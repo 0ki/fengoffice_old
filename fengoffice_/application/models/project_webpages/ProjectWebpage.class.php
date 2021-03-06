@@ -186,7 +186,7 @@ class ProjectWebpage extends BaseProjectWebpage {
 	 * @return string
 	 */
 	function getObjectUrl() {
-		return $this->getEditUrl();
+		return $this->getUrl();
 	} // getObjectUrl
 
 	function getDashboardObject(){

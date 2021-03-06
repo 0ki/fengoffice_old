@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.1 RC2
-    =====================
+    About OpenGoo 1.1
+    =================
 
     OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
@@ -68,7 +68,7 @@
     ==========================================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.1 RC2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 1.0 to 1.1.
@@ -97,7 +97,7 @@
 
 	Changelog
 	=========
-	
+
 	Since 1.1 RC1
 	-------------
 	

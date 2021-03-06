@@ -146,7 +146,7 @@ class ContactController extends ApplicationController {
     	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
-					TABLE_PREFIX . "companies` `co` WHERE " .$proj_cond_companies . $tag_str . $permissions;
+					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND " .$proj_cond_companies . $tag_str . $permissions;
 					
 		if (!can_manage_contacts(logged_user())){
 			$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
@@ -155,12 +155,12 @@ class ContactController extends ApplicationController {
 		
 		if (isset($project)) {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE EXISTS (SELECT * FROM `" . 
+					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND EXISTS (SELECT * FROM `" . 
 					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
 					str_replace('= `object_manager_value`', "= 'ProjectContacts'", $tag_str) . $permissions;
 		} else{
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE '1' = '1' " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
+					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		}
 		
 		if($count){

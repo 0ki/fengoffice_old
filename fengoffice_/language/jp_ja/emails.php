@@ -80,6 +80,10 @@ return array(
 	'task has been modified' => 'ワークスペース "{1}" のタスク "{0}" は更新されました', // 'Task "{0}" in workspace "{1}" has been modified'
 	'task modified' => 'タスクが変更された', // 'Task modified'
 	'view task' => 'タスクの表示', // 'View task'
+
+	// ENGLISH MISSING TRANSLATIONS
+	'original message' => 'Original message',
+    'mail sent' => 'Sent',
     ); // array
 
     ?>

@@ -139,6 +139,9 @@
 	'error create backup folder' => 'バックアップフォルダーの作成でエラーが発生しました。バックアップを完了できません。', // 'Error while creating backup folder. Cannot complete backup'
 	'error delete backup' => 'バックアップの削除でエラーが発生しました。', // 'Error while deleting database backup,'
 	'success delete backup' => 'バックアップを削除しました', // 'Backup was deleted'
+  	
+  	// ENGLISH MISSING TRANSLATIONS
+  	'name must be unique' => 'Sorry, but selected name is already taken',
    ); // array
 
 ?>

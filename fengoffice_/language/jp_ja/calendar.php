@@ -130,5 +130,13 @@
 	"months" => "月", // "months"
 	"years" => "年", // "years"
 
+  	// ENGLISH MISSING TRANSLATIONS
+  	'invitations' => 'Invitations',
+    'pending response' => 'Pending response',
+    'participate' => 'Will attend',
+    'no invitations to this event' => 'No invitations were sent to this event',
+    'duration must be at least 15 minutes' => 'Duration must be at least 15 minutes',
+    'event dnx' => 'Requested event does not exists',
+  
   ); // array
 ?>

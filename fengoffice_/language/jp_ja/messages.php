@@ -416,7 +416,47 @@
   	'view open tasks' => 'オープンタスク', // 'Open tasks'
   	'already logged in' => 'すでにログインしています', // 'You are already logged in'
   
-	'some tasks could not be updated due to permission restrictions' => 'パーミションの制限のためいくつかのタスクをアップデートできませんでした。' // 'Some tasks could not be updated due to permission restrictions'
+	'some tasks could not be updated due to permission restrictions' => 'パーミションの制限のためいくつかのタスクをアップデートできませんでした。', // 'Some tasks could not be updated due to permission restrictions'
+    
+  	// ENGLISH MISSING TRANSLATIONS
+  	'log trash projectmessages' => '\'{0}\' moved to trash',
+    'log untrash projectmessages' => '\'{0}\' restored from trash',
+    'log trash projectevents' => '\'{0}\' moved to trash',
+    'log untrash projectevents' => '\'{0}\' restored from trash',
+    'log trash comments' => '\'{0}\' moved to trash',
+    'log untrash comments' => '\'{0}\' restored from trash',
+    'log trash projectmilestones' => '\'{0}\' moved to trash',
+    'log untrash projectmilestones' => '\'{0}\' restored from trash',
+    'log trash projecttasklists' => '\'{0}\' moved to trash',
+    'log untrash projecttasklists' => '\'{0}\' restored from trash',
+    'log trash projecttasks' => '\'{0}\' moved to trash',
+    'log untrash projecttasks' => '\'{0}\' restored from trash',
+    'log trash projectforms' => '\'{0}\' moved to trash',
+    'log untrash projectforms' => '\'{0}\' restored from trash',
+    'log trash projectfiles' => '\'{0}\' moved to trash',
+    'log untrash projectfiles' => '\'{0}\' restored from trash',
+    'log trash projectfilerevisions' => '\'{0}\' moved to trash',
+    'log untrash projectfilerevisions' => '\'{0}\' restored from trash',
+    'log trash projectwebpages' => '\'{0}\' moved to trash',
+    'log untrash projectwebpages' => '\'{0}\' restored from trash',
+    'log trash contacts' => '\'{0}\' moved to trash',
+    'log untrash contacts' => '\'{0}\' restored from trash',
+    'log trash companies' => '\'{0}\' moved to trash',
+    'log untrash companies' => '\'{0}\' restored from trash',
+    'log trash mailcontents' => '\'{0}\' moved to trash',
+    'log untrash mailcontents' => '\'{0}\' restored from trash',
+    'log trash timeslots' => '\'{0}\' moved to trash',
+    'log untrash timeslots' => '\'{0}\' restored from trash',
+    'success trash object' => 'Object moved to trash successfully',
+    'error trash object' => 'Failed to move object to trash',
+    'success untrash object' => 'Object restored from trash successfully',
+    'error untrash object' => 'Failed to restore object from trash',
+    'success trash objects' => '{0} objects moved to trash successfully',
+    'error trash objects' => 'Failed to move {0} objects to trash',
+    'success untrash objects' => '{0} objects restored from trash successfully',
+    'error untrash objects' => 'Failed to restore {0} objects from trash',
+    'success delete object' => 'Object deleted successfully',
+    'error delete object' => 'Failed to delete object',
   ); // array
 
 ?>

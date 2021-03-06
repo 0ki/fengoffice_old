@@ -174,8 +174,12 @@
 //  	'add work' => '作業を追加', // 'Add work'
  
   	'date format' => 'm/d/Y', // 'm/d/Y'
-  	'date format description' => '(mm/dd/yyyy)' // '(mm/dd/yyyy)'
+  	'date format description' => '(mm/dd/yyyy)', // '(mm/dd/yyyy)'
 
+  	// ENGLISH MISSING TRANSLATIONS
+  	'add work' => 'Add work',
+    'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?',
+  
   ); // array
 
 ?>

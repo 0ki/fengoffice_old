@@ -195,6 +195,12 @@
 	'edit preferences' => '環境設定の編集', // 'Edit preferences'
 	'view milestone' => 'マイルストーンの表示',
 
+  	// ENGLISH MISSING TRANSLATIONS
+  	'edit file properties' => 'Edit file Properties',
+    'custom properties' => 'Custom Properties',
+    'move to trash' => 'Move to trash',
+    'restore from trash' => 'Restore from trash',
+    'delete permanently' => 'Delete permanently',
   ); // array
 
 ?>

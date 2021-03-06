@@ -441,7 +441,48 @@
   'do complete' => '完了', // 'Complete'
   
   'task data' => 'タスクデータ', // 'Task data'
-  
+
+  // ENGLISH MISSING TRANSLATIONS
+  	'edit picture' => 'Edit Picture',
+    'import contacts from csv' => 'Import contacts from .csv file',
+    'import' => 'Import',
+    'file not exists' => 'The file does not exists',
+    'field delimiter' => 'Field delimiter',
+    'first record contains field names' => 'First record contains field names',
+    'import contact success' => 'Contact import success.',
+    'contact fields' => 'Contact Fields',
+    'fields from file' => 'Fields from file',
+    'you must match the database fields with file fields before executing the import process' => 'You must match the database fields with file fields before executing the import process.',
+    'import result' => 'Import results',
+    'contacts succesfully imported' => 'Contacts succesfully imported',
+    'contacts import fail' => 'Import failed for contacts',
+    'contacts import fail help' => 'Import process may have failed due to existing data in the database, like name or email address, etc.',
+    'import fail reason' => 'Fail reason',
+    'deleted by' => 'Deleted by',
+    'success pause timeslot' => 'Time slot paused successfully',
+    'success resume timeslot' => 'Time slot resumed successfully',
+    'paused timeslot message' => 'Time slot paused, total time: {0}',
+    'time since pause' => 'Time since pause',
+    'pause work' => 'Pause work',
+    'resume work' => 'Resume work',
+    'seconds' => 'Seconds',
+    'search in all workspaces' => 'Search in all workspaces',
+    'total pause time' => 'Total pause time',
+    'pause time cannot be negative' => 'Pause time cannot be negative',
+    'pause time cannot exceed timeslot time' => 'Pause time cannot exceed timeslot time',
+    'timeslots' => 'Timeslots',
+    'task timeslots' => 'Task timeslots',
+    'time timeslots' => 'General timeslots',
+    'all timeslots' => 'Task and general timeslots',
+    'print report' => 'Print report',
+    'all active tasks' => 'All active tasks',
+    'unique id' => 'Unique Id',
+    'pending tasks for' => 'Pending tasks for {0}',
+    'my late milestones and tasks' => 'My late milestones and tasks',
+    'late milestones and tasks for' => 'Late milestones and tasks for {0}',
+    'my tasks in progress' => 'My tasks in progress',
+    'tasks in progress for' => 'Tasks in progress for {0}',
+    'time has to be greater than 0' => 'Time has to be greater than 0',
   ); // array
 
 ?>

@@ -112,6 +112,39 @@
   	'user ws config option name task panel status' => 'ステータス', // 'Status'
   	'user ws config option name task panel filter' => 'Filter by', // 'Filter by'
   	'user ws config option name task panel filter value' => 'フィルターの値', // 'Filter value'
+    
+  	// ENGLISH MISSING TRANSLATIONS
+  	'config option name days_on_trash' => 'Days on trash',
+    'config option desc days_on_trash' => 'How many days a content object is kept in the trash before being automatically deleted. If 0, objects won\'t be deleted from trash. Warning: The Email module is in Beta state, and thus may contain errors that make it no suitable for production use.',
+    'config option name enable_email_module' => 'Enable Email Module',
+    'config option desc enable_email_module' => 'Determines whether the Email Tab will be available in OpenGoo.',
+    'config option name time_format_use_24' => 'Use 24 hours format for time descriptions',
+    'config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
+    'config option name work_day_start_time' => 'Work day start time',
+    'config option desc work_day_start_time' => 'Specifies the time when work day starts',
+    'templates' => 'Templates',
+    'add template' => 'Add template',
+    'confirm delete template' => 'Are you sure you want to delete this template?',
+    'no templates' => 'There are no templates',
+    'template name required' => 'The template\'s name is required',
+    'can manage templates' => 'Can manage templates',
+    'new template' => 'New template',
+    'edit template' => 'Edit template',
+    'template dnx' => 'The template does not exist',
+    'success edit template' => 'Template modified successfully',
+    'log add cotemplates' => '{0} added',
+    'log edit cotemplates' => '{0} modified',
+    'success delete template' => 'Template deleted successfully',
+    'error delete template' => 'Error deleting the template',
+    'objects' => 'Objects',
+    'objects in template' => 'Objects in template',
+    'no objects in template' => 'There are no objects in this template',
+    'add to a template' => 'Add to a template',
+    'add an object to template' => 'Add an object to this template',
+    'you are adding object to template' => 'You are adding {0} \'{1}\' to a template. Choose a template below or create a new one for this {0}.',
+    'success add object to template' => 'Object added to template successfully',
+    'object type not supported' => 'This object type is not supported for templates',
+    'assign template to workspace' => 'Assign template to workspace',
   	); // array
 
 ?>
