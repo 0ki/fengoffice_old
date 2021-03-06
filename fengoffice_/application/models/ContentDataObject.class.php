@@ -1835,7 +1835,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	}
 	
 	function getMembersIdsToDisplayPath() {
-		$members_ids = array();
+		$member_ids = array();
 		$dimensions_ids = array();
 		$selected_members_ids = $this->getMemberIds();
 		if(count($selected_members_ids) > 0){

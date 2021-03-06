@@ -300,18 +300,18 @@ class TaskController extends ApplicationController {
 				$duetime = getTimeValue(array_var($task_data, 'task_due_time'));
 				if (is_array($duetime)) {
 					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
-					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
-				}				
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));					
+				}		
+				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
 				$task_data['use_due_time'] = is_array($duetime);
 			}
 			if ($task_data['start_date'] instanceof DateTimeValue) {
 				$starttime = getTimeValue(array_var($task_data, 'task_start_time'));
 				if (is_array($starttime)) {
 					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
-					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
-				}				
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));					
+				}	
+				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
 				$task_data['use_start_time'] = is_array($starttime);
 			}
 				

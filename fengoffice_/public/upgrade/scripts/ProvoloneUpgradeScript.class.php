@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Provolone upgrade script will upgrade FengOffice 2.6.4-beta to FengOffice 2.7.1-beta
+ * Provolone upgrade script will upgrade FengOffice 2.6.4-beta to FengOffice 2.7.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ProvoloneUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.6.4-beta');
-		$this->setVersionTo('2.7.1-beta');
+		$this->setVersionTo('2.7.1');
 	} // __construct
 
 	function getCheckIsWritable() {

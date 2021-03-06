@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1-beta
+	About Feng Office 2.7.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,17 @@
 	Changelog
 	=========
 			
+	Since 2.7.1-beta
+	----------------
+	bugfix: quick edit task timezone errors.
+	bugfix: performance improvement on object listing query.
+	bugfix: performance improvement on mail listing query.
+	bugfix: superadmins should not see unclassified emails of other people.
+	bugfix: when selecting a workspace after searching it, it is not focused
+	
+	language: languages fr_ca, ar_sa updated
+	
+
 	Since 2.7.0.4
 	----------------
 	feature: Workspaces, tags, etc. selectors upgraded.

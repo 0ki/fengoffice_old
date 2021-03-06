@@ -268,8 +268,8 @@
 	 * @param $object_id
 	 * @return boolean
 	 */
-	function can_read_sharing_table(Contact $user, $object_id) {
-		if($user->isAdministrator()){
+	function can_read_sharing_table(Contact $user, $object_id, $allow_super_admin = true) {
+		if($allow_super_admin && $user->isAdministrator()){
 			return true;
 		}
 		$perm = SharingTables::instance()->findOne(array('conditions' => array("object_id=? AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = '".$user->getId()."')", $object_id)));
@@ -314,8 +314,8 @@
 	 * @param $object_type_id
 	 * @return boolean
 	 */
-	function can_access(Contact $user, $members, $object_type_id, $access_level){
-		if($user->isAdministrator()){
+	function can_access(Contact $user, $members, $object_type_id, $access_level, $allow_super_admin = true) {
+		if($allow_super_admin && $user->isAdministrator()){
 			return true;
 		}
 		$write = $access_level == ACCESS_LEVEL_WRITE;
@@ -582,14 +582,9 @@
 				$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id=0 ORDER BY name ASC");
 				$tmp_mem_ids = array();
 				foreach ($root_members as $mem) {
+					if (!isset($members[$dim->getId()])) $members[$dim->getId()] = array();
 					$members[$dim->getId()][] = $mem;
-					$tmp_mem_ids[] = $mem['id'];
-					//$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
-				}
-				$all_children = array();
-				if (count($tmp_mem_ids) > 0) {
-					$all_children = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id IN (".implode(',',$tmp_mem_ids).") ORDER BY parent_member_id, name");
-					$members[$dim->getId()] = array_merge($members[$dim->getId()], $all_children);
+					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
 				}
 				
 				$allowed_object_types[$dim->getId()] = array();

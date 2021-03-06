@@ -458,14 +458,15 @@ abstract class ContentDataObjects extends DataManager {
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
-					
+			$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
+			
 			$permissions_condition = "o.id IN (
 					SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
 					WHERE o.id = sh.object_id
-					AND sh.group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid)
+					AND sh.group_id  IN ($logged_user_pgs)
 			)";
 			
-			if (logged_user()->isAdministrator() ||($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
+			if (!$this instanceof MailContents && logged_user()->isAdministrator() || ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
 				$permissions_condition = "true";
 			}
 			

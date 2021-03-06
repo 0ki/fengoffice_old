@@ -177,6 +177,6 @@ if (COMPLETE_MIGRATION_OUT != 'console') {
 }
 
 } catch (Exception $e) {
-	echo "ERROR: ".$e->getMessage()."\n";
-	echo "Trace:\n".$e->getTraceAsString()."\n";
+	complete_migration_print("ERROR: ".$e->getMessage()."\n");
+	complete_migration_print("Trace:\n".$e->getTraceAsString()."\n");
 }

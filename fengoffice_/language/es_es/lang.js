@@ -816,7 +816,7 @@ addLangs({
 	'save as' : 'Guardar como {0}',
 	
 	'viewing all information' : 'Viendo toda la Infomación',
-	'add a variable to this task': 'Agreagr una variable a esta tarea',
+	'add a variable to this task': 'Agregar una variable a esta tarea',
 	
 	'phone number': 'Teléfono',
 	'edit_picture':'Editar foto',

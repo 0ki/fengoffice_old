@@ -263,7 +263,7 @@ class MailContents extends BaseMailContents {
 				$read = "AND ";
 				$subread = "AND mc."; 
 			}
-			$read2 = "id IN (SELECT rel_object_id FROM " . TABLE_PREFIX . "read_objects t WHERE contact_id = " . logged_user()->getId() . "  AND t.is_read = '1')";
+			$read2 = "id IN (SELECT rel_object_id FROM " . TABLE_PREFIX . "read_objects t WHERE contact_id = " . logged_user()->getId() . " AND id = t.rel_object_id AND t.is_read = '1')";
 			$read .= $read2;
 			$subread .= $read2;
 		} else {

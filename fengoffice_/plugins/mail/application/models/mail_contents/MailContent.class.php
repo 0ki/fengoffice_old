@@ -406,9 +406,9 @@ class MailContent extends BaseMailContent {
 	function canView(Contact $user) {
 		$account = $this->getAccount();
 		if ($account instanceof MailAccount) {
-			return ($account->getContactId() == logged_user()->getId() || can_read_sharing_table($user, $this->getId()));
+			return ($account->getContactId() == logged_user()->getId() || can_read_sharing_table($user, $this->getId(), false));
 		}else{
-			return can_read_sharing_table($user, $this->getId());
+			return can_read_sharing_table($user, $this->getId(), false);
 		}
 	}
 
