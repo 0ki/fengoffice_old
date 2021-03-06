@@ -244,19 +244,20 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		// return image depending on type string
 		$image = "file.png";
 		$mimeType = str_replace("/", "-", $this->getTypeString());
-		$parts = split("-", $mimeType);
-		if (count($parts) > 0) {
-			$theme = config_option("theme", DEFAULT_THEME);
-			$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
-			$acc = "";
-			foreach ($parts as $part) {
-				if ($acc != "") $acc .= "-";
-				$acc .= $part;
-				if (is_file($base . $acc . ".png")) {
-					$image = $acc . ".png";
-				} else {
-					break;
-				}
+		$theme = config_option("theme", DEFAULT_THEME);
+		$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
+		$temp = $mimeType;
+		$x = 0;
+		while (true) {
+			$x++;
+			if (is_file($base . $temp . ".png")) {
+				$image = $temp . ".png";
+				break;
+			} else {
+				if ($x > 10) break;
+				$i = strrpos($temp, "-");
+				if ($i < 0) break;
+				$temp = substr($temp, 0, $i);
 			}
 		}
 		return get_image_url("48x48/types/$image");

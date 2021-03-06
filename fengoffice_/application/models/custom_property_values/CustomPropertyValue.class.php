@@ -1,23 +1,23 @@
 <?php
 
-  /**
-  * CustomPropertyValue class
-  *
-  * @author Pablo Kamil <pablokam@gmail.com>
-  */
-  class CustomPropertyValue extends BaseCustomPropertyValue {
-      
-    /**
-    * Construct the object
-    *
-    * @param void
-    * @return null
-    */
-    function __construct() {
-      parent::__construct();
-    } // __construct
-    
-    /**
+/**
+ * CustomPropertyValue class
+ *
+ * @author Pablo Kamil <pablokam@gmail.com>
+ */
+class CustomPropertyValue extends BaseCustomPropertyValue {
+
+	/**
+	 * Construct the object
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function __construct() {
+		parent::__construct();
+	} // __construct
+
+	/**
 	 * Validate before save
 	 *
 	 * @access public
@@ -39,14 +39,14 @@
 					}
 				}else{
 					if($this->getValue() != '' && !is_numeric($this->getValue())){
-							$errors[] = lang('value must be numeric', $cp->getName());
+						$errors[] = lang('value must be numeric', $cp->getName());
 					}
 				}
 			}
-		}//if		
+		}//if
 	} // validate
-    
-    
-  } // ObjectPropertyValue
+
+
+} // ObjectPropertyValue
 
 ?>

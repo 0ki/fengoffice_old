@@ -142,6 +142,11 @@ class ContactController extends ApplicationController {
     	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
     	$proj_cond_contacts = ' `project_id` IN (' . $proj_ids . ')';
     	
+    	// show companies with no workspace when viewing All
+    	if (!isset($project)) {
+    		$proj_cond_companies = 'true';
+    	} 
+    	
     	if(isset($tag) && $tag && $tag!='')
     		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
@@ -152,11 +157,7 @@ class ContactController extends ApplicationController {
 		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
 					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
 					
-		if (!can_manage_contacts(logged_user())){
-			$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
-			$permissions = " AND `co`.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `co`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pc`') .'))';
-		} else $permissions = '';
-		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
 		if (isset($project)) {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
 					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND EXISTS (SELECT * FROM `" . 
@@ -1252,13 +1253,13 @@ class ContactController extends ApplicationController {
 		if ($only_first_record) {
 			$result = fgetcsv($handle, null, $delimiter);
 			$aux = array();
-			foreach ($result as $title) $aux[] = mb_convert_encoding($title, "utf-8", mb_detect_encoding($title));
+			foreach ($result as $title) $aux[] = mb_convert_encoding($title, "utf-8", detect_encoding($title));
 			$result = $aux;			
 		} else {
 			$result = array();
 			while ($fields = fgetcsv($handle, null, $delimiter)) {
 				$aux = array();
-				foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "utf-8", mb_detect_encoding($field));
+				foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "utf-8", detect_encoding($field));
 				$result[] = $aux;
 			}
 		}
@@ -1293,7 +1294,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['city']) && $checked['city']) $contact_data['city'] = array_var($fields, $position['city']);
 		if (isset($checked['state']) && $checked['state']) $contact_data['state'] = array_var($fields, $position['state']);
 		if (isset($checked['zipcode']) && $checked['zipcode']) $contact_data['zipcode'] = array_var($fields, $position['zipcode']);
-		if (isset($checked['country']) && $checked['country']) $contact_data['country'] = array_var($fields, $position['country']);
+		if (isset($checked['country']) && $checked['country']) $contact_data['country'] = CountryCodes::getCountryCodeByName(array_var($fields, $position['country']));
 		if (isset($checked['phone_number']) && $checked['phone_number']) $contact_data['phone_number'] = array_var($fields, $position['phone_number']);
 		if (isset($checked['fax_number']) && $checked['fax_number']) $contact_data['fax_number'] = array_var($fields, $position['fax_number']);
 		$contact_data['timezone'] = logged_user()->getTimezone();
@@ -1312,7 +1313,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['w_city']) && $checked['w_city']) $contact_data['w_city'] = array_var($fields, $position['w_city']);
 		if (isset($checked['w_state']) && $checked['w_state']) $contact_data['w_state'] = array_var($fields, $position['w_state']);
 		if (isset($checked['w_zipcode']) && $checked['w_zipcode']) $contact_data['w_zipcode'] = array_var($fields, $position['w_zipcode']);
-		if (isset($checked['w_country']) && $checked['w_country']) $contact_data['w_country'] = array_var($fields, $position['w_country']);
+		if (isset($checked['w_country']) && $checked['w_country']) $contact_data['w_country'] = CountryCodes::getCountryCodeByName(array_var($fields, $position['w_country']));
 		if (isset($checked['w_phone_number']) && $checked['w_phone_number']) $contact_data['w_phone_number'] = array_var($fields, $position['w_phone_number']);
 		if (isset($checked['w_phone_number2']) && $checked['w_phone_number2']) $contact_data['w_phone_number2'] = array_var($fields, $position['w_phone_number2']);
 		if (isset($checked['w_fax_number']) && $checked['w_fax_number']) $contact_data['w_fax_number'] = array_var($fields, $position['w_fax_number']);
@@ -1324,7 +1325,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['h_city']) && $checked['h_city']) $contact_data['h_city'] = array_var($fields, $position['h_city']);
 		if (isset($checked['h_state']) && $checked['h_state']) $contact_data['h_state'] = array_var($fields, $position['h_state']);
 		if (isset($checked['h_zipcode']) && $checked['h_zipcode']) $contact_data['h_zipcode'] = array_var($fields, $position['h_zipcode']);
-		if (isset($checked['h_country']) && $checked['h_country']) $contact_data['h_country'] = array_var($fields, $position['h_country']);
+		if (isset($checked['h_country']) && $checked['h_country']) $contact_data['h_country'] = CountryCodes::getCountryCodeByName(array_var($fields, $position['h_country']));
 		if (isset($checked['h_phone_number']) && $checked['h_phone_number']) $contact_data['h_phone_number'] = array_var($fields, $position['h_phone_number']);
 		if (isset($checked['h_phone_number2']) && $checked['h_phone_number2']) $contact_data['h_phone_number2'] = array_var($fields, $position['h_phone_number2']);
 		if (isset($checked['h_fax_number']) && $checked['h_fax_number']) $contact_data['h_fax_number'] = array_var($fields, $position['h_fax_number']);
@@ -1336,7 +1337,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['o_city']) && $checked['o_city']) $contact_data['o_city'] = array_var($fields, $position['o_city']);
 		if (isset($checked['o_state']) && $checked['o_state']) $contact_data['o_state'] = array_var($fields, $position['o_state']);
 		if (isset($checked['o_zipcode']) && $checked['o_zipcode']) $contact_data['o_zipcode'] = array_var($fields, $position['o_zipcode']);
-		if (isset($checked['o_country']) && $checked['o_country']) $contact_data['o_country'] = array_var($fields, $position['o_country']);
+		if (isset($checked['o_country']) && $checked['o_country']) $contact_data['o_country'] = CountryCodes::getCountryCodeByName(array_var($fields, $position['o_country']));
 		if (isset($checked['o_phone_number']) && $checked['o_phone_number']) $contact_data['o_phone_number'] = array_var($fields, $position['o_phone_number']);
 		if (isset($checked['o_phone_number2']) && $checked['o_phone_number2']) $contact_data['o_phone_number2'] = array_var($fields, $position['o_phone_number2']);
 		if (isset($checked['o_fax_number']) && $checked['o_fax_number']) $contact_data['o_fax_number'] = array_var($fields, $position['o_fax_number']);
@@ -1442,7 +1443,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['w_city']) && $checked['w_city'] == 'checked') $str .= $contact->getWCity() . ',';
 		if (isset($checked['w_state']) && $checked['w_state'] == 'checked') $str .= $contact->getWState() . ',';
 		if (isset($checked['w_zipcode']) && $checked['w_zipcode'] == 'checked') $str .= $contact->getWZipcode() . ',';
-		if (isset($checked['w_country']) && $checked['w_country'] == 'checked') $str .= $contact->getWCountry() . ',';
+		if (isset($checked['w_country']) && $checked['w_country'] == 'checked') $str .= $contact->getWCountryName() . ',';
 		if (isset($checked['w_phone_number']) && $checked['w_phone_number'] == 'checked') $str .= $contact->getWPhoneNumber() . ',';
 		if (isset($checked['w_phone_number2']) && $checked['w_phone_number2'] == 'checked') $str .= $contact->getWPhoneNumber2() . ',';
 		if (isset($checked['w_fax_number']) && $checked['w_fax_number'] == 'checked') $str .= $contact->getWFaxNumber() . ',';
@@ -1454,7 +1455,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['h_city']) && $checked['h_city'] == 'checked') $str .= $contact->getHCity() . ',';
 		if (isset($checked['h_state']) && $checked['h_state'] == 'checked') $str .= $contact->getHState() . ',';
 		if (isset($checked['h_zipcode']) && $checked['h_zipcode'] == 'checked') $str .= $contact->getHZipcode() . ',';
-		if (isset($checked['h_country']) && $checked['h_country'] == 'checked') $str .= $contact->getHCountry() . ',';
+		if (isset($checked['h_country']) && $checked['h_country'] == 'checked') $str .= $contact->getHCountryName() . ',';
 		if (isset($checked['h_phone_number']) && $checked['h_phone_number'] == 'checked') $str .= $contact->getHPhoneNumber() . ',';
 		if (isset($checked['h_phone_number2']) && $checked['h_phone_number2'] == 'checked') $str .= $contact->getHPhoneNumber2() . ',';
 		if (isset($checked['h_fax_number']) && $checked['h_fax_number'] == 'checked') $str .= $contact->getHFaxNumber() . ',';
@@ -1466,7 +1467,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['o_city']) && $checked['o_city'] == 'checked') $str .= $contact->getOCity() . ',';
 		if (isset($checked['o_state']) && $checked['o_state'] == 'checked') $str .= $contact->getOState() . ',';
 		if (isset($checked['o_zipcode']) && $checked['o_zipcode'] == 'checked') $str .= $contact->getOZipcode() . ',';
-		if (isset($checked['o_country']) && $checked['o_country'] == 'checked') $str .= $contact->getOCountry() . ',';
+		if (isset($checked['o_country']) && $checked['o_country'] == 'checked') $str .= $contact->getOCountryName() . ',';
 		if (isset($checked['o_phone_number']) && $checked['o_phone_number'] == 'checked') $str .= $contact->getOPhoneNumber() . ',';
 		if (isset($checked['o_phone_number2']) && $checked['o_phone_number2'] == 'checked') $str .= $contact->getOPhoneNumber2() . ',';
 		if (isset($checked['o_fax_number']) && $checked['o_fax_number'] == 'checked') $str .= $contact->getOFaxNumber() . ',';
@@ -1490,7 +1491,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['city']) && $checked['city'] == 'checked') $str .= $company->getCity() . ',';
 		if (isset($checked['state']) && $checked['state'] == 'checked') $str .= $company->getState() . ',';
 		if (isset($checked['zipcode']) && $checked['zipcode'] == 'checked') $str .= $company->getZipcode() . ',';
-		if (isset($checked['country']) && $checked['country'] == 'checked') $str .= $company->getCountry() . ',';
+		if (isset($checked['country']) && $checked['country'] == 'checked') $str .= $company->getCountryName() . ',';
 		if (isset($checked['phone_number']) && $checked['phone_number'] == 'checked') $str .= $company->getPhoneNumber() . ',';
 		if (isset($checked['fax_number']) && $checked['fax_number'] == 'checked') $str .= $company->getFaxNumber() . ',';
 		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= $company->getEmail() . ',';

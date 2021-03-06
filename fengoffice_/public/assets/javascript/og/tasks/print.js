@@ -83,7 +83,7 @@ ogTasks.printGroupTasks = function(group, printWindow){
 		else if (task.priority == 200)
 			color = '0';
 		
-		sb.append("<div style='margin-left:" + (4 + (level * 15)) + "px;border-bottom:1px dotted #888;'>");
+		sb.append("<div class='task' style='margin-left:" + (4 + (level * 15)) + "px;'>");
 		sb.append("<table style='width:100%'><tr><td width=20><img src='" + og.hostName + "/public/assets/themes/default/images/16x16/wscolors/color" + color + ".png' style='padding-right:3px'/></td><td>");
 		if(task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group.group_id))
 			sb.append("<b>" + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;');

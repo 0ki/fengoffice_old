@@ -69,6 +69,7 @@ addLangs({
 	'cancel': 'Cancela',
 	'company': 'Empresa',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'add new contact': 'Criar novo Contato',
 	'displaying contacts of': 'Exibindo Contatos {0} to {1} of {2}',
 	'no contacts to display': 'Sem contatos para mostrar',

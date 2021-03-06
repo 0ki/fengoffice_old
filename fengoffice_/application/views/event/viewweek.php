@@ -45,6 +45,7 @@ $tags = active_tag();
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
+	$weeknumber = $today->format("W");
 	
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
 	
@@ -149,21 +150,27 @@ $tags = active_tag();
 	<td class="coViewHeader" colspan=2 rowspan=1>
 	<div class="coViewTitle">
 		<table style="width:100%"><tr><td>
-			<span id="chead0"><?php echo  date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
+			<span id="chead0">
+			<?php if (user_config_option("show_week_numbers")) {
+				echo lang("week number x", $weeknumber) . " - "; 
+			}?>
+			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
 		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>
 		 </td><td style="width:100px;">
-		 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-		 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-		 	<?php 
-		 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
-		 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-		 	 ?>
-		 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-		 		title="<?php echo lang('copy this url in your calendar client software')?>"
-		 		onclick="javascript:Ext.Msg.show({
-									   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-									   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-							   			icon: Ext.MessageBox.INFO });"></a>
+		 	<?php if (config_option("show_feed_links")) { ?>
+			 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+			 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+			 	<?php 
+			 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+			 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+			 	 ?>
+			 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+			 		title="<?php echo lang('copy this url in your calendar client software')?>"
+			 		onclick="javascript:Ext.Msg.show({
+										   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+										   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+								   			icon: Ext.MessageBox.INFO });"></a>
+			<?php } ?>
 		 </td></tr></table>	
 	</div>		
 	</td>
@@ -532,7 +539,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 								<?php
 								if ($user_filter != -1) { 
 									$invitations = $event->getInvitations();
-									if ($invitations != null && is_array($invitations) && $invitations[$user_filter] != null) {
+									if ($invitations != null && is_array($invitations) && isset($invitations[$user_filter])) {
 										$inv = $invitations[$user_filter];
 										
 										if ($inv->getInvitationState() == 0) { // Not answered
@@ -611,7 +618,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 
 	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
-	calToolbarDateMenu.picker.setValue(dtv);
+	og.calToolbarDateMenu.picker.setValue(dtv);
 
 	// scroll to first event
 	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);

@@ -3,7 +3,7 @@
 <html>
 <head>
 	<!-- script src="http://www.savethedevelopers.org/say.no.to.ie.6.js"></script -->
-	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) ?> - OpenGoo</title>
+	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) . ' - ' . PRODUCT_NAME ?></title>
 	<?php echo link_tag(with_slash(ROOT_URL)."favicon.ico", "rel", "shortcut icon") ?>
 	<?php echo add_javascript_to_page("app.js") // loaded first because it's needed for translating?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
@@ -16,6 +16,7 @@
 	} else {
 		echo stylesheet_tag('website.css');
 	}
+	echo stylesheet_tag('custom.css');
 	$css = array();
 	Hook::fire('autoload_stylesheets', null, $css);
 	foreach ($css as $c) {
@@ -36,7 +37,9 @@
 		}
 	}
 	?>
-	<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
+	<?php if (config_option("show_feed_links")) { ?>
+		<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
+	<?php } ?>
 </head>
 <body id="body" <?php echo render_body_events() ?>>
 
@@ -98,7 +101,6 @@
 
 <script>
 // OG config options
-og.noOfTasks = <?php echo defined('NO_OF_TASKS') ? NO_OF_TASKS : 8 ?>;
 og.pageSize = <?php echo config_option('files_per_page', 10)?>;
 og.timeFormat24 = <?php echo config_option('time_format_use_24', 0) ? 1 : 0 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';

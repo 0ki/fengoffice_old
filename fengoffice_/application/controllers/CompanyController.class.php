@@ -41,6 +41,7 @@ class CompanyController extends ApplicationController {
 		} // if
 
 		ajx_set_no_toolbar(true);
+		ajx_extra_data(array("title" => $company->getName(), 'icon'=>'ico-company'));
 		tpl_assign('company', $company);
 	} // card
 

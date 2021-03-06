@@ -1,7 +1,7 @@
 <?php return array(
 	'new message' => 'Nueva nota',
 	'new comment' => 'Añadir comentario',
-	'your account created' => 'Su cuenta ha sido creada',
+	'your account created' => 'Su nueva cuenta en OpenGoo ha sido creada',
 	'your password' => 'Contraseña',
 	'milestone assigned to you' => 'Se le ha asignado un hito',
 	'task assigned to you' => 'Se le ha asignado una tarea',
@@ -154,6 +154,7 @@
 	'due_date reminder notification milestone' => 'Recordatorio de hito con vencimiento',
 	'due_date milestone reminder desc' => 'El hito "{0}" vence el "{1}" y aún está pendiente',
 	'start reminder notification event' => 'Recordatorio de evento',
+	'start event reminder' => 'Recordatorio de evento',
 	'start event reminder desc' => 'El evento "{0}" comienza el "{1}"',
 	'mail attachments' => 'Adjuntos',
 	'select attachment' => 'Seleccionar y subir el adjunto',

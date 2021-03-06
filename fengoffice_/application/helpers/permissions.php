@@ -274,10 +274,14 @@
 		if ($manager instanceof Contacts) {
 			if (!can_manage_contacts($user)){
 				$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
-				return "$table_alias.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `$table_alias`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), $access_level, $user, '`project_id`', '`pc`') .'))';
+				return "$table_alias.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = $table_alias.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), $access_level, $user, '`project_id`', '`pc`') .'))';
 			} else {
 				return 'true';
 			}
+		}
+		
+		if ($manager instanceof Companies && can_manage_contacts($user)) {
+			return 'true';
 		}
 		// permissions for projects
 		if ($manager instanceof Projects) {

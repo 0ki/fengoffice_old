@@ -14,4 +14,7 @@
 	'columns and order' => 'Columnas & Orden',
 	'true' => 'Verdadero',
 	'false' => 'Falso',
+	'ends with' => 'Termina en',
+	'field' => 'Campo',
+	'condition' => 'Condición',
 ); ?>

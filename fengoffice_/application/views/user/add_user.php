@@ -2,9 +2,10 @@
 	require_javascript("modules/addUserForm.js");
 	require_javascript("og/Permissions.js");
 	$genid=gen_id();
+	$object = $user;
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
 <div class="adminAddUser">
   <div class="adminHeader">
@@ -36,7 +37,12 @@
     	
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
-	<br/><a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a><br/>
+  	<?php $categories = array(); Hook::fire('object_add_categories', $object, $categories); ?>
+  	
+	<br/><a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+	<?php foreach ($categories as $category) { ?>
+		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+	<?php } ?>
   </div>
 <?php } else { ?>
   <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
@@ -150,9 +156,18 @@
 		</fieldset>
 	</div>
 	
+	<?php foreach ($categories as $category) { ?>
+	<div style="display:none" id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
+	
 	<div>
 		<?php echo render_object_custom_properties($user, 'Users', true) ?>
-	</div><br/>	
+	</div><br/>
 
   <?php 
   echo input_field('user[contact_id]',array_var($user_data, 'contact_id',''), array('type' => 'hidden'));

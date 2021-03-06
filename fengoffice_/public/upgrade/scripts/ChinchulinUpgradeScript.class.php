@@ -52,10 +52,6 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 		return $this->check_extensions;
 	}
 	
-	function worksFor($version) {
-		return version_compare($version, $this->getVersionFrom()) >= 0 && version_compare($version, $this->getVersionTo()) < 0;
-	}
-	
 	/**
 	 * Execute the script
 	 *

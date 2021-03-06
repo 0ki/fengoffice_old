@@ -3,9 +3,9 @@
 return array(
 
 // Titles
-    'new message' => 'New message',
+    'new message' => 'New note',
     'new comment' => 'New comment',
-    'your account created' => 'Your account has been created',
+    'your account created' => 'Your new OpenGoo account has been created',
     'your password' => 'Your password',
     'milestone assigned to you' => 'Milestone has been assigned to you',
     'task assigned to you' => 'Task has been assigned to you',
@@ -21,10 +21,10 @@ return array(
 	'password expires days' => 'Your password will expire in {0} days',
 
     'dont reply wraning' => 'THIS IS A SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
-    'new message posted' => 'New message "{0}" has been posted',
+    'new message posted' => 'New note "{0}" has been posted',
     'new task' => 'New task',
     'new task created' => 'New task "{0}" has been created in "{1}" workspace',
-    'view new message' => 'View that message',
+    'view new message' => 'View that note',
     'view new task' => 'View that task',
 
     'new comment posted' => 'New comment on "{0}" has been posted',
@@ -88,6 +88,7 @@ return array(
 	'due_date reminder notification milestone' => 'Due milestone reminder',
 	'due_date milestone reminder desc' => 'Milestone "{0}" is due on "{1}" and is still pending',
 	'start reminder notification event' => 'Event reminder',
+	'start event reminder' => 'Event reminder',
 	'start event reminder desc' => 'Event "{0}" starts on "{1}"',
 	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
 	'task modified' => 'Task modified',

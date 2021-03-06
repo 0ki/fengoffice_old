@@ -240,6 +240,15 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 		return $names;
 	}
+	
+	function getUserWorkspacePaths($user = null) {
+		$workspaces = $this->getUserWorkspaces($user);
+		$paths = array();
+		foreach ($workspaces as $w) {
+			$paths[] = $w->getPath();
+		}
+		return $paths;
+	}
 
 	/**
 	 * Returns true if the object is in workspace $w.

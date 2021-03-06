@@ -132,4 +132,11 @@
 	'success export calendar' => 'Esportati {0} eventi.',
 	'calendar name desc' => 'Nome dell\'agenda da esportare',
 	'calendar will be exported in icalendar format' => 'L\'agenda sarà esportato in formato iCalendar.',
+	'event invitation response' => 'Risposta all\'invito',
+	'user will attend to event' => '{0} attenderà questo evento',
+	'user will not attend to event' => '{0} non attenderà questo evento',
+	'copy this url in your calendar client software' => 'Per effettuare l\'importazione da questo calendario al tuo software copia questo url',
+	'import events from third party software' => 'Importa eventi da altro software',
+	'subws' => 'Sub Ws.',
+	'check to include sub ws' => 'Spunta questo per includere nell\'url i sottoprogetti',
 ); ?>

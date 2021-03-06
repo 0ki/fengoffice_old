@@ -83,7 +83,6 @@ addLangs({
 	'edit workspace': 'Edit the selected workspace',
 	'company': 'Company',
 	'companies': 'Companies',
-	'email': 'E-mail',
 	'checkin': 'Check in',
 	'checkout': 'Check out',
 	'checked out by': 'Checked out by {0}',
@@ -172,7 +171,6 @@ addLangs({
 	
 	/* contact manager*/
 	'company': 'Company',
-	'email': 'Email',
 	'add new contact': 'Add a new contact',
 	'displaying contacts of': 'Displaying contacts {0} to {1} of {2}',
 	'no contacts to display': 'No contacts to display',
@@ -269,6 +267,7 @@ addLangs({
 	'write' : 'Write',
 	'write new mail' : 'Write E-Mail',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'weblink': 'Web link',
 	'webpage': 'Web link',
 	'task': 'Task',
@@ -593,6 +592,7 @@ addLangs({
     'checked': 'Checked?',
     'required' : 'Required?',
     'multiple values' : 'Multiple values?',
+    'visible by default' : 'Visible by default?',
     'add custom property' : 'Add custom property',
     'delete custom property confirmation': 'Are you sure you want to delete the custom property?',
     'undo': 'Undo',
@@ -605,6 +605,8 @@ addLangs({
     'custom property invalid numeric value': 'Default value must be a number for custom property: {0}',
     'value cannot be empty': 'Value cannot be empty',
     'value must be numeric': 'Value must be numeric',
+    'memo': 'Memo',
+    'add value': 'Add value',
     	
     /* Custom Reports */
     'group by': 'Group by',
@@ -615,20 +617,23 @@ addLangs({
   	'field': 'Field',
   	'condition': 'Condition',
   	'value': 'Value',
-  	'parametrizable': 'Parametrizable',
+  	'parametrizable': 'Parameter',
   	'date format': 'mm-dd-yyyy',
   	'like': 'Like',
   	'not like': 'Not like',
-  	'equals': 'Equals',
-  	'not equals': 'Not equals',
+  	'equals': 'Equal to',
+  	'not equals': 'Not equal to',
   	'true': 'True',
   	'false': 'False',
+  	'ends with': 'Ends with',
   	'report cols not selected': 'There are no columns selected for the report',
   	'no report conditions': 'There are no conditions for the report',
-  	'condition value empty': 'You must enter a value for condition of field {0}',
-  	'condition value not numeric': 'Value of field {0} must be numerical',
+  	'condition value empty': 'You must enter a value for the condition of field {0}',
+  	'condition value not numeric': 'The value of field {0} must be numerical',
   	
   	'milestones': 'Milestones',
-  	'no subject' : 'No subject'
+  	'no subject' : 'No subject',
+  	
+  	'value is already in the list' : 'The value is already on the list'
     
 });

@@ -277,6 +277,17 @@
       return array_var(self::$countries, $code);
     } // getCountryNameByCode
   
+  	function getCountryCodeByName($countryName) {
+		$country_codes = array_keys(self::$countries);
+		if (in_array($countryName, $country_codes)) { //name is a code
+			return $countryName;
+		} else {
+			foreach ($country_codes as $code) {
+				if (strtolower(lang("country $code")) == strtolower($countryName)) return $code;
+			}
+		}
+		return '';
+	}
   } // CountryCodes
 
 ?>

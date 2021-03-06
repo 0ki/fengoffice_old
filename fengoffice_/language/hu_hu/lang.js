@@ -76,7 +76,6 @@ addLangs({
 	'edit workspace': 'Kiválasztott projekt szerkesztése',
 	'Cég': 'Cég',
 	'Cégek': 'Cégek',
-	'email': 'E-mail',
 	'checkin': 'Bejelentés',
 	'checkout': 'Kijelentés',
 	'checked out by': 'Bejelentette {0}',
@@ -166,6 +165,7 @@ addLangs({
 	/* contact manager*/
 	'company': 'Cég',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'add new contact': 'Új ügyfél hozzáadása',
 	'displaying contacts of': 'Ügyfelek listája {0} tól {1} ig {2} ból',
 	'no contacts to display': 'Nincs ilyen ügyfél',

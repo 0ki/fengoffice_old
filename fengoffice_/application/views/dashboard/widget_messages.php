@@ -1,7 +1,7 @@
-<?php if (user_config_option('show_messages_widget_context_help', true, logged_user()->getId())) {
-  	tpl_assign('helpDescription', lang('chelp messages widget'));
-	tpl_assign('option_name' , 'messages_widget');
-	$this->includeTemplate(get_template_path('context_help', 'help'));
+<?php 
+$show_help_option = user_config_option('show_context_help', 'until_close'); 
+if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_messages_widget_context_help', true, logged_user()->getId()))) {
+	render_context_help($this, 'chelp messages widget', 'messages_widget');
 } ?>
   
 <div style="padding:10px">

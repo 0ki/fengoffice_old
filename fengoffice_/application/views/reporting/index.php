@@ -31,8 +31,23 @@
 <td height=12></td>
 <td rowspan=<?php echo count($reportPages) + 2 ?> colspan=2 style="background-color:white">
 
+<div style="padding:10px">
 <?php 
 	// MAIN PAGES
+	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_reporting_panel_context_help', true, logged_user()->getId()))) {
+		$hd_key = 'chelp reporting panel';
+	  	if (can_manage_reports(logged_user())){
+	  		$hd_key .= ' manage';
+	  		if (logged_user()->isAdministrator() && can_manage_security(logged_user())){
+	  			$hd_key .= ' admin'; 
+	  		}
+	  	}
+
+		render_context_help($this, $hd_key, 'reporting_panel');
+		echo '<br/>';
+	} 
+
 	foreach ($reportPages as $pageTitle => $pageInfo) {?>
 <div class="inner_report_menu_div" id="<?php echo $genid . $pageTitle?>" style="display:<?php echo $pageTitle == $selectedPage? 'block' : 'none';?>">
 
@@ -74,7 +89,7 @@
 	<?php } //foreach?>
 	</ul>
 <?php } else {
-		echo lang('no custom reports');
+		echo lang('no custom reports') . '<br/>';
 	} // if count
 	
 	// Add new custom report 
@@ -88,13 +103,16 @@
 } // CUSTOM REPORTS ?>
 </div>
 <?php } // MAIN PAGES?>
+</div>
 </td><td class="coViewTopRight"></td></tr>
 
 
 <?php // MENU ROWS
 	foreach ($reportPages as $pageTitle => $pageInfo) {?>
 <tr><td class="report_<?php echo $pageTitle == $selectedPage ? '' : 'un'?>selected_menu">
-<a href="#" onclick="javascript:og.selectReportingMenuItem(this, '<?php echo $genid . $pageTitle?>', '<?php echo $pageTitle ?>')"><div  class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:90px"><?php echo lang($pageTitle) ?></div></a>
+<a href="#" onclick="javascript:og.selectReportingMenuItem(this, '<?php echo $genid . $pageTitle?>', '<?php echo $pageTitle ?>')">
+	<div class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:90px;padding-bottom:8px"><?php echo lang($pageTitle) ?></div>
+</a>
 </td><td class="coViewRight"></td>
 </tr>
 <?php } // MENU ROWS?>
@@ -107,11 +125,3 @@
 </table>
 
 </div>
-
-<script>
-	og.deleteReport = function(id){
-		if(confirm(lang('delete report confirmation'))){
-			og.openLink(og.getUrl('reporting', 'delete_custom_report', {id: id}));
-		}
-	};
-</script>

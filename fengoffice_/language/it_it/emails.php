@@ -153,4 +153,9 @@
 	'closed notification task desc' => 'L\'attività \'{0}\' è stata completata da {1}.',
 	'closed notification milestone' => 'Il traguardo \'{0}\' è stato raggiunto',
 	'closed notification milestone desc' => 'Il traguardo \'{0}\' è stato raggiunto da {1}.',
+	'password expiration reminder' => 'Promemoria scadenza password',
+	'password expires days' => 'La tua password scadrà tra {0} giorni',
+	'mail attachments' => 'Allegati',
+	'select attachment' => 'Sceglie carica un allegato',
+	'attach from workspace' => 'Scegli l\'allegato dal progetto',
 ); ?>

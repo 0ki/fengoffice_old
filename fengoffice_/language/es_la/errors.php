@@ -162,6 +162,7 @@
   	'error document checked out by another user' => 'Este documento está bloqueado por otro usuario.',
 	'custom property value required' => '{0} es requerido',
 	'value must be numeric' => 'El valor de {0} debe ser numérico',
+  	'values cannot be empty' => 'Los valores de {0} no pueden ser vacíos',
 	'report name required' => 'El nombre del reporte es requerido',
 	'report object type required' => 'El tipo de objeto es requerido',
 

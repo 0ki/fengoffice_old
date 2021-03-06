@@ -96,18 +96,20 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 					<table style="width:100%"><tr><td>
 						<span id="chead0"><?php echo $view_title .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName()))); ?></span>
 					</td><td style="width:100px;">
-					<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-				 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-				 	<?php 
-				 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
-				 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-				 	 ?>
-				 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-				 		title="<?php echo lang('copy this url in your calendar client software')?>"
-				 		onclick="javascript:Ext.Msg.show({
-											   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-											   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-									   			icon: Ext.MessageBox.INFO });"></a>
+					<?php if (config_option("show_feed_links")) { ?>
+						<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+					 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+					 	<?php 
+					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+					 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+					 	 ?>
+					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+					 		title="<?php echo lang('copy this url in your calendar client software')?>"
+					 		onclick="javascript:Ext.Msg.show({
+												   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+												   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+										   			icon: Ext.MessageBox.INFO });"></a>
+					<?php } ?>
 					 </td></tr></table>	
 				</div>
 			</td>
@@ -396,7 +398,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 																</td><td align="right">
 																<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
 																<?php $invitations = $event->getInvitations(); 
-																if ($invitations != null && is_array($invitations) && $invitations[$user_filter] != null) {
+																if ($invitations != null && is_array($invitations) && isset($invitations[$user_filter])) {
 																	$inv = $invitations[$user_filter];
 																	if ($inv->getInvitationState() == 0) { // Not answered
 																		echo '<img src="' . image_url('/16x16/mail_mark_unread.png') . '"/>';
@@ -468,7 +470,7 @@ $date_format = user_config_option('date_format', 'd/m/Y');
 
 	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
-	calToolbarDateMenu.picker.setValue(dtv);
+	og.calToolbarDateMenu.picker.setValue(dtv);
 
 	// scroll to first event
 	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);

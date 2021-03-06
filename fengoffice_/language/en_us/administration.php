@@ -59,6 +59,8 @@
   	'config option desc time_format_use_24' => 'If set, the 24 hour format will be used instead of the 12 hour format',
   	'config option name file_revision_comments_required' => 'File revision comments required',
     'config option desc file_revision_comments_required' => 'If set, adding new file revisions requires users to provide a new comment for each revision.',
+ 	'config option name show_feed_links' => 'Show feed links',
+    'config option desc show_feed_links' => 'This allows you to show links to RSS or iCal feeds to the logged user throughout the system, so that he can subscribe to them. WARNING: These links contain information that can login a user to the system. If an unaware user shares one of this links he could be compromising all of his information.',
 
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
@@ -92,6 +94,8 @@
     'config option name smtp_username' => 'SMTP username',
     'config option name smtp_password' => 'SMTP password',
     'config option name smtp_secure_connection' => 'Use secure SMTP connection',
+  	'config option name user_email_fetch_count' => 'Email fetch limit',
+  	'config option desc user_email_fetch_count' => 'How many emails to fetch when a user clicks on the "Check mail accounts" button. Using a large value may cause timeout errors to the user. Use 0 for no limit. Note, this doesn\'t affect email fetching through cron.',
   
   	// Passwords
   	'config option name min_password_length' => 'Minimum password length',
@@ -160,12 +164,21 @@
   	'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
  	'user ws config option name start_monday' => 'Start week on monday',
 	'user ws config option desc start_monday' => 'Will show the calendar starting weeks on monday',
+  	'user ws config option name show_week_numbers' => 'Show week numbers',
+	'user ws config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
   
   	'user ws config option name date_format' => 'Date format',
   	'user ws config option desc date_format' => 'Template format to be applied to date values.',
   	'user ws config option name descriptive_date_format' => 'Descriptive date format',
   	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values.',
-     
+
+  	'user ws config option name show_context_help' => 'Show contextual help',
+  	'user ws config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
+  	
+	'show context help always' => 'Always',
+	'show context help never' => 'Never',
+	'show context help until close' => 'Until close',
+  
   	'backup process desc' => 'A backup saves the current state of the whole application into a compressed folder. It can be used to easily backup an OpenGoo installation. <br> Generating a backup of the database and filesystem can last more than a couple of seconds, so making a backup is a process consisting on three steps: <br>1.- Launch a backup process, <br>2.- Download the backup. <br> 3.- Optionally, a backup can be manually deleted so that it is not available in the future. <br> ',
     'backup config warning' => 'Warning: Your config and tmp folders won\'t be backed up.',
   	'start backup' => 'Launch backup process',
@@ -248,7 +261,8 @@
   	'select object type' => 'Select object type',
   	'select one' => 'Select one',
   	'email type' => 'Email',
-  	'custom properties updated' => 'Custom properties updated'
+  	'custom properties updated' => 'Custom properties updated',
+  	'user ws config option name noOfTasks' => 'Set number of tasks shown as default',
   ); // array
 
 ?>

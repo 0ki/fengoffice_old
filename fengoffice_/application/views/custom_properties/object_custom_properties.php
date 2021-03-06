@@ -3,12 +3,12 @@ $include_script = false;
 $cps = CustomProperties::getAllCustomPropertiesByObjectType($type);
 $ti = 0;
 if (!isset($genid))
-	$genid = gen_id();
+$genid = gen_id();
 if (!isset($startTi))
-	$startTi = 20000;
+$startTi = 20000;
 if(count($cps) > 0){
 	foreach($cps as $customProp){
-		if(!isset($required) || ($required && $customProp->getIsRequired()) || (!$required && !$customProp->getIsRequired())){
+		if(!isset($required) || ($required && ($customProp->getIsRequired() || $customProp->getVisibleByDefault())) || (!$required && !($customProp->getIsRequired() || $customProp->getVisibleByDefault()))){
 			$ti++;
 			$cpv = CustomPropertyValues::getCustomPropertyValue($_custom_properties_object->getId(), $customProp->getId());
 			$default_value = $customProp->getDefaultValue();
@@ -19,36 +19,56 @@ if(count($cps) > 0){
 			echo '<div style="margin-top:6px">';
 
 			if ($customProp->getType() == 'boolean')
-				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getName()));
-			
+			echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getName()));
+
 			echo label_tag(clean($customProp->getName()), $genid . 'cp' . $customProp->getName(), $customProp->getIsRequired(), array('style' => 'display:inline'), $customProp->getType() == 'boolean'?'':':');
 			if ($customProp->getDescription() != ''){
 				echo '<span class="desc" style="margin-left:10px">- ' . clean($customProp->getDescription()) . '</span>';
 			}
 			echo '</div>';
-			
+
 			switch ($customProp->getType()) {
 				case 'text':
-				case 'numeric':  
+				case 'numeric':
+				case 'memo':
 					if($customProp->getIsMultipleValues()){
-						echo "<input type='hidden' id='$name' name='$name' value='" . clean($default_value) . "' />";
 						$numeric = ($customProp->getType() == "numeric");
 						echo "<table><tr><td>";
-						echo text_field('field'.$customProp->getId(), '', array('tabindex' => $startTi + $ti, 'id' => 'field'.$customProp->getId()));
-						echo "</td><td>";
-						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue('.$customProp->getId().',\''."list-".$name.'\','.($numeric?'true':'false').')">'.lang('add value').'</a><br/>';
-						echo "</td></tr><tr><td>";
-						$options = array();
-						foreach(explode(',', $default_value) as $value){
-							if($value != '') $options[] = '<option value="'. clean($value) .'">'. clean($value).'</option>';
-						}				
-						echo select_box("list-".$name, $options, array('size' => '3', 'style' => 'width:210px;', 'id' => "list-".$name, 'multiple' => 'multiple'));
-						echo "</td><td>";
-						echo '&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue(\''."list-".$name.'\')">'.lang('remove value').'</a><br/>';
+						echo '<div id="listValues'.$customProp->getId().'" name="listValues'.$customProp->getId().'">';
+						$isMemo = $customProp->getType() == 'memo';
+						$count = 0;
+						$fieldValues = explode(',', $default_value);
+						foreach($fieldValues as $value){
+							$value = str_replace('|', ',', $value);
+							if($value != ''){
+								echo '<div id="value'.$count.'">';
+								if($isMemo){
+									echo textarea_field($name.'[]', $value, array('tabindex' => $startTi + $ti, 'id' => $name.'[]'));
+								}else{
+									echo text_field($name.'[]', $value, array('tabindex' => $startTi + $ti, 'id' => $name.'[]'));
+								}
+								echo '&nbsp;<a href="#" class="link-ico ico-delete" onclick="og.removeCPValue('.$customProp->getId().','.($count).','.($isMemo ? 1 : 0).')" ></a>';
+								echo '</div>';
+								$count++;
+							}
+						}
+						echo '<div id="value'.$count.'">';
+						if($customProp->getType() == 'memo'){
+							echo textarea_field($name.'[]', '', array('tabindex' => $startTi + $ti, 'id' => $name.'[]'));
+						}else{
+							echo text_field($name.'[]', '', array('tabindex' => $startTi + $ti, 'id' => $name.'[]'));
+						}
+						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPValue('.$customProp->getId().',\''.$isMemo.'\')">'.lang('add value').'</a><br/>';
+						echo '</div>';
+						echo '</div>';
 						echo "</td></tr></table>";
 						$include_script = true;
 					}else{
-						echo text_field($name, $default_value, array('tabindex' => $startTi + $ti));
+						if($customProp->getType() == 'memo'){
+							echo textarea_field($name, $default_value, array('tabindex' => $startTi + $ti, 'class' => 'short'));
+						}else{
+							echo text_field($name, $default_value, array('tabindex' => $startTi + $ti));
+						}
 					}
 					break;
 				case 'boolean':
@@ -85,6 +105,7 @@ if(count($cps) > 0){
 		}
 	}
 }
-if ($include_script) require_javascript("og/CustomProperties.js");
-?>
+if ($include_script)
+require_javascript("og/CustomProperties.js");
 
+?>

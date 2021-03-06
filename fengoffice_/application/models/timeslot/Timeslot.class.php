@@ -170,6 +170,18 @@ class Timeslot extends BaseTimeslot {
 			$this->setDescription($description);
     }
     
+    
+	/**
+	 * Return user who completed this timeslot
+	 *
+	 * @access public
+	 * @param void
+	 * @return User
+	 */
+	function getCompletedBy() {
+		return $this->getUser();
+	} // getCompletedBy
+    
     // ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------

@@ -95,6 +95,17 @@ class Localization {
 		if(is_null($default)) $default = "Missing lang: $name";
 		return $this->langs->get($name, $default);
 	} // lang
+	
+	/**
+	 * Returns true if key exists in langs array
+	 *
+	 * @param string $name
+	 * @return boolean
+	 */
+	function lang_exists($name) {
+		if (is_null($name)) return false;
+		else return $this->langs->has($name);
+	}
 
 	/**
 	 * Load language settings

@@ -598,7 +598,8 @@
   'weblink' => 'Weblink',
   
   'add value' => 'Add value',
-  'remove value' => 'Remove value'
+  'remove value' => 'Remove value',
+  
   ); // array
 
 ?>

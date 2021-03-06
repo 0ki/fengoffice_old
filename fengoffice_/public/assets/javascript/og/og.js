@@ -1,4 +1,10 @@
 var og = {};
+var ogTasks = {};
+var ogTaskEvents = {};
+ogTasksTask = {};
+ogTasksMilestone = {};
+ogTasksCompany = {};
+ogTasksUser = {};
 var vtindex = 0;
 var vtlist = [];
 
@@ -1153,3 +1159,13 @@ og.loadScripts = function(urls, config) {
 };
 
 og.loadedScripts = {};
+
+og.ToggleTrap = function(trapid, fsid) {
+	if (Ext.isIE) {
+		if (!Ext.get(fsid).isDisplayed()) {
+			Ext.get(fsid).setDisplayed('block');
+		} else {
+			Ext.get(fsid).setDisplayed('none');
+		}
+	}
+};

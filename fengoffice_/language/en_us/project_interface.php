@@ -270,6 +270,9 @@ return array(
 	'add custom property' => 'Add a custom property',
 	'fetch imap folders' => 'Fetch IMAP folders',
 	'no reports found' => 'No reports found for {0}',
+
+	'remove this widget' => 'Remove this widget',
+	'add a new' => 'Add a new',
 ); // array
 
 ?>

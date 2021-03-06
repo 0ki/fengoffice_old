@@ -16,10 +16,10 @@ class Hook {
 	}
 	
 	static function init() {
-		$handle = opendir("application/hooks");
+		$handle = opendir(ROOT . "/application/hooks");
 		while ($file = readdir($handle)) {
-			if (is_file("application/hooks/$file")) {
-				include_once "application/hooks/$file";
+			if (is_file(ROOT . "/application/hooks/$file")) {
+				include_once ROOT . "/application/hooks/$file";
 			}
 		}
 		closedir($handle);

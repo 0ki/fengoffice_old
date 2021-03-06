@@ -1,8 +1,7 @@
 <?php
-	if (user_config_option('show_calendar_widget_context_help', true, logged_user()->getId())) {
-		tpl_assign('helpDescription', lang('chelp calendar widget'));
-		tpl_assign('option_name' , 'calendar_widget');
-		$this->includeTemplate(get_template_path('context_help', 'help'));
+	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_calendar_widget_context_help', true, logged_user()->getId()))) {
+		render_context_help($this, 'chelp calendar widget', 'calendar_widget');
 	}
 	
 	require_javascript('og/EventPopUp.js');
@@ -164,8 +163,11 @@
 							$subject =   clean($event->getSubject());
 							$typeofevent = $event->getTypeId(); 
 							$private = $event->getIsPrivate(); 
-							$eventid = $event->getId(); 
-						
+							$eventid = $event->getId();
+
+							$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+							$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+							
 							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 							if(!$private && $count <= 3){
 								$output .= "<div class='event_block'   style='z-index:1000;'>";
@@ -177,7 +179,7 @@
 								$output .= '</span>';
 								$output .= "</div>";
 								
-								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : ''));
+								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : ''));
 								$tip_text = str_replace("\n", '<br>', $tip_text);
 								if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>

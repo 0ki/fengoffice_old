@@ -35,6 +35,7 @@ class PropertyController extends ApplicationController {
 				$prop['default_value'] = $custom->getDefaultValue();
 				$prop['required'] = $custom->getIsRequired();
 				$prop['multiple_values'] = $custom->getIsMultipleValues();
+				$prop['visible_by_default'] = $custom->getVisibleByDefault();
 				$customProperties[] = $prop;
 			}
 			ajx_current("empty");

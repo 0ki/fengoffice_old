@@ -52,6 +52,9 @@ function Cell(row, column){
 	}
 
 
+	self.getAddress = function(){
+		return {row:this.row,col:this.column};
+	}
 	//Contents Functions
 	self.getValue = function(){
 		return this.value;

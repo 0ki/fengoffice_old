@@ -258,11 +258,11 @@ class PHPExcel_Writer_PDF implements PHPExcel_Writer_IWriter {
 					}
 
 					// Text color
-					/*$pdf->SetTextColor(
+					$pdf->SetTextColor(
 						hexdec(substr($style->getFont()->getColor()->getRGB(), 0, 2)),
 						hexdec(substr($style->getFont()->getColor()->getRGB(), 2, 2)),
 						hexdec(substr($style->getFont()->getColor()->getRGB(), 4, 2))
-					);*/
+					);
 
 					// Fill color
 					if ($style->getFill()->getFillType() != PHPExcel_Style_Fill::FILL_NONE) {

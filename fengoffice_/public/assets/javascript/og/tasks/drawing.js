@@ -6,6 +6,359 @@
  * @author Carlos Palma <chonwil@gmail.com>
  */
 
+//************************************
+//*		<RX : dragging
+//************************************
+
+var rx__dd = 1000;
+rx__TasksD = Ext.extend(Ext.dd.DDProxy, {
+startDrag: function(x, y) {
+	var dragEl = Ext.get(this.getDragEl());
+	var el = Ext.get(this.getEl());
+	
+	dragEl.applyStyles({border:'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
+	var task = ogTasks.getTask(this.config.dragData.i_t);
+	dragEl.update(/*el.up('table').dom.innerText*/ task.title);
+	dragEl.addClass(el.dom.className + ' RX__tasks_dd-proxy'); 
+},
+onDragOver: function(e, targetId) {
+    //console.log('dragOver: ' + targetId);
+    var target = Ext.get(targetId);
+	//Ext.get('wsCrumbsDiv').update(targetId);
+	//alert(targetId);
+	if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) {
+		//alert(rx__TasksDrag.haveExtDD[targetId] + ' '+ targetId);
+        this.lastTargetId = targetId;		
+		this.lastGroupTargetId = targetId;
+        target.addClass('RX__tasks_dd-over');
+	}else if(targetId.indexOf(rx__TasksDrag.idTask)>=0) {
+        this.lastTargetId = targetId;				
+	}else{
+		//XXX: mark wrong target, check other options
+	}
+},
+onDragOut: function(e, targetId) {
+    //console.log('dragOver: ' + targetId);
+    var target = Ext.get(targetId);
+	if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) {
+        this.lastTargetId = ''; //targetId;		
+        target.removeClass('RX__tasks_dd-over');
+	}else if(targetId.indexOf(rx__TasksDrag.idTask)>=0) {
+        this.lastTargetId = this.lastGroupTargetId;				
+	}else{
+		//XXX: mark wrong target, check other options
+	}
+},
+endDrag: function() {
+    var dragEl = Ext.get(this.getDragEl());
+    var el = Ext.get(this.getEl());
+	if(this.lastGroupTargetId) 
+		Ext.get(this.lastGroupTargetId).removeClass('RX__tasks_dd-over');
+		
+    //Ext.get(this.lastTarget).appendChild(el);
+    //el.applyStyles({position:'', width:''});
+	var targetId = this.lastTargetId;
+	rx__TasksDrag.d = rx__TasksDrag.haveExtDD[targetId];
+	rx__TasksDrag.t = this.config.dragData.i_t;
+	rx__TasksDrag.g = this.config.dragData.i_g;
+	this.lastTargetId = null;
+	this.lastGroupTargetId = null;
+	
+	if(targetId.indexOf(rx__TasksDrag.idGroup)>=0) {
+		/*alert('From '+rx__TasksDrag.g+'.'+rx__TasksDrag.t+' to '+rx__TasksDrag.d+' ('+rx__TasksDrag.displayCriteria.group_by+')');*/
+		rx__TasksDrag.process();
+		//alert(dump(ogTasks.Groups));
+	}else if(targetId.indexOf(rx__TasksDrag.idTask)>=0) {
+		/*alert('From '+rx__TasksDrag.g+'.'+rx__TasksDrag.t+' to subtask of '+rx__TasksDrag.d+' (parent task)');*/
+		rx__TasksDrag.processSubtask();
+		//alert(dump(ogTasks.Groups));
+	}else{
+        //el.applyStyles({position:'absolute'});
+        //el.setXY(dragEl.getXY());
+        //el.setWidth(dragEl.getWidth());
+	}
+    //Ext.get('dd1-ct').removeClass('dd-over');
+    //Ext.get('dd2-ct').removeClass('dd-over');
+}
+});
+
+function dump(arr,level) {
+	var dumped_text = "";
+	if(!level) level = 0;
+	
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += "    ";
+	
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects
+		 for(var item in arr) {
+			  var value = arr[item];
+			 
+			  if(typeof(value) == 'object') { //If it is an array,
+				   dumped_text += level_padding + "'" + item + "' ...\n";
+				   dumped_text += dump(value,level+1);
+			  } else {
+	 			   dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+			  }
+		 }
+	} else { //Stings/Chars/Numbers etc.
+	 dumped_text = "===>"+arr+"<===("+typeof(arr)+")";
+	}
+	return dumped_text;
+} 
+
+var rx__TasksDrag = {
+	t: false,
+	g: false,
+	d: false,
+	displayCriteria: '',
+	state: 'no',
+	haveExtDD: {},
+	full_redraw: false,
+
+	classGroup: 'ogTasksGroup', //'ogTasksGroupHeader',
+	idGroup: 'ogTasksPanelGroupCont', // 'ogTasksPanelGroup',
+	classTask: 'ogTasksTaskTable',
+	idTask: 'ogTasksPanelTaskTable',
+
+	prepareExt: function(t,g,id) {
+		if(this.haveExtDD[id]) return;
+		Ext.get(id).dd = new rx__TasksD(id, 'group', { scope: this, dragData: {i_t:t, i_g: g} });
+		new Ext.dd.DropZone(id, {ddGroup: 'group'});
+		this.haveExtDD[id] = t; // true
+		this.prepareDrops();
+	},
+	prepareDrops: function() {
+		Ext.select('.'+rx__TasksDrag.classGroup).each( function(el) {
+			if(el.hasClass('rx__hasDZ')) return;
+			el.addClass('rx__hasDZ');
+			id = el.dom.id;
+			new Ext.dd.DropZone(id, {ddGroup: 'group'});
+			d = id.substr(rx__TasksDrag.idGroup.length, 66);
+			rx__TasksDrag.haveExtDD[id] = d;
+		} );
+		Ext.select('.'+rx__TasksDrag.classTask).each( function(el) {
+			if(el.hasClass('rx__hasDZ')) return;
+			el.addClass('rx__hasDZ');
+			id = el.dom.id;
+			new Ext.dd.DropZone(id, {ddGroup: 'group'});
+			d = new String( id.substr(rx__TasksDrag.idTask.length, 66) );
+			d = d.substr(1,d.indexOf('G')-1); // format: T{task_id}G{group_id}
+			rx__TasksDrag.haveExtDD[id] = d;
+		} );
+	},
+	prepareDrop: function(d,id) {
+		if(this.haveExtDD[id]) return;
+		/*Ext.get(id).dd =*/ new Ext.dd.DropZone(id, {ddGroup: 'group'});
+		this.haveExtDD[id] = d;
+	},
+	parametersFromTask: function(task) {
+		var parameters = [];
+		/* // optional //
+		parameters["parent_id"] = parentField.value;
+		parameters["hours"] = hoursPanel.value;
+		parameters["task_start_date"] = startPanel.getValue().format(lang('date format'));
+		parameters["task_due_date"] = duePanel.getValue().format(lang('date format'));
+		parameters["notify"] = true;
+		parameters["text"] = description.value;		*/
+		
+		// mandatory
+		parameters["assigned_to"] = task.assignedToId;
+		parameters["milestone_id"] = task.milestoneId;
+		parameters["priority"] = task.priority;
+		parameters["title"] = task.title;
+		parameters["project_id"] = task.workspaceIds;
+		parameters["tags"] = task.tags;
+		
+		return parameters;
+	},
+	quickEdit: function(task_id, parameters) {
+		// wrap
+		var params2 = [];
+		for (var i in parameters)
+			if (parameters[i] || parameters[i] === 0)
+				params2["task[" + i + "]"] = parameters[i];
+		/*alert('Updating (quick edit) #'+this.t+' with '+dump(params2));/**/
+		/*return params2;		*/
+
+		
+		parameters = params2;
+		var url = og.getUrl('task', 'quick_edit_task', {id:task_id});
+	
+		og.openLink(url, {
+			method: 'POST',
+			post: parameters,
+			callback: function(success, data) {
+				if (success && ! data.errorCode) {
+					var task = ogTasks.getTask(data.task.id);
+					if (!task){
+						var task = new ogTasksTask();
+						task.setFromTdata(data.task);
+						if (data.task.s)
+							task.statusOnCreate = data.task.s;
+						task.isCreatedClientSide = true;
+						ogTasks.Tasks[ogTasks.Tasks.length] = task;
+						var parent = ogTasks.getTask(task.parentId);
+						if (parent){
+							task.parent = parent;
+							parent.subtasks[parent.subtasks.length] = task;
+						}
+					} else {
+						task.setFromTdata(data.task);
+						var parent = ogTasks.getTask(task.parentId);
+						if (parent){
+							task.parent = parent;
+							parent.subtasks[parent.subtasks.length] = task;
+						}
+					}
+					if(!rx__TasksDrag.full_redraw) ogTasks.redrawGroups = false;
+					else rx__TasksDrag.full_redraw = true;
+					ogTasks.draw();
+					ogTasks.redrawGroups = true;
+					rx__TasksDrag.haveExtDD = {};
+				} else {
+					if (!data.errorMessage || data.errorMessage == '')
+						og.err(lang("error adding task"));
+				}
+			},
+			scope: ogTasks
+		});
+		
+	},
+	process: function() {
+		var task = ogTasks.getTask(this.t);
+		if (this.g == this.d) {
+			// task is being dragged from group #G to group #G
+			if (task.parentId != 0) {
+				// however, the intention might be to un-attach the task from its parent (!)
+				this.d = 0;
+				this.processSubtask();
+			}
+			return;
+		}
+		var parameters = this.parametersFromTask(task);
+		parameters['parent_id'] = 0; // XXX: currently, such dragging as subtask to another group is not possible (!)
+		
+		// special edits
+		switch(this.displayCriteria.group_by) {
+			case 'status': ogTasks.ToggleCompleteStatus(task.id, 1-this.d); return; break;
+			default:
+		}
+	
+		var group = ogTasks.getGroup(this.d);
+		var group_not_empty = group && group.group_tasks && group.group_tasks.length>0;
+		
+		// change
+		switch (this.displayCriteria.group_by){
+			case 'milestone':	parameters["milestone_id"] = this.d!='unclassified'? ogTasks.getMilestone(this.d).id : 0; break;
+			case 'priority':	parameters["priority"] = this.d!='unclassified'? parseInt(this.d) : 200; /*100,200,300*/ break;
+			case 'assigned_to':	parameters["assigned_to"] = this.d; /* 1:1 */ break;
+			case 'due_date' : 	if(group_not_empty) parameters["task_due_date"] = group.group_tasks[0].dueDate; break;
+			case 'start_date' : if(group_not_empty) parameters["task_start_date"] = group.group_tasks[0].startDate; break;
+			case 'created_on' : if(group_not_empty) parameters["created_on"] = group.group_tasks[0].createdOn; break;
+			case 'completed_on':if(group_not_empty) parameters["completed_on"] = group.group_tasks[0].completedOn.toString().format(lang('date format')); break;
+			case 'created_by' :	parameters["created_by"] = this.d; /* ? */ break;
+			case 'status' : 	parameters["status"] = this.d; /* done previously, special request */ break;
+			case 'completed_by':parameters["completed_by"] = this.d; /* ? */ break;
+			case 'tag':			{
+				if(this.d=='unclassified') /* remove single tag */ {
+					//var untag = ogTasks.Groups[this.g].group_id; // group id (=tag name) from group index
+					var untag = new String(this.g);
+					s = new String(task.tags);
+					if(!task.tags) s='';
+					i = s.indexOf(untag);
+					if(i>=0) s = s.substr(0,i)+s.substr(i+1+untag.length);
+					parameters['tags'] = s;
+				}else /* add single tag */ {
+					if(!task.tags || task.tags=='null')
+						parameters['tags'] = this.d;
+					else parameters['tags'] += ', '+this.d;
+				}
+			} break;
+			default:
+		}
+		
+		task_id = this.t;
+		this.quickEdit(task_id, parameters);
+		
+	},
+	processSubtask: function() {
+		var task = ogTasks.getTask(this.t);
+		this.d = parseInt(this.d);
+		if (task.parentId == this.d)
+			return;
+			
+		// check for unwanted cycles - #t cannot be a predecessor of #d 
+		var ti = this.d; var tiQ={};
+		while(ti!=0 && !tiQ[ti]) {
+			/*alert('Checking if #'+ti+' is '+this.t);*/
+			if(ti==this.t) return;
+			var tt = ogTasks.getTask(ti);
+			if(!tt) break;
+			tiQ[ti]=1; // loop protection
+			ti = tt.parentId;
+		}
+		
+		var parameters = this.parametersFromTask(task);
+		parameters['parent_id'] = this.d;
+		rx__TasksDrag.full_redraw = true;
+		
+		// unattach from current parent
+		if(task.parentId) {
+			var parent = ogTasks.getTask(task.parentId);
+			for(var i=parent.subtasks.length; i-->0;) 
+				if(parent.subtasks[i].id == this.t)
+				{
+					parent.subtasks.splice(i,1);
+					break;
+				}
+			for (var i = 0; i < ogTasks.Tasks.length; i++)
+				if (ogTasks.Tasks[i].id == this.t) {
+					ogTasks.Tasks[i].parentId = 0;
+					ogTasks.Tasks[i].parent = null;
+					break;
+				}
+
+		}
+		
+		// modify
+		this.quickEdit(this.t, parameters);
+	},
+	onDragStart: function(t,g,id) {
+		return false;
+		if(this.state!='no') return false;
+		this.t=t;
+		this.g=g;
+		this.state = 'md';
+		return false;
+	},
+	last_oDO_e: null,
+	markCursor: function(e,d) {
+		if(this.last_oDO_e)
+			this.last_oDO_e.style.cursor = 'auto';
+		if(e)
+			e.style.cursor = (d==this.g?'not-allowed':'crosshair')+' !important';
+		this.last_oDO_e = e;
+	},
+	onDragOver: function(e,d) {
+		if(this.state!='md') return false;
+		if(this.last_oDO_e==e) return false;
+			else this.markCursor(e,d);
+		return false;
+	},
+	onDrop: function(d) {
+		if(this.state!='md') return false;
+		this.markCursor(null,d);
+		this.d=d;
+		this.state = 'no';
+		alert('From '+this.g+'.'+this.t+' to '+this.d);
+		return false;
+	},
+	showHandle: function(id,v) {
+		var o = document.getElementById('RX__ogTasksPanelDrag'+id);
+		if(o) o.style.visibility = v?'visible':'hidden';
+	}
+};
 
 //************************************
 //*		Main function
@@ -26,6 +379,14 @@ ogTasks.draw = function(){
 		this.Groups[i].group_tasks = this.orderTasks(displayCriteria, this.Groups[i].group_tasks);
 	}
 	
+	// *** <RX ***
+	rx__TasksDrag.displayCriteria = displayCriteria;
+	rx__TasksDrag.allowDrag = false;
+	if(displayCriteria.group_by=='milestone' || displayCriteria.group_by=='priority' 
+	|| displayCriteria.group_by=='assigned_to' || displayCriteria.group_by=='status' 
+	|| displayCriteria.group_by=='tags' ) rx__TasksDrag.allowDrag = true;
+	// *** /RX ***
+	
 	//Drawing
 	var sb = new StringBuffer();
 	for (var i = 0; i < this.Groups.length; i++){
@@ -36,7 +397,7 @@ ogTasks.draw = function(){
 	// *** <RX ***
 	if(this.Groups.length==1 && this.Groups[0].group_tasks.length==0) { // there are no tasks to display
 		sb.append('<div class="inner-message" style="text-align: center; color: gray; font-size: 14px;">'+lang('no tasks to display')+ '</div>'+
-		'<div id="rx__no_tasks_info" style="text-align: center; padding-top:10px"><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
+		'<div id="rx__no_tasks_info" style="text-align: center; "><a href="#" class="internalLink ogTasksGroupAction ico-add" '+
 		'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')" '+
 		'title="' + lang('add task') + '">' + (lang('add task')) + '</a>'+
 		'</div>');
@@ -97,6 +458,9 @@ ogTasks.drawMilestoneCompleteBar = function(group){
 ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	var sb = new StringBuffer();
 	
+		// **** <RX : dragging **** //
+	//sb.append('<script>rx__TasksDrag.prepareDrop(\"" + group.group_id + "\",this.id);</scr'+'ipt>');
+	rx__TasksDrag.haveExtDD['ogTasksPanelGroupCont'+group.group_id] = group.group_id;
 	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
 	sb.append("<table width='100%'><tr>");
 	sb.append('<td style="width:20px"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onchange="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
@@ -270,7 +634,17 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level)
 	var padding = 15 * level;
 	var containerName = 'ogTasksPanelTask' + task.id + 'G' + group_id;
 	task.divInfo[task.divInfo.length] = {group_id: group_id, drawOptions: drawOptions, displayCriteria: displayCriteria, group_id: group_id, level:level};
-	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '">' + this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level) + '</div>';
+
+	// **** <RX : dragging **** //
+	var rx__drag_h = '';
+	var tgId = "T" + task.id + 'G' + group_id;
+	if(rx__TasksDrag.allowDrag)
+		rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' class='RX__tasks_og-drag ogTasksIcon' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'></div>";
+
+	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row" onmouseover="rx__TasksDrag.showHandle(\''+tgId+'\',1)"  onmouseout="rx__TasksDrag.showHandle(\''+tgId+'\',0)">' + rx__drag_h 
+		 + this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level) + '</div>';
+	// **** /RX **** //
+	
 	if (task.subtasks.length > 0)
 		html += this.drawSubtasks(task, drawOptions, displayCriteria, group_id, level);
 	return html;

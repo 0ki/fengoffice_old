@@ -39,6 +39,9 @@
 	foreach($companies as $company)
 		$companies_array[] = $company->getArrayInfo();
 ?>
+<script>
+og.noOfTasks = <?php echo user_config_option('noOfTasks', 8) ?>;
+</script>
 <div id="taskPanelHiddenFields">
 	<input type="hidden" id="hfProjectTemplates" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($project_templates_array)))) ?>"/>
 	<input type="hidden" id="hfAllTemplates" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($all_templates_array)))) ?>"/>
@@ -54,13 +57,11 @@
 	<div id="tasksPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 	<div id="tasksPanelBottomToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;border-bottom:1px solid #CCC;"></div>
 	<div id="tasksPanelContent" style="background-color:white;padding:7px;padding-top:0px;overflow-y:scroll;">
-		<?php if (user_config_option('show_tasks_context_help', true, logged_user()->getId())) {?>
+		<?php 
+			$show_help_option = user_config_option('show_context_help', 'until_close'); 
+			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_tasks_context_help', true, logged_user()->getId()))) {?>
 			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php 
-					tpl_assign('helpTemplate', 'tasks');
-					tpl_assign('option_name' , 'tasks');
-					$this->includeTemplate(get_template_path('context_help', 'help'));
-				?>
+				<?php render_context_help($this, 'chelp tasks list', 'tasks', 'tasks'); ?>
 			</div>
 		<?php }?>
 	<?php if (isset($displayTooManyTasks) && $displayTooManyTasks){ ?>

@@ -493,12 +493,14 @@ class AccessController extends ApplicationController {
 		
 		//Get Plugin translation files
 		$filenames = get_files($fileDir . "/plugins", "js");
-		sort($filenames);
-		foreach ($filenames as $f) {
-			$content .= "\n/* $f */\n";
-			$content .= "try {";				
-			$content .= file_get_contents($f);
-			$content .= "} catch (e) {}";
+		if (is_array($filenames) && count($filenames) > 0){
+			sort($filenames);
+			foreach ($filenames as $f) {
+				$content .= "\n/* $f */\n";
+				$content .= "try {";				
+				$content .= file_get_contents($f);
+				$content .= "} catch (e) {}";
+			}
 		}
 		
 		$content .= "\n/* end */\n";

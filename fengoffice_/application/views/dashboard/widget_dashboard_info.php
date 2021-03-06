@@ -1,8 +1,7 @@
 <?php 
-	if (user_config_option('show_dashboard_info_widget_context_help', true, logged_user()->getId())) {
-		tpl_assign('helpDescription', lang('chelp dashboard info widget'));
-		tpl_assign('option_name' , 'dashboard_info_widget');
-		$this->includeTemplate(get_template_path('context_help', 'help'));
+	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_dashboard_info_widget_context_help', true, logged_user()->getId()))) {
+		render_context_help($this, 'chelp dashboard info widget', 'dashboard_info_widget');
 	}
 	$date_format = user_config_option('date_format', 'd/m/Y');
 ?>
@@ -90,6 +89,8 @@
 	<tr><td colspan="2">
 		<?php echo render_custom_properties($project); ?><br/>
 	</td></tr>
-	<tr><td colspan="2"><a target="_blank" class="link-ico ico-rss" href="<?php echo get_url('feed', 'project_activities', array('id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken(), 'project' => $project->getId())) ?>"><?php echo lang("recent project activities feed", clean($project->getName()))?></a></td></tr>
+	<?php if (config_option("show_feed_links")) { ?>
+		<tr><td colspan="2"><a target="_blank" class="link-ico ico-rss" href="<?php echo get_url('feed', 'project_activities', array('id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken(), 'project' => $project->getId())) ?>"><?php echo lang("recent project activities feed", clean($project->getName()))?></a></td></tr>
+	<?php } ?>
 </table>
 </div>

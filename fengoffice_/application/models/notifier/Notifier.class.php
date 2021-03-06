@@ -33,18 +33,22 @@ class Notifier {
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
 		if ($action == ApplicationLogs::ACTION_ADD) {
 			if ($object instanceof ProjectMessage) {
-				self::newMessage($object, $subscribers);
+				self::messageNotification($object, $subscribers, 'new');
 			} else if ($object instanceof Comment) {
 				self::newObjectComment($object);
 			} else {
 				self::objectNotification($object, $subscribers, $object->getCreatedBy(), 'new');
 			}
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
-			self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
+			if ($object instanceof ProjectMessage) {
+				self::messageNotification($object, $subscribers, 'modified');
+			} else {
+				self::objectNotification($object, $subscribers, $object->getUpdatedBy(), 'modified');
+			}
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectNotification($object, $subscribers, Users::findById($object->getTrashedById()), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
-			self::objectNotification($object, $subscribers, $object->getClosedBy(), 'closed');
+			self::objectNotification($object, $subscribers, $object->getCompletedBy(), 'closed');
 		}
 	}
 	function shareObject(ProjectDataObject $object, $people) {
@@ -77,7 +81,7 @@ class Notifier {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
-				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
+				$workspaces = implode(", ", $object->getUserWorkspacePaths($user));
 				$properties['workspace'] = $workspaces;
 				tpl_assign('properties', $properties);
 				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
@@ -102,8 +106,7 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function newMessage(ProjectMessage $message, $people) {
-		$description = lang('new message posted', $message->getTitle());
+	static function messageNotification(ProjectMessage $message, $people, $type) {
 		$text = "\r\n" . $message->getText();
 		$text = str_replace("\r\n", "\n", $text);
 		$text = str_replace("\r", "\n", $text);
@@ -111,7 +114,7 @@ class Notifier {
 		$properties = array(
 			'text' => $text
 		);
-		self::objectNotification($message, $people, $message->getCreatedBy(), 'new', $description, $properties);
+		self::objectNotification($message, $people, $message->getCreatedBy(), $type, null, $properties);
 	} // newMessage
 	
 	/**
@@ -141,7 +144,7 @@ class Notifier {
 				$subscribers[] = $subscriber;
 			} // of
 		} // foreach
-		self::objectNotification($message, $people, $comment->getCreatedBy(), 'new', $description, $properties);
+		self::objectNotification($comment, $subscribers, $comment->getCreatedBy(), 'new', $description, $properties);
 	} // newObjectComment
 	
 	/**

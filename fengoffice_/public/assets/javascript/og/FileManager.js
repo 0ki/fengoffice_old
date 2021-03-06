@@ -318,11 +318,11 @@ og.FileManager = function() {
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
-				}},
+				}}/*,
 				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
-				}}
+				}}*/
 			]}
 		}),
 		tag: new Ext.Action({

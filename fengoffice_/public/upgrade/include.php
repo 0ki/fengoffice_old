@@ -22,15 +22,21 @@
   require UPGRADER_PATH . '/library/classes/Output.class.php';
   require UPGRADER_PATH . '/library/classes/Output_Console.class.php';
   require UPGRADER_PATH . '/library/classes/Output_Html.class.php';
+  require UPGRADER_PATH . '/library/classes/Localization.class.php';
   
   require_once UPGRADER_PATH . '/library/classes/Template.class.php';
   
+  require_once INSTALLATION_PATH . '/config/config.php';
   require_once INSTALLATION_PATH . '/environment/functions/general.php';
   require_once INSTALLATION_PATH . '/environment/functions/files.php';
   require_once INSTALLATION_PATH . '/environment/functions/utf.php';
   require_once INSTALLATION_PATH . '/environment/classes/Error.class.php';
   require_once INSTALLATION_PATH . '/environment/classes/errors/filesystem/FileDnxError.class.php';
+  require_once INSTALLATION_PATH . '/environment/classes/errors/filesystem/DirDnxError.class.php';
+  require_once INSTALLATION_PATH . '/environment/classes/container/IContainer.class.php';
+  require_once INSTALLATION_PATH . '/environment/classes/container/Container.class.php';
   
+Localization::instance()->loadSettings(DEFAULT_LOCALIZATION, INSTALLATION_PATH . '/language');
   // Set exception handler
   set_exception_handler('dump_upgrader_exception');
 

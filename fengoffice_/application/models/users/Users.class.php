@@ -17,6 +17,20 @@ class Users extends BaseUsers {
 	function getAll() {
 		return self::findAll();
 	} // getAll
+	
+	/**
+	 * Returns all the users visible by the requesting user
+	 *
+	 * @param User $user
+	 * @return array
+	 */
+	static function getVisibleUsers(User $user) {
+		if ($user->isMemberOfOwnerCompany()){
+			return self::findAll(array('order' => 'concat(`display_name`, `username`)'));
+		} else {
+			return $user->getCompany()->getUsers();
+		}
+	} // getAll
 
 	/**
 	 * Return user by username

@@ -215,4 +215,6 @@
 	'add subscribers desc' => 'Sottoscrivi questo oggetto per le persone selezionate. I Sottoscrittori riceveranno notifica email delle relative modifiche ',
 	'edit revision comment' => 'Modifica il commento alla revisione',
 	'add custom property' => 'Aggiungi una proprietà personalizzata',
+	'fetch imap folders' => 'Carica le cartelle IMAP',
+	'no reports found' => 'Nessun rapporto trovato per {0}',
 ); ?>

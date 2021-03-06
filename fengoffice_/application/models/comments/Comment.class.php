@@ -225,6 +225,8 @@ class Comment extends BaseComment {
 		$saved = parent::save();
 		if($saved) {
 			$object = $this->getObject();
+			$object->save(); // update object
+			
 			if($object instanceof ProjectDataObject) {
 				if($is_new) {
 					$object->onAddComment($this);

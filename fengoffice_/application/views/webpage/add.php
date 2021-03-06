@@ -71,7 +71,7 @@
 	<fieldset>
 	<legend>
 		<?php echo label_tag(lang('description'), 'webpageFormDesc') ?> </legend>
-    	<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'short', 'id' => 'webpageFormDesc', 'tabindex' => '40')) ?>
+    	<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'long', 'id' => 'webpageFormDesc', 'tabindex' => '40')) ?>
     </fieldset>
 	</div>
   

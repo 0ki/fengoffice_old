@@ -56,7 +56,7 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * Return one custom property given the id
 	 *
 	 * @param int $prop_id
-	 * @return array
+	 * @return CustomProperty
 	 */
 	static function getCustomProperty($prop_id) {
 		return self::findOne(array(

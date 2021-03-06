@@ -45,8 +45,8 @@ class  BackupController extends ApplicationController {
 		} // if
 		$filename =  BACKUP_FILENAME;
 		$folder = BACKUP_FOLDER;
-		$last_backup = @filectime($folder . '/' .$filename );
 		if (is_file($folder . '/' .$filename )) {
+			$last_backup = @filectime($folder . '/' .$filename );
 			$has_backup = true;
 		} else {
 			$has_backup = false;

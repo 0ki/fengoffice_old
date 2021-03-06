@@ -19,7 +19,7 @@ var permissionsList = new Array();
  * 		pr = an array containing the radio permissions, states: [0,1,2]
  *		isModified = returns true if the workspace permission was modified from its original value
  */
-function ogPermission(workspace_id, radio_permissions, checkbox_permissions){
+og.ogPermission = function(workspace_id, radio_permissions, checkbox_permissions){
 	this.isModified = false;
 	this.wsid = workspace_id;
 	this.pr = radio_permissions;
@@ -28,7 +28,7 @@ function ogPermission(workspace_id, radio_permissions, checkbox_permissions){
 
 
 //Returns a copy of this permissions object
-ogPermission.prototype.clone = function() {
+og.ogPermission.prototype.clone = function() {
 	var radio_permissions = [];
 	for (var i = 0; i < this.pr.length; i++)
 		radio_permissions[radio_permissions.length] = this.pr[i];
@@ -37,7 +37,7 @@ ogPermission.prototype.clone = function() {
 	for (var i = 0; i < this.pc.length; i++)
 		checkbox_permissions[checkbox_permissions.length] = this.pc[i];
 	
-	var result = new ogPermission(this.wsid, radio_permissions, checkbox_permissions);
+	var result = new og.ogPermission(this.wsid, radio_permissions, checkbox_permissions);
 	result.isModified = this.isModified;
 	
 	return result;
@@ -45,7 +45,7 @@ ogPermission.prototype.clone = function() {
  
  
 //Returns true if the permission has any permission set to a value other than 0
-function ogPermHasAnyPermission(){
+og.ogPermHasAnyPermission = function(){
 	var allCheckedFalse = true;
 
 	//Checkboxes
@@ -61,7 +61,7 @@ function ogPermHasAnyPermission(){
 
 
 //Returns true if the permission has all permissions set to their highest value
-function ogPermHasAllPermissions(){
+og.ogPermHasAllPermissions = function(){
 	var allCheckedTrue = true;
 
 	//Checkboxes
@@ -75,8 +75,8 @@ function ogPermHasAllPermissions(){
 	return allCheckedTrue;
 }
 
-ogPermission.prototype.hasAnyPermission = ogPermHasAnyPermission;
-ogPermission.prototype.hasAllPermissions = ogPermHasAllPermissions;
+og.ogPermission.prototype.hasAnyPermission = og.ogPermHasAnyPermission;
+og.ogPermission.prototype.hasAllPermissions = og.ogPermHasAllPermissions;
 
 
 
@@ -89,7 +89,7 @@ ogPermission.prototype.hasAllPermissions = ogPermHasAllPermissions;
  
 //	Loads the permission info from a hidden field. 
 //	The name of the hidden field must be of the form <genid> + 'hfPerms'
-function ogLoadPermissions(genid){
+og.ogLoadPermissions = function(genid){
 	var permarray = [];
 	
 	var hf = document.getElementById(genid + 'hfPerms');
@@ -99,7 +99,7 @@ function ogLoadPermissions(genid){
 		
 	 	
 	 	for (var i = 0; i < dec.length; i++){
-	 		var perm = new ogPermission(dec[i].wsid, dec[i].pr, dec[i].pc);
+	 		var perm = new og.ogPermission(dec[i].wsid, dec[i].pr, dec[i].pc);
 	 		permarray[dec[i].wsid] = perm;
 	 		var node = tree.getNodeById('ws' + dec[i].wsid);
 	 		if (node){
@@ -116,7 +116,7 @@ function ogLoadPermissions(genid){
 
 //	Sets the permission information to send inside a hidden field. 
 //	The id of the hidden field must be of the form: <genid> + 'hfPermsSend'
-function ogPermPrepareSendData(genid){
+og.ogPermPrepareSendData = function(genid){
 	var result = new Array();
 	var permissions = permissionsList[genid];
 	var i;
@@ -136,16 +136,16 @@ function ogPermPrepareSendData(genid){
 //-------------------------------------------------- ACTIONS
 
 //	Applies the current workspace permission settings to all subworkspaces
-function ogPermApplyToSubworkspaces(genid){
-	var ws = ogPermGetSelectedWs(genid);
+og.ogPermApplyToSubworkspaces = function(genid){
+	var ws = og.ogPermGetSelectedWs(genid);
 	var permission = permissionsList[genid][ws.id];
 	if (!permission){
-		permission = new ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
+		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
 		permissionsList[genid][ws.id] = permission;
 	}
 	var tree = Ext.getCmp('workspace-chooser' + genid);
 	var node = tree.getNodeById('ws' + ws.id);
-	var ids = ogPermGetSubWsIdsFromNode(node);
+	var ids = og.ogPermGetSubWsIdsFromNode(node);
 	
 	// holds the nodes that that were expanded once, to avoid expanding again the same node.
 	// 1 expansion per node is needed to fix a view issue when checking collapsed child nodes.
@@ -188,14 +188,14 @@ function ogPermApplyToSubworkspaces(genid){
 
 
 //	Action to execute when the value of an element of the displayed permission changes
-function ogPermValueChanged(genid){
-	var ws = ogPermGetSelectedWs(genid);
+og.ogPermValueChanged = function(genid){
+	var ws = og.ogPermGetSelectedWs(genid);
 	var permission = permissionsList[genid][ws.id];
 	if (!permission){
-		permission = new ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
+		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
 		permissionsList[genid][ws.id] = permission;
 	}
-	ogSavePermissions(genid,permission);
+	og.ogSavePermissions(genid,permission);
 	
 	//Update the tree checkbox if there are any permissions
 	var tree = Ext.getCmp('workspace-chooser' + genid);
@@ -214,13 +214,13 @@ function ogPermValueChanged(genid){
 
 
 //	Action to execute when the selected workspace changes
- function ogPermSelectedWsChanged(genid){
-	var ws = ogPermGetSelectedWs(genid);
+og.ogPermSelectedWsChanged = function(genid){
+	var ws = og.ogPermGetSelectedWs(genid);
 	var permission = permissionsList[genid][ws.id];
 	if (!permission){
-		permission = new ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
+		permission = new og.ogPermission(ws.id, [0,0,0,0,0,0,0,0,0], [0,0]);
 	}
-	ogPopulatePermissions(genid,permission);
+	og.ogPopulatePermissions(genid,permission);
 	
 	var titleDiv = document.getElementById(genid + 'project_name').innerHTML = ws.n;
 	document.getElementById(genid + 'project_permissions').style.display="block";
@@ -228,23 +228,23 @@ function ogPermValueChanged(genid){
 
 
 //	Action to execute when the 'All' checkbox is checked or unchecked
-function ogPermAllChecked(genid,value,wsid){
+og.ogPermAllChecked = function(genid,value,wsid){
 	if (!wsid){
-		var ws = ogPermGetSelectedWs(genid);
+		var ws = og.ogPermGetSelectedWs(genid);
 		wsid = ws.id;
 	}
 	var permission;
 	if (value)
-		permission = new ogPermission(wsid, [2,2,2,2,2,2,2,2,2], [1,1]);
+		permission = new og.ogPermission(wsid, [2,2,2,2,2,2,2,2,2], [1,1]);
 	else
-		permission = new ogPermission(wsid, [0,0,0,0,0,0,0,0,0], [0,0]);
+		permission = new og.ogPermission(wsid, [0,0,0,0,0,0,0,0,0], [0,0]);
 	
 	permission.isModified = true;
 	permissionsList[genid][wsid] = permission;
 	
-	var ws = ogPermGetSelectedWs(genid);
+	var ws = og.ogPermGetSelectedWs(genid);
 	if (ws.id == wsid)
-		ogPopulatePermissions(genid,permission);
+		og.ogPopulatePermissions(genid,permission);
 		
 	var tree = Ext.getCmp('workspace-chooser' + genid);
 	var node = tree.getNodeById('ws' + wsid);
@@ -257,13 +257,13 @@ function ogPermAllChecked(genid,value,wsid){
 //-------------------------------------------------- UTILITIES
 
 //	Returns the subworkspace ids from a given tree node
-function ogPermGetSubWsIdsFromNode(node){
+og.ogPermGetSubWsIdsFromNode = function(node){
 	var result = new Array();
 	if (node && node.firstChild){
 		var children = node.childNodes;
 		for (var i = 0; i < children.length; i++){
 			result[result.length] = children[i].ws.id;
-			result = result.concat(ogPermGetSubWsIdsFromNode(children[i]));
+			result = result.concat(og.ogPermGetSubWsIdsFromNode(children[i]));
 		}
 	}
 	return result;
@@ -271,7 +271,7 @@ function ogPermGetSubWsIdsFromNode(node){
 
 
 //	Returns the selected workspace from the tree control
-function ogPermGetSelectedWs(genid){
+og.ogPermGetSelectedWs = function(genid){
 	var tree = Ext.getCmp('workspace-chooser' + genid);
 	var ws = tree.getActiveWorkspace();
 	return ws;
@@ -279,16 +279,16 @@ function ogPermGetSelectedWs(genid){
 
 
 //	Sets all radio permissions to a specific level for a given workspace
-function ogPermSetLevel(genid,level){
-	var ws = ogPermGetSelectedWs(genid);
+og.ogPermSetLevel = function(genid,level){
+	var ws = og.ogPermGetSelectedWs(genid);
 	var permission = permissionsList[genid][ws.id];
 	if (!permission){
-		permission = new ogPermission(ws.id, [level,level,level,level,level,level,level,level,level], [0,0]);
+		permission = new og.ogPermission(ws.id, [level,level,level,level,level,level,level,level,level], [0,0]);
 	} else
 		permission.pr = [level,level,level,level,level,level,level,level,level];
 	
 	permissionsList[genid][ws.id] = permission;
-	ogPopulatePermissions(genid,permission);
+	og.ogPopulatePermissions(genid,permission);
 	
 	var tree = Ext.getCmp('workspace-chooser' + genid);
 	var node = tree.getNodeById('ws' + ws.id);
@@ -299,14 +299,14 @@ function ogPermSetLevel(genid,level){
 
 
 //	Displays the permission values
-function ogPopulatePermissions(genid, permission){
+og.ogPopulatePermissions = function(genid, permission){
 	//Checkboxes
 	for (var i = 0; i < permission.pc.length; i++)
 		document.getElementById(genid + "chk_" + i).checked = (permission.pc[i] == 1);
 		
 	//Radio buttons
 	for (var i = 0; i < permission.pr.length; i++)
-		ogSetCheckedValue(document.getElementsByName(genid + "rg_" + i),permission.pr[i]);
+		og.ogSetCheckedValue(document.getElementsByName(genid + "rg_" + i),permission.pr[i]);
 	
 	var chk = document.getElementById(genid + 'pAll');
 	if (chk) 
@@ -315,21 +315,21 @@ function ogPopulatePermissions(genid, permission){
 
 
 //	Gets the values from the displayed permission and saves them to the permission object.
-function ogSavePermissions(genid,permission){
+og.ogSavePermissions = function(genid,permission){
 	//Checkboxes
 	for (var i = 0; i < permission.pc.length; i++)
 		permission.pc[i] = document.getElementById(genid + "chk_" + i).checked ? 1 : 0;
 		
 	//Radio buttons
 	for (var i = 0; i < permission.pr.length; i++)
-		permission.pr[i] = ogGetCheckedValue(document.getElementsByName(genid + "rg_" + i));
+		permission.pr[i] = og.ogGetCheckedValue(document.getElementsByName(genid + "rg_" + i));
 		
 	permission.isModified = true;
 }
 
 
 //	Returns the value of the radio button that is checked
-function ogGetCheckedValue(radioObj) {
+og.ogGetCheckedValue = function(radioObj) {
 	if(!radioObj)
 		return "";
 	var radioLength = radioObj.length;
@@ -348,7 +348,7 @@ function ogGetCheckedValue(radioObj) {
 
 
 //	Sets the radio button with the given value as being checked
-function ogSetCheckedValue(radioObj, newValue) {
+og.ogSetCheckedValue = function(radioObj, newValue) {
 	if(!radioObj)
 		return;
 	var radioLength = radioObj.length;

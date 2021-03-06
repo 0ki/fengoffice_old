@@ -5,12 +5,6 @@
 //some event handlers
 og.eventManager.addListener('tag changed', 
  	function (tag){ 
- 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink(og.getUrl('event', 'view_calendar', {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y')}), 
- 				{caller:'calendar-panel',
- 				get:{tag:tag.name}}
- 			);
- 		}
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'tasks-panel') {
  			og.openLink('<?php echo get_url('task','new_list_tasks')?>',
  				{caller:'tasks-panel',
@@ -21,11 +15,7 @@ og.eventManager.addListener('tag changed',
 );
 og.eventManager.addListener('workspace changed', 
  	function (ws){ 
- 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink(og.getUrl('event', 'view_calendar', {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y')}), 
- 				{caller:'calendar-panel'}
- 			);
- 		}
+
  	}
 );
 
@@ -69,7 +59,17 @@ og.eventManager.addListener('download document',
 			//og.openLink(og.getUrl('files', 'list_files'));
 			og.panels.documents.reload();
 		}	
-		window.open(og.getUrl('files', 'download_file', {id: args.id, validate:0}));
+		location.href = og.getUrl('files', 'download_file', {id: args.id, validate:0});
+	}
+);
+
+og.eventManager.addListener('config checkout_notification_dialog changed',
+	function(val) {
+		if (val == "true") {
+			og.showCheckoutNotification = true;
+		} else {
+			og.showCheckoutNotification = false;
+		}
 	}
 );
 </script>

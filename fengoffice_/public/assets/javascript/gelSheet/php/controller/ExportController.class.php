@@ -95,6 +95,19 @@
 							$objWriter3->save($currentDir."$filename.$format"); //save the object to a xlsx file
 							break;
 
+				case "cvs":
+							$objWriter4 = new PHPExcel_Writer_CSV($this->objPHPExcel);
+							//$objWriter4->setTempDir($currentDir);
+							$objWriter4->save("$filename.$format");	//save the object to a CVS file
+							break;
+							
+				case "html":
+							$objWriter5 = new PHPExcel_Writer_HTML($this->objPHPExcel);
+							$objWriter5->writeAllSheets();
+							//$objWriter5->setTempDir($currentDir);
+							$objWriter5->save("$filename.$format");	//save the object to a HTML file
+							break;
+							
 
 			}
 
@@ -183,15 +196,16 @@
 						$fontId= $cell->getFontStyleId();
 
 						$fontStyle= new FontStyle();
-				//		echo "<br>".print_r($fontStyle);
 						$fontStyle= $this->book->getFontStyle($fontId);
-				//		echo "<br>".print_r($fontStyle);
 
 						$fontName= $fontStyle->getFontName();
 						
 						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setName($fontName);
+						
+						//echo $col ."-" .$row. " " . $color;
+						
 						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setBold($fontStyle->getFontBold()== 1);
-						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setColor(PHPExcel_Style_Color::setRGB(substr($fontStyle->getFontColor(), 1)));
+						
 						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setItalic($fontStyle->getFontItalic()==1);
 						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setSize($fontStyle->getFontSize());
 
@@ -199,7 +213,15 @@
 							$this->objPHPExcel->getActiveSheet()->getStyle()->getFont()->setUnderline(PHPExcel_Style_Font::UNDERLINE_SINGLE);
 
 						}
-
+						
+						
+						
+						$ncolor= new PHPExcel_Style_Color(PHPExcel_Style_Color::COLOR_WHITE);						
+						$ncolor->setRGB(substr($fontStyle->getFontColor(),1));							
+						
+						$this->objPHPExcel->getActiveSheet()->getStyle($cellPos)->getFont()->setColor($ncolor);
+						
+						
 					}
 
 
@@ -212,7 +234,6 @@
 				}
 
 		}
-
 
 		/**
 		 * Gives a PHPExcel readeable position
@@ -360,6 +381,8 @@
 		 */
 		function _send($filename){
 
+			global $cnf;
+			
 			
 			header("Pragma: public");
 			header("Expires: 0");
@@ -370,9 +393,12 @@
 			header("Content-Disposition: attachment;filename= $filename");
 			header("Content-Transfer-Encoding: binary ");
 
-			global $cnf;
+			
 
 			readfile($cnf['path']['Temp'].$filename);
+			
+			
+			
 			unlink($cnf['path']['Temp'].$filename ) ;
 
 		}

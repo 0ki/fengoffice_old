@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.6 2008/12/16 19:13:13 alvarotm01 Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.7 2009/04/29 21:16:27 alvarotm01 Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.6 2008/12/16 19:13:13 alvarotm01 Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.7 2009/04/29 21:16:27 alvarotm01 Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -1426,7 +1426,7 @@ class mime_parser_class
 							continue 3;
 						case 'StartPart':
 							if(!$this->DecodeStream($parameters, $end_of_part, $decoded_part))
-								return(0);
+								continue 3;//return(0);
 							$decoded['Parts'][$part_number]=$decoded_part;
 							$part_number++;
 							$state = MIME_MESSAGE_GET_BODY_PART;
@@ -1447,7 +1447,8 @@ class mime_parser_class
 					}
 					break;
 			}
-			return($this->SetError('unexpected decoded message part type '.$type.' in state '.$state));
+			break;
+			//return($this->SetError('unexpected decoded message part type '.$type.' in state '.$state));
 		}
 		return(1);
 	}

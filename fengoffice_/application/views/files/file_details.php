@@ -45,14 +45,18 @@ if (isset($file) && $file instanceof ProjectFile) {
 	}
 	
 	if($file->canDownload(logged_user()) && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
-		$url = $file->getDownloadUrl(); 
-		$checkedOutById = $file->getCheckedOutById();
-		if($checkedOutById != 0){
-			$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Users::findById($checkedOutById)->getUsername());
-		}else{
-			$checkedOutByName = '';
+		$url = $file->getDownloadUrl();
+		if (config_option('checkout_notification_dialog')) { 
+			$checkedOutById = $file->getCheckedOutById();
+			if($checkedOutById != 0){
+				$checkedOutByName = ($checkedOutById == logged_user()->getId() ?  "self" : Users::findById($checkedOutById)->getUsername());
+			}else{
+				$checkedOutByName = '';
+			}
+			add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', "javascript:og.checkDownload('$url',$checkedOutById,'$checkedOutByName');", 'ico-download', '', array("download" => true));
+		} else {
+			add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $url, 'ico-download', '_blank');
 		}
-		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', "javascript:og.checkDownload('$url',$checkedOutById,'$checkedOutByName');", 'ico-download', '', array("download" => true));
 	}
 	
 	if($file->getType() == ProjectFiles::TYPE_WEBLINK){

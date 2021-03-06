@@ -31,7 +31,7 @@ table {
 <div class="print" style="padding:7px">
 
 <div class="printHeader">
-<h1><?php echo $title ?></h1>
+<h1 align="center"><?php echo $title ?></h1>
 <?php $this->includeTemplate(get_template_path($template_name, 'reporting'));?>
 </div>
 </div>

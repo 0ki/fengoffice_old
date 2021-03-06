@@ -333,7 +333,7 @@ function createToolbars(){
 		
 		var text = new Ext.form.TextField({
 			fieldLabel: 'f(x)',
-			width:558,
+			width:547,
 			id: 'FormulaBar' ,
 			enableKeyEvents: true 
 			 

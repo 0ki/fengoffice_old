@@ -3,16 +3,6 @@ require_javascript('modules/addMessageForm.js');
 ?>
 <script type="text/javascript">
 
-	og.ToggleTrap = function(fsid) {
-		if (Ext.isIE) {
-			if (!Ext.get(fsid).isDisplayed()) {
-				Ext.get(fsid).setDisplayed('block');
-			} else {
-				Ext.get(fsid).setDisplayed('none');
-			}
-		}
-	}
-	
 	function cal_hide(id) {
 		document.getElementById(id).style.display = "none";
 	}

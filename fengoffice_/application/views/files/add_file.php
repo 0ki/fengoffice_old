@@ -49,7 +49,14 @@ $comments_required = config_option('file_revision_comments_required');
 <?php if ($enableUpload) {
 	if ($file->isNew()) {?>
 		<div id="<?php echo $genid ?>selectFileControlDiv">
-			<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0')) . ' ' . lang('file')?>
+			<?php 
+				$show_help_option = user_config_option('show_context_help', 'until_close'); 
+				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_addfile_context_help', true, logged_user()->getId()))) {?>
+				<div id="weblinkFileContextHelp" style="margin-bottom:3px;">
+					<?php render_context_help($this, 'chelp addfile', 'add_file'); ?>
+				</div>
+			<?php }?>
+	    	<?php echo radio_field($genid.'_rg', true, array('id' => $genid.'fileRadio', 'onchange' => 'og.addDocumentTypeChanged(0, "'.$genid.'")', 'value' => '0')) . ' ' . lang('file')?>
 	    	<?php echo radio_field($genid.'_rg', false, array('id' => $genid.'weblinkRadio', 'onchange' => 'og.addDocumentTypeChanged(1, "'.$genid.'")', 'value' => '1')) . ' ' . lang('weblink')?>
 	        <div id="<?php echo $genid ?>fileUploadDiv">
 			<?php echo label_tag(lang('file'), $genid . 'fileFormFile', true) ?>
@@ -182,7 +189,7 @@ $comments_required = config_option('file_revision_comments_required');
 					</div>
 					<div id="<?php echo $genid ?>fileFormRevisionCommentBlock">
 						<?php echo label_tag(lang('revision comment'), $genid.'fileFormRevisionComment', $comments_required) ?>
-						<?php echo textarea_field('file[revision_comment]', array_var($file_data, 'revision_comment'), array('class' => 'short', 'tabindex' => '75', 'id' => $genid.'fileFormRevisionComment')) ?>
+						<?php echo textarea_field('file[revision_comment]', array_var($file_data, 'revision_comment'), array('class' => 'long', 'tabindex' => '75', 'id' => $genid.'fileFormRevisionComment')) ?>
 						<input type='hidden' id ="<?php echo $genid ?>RevisionCommentsRequired" value="<?php echo $comments_required? '1':'0'?>"/>
 					</div>
 				</div>
@@ -238,7 +245,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<div id="<?php echo $genid ?>add_file_description_div" style="display: none">
 		<fieldset>
 		<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'short', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
+		<?php echo textarea_field('file[description]', array_var($file_data, 'description'), array('class' => 'long', 'id' => $genid.'fileFormDescription', 'tabindex' => '90')) ?>
 		</fieldset>
 	</div>
 

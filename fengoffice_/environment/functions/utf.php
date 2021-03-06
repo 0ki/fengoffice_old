@@ -52,4 +52,13 @@ function strpos_utf($haystack, $needle, $offset = 0) {
 	} // if
 }
 
+function detect_encoding($string, $encoding_list = null, $strict = false) {
+	if ($encoding_list == null) $encoding_list = mb_detect_order();
+	if (function_exists('mb_detect_encoding')) {
+		return mb_detect_encoding($string, $encoding_list, $strict);
+	} else {
+		return 'UTF-8';
+	}
+}
+
 ?>

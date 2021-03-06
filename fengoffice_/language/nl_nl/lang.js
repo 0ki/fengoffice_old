@@ -75,6 +75,7 @@ addLangs({
 	'company': 'Bedrijf',
 	'companies': 'Bedrijven',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'checkin': 'Check in',
 	'checkout': 'Check uit',
 	'checked out by': 'Uit gecheckt door {0}',

@@ -1,6 +1,6 @@
 
 // DatePicker Menu
-var calToolbarDateMenu = new Ext.menu.DateMenu({
+var tbar_datemenu = new Ext.menu.DateMenu({
     handler : function(dp, date){
     	dp.setValue(date);
     	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
@@ -8,8 +8,9 @@ var calToolbarDateMenu = new Ext.menu.DateMenu({
     format: og.date_format,
 	altFormats: lang('date format alternatives')
 });
+og.calToolbarDateMenu = tbar_datemenu;
 
-Ext.apply(calToolbarDateMenu.picker, { 
+Ext.apply(og.calToolbarDateMenu.picker, { 
 	okText: lang('ok'),
 	cancelText: lang('cancel'),
 	monthNames: [lang('month 1'), lang('month 2'), lang('month 3'), lang('month 4'), lang('month 5'), lang('month 6'), lang('month 7'), lang('month 8'), lang('month 9'), lang('month 10'), lang('month 11'), lang('month 12')],
@@ -59,7 +60,7 @@ var topToolbarItems = {
         tooltip: lang('add new event'),
         iconCls: 'ico-new',
         handler: function() {
-        	var date = calToolbarDateMenu.picker.getValue();
+        	var date = og.calToolbarDateMenu.picker.getValue();
 			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
 	}),
@@ -69,7 +70,7 @@ var topToolbarItems = {
         iconCls: 'ico-calendar-month',
         handler: function() {
         	cal_actual_view = 'index';
-			var date = calToolbarDateMenu.picker.getValue();
+			var date = og.calToolbarDateMenu.picker.getValue();
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
 	}),
@@ -79,7 +80,7 @@ var topToolbarItems = {
         iconCls: 'ico-calendar-week',
         handler: function() {
 			cal_actual_view = 'viewweek';
-			var date = calToolbarDateMenu.picker.getValue();
+			var date = og.calToolbarDateMenu.picker.getValue();
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
 	}),
@@ -89,7 +90,7 @@ var topToolbarItems = {
         iconCls: 'ico-today',
         handler: function() {
 			cal_actual_view = 'viewdate';
-			var date = calToolbarDateMenu.picker.getValue();
+			var date = og.calToolbarDateMenu.picker.getValue();
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
 	}),
@@ -97,11 +98,11 @@ var topToolbarItems = {
 		tooltip: lang('prev'),
         iconCls: 'ico-prevmonth',
         handler: function() {
-        	var date = calToolbarDateMenu.picker.getValue();
+        	var date = og.calToolbarDateMenu.picker.getValue();
         	if (cal_actual_view == 'index') date = date.add(Date.MONTH, -1);
         	if (cal_actual_view == 'viewweek') date = date.add(Date.DAY, -7);
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, -1);
-        	calToolbarDateMenu.picker.setValue(date);
+        	og.calToolbarDateMenu.picker.setValue(date);
 			
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
@@ -110,11 +111,11 @@ var topToolbarItems = {
 		tooltip: lang('next'),
         iconCls: 'ico-nextmonth',
         handler: function() {
-        	var date = calToolbarDateMenu.picker.getValue();
+        	var date = og.calToolbarDateMenu.picker.getValue();
         	if (cal_actual_view == 'index') date = date.add(Date.MONTH, 1);
         	if (cal_actual_view == 'viewweek') date = date.add(Date.DAY, 7);
         	if (cal_actual_view == 'viewdate') date = date.add(Date.DAY, 1);
-        	calToolbarDateMenu.picker.setValue(date);
+        	og.calToolbarDateMenu.picker.setValue(date);
 			
 			changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 		}
@@ -122,7 +123,7 @@ var topToolbarItems = {
 	goto: new Ext.Action({
 		text: lang('pick a date'),
         tooltip: lang('pick a date'),
-        menu: calToolbarDateMenu
+        menu: og.calToolbarDateMenu
 	}),
 	imp_exp: new Ext.Action({
 		text: lang('import/export'),
@@ -199,7 +200,7 @@ og.CalendarTopToolbar = function(config) {
         		var splited = record.data.value.split(':');
         		actual_user_filter = splited[1] == 0 ? -1 : splited[1];
         		actual_comp_filter = splited[0];
-        		var date = calToolbarDateMenu.picker.getValue();
+        		var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
         	}
         }
@@ -218,7 +219,7 @@ og.CalendarTopToolbar = function(config) {
 			text: lang('view all'),
 			handler: function() {
 				actual_status_filter = -1;
-				var date = calToolbarDateMenu.picker.getValue();
+				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 			}
 		}),
@@ -229,7 +230,7 @@ og.CalendarTopToolbar = function(config) {
 			checkHandler: function() {
 				if (this.checked) addStateFilter('0');
 				else removeStateFilter('0');
-				var date = calToolbarDateMenu.picker.getValue();
+				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 			}
 		},
@@ -240,7 +241,7 @@ og.CalendarTopToolbar = function(config) {
 			checkHandler: function() {
 				if (this.checked) addStateFilter('1');
 				else removeStateFilter('1');
-				var date = calToolbarDateMenu.picker.getValue();
+				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 			}
 		},
@@ -251,7 +252,7 @@ og.CalendarTopToolbar = function(config) {
 			checkHandler: function() {
 				if (this.checked) addStateFilter('2');
 				else removeStateFilter('2');
-				var date = calToolbarDateMenu.picker.getValue();
+				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 			}
 		},
@@ -262,7 +263,7 @@ og.CalendarTopToolbar = function(config) {
 			checkHandler: function() {
 				if (this.checked) addStateFilter('3');
 				else removeStateFilter('3');
-				var date = calToolbarDateMenu.picker.getValue();
+				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter);
 			}
 		}

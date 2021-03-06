@@ -159,7 +159,6 @@ addLangs({
 	
 	/* contact manager*/
 	'company': 'Společnost',
-	'email': 'Email',
 	'add new contact': 'Přidat nový kontakt',
 	'displaying contacts of': 'Zobrazit kontakty {0} až {1} z {2}',
 	'no contacts to display': 'Žádné kontakty ke zobrazení',
@@ -245,7 +244,8 @@ addLangs({
 	/*  */
 	'write' : 'Psát',
 	'write new mail' : 'Psát e-mail',
-	'email': 'E-mail',
+	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'weblink': 'Webový odkaz',
 	'webpage': 'Webový odkaz',
 	'task': 'Úkol',

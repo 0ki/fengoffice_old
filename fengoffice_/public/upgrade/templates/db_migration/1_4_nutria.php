@@ -54,7 +54,10 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
  ('passwords', 'new_password_char_difference', '0', 'BoolConfigHandler', '0', '8', NULL),
  ('passwords', 'validate_password_history', '0', 'BoolConfigHandler', '0', '9', NULL),
  ('general', 'checkout_notification_dialog', '0', 'BoolConfigHandler', '0', '0', NULL),
- ('general', 'file_revision_comments_required', '0', 'BoolConfigHandler', '0', '0', NULL)
+ ('general', 'currency_code', '$', 'StringConfigHandler', '0', '0', NULL),
+ ('general', 'file_revision_comments_required', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email')
 ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
@@ -62,7 +65,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_
  ('dashboard', 0, 0, 1),
  ('task panel', 0, 0, 2),
  ('time panel', 1, 0, 3),
- ('calendar panel', 1, 0, 4),
+ ('calendar panel', 0, 0, 4),
  ('context help', 1, 0, 5)
 ON DUPLICATE KEY UPDATE id=id;
 
@@ -103,7 +106,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('general', 'localization', 'en_us', 'LocalizationConfigHandler', 0, 100, ''),
+ ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
  ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
  ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
@@ -114,6 +117,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
+ ('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
+ ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
  ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
  ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('task panel', 'show_tasks_context_help', '1', 'BoolConfigHandler', '0', '2', NULL),
@@ -129,7 +134,11 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('context help', 'show_dashboard_info_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_comments_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_emails_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
- ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL)
+ ('context help', 'show_reporting_panel_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_add_file_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
+ ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
+ ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL)
 ON DUPLICATE KEY UPDATE id=id;
 
 
@@ -215,6 +224,47 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_conditions` (
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `default_value` = '' WHERE `category_name` = 'general' AND `name` = 'localization';
+
 ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_manage_templates`;
 ALTER TABLE `<?php echo $table_prefix ?>groups` ADD COLUMN `can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_manage_templates`;
 UPDATE `<?php echo $table_prefix ?>users` SET can_manage_reports = 1 WHERE `id` IN (SELECT `user_id` FROM `<?php echo $table_prefix ?>group_users` WHERE `group_id` = 10000000);
+
+ALTER TABLE `<?php echo $table_prefix ?>custom_properties` ADD COLUMN `visible_by_default` TINYINT(1) NOT NULL DEFAULT 0 AFTER `property_order`;
+
+ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` MODIFY COLUMN `value` text <?php echo $default_collation ?> NOT NULL;
+
+-- larger contact fields
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `firstname` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `lastname` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `middlename` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `department` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `job_title` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_city` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_state` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_zipcode` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_country` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_phone_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_fax_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_assistant_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `w_callback_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_city` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_state` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_zipcode` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_country` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_phone_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_fax_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_mobile_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `h_pager_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_city` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_state` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_zipcode` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_country` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_phone_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_phone_number2` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>contacts` MODIFY COLUMN `o_fax_number` varchar(50) <?php echo $default_collation ?> default NULL;
+
+ALTER TABLE `<?php echo $table_prefix ?>companies` MODIFY COLUMN `phone_number` varchar(50) <?php echo $default_collation ?> default NULL;
+ALTER TABLE `<?php echo $table_prefix ?>companies` MODIFY COLUMN `fax_number` varchar(50) <?php echo $default_collation ?> default NULL;

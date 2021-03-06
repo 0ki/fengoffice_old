@@ -20,6 +20,48 @@
       )); // findAll
     } // getAll
     
+    static function getVisibleCompanies(User $user){
+    	if (can_manage_contacts($user)){
+    		return self::getAll();
+    	} else {
+    		return self::getCompaniesByProjects($user->getActiveProjectIdsCSV());
+    	}
+    }
+    
+    /**
+    * Return all companies that are on specific projects, determined by a CVS list of project ids.
+    *
+    * @access public
+    * @param string $projects_csv CSV list of projects
+    * @param string $additional_conditions Additional SQL conditions
+    * @param bool $include_owner Include the owner company
+    * @return array Array of Companies
+    */
+    static function getCompaniesByProjects($projects_csv, $additional_conditions = null, $include_owner = true) {
+    	$companies = array();
+    	$companies_table = self::instance()->getTableName(true);
+    	$project_objects_table=  WorkspaceObjects::instance()->getTableName(true);
+
+		// Restrict result only on owner company
+    	$ownerCond = '';
+    	if (!$include_owner){
+    		$owner_id = owner_company()->getId();
+    		$ownerCond = "$companies_table.`client_of_id` = '$owner_id' AND ";
+    	}
+    	
+    	$sql = "SELECT DISTINCT $companies_table.* FROM $companies_table, $project_objects_table WHERE $ownerCond ($companies_table.`id` = $project_objects_table.`object_id` AND $project_objects_table.`object_manager` = 'Companies' AND $project_objects_table.`workspace_id` IN ( " . $projects_csv . '))';
+    	if(trim($additional_conditions) <> '') $sql .= " AND ($additional_conditions) ORDER BY $companies_table.`name`";
+
+    	$rows = DB::executeAll($sql);
+    	if(is_array($rows)) {
+    		foreach($rows as $row) {
+    			$companies[] = Companies::instance()->loadFromRow($row);
+    		} // foreach
+    	} // if
+
+    	return count($companies) ? $companies : null;
+    } // getCompaniesByProjects
+    
     /**
     * Return all companies that have system users
     *

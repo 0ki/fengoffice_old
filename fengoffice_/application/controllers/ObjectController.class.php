@@ -57,26 +57,22 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function add_custom_properties($object) {
-		$object->clearObjectProperties();
-		$names = array_var($_POST, 'custom_prop_names');
-		$values = array_var($_POST, 'custom_prop_values');
-		if (!is_array($names)) return;
-		for ($i=0; $i < count($names); $i++) {
-			$name = trim($names[$i]);
-			$value = trim($values[$i]);
-			if ($name != '' && $value != '') {
-				$property = new ObjectProperty();
-				$property->setObject($object);
-				$property->setPropertyName($name);
-				$property->setPropertyValue($value);
-				$property->save();
-				if ($object->isSearchable()) {
-					$object->addPropertyToSearchableObject($property);
-				}
-			}
-		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
 		if (is_array($obj_custom_properties)){
+			$customProps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($object->manager()));
+			foreach($customProps as $cp){
+				if($cp->getType() == 'boolean'){
+					$custom_property_value = new CustomPropertyValue();
+					$cpv = CustomPropertyValues::getCustomPropertyValue($object->getId(), $cp->getId());
+					if($cpv instanceof CustomPropertyValue){
+						$custom_property_value = $cpv;
+					}
+					$custom_property_value->setObjectId($object->getId());
+					$custom_property_value->setCustomPropertyId($cp->getId());
+					$custom_property_value->setValue(0);
+					$custom_property_value->save();
+				}
+			}
 			$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($object->manager()));
 			foreach($obj_custom_properties as $id => $value){
 				$is_valid = false;
@@ -106,18 +102,41 @@ class ObjectController extends ApplicationController {
 						}
 					}
 					if(is_array($value)){
-						$custom_property_value->setValue(implode(',', $value));
+						foreach($value as &$val){
+							if(strpos($val, ',')){
+								$val = str_replace(',', '|', $val);
+							}
+						}
+						$value = implode(',', array_filter($value));
 					}else{
 						if($custom_property->getType() == 'boolean'){
-							$custom_property_value->setValue(isset($value));
-						}else{
-							$custom_property_value->setValue($value);
+							$value = isset($value);
 						}
 					}
+					$custom_property_value->setValue($value);
 					$custom_property_value->save();
 				}
 			}
 		}
+		
+		$object->clearObjectProperties();
+		$names = array_var($_POST, 'custom_prop_names');
+		$values = array_var($_POST, 'custom_prop_values');
+		if (!is_array($names)) return;
+		for ($i=0; $i < count($names); $i++) {
+			$name = trim($names[$i]);
+			$value = trim($values[$i]);
+			if ($name != '' && $value != '') {
+				$property = new ObjectProperty();
+				$property->setObject($object);
+				$property->setPropertyName($name);
+				$property->setPropertyValue($value);
+				$property->save();
+				if ($object->isSearchable()) {
+					$object->addPropertyToSearchableObject($property);
+				}
+			}
+		}		
 	}
 	
 	function add_reminders($object) {

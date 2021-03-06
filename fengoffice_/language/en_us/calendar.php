@@ -162,5 +162,7 @@
 	'import events from third party software' => 'Import events from third party software',
 	'subws' => 'Sub Ws.',
 	'check to include sub ws' => 'Check this to include sub workspaces in the url',
+  	'week short' => 'Week',
+  	'week number x' => 'Week {0}',
   ); // array
 ?>

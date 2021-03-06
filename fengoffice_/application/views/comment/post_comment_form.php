@@ -9,9 +9,9 @@
   <p class="error"><?php echo lang('admin notice comments disabled') ?></p>
 <?php } // if ?>
 
-	<table><tr><td>
+	<table style="width:97%"><tr><td>
   <div class="formAddCommentText">
-    <?php echo textarea_field("comment[text]", '', array('class' => 'short', 'id' => 'addCommentText')) ?>
+    <?php echo textarea_field("comment[text]", '', array('class' => 'long', 'id' => 'addCommentText')) ?>
   </div>
   </td>
     <td style="padding-left:10px">

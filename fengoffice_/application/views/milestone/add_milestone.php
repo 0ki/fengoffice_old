@@ -81,7 +81,7 @@
 	<div id="<?php echo $genid ?>add_milestone_description_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'short', 'id' => $genid . 'milestoneFormDesc', 'tabindex' => '20')) ?>
+		<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'long', 'id' => $genid . 'milestoneFormDesc', 'tabindex' => '20')) ?>
 	</fieldset>
 	</div>
   

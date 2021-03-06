@@ -66,7 +66,7 @@ fieldset legend {
 input { width: 200px; }
 input.short { width: 50px; }
 input.medium { width: 150px; }
-input.long { width: 400px; }
+input.long { width: 97%; /*99%;*/ }
 input.title { width: 530px; }
 
 textarea.textfield {
@@ -85,7 +85,7 @@ legend label.checkbox {
 }
 
 textarea, textarea.long {
-  width: 400px;
+  width: 97%; /* 99% */
   height: 150px;
 }
 
@@ -105,7 +105,7 @@ textarea.comment {
 }
 
 textarea.editor {
-  width: 530px;
+  width: 97%;/*99%;*/
   height: 300px;
 }
 

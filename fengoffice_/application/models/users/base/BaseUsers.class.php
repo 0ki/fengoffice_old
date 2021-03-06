@@ -119,6 +119,40 @@ abstract class BaseUsers extends DataManager {
       );
     } // getSystemColumns
     
+    /**
+    * Return external columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getExternalColumns() {
+      return array_merge(parent::getExternalColumns(), array('company_id'));
+    } // getExternalColumns
+    
+    /**
+    * Return report object title columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getReportObjectTitleColumns() {
+      return array('username');
+    } // getReportObjectTitleColumns
+    
+    /**
+    * Return report object title
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getReportObjectTitle($values) {
+    	$username = isset($values['username']) ? $values['username'] : ''; 
+    	return $username;
+    } // getReportObjectTitle
+    
 	// -------------------------------------------------------
 	//  Finders
 	// -------------------------------------------------------

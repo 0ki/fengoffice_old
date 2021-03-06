@@ -265,7 +265,7 @@
         die();
       } // if
       
-      CompanyWebsite::instance()->setLoggedUser($user, false, false);
+      CompanyWebsite::instance()->setLoggedUser($user, false, false, false);
       return $user;
     } // loginUserByToken
   

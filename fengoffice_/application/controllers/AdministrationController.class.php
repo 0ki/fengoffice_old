@@ -136,6 +136,7 @@ class AdministrationController extends ApplicationController {
 					$new_cp->setIsRequired(isset($data['required']));
 					$new_cp->setIsMultipleValues(isset($data['multiple_values']));
 					$new_cp->setOrder($id);
+					$new_cp->setVisibleByDefault(isset($data['visible_by_default']));
 					$new_cp->save();
 				}
 				DB::commit();

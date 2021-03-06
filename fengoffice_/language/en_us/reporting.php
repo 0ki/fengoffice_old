@@ -18,7 +18,9 @@
   	'columns and order' => 'Columns & Order',
   	'true' => 'True',
   	'false' => 'False',
-  	
+  	'field' => 'Field',
+  	'condition' => 'Condition',
+  	'ends with' => 'ends with',
   );
   
 ?>

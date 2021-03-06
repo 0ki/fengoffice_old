@@ -31,6 +31,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('mailing', 'smtp_username', '', 'StringConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_password', '', 'PasswordConfigHandler', 0, 0, NULL),
 	('mailing', 'smtp_secure_connection', 'no', 'SecureSmtpConnectionConfigHandler', 0, 0, 'Values: no, ssl, tls'),
+	('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),
 	('modules', 'enable_notes_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable notes tab.'),
 	('modules', 'enable_email_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable email tab.'),
 	('modules', 'enable_contacts_module', '1', 'BoolConfigHandler', 0, 0, 'Enable or disable contacts tab.'),
@@ -52,7 +53,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'checkout_notification_dialog', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'file_revision_comments_required', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'currency_code', '$', 'StringConfigHandler', '0', '0', NULL),
-	('general', 'checkout_for_editing_online', '0', 'BoolConfigHandler', '0', '0', NULL);
+	('general', 'checkout_for_editing_online', '0', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL);
 	
 
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
@@ -98,7 +100,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_
 	('dashboard', 0, 0, 1),
 	('task panel', 0, 0, 2),
 	('time panel', 1, 0, 3),
-	('calendar panel', 1, 0, 4),
+	('calendar panel', 0, 0, 4),
 	('context help', 1, 0, 5);
 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
@@ -138,7 +140,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('general', 'localization', 'en_us', 'LocalizationConfigHandler', 0, 100, ''),
+ ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
  ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
  ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
@@ -149,6 +151,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
+ ('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
+ ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
  ('dashboard', 'show getting started widget', '1', 'BoolConfigHandler', '0', '1000', NULL),
  ('dashboard', 'getting_started_widget_expanded', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('task panel', 'show_tasks_context_help', '1', 'BoolConfigHandler', '0', '2', NULL),
@@ -164,7 +168,11 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('context help', 'show_dashboard_info_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_comments_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_emails_widget_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
- ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL);
+ ('context help', 'show_reporting_panel_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('context help', 'show_add_file_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
+ ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
+ ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
+ ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL);
 
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
 	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),

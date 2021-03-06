@@ -21,11 +21,11 @@ if (count($scripts) > 0) {
       <div id="upgraderControls">
         <table class="formBlock">
           <tr>
-            <th colspan="2">Upgrade</th>
+            <th colspan="2"><?php echo lang('upgrade')?></th>
           </tr>
 <?php if ($installed_version == "unknown") { ?>
           <tr>
-            <td class="optionLabel"><label for="upgradeFormFrom">Upgrade from: </label></td>
+            <td class="optionLabel"><label for="upgradeFormFrom"><?php echo lang('upgrade from')?>: </label></td>
             <td>
               <select name="form_data[upgrade_from]" id="upgradeFormFrom">
 	<?php foreach($scripts as $script) { ?>
@@ -36,29 +36,29 @@ if (count($scripts) > 0) {
           </tr>
 <?php } else { ?>
 		<tr>
-			<td class="optionLabel"><label>Upgrade from: </label></td>
+			<td class="optionLabel"><label><?php echo lang('upgrade from')?>: </label></td>
 			<td>
 				<input name="form_data[upgrade_from]" type="hidden" value="<?php echo $installed_version ?>" />
 				<?php echo $installed_version ?></td>
 		</tr>
 <?php } ?>
           <tr>
-            <td class="optionLabel"><label for="upgradeFormTo">Upgrade to: </label></td>
+            <td class="optionLabel"><label for="upgradeFormTo"><?php echo lang('upgrade to')?>: </label></td>
             <td>
               <select name="form_data[upgrade_to]" id="upgradeFormTo">
 	<?php foreach($scripts as $script) { ?>
-                <option <?php if ($script->getVersionTo() == $product_version) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionTo()) ?>">OpenGoo <?php echo clean($script->getVersionTo()) ?></option>
+                <option <?php if ($script->getVersionTo() == $product_version) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionTo()) ?>"><?php echo PRODUCT_NAME?> <?php echo clean($script->getVersionTo()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>
           </tr>
         </table>
-        <button type="submit" accesskey="s">Upgrade (Alt+S)</button>
+        <button type="submit" accesskey="s"><?php echo lang('upgrade')?> (Alt+S)</button>
       </div>
       <input type="hidden" name="submited" value="submited" />
     </form>
 <?php } else { ?>
-	<div style="padding: 20px">You already have upgraded to the latest possible version.</div>
+	<div style="padding: 20px"><?php echo lang('already upgraded')?></div>
 <?php } ?>
       <div id="content">
 <?php if(isset($status_messages) && count($status_messages)) { ?>
@@ -70,8 +70,8 @@ if (count($scripts) > 0) {
 <?php } // if ?>
       </div>
 
-	<div class="back"><a href="../../">Back to OpenGoo</a></div>
-    <div id="footer">&copy; <?php echo date('Y') ?> <a href="http://www.OpenGoo.org/">OpenGoo</a>. All rights reserved.</div>
+	<div class="back"><a href="../../"><?php echo lang('back to opengoo')?></a></div>
+    <div id="footer">&copy; <?php echo date('Y') ?> <a href="<?php echo PRODUCT_URL?>"><?php echo PRODUCT_NAME?></a>. <?php echo lang('all rights reserved')?>.</div>
   </div>
 
 </body>

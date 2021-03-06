@@ -17,9 +17,31 @@ return array(
 
 	'chelp personal account' => 'This is your personal account.<br/>In this view you can update your profile and avatar, change your password and edit your personal preferences.',
 	'chelp user account' => 'This is a user account.',
-	'chelp user account admin' => 'Being an administrator, you may update the user\'s profile and avatar, change his or her password, and edit his or her preferences through this view.',
+	'chelp user account admin' => 'This is a user account.<br/>Being an administrator, you may update the user\'s profile and avatar, change his or her password, and edit his or her preferences through this view.',
+
+	'chelp reporting panel' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.',
+	'chelp reporting panel manage' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.<br/>As you also have report management privileges, you can create and manage custom reports for each object type.',
+	'chelp reporting panel manage admin' => 'This is the reporting panel. In here you can execute reports involving all the different object types found to the left.<br/>As you also have report management privileges, you can create and manage custom reports for each object type. These privileges are set for each user in the user permissions section.',
+
+	'chelp addfile' => 'Choose "File" to upload a file, or "Weblink" to add a file as a reference to another file that is not physically stored in your server.',
 
  	'remove context help' => 'Remove this help message',
+
+	'chelp tasks list welcome' => 'Welcome to the tasks panel',
+
+	'chelp tasks list' => '<br/>You can apply one of the following filters:<br/>
+							<b>Created by</b>: only display tasks created by a specific user or group <br/>
+							<b>Completed by</b>: only display tasks completed by a specific user or group <br/>
+							<b>Assigned to</b>: only display tasks assigned to a specific user or group <br/>
+							<b>Assigned by</b>: only display tasks assigned by a specific user or group <br/>
+							<b>Milestone</b>: only display tasks belonging to a specific milestone<br/>
+							<b>Priority</b>: only display tasks with a specific priority (low, normal, high) <br/>
+							</td>
+							<td>
+							<br/>You can group tasks by the following criteria (among others):<br/>
+							<b>Milestone</b>: group tasks by a specific milestone <br/>
+							<b>Priority</b>: group tasks by a specific priority (low, normal, high) <br/>
+							<b>Workspace</b>: group tasks by a specific workspace <br/>',
 	
 ); // array
 

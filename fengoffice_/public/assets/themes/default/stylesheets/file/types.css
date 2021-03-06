@@ -80,6 +80,12 @@
 .ico-application-vnd_oasis_opendocument_text {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.text.png);
 }
+.ico-application-vnd_openxmlformats-officedocument_spreadsheetml_sheet {
+	background-image: url(../../images/16x16/types/application-vnd.openxmlformats-officedocument.spreadsheetml.sheet.png);
+}
+.ico-application-vnd_openxmlformats-officedocument_wordprocessingml_document {
+	background-image: url(../../images/16x16/types/application-vnd.openxmlformats-officedocument.wordprocessingml.document.png);
+}
 .ico-application-vnd_rn-realmedia {
 	background-image: url(../../images/16x16/types/video.png);
 }
@@ -211,6 +217,12 @@
 }
 .ico-large-application-vnd_oasis_opendocument_text {
 	background-image: url(../../images/48x48/types/application-vnd.oasis.opendocument.text.png);
+}
+.ico-large-application-vnd_openxmlformats-officedocument_spreadsheetml_sheet {
+	background-image: url(../../images/48x48/types/application-vnd.openxmlformats-officedocument.spreadsheetml.sheet.png);
+}
+.ico-large-application-vnd_openxmlformats-officedocument_wordprocessingml_document {
+	background-image: url(../../images/48x48/types/application-vnd.openxmlformats-officedocument.wordprocessingml.document.png);
 }
 .ico-large-application-vnd_rn-realmedia {
 	background-image: url(../../images/48x48/types/video.png);

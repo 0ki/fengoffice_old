@@ -159,7 +159,9 @@ if ($to != "") {
 	// finished loading translation files
 
 	$file = $_GET["file"];
-	if (!isset($file)) $file = ""; ?>
+	if (!isset($file)) $file = "";
+	$filter = $_GET["filter"];
+	if (!isset($filter)) $filter = "all"; ?>
 	<td>
 	<label>Choose a file:</label>
 	<form action="index.php" method="get">
@@ -167,6 +169,7 @@ if ($to != "") {
 		<input type="hidden" name="a" value="translate">
 		<input type="hidden" name="from" value="<?php echo $from ?>" />
 		<input type="hidden" name="to" value="<?php echo $to ?>" />
+		<input type="hidden" name="filter" value="<?php echo $filter ?>" />
 		<script>
 			function fileChosen() {
 				if (this.value != "") {
@@ -186,8 +189,6 @@ if ($to != "") {
 	</form>
 	</td> <?php
 	if ($file != "") { 
-		$filter = $_GET["filter"];
-		if (!isset($filter)) $filter = "all";
 		$start = $_GET['start'];
 		if (!isset($start)) $start = 0;
 		if ($start >= $added && $filter == "missing") $start -= $added;
@@ -312,14 +313,7 @@ if ($to != "") {
 				$remaining = min($start, $pagesize); ?>
 				<button onclick="this.parentNode.action += '&start=<?php echo $start - $remaining?>'" type="submit">Previous <?php echo $remaining  ?></button><?php
 			}
-			/*if ($filter == 'missing') {
-				// when pressing Next you are saving current langs, and thus removing them from the
-				// 'missing' category, so the Next button doesn't need to change the $start value to
-				// show you new items
-				$nextstart = $start + $pagesize;
-			} else {
-				$nextstart = $start + $pagesize;
-			}*/
+			// when filter is "missing" start was already calculated to reflect the langs that were added
 			$nextstart = $start + $pagesize;
 			$remaining = min(array($pagesize, $count - $nextstart));
 			if ($remaining > 0) { ?>

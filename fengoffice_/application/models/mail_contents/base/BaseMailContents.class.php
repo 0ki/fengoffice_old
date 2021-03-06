@@ -116,6 +116,40 @@ abstract class BaseMailContents extends ProjectDataObjects {
       	'account_id', 'uid', 'content_file_id')
 		);
 	} // getSystemColumns
+	
+	/**
+    * Return external columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getExternalColumns() {
+      return array_merge(parent::getExternalColumns(), array());
+    } // getExternalColumns
+	
+	/**
+    * Return report object title columns
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getReportObjectTitleColumns() {
+      return array('subject');
+    } // getReportObjectTitleColumns
+    
+    /**
+    * Return report object title
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getReportObjectTitle($values) {
+    	$subject = isset($values['subject']) ? $values['subject'] : ''; 
+    	return $subject;
+    } // getReportObjectTitle
 
 	// -------------------------------------------------------
 	//  Finders

@@ -1840,7 +1840,7 @@ class Project extends BaseProject {
 		$mails = $this->getAllMails();
 		if(is_array($mails)) {
 			foreach($mails as $mail) {
-				$mail->setProjectId(0);
+				$mail->removeFromWorkspace($this);
 			} // foreach
 		} // if
 	} //  clearMails

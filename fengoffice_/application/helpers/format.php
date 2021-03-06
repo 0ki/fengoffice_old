@@ -178,4 +178,25 @@ function truncate($string, $length, $etc = '...', $charset='UTF-8',
         return $string;
     }
 }
+
+function date_format_tip($format) {
+	$traductions = array('d' => 'dd', 'D' => lang('sunday short'), 'j' => 'd', 'l' => lang('sunday'), 'N' => 'w', 'S' => 'st', 
+					'w' => 'w', 'z' => 'dy', 'W' => 'W', 'F' => lang('month 1'), 'm' => 'mm', 'M' => substr(lang('month 1'),0,3),
+					'n' => 'm', 't' => '', 'L' => '', 'o' => 'yyyy', 'Y' => 'yyyy', 'y' => 'yy',
+					'a' => 'am', 'A' => 'AM', 'B' => '000', 'g' => 'h', 'G' => 'h', 'h' => 'hh', 'H' => 'hh', 'i' => 'mm', 
+					's' => 'ss', 'u' => 'uuuuu', 'e' => 'GMT', 'I' => '', 'O' => '+hhmm', 'P' => '+hh:mm', 'T' => 'EST', 
+					'Z' => 'ssss', 'c' => 'ISO date', 'r' => 'Thu, 21 Dec 2000 16:01:07 +0200', 'U' => 'ssss');
+	
+	$formatChars = array_keys($traductions);
+	$result = '';
+	$i = 0;
+	while ($i < strlen($format)) {
+		$char = $format[$i++];
+		if (in_array($char, $formatChars)) $result .= $traductions[$char];
+		else $result .= $char;
+	}
+	
+	return $result;
+}
+
 ?>

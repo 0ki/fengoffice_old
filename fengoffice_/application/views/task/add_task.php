@@ -1,5 +1,7 @@
 <?php
 	require_javascript('modules/addMessageForm.js');
+	require_javascript('og/tasks/main.js');
+	require_javascript('og/tasks/addTask.js');
 	$genid = gen_id();
 	$object = $task;
 	if ($task->isNew()) {
@@ -229,7 +231,7 @@
 		
    	
 	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'long', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>
 
 	<?php foreach ($categories as $category) { ?>

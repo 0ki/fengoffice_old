@@ -61,38 +61,38 @@
 
 <b><?php echo lang('new account step actions',$step) ?></b><br/><hr/>
 
-Add a new:
+<?php echo lang('add a new')?>:
 
 <image src='<?php echo image_url('/16x16/message.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('message', 'add')?> ' >Note</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('message', 'add')?> ' ><?php echo lang('message')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/contact.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('contact', 'add')?> ' >Contact</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('contact', 'add')?> ' ><?php echo lang('contact')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/companies.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('company', 'add_client')?> ' >Company</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('company', 'add_client')?> ' ><?php echo lang('company')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/event.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('event', 'add')?> ' >Event</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('event', 'add')?> ' ><?php echo lang('event')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/upload.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_file')?> ' >File</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('files', 'add_file')?> ' ><?php echo lang('file')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/documents.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_document')?> ' >Document</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('files', 'add_document')?> ' ><?php echo lang('document')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/prsn.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('files', 'add_presentation')?> ' >Presentation</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('files', 'add_presentation')?> ' ><?php echo lang('presentation')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/milestone.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('milestone', 'add')?> ' >Milestone</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('milestone', 'add')?> ' ><?php echo lang('milestone')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/task.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('task', 'add_task')?> ' >Task</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('task', 'add_task')?> ' ><?php echo lang('task')?></a>&nbsp;|&nbsp;
 
 <image src='<?php echo image_url('/16x16/types/webpage.png')?> ' />&nbsp;
-<a class='internalLink' href='<?php echo get_url('webpage', 'add')?> ' >Web link</a>&nbsp;|&nbsp;
+<a class='internalLink' href='<?php echo get_url('webpage', 'add')?> ' ><?php echo lang('weblink')?></a>&nbsp;&nbsp;
 
-<br/><br/><p><a class='internalLink' href='<?php echo get_url('config', 'remove_getting_started_widget')?> ' >Remove this widget</a></p>
+<br/><br/><p><a class='internalLink' href='<?php echo get_url('config', 'remove_getting_started_widget')?> ' ><?php echo lang('remove this widget')?></a></p>
 	
 </div>

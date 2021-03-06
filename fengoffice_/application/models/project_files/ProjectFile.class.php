@@ -351,10 +351,10 @@ class ProjectFile extends BaseProjectFile {
 		if(($uploaded_file['type'] == 'application/octet-stream') && ($extension == 'eyedoc')) $uploaded_file['type'] = 'text/html';
 		//eyedoc MOD
 		
-		// calculate md5
-		if ($revision->columnExists('md5')) {
-			$md5 = md5_file($uploaded_file['tmp_name']);
-			$revision->setColumnValue('md5', $md5);
+		// calculate hash
+		if ($revision->columnExists('hash')) {
+			$hash = hash_file("sha256", $uploaded_file['tmp_name']);
+			$revision->setColumnValue('hash', $hash);
 		}
 		
 		$repository_id = FileRepository::addFile($uploaded_file['tmp_name'], array('name' => $uploaded_file['name'], 'type' => $uploaded_file['type'], 'size' => $uploaded_file['size']));

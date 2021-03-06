@@ -213,7 +213,7 @@ final class CompanyWebsite {
 	 * @return null
 	 * @throws DBQueryError
 	 */
-	function setLoggedUser(User $user, $remember = false, $set_last_activity_time = true) {
+	function setLoggedUser(User $user, $remember = false, $set_last_activity_time = true, $set_cookies = true) {
 		if($set_last_activity_time) {
 			$user->setLastActivity(DateTimeValueLib::now());
 			
@@ -225,16 +225,18 @@ final class CompanyWebsite {
 			$user->save();
 		} // if
 
-		$expiration = $remember ? REMEMBER_LOGIN_LIFETIME : SESSION_LIFETIME;
-
-		Cookie::setValue('id', $user->getId(), $expiration);
-		Cookie::setValue('token', $user->getTwistedToken(), $expiration);
-
-		if($remember) {
-			Cookie::setValue('remember', 1, $expiration);
-		} else {
-			Cookie::unsetValue('remember');
-		} // if
+		if ($set_cookies) {
+			$expiration = $remember ? REMEMBER_LOGIN_LIFETIME : SESSION_LIFETIME;
+	
+			Cookie::setValue('id', $user->getId(), $expiration);
+			Cookie::setValue('token', $user->getTwistedToken(), $expiration);
+	
+			if($remember) {
+				Cookie::setValue('remember', 1, $expiration);
+			} else {
+				Cookie::unsetValue('remember');
+			} // if
+		}
 
 		$this->logged_user = $user;
 	} // setLoggedUser

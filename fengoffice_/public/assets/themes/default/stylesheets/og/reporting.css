@@ -26,3 +26,7 @@
 	border-bottom:1px solid #AAAAAA;
 	color: #666666;
 }
+
+.reportConditionDD {
+	min-width:120px;
+}

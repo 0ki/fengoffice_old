@@ -74,6 +74,7 @@ addLangs({
 	'company': 'société',
 	'companies': 'Sociétés',
 	'email': 'Courriel',
+	'email tab': 'Courriel (BETA)',
 	'checkin': 'vérifier',
 	'checkout': 'Enregistrer',
 	'checked out by': 'Enregistré par {0}',

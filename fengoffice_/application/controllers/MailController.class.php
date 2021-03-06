@@ -70,7 +70,6 @@ class MailController extends ApplicationController {
 				$re_body = $arr_body[0]."<body>".$re_body.$arr_body[1];
 				else
 				$re_body = $re_body.$arr_body[0];
-				Logger::log($re_body);
 			}
 			 
 			$mail_data = array(
@@ -366,17 +365,6 @@ class MailController extends ApplicationController {
 		return $html;
 	}
 	
-	function logarray($array, $pre="") {
-		foreach($array as $k=>$v) {
-			if (!is_array($v)) Logger::log("$pre$k => $v");
-			else {
-				Logger::log("$pre Array = $k");
-				self::logarray($v, "$pre    ");
-				Logger::log("$pre End Array $k");
-			}
-		}
-	}
-
 	/**
 	 * Delete specific email
 	 *
@@ -685,8 +673,9 @@ class MailController extends ApplicationController {
 		 
 		session_commit();
 		if (is_array($accounts) && count($accounts) > 0){
-			// check a maximum of 10 emails per account
-			MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived, 10);
+			// check a maximum of $max emails per account
+			$max = config_option("user_email_fetch_count", 10);
+			MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived, $max);
 
 			$errMessage = lang('success check mail', $mailsReceived);
 			if ($err > 0){

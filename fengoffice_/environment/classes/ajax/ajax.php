@@ -151,8 +151,6 @@ function ajx_replace($replace = true) {
 function require_javascript($url) {
 	if (is_ajax_request()) {
 		AjaxResponse::instance()->addScript($url);
-	} else {
-		add_javascript_to_page($url);
 	}
 }
 ?>

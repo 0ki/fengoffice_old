@@ -67,7 +67,20 @@ function GridModel(grid){
 		grid.focusActiveCell();
 	}
 
-
+	self.refreshValues = function(){
+		for(var i =0; i< (this.viewport.end.row - this.viewport.start.row +1);i++){
+			for(var j = 0; j< (this.viewport.end.col - this.viewport.start.col);j++){
+				var cell = this.model.getCell(this.viewport.start.row + i, this.viewport.start.col+ j);
+				
+				if(cell){
+					var value = cell.getValue();
+					if (value ==undefined) value = "";
+					grid.setValue(i,j,value);
+				}
+			}
+		}
+	}
+	
 	//Capture and Overwrite Grid Events
 	grid.onCellValueChange = function(i,j,value){
 		if( value != undefined ){
@@ -77,7 +90,7 @@ function GridModel(grid){
 			if(self.model.getCellFontStyleId(i,j)!=0)
 				self.model.deleteCell(i,j);
 		}
-			
+		self.refreshValues();
 	}
 	
 	//Capture and Overwrite Grid Events
@@ -97,6 +110,7 @@ function GridModel(grid){
 		WrapFontStyle(activeCell,self.model.getCellFontStyleId(row,col));
 		self.selection.setSelection(new Address(row, col));
 		document.getElementById("FormulaBar").value=activeCell.getValue(); //TODO:Desacoplar!!!!
+		//self.refresh();
 	}
 
 	grid.onMove = function(offsetX, offsetY){

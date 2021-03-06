@@ -75,6 +75,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('revisions', $revisions);
 		tpl_assign('order', null);
 		tpl_assign('page', null);
+		ajx_extra_data(array("title" => $file->getFilename(), 'icon'=>'ico-file'));
 		ajx_set_no_toolbar(true);
 
 	} // file_details
@@ -787,7 +788,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = '';
 
 				$file_dt['name'] = $file->getFilename();
-				$file_content = iconv(mb_detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
+				$file_content = iconv(detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = $file->getTypeString();
 				$file_dt['tmp_name'] = './tmp/' . rand () ;
@@ -1862,7 +1863,7 @@ class FilesController extends ApplicationController {
 		header("Content-Type: " . $file->getTypeString());
 		header("Content-Length: " . (string) $file->getFileSize());
 		$content = purify_html($file->getFileContent());
-		print iconv(mb_detect_encoding($content, array('UTF-8', 'ISO-8859-1')), 'UTF-8', $content);
+		print iconv(detect_encoding($content, array('UTF-8', 'ISO-8859-1')), 'UTF-8', $content);
 		die();
 	}
 

@@ -1269,10 +1269,10 @@ function render_add_custom_properties(ProjectDataObject $object) {
 			<th>' . lang('value') . '</th>
 			<th class="actions"></th>
 			</tr></tbody></table>
-			<a href="#" onclick="og.addCustomProperty(this.parentNode, \'\', \'\');return false;">' . lang("add custom property") . '</a>
+			<a href="#" onclick="og.addObjectCustomProperty(this.parentNode, \'\', \'\');return false;">' . lang("add custom property") . '</a>
 		</div>
 		<script>
-		og.addCustomProperty = function(parent, name, value) {
+		og.addObjectCustomProperty = function(parent, name, value) {
 			var count = parent.getElementsByTagName("tr").length - 1;
 			var tbody = parent.getElementsByTagName("tbody")[0];
 			var tr = document.createElement("tr");
@@ -1314,11 +1314,11 @@ function render_add_custom_properties(ProjectDataObject $object) {
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
 	if (is_array($properties)) {
 		foreach($properties as $property) {
-			$output .= 'og.addCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
+			$output .= 'og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
 		} // for
 	} // if
 	$output .= '
-		og.addCustomProperty(document.getElementById("'.$genid.'"), "", "");
+		og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");
 		</script>
 	';
 	return $output;
@@ -1424,4 +1424,31 @@ function filter_assigned_to_select_box($list_name, $project = null, $selected = 
 function render_initial_workspace_chooser($name, $value) {
 	return select_project2($name, "'$value'", gen_id(), true, array(array('id'=>'remember', 'name'=>lang('remember last'), 'color'=>'remember', 'parent'=>'root')));
 }
+
+/**
+ * Renders context help in a view, only if description_key is a valid lang.
+ * If helpTemplate is null, default template is used
+ *
+ * @param $view View where the context help will be placed
+ * @param string $description_key Key of the description to show, if not exists help will not be shown.
+ * @param string $option_name
+ * @param string $helpTemplate
+ */
+function render_context_help($view, $description_key, $option_name = null, $helpTemplate = null) {
+	if ($view != null && $description_key != null && Localization::instance()->lang_exists($description_key)) {
+		
+		if ($option_name != null) { 
+			tpl_assign('option_name' , $option_name);
+		}
+		
+		if ($helpTemplate == null) {
+			tpl_assign('helpDescription', lang($description_key));
+		} else {
+			tpl_assign('helpTemplate', $helpTemplate);
+		}
+		
+		$view->includeTemplate(get_template_path('context_help', 'help'));
+	}
+}
+
 ?>

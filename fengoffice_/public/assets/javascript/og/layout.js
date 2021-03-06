@@ -53,7 +53,7 @@ Ext.onReady(function(){
 			}
 		}),
 		og.panels.email = new og.ContentPanel({
-			title: lang('email') + ' (BETA)',
+			title: lang('email tab'),
 			id: 'mails-panel',
 			iconCls: 'ico-email',
 			refreshOnWorkspaceChange: true,
@@ -126,7 +126,7 @@ Ext.onReady(function(){
 			title: lang('reporting'),
 			id: 'reporting-panel',
 			iconCls: 'ico-reporting',
-			refreshOnWorkspaceChange: false,
+			refreshOnWorkspaceChange: true,
 			defaultContent: {
 				type: "url",
 				data: og.getUrl('reporting','index')

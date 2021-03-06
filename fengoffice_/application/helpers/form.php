@@ -409,14 +409,15 @@
   function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true) {
   	require_javascript('og/DateField.js');
   	
+  	$date_format = user_config_option('date_format', 'd/m/Y');
   	if ($genid == null) $genid = gen_id();
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){
-  		$dateValue = $value->format(user_config_option('date_format', 'd/m/Y'));
+  		$dateValue = $value->format($date_format);
   	}
   	$daterow = '';
   	if ($display_date_info)
-  		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>" . lang('date format description') . "</span></td>";
+  		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
   	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>";
 	$html .= "<script type='text/javascript'>
 	var dtp" . gen_id() . " = new og.DateField({

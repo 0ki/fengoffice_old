@@ -54,8 +54,11 @@
     <script type="text/javascript" src="./application/application_events.js"></script>
 
     <script type="text/javascript" src="./application/application_dialogs.js"></script>
-    <script type="text/javascript" src="./application/formulabar.js"></script>
 
+	
+	<!--
+    <script type="text/javascript" src="./application/formulabar.js"></script>
+    -->
     <script type="text/javascript" src="./grid/grid_navigation.js"></script>
     <script type="text/javascript" src="./grid/grid_operations.js"></script>
     <script type="text/javascript" src="./grid/grid.js"></script>
@@ -81,6 +84,8 @@
 	<script type="text/javascript" src="../logic/book.js"></script>
     <script type="text/javascript" src="../logic/sheet.js"></script>
     <script type="text/javascript" src="../logic/sheet_style_operations.js"></script>
+    <script type="text/javascript" src="../logic/calculator.js"></script>
+    <script type="text/javascript" src="../logic/references.js"></script>
     <script type="text/javascript" src="../logic/formula_parser.js"></script>
     <script type="text/javascript" src="../logic/cell.js"></script>
     <script type="text/javascript" src="../logic/row.js"></script>

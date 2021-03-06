@@ -66,8 +66,8 @@ CREATE TABLE `<?php echo $table_prefix ?>companies` (
   `state` varchar(50) <?php echo $default_collation ?> default NULL,
   `zipcode` varchar(30) <?php echo $default_collation ?> default NULL,
   `country` varchar(10) <?php echo $default_collation ?> default NULL,
-  `phone_number` varchar(30) <?php echo $default_collation ?> default NULL,
-  `fax_number` varchar(30) <?php echo $default_collation ?> default NULL,
+  `phone_number` varchar(50) <?php echo $default_collation ?> default NULL,
+  `fax_number` varchar(50) <?php echo $default_collation ?> default NULL,
   `logo_file` varchar(44) <?php echo $default_collation ?> default NULL,
   `timezone` float(3,1) NOT NULL default '0.0',
   `hide_welcome_info` tinyint(1) unsigned NOT NULL default '0',
@@ -995,6 +995,7 @@ CREATE TABLE `<?php echo $table_prefix ?>custom_properties` (
   `is_required` tinyint(1) NOT NULL,
   `is_multiple_values` tinyint(1) NOT NULL,
   `property_order` int(10) NOT NULL,
+  `visible_by_default` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

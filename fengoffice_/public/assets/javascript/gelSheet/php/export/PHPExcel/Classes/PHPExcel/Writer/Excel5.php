@@ -147,7 +147,7 @@ class PHPExcel_Writer_Excel5 implements PHPExcel_Writer_IWriter {
 
 						'Bold' => $style->getFont()->getBold(),
 						'FontFamily' => $style->getFont()->getName(),
-						//'Color' => $this->_addColor($workbook, $style->getFont()->getColor()->getRGB()),
+						'Color' => $this->_addColor($workbook, $style->getFont()->getColor()->getRGB()),
 						'Underline' => $this->_mapUnderline($style->getFont()->getUnderline()),
 						'Size' => $style->getFont()->getSize(),
 						//~ 'Script' => $style->getSuperscript(),

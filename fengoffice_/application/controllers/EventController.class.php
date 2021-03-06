@@ -490,22 +490,22 @@ class EventController extends ApplicationController {
 		if (is_null($view_type) || $view_type == '') {
 			$view_type = user_config_option('calendar view type', 'viewweek');
 		}
-		if (user_config_option('calendar view type') != $view_type)
+		if (user_config_option('calendar view type', '') != $view_type)
 			set_user_config_option('calendar view type', $view_type, logged_user()->getId());
-
+		
 		$user_filter = array_var($_GET,'user_filter');
 		if (is_null($user_filter) || $user_filter == '') {
 			$user_filter = user_config_option('calendar user filter', 0);
 		}
 		if ($user_filter == 0) $user_filter = logged_user()->getId(); 	
-		if (user_config_option('calendar user filter') != $user_filter)
+		if (user_config_option('calendar user filter', '') != $user_filter)
 			set_user_config_option('calendar user filter', $user_filter, logged_user()->getId());
 			
 		$status_filter = array_var($_GET,'status_filter');
 		if (is_null($status_filter)) {
 			$status_filter = user_config_option('calendar status filter', ' 0 1 3');
-		} 
-		if (user_config_option('calendar status filter') != $status_filter)
+		}
+		if (user_config_option('calendar status filter', '') != $status_filter)
 			set_user_config_option('calendar status filter', $status_filter, logged_user()->getId());
 	}
 	
@@ -897,7 +897,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.84 2009/04/21 22:18:50 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.85 2009/04/28 17:38:30 alvarotm01 Exp $
  *
  ***************************************************************************/
 

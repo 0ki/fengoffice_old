@@ -141,5 +141,6 @@
 	'import events from third party software' => 'Importe eventos desde otras aplicaciones',
 	'subws' => 'Sub Esp.',
 	'check to include sub ws' => 'Active esta casilla para incluír los sub espacios de trabajo en el link',
-	
+	'week short' => 'Sem.',
+	'week number x' => 'Semana {0}',	
 ); ?>

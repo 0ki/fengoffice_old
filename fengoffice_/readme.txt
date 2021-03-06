@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.4 beta
-    ======================
+    About OpenGoo 1.4 beta 2
+    ========================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4 beta - http://www.opengoo.org/
+    2. Download OpenGoo 1.4 beta 2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4 beta
+    	from your current version to 1.4 beta 2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,46 @@
 
 	Changelog
 	=========
+
+	Since 1.4 beta
+	--------------
+
+	- feature: Several improvements to custom reports and custom properties, like pagination, memo field type
+	- feature: Config option to show week number in calendar
+	
+	- usability: Added word OpenGoo to new account email subject; ie: 'Your new OpenGoo account has been created'	
+	- usability: Amount of tasks shown on the tasks panel can be configured	
+	- usability: Custom properties for workspaces displays nothing when none defined	
+	- usability: Don't show the help if the lang is not there	
+	- usability: Make date widget help string dependant on the date format (now it is a static lang)	
+	- usability: There should be contextual help explaining about File links (files with URL) when uploading
+	- usability: Change the updated_on field when a comment is added
+	- usability: Include Note's text on modification notification
+	- usability: Complete workspace path on email notifications
+	- usability: Increase size of textareas when editing notes, comments and descriptions
+	- usability: Limit Contact field sizes on GUI to match the size in the database
+	- usability: Open objects in new tab in reports
+	- usability: When editing comments the submit button should read Save Changes instead of Edit Comment
+		
+	- bugfix: Avoid using mb_detect_encoding if not available (mbstring extension not installed)	
+	- bugfix: Calendar view sometimes was not being remembered on calendar	
+	- bugfix: Companies with no workspaces were not listed	
+	- bugfix: Error adding custom report	
+	- bugfix: Error importing contacts (country)	
+	- bugfix: Error when creating a task from quick add	
+	- bugfix: Error when listing contacts	
+	- bugfix: Minor problem(s) with workspace selection control when editing a workspace on IE7	
+	- bugfix: When adding a new user, opengoo refreshes and the user is not added	
+	- bugfix: Sometimes when changing localization nothing happens.	
+	- bugfix: When deleting a tag it is still filtering by that tag	
+	- bugfix: When filtering for workspaces on a workspace chooser, the workspaces aren't expanded
+	- bugfix: Load custom css even when using minified CSS that doesn't include it
+	- bugfix: Avoid popup blocking when downloading
+	- bugfix: Error when deleting workspace with assigned emails
+	- bugfix: Error 500 on Overview only when not in debug mode
+	- bugfix: Comment notifications were not being sent
+
+	- security: Config option to enable/disable feeds with warning about security issues
 
 	Since 1.3.1
 	-----------

@@ -19,7 +19,6 @@ return array(
 		'og/TrashCan.js',
 		'og/FileManager.js',
 		'og/ReportingManager.js',
-		'og/ReportingFunctions.js',
 		'og/CalendarManager.js',
 		'og/Sound.js',
 		'og/LoginDialog.js',

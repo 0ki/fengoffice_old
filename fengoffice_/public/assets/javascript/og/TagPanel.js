@@ -253,7 +253,8 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		return this.getNodeById(this.nameToId(tagname));
 	},
 	
-	loadTags: function(url) {
+	loadTags: function(url, config) {
+		if (!config) config = {};
 		if (this.loadTagsFrom) {
 			this.removeAll();
 			var tags = Ext.getCmp(this.loadTagsFrom).getTags();
@@ -280,6 +281,9 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 							this.pauseEvents = true;
 							this.tags.select();
 							this.pauseEvents = false;
+						}
+						if (config.callback) {
+							config.callback.call(config.scope);
 						}
 					}
 				},
@@ -341,7 +345,12 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	deleteTag: function(name) {
-		this.loadTags(og.getUrl('tag', 'delete_tag_by_name', {tag: name}));
+		this.loadTags(og.getUrl('tag', 'delete_tag_by_name', {tag: name}), {
+			callback: function() {
+				this.fireEvent('tagselect', this.tags.tag);
+			},
+			scope: this
+		});
 	}
 });
 

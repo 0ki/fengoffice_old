@@ -28,14 +28,14 @@
 
   <div class="formAddCommentText">
     <?php echo label_tag(lang('text'), 'addCommentText', true) ?>
-    <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'comment', 'id' => 'addCommentText')) ?>
+    <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'long', 'id' => 'addCommentText')) ?>
   </div>
 
 <?php if($comment->columnExists('comments_enabled') && !$comment->getCommentsEnabled() && logged_user()->isAdministrator()) { ?>
 <p class="error"><?php echo lang('admins can post comments on locked objects desc') ?></p>
 <?php } // if ?>
     
-    <?php echo submit_button($comment->isNew() ? lang('add comment') : lang('edit comment')) ?>
+    <?php echo submit_button($comment->isNew() ? lang('add comment') : lang('save changes')) ?>
 </form>
 
 	</div>

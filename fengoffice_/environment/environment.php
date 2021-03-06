@@ -66,6 +66,7 @@
   include ENVIRONMENT_PATH . '/classes/logger/Logger_Backend.class.php';
   include ENVIRONMENT_PATH . '/classes/logger/Logger.class.php';
   include ENVIRONMENT_PATH . '/classes/logger/backend/Logger_Backend_File.class.php';
+  include ENVIRONMENT_PATH . '/classes/logger/backend/Logger_Backend_Null.class.php';
   
   include ENVIRONMENT_PATH . '/classes/timeit/TimeIt.class.php';
   

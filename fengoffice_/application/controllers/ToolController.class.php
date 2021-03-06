@@ -165,6 +165,7 @@ class ToolController extends ApplicationController {
 			fclose($f);
 		}
 		
+		tpl_assign('added', $added);
 		tpl_assign('from', array_var($_GET, 'from'));
 		tpl_assign('to', array_var($_GET, 'to'));
 	}

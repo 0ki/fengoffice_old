@@ -1,4 +1,4 @@
-<h2>Upgrade process log</h2>
+<h2><?php echo lang('upgrade process log')?></h2>
 <ul>
 <?php foreach($upgrader->getChecklistItems() as $group_name => $checklist_items) { ?>
 <?php if(is_array($checklist_items)) { ?>

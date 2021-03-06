@@ -41,7 +41,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.3.1');
-		$this->setVersionTo('1.4-beta');
+		$this->setVersionTo('1.4-beta2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -129,7 +129,58 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 			$upgrade_script = tpl_fetch(get_template_path('db_migration/1_4_nutria'));
 		} else {
 			// upgrading from a pre-release of this version (beta, rc, etc)
-			$upgrade_script = "";
+			$upgrade_script = "
+			INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL),
+				('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
+				('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
+				('context help', 'show_reporting_panel_context_help', '1', 'BoolConfigHandler', '1', '0', NULL)
+			ON DUPLICATE KEY UPDATE id=id;
+			UPDATE `".TABLE_PREFIX."user_ws_config_options`
+				SET `is_system` = 0 WHERE `name` IN ('start_monday', 'show_week_numbers');
+			UPDATE `".TABLE_PREFIX."user_ws_config_categories`
+				SET `is_system` = 0 WHERE `name` = 'calendar panel';
+			INSERT INTO `".TABLE_PREFIX."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
+				('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email')
+			ON DUPLICATE KEY UPDATE id=id;
+			ALTER TABLE `".TABLE_PREFIX."custom_properties` ADD COLUMN `visible_by_default` TINYINT(1) NOT NULL DEFAULT 0 AFTER `property_order`;
+			ALTER TABLE `".TABLE_PREFIX."custom_property_values` MODIFY COLUMN `value` text $default_collation NOT NULL;
+			-- larger contact fields
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `firstname` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `lastname` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `middlename` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `department` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `job_title` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_city` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_state` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_zipcode` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_country` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_phone_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_phone_number2` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_fax_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_assistant_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `w_callback_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_city` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_state` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_zipcode` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_country` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_phone_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_phone_number2` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_fax_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_mobile_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `h_pager_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_city` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_state` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_zipcode` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_country` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_phone_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_phone_number2` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."contacts` MODIFY COLUMN `o_fax_number` varchar(50) $default_collation default NULL;
+			
+			ALTER TABLE `".TABLE_PREFIX."companies` MODIFY COLUMN `phone_number` varchar(50) $default_collation default NULL;
+			ALTER TABLE `".TABLE_PREFIX."companies` MODIFY COLUMN `fax_number` varchar(50) $default_collation default NULL;
+			";
 		}
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

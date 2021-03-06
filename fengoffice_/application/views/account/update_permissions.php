@@ -9,7 +9,7 @@
 	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password');
   } // if
 ?>
-<form style="height:100%;background-color:white" action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" onsubmit="javascript:ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="POST">
+<form style="height:100%;background-color:white" action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="POST">
 <div class="adminClients">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang("permissions for user", clean($user->getUsername())) ?></div>

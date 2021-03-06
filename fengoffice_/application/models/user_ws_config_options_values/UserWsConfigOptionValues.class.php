@@ -24,7 +24,6 @@
     	$ret = 0;
 		$res = DB::execute($sql);
     	$rows=$res->fetchAll();
-		Logger::log($rows[0]["c"]);
 		return $rows[0]["c"] > 0;
     } // getOptionsByCategory
     

@@ -6,14 +6,11 @@
  *
  * @author Carlos Palma <chonwil@gmail.com>
  */
- 
-var ogTasks = {};
 
 ogTasks.Tasks = [];
 ogTasks.Users = [];
 ogTasks.Companies = [];
 ogTasks.Milestones = [];
-ogTaskEvents = {};
 
 ogTasks.Groups = [];
 

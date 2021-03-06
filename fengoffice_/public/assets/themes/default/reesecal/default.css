@@ -485,3 +485,10 @@ input.cal_admin_edituser_button{
 	font-family: Geneva, Arial, Helvetica, sans-serif;
 	text-align: center;
 }
+
+.weeknumber {
+	background-color: #455678;
+	color: white;
+	vertical-align: middle;
+	font-weight: bold;
+}

@@ -149,6 +149,7 @@ function product_name() {
  * @return string
  */
 function product_version() {
+	if (defined('DISPLAY_VERSION')) return DISPLAY_VERSION;
 	return include ROOT . '/version.php';
 } // product_version
 

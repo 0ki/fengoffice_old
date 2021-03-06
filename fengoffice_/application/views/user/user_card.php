@@ -3,19 +3,20 @@
 	if(isset($user) && ($user instanceof User)) { 
 ?>
 <div class="card" style="padding:0px;">
-	<?php if ($isUserAccount && user_config_option('show_account_context_help', true, logged_user()->getId())) {?>
+	<?php
+	$show_help_option = user_config_option('show_context_help', 'until_close'); 
+	if ($isUserAccount && ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_account_context_help', true, logged_user()->getId())))) {?>
 		<div style="padding-bottom:10px;">
 		<?php 
 			if($user->getId() == logged_user()->getId()){
-				tpl_assign('helpDescription', lang('chelp personal account'));
+				$hd_key = 'chelp personal account';
 			}else{
-				$hdesc = lang('chelp user account');
+				$hd_key = 'chelp user account';
 				if (logged_user()->isAdministrator())
-					$hdesc .= '<br/>' . lang('chelp user account admin');
-				tpl_assign('helpDescription', $hdesc);
+					$hd_key .= ' admin';
 			}
-			tpl_assign('option_name', 'account');
-			$this->includeTemplate(get_template_path('context_help', 'help'));?>
+			render_context_help($this, $hd_key, 'account');
+		?>
 		</div>
 	<?php } ?>
 		

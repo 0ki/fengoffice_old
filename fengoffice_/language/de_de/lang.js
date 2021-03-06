@@ -76,6 +76,7 @@ addLangs({
 	'company': 'Firma',
 	'companies': 'Firmen',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'checkin': 'Check in',
 	'checkout': 'Check out',
 	'checked out by': 'Ausgecheckt von {0}',

@@ -37,14 +37,15 @@
     </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+  	<?php $cps = CustomProperties::getAllCustomPropertiesByObjectType('Projects'); ?>
   
   	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>
+		<a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>
 		<?php if ($project->canChangePermissions(logged_user())) { ?>
-			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+			 - <a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
 		<?php } ?>
 		<?php  if ($billing_amounts && count($billing_amounts) > 0) {  ?>
-			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_billing',this)"><?php echo lang('billing') ?></a>
+			 - <a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_billing',this)"><?php echo lang('billing') ?></a>
 		<?php } ?>
 		<?php  if (can_manage_contacts(logged_user())) {  ?>
 			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>project_contacts',this)"><?php echo lang('workspace contacts') ?></a>
@@ -52,7 +53,9 @@
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
-		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> 
+		<?php if (count($cps) > 0) { ?>
+			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+		<?php } ?> 
 	</div>
   
   </div>
@@ -208,6 +211,7 @@
 		</div>
 			<?php } else echo select_project2('project[parent_id]', ($project->isNew())? (active_project()?active_project()->getId():0):$project->getParentId(), $genid, true) ?>
 	</fieldset>
+	<div id="trap1"><fieldset id="fs1" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 	<?php } ?>
 	
 	
@@ -299,12 +303,14 @@
 	</div>
 	<?php } ?>
 	
+	<?php if (count($cps) > 0) { ?>
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, 'Projects', false) ?>
 		</fieldset>
 	</div>
+	<?php } ?>
 	
 	<div>
 		<?php echo render_object_custom_properties($object, 'Projects', true) ?>

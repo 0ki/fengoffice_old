@@ -77,7 +77,6 @@ addLangs({
 	'edit workspace': 'Edytuj wybrany projekt',
 	'company': 'Firma',
 	'companies': 'Firmy',
-	'email': 'Adres e-mail',
 	'checkin': 'Wgraj zmiany',
 	'checkout': 'Pobierz do edycji',
 	'checked out by': 'Pobrane do edycji przez {0}',
@@ -167,6 +166,7 @@ addLangs({
 	/* contact manager*/
 	'company': 'Firma',
 	'email': 'E-mail',
+	'email tab': 'Email (BETA)',
 	'add new contact': 'Dodaj nowy kontakt',
 	'displaying contacts of': 'Wyświetlane kontakty {0} do {1} z {2}',
 	'no contacts to display': 'Brak kontaktów do wyświetlenia',

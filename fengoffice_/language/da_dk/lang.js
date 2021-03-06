@@ -75,6 +75,7 @@ addLangs({
 	'company': 'Klub',
 	'companies': 'Klubber',
 	'email': 'Email',
+	'email tab': 'Email (BETA)',
 	'checkin': 'Log in',
 	'checkout': 'Log ud',
 	'checked out by': 'Tjekket af {0}',

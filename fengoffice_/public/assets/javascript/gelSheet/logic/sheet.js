@@ -174,83 +174,52 @@ function Sheet(nRows, nColumns){
 		this.cells[row][column].setValue(value);
 	}
 
-	self.calculate = function (formula) {
+	self.calculate = function (formula,row,col) {
 
 		var tokens = parseFormula(formula) ;//
 		var result = null ;
 		var strtoeval = '' ;
 
 		var current_func = null ;
-		
 		while (tokens.moveNext()) {
- 
     		var token = tokens.current();
- 
     		switch (token.type) {
-				
 				case 'operator-infix' :
 					strtoeval += token.value ;
-				    		
 				case 'operand' :
 					switch (token.subtype) {
 						case 'number' :
+							if (current_func != undefined) {
+								strtoeval += calculator.calc(current_func,token.value) ;
+							}
 							strtoeval += token.value ;
 						break ;
 						case 'range' :
 		    				address = this.namespace.getRangeAddress(token.value) ;
-		    				// address = { start:{row:0, col:0}  } ;
-		    				// address = { start:{row:0, col:0} , end:{row:0, col:3} } ;
+		    				References.addReference(address,{row:row,col:col});
 		    				if (address.end == undefined ) {
 		    					// single value ! 
 			    				var value = this.getValue(address.start.row, address.start.col) ;
-			    				if ( value == undefined ) value = 0 ; 
+			    				if (current_func != undefined) {
+			    					
+									strtoeval += calculator.calc(current_func,new Array(value) ) ;
+									
+								}else {
+									strtoeval += value ;
+								}
 		    				}else {
 		    					//range ! 
 								var values = new Array() ;
 								values.pop();
 	    						for ( var i = address.start.row ; i <= address.end.row; i++ ) {
-	 
 	    							for ( var j = address.start.col ; j <= address.end.col; j++ ) {
 	    							    var value = this.getValue(i,j) ;
-	    								values.push( value ) ;
+	    								if ( value != undefined ) values.push( value ) ;
 	    							}
-	    						}		    	
-		    					//sacar esto pa afuera ..
-		    					
-		    					if (current_func == 'SUM') {
-		    						var value = 0 ;
-		    						for (var item in values) {
-		    							if ( ( item != 'remove' ) &&  ( item != undefined ) ) 
-		    								value += parseFloat(values[item]) ; 
-		    						}
-		    					}
-
-		    					if (current_func == 'AVG') {
-		    						var value = 0 ;
-		    						var total = 0 ;
-		    						for (var item in values) {
-		    							
-		    							if ( ( item != 'remove' ) &&  ( item != undefined ) ) {
-		    								total++ ;
-		    								value += parseFloat(values[item])   ; 
-		    							}
-		    						}
-		    						value = value / total ;
-		    					} 
-
-		    					if (current_func == 'MULT') {
-		    						var value = 1 ;
-		    						for (var item in values) {
-		    							if ( ( item != 'remove' ) &&  ( item != undefined ) ) 
-		    								value *= parseFloat(values[item]) ; 
-		    						}
-		    					} 
-
-		    					 
-		    				}
-		    				strtoeval += value ;
-
-						break ;
+	    						}
+	    						strtoeval += calculator.calc(current_func,values) ;
+			    			}
+						break ;						
 					}				
 				break;    		
     		
@@ -260,17 +229,25 @@ function Sheet(nRows, nColumns){
     				}else {
     					current_func = '' ;
     				}
-    			break ; 
-    			
+    			break ;
+    			case 'subexpression' :
+    			alert('parettesis');
+					if (token.subtype == 'start') {
+						strtoeval += "(" ;
+					}else {
+						strtoeval += ")" ;
+					}
+				break; 
     		}
 		}
 		
-		//alert(strtoeval) ;
+		
 		try {
 		 	result = eval(strtoeval);
 		}catch ( e) {
 			result =  "INVALID";
 		}
+		
 		return result ;
 	}
 
@@ -281,12 +258,13 @@ function Sheet(nRows, nColumns){
 			if(this.cells[row][column] == undefined){
 				this.addCell(row,column);
 			}
+				
 		this.cells[row][column].setFormula(value);
 		
-		if (value != undefined  ) {
-		
+		if (value != undefined  ) {		
 			if (value.length) {
 				if  ( (value[0] == '=') || (value[0] == '+') )  {
+					this.cells[row][column].setValue(this.calculate(value,row,column));
 					this.cells[row][column].setValue(this.calculate(value));
 				}
 				else {
@@ -294,8 +272,21 @@ function Sheet(nRows, nColumns){
 				}
 			}
 		}
+		self.updateReferences({row:row,col:column});
 	}
 
+	self.updateReferences = function(address){
+		var references = References.getReferenced(address);
+		//alert(references.toSource());
+		for(var ref in references){
+			//alert(ref.toSource());
+			if(ref!='remove'){
+				var c = references[ref];
+				//alert(c.toSource()+ " " +c.row + " " + c.col + " " + this.getFormula(c.row,c.col));
+				this.setFormula(c.row,c.col,this.getFormula(c.row,c.col));
+			}
+		}
+	}
 	
 
 	self.getFormula = function(row,column){

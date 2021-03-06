@@ -364,17 +364,21 @@ class MailUtilities {
 						for ($i = $lastReceived; $i < $toGet; $i++) {
 							$index = $i+1;
 							$summary = array_var($mails_info, $index, $imap->getSummary($index));
-							if ($imap->isDraft($index)) $state = '2';
-							else if ($summary[0]['FROM'][0]['EMAIL'] == $account->getEmail()) $state = '1';
-							else $state = '0';
-							
-							$messages = $imap->getMessages($index);
-							if (PEAR::isError($messages)) {
-								alert($messages->getMessage());
-								return $received;
+							if (PEAR::isError($summary)) {
+								Logger::log($summary->getMessage());
+							} else {
+								if ($imap->isDraft($index)) $state = '2';
+								else if ($summary[0]['FROM'][0]['EMAIL'] == $account->getEmail()) $state = '1';
+								else $state = '0';
+								
+								$messages = $imap->getMessages($index);
+								if (PEAR::isError($messages)) {
+									Logger::log($messages->getMessage());
+									return $received;
+								}
+								self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
+								$received++;
 							}
-							self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
-							$received++;
 						}
 
 					}
@@ -392,7 +396,10 @@ class MailUtilities {
 			$imap = new Net_IMAP("tcp://" . $account->getServer());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-		
+		if (PEAR::isError($ret)) {
+			Logger::log($ret->getMessage());
+			throw new Exception($ret->getMessage());
+		}
 		$result = array();
 		if ($ret === true) {
 			$mailboxes = $imap->getMailboxes('',0,true);

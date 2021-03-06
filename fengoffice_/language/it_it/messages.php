@@ -515,4 +515,8 @@
 	'success assign user billing categories' => 'Categorie di fatturazione aggiunte all\'utente con successo',
 	'confirm delete billing category' => 'Confermi la cancellazione della categoria di fatturazione selezionata?',
 	'weblink dnx' => 'Il collegamento web richiesto non esiste.',
+	'document checked out' => 'Il documento è già stato salvato da un altro utente',
+	'success trash file revision' => 'La revisione del file è stata cestinata',
+	'success unclassify email' => 'Email declassificata con successo',
+	'error unclassify email' => 'Declassificazione email fallita',
 ); ?>

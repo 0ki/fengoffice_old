@@ -43,6 +43,7 @@ $today->add('h', logged_user()->getTimezone());
 $currentday = $today->format("j");
 $currentmonth = $today->format("n");
 $currentyear = $today->format("Y");
+$firstweek = date("W", mktime(0, 0, 0, $month, 1, $year));
 
 if(user_config_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
@@ -86,40 +87,39 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					<table style="width:100%"><tr><td>				
 						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?>
 					</td><td style="width:100px;padding:0 24px 0 0;">
-					<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
-				 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
-				 	<?php 
-				 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
-				 		$export_ws = active_project() != null ? active_project()->getId() : 0;
-				 	 ?>
-				 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
-				 		title="<?php echo lang('copy this url in your calendar client software')?>"
-				 		onclick="javascript:Ext.Msg.show({
-											   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-											   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-									   			icon: Ext.MessageBox.INFO });"></a>
+					<?php if (config_option("show_feed_links")) { ?>
+						<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
+					 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
+					 	<?php 
+					 		$export_name = active_project() != null ? clean(active_project()->getName()) : clean($user->getDisplayName());
+					 		$export_ws = active_project() != null ? active_project()->getId() : 0;
+					 	 ?>
+					 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
+					 		title="<?php echo lang('copy this url in your calendar client software')?>"
+					 		onclick="javascript:Ext.Msg.show({
+												   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+												   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+										   			icon: Ext.MessageBox.INFO });"></a>
+					<?php } ?>
 					 </td></tr></table>
 				</div>
 				<div>
 					<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="20px">
 						<tr>
-						<?php 
-						if(!user_config_option("start_monday")) {
-							echo "    <th width='15%'>" .  lang('sunday short') . '</th>' . "\n";
-						}
-						?>
+						<?php if(user_config_option("show_week_numbers")) { ?>
+							<th width="20"><?php echo lang('week short') ?></th>
+						<?php } ?>
+						<?php  if(!user_config_option("start_monday")) { ?>
+							<th width='15%'><?php echo lang('sunday short') ?></th>
+						<?php } ?>
 						<th width="14%"><?php echo  lang('monday short') ?></th>
 						<th width="14%"><?php echo  lang('tuesday short') ?></th>
 						<th width="14%"><?php echo  lang('wednesday short') ?></th>
 						<th width="14%"><?php echo  lang('thursday short') ?></th>
 						<th width="14%"><?php echo  lang('friday short') ?></th>
 						<th width="15%"><?php echo  lang('saturday short') ?></th>
-						
-						<?php 
-						$output = '';
-						if(user_config_option("start_monday")) {
-						?>
-							<th width="15%"> <?php echo lang('sunday short') ?> </th>
+						<?php if(user_config_option("start_monday")) { ?>
+							<th width="15%"><?php echo lang('sunday short') ?></th>
 						<?php } ?>
 						<th id="ie_scrollbar_adjust_th" style="display:none;width:15px;padding:0px;margin:0px"></th>
 						</tr>
@@ -134,13 +134,21 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 				<table id="calendar" border='0' cellspacing='0' cellpadding='0' width="100%" height="100%">
 				
 				<tr id="guide_row" style="display:none">
-					<th width="15%"></th>
+					<?php if(user_config_option("show_week_numbers")) { ?>
+						<th width="20"></th>
+					<?php } ?>
+					<?php if(!user_config_option("start_monday")) { ?>
+						<th width='15%'></th>
+					<?php } ?>
 					<th width="14%"></th>
 					<th width="14%"></th>
 					<th width="14%"></th>
 					<th width="14%"></th>
 					<th width="14%"></th>
 					<th width="15%"></th>
+					<?php if(user_config_option("start_monday")) { ?>
+						<th width='15%'></th>
+					<?php } ?>
 					<th id="ie_scrollbar_adjust" style="display:none;width:15px;padding:0px;margin:0px;"></th>
 				</tr>
 					<?php
@@ -153,6 +161,9 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					for ($week_index = 0;; $week_index++) {
 					?>
 						<tr>
+						<?php if(user_config_option("show_week_numbers")) { ?>
+							<td style="width:20px" class="weeknumber" valign="top"><?php echo $week_index + $firstweek?></td>
+						<?php } ?>
 					<?php
 						$month_aux = $month;
 						$year_aux = $year;
@@ -297,7 +308,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 														<?php
 														if ($user_filter != -1) { 
 															$invitations = $event->getInvitations();
-															if ($invitations != null && is_array($invitations) && $invitations[$user_filter] != null) {
+															if ($invitations != null && is_array($invitations) && isset($invitations[$user_filter])) {
 																$inv = $invitations[$user_filter];
 																
 																if ($inv->getInvitationState() == 0) { // Not answered
@@ -438,7 +449,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 	
 	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
-	calToolbarDateMenu.picker.setValue(dtv);
+	og.calToolbarDateMenu.picker.setValue(dtv);
 
 	Ext.QuickTips.init();
 

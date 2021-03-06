@@ -160,7 +160,7 @@ class UserController extends ApplicationController {
 		$user_password = new UserPassword();
 		$user_password->setUserId($user->getId());
 		$user_password->setPasswordDate(DateTimeValueLib::now());
-		$user_password->setPassword(cp_encrypt($password), $user_password->getPasswordDate()->getTimestamp());
+		$user_password->setPassword(cp_encrypt($password, $user_password->getPasswordDate()->getTimestamp()));
 		$user_password->password_temp = $password;
 		$user_password->save();
 		
@@ -384,6 +384,7 @@ class UserController extends ApplicationController {
 		tpl_assign('logs', $logs);
 		tpl_assign('user', $user);
 		ajx_set_no_toolbar(true);
+		ajx_extra_data(array("title" => $user->getDisplayName(), 'icon'=>'ico-user'));
 	} // card
 
 	

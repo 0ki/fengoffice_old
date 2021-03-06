@@ -164,6 +164,7 @@
   	//Custom properties
   	'custom property value required' => '{0} is required',
   	'value must be numeric' => 'Value(s) must be numeric for {0}',
+  	'values cannot be empty' => 'Value(s) cannot be empty for {0}',
   
   	//Reports
   	'report name required' => 'Report name is required',

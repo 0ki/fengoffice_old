@@ -563,10 +563,19 @@
 }
 
 /** custom properties **/
+.og-custom-properties {
+	width:100%;
+}
+
+.og-custom-properties td.value {
+	padding: 1px 5px;
+}
+
 .og-custom-properties td.name {
 	font-weight: bold;
-	padding-left: 15px;
-	padding-right: 5px;
+	padding: 1px 5px;
+	white-space:nowrap;
+	width:1%;
 }
 .og-add-custom-properties th {
 	width: 200px;
@@ -579,4 +588,16 @@
 }
 .og-add-custom-properties input {
 	width: 200px;
+}
+
+.og-custom-properties .row {
+	background-color:white;	
+}
+
+.og-custom-properties .altRow {
+	background-color:#ECEFF7;	
+}
+
+.og-custom-properties .subAltRow {
+	background-color:#F4F5F7;	
 }

@@ -231,6 +231,28 @@
     function setOrder($value) {
       return $this->setColumnValue('property_order', $value);
     } // setOrder() 
+    
+    /**
+    * Return value of 'visible_by_default' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getVisibleByDefault() {
+      return $this->getColumnValue('visible_by_default');
+    } // getVisibleByDefault()
+    
+    /**
+    * Set value of 'visible_by_default' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setVisibleByDefault($value) {
+      return $this->setColumnValue('visible_by_default', $value);
+    } // getVisibleByDefault() 
       
     /**
     * Return manager instance

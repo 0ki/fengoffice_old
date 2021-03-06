@@ -274,6 +274,8 @@ class User extends BaseUser {
 	 */
 	function isAdministrator() {
 		if(is_null($this->is_administrator)) {
+			if (!$this->getId())
+				return false;
 			$this->is_administrator = GroupUsers::isUserInGroup($this->getId(),Group::CONST_ADMIN_GROUP_ID );
 		} // if
 		return $this->is_administrator;

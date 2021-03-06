@@ -57,14 +57,15 @@ og.WorkspaceTree = function(config) {
 	if (!config) config = {};
 	var workspaces = config.workspaces;
 	delete config.workspaces;
+	var id = config.id || 'workspace-panel';
 	Ext.applyIf(config, {
-		ddGroup: 'WorkspaceDD',
-		enableDD: false,
+		/*ddGroup: 'WorkspaceDD',
+		enableDrop: true,*/
 		autoScroll: true,
 		autoLoadWorkspaces: false,
 		border: false,
 		bodyBorder: false,
-		id: 'workspace-panel',
+		id: id,
 		rootVisible: false,
 		lines: false,
 		root: new Ext.tree.TreeNode(lang('workspaces')),
@@ -72,7 +73,7 @@ og.WorkspaceTree = function(config) {
 		selectedWorkspaceId: og.initialWorkspace,
 		tbar: [{
 			xtype: 'textfield',
-			id: 'workspace-filter',
+			id: id + 'filter',
 			width: 200,
 			emptyText:lang('filter workspaces'),
 			listeners:{
@@ -91,10 +92,10 @@ og.WorkspaceTree = function(config) {
 	if (!config.listeners) config.listeners = {};
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
-			var dest = e.target.ws.id;
-			var orig = e.data.node.ws.id;
-			var url = og.getUrl('project', 'move', {id: orig, to: dest});
-			og.openLink(url);
+			if (e.data.grid) {
+				e.data.grid.moveObjects(e.target.ws.id);
+			}
+			return false;
 		}
     });
 	og.WorkspaceTree.superclass.constructor.call(this, config);
@@ -123,7 +124,7 @@ og.WorkspaceTree = function(config) {
 				if (node && !this.pauseEvents) {
 					if (node.id != 'trash'){
 						this.fireEvent("workspaceselect", node.ws);
-						var tf = this.getTopToolbar().items.get('workspace-filter');
+						var tf = this.getTopToolbar().items.get(this.id + 'filter');
 						tf.setValue("");
 						this.clearFilter();
 						node.expand();
@@ -467,7 +468,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	},
 	
 	filterTree: function(text) {
-		if (text == this.getTopToolbar().items.get('workspace-filter').emptyText) {
+		if (text == this.getTopToolbar().items.get(this.id + 'filter').emptyText) {
 			text = "";
 		}
 		if (text.trim() == '') {
@@ -476,7 +477,16 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
 			this.filterNode(this.workspaces, re);
 			this.workspaces.getUI().show();
-			this.expandAll();
+			function expandAll(node) {
+				node.expand();
+				var c = node.firstChild;
+				while (c) {
+					c.expand();
+					c = c.nextSibling;
+				}
+			}
+			expandAll(this.workspaces);
+			//this.expandAll();
 		}
 	},
 	

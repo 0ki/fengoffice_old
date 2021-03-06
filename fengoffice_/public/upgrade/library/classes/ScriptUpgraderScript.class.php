@@ -238,7 +238,7 @@ abstract class ScriptUpgraderScript {
 	 * @param string $version
 	 */
 	function worksFor($version) {
-		return version_compare($this->getVersionFrom(), $version) == 0;
+		return version_compare($version, $this->getVersionFrom()) >= 0 && version_compare($version, $this->getVersionTo()) < 0;
 	}
 	/**
 	 * Print message to the output
