@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2-rc
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.2-rc');
+		$this->setVersionTo('3.4.2-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {

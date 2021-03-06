@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.2-rc
+	About Feng Office 3.4.2-rc2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,10 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.2-rc
+	----------------
+	bugfix: member cache construction function fixed.
 	
 	Since 3.4.2-beta2
 	----------------
