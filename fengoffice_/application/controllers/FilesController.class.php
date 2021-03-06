@@ -522,6 +522,7 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				
 				if (array_var($file_data, 'notify_myself_too')) {
+					set_user_config_option('notify_myself_too', 1);
 					logged_user()->notify_myself = true;
 				}
 				
@@ -630,6 +631,7 @@ class FilesController extends ApplicationController {
 			DB::commit();
 			
 			if (array_var($file_data, 'notify_myself_too')) {
+				set_user_config_option('notify_myself_too', 1);
 				logged_user()->notify_myself = true;
 			}
 			
@@ -2122,6 +2124,7 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				
 				if (array_var($file_data, 'notify_myself_too')) {
+					set_user_config_option('notify_myself_too', 1);
 					logged_user()->notify_myself = true;
 				}
 				

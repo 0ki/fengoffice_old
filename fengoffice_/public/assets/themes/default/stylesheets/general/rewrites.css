@@ -363,6 +363,16 @@ a.iCalSubscribe {
 .dimension-selector-container .dimension-panel-textfilter.ico-search-m.search-filter {
 	height: 20px!important;
 }
+#object-picker .dimension-selector-container .dimension-panel-textfilter.ico-search-m.search-filter {
+	text-overflow: ellipsis;
+}
+#object-picker .dimension-selector-container {
+	margin: 10px 0;
+}
+#object-picker .dimension-selector-container label {
+	font-weight: bold;
+	margin-bottom: 3px;
+}
 
 .dimension-selector-container .x-panel-header.x-unselectable {
 	border-width: 0;	

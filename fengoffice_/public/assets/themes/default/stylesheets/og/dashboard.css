@@ -572,3 +572,10 @@
 .widget-active-context-info .widget-body .info-content-item {
 	display: inline
 }
+
+.x-btn-text.link-ico {
+    height: inherit;
+}
+.x-btn-text.link-ico.ico-company {
+    padding: 1px 0 0px 18px;
+}

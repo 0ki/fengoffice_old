@@ -180,8 +180,8 @@
 	'config option name add_default_permissions_for_users' => 'Set default permissions for Executive, Manager and Administrator users',
 	'config option desc add_default_permissions_for_users' => 'If enabled then these users will be granted with the default permissions when creating a Workspace, Client or Project',
 	
-    'config option name notify_myself_too' => 'Include myself in automatic notifications',
-  	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
+    'user config option name notify_myself_too' => 'Include myself in automatic notifications',
+  	'user config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
   		
   	'config option name give_member_permissions_to_new_users' => 'Give permissions to all clients, projects, etc. for new users',
   	'config option desc give_member_permissions_to_new_users' => 'When creating a new user, if the user type is selected in this option then the user will be granted with permissions in all members.',

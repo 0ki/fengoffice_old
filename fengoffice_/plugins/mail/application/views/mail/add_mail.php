@@ -429,7 +429,7 @@ Ext.onReady(function() {
 og.checkAttach = function() {
 	var attach = $("#<?php echo $genid;?>attachments").children().length;
 	var editor = og.getCkEditorInstance(genid + 'ckeditor');	
-	var config = <?php echo user_config_option("check_attach_word");?>;
+	var config = <?php echo user_config_option("check_attach_word") ? '1' : '0';?>;
 	text = editor.getData();
 	var originalMail = text.indexOf("original_mail");
 

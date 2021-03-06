@@ -997,33 +997,32 @@ class TaskController extends ApplicationController {
 		$join_params['e_field'] = "object_id";
 		$join_params['on_extra'] = $join_on_extra;
 		
-		$group_totals_times = ProjectTasks::instance()->listing(array(
-				"select_columns" => array("SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time)) - SUM(subtract/60) AS group_time_worked "),
-				"extra_conditions" => $conditions,
+		$total_timeslot = "SUM(TIMESTAMPDIFF(MINUTE,start_time,end_time))";
+		$total_paused =  "SUM(subtract/60)";
+		$total_estimated = "SUM(time_estimate) AS group_time_estimate ";
+		
+		//querys returning total worked time, total estimated time and total pending time
+		//time worked is the addition of all timeslots minus the addition of all pauses
+		//time estimated is the addition of the substractions of estimated and worked, grouping by task to substract
+		$group_totals = ProjectTasks::instance()->listing(array(
+				"select_columns" => array("time_estimate",$total_timeslot ." - ". $total_paused." AS group_time_worked", "GREATEST(time_estimate -  COALESCE($total_timeslot - $total_paused,0),0) AS pending"),
 				"join_params"=> $join_params,
+				"extra_conditions" => $conditions,
+				"group_by" =>  "e.`object_id`",
+				"query_wraper_start" => "SELECT $total_estimated,  SUM(group_time_worked) AS group_time_worked ,COALESCE(SUM(pending), 0) AS group_time_pending FROM (",
+				"query_wraper_end" => ") AS pending_calc",
 				"count_results" => false,
 				"raw_data" => true,
 		))->objects;
 		
-		if(is_null($group_time_estimate)){
-			$group_totals = ProjectTasks::instance()->listing(array(
-					"select_columns" => array("SUM(time_estimate) AS group_time_estimate "),
-					"extra_conditions" => $conditions,				
-					"count_results" => false,
-					"raw_data" => true,
-			))->objects;
-			$group_time_estimate = $group_totals[0]['group_time_estimate'];
-		}
-				
-		$totals['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_estimate * 60), 'hm', 60));
-				
-		$group_time_worked = $group_totals_times[0]['group_time_worked'];
+		$group_time_estimate = $group_totals[0]['group_time_estimate'];
+		$group_time_pending = $group_totals[0]['group_time_pending'];
+		$group_time_worked = $group_totals[0]['group_time_worked'];
 		$group_time_worked = is_null($group_time_worked) ? 0 : $group_time_worked;
+		
+		$totals['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_estimate * 60), 'hm', 60));	
 		$totals['worked_time'] = $group_time_worked;
 		$totals['worked_time_string'] = ($group_time_worked <= 0) ? "" : str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_worked * 60), 'hm', 60));
-		
-		$group_time_pending = $group_time_estimate - $group_time_worked;
-		$group_time_pending = (is_null($group_time_pending) || $group_time_pending < 0) ? 0 : $group_time_pending;
 		$totals['pending_time'] = $group_time_pending;
 		$totals['pending_time_string'] = ($group_time_pending <= 0) ? "" : str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($group_time_pending * 60), 'hm', 60));
 				

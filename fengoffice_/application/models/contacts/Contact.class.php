@@ -1530,7 +1530,7 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getAddUserUrl() {
-		return get_url('contact', 'add', array('company_id' => $this->getId(), 'is_user' => 1));
+		return get_url('contact', 'add', array('company_id' => $this->getId(), 'is_user' => 1, 'user_type' => 4));
 	} // getAddUserUrl
 	
 	

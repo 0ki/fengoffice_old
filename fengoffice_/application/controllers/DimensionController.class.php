@@ -764,49 +764,13 @@ class DimensionController extends ApplicationController {
 	
 	function linked_object_filters() {
 		$genid = gen_id();
-		$html = "<div class='linked-objects-member-filters'>";
 		
-		$context = active_context();
+		$listeners = array('on_selection_change' => "Ext.getCmp('dimFilter').fireEvent('memberselected', member_selector['$genid'].sel_context);");		
+		$options = array('select_current_context' => true, 'listeners' => $listeners, 'width' => 195);
 		
-		$dimensions = Dimensions::findAll(array('conditions' => 'is_manageable = 1'));
+		render_member_selectors(ProjectMessages::instance()->getObjectTypeId(), $genid, null, $options, null, null, false);
 		
-		foreach ($dimensions as $dimension) {
-			
-			$dimension_id = $dimension->getId();
-			$sel_name = "";
-			$sel_id = 0;
-			foreach ($context as $selection) {
-				if ($selection instanceof Member && $selection->getDimensionId() == $dimension_id) {
-					$sel_name = clean($selection->getName());
-					$sel_id = $selection->getId();
-				}
-			}
-			
-			$html .= '<div class="lo-member-selector"><div class="selector-label">'.lang('filter by '.$dimension->getCode()).'</div>';
-			
-			$autocomplete_options = array();
-			$dim_controller = new DimensionController();
-			$members = $dim_controller->initial_list_dimension_members($dimension_id, null, null, false, "", null, false, null, true, array());
-			foreach ($members as $m) {
-				$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);
-			}
-			
-			$combo_listeners = array(
-				"select" => "function (combo, record, index) { Ext.getCmp('dimFilter').fireEvent('memberselected', record.data); }",
-			);
-			$html .= autocomplete_member_combo("member_autocomplete-dim".$dimension_id, $dimension_id, $autocomplete_options, 
-					lang($dimension->getCode()), array('class' => 'member-name-input', 'selected_name' => $sel_name), false, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
-			$html .= "</div>";
-			
-			if ($sel_id > 0) {
-				$html .= "<script>Ext.getCmp('obj_picker_grid').member_filter[$dimension_id] = $sel_id;</script>";
-			}
-		}
-		
-		$html .= '<div class="buttons"><button onclick="Ext.getCmp(\'dimFilter\').fireEvent(\'clearfilters\', \''.$genid.'\');">'.lang('remove all filters').'</button></div>';
-		$html .= '</div>';
-		
-		die($html);
+		die();
 	}
 	
 	

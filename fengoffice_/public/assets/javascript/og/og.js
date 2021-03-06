@@ -2980,7 +2980,7 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 	var all_inputs = $('#'+form_id+' input');
 	for (var i=0; i<all_inputs.length; i++) {
 		if(all_inputs[i].type == 'checkbox') {
-			params[all_inputs[i].name] = all_inputs[i].checked;
+			params[all_inputs[i].name] = all_inputs[i].checked ? '1' : '0';
 		} else if (all_inputs[i].type == 'radio') {
 			if (all_inputs[i].checked) {
 				params[all_inputs[i].name] = params[all_inputs[i].name] = all_inputs[i].value;

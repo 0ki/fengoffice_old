@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2
+ * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2.1-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1.5.3');
-		$this->setVersionTo('3.2');
+		$this->setVersionTo('3.2.1-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -409,6 +409,24 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".$t_prefix."member_custom_property_values` ADD INDEX (`member_id`);
 			";
 		}
+		
+		if (version_compare($installed_version, '3.2.1-beta') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."objects` ADD INDEX `type_trash_arch`(`object_type_id`, `trashed_on`, `archived_on`);
+			";
+			
+			$upgrade_script .= "
+				INSERT INTO `" . $t_prefix . "contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+				VALUES ('general', 'notify_myself_too', 0, 'BoolConfigHandler', '0', '100', '')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			
+			$upgrade_script .= "
+				DELETE FROM ".$t_prefix."config_options
+				WHERE name = 'notify_myself_too';
+			";
+		}
+		
 		
 		
 		// Execute all queries

@@ -43,7 +43,8 @@ og.OverviewManager = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
-										
+					
+					Ext.getCmp('overview-manager').store.lastOptions.params.count_results = 1;
 					Ext.getCmp('overview-manager').reloadGridPagingToolbar('object','list_objects','overview-manager');
 				}
 			}
@@ -440,14 +441,30 @@ og.OverviewManager = function() {
 		showAsDashboard: new Ext.Action({
 			id: "view-as-dashboard",
 			text: lang('view as dashboard'),
-                        tooltip: lang('view as dashboard'),
-                        iconCls: 'ico-view-as-dashboard',
+			tooltip: lang('view as dashboard'),
+			iconCls: 'ico-view-as-dashboard',
 			handler: function() {
 				og.switchToDashboard();
 			},
 			scope: this
 		})
     };
+	
+	var toolbar = [
+		actions.newCO,
+		'-',
+		actions.archive,
+		actions.del,			
+		'-',
+		actions.more,
+		actions.markAs,
+		'->'
+	];
+	for (var i=0; i<og.additional_dashboard_actions.length; i++) {
+		toolbar.push(og.additional_dashboard_actions[i]);
+	}
+	toolbar.push(actions.showAsDashboard);
+	
     
 	og.OverviewManager.superclass.constructor.call(this, {
 		enableDrag: true,
@@ -472,17 +489,7 @@ og.OverviewManager = function() {
 			forceFit: true
 		},
 		sm: sm,
-		tbar:[
-			actions.newCO,
-			'-',
-			actions.archive,
-			actions.del,			
-			'-',
-			actions.more,
-			actions.markAs,
-			'->' ,
-			actions.showAsDashboard
-		],
+		tbar: toolbar,
 		listeners: {
 			'render': {
 				fn: function() {

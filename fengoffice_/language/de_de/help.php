@@ -2,7 +2,7 @@
 	'chelp pending tasks widget' => 'Dieses Widget zeigt zugeordnete unvollständige Aufgaben. Diese Einstellungen können in den Übersicht-Optionen geändert werden.',
 	'chelp documents widget' => 'Dieses Widget zeigt die neuesten Dokumente im ausgewählten Arbeitsbereich.',
 	'chelp active tasks widget' => 'Dieses Widget zeigt aktive und unterbrochene Aufgaben.',
-	'chelp late tasks widget' => 'Dieses Widget zeigt verspätete Aufgaben und Meilensteine, beginnend heute fällig, sortiert nach Fälligkeit.',
+	'chelp late tasks widget' => 'Dieses Widget zeigt überfällige Aufgaben und Meilensteine, beginnend heute fällig, sortiert nach Fälligkeit.',
 	'chelp calendar widget' => 'Dieses Widget zeigt Termine, fällige Aufgaben und Meilensteine der aktuellen Woche. Ein neuer Termin wird durch Klicken auf einen Tag hinzugefügt.',
 	'chelp comments widget' => 'Dieses Widget zeigt die neuesten Kommentare für Objekte im aktuellen Arbeitsbereich.',
 	'chelp dashboard info widget' => 'Dieses Widget zeigt die Informationen für den aktuellen Arbeitsbereich, einschließlich der zugeordneten Benutzer, zugeordnete Kontakte, etc.',
@@ -34,4 +34,9 @@
 	'how to purchase desc' => 'Informationen über unsere unterschiedlichen Angebote und Vorteile',
 	'add ticket' => 'Ein neues Supportticket hinzufügen',
 	'add ticket desc' => 'Persönliche Hilfe zu Feng Office erhalten',
+	'Super Administrator user role description' => 'Kann alles machen und auf alles zugreifen. Diese Rolle eignet sich besonders für den Firmeninhaber des Feng Office Systems.',
+	'Executive user role description' => 'Kann alles bearbeiten, soweit dafür berechtigt, darf aber selbst keine Berechtigungen setzen. Diese Rolle eignet sich besonders für Personen, die an Aufgaben arbeiten sowie für Externe, die an Projekten mitwirken. Können keine Einstellungen für Abrechnung vornehmen.',
+	'more information about user roles' => 'Weitere Informationen über Benutzerrollen',
+	'Administrator user role description' => 'Darf, mit Ausnahme der Berechtigungsverwaltung für Administratoren und Super-Administratoren, alles.',
+	'Manager user role description' => 'Darf alles an Kunden, Projekten und Arbeitsbereichen durchführen, wofür er von den Administratoren berechtigt wurde.',
 ); ?>

@@ -220,4 +220,8 @@
 	'open notification task' => 'Aufgabe gestartet {0}',
 	'open notification task desc' => 'Aufgabe gestartet von {1}',
 	'new notification event invitation' => '{1} wurde eingeladen zu:',
+	'mails_in_outbox reminder' => 'Nicht gesendete E-Mails',
+	'mails_in_outbox reminder desc' => '{0} sind noch nicht versendet worden. Bitte schauen Sie in Ihren Postausgang für weitere Informationen',
+	'upload notification file' => 'Eine neue version der Datei \'{0}\' wurde hochgeladen',
+	'upload notification file desc' => '{1} hat eine neue Version der folgenden Datei hochgeladen:',
 ); ?>

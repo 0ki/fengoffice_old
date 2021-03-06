@@ -527,13 +527,14 @@ class Reports extends BaseReports {
 								$dateFormat = user_config_option('date_format');
 								Hook::fire("custom_property_date_format", null, $dateFormat);
 								
+								$tz = logged_user()->getTimezone();
 								if ($object instanceof ProjectTask) {
 									if(($field == 'due_date' && !$object->getUseDueTime()) || ($field == 'start_date' && !$object->getUseStartTime())){
 										$dateFormat = user_config_option('date_format');
+										$tz = 0;
 									}								
 								}
-								
-								$value = format_date($value,$dateFormat);															
+								$value = format_date($value, $dateFormat, $tz * 3600);
 							}
 							
 							if(in_array($field, $managerInstance->getExternalColumns())){

@@ -929,356 +929,6 @@ class ObjectController extends ApplicationController {
 		}
 	}
 
-	function list_objects() {
-		/* get query parameters */
-		$filesPerPage = config_option('files_per_page');
-		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
-		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
-		$order = array_var($_GET,'sort');
-		$id_no_select = array_var($_GET,'id_no_select',"undefined");
-		$ignore_context = (bool) array_var($_GET, 'ignore_context');
-		$member_ids = json_decode(array_var($_GET, 'member_ids'));
-		$extra_member_ids = json_decode(array_var($_GET, 'extra_member_ids'));
-		
-		$orderdir = array_var($_GET,'dir');
-		if (!in_array(strtoupper($orderdir), array('ASC', 'DESC'))) $orderdir = 'ASC';
-		
-		if ($order == "dateUpdated") {
-			$order = "updated_on";
-		}elseif ($order == "dateArchived") {
-			$order = "archived_on";
-		}elseif ($order == "dateDeleted") {
-			$order = "trashed_on";
-		}elseif ($order == "name") {
-			$order = "name";
-		} else {
-			$order = "";
-			$orderdir = "";
-		}
-		
-		$extra_list_params = array_var($_GET,'extra_list_params');
-		$extra_list_params = json_decode($extra_list_params);
-		
-		$page = (integer) ($start / $limit) + 1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		
-		$typeCSV = array_var($_GET, 'type');
-		$types = null;
-		if ($typeCSV) {
-			$types = explode(",", $typeCSV);
-		}
-		$name_filter = mysql_real_escape_string( array_var($_GET, 'name') );
-		$linked_obj_filter = array_var($_GET, 'linkedobject');
-		$object_ids_filter = '';
-		$show_all_linked_objects = false;
-		if (!is_null($linked_obj_filter)) {
-			$show_all_linked_objects = true;
-			$linkedObject = Objects::findObject($linked_obj_filter);
-			$objs = $linkedObject->getLinkedObjects();
-			foreach ($objs as $obj) $object_ids_filter .= ($object_ids_filter == '' ? '' : ',') . $obj->getId();
-		}
-		
-		$filters = array();
-		if (!is_null($types)) $filters['types'] = $types;
-		if (!is_null($name_filter)) $filters['name'] = $name_filter;
-		if ($object_ids_filter != '') $filters['object_ids'] = $object_ids_filter;
-
-		$user = array_var($_GET,'user');
-		$trashed = array_var($_GET, 'trashed', false);
-		$archived = array_var($_GET, 'archived', false);
-
-		/* if there's an action to execute, do so */
-		if (!$show_all_linked_objects){
-			$linkedObject = null;
-			if (array_var($_GET, 'action') == 'delete') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-
-				$result = ContentDataObjects::listing(array(
-					"extra_conditions" => " AND o.id IN (".implode(",",$ids).") ",
-					"include_deleted" => true
-				));
-
-				$objects = $result->objects;
-
-				$real_deleted_ids = array();
-				list($succ, $err) = $this->do_delete_objects($objects, false, $real_deleted_ids);
-
-				if ($err > 0) {
-					flash_error(lang('error delete objects', $err));
-				} else {
-					Hook::fire('after_object_delete_permanently', $real_deleted_ids, $ignored);
-					flash_success(lang('success delete objects', $succ));
-				}
-			} else if (array_var($_GET, 'action') == 'delete_permanently') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-
-				$objects = Objects::instance()->findAll(array("conditions" => "id IN (".implode(",",$ids).")"));
-
-				$real_deleted_ids = array();
-				list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
-
-				if ($err > 0) {
-					flash_error(lang('error delete objects', $err));
-				}
-				if ($succ > 0) {
-					Hook::fire('after_object_delete_permanently', $real_deleted_ids, $ignored);
-					flash_success(lang('success delete objects', $succ));
-				}
-			}else if (array_var($_GET, 'action') == 'markasread') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
-
-			}else if (array_var($_GET, 'action') == 'markasunread') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
-
-			}else if (array_var($_GET, 'action') == 'empty_trash_can') {
-
-				$result = ContentDataObjects::listing(array(
-					"select_columns" => array('id'),
-					"raw_data" => true,
-					"trashed" => true,
-				));
-				$objects = $result->objects;
-				
-				if (count($objects) > 0) {
-					$obj_ids_str = implode(',', array_flat($objects));
-					$extra_conds = "AND o.id IN ($obj_ids_str)";
-					
-					$count = Trash::purge_trash(0, 1000, $extra_conds);
-					flash_success(lang('success delete objects', $count));
-				}
-
-			} else if (array_var($_GET, 'action') == 'archive') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
-				if ($err > 0) {
-					flash_error(lang('error archive objects', $err));
-				} else {
-					flash_success(lang('success archive objects', $succ));
-				}
-			} else if (array_var($_GET, 'action') == 'unarchive') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'unarchive');
-				if ($err > 0) {
-					flash_error(lang('error unarchive objects', $err));
-				} else {
-					flash_success(lang('success unarchive objects', $succ));
-				}
-			}
-			else if (array_var($_GET, 'action') == 'unclassify') {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				$err = 0;
-				$succ = 0;
-				foreach ($ids as $id) {
-					$split = explode(":", $id);
-					$type = $split[0];
-					if (Plugins::instance()->isActivePlugin('mail') && $type == 'MailContents') {
-						$email = MailContents::findById($split[1]);
-						if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
-							if (MailController::do_unclassify($email)) $succ++;
-							else $err++;
-						} else $err++;
-					}
-				}
-				if ($err > 0) {
-					flash_error(lang('error unclassify emails', $err));
-				} else {
-					flash_success(lang('success unclassify emails', $succ));
-				}
-			}
-			else if (array_var($_GET, 'action') == 'restore') {
-				$errorMessage = null;
-				$ids = explode(',', array_var($_GET, 'objects'));
-				$success = 0; $error = 0;
-				foreach ($ids as $id) {
-					$obj = Objects::findObject($id);
-					if ($obj->canDelete(logged_user())) {
-						try {
-							$obj->untrash($errorMessage);
-
-							if($obj->getObjectTypeId() == 11){
-								$event = ProjectEvents::findById($obj->getId());
-								if($event->getExtCalId() != ""){
-									$this->created_event_google_calendar($obj,$event);
-								}
-							}
-
-							ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
-							$success++;
-						} catch (Exception $e) {
-							$error++;
-						}
-					} else {
-						$error++;
-					}
-				}
-				if ($success > 0) {
-					flash_success(lang("success untrash objects", $success));
-				}
-				if ($error > 0) {
-					$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
-					flash_error($errorString);
-				}
-			}
-		}
-		
-		$filterName = array_var($_GET,'name');
-		
-		$template_object_names = "";
-		$template_extra_condition = "true";
-		
-		$template_objects = false;
-		
-		if(in_array("template_task", array_var($filters, 'types', array())) || in_array("template_milestone", array_var($filters, 'types', array()))){
-			$template_id = 0;
-			$template_objects = true;
-			if(isset($extra_list_params->template_id)){
-				$template_id = $extra_list_params->template_id;
-			}					
-			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
-			if($tmpl_task instanceof TemplateTask){
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".$tmpl_task->getTemplateId()." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
-			}else{
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".intval($template_id)." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
-			}
-		}else{
-			$template_object_names = "AND name <> 'template_task' AND name <> 'template_milestone'" ;
-		}
-		$result = null;
-		
-		$context = active_context();
-
-		$obj_type_types = array('content_object', 'dimension_object');
-		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
-		
-		$type_condition = "";
-		if ($types) {
-			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
-		}
-		
-		$res = DB::executeAll("SELECT id from ".TABLE_PREFIX."object_types WHERE type IN ('". implode("','",$obj_type_types)."') ".$template_object_names." AND name <> 'file revision' $type_condition ");
-		$type_ids = array();
-
-		foreach ($res as $row){
-			if (ObjectTypes::isListableObjectType($row['id']) ){
-				$types_ids[] = $row['id'] ;
-			}
-		}
-
-		//Hook::fire('list_objects_type_ids', null, $types_ids);
-		$type_ids_csv = implode(',', $types_ids);
-		$extra_conditions = array() ;
-		$extra_conditions[] = "object_type_id in ($type_ids_csv)";
-		$extra_conditions[] = $template_extra_condition;
-		if ($name_filter) {
-			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
-		}
-		if ($id_no_select != "undefined") {
-			$extra_conditions[] = "id <> '$id_no_select'" ;
-		}
-		if($object_ids_filter != ""){
-			$extra_conditions[] = "id in ($object_ids_filter)";
-		}
-		
-		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
-			$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
-			 (SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = ".logged_user()->getId().",
-			 true)";
-		}
-		
-		// don't include tasks which have is_template=1
-		$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
-			 (SELECT t.is_template FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = 0, true)";
-		
-		// don't include unclassified mails from other accounts
-		if (Plugins::instance()->isActivePlugin('mail')) {
-			$accounts_of_loggued_user = MailAccountContacts::getByContact(logged_user());
-			$account_ids = array(0);
-			foreach ($accounts_of_loggued_user as $acc) {
-				$account_ids[] = $acc->getAccountId();
-			}
-			$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='mail',
-				 (SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=o.id) IN (".implode(',', $account_ids).") 
-				 		OR EXISTS (SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1 
-				 				INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id
-				 				WHERE om1.object_id=o.id AND d1.is_manageable=1),
-				 true)";
-		}
-		
-		$only_count_result = array_var($_GET, 'only_result',false);
-		$count_results = array_var($_GET, 'count_results',false);
-		
-		if($object_ids_filter == "" && $show_all_linked_objects){
-			$pagination = array();
-		}else{
-			$pagination = ContentDataObjects::listing(array(
-				"start" => $start,
-				"limit" => $limit,
-				"order" => $order,
-				"order_dir" => $orderdir,
-				"trashed" => $trashed,
-				"archived" => $archived,
-				"types" => $types,
-				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions),
-				"ignore_context" => $ignore_context,
-				"extra_member_ids" => $extra_member_ids,
-				"count_results" => $count_results,
-				"only_count_results" => $only_count_result,
-				"template_objects" => $template_objects
-			));
-		}
-		
-		$result = $pagination->objects;
-		$total_items = $pagination->total;
-		
-		if(!$result) $result = array();
-
-		/* prepare response object */
-		$info = array();
-
-		foreach ($result as $obj /* @var $obj Object */) {
-			$info_elem =  $obj->getArrayInfo($trashed, $archived);
-			
-			$instance = Objects::instance()->findObject($info_elem['object_id']);
-			if (!$instance instanceof ContentDataObject) continue;
-			$info_elem['url'] = $instance->getViewUrl();
-			
-			
-			$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
-			$info_elem['manager'] = get_class($instance->manager()) ;
-			$info_elem['memPath'] = json_encode($instance->getMembersIdsToDisplayPath());
-			/* @var $instance Contact  */
-			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
-				if( $instance->isCompany() ) {
-					$info_elem['icon'] = 'ico-company';
-					$info_elem['type'] = 'company';
-					
-				}else{
-					$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersIdsToDisplayPath());
-				}
-			} else if ($instance instanceof ProjectFile) {
-				$info_elem['mimeType'] = $instance->getTypeString();
-			}
-			
-			$info[] = $info_elem;
-			
-		}
-		
-		$listing = array(
-			"totalCount" => $total_items,
-			"start" => $start,
-			"objects" => $info
-		);
-		
-		
-		ajx_extra_data($listing);
-		tpl_assign("listing", $listing);
-		
-		if (isset($reload) && $reload) ajx_current("reload");
-		else ajx_current("empty");
-	}
-
 	
 	function view(){
 		$id = array_var($_GET,'id');
@@ -1960,5 +1610,450 @@ class ObjectController extends ApplicationController {
 		$value = array_var($_GET,'config_option_value');
 		set_user_config_option($name, $value, logged_user()->getId());
 	}
+	
+	
+	private function processListActions() {
+
+		$linkedObject = null;
+		if (array_var($_GET, 'action') == 'delete') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+		
+			$result = ContentDataObjects::listing(array(
+					"extra_conditions" => " AND o.id IN (".implode(",",$ids).") ",
+					"include_deleted" => true
+			));
+		
+			$objects = $result->objects;
+		
+			$real_deleted_ids = array();
+			list($succ, $err) = $this->do_delete_objects($objects, false, $real_deleted_ids);
+		
+			if ($err > 0) {
+				flash_error(lang('error delete objects', $err));
+			} else {
+				Hook::fire('after_object_delete_permanently', $real_deleted_ids, $ignored);
+				flash_success(lang('success delete objects', $succ));
+			}
+		} else if (array_var($_GET, 'action') == 'delete_permanently') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+		
+			$objects = Objects::instance()->findAll(array("conditions" => "id IN (".implode(",",$ids).")"));
+		
+			$real_deleted_ids = array();
+			list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
+		
+			if ($err > 0) {
+				flash_error(lang('error delete objects', $err));
+			}
+			if ($succ > 0) {
+				Hook::fire('after_object_delete_permanently', $real_deleted_ids, $ignored);
+				flash_success(lang('success delete objects', $succ));
+			}
+		}else if (array_var($_GET, 'action') == 'markasread') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
+		
+		}else if (array_var($_GET, 'action') == 'markasunread') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
+		
+		}else if (array_var($_GET, 'action') == 'empty_trash_can') {
+		
+			$result = ContentDataObjects::listing(array(
+					"select_columns" => array('id'),
+					"raw_data" => true,
+					"trashed" => true,
+			));
+			$objects = $result->objects;
+		
+			if (count($objects) > 0) {
+				$obj_ids_str = implode(',', array_flat($objects));
+				$extra_conds = "AND o.id IN ($obj_ids_str)";
+					
+				$count = Trash::purge_trash(0, 1000, $extra_conds);
+				flash_success(lang('success delete objects', $count));
+			}
+		
+		} else if (array_var($_GET, 'action') == 'archive') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
+			if ($err > 0) {
+				flash_error(lang('error archive objects', $err));
+			} else {
+				flash_success(lang('success archive objects', $succ));
+			}
+		} else if (array_var($_GET, 'action') == 'unarchive') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'unarchive');
+			if ($err > 0) {
+				flash_error(lang('error unarchive objects', $err));
+			} else {
+				flash_success(lang('success unarchive objects', $succ));
+			}
+		}
+		else if (array_var($_GET, 'action') == 'unclassify') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$err = 0;
+			$succ = 0;
+			foreach ($ids as $id) {
+				$split = explode(":", $id);
+				$type = $split[0];
+				if (Plugins::instance()->isActivePlugin('mail') && $type == 'MailContents') {
+					$email = MailContents::findById($split[1]);
+					if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
+						if (MailController::do_unclassify($email)) $succ++;
+						else $err++;
+					} else $err++;
+				}
+			}
+			if ($err > 0) {
+				flash_error(lang('error unclassify emails', $err));
+			} else {
+				flash_success(lang('success unclassify emails', $succ));
+			}
+		}
+		else if (array_var($_GET, 'action') == 'restore') {
+			$errorMessage = null;
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$success = 0; $error = 0;
+			foreach ($ids as $id) {
+				$obj = Objects::findObject($id);
+				if ($obj->canDelete(logged_user())) {
+					try {
+						$obj->untrash($errorMessage);
+		
+						if($obj->getObjectTypeId() == 11){
+							$event = ProjectEvents::findById($obj->getId());
+							if($event->getExtCalId() != ""){
+								$this->created_event_google_calendar($obj,$event);
+							}
+						}
+		
+						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
+						$success++;
+					} catch (Exception $e) {
+						$error++;
+					}
+				} else {
+					$error++;
+				}
+			}
+			if ($success > 0) {
+				flash_success(lang("success untrash objects", $success));
+			}
+			if ($error > 0) {
+				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
+				flash_error($errorString);
+			}
+		}
+		
+	}
+	
+	
+	function list_objects() {
+		/* get query parameters */
+		$filesPerPage = config_option('files_per_page');
+		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
+		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
+		$order = array_var($_GET,'sort');
+		$id_no_select = array_var($_GET,'id_no_select',"undefined");
+		$ignore_context = (bool) array_var($_GET, 'ignore_context');
+		$member_ids = json_decode(array_var($_GET, 'member_ids'));
+		$extra_member_ids = json_decode(array_var($_GET, 'extra_member_ids'));
+		
+		$orderdir = array_var($_GET,'dir');
+		if (!in_array(strtoupper($orderdir), array('ASC', 'DESC'))) $orderdir = 'ASC';
+		
+		if ($order == "dateUpdated") {
+			$order = "updated_on";
+		}elseif ($order == "dateArchived") {
+			$order = "archived_on";
+		}elseif ($order == "dateDeleted") {
+			$order = "trashed_on";
+		}elseif ($order == "name") {
+			$order = "name";
+		} else {
+			$order = "";
+			$orderdir = "";
+		}
+		
+		$extra_list_params = array_var($_GET,'extra_list_params');
+		$extra_list_params = json_decode($extra_list_params);
+		
+		$page = (integer) ($start / $limit) + 1;
+		$hide_private = !logged_user()->isMemberOfOwnerCompany();
+		
+		$typeCSV = array_var($_GET, 'type');
+		$types = null;
+		if ($typeCSV) {
+			$types = explode(",", $typeCSV);
+		}
+		$name_filter = mysql_real_escape_string( array_var($_GET, 'name') );
+		$linked_obj_filter = array_var($_GET, 'linkedobject');
+		$object_ids_filter = '';
+		$show_all_linked_objects = false;
+		if (!is_null($linked_obj_filter)) {
+			$show_all_linked_objects = true;
+			$linkedObject = Objects::findObject($linked_obj_filter);
+			$objs = $linkedObject->getLinkedObjects();
+			foreach ($objs as $obj) $object_ids_filter .= ($object_ids_filter == '' ? '' : ',') . $obj->getId();
+		}
+		
+		$filters = array();
+		if (!is_null($types)) $filters['types'] = $types;
+		if (!is_null($name_filter)) $filters['name'] = $name_filter;
+		if ($object_ids_filter != '') $filters['object_ids'] = $object_ids_filter;
+
+		$user = array_var($_GET,'user');
+		$trashed = array_var($_GET, 'trashed', false);
+		$archived = array_var($_GET, 'archived', false);
+
+		/* if there's an action to execute, do so */
+		if (!$show_all_linked_objects){
+			$this->processListActions();
+		}
+		
+		$filterName = array_var($_GET,'name');
+		
+		$template_object_names = "";
+		$template_extra_condition = "true";
+		
+		$template_objects = false;
+		
+		if(in_array("template_task", array_var($filters, 'types', array())) || in_array("template_milestone", array_var($filters, 'types', array()))){
+			$template_id = 0;
+			$template_objects = true;
+			if(isset($extra_list_params->template_id)){
+				$template_id = $extra_list_params->template_id;
+			}					
+			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
+			if($tmpl_task instanceof TemplateTask){
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".$tmpl_task->getTemplateId()." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
+			}else{
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".intval($template_id)." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
+			}
+		}else{
+			$template_object_names = "AND name <> 'template_task' AND name <> 'template_milestone'" ;
+		}
+		$result = null;
+		
+		$context = active_context();
+
+		$obj_type_types = array('content_object', 'dimension_object');
+		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
+		
+		$type_condition = "";
+		if ($types) {
+			$type_condition = " AND name IN ('".implode("','",$types) ."')";  
+		}
+		
+		
+		$extra_conditions = array();
+		
+		// Object type filter - exclude template types (if not template picker), filter by required type names (if specified) and match value with objects table
+		$extra_object_type_conditions = "
+			AND name <> 'file revision' $template_object_names $type_condition AND o.object_type_id = ot.id";
+		
+		$extra_conditions[] = ObjectTypes::getListableObjectsSqlCondition($extra_object_type_conditions);
+		// --
+		
+		
+		// logged user permission group ids
+		$logged_user_pg_ids = implode(',', logged_user()->getPermissionGroupIds());
+
+		// used in template object picker
+		$extra_conditions[] = $template_extra_condition;
+		
+		// when filtering by name
+		if ($name_filter) {
+			$extra_conditions[] = "
+				name LIKE '%$name_filter%'";
+		}
+		
+		// when excluding some object in particular
+		if ($id_no_select != "undefined") {
+			$extra_conditions[] = "
+				id <> '$id_no_select'";
+		}
+		
+		// when filtering by some group of objects, for example in the linked objects view
+		if($object_ids_filter != ""){
+			$extra_conditions[] = "
+				id in ($object_ids_filter)";
+		}
+		
+		
+		$joins[] = "
+			LEFT JOIN ".TABLE_PREFIX."project_tasks pt on pt.object_id=o.id";
+		
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			// exclude other users' tasks if cannot see them
+			$extra_conditions[] = "
+				( pt.assigned_to_contact_id IS NULL OR pt.assigned_to_contact_id= ".logged_user()->getId().")";
+		}
+		// don't include tasks which have is_template=1
+		$extra_conditions[] = "
+			( pt.is_template IS NULL OR pt.is_template=0)";
+		
+		// trashed conditions
+		$extra_conditions[] = "
+			o.trashed_on".($trashed ? "<>" : "=")."0";
+		// archived conditions
+		$extra_conditions[] = "
+			o.archived_on".($archived ? "<>" : "=")."0";
+		
+		
+		// don't include unclassified mails from other accounts
+		if (Plugins::instance()->isActivePlugin('mail')) {
+			$accounts_of_loggued_user = MailAccountContacts::getByContact(logged_user());
+			$account_ids = array(0);
+			foreach ($accounts_of_loggued_user as $acc) {
+				$account_ids[] = $acc->getAccountId();
+			}
+			
+			$joins[] = "
+				LEFT JOIN ".TABLE_PREFIX."mail_contents mc on mc.object_id=o.id
+			";
+			
+			$extra_conditions[] = "
+				IF( mc.account_id IS NULL, true, mc.account_id IN (".implode(',', $account_ids).") OR EXISTS (
+					SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1 
+						INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id 
+						INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id 
+					WHERE om1.object_id=o.id AND d1.is_manageable=1)
+				)";
+		}
+		
+		// don't show attached files of emails that cannot be viewed
+		if (logged_user()->isAdministrator() && Plugins::instance()->isActivePlugin('mail')) {
+			$joins[] = "LEFT JOIN ".TABLE_PREFIX."project_files pf on pf.object_id=o.id";
+			$extra_conditions[] = "IF(pf.mail_id IS NULL OR pf.mail_id = 0, true, 
+				pf.mail_id IN (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE pf.mail_id = sh.object_id AND sh.group_id  IN ($logged_user_pg_ids)))";
+		}
+		
+		$only_count_result = array_var($_GET, 'only_result', false);
+		$count_results = array_var($_GET, 'count_results', false);
+		
+		// Members filter
+		$sql_members = "";
+		if (!$ignore_context && !$member_ids) {
+			$members = active_context_members(false); // Context Members Ids
+		} elseif ( count($member_ids) ) {
+			$members = $member_ids;
+		} else {
+			// get members from context
+			$members = active_context_members(false);
+		}
+		if  (is_array($extra_member_ids)) {
+			if (isset($members)) {
+				$members = array_merge($members, $extra_member_ids);
+			} else {
+				$members = $extra_member_ids;
+			}
+		}
+		if (isset($members) && is_array($members) && count($members) > 0) {
+			$sql_members = "
+				AND (EXISTS (SELECT om.object_id
+					FROM  ".TABLE_PREFIX."object_members om
+					WHERE om.member_id IN (" . implode ( ',', $members ) . ") AND o.id = om.object_id 
+					GROUP BY object_id
+					HAVING count(member_id) = ".count($members)."
+				))
+			";
+		}
+		// --
+		
+		// Permissions filter
+		$sql_permissions = "
+			AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
+		";
+		
+		// Main select
+		$sql_select = "SELECT * FROM ".TABLE_PREFIX."objects o ";
+		
+		// Joins
+		$sql_joins = implode(" ", $joins);
+		
+		// Where
+		$sql_where = "
+			WHERE " . implode(" AND ", $extra_conditions) . $sql_permissions . $sql_members;
+		
+		// Order
+		$sql_order = "";
+		if ($order) {
+			$sql_order = "
+				ORDER BY $order $orderdir
+			";
+		}
+		
+		// Limit
+		$sql_limit = "";
+		if ($start >= 0 && $limit > 0) {
+			$sql_limit = " LIMIT $start, $limit";
+		}
+		
+		// Full SQL
+		$sql = "$sql_select $sql_joins $sql_where $sql_order $sql_limit";
+		
+		// Execute query
+		if (!$only_count_result) {
+			Logger::log($sql);
+			$rows = DB::executeAll($sql);
+		}
+		
+		// get total items
+		if ($count_results) {
+			$sql_count = "SELECT count(o.id) as total_items FROM ".TABLE_PREFIX."objects o $sql_joins $sql_where";
+			$rows_count = DB::executeAll($sql_count);
+			$total_items = $rows_count[0]['total_items'];
+		} else {
+			$total_items = count($rows) < $filesPerPage ? count($rows) : 1000000;
+		}
+		
+		// prepare response object
+		$info = array();
+		
+		// get objects
+		if (is_array($rows)) {
+			foreach ($rows as $row) {
+				$instance = Objects::findObject($row['id']);
+				
+				if (!$instance instanceof ContentDataObject) continue;
+				
+				$info_elem = $instance->getObject()->getArrayInfo();
+				
+				$info_elem['url'] = $instance->getViewUrl();
+				$info_elem['isRead'] = $instance->getIsRead(logged_user()->getId()) ;
+				$info_elem['manager'] = get_class($instance->manager()) ;
+				$info_elem['memPath'] = json_encode($instance->getMembersIdsToDisplayPath());
+				
+				if ($instance instanceof Contact) {
+					if( $instance->isCompany() ) {
+						$info_elem['icon'] = 'ico-company';
+						$info_elem['type'] = 'company';
+					}else{
+						$info_elem['memPath'] = json_encode($instance->getUserType()?"":$instance->getMembersIdsToDisplayPath());
+					}
+				} else if ($instance instanceof ProjectFile) {
+					$info_elem['mimeType'] = $instance->getTypeString();
+				}
+					
+				$info[] = $info_elem;
+			}
+		}
+		
+		$listing = array(
+			"totalCount" => $total_items,
+			"start" => $start,
+			"objects" => $info
+		);
+		
+		ajx_extra_data($listing);
+		tpl_assign("listing", $listing);
+		
+		if (isset($reload) && $reload) ajx_current("reload");
+		else ajx_current("empty");
+	}
+	
 	
 }

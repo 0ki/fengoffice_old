@@ -120,6 +120,28 @@
 			return ObjectTypes::instance()->findById($id, $force_reload);
 		}
 	}
+	
+	
+	
+	static function getListableObjectsSqlCondition($extra_conditions = "") {
+		
+		$sql = "
+			EXISTS (
+				SELECT DISTINCT(id) as id  
+				FROM ".TABLE_PREFIX."object_types ot
+				WHERE type IN ('content_object', 'dimension_object', 'comment') 
+				AND (
+				  plugin_id IS NULL OR plugin_id = 0 OR 
+				  plugin_id IN (
+				    SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0 
+				  )
+				)
+				$extra_conditions
+			)
+		";
+		
+		return $sql;
+	}
     
   } // ObjectTypes 
 

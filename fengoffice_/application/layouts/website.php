@@ -462,6 +462,31 @@ setInterval(function() {
 }, 60000);
 <?php } ?>
 
+og.additional_dashboard_actions = [];
+<?php 
+//additional buttons in dashboard objects list
+$actions = array();
+Hook::fire('additional_dashboard_actions', null, $actions);
+$i=0;
+foreach ($actions as $action) {
+	$i++;
+	?>
+	og.additional_dashboard_actions.push(
+		new Ext.Action({
+			id: "add-action-<?php echo $i?>",
+			text: "<?php echo $action['name']?>",
+			tooltip: "<?php echo $action['name']?>",
+			iconCls: "<?php echo $action['class']?>",
+			handler: function() {
+				<?php echo $action['onclick']?>
+			},
+			scope: this
+		})
+	);
+	<?php
+}
+?>
+
 <?php if (Plugins::instance()->isActivePlugin('mail')) { ?>
 	og.loadEmailAccounts('view');
 	og.loadEmailAccounts('edit');

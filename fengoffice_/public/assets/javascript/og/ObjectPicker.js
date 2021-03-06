@@ -8,7 +8,7 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 		ajax: true,
 		include_comments: true,
 		id_no_select: object_id_no_select,
-		count_results : true,
+		count_results : 0,
 		extra_list_params: extra_list_param
 	};
 	if (ignore_context) {
@@ -32,7 +32,20 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 					'updatedBy', 'updatedById', 'dateUpdated'
             	]
         	}),
-        	remoteSort: true
+        	remoteSort: true,
+        	listeners: {
+        		'load': function(store, result) {
+        			// fix count query to be quick and then don't hide texts and reloadGridPagingToolbar
+        			var bbar = Ext.getCmp('obj_picker_grid').getBottomToolbar();
+        			if (bbar) {
+        				bbar.displayMsg = '';
+        				bbar.afterPageText = '';
+        			}
+        			/*this.lastOptions.params = this.baseParams;
+        			this.lastOptions.params.count_results = 1;
+        			Ext.getCmp('obj_picker_grid').reloadGridPagingToolbar('object','list_objects','obj_picker_grid');*/
+        		}
+        	}
     	});
 		
 
@@ -158,7 +171,10 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 			}
 			var member_ids = [];
 			for (x in this.member_filter) {
-				member_ids.push(this.member_filter[x]);
+				for (var mi=0; mi<this.member_filter[x].length; mi++) {
+					member_ids.push(this.member_filter[x][mi]);
+				}
+				//member_ids.push(this.member_filter[x]);
 			}
 			this.store.baseParams.extra_member_ids = Ext.util.JSON.encode(member_ids);
 			this.store.baseParams.ignore_context = this.store.baseParams.ignore_context || member_ids.length > 0;
@@ -405,10 +421,14 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 						},
 						listeners: {
 							memberselected: {
-								fn: function(member) {
-									grid = Ext.getCmp('obj_picker_grid');
-									grid.member_filter[member.dim] = member.id;
-									grid.filterSelect();
+								fn: function(context) {
+									var grid = Ext.getCmp('obj_picker_grid');
+									if (grid) {
+										//console.log(member);
+										grid.member_filter = context;
+										//grid.member_filter[member.dim] = member.id;
+										grid.filterSelect();
+									}
 								}
 							},
 							clearfilters: {

@@ -129,12 +129,12 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 						('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '')
 					ON DUPLICATE KEY UPDATE name=name;
 				";
-				if (!$this->checkColumnExists($t_prefix . "project_tasks", "from_template_object_id", $this->database_connection)) {
+				if (!$this->checkColumnExists($t_prefix . "contact_addresses", "street", $this->database_connection)) {
 					$upgrade_script .= "
 						ALTER TABLE `".$t_prefix."contact_addresses` MODIFY COLUMN `street` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;
 					";
 				}
-				if (!$this->checkColumnExists($t_prefix . "project_tasks", "from_template_object_id", $this->database_connection)) {
+				if (!$this->checkColumnExists($t_prefix . "system_permissions", "can_manage_contacts", $this->database_connection)) {
 					$upgrade_script .= "
 						ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_manage_contacts` BOOLEAN NOT NULL DEFAULT 0;
 					";
@@ -298,7 +298,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 				// Copy subtasks for tasks that are in template tasks.
 				$upgrade_loop_script = "
 					INSERT INTO `".$t_prefix."template_tasks`(`template_id`, `session_id`, `object_id`, `parent_id`, `text`, `due_date`, `start_date`, `assigned_to_contact_id`, `assigned_on`, `assigned_by_id`, `time_estimate`, `completed_on`, `completed_by_id`, `started_on`, `started_by_id`, `priority`, `state`, `order`, `milestone_id`, `is_template`, `from_template_id`, `from_template_object_id`, `repeat_end`, `repeat_forever`, `repeat_num`, `repeat_d`, `repeat_m`, `repeat_y`, `repeat_by`, `object_subtype`, `percent_completed`, `use_due_time`, `use_start_time`, `original_task_id`, `type_content`".$multi_assignment.")
-					SELECT '0' AS `template_id`,'0' AS `session_id`, pt.*
+					SELECT '0' AS `template_id`,'0' AS `session_id`, pt.`object_id`, pt.`parent_id`, pt.`text`, pt.`due_date`, pt.`start_date`, pt.`assigned_to_contact_id`, pt.`assigned_on`, pt.`assigned_by_id`, pt.`time_estimate`, pt.`completed_on`, pt.`completed_by_id`, pt.`started_on`, pt.`started_by_id`, pt.`priority`, pt.`state`, pt.`order`, pt.`milestone_id`, pt.`is_template`, pt.`from_template_id`, pt.`from_template_object_id`, pt.`repeat_end`, pt.`repeat_forever`, pt.`repeat_num`, pt.`repeat_d`, pt.`repeat_m`, pt.`repeat_y`, pt.`repeat_by`, pt.`object_subtype`, pt.`percent_completed`, pt.`use_due_time`, pt.`use_start_time`, pt.`original_task_id`, pt.`type_content`".$multi_assignment."
 					FROM `".$t_prefix."project_tasks` AS pt
 					WHERE pt.parent_id IN
 					(SELECT pt2.`object_id`

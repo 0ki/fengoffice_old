@@ -1,7 +1,7 @@
 <?php return array(
 	'help opt show' => 'Visa',
 	'help opt hide' => 'Göm',
-	'enable all chelp messages click' => 'Tryck här',
+	'enable all chelp messages click' => 'Tryck hör',
 	'about us' => 'Om oss',
 	'help manual' => 'Användarmanual',
 	'how to purchase' => 'Köpa produkten',

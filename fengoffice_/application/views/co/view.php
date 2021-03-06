@@ -121,7 +121,7 @@
 			}
 			
 			$logged_user_pgs = logged_user()->getPermissionGroupIds();
-			if ($object instanceof ContentDataObject && $object->allowsTimeslots() && (can_access_pgids($logged_user_pgs, $object->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_READ) || logged_user()->isAdministrator())) {
+			if ($object instanceof ContentDataObject && $object->allowsTimeslots()) {
 				echo render_object_timeslots($object, $object->getViewUrl());
 			}
 			

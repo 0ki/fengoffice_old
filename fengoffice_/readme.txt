@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2
+	About Feng Office 3.2.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,11 +105,20 @@
 	Changelog
 	=========
 	
-	Since 3.2-rc2
+	Since 3.2
 	----------------
-	bugfix:	ie fixes.
-	bugfix: custom properties description in forms is not aligned.
+	bugfix: feng1 upgrade
+	bugfix: mail listing must not show emails that are not of my account and are not classified.
+	bugfix: config option notify myself when uploading documents. 
+	bugfix: total pending time in tasks list. 
+	bugfix: add timeslot on task view not visible in root.
+	bugfix: expenses, objectives and purchase orders where sending notifications before commit.
+	bugfix: input type checkbox in modals
+	bugfix: in community editions (tasks does not use time in dates) the reports are adding the timezone.
+	bugfix: projects list and clients list links are not included in dashboard list view
 	
+	performance: linked objects list
+	performance: index by object_type_id, trashed_on, archived_on in objects table
 	
 	Since 3.2-rc
 	----------------

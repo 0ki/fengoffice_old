@@ -128,4 +128,13 @@
 	'member name already exists in dimension' => 'Das Mitglied \'{0}\' existiert bereits in der gewählten Dimension.',
 	'must choose at least one member of' => 'Sie müssen mindestens ein Mitglied von {0} auswählen.',
 	'content too long not loaded' => 'Der vorherige E-Mailinhalt ist zu lang und konnte nicht geladen werden. Er wird trotzdem mit dieser E-Mail versendet.',
+	'you dont have permissions to classify object in member' => 'Sie haben keine Berechtigung, um \'{0}\' \'{1}\' zuzuordnen',
+	'upload error msg UPLOAD_ERR_NO_FILE' => 'Keine Datei konnte hochgeladen werden.',
+	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'Keine Datei konnte hochgeladen werden - temporärer Ordner fehlt.',
+	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'Konnte nicht auf die Festplatte schreiben.',
+	'upload error msg UPLOAD_ERR_EXTENSION' => 'Konnte Datei, wegen der PHP-Dateiendung, nicht hochladen.',
+	'timeslot dnx' => 'Zeitabschnitt existiert nicht',
+	'upload error msg UPLOAD_ERR_INI_SIZE' => 'Die hochgeladene Datei überschreitet die maximal zulässige Größe von {0}.',
+	'upload error msg UPLOAD_ERR_FORM_SIZE' => 'Die hochgeladene Datei überschreitet die maximal zulässige Größe von {0}.',
+	'upload error msg UPLOAD_ERR_PARTIAL' => 'Die hochgeladene Datei wurde nur zum Teil hochgeladen.',
 ); ?>

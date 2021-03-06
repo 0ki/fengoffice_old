@@ -167,7 +167,8 @@ CREATE TABLE `<?php echo $table_prefix ?>objects` (
   KEY `trashed_on` (`trashed_on`),
   KEY `archived_on` (`archived_on`),
   KEY `object_type` (`object_type_id`),
-  KEY `name` USING HASH (`name`)
+  KEY `name` USING HASH (`name`),
+  KEY `type_trash_arch` (`object_type_id`,`trashed_on`,`archived_on`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>plugins` (

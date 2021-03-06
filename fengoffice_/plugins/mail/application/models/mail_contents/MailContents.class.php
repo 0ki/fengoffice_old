@@ -241,6 +241,19 @@ class MailContents extends BaseMailContents {
 			$classified = "AND " . ($classif_filter == 'unclassified' ? "NOT " : "");
 			$classified .= "o.id IN (SELECT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON m.id=om.member_id WHERE m.dimension_id<>$persons_dim_id)";
 		}
+		
+		// if not filtering by account or classification then check that emails are classified or from one of my accounts
+		if ($classified=='' && $accountConditions=='') {
+			$macs = MailAccountContacts::instance()->getByContact(logged_user());
+			$acc_ids = array(0);
+			foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
+			
+			$accountConditions = " AND ($mailTablePrefix.account_id IN (".implode(',', $acc_ids).") OR EXISTS (
+					SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1 
+						INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id 
+						INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id 
+					WHERE om1.object_id=$mailTablePrefix.object_id AND d1.is_manageable=1) ) ";
+		}
 
 		// Check for draft, junk, etc. emails
 		if ($state == "draft") {

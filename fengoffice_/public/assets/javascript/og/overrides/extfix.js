@@ -213,11 +213,13 @@ Ext.grid.GridPanel.override({
 			og.openLink(og.getUrl(controller, func, params), {
 			  hideLoading: true,
 			  callback: function(success, data) {
+				var man = Ext.getCmp(manager);
+				if (!man) return;
 				
-				Ext.getCmp(manager).store.proxy.totalLength = data.totalCount;
-				Ext.getCmp(manager).store.totalLength = data.totalCount;
+				man.store.proxy.totalLength = data.totalCount;
+				man.store.totalLength = data.totalCount;
 						
-				var bba = Ext.getCmp(manager).getBottomToolbar();
+				var bba = man.getBottomToolbar();
 				bba.updateInfo();
 				
 				var total_pag =  data.totalCount < bba.pageSize ? 1 : Math.ceil(data.totalCount/bba.pageSize)
@@ -236,7 +238,8 @@ Ext.grid.GridPanel.override({
 				bba.loading.enable();
 			  }});
 		
-			params.only_result = 0;	
+			params.only_result = 0;
+			params.count_results = 0;
 		}
 	}
 });
