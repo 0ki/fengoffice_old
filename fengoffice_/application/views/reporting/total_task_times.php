@@ -30,7 +30,7 @@
 		foreach ($subgroups as $subgroup) {
 			$sub_total = 0;
 			$sub_total_billing = 0;
-			total_task_times_print_group($subgroup, $grouped_objects, $options, $skip_groups, $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total, $sub_total_billing);
+			total_task_times_print_group($subgroup, $grouped_objects, $options, array(), $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total, $sub_total_billing);
 			$group_total += $sub_total;
 			$group_billing_total += $sub_total_billing;
 		}
@@ -133,31 +133,6 @@
 	$sectionDepth = 0;
 	$totCols = 6 + count_extra_cols($columns);
 	$date_format = user_config_option('date_format');
-	
-	$context = active_context();
-	foreach ($context as $selected_member) {
-		/* var Member $selected_member */
-		if ($selected_member instanceof Member) {
-			$ot = ObjectTypes::findById($selected_member->getObjectTypeId());
-			$dimension_filters[lang($ot->getName())] = array('name' => $selected_member->getName(), 'icon' => $selected_member->getIconClass());
-		}
-	}
-	
-	$dimension_filters = array();
-	$skip_groups = array();
-	foreach ($context as $selection) {
-		if ($selection instanceof Member) {
-			$sel_parents = $selection->getAllParentMembersInHierarchy();
-			foreach ($sel_parents as $sp) $skip_groups[] = $sp->getId();
-			
-			$ot = ObjectTypes::findById($selection->getObjectTypeId());
-			$dimension_filters[lang($ot->getName())] = array('name' => $selection->getName(), 'icon' => $selection->getIconClass());
-		}
-	}
-	
-	foreach ($dimension_filters as $type => $filter) { ?>
-		<div><span class="bold"><?php echo $type ?>:</span><span style="margin-left:10px;" class="coViewAction <?php echo $filter['icon']?>"><?php echo $filter['name'] ?></span></div>
-	<?php }
 
 	if ($start_time) { ?>
 		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_date($start_time) ?>
@@ -172,34 +147,36 @@
 	<?php }	?>
 		
 	
-	<div class="timeslot-report-container"><?php
-	
-	$total = 0;
-	$billing_total = 0;
-	
-	$groups = order_groups_by_name($grouped_timeslots['groups']);
-	foreach ($groups as $gid => $group_obj) {
-		$tmp_total = 0;
-		$tmp_billing_total = 0;
-		total_task_times_print_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_report_data'), $skip_groups, 0, "", $tmp_total, $tmp_billing_total);
-		$total += $tmp_total;
-		$billing_total += $tmp_billing_total;
-	}
-        if(count($groups) >0){
-	?>
-		<div class="report-group-footer" style="margin-top:20px;">
-			<span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
-			<div style="float:right;width:127px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
-		<?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
-			<div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
-		<?php }?>
-		</div>
-	</div>
-        <?php }?>      
-                
+	<div class="timeslot-report-container">
+        <?php
+        if(count($grouped_timeslots) > 0){
+            $total = 0;
+            $billing_total = 0;
+
+            $groups = order_groups_by_name($grouped_timeslots['groups']);
+            foreach ($groups as $gid => $group_obj) {
+                    $tmp_total = 0;
+                    $tmp_billing_total = 0;
+                    total_task_times_print_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_report_data'), array(), 0, "", $tmp_total, $tmp_billing_total);
+                    $total += $tmp_total;
+                    $billing_total += $tmp_billing_total;
+            }
+            if(count($groups) >0){
+            ?>
+                    <div class="report-group-footer" style="margin-top:20px;">
+                            <span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
+                            <div style="float:right;width:127px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
+                    <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
+                            <div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
+                    <?php }?>
+                    </div>
+            </div>
+            <?php }?>
+        <?php }?>
     <?php 
 	$sumTime = 0;
 	$sumBilling = 0;
+        $showBillingCol = array_var($post, 'show_billing', false);
 	if (count($timeslotsArray) > 0){
     ?>
         <table style="min-width:564px">
@@ -228,13 +205,13 @@
 	$showSelCol = false; //show selected columns
 	$showUserCol = !has_value($group_by, 'user_id');
 	$showTitleCol = !has_value($group_by, 'id');
-	$showBillingCol = array_var($post, 'show_billing', false);
 	if (!$showUserCol) $totCols--;
 	if (!$showTitleCol) $totCols--;
 	if (!$showBillingCol) $totCols--;
 	if (count_extra_cols($columns)>0) $showSelCol = true;
 	
 	$previousTSRow = null;
+        $isAlt = true;
 	foreach ($timeslotsArray as $ts)	{
 		$showHeaderRow = false;
 		//to skip showing workspaces in case there are conditions
@@ -243,7 +220,7 @@
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){
 			$has_difference = false;
 			for ($j = 0; $j <= $i; $j++) {
-				$has_difference = $has_difference || has_difference($previousTSRow,$tsRow, $group_by[$j]);
+				$has_difference = $has_difference || has_difference($previousTSRow,$ts, $group_by[$j]);
 			}
 			
 			if ($has_difference){
@@ -257,7 +234,6 @@
 				}
 				$sumTimes[$i] = 0;
 				$sumBillings[$i] = 0;
-				$isAlt = true;
 			}
 		}
 		
@@ -265,13 +241,13 @@
 		$has_difference = false;
 		for ($i = 0; $i < $sectionDepth; $i++){
 			$colspan = 3 - $i;
-			$has_difference = $has_difference || has_difference($previousTSRow,$tsRow, $group_by[$i]);
+			$has_difference = $has_difference || has_difference($previousTSRow,$ts, $group_by[$i]);
 			$showHeaderRow = $has_difference || $showHeaderRow;
 			
 			if ($has_difference){?>
 			<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;<?php echo $i > 0 ? 'padding-left:20px;padding-right:10px;' : '' ?>padding-top:10px;padding-bottom:5px;"><table style="width:100%">
 <tr><td colspan=<?php echo $totCols ?> style="border-bottom:2px solid #888;font-size:<?php echo (150 - (15 * $i)) ?>%;font-weight:bold;">
-	<?php echo clean(getGroupTitle($group_by[$i], $tsRow)) ?></td></tr>
+	<?php echo clean(getGroupTitle($group_by[$i], $ts)) ?></td></tr>
 
 <?php 		}
 			$sumTimes[$i] += $ts->getMinutes();
@@ -279,7 +255,7 @@
 		}
 		
 		$isAlt = !$isAlt;
-		$previousTSRow = $tsRow;
+		$previousTSRow = $ts;
 		
 		if ($showHeaderRow || (!$hasGroupBy && !$headerPrinted)) {
 			$headerPrinted = true;
@@ -351,7 +327,7 @@
 	<?php }?>
 <?php 
 // TOTAL TIME
-if (is_array($timeslotsArray)) {
+if (count($timeslotsArray) > 0) {
 	foreach ($timeslotsArray as $t) {
 		if (isset($has_conditions) && $has_conditions && $t->getObjectManager() == 'Projects') continue;
 		$sumTime += $t->getMinutes();

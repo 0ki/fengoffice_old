@@ -31,7 +31,7 @@ og.MemberChooserTree = function(config) {
 		rootVisible: true,
 		lines: false,
 		root: {
-        	text: lang('All'),
+        	text: lang('all'),
         	expanded: false
     	},
 		cls: 'member-chooser',

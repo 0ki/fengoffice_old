@@ -853,6 +853,7 @@ function create_user($user_data, $permissionsString) {
 	$permission_group->setName('User '.$contact->getId().' Personal');
 	$permission_group->setContactId($contact->getId());
 	$permission_group->setIsContext(false);
+        $permission_group->setType("permission_groups");
 	$permission_group->save();
 	$contact->setPermissionGroupId($permission_group->getId());
 	

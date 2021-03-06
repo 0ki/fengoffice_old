@@ -41,7 +41,7 @@ og.core_dimensions = {
 		});
 	},
 	
-	buildBeforeObjectViewAction: function(obj_id) {
+	buildBeforeObjectViewAction: function(obj_id, suspend_events) {
 		var dimensions_panel = Ext.getCmp('menu-panel');
 		dimensions_panel.items.each(function(item, index, length) {
 			if (item.dimensionCode == 'feng_persons') {
@@ -52,7 +52,9 @@ og.core_dimensions = {
 					if (this.object_id == obj_id) member_id = this.id;
 	 			});
 				if (member_id > 0) {
+					if (suspend_events) item.getSelectionModel().suspendEvents();
 					og.core_dimensions.onContactClick(member_id);
+					if (suspend_events) item.getSelectionModel().resumeEvents();
 				}
 			}
 		});

@@ -136,6 +136,28 @@ abstract class BaseExternalCalendarUser extends DataObject {
 	} // setSync()
         
         /**
+	 * Return value of 'related_to' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getRelatedTo() {
+		return $this->getColumnValue('related_to');
+	} // getRelatedTo()
+
+	/**
+	 * Set value of 'related_to' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return string
+	 */
+	function setRelatedTo($value) {
+		return $this->setColumnValue('related_to', $value);
+	} // setRelatedTo()
+        
+        /**
         * Return manager instance
         *
         * @access protected

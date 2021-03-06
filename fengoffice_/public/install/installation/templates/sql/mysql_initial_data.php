@@ -305,20 +305,20 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`re
  
 
 
-INSERT INTO `<?php echo $table_prefix ?>permission_groups` (`name`, `contact_id`, `is_context`, `plugin_id`) VALUES
-('Super Administrator',	0,	0,	NULL),
-('Administrator',	0,	0,	NULL),
-('Manager',	0,	0,	NULL),
-('Executive',	0,	0,	NULL),
-('Collaborator Customer',	0,	0,	NULL),
-('Internal Collaborator',	0,	0,	NULL),
-('External Collaborator',	0,	0,	NULL),
-('ExecutiveGroup',	0,	0,	NULL),
-('CollaboratorGroup',	0,	0,	NULL),
-('GuestGroup',	0,	0,	NULL),
-('Guest Customer',	0,	0,	NULL),
-('Guest',	0,	0,	NULL),
-('Non-Exec Director',	0,	0,	NULL);
+INSERT INTO `<?php echo $table_prefix ?>permission_groups` (`name`, `contact_id`, `is_context`, `plugin_id`, `type`) VALUES
+('Super Administrator',	0,	0,	NULL, 'roles'),
+('Administrator',	0,	0,	NULL, 'roles'),
+('Manager',	0,	0,	NULL, 'roles'),
+('Executive',	0,	0,	NULL, 'roles'),
+('Collaborator Customer',	0,	0,	NULL, 'roles'),
+('Internal Collaborator',	0,	0,	NULL, 'roles'),
+('External Collaborator',	0,	0,	NULL, 'roles'),
+('ExecutiveGroup',	0,	0,	NULL, 'roles'),
+('CollaboratorGroup',	0,	0,	NULL, 'roles'),
+('GuestGroup',	0,	0,	NULL, 'roles'),
+('Guest Customer',	0,	0,	NULL, 'roles'),
+('Guest',	0,	0,	NULL, 'roles'),
+('Non-Exec Director',	0,	0,	NULL, 'roles');
 
 SET @exegroup := (SELECT pg.id FROM <?php echo $table_prefix ?>permission_groups pg WHERE pg.name = 'ExecutiveGroup');
 SET @colgroup := (SELECT pg.id FROM <?php echo $table_prefix ?>permission_groups pg WHERE pg.name = 'CollaboratorGroup');

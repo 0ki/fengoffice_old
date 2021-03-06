@@ -16,8 +16,11 @@
         $loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
-
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>) && og.setDescription();">
+<script>
+og.genid = '<?php echo $genid?>';
+og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
+</script>
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="add-task" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return App.modules.addTaskForm.checkSubmitAddTask('<?php echo $genid; ?>','<?php echo $task->manager()->getObjectTypeId()?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $task->manager()->getObjectTypeId() ?>) && og.setDescription() <?php if (array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) { echo "&& og.TaskMultiAssignment()";}?>;">
 
 <div class="task">
 <div class="coInputHeader">
@@ -43,9 +46,9 @@
 	
 	</div>
 	<div>
-		<?php echo label_tag(lang('name'), $genid . 'taskListFormName', true ) ?>
+		<?php echo label_tag(lang('name'),'ogTasksPanelATTitle', true ) ?>
                 <?php echo text_field('task[name]', array_var($task_data, 'name'), 
-    		array('class' => 'title', 'id' => $genid . 'taskListFormName', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
+    		array('class' => 'title', 'id' => 'ogTasksPanelATTitle', 'tabindex' => '1',"size"=>"255", "maxlength"=>"255")) ?>
     </div>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $task, $categories); ?>
@@ -72,6 +75,8 @@
 	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
         <input id="<?php echo $genid?>view_related" type="hidden" name="view_related" value="<?php echo (isset($task_related) ? $task_related : "")?>" />
         <input id="<?php echo $genid?>type_related" type="hidden" name="type_related" value="only" />
+        <input id="<?php echo $genid?>multi_assignment_aplly_change" type="hidden" name="task[multi_assignment_aplly_change]" value="" />
+        <input id="<?php echo $genid?>view_add" type="hidden" name="view_add" value="true" />
 	
 	<div id="<?php echo $genid ?>add_task_select_context_div" style="display:none">
 	<fieldset>
@@ -194,9 +199,9 @@
       		<table>
 		<tr>
 			<td align="right"><?php echo lang("hours") ?>:&nbsp;</td>
-			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('style' => 'width:30px', 'tabindex' => '80')) ?></td>
+			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('id' => 'ogTasksPanelATHours', 'style' => 'width:30px', 'tabindex' => '80')) ?></td>
 			<td align="right" style="padding-left:10px"><?php echo lang("minutes") ?>:&nbsp;</td>
-			<td align='left'><select name="task[time_estimate_minutes]" size="1" tabindex="85">
+			<td align='left'><select name="task[time_estimate_minutes]" size="1" tabindex="85" id="ogTasksPanelATMinutes">
 			<?php
 				$minutes = ($totalTime % 60);
 				$minuteOptions = array(0,5,10,15,20,25,30,35,40,45,50,55);
@@ -552,10 +557,19 @@
 		</td></tr></table>
 		
 	</div>
-	
-	
+        
+        <?php 
+            if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                if($task->isNew()){
+                    $null = null;
+                    Hook::fire('draw_html', $genid, $null);
+                }                
+                require_javascript('multi_assignment.js', 'crpm');
+            }
+        ?>
+        
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
-  <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
+        <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
 </div>
 </form>
@@ -714,7 +728,7 @@
 		});
 	}
 
-	Ext.get('<?php echo $genid ?>taskListFormName').focus();
+	Ext.get('ogTasksPanelATTitle').focus();
         
         Ext.extend(og.TaskPopUp, Ext.Window, {
                 accept: function() {
@@ -733,4 +747,15 @@
         function selectRelated(val){
             $("#<?php echo $genid?>type_related").val(val);
         }
+        
+        
+        <?php if ($task->isNew()){ ?> 
+            COUNT_LINE = 1;
+            <?php 
+                    if (count($multi_assignment) > 0) {
+                        foreach($multi_assignment as $assignment){ ?>
+                            addMultiAssignment('<?php echo $genid ?>','<?php echo $assignment['assigned_to_contact_id'] ?>' , '<?php echo $assignment['name'] ?>', '<?php echo $assignment['time_estimate_hours'] ?>', '<?php echo $assignment['time_estimate_minutes'] ?>');		
+            <?php       }
+                    }//foreach ?>
+        <?php }//if ?>
 </script>

@@ -104,9 +104,14 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false) {
 		
-		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
+//		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
+//		$from_date = $from_date->beginningOfDay ();
+//		$to_date = new DateTimeValue ( $date_end->getTimestamp () );
+//		$to_date = $to_date->endOfDay ();
+                
+                $from_date = new DateTimeValue ( $date_start->getTimestamp () - logged_user()->getTimezone() * 3600 );
 		$from_date = $from_date->beginningOfDay ();
-		$to_date = new DateTimeValue ( $date_end->getTimestamp () );
+		$to_date = new DateTimeValue ( $date_end->getTimestamp () - logged_user()->getTimezone() * 3600);
 		$to_date = $to_date->endOfDay ();
 		
 		$assignedFilter = '';
@@ -129,7 +134,7 @@ class ProjectTasks extends BaseProjectTasks {
 				$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
 				break;
 		}
-		
+                
 		$result = self::instance()->listing(array(
 			"extra_conditions" => $conditions
 		));

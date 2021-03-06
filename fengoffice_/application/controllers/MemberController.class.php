@@ -533,7 +533,7 @@ class MemberController extends ApplicationController {
 				}
 				
 				// Fill sharing table if is a dimension object (after permission creation);
-				if ($dimension_object) {
+				if (isset($dimension_object) && $dimension_object instanceof ContentDataObject) {
 					$dimension_object->addToSharingTable();
 				}
 				

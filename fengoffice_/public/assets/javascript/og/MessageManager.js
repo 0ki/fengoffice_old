@@ -33,6 +33,9 @@ og.MessageManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					Ext.getCmp('message-manager').getView().focusRow(og.lastSelectedRow.messages+1);
+                                        
+                                        var sm = Ext.getCmp('message-manager').getSelectionModel();
+                                        sm.clearSelections();
 				}
 			}
 		});
@@ -41,8 +44,8 @@ og.MessageManager = function() {
 	this.store = og.MessageManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
-	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'message-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
+	function renderDragHandle(value, p, r, ix) {
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'message-manager\').getSelectionModel();if (!sm.isSelected('+ix+')) sm.clearSelections();sm.selectRow('+ix+', true);"></div>';
 	}
 	
 	var readClass = 'read-unread-' + Ext.id();

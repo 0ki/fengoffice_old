@@ -223,8 +223,8 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @param Contact $contact
 	 * @return boolean
 	 */
-	function canView(Contact $contact) {
-		return can_read($contact, $this->getMembers(), $this->getObjectTypeId());
+	function canView(Contact $user) {
+		return can_read_sharing_table($user, $this->getId());
 	} // canView
 
 	/**
@@ -454,7 +454,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 			't' => $this->getTitle(),
 			'tnum' => $tnum,
 			'tc' => $tc,
-			'dd' => $this->getDueDate()->getTimestamp());
+			'dd' => $this->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		
 		if ($this->getCompletedById() > 0){
 			$result['compId'] = $this->getCompletedById();

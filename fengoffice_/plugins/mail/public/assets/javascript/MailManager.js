@@ -124,8 +124,8 @@ og.MailManager = function() {
 		return name;
 	}
 	
-	function renderDragHandle(value, p, r) {
-		Ext.getCmp('mails-manager').maxrowidx = r.data.ix;
+	function renderDragHandle(value, p, r, ix) {
+		Ext.getCmp('mails-manager').maxrowidx = ix;
 		return '<div class="img-grid-drag" title="' + lang('click to drag') + '""></div>';
 	}
 	

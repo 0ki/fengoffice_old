@@ -366,32 +366,34 @@ class ProjectEvents extends BaseProjectEvents {
                                             $array_events_google[] = $special_id;
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
                                             if($new_event){
-                                                $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                                if(($fin - $start) == 86400){
-                                                    $new_event->setStart(date("Y-m-d H:i:s",$start));
-                                                    $new_event->setDuration(date("Y-m-d H:i:s",$start));
-                                                    $new_event->setTypeId(2);
-                                                }elseif(($fin - $start) > 86400){                                                
-                                                    $t_s = explode(' ', date("Y-m-d H:i:s",$start));
-                                                    $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
+                                                if(strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){
+                                                    $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                    $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                                    if(($fin - $start) == 86400){
+                                                        $new_event->setStart(date("Y-m-d H:i:s",$start));
+                                                        $new_event->setDuration(date("Y-m-d H:i:s",$start));
+                                                        $new_event->setTypeId(2);
+                                                    }elseif(($fin - $start) > 86400){                                                
+                                                        $t_s = explode(' ', date("Y-m-d H:i:s",$start));
+                                                        $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
 
-                                                    $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - $contact->getTimezone() * 3600);
-                                                    $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - $contact->getTimezone() * 3600);
+                                                        $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - $contact->getTimezone() * 3600);
+                                                        $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - $contact->getTimezone() * 3600);
 
-                                                    $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
-                                                    $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
-                                                    $new_event->setTypeId(2);
-                                                }else{
-                                                    $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                    $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                                }
+                                                        $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
+                                                        $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
+                                                        $new_event->setTypeId(2);
+                                                    }else{
+                                                        $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                        $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                                    }
 
-                                                $new_event->setObjectName($event_name);
-                                                $new_event->setDescription($event->content->text);
-                                                $new_event->setExtCalId($calendar->getId());
-                                                $new_event->save(); 
-
+                                                    $new_event->setObjectName($event_name);
+                                                    $new_event->setDescription($event->content->text);
+                                                    $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
+                                                    $new_event->setExtCalId($calendar->getId());
+                                                    $new_event->save();
+                                                }                                                
                                             }else{
                                                 $new_event = new ProjectEvent();
 
@@ -420,6 +422,7 @@ class ProjectEvents extends BaseProjectEvents {
                                                 $new_event->setObjectName($event_name);
                                                 $new_event->setDescription($event->content->text);
                                                 $new_event->setSpecialID($special_id);
+                                                $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                                 $new_event->setExtCalId($calendar->getId());                                            
                                                 $new_event->save(); 
 
@@ -440,30 +443,40 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $subscription->setContactId($contact->getId());
                                                     $subscription->save();
                                                 }
-
-                                                $member_ids = array();
-                                                $context = active_context();
-                                                if(count($context) > 0){
-                                                    foreach ($context as $selection) {
-                                                            if ($selection instanceof Member) $member_ids[] = $selection->getId();
+                                                
+                                                if($users->getRelatedTo()){
+                                                    $member = array();
+                                                    $member_ids = explode(",",$users->getRelatedTo());
+                                                    foreach ($member_ids as $member_id){
+                                                        $member[] = $member_id;
                                                     }
+                                                    $object_controller = new ObjectController();
+                                                    $object_controller->add_to_members($new_event, $member); 
+                                                }else{
+                                                    $member_ids = array();
+                                                    $context = active_context();
+                                                    if(count($context) > 0){
+                                                        foreach ($context as $selection) {
+                                                                if ($selection instanceof Member) $member_ids[] = $selection->getId();
+                                                        }
+                                                    }                                                
+                                                    if (count($member_ids) == 0 && $contact instanceof Contact) {
+                                                            $m = Members::findById($contact->getPersonalMemberId());
+                                                            if (!$m instanceof Member) {
+                                                                    $person_dim = Dimensions::findByCode('feng_persons');
+                                                                    if ($person_dim instanceof Dimension) {
+                                                                            $member_ids = Members::findAll(array(
+                                                                                    'id' => true, 
+                                                                                    'conditions' => array("object_id = ? AND dimension_id = ?", $contact->getId(), $person_dim->getId())
+                                                                            ));
+                                                                    }
+                                                            } else {
+                                                                    $member_ids[] = $m->getId();
+                                                            }
+                                                    }
+                                                    $object_controller = new ObjectController();
+                                                    $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                                 }                                                
-                                                if (count($member_ids) == 0 && $contact instanceof Contact) {
-                                                	$m = Members::findById($contact->getPersonalMemberId());
-                                                	if (!$m instanceof Member) {
-                                                		$person_dim = Dimensions::findByCode('feng_persons');
-                                                		if ($person_dim instanceof Dimension) {
-                                                			$member_ids = Members::findAll(array(
-                                                				'id' => true, 
-                                                				'conditions' => array("object_id = ? AND dimension_id = ?", $contact->getId(), $person_dim->getId())
-                                                			));
-                                                		}
-                                                	} else {
-                                                		$member_ids[] = $m->getId();
-                                                	}
-                                                }
-                                                $object_controller = new ObjectController();
-                                                $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                             }           
                                         }// foreach event list 
 
@@ -560,6 +573,7 @@ class ProjectEvents extends BaseProjectEvents {
                                             $event_id = explode("/",$createdEvent->id->text);
                                             $special_id = end($event_id); 
                                             $event->setSpecialID($special_id);
+                                            $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                             $event->setExtCalId($calendar_feng['id']);
                                             $event->save();
                                         }                             
@@ -628,6 +642,7 @@ class ProjectEvents extends BaseProjectEvents {
                                             $event_id = explode("/",$createdEvent->id->text);
                                             $special_id = end($event_id); 
                                             $event->setSpecialID($special_id);
+                                            $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                             $event->setExtCalId($calendar->getId());
                                             $event->save();
                                         } 

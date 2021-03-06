@@ -28,7 +28,7 @@
 		  	<td style="vertical-align:middle">
 		  		<span class="perm_all_checkbox_container">
 					<?php echo checkbox_field($genid . 'pAll', false, array('id' => $genid . 'pAll', 'onclick' => 'og.userPermissions.ogPermAllChecked("' . $genid . '", this.checked)')) ?>
-					<label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
+					<label style="font-weight:bold" for="<?php echo $genid ?>pAll" class="checkbox"><?php echo lang('all') ?></label>   
 		  		</span>
 		  	</td>
 		  	<td align=center style="padding:0 10px;width:100px;"><a href="#" class="internalLink radio-title-3" onclick="og.userPermissions.ogPermSetLevel('<?php echo $genid ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>

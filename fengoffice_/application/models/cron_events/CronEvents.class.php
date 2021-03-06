@@ -8,6 +8,9 @@
 class CronEvents extends BaseCronEvents {
 
 	function getDueEvents($date = null) {
+		
+		@unlink(CACHE_DIR . "/autoloader.php");
+		
 		if (!$date instanceof DateTimeValue) $date = DateTimeValueLib::now();
 		$events = self::findAll(array(
 			'conditions' => array(

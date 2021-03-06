@@ -3,8 +3,8 @@
 	<div class="section-top">
                 <div class="dashActions" style="float: right;">
                         <a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
-                            <div class="viewAsList">
-                                <img/>
+                            <div class="viewAsList"> 
+                                <img style="border: 0px; padding: 0px\9;"/>
                                 <?php echo lang('view as list') ?>
                             </div>
                         </a>

@@ -185,6 +185,7 @@ CREATE TABLE `<?php echo $table_prefix ?>permission_groups` (
   `is_context` tinyint(1) unsigned NOT NULL default '0',
   `plugin_id` int(10) unsigned,
   `parent_id` int(10) unsigned NOT NULL default '0',
+  `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NULL,
   PRIMARY KEY  (`id`), 
   UNIQUE KEY `name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -520,6 +521,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_mjump` int(10) unsigned NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
   `special_id` VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `update_sync` DATETIME DEFAULT NULL,
   `ext_cal_id` INT(10) UNSIGNED NOT NULL,
   `original_event_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
   PRIMARY KEY  (`object_id`),
@@ -1014,6 +1016,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_users` 
   `auth_pass` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   `type` text COLLATE utf8_unicode_ci NOT NULL,
   `sync` TINYINT( 1 ) NULL DEFAULT '0',
+  `related_to` VARCHAR( 255 ) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
 

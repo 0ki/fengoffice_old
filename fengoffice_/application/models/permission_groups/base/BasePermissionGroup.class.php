@@ -121,6 +121,28 @@
     function setIsContext($value) {
       return $this->setColumnValue('is_context', $value);
     } // setIsManageable() 
+    
+    /**
+    * Return value of 'type' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getType() {
+      return $this->getColumnValue('type');
+    } // getType()
+    
+    /**
+    * Set value of 'type' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setType($value) {
+      return $this->setColumnValue('type', $value);
+    } // setType() 
  
     /**
     * Return manager instance

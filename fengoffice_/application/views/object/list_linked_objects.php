@@ -17,12 +17,9 @@ if ($linked_objects_object->isNew()){
 		
 	foreach ($linked_objects as $linked_object) {
 		if( !$linked_object instanceof ApplicationDataObject ) continue ; //check that it is a valid object
-		if  ($linked_object instanceof Contact){ // if it is a contact
-			if (!$linked_object->canView(logged_user()) ) continue; // check permissions on contacts 			
-		} else { // not a contact
-			if (!can_read(logged_user(), $linked_object->getMembers(), $linked_object->getObjectTypeId() ) )  //check permissions on other COs
-					continue; 
-		}
+		
+		if (!$linked_object->canView(logged_user()) ) continue; // check permissions
+		
 		$object_title = $linked_object->getObjectName();
 		if (strlen($object_title) > 28){
 			$object_title = clean(utf8_substr($object_title,0,26)) . "&hellip;";	

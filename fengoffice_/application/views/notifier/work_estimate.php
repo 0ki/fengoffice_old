@@ -39,12 +39,12 @@
         <!-- ASSIGNED TO, BY AND PRIORITY -->
         <div>
         <!-- ASSIGNED TO AND BY -->
-        <?php if (isset($asigned) || isset($by)){?>
+        <?php if ((isset($asigned) && $asigned != "") || (isset($by) && $by != "")){?>
             <span style="width: 100%; line-height: 20px; display: block;">
-            <?php if (isset($asigned)) {?>
+            <?php if (isset($asigned) && $asigned != "") {?>
                 <?php echo lang('assigned to')?>: <b><?php echo $asigned ?></b> 
             <?php }?>
-            <?php if (isset($by)) {?>
+            <?php if (isset($by) && $by != "") {?>
                 <?php echo lang('by'); ?>: <b><?php echo $by ?></b> 
             <?php }?>                
             </span>
@@ -53,7 +53,7 @@
         
         <!-- PRIORITY -->
         <?php 
-            if (isset($priority)) {
+            if (isset($priority) && $priority != "") {
                 $prority = $priority[0];
                 if($priority[1] == "white"){
                     $back_color = "font-size: 12px;";
@@ -90,6 +90,12 @@
                     <?php echo $customers ?> 
                 <?php }?> 
                 <!-- END CUSTOMERS -->
+                <!-- FOLDERS -->
+                <?php if (isset($folders) && $folders != "") {?>
+                    <?php echo lang('folder')?>: 
+                    <?php echo $folders ?> 
+                <?php }?> 
+                <!-- END FOLDERS -->
                 <!-- TAGS -->
                 <?php if (isset($tags) && $tags != "") {?>
                     <?php echo lang('tags')?>: 
@@ -100,16 +106,16 @@
         </div>
         <div>
             <!-- DUE DATE AND START DATE -->
-            <?php if (isset($due_date) || isset($start_date)){?>
+            <?php if ((isset($due_date) && $due_date != "") || (isset($start_date) && $start_date != "")){?>
             <span style="width: 100%; line-height: 20px; display: block;">
                 <!-- DUE DATE -->
-                <?php if (isset($due_date)) {?>
+                <?php if (isset($due_date) && $due_date != "") {?>
                     <?php echo lang('due date')?>: <b><?php echo $due_date ?></b> 
                 <?php }?>
                 <!-- END DUE DATE -->
                 
                 <!-- START DATE -->
-                <?php if (isset($start_date)) {?>
+                <?php if (isset($start_date) && $start_date != "") {?>
                     <?php echo lang('start date')?>: <b><?php echo $start_date ?></b> 
                 <?php }?>
                 <!-- END START DATE -->

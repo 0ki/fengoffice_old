@@ -41,6 +41,9 @@ og.ArchivedObjects = function() {
 					}
 					var cmp = Ext.getCmp('archivedobjects-manager');
 					if (cmp) cmp.getView().focusRow(og.lastSelectedRow.archived+1);
+                                        
+                                        var sm = Ext.getCmp('archivedobjects-manager').getSelectionModel();
+                                        sm.clearSelections();
 				}
 			}
 		});
@@ -49,8 +52,8 @@ og.ArchivedObjects = function() {
 	this.store = og.ArchivedObjects.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
-	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="Ext.getCmp(\'archivedobjects-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	function renderDragHandle(value, p, r, ix) {
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="Ext.getCmp(\'archivedobjects-manager\').getSelectionModel().selectRow('+ix+', true);"></div>';
 	}
 	
 	function renderName(value, p, r) {

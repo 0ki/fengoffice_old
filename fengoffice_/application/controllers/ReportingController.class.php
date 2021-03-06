@@ -359,7 +359,7 @@ class ReportingController extends ApplicationController {
 			if ($gb != '0') $group_by[] = $gb;
 		}
 		
-		$timeslots = Timeslots::getTaskTimeslots($context, null, $user, $st, $et, array_var($report_data, 'task_id', 0), null, null, null, null, $timeslotType);
+		$timeslots = Timeslots::getTaskTimeslots($context, null, $user, $st, $et, array_var($report_data, 'task_id', 0), $group_by, null, null, null, $timeslotType);
 		
 		$unworkedTasks = null;
 		if (array_var($report_data, 'include_unworked') == 'checked') {
@@ -375,7 +375,9 @@ class ReportingController extends ApplicationController {
 			else if (str_starts_with($text, 'dim_')) $gb_criterias[] = array('type' => 'dimension', 'value' => str_replace_first('dim_', '', $text));
 		}
 		$grouped_timeslots = groupObjects($gb_criterias, $timeslots);
-
+                
+                tpl_assign('columns', $columns);
+                tpl_assign('timeslotsArray', array());                        
 		tpl_assign('grouped_timeslots', $grouped_timeslots);
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
@@ -400,13 +402,18 @@ class ReportingController extends ApplicationController {
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 
 		$timeslotsArray = Timeslots::getTaskTimeslots(active_context(), null,null,$st,$et, get_id());
-
-		tpl_assign('estimate', $task->getTimeEstimate());
-		//tpl_assign('timeslots', $timeslots);
-		tpl_assign('timeslotsArray', $timeslotsArray);
+                
+                tpl_assign('columns', array());
+                tpl_assign('user', array());
+                tpl_assign('group_by', array());
+                tpl_assign('grouped_timeslots', array());
 		tpl_assign('template_name', 'total_task_times');
+                tpl_assign('estimate', $task->getTimeEstimate());
+		tpl_assign('timeslotsArray', $timeslotsArray);
 		tpl_assign('title',lang('task time report'));
 		tpl_assign('task_title', $task->getTitle());
+                tpl_assign('start_time', $st);
+		tpl_assign('end_time', $et);
 		$this->setTemplate('report_printer');
 	}
 

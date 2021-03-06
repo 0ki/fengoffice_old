@@ -49,6 +49,8 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	$tmp_tasks = ProjectTasks::instance()->getRangeTasksByUser($date_start, $date_end, $user_filter );
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
+	$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
+                                        
 	$tasks = array();
 	if($tmp_tasks) {
 		foreach ($tmp_tasks as $task) {
@@ -198,8 +200,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 				if(!$result)
 					$result = array();
 				if(!empty($milestones))
-					$result = array_merge($result,$milestones );
-					
+					$result = array_merge($result,$milestones );					
 					
 				if(!empty($tasks))
 					$result = array_merge($result,$tasks );
@@ -210,7 +211,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 					
 				if(count($result)<1) $output .= "&nbsp;";
 				else{
-					$count=0;
+					$count = 0;
 					$to_show_len = 25;
 					foreach($result as $event){
 						
@@ -229,7 +230,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 							
 							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 							if($count <= 3){
-								$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
+								$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."...";
 								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
@@ -248,21 +249,21 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 								<?php
 							}
 						} elseif($event instanceof ProjectMilestone ){
-							$milestone=$event;
-							$due_date=$milestone->getDueDate();
+							$milestone = $event;
+							$due_date = new DateTimeValue($milestone->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 							if ($dtv->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 								$count++;
-								if ($count<=3){
+								if ($count <= 3){
 									$cal_text = clean($milestone->getName());
 									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
-									$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
+									$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico ico-milestone\" style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= $cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 									
-									$tip_text = str_replace("\r", '', lang('assigned to') .': '. clean($milestone->getAssignedToName()) . (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
+									$tip_text = str_replace("\r", '', (trim(clean($milestone->getDescription())) == '' ? '' : '<br><br>'. clean($milestone->getDescription())));
 									$tip_text = str_replace("\n", '<br>', $tip_text);
 									if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 									?>
@@ -276,15 +277,16 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 						}//endif milestone
 						elseif($event instanceof ProjectTask){
 							$task = $event;
-							$start_date = $task->getStartDate();
-							$due_date = $task->getDueDate();
 							$start_of_task = false;
 							$end_of_task = false;
-							if ($due_date instanceof DateTimeValue)
-								if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
-							if ($start_date instanceof DateTimeValue)
-								if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
-
+							if ($task->getDueDate() instanceof DateTimeValue){
+                                                                $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                                                                if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
+                                                        }
+                                                        if ($task->getStartDate() instanceof DateTimeValue){
+                                                                $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                                                                if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+                                                        }
 							if ($start_of_task || $end_of_task) {
 								if ($start_of_task && $end_of_task) {
 									$tip_title = lang('task');
@@ -301,10 +303,10 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 								}
 								
 								$count++;
-								if ($count<=3){
+								if ($count <= 3){
 									$cal_text = clean($task->getTitle());
 									$cal_text = mb_strlen($cal_text) < $to_show_len ? $cal_text : mb_substr($cal_text, 0, $to_show_len-3)."...";
-									$output .= "<div class='og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
+									$output .= "<div class='nobr og-wsname-color-$ws_color' style='border-radius:4px;height:17px;margin:1px;padding:1px;z-index:1000;border: 1px solid;border-color:$border_color'>";
 									$output .= "<span id='o_ta_div_$tip_pre" . $task->getId() . "'>";
 									$output .= "<a class=\"internalLink link-ico $ico\" style='vertical-align:bottom;' href='".$task->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= $cal_text."</a>";
@@ -336,7 +338,7 @@ if ($calendar_panel instanceof TabPanel && $calendar_panel->getEnabled()) {
 	
 								if ($count <= 3){
 	
-									$output .= '<div class="event_block"  id="m_bd_div_'.$contact->getId().'" style="border-left-color: #B1BFAC;">';
+									$output .= '<div class="nobr event_block"  id="m_bd_div_'.$contact->getId().'" style="border-left-color: #B1BFAC;">';
 									$output .= "<a style='vertical-align:bottom;' href='".$contact->getViewUrl()."' onclick=\"og.disableEventPropagation(event);\" >";
 									$output .= "<img src='".image_url('/16x16/contacts.png')."' style='vertical-align: middle;'>";
 									$output .= "<span>".$contact->getDisplayName()."</span></a>";

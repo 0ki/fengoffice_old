@@ -49,6 +49,9 @@ og.LinkedObjectManager = function(config) {
 						this.fireEvent('messageToShow', "");
 					}
 					Ext.getCmp('linked-objects-manager').getView().focusRow(og.lastSelectedRow.linkedobjs+1);
+                                        
+                                        var sm = Ext.getCmp('linked-objects-manager').getSelectionModel();
+                                        sm.clearSelections();
 				}
 			}
 		});
@@ -57,8 +60,8 @@ og.LinkedObjectManager = function(config) {
 	this.store = og.LinkedObjectManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
-	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="Ext.getCmp(\'linked-objects-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+	function renderDragHandle(value, p, r, ix) {
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="Ext.getCmp(\'linked-objects-manager\').getSelectionModel().selectRow('+ix+', true);"></div>';
 	}
 
 	function renderName(value, p, r) {

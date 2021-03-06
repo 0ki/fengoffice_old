@@ -163,9 +163,7 @@ class SearchController extends ApplicationController {
                 if($_POST){
                     $conditions = array_var($_POST, 'conditions');                    
                     $search = array_var($_POST, 'search');
-                    $type_object = array_var($search, 'search_object_type_id');
-                    
-                    tpl_assign('type_object', $type_object);
+                    $type_object = array_var($search, 'search_object_type_id');                    
 
                     if(!is_array($conditions)) $conditions = array();
                     $where_condiition = '';
@@ -218,6 +216,8 @@ class SearchController extends ApplicationController {
 			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
                 }else{
+                    $type_object = '';
+                    
                     $sql = "	
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
@@ -245,7 +245,10 @@ class SearchController extends ApplicationController {
 			LIMIT $start, $limitTest ";
                 }
                 
+                tpl_assign('type_object', $type_object);
+                
 		$db_search_results = array();
+                $search_results_ids = array();
 		$timeBegin = time();
 		$res = DB::execute($sql);
 		$timeEnd = time();
@@ -290,8 +293,8 @@ class SearchController extends ApplicationController {
 		foreach ($object_types as $ot) {
 			$types[] = array($ot->getId(), lang($ot->getName()));
 		}
-		if ($selected_type != '')
-			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
+//		if ($selected_type != '')
+//			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
 		
 		tpl_assign('object_types', $types);
 

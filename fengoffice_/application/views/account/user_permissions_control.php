@@ -34,7 +34,7 @@ if (!isset($name)) $name = 'permissions';
   	<tr style="border-bottom:1px solid #888;margin-bottom:5px">
   	<td style="vertical-align:middle">
   		<span class="perm_all_checkbox_container">
-			<?php echo checkbox_field($genid . $dimension->getId() . 'pAll', false, array('id' => $genid . $dimension->getId() .'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '", '. $dimension->getId() .', this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid .$dimension->getId() ?>pAll" class="checkbox"><?php echo lang('All') ?></label>   
+			<?php echo checkbox_field($genid . $dimension->getId() . 'pAll', false, array('id' => $genid . $dimension->getId() .'pAll', 'onclick' => 'og.ogPermAllChecked("' . $genid . '", '. $dimension->getId() .', this.checked)')) ?> <label style="font-weight:bold" for="<?php echo $genid .$dimension->getId() ?>pAll" class="checkbox"><?php echo lang('all') ?></label>   
   		</span>
   	</td>
   	<td align=center style="padding-left:10px;padding-right:10px;width:100px;"><a href="#" class="internalLink radio-title-3" onclick="og.ogPermSetLevel('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>', 3);return false;"><?php echo lang('read write and delete') ?></a></td>

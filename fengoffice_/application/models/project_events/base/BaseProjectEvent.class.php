@@ -285,6 +285,27 @@
     } // setSpecialID()
     
     /**
+    * Set value of 'update_sync' field
+    *
+    * @access public   
+    * @param Date $value
+    * @return Date
+    */
+    function setUpdateSync($value) {
+      return $this->setColumnValue('update_sync', $value);
+    } // setUpdateSync() 
+    
+    /**
+    * Return value of 'update_sync' field
+    *
+    * @access public
+    * @return Date 
+    */
+    function getUpdateSync() {
+      return $this->getColumnValue('update_sync');
+    } // getUpdateSync()
+    
+    /**
     * Return value of 'start' field
     *
     * @access public

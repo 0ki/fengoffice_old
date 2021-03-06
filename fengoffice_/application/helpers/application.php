@@ -592,7 +592,6 @@ function render_link_to_object($object, $text=null, $reload=false){
 	require_javascript("og/ObjectPicker.js");
 	
 	$id = $object->getId();
-	$manager = get_class($object->manager());
 	if ($text == null) $text = lang('link object');
 	$reload_param = $reload ? '&reload=1' : ''; 
 	$result = '';

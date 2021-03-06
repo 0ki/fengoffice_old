@@ -298,7 +298,7 @@ if ($time_estimate > 0 || $total_minutes > 0){?>
 <?php } ?>
 </table>
 
-<div><?php echo lang('percent completed detail', isset($counter) ? $counter : '0') ?></div>
+<div class="desc"><?php echo lang('percent completed detail', isset($counter) ? $counter : '0') ?></div>
 
 <?php } ?>
 

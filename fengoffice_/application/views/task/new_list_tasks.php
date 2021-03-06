@@ -11,7 +11,11 @@
 
 	if (config_option('use tasks dependencies')) {
 		require_javascript('og/tasks/task_dependencies.js');
-	}
+	}        
+
+        if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                require_javascript('multi_assignment.js', 'crpm');
+        }
         
         $loc = user_config_option('localization');
 	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
@@ -99,6 +103,7 @@ og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_2
 og.config.time_format_use_24_duetime = '<?php echo user_config_option('time_format_use_24') ? 'G:i' : 'g:i A' ?>';
 og.config.work_day_start_time = '<?php echo strtotime(user_config_option('work_day_start_time')) ?>';
 og.config.work_day_end_time = '<?php echo strtotime(user_config_option('work_day_end_time')) ?>';
+og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 </script>
 
 <div id="taskPanelHiddenFields">

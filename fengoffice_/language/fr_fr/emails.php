@@ -65,6 +65,7 @@
 	'due task email' => 'La tâche "{0}" est à rendre pour le "{1}" mais est toujours en attente',
 	'due task' => 'Tâche à faire',
 	'due task reminder' => 'Tâche à faire',
+	'due_date task reminder' => 'Tâche à faire',
 	'task has been modified' => 'La tâche "{0}" du contexte "{1}" a été modifiée',
 	'task modified' => 'Tâche modifiée',
 	'view task' => 'Afficher la tâche',

@@ -14,12 +14,41 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
   <div class="formAddTimeslotDescription">
-    <?php echo label_tag(lang('description'), 'addTimeslotDescription', false) ?>
+
+    <div class="bold"><?php echo lang('description') ?>:&nbsp;</div>
     <?php echo textarea_field("timeslot[description]", array_var($timeslot_data, 'description'), array('class' => 'short', 'id' => 'addTimeslotDescription', 'tabindex' => '10')) ?>
   </div>
-	<table>
+
+	<table style="margin-top:10px;">
+<?php
+	if (can_manage_time(logged_user())) {
+		echo '<tr><td><span class="bold">' . lang("person") . ':&nbsp;</span></td>';
+		
+		if (logged_user()->isMemberOfOwnerCompany()) {
+			$users = Contacts::getAllUsers();
+		} else {
+			$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
+		}
+		$tmp_users = array();
+		foreach ($users as $user) {
+			$rel_object = $timeslot->getRelObject();
+			$is_assigned = ($rel_object instanceof ProjectTask && $rel_object->getAssignedToContactId() == $user->getId());
+			if ($is_assigned || can_add($user, active_context(), Timeslots::instance()->getObjectTypeId())) {
+				$tmp_users[] = $user;
+			}
+		}
+		$users = $tmp_users;
+		
+		$user_options = array();
+		foreach ($users as $user) {
+			$user_options[] = option_tag($user->getObjectName(), $user->getId(), array_var($timeslot_data, 'contact_id') == $user->getId() ? array("selected" => "selected") : null);
+		}
+		echo '<td>' . select_box("timeslot[contact_id]", $user_options, array('id' => $genid . 'tsUser', 'tabindex' => '15')) . '</td></tr>';
+		echo '<tr><td>&nbsp;</td></tr>';
+	}
+?>
 		<tr>
-			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("start date") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				$start_time = new DateTimeValue($timeslot->getStartTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
 				echo pick_date_widget2('timeslot[start_value]',$start_time, $genid, 20);
@@ -27,7 +56,7 @@
 		</tr>
 		
 		<tr>
-			<td><b><?php echo lang("start time") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("start time") ?>:&nbsp;</span></td>
 			<td align='left'><select name="timeslot[start_hour]" size="1" tabindex="30">
 			<?php
 			for($i = 0; $i < 24; $i++) {
@@ -36,7 +65,7 @@
 					echo ">$i</option>\n";
 				}
 			?>
-			</select> <b>:</b> <select name="timeslot[start_minute]" size="1">
+			</select> <span class="bold">:</span> <select name="timeslot[start_minute]" size="1">
 			<?php
 			$minute = $start_time->getMinute();
 			for($i = 0; $i < 60; $i++) {
@@ -48,7 +77,7 @@
 			</select></td>
 		</tr><tr><td>&nbsp;</td></tr>
 		<tr>
-			<td ><b><?php echo lang("end date") ?>:&nbsp;</b></td>
+			<td ><span class="bold"><?php echo lang("end date") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				if ($timeslot->getEndTime() == null){
 					$dt = DateTimeValueLib::now();
@@ -60,7 +89,7 @@
 		</tr>
 		
 		<tr>
-			<td><b><?php echo lang("end time") ?>:&nbsp;</b></td>
+			<td><span class="bold"><?php echo lang("end time") ?>:&nbsp;</span></td>
 			<td align='left'><select name="timeslot[end_hour]" size="1" tabindex="50">
 			<?php
 			for($i = 0; $i < 24; $i++) {
@@ -69,7 +98,7 @@
 					echo ">$i</option>\n";
 				}
 			?>
-			</select> <b>:</b> <select name="timeslot[end_minute]" size="1" tabindex="60">
+			</select> <span class="bold">:</span> <select name="timeslot[end_minute]" size="1" tabindex="60">
 			<?php
 			$minute = $end_time->getMinute();
 			for($i = 0; $i < 60; $i++) {
@@ -81,15 +110,15 @@
 			</select></td>
 		</tr><tr><td>&nbsp;</td></tr>
 		<tr>
-			<td ><b><?php echo lang("total pause time") ?>:&nbsp;</b></td>
-			<td align='left'><b><?php 
+			<td ><span class="bold"><?php echo lang("total pause time") ?>:&nbsp;</span></td>
+			<td align='left'><span class="bold"><?php 
 				$totalSeconds = $timeslot->getSubtract();
 				$seconds = $totalSeconds % 60;
 				$minutes = (($totalSeconds - $seconds) / 60) % 60;
 				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
 				
 			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>"/><?php echo lang('hours') ?>,&nbsp;
-			</b><select name="timeslot[subtract_minutes]" size="1" tabindex="70">
+			</span><select name="timeslot[subtract_minutes]" size="1" tabindex="70">
 			<?php
 			for($i = 0; $i < 60; $i++) {
 				echo "<option value='$i'";
@@ -113,9 +142,9 @@
 	<?php if ($show_billing) {?>
 		<br/>
 		<?php echo radio_field('timeslot[is_fixed_billing]',!$timeslot_data['is_fixed_billing'],array('onchange' => 'og.showAndHide("' . $genid. 'hbilling",["' . $genid. 'fbilling"])', 
-			'value' => '0', 'style' => 'width:16px')); echo '<b>' . lang('hourly billing') . '</b>'; ?>
+			'value' => '0', 'style' => 'width:16px')); echo '<span class="bold">' . lang('hourly billing') . '</span>'; ?>
 		<?php echo radio_field('timeslot[is_fixed_billing]',$timeslot_data['is_fixed_billing'],array('onchange' => 'og.showAndHide("' . $genid. 'fbilling",["' . $genid. 'hbilling"])', 
-		'value' => '1', 'style' => 'width:16px')); echo '<b>' . lang('fixed billing') . '</b>'; ?>
+		'value' => '1', 'style' => 'width:16px')); echo '<span class="bold">' . lang('fixed billing') . '</span>'; ?>
 	  	<div id="<?php echo $genid ?>hbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'display:none':'' ?>">
 	    	<?php echo label_tag(lang('hourly rates'), 'addTimeslotHourlyBilling', false) ?>
 	  		<?php echo text_field('timeslot[hourly_billing]',array_var($timeslot_data, 'hourly_billing'), array('id' => 'addTimeslotHourlyBilling')) ?>

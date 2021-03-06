@@ -719,8 +719,8 @@ abstract class BaseProjectTask extends ContentDataObject {
 	function setTypeContent($value) {
 		return $this->setColumnValue('type_content', $value);
 	} // setTypeContent()
-	
-    /**
+        
+        /**
 	 * Return manager instance
 	 *
 	 * @access protected

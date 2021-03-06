@@ -166,9 +166,9 @@ foreach($companies as $company)
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
 					$milestones = ProjectMilestones::getRangeMilestones($date_start, $date_end);
-                                        if($task_filter != "hide"){
-                                            $tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
-                                        }
+					if($task_filter != "hide"){
+						$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
+					}
 					// FIXME
 					$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 					
@@ -401,9 +401,6 @@ foreach($companies as $company)
 											 	
 								<?php
 											}
-								?>
-												
-								<?php
 										}
 									}
 									foreach($result as $event){
@@ -412,8 +409,8 @@ foreach($companies as $company)
 										cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
 										
 										if($event instanceof ProjectMilestone ){
-											$milestone=$event;
-											$due_date=$milestone->getDueDate();
+											$milestone = $event;
+											$due_date = new DateTimeValue($milestone->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
 											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
 												$count++;
@@ -450,14 +447,16 @@ foreach($companies as $company)
 										}//endif milestone
 										elseif($event instanceof ProjectTask){
 											$task = $event;
-											$start_date = $task->getStartDate();
-											$due_date = $task->getDueDate();
 											$end_of_task = false;
 											$start_of_task = false;
-											if ($due_date instanceof DateTimeValue)
+											if ($task->getDueDate() instanceof DateTimeValue){
+												$due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 												if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
-											if ($start_date instanceof DateTimeValue)
+											}
+											if ($task->getStartDate() instanceof DateTimeValue){
+												$start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 												if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+											}
 											if ($start_of_task || $end_of_task) {
 												if ($start_of_task && $end_of_task) {
 													$tip_title = lang('task');
@@ -523,9 +522,6 @@ foreach($companies as $company)
 													</script>
 								<?php
 												}//if count
-								?>
-													
-								<?php
 											}
 										}
 									} // end foreach event writing loop

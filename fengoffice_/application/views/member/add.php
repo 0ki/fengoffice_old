@@ -5,17 +5,18 @@
 	$genid = gen_id();
 	if (!isset($parent_sel)) $parent_sel = 0;
 	if (!isset($obj_type_sel)) $obj_type_sel = 0;
-	if (!$member->isNew()) {
+	if (!isset($member)) $member = null;
+	if ($member instanceof Member && !$member->isNew()) {
 		$memberId = $member->getId();
 	}
 	
 	$object_type_selected = $obj_type_sel > 0 ? ObjectTypes::findById($obj_type_sel) : null;
-	if (!$member->isNew()) {
+	if ($member instanceof Member && !$member->isNew()) {
 		$object_type_name = lang(ObjectTypes::findById($member->getObjectTypeId())->getName());
 	} else {
 		$object_type_name = $object_type_selected instanceof ObjectType ? lang($object_type_selected->getName()) : null;
 	}
-	if(!$member->isNew()) {
+	if($member instanceof Member && !$member->isNew()) {
 		$ot = ObjectTypes::findById($member->getObjectTypeId());
 		$ot_name = lang($ot->getName());
 		if ($member->getArchivedById() == 0) {
@@ -32,7 +33,7 @@
 	id="<?php echo $genid ?>submit-edit-form" 
 	class="edit-member" 
 	method="post" enctype="multipart/form-data"  
-	action="<?php echo $member->isNew() ? get_url('member', 'add') : get_url('member', 'edit', array("id" => $member->getId())) ?>"
+	action="<?php echo $member == null || $member->isNew() ? get_url('member', 'add') : get_url('member', 'edit', array("id" => $member->getId())) ?>"
 <?php if ( $current_dimension->getDefinesPermissions()):?>
 	onsubmit="og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>'); return true">
 <?php endif;?>
@@ -43,7 +44,7 @@
 			<table style="width:535px"><tr><td>
 				<?php echo $form_title ?>
 			</td><td style="text-align:right">
-				<?php echo submit_button($member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+				<?php echo submit_button($member == null || $member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
 			</td></tr></table>
 		</div>
 		
@@ -54,7 +55,7 @@
 		<div style="padding-top:10px">
 			<!--  <div><span class="bold"><?php echo lang('dimension')?>:&nbsp;</span><span class="desc"><?php echo $current_dimension->getName()?></span></div> -->
 			<input type="hidden" id="<?php echo $genid?>dimension_id" name="member[dimension_id]" value="<?php echo $current_dimension->getId();?>" />
-			<input type="hidden" id="<?php echo $genid?>member_id" name="member[member_id]" value="<?php echo ($member->isNew() ? '0' : $member->getId());?>" />
+			<input type="hidden" id="<?php echo $genid?>member_id" name="member[member_id]" value="<?php echo ($member == null || $member->isNew() ? '0' : $member->getId());?>" />
 		</div>
 	</div>
 	<div class="coInputSeparator"></div>
@@ -66,7 +67,7 @@
 			<?php echo text_field('member[name]', array_var($member_data, 'name'), array('id' => $genid . 'memberFormTitle', 'class' => 'title', 'tabindex' => '1')) ?>
 		</div>
 	
-		<div <?php echo ($member->isNew() ? "" : 'style="display:none;"')?>>
+		<div <?php echo ($member == null || $member->isNew() ? "" : 'style="display:none;"')?>>
 			<?php echo label_tag(lang('type'), "", true) ?>
 			<input type="hidden" id="<?php echo $genid ?>memberObjectType" name="member[object_type_id]"></input>
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
@@ -131,7 +132,7 @@
 		<input type="hidden" name="prop_genid" value="<?php echo $prop_genid?>" />
 	<?php } ?>
 	<div style="margin-top:10px;"></div>
-	<?php echo submit_button($member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+	<?php echo submit_button($member == null || $member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
 	</div>
 </form>
 

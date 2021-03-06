@@ -251,7 +251,7 @@ sig.actualHtmlSignature = '';
 	</div>
 	<?php } ?>
 	
-	<?php if (count($cps) > 0) { ?>
+	<?php if (count($visible_cps) > 0) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 			<fieldset>
 				<legend><?php echo lang('custom properties') ?></legend>

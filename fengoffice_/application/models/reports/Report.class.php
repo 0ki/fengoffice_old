@@ -41,7 +41,7 @@
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read($user, $this->getMembers(), $this->manager()->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	} // canView
 
 	/**

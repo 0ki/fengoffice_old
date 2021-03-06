@@ -310,16 +310,17 @@ og.CalendarTopToolbar = function(config) {
 	if (!og.loggedUser.isGuest) {
 		this.addSeparator();
 		this.add(topToolbarItems.imp_exp);
-	}
-        this.add(new Ext.Action({
-                                text: lang('sync'),
-                                tooltip: lang('sync'),
-                                handler: function() {
-                                        var url = og.getUrl('event', 'calendar_sinchronization');
-                                        og.openLink(url);
-                                },
-                                scope: this
-                            }));
+	
+                this.add(new Ext.Action({
+                                        text: lang('sync'),
+                                        tooltip: lang('sync'),
+                                        handler: function() {
+                                                var url = og.getUrl('event', 'calendar_sinchronization');
+                                                og.openLink(url);
+                                        },
+                                        scope: this
+                                    }));
+        }
 //        this.add(new Ext.Action({
 //                                text: lang('import'),
 //                                tooltip: lang('import'),

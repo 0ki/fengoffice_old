@@ -268,7 +268,11 @@ class Timeslot extends BaseTimeslot {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read($user, $this->getMembers());
+		if ($this->getRelObjectId() > 0) {
+			return can_read_sharing_table($user, $this->getRelObjectId());
+		} else {
+			return can_read_sharing_table($user, $this->getId());
+		}
 	}
 
 	/**
@@ -293,7 +297,7 @@ class Timeslot extends BaseTimeslot {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
-		return ($user->getId() == $this->getContactId() || $user->isAdministrator());
+		return ($user->getId() == $this->getContactId() || can_manage_time($user));
 	}
 
 	/**
@@ -304,7 +308,7 @@ class Timeslot extends BaseTimeslot {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
-		return ($user->getId() == $this->getContactId() || $user->isAdministrator());
+		return ($user->getId() == $this->getContactId() || can_manage_time($user));
 	}
 
 	// ---------------------------------------------------

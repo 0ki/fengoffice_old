@@ -1369,9 +1369,14 @@ class EventController extends ApplicationController {
                     }
                     tpl_assign('calendars', $view_calendars);
                     
+                    $members_ids = explode(",", $user->getRelatedTo());
+                    foreach($members_ids as $members_id){
+                        $members[] = $members_id;
+                    }
                     $user_data['id'] = $user->getId();
                     $user_data['auth_user'] = $user->getAuthUser();
-                    $user_data['auth_pass'] = $user->getAuthPass();   
+                    $user_data['auth_pass'] = $user->getAuthPass();
+                    $user_data['related_to'] = $members;
                     $user_data['sync'] = $user->getSync(); 
                     
                     tpl_assign('user', $user_data);
@@ -1415,10 +1420,18 @@ class EventController extends ApplicationController {
                         $sync = 1;
                     }
                     
+                    $member_ids = json_decode(array_var($_POST, 'related_to'));
+                    $members = "";
+                    foreach($member_ids as $member_id){
+                        $members .= $member_id.",";
+                    }
+                    $members = rtrim($members, ",");
+                    
                     $user_cal = ExternalCalendarUsers::findById(get_id('cal_user_id'));
                     if($user_cal){
                         $user_cal->setAuthUser(array_var($_POST, 'auth_user'));
                         $user_cal->setAuthPass(array_var($_POST, 'auth_pass'));
+                        $user_cal->setRelatedTo($members);
                         $user_cal->setSync($sync);
                         $user_cal->save();
                         
@@ -1429,6 +1442,7 @@ class EventController extends ApplicationController {
                         $user_cal->setAuthUser(array_var($_POST, 'auth_user'));
                         $user_cal->setAuthPass(array_var($_POST, 'auth_pass'));
                         $user_cal->setContactId(logged_user()->getId());
+                        $user_cal->setRelatedTo($members);
                         $user_cal->setType("google");
                         $user_cal->setSync($sync);
                         $user_cal->save();
@@ -1713,32 +1727,34 @@ class EventController extends ApplicationController {
                                         $array_events_google[] = $special_id;
                                         $new_event = ProjectEvents::findBySpecialId($special_id);
                                         if($new_event){
-                                            $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                            $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                            if(($fin - $start) == 86400){
-                                                $new_event->setStart(date("Y-m-d H:i:s",$start));
-                                                $new_event->setDuration(date("Y-m-d H:i:s",$start));
-                                                $new_event->setTypeId(2);
-                                            }elseif(($fin - $start) > 86400){                                                
-                                                $t_s = explode(' ', date("Y-m-d H:i:s",$start));
-                                                $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
-                                                
-                                                $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
-                                                $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
-                                                
-                                                $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
-                                                $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
-                                                $new_event->setTypeId(2);
-                                            }else{
-                                                $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                            if(strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){
+                                                $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                                if(($fin - $start) == 86400){
+                                                    $new_event->setStart(date("Y-m-d H:i:s",$start));
+                                                    $new_event->setDuration(date("Y-m-d H:i:s",$start));
+                                                    $new_event->setTypeId(2);
+                                                }elseif(($fin - $start) > 86400){                                                
+                                                    $t_s = explode(' ', date("Y-m-d H:i:s",$start));
+                                                    $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
+
+                                                    $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
+                                                    $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
+
+                                                    $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
+                                                    $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
+                                                    $new_event->setTypeId(2);
+                                                }else{
+                                                    $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
+                                                    $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
+                                                }
+
+                                                $new_event->setObjectName($event_name);
+                                                $new_event->setDescription($event->content->text);
+                                                $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
+                                                $new_event->setExtCalId($calendar->getId());
+                                                $new_event->save(); 
                                             }
-                                            
-                                            $new_event->setObjectName($event_name);
-                                            $new_event->setDescription($event->content->text);
-                                            $new_event->setExtCalId($calendar->getId());
-                                            $new_event->save(); 
-                                            
                                         }else{
                                             $new_event = new ProjectEvent();
                                             
@@ -1767,6 +1783,7 @@ class EventController extends ApplicationController {
                                             $new_event->setObjectName($event_name);
                                             $new_event->setDescription($event->content->text);
                                             $new_event->setSpecialID($special_id);
+                                            $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
                                             $new_event->setExtCalId($calendar->getId());                                            
                                             $new_event->save(); 
                                             
@@ -1788,13 +1805,23 @@ class EventController extends ApplicationController {
                                                 $subscription->save();
                                             }
 
-                                            $member_ids = array();
-                                            $context = active_context();
-                                            foreach ($context as $selection) {
+                                            if($users->getRelatedTo()){
+                                                $member = array();
+                                                $member_ids = explode(",",$users->getRelatedTo());
+                                                foreach ($member_ids as $member_id){
+                                                    $member[] = $member_id;
+                                                }
+                                                $object_controller = new ObjectController();
+                                                $object_controller->add_to_members($new_event, $member); 
+                                            }else{
+                                                $member_ids = array();
+                                                $context = active_context();
+                                                foreach ($context as $selection) {
                                                     if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                                            }		        
-                                            $object_controller = new ObjectController();
-                                            $object_controller->add_to_members($new_event, $member_ids); 
+                                                }		        
+                                                $object_controller = new ObjectController();
+                                                $object_controller->add_to_members($new_event, $member_ids); 
+                                            }                                            
                                         }           
                                     }// foreach event list 
 
@@ -1891,6 +1918,7 @@ class EventController extends ApplicationController {
                                         $event_id = explode("/",$createdEvent->id->text);
                                         $special_id = end($event_id); 
                                         $event->setSpecialID($special_id);
+                                        $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                         $event->setExtCalId($calendar_feng['id']);
                                         $event->save();
                                     }                             
@@ -1959,6 +1987,7 @@ class EventController extends ApplicationController {
                                         $event_id = explode("/",$createdEvent->id->text);
                                         $special_id = end($event_id); 
                                         $event->setSpecialID($special_id);
+                                        $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                         $event->setExtCalId($calendar->getId());
                                         $event->save();
                                     } 

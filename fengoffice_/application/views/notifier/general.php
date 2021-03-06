@@ -139,6 +139,12 @@
                         <?php echo $customers ?> 
                     <?php }?> 
                     <!-- END CUSTOMERS -->
+                    <!-- FOLDERS -->
+                    <?php if (isset($folders) && $folders != "") {?>
+                        <?php echo lang('folder')?>: 
+                        <?php echo $folders ?> 
+                    <?php }?> 
+                    <!-- END FOLDERS -->
                     <!-- TAGS -->
                     <?php if (isset($tags) && $tags != "") {?>
                         <?php echo lang('tags')?>: 
@@ -220,6 +226,12 @@
                     <?php echo $customers ?> 
                 <?php }?> 
                 <!-- END CUSTOMERS -->
+                <!-- FOLDERS -->
+                <?php if (isset($folders) && $folders != "") {?>
+                    <?php echo lang('folder')?>: 
+                    <?php echo $folders ?> 
+                <?php }?> 
+                <!-- END FOLDERS -->
                 <!-- TAGS -->
                 <?php if (isset($tags) && $tags != "") {?>
                     <?php echo lang('tags')?>: 

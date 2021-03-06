@@ -12,11 +12,11 @@
 		foreach ($contacts as $person): /* @var $person Contact */ ?>
 			<li<?php echo ($row_cls == "" ? "" : " class='$row_cls'")?>>
 				<div class="contact-avatar">
-					<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>);"><img src="<?php echo $person->getPictureUrl(); ?>" /></a>
+					<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>, true);"><img src="<?php echo $person->getPictureUrl(); ?>" /></a>
 				</div>
 				
 				<div class="contact-info">
-					<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>);"><?php echo clean($person->getObjectName()) ?></a>
+					<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>, true);"><?php echo clean($person->getObjectName()) ?></a>
 					<div class="email"><?php echo $person->getEmailAddress(); ?></div> 
 				</div>
 				

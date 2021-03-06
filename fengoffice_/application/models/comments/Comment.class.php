@@ -118,8 +118,7 @@ class Comment extends BaseComment {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		$object = $this->getRelObject();
-		return can_read($user, $object->getMembers(), $object->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getRelObjectId());
 	} // canView
 
 	/**

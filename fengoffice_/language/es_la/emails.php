@@ -77,6 +77,7 @@
 	'due task email' => 'La tarea "{0}" vencerá el "{1}" y aún está pendiente',
 	'due task' => 'Tarea a vencer',
 	'due task reminder' => 'Tarea a vencer',
+	'due_date task reminder' => 'Tarea a vencer',
 	'task has been modified' => 'La tarea "{0}" en el espacio "{1}" ha sido modificada.',
 	'task modified' => 'Tarea modificada',
 	'view task' => 'Ver tarea',

@@ -8,7 +8,7 @@
 class Dimension extends BaseDimension {
 	
 	
-	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false ) {
+	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false, $extra_conditions = "") {
 		$contactsType = ObjectTypes::instance()->findByName('person');
 		if ($contactsType) {
 			$contactsTypeId = $contactsType->getId();
@@ -27,6 +27,11 @@ class Dimension extends BaseDimension {
 				$parameters['conditions'].= " AND ( object_type_id <> $contactsTypeId OR EXISTS ( SELECT object_id FROM  ".TABLE_PREFIX."contacts c WHERE c.object_id = `".TABLE_PREFIX."members`.object_id AND c.disabled = 0 ))" ;
 			}
 		}
+		
+		if ($extra_conditions != "") {
+			$parameters['conditions'].= " $extra_conditions";
+		}
+		
 		$members = Members::findAll($parameters);
   		return $members;
   	}

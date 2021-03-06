@@ -545,7 +545,11 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	}
         
         for (var c = 0; c < group.group_tasks.length; c++){
-            time_estimated += group.group_tasks[c].TimeEstimate;
+            if (group.group_tasks[c].subtasks.length > 0){
+                    time_estimated += this.subtasksTimeEstimate(group.group_tasks[c].TimeEstimate,group.group_tasks[c], displayCriteria)
+            }else{
+                    time_estimated += group.group_tasks[c].TimeEstimate;
+            }
 	}
         
         if(drawOptions.show_time_estimates){
@@ -565,7 +569,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
             sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" +  lang('time estimates') + ':&nbsp;' + format_total_estimate + "</span>");
         }
         
-	sb.append("</div></div>");
+	sb.append("</div></div></div>");
 	return sb.toString();
 }
 
@@ -764,13 +768,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	sb.append('</td><td style="width:85px;">' + ogTasks.buildTaskPercentCompletedBar(task) + '</td><td>');
 
 	sb.append('</td><td align=right><table style="height:100%"><tr>');
+        
 	//Draw task actions
 	sb.append("<td class='nobr'><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
-	var renderTo = "ogTasksPanelTaskActions" + tgId + "Assign";
 	
 	// Add Subtask
-	sb.append("<td class='add-subtask-link-container'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
-	
+	sb.append("<td style='padding-left:8px;'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
 
 	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
 	// FIXME: remove this function when wuick add is enabled
@@ -913,7 +916,18 @@ ogTasks.drawSubtasks = function(task, drawOptions, displayCriteria, group_id, le
 	html += '</div>';
 	return html;
 }
-
+                    
+ogTasks.subtasksTimeEstimate = function(time_estimated, task, displayCriteria){
+	var orderedTasks = this.orderTasks(displayCriteria, task.subtasks);
+        for (var i = 0; i < orderedTasks.length; i++){
+                if (orderedTasks[i].subtasks.length > 0){
+                        time_estimated += this.subtasksTimeEstimate(orderedTasks[i].TimeEstimate, orderedTasks[i], displayCriteria);
+                }else{
+                        time_estimated = time_estimated + orderedTasks[i].TimeEstimate
+                }
+        }
+	return time_estimated;
+}
 
 ogTasks.ToggleCompleteStatus = function(task_id, status){
 	var action = (status == 0)? 'complete_task' : 'open_task';

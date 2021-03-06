@@ -42,19 +42,19 @@ $genid = gen_id();
 	echo stylesheet_tag('event/day.css');
 
 	$today = DateTimeValueLib::now();
-	$today->add('h', logged_user()->getTimezone());
+	//$today->add('h', logged_user()->getTimezone());
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
 	$drawHourLine = ($day == $currentday && $month == $currentmonth && $year == $currentyear);
 
 	$dtv = DateTimeValueLib::make(0,0,0,$month,$day,$year);
-
+        
 	$result = ProjectEvents::getDayProjectEvents($dtv, active_context(), $user_filter, $status_filter); 
 	if(!$result) $result = array();	
 	
 	$alldayevents = array();
-	$milestones = ProjectMilestones::getRangeMilestones($dtv, $dtv);
+	$milestones = ProjectMilestones::getRangeMilestones($today, $today);
         if($task_filter != "hide"){
             $tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
         }
@@ -70,34 +70,37 @@ $genid = gen_id();
 	
 	if($milestones)
 		$alldayevents = array_merge($alldayevents,$milestones);
-
+        
 	if(isset($tasks)) {
 		$tmp_tasks = array();
 		$dtv_end = new DateTimeValue($dtv->getTimestamp() + 60*60*24);
 		foreach ($tasks as $task) {
 			$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $dtv, $dtv_end));
 		}
-		foreach ($tmp_tasks as $k => $task) {
-			$added = false;
-			if ($task->getDueDate() instanceof DateTimeValue &&
-				$dtv->getTimestamp() == mktime(0,0,0, $task->getDueDate()->getMonth(), $task->getDueDate()->getDay(), $task->getDueDate()->getYear())) {
-					if ($task->getUseDueTime()) {
-						$result[] = $task;
-					} else {
-						$alldayevents[] = $task;
-					}
-					$added = true;
-			}
-			if (!$added && $task->getStartDate() instanceof DateTimeValue &&
-				$dtv->getTimestamp() == mktime(0,0,0, $task->getStartDate()->getMonth(), $task->getStartDate()->getDay(), $task->getStartDate()->getYear())) {
-					if ($task->getUseStartTime()) {
-						$result[] = $task;
-					} else {
-						$alldayevents[] = $task;
-					}
-					$added = true;
-			}
-			
+		foreach ($tmp_tasks as $task) {
+			$added = false;                        
+                        if($task->getDueDate() instanceof DateTimeValue){
+                            $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                            if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
+                                    if ($task->getUseDueTime()) {
+                                            $result[] = $task;
+                                    } else {
+                                            $alldayevents[] = $task;
+                                    }
+                                    $added = true;
+                            }
+                        }
+                        if($task->getStartDate() instanceof DateTimeValue){
+                            $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
+                            if (!$added && $dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
+                                    if ($task->getUseStartTime()) {
+                                            $result[] = $task;
+                                    } else {
+                                            $alldayevents[] = $task;
+                                    }
+                                    $added = true;
+                            }
+                        }
 		}
 	}
 	if (is_array($birthdays))
@@ -185,14 +188,16 @@ $genid = gen_id();
 									$divtype = '<span class="italic">' . lang('milestone') . '</span> - ';
 									$tipBody = clean($event->getDescription());
 								}elseif ($event instanceof ProjectTask){
-									$start_date = $event->getStartDate();
-									$due_date = $event->getDueDate();
 									$start_of_task = false;
 									$end_of_task = false;
-									if ($due_date instanceof DateTimeValue)
+									if ($event->getDueDate() instanceof DateTimeValue) {
+										$due_date = new DateTimeValue($event->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 										if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
-									if ($start_date instanceof DateTimeValue)
+									}
+									if ($event->getStartDate() instanceof DateTimeValue) {
+										$start_date = new DateTimeValue($event->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
 										if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+									}
 									
 									if ($start_of_task && $end_of_task) {
 										$tip_title = lang('task');
@@ -480,7 +485,7 @@ $genid = gen_id();
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>;"></div>
 													<div id="inner_d_ev_div_<?php echo $event->getId()?>" class="chipbody edit og-wsname-color-<?php echo  $ws_color?>" style="height: <?php echo $height ?>px;">
-													<div style="height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
+													<div style="overflow:hidden;height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
 														<table style="width:100%;"><tr><td>
 														<?php if ($event instanceof ProjectEvent) { ?>
 															<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin-top:2px 0 0 2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);"></input>

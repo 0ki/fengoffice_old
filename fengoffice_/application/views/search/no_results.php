@@ -1,3 +1,4 @@
+<?php $genid = gen_id();?>
 <div id="headerDiv" class="searchDescription">
 <?php 
         if (array_var($_GET, 'search_all_projects') != 'true' && current_member_search()){            
@@ -18,4 +19,3 @@
 		<?php echo lang("no search result for", $search_string);?>
 	</div>
 </div>
-

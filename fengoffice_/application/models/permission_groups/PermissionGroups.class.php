@@ -22,8 +22,9 @@
     }
     
     static function getNonRolePermissionGroups() {
-    	$roles = "'Administrator','Collaborator Customer','CollaboratorGroup','Executive','ExecutiveGroup','External Collaborator','Guest','Guest Customer','GuestGroup','Internal Collaborator','Manager','Non-Exec Director','Super Administrator'";
-		return self::findAll(array("conditions" => "`contact_id` = 0 AND `name` NOT IN ($roles) AND parent_id=0"));
+//    	$roles = "'Administrator','Collaborator Customer','CollaboratorGroup','Executive','ExecutiveGroup','External Collaborator','Guest','Guest Customer','GuestGroup','Internal Collaborator','Manager','Non-Exec Director','Super Administrator'";
+//		return self::findAll(array("conditions" => "`contact_id` = 0 AND `name` NOT IN ($roles) AND parent_id=0"));
+        return self::findAll(array("conditions" => "`type` = 'user_groups'"));
     }
     
   } // PermissionGroups 

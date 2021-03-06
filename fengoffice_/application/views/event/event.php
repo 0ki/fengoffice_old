@@ -307,24 +307,16 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
                                                                                         if (el) el.checked = true;
                                                                                 } 
                                                                         }
-                                                                        og.viewDays = function(view) {
-                                                                            var btn = Ext.get('<?php echo $genid ?>repeat_days');
-                                                                            if(view){
-                                                                                btn.dom.style.display = 'block';
-                                                                            }else{
-                                                                                btn.dom.style.display = 'none';
-                                                                            }
-                                                                        }
                                                                 </script>
 								<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
-									<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => $genid.'repeat_opt_forever','value' => '1', 'tabindex' => '60', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+									<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => $genid.'repeat_opt_forever','value' => '1', 'tabindex' => '60')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
 								</td></tr>
 								<tr><td colspan="2" style="vertical-align:middle">
-									<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => $genid.'repeat_opt_times','value' => '2', 'tabindex' => '70', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
+									<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => $genid.'repeat_opt_times','value' => '2', 'tabindex' => '70')) ."&nbsp;". lang('CAL_REPEAT');
 									echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;" . lang('CAL_TIMES') ?>
 								</td></tr>
 								<tr><td style="vertical-align:middle">
-									<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'tabindex' => '90', 'onclick' => 'og.viewDays(false)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?>
+									<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'tabindex' => '90')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?>
 								</td><td style="padding-left:8px;">
 									<?php echo pick_date_widget2('event[repeat_end]', $rend, $genid, 95);?>
 								</td></tr>
@@ -362,7 +354,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 						</div>
 					</td>
 				</tr>
-                                <tr id="<?php echo $genid ?>repeat_days" style="display: none;">
+                                <tr id="<?php echo $genid ?>repeat_days">
                                     <td>
                                         <table>
                                             <tr>

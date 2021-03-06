@@ -534,6 +534,7 @@ class AccessController extends ApplicationController {
 				$permission_group->setName('Account Owner');
 				$permission_group->setContactId($administrator->getId());
 				$permission_group->setIsContext(false);
+                                $permission_group->setType("permission_groups");
 				$permission_group->save();
 				
 				$administrator->setPermissionGroupId($permission_group->getId());

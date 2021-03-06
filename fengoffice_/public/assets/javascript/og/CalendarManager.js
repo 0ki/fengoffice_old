@@ -23,6 +23,9 @@ og.CalendarManager = function() {
 					var d = this.reader.jsonData;
 					/*var ws = og.clean(Ext.getCmp('workspace-panel').getActiveWorkspace().name);
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag());*/
+                                        
+                                        var sm = Ext.getCmp('calendar-manager').getSelectionModel();
+                                        sm.clearSelections();
 				}
 			},
 			renderTo: Ext.getBody()

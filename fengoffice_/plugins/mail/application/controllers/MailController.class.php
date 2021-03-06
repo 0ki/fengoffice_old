@@ -1980,7 +1980,7 @@ class MailController extends ApplicationController {
 							if (!$account_user instanceof MailAccountContact) {
 								$account_user = new MailAccountContact();
 								$account_user->setAccountId($mailAccount->getId());
-								$account_user->setUserId($user_id);
+								$account_user->setContactId($user_id);
 							}
 							$account_user->setCanEdit($access == 'write');
 							$account_user->save();

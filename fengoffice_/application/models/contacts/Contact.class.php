@@ -578,7 +578,7 @@ class Contact extends BaseContact {
 	 */
 	function getContactsByCompany() {
 		return Contacts::findAll(array(
-        'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` = 0'
+                    'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` <> 0 AND `disabled` = 0'
 		)); // findAll
 	} // getContactsByCompany
 	
@@ -869,7 +869,7 @@ class Contact extends BaseContact {
 	function canView(Contact $user) {
 		if ( $this->isOwnerCompany()) return true;
 		if ( $user->getId() == logged_user()->getId() ) return true ;
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	} // canView
 	
 	
@@ -946,7 +946,7 @@ class Contact extends BaseContact {
 	
 
 	function canLinkObject(Contact $user) {
-		return can_read ($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	}
 	
 	
@@ -1882,4 +1882,12 @@ class Contact extends BaseContact {
 		return get_url('account', 'disable', array("id"=>$this->getId()));
 	}
 
+	
+	private $pg_ids_cache = null;
+	function getPermissionGroupIds() {
+		if (is_null($this->pg_ids_cache)) {
+			$this->pg_ids_cache = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = '".$this->getId()."'"));
+		}
+		return $this->pg_ids_cache;
+	}
 }

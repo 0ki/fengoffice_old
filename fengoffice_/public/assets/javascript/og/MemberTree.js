@@ -100,7 +100,7 @@ og.MemberTree = function(config) {
 					}
 				}
 				
-				if (og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
+				if (e.data.selections[0] && og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
 					
 					if (og.preferences['drag_drop_prompt'] == 'prompt') {
@@ -238,7 +238,6 @@ og.MemberTree = function(config) {
 					og.contextManager.lastSelectedMemberType = type; 
 					
 					og.eventManager.fireEvent('member changed', node);
-					og.eventManager.fireEvent('workspace changed', node); //Backguard compatibility
 					
 				}else { 
 					// Multiple Selection: (UNDER DEVELOPENT) 

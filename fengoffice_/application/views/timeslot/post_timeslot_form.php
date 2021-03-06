@@ -7,10 +7,36 @@
 <form class="internalForm" action="<?php echo Timeslot::getAddTimespanUrl($timeslot_form_object) ?>" method="post" enctype="multipart/form-data">
 <button id="<?php echo $genid?>buttonAddWork" type="button" class="submit" onclick="addWork('<?php echo $genid?>')"><?php echo lang('add work') ?></button>
 
-<div id="<?php echo $genid?>addwork" style="display:none">
+<div id="<?php echo $genid?>addwork" style="display:none;">
 <table><tr><td>
+<?php
+	if (can_manage_time(logged_user())) {
+		echo label_tag(lang("person"), $genid . "closeTimeslotDescription", false);
+		
+		if (logged_user()->isMemberOfOwnerCompany()) {
+			$users = Contacts::getAllUsers();
+		} else {
+			$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
+		}
+		$tmp_users = array();
+		foreach ($users as $user) {
+			$is_assigned = ($timeslot_form_object instanceof ProjectTask && $timeslot_form_object->getAssignedToContactId() == $user->getId());
+			if ($is_assigned || can_add($user, active_context(), Timeslots::instance()->getObjectTypeId())) {
+				$tmp_users[] = $user;
+			}
+		}
+		$users = $tmp_users;
+		
+		$user_options = array();
+		foreach ($users as $user) {
+			$user_options[] = option_tag($user->getObjectName(), $user->getId(), logged_user()->getId() == $user->getId() ? array("selected" => "selected") : null);
+		}
+		echo select_box("timeslot[contact_id]", $user_options, array('id' => $genid . 'tsUser', 'tabindex' => '60'));
+	}
+?>
+</td><td style="padding-left:10px">
 	<?php echo label_tag(lang("end work description"), $genid . "closeTimeslotDescription", false) ?>
-        <?php echo textarea_field("timeslot[description]", '', array('class' => 'short', 'id' => $genid . 'closeTimeslotDescription', 'tabstop' => '100')) ?>
+	<?php echo textarea_field("timeslot[description]", '', array('class' => 'short', 'id' => $genid . 'closeTimeslotDescription', 'tabstop' => '70')) ?>
 </td><td style="padding-left:10px">
 	<?php echo label_tag(lang('total time'), "closeTimeslotTotalTime", false) ?>
         <table>

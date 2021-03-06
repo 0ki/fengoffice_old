@@ -57,7 +57,7 @@
 		if (file_exists( $path ) ) {
 			include $path;
 		}else{
-			throw new Error("Widget has invalid path: '".$path."'") ;
+			//throw new Error("Widget has invalid path: '".$path."'") ;
 		}
 	}
 	

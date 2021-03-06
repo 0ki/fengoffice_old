@@ -157,24 +157,31 @@ class Notifier {
                 $tags = '';
                 $projects = '';
                 $customers = '';
+                $folders = '';
                 if($object->getMembersToDisplayPath()){
                     $members = $object->getMembersToDisplayPath();
-                    if (array_key_exists('3', $members)){
-                        foreach($members[3] as $member){
-                            $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                    }
-                    if (array_key_exists('4', $members)){
-                        foreach($members[4] as $member){
-                            $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                    }
-                    if (array_key_exists('5', $members)){
-                        foreach($members[5] as $member){
-                            if($member['ot'] == 24){
-                                $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }else{
-                                $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                    foreach ($members as $key => $member){                        
+                        $dim = Dimensions::getDimensionById($key);
+                        if ($dim->getCode() == "workspaces"){
+                            foreach($members[$key] as $member){
+                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "tags"){
+                            foreach($members[$key] as $member){
+                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "customer_project"){
+                            foreach($members[$key] as $member){
+                                $obj_type = ObjectTypes::findById($member['ot']);
+                                if($obj_type->getName() == 'project'){
+                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'customer'){
+                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'folder'){
+                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
                             }
                         }
                     }
@@ -208,6 +215,7 @@ class Notifier {
                 tpl_assign('tags', $tags);//tags
                 tpl_assign('projects', $projects);//projects
                 tpl_assign('customers', $customers);//customers
+                tpl_assign('folders', $folders);//folders
                                 
 		$emails = array();		
 		foreach($people as $user) {
@@ -591,33 +599,47 @@ class Notifier {
 		tpl_assign('object', $object);
                 tpl_assign('title', $name);
                 tpl_assign('description', escape_html_whitespace(convert_to_links(clean($object->getDescription()))));//descripction
-               
+                
                 //context
+                $workspaces = '';
+                $tags = '';
+                $projects = '';
+                $customers = '';
+                $folders = '';
                 if($object->getMembersToDisplayPath()){
-                    $workspaces = '';
-                    $tags = '';
-                    $projects = '';
-                    $customers = '';
-                    
                     $members = $object->getMembersToDisplayPath();
-                    foreach($members[3] as $member){
-                        $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                    }
-                    tpl_assign('workspaces', $workspaces);//workspaces
-                    foreach($members[4] as $member){
-                        $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                    }
-                    tpl_assign('tags', $tags);//tags
-                    foreach($members[5] as $member){
-                        if($member['ot'] == 24){
-                            $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }else{
-                            $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                    foreach ($members as $key => $member){                        
+                        $dim = Dimensions::getDimensionById($key);
+                        if ($dim->getCode() == "workspaces"){
+                            foreach($members[$key] as $member){
+                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "tags"){
+                            foreach($members[$key] as $member){
+                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "customer_project"){
+                            foreach($members[$key] as $member){
+                                $obj_type = ObjectTypes::findById($member['ot']);
+                                if($obj_type->getName() == 'project'){
+                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'customer'){
+                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'folder'){
+                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
+                            }
                         }
                     }
-                    tpl_assign('projects', $projects);//projects
-                    tpl_assign('customers', $customers);//customers
                 }
+                
+                tpl_assign('workspaces', $workspaces);//workspaces
+                tpl_assign('tags', $tags);//tags
+                tpl_assign('projects', $projects);//projects
+                tpl_assign('customers', $customers);//customers
+                tpl_assign('folders', $folders);//folders
 		
 		$attachments = array();                    
                 $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
@@ -855,14 +877,13 @@ class Notifier {
                 tpl_assign('title', $task->getObjectName());
                 tpl_assign('by', $task->getAssignedBy()->getObjectName());
                 tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
+                $text = "";
                 if(config_option("wysiwyg_tasks")){
                     $text = purify_html(nl2br($task->getDescription()));
                 }else{
                     $text = escape_html_whitespace($task->getDescription());
-                }                
-                if($text != ""){
-                    tpl_assign('description', $text);//descripction  
-                }                  
+                }
+                tpl_assign('description', $text);//descripction
                 tpl_assign('description_title', lang("new task assigned to you desc", $task->getObjectName(),$task->getCreatedBy()->getObjectName()));//description_title
                 
                 //priority
@@ -884,37 +905,44 @@ class Notifier {
 		}
                 
                 //context
+                $workspaces = '';
+                $tags = '';
+                $projects = '';
+                $customers = '';
+                $folders = '';
                 if($task->getMembersToDisplayPath()){
-                    $workspaces = '';
-                    $tags = '';
-                    $projects = '';
-                    $customers = '';
-                    
-                    $members = $task->getMembersToDisplayPath();                    
-                    if (array_key_exists('3', $members)){
-                        foreach($members[3] as $member){
-                            $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                        tpl_assign('workspaces', $workspaces);//workspaces
-                    }
-                    if (array_key_exists('4', $members)){
-                        foreach($members[4] as $member){
-                            $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                        tpl_assign('tags', $tags);//tags
-                    }
-                    if (array_key_exists('5', $members)){
-                        foreach($members[5] as $member){
-                            if($member['ot'] == 24){
-                                $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }else{
-                                $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                    $members = $task->getMembersToDisplayPath();
+                    foreach ($members as $key => $member){                        
+                        $dim = Dimensions::getDimensionById($key);
+                        if ($dim->getCode() == "workspaces"){
+                            foreach($members[$key] as $member){
+                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "tags"){
+                            foreach($members[$key] as $member){
+                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "customer_project"){
+                            foreach($members[$key] as $member){
+                                $obj_type = ObjectTypes::findById($member['ot']);
+                                if($obj_type->getName() == 'project'){
+                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'customer'){
+                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'folder'){
+                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
                             }
                         }
-                        tpl_assign('projects', $projects);//projects
-                        tpl_assign('customers', $customers);//customers
                     }
                 }
+                tpl_assign('workspaces', $workspaces);//workspaces
+                tpl_assign('tags', $tags);//tags
+                tpl_assign('projects', $projects);//projects
+                tpl_assign('customers', $customers);//customers
+                tpl_assign('folders', $folders);//folders
                 
                 //start date, due date or start
                 if ($task->getStartDate() instanceof DateTimeValue) {
@@ -974,14 +1002,13 @@ class Notifier {
                 tpl_assign('title', $task->getObjectName());
                 tpl_assign('by', $task->getAssignedBy()->getObjectName());
                 tpl_assign('asigned', $task->getAssignedTo()->getObjectName());
+                $text = "";
                 if(config_option("wysiwyg_tasks")){
                     $text = purify_html(nl2br($task->getDescription()));
                 }else{
                     $text = escape_html_whitespace($task->getDescription());
                 }
-                if($text != ""){
-                    tpl_assign('description', $text);//descripction    
-                }
+                tpl_assign('description', $text);//descripction
                 tpl_assign('description_title', lang("new task work estimate to you desc", $task->getObjectName(),$task->getCreatedBy()->getObjectName()));//description_title
                 
                 //priority
@@ -1003,37 +1030,44 @@ class Notifier {
 		}
                 
                 //context
+                $workspaces = '';
+                $tags = '';
+                $projects = '';
+                $customers = '';
+                $folders = '';
                 if($task->getMembersToDisplayPath()){
-                    $workspaces = '';
-                    $tags = '';
-                    $projects = '';
-                    $customers = '';
-                    
                     $members = $task->getMembersToDisplayPath();
-                    if (array_key_exists('3', $members)){
-                        foreach($members[3] as $member){
-                            $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                        tpl_assign('workspaces', $workspaces);//workspaces
-                    }
-                    if (array_key_exists('4', $members)){
-                        foreach($members[4] as $member){
-                            $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                        }
-                        tpl_assign('tags', $tags);//tags
-                    }
-                    if (array_key_exists('5', $members)){
-                        foreach($members[5] as $member){
-                            if($member['ot'] == 24){
-                                $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }else{
-                                $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                    foreach ($members as $key => $member){                        
+                        $dim = Dimensions::getDimensionById($key);
+                        if ($dim->getCode() == "workspaces"){
+                            foreach($members[$key] as $member){
+                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "tags"){
+                            foreach($members[$key] as $member){
+                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }                        
+                        if ($dim->getCode() == "customer_project"){
+                            foreach($members[$key] as $member){
+                                $obj_type = ObjectTypes::findById($member['ot']);
+                                if($obj_type->getName() == 'project'){
+                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'customer'){
+                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }elseif($obj_type->getName() == 'folder'){
+                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                                }
                             }
                         }
-                        tpl_assign('projects', $projects);//projects
-                        tpl_assign('customers', $customers);//customers
                     }
                 }
+                tpl_assign('workspaces', $workspaces);//workspaces
+                tpl_assign('tags', $tags);//tags
+                tpl_assign('projects', $projects);//projects
+                tpl_assign('customers', $customers);//customers
+                tpl_assign('folders', $folders);//folders
                 
                 //start date, due date or start
                 if ($task->getStartDate() instanceof DateTimeValue) {

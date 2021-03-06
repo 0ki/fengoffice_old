@@ -74,11 +74,7 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 		foreach ($object_group as $linked_object){
 			if( !$linked_object instanceof ApplicationDataObject ) continue ; //check that it is a valid object
 			
-			if  ($linked_object instanceof Contact){ // if it is a contact
-				if (!$linked_object->canView(logged_user()) ) continue; // check permissions on contacts 			
-			} else {
-				if (!can_read(logged_user(), $linked_object->getMembers(), $linked_object->getObjectTypeId() ) ) continue; 
-			}
+			if (!$linked_object->canView(logged_user()) ) continue; // check permissions
 			
 			tpl_assign('counter', $counter);
 			tpl_assign('linked_object', $linked_object);

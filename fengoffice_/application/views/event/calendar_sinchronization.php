@@ -7,10 +7,9 @@ $genid = gen_id();
     <div class="adminHeader">
         <div class="adminTitle"><?php echo lang('calendar sinchronization') ?></div>
         <div class="adminSeparator"></div>
-        <div style="float: left; width: 300px;">
-            <form class="internalForm" action="<?php echo get_url('event', 'add_calendar_user', array('cal_user_id' => array_var($user, 'id'))); ?>" method="post">
+        <div style="float: left; width: 350px;">
+            <form id ="<?php echo $genid ?>submit-sync-form" class="internalForm" action="<?php echo get_url('event', 'add_calendar_user', array('cal_user_id' => array_var($user, 'id'))); ?>" method="post" onsubmit="return og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo ProjectEvents::instance()->getObjectTypeId(); ?>) && setRelatedTo();">
                 <?php 
-
                     echo label_tag(lang('account gmail'), $genid . 'auth_user', true);
                     echo text_field('auth_user', array_var($user, 'auth_user'),array('id' => $genid . 'auth_user', 'tabindex' => '1'));
 
@@ -20,9 +19,10 @@ $genid = gen_id();
                     echo label_tag(lang('sync event feng'), $genid . 'sync');
                     echo checkbox_field('sync', array_var($user, 'sync'), array('id' => $genid.'sync', 'tabindex'=>'3'));
                 ?>
-                <div style="clear:both"></div>     
+                <div style="clear:both"></div> 
+                <input id="<?php echo $genid?>related_to" type="hidden" name="related_to" />
                 <?php
-                  echo submit_button(array_var($user, 'id') ? lang('save changes') : lang('add account'), 's', array('tabindex' => '4')); 
+                  echo button(array_var($user, 'id') ? lang('save changes') : lang('add account'), 's', array('tabindex' => '4', 'onclick' => 'submitCalendar()')); 
                 ?>
             </form>
         </div>
@@ -49,33 +49,24 @@ $genid = gen_id();
         </form>
         <?php }?>
         <div style="clear: both;"></div>
+        <div style="padding-top:5px;text-align:left;">
+            <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_mail_select_context_div',this)"><?php echo lang('context') ?></a>
+        </div>
+    </div>
+    <div id="<?php echo $genid ?>add_mail_select_context_div" style="display:none" >
+        <fieldset>
+                <legend><?php echo lang('context') ?></legend>
+                <?php
+                        if (array_var($user, 'id')) {
+                                render_dimension_trees(ProjectEvents::instance()->getObjectTypeId(), $genid, array_var($user, 'related_to'));
+                        } else {
+                                render_dimension_trees(ProjectEvents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true));
+                        } 
+                ?>
+        </fieldset>
     </div>
     <?php if(isset($user) && is_array($user) && count($user)) { ?>
     <div class="adminMainBlock">
-        
-<!--        <form class="internalForm" action="<?php echo get_url('event', 'add_calendar', array('cal_id' => array_var($cal_data, 'id'))); ?>" method="post">
-            <fieldset>
-                    <legend><?php echo array_var($cal_data, 'id') ? lang('edit calendar') : lang('new calendar') ?></legend>
-
-                    <div class="mail-account-item">
-                            <?php 
-                                echo label_tag(lang('name calendar'), $genid . 'calendar_name', true);
-                                echo text_field('calendar_name', array_var($cal_data, 'calendar_name'),array('id' => $genid . 'calendar_name','class' => 'title', 'tabindex' => '5'));
-                            ?>
-                    </div>
-
-                    <div class="mail-account-item">
-                            <?php 
-                                echo label_tag(lang('users link'), $genid . 'calendar_link', true);
-                                echo text_field('calendar_link', array_var($cal_data, 'calendar_link'),array('id' => $genid . 'calendar_user','class' => 'title', 'tabindex' => '6'));
-                            ?>
-                    </div>
-                    <?php
-                        echo text_field('ext_cal_user_id', array_var($user, 'id'),array('id' => $genid . 'ext_cal_user_id', 'type' => 'hidden'));
-                        echo submit_button(array_var($cal_data, 'id') ? lang('save changes') : lang('add calendar'), 's', array('tabindex' => '8')); 
-                    ?>
-            </fieldset>
-        </form>-->
         <?php if(isset($calendars) && is_array($calendars) && count($calendars)) { ?>
         <table class="adminListing" style="min-width: 400px; margin-top: 10px;">
                 <tr>
@@ -114,5 +105,29 @@ $genid = gen_id();
                                         }));
                                         $('#<?php echo $genid ?>tr_'+cal_id).remove();
                                 }
+        };
+        
+        var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-" . ProjectEvents::instance()->getObjectTypeId() ?>').items;
+        if (memberChoosers) {
+            memberChoosers.each(function(item, index, length) {			
+                item.on('all trees updated', function() {
+                    var dimensionMembers = {};
+                    memberChoosers.each(function(it, ix, l) {
+                        dim_id = this.dimensionId;
+                        dimensionMembers[dim_id] = [];
+                        var checked = it.getChecked("id");
+                        for (var j = 0 ; j < checked.length ; j++ ) {
+                            dimensionMembers[dim_id].push(checked[j]);
+                        }
+                    });
+                });
+            });
+        }
+        
+        function submitCalendar() {
+            og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo ProjectEvents::instance()->getObjectTypeId(); ?>);            
+            var members = document.getElementById('<?php echo $genid ?>members');
+            $('#<?php echo $genid?>related_to').val(members.value);
+            $('#<?php echo $genid ?>submit-sync-form').submit();
         };
 </script>

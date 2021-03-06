@@ -41,7 +41,7 @@ og.ContentPanel = function(config) {
 	this.onClose = config.onClose;
 	
 	if (config.refreshOnWorkspaceChange) {
-		og.eventManager.addListener('workspace changed', this.reset, this);
+		og.eventManager.addListener('member changed', this.reset, this);
 	}
 
 	

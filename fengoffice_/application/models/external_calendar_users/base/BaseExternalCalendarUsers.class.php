@@ -18,7 +18,8 @@ abstract class BaseExternalCalendarUsers extends DataManager {
 		'auth_user' => DATA_TYPE_STRING,
                 'auth_pass' => DATA_TYPE_STRING,
                 'type' => DATA_TYPE_STRING,
-                'sync' => DATA_TYPE_INTEGER
+                'sync' => DATA_TYPE_INTEGER,
+                'related_to' => DATA_TYPE_STRING
 	);
 
 	/**

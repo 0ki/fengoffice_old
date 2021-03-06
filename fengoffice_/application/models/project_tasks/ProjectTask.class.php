@@ -165,8 +165,12 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return Contact
 	 */
+	private $assigned_to_cache = null;
 	function getAssignedToContact() {
-		return Contacts::findById($this->getAssignedToContactId());
+		if (is_null($this->assigned_to_cache)) {
+			$this->assigned_to_cache = Contacts::findById($this->getAssignedToContactId());
+		}
+		return $this->assigned_to_cache;
 	} // 
 
 	/**
@@ -269,7 +273,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	} // canView
 	
 	/**
@@ -279,13 +283,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return unknown
 	 */
 	private function isAsignedToUserOrCompany(Contact $user){
-				// Additional check - is this task assigned to this user or its company
-		if($this->getAssignedTo() instanceof Contact) {
-			if($user->getId() == $this->getAssignedTo()->getObjectId()) return true;
-		} elseif($this->getAssignedTo() instanceof Company) {
-			if($user->getCompanyId() == $this->getAssignedTo()->getObjectId()) return true;
-		} // if
-		return false;
+		return ($user->getId() == $this->getAssignedToContactId());
 	}
 	/**
 	 * Check if specific user can update this task
@@ -303,7 +301,7 @@ class ProjectTask extends BaseProjectTask {
 	} // canEdit
 	
 	function canAddTimeslot($user) {
-		return $this->canChangeStatus($user);
+		return $this->canChangeStatus($user) || can_manage_time($user) || can_access_pgids($user->getPermissionGroupIds(), $this->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE);
 	}
 	
 	/**
@@ -1398,15 +1396,15 @@ class ProjectTask extends BaseProjectTask {
 	function getArrayInfo($full = false){
                 if(config_option("wysiwyg_tasks")){
                     if($this->getTypeContent() == "text"){
-                        $desc = nl2br(htmlspecialchars($this->getDescription()));
+                        $desc = nl2br(htmlspecialchars($this->getText()));
                     }else{
-                        $desc = purify_html(nl2br($this->getDescription()));
+                        $desc = purify_html(nl2br($this->getText()));
                     }
                 }else{
                     if($this->getTypeContent() == "text"){
-                        $desc = htmlspecialchars($this->getDescription());
+                        $desc = htmlspecialchars($this->getText());
                     }else{
-                        $desc = html_to_text(html_entity_decode(nl2br($this->getDescription()), null, "UTF-8"));
+                        $desc = html_to_text(html_entity_decode(nl2br($this->getText()), null, "UTF-8"));
                     }   
                 }
                 
@@ -1419,15 +1417,15 @@ class ProjectTask extends BaseProjectTask {
 			'cid' => $this->getCreatedById(),
 			'otype' => $this->getObjectSubtype(),
 			'percentCompleted' => $this->getPercentCompleted(),
-			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath()))),
-			//'description' => $this->getText()
+			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($this->getMembersToDisplayPath())))
 		);
 		
 		if ($full) {
 			$result['description'] = $this->getText();
-		}
+		}		
 		
-		
+                $result['multiAssignment'] = $this->getColumnValue('multi_assignment',0);
+			
 		if ($this->isCompleted())
 			$result['s'] = 1;
 			

@@ -44,6 +44,15 @@ class TaskController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
+		
+		$notAllowedMember = '' ;
+		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember)) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
+			else flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
+			ajx_current("empty");
+			return;
+		}
+		
 		ajx_current("empty");
 		$task = new ProjectTask();
 		$task_data = array_var($_POST, 'task');
@@ -72,6 +81,13 @@ class TaskController extends ApplicationController {
 				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
 				$task_data['use_start_time'] = is_array($starttime);
 			}
+                        
+                        if(config_option("wysiwyg_tasks")){
+                            $task_data['type_content'] = "html";
+                            $task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+                        }else{
+                            $task_data['type_content'] = "text";
+                        }
 			
 			$task_data['object_type_id'] = $task->getObjectTypeId();
 			
@@ -92,22 +108,23 @@ class TaskController extends ApplicationController {
 				
 				$gb_member_id = array_var($task_data, 'member_id');				
 				$member_ids = array();
-                                
-                                if($parent){
-                                    if(count($parent->getMembers()) > 0){
-                                        foreach ($parent->getMembers() as $member){
-                                            if($member->getDimensionId() != 1){
-                                                $member_ids[] = $member->getId();
-                                            }
-                                        }
-                                    }
-                                    $task->setMilestoneId($parent->getMilestoneId());
-                                    $task->save();
-                                }
-                                
-                                if(count($member_ids) == 0){
-                                    $member_ids = active_context_members(false);
-                                }                                    
+				$persons_dim = Dimensions::findByCode('feng_persons');
+				$persons_dim_id = $persons_dim instanceof Dimension ? $persons_dim->getId() : 0;
+				if($parent){
+					if(count($parent->getMembers()) > 0){
+						foreach ($parent->getMembers() as $member){
+							if($member->getDimensionId() != $persons_dim_id){
+								$member_ids[] = $member->getId();
+							}
+						}
+					}
+					$task->setMilestoneId($parent->getMilestoneId());
+					$task->save();
+				}
+
+				if(count($member_ids) == 0){
+					$member_ids = active_context_members(false);
+				}
                                 
 				if ($gb_member_id && is_numeric($gb_member_id)) {
 					$member_ids[] = $gb_member_id;
@@ -117,20 +134,20 @@ class TaskController extends ApplicationController {
 				$object_controller->add_to_members($task, $member_ids);
 				
 				//Add new work timeslot for this task
-				if (array_var($task_data,'hours') != '' && array_var($task_data,'hours') > 0){
-					$hours = array_var($task_data, 'hours');
-					$hours = - $hours;
-						
-					$timeslot = new Timeslot();
-					$dt = DateTimeValueLib::now();
-					$dt2 = DateTimeValueLib::now();
-					$timeslot->setEndTime($dt);
-					$dt2 = $dt2->add('h', $hours);
-					$timeslot->setStartTime($dt2);
-					$timeslot->setContactId(logged_user()->getId());
-					$timeslot->setObjectId($task->getId());
-					$timeslot->save();
-				}
+//				if (array_var($task_data,'hours') != '' && array_var($task_data,'hours') > 0){
+//					$hours = array_var($task_data, 'hours');
+//					$hours = - $hours;
+//						
+//					$timeslot = new Timeslot();
+//					$dt = DateTimeValueLib::now();
+//					$dt2 = DateTimeValueLib::now();
+//					$timeslot->setEndTime($dt);
+//					$dt2 = $dt2->add('h', $hours);
+//					$timeslot->setStartTime($dt2);
+//					$timeslot->setContactId(logged_user()->getId());
+//					$timeslot->setObjectId($task->getId());
+//					$timeslot->save();
+//				}
 
 				// subscribe
 				$task->subscribeUser(logged_user());
@@ -141,8 +158,8 @@ class TaskController extends ApplicationController {
 					$task->subscribeUser($assignee);
 				}
 				
-			    // create default reminder
-			    $reminder = new ObjectReminder();
+                                // create default reminder
+                                $reminder = new ObjectReminder();
 				$reminder->setMinutesBefore(1440);
 				$reminder->setType("reminder_email");
 				$reminder->setContext("due_date");
@@ -158,6 +175,28 @@ class TaskController extends ApplicationController {
 				}
 				$reminder->save();
 				
+                                $subs = array();
+                                if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                                    $json_subtasks = json_decode(array_var($_POST, 'multi_assignment'));
+                                    $line = 0;
+                                    foreach ($json_subtasks as $json_subtask){
+                                        $subtasks[$line]['assigned_to_contact_id'] = $json_subtask->assigned_to_contact_id;
+                                        $subtasks[$line]['name'] = $json_subtask->name;
+                                        $subtasks[$line]['time_estimate_hours'] = $json_subtask->time_estimate_hours;
+                                        $subtasks[$line]['time_estimate_minutes'] = $json_subtask->time_estimate_minutes;
+                                        $line++;
+                                    }
+                                    
+                                    Hook::fire('save_subtasks', $task, $subtasks);
+                                    
+                                    $subtasks = ProjectTasks::findAll(array(
+                                              'conditions' => '`parent_id` = ' . DB::escape($task->getId())
+                                              )); // findAll
+                                    foreach ($subtasks as $sub){
+                                        $subs[] = $sub->getArrayInfo();
+                                    }
+                                }
+                                
 				DB::commit();
 
 				// notify asignee
@@ -167,7 +206,7 @@ class TaskController extends ApplicationController {
 					} catch(Exception $e) {
 					} // try
 				}
-				ajx_extra_data(array("task" => $task->getArrayInfo()));
+				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs));
 				flash_success(lang('success add task', $task->getObjectName()));
 			} catch(Exception $e) {
 				DB::rollback();
@@ -197,6 +236,7 @@ class TaskController extends ApplicationController {
 
 		$task_data = array_var($_POST, 'task');
 
+		// set task dates
 		if (is_array($task_data)) {
 			$task_data['due_date'] = getDateValue(array_var($task_data, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
@@ -227,47 +267,72 @@ class TaskController extends ApplicationController {
 			}
 			try {
 				DB::beginWork();
+                                
+                                $subs = array();
+                                if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                                    if(array_var($task_data, 'multi_assignment_aplly_change') == 'subtask') {
+                                        $null = null;
+                                        Hook::fire('edit_subtasks', $task, $null);   
+                                        
+                                        $subtasks = ProjectTasks::findAll(array(
+                                                  'conditions' => '`parent_id` = ' . DB::escape($task->getId())
+                                                  )); // findAll
+                                        foreach ($subtasks as $sub){
+                                            $subs[] = $sub->getArrayInfo();
+                                        }
+                                    }
+                                }
+                                
 				$task->save();
 				
-                                $totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
+				// get member ids
+				$member_ids = array();
+				if (array_var($task_data, 'members')) {
+					$member_ids = json_decode(array_var($task_data, 'members'));
+				}
+				
+				// get member id when changing member via drag & drop
+				if (array_var($task_data, 'member_id')) {
+					$member_ids[] = array_var($task_data, 'member_id');
+				}
+				
+				// drag & drop - also apply changes to subtasks
+				$tasks_to_update = $task->getAllSubTasks();
+				$tasks_to_update[] = $task;
+				
+				
+				// calculate and set time estimate
+				$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
 				$task->setTimeEstimate($totalMinutes);
-                                $task->save();
+				$task->save();
       
-//                                $member_ids = json_decode(array_var($_POST, 'members'));
-//                                
-//				// Add assigned user to the subscibers list
-//				if ($task->getAssignedToContactId() > 0  && Contacts::instance()->findById( $task->getAssignedToContactId()) ) {
-//					if (!isset($_POST['subscribers'])) $_POST['subscribers'] = array();
-//					$_POST['subscribers']['user_'.$task->getAssignedToContactId()] = 'checked';
-//				}
-//
-//				$object_controller = new ObjectController();
-//				$object_controller->add_to_members($task, $member_ids);
-//				$object_controller->add_subscribers($task);
-//				$object_controller->link_to_new_object($task);
-//				$object_controller->add_custom_properties($task);
-//				$object_controller->add_reminders($task);
+				// Add assigned user to the subscibers list
+				if ($task->getAssignedToContactId() > 0  && Contacts::instance()->findById( $task->getAssignedToContactId()) ) {
+					if (!isset($_POST['subscribers'])) $_POST['subscribers'] = array();
+					$_POST['subscribers']['user_'.$task->getAssignedToContactId()] = 'checked';
+				}
 
-				// apply values to subtasks
-				$assigned_to = $task->getAssignedToContactId();
-				$subtasks = $task->getAllSubTasks();
-				$milestone_id = $task->getMilestoneId();
-				$apply_ms = array_var($task_data, 'apply_milestone_subtasks') == "checked";
-				$apply_at = array_var($task_data, 'apply_assignee_subtasks', '') == "checked";
-				foreach ($subtasks as $sub) {
-					$modified = false;
-					if ($apply_at || !($sub->getAssignedToContactId() > 0)) {
-						$sub->setAssignedToContactId($assigned_to);
-						$modified = true;
-					}
-					if ($apply_ms) {
-						$sub->setMilestoneId($milestone_id);
-						$modified = true;
-					}
-					if ($modified) {
-						$sub->save();
+				// add to members, subscribers, etc
+				$object_controller = new ObjectController();
+				if (count($member_ids) > 0) {
+					foreach ($tasks_to_update as $task_to_update) {
+						$object_controller->add_to_members($task_to_update, $member_ids);
 					}
 				}
+				
+				// check valid assigned to
+				if ($task->getAssignedToContactId() > 0 && !can_read_sharing_table($task->getAssignedToContact(), $task->getId())) {
+					if ($task->getAssignedToContact() instanceof Contact) {
+						flash_error(lang('error cannot assign task to user', $task->getAssignedToContact()->getObjectName(), $task->getObjectName()));
+					}
+					$task->setAssignedToContactId(0);
+					$task->save();
+				}
+				
+				$object_controller->add_subscribers($task);
+				$object_controller->link_to_new_object($task);
+				$object_controller->add_custom_properties($task);
+				$object_controller->add_reminders($task);
 
 				$task->resetIsRead();
 				
@@ -282,11 +347,7 @@ class TaskController extends ApplicationController {
 					} catch(Exception $e) {
 					} // try
 				}
-				$subt_info = array();
-				foreach ($modified_subtasks as $sub) {
-					$subt_info[] = $sub->getArrayInfo();
-				}
-				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subt_info));
+				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subs));
 				flash_success(lang('success edit task', $task->getObjectName()));
 			} catch(Exception $e) {
 				DB::rollback();
@@ -306,6 +367,7 @@ class TaskController extends ApplicationController {
 			return;
 		}
 
+		$count_tasks = ProjectTasks::count('object_id in (' . implode(',',$ids) . ')');
 		$tasksToReturn = array();
 		$showSuccessMessage = true;
 		try{
@@ -396,7 +458,7 @@ class TaskController extends ApplicationController {
 				} // end switch
 			} // end foreach
 			DB::commit();
-			if (count($tasksToReturn) < count($tasks)) {
+			if (count($tasksToReturn) < $count_tasks) {
 				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restrictions'));
 			} else if ($showSuccessMessage) {
 				flash_success(lang('tasks updated'));
@@ -639,8 +701,9 @@ class TaskController extends ApplicationController {
 				'showTime' => user_config_option('tasksShowTime'),
 				'showDates' => user_config_option('tasksShowDates'),
 				'showTags' => user_config_option('tasksShowTags',0),
+                                'showEmptyMilestones' => user_config_option('tasksShowEmptyMilestones',1),
 				'showTimeEstimates' => user_config_option('tasksShowTimeEstimates',1),
-				'groupBy' => user_config_option('tasksGroupBy','nothing'),
+				'groupBy' => user_config_option('tasksGroupBy','milestone'),
 				'orderBy' => user_config_option('tasksOrderBy','priority'),
 				'defaultNotifyValue' => user_config_option('can notify from quick add'),
 			);
@@ -786,6 +849,18 @@ class TaskController extends ApplicationController {
 
 		tpl_assign('task_data', $task_data);
 		tpl_assign('task', $task);
+                
+                $subtasks = array();
+                $json_subtasks = json_decode(array_var($_POST, 'multi_assignment'));
+                $line = 0;
+                foreach ($json_subtasks as $json_subtask){
+                    $subtasks[$line]['assigned_to_contact_id'] = $json_subtask->assigned_to_contact_id;
+                    $subtasks[$line]['name'] = $json_subtask->name;
+                    $subtasks[$line]['time_estimate_hours'] = $json_subtask->time_estimate_hours;
+                    $subtasks[$line]['time_estimate_minutes'] = $json_subtask->time_estimate_minutes;
+                    $line++;
+                }                
+                tpl_assign('multi_assignment', $subtasks);                
 
 		if (is_array(array_var($_POST, 'task'))) {
 			// order
@@ -905,12 +980,7 @@ class TaskController extends ApplicationController {
 				$object_controller->add_subscribers($task);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
-				$object_controller->add_reminders($task);
-				
-				/*FIXME if ($parent instanceof ProjectTask) {
-					// task is being added as subtask of another, so place in same workspace
-					$task->addToWorkspace($parent->getProject());
-				}*/
+				$object_controller->add_reminders($task);                                
 				
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_ADD);
 
@@ -926,6 +996,11 @@ class TaskController extends ApplicationController {
 
 					$this->repetitive_task($task, $opt_rep_day);
 				}
+                                
+                                if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                                    $subtasks = array_var($_POST, 'multi_assignment');
+                                    Hook::fire('save_subtasks', $task, $subtasks);
+                                }
                                 
 				DB::commit();
 
@@ -1076,6 +1151,7 @@ class TaskController extends ApplicationController {
 				'repeat_by' => $task->getRepeatBy(),
 				'object_subtype' => array_var($_POST, "object_subtype", ($task->getObjectSubtype() != 0 ? $task->getObjectSubtype() : config_option('default task co type'))),
                                 'type_content' => $task->getTypeContent(), 
+                                'multi_assignment' => $task->getColumnValue('multi_assignment',0)
 			); // array
 		} // if
                 
@@ -1243,7 +1319,14 @@ class TaskController extends ApplicationController {
                                 if($_POST['type_related'] == "all" || $_POST['type_related'] == "news"){
                                     $task_data['members'] = json_decode(array_var($_POST, 'members'));
                                     $this->repetitive_tasks_related($task,"edit",$_POST['type_related'],$task_data);
-                                }                                
+                                }            
+                                
+                                if(config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm')){
+                                    if(array_var($task_data, 'multi_assignment_aplly_change') == 'subtask') {       
+                                        $null = null;
+                                        Hook::fire('edit_subtasks', $task, $null);
+                                    }
+                                }
                                 
 				DB::commit();
 

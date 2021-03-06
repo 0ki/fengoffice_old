@@ -15,7 +15,7 @@ function workspaces_custom_reports_additional_columns($args, &$ret) {
 		$doptions = $dimension->getOptions(true);
 		
 		if( $doptions && isset($doptions->useLangs) && $doptions->useLangs ) {
-			$name = lang($dimension['dimension_code']);
+			$name = lang($dimension->getCode());
 		} else {
 			$name = $dimension->getName();
 		}

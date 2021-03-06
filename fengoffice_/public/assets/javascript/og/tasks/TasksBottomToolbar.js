@@ -212,7 +212,8 @@ og.TasksBottomToolbar = function(config) {
 		if (companiesArray[i].id) compData[compData.length] = [companiesArray[i].id, og.clean(companiesArray[i].name)];
 	}
 	
-	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
+	//ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
+	ucsData = ucsData.concat(ucsOtherUsers).concat(compData);
     
     this.filterNamesCompaniesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCompaniesCombo',
@@ -254,7 +255,8 @@ og.TasksBottomToolbar = function(config) {
 		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id)
 			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, og.clean(usersArray[i].name)];
 	}
-	uData = uData.concat(ogTasksOrderUsers(uDOtherUsers));
+	//ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
+	ucsData = ucsData.concat(ucsOtherUsers).concat(compData);
     this.filterNamesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCombo',
         store: new Ext.data.SimpleStore({

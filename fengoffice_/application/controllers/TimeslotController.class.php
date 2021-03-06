@@ -70,11 +70,11 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function add_timespan() {
-		if (!can_manage_time(logged_user())) {
+	/*	if (!can_manage_time(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-		}
+		}*/
 		$object_id = get_id('object_id');
 		
 		$object = Objects::findObject($object_id);
@@ -91,11 +91,11 @@ class TimeslotController extends ApplicationController {
 		if (strpos($hours,',') && !strpos($hours,'.')) {
 			$hours = str_replace(',','.',$hours);
 		}
-                
-                if($minutes){
-                    $min = str_replace('.','',($minutes/6));
-                    $hours = $hours + ("0.".$min);                    
-                }
+		
+		if($minutes){
+			$min = str_replace('.','',($minutes/6));
+			$hours = $hours + ("0.".$min);
+		}
 		
 		$timeslot = new Timeslot();
 		$dt = DateTimeValueLib::now();
@@ -104,7 +104,7 @@ class TimeslotController extends ApplicationController {
 		$dt2 = $dt2->add('h', -$hours);                
 		$timeslot->setStartTime($dt2);
 		$timeslot->setDescription(array_var($timeslot_data, 'description'));
-		$timeslot->setContactId(logged_user()->getId());
+		$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
 		$timeslot->setRelObjectId($object_id);
 		
 		$billing_category_id = logged_user()->getDefaultBillingId();
@@ -127,21 +127,21 @@ class TimeslotController extends ApplicationController {
 			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_OPEN);
 			                        
 			$task = ProjectTasks::findById($object_id);
-                        if($task->getTimeEstimate() > 0){
-                            $timeslots = $task->getTimeslots();
-                            if (count($timeslots) == 1){
-                                $task->setPercentCompleted(0);
-                            }
-                            $timeslot_percent = round(($hours * 100) / ($task->getTimeEstimate() / 60));
-                            $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
-                            $task->setPercentCompleted($total_percentComplete);
-                            $task->save();
+			if($task->getTimeEstimate() > 0){
+				$timeslots = $task->getTimeslots();
+				if (count($timeslots) == 1){
+					$task->setPercentCompleted(0);
+				}
+				$timeslot_percent = round(($hours * 100) / ($task->getTimeEstimate() / 60));
+				$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+				$task->setPercentCompleted($total_percentComplete);
+				$task->save();
 
-                            $this->notifier_work_estimate($task);
-                        }      
-                        
-                        DB::commit();
-                        
+				$this->notifier_work_estimate($task);
+			}
+			
+			DB::commit();
+			
 			flash_success(lang('success create timeslot'));
 			ajx_current("reload");
 		} catch (Exception $e) {
@@ -352,7 +352,8 @@ class TimeslotController extends ApplicationController {
 		$timeslot_data = array_var($_POST, 'timeslot');
 		if(!is_array($timeslot_data)) {
 			$timeslot_data = array(
-          		'description' => $timeslot->getDescription(),
+				'contact_id' => $timeslot->getContactId(),
+				'description' => $timeslot->getDescription(),
           		'start_time' => $timeslot->getStartTime(),
           		'end_time' => $timeslot->getEndTime(),
           		'is_fixed_billing' => $timeslot->getIsFixedBilling(),
@@ -368,8 +369,9 @@ class TimeslotController extends ApplicationController {
 		
 		if(is_array(array_var($_POST, 'timeslot'))) {
 			try {
-                                $this->percent_complete_delete($timeslot);
-                                
+				$this->percent_complete_delete($timeslot);
+				
+				$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
 				$timeslot->setDescription(array_var($timeslot_data, 'description'));
        			
 				$st = getDateValue(array_var($timeslot_data, 'start_value'),DateTimeValueLib::now());
@@ -428,26 +430,27 @@ class TimeslotController extends ApplicationController {
 				}
 				
 				DB::beginWork();
-				$timeslot->save();      
-                                
-                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - ($timeslot->getStartTime()->getTimestamp() + $timeslot->getSubtract())) / 3600;
-                                $task = ProjectTasks::findById($timeslot->getRelObjectId());
-                                if($task->getTimeEstimate() > 0){
-                                    $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
-                                    $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
-                                    $task->setPercentCompleted($total_percentComplete);
-                                    $task->save();
-                                }
-                                
-                                $this->notifier_work_estimate($task);
-                                
+				$timeslot->save();
+				
+				$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - ($timeslot->getStartTime()->getTimestamp() + $timeslot->getSubtract())) / 3600;
+				$task = ProjectTasks::findById($timeslot->getRelObjectId());
+				if($task->getTimeEstimate() > 0){
+					$timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
+					$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+					$task->setPercentCompleted($total_percentComplete);
+					$task->save();
+				}
+				
+				$this->notifier_work_estimate($task);
+				
 				DB::commit();
 
 				flash_success(lang('success edit timeslot'));
 				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error(lang('error edit timeslot'));
+				Logger::log($e->getTraceAsString());
+				flash_error(lang('error edit timeslot').": ".$e->getMessage());
 				ajx_current("empty");
 			}
 		}

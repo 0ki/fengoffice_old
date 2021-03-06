@@ -19,7 +19,8 @@
     	'name' => DATA_TYPE_STRING, 
     	'contact_id' => DATA_TYPE_INTEGER, 
     	'is_context' => DATA_TYPE_BOOLEAN,
-    	'parent_id' => DATA_TYPE_INTEGER
+    	'parent_id' => DATA_TYPE_INTEGER,
+        'type' => DATA_TYPE_STRING, 
     );
   
     /**

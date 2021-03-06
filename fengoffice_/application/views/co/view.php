@@ -92,8 +92,10 @@
 			if ($object instanceof ApplicationDataObject)
 				echo render_custom_properties($object);
 			
-			if ($object instanceof ContentDataObject && $object->allowsTimeslots() && can_manage_time(logged_user()))
+			$logged_user_pgs = logged_user()->getPermissionGroupIds();
+			if ($object instanceof ContentDataObject && $object->allowsTimeslots() && can_access_pgids($logged_user_pgs, $object->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_READ)) {
 				echo render_object_timeslots($object, $object->getViewUrl());
+			}
 				
 			$isUser = ( $object instanceof Contact && $object->isUser() );
 			if ($object instanceof ContentDataObject &&	$object->canView(logged_user()) || ( $isUser && (logged_user()->getId() == get_id() || logged_user()->isAdministrator()) ) ){ 

@@ -47,7 +47,7 @@
       $objects = array();
       foreach($relations as $relation) {
         $object = $relation->getOtherObject($originalObject);
-        if (!can_access(logged_user(), $object->getMembers(), $object->getObjectTypeId(), ACCESS_LEVEL_READ)) continue;
+		if (!$object->canView(logged_user())) continue;
         $objects[] = $object;
       } // if
 

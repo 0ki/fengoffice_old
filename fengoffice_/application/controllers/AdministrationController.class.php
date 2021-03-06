@@ -784,8 +784,7 @@ class AdministrationController extends ApplicationController {
 	
 	function tabs_submit() {
 		ajx_current("empty");
-		evt_add("tabs changed");
-		//AjaxResponse::instance()->addInlineScript("<script>alert(1);<script>");
+		evt_add("tabs changed", null);
 		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -794,7 +793,7 @@ class AdministrationController extends ApplicationController {
 		foreach ($_POST['tabs'] as $id => $tab) {
 			$ordering = (int) $tab['ordering'];
 			$title = mysql_escape_string($tab['title']);
-			$enabled = ($tab['enabled']=="on")?1:0;
+			$enabled = (array_var($tab, 'enabled') == "on") ? 1 : 0;
 			
 			if ($tp = TabPanels::instance()->findById($id)){
 				$tp->setOrdering($ordering);

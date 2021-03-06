@@ -111,6 +111,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
 	if (tdata.udt) this.useDueTime = tdata.udt;
 	if (tdata.ust) this.useStartTime = tdata.ust;
+        if (tdata.multiAssignment) this.multiAssignment = tdata.multiAssignment;
 }
 
 ogTasksMilestone = function(id, title, dueDate, totalTasks, completedTasks, isInternal, isUrgent){

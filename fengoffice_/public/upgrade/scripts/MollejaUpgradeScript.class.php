@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Molleja upgrade script will upgrade FengOffice 2.0.1 to FengOffice 2.1-beta
+ * Molleja upgrade script will upgrade FengOffice 2.0.1 to FengOffice 2.1-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.0.1');
-		$this->setVersionTo('2.1-beta');
+		$this->setVersionTo('2.1-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -122,6 +122,32 @@ class MollejaUpgradeScript extends ScriptUpgraderScript {
 				if (!$this->checkColumnExists($t_prefix."file_types", 'is_allow', $this->database_connection)) {
 					$upgrade_script .= "
 						ALTER TABLE `".$t_prefix."file_types` ADD COLUMN `is_allow` TINYINT(1) NOT NULL DEFAULT '1';";
+				}
+			}
+				
+			// UPDATE VERSION 2.1-rc
+			if (version_compare($installed_version, '2.1-rc') < 0) {
+				//TYPES IN PERMISSION GROUPS
+				if (!$this->checkColumnExists($t_prefix."permission_groups", 'type', $this->database_connection)) {
+					$upgrade_script .= "ALTER TABLE  `".$t_prefix."permission_groups` ADD `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NOT NULL;";
+				}
+				$upgrade_script .= "
+					UPDATE `".$t_prefix."permission_groups` SET `type` = 'roles' WHERE `id` <= 13;
+					UPDATE `".$t_prefix."permission_groups` SET `type` = 'permission_groups' WHERE `contact_id` > 0;
+					UPDATE `".$t_prefix."permission_groups` SET `type` = 'user_groups' WHERE `type` = '' OR `type` IS NULL;";
+			}
+
+			//UPDATE VERSION 2.1
+			if (version_compare($installed_version, '2.1') < 0) {
+				//CLASIFFY EVENTS
+				if (!$this->checkColumnExists($t_prefix."external_calendar_users", 'related_to', $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."external_calendar_users` ADD `related_to` VARCHAR( 255 ) NOT NULL;";
+				}
+				//PERFORMANCE SYNC EVENTS
+				if (!$this->checkColumnExists($t_prefix."project_events", 'update_sync', $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."project_events` ADD `update_sync` DATETIME NOT NULL AFTER `special_id`;";
 				}
 			}
 		}

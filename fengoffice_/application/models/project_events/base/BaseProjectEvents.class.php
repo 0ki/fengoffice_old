@@ -29,6 +29,7 @@ abstract class BaseProjectEvents extends ContentDataObjects {
     	'repeat_h' => DATA_TYPE_INTEGER,
     	'type_id' => DATA_TYPE_INTEGER,
     	'special_id' => DATA_TYPE_STRING,
+        'update_sync' => DATA_TYPE_DATETIME,
      	'repeat_dow' => DATA_TYPE_INTEGER,
     	'repeat_wnum' => DATA_TYPE_INTEGER,
     	'repeat_mjump' => DATA_TYPE_INTEGER,
@@ -103,7 +104,7 @@ abstract class BaseProjectEvents extends ContentDataObjects {
      */
     function getSystemColumns() {
             return array_merge(parent::getSystemColumns(), array(
-            'type_id', 'special_id', 'ext_cal_id', 'original_event_id')
+            'type_id', 'special_id', 'update_sync', 'ext_cal_id', 'original_event_id')
             );
     } // getSystemColumns
 

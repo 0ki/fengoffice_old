@@ -662,7 +662,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	} // canView
 
 	
@@ -673,7 +673,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return boolean
 	 */
 	function canDownload(Contact $user) {
-		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
+		return can_read_sharing_table($user, $this->getId());
 	} // canDownload
 
 

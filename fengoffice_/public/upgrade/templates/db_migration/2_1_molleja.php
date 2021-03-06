@@ -11,3 +11,12 @@ ALTER TABLE `<?php echo $table_prefix ?>members`
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`id` ,`extension` ,`icon` ,`is_searchable` ,`is_image`) VALUES
  ('34', 'odt', 'doc.png', '1', '0'), ('35', 'fodt', 'doc.png', '1', '0')
 ON DUPLICATE KEY UPDATE id=id;
+
+ALTER TABLE `<?php echo $table_prefix ?>external_calendar_users` ADD `related_to` VARCHAR( 255 ) NOT NULL;
+                                
+ALTER TABLE `<?php echo $table_prefix ?>project_events` ADD `update_sync` DATETIME NOT NULL AFTER `special_id`;
+
+ALTER TABLE  `<?php echo $table_prefix ?>permission_groups` ADD  `type` ENUM(  'roles',  'permission_groups',  'user_groups' ) NOT NULL;
+UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'roles' WHERE `id` <= 13;
+UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'permission_groups' WHERE `contact_id` > 0;
+UPDATE `<?php echo $table_prefix ?>permission_groups` SET `type` = 'user_groups' WHERE `type` = '' OR `type` IS NULL;

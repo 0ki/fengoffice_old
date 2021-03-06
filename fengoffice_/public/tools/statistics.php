@@ -7,7 +7,8 @@ include "config/config.php";
 $db_link = mysql_connect(DB_HOST, DB_USER, DB_PASS) or die();
 if (!mysql_select_db(DB_NAME, $db_link)) die();
 
-$all_statistics = array('config' => array('db_host' => DB_HOST, 'db_name' => DB_NAME, 'url' => ROOT_URL));
+$version = include 'version.php';
+$all_statistics = array('config' => array('db_host' => DB_HOST, 'db_name' => DB_NAME, 'url' => ROOT_URL, 'version' => $version));
 
 // build module usage information
 if (isset($_REQUEST['modules']) && $_REQUEST['modules']) {
