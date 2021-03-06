@@ -443,4 +443,7 @@ return array(
 	'extend billing categories with advanced billing' => 'Extend billing categories with advanced billing',
 	'relations' => 'Relations',
 	'table' => 'Table',
+	'task status' => 'Task status',
+	'time report task status desc' => 'If a status is selected then the tasks timeslots will be filtered by it\'s task status. This filter does not apply to timeslots created in Time panel.',
+	'all tasks' => 'All tasks',
 );

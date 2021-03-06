@@ -125,6 +125,9 @@
 	margin-left: 20px;
 }
 /* </upgrade> */
+.configCategoryOtpion {
+	padding: 5px;
+}
 .configCategory, .userWsConfigCategory {
 	padding: 10px 5px;
 }

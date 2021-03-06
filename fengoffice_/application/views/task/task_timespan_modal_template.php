@@ -2,10 +2,10 @@
 <div id="task-timespan-modal{{genid}}" class="modal-container" style="background-color: white;padding: 10px;">
 
 <form id="task-timespan-modal-form{{genid}}" style="min-width: 340px;">
-	<div style="display: inline-block;" id="{{genid}}addwork">
+	<div style="display: inline-block; width:100%;" id="{{genid}}addwork">
 		<input type="hidden" value="{{taskId}}" name="object_id">
 
-		<div style="margin-bottom:5px;display:none;" id="{{genid}}tsUserContainer">
+		<div style="margin-bottom:10px;display:none;" id="{{genid}}tsUserContainer">
 			<label for="{{genid}}closeTimeslotDescription">{{lang 'person'}}:</label>
 			<select name="timeslot[contact_id]" tabindex="60" id="{{genid}}tsUser">
 			</select>

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4-beta
+	About Feng Office 3.4-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,12 @@
 	Changelog
 	=========
 	
+	Since 3.4-beta
+	----------------
+	bugfix: cannot instantiate template from mail if template has no variables.
+	bugfix: in some languages somtimes the messages widget crashes the overview.
+	
+	
 	Since 3.3.0.11
 	----------------
 	feature: filter by type in archived objects, trash panel and overview list.
@@ -116,6 +122,10 @@
 	feature: expenses - config option to allow to add negative amounts.
 	feature: advanced billing plugin.
 	feature: add to listings the possibility to order by custom properties and dimension members.
+	feature: don't persist attached documents after sending the email.
+	feature: allow to filter time report by associated task status.
+	feature: when completing a task show popup to ask if user wants to complete subtasks too.
+	feature: allow to set user when adding worked time from tasks list.
 	
 	bugfix: when editing an object, don't modify linked objects for objects that logged user doesn't have permissions.
 	bugfix: when editing an object, linked objects are not instantly loaded in the form.

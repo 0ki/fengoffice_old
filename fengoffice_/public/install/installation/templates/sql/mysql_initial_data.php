@@ -325,6 +325,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
  ('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'timeReportTaskStatus', 'all', 'StringConfigHandler', 1, 0, ''),
  ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'view_mail_attachs_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, ''),

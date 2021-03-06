@@ -39,4 +39,6 @@
 	'do you want to add default permissions in member for users' => '¿Desea agregar permisos por defecto a \'{1}\' en \'{0}\'?',
 
 	'add new row' => 'Agregar nueva fila',
+	'update subtasks' => 'Modificar subtareas',
+	'success complete subtasks of' => 'Las subtareas de \'{0}\' fueron completadas exitosamente',
 );

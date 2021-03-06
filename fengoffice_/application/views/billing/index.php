@@ -33,7 +33,7 @@
 		if ($draw_disabled_options) {
 	?>
 		<div class="disabled">
-		    <div class="configCategory alt">
+		    <div class="configCategory odd">
 	            <h2><?php echo lang("income config general")?></h2>
 	            <div class="configCategoryDescription"><?php echo lang('income general config description')?></div>
 	        </div>
@@ -41,7 +41,7 @@
 	            <h2><?php echo lang("taxes")?></h2>
 	            <div class="configCategoryDescription"><?php echo lang('taxes config description')?></div>
 	        </div>
-	        <div class="configCategory alt">
+	        <div class="configCategory odd">
 	            <h2><?php echo lang("invoice copies")?></h2>
 	            <div class="configCategoryDescription"><?php echo lang('copies config description')?></div>
 	        </div>
@@ -49,7 +49,7 @@
 	            <h2><?php echo lang("invoice types")?></h2>
 	            <div class="configCategoryDescription"><?php echo lang('invoice types config description')?></div>
 	        </div>
-	        <div class="configCategory alt">
+	        <div class="configCategory odd">
 	            <h2><?php echo lang("invoice notebooks")?></h2>
 	            <div class="configCategoryDescription"><?php echo lang('invoice notebooks config description')?></div>
 	        </div>

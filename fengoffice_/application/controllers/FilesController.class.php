@@ -599,6 +599,12 @@ class FilesController extends ApplicationController {
 			}else{
 				$file->setDefaultSubject('');
 			}
+			
+			// files added as email attachments must be archived
+			if (array_var($file_data, 'composing_mail') && $upload_option == -1) {
+				$file->getObject()->setColumnValue('archived_by_id', logged_user()->getId());
+				$file->getObject()->setColumnValue('archived_on', DateTimeValueLib::now());
+			}
 		
 			DB::beginWork();
 			

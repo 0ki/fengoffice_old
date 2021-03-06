@@ -1005,7 +1005,7 @@ class ObjectController extends ApplicationController {
 						continue;
 					}
 					if ($obj->canEdit(logged_user())) {
-						$obj->setDontMakeCalculations(true);
+						if (method_exists($obj, 'setDontMakeCalculations')) $obj->setDontMakeCalculations(true);
 						if ($action == 'archive') {
 							$obj->archive();
 							$succ++;
@@ -1663,7 +1663,9 @@ class ObjectController extends ApplicationController {
 			));
 		
 			$objects = $result->objects;
-			foreach ($objects as $object) $object->setDontMakeCalculations(true);
+			foreach ($objects as $object) {
+				if (method_exists($object, 'setDontMakeCalculations')) $object->setDontMakeCalculations(true);
+			}
 		
 			$real_deleted_ids = array();
 			list($succ, $err) = $this->do_delete_objects($objects, false, $real_deleted_ids);
@@ -1705,7 +1707,9 @@ class ObjectController extends ApplicationController {
 					"trashed" => true,
 			));
 			$objects = $result->objects;
-			foreach ($objects as $object) $object->setDontMakeCalculations(true);
+			foreach ($objects as $object) {
+				if (method_exists($object, 'setDontMakeCalculations')) $object->setDontMakeCalculations(true);
+			}
 		
 			if (count($objects) > 0) {
 				$obj_ids_str = implode(',', array_flat($objects));
@@ -1759,7 +1763,7 @@ class ObjectController extends ApplicationController {
 			$success = 0; $error = 0;
 			foreach ($ids as $id) {
 				$obj = Objects::findObject($id);
-				$obj->setDontMakeCalculations(true);
+				if (method_exists($obj, 'setDontMakeCalculations')) $obj->setDontMakeCalculations(true);
 				if ($obj->canDelete(logged_user())) {
 					try {
 						$obj->untrash($errorMessage);
@@ -2076,7 +2080,7 @@ class ObjectController extends ApplicationController {
 		
 		// Full SQL
 		$sql = "$sql_select $sql_joins $sql_where $sql_order $sql_limit";
-		
+		Logger::log($sql);
 		// Execute query
 		if (!$only_count_result) {
 			$rows = DB::executeAll($sql);

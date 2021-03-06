@@ -1322,7 +1322,10 @@ ogTasks.drawSubtasks = function(params){
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');	
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
 	var drawOptions = topToolbar.getDrawOptions();
-		
+	
+	// reverse the array because rows are inserted in reverse order (using function "after" of the task parent)
+	task.subtasksIds = task.subtasksIds.reverse();
+	
 	for (var i = 0; i < task.subtasksIds.length; i++){
 		var subtask = ogTasks.getTask(task.subtasksIds[i]);
 		var subtask_row = ogTasks.drawTask(subtask, drawOptions, displayCriteria, group_id, level, null, 1);
@@ -1366,21 +1369,27 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 			if (!success || data.errorCode) {
 				
 			} else {
-				//Set task data
-				var task = ogTasksCache.addTasks(data.task);
+				if (data.task) {
+					//Set task data
+					var task = ogTasksCache.addTasks(data.task);
+					
+					//update dependants
+					if (task.status){
+						ogTasks.updateDependantTasks(task.id,false);
+					}else{
+						ogTasks.updateDependantTasks(task.id,true);
+					}
 				
-				//update dependants
-				if (task.status){
-					ogTasks.updateDependantTasks(task.id,false);
-				}else{
-					ogTasks.updateDependantTasks(task.id,true);
+					ogTasks.UpdateTask(task.id, false);
+				} else {
+					ogTasks.UpdateTask(task_id, true);
 				}
-				
-				ogTasks.UpdateTask(task.id,false);
 
-				for ( var j = 0; j < data.more_tasks.length; j++) {
-					ogTasks.drawTaskRowAfterEdit({'task':data.more_tasks[j]});//$hola					
-				}				
+				if (data.more_tasks) {
+					for ( var j = 0; j < data.more_tasks.length; j++) {
+						ogTasks.drawTaskRowAfterEdit({'task':data.more_tasks[j]});					
+					}
+				}
 				ogTasks.refreshGroupsTotals();
 			}
 		},
@@ -1395,7 +1404,10 @@ ogTasks.loadTimeslotUsers = function(genid, task_id) {
 			if (data.users && data.users.length > 0) {
 				for (var i=0; i<data.users.length; i++) {
 					var u = data.users[i];
-					$('#' + genid + 'tsUser').append('<option value="'+ u.id +'">'+ u.name +'</option>');
+					var sel = u.id == og.loggedUser.id ? 'selected="selected"' : '';
+					console.log(sel);
+					console.log(u);
+					$('#' + genid + 'tsUser').append('<option value="'+ u.id +'" '+ sel +'>'+ u.name +'</option>');
 				}
 				$('#' + genid + 'tsUserContainer').show();
 				

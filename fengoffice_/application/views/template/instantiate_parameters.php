@@ -18,7 +18,9 @@ if (array_var($_REQUEST, 'modal')) {
 	<div class="clear"></div>
 </div>
 <div class="coInputMainBlock">
-	
+	<?php if (!isset($parameters) || count($parameters) == 0) { ?>
+	<input name="parameterValues[dummy]" value="" type="hidden"/>
+	<?php } ?>
 	<div>
 		<table style="width:100%;"><tbody>
 		<?php foreach($parameters as $parameter) {

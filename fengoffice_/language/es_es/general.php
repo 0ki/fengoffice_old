@@ -417,5 +417,8 @@
 	'extend billing categories with advanced billing' => 'Extienda las categorías de facturación con "Facturación avanzada"',
 	'relations' => 'Relaciones',
 	'table' => 'Tabla',
-		
+
+	'task status' => 'Estado de tareas',
+	'time report task status desc' => 'Si se selecciona un estado, los tiempos de trabajo de tareas serán filtrados por el estado de su tarea. No aplica a los tiempos de trabajo ingresados desde el panel de Horas.',
+	'all tasks' => 'Todas las tareas',
 );

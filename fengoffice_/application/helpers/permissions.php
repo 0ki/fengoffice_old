@@ -1405,7 +1405,7 @@
 	 * @param $extra_conditions Extra conditions to add to the users query
 	 * @param $to_assign true if this function is called to fill the "assigned to" combobox when editing a task
 	 */
-	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "", $for_tasks_filter = false) {
+	function allowed_users_in_context($object_type_id, $context = null, $access_level = ACCESS_LEVEL_READ, $extra_conditions = "", $for_tasks_filter = false, $include_member_childs = false) {
 		$result = array();
 		
 		$members = array();
@@ -1449,7 +1449,15 @@
 			if ($zero_members && config_option('let_users_create_objects_in_root') && (logged_user()->isAdminGroup() || logged_user()->isExecutive() || logged_user()->isManager())) {
 				$allowed_permission_groups = array_flat(DB::executeAll("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id=0 AND object_type_id=$object_type_id"));
 			} else {
-				$allowed_permission_groups = can_access_pgids($all_permission_groups, $members, $object_type_id, $access_level);
+				if ($include_member_childs) {
+					$all_members = $members;
+					foreach ($members as $member) {
+						$all_members = array_merge($all_members, $member->getAllChildrenInHierarchy());
+					}
+				} else {
+					$all_members = $members;
+				}
+				$allowed_permission_groups = can_access_pgids($all_permission_groups, $all_members, $object_type_id, $access_level);
 			}
 		}
 		

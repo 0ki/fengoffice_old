@@ -16,6 +16,9 @@
 #tabs-panel .x-panel-body-noheader {
 	overflow-x: hidden !important;
 }
+#tabs-panel #reporting-panel .x-panel-body-noheader {
+	overflow-x: auto !important;
+}
 
 #menu-panel .x-panel-body{
 	border-bottom-width: 0;

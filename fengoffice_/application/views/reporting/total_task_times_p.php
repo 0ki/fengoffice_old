@@ -173,6 +173,20 @@
 			</td>
 		</tr>
 		
+		<tr style='height:30px;' id="<?php echo $genid?>task_status_row">
+			<td><span class="bold"><?php echo lang('task status') ?></span></td>
+			<td align='left' style="padding: 12px 0 0 0;"><?php
+				$sel_status = array_var($report_data, "task_status", 'all');
+				$options = array();
+				$options[] = option_tag('-- ' . lang('all tasks') . ' --', 'all', $sel_status == 'all' ? array('selected' => 'selected') : null);
+				$options[] = option_tag(lang('pending'), 'pending', $sel_status == 'pending' ? array('selected' => 'selected') : null);
+				$options[] = option_tag(lang('completed'), 'completed', $sel_status == 'completed' ? array('selected' => 'selected') : null);
+				echo select_box('report[task_status]', $options, array('style' => 'float:left;'));
+			?>
+				<div class="desc" style="width:75%; float:left; margin-left:10px;"><?php echo lang('time report task status desc')?></div>
+			</td>
+		</tr>
+		
 		<?php if (isset($has_custom_properties) && $has_custom_properties) {?>
 		<tr>
 			<td style="padding-top:10px;padding-right:10px;"><span class="bold"><?php echo lang('custom properties') ?>:&nbsp;</span></td>

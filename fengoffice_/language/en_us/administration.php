@@ -386,6 +386,7 @@
 	'object type not supported' => 'This object type is not supported for templates',
   	'assign template to workspace' => 'Assign template to workspace',
   	'parameters' => 'Parameters',
+  	'success instatiate template' => 'Template \'{0}\' successfully instantiated',
   
   	'cron events' => 'Cron events',
   	'about cron events' => 'Learn about cron events...',

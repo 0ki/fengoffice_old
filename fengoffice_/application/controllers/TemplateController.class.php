@@ -703,6 +703,11 @@ class TemplateController extends ApplicationController {
 		}else{
 			ajx_current("back");
 		}
+		
+		flash_success(lang('success instatiate template', $template->getName()));
+		if (array_var($_GET, 'from_email') > 0) {
+			evt_add('reload tab panel', 'tasks-panel');
+		}
 	}
 	
 	

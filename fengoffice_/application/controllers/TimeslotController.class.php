@@ -533,10 +533,14 @@ class TimeslotController extends ApplicationController {
 				$rel_object = $timeslot->getRelObject();
 			}
 			
-			if (logged_user()->isMemberOfOwnerCompany()) {
-				$users = Contacts::getAllUsers();
+			if (can_manage_time(logged_user())) {
+				if (logged_user()->isMemberOfOwnerCompany()) {
+					$users = Contacts::getAllUsers();
+				} else {
+					$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
+				}
 			} else {
-				$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
+				$users = array(logged_user());
 			}
 			$tmp_users = array();
 			foreach ($users as $user) {

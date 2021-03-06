@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4-beta
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4-beta');
+		$this->setVersionTo('3.4-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -106,6 +106,14 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 			// dummy query
 			$upgrade_script .= "
 				UPDATE ".$t_prefix."config_options SET is_system=1 WHERE name='messages_per_page';
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4-rc') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('general', 'timeReportTaskStatus', 'all', 'StringConfigHandler', 1, 0, '')
+				ON DUPLICATE KEY UPDATE name=name;
 			";
 		}
 		

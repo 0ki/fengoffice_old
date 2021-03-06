@@ -338,6 +338,7 @@
 	'default user preferences desc' => 'Determine los valores por defecto de las preferencias de usuario. Estos valores se aplicarán mientras el usuario no determine los valores sus preferencias.',
 	'add a parameter to template' => 'Agregar un parámetro a esta plantilla',
 	'parameters' => 'Parámetros',
+  	'success instatiate template' => 'Plantilla \'{0}\' instanciada exitosamente',
 	'config option name smtp_address' => 'Dirección SMTP',
 	'config option desc smtp_address' => 'Opcional. Algunos servidores requieren que los correos enviados tengan una dirección de correo del servidor. Dejar en blanco para usar la dirección de correo del usuario que envía el correo.',
 	'mail accounts' => 'Cuentas de correo',

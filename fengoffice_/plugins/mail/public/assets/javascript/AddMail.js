@@ -203,11 +203,11 @@ og.addMailAttachment = function(container, obj) {
  	}
  	if (obj.manager == 'ProjectFiles' || obj.manager == 'MailContents') {
  	 	var id = Ext.id();
- 		name += "<input id=\"check" + id + "\" type=\"checkbox\" checked=\"checked\"  style=\"margin-left: 30px; position: relative; top: 3px; width: 16px;\" name=\"attach_contents[" + count + "]\" />" +
-		"<label for=\"check" + id + "\" style=\"display: inline; margin-left: 5px;\">" + lang("attach contents") + "</label>";
+ 		name += "<label for=\"check" + id + "\" style=\"display: inline; margin-right: 50px;float:right;\">" + lang("attach contents") + "</label>"+
+ 			"<input id=\"check" + id + "\" type=\"checkbox\" checked=\"checked\"  style=\"float:right;margin-right: 5px; position: relative; top: 3px; width: 16px;\" name=\"attach_contents[" + count + "]\" />";
  	} else if (obj.manager == 'FwdMailAttach') {
- 	 	name += "<input type=\"checkbox\" checked=\"checked\" style=\"margin-left: 30px; position: relative; top: 3px; width: 16px;\" disabled=\"disabled\" />" +
-		"<label style=\"display: inline; margin-left: 5px;\">" + lang("attach contents") + "</label>";
+ 	 	name += "<label style=\"display: inline; margin-right: 50px;float:right;\">" + lang("attach contents") + "</label>" +
+ 	 		"<input type=\"checkbox\" checked=\"checked\" style=\"float:right; margin-right: 5px; position: relative; top: 3px; width: 16px;\" disabled=\"disabled\" />";
  	}
 	var html = 
 		"<input type=\"hidden\" value=\"" + objid + "\" name=\"linked_objects[" + count + "]\"/>" +

@@ -20,6 +20,11 @@
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
+<style>
+#add_mail_attachments .removeDiv {
+	line-height: 20px;
+}
+</style>
 <input type="hidden" id="<?php echo $genid ?>signatures" />
 <script>
 og.attachContents = <?php echo user_config_option('attach_docs_content') ? '1' : '0'; ?>;

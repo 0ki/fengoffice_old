@@ -40,7 +40,7 @@
   	}
   	
   	function isActivePlugin($name) {
-  		if (!$this instanceof Plugins) {
+  		if (!isset($this) || !$this instanceof Plugins) {
   			return self::instance()->isActivePlugin($name);
   		}
 		$this->getActive();

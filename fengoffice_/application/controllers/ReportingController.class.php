@@ -198,6 +198,8 @@ class ReportingController extends ApplicationController {
 		$report_data['show_billing'] = user_config_option('timeReportShowBilling');
 		$report_data['show_cost'] = user_config_option('timeReportShowCost');
 		
+		$report_data['task_status'] = user_config_option('timeReportTaskStatus');
+		
 		$cp_ids = CustomProperties::getCustomPropertyIdsByObjectType(ProjectTasks::instance()->getObjectTypeId());
 		tpl_assign('has_custom_properties', count($cp_ids) > 0);
 		
@@ -205,7 +207,7 @@ class ReportingController extends ApplicationController {
 		if (count($sel_member_ids) == 0) {
 			$users = Contacts::getAllUsers();
 		} else {
-			$users = allowed_users_in_context(Timeslots::instance()->getObjectTypeId(), active_context());
+			$users = allowed_users_in_context(Timeslots::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, "", false, true);
 		}
 		$_SESSION['total_task_times_report_data'] = $report_data;
 		tpl_assign('report_data', $report_data);
@@ -249,6 +251,7 @@ class ReportingController extends ApplicationController {
 			set_user_config_option('timeReportTimeslotType', $report_data['timeslot_type'] , logged_user()->getId());
 			set_user_config_option('timeReportShowBilling', isset($report_data['show_billing']) ? 1:0 , logged_user()->getId());
 			set_user_config_option('timeReportShowCost', isset($report_data['show_cost']) ? 1:0 , logged_user()->getId());
+			set_user_config_option('timeReportTaskStatus', $report_data['task_status'] , logged_user()->getId());
 			
 			$group = $report_data['group_by_1'].", ".$report_data['group_by_2'].", ".$report_data['group_by_3'];
 			$altGroup = $report_data['alt_group_by_1'].",".$report_data['alt_group_by_2'].",".$report_data['alt_group_by_3'];
@@ -383,6 +386,15 @@ class ReportingController extends ApplicationController {
 				$current_condition .= ')';
 				$extra_conditions .= $current_condition;
 				
+			}
+		}
+		
+		if ($timeslot_type != 1) {
+			$task_status = array_var($report_data, 'task_status', 'all');
+			if ($task_status == 'pending') {
+				$extra_conditions .= " AND IF(e.rel_object_id=0, true, (SELECT pt.completed_by_id FROM ".TABLE_PREFIX."project_tasks pt WHERE pt.object_id=e.rel_object_id)=0) ";
+			} else if ($task_status == 'completed') {
+				$extra_conditions .= " AND IF(e.rel_object_id=0, true, (SELECT pt.completed_by_id FROM ".TABLE_PREFIX."project_tasks pt WHERE pt.object_id=e.rel_object_id)>0) ";
 			}
 		}
 		

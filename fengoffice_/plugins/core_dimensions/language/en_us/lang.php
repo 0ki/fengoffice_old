@@ -37,4 +37,7 @@
 	
 	'add timeslot' => 'Add timeslot',
 	'add new row' => 'Add new row',
+	
+	'update subtasks' => 'Update subtasks',
+	'success complete subtasks of' => 'Subtasks of \'{0}\' completed successfully',
 );

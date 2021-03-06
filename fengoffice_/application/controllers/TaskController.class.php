@@ -1748,25 +1748,10 @@ class TaskController extends ApplicationController {
 	}
 	
 	private function getTasksInGroup($conditions, $start, $limit, $join_params = null, $group_by = null){
-		$order = user_config_option('tasksOrderBy');
-		$order_dir = 'DESC';
-		switch($order){
-			case 'name':
-				$order_dir = 'ASC';
-				break;
-			case 'assigned_to':
-				$order = 'assigned_to_contact_id';
-				$order_dir = 'ASC';
-				break;
-			case 'due_date':
-			case 'start_date':
-			case 'created_on':
-			case 'completed_on':
-				$order = "($order='0000-00-00 00:00:00'), $order";
-				$order_dir = 'ASC';
-				break;			
-		}
-				
+		$order = 'name';
+		$order_dir = 'ASC';
+		$this->getListingOrderBy($order, $order_dir);
+		
 		//START tasks tree
 		$list_subtasks = user_config_option('tasksShowSubtasksStructure') && !user_config_option('show_tasks_list_as_gantt');
 		if($list_subtasks){
@@ -1948,25 +1933,52 @@ class TaskController extends ApplicationController {
 		ajx_extra_data($data);
 	}
 	
+	private function getListingOrderBy(&$order_by, &$order_dir) {
+		$order_by = user_config_option('tasksOrderBy');
+		$order_dir = 'DESC';
+		switch($order_by){
+			case 'name':
+				$order_dir = 'ASC';
+				break;
+			case 'assigned_to':
+				$order_by = 'assigned_to_contact_id';
+				$order_dir = 'ASC';
+				break;
+			case 'due_date':
+			case 'start_date':
+			case 'created_on':
+			case 'completed_on':
+				$order_by = "($order_by='0000-00-00 00:00:00'), $order_by";
+				$order_dir = 'ASC';
+				break;
+		}
+	}
+	
 	function get_tasks() {
 		ajx_current("empty");
 		$data = array();
 		$tasks_array = array();
 		
 		$tasks_ids = array_map('intval',json_decode(array_var($_REQUEST, 'tasks_ids', null )));		
-		if (is_array($tasks_ids)){						
+		if (is_array($tasks_ids)){
 			$conditions = " AND `object_id` IN (".implode(',', $tasks_ids).")";
+			
+			$order_by = 'name';
+			$order_dir = 'ASC';
+			$this->getListingOrderBy($order_by, $order_dir);
 		
 			$tasks = ProjectTasks::instance()->listing(array(
 					"extra_conditions" => $conditions,
 					"count_results" => false,
+					"order" => $order_by,
+					"order_dir" => $order_dir,
 					"raw_data" => true,
 			))->objects;
 			
 			$tasks_array = array();
 			foreach ($tasks as $task){
 				$tasks_array[] = ProjectTasks::getArrayInfo($task);
-			}			
+			}
 		}
 		
 		$data['tasks'] = $tasks_array;
@@ -3276,7 +3288,6 @@ class TaskController extends ApplicationController {
 					$task->save();
 				}
 				
-
 				if(config_option('repeating_task') == 1 && $task instanceof ProjectTask){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;
@@ -3732,9 +3743,14 @@ class TaskController extends ApplicationController {
 			ApplicationLogs::createLog($task, ApplicationLogs::ACTION_CLOSE, false, false, true, substr($log_info,0,-1));
 			flash_success(lang('success complete task'));
 
+			$pending_subtasks = 0;
 			$subt_info = array();
 			foreach($task->getAllSubTasks() as $sub){
 				$subt_info[]=$sub->getArrayInfo();
+				if ($sub->getCompletedById() == 0) $pending_subtasks++;
+			}
+			if ($pending_subtasks > 0) {
+				evt_add('ask to complete subtasks', array('parent_id' => $task->getId()));
 			}
 
 			$more_tasks = array();
@@ -3754,6 +3770,55 @@ class TaskController extends ApplicationController {
 			flash_error($e->getMessage());
 		} // try
 	} // complete_task
+	
+	function complete_subtasks() {
+		
+		ajx_current("empty");
+		$task = ProjectTasks::findById(get_id());
+		if(!($task instanceof ProjectTask)) {
+			flash_error(lang('task dnx'));
+			return;
+		}
+		
+		if(!$task->canEdit(logged_user()) && $task->getAssignedTo()!=logged_user()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		try {
+			DB::beginWork();
+			
+			$completed_tasks = array();
+			$log_info = array();
+			$subtasks = $task->getAllSubTasks();
+			
+			foreach ($subtasks as $sub) {
+				if ($sub->getCompletedById() == 0 && $sub->canChangeStatus(logged_user())) {
+					$log_info[$sub->getId()] = $sub->completeTask();
+					$completed_tasks[] = $sub;
+				}
+			}
+			
+			DB::commit();
+			flash_success(lang('success complete subtasks of', $task->getObjectName()));
+			
+			$tasks_info = array();
+			foreach ($completed_tasks as $sub) {
+				if (isset($log_info[$sub->getId()])) {
+					$linfo = array_var($log_info, $sub->getId(), '');
+					ApplicationLogs::createLog($sub, ApplicationLogs::ACTION_CLOSE, false, true, true, substr($linfo,0,-1));
+				}
+				$tasks_info[] = $sub->getArrayInfo();
+			}
+			
+			ajx_extra_data(array("tasks" => $tasks_info));
+			
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		}
+	}
 
 	/**
 	 * Reopen completed task

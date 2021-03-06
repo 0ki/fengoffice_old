@@ -194,6 +194,9 @@ og.timeslotTypeSelectChange = function(select, genid) {
 	
 	document.getElementById(genid + 'task_ts_desc').style.display = select.value == 0 ? '' : 'none';
 	document.getElementById(genid + 'general_ts_desc').style.display = select.value == 1 ? '' : 'none';
+	
+	var st_row = document.getElementById(genid + 'task_status_row');
+	if (st_row) st_row.style.display = select.value == 1 ? 'none' : '';
 }
 
 og.switchToOverview = function(){

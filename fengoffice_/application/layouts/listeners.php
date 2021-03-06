@@ -480,6 +480,56 @@ og.eventManager.addListener('ask to change subtasks dates',
 );
 
 
+og.eventManager.addListener('ask to complete subtasks',
+	function (data) {
+		if (data && data.parent_id) {
+			var question = lang('complete task and subtask');
+			var div = document.createElement('div');
+			var genid = Ext.id();
+			div.innerHTML = '<div style="border-radius: 5px; background-color: #fff; padding: 10px; width: 400px;">'+ 
+				'<div><label class="coInputTitle">'+lang('update subtasks')+'</label></div>'+
+				'<div id="'+genid+'_question">'+ question +'</div>'+
+				'<div id="'+genid+'_buttons">'+
+				'<button class="yes submit blue">'+lang('yes')+'</button><button class="no submit blue">'+lang('no')+'</button>'+
+				'</div><div class="clear"></div></div>';
+
+			var modal_params = {
+				'escClose': false,
+				'overlayClose': false,
+				'closeHTML': '<a id="'+genid+'_close_link" class="modal-close" title="'+lang('close')+'"></a>',
+				'onShow': function (dialog) {
+					$("#"+genid+"_close_link").addClass("modal-close-img");
+					$("#"+genid+"_buttons").css('text-align', 'right').css('margin', '10px 0');
+					$("#"+genid+"_question").css('margin', '10px 0');
+					$("#"+genid+"_buttons button.yes").css('margin-right', '10px').click(function(){
+						og.openLink(og.getUrl('task', 'complete_subtasks', {id: data.parent_id}), {
+							callback: function(success, cbdata) {
+								if (success && cbdata && cbdata.tasks) {
+									for (var i=0; i<cbdata.tasks.length; i++) {
+										var task = cbdata.tasks[i];
+										if (task) {
+											var task_added = ogTasksCache.addTasks(task);
+											ogTasks.UpdateTask(task_added.id, false);
+										}
+									}
+								}
+							}
+						});
+						$('.modal-close').click();
+					});
+					$("#"+genid+"_buttons button.no").css('margin-right', '10px').click(function(){
+						$('.modal-close').click();
+					});
+			    }
+			};
+			setTimeout(function() {
+				$.modal(div, modal_params);
+			}, 100);
+		}
+	}
+);
+
+
 og.eventManager.addListener('new user added', 
  	function (data){
  		if (data && data.id > 0) { 

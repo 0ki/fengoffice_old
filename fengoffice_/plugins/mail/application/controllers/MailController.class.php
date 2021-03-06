@@ -1043,6 +1043,14 @@ class MailController extends ApplicationController {
 							
 							if (defined('DEBUG') && DEBUG) file_put_contents(ROOT."/cache/log_mails.txt", gmdate("d-m-Y H:i:s") . " email saved: ".$mail->getId() . "\n", FILE_APPEND);
 							
+							// remove archived attachments
+							$attachs = ProjectFiles::findAll(array('conditions' => "mail_id=".$mail->getId()));
+							foreach ($attachs as $attach) {
+								if ($attach->getArchivedById() == $user->getId() && $attach->getCreatedById() == $user->getId() && $attach->countRevisions()==1) {
+									$attach->delete();
+								}
+							}
+							
 							$properties = array("id" => $mail->getId());
 							evt_add("mail sent", $properties);
 							$count++;
