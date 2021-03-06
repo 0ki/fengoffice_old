@@ -507,6 +507,26 @@ return array(
   'mobile' => 'Mobile',
   'pager' => 'Pager',
 
+  'hphone title' => 'Phone',
+  'wphone title' => 'Phone',
+  'ophone title' => 'Phone',
+
+  'hphone' => 'Phone',
+  'hphone 2' => 'Phone 2',
+  'hfax' => 'Fax',
+  'hmobile' => 'Mobile',
+  'hpager' => 'Pager',
+
+  'wphone' => 'Phone',
+  'wphone 2' => 'Phone 2',
+  'wfax' => 'Fax',
+  'wassistant' => 'Assistant',
+  'wcallback' => 'Callback',
+
+  'ophone' => 'Phone',
+  'ophone 2' => 'Phone 2',
+  'ofax' => 'Fax',
+
   'roles' => 'Roles',  
   'last updated by on' => '{0}, on {1}',
   'updated' => 'Updated',
@@ -668,6 +688,8 @@ return array(
   'can_manage_reports description' => 'If this permission is checked the user will be able to create, update and delete Custom Reports.',
   'can_manage_time description' => 'If this permission is checked the user will be able to use the Time module and add timeslots to tasks.',
   'can_add_mail_accounts description' => 'If this permission is checked the user will be able to create new Email accounts',
+
+  'archived by' => 'Archived by',
 ); // array
 
 ?>

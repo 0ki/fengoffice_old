@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.6 beta 2
+    About OpenGoo 1.6 beta 3
     ========================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.6 beta - http://www.opengoo.org/
+    2. Download OpenGoo 1.6 beta 3 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.6 beta
+    	from your current version to 1.6 beta 3
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -90,6 +90,38 @@
 
 	Changelog
 	=========
+	
+	Since 1.6-beta2
+	---------------
+	
+	usability: Added pagination to the Time module.
+	usability: Show 'Archived by' in object properties if an object is archived.
+	usability: Show read/unread status in Dahsboard/View as list.
+	usability: Warn a user when replying or forwarding an email and a new email arrives at the conversation.
+	usability: Add the magnifying glass to the email views.
+	usability: Removed 'Account already being checked' error message.
+	
+	bugfix: An empty 'Custom properties' fieldset is shown in 'Update profile'.
+	bugfix: Fix autodetect timezone with DST and enable by default.
+	bugfix: Check mail doesn't refresh view if an error occurs in one account.
+	bugfix: Filtering email conversations by tag is not working correctly. It should show a conversation if any one email in it is tagged.
+	bugfix: If someone replies to an email but changes the subject the email should be put into a new conversation.
+	bugfix: If you delete the newest email in a conversation, the conversation is no longer listed (when email is shown as conversation).
+	bugfix: Notifications are not sent when subscribing from 'Modify subscribers'.
+	bugfix: Put default repetition value for repeating events and tasks.
+	bugfix: Remove illegal UTF-8 characters before saving an email.
+	bugfix: Save custom fields when saving an email draft.
+	bugfix: Sort emails by received date instead of sent date in email listing and in conversation listing (in email view).
+	bugfix: Value for 'mail_drag_prompt' user config option is not loaded correctly.	
+	bugfix: Wrap HTML emails in a div with CKEditor style.
+	bugfix: Delete conversation after deleting last email in conversation.
+	bugfix: An email's quoted reply is deleted when changing 'From' account.
+	bugfix: Replying to an email, saving as draft, loading the draft and sending the email doesn't add the reply to the conversation.
+	bugfix: Unauthenticated content warnings over SSL in FF 3.5.
+	bugfix: User-type custom reports fail to execute.
+	bugfix: When a file is downloaded it should be marked as read.
+	bugfix: Wrong initial email filters for new installations.
+	
 	
 	Since 1.6-beta
 	--------------

@@ -20,7 +20,7 @@ og.OverviewManager = function() {
 				id: 'id',
 				fields: [
 					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById', 'dateCreated', 
-					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix'
+					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead'
 				]
 			}),
 			remoteSort: true,
@@ -52,6 +52,18 @@ og.OverviewManager = function() {
 
 	function renderDragHandle(value, p, r) {
 		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'overview-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
+	}
+	
+	function renderIsRead(value, p, r){
+		div = '';
+		if (r.data.manager != 'Contacts' && r.data.manager != 'Companies' && r.data.manager != 'Comments' && r.data.manager != 'ProjectFileRevisions') {
+			if (value){
+				div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'overview-manager\').load({action: 'markasunread', objects:'" + r.data.manager+":"+r.data.object_id + "'});Ext.getCmp(\'overview-manager\').getSelectionModel().clearSelections(); \" />";
+			}else{			
+				div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('overview-manager').load({action: 'markasread', objects:'" + r.data.manager+":"+r.data.object_id + "'});Ext.getCmp('overview-manager').getSelectionModel().clearSelections(); \" />";
+			}
+		}
+		return div;
 	}
 	
 	function renderName(value, p, r) {
@@ -145,11 +157,26 @@ og.OverviewManager = function() {
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
 		function() {
+			var allUnread = true, allRead = true;
+			var selections = sm.getSelections()
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.manager != 'Contacts' && selections[i].data.manager != 'Companies' && selections[i].data.manager != 'Comments' && selections[i].data.manager != 'ProjectFileRevisions') {
+					if (selections[i].data.isRead){
+						allUnread = false;
+					} else {
+						allRead = false;
+					}
+					if (!allUnread && !allRead) break;
+				}
+			}
+		
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
 				actions.archive.setDisabled(true);
+				markactions.markAsRead.setDisabled(true);
+				markactions.markAsUnread.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
@@ -164,6 +191,16 @@ og.OverviewManager = function() {
 					moreActions.download.setDisabled(false);
 				} else {
 					moreActions.download.setDisabled(true);
+				}
+				if (allUnread) {
+					markactions.markAsUnread.setDisabled(true);
+				} else {
+					markactions.markAsUnread.setDisabled(false);
+				}
+				if (allRead) {
+					markactions.markAsRead.setDisabled(true);
+				} else {
+					markactions.markAsRead.setDisabled(false);
 				}
 			}
 		});
@@ -183,6 +220,16 @@ og.OverviewManager = function() {
         	dataIndex: 'icon',
         	width: 28,
         	renderer: renderIcon,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
+			id: 'isRead',
+			header: '&nbsp;',
+			dataIndex: 'isRead',
+			width: 16,
+        	renderer: renderIsRead,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -240,6 +287,38 @@ og.OverviewManager = function() {
 			hidden: true
 		}]);
 	cm.defaultSortable = false;
+	
+	markactions = {
+		markAsRead: new Ext.Action({
+			text: lang('mark as read'),
+		    tooltip: lang('mark as read desc'),
+		    iconCls: 'ico-mark-as-read',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasread',
+					objects: getSelectedIds()
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		}),
+		
+		markAsUnread: new Ext.Action({
+			text: lang('mark as unread'),
+            tooltip: lang('mark as unread desc'),
+            iconCls: 'ico-mark-as-unread',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasunread',
+					objects: getSelectedIds()
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		})
+	};
 
 	moreActions = {
 		download: new Ext.Action({
@@ -334,6 +413,14 @@ og.OverviewManager = function() {
 				moreActions.slideshow
 			]}
 		}),
+		markAs: new Ext.Action({
+			text: lang('mark as'),
+			tooltip: lang('mark as desc'),
+			menu: [
+				markactions.markAsRead,
+				markactions.markAsUnread
+			]
+		}),
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
@@ -384,6 +471,7 @@ og.OverviewManager = function() {
 			actions.archive,
 			'-',
 			actions.more,
+			actions.markAs,
 			'->',
 			actions.showAsDashboard
 		],

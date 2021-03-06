@@ -715,15 +715,8 @@ class TaskController extends ApplicationController {
 			return;
 		} // if
 
-	//read object for this user
-		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-		 $task_list->getId() . ' AND rel_object_manager = \'ProjectTasks\'' .
-		 ' AND user_id = ' . logged_user()->getId()));
-
-		if (count($ro) == 0)
-		{	
-			$task_list->setIsRead(logged_user()->getId(),true);	    	
-		}
+		//read object for this user
+		$task_list->setIsRead(logged_user()->getId(),true);
 		
 		tpl_assign('task_list', $task_list);
 

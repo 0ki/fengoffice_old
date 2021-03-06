@@ -29,13 +29,10 @@ class AdministrationController extends ApplicationController {
 		} // if
 
 		//Autentify password
-		$pasword_required = ConfigOptions::getByName('ask_administration_autentification');
-		if ($pasword_required instanceof ConfigOption){
-			$optionValue = $pasword_required->getValue();
-			if ($optionValue == 1) {
-				$last_login = array_var($_SESSION, 'admin_login', 0);
-				if ($last_login < time() - ADMIN_SESSION_TIMEOUT && array_var($_GET, 'a') != 'password_autentify') {
-					//$this->setTemplate(get_template_path('password_autentify', 'administration'));
+		if (config_option('ask_administration_autentification')) {
+			$last_login = array_var($_SESSION, 'admin_login', 0);
+			if ($last_login < time() - ADMIN_SESSION_TIMEOUT) {
+				if (array_var($_GET, 'a') != 'password_autentify') {
 					$ref_controller = null;
 					$ref_action = null;
 					$ref_params = array();
@@ -54,8 +51,10 @@ class AdministrationController extends ApplicationController {
 					}
 					$url = get_url($ref_controller, $ref_action, $ref_params);
 					$this->redirectTo('administration', 'password_autentify', array('url' => $url));
-				}//foreach
-			}//if
+				}
+			} else {
+				$_SESSION['admin_login'] = time();
+			}
 		}//if
 	} // __construct
 

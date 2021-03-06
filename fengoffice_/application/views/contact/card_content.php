@@ -47,17 +47,17 @@
       <?php } ?>
       </td><td>
       <?php if($contact->getWPhoneNumber() || $contact->getWPhoneNumber2() || $contact->getWFaxNumber() || $contact->getWAssistantNumber() || $contact->getWCallbackNumber()) {?>
-    	  <span style="font-weight:bold"><?php echo lang('phone') ?>:</span>
+    	  <span style="font-weight:bold"><?php echo lang('wphone title') ?>:</span>
 	      <?php if ($contact->getWPhoneNumber()) { ?>
-	      <div><span><?php echo lang('phone') ?>:</span> <?php echo clean($contact->getWPhoneNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('wphone') ?>:</span> <?php echo clean($contact->getWPhoneNumber());?></div><?php } ?>
 	      <?php if ($contact->getWPhoneNumber2()) { ?>
-	      <div><span><?php echo lang('phone 2') ?>:</span> <?php echo clean($contact->getWPhoneNumber2());?></div><?php } ?>
+	      <div><span><?php echo lang('wphone 2') ?>:</span> <?php echo clean($contact->getWPhoneNumber2());?></div><?php } ?>
 	      <?php if ($contact->getWFaxNumber()) { ?>
-	      <div><span><?php echo lang('fax') ?>:</span> <?php echo clean($contact->getWFaxNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('wfax') ?>:</span> <?php echo clean($contact->getWFaxNumber());?></div><?php } ?>
 	      <?php if ($contact->getWAssistantNumber()) { ?>
-	      <div><span><?php echo lang('assistant') ?>:</span> <?php echo clean($contact->getWAssistantNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('wassistant') ?>:</span> <?php echo clean($contact->getWAssistantNumber());?></div><?php } ?>
 	      <?php if ($contact->getWCallbackNumber()) { ?>
-	      <div><span><?php echo lang('callback') ?>:</span> <?php echo clean($contact->getWCallbackNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('wcallback') ?>:</span> <?php echo clean($contact->getWCallbackNumber());?></div><?php } ?>
       <?php } ?>
     </td></tr> 
 <?php } // if ?>
@@ -86,17 +86,17 @@
       </td><td>
       
       <?php if($contact->getHPhoneNumber() || $contact->getHPhoneNumber2() || $contact->getHFaxNumber() || $contact->getHMobileNumber() || $contact->getHPagerNumber()) {?>
-    	  <span style="font-weight:bold"><?php echo lang('phone') ?>:</span>
+    	  <span style="font-weight:bold"><?php echo lang('hphone title') ?>:</span>
 	      <?php if ($contact->getHPhoneNumber()) { ?>
-	      <div><span><?php echo lang('phone') ?>:</span> <?php echo clean($contact->getHPhoneNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('hphone') ?>:</span> <?php echo clean($contact->getHPhoneNumber());?></div><?php } ?>
 	      <?php if ($contact->getHPhoneNumber2()) { ?>
-	      <div><span><?php echo lang('phone 2') ?>:</span> <?php echo clean($contact->getHPhoneNumber2());?></div><?php } ?>
+	      <div><span><?php echo lang('hphone 2') ?>:</span> <?php echo clean($contact->getHPhoneNumber2());?></div><?php } ?>
 	      <?php if ($contact->getHFaxNumber()) { ?>
-	      <div><span><?php echo lang('fax') ?>:</span> <?php echo clean($contact->getHFaxNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('hfax') ?>:</span> <?php echo clean($contact->getHFaxNumber());?></div><?php } ?>
 	      <?php if ($contact->getHMobileNumber()) { ?>
-	      <div><span><?php echo lang('mobile') ?>:</span> <?php echo clean($contact->getHMobileNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('hmobile') ?>:</span> <?php echo clean($contact->getHMobileNumber());?></div><?php } ?>
 	      <?php if ($contact->getHPagerNumber()) { ?>
-	      <div><span><?php echo lang('pager') ?>:</span> <?php echo clean($contact->getHPagerNumber());?></div><?php } ?>
+	      <div><span><?php echo lang('hpager') ?>:</span> <?php echo clean($contact->getHPagerNumber());?></div><?php } ?>
       <?php } ?>
     </td></tr> 
 <?php } // if ?>
@@ -113,13 +113,13 @@
       </td><td>
       
       <?php if($contact->getOPhoneNumber() || $contact->getOPhoneNumber2() || $contact->getOFaxNumber()) {?>
-		<span style="font-weight:bold"><?php echo lang('phone') ?>:</span>
+		<span style="font-weight:bold"><?php echo lang('ophone title') ?>:</span>
     	<?php if ($contact->getOPhoneNumber()) { ?>
-      	<div><span><?php echo lang('phone') ?>:</span> <?php echo clean($contact->getOPhoneNumber());?></div><?php } ?>
+      	<div><span><?php echo lang('ophone') ?>:</span> <?php echo clean($contact->getOPhoneNumber());?></div><?php } ?>
       	<?php if ($contact->getOPhoneNumber2()) { ?>
-      	<div><span><?php echo lang('phone 2') ?>:</span> <?php echo clean($contact->getOPhoneNumber2());?></div><?php } ?>
+      	<div><span><?php echo lang('ophone 2') ?>:</span> <?php echo clean($contact->getOPhoneNumber2());?></div><?php } ?>
       	<?php if ($contact->getOFaxNumber()) { ?>
-      	<div><span><?php echo lang('fax') ?>:</span> <?php echo clean($contact->getOFaxNumber());?></div><?php } ?>
+      	<div><span><?php echo lang('ofax') ?>:</span> <?php echo clean($contact->getOFaxNumber());?></div><?php } ?>
       <?php } ?>
     </td></tr> 
 <?php } // if ?>

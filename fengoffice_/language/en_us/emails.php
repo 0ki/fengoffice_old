@@ -181,6 +181,25 @@ return array(
 	'select attachment' => 'Select and upload attachment',
 	'attach from workspace' => 'Attach from workspace',
     'attach from file system' => 'Attach from computer',
+
+	'subscribed notification task' => 'Subscribed to Task \'{0}\'',
+	'subscribed notification task desc' => 'You have been subscribed to the Task \'{0}\' by {1}.',
+	'subscribed notification event' => 'Subscribed to Event \'{0}\'',
+	'subscribed notification event desc' => 'You have been subscribed to the Event \'{0}\' by {1}.',
+	'subscribed notification company' => 'Subscribed to Company \'{0}\'',
+	'subscribed notification company desc' => 'You have been subscribed to the Company \'{0}\' by {1}.',
+	'subscribed notification contact' => 'Subscribed to Contact \'{0}\'',
+	'subscribed notification contact desc' => 'You have been subscribed to the Contact \'{0}\' by {1}.',
+	'subscribed notification message' => 'Subscribed to Note \'{0}\'',
+	'subscribed notification message desc' => 'You have been subscribed to the Note \'{0}\' by {1}.',
+	'subscribed notification file' => 'Subscribed to File \'{0}\'',
+	'subscribed notification file desc' => 'You have been subscribed to the File \'{0}\' by {1}.',
+	'subscribed notification webpage' => 'Subscribed to Web link \'{0}\'',
+	'subscribed notification webpage desc' => 'You have been subscribed to the Web link \'{0}\' by {1}.',
+	'subscribed notification milestone' => 'Subscribed to Milestone \'{0}\'',
+	'subscribed notification milestone desc' => 'You have been subscribed to the Milestone \'{0}\' by {1}.',
+	'subscribed notification email' => 'Subscribed to Email \'{0}\'',
+	'subscribed notification email desc' => 'You have been subscribed to the Email \'{0}\' by {1}.',
 	); // array
 
     ?>

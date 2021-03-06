@@ -162,4 +162,5 @@
 	'modified notification email desc' => 'Wiadomość e-mail \'{0}\' została zmodyfikowana przez {1}',
 	'deleted notification email' => 'Wiadomość e-mail \'{0}\' została wysłana do kosza',
 	'deleted notification email desc' => 'Wiadomość e-mail \'{0}\' została wysłana do kosza przez {1}',
+	'attach from file system' => 'Dołącz z komputera',
 ); ?>

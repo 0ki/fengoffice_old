@@ -33,6 +33,15 @@
     } // assign
     
     /**
+     * Return the value of a variable.
+     * @param string $name
+     * @return mixed
+     */
+    function getVar($name) {
+    	return array_var($this->vars, trim($name));
+    }
+    
+    /**
     * Display template and retur output as string
     *
     * @param string $template Template path (absolute path or path relative to 
@@ -70,13 +79,13 @@
     * @param string $template Template name or path relative to templates dir
     * @return null
     */
-    function includeTemplate($template) {
-      if(file_exists($template)) {
+    function includeTemplate($__template) {
+      if(file_exists($__template)) {
         extract($this->vars, EXTR_SKIP);
-        include $template;
+        include $__template;
         return true;
       } else {
-        throw new FileDnxError($template, "Template '$template' doesn't exists");
+        throw new FileDnxError($__template, "Template '$__template' doesn't exists");
       } // if
     } // includeTemplate
     

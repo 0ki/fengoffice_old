@@ -88,7 +88,16 @@ class ObjectController extends ApplicationController {
 		$objectId = array_var($_GET, 'object_id');
 		$managerName = array_var($_GET, 'object_manager');
 		$object = get_object_by_manager_and_id($objectId,$managerName);
+		$old_users = $object->getSubscriberIds();
 		$this->add_subscribers($object);
+		$users = $object->getSubscriberIds();
+		$new = array();
+		foreach ($users as $user) {
+			if (!in_array($user, $old_users)) {
+				$new[] = $user;
+			}
+		}
+		ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_SUBSCRIBE, false, false, true, implode(",", $new));
 		
 		flash_success(lang('subscription modified successfully'));
 	}
@@ -1312,7 +1321,11 @@ class ObjectController extends ApplicationController {
 			}
 		}else if (array_var($_GET, 'action') == 'markasread') {
 			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_mark_as_read_objects($ids, null);
+			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
+			
+		}else if (array_var($_GET, 'action') == 'markasunread') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
 			
 		}else if (array_var($_GET, 'action') == 'empty_trash_can') {
 							
@@ -1422,12 +1435,6 @@ class ObjectController extends ApplicationController {
 			} else {
 				$ids = explode(',', array_var($_GET, 'objects'));
 				$count = 0;
-				$active = active_project();
-				if ($active instanceof Project) {
-					$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
-				} else {
-					$ws_ids = logged_user()->getWorkspacesQuery();
-				}
 				DB::beginWork();
 				foreach ($ids as $id) {
 					$split = explode(":", $id);
@@ -1455,7 +1462,7 @@ class ObjectController extends ApplicationController {
 							$count++;
 						} else {
 							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectMilestones') {
-								$ws = $obj->getWorkspaces($ws_ids);
+								$ws = $obj->getWorkspaces();
 								foreach ($ws as $w) {
 									if (can_add(logged_user(), $w, $type)) {
 										$obj->removeFromWorkspace($w);
@@ -1664,20 +1671,20 @@ class ObjectController extends ApplicationController {
 		return array($succ, $err);
 	}
 
-	function do_mark_as_read_objects($ids, $manager=null) {
+	function do_mark_as_read_unread_objects($ids, $read) {
 		$err = 0; // count errors
-		$succ = 0; // count files deleted
-		foreach ($ids as $id) {
+		$succ = 0; // count updated objects
+		foreach ($ids as $str_id) {
 			try {
-				if (trim($id)!=''){
-					if ($manager){
+				if (trim($str_id) != ''){
+					$exploded = explode(":", $str_id);
+					$manager = array_var($exploded, 0);
+					$id = array_var($exploded, 1);
+					if ($manager) {
 						$obj = get_object_by_manager_and_id($id, $manager);
-						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-						 $obj->getId() . ' AND rel_object_manager = \''.$obj->manager().'\''));		 
-						if (count($ro) == 0)
-						{	
-							$obj->setIsRead(logged_user()->getId(),true);	    	
-						}						
+						if ($obj) {
+							$obj->setIsRead(logged_user()->getId(), $read);
+						}
 					}
 					$succ++;
 				}
@@ -1777,7 +1784,7 @@ class ObjectController extends ApplicationController {
 
 		try {
 			$object->subscribeUser(logged_user());
-			ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_SUBSCRIBE);
+			ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_SUBSCRIBE, false, true, true, logged_user()->getId());
 			flash_success(lang('success subscribe to object'));
 		} catch (Exception $e) {
 			flash_error(lang('error subscribe to object'));

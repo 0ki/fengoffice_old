@@ -1383,7 +1383,8 @@ abstract class ProjectDataObject extends ApplicationDataObject {
     			"dateDeleted" => $deletedOn,
     			"archivedById" => $this instanceof Comment || $this instanceof ProjectFileRevision ? 0 : $this->getArchivedById(),
     			"archivedBy" => $archivedBy,
-    			"dateArchived" => $archivedOn
+    			"dateArchived" => $archivedOn,
+    			"isRead" => $this->getIsRead(logged_user()->getId())
 		);
 	}
 
@@ -1408,6 +1409,15 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if(is_null($this->subscribers)) $this->subscribers = ObjectSubscriptions::getUsersByObject($this);
 		return $this->subscribers;
 	} // getSubscribers
+	
+	function getSubscriberIds() {
+		$subscribers = $this->getSubscribers();
+		$ids = array();
+		foreach ($subscribers as $subscriber) {
+			$ids[] = $subscriber->getId();
+		}
+		return $ids;
+	}
 
 	/**
 	 * Check if specific user is subscriber
@@ -1439,6 +1449,8 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			return true;
 		} // if
 
+		$this->subscribers = null;
+		
 		// New subscription
 		$subscription = new ObjectSubscription();
 		$subscription->setObjectId($this->getId());
@@ -1473,6 +1485,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return boolean
 	 */
 	function clearSubscriptions() {
+		$this->subscribers = null;
 		return ObjectSubscriptions::clearByObject($this);
 	} // clearSubscriptions
 

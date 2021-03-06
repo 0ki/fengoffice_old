@@ -531,4 +531,13 @@
 	'template parameters' => 'Vorlagen-Parameter',
 	'add image' => 'Bild hinzufügen',
 	'update image' => 'Bild aktualisieren',
+	'can_edit_company_data description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage die Unternehmensdaten zu bearbeiten.',
+	'can_manage_security description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Benutzer und Gruppen anzulegen, zu aktualisieren und zu löschen, sowie deren Berechtigungen zu ändern.',
+	'can_manage_workspaces description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Arbeitsbereiche anzulegen, zu aktualisieren und zu löschen.',
+	'can_manage_configuration description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Anwendungseinstellungen zu bearbeiten, wie Konfiguration, Benutzerdefinierte Eigenschaften und Zeitsteuerung und sie zu aktualisieren.',
+	'can_manage_contacts description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Kontakte im System anzulegen, zu aktualisieren und zu löschen.',
+	'can_manage_templates description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Vorlagen anzulegen, zu aktualisieren und zu löschen.',
+	'can_manage_reports description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage Benutzerdefinierte Berichte anzulegen, zu aktualisieren und zu löschen.',
+	'can_manage_time description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage das Zeitmodul zu benutzen und Zeitfenster den Aufgaben zu zuordnen.',
+	'can_add_mail_accounts description' => 'Wenn die Berechtigung des Benutzer geprüft wurde, ist er in der Lage neue Email-Konten anzulegen.',
 ); ?>

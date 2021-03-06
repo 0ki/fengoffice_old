@@ -433,7 +433,7 @@ function set_config_option($option_name, $value) {
  * @return mixed
  */
 function user_config_option($option, $default = null, $user_id = null) {
-	if (!$user_id) {
+	if (is_null($user_id)) {
 		if (logged_user() instanceof User) {
 			$user_id = logged_user()->getId();
 		} else if (is_null($default)) {
@@ -458,6 +458,10 @@ function user_has_config_option($option_name, $user_id = 0, $workspace_id = 0) {
 		'user_id' => $user_id,
 		'workspace_id' => $workspace_id));
 	return $value instanceof UserWsConfigOptionValue;
+}
+
+function default_user_config_option($option, $default = null) {
+	return UserWsConfigOptions::getDefaultOptionValue($option, $default);
 }
 
 
@@ -567,7 +571,7 @@ function remove_dir($dir) {
 		if($obj == '.' || $obj == '..') continue;
 		$path = "$dir/$obj";
 		if (is_dir($path)) {
-			unlink_dir($path);
+			remove_dir($path);
 		} else {
 			@unlink($path);
 		}

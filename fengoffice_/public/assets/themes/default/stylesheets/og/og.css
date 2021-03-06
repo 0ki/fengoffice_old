@@ -2,6 +2,11 @@
 	z-index: 1100000000 !important;
 }
 
+.og-disabled {
+	opacity: 0.4;
+	filter: alpha(opacity=0.4);
+}
+
 /** loading indicator **/
 .og-loading {
 	position: absolute;
@@ -41,6 +46,10 @@
 	width:10px;
 	height:14px;
 	cursor: move;
+}
+
+.ico-unknown {
+	background-image: url(../../images/16x16/types/unknown.png) !important;
 }
 
 .ico-arrowleft {

@@ -136,12 +136,7 @@ class MessageController extends ApplicationController {
 							$message = ProjectMessages::findById($id);
 							try {
 								
-								$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-								 $message->getId() . ' AND rel_object_manager = \''.$message->manager().'\''));		 
-								if (count($ro) == 0)
-								{	
-									$message->setIsRead(logged_user()->getId(),true);	    	
-								}						
+								$message->setIsRead(logged_user()->getId(),true);						
 								$succ++;
 								
 							} catch(Exception $e) {
@@ -169,12 +164,7 @@ class MessageController extends ApplicationController {
 							$message = ProjectMessages::findById($id);
 							try {
 								
-								$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-								 $message->getId() . ' AND rel_object_manager = \''.$message->manager().'\''));		 
-								if (count($ro) == 0)
-								{	
-									$message->setIsRead(logged_user()->getId(),false);	    	
-								}						
+								$message->setIsRead(logged_user()->getId(),false);						
 								$succ++;
 								
 							} catch(Exception $e) {
@@ -408,14 +398,7 @@ class MessageController extends ApplicationController {
 		//$this->setHelp("view_message");
 		
 		//read object for this user
-		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-		 $message->getId() . ' AND rel_object_manager = \'ProjectMessages\'' . 
-		 ' AND user_id = ' . logged_user()->getId() 
-		 ));		 
-		if (count($ro) == 0)
-		{	
-			$message->setIsRead(logged_user()->getId(),true);	    	
-		}
+		$message->setIsRead(logged_user()->getId(),true);
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
 		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));

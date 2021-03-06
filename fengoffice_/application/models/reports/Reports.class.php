@@ -269,7 +269,7 @@ class Reports extends BaseReports {
 			{
 				$allConditions .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
 			}
-			if ($manager != 'Projects') {
+			if ($manager != 'Projects' && $manager != 'Users') {
 				$allConditions .= ' AND t.trashed_by_id = 0 ';
 			}
 

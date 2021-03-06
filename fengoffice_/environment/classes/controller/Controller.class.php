@@ -75,6 +75,10 @@
         	TimeIt::start("Action");
         	$this->$action();
         	TimeIt::stop();
+        	Hook::fire('after_action', array(
+	        	'controller' => $this,
+	        	'action' => $action
+	        ), $ret);
         }
         return true;
       } else {

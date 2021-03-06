@@ -248,5 +248,9 @@
 	'user ws config option name show_emails_as_conversations' => 'Mostrar correos como conversaciones',
 	'user ws config option desc show_emails_as_conversations' => 'Si está habilitado los correos se agruparan en conversaciones en el listado de correos, mostrando los correos relacionados como una única entrada.',
 	'user ws config option name autodetect_time_zone' => 'Autodetectar zona horaria',
-  	'user ws config option desc autodetect_time_zone' => 'Cuando esta opción está habilitada la zona horaria del usuario se detectará automáticamente desde el navegador.',
+	'user ws config option desc autodetect_time_zone' => 'Cuando esta opción está habilitada la zona horaria del usuario se detectará automáticamente desde el navegador.',
+	'user ws config option name search_engine' => 'Motor de búsquedas',
+	'user ws config option desc search_engine' => 'Escoja qué motor de búsquedas usar. "Completa" hará una búsqueda más exhaustiva pero tomará más tiempo que "Rápida".',
+	'search engine mysql like' => 'Completa',
+	'search engine mysql match' => 'Rápida',
 ); ?>

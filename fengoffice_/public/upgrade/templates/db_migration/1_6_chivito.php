@@ -13,7 +13,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
  ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL),
- ('general', 'autodetect_time_zone', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('general', 'autodetect_time_zone', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
  ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL)
 ON DUPLICATE KEY UPDATE id=id;
@@ -130,9 +130,13 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_contents`
  ADD COLUMN `message_id` VARCHAR(150) NOT NULL COMMENT 'Message-Id header',
  ADD COLUMN `in_reply_to_id` VARCHAR(150) NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
  ADD COLUMN `conversation_id` int(10) unsigned NOT NULL default '0',
+ ADD COLUMN `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
  CHANGE COLUMN `sent_date` `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
  ADD INDEX `conversation_id` (`conversation_id`),
  ADD INDEX `message_id` (`message_id`),
+ ADD INDEX `received_date` (`received_date`),
  ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
+
+UPDATE `<?php echo $table_prefix ?>mail_contents` SET `received_date` = `sent_date`;
 
 OPTIMIZE TABLE `<?php echo $table_prefix ?>_mail_contents`;

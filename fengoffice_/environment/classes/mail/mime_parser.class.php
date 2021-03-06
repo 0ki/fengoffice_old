@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.10 2009/10/07 13:44:16 idesoto Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.10.2.1 2009/11/12 21:08:45 idesoto Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.10 2009/10/07 13:44:16 idesoto Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.10.2.1 2009/11/12 21:08:45 idesoto Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -921,8 +921,8 @@ class mime_parser_class
 										}
 									}
 									if(count($decoded_header)
-									&& (!strcmp($decoded_header[$last = count($decoded_header)-1]['Encoding'], 'ASCII'))
-									|| !strcmp($decoded_header[$last]['Encoding'], $encoding))
+									&& (!strcmp($decoded_header[$last = count($decoded_header)-1]['Encoding'], 'ASCII')
+									|| !strcmp($decoded_header[$last]['Encoding'], $encoding)))
 									{
 										$decoded_header[$last]['Value'].= $decoded;
 										$decoded_header[$last]['Encoding']= $encoding;
@@ -954,8 +954,8 @@ class mime_parser_class
 									}
 								}
 								if(count($decoded_header)
-								&& (!strcmp($decoded_header[$last = count($decoded_header)-1]['Encoding'], 'ASCII'))
-								|| !strcmp($decoded_header[$last]['Encoding'], $encoding))
+								&& (!strcmp($decoded_header[$last = count($decoded_header)-1]['Encoding'], 'ASCII')
+								|| !strcmp($decoded_header[$last]['Encoding'], $encoding)))
 								{
 									$decoded_header[$last]['Value'].= $decoded;
 									$decoded_header[$last]['Encoding']= $encoding;
@@ -2231,6 +2231,28 @@ class mime_parser_class
 				$results['Date'] = $message['DecodedHeaders']['date:'][0][0]['Value'];
 			else
 				$results['Date'] = $message['Headers']['date:'];
+		}
+		if (isset($message['Headers']['delivery-date:'])) {
+			if (is_array($message['Headers']['delivery-date:'])) {
+				$results['Received'] = $message['Headers']['delivery-date:'][0];
+			} else {
+				$results['Received'] = $message['Headers']['delivery-date:'];
+			}
+		} else if (isset($message['Headers']['received:'])) {
+			if (is_array($message['Headers']['received:'])) {
+				$r_str = trim($message['Headers']['received:'][0]);
+			} else {
+				$r_str = trim($message['Headers']['received:']);
+			}
+			$r_ln = strrpos($r_str, "\n");
+			$r_sc = strrpos($r_str, ";");
+			if ($r_sc !== false && ($r_ln === false || $r_ln <= $r_sc)) {
+				$results['Received'] = trim(substr($r_str, $r_sc + 1));
+			} else if ($r_ln !== false) {
+				$results['Received'] = trim(substr($r_str, $r_ln + 1));
+			} else {
+				$results['Received'] = trim($r_str);
+			}
 		}
 		$l = count($this->address_headers);
 		for(Reset($this->address_headers), $h = 0; $h<$l; Next($this->address_headers), ++$h)

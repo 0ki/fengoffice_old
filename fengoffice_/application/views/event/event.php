@@ -330,7 +330,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 					<td>
 						<div id="cal_extra2" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
 							<div id="cal_extra1" style="<?php echo $hide ?>">
-								<?php echo lang('CAL_EVERY') ."&nbsp;". text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '50', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+								<?php echo lang('CAL_EVERY') ."&nbsp;". text_field('event[occurance_jump]',array_var($event_data, 'rjump', '1'), array('class' => 'title','size' => '2', 'tabindex' => '50', 'maxlength' => '100', 'style'=>'width:25px')) ?>
 								<span id="word"></span>
 							</div>
 							<table>

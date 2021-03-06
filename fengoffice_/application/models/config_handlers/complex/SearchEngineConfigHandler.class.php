@@ -18,7 +18,7 @@
       $options = array();
       
       $option_attributes = $this->getValue() == 'like' ? array('selected' => 'selected') : null;
-      $options[] = option_tag('MySQL LIKE (beta)', 'like', $option_attributes);
+      $options[] = option_tag(lang('search engine mysql like'), 'like', $option_attributes);
       
       $option_attributes = $this->getValue() == 'match' ? array('selected' => 'selected') : null;
       $options[] = option_tag('MySQL MATCH', 'match', $option_attributes);

@@ -3,7 +3,7 @@
 	<div class="adminHeader">
 		<div class="adminTitle">
 			<table style="width:535px"><tr><td>
-				<?php echo clean($category->getDisplayName()) ?>
+				<?php echo $category->getDisplayName() ?>
 			</td><td style="text-align:right">
 				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
 			</td></tr></table>
@@ -19,9 +19,9 @@
 				<?php $counter++; ?>
 				<div class="configCategoryOtpion " style="<?php echo $counter % 2 ? 'background-color:#F4F8F9' : '' ?>" id="configCategoryOption_<?php echo $option->getName() ?>">
 					<div class="configOptionInfo">
-						<div class="configOptionLabel"><label><?php echo clean($option->getDisplayName()) ?>:</label></div>
+						<div class="configOptionLabel"><label><?php echo $option->getDisplayName() ?>:</label></div>
 					<?php if(trim($option_description = $option->getDisplayDescription())) { ?>
-						<div class="configOptionDescription desc"><?php echo clean($option_description) ?></div>
+						<div class="configOptionDescription desc"><?php echo $option_description ?></div>
 					<?php } // if ?>
 					</div>
 					<div class="configOptionControl">

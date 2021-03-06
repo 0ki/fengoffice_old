@@ -112,7 +112,13 @@ class MailContent extends BaseMailContent {
 				Logger::log($e->getMessage());
 			}
 		}
-
+		$rows = DB::executeAll("SELECT count(`id`) as `c` FROM `".TABLE_PREFIX."mail_contents` WHERE `conversation_id` = " . DB::escape($this->getConversationId()));
+		if (is_array($rows) && count($rows) > 0) {
+			if ($rows[0]['c'] < 2) {
+				// if no other emails in conversation, delete conversation
+				DB::execute("DELETE FROM `".TABLE_PREFIX."mail_conversations` WHERE `id` = " . DB::escape($this->getCOnversationId()));
+			}
+		}
 		return parent::delete();
 	}
 	
@@ -198,47 +204,6 @@ class MailContent extends BaseMailContent {
 	function getIsSent() {
 		return ($this->getColumnValue('state') == 1);
 	} // getIsSent()
-	
-	
-	/**
-	 * Mark the mail as read/unread
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function setIsRead($is_read, $user_id = null) {
-		try {
-			if ($user_id == null) {
-				if (logged_user() instanceof User) {
-					$user_id = logged_user()->getId();
-				} else {
-					return;
-				}
-			}
-			$readobj = ReadObjects::findOne(array(
-						        'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $this->getId(), get_class($this->manager()))
-						      )); // findOne
-			if ($is_read) {
-				if ($readobj instanceof ReadObject) {
-					$readobj->setIsRead(1);
-					$readobj->save();
-				} else {
-					$readobj = new ReadObject();
-					$readobj->setIsRead(1);
-					$readobj->setUserId($user_id);
-					$readobj->setRelObjectId($this->getId());
-					$readobj->setRelObjectManager(get_class($this->manager()));
-					$readobj->save();
-				}
-			} else {				
-				if ($readobj!=null) $readobj->delete();
-			}
-		} catch(Exception $e){
-			throw $e;
-		}	
-	} // getIsClassified()
-
 
 	// ---------------------------------------------------
 	//  URLs
@@ -553,7 +518,7 @@ class MailContent extends BaseMailContent {
     		$archivedBy = lang("n/a");
     	}
     	
-    	$sentTimestamp = $this->getSentDate() instanceof DateTimeValue ? ($this->getSentDate()->isToday() ? format_time($this->getSentDate()) : format_datetime($this->getSentDate())) : lang('n/a');
+    	$sentTimestamp = $this->getReceivedDate() instanceof DateTimeValue ? ($this->getReceivedDate()->isToday() ? format_time($this->getReceivedDate()) : format_datetime($this->getReceivedDate())) : lang('n/a');
     	
 		return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
@@ -575,7 +540,8 @@ class MailContent extends BaseMailContent {
     			"dateDeleted" => $deletedOn,
     			"archivedById" => $this->getArchivedById(),
     			"archivedBy" => $archivedBy,
-    			"dateArchived" => $archivedOn
+    			"dateArchived" => $archivedOn,
+				"isRead" => $this->getIsRead(logged_user()->getId())
 		);
 	}
 	

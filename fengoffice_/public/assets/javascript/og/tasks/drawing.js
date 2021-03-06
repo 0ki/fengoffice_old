@@ -193,10 +193,6 @@ var rx__TasksDrag = {
 			parameters["task_start_date"] = d2.format(og.preferences['date_format']);
 		}
 		
-		// useful
-		parameters["apply_ws_subtasks"] = "checked";
-		parameters["apply_milestone_subtasks"] = "checked";
-
 		return parameters;
 	},
 	quickEdit: function(task_id, parameters) {
@@ -334,6 +330,8 @@ var rx__TasksDrag = {
 		}
 
 		parameters['parent_id'] = this.p?this.p:0;
+		parameters['apply_ws_subtasks'] = "checked";
+		parameters['apply_milestone_subtasks'] = "checked";
 	
 		var group = ogTasks.getGroup(this.d);
 		var group_not_empty = group && group.group_tasks && group.group_tasks.length>0;

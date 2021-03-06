@@ -76,14 +76,8 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 
-		//read object for this user
-		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' . 
-		$file->getId() . ' AND rel_object_manager = \'ProjectFiles\'' .
-		 ' AND user_id = ' . logged_user()->getId()));
-		if (count($ro) == 0)
-		{	
-			$file->setIsRead(logged_user()->getId(),true);	    	
-		}
+		//read object for this user	
+		$file->setIsRead(logged_user()->getId(),true);
 		
 		tpl_assign('file', $file);
 		tpl_assign('last_revision', $file->getLastRevision());
@@ -155,6 +149,8 @@ class FilesController extends ApplicationController {
 			return;
 		}
 
+		$file->setIsRead(logged_user()->getId(),true);
+		
 		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
 		die();
 	} // download_file
@@ -1217,13 +1213,7 @@ class FilesController extends ApplicationController {
 				foreach ($ids as $id) {
 				$file = ProjectFiles::findById($id);
 					try {
-						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-						 $file->getId() . ' AND rel_object_manager = \''.$file->manager().'\' AND user_id = ' .
-						  logged_user()->getId()));
-						if (count($ro) == 0)
-						{
-							$file->setIsRead(logged_user()->getId(),true);
-						}
+						$file->setIsRead(logged_user()->getId(),true);
 						$succ++;
 						
 					} catch(Exception $e) {
@@ -1239,13 +1229,7 @@ class FilesController extends ApplicationController {
 				foreach ($ids as $id) {
 				$file = ProjectFiles::findById($id);
 					try {
-						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-						 $file->getId() . ' AND rel_object_manager = \''.get_class($file->manager()).'\' AND user_id = ' .
-						  logged_user()->getId() ));
-						if (count($ro) != 0)
-						{
-							$file->setIsRead(logged_user()->getId(),false);
-						}
+						$file->setIsRead(logged_user()->getId(),false);
 						$succ++;
 
 					} catch(Exception $e) {

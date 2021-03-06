@@ -625,12 +625,7 @@ class EventController extends ApplicationController {
 		    }
 
 		 	//read object for this user
-			$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-			 $event->getId() . ' AND rel_object_manager = \'ProjectEvents\''));
-			if (count($ro) == 0)
-			{	
-				$event->setIsRead(logged_user()->getId(),true);		    	
-			}
+			$event->setIsRead(logged_user()->getId(), true);		    	
 			$this->setTemplate('viewevent');
 			$tag = active_tag();
 			tpl_assign('tags',$tag);	
@@ -1174,16 +1169,7 @@ class EventController extends ApplicationController {
 			$events = array();
 			foreach($ev_ids as $id) {
 				$event = ProjectEvents::findById($id);
-				//read object for this user
-				
-				$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-				 $id . ' AND rel_object_manager = \'ProjectEvents\' ' . 
-				' AND ' . 'user_id = ' . logged_user()->getId()));
-				 
-				if (count($ro) == 0)
-				{
-					$event->setIsRead(logged_user()->getId(),true);
-				}
+				$event->setIsRead(logged_user()->getId(),true);
 			}
 			ajx_current("reload");
 	}
@@ -1198,16 +1184,7 @@ class EventController extends ApplicationController {
 			$events = array();
 			foreach($ev_ids as $id) {
 				$event = ProjectEvents::findById($id);
-				//read object for this user
-				
-				$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-				 $id . ' AND rel_object_manager = \'ProjectEvents\' ' . 
-				' AND ' . 'user_id = ' . logged_user()->getId()));
-				 
-				if (count($ro) != 0)
-				{
-					$event->setIsRead(logged_user()->getId(),false);
-				}
+				$event->setIsRead(logged_user()->getId(),false);
 			}
 			ajx_current("reload");
 	}
@@ -1221,7 +1198,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.104 2009/10/20 20:37:26 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.104.2.1 2009/11/13 21:56:38 idesoto Exp $
  *
  ***************************************************************************/
 

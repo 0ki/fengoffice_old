@@ -268,4 +268,6 @@ Code-Erklärung ist gleich dem Datumsformat.',
 	'drag drop prompt option' => 'zu Benutzeraktion auffordern',
 	'mail drag drop prompt option' => 'zu Benutzeraktion auffordern',
 	'user ws config option name drag_drop_prompt' => 'Aktion beim Ziehen eines Objektes in einen Arbeitsbereich',
+	'user ws config option name search_engine' => 'Suchmaschine',
+	'user ws config option desc search_engine' => 'Wähle die Suchmaschine: "Ähnlich" ist eine umfassende Suche, die aber länger dauert als "Treffer"',
 ); ?>

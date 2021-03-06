@@ -33,23 +33,26 @@ class TimeController extends ApplicationController {
 		$tasksUserId = array_var($_GET,'tu');
 		if (is_null($tasksUserId)) {
 			$tasksUserId = user_config_option('TM tasks user filter',logged_user()->getId());
-		} else
-			if (user_config_option('TM tasks user filter') != $tasksUserId)
-				set_user_config_option('TM tasks user filter', $tasksUserId, logged_user()->getId());
+		} else if (user_config_option('TM tasks user filter') != $tasksUserId) {
+			set_user_config_option('TM tasks user filter', $tasksUserId, logged_user()->getId());
+		}
 				
 		$timeslotsUserId = array_var($_GET,'tsu');
 		if (is_null($timeslotsUserId)) {
 			$timeslotsUserId = user_config_option('TM user filter',0);
-		} else
-			if (user_config_option('TM user filter') != $timeslotsUserId)
-				set_user_config_option('TM user filter', $timeslotsUserId, logged_user()->getId());
+		} else if (user_config_option('TM user filter') != $timeslotsUserId) {
+			set_user_config_option('TM user filter', $timeslotsUserId, logged_user()->getId());
+		}
 				
 		$showTimeType = array_var($_GET,'stt');
 		if (is_null($showTimeType)) {
 			$showTimeType = user_config_option('TM show time type',0);
-		} else
-			if (user_config_option('TM show time type') != $showTimeType)
-				set_user_config_option('TM show time type', $showTimeType, logged_user()->getId());
+		} else if (user_config_option('TM show time type') != $showTimeType) {
+			set_user_config_option('TM show time type', $showTimeType, logged_user()->getId());
+		}
+		
+		$start = array_var($_GET, 'start', 0);
+		$limit = 20;
 		
 		$tasksUser = Users::findById($tasksUserId);
 		$timeslotsUser = Users::findById($timeslotsUserId);	
@@ -60,10 +63,11 @@ class TimeController extends ApplicationController {
 		$tasks_array = array();
 		
 		//Timeslots view
+		$total = 0;
 		switch ($showTimeType){
 			case 0: //Show only timeslots added through the time panel
-				$timeslots = Timeslots::getProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project(), 0, 20);
-				
+				$timeslots = Timeslots::getProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project(), $start, $limit);
+				$total = Timeslots::countProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project());
 				break;
 			case 1: //Show only timeslots added through the tasks panel / tasks
 				throw new Error('not yet implemented' . $showTimeType);
@@ -98,6 +102,9 @@ class TimeController extends ApplicationController {
 		tpl_assign('timeslots', $timeslots);
 		tpl_assign('tasks', $tasks);
 		tpl_assign('users', $users);
+		tpl_assign('start', $start);
+		tpl_assign('limit', $limit);
+		tpl_assign('total', $total);
 		tpl_assign('companies', $companies);
 		ajx_set_no_toolbar(true);
 	}

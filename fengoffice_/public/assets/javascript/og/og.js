@@ -558,7 +558,7 @@ og.openLink = function(url, options) {
 			} else {
 				if (!options.options.hideErrors && !options.options.silent && response.status > 0) {
 					og.err(lang("http error", response.status, response.statusText));
-					og.httpErrLog = response.responseText;
+					og.httpErrLog = og.clean(response.responseText);
 				}
 				if (typeof options.postProcess == 'function') options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
 				if (typeof options.onError == 'function') options.onError.call(options.scope || this, data || response.responseText, options.options);
@@ -1582,38 +1582,11 @@ og.showHide = function(itemId) {
 	}
 };
 
-og.calculate_time_zone = function() {
-	var rightNow = new Date();
-	var jan1 = new Date(rightNow.getFullYear(), 0, 1, 0, 0, 0, 0);  // jan 1st
-	var june1 = new Date(rightNow.getFullYear(), 6, 1, 0, 0, 0, 0); // june 1st
-	var temp = jan1.toGMTString();
-	var jan2 = new Date(temp.substring(0, temp.lastIndexOf(" ")-1));
-	temp = june1.toGMTString();
-	var june2 = new Date(temp.substring(0, temp.lastIndexOf(" ")-1));
-	var std_time_offset = (jan1 - jan2) / (1000 * 60 * 60);
-	var daylight_time_offset = (june1 - june2) / (1000 * 60 * 60);
-	var dst;
-	if (std_time_offset == daylight_time_offset) {
-		dst = "0"; // daylight savings time is NOT observed
-	} else {
-		// positive is southern, negative is northern hemisphere
-		var hemisphere = std_time_offset - daylight_time_offset;
-		if (hemisphere >= 0)
-			std_time_offset = daylight_time_offset;
-		dst = "1"; // daylight savings time is observed
-	}
-	var i;
-	return std_time_offset;
-	// check just to avoid error messages
-	/*
-	if (document.getElementById('timezone')) {
-		for (i = 0; i < document.getElementById('timezone').options.length; i++) {
-			if (document.getElementById('timezone').options[i].value == og.convert_time_zone(std_time_offset)+","+dst) {
-				document.getElementById('timezone').selectedIndex = i;
-				break;
-			}
-		}
-	}*/
+og.calculate_time_zone = function(server) {
+	var client = new Date();
+	var diff = client.getTime() - server.getTime();
+	diff = Math.round(diff*2/3600000);
+	return diff / 2;
 };
 
 og.redrawLinkedObjects = function(id, manager) {
@@ -1798,4 +1771,31 @@ og.onChangeObjectCoType = function(genid, manager, id, new_cotype) {
 			}
 		}}
 	);
+};
+
+og.expandDocumentView = function() {
+	if (this.oldParent) {
+		//this.parentNode.parentNode.removeChild(this.parentNode);
+		//this.oldParent.appendChild(this.parentNode);
+		var parentBody = og.getParentContentPanelBody(this);
+		parentBody.style.overflow = 'auto';
+		this.parentNode.style.position = 'relative';
+		this.parentNode.style.height = this.parentNode.oldHeight + 'px';
+		this.parentNode.style.zIndex = '0';
+		this.title = lang('expand');
+		this.className = 'ico-expand';
+		this.oldParent = false;
+	} else {
+		this.oldParent = this.parentNode.parentNode;
+		//this.oldParent.removeChild(this.parentNode);
+		//document.body.appendChild(this.parentNode);
+		var parentBody = og.getParentContentPanelBody(this);
+		parentBody.style.overflow = 'hidden';
+		this.parentNode.style.position = 'absolute';
+		this.parentNode.oldHeight = this.parentNode.offsetHeight;
+		this.parentNode.style.height = '100%';
+		this.parentNode.style.zIndex = '1000';
+		this.title = lang('collapse');
+		this.className = 'ico-collapse';
+	}
 };

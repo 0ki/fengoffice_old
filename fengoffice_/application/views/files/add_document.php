@@ -38,7 +38,7 @@
 	
 
 	<div id="<?php echo $genid ?>ckcontainer" style="height: 100%">
-		<textarea style="display:none;" cols="80" id="<?php echo $genid ?>ckeditor" name="editor" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
+		<textarea style="display:none;" cols="80" id="<?php echo $genid ?>ckeditor" name="editor" rows="10" autocomplete="off"><?php echo clean($ckEditorContent) ?></textarea>
 	</div>
 </form>
 

@@ -310,63 +310,61 @@ if (!$logged_user_settings instanceof MailAccountUser) {
 </form>
 
 <script>
-	og.autofillmailaccountinfo = function (addres , genid)
-	{
+	og.autofillmailaccountinfo = function (addres , genid) {
 		atIndex = addres.indexOf("@");
 		var autoconf = false;
-		if (atIndex != -1){
+		if (atIndex != -1) {
 			domain = addres.substring(atIndex+1);
-			domainName = domain.substring(0,domain.indexOf('.'));
+			domainName = domain.substring(0,domain.indexOf('.')).toLowerCase();
 			messageDiv = document.getElementById(genid+'autoconfigmessage');
 			messageDiv.innerHTML = "";
-			switch (domainName.toLowerCase())
-			{
+			switch (domainName) {
 				case 'hotmail':
 					autoconf = true;					
-				serverAddres = document.getElementById(genid+'server');
+					serverAddres = document.getElementById(genid+'server');
 					serverAddres.value = 'pop3.live.com';
-				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer = document.getElementById('mailSmtpServer');
 					smtpServer.value = 'smtp.live.com';
-				email = document.getElementById(genid+'email');
+					email = document.getElementById(genid+'email');
 					email.value = addres;
-				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort = document.getElementById('mailSmtpPort');
 					smtpPort.value = '25';
-				method = document.getElementById(genid+'method');
+					method = document.getElementById(genid+'method');
 					method[1].selected = 'selected';
 					method[0].selected = '';
-				useSsl = document.getElementById(genid+'ssl');
+					useSsl = document.getElementById(genid+'ssl');
 					useSsl.checked = 'checked';
-				ssl = document.getElementById(genid + 'sslport');
-				ssl.value = '995';
-				divSsl = document.getElementById(genid + 'sslportdiv');
+					ssl = document.getElementById(genid + 'sslport');
+					ssl.value = '995';
+					divSsl = document.getElementById(genid + 'sslportdiv');
 					divSsl.style.display = 'block';
-				connectionType = document.getElementById('mailOutgoingTransportType');
-				connectionType[1].selected = 'selected';
-				connectionType[0].selected = '';
-				connectionType[2].selected = '';
-				break;
-
-				case 'gmail': 
+					connectionType = document.getElementById('mailOutgoingTransportType');
+					connectionType[1].selected = 'selected';
+					connectionType[0].selected = '';
+					connectionType[2].selected = '';
+					break;
+				case 'gmail':
+				case 'googlemail':
 					autoconf = true;
 					serverAddres = document.getElementById(genid+'server');
-						serverAddres.value = 'imap.gmail.com';
+					serverAddres.value = 'imap.' + domainName + '.com';
 					smtpServer = document.getElementById('mailSmtpServer');
-						smtpServer.value = 'smtp.gmail.com';
+					smtpServer.value = 'smtp.' + domainName + '.com';
 					email = document.getElementById(genid+'email');
-						email.value = addres;
+					email.value = addres;
 					smtpPort = document.getElementById('mailSmtpPort');
-						smtpPort.value = '465';
+					smtpPort.value = '465';
 					method = document.getElementById(genid+'method');
-						method[0].selected = 'selected';
-						method[1].selected = '';
+					method[0].selected = 'selected';
+					method[1].selected = '';
 					ssl = document.getElementById(genid + 'sslport');
 					folders = document.getElementById(genid + 'folders');
-						folders.style.display = 'block';
-						ssl.value = '993';
+					folders.style.display = 'block';
+					ssl.value = '993';
 					useSsl = document.getElementById(genid+'ssl');
-						useSsl.checked = 'checked';
+					useSsl.checked = 'checked';
 					divSsl = document.getElementById(genid + 'sslportdiv');
-						divSsl.style.display = 'block';
+					divSsl.style.display = 'block';
 					//Ext.get(genid+'password').on('onchange',og.fetchImapFolders(genid));
 					passInput = document.getElementById(genid+'password');
 					var fun = 'og.fetchImapFolders(\''+genid+'\')';
@@ -375,83 +373,40 @@ if (!$logged_user_settings instanceof MailAccountUser) {
 					connectionType[1].selected = 'selected';
 					connectionType[0].selected = '';
 					connectionType[2].selected = '';
-
-				break;				
+					domainName = 'gmail';
+					break;				
 				case 'yahoo':
-					autoconf = true;
-					serverAddres = document.getElementById(genid+'server');
-					serverAddres.value = 'plus.pop.mail.yahoo.com';
-				smtpServer = document.getElementById('mailSmtpServer');
-					smtpServer.value = 'plus.smtp.mail.yahoo.com';
-				email = document.getElementById(genid+'email');
-					email.value = addres.substring(0,addres.indexOf('@'));
-				smtpPort = document.getElementById('mailSmtpPort');
-					smtpPort.value = '465';
-				method = document.getElementById(genid+'method');
-					method[1].selected = 'selected';
-					method[0].selected = '';
-				useSsl = document.getElementById(genid+'ssl');
-					useSsl.checked = 'checked';
-				divSsl = document.getElementById(genid + 'sslportdiv');
-				divSsl.style.display = 'block';
-				connectionType = document.getElementById('mailOutgoingTransportType');
-				connectionType[1].selected = 'selected';
-				connectionType[0].selected = '';
-				connectionType[2].selected = '';
-				break;
+				case 'ymail':
 				case 'rocketmail':
 					autoconf = true;
 					serverAddres = document.getElementById(genid+'server');
 					serverAddres.value = 'plus.pop.mail.yahoo.com';
-				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer = document.getElementById('mailSmtpServer');
 					smtpServer.value = 'plus.smtp.mail.yahoo.com';
-				email = document.getElementById(genid+'email');
+					email = document.getElementById(genid+'email');
 					email.value = addres.substring(0,addres.indexOf('@'));
-				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort = document.getElementById('mailSmtpPort');
 					smtpPort.value = '465';
-				method = document.getElementById(genid+'method');
+					method = document.getElementById(genid+'method');
 					method[1].selected = 'selected';
 					method[0].selected = '';
-				useSsl = document.getElementById(genid+'ssl');
+					useSsl = document.getElementById(genid+'ssl');
 					useSsl.checked = 'checked';
-				divSsl = document.getElementById(genid + 'sslportdiv');
-				divSsl.style.display = 'block';
-				connectionType = document.getElementById('mailOutgoingTransportType');
-				connectionType[1].selected = 'selected';
-				connectionType[0].selected = '';
-				connectionType[2].selected = '';
-				break;
-				case 'ymail':
-					autoconf = true;
-					serverAddres = document.getElementById(genid+'server');
-					serverAddres.value = 'plus.pop.mail.yahoo.com';
-				smtpServer = document.getElementById('mailSmtpServer');
-					smtpServer.value = 'plus.smtp.mail.yahoo.com';
-				email = document.getElementById(genid+'email');
-					email.value = addres.substring(0,addres.indexOf('@'));
-				smtpPort = document.getElementById('mailSmtpPort');
-					smtpPort.value = '465';
-				method = document.getElementById(genid+'method');
-					method[1].selected = 'selected';
-					method[0].selected = '';
-				useSsl = document.getElementById(genid+'ssl');
-					useSsl.checked = 'checked';
-				divSsl = document.getElementById(genid + 'sslportdiv');
-				divSsl.style.display = 'block';
-				connectionType = document.getElementById('mailOutgoingTransportType');
-				connectionType[1].selected = 'selected';
-				connectionType[0].selected = '';
-				connectionType[2].selected = '';
-				break;
+					divSsl = document.getElementById(genid + 'sslportdiv');
+					divSsl.style.display = 'block';
+					connectionType = document.getElementById('mailOutgoingTransportType');
+					connectionType[1].selected = 'selected';
+					connectionType[0].selected = '';
+					connectionType[2].selected = '';
+					domainName = 'yahoo';
+					break;
 				default:
 					return;
-				break;
 			}
-			if (autoconf){
-				messageDiv.innerHTML = lang('autoconfig ' + domainName.toLowerCase() + ' message');
+			if (autoconf) {
+				messageDiv.innerHTML = lang('autoconfig ' + domainName + ' message');
 			}
 		}
-		return;
 	};
 
 	<?php if ($logged_user_can_edit) { ?>

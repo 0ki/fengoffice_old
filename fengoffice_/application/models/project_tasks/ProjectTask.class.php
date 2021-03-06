@@ -1351,7 +1351,8 @@ class ProjectTask extends BaseProjectTask {
     			"dateDeleted" => $deletedOn,
     			"archivedById" => $this->getArchivedById(),
     			"archivedBy" => $archivedBy,
-    			"dateArchived" => $archivedOn
+    			"dateArchived" => $archivedOn,
+    			"isRead" => $this->getIsRead(logged_user()->getId())
 			);
     }
 

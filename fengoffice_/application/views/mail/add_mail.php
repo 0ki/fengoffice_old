@@ -37,6 +37,7 @@ sig.actualHtmlSignature = '';
 
 <input type="hidden" name="mail[conversation_id]" value="<?php echo array_var($mail_data, 'conversation_id') ?>" />
 <input type="hidden" name="mail[in_reply_to_id]" value="<?php echo array_var($mail_data, 'in_reply_to_id') ?>" />
+<input type="hidden" name="mail[last_mail_in_conversation]" value="<?php echo array_var($mail_data, 'last_mail_in_conversation') ?>" />
 <?php 
 
 	tpl_display(get_template_path('form_errors'));
@@ -73,7 +74,7 @@ sig.actualHtmlSignature = '';
     		$sig = "";
     	}
     	$sig = nl2br($sig);
-    	$htmlsig = str_replace("\n", "", "<div class=\"opengoo_signature\">$sig</div>");
+    	$htmlsig = str_replace(array("\r", "\n"), "", "<div class=\"opengoo_signature\">$sig</div>");
     	$textsig = html_to_text($sig);
     	if ($acc_id) {
 	    	if ($m_acc->getId() == $acc_id) {
@@ -265,7 +266,7 @@ sig.actualHtmlSignature = '';
     	$idx = stripos($body, '<body');
     	if ($idx !== FALSE) {
     		$end_tag = strpos($body, '>', $idx) + 1;
-    		$html_body = utf8_substr($body, 0, $end_tag) . "<br />--<br />$orig_htmlsignature<br />" . utf8_substr($body, $end_tag); 
+    		$html_body = utf8_substr($body, 0, $end_tag) . "<br />--<br />$orig_htmlsignature" . utf8_substr($body, $end_tag); 
     	} else {
     		$html_body = "<br />--<br />$orig_htmlsignature" . $body;
     	}
@@ -276,7 +277,7 @@ sig.actualHtmlSignature = '';
     	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();", 'autocomplete' => 'off')) ?>
 
     <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
-		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor"><?php echo clean($html_body) ?></textarea>
+		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" autocomplete="off"><?php echo clean($html_body) ?></textarea>
 	</div>
 </div>
 </div>

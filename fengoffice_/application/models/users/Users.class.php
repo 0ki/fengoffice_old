@@ -208,6 +208,11 @@ class Users extends BaseUsers {
 			else return lang('n/a');
 		}
 	}
+	
+	function findByIds($ids) {
+		$esc = DB::escape($ids);
+		return self::findAll(array('conditions' => "`id` IN ($esc)"));
+	}
 } // Users
 
 ?>

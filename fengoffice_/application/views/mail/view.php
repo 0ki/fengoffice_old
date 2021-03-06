@@ -5,7 +5,7 @@
 		add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward', null, null, true);
 		add_page_action(lang('print'), $email->getPrintUrl(), 'ico-print', "_blank", null, true);
 	}
-	if($email->canDelete(logged_user()) && $email->getCreatedById() == logged_user()->getId()) {
+	if($email->canDelete(logged_user())) {
 		if ($email->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore', null, null, true);
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
@@ -58,9 +58,9 @@
 	og.changeContentIframeSrc = function(pre, rand) {
 		var iframe = document.getElementById(genid + 'ifr');
 		if (og.sandboxName) {
-			iframe.src = og.getSandboxUrl('feed', 'show_html_mail', {acc: pre, r: rand, id: og.loggedUser.id, token: tt});
+			iframe.src = og.getSandboxUrl('feed', 'show_html_mail', {pre: pre, r: rand, id: og.loggedUser.id, token: tt});
 		} else {
-			iframe.src = og.getUrl('mail', 'show_html_mail', {acc: pre, r: rand, id: og.loggedUser.id, token: tt});
+			iframe.src = og.getUrl('mail', 'show_html_mail', {pre: pre, r: rand, id: og.loggedUser.id, token: tt});
 		}
 
 		/*iframe.style.display = 'none';
@@ -155,7 +155,7 @@
 				$conversation_block .= $from;
 				if (!$is_current) $conversation_block .= '	</a><span class="desc">- '.$info_text.'</span></td>';
 				
-				$info_date = $info->getSentDate() instanceof DateTimeValue ? ($info->getSentDate()->isToday() ? format_time($info->getSentDate()) : format_datetime($info->getSentDate())) : lang('n/a');
+				$info_date = $info->getReceivedDate() instanceof DateTimeValue ? ($info->getReceivedDate()->isToday() ? format_time($info->getReceivedDate()) : format_datetime($info->getReceivedDate())) : lang('n/a');
 				$conversation_block .= '</td><td style="text-align:right;padding-right:3px"><span class="desc">'. lang('date').': </span>'. $info_date .'</td>';
 
 			} //foreach
@@ -171,6 +171,17 @@
 			} else {
 				$html_content = purify_html($email->getBodyHtml());
 			}
+			if (strpos($html_content, "<html") === false) {
+				if (strpos($html_content, "<body") === false) {
+					$html_content = "<body>" . $html_content . "</body>";
+				}
+				if (strpos($html_content, "<head") === false) {
+					$html_content = "<head></head>" . $html_content;
+				}
+				$html_content = "<html>" . $html_content . "</html>";
+			}
+			$html_content = str_replace("<head>", '<head><link rel="stylesheet" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
+			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
 			// links must open in a new tab or window
 			$html_content = str_replace('href', 'target="_blank" href', $html_content);
 			
@@ -179,7 +190,7 @@
 			$quoted_html_content = array_var($mail_html_content, 'quoted');
 			
 			// put content into an iframe, in order to avoid css to affect the rest of the interface
-			$tmphtml = $email->getAccountId().'temp_mail_content.html';
+			$tmphtml = $email->getAccountId() . '_' . logged_user()->getId() . '_temp_mail_content.html';
 			
 			$content = '';
 			if (user_config_option('block_email_images') && html_has_images($html_content)) {
@@ -193,7 +204,7 @@
 				
 				$html_content = remove_images_from_html($html_content);
 				$content = '<div id="'.$genid.'showImagesLink" style="background-color:#FFFFCC">'.lang('images are blocked').' 
-					<a href="#" onclick="og.showMailImages(\'wi_'.$email->getAccountId().'\', '.rand().');" style="text-decoration: underline;">'.lang('show images').'</a>
+					<a href="#" onclick="og.showMailImages(\'wi_'.$email->getAccountId().'_'.logged_user()->getId().'\', '.rand().');" style="text-decoration: underline;">'.lang('show images').'</a>
 				</div>';
 			}
 			
@@ -202,18 +213,21 @@
 			fwrite($handle, $html_content);
 			fclose($handle);
 			if (defined('SANDBOX_URL')) {
-				$url = get_sandbox_url('feed', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => gen_id(), 'id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken()));
+				$url = get_sandbox_url('feed', 'show_html_mail', array('pre' => $email->getAccountId() ."_". logged_user()->getId(), 'r' => gen_id(), 'id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken()));
 			} else {
-				$url = get_url('mail', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => gen_id()));
+				$url = get_url('mail', 'show_html_mail', array('pre' => $email->getAccountId() ."_". logged_user()->getId(), 'r' => gen_id()));
 			}
-			$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;" frameborder="0" src="'.$url.'" 
-							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight) ;">
+			$content .= '<div style="position: relative; left:0; top: 0; width: 100%; height: 100px; background-color: white">';
+			$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;height:100%" frameborder="0" src="'.$url.'" 
+							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.parentNode.style.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight) + \'px\' ;">
 						</iframe>';
 			'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
+			$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>
+				</div>';
 
 			if ($quoted_html_content) {
 				$q_link = "<a id='".$genid."showQuotedText' style='font-family:verdana,arial,helvetica,sans-serif; font-size:11px; line-height:150%; cursor:pointer; color:#003562; padding-left:10px;'";
-				$q_link .= " onclick='og.showQuotedHtml(\"q_".$email->getAccountId()."\", ".rand().");'>";
+				$q_link .= " onclick='og.showQuotedHtml(\"q_".$email->getAccountId().'_'.logged_user()->getId()."\", ".rand().");'>";
 				$q_link .= ":: ".lang('show quoted text')." ::</a>";
 				
 				file_put_contents(ROOT."/tmp/q_".$tmphtml, $html_content . $quoted_html_content);

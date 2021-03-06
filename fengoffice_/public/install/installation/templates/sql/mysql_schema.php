@@ -667,6 +667,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `cc` text <?php echo $default_collation ?> NOT NULL,
   `bcc` text <?php echo $default_collation ?> NOT NULL,
   `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `subject` text <?php echo $default_collation ?>,
   `body_plain` longtext <?php echo $default_collation ?>,
   `body_html` longtext <?php echo $default_collation ?>,
@@ -692,6 +693,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   PRIMARY KEY  (`id`),
   KEY `account_id` (`account_id`),
   KEY `sent_date` (`sent_date`),
+  KEY `received_date` (`received_date`),
   KEY `uid` (`uid`),
   KEY `conversation_id` (`conversation_id`),
   KEY `message_id` (`message_id`)

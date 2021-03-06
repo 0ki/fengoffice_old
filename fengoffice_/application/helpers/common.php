@@ -114,13 +114,18 @@
 		$images = array();
 		if (is_array($urls)) {
 			foreach ($urls as $url) {
-				$cache_name = preg_replace("/[^a-zA-Z0-9]/", "_", $url);
-				$cache_path = "cache/$cache_name.cache";
-				if (!is_file($cache_path)) {
-					$content = file_get_contents($url);
-					file_put_contents($cache_path, $content);
-				} 
-				$images[$url] = $cache_path;
+				if (substr($url, 0, 5) != 'http:' && substr($url, 0, 6) != 'https:') continue; // ignore non-http urls
+				if (defined('CACHE_EMAIL_IMAGE_URLS') && CACHE_EMAIL_IMAGE_URLS) {
+					$cache_name = preg_replace("/[^a-zA-Z0-9]/", "_", $url);
+					$cache_path = "cache/$cache_name.cache";
+					if (!is_file($cache_path)) {
+						$content = file_get_contents($url);
+						file_put_contents($cache_path, $content);
+					} 
+					$images[$url] = $cache_path;
+				} else {
+					$images[$url] = $url;
+				}
 			}
 		}
 		return $images;

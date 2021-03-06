@@ -296,14 +296,33 @@ class Timeslots extends BaseTimeslots {
 		}
 			
 		$user_sql = "";
-		if ($user instanceof User)
+		if ($user instanceof User) {
 			$user_sql = " AND user_id = " . $user->getId();
+		}
 		
 		return Timeslots::findAll(array(
 			'conditions' => "object_manager = 'Projects'" . $project_sql . $user_sql, 
 			'order' => 'start_time DESC, id DESC',
 			'offset' => $offset,
 			'limit' => $limit));
+	}
+	
+	static function countProjectTimeslots($allowedWorkspaceIdsCSV = null, $user = null, $project = null) {
+		$project_sql = "";
+		if ($allowedWorkspaceIdsCSV != null) {
+			$project_sql .= " AND `object_id` IN ($allowedWorkspaceIdsCSV)";
+		}
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesQuery();
+			$project_sql .= " AND `object_id` IN ($pids)";
+		}
+			
+		$user_sql = "";
+		if ($user instanceof User) {
+			$user_sql = " AND user_id = " . $user->getId();
+		}
+		
+		return Timeslots::count("object_manager = 'Projects'" . $project_sql . $user_sql);
 	}
 } // Comments
 

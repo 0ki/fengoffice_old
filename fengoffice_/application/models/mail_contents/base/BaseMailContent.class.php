@@ -234,6 +234,28 @@ abstract class BaseMailContent extends ProjectDataObject {
 	} // setSentDate()
 	
 	/**
+	 * Return value of 'received_date' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return DateTimeValue
+	 */
+	function getReceivedDate() {
+		return $this->getColumnValue('received_date');
+	} // getReceivedDate()
+
+	/**
+	 * Set value of 'received_date' field
+	 *
+	 * @access public
+	 * @param DateTimeValue $value
+	 * @return boolean
+	 */
+	function setReceivedDate($value) {
+		return $this->setColumnValue('received_date', $value);
+	} // setReceivedDate()
+	
+	/**
 	 * Return value of 'content' field
 	 *
 	 * @access public

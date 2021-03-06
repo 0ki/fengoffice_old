@@ -1198,8 +1198,6 @@ class Swift
 	 */
 	public function addImage($path)
 	{
-		if (!file_exists($path)) return false;
-		
 		$gpc = ini_get('magic_quotes_gpc');
 		ini_set('magic_quotes_gpc', 0);
 		$gpc_run = ini_get('magic_quotes_runtime');

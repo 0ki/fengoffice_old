@@ -28,9 +28,7 @@ class MailUtilities {
 					$lastChecked = $account->getLastChecked();
 					$minutes = 5;
 					if ($lastChecked instanceof DateTimeValue && $lastChecked->getTimestamp() + $minutes*60 >= DateTimeValueLib::now()->getTimestamp()) {
-						$errAccounts[$err]["accountName"] = $account->getEmail();
-						$errAccounts[$err]["message"] = lang("account already being checked");
-						$err++;
+						$succ++;
 						DB::commit();
 						continue;
 					} else {
@@ -190,22 +188,30 @@ class MailUtilities {
 			if ($enc_conv->hasError()) {
 				$utf8_from = utf8_encode($from_name);
 			}
+			$utf8_from = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_from);
 			$mail->setFromName($utf8_from);
 			
 			$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $parsedMail['Subject']);
 			if ($enc_conv->hasError()) {
 				$utf8_subject = utf8_encode($parsedMail['Subject']);
 			}
+			$utf8_subject = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_subject);
 			$mail->setSubject($utf8_subject);
 		} else {
 			$mail->setFromName($from_name);
-			$mail->setSubject($parsedMail['Subject']);
+			$utf8_subject = @iconv("UTF-8", "UTF-8//IGNORE", $parsedMail['Subject']);
+			$mail->setSubject($utf8_subject);
 		}
 		$mail->setTo($to_addresses);
 		if (array_key_exists("Date", $parsedMail)) {
 			$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
 		}else{
 			$mail->setSentDate(new DateTimeValue(DateTimeValueLib::now()));
+		}
+		if (array_key_exists("Received", $parsedMail)) {
+			$mail->setReceivedDate(new DateTimeValue(strtotime($parsedMail["Received"])));
+		}else{
+			$mail->setReceivedDate(new DateTimeValue(DateTimeValueLib::now()));
 		}
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
@@ -223,16 +229,19 @@ class MailUtilities {
 			case 'html':
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
 				$mail->setBodyHtml($utf8_body);
 				break;
 			case 'text': 
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
 				$mail->setBodyPlain($utf8_body);
 				break;
 			case 'delivery-status': 
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Response', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Response', ''));
+				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
 				$mail->setBodyPlain($utf8_body);
 				break;
 			default: break;
@@ -250,7 +259,7 @@ class MailUtilities {
 					// remove html comments
 					$body = preg_replace('/<!--.*-->/i', '', $body);
 				}
-				
+				$body = @iconv("UTF-8", "UTF-8//IGNORE", $body);
 				if ($alt['Type'] == 'html') {
 					$mail->setBodyHtml($body);
 				} else if ($alt['Type'] == 'text') {
@@ -268,12 +277,13 @@ class MailUtilities {
 			DB::beginWork();
 			
 			if ($in_reply_to_id != "") {
-				if ($message_id != "")
+				if ($message_id != "") {
 					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id'"));
-				else
+				} else {
 					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id'"));
+				}
 				
-				if ($conv_mail) {
+				if ($conv_mail instanceof MailContent && strpos(strtolower($mail->getSubject()), strtolower($conv_mail->getSubject())) !== false) {
 					$mail->setConversationId($conv_mail->getConversationId());
 				} else {
 					$conv_id = MailContents::getNextConversationId($account->getId());

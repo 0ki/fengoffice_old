@@ -55,10 +55,12 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$is_silent = (boolean) $is_silent;
 		} // if
 
-		try {
-			Notifier::notifyAction($object, $action, $log_data);
-		} catch (Exception $ex) {
-			
+		if (!$is_silent) {
+			try {
+				Notifier::notifyAction($object, $action, $log_data);
+			} catch (Exception $ex) {
+				
+			}
 		}
 		
 		$manager = $object->manager();

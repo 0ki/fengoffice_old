@@ -112,6 +112,13 @@ Hook::register("opengoo");
  *   		- action: string. Action name.
  *   	- &$ret:
  *   		if set to false, the action will not be called.
+ *
+ *  - after_action: Called after executing an action.
+ *   	- $args : assoc
+ *   		- controller: Controller instance.
+ *   		- action: string. Action name.
+ *   	- &$ret:
+ *   		if set to false, the action will not be called.
  *   
  *  - override_action_view: Called before generating an action's view, so that you can change it.
  *  	- $controller : PageController

@@ -326,6 +326,31 @@
 		<?php } // if ?>
 		
 		<?php
+		if ($object instanceof ProjectDataObject && $object->isArchivable() && $object->isArchived()) { ?>
+    		<span style="color:#333333;font-weight:bolder;">
+    			<?php echo lang('archived by') ?>:
+			</span><br/><div style="padding-left:10px">
+			<?php
+			$archive_user = Users::findById($object->getArchivedById());
+			if ($archive_user instanceof User) {
+				if (logged_user()->getId() == $archive_user->getId()) {
+					$username = lang('you');
+				} else {
+					$username = clean($archive_user->getDisplayName());
+				}
+
+				if ($object->getArchivedOn()->isToday()) {
+					$datetime = format_time($object->getArchivedOn());
+					echo lang('user date today at', $archive_user->getCardUrl(), $username, $datetime, clean($archive_user->getDisplayName()));
+				} else {
+					$datetime = format_datetime($object->getArchivedOn(), $date_format, logged_user()->getTimezone());
+					echo lang('user date', $archive_user->getCardUrl(), $username, $datetime, clean($archive_user->getDisplayName()));
+				}
+			}
+			 ?></div>
+		<?php } // if ?>
+		
+		<?php
 		if ($object instanceof ProjectFile && $object->getLastRevision() instanceof ProjectFileRevision) { ?>
 			<span style="color:#333333;font-weight:bolder;">
     			<?php echo lang('mime type') ?>:

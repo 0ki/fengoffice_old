@@ -1,3 +1,44 @@
+og.eventManager.addListener('new email in conversation',
+	function(mail) {
+
+		function sendAnyway() {
+			og.ExtendedDialog.dialog.destroy();
+			var form = document.getElementById(mail.genid + 'form');
+			form["mail[last_mail_in_conversation]"].value = mail.id;
+			if (form) form.onsubmit();
+		}
+
+		function viewNewEmail() {
+			og.ExtendedDialog.dialog.destroy();
+			var form = document.getElementById(mail.genid + 'form');
+			form["mail[last_mail_in_conversation]"].value = mail.id;
+			og.openLink(og.getUrl('mail', 'view', {id: mail.id}), {caller: 'new'});
+		}
+	
+		og.ExtendedDialog.show({
+			title: lang('warning'),
+			id: 'newEmailInConverstaion',
+			modal: true,
+			height: 150,
+			width: 350,
+			resizable: false,
+			buttons: [{
+				text: lang('send anyway'),
+				handler: sendAnyway
+			}, {
+				text: lang('view new email'),
+				handler: viewNewEmail
+			}],
+			dialogItems: [{
+				xtype: 'label',
+				hideLabel: true,
+				style: 'font-size:100%;',
+				text: lang('new email in conversation text')
+			}]
+		});
+	}
+);
+
 og.mailSetBody = function(genid) {
 	var form = Ext.getDom(genid + 'form');
 	if (form.preventDoubleSubmit) return false;
@@ -17,7 +58,7 @@ og.mailSetBody = function(genid) {
 og.mailAlertFormat = function(genid, opt) {
 	var oEditor = og.getCkEditorInstance(genid + 'ckeditor');
 	if (opt == 'plain') {
-		Ext.MessageBox.confirm('Warning', lang('switch format warn'), function(btn) {
+		Ext.MessageBox.confirm(lang('warning'), lang('switch format warn'), function(btn) {
 			if (btn == 'yes') {
 				var mailBody = Ext.getDom(genid + 'mailBody')
 				mailBody.style.display = 'block';				
@@ -27,15 +68,14 @@ og.mailAlertFormat = function(genid, opt) {
 				
 				var iText = oEditor.getData();
 				 // remove line breaks
-				iText = iText.replace(/[\n\r]\s*/ig, "");
+				iText = iText.replace(/[\n\r]/ig, "");
 				// replace signature
-				iText = iText.replace(/<div class="opengoo_signature">.*<\/div>/i, sig.actualTextSignature.replace(/\n/g, "<br>"));
+				iText = iText.replace(/<div class="opengoo_signature">.*?<\/div>/i, sig.actualTextSignature.replace(/\n/g, "<br />"));
 				// convert html to text
 				iText = og.htmlToText(iText);
 				mailBody.value = iText;
 				mailBody.oldMailBody = mailBody.value;
-			}
-			else{
+			} else {
 				Ext.getDom(genid + 'format_html').checked = true;
 				Ext.getDom(genid + 'format_plain').checked = false;
 				Ext.getDom(genid + 'mailBody').style.display= 'none';
@@ -49,7 +89,7 @@ og.mailAlertFormat = function(genid, opt) {
 		Ext.getDom(genid + 'ck_editor').style.display = 'block';
 		var html = mailBody.value;
 		html = og.clean(html);
-		html = html.replace('--\n' + sig.actualTextSignature, '--<br />' + sig.actualHtmlSignature);
+		html = html.replace('--\n' + og.htmlToText(sig.actualTextSignature.replace(/\n/g, "<br />")), '--<br />' + sig.actualHtmlSignature);
 		html = html.replace(/\r\n/g, "<br />");
 		html = html.replace(/\r|\n/g, "<br />");
 		oEditor.setData(html);
@@ -115,7 +155,7 @@ og.changeSignature = function(genid, acc_id) {
 		var editor = og.getCkEditorInstance(iname);
 		html = editor.getData();
 		html = html.replace(/\n/g, '');
-		html = html.replace(/<div class="opengoo_signature">.*<\/div>/i, new_htmlsig);
+		html = html.replace(/<div class="opengoo_signature">.*?<\/div>/i, new_htmlsig);
 		editor.setData(html);
 	} else {
 		if (Ext.getDom('mailBody').value.indexOf('--\n' + sig.actualTextSignature) != -1) {

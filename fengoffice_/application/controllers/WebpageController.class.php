@@ -343,12 +343,7 @@ class WebpageController extends ApplicationController {
 				foreach ($ids as $id) {
 				$webpage = ProjectWebpages::findById($id);
 					try {
-						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-						 $webpage->getId() . ' AND rel_object_manager = \''.$webpage->manager().'\''));
-						if (count($ro) == 0)
-						{
-							$webpage->setIsRead(logged_user()->getId(),true);
-						}
+						$webpage->setIsRead(logged_user()->getId(),true);
 						$succ++;
 						
 					} catch(Exception $e) {						
@@ -364,12 +359,7 @@ class WebpageController extends ApplicationController {
 				foreach ($ids as $id) {
 				$webpage = ProjectWebpages::findById($id);
 					try {
-						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-						 $webpage->getId() . ' AND rel_object_manager = \''.$webpage->manager().'\''));
-						if (count($ro) == 0)
-						{
-							$webpage->setIsRead(logged_user()->getId(),false);
-						}
+						$webpage->setIsRead(logged_user()->getId(),false);
 						$succ++;
 						
 					} catch(Exception $e) {						
@@ -524,14 +514,7 @@ class WebpageController extends ApplicationController {
 		} // if
 		
 		//read object for this user
-		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
-		 $weblink->getId() . ' AND rel_object_manager = \'ProjectWebpages\'' .
-		 ' AND user_id = ' . logged_user()->getId())
-		 );
-		if (count($ro) == 0)
-		{	
-			$weblink->setIsRead(logged_user()->getId(),true);
-		}
+		$weblink->setIsRead(logged_user()->getId(),true);
 
 		tpl_assign('object', $weblink);
 		tpl_assign('subscribers', $weblink->getSubscribers());

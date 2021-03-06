@@ -336,7 +336,7 @@
 				<td>
 					<div id="<?php echo $genid ?>repeat_options" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
 						<div>
-							<?php echo lang('CAL_EVERY') . " " .text_field('task[occurance_jump]', array_var($task_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => $genid.'occ_jump', 'tabindex' => '94', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+							<?php echo lang('CAL_EVERY') . " " .text_field('task[occurance_jump]', array_var($task_data, 'rjump', '1'), array('class' => 'title','size' => '2', 'id' => $genid.'occ_jump', 'tabindex' => '94', 'maxlength' => '100', 'style'=>'width:25px')) ?>
 							<span id="<?php echo $genid ?>word"></span>
 						</div>
 						<script type="text/javascript">

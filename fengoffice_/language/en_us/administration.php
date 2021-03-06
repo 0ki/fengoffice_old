@@ -41,7 +41,7 @@
     // Validate Password
     // ---------------------------------------------------
 
-  	'autentify password title'=> 'Autentify Password',
+  	'autentify password title'=> 'Authenticate Password',
   	'autentify password desc'=> 'You requested to enter to the administrator panel.<br/> Please re-enter your password',
   
     // ---------------------------------------------------
@@ -68,8 +68,8 @@
  	'config option name show_feed_links' => 'Show feed links',
     'config option desc show_feed_links' => 'This allows you to show links to RSS or iCal feeds to the logged user throughout the system, so that he can subscribe to them. WARNING: These links contain information that can login a user to the system. If an unaware user shares one of this links he could be compromising all of his information.',
 	
-    'config option name ask_administration_autentification' => 'Autentify administration',
-    'config option desc ask_administration_autentification' => 'Sets whether a pasword autentification dialog is displayed when accsesing the administration panel',
+	'config option name ask_administration_autentification' => 'Authenticate administration',
+    'config option desc ask_administration_autentification' => 'If "Yes" is chosen, a password authentication dialog will be displayed when accessing the administration panel',
   
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
@@ -303,7 +303,10 @@
   	'user ws config option name autodetect_time_zone' => 'Autodetect timezone',
   	'user ws config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
   	'user ws config option name search_engine' => 'Search engine',
-  	'user ws config option desc search_engine' => 'Choose which search engine to use. "LIKE" will do a more exhaustive search but will take much longer than "MATCH".',
+  	'user ws config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick".',
+  
+  	'search engine mysql like' => 'Full',
+  	'search engine mysql match' => 'Quick',
   ); // array
 
 ?>

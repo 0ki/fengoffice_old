@@ -176,6 +176,49 @@
 	<td class="coViewRight"></td>
 </tr>
 <tr>
+	<td colspan="2" class="coViewBody">
+	<?php if ($total > 0) {
+		$page = intval($start / $limit);
+		$totalPages = ceil($total / $limit);
+		if ($totalPages > 1) {
+		$a_nav = array(
+			'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-prev" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-next" style="padding-left:16px"/>', 
+			'<span class="x-tbar-page-last" style="padding-left:16px"/>'
+		);
+		$nav = '';
+		if ($page != 0) { ?>
+			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => '0', 'limit' => $limit)) ?>"><span class="x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span></a>
+			<a class="internalLink" href="<?php  echo get_url('time', 'index', array('start' => $start - $limit, 'limit' => $limit)) ?>"><span class="x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span></a>&nbsp;
+		<?php } else { ?>
+			<span class="og-disabled x-tbar-page-first db-ico" style="padding-left:16px">&nbsp;</span>
+			<span class="og-disabled x-tbar-page-prev db-ico" style="padding-left:16px">&nbsp;</span>&nbsp;
+		<?php }
+		for ($i = 1; $i < $totalPages + 1; $i++) {
+			$off = $limit * ($i - 1);
+			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) { ?>
+				<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><?php echo $i ?></a>&nbsp;&nbsp;
+			<?php } else if($i == $page + 1) { ?>
+				<b><?php echo $i ?></b>&nbsp;&nbsp;
+			<?php }
+		}
+		if ($page < $totalPages - 1) {
+			$off = $start + $limit; ?>
+			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span></a>
+			<?php $off = $limit * ($totalPages - 1); ?>
+			<a class="internalLink" href="<?php echo get_url('time', 'index', array('start' => $off, 'limit' => $limit)) ?>"><span class="x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span></a>
+		<?php } else { ?>
+			<span class="og-disabled x-tbar-page-next db-ico" style="padding-left:16px">&nbsp;</span>
+			<span class="og-disabled x-tbar-page-last db-ico" style="padding-left:16px">&nbsp;</span>
+		<?php } ?>
+		<br/><span class='desc'>&nbsp;<?php echo lang('total') . ": " . $totalPages . " " . lang('pages') ?></span>
+		<?php }
+	} ?>
+	</td>
+	<td class="coViewRight"></td>
+</tr>
+<tr>
 	<td class="coViewBottomLeft"></td>
 	<td class="coViewBottom">&nbsp;</td>
 	<td class="coViewBottomRight"></td>
@@ -190,4 +233,5 @@ ogTimeManager.drawTimespans('<?php echo $genid ?>');
 
 Ext.getCmp("<?php echo $genid ?>timeslot[date]Cmp").focus();
 </script>
+
 </div>

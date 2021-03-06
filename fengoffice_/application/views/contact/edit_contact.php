@@ -171,19 +171,19 @@
 					<td><?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle', 'maxlength' => '40', 'tabindex' => '105', 'maxlength' => 50)) ?></td>
 				</tr><tr height=20><td></td><td></td></tr>
 				<tr>
-					<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'profileFormWPhoneNumber') ?> </td>
+					<td class="td-pr"><?php echo label_tag(lang('wphone'), $genid.'profileFormWPhoneNumber') ?> </td>
 					<td><?php echo text_field('contact[w_phone_number]', array_var($contact_data, 'w_phone_number'), array('id' => $genid.'profileFormWPhoneNumber', 'tabindex' => '110', 'maxlength' => 50)) ?></td>
 				</tr><tr>
-					<td class="td-pr"><?php echo label_tag(lang('phone 2'), $genid.'profileFormWPhoneNumber2') ?> </td>
+					<td class="td-pr"><?php echo label_tag(lang('wphone 2'), $genid.'profileFormWPhoneNumber2') ?> </td>
 					<td><?php echo text_field('contact[w_phone_number2]', array_var($contact_data, 'w_phone_number2'), array('id' => $genid.'profileFormWPhoneNumber2', 'tabindex' => '115', 'maxlength' => 50)) ?></td>
 				</tr><tr>
-					<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'profileFormWFaxNumber') ?> </td>
+					<td class="td-pr"><?php echo label_tag(lang('wfax'), $genid.'profileFormWFaxNumber') ?> </td>
 					<td><?php echo text_field('contact[w_fax_number]', array_var($contact_data, 'w_fax_number'), array('id' => $genid.'profileFormWFaxNumber', 'tabindex' => '120', 'maxlength' => 50)) ?></td>
 				</tr><tr>
-					<td class="td-pr"><?php echo label_tag(lang('assistant'), $genid.'profileFormWAssistantNumber') ?> </td>
+					<td class="td-pr"><?php echo label_tag(lang('wassistant'), $genid.'profileFormWAssistantNumber') ?> </td>
 					<td><?php echo text_field('contact[w_assistant_number]', array_var($contact_data, 'w_assistant_number'), array('id' => $genid.'profileFormWAssistantNumber', 'tabindex' => '125', 'maxlength' => 50)) ?></td>
 				</tr><tr>
-					<td class="td-pr"><?php echo label_tag(lang('callback'), $genid.'profileFormWCallbackNumber') ?></td>
+					<td class="td-pr"><?php echo label_tag(lang('wcallback'), $genid.'profileFormWCallbackNumber') ?></td>
 					<td><?php echo text_field('contact[w_callback_number]', array_var($contact_data, 'w_callback_number'), array('id' => $genid.'profileFormWCallbackNumber', 'tabindex' => '130', 'maxlength' => 50)) ?></td>
 				</tr>
 				</table>
@@ -263,19 +263,19 @@
 			</td>
 			<td>
 			<table><tr>
-				<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'profileFormHPhoneNumber') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('hphone'), $genid.'profileFormHPhoneNumber') ?></td>
 				<td><?php echo text_field('contact[h_phone_number]', array_var($contact_data, 'h_phone_number'), array('id' => $genid.'profileFormHPhoneNumber', 'tabindex' => '190', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('phone 2'), $genid.'profileFormHPhoneNumber2') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('hphone 2'), $genid.'profileFormHPhoneNumber2') ?></td>
 				<td><?php echo text_field('contact[h_phone_number2]', array_var($contact_data, 'h_phone_number2'), array('id' => $genid.'profileFormHPhoneNumber2', 'tabindex' => '195', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'profileFormHFaxNumber') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('hfax'), $genid.'profileFormHFaxNumber') ?></td>
 				<td><?php echo text_field('contact[h_fax_number]', array_var($contact_data, 'h_fax_number'), array('id' => $genid.'profileFormHFaxNumber', 'tabindex' => '200', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('mobile'), $genid.'profileFormHMobileNumber') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('hmobile'), $genid.'profileFormHMobileNumber') ?></td>
 				<td><?php echo text_field('contact[h_mobile_number]', array_var($contact_data, 'h_mobile_number'), array('id' => $genid.'profileFormHMobileNumber', 'tabindex' => '205', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('pager'), $genid.'profileFormHPagerNumber') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('hpager'), $genid.'profileFormHPagerNumber') ?></td>
 				<td><?php echo text_field('contact[h_pager_number]', array_var($contact_data, 'h_pager_number'), array('id' => $genid.'profileFormHPagerNumber', 'tabindex' => '210', 'maxlength' => 50)) ?></td>
 			</tr>
 			</table>
@@ -316,13 +316,13 @@
 			</td>
 			<td>
 			<table><tr>
-				<td><?php echo label_tag(lang('phone number'), $genid.'profileFormOPhoneNumber') ?></td>
+				<td><?php echo label_tag(lang('ophone'), $genid.'profileFormOPhoneNumber') ?></td>
 				<td><?php echo text_field('contact[o_phone_number]', array_var($contact_data, 'o_phone_number'), array('id' => $genid.'profileFormOPhoneNumber', 'tabindex' => '250', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('phone number 2'), $genid.'profileFormOPhoneNumber2') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('ophone 2'), $genid.'profileFormOPhoneNumber2') ?></td>
 				<td><?php echo text_field('contact[o_phone_number2]', array_var($contact_data, 'o_phone_number2'), array('id' => $genid.'profileFormOPhoneNumber2', 'tabindex' => '255', 'maxlength' => 50)) ?></td>
 			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('fax number'), $genid.'profileFormOFaxNumber') ?></td>
+				<td class="td-pr"><?php echo label_tag(lang('ofax'), $genid.'profileFormOFaxNumber') ?></td>
 				<td><?php echo text_field('contact[o_fax_number]', array_var($contact_data, 'o_fax_number'), array('id' => $genid.'profileFormOFaxNumber', 'tabindex' => '260', 'maxlength' => 50)) ?></td>
 			</tr>
 			</table>

@@ -766,6 +766,11 @@ class ContactController extends ApplicationController {
 					$company->save();
 					ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
 					$newCompany = true;
+					if(active_project() instanceof Project) {
+						if ($company->canAdd(logged_user(), active_project())) {
+							$company->addToWorkspace(active_project());
+						}
+					}
 				}
 				
 				$contact_data['o_birthday'] = getDateValue($contact_data["o_birthday_value"]);
@@ -982,6 +987,11 @@ class ContactController extends ApplicationController {
 					$company->save();
 					ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD );
 					$newCompany = true;
+					if(active_project() instanceof Project) {
+						if ($company->canAdd(logged_user(), active_project())) {
+							$company->addToWorkspace(active_project());
+						}
+					}
 				}
 				
 				$contact_data['o_birthday'] = getDateValue($contact_data["o_birthday_value"]);

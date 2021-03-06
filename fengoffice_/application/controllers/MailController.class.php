@@ -60,7 +60,7 @@ class MailController extends ApplicationController {
 		}
 		$mail_data = array_var($_POST, 'mail', null);
 		if (!is_array($mail_data)) {
-			$re_subject = str_starts_with($original_mail->getSubject(), 'Re:') ? $original_mail->getSubject(): 'Re: ' . $original_mail->getSubject();
+			$re_subject = str_starts_with(strtolower($original_mail->getSubject()), 're:') ? $original_mail->getSubject() : 'Re: ' . $original_mail->getSubject();
 			
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
@@ -68,7 +68,7 @@ class MailController extends ApplicationController {
 			
 			$re_body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
 			if ($type == 'html') {
-				$pre_quote = "<blockquote type='cite' style='padding:0 15px; border-left:1px solid #987ADD;'>";
+				$pre_quote = "<blockquote type='cite' style='padding:0 10px; border-left: 1px solid #987ADD;'>";
 				$post_quote = "</blockquote>";
 			} else {
 				$pre_quote = "";
@@ -130,6 +130,7 @@ class MailController extends ApplicationController {
 				'body' => $re_body,
 				'conversation_id' => $original_mail->getConversationId(),
 				'in_reply_to_id' => $original_mail->getMessageId(),
+				'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
 			); // array
 		} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
@@ -215,6 +216,9 @@ class MailController extends ApplicationController {
 
 			$subject = array_var($mail_data, 'subject');
 			$body = array_var($mail_data, 'body');
+			if (array_var($mail_data, 'format') == 'html') {
+				$body = '<div style="font-family:Arial,Verdana,sans-serif;font-size:12px;color:#222">' . $body . '</div>';
+			}
 			$type = 'text/' . array_var($mail_data, 'format');
 			
 			$to = trim(array_var($mail_data, 'to'));
@@ -231,6 +235,20 @@ class MailController extends ApplicationController {
 				flash_error(lang('recipient must be specified'));
 				ajx_current("empty");
 				return;
+			}
+			
+			$last_mail_in_conversation = array_var($mail_data, 'last_mail_in_conversation');
+			$conversation_id = array_var($mail_data, 'conversation_id');
+			if ($last_mail_in_conversation && $conversation_id) {
+				$new_mail_in_conversation = MailContents::getLastMailIdInConversation($conversation_id, true);
+				if ($new_mail_in_conversation != $last_mail_in_conversation) {
+					ajx_current("empty");
+					evt_add("new email in conversation", array(
+						'id' => $new_mail_in_conversation,
+						'genid' => array_var($_POST, 'instanceName')
+					));
+					return;
+				}
 			}
 			
 			$mail->setFromAttributes($mail_data);
@@ -369,13 +387,22 @@ class MailController extends ApplicationController {
 				$mail->setAccountEmail($account->getEmailAddress());
 
  				$mail->setSentDate(DateTimeValueLib::now());
+ 				$mail->setReceivedDate(DateTimeValueLib::now());
  				
 				DB::beginWork();
 				
 				$msg_id = "<" . gen_id() . substr($account->getEmailAddress(), strpos($account->getEmailAddress(), '@')) . ">";
 				$conversation_id = array_var($mail_data, 'conversation_id');
-				if (!$conversation_id) $conversation_id = MailContents::getNextConversationId($account->getId());;
 				$in_reply_to_id = array_var($mail_data, 'in_reply_to_id');
+				if ($conversation_id) {
+					$in_reply_to = MailContents::getByMessageId($in_reply_to_id);
+					if (!$in_reply_to instanceof MailContent || strpos(strtolower($mail->getSubject()), strtolower($in_reply_to->getSubject())) === false) {
+						$conversation_id = null;
+						$in_reply_to_id = '';
+					}
+				}
+				if (!$conversation_id) $conversation_id = MailContents::getNextConversationId($account->getId());;
+				
 				
 				$mail->setMessageId($msg_id);
 				$mail->setConversationId($conversation_id);
@@ -397,7 +424,7 @@ class MailController extends ApplicationController {
 				$mail->setFromName(logged_user()->getDisplayName());
 
 				$mail->save();
-				$mail->setIsRead(true);
+				$mail->setIsRead(logged_user()->getId(), true);
 				$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
 				
 				// autoclassify sent email
@@ -589,6 +616,7 @@ class MailController extends ApplicationController {
 						$mail->setSize(strlen($content));
 						$mail->setState(3);
 						$mail->setSentDate(DateTimeValueLib::now());
+						$mail->setReceivedDate(DateTimeValueLib::now());
 						$mail->save();
 						evt_add("mail sent", array("mail_id" => $mail->getId()));
 					} else {
@@ -649,9 +677,9 @@ class MailController extends ApplicationController {
 		if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
 		
 		if ($email->getBodyHtml() != '') {
-			$tmp_folder = "/tmp/" . $email->getAccountId() . "temp_mail_content_res";
+			$tmp_folder = "/tmp/" . $email->getAccountId() . "_" . logged_user()->getId() . "_temp_mail_content_res";
 			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
-			$parts_array = array_var($decoded,0,array('Parts' => ''));
+			$parts_array = array_var($decoded, 0, array('Parts' => ''));
 			$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), $parts_array['Parts'], $tmp_folder));
 		}
 		
@@ -662,16 +690,7 @@ class MailController extends ApplicationController {
 			ajx_replace(true);
 		}
 
-		if (!$email->getIsRead(logged_user()->getId())) {
-			try {
-				DB::beginWork();
-				$email->setIsRead(1, logged_user()->getId());
-				DB::commit();
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error(lang('error mark email'));
-			}
-		}
+		$email->setIsRead(logged_user()->getId(),true);
 	}
 	
 	/**
@@ -946,7 +965,7 @@ class MailController extends ApplicationController {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-				$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".$fName;
+				$tempFileName = ROOT ."/tmp/". logged_user()->getId()."x".gen_id();
 				$fh = fopen($tempFileName, 'w') or die("Can't open file");
 				fwrite($fh, $att["Data"]);
 				fclose($fh);
@@ -979,8 +998,7 @@ class MailController extends ApplicationController {
 					$file->setTagsFromCSV($csv);
 					$enc = array_var($parsedMail,'Encoding','UTF-8');
 					
-					$ext = utf8_substr($fName, strrpos($fName,'.')+1, utf8_strlen($fName, $enc), $enc);
-					
+					$ext = utf8_substr($fName, strrpos($fName,'.')+1, utf8_strlen($fName, $enc), $enc);					
 								
 					$mime_type = '';
 					if (Mime_Types::instance()->has_type($att["content-type"]))
@@ -1032,10 +1050,9 @@ class MailController extends ApplicationController {
 	}
 	
 	function show_html_mail() {
-		$acc_id = $_GET['acc'];
-		$filename = ROOT."/tmp/".$acc_id."temp_mail_content.html";
-		
-		if (!file_exists(ROOT."/tmp/".$acc_id."temp_mail_content.html")) {
+		$pre = $_GET['pre'];
+		$filename = ROOT."/tmp/".$pre."_temp_mail_content.html";		
+		if (!file_exists($filename)) {
 			ajx_current("empty");
 			return;
 		}
@@ -1084,19 +1101,21 @@ class MailController extends ApplicationController {
 			$max = config_option("user_email_fetch_count", 10);
 			MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived, $max);
 
-			$errMessage = lang('success check mail', $mailsReceived);
+			if ($succ > 0) {
+				$errMessage = lang('success check mail', $mailsReceived);
+			}
 			if ($err > 0){
 				foreach($errAccounts as $error) {
 					$errMessage .= lang('error check mail', $error["accountName"], $error["message"]);
 				}
 			}
+			if ($succ > 0) $err = 0;
 		} else {
 			$err = 1;
 			$errMessage = lang('no mail accounts set for check');
 		}
 		
 		ajx_add("overview-panel", "reload");
-		ajx_current("empty");
 
 		return array($err, $errMessage);
 	}
@@ -1547,7 +1566,7 @@ class MailController extends ApplicationController {
 		$mail_data = array_var($_POST, 'mail', null);
 
 		if(!is_array($mail_data)) {
-			$fwd_subject = str_starts_with($original_mail->getSubject(),'Fwd:')?$original_mail->getSubject():'Fwd: '.$original_mail->getSubject();
+			$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
 			
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
@@ -1631,7 +1650,6 @@ class MailController extends ApplicationController {
 	 */
 	function edit_mail(){
 		$this->setTemplate('add_mail');
-		$mail = new MailContent();
 		if(array_var($_GET,'id','') == ''){
 			flash_error('Invalid parameter.');
 			ajx_current("empty");
@@ -1666,6 +1684,9 @@ class MailController extends ApplicationController {
 	          'body' => $body,
 	          'type' => $original_mail->getBodyHtml() != '' ? 'html' : 'plain',
 	          'account_id' => $original_mail->getAccountId(),
+			  'conversation_id' => $original_mail->getConversationId(),
+			  'in_reply_to_id' => $original_mail->getMessageId(),
+			  'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
 	          'id' => $original_mail->getId(),
 			  'draft_edit' => 1,
 			  'attachs' => $attachs
@@ -1673,7 +1694,7 @@ class MailController extends ApplicationController {
 		} // if
 		
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
-		tpl_assign('mail', $mail);
+		tpl_assign('mail', $original_mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
 	}//forward_mail
@@ -1707,6 +1728,10 @@ class MailController extends ApplicationController {
 			"mantainWs" => array_var($_GET, 'mantainWs'),
 			"classify_atts" => array_var($_GET, 'classify_atts'),
 		);
+		$dir = array_var($_GET,'dir');
+		if ($dir != 'ASC' && $dir != 'DESC') {
+			$dir = 'ASC';
+		}
 		$order = array_var($_GET,'sort');
 		switch ($order){
 			case 'title':
@@ -1716,21 +1741,14 @@ class MailController extends ApplicationController {
 				$order = '`account_email`';
 			break;
 			case 'from':
-				$order = '`from_name`, `from`';
-			break;
-			case 'date':
-				$order = '`sent_date`';
+				$order = "`from_name` $dir, `from`";
 			break;
 			case 'folder':
 				$order = '`imap_folder_name`';
 			break;
 			default:
-				$order = '`sent_date`';
+				$order = "`received_date`";
 			break;
-		}
-		$dir = array_var($_GET,'dir');
-		if (! $dir == 'ASC' ||! $dir == 'DEC') {
-			$dir = 'ASC';
 		}
 		//Resolve actions to perform
 		$actionMessage = array();
@@ -1827,6 +1845,11 @@ class MailController extends ApplicationController {
 					if (strlen_utf($text) > 150) {
 						$text = substr_utf($text, 0, 150) . "...";
 					}
+					$show_as_conv = user_config_option('show_emails_as_conversations');
+					if ($show_as_conv) {
+						$conv_total = MailContents::countMailsInConversation($msg);
+						$conv_unread = MailContents::countUnreadMailsInConversation($msg);
+					}
 					$properties = array(
 					    "id" => $msg->getId(),
 						"ix" => $i,
@@ -1838,11 +1861,11 @@ class MailController extends ApplicationController {
 						"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 						"subject" => $msg->getSubject(),
 						"text" => $text,
-						"date" => $msg->getSentDate() instanceof DateTimeValue ? ($msg->getSentDate()->isToday() ? format_time($msg->getSentDate()) : format_datetime($msg->getSentDate())) : lang('n/a'),
+						"date" => $msg->getReceivedDate() instanceof DateTimeValue ? ($msg->getReceivedDate()->isToday() ? format_time($msg->getReceivedDate()) : format_datetime($msg->getReceivedDate())) : lang('n/a'),
 						"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getId() : 0),
 						"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
 						"tags" => implode(", ", $msg->getTagNames()),
-						"isRead" => $msg->getIsRead(logged_user()->getId()),
+						"isRead" => $show_as_conv ? ($conv_unread == 0) : $msg->getIsRead(logged_user()->getId()),
 						"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
 						"from_email" => $msg->getFrom(),
 						"isDraft" => $msg->getIsDraft(),
@@ -1850,9 +1873,9 @@ class MailController extends ApplicationController {
 						"folder" => $msg->getImapFolderName(),
 						"to" => $msg->getTo(),
 					);
-					if (user_config_option('show_emails_as_conversations')) {
-						$properties["conv_total"] = MailContents::countMailsInConversation($msg);
-						$properties["conv_unread"] = MailContents::countUnreadMailsInConversation($msg);
+					if ($show_as_conv) {
+						$properties["conv_total"] = $conv_total;
+						$properties["conv_unread"] = $conv_unread;
 					}
 					$object["messages"][] = $properties;
 				}
@@ -1883,16 +1906,24 @@ class MailController extends ApplicationController {
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->canDelete(logged_user())){
-								try{
-									DB::beginWork();
-									$email->trash(null);
-									ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
-									DB::commit();
-									$succ++;
-								} catch(Exception $e){
-									DB::rollback();
-									$err++;
+							if (isset($email) && $email->canDelete(logged_user())) {
+								if (user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+									$emails_in_conversation = MailContents::getMailsFromConversation($email);
+								} else { 
+									$emails_in_conversation = array($email);
+								}
+								foreach ($emails_in_conversation as $email){
+									if ($email->canDelete(logged_user())) {
+										try {
+											$email->trash();
+											ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+											$succ++;
+										} catch(Exception $e) {
+											$err++;
+										}
+									} else {
+										$err++;
+									}
 								}
 							} else {
 								$err++;
@@ -1915,15 +1946,25 @@ class MailController extends ApplicationController {
 
 			case "tag":
 				$tag = $attributes["tag"];
+				if (!trim($tag)) break;
 				for($i = 0; $i < count($attributes["ids"]); $i++){
 					$id = $attributes["ids"][$i];
 					$type = $attributes["types"][$i];
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->canEdit(logged_user())){
-								Tags::addObjectTag($tag, $email);
-								ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TAG, false, null, true, $tag);
+							if (isset($email)) {
+								if (user_config_option('show_emails_as_conversations',true,logged_user()->getId())) {
+									$emails_in_conversation = MailContents::getMailsFromConversation($email);
+								} else { 
+									$emails_in_conversation = array($email);
+								}
+								foreach ($emails_in_conversation as $email){
+									if ($email->canEdit(logged_user())){
+										Tags::addObjectTag($tag, $email);
+										ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_TAG, false, null, true, $tag);
+									}
+								}
 								$resultMessage = lang("success tag objects", '');
 							};
 							break;
@@ -1944,10 +1985,11 @@ class MailController extends ApplicationController {
 						case "email":
 							$email = MailContents::findById($id);
 							if (isset($email)){
-								if (user_config_option('show_emails_as_conversations',true,logged_user()->getId()))
+								if (user_config_option('show_emails_as_conversations',true,logged_user()->getId())) {
 									$emails_in_conversation = MailContents::getMailsFromConversation($email);
-								else
+								} else {
 									$emails_in_conversation = array($email);
+								}
 								foreach ($emails_in_conversation as $email){
 									if ($email->canEdit(logged_user())){
 										if ($tag != ''){
@@ -2003,19 +2045,13 @@ class MailController extends ApplicationController {
 					$resultCode = 1;
 				} else {
 					$count = 0;
-					$active = active_project();
-					if ($active instanceof Project) {
-						$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
-					} else {
-						$ws_ids = logged_user()->getWorkspacesQuery();
-					}
 					for($i = 0; $i < count($attributes["ids"]); $i++){
 						$id = $attributes["ids"][$i];
 						$type = $attributes["types"][$i];
 						switch ($type){
 							case "email":
 								$email = MailContents::findById($id);
-								if ($email->getConversationId()) {
+								if (user_config_option('show_emails_as_conversations',true,logged_user()->getId())) {
 									$conversation = MailContents::getMailsFromConversation($email);
 								} else {
 									$conversation = array($email);
@@ -2061,16 +2097,16 @@ class MailController extends ApplicationController {
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->canEdit(logged_user())){
-								try{
-									DB::beginWork();
-									$email->setIsRead($action=='markAsRead' ? 1 : 0,logged_user()->getId());
-									DB::commit();
-									//$resultMessage = lang("success mark objects", '');
-								} catch(Exception $e){
-									DB::rollback();
-									$resultMessage .= $e->getMessage();
-									$resultCode = $e->getCode();
+							if (isset($email)) {
+								if (user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+									$emails_in_conversation = MailContents::getMailsFromConversation($email);
+								} else {
+									$emails_in_conversation = array($email);
+								}
+								foreach ($emails_in_conversation as $email) {
+									if ($email->canEdit(logged_user())) {
+										$email->setIsRead(logged_user()->getId(), $action == 'markAsRead');
+									}
 								}
 							};
 							break;
@@ -2093,16 +2129,22 @@ class MailController extends ApplicationController {
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->canEdit(logged_user())){
-								try{
-									DB::beginWork();
-									$email->archive(null);
-									ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
-									DB::commit();
-									$succ++;
-								} catch(Exception $e){
-									DB::rollback();
-									$err++;
+							if (isset($email)) {
+								if (user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
+									$emails_in_conversation = MailContents::getMailsFromConversation($email);
+								} else {
+									$emails_in_conversation = array($email);
+								}
+								foreach ($emails_in_conversation as $email) {
+									if ($email->canEdit(logged_user())) {
+										try {
+											$email->archive(null);
+											ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+											$succ++;
+										} catch(Exception $e) {
+											$err++;
+										}
+									}
 								}
 							} else {
 								$err++;
@@ -2209,7 +2251,7 @@ class MailController extends ApplicationController {
 			
 			$info[] = array(
 				'id' => $mail->getId(),
-				'date' => $mail->getSentDate() instanceof DateTimeValue ? ($mail->getSentDate()->isToday() ? format_time($mail->getSentDate()) : format_datetime($mail->getSentDate())) : lang('n/a'),
+				'date' => $mail->getReceivedDate() instanceof DateTimeValue ? ($mail->getReceivedDate()->isToday() ? format_time($mail->getReceivedDate()) : format_datetime($mail->getReceivedDate())) : lang('n/a'),
 				'has_att' => $mail->getHasAttachments(),
 				'text' => htmlentities($text),
 				'read' => $mail->getIsRead(logged_user()->getId()),
@@ -2252,7 +2294,7 @@ class MailController extends ApplicationController {
 		 
 		if ($email->getBodyHtml() != '') {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-			$tmp_folder = "/tmp/" . $email->getAccountId() . "temp_mail_content_res";
+			$tmp_folder = "/tmp/" . $email->getAccountId() . "_" . logged_user()->getId() . "_temp_mail_content_res";
 			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
 			$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), $decoded[0]['Parts'], $tmp_folder));
 		}

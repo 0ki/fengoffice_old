@@ -24,6 +24,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
     'cc' => DATA_TYPE_STRING,
 	'bcc' => DATA_TYPE_STRING,
     'sent_date' => DATA_TYPE_DATETIME,
+	'received_date' => DATA_TYPE_DATETIME,
     'subject' => DATA_TYPE_STRING,
     'content' => DATA_TYPE_STRING,
     'body_plain' => DATA_TYPE_STRING,

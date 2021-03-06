@@ -24,6 +24,7 @@
     </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType('Users'); ?>
   
   	<div style="padding-top:5px">
 		<?php if(logged_user()->isAdministrator()) { ?>
@@ -36,6 +37,9 @@
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
+		<?php if ($cps > 0) { ?>
+			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+		<?php } ?> 
 	</div>
   
   </div>
@@ -118,7 +122,7 @@
     <legend><?php echo lang('timezone') ?></legend>
     <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
     <div id ="<?php echo $genid?>detectTimeZone">
-    <?php echo yes_no_widget('autodetect_time_zone', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', false, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
+    <?php echo yes_no_widget('autodetect_time_zone', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
     </div>
     <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', false, $user->getId())) echo 'style="display:none"'; ?>>
     <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
@@ -164,12 +168,14 @@
     	array('id' => 'profileFormTitle', 'tabindex' => '2800')) ?>
   </div>
   
+  	<?php if ($cps > 0) { ?>
   	<div id='<?php echo $genid ?>add_custom_properties_div' style="">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($user, 'Users', false) ?>
 		</fieldset>
 	</div>
+	<?php } ?>
 	
 	<?php foreach ($categories as $category) { ?>
 	<div style="display:none" id="<?php echo $genid . $category['name'] ?>">
@@ -182,7 +188,7 @@
 	
 	<div>
 		<?php echo render_object_custom_properties($user, 'Users', true) ?>
-	</div><br/>
+	</div>
 	
   <?php echo submit_button(lang('save changes'),'s',array('tabindex' => '3000')) ?>
 

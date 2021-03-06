@@ -743,8 +743,6 @@ addLangs({
 
   	'autoconfig gmail message' : 'Gmail autoconfiguration detected. <br> Remember you have to enable IMAP service for your gmail account. More information <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">here</a>',
   	'autoconfig hotmail message' : 'Hotmail autoconfiguration detected',
-  	'autoconfig ymail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
-  	'autoconfig rocketmail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
   	'autoconfig yahoo message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
   		
   	//concurrence
@@ -765,5 +763,12 @@ addLangs({
   	'select co types to apply' : 'Select the object types you wish to apply the property',
   	'write an email to contact': 'Write an email to {0}',
   	'quick upload desc': 'Link a new file from your computer',
-  	'switch format warn': 'Switching to text will discard all HTML formatting. Continue?'
+  	'switch format warn': 'Switching to text will discard all HTML formatting. Continue?',
+  	
+  	'expand': 'Expand',
+  	'collapse': 'Collapse',
+  	'warning': 'Warning',
+  	'new email in conversation text': 'There\'s a new email in the conversation you are replying to. Do you want to send the email anyway or view the new email in a new tab?',
+  	'send anyway': 'Send anyway',
+  	'view new email': 'View new email'
 });

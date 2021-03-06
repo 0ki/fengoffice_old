@@ -44,6 +44,8 @@ class Notifier {
 			self::objectNotification($object, $subscribers, logged_user(), 'deleted');
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
 			self::objectNotification($object, $subscribers, logged_user(), 'closed');
+		} else if ($action == ApplicationLogs::ACTION_SUBSCRIBE) {
+			self::objectNotification($object, Users::findByIds(explode(",", $log_data)), logged_user(), 'subscribed');
 		}
 	}
 	function shareObject(ProjectDataObject $object, $people) {

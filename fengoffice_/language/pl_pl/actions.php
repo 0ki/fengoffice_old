@@ -150,4 +150,9 @@
 	'apply milestone to subtasks' => 'Przydziel zadania podrzędne do etapu',
 	'apply workspace to subtasks' => 'Przydziel zadania podrzędne do etapu',
 	'show all linked objects' => 'Pokaż wszystkie dowiązane obiekty({0})',
+	'archive' => 'Archiwizuj',
+	'unarchive' => 'Odwróć archiwizację',
+	'confirm archive selected objects' => 'Czy na pewno chcesz archiwizować wybrane obiekty?',
+	'confirm archive object' => 'Czy na pewno chcesz archiwizaować ten obiekt',
+	'confirm unarchive object' => 'Czy na pewno odwrócić archiwizację tego obiektu',
 ); ?>

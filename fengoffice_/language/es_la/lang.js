@@ -671,5 +671,11 @@ addLangs({
 	'write an email to contact': 'Escribir correo a {0}',
 	'click to drag': 'Clic y mantener para arrastrar',
 	'quick upload desc': 'Vincular un archivo desde la computadora',
-	'switch format warn': 'Cambiar a texto descartará el formato HTML. ¿Desea continuar?'
+	'switch format warn': 'Cambiar a texto descartará el formato HTML. ¿Desea continuar?',
+	'expand': 'Expandir',
+	'collapse': 'Colapsar',
+	'warning': 'Aviso',
+	'new email in conversation text': 'Hay correo nuevo en la conversación que está respondiendo. Desea enviar el correo de todos modos o ver el nuevo correo en una nueva pestaña?',
+	'send anyway': 'Enviar de todos modos',
+	'view new email': 'Ver correo nuevo'
 });

@@ -21,4 +21,8 @@
 	'ascending' => 'Rosnąco',
 	'descending' => 'Malejąco',
 	'parametrizable' => 'Parametr?',
+	'columns to print' => 'Kolumny do wydrukowania',
+	'columns to print desc' => 'Przenieś kolumny które chcesz wydrukować do pola po prawej.',
+	'reporting workspace' => 'Projekt',
+	'reporting user' => 'Użytkownik',
 ); ?>

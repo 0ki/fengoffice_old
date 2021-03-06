@@ -44,7 +44,8 @@ og.ArchivedObjects = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
-					Ext.getCmp('archivedobjects-manager').getView().focusRow(og.lastSelectedRow.archived+1);
+					var cmp = Ext.getCmp('archivedobjects-manager');
+					if (cmp) cmp.getView().focusRow(og.lastSelectedRow.archived+1);
 				}
 			}
 		});

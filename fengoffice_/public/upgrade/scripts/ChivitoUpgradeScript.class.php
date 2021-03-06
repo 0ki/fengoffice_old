@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-beta2
+ * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-beta3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6-beta2');
+		$this->setVersionTo('1.6-beta3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -105,6 +105,15 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 		 			ON DUPLICATE KEY UPDATE id=id;
 		 			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `category_name` = 'general' WHERE `name` = 'work_day_start_time';
 		 			ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
+				";
+			}
+			if (version_compare($installed_version, "1.6-beta3") < 0) {
+				$upgrade_script .= "
+		 			ALTER TABLE `".TABLE_PREFIX."mail_contents`
+		 			  ADD COLUMN `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
+		 			  ADD INDEX `received_date` (`received_date`);
+		 			UPDATE `".TABLE_PREFIX."mail_contents` SET `received_date` = `sent_date`;
+		 			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = '1' WHERE `name` = 'autodetect_time_zone';
 				";
 			}
 		}

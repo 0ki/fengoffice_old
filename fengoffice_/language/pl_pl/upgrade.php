@@ -12,4 +12,5 @@
 	'error upgrade version not found' => 'Podano nieprawidłową wersję ({0}). Automatyczna aktualizacja nie może zostać przeprowadzona. Spróbuj później lub skorzystaj z opcji aktualizacji ręcznej.',
 	'error upgrade invalid zip url' => 'Nieprawidłowy adres URL dla pobierania podanej wersji. Automatyczna aktualizacja nie może zostać przeprowadzona. Spróbuj później lub skorzystaj z opcji aktualizacji ręcznej.',
 	'error upgrade cannot open zip file' => 'Nie można otworzyć archiwum zip z nową wersją. Automatyczna aktualizacja nie może zostać przeprowadzona. Spróbuj później lub skorzystaj z opcji aktualizacji ręcznej.',
+	'upgrade from to' => 'Aktualizauj {0} do {1}',
 ); ?>
