@@ -171,6 +171,7 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 				start: 0,
 				limit: og.config['files_per_page']
 			});
+			this.store.removeAll();
 			this.store.load({
 				params: params
 			});
@@ -344,16 +345,17 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 						scope: this
 					},
 					"-",
-					{
+					/*{
 						xtype : 'label',
 						text: lang('filter') + ': ',
 			            iconCls: 'ico-search',
 						scope: this
-					},
+					},*/
 					{
 						xtype: 'textfield',
 						id: 'txtFilreByObjectName',
 						fieldLabel: lang('name'),
+						emptyText: lang('filter') + '...',
 						tooltip: lang('filtre name desc'),
 						listeners:{
 							render: {

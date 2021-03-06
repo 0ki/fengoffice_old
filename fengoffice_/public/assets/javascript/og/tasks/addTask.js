@@ -9,7 +9,21 @@
 //*		Draw add new task form
 //************************************
 
-ogTasks.drawAddNewTaskForm = function(group_id, parent_id, level){
+ogTasks.drawAddNewTaskForm = function(group_id, parent_id, level, position){
+	var additionalParams = {};
+	var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+	if (toolbar.filterNamesCompaniesCombo.isVisible()){
+		var value = toolbar.filterNamesCompaniesCombo.getValue();
+		if (value) {
+			additionalParams.assigned_to_contact_id = value;
+		}
+	}
+	if (parent_id > 0)
+		additionalParams.parent_id = parent_id;
+	
+	og.render_modal_form('', {c:'task', a:'add_task', params: additionalParams});
+	return;
+	
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	var filters = bottomToolbar.getFilters();
@@ -63,35 +77,27 @@ ogTasks.drawAddNewTaskForm = function(group_id, parent_id, level){
 		description: '',
 		priority: priority,
 		dueDate: '',
-                startDate: '',
+		startDate: '',
 		assignedTo: assignedToValue,
 		taskId: 0,
-                time_estimated: 0,
-                multiAssignment: 0,
-		isEdit: false                
+		time_estimated: 0,
+		multiAssignment: 0,
+		isEdit: false,
+		position: position
 	});
-        if(og.config.wysiwyg_tasks){
-        	var height = $("#tasks_quick_add_selectors").height();
-    		height = "auto";
-        	loadCKeditor(0,height);
-        }
+	
+	if(og.config.wysiwyg_tasks){
+		var height = $("#tasks_quick_add_selectors").height();
+		height = "auto";
+		loadCKeditor(0,height);
+	}
 }
 
 ogTasks.drawEditTaskForm = function(task_id, group_id){
 	var task = this.getTask(task_id);
 	var containerName = 'ogTasksPanelTask' + task.id + 'G' + group_id;
 	if (task){
-		// if description not loaded yet then load description before drawing form
-		if ((!task.description || task.description == '') && !ogTasks.all_descriptions_loaded) {
-			og.openLink(og.getUrl('task', 'get_task_data', {id:task_id, desc:1}), {callback: function(success, data) {
-				
-				task.description = data.desc;
-				this.performDrawEditTaskForm(containerName, task);
-				
-			}, scope: this});
-		} else {
-			this.performDrawEditTaskForm(containerName, task);
-		}
+		og.render_modal_form('', {c:'task', a:'edit_task', params: {id:task.id, use_ajx:1}});
 	}
 }
 
@@ -141,7 +147,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	var drawOptions = topToolbar.getDrawOptions();
 	var padding = (15/* * level*/) - 1;
 	
-	var html = "<div style='margin-left:" + padding + "px' class='ogTasksAddTaskForm'>";
+	var html = "<div style='margin-left:" + padding + "px; margin-right:" + padding + "px' class='ogTasksAddTaskForm'>";
 	
 	if (data.member_id && bottomToolbar.getDisplayCriteria().group_by.indexOf('dimension_') == 0) {
 		html += "<input type='hidden' id='ogTasksPanelATMemberId' value='" + data.member_id + "'>";
@@ -367,13 +373,20 @@ ogTasks.drawTaskForm = function(container_id, data){
 	div.id = 'ogTasksPanelAT';
 	div.innerHTML = html;
 	
-	var container = document.getElementById(container_id);
-	var next = container.nextSibling;
-	if (next)
-		container.parentNode.insertBefore(div, next);
-	else
-		container.appendChild(div);
 	
+	var modal_params = {
+			'escClose': true,
+			'overlayClose': true,
+			'closeHTML': '<a id="ogTasksPanelAT_close_link" class="modal-close"></a>'
+		};
+	if(data.position){
+		modal_params['maxWidth'] =($( window ).width()-$('#ogTasksPanelListATTitle').offset().left*2);
+		modal_params['position'] =[$('#ogTasksPanelListATTitle').offset().top -30,$('#ogTasksPanelListATTitle').offset().left -30];
+	}
+	
+	$.modal(div,modal_params);
+	  
+	  	 
 	//Create Ext components
 	var object_subtypes = ogTasks.ObjectSubtypes;
 	var co_types = [];
@@ -558,6 +571,10 @@ ogTasks.drawTaskForm = function(container_id, data){
 	});
 }
 
+ogTasks.closeModal = function(){
+	$('#ogTasksPanelAT_close_link').click();
+}
+
 ogTasks.addNewTaskShowMore = function(){
 
 	document.getElementById('ogTasksPanelATShowMore').style.display = 'none';
@@ -591,9 +608,11 @@ ogTasks.TaskFormShowAll = function(task_id){
 }
 
 ogTasks.hideAddNewTaskForm = function(){
+	ogTasks.closeModal();
+	
 	var oldForm = document.getElementById('ogTasksPanelAT');
 	if (oldForm)
-		oldForm.parentNode.removeChild(oldForm);
+		oldForm.parentNode.removeChild(oldForm);	
 }
 
 ogTasks.GetNewTaskParameters = function(wrapWith,task_id){
@@ -781,60 +800,7 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 		post: parameters,
 		callback: function(success, data) {
 			if (success && ! data.errorCode) {
-				var task = this.getTask(data.task.id);
-				if (!task){
-					var task = new ogTasksTask();
-					task.setFromTdata(data.task);
-					if (data.task.s) {
-						task.statusOnCreate = data.task.s;
-					}
-					task.isCreatedClientSide = true;
-					this.Tasks[this.Tasks.length] = task;
-					var parent = this.getTask(task.parentId);
-					if (parent){
-						task.parent = parent;
-						parent.subtasks[parent.subtasks.length] = task;
-					}
-
-					if (data.subtasks) {
-						for (i = 0; i < data.subtasks.length; i++) {
-							var task = new ogTasksTask();
-							task.setFromTdata(data.subtasks[i]);
-							if (data.subtasks[i].s) {
-								task.statusOnCreate = data.subtasks[i].s;
-							}
-							task.isCreatedClientSide = true;
-							this.Tasks[this.Tasks.length] = task;
-							var parent = this.getTask(task.parentId);
-							if (parent) {
-								task.parent = parent;
-								parent.subtasks[parent.subtasks.length] = task;
-							}
-						}
-					}
-				} else {
-					task.setFromTdata(data.task);
-				}
-				
-				if (data.subtasks) {
-					for (i=0; i<data.subtasks.length; i++) {
-						var subtask = this.getTask(data.subtasks[i].id);
-						if (subtask) {
-							subtask.setFromTdata(data.subtasks[i]);
-						}
-					}
-				}
-
-				if (data.parent) {
-					var parent = this.getTask(data.parent.id);
-					if (parent) {
-						parent.setFromTdata(data.parent);
-					}
-				}
-
-				this.redrawGroups = false;
-				this.draw();
-				this.redrawGroups = true;
+				this.drawTaskRowAfterEdit(data);
 			} else {
 				if (!data.errorMessage || data.errorMessage == '') {
 					og.err(lang("error adding task"));
@@ -843,7 +809,70 @@ ogTasks.SubmitNewTask = function(task_id,view_popup){
 		},
 		scope: this
 	});
+	
+	ogTasks.hideAddNewTaskForm();
 }
+
+
+ogTasks.drawTaskRowAfterEdit = function(data) {
+	if (!data || !data.task) return;
+	
+	var task = ogTasks.getTask(data.task.id);
+	if (!task){
+		var task = new ogTasksTask();
+		task.setFromTdata(data.task);
+		if (data.task.s) {
+			task.statusOnCreate = data.task.s;
+		}
+		task.isCreatedClientSide = true;
+		ogTasks.Tasks[ogTasks.Tasks.length] = task;
+		var parent = ogTasks.getTask(task.parentId);
+		if (parent){
+			task.parent = parent;
+			parent.subtasks[parent.subtasks.length] = task;
+		}
+
+		if (data.subtasks) {
+			for (i = 0; i < data.subtasks.length; i++) {
+				var task = new ogTasksTask();
+				task.setFromTdata(data.subtasks[i]);
+				if (data.subtasks[i].s) {
+					task.statusOnCreate = data.subtasks[i].s;
+				}
+				task.isCreatedClientSide = true;
+				ogTasks.Tasks[ogTasks.Tasks.length] = task;
+				var parent = ogTasks.getTask(task.parentId);
+				if (parent) {
+					task.parent = parent;
+					parent.subtasks[parent.subtasks.length] = task;
+				}
+			}
+		}
+	} else {
+		task.setFromTdata(data.task);
+	}
+	
+	if (data.subtasks) {
+		for (i=0; i<data.subtasks.length; i++) {
+			var subtask = ogTasks.getTask(data.subtasks[i].id);
+			if (subtask) {
+				subtask.setFromTdata(data.subtasks[i]);
+			}
+		}
+	}
+
+	if (data.parent) {
+		var parent = ogTasks.getTask(data.parent.id);
+		if (parent) {
+			parent.setFromTdata(data.parent);
+		}
+	}
+
+	ogTasks.redrawGroups = false;
+	ogTasks.draw();
+	ogTasks.redrawGroups = true;
+}
+
 
 
 ogTasks.buildAssignedToComboStore = function(companies, only_me, groups) {
@@ -1014,4 +1043,96 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 		value: ogTasks.selectedMilestone,
 		tabIndex:1000
 	});
+}
+
+
+// Add subtask functions for add/edit task form
+ogTasks.drawAddSubTaskInputs = function(genid, data) {
+		
+	if (!data) data = {};
+	if (!data.id) data.id = 0;
+	if (!data.name) data.name = '';
+	if (!data.assigned_to) data.assigned_to = 0;
+
+	if (!ogTasks.subtask_count) ogTasks.subtask_count = {};
+	if (!ogTasks.subtask_count[genid]) ogTasks.subtask_count[genid] = 0;
+	
+	var i = ogTasks.subtask_count[genid];
+	
+	var html = '<div class="subtask-inputs-container '+genid+'">';
+	html += '<div class="inputs-container">';
+	html += '<input type="hidden" name="task[subtasks]['+i+'][id]" value="'+ data.id +'">';
+	html += '<input type="text" name="task[subtasks]['+i+'][name]" value="'+ data.name +'" placeholder="'+ lang('task') +'" class="subtask-name">';
+	html += '<input type="hidden" name="task[subtasks]['+i+'][assigned_to]" value="'+ data.assigned_to +'" id="'+ genid + '_' + i +'_assigned_to">';
+	html += '<input type="hidden" name="task[subtasks]['+i+'][deleted]" value="0" id="'+ genid + '_' + i +'_deleted" class="deleted-hf">';
+	html += '</div>';
+	html += '<div id="'+ genid +'_'+ i +'assigned_to_container" class="assigned-container"></div>';
+	html += '<div class="remove-link-container">';
+	html += '<a href="#" class="link-ico ico-delete remove-subtask-link" onclick="this.parentNode.parentNode.style.display=\'none\'; document.getElementById(\''+genid +'_'+ i +'_deleted\').value=1; document.getElementById(\''+ genid +'undo_remove\').style.display=\'\'">'+ lang('remove') +'</a>';
+	html += '</div><div class="clear"></div></div>';
+	
+	$('#'+ genid +'subtasks').append(html);
+	
+	if (!ogTasks.usersStore || !ogTasks.usersStore[genid]) {
+		var parameters = og.contextManager.plainContext() ? {context: og.contextManager.plainContext()} : {};
+		og.openLink(og.getUrl('task', 'allowed_users_to_assign', parameters), {callback: function(success, d){
+			only_me = d.only_me ? d.only_me : null;
+			ogTasks.usersStore[genid] = ogTasks.buildAssignedToComboStore(d.companies, only_me, d.groups);
+			ogTasks.drawAddSubTaskAssignedToInput(ogTasks.usersStore[genid], data, genid, i);
+		}});
+	} else {
+		ogTasks.drawAddSubTaskAssignedToInput(ogTasks.usersStore[genid], data, genid, i);
+	}
+
+	ogTasks.subtask_count[genid] = ogTasks.subtask_count[genid] + 1;
+}
+
+ogTasks.drawAddSubTaskAssignedToInput = function(usersStore, data, genid, i) {
+	only_me = data.only_me ? data.only_me : null;
+	var stAssignCombo = new Ext.form.ComboBox({
+		subtask_index: i,
+		renderTo: genid +'_'+ i +'assigned_to_container',
+		name: 'subtask_assigned_to_' + i,
+		id: genid + 'subtask_assigned_to_' + i,
+		value: data.assigned_to,
+		store: usersStore,
+		displayField:'text',
+        mode: 'local',
+        cls: 'assigned-to-combo',
+        triggerAction: 'all',
+        selectOnFocus: true,
+        valueField: 'value',
+        emptyText: (lang('select user or group') + '...'),
+	});
+	stAssignCombo.on('select', function(combo, record, index) {
+		var hf = document.getElementById(genid + '_' + combo.subtask_index + '_assigned_to');
+		if (hf) hf.value = combo.getValue();
+	});
+}
+
+ogTasks.applyAssignedToSubtasksInTaskForm = function(genid) {
+	if ($('#'+ genid +'taskFormApplyAssignee').attr('checked') == 'checked') {
+		var combos_aux = $('.assigned-to-combo');
+		for (var i=0; i<combos_aux.length; i++) {
+			if (combos_aux[i].id.indexOf(genid + 'subtask_assigned_to_') >= 0) {
+				
+				var combo = Ext.getCmp(combos_aux[i].id);
+				var original_assigned = document.getElementById(genid + 'taskFormAssignedTo');
+				if (original_assigned) {
+					combo.setValue(original_assigned.value);
+					var idx = combos_aux[i].id.substring(combos_aux[i].id.lastIndexOf('_')+1);
+					$('#'+ genid +'_'+ idx +'_assigned_to').val(original_assigned.value);
+				}
+			}
+		}
+	}
+}
+
+ogTasks.undoRemoveSubtasks = function(genid) {
+	$('.'+ genid +'.subtask-inputs-container').show();
+	$('#'+ genid +'undo_remove').hide();
+	var inputs = $('.'+ genid +'.subtask-inputs-container input.deleted-hf');
+	for (var i=0; i<inputs.length; i++) {
+		$(inputs[i]).val(0);
+	}
 }

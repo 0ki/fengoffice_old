@@ -3,6 +3,7 @@
 <html>
 <head>
 	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getFirstName()) . ' - ' . PRODUCT_NAME ?></title>
+	
 	<?php $favicon_name = 'favicon.ico';
 		Hook::fire('change_favicon', null, $favicon_name); ?>
 	<?php echo link_tag(with_slash(ROOT_URL).$favicon_name, "rel", "shortcut icon") ?>
@@ -68,6 +69,11 @@
 	}
 	echo add_javascript_to_page("ckeditor/ckeditor.js");
 	
+	$html_templates = include "html_templates.php";
+	foreach ($html_templates as $template) {
+		include $template;
+	}
+	
 	// Include plguin specif js
 	foreach (Plugins::instance()->getActive() as $p) {
 		/* @var $p Plugin */
@@ -86,7 +92,6 @@
 		    position: absolute;
 		    top: 45%;
 			color: #333333;
-			font-family: verdana,arial,helvetica,sans-serif;
     		line-height: 150%;
 		}
 	</style>
@@ -104,209 +109,77 @@
 <?php 
 echo render_page_javascript();
 echo render_page_inline_js();
-$use_owner_company_logo = owner_company()->hasLogo();
+$use_owner_company_logo = owner_company()->hasPicture();
 $show_owner_company_name_header = config_option("show_owner_company_name_header");
 ?>
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
-            <div style="float: left; cursor:pointer;" onclick="og.clearDimensionSelection();">
-                <div id="logodiv">
-                    <div style="" id="logo_company_margin_top">
-                        <img src="<?php echo ($use_owner_company_logo) ? owner_company()->getLogoUrl() : 's.gif' ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
-                        <script>
-                            $('#img_company_margin').load(function() {
-                                var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
-                                var magin_top = "-" + margin + "px";
-                                $("#logo_company_margin_top").css({'margin-top':magin_top, 'position': 'relative', 'top': '50%'});
-                                $("#img_company_margin").show();
-                            });
-                        </script>
-                    </div>
-                    <div style="float: left;">
-                        <?php if(!$use_owner_company_logo){?>
-                        <a id="change-logo-link" style="color: <?php echo "#".config_option('brand_colors_head_font')?>; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
-                        <?php } ?>
-                        <?php if($show_owner_company_name_header){?>
-                        <h1 style="padding-top:15px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
-                        <?php } ?>
-                    </div>
-                </div>
-                
-            </div>
-                        
-            </table>
-		<div class="header-content-right">
-			<div id="searchbox">
-				<form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get" id="form_search">
-					<table>
-						<tr>
-							<td>
-								<input name="search_for_in" placeholder="<?php echo lang('search') . "..."?>" id="search_for_in"/>
-								<input type="hidden" name="c" value="search" />
-								<input type="hidden" name="a" value="search" />
-								<input type="hidden" name="current" value="search" />
-								<input type="hidden" id="hfVars" name="vars" value="dashboard" />
-								<input style="display:none" id="searchButtonReal" type="submit" />
-								<input style="display:none" name="search_for" id="search_for"/>
-							</td>
-							<td>
-								<div class="btn-group">
-									<button class="btn" style="height: 21px;" type="button" id="searchButton"><span style="margin-top: -3px; display: block;"><?php echo lang('search')?></span></button>
-									<a class="btn dropdown-toggle" style="height: 11px;" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-									<ul class="dropdown-menu">
-										<li><a href="<?php echo get_url('search', 'search', array('advanced' => true))?>"><?php echo lang('advanced search')?></a></li>
-									</ul>
-								</div>
-							</td>
-							<td style="padding-left:10px">
-								<div id="quickAdd" style="display: none"></div>
-							</td>
-						</tr>
-					</table>
-				</form>
-			</div>			
-			<div id="userboxWrapper">
-				<h2>
-				<a href="#" onclick="showUserOptionsPanel()"><?php echo clean(logged_user()->getObjectName()); ?></a></h2>
-				<a href="#" class="account" onclick="showUserOptionsPanel()">&nbsp;</a>								
+	  <table style="width:100%;"><tr><td id="left-header-cell">
+		<div style="float: left;" class="header-content-left">
+			<div id="logodiv">
+				<div style="" id="logo_company_margin_top">
+					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl() : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
+					<script>
+						$('#img_company_margin').load(function() {
+							var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
+							$("#img_company_margin").show();
+						});
+					</script>
+				</div>
+				<div style="float: left;">
+				<?php if($show_owner_company_name_header){?>
+					<h1 style="padding-top:10px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
+				<?php } ?>
+				</div>
 			</div>
+		</div>
+		
+	  </td><td id="center-header-cell">
+	
+		<div id="headerBreadcrumb" class="header-breadcrumb-container">
+			<div class="header-breadcrumb home" onclick="og.Breadcrumbs.resetSelection();"><?php echo lang('menu home')?></div>
+			<div class="breadcrumb-members">
+				<div class="primary-breadcrumb"></div>
+				<div class="secondary-breadcrumb"></div>
+			</div>
+		</div>
+		
+	  </td><td id="right-header-cell">
+		
+		<div class="header-content-right">			
+			<ul class="options_menu">
+				<li>
+					<div class="gen-search">
+					<?php
+						// General search selector parameters
+						if (!isset($genid)) $genid = gen_id();
+						$container_id = $genid . '_general_search';
+						$extra_param = '0';
+						$search_function = 'ogSearchSelector.generalSearch';
+						$select_function = 'ogSearchSelector.onGeneralSearchResultSelect';
+						$search_placeholder = lang('search');
+						$result_limit = '5';
+						$search_minLength = 0;
+						$search_delay = 1100;
+						
+						include get_template_path("search_selector_view", "search_selector");			
+					?>
+					</div>
+				</li>	
+			  	<li id="userboxWrapper" onclick="showUserOptionsPanel()">			  	
+					<img src="<?php echo logged_user()->getPictureUrl(); ?>" alt="" />
+					<a id="userLink" style="margin-right: 5px;" href="#" ><?php echo clean(logged_user()->getObjectName()); ?></a>	
+					<div class="account"></div>										
+			  	</li>			  				  
+			</ul>
 			<div class="clear"></div>
 			<?php echo render_user_box(logged_user())?>
 		</div>
 		<?php Hook::fire('render_page_header', null, $ret); 
 			  Hook::fire('on_page_load', 'mail', $ret);
 		?>
-        <script>
-            
-            /*** User Settings Panel ***/ 
-            
-            /**
-            * Slide to show/hide user setting panel
-            */
-            function showUserOptionsPanel()
-            {
-                $('div.user-box-actions').slideToggle();  
-            }
-            
-            /**
-            * Save selected colors to Organization settings
-            */            
-            function saveBrandColors (element)
-            {
-                element.disabled = true;
-                var parameters = {};
-                $('div.theme-color-picker form input[type=text]').each(function(inx, obj){
-                    parameters[obj['name']] = obj.value;
-                });
-                $.ajax({
-    				data: parameters,	
-    				url: og.makeAjaxUrl(og.getUrl('administration','scolors')),
-    				dataType: "json",
-    				type: "POST",
-    				complete: function(data){
-	                	$('li.theme-color-picker-wrapper').slideUp();
-	                    element.disabled = false;
-                	}
-                });
-            }
-                        
-            /*** Brand color-picker ***/
-			var brand_colors = {
-				head_back: '<?php echo config_option('brand_colors_head_back')?>',
-				head_font: '<?php echo config_option('brand_colors_head_font')?>',
-				tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
-				tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
-            };
-            
-            /**
-            * Create style sheet for current colors
-            */
-            function createBrandColorsSheet ()
-            {
-                var header_back = brand_colors['head_back'];
-                var tabs_back = brand_colors['tabs_back'];
-                var tabs_font = brand_colors['tabs_font'];
-                var header_font = brand_colors['head_font'];
-
-                var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '}';
-                cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
-                cssRules += '#header, #userboxWrapper h2 a {background-color: #' + header_back + '}';
-                cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + tabs_font + '}';
-                cssRules += 'ul.x-tab-strip li.x-tab-strip-active {background-color: #' + tabs_font + ' !important}';
-                cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + tabs_back + ' !important}';
-                cssRules += '#logodiv h1, #userboxWrapper h2 a, div.og-loading {color: #' + header_font + '}';
-				// dimension title
-                cssRules += '.x-accordion-hd {background-color: #' + tabs_back + '}';
-				// selected member
-				var node_selected_back = color_utils.make_transparent_color('#'+tabs_back);
-				if (node_selected_back) cssRules += '.x-tree-node .x-tree-selected {background-color: '+node_selected_back+'; border-color: '+color_utils.darker_html_color(node_selected_back)+'}';
-				// ckeditor back color
-                cssRules += '.cke_wrapper {background-color: #'+tabs_back+' !important;}';
-
-                var styleElement = document.createElement("style");
-                styleElement.type = "text/css";
-                if (styleElement.styleSheet) {
-                    styleElement.styleSheet.cssText = cssRules;
-                } else {
-                    styleElement.appendChild(document.createTextNode(cssRules));
-                }
-                document.getElementsByTagName("head")[0].appendChild(styleElement);
-            }
-            
-            /**
-            * OnReady events
-            */ 
-            $(document).ready(
-                function() {
-                    createBrandColorsSheet();
-                    $('.back-color-value').val('#'+brand_colors['head_back']);
-                    $('.front-color-value').val('#'+brand_colors['tabs_back']);
-                    $('.face-font-color-value').val('#'+brand_colors['tabs_font']);
-                    $('.title-font-color-value').val('#'+brand_colors['head_font']);
-
-                    $('.back-color-value, .front-color-value, .face-font-color-value, .title-font-color-value').modcoder_excolor({
-                       shadow : false,
-                       background_color : '#eeeeee',
-                       backlight : false,
-                       callback_on_ok : function() {
-                            brand_colors['head_back'] = $('.back-color-value').val().substring(1,7);
-                            brand_colors['tabs_back'] = $('.front-color-value').val().substring(1,7);
-                            brand_colors['tabs_font'] = $('.face-font-color-value').val().substring(1,7);
-                            brand_colors['head_font'] = $('.title-font-color-value').val().substring(1,7);
-                            createBrandColorsSheet();
-                       }
-                    });
-                    
-                    $("#searchButton").click(function () {
-						if($("#search_for_in").val() != ""){
-                        	$("#searchButtonReal").click();                            
-                        }                  
-                    });
-                    
-                    $("#advancedSearch").click(function() {
-                        $("#searchButtonReal").click();
-                    });
-
-                    $("#form_search").submit(function (e){
-						$("#search_for").val($("#search_for_in").val());
-                    	$("#searchButton").prop("disabled",true);
-                    	$("#search_for_in").prop("disabled",true);
-                    });
-
-					//if enter key press on chrome submit the form
-                    if (navigator.userAgent.toLowerCase().indexOf('chrome')>-1){
-                    	$('#form_search').keypress(function(e){
-	                        if(e.which == 13){
-	                            if($("#search_for_in").val() != ""){
-	                            	$("#searchButtonReal").click();                            
-	                            }        
-	                        }
-	                    });
-                    }
-                }
-            );
-        </script>
+	  </td></tr></table>
 	</div>
 </div>
 <!-- /header -->
@@ -329,7 +202,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 
 <script>
 		
-	
+
 // OG config options
 og.hostName = '<?php echo ROOT_URL ?>';
 og.sandboxName = <?php echo defined('SANDBOX_URL') ? "'".SANDBOX_URL."'" : 'false'; ?>;
@@ -340,14 +213,15 @@ if ($initialWS === "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);
 }
 ?>
+
 og.initialWorkspace = '<?php echo $initialWS ?>';
 <?php $qs = (trim($_SERVER['QUERY_STRING'])) ? "&" . $_SERVER['QUERY_STRING'] : "";  ?>
 og.queryString = '<?php echo $_SERVER['QUERY_STRING'] ?>';
+
 og.initialURL = '<?php echo ROOT_URL ."/?".$_SERVER['QUERY_STRING'] ?>';
 <?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php }
- 
 if (user_config_option("autodetect_time_zone", null)) {
 	$now = DateTimeValueLib::now();
 ?>
@@ -358,7 +232,12 @@ if (user_config_option("autodetect_time_zone", null)) {
 og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
 og.ownerCompany = {
 	id: '<?php echo owner_company()->getId()?>',
-	name: '<?php clean(owner_company()->getObjectName())?>'
+	name: '<?php echo clean(owner_company()->getObjectName())?>',
+	logo_url: '<?php echo (owner_company()->getPictureFile() != '' ? owner_company()->getPictureUrl() : '')?>',
+	email: '<?php echo clean(owner_company()->getEmailAddress('work')) ?>',
+	phone: '<?php echo clean(owner_company()->getPhoneNumber('work')) ?>',
+	address: '<?php echo clean(owner_company()->getStringAddress('work')) ?>',
+	homepage: '<?php echo clean(owner_company()->getWebpageUrl('work')) ?>'
 };
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
@@ -393,7 +272,14 @@ og.config = {
 	'enable_tasks_module': <?php echo json_encode(module_enabled("tasks")) ?>,
 	'enable_weblinks_module': <?php echo json_encode(module_enabled('weblinks')) ?>,
 	'enable_time_module': <?php echo json_encode(module_enabled("time") && can_manage_time(logged_user())) ?>,
-	'enable_reporting_module': <?php echo json_encode(module_enabled("reporting")) ?>
+	'enable_reporting_module': <?php echo json_encode(module_enabled("reporting")) ?>,
+	'enabled_dimensions': Ext.util.JSON.decode('<?php echo json_encode(config_option('enabled_dimensions')) ?>'),
+	'brand_colors': {
+		brand_colors_head_back: '<?php echo config_option('brand_colors_head_back')?>',
+		brand_colors_head_font: '<?php echo config_option('brand_colors_head_font')?>',
+		brand_colors_tabs_back: '<?php echo config_option('brand_colors_tabs_back')?>',
+		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
+	}
 };
 og.preferences = {
 	'viewContactsChecked': <?php echo json_encode(user_config_option('viewContactsChecked')) ?>,
@@ -417,6 +303,63 @@ og.preferences = {
 	'can_modify_navigation_panel': <?php echo user_config_option('can_modify_navigation_panel') ? '1' : '0' ?>,
 	'show_birthdays_in_calendar': <?php echo user_config_option('show_birthdays_in_calendar') ? '1' : '0' ?>
 };
+
+og.userRoles = {};
+<?php $all_roles = PermissionGroups::instance()->getNonPersonalSameLevelPermissionsGroups();
+	foreach ($all_roles as $role) {?>
+		og.userRoles[<?php echo $role->getId()?>] = {code:'<?php echo $role->getName() ?>', name:'<?php echo str_replace("'", "\'", lang($role->getName()))?>', parent:'<?php echo $role->getParentId()?>'};
+<?php } ?>
+
+og.userTypes = {};
+<?php $all_user_types = PermissionGroups::instance()->getUserTypeGroups();
+	foreach ($all_user_types as $type) {?>
+		og.userTypes[<?php echo $type->getId()?>] = {code:'<?php echo $type->getName() ?>', name:'<?php echo str_replace("'", "\'", lang($type->getName()))?>'};
+<?php } ?>
+og.defaultRoleByType = {};
+<?php $default_roles_by_type = PermissionGroups::instance()->getDefaultRolesByType();
+	foreach ($default_roles_by_type as $type => $role) {?>
+		og.defaultRoleByType[<?php echo $type?>] = <?php echo $role?>;
+<?php } ?>
+
+<?php
+$rolePermissions = SystemPermissions::getAllRolesPermissions();
+echo "og.userRolesPermissions =".json_encode($rolePermissions).";";
+$maxRolePermissions = MaxSystemPermissions::getAllMaxRolesPermissions();
+echo "og.userMaxRolesPermissions =".json_encode($maxRolePermissions).";";
+?>
+
+<?php 
+$tabs_allowed = TabPanelPermissions::getAllRolesModules();
+echo "og.tabs_allowed=".json_encode($tabs_allowed).";";
+$guest_groups = PermissionGroups::instance()->getGuestPermissionGroups();
+echo "og.guest_permission_group_ids = [];";
+foreach ($guest_groups as $gg) {
+	echo "og.guest_permission_group_ids.push(".$gg->getId().");";
+}
+?>
+
+<?php 
+$allUsers = Contacts::getAllUsers(null, true);
+foreach($allUsers as $usr) {
+    $usr_info = $usr->getArrayInfo();
+    $allUsers_array[$usr->getId()] = $usr_info;
+}
+?>
+og.allUsers =  <?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($allUsers_array)))) ?>;
+
+<?php 
+$object_types = ObjectTypes::getAllObjectTypes();
+
+foreach ($object_types as $ot) {
+	$types[$ot->getId()] = array(
+								"name" => $ot->getName(),
+								"icon" => $ot->getIconClass(),
+								"type" => $ot->getType()
+							);
+}
+?>
+og.objectTypes =  <?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($types)))) ?>;
+
 <?php
 	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');
 	foreach ($listing_preferences as $lp) {
@@ -433,7 +376,7 @@ Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin
 og.musicSound = new Sound();
 og.systemSound = new Sound();
 
-var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
+
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 var isActiveBrowserTab = true;
@@ -468,8 +411,7 @@ setInterval(function() {
 
 				//reload og.dimensions
 				if (data.reload_dims) {
-					og.dimensions = {};
-					og.dimensions_check_date = new Date();					
+					ogMemberCache.reset_dimensions_cache();										
 				}
 			}
 		});
@@ -499,12 +441,13 @@ og.menuPanelCollapsed = false;
 
 og.dimensionPanels = [
 	<?php
+	$enabled_dimensions = config_option("enabled_dimensions");
 	$dimensionController = new DimensionController();
 	$first = true; 
 	$dimensions = $dimensionController->get_context();
 	foreach ( $dimensions['dimensions'] AS $dimension ):
-	 	if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden ) {
-	 		continue ;
+	 	if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden || !in_array($dimension->getId(), $enabled_dimensions)) {
+	 		continue;
 	 	}
 	 		
 		/* @var $dimension Dimension */
@@ -517,6 +460,7 @@ og.dimensionPanels = [
 			reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReload($dimension->getId()) ) ; ?>,
 			xtype: 'member-tree',
 			id: 'dimension-panel-<?php echo $dimension->getId() ; ?>',
+			lines: false,
 			dimensionId: <?php echo $dimension->getId() ; ?>,
 			dimensionCode: '<?php echo $dimension->getCode() ; ?>',
 			dimensionOptions: <?php echo ( $dimension->getOptions() ) ?  $dimension->getOptions() : '""' ; ?>,
@@ -572,8 +516,7 @@ og.objPickerTypeFilters = [];
 		}
 	}
 ?>
-	var searchForm = document.getElementById("searchbox").getElementsByTagName("form")[0] ;
-	H5F.setup(searchForm);
+
 
 	og.additional_list_columns = [];
 	og.additional_on_dimension_object_click = [];
@@ -604,7 +547,16 @@ og.dimension_object_type_contents = [];
 	} 
 ?>
 
+function showUserOptionsPanel() {
+    $('div.user-box-actions').slideToggle();  
+}
+
+og.getting_started_step = '<?php echo config_option('getting_started_step') ?>';
+
 $(document).ready(function() {
+
+	og.createBrandColorsSheet(og.config.brand_colors);
+	
 	var logo_link = document.getElementById("change-logo-link");
 	if (logo_link) {
 		logo_link.onclick = function(e){
@@ -634,16 +586,35 @@ $(document).ready(function() {
 			}
 		}
 	});
+
+	var all_steps = 99;
+	if (og.getting_started_step < all_steps) {
+		og.more_panel_int = setInterval(function() {
+			var more_panel = Ext.getCmp('more-panel');
+			if (more_panel) {
+				var tp = Ext.getCmp('tabs-panel');
+				if (tp) tp.setActiveTab(more_panel);
+				clearInterval(og.more_panel_int);
+			}
+		}, 500);
+	}
+
+	setTimeout(function() {
+		og.Breadcrumbs.resizeHeaderBreadcrumbs();
+	}, 250);
 	
-		
+	$(window).resize(function() {
+		og.Breadcrumbs.resizeHeaderBreadcrumbs();
+		og.checkAndAdjustTabsSize();
+	});	
 });
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
 
 	<div id="quick-form" > 
-            <div style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();"><?php echo lang('close')?></a></div>
-            <div class="close" style="float: right;"></div>
+            <div id="close_text" style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();"><?php echo lang('close')?></a></div>
+            <div id="close_ico" class="close" style="float: right;"></div>
             <div class="form-container"></div>
 	</div>
 </body>

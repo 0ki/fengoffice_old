@@ -235,7 +235,7 @@ og.OverviewManager = function() {
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -243,7 +243,7 @@ og.OverviewManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -374,7 +374,7 @@ og.OverviewManager = function() {
 	//alert(quickAdd);
 	actions = {
 		newCO: new og.QuickAdd({
-			menu: quickAdd.menu 
+			//menu: quickAdd.menu 
 		}) ,
 		
 		del: new Ext.Action({
@@ -459,6 +459,7 @@ og.OverviewManager = function() {
 		stateful: og.preferences['rememberGUIState'],
 		stripeRows: true,
 		closable: true,
+		loadMask: true,
 		id: 'overview-manager',
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
@@ -513,6 +514,7 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		Ext.apply(this.store.baseParams, {
 		      context: og.contextManager.plainContext()			
 		});
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

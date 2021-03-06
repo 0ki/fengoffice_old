@@ -1,15 +1,19 @@
 <div class="adminConfiguration" style="height:100%;background-color:white">
 <form class="internalForm" action="<?php echo $category->getDefaultUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
-	<div class="adminHeader">
-		<div class="adminTitle">
-			<table style="width:535px"><tr><td>
+	<div class="coInputHeader">
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle">
 				<?php echo $category->getDisplayName() ?>
-			</td><td style="text-align:right">
-				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
-			</td></tr></table>
+			</div>
 		</div>
+		<div class="coInputButtons">
+			<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button type="reset" class="submit"><?php echo lang('reset') ?></button>
+		</div>
+		<div class="clear"></div>
+	  </div>
 	</div>
-	<div class="adminSeparator"></div>
+	
 	<div class="adminMainBlock">
 
 	<?php if(isset($options) && is_array($options) && count($options)) { ?>
@@ -30,7 +34,7 @@
 					</div>
 				<?php } // foreach ?>
 			</div>
-			<?php echo submit_button(lang('save')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
+			<?php echo submit_button(lang('save')) ?>&nbsp;<button type="reset" class="submit"><?php echo lang('reset') ?></button>
 	<?php } else { ?>
 		<p><?php echo lang('config category is empty') ?></p>
 	<?php } // if ?>

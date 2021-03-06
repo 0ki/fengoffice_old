@@ -50,7 +50,14 @@ class WebpageController extends ApplicationController {
 		} // if
 
 		$webpage = new ProjectWebpage();
-
+		
+		if(is_array(array_var($_POST, 'webpage'))) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+		}
 		$webpage_data = array_var($_POST, 'webpage');
 		
 		if(is_array(array_var($_POST, 'webpage'))) {
@@ -70,12 +77,12 @@ class WebpageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				//link it!
-                                $object_controller = new ObjectController();
-                                $object_controller->add_subscribers($webpage);
-                                $object_controller->add_to_members($webpage, $member_ids);
-                                $object_controller->link_to_new_object($webpage);
+				$object_controller = new ObjectController();
 				$object_controller->add_subscribers($webpage);
-                                $object_controller->add_custom_properties($webpage);
+				$object_controller->add_to_members($webpage, $member_ids);
+				$object_controller->link_to_new_object($webpage);
+				$object_controller->add_subscribers($webpage);
+				$object_controller->add_custom_properties($webpage);
 
 				DB::commit();
 				ApplicationLogs::createLog($webpage, ApplicationLogs::ACTION_ADD);
@@ -83,7 +90,11 @@ class WebpageController extends ApplicationController {
 
 				flash_success(lang('success add webpage', $webpage->getObjectName()));
 				ajx_current("back");
-				// Error...
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -126,6 +137,11 @@ class WebpageController extends ApplicationController {
 
 		$webpage_data = array_var($_POST, 'webpage');
 		if(!is_array($webpage_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$webpage_data = array(
 	          'url' => $webpage->getUrl(),
 	          'name' => $webpage->getObjectName(),
@@ -147,10 +163,10 @@ class WebpageController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				
 				$object_controller = new ObjectController();
-                                $object_controller->add_to_members($webpage, $member_ids);
-                                $object_controller->link_to_new_object($webpage);
+				$object_controller->add_to_members($webpage, $member_ids);
+				$object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
-                                $object_controller->add_custom_properties($webpage);
+				$object_controller->add_custom_properties($webpage);
 
 				
 				$webpage->resetIsRead();
@@ -160,7 +176,11 @@ class WebpageController extends ApplicationController {
 				
 				flash_success(lang('success edit webpage', $webpage->getObjectName()));
 				ajx_current("back");
-
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -315,6 +335,9 @@ class WebpageController extends ApplicationController {
 			}
 		}
 		
+		$extra_conditions = "";
+		Hook::fire("listing_extra_conditions", null, $extra_conditions);
+		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		
 		$res =  ProjectWebpages::instance()->listing(array(
@@ -322,6 +345,7 @@ class WebpageController extends ApplicationController {
 			"limit" => $limit,
 			"order" => $order , 
 			"order_dir" => $order_dir,
+			"extra_conditions" => $extra_conditions,
 			'count_results' => false,
 			'only_count_results' => $only_count_result
 		));

@@ -314,7 +314,7 @@
 	 * @param $object_type_id
 	 * @return boolean
 	 */
-	function can_access(Contact $user, $members, $object_type_id, $access_level, $allow_super_admin = true) {
+	function can_access(Contact $user, $members, $object_type_id, $access_level, $allow_super_admin = true){
 		if($allow_super_admin && $user->isAdministrator()){
 			return true;
 		}
@@ -343,6 +343,7 @@
 				return $return;
 			}
 			
+			$enabled_dimensions = config_option('enabled_dimensions');
 			$dimension_permissions = array();
 			foreach($members as $k => $m){
 				if (!$m instanceof Member) {
@@ -351,7 +352,7 @@
 				}
 				
 				$dimension = $m->getDimension();
-				if(!$dimension->getDefinesPermissions()){
+				if(!$dimension->getDefinesPermissions() || !in_array($dimension->getId(), $enabled_dimensions)){
 					continue;
 				}
 				$dimension_id = $dimension->getId();
@@ -391,6 +392,7 @@
 			// check that user has permissions in all mandatory query method dimensions
 			$mandatory_count = 0;
 			foreach ($dimension_query_methods as $dim_id => $qmethod) {
+				if (!in_array($dim_id, $enabled_dimensions)) continue;
 				if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY) {
 					$mandatory_count++;
 					if (!array_var($dimension_permissions, $dim_id)) {
@@ -458,9 +460,11 @@
 			$dimension_query_methods = array();
 			$dimension_permissions = array();
 			
+			$enabled_dimensions = config_option('enabled_dimensions');
+			
 			$dimension_info = array();
 			foreach($members as $k => $m) {
-				if (!$m instanceof Member) {
+				if (!$m instanceof Member || !in_array($m->getDimensionId(), $enabled_dimensions)) {
 					unset($members[$k]);
 					continue;
 				}
@@ -495,6 +499,7 @@
 			
 			$mandatory_dimension_ids = array();
 			foreach ($dimension_query_methods as $dim_id => $qmethod) {
+				if (!in_array($dim_id, $enabled_dimensions)) continue;
 				if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY) {
 					$mandatory_dimension_ids[] = $dim_id;
 				}
@@ -513,6 +518,7 @@
 				// No mandatory dimensions involved => return all allowed permission groups
 				$other_pgs = array();
 				foreach ($dimension_query_methods as $dim_id => $qmethod) {
+					if (!in_array($dim_id, $enabled_dimensions)) continue;
 					if ($qmethod == DIMENSION_PERMISSION_QUERY_METHOD_NOT_MANDATORY) {
 						$other_pgs = array_merge($other_pgs, $dimension_permissions[$dim_id]);
 					}
@@ -569,15 +575,16 @@
 		ini_set('memory_limit', '512M');
 		$member_permissions = array();		
 		$dimensions = array();
-		$dims = Dimensions::findAll();
+		$dims = Dimensions::findAll(array('order' => 'default_order'));
 		$members = array();
 		$member_types = array();
 		$allowed_object_types = array();
 		$allowed_object_types_by_member_type[] = array();
 		$root_permissions = array();
+		$enabled_dimensions = config_option("enabled_dimensions");
 		
 		foreach($dims as $dim) {
-			if ($dim->getDefinesPermissions()) {
+			if ($dim->getDefinesPermissions() && in_array($dim->getId(), $enabled_dimensions)) {
 				$dimensions[] = $dim;
 				$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id=0 ORDER BY name ASC");
 				$tmp_mem_ids = array();
@@ -730,7 +737,7 @@
 					
 			// save module permissions
 			try {
-				TabPanelPermissions::clearByPermissionGroup($pg_id);
+				TabPanelPermissions::clearByPermissionGroup($pg_id, true);
 				if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
 					foreach($mod_permissions_data as $tab_id => $val) {
 						$tpp = new TabPanelPermission();
@@ -746,7 +753,7 @@
 			
 			$root_permissions_sharing_table_delete = array();
 			$root_permissions_sharing_table_add = array();
-			if (logged_user() instanceof Contact && can_manage_security(logged_user()) && logged_user()->isAdminGroup()) {
+			if (logged_user() instanceof Contact && can_manage_security(logged_user())) {
 				try {
 					
 					// save system permissions
@@ -760,6 +767,32 @@
 					Hook::fire('add_user_permissions', $pg_id, $other_permissions);
 					foreach ($other_permissions as $k => $v) {
 						$system_permissions->setColumnValue($k, false);
+					}
+					
+					// check max permissions for role, in case of modifying user's permissions
+					$role_id = "-1";
+					$tmp_contact = Contacts::findOne(array('conditions' => 'permission_group_id = '.$pg_id));
+					if ($tmp_contact instanceof Contact) {
+						$role_id = $tmp_contact->getUserType();
+					}
+					$max_role_system_permissions = MaxSystemPermissions::findOne(array('conditions' => 'permission_group_id = '.$role_id));
+					if ($max_role_system_permissions instanceof MaxSystemPermission) {
+						foreach ($sys_permissions_data as $col => &$val) {
+							$max_val = $max_role_system_permissions->getColumnValue($col);
+							if (!$max_val) {
+								unset($sys_permissions_data[$col]);
+							}
+						}
+					}
+					// don't allow to write emails for collaborators and guests
+					if ($tmp_contact instanceof Contact) {
+						$user_type_name = $tmp_contact->getUserTypeName();
+						if (!in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'))) {
+							$mail_ot = ObjectTypes::findByName('mail');
+							if ($mail_ot instanceof ObjectType) {
+								DB::executeAll("UPDATE ".TABLE_PREFIX."contact_member_permissions SET can_write=0, can_delete=0 WHERE object_type_id=".$mail_ot->getId()." AND permission_group_id=$pg_id");
+							}
+						}
 					}
 					
 					$sys_permissions_data['can_task_assignee'] = !$is_guest;
@@ -843,6 +876,10 @@
 			
 			if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
 				try {
+					$tmp_contact = Contacts::findOne(array('conditions' => 'permission_group_id = '.$pg_id));
+					if ($tmp_contact instanceof Contact) $user_type_name = $tmp_contact->getUserTypeName();
+					$mail_ot = ObjectTypes::findByName('mail');
+					
 					$sql_insert_values = "";
 					$allowed_members_ids= array();
 					foreach ($permissions as $perm) {
@@ -865,6 +902,13 @@
 								$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 							}
 							if ($save_cmps) {
+								// don't allow to write emails for collaborators and guests
+								if ($tmp_contact instanceof Contact && !in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'))) {
+									if ($mail_ot instanceof ObjectType && $perm->o == $mail_ot->getId()) {
+										$perm->d = 0;
+										$perm->w = 0;
+									}
+								}
 								$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
 							}
 							
@@ -1063,6 +1107,49 @@
 		);
 	}
 	
+	function get_default_member_permission($parent,$permission_parameters) {
+		//inherit permission from parent
+		if ($parent != 0 && config_option('inherit_permissions_from_parent_member')) {
+			$parent_member = Members::getMemberById($parent);
+			if ($parent_member instanceof Member) {
+				$parent_permissions = permission_member_form_parameters($parent_member);
+		
+				$permission_parameters['permission_groups'] = $parent_permissions['permission_groups'];
+				$permission_parameters['member_permissions'] = $parent_permissions['member_permissions'];
+			}
+		}
+			
+		// Add default permissions for executives, managers and administrators
+		if (config_option('add_default_permissions_for_users')) {
+			if ($parent == 0) {
+				$user_types = implode(',', config_option('give_member_permissions_to_new_users'));
+				if (trim($user_types) != "") {
+					$users = Contacts::findAll(array('conditions' => "user_type IN (".$user_types.")"));
+					
+					foreach ($users as $user) {
+						if (!isset($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) || count($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) == 0) {
+							$user_pg = array();
+							foreach ($permission_parameters['allowed_object_types'] as $ot){
+								$role_perm = RoleObjectTypePermissions::findOne(array('conditions' => array("role_id=? AND object_type_id=?", $user->getUserType(), $ot->getId())));
+								$user_pg[] = array(
+										'o' => $ot->getId(),
+										'w' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanWrite()?1:0) : 0,
+										'd' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanDelete()?1:0) : 0,
+										'r' => $role_perm instanceof RoleObjectTypePermission ? 1 : 0,
+								);
+							}
+							
+							$permission_parameters['member_permissions'][$user->getPermissionGroupId()] = $user_pg;
+						}
+					}
+				}
+			}
+		}
+		
+		return $permission_parameters;
+		
+	}
+	
 	function save_member_permissions($member, $permissionsString = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true, $update_contact_member_cache = true) {
 		@set_time_limit(0);
 		ini_set('memory_limit', '1024M');
@@ -1174,7 +1261,7 @@
 		$members = array();
 		if (isset($context) && is_array($context)) {
 			foreach ($context as $selection) {
-				if ($selection instanceof Member && $selection->getDimension()->getDefinesPermissions()) {
+				if ($selection instanceof Member && $selection->getDimension()->getDefinesPermissions() && $selection->getDimension()->getIsManageable()) {
 					$members[] = $selection;
 				}
 			}
@@ -1326,7 +1413,7 @@
 		} else {
 
 			// populate permission groups
-			$permissions_decoded = json_decode($permissionsString);
+		/*	$permissions_decoded = json_decode($permissionsString);
 			$to_insert = array();
 			$to_delete = array();
 			if (is_array($permissions_decoded)) {
@@ -1346,7 +1433,7 @@
 			if (count($to_delete) > 0) {
 				$where = implode(' OR ', $to_delete);
 				DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
-			}
+			}*/
 			
 			// save permissions in background
 			$perm_filename = ROOT ."/tmp/uperm_".gen_id();

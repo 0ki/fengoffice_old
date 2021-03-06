@@ -1435,6 +1435,23 @@ class Notifier {
 			} catch (Exception $e) {
 				DB::rollback();
 				Logger::log('There has been a problem when sending the Queued emails. Problem:'.$e->getTraceAsString());
+				$msg = $e->getMessage();
+				if (strpos($msg, 'Failed to authenticate') !== false) {
+					$from_k = array_keys($from);
+					$usu = Contacts::getByEmail($from_k[0]);
+					
+					$rem = ObjectReminders::instance()->findOne(array('conditions' => "context='eauthfail ". $from_k[0]."'"));
+					if (!$rem instanceof ObjectReminder && $usu instanceof Contact) {
+						$reminder = new ObjectReminder();
+						$reminder->setMinutesBefore(0);
+						$reminder->setType("reminder_popup");
+						$reminder->setContext("eauthfail ". $from_k[0]);
+						$reminder->setObject($usu);
+						$reminder->setUserId($usu->getId());
+						$reminder->setDate(DateTimeValueLib::now());
+						$reminder->save();
+					}
+				}
 			}
 		}
 		return $count;

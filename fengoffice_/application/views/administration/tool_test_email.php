@@ -1,10 +1,17 @@
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo clean($tool->getDisplayName()) ?></div>
+
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo clean($tool->getDisplayName()) ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+
+</div>
+
+<div class="adminMainBlock">
   
 <form class="internalForm" action="<?php echo $tool->getToolUrl() ?>" method="post">
 <?php tpl_display(get_template_path('form_errors')) ?>
@@ -16,7 +23,7 @@
   
   <div>
     <?php echo label_tag(lang('test mail message'), 'testMailFormMessage', true) ?>
-    <?php echo textarea_field('test_mail[message]', array_var($test_mail_data, 'message'), array('id' => 'testMailFormMessage')) ?>
+    <?php echo textarea_field('test_mail[message]', array_var($test_mail_data, 'message'), array('id' => 'testMailFormMessage', 'class' => 'huge')) ?>
   </div>
   
   <?php echo submit_button(lang('submit')) ?>

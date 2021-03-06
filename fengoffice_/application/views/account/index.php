@@ -6,7 +6,7 @@ set_page_title(logged_user()->getObjectName());
 
 if($user->canUpdateProfile(logged_user())) {
 	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit',null,null,true);
-	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
+	add_page_action(lang('update avatar'), $user->getUpdatePictureUrl(), 'ico-picture');
 	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-password',null,null,true);
 } // if
 

@@ -11,24 +11,40 @@ if (!isset($conditions)) $conditions = array();
 	onsubmit="return og.validateReport('<?php echo $genid ?>');"><input
 	type="hidden" name="report[report_object_type_id]" id="report[report_object_type_id]"
 	value="<?php echo array_var($report_data, 'report_object_type_id', '') ?>" />
+
 <div class="coInputHeader">
-<div class="coInputHeaderUpperRow">
-<div class="coInputTitle">
-<table style="width: 535px">
-	<tr>
-		<td><?php echo (isset($id) ? lang('edit custom report') : lang('new custom report')) ?></td>
-		<td style="text-align: right"><?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '20')) ?></td>
-	</tr>
-</table>
-</div>
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo (isset($id) ? lang('edit custom report') : lang('new custom report')) ?>
+	</div>
+  </div>
+
+  <div>
+	<div class="coInputName">
+	<?php echo text_field('report[name]', array_var($report_data, 'name'), array('id' => $genid . 'reportFormName', 'class' => 'title', 'placeholder' => lang('type name here'))); ?>
+	</div>
+		
+	<div class="coInputButtons">
+		<?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
+	</div>
+	<div class="clear"></div>
+  </div>
 </div>
 
-<div>
-<?php
-echo label_tag(lang('name'), $genid . 'reportFormName', true);
-echo text_field('report[name]', array_var($report_data, 'name'), array('id' => $genid . 'reportFormName', 'tabindex' => '1', 'class' => 'title'));
-echo label_tag(lang('description'), $genid . 'reportFormDescription', false);
-echo text_field('report[description]', array_var($report_data, 'description'), array('id' => $genid . 'reportFormDescription', 'tabindex' => '2', 'class' => 'title'));
+
+<div class="coInputMainBlock">
+	<div class="dataBlock">
+	<?php
+	echo label_tag(lang('description'), $genid . 'reportFormDescription', false);
+	echo text_field('report[description]', array_var($report_data, 'description'), array('id' => $genid . 'reportFormDescription', 'tabindex' => '2', 'class' => 'title'));
+	?>
+	</div>
+	<div class="clear"></div>
+	
+	<div class="dataBlock">
+<?php 
+
 echo label_tag(lang('object type'), $genid . 'reportFormObjectType', true); 
 
 $selected_option=null;
@@ -48,36 +64,35 @@ $context_div_display ="display:none;";
 $strDisabled = count($options) > 1 ? '' : 'disabled';
 echo select_box('objectTypeSel', $options, array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10'));
 ?>
-
-	<span style="margin-left:30px;">
-		<?php echo checkbox_field("report[ignore_context]", array_var($report_data, 'ignore_context', true), array('id' => $genid.'ignore_context')); ?>
-		<label class="checkbox" for="<?php echo $genid.'ignore_context'?>"><?php echo lang('show always')?></label>
-	</span>
-</div>
-
-<div style="padding-top:5px">
-	<a href="#" class="option" style="<?php echo $context_menu_style ?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_report_select_context_div',this)"><?php echo lang('context') ?></a>
-</div>
-
-</div>
-
-<div id="<?php echo $genid ?>MainDiv" class="coInputMainBlock" style="display:none;">
-
-	<div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
-		<fieldset><legend><?php echo lang('context')?></legend>
-		<?php
-			$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
-			if ($object->isNew()) {
-				render_member_selectors($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
-			} else {
-				render_member_selectors($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds(), array('listeners' => $listeners));
-			}
-		?>
-		</fieldset>
 	</div>
+	<div class="clear"></div>
+	
+	<div class="dataBlock">
+	  <span style="margin-left:30px;">
+		<?php echo checkbox_field("report[ignore_context]", array_var($report_data, 'ignore_context', true), array('id' => $genid.'ignore_context',
+				'onchange' => 'document.getElementById("'.$genid.'add_report_select_context_div").style.display = (this.checked ? "none" : "")')); ?>
+		<label class="checkbox" for="<?php echo $genid.'ignore_context'?>"><?php echo lang('show always')?></label>
+	  </span>
 
+	  <div class="clear"></div>
+	</div>
+	<div class="dataBlock">
+	  <div id="<?php echo $genid ?>add_report_select_context_div" style="<?php echo $context_div_display ?>"> 
+	<?php
+		$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
+		if ($object->isNew()) {
+			render_member_selectors($object->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), null, null, false);
+		} else {
+			render_member_selectors($object->manager()->getObjectTypeId(), $genid, $object->getMemberIds(), array('listeners' => $listeners), null, null, false);
+		}
+	?>
+	  </div>
+	</div>
+</div>
+
+<div id="<?php echo $genid ?>MainDiv" class="coInputMainBlock">
 	<fieldset><legend><?php echo lang('conditions') ?></legend>
-		<div id="<?php echo $genid ?>"></div>
+		<div id="<?php echo $genid ?>" class="report-conditions"></div>
 		<div style="margin-top:10px;">
 			<a href="#" class="link-ico ico-add" onclick="og.addCondition('<?php echo $genid ?>', 0, 0, '', '', '', false)"><?php echo lang('add condition')?></a>
 		</div>

@@ -1,16 +1,18 @@
 <div class="adminCronEvents" style="height:100%;background-color:white">
 <form class="internalForm" action="<?php echo get_url("administration", "cron_events") ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
-	<div class="adminHeader">
-		<div class="adminTitle">
-			<table style="width:535px"><tr><td>
-				<?php echo lang("cron events") ?>
-			</td><td style="text-align:right">
-				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button class="submit" type="reset"><?php echo lang('reset') ?></button>
-			</td></tr></table>
+	<div class="coInputHeader">
+
+	  <div class="coInputHeaderUpperRow">
+		<div class="coInputTitle">
+			<?php echo lang('cron events') ?>
 		</div>
+	  </div>
+	  <div class="clear"></div>
 	</div>
-	<div class="adminSeparator"></div>
-	<div class="adminMainBlock">
+	
+	<div class="coInputMainBlock adminMainBlock">
+	
+	
 
 	<div style="margin-bottom: 15px">
 		<a href="#" onclick="document.getElementById('cron-events-info').style.display = 'block';this.style.display = 'none';return false;"><?php echo lang('about cron events') ?></a>

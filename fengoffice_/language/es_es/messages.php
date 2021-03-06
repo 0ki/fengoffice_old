@@ -664,4 +664,6 @@
   	'contact email is required to create user' => 'Para crear un usuario, la persona debe tener una direccón de correo válida. Por favor edite la persona e intente nuevamente.',
 	'disable' => 'Desactivar',
 	'and xx more' => 'y {0} más.',
+		
+	'permissions successfully saved' => 'Permisos editados exitosamente',
 ); ?>

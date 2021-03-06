@@ -1,3 +1,26 @@
+ogMemberCache = {};
+
+//after load all root members in og.dimensions for a dim put the dim id here
+ogMemberCache.dimensions_root_members = new Array();
+
+ogMemberCache.addDimToDimRootMembers = function(dim_id){
+	if(!ogMemberCache.areDimRootMembersLoaded(dim_id)){
+		ogMemberCache.dimensions_root_members.push(dim_id);
+	}	
+}
+
+ogMemberCache.areDimRootMembersLoaded = function(dim_id){
+	if(ogMemberCache.dimensions_root_members.indexOf(dim_id) != -1){
+		return true;
+	}	
+	return false;
+}
+
+ogMemberCache.reset_dimensions_cache = function(){
+	og.dimensions = {};
+	og.dimensions_check_date = new Date();
+	ogMemberCache.dimensions_root_members.length = 0;
+}
 
 /*
  *This function search a member on og.dimensions and if is not there get it from the server. 
@@ -170,6 +193,10 @@ og.searchMemberOnServer = function(dimension_id, search_params, func_callback){
 		params.random = search_params.random;
 	}
 	
+	if(typeof search_params.allowed_member_types != 'undefined'){
+		params.allowed_member_types = search_params.allowed_member_types;
+	}
+	
 	og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', params), {
 		hideLoading:true, 
 		hideErrors:true,
@@ -179,4 +206,70 @@ og.searchMemberOnServer = function(dimension_id, search_params, func_callback){
 			}
 		}
 	});		
+}
+
+
+
+/*
+ *This function get members from server if they are not in og.dimensions yet
+ *@param members_ids array required
+ *@callback_extra_params
+ *@param func_callback function to execute after search on the server (recive 1 param callback_extra_params)
+ * */
+og.getMembersFromServer = function(members_ids,func_callback, callback_extra_params){	
+	var missing_members_ids = new Array();
+	for (var i=0; i<members_ids.length; i++) {
+		var mem_id = members_ids[i];
+		var missing = true;
+		for (did in og.dimensions_info) {
+			if (isNaN(did)) continue;		
+			if(og.dimensions && og.dimensions[did]){
+				var member = og.dimensions[did][mem_id];
+				if (typeof member != "undefined") {
+					missing = false;		
+				}
+			}		
+		}
+		if(missing){
+			missing_members_ids.push(mem_id);
+		}
+	}
+	if(missing_members_ids.length > 0){
+		og.openLink(og.getUrl('dimension', 'get_members', {member_ids:Ext.encode(missing_members_ids)}), {
+			hideLoading: true,
+			callback: function(s, d) {
+				for (var prop in d.members) {
+					var mem_path = d.members[prop];
+			        	   
+			        for (var mem in mem_path) {
+			        	var member = mem_path[mem];
+			        	//add member to og.dimensions
+			        	if(typeof(member.dimension_id) != "undefined"){
+			        		og.addMemberToOgDimensions(member.dimension_id,member);
+			        	}		        			   
+			        }		        		  
+				} 
+			        	   	
+		        //execute the callback function 
+		        if (typeof callback_extra_params == "undefined") {
+		        	callback_extra_params = {};
+		        }
+		        			   
+		        if (typeof func_callback != "undefined") {
+		        	func_callback(callback_extra_params);
+		        }	        			   
+		        		   
+		        		 
+			}
+		})
+	}else{
+		//execute the callback function 
+        if (typeof callback_extra_params == "undefined") {
+        	callback_extra_params = {};
+        }
+        			   
+        if (typeof func_callback != "undefined") {
+        	func_callback(callback_extra_params);
+        }		
+	}
 }

@@ -6,15 +6,21 @@
 ?>
 
 
-<div class="adminClients" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('task templates') ?></div>
+<div class="adminClients">
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('task templates') ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+
+</div>
+
+<div class="coInputMainBlock adminMainBlock">
 
 <?php if(isset($task_templates) && is_array($task_templates) && count($task_templates)) { ?>
-<table style="min-width:400px;margin-top:10px;">
+<table style="min-width:400px;">
   <tr>
     <th><?php echo lang('template') ?></th>
     <th><?php echo lang('options') ?></th>
@@ -31,7 +37,7 @@ foreach($task_templates as $task_template) {
   	$options[] = '<a class="internalLink" href="' . $task_template->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete task template')) . '\')">' . lang('delete template') . '</a>';
   }
 ?>
-    <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
+    <td><?php echo implode(' | ', $options) ?></td>
   </tr>
 <?php } // foreach ?>
 </table>

@@ -141,3 +141,39 @@ function core_dimensions_update_7_8() {
 	}
 	//END Load the contact member cache
 }
+
+// Remove permissions that are greater than the limit permissions
+function core_dimensions_update_8_9() {
+	$mail_ot = ObjectTypes::findByName('mail');
+	$users = Contacts::getAllUsers();
+	foreach ($users as $user) {/* @var $user Contact */
+		if ($user->isAdminGroup()) {
+			continue;
+		}
+		
+		$role_id = $user->getUserType();
+		$sys_perm = SystemPermissions::findOne(array('conditions' => 'permission_group_id='.$user->getPermissionGroupId()));
+		
+		// check max system permissions
+		$max_role_system_permissions = MaxSystemPermissions::findOne(array('conditions' => 'permission_group_id = '.$role_id));
+		if ($max_role_system_permissions instanceof MaxSystemPermission) {
+			$sys_perm_cols = get_table_columns(TABLE_PREFIX."system_permissions");
+			foreach ($sys_perm_cols as $col) {
+				$max_val = $max_role_system_permissions->getColumnValue($col);
+				if (!$max_val) {
+					$sys_perm->setColumnValue($col, 0);
+				}
+			}
+			$sys_perm->save();
+		}
+		
+		// don't allow to write emails for collaborators and guests
+		$user_type_name = $user->getUserTypeName();
+		if (!in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'))) {
+			if ($mail_ot instanceof ObjectType) {
+				DB::executeAll("UPDATE ".TABLE_PREFIX."contact_member_permissions SET can_write=0, can_delete=0 WHERE object_type_id=".$mail_ot->getId()." AND permission_group_id=".$user->getPermissionGroupId());
+			}
+		}
+	
+	}
+}

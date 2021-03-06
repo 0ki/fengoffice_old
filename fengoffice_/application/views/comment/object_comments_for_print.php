@@ -13,7 +13,7 @@
 
 .objectComments .commentHead {
   color: #333;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .objectComments .commentHead a {
@@ -72,7 +72,7 @@
 		<?php 	} // if ?>
 		
 				<div class="commentBody">
-					<?php echo nl2br(clean($comment->getText())) ?>
+					<div class="commentText"><?php echo nl2br(clean($comment->getText())) ?></div>
 				</div>
 			</div>
 		<?php } // foreach ?>

@@ -39,6 +39,9 @@ class DimensionController extends ApplicationController {
 		$all_dimensions = Dimensions::findAll(array('order'=>'default_order ASC , id ASC'));
 		$dimensions_to_show = array();
 		
+		foreach ($all_dimensions as $dim){
+			if (!isset($user_root_dimensions[$dim->getId()])) $user_root_dimensions[$dim->getId()] = false;
+		}
 		
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 		
@@ -50,7 +53,7 @@ class DimensionController extends ApplicationController {
 				}else{
 					$dim->setIsRoot(false);
 				}
-			} 
+			}
 					
 			$added=false;
 			
@@ -357,7 +360,7 @@ class DimensionController extends ApplicationController {
 		
 		//$dids = explode ("," ,user_config_option('root_dimensions', null, logged_user()->getId() ));
 		//if(in_array($dimension_id, $dids)){
-		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));
+		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id, 'dimensions_root_members' => true));
 		//}
 	}
 	
@@ -371,7 +374,14 @@ class DimensionController extends ApplicationController {
 		$limit = array_var($_REQUEST, 'limit');
 		$order = array_var($_REQUEST, 'order', 'id');
 		$parents = array_var($_REQUEST, 'parents' , true);
-
+		
+		$allowed_member_types_str = array_var($_REQUEST, 'allowed_member_types' , '');
+		if ($allowed_member_types_str != '') {
+			$allowed_member_types = explode(',', $allowed_member_types_str);
+		} else {
+			$allowed_member_types = array();
+		}
+		
 		if(strlen($name) > 0 || $random){
 			//get the member list
 			//Super admins are not using the contact member cache
@@ -386,7 +396,12 @@ class DimensionController extends ApplicationController {
 					$name = mysql_real_escape_string($name);
 					$search_name_cond = " AND name LIKE '%".$name."%'";
 				}
-				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? ".$search_name_cond, $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
+				
+				$member_type_cond = "";
+				if (count($allowed_member_types) > 0) {
+					$member_type_cond = " AND object_type_id IN (".implode(',', $allowed_member_types).")";
+				}
+				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
 				//include all parents
 				//Check hierarchy
 				if($parents){
@@ -419,6 +434,10 @@ class DimensionController extends ApplicationController {
 				if(isset($limit)){
 					$params["start"] = $start;
 					$params["limit"] = $limit + 1;
+				}
+				
+				if (count($allowed_member_types) > 0) {
+					$params["extra_condition"] = " AND m.object_type_id IN (".implode(',', $allowed_member_types).")";
 				}
 				
 				$memberList = ContactMemberCaches::getAllMembersWithCachedParentId($params);
@@ -542,6 +561,28 @@ class DimensionController extends ApplicationController {
 		ajx_current("empty");
 	}
 	
+	//return all members in member_ids array 
+	function get_members() {
+		$member_ids = json_decode(array_var($_REQUEST, 'member_ids', null ));
+		if (!is_array($member_ids)) {
+			$member_ids = null;
+		}else{		
+			$all_members = array();
+			$all_members_ids = array();
+			foreach ($member_ids as $m) {
+				$mem = Members::getMemberById($m);
+				if($mem instanceof Member){
+					$parents = $mem->getAllParentMembersInHierarchy(true);
+					$all_members[] = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);									
+				}
+			}
+					
+			ajx_extra_data(array("members" => $all_members));		
+		}
+		ajx_current("empty");
+	}
+	
+	
 	function buildMemberList($all_members, $dimension,  $allowed_member_type_ids, $allowed_object_type_ids, $item_object, $object_type_id, $return_only_name=false) {
 		$dot_array = array(); // Dimension Object Types array (cache)
 		$membersset = array();
@@ -631,6 +672,8 @@ class DimensionController extends ApplicationController {
 					"id" => $m->getId(),
 					"color" => $m->getMemberColor(),
 					"name" => clean($m->getName()),
+					"text" => clean($m->getName()),
+					"leaf" => true,
 					"parent" => $tempParent,
 					"realParent" => $m->getParentMemberId(),
 					"object_id" => $m->getObjectId(),
@@ -737,5 +780,193 @@ class DimensionController extends ApplicationController {
 		$html .= '</div>';
 		
 		die($html);
+	}
+	
+	
+	function list_members() {
+		if (!logged_user()->isAdminGroup()) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		ajx_set_no_toolbar();
+		
+		$dim_id = array_var($_REQUEST, 'dim', 0);
+		$dimension = Dimensions::findById($dim_id);
+		if (!$dimension instanceof Dimension) {
+			flash_error(lang('dimension snx'));
+			ajx_current("empty");
+			return;
+		}
+		
+		if (isset($_REQUEST['page'])) {
+			ajx_replace(true);
+		}
+		
+		// parameters
+		$page = array_var($_REQUEST, 'page');
+		$order_by = array_var($_REQUEST, 'order');
+		$order_by_dir = array_var($_REQUEST, 'order_dir');
+		
+		// pagination params
+		$items_x_page = array_var($_REQUEST, 'items_x_page', 20);
+		if (!$page) $page = 1;
+		$offset = $items_x_page * ($page - 1);
+		
+		// order defaults
+		if (!$order_by) $order_by = 'name';
+		
+		if (!in_array($order_by_dir, array('ASC', 'DESC'))) $order_by_dir = 'ASC';
+		
+		$dimension_options = $dimension->getOptions(true);
+		if($dimension_options && isset($dimension_options->useLangs) && $dimension_options->useLangs ) {
+			$dim_name = lang($dimension->getCode());
+		} else {
+			$dim_name = $dimension->getName();
+		}
+		
+		// permissions sql
+		$perm_sql = "";
+		if ($dimension->getDefinesPermissions() && !logged_user()->isAdministrator()) {
+			$pg_ids = logged_user()->getPermissionGroupIds();
+			$perm_sql = " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=m.id AND cmp.permission_group_id IN (".implode(',', $pg_ids)."))";
+		}
+		
+		$main_sql = "SELECT * FROM ".TABLE_PREFIX."members m INNER JOIN ".TABLE_PREFIX."application_logs l ON l.member_id=m.id WHERE m.dimension_id='$dim_id' AND l.action='add' $perm_sql";
+		
+		$sql = "$main_sql
+				ORDER BY $order_by $order_by_dir 
+				LIMIT $offset, $items_x_page";
+		
+		$rows = DB::executeAll($sql);
+		
+		$count_sql = str_replace("SELECT * FROM", "SELECT count(*) as total FROM", $main_sql);
+		$count_row = DB::executeAll($count_sql);
+		
+		$members = array();
+		$ids = array();
+		$log_data = array();
+		foreach ($rows as $row) {
+			$members[] = Members::findById($row['member_id']);
+			$log_data[$row['member_id']] = array('created_on' => $row['created_on'], 'created_by_id' => $row['created_by_id']);
+		}
+		
+		$member_type_ids = array_flat(DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."dimension_object_types WHERE dimension_id=$dim_id AND is_root=1"));
+		$member_types = ObjectTypes::findAll(array('conditions' => 'id IN ('.implode(',', $member_type_ids).')'));
+		
+		tpl_assign('members', $members);
+		tpl_assign('log_data', $log_data);
+		tpl_assign('dimension', $dimension);
+		tpl_assign('dimension_name', $dim_name);
+		tpl_assign('member_types', $member_types);
+		
+		tpl_assign('page', $page);
+		tpl_assign('total_items', $count_row[0]['total']);
+		tpl_assign('items_x_page', $items_x_page);
+		tpl_assign('order_by', $order_by);
+		tpl_assign('order_by_dir', $order_by_dir);
+	}
+	
+	
+	
+	
+	
+	
+	
+	function dimension_tree_for_permissions() {
+		$dimension_id = array_var($_REQUEST, 'dimension_id');
+		$checkedField = (array_var($_REQUEST, 'checkboxes'))?"checked":"_checked";
+		$objectTypeId = array_var($_REQUEST, 'object_type_id', null );
+		
+		$allowedMemberTypes = json_decode(array_var($_REQUEST, 'allowedMemberTypes', null ));
+		if (!is_array($allowedMemberTypes)) {
+			$allowedMemberTypes = null;
+		}
+	
+		$only_names = array_var($_REQUEST, 'onlyname', false);
+	
+		$name = trim(array_var($_REQUEST, 'query', ''));
+		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
+	
+		if (array_var($_REQUEST, 'new_user')) {
+			if (isset($_REQUEST['forced_members'])) {
+				$forced_members = json_decode(array_var($_REQUEST, 'forced_members', ''));
+				$fms = array(0);
+				if (is_array($forced_members) && count($forced_members) > 0) {
+					foreach ($forced_members as $fm) {
+						if (is_numeric($fm)) $fms[] = $fm;
+					}
+				}
+				if (count($fms) > 0) $extra_cond .= " AND id IN (".implode(',', $fms).")";
+			}
+			
+			if (isset($_REQUEST['excluded_members'])) {
+				$excluded_members = json_decode(array_var($_REQUEST, 'excluded_members', ''));
+				$ems = array(0);
+				if (is_array($excluded_members) && count($excluded_members) > 0) {
+					foreach ($excluded_members as $em) {
+						if (is_numeric($em)) $ems[] = $em;
+					}
+				}
+				if (count($ems) > 0) $extra_cond .= " AND id NOT IN (".implode(',', $ems).")";
+			}
+			
+		} else {
+			if (array_var($_REQUEST, 'only_with_perm')) {
+				$extra_cond .= " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg').")";
+			} else if (array_var($_REQUEST, 'only_without_perm')) {
+				$extra_cond .= " AND NOT EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg').")";
+			}
+		}
+		
+		$return_all_members = false;
+	
+		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
+		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));
+	
+		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, null, false, null, $only_names, $selected_members);
+		
+		// add missing parents
+		$missing_parent_ids = array();
+		$all_members = array();
+		foreach ($memberList as $m) {
+			$all_members[$m['id']] = $m['id'];
+		}
+		foreach ($memberList as $m) {
+			if ($m['parent'] > 0 && !isset($all_members[$m['parent']])) $missing_parent_ids[$m['parent']] = $m['parent'];
+		}
+		
+		while (count($missing_parent_ids) > 0) {
+			$missing_members = DB::executeAll("SELECT m.*, ot.icon FROM ".TABLE_PREFIX."members m INNER JOIN ".TABLE_PREFIX."object_types ot ON ot.id=m.object_type_id WHERE m.id IN (".implode(',', $missing_parent_ids).")");
+			$missing_parent_ids = array();
+			$new_missing = array();
+
+			foreach ($missing_members as $mem) {
+				$m = array(
+					"id" => $mem['id'],
+					"name" => clean($mem['name']),
+					"parent" => $mem['parent_member_id'],
+					"realParent" => $mem['parent_member_id'],
+					"object_id" => $mem['object_id'],
+					"depth" => $mem['depth'],
+					"iconCls" => 'ico-' . $mem['icon'],
+					"dimension_id" => $mem['dimension_id'],
+					"object_type_id" => $mem['object_type_id'],
+					"expandable" => true,
+				);
+				$memberList[str_pad(array_var($m, 'parent'), 20, "0", STR_PAD_LEFT) . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
+				$new_missing[] = $m;
+				$all_members[$m['id']] = $m;
+			}
+			foreach ($new_missing as $m) {
+				if ($m['parent'] > 0 && !isset($all_members[$m['parent']])) $missing_parent_ids[$m['parent']] = $m['parent'];
+			}
+		}
+		// --
+	
+		$tree = buildTree($memberList, "parent", "children", "id", "name", $checkedField);
+	
+		ajx_current("empty");
+		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));
 	}
 }

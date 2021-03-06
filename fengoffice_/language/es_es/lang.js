@@ -1,7 +1,9 @@
 locale = 'es_es';
 addLangs({
 	'check in': '<b>Devolver</b>',
+	'total': 'Total',
 	'cannot check in': 'No es posible devolver',
+	'work in progress' : 'Trabajo en progreso',
 	'to date' : 'Hasta',
 	'from date' : 'Desde',
 	'add as new revision to': 'Añadir como nueva revisión a',
@@ -34,6 +36,7 @@ addLangs({
 	'checkout recommendation': '¿Está planificando editar este documento? Si es así, es recomendable que realice el bloqueo del documento al descargarlo',
 	'confirm inherit permissions': '¿Desea que el nuevo espacio herede los permisos de su espacio padre?',
 	'by': 'Por',
+	'by uppercase': 'Por',
 	'name': 'Nombre',
 	'project': 'Área de trabajo',
 	'user': 'Usuario',
@@ -139,6 +142,7 @@ addLangs({
 	'contact': 'Contacto',
 	'event': 'Evento',
 	'task': 'Tarea',
+	'add work' : 'Añadir horas trabajadas',
 	'milestone': 'Hito',
 	'refresh': 'Actualizar',
 	'author': 'Autor',
@@ -433,6 +437,8 @@ addLangs({
 	'after this year' : 'Posterior a este año',	
 	'start': 'inicio',
 	'due': 'fin',
+	'start m': 'Inicio',
+	'due m': 'Fin',
 	'add subtask': 'Agregar una nueva subtarea',
 	'completed by name on': 'Completado por {0} el {1}',
 	'show more tasks number': 'Ver mas ({0})...',
@@ -766,6 +772,10 @@ addLangs({
 	'information': 'Información',
 	'persons': 'Personas',
 	'estimated time': 'Tiempo estimado',
+	'pending time': 'Tiempo pendiente',
+    'worked time': 'Tiempo trabajado',
+    'pending': 'Pendiente',
+    'worked': 'Trabajado',
 	'context': 'Relaciones',
 	'select context members': 'Seleccione los miembros relacionados',
 	'member fields': 'Campos de los miembros',
@@ -815,12 +825,20 @@ addLangs({
 	'general view': 'Vista general',
 	'save as' : 'Guardar como {0}',
 	
+	'quick edit': 'Acceso rápido a edición',
+	'quick complete': 'Acceso rápido a completar',
+	'quick add sub tasks': 'Acceso rápido a agregar subtarea',
+	
 	'viewing all information' : 'Viendo toda la Infomación',
 	'add a variable to this task': 'Agregar una variable a esta tarea',
 	
 	'phone number': 'Teléfono',
 	'edit_picture':'Editar foto',
 	
+	'view classification' : 'Ver clasificación',
+	'classified under' : 'Clasificado en',
+	
 	'birthdays': 'Cumpleaños',
-	'email address': 'Correo'
+	'email address': 'Correo',
+	'home': 'Inicio'
 });

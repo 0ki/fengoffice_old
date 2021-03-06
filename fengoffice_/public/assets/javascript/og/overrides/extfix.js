@@ -20,9 +20,39 @@ Ext.tree.DefaultSelectionModel.override({
 /**/
 // Uncomment this to support drag and drop in grids
 // Also uncomment enableDrag on grids, enableDrop on workspacepanel and ddGroup on both
+/*Ext.grid.CheckboxSelectionModel.override({
+    handleMouseDown: Ext.emptyFn
+});*/
+
 Ext.grid.CheckboxSelectionModel.override({
-    handleMouseDown: Ext.emptyFn   
+	handleMouseDown: function(grid, rowIndex, e) {
+		
+		t = e.getTarget();
+		if(e.button === 0 && t.className != 'x-grid3-row-checker'){
+			e.stopEvent();
+			var row = e.getTarget('.x-grid3-row');
+			if(row){
+				var index = row.rowIndex;
+				if(this.isSelected(index)){
+					this.deselectRow(index);
+				}else{
+					if (e.shiftKey) {
+						// range selection
+	            		var sels = this.getSelections();
+	            		if (sels.length > 0) {
+	            			var first_idx = sels[0].data.ix;
+	            			this.selectRange(first_idx, index);
+	            		}
+	            	} else {
+	            		// single selection, if ctrlKey then keep previous selection
+	            		this.selectRow(index, e.ctrlKey === true);
+	            	}
+				}
+			}
+		}
+	}
 });
+
 Ext.grid.GridView.override({
 	focusCell : function(row, col, hscroll){
 		this.syncFocusEl(this.ensureVisible(row, col, hscroll));
@@ -41,14 +71,10 @@ Ext.grid.GridView.override({
 Ext.grid.RowSelectionModel.override({
     initEvents : function() {
         if (!this.grid.enableDragDrop && !this.grid.enableDrag) {
-            this.grid.on("rowmousedown", this.handleMouseDown, this);
+        	this.grid.on("rowmousedown", this.handleMouseDown, this);
         } else { // allow click to work like normal
-            this.grid.on("rowclick", function(grid, rowIndex, e) {
-                var target = e.getTarget();                
-                if (target.className !== 'x-grid3-row-checker' && e.button === 0 && !e.shiftKey && !e.ctrlKey) {
-                    this.selectRow(rowIndex, false);
-                    grid.view.focusRow(rowIndex);
-                }
+        	this.grid.on("rowclick", function(grid, rowIndex, e) {
+        		
             }, this);
         }
 
@@ -182,7 +208,9 @@ Ext.grid.GridPanel.override({
 		if(typeof params != 'undefined'){
 			delete params.action;
 			params.only_result = 1;
-			og.openLink(og.getUrl(controller, func, params), {callback: function(success, data) {
+			og.openLink(og.getUrl(controller, func, params), {
+			  hideLoading: true,
+			  callback: function(success, data) {
 				
 				Ext.getCmp(manager).store.proxy.totalLength = data.totalCount;
 				Ext.getCmp(manager).store.totalLength = data.totalCount;
@@ -199,7 +227,7 @@ Ext.grid.GridPanel.override({
 				}
 				
 				bba.loading.enable();			
-			}});
+			  }});
 		
 			params.only_result = 0;	
 		}

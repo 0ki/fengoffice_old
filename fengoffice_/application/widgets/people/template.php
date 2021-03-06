@@ -15,7 +15,7 @@
 		 */
 	?>
 	<div style="overflow: hidden;" class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang("contacts");?>
+		<div class="widget-title"><?php echo (isset($widget_title)) ? $widget_title : lang("contacts");?></div>
 		<input name="mids" type="hidden" value="<?php echo isset($mids) ? $mids : "" ?>" />
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
@@ -35,8 +35,10 @@
 			$i++;
 			if ($i < $limit) :?>
 				<li<?php echo ($row_cls == "" ? "" : " class='$row_cls'")?>>
-					<div class="contact-avatar">
-						<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>, true);"><img src="<?php echo $person->getPictureUrl(); ?>" /></a>
+					<div class="contact-picture contact-picture-container">
+						<a href="<?php echo $person->getCardUrl() ?>" class="person" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction(<?php echo $person->getId()?>, true);">
+							<img src="<?php echo $person->getPictureUrl(); ?>" />
+						</a>
 					</div>
 					
 					<div class="contact-info">
@@ -46,7 +48,6 @@
 					
 					<div class="clear"></div>
 				</li>
-			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 			<?php endif;?>
 		<?php endforeach; ?>
 		</ul>
@@ -56,19 +57,24 @@
 		 * This section is for add permissions 
 		 */
 		?>
-		<?php if ($render_add) :?>
-			<?php if (count($contacts) > 0) :?>
-				<div class="person-list-separator"></div>
-			<?php endif; ?>
+		<?php if ($render_add) :
+				$exe_pg = PermissionGroups::instance()->findOne(array('conditions' => "type='roles' AND parent_id>0 AND name='Executive'"));
+		?>
+			
 			<div style="margin-top:4px; margin-left:10px; margin-right:10px;">
 				<?php 
 				/*
 				 * Add people button
 				 */
 				?> 
-				<div style="float:left; width: 75%;">
-					<button style="overflow: hidden; width:auto;" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-hide').show();" id="add-person-form-show" class="add-first-btn">
-						<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;<?php echo ((isset($add_people_btn)) ? lang('add contact here') : lang('add contact'));?></button>
+				<div style="float:left; width: 75%; margin-top: 10px;">
+				<?php if (!isset($add_people_btn)) { ?>
+				
+					<button style="overflow: hidden; width:auto;" onclick="og.openLink(og.getUrl('contact','add', {is_user:1, user_type:'<?php echo $exe_pg->getId()?>'})); return false;" id="add-person-form-show" class="add-first-btn">
+						<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;<?php echo lang('add user');?></button>
+				
+				<?php } ?>
+				
 				</div>
 							  
 				<?php 
@@ -82,10 +88,13 @@
 					</div>
 					<div class="clear"></div>
 				<?php endif;?>
-			
+				
+				<?php if (count($contacts) > 0) :?>
+					<div class="person-list-separator"></div>
+				<?php endif; ?>
 			
 				<div class="clear"></div>
-				<div id="person-form-<?php echo $genid ?>" class="add-person-form" style="display:none;">
+				<div id="person-form-<?php echo $genid ?>" class="add-person-form" style="<?php echo isset($add_people_btn) ? "" : "display:none;"?>">
 					 
 					 <?php 
 					/*
@@ -93,9 +102,10 @@
 					 */
 					?>
 					<div class="contact_registered">
+					  <h2><?php echo lang('add contacts to', implode(", ", $mnames))?></h2>
 				      <label class="checkbox">
-				      <?php echo radio_field($genid.'_rg', true, array('id' => $genid.'contact_registered', 'onchange' => 'og.addContactTypeChanged(1, "'.$genid.'")', 'value' => '1'))?>
-		    		  <?php echo lang('Registered Person')?>
+				      <?php //echo radio_field($genid.'_rg', true, array('id' => $genid.'contact_registered', 'onchange' => 'og.addContactTypeChanged(1, "'.$genid.'")', 'value' => '1'))?>
+		    		  <?php //echo lang('Registered Person')?>
 		    		  </label>
 				    </div>
 				    
@@ -104,18 +114,18 @@
 					 * This section display the select box for select contact that are not in this dim
 					 */
 					?>
-				    <div id="<?php echo $genid ?>registered-person-form" style="padding-bottom:4px;">
+				    <div id="<?php echo $genid ?>registered-person-form" style="padding-bottom:4px;float:right;display:none;">
 						
-						<div style="margin-left:10px;">
-							<?php 
+						<div>
+							<div style="float:left;"><?php
 								if($contacts_for_combo != null){
-									$select_box_attrib = array('id'=>'permissions_users_select_box','style'=>'width:160px; margin-bottom: 5px;');
+									$select_box_attrib = array('id'=>'permissions_users_select_box','style'=>'width:160px; margin-bottom: 5px; height:30px; font-size:15px;');
 									echo user_select_box('permissions_users_select_box',null,$select_box_attrib,$contacts_for_combo);
 								}
-							?>
-							<button class="add-permission-button">
+							?></div>
+							<button class="add-first-btn add-permission-button" style="float:right; font-size: 15px; height: 30px;">
 								<img src="public/assets/themes/default/images/16x16/add.png">
-								<?php echo lang('add')?>
+								<?php echo lang('add').' '.strtolower(lang('Registered Person'))?>
 							</button>
 						</div>
 						
@@ -129,11 +139,16 @@
 					 * Contact non registered
 					 */
 					?>
-					<div class="contact_registered">
-				      <label class="checkbox">
-				      <?php echo radio_field($genid.'_rg', false, array('id' => $genid.'contact_non_registered', 'onchange' => 'og.addContactTypeChanged(0, "'.$genid.'")', 'value' => '0'))?>
-				      <?php echo lang('Non registered person (add one from scratch)') ?>
-				      </label>
+					<div class="contact_registered" style="float:left;">
+				      
+				      <?php //echo radio_field($genid.'_rg', false, array('id' => $genid.'contact_non_registered', 'onchange' => 'og.addContactTypeChanged(0, "'.$genid.'")', 'value' => '0'))?>
+				      <?php //echo lang('Non registered person (add one from scratch)') ?>
+				      
+				      	<div id="<?php echo $genid?>you-can-also-text" style="padding-right: 7px; display:none;"><?php echo lang('or you can also') . ' '?></div>
+				        <button class="add-first-btn" style="float:none; font-size: 15px; height: 30px;" onclick="og.openLink(og.getUrl('contact','add', {is_user:1, user_type:'<?php echo $exe_pg->getId()?>'})); return false;">
+							<img src="public/assets/themes/default/images/16x16/add.png">
+							<?php echo lang('add a non registered person')?>
+						</button>
 				    </div>
 				    
 					<div class="clear"></div>
@@ -159,7 +174,7 @@
 							<?php tpl_display(get_template_path("add_contact/access_data_company","contact")); ?>
 						</div>
 						
-						<button class="add-person-button">
+						<button class="add-person-button add-first-btn">
 							<img src="public/assets/themes/default/images/16x16/add.png">
 							<?php echo lang('add')?>
 						</button>
@@ -307,11 +322,9 @@
 
 					//if permissions_users_select_box is empty 
 					var options = $("#permissions_users_select_box").children();
-					if(options.length == 0){
-						$(".contact_registered").hide();
-						$("#<?php echo $genid ?>registered-person-form").hide();
-						$("#<?php echo $genid ?>non-registered-person-form").show();
-						$("#<?php echo $genid ?>non-registered-person-form").children("h2").show();
+					if(options.length > 0){
+						$("#<?php echo $genid ?>you-can-also-text").show();
+						$("#<?php echo $genid ?>registered-person-form").show();
 					}
 					
 					//add user to the widget list
@@ -320,7 +333,7 @@
 					}else{
 						var contact_div = '<li class="dashAltRow">';
 					}					
-					contact_div +='<div class="contact-avatar">';
+					contact_div +='<div class="contact-picture contact-picture-container">';
 					contact_div +='<a href="'+data.card_url+'" class="person" onclick="if (og.core_dimensions) og.core_dimensions.buildBeforeObjectViewAction('+data.id+', true);"><img src="'+data.picture_url+'" /></a>';
 					contact_div +='</div>';										
 					contact_div +='<div class="contact-info">';
@@ -348,18 +361,17 @@
 			if(e.keyCode == 13){
 				$(".add-person-button").click();
      		}
-		});						
-	});
-	
-	$(document).ready(function() {
-		var options = $("#permissions_users_select_box").children();
-		if(options.length == 0){
-			$(".contact_registered").hide();
-			$("#<?php echo $genid ?>registered-person-form").hide();
-			$("#<?php echo $genid ?>non-registered-person-form").show();
-			$("#<?php echo $genid ?>non-registered-person-form").children("h2").show();
-		}
-		
-	});
+		});
 
+		var options = $("#permissions_users_select_box").children();
+		if(options.length > 0){
+			$("#<?php echo $genid ?>you-can-also-text").show();
+			$("#<?php echo $genid ?>registered-person-form").show();
+		}
+
+
+		var total_w = $(".add-person-form").width();
+		var button_w = $(".add-permission-button").width();
+		$("#permissions_users_select_box").css('width', (total_w - button_w - 15) + 'px');
+	});
 </script>

@@ -5,6 +5,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
 	('system', 1, 0),
 	('general', 0, 1),
 	('mailing', 0, 2),
+	('brand_colors', 0, 3),
 	('passwords', 0, 4);
 
 
@@ -19,6 +20,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('system', 'files_per_page', '50', 'IntegerConfigHandler', 1, 0, NULL),
 	('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used'),
 	('system', 'min_chars_for_match', '3', 'IntegerConfigHandler', 1, 0, 'If search criteria len is less than this, then use always LIKE'),
+	('system', 'getting_started_step', '1', 'IntegerConfigHandler', 1, 0, ''),
 	('general', 'upgrade_last_check_datetime', '2006-09-02 13:46:47', 'DateTimeConfigHandler', 1, 0, 'Date and time of the last upgrade check'),
 	('general', 'upgrade_last_check_new_version', '0', 'BoolConfigHandler', 1, 0, 'True if system checked for the new version and found it. This value is used to hightligh upgrade tab in the administration'),
 	('general', 'file_storage_adapter', 'fs', 'FileStorageConfigHandler', 0, 0, 'What storage adapter should be used? fs or mysql'),
@@ -66,13 +68,13 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'add_default_permissions_for_users', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'give_member_permissions_to_new_users', '', 'UserTypeMultipleConfigHandler', '0', '0', NULL),
     ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL),
-    ('general', 'show_owner_company_name_header', '1', 'BoolConfigHandler', 1, 100, ''),
-	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
+    ('general', 'show_owner_company_name_header', '0', 'BoolConfigHandler', 1, 100, ''),
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
-	('brand_colors', 'brand_colors_head_back', '4c8036', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_head_font', 'ffffff', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_tabs_back', '4c8036', 'StringConfigHandler', '1', '0', NULL),
-	('brand_colors', 'brand_colors_tabs_font', 'ffffff', 'StringConfigHandler', '1', '0', NULL);
+	('general', 'enabled_dimensions', '', 'RootDimensionsConfigHandler', '1', '0', NULL),
+	('brand_colors', 'brand_colors_head_back', '424242', 'ColorPickerConfigHandler', '0', '0', NULL),
+	('brand_colors', 'brand_colors_head_font', 'FFFFFF', 'ColorPickerConfigHandler', '0', '0', NULL),
+	('brand_colors', 'brand_colors_tabs_back', 'e7e7e7', 'ColorPickerConfigHandler', '1', '0', NULL),
+	('brand_colors', 'brand_colors_tabs_font', '333333', 'ColorPickerConfigHandler', '1', '0', NULL);
 		
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -152,6 +154,19 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowPercentCompletedBar', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowTimePending', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowTimeWorked', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowQuickEdit', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowQuickComplete', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowQuickComment', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowStartDates', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowAssignedBy', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowClassification', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowEndDates', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowQuickAddSubTasks', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowDescriptionOnTimeForms', '1', 'BoolConfigHandler', 0, 0, ''),
  ('task panel', 'tasksShowTags', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowEmptyMilestones', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksGroupBy', 'due_date', 'StringConfigHandler', 1, 0, ''),
@@ -175,7 +190,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'reset_password', '', 'StringConfigHandler', '1', '0', 'Used to store per-user tokens to validate password reset requests'),
  ('general', 'autodetect_time_zone', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL),
- ('general', 'root_dimensions', '', 'RootDimensionsConfigHandler', '0', '0', NULL), 
+ ('general', 'root_dimensions', '', 'RootDimensionsConfigHandler', '0', '0', NULL),
  ('general', 'show_object_direct_url',0,'BoolConfigHandler',0,0,NULL ),
  ('general', 'drag_drop_prompt','prompt','DragDropPromptConfigHandler',0,0,NULL ),
  ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
@@ -296,8 +311,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'view_mail_attachs_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
- ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
- 
+ ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'settings_closed', '0', 'BoolConfigHandler', 1, 0, '');
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
  ('workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', null),
@@ -351,13 +366,14 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`re
  ('calendar-panel','calendar','ico-calendar',1,'event','view_calendar','','',0,'system',8,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='event')),
  ('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='contact')),
  ('documents-panel','documents','ico-documents',1,'files','init','','',1,'system',6,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='file')),
- ('messages-panel','messages','ico-messages',1,'message','init','','',1,'system',5,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')),
+ ('messages-panel','messages','ico-messages',1,'message','init','','',0,'system',5,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='message')),
  ('overview-panel','overview','ico-overview',1,'dashboard','main_dashboard','dashboard','main_dashboard',1,'system',-100,0,0),
- ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',0,'system',9,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='report')),
+ ('reporting-panel','reporting','ico-reporting',1,'reporting','index','','',1,'system',9,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='report')),
  ('tasks-panel','tasks','ico-tasks',1,'task','new_list_tasks','','',1,'system',3,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='task')),
- ('time-panel','time','ico-time-layout',1,'time','index','','',0,'system',8,0,0),
- ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='weblink'));
- 
+ ('time-panel','time','ico-time-layout',1,'time','index','','',1,'system',8,0,0),
+ ('webpages-panel','web pages','ico-webpages',1,'webpage','init','','',0,'system',7,0,(SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='weblink')),
+ ('more-panel','getting started','ico-more-tab',0,'more','index','','',1,'system',100,0,0);
+
 
 
 INSERT INTO `<?php echo $table_prefix ?>permission_groups` (`name`, `contact_id`, `is_context`, `plugin_id`, `type`) VALUES
@@ -393,6 +409,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	'contacts-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'documents-panel'),
@@ -404,6 +421,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'contacts-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'documents-panel'),
@@ -415,6 +433,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'contacts-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'documents-panel'),
@@ -426,6 +445,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'contacts-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'documents-panel'),
@@ -436,6 +456,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'contacts-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'documents-panel'),
@@ -444,6 +465,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'tasks-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'time-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'webpages-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'calendar-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'documents-panel'),
@@ -452,6 +474,7 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'tasks-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'time-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'webpages-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	'more-panel'),
 
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	'overview-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	'calendar-panel'),
@@ -472,7 +495,8 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panel_permissions` (`permission_grou
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'time-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'webpages-panel'),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'contacts-panel'),
-((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'reporting-panel');
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'reporting-panel'),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	'more-panel');
 
 
 INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_see_assigned_to_other_tasks`, `can_manage_contacts`) VALUES
@@ -480,6 +504,18 @@ INSERT INTO `<?php echo $table_prefix ?>system_permissions` (`permission_group_i
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	0,	1,	0,	1,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Guest'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	0,	1, 0),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Non-Exec Director'),	0,	0,	0,	0,	0,		0,	0,	0,	0,	0,	1,	1, 0);
+
+INSERT INTO `<?php echo $table_prefix ?>max_system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimensions`, `can_manage_dimension_members`, `can_manage_tasks`, `can_task_assignee`, `can_manage_billing`, `can_view_billing`, `can_see_assigned_to_other_tasks`, `can_manage_contacts`) VALUES
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Super Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Administrator'),	1,	1,	1,	1,	1,		1,	1,	1,	1,	1,	1,	1, 1),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Manager'),	1,	0,	1,	1,	1,		0,	1,	1,	1,	1,	1,	1, 1),
+((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Executive'),	1,	0,	0,	0,	1,		0,	1,	0,	1,	0,	1,	1, 1),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Collaborator Customer'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	1,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'Internal Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
 ((SELECT id FROM <?php echo $table_prefix ?>permission_groups WHERE name = 'External Collaborator'),	0,	0,	0,	0,	0,		0,	0,	0,	1,	0,	0,	1, 0),
@@ -495,7 +531,7 @@ INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`pa
  ('calendar','upcoming events milestones and tasks',0,'','','top',0,'ico-event'),
  ('completed_tasks_list','completed tasks list',0,'','','right',150,'ico-task'),
  ('activity_feed', 'activity_feed', 0, '', '', 'left', 10,'ico-properties'),
- ('active_context_info', 'active context info', 0, '', '', 'left', 0, 'ico-workspace'),
+ ('active_context_info','active_context_info',0,'','','left',1,'ico-summary'),
  ('comments','comments',0,'','','left',15,'ico-comment');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)

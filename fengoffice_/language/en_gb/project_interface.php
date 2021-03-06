@@ -351,7 +351,8 @@ Subject:   {0}<br/>
 	'linked milestone tab' => 'Milestones',
 	'linked task tab' => 'Tasks',
 	'linked event tab' => 'Events',
-	'apply assignee to subtasks' => 'Apply assignee to subtasks',
+	'apply assignee to subtasks' => 'Apply current assignee to subtasks',
+	'undo remove subtasks' => 'Restore removed subtasks',
 
 	'attachment from email' => 'Attached to email "{0}"',
 ); // array

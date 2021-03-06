@@ -36,6 +36,7 @@
 	'subscribe to object' => 'Suscribirse al objeto',
 	'unsubscribe from object' => 'Borrar subscripción al objeto',
 	'add comment' => 'Añadir comentario',
+	'write comment' => 'Escriba aquí su comentario',
 	'edit comment' => 'Editar comentario',
 	'add task list' => 'Añadir tarea',
 	'edit task list' => 'Editar tarea',

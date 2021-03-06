@@ -6,15 +6,19 @@
   
   $genid = gen_id();
 ?>
+<div class="coInputHeader">
 
-<div id="<?php echo $genid ?>adminContainer" class="adminGroups" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('groups') ?></div>
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('groups') ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+
+</div>
+
+<div class="coInputMainBlock adminMainBlock">
 <?php if(isset($permission_groups) && is_array($permission_groups) && count($permission_groups)) { ?>
-<table style="min-width:400px;margin-top:10px;">
+<table style="min-width:400px;">
   <tr>
     <th><?php echo lang('name') ?></th>
     <th style="text-align: center"><?php echo lang('users') ?></th>
@@ -35,7 +39,7 @@
 			$options[] = '<a class="internalLink" href="' . $group->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete group')) . '\')">' . lang('delete') . '</a>';
 		}
 	?>
-	    <td style="font-size:80%;text-align: center;"><?php echo implode(' | ', $options) ?></td>
+	    <td style="text-align: center;"><?php echo implode(' | ', $options) ?></td>
 	  </tr>
 <?php } ?>
 </table>
@@ -44,8 +48,3 @@
 <?php } // if ?>
 </div>
 </div>
-
-<script>
-	var div = document.getElementById('<?php echo $genid ?>adminContainer');
-	div.parentNode.style.backgroundColor = '#FFFFFF'; 
-</script>

@@ -34,7 +34,7 @@
 	require_javascript("og/ReportingFunctions.js");
 ?>
 
-<div style="padding:7px;">
+<div>
 
 <table>
 <tr>

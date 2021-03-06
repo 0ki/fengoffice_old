@@ -404,6 +404,7 @@ var rx__TasksDrag = {
 //************************************
 
 ogTasks.draw = function(){
+	ogTasks.currentUser.isWorking = false;
 	var start = new Date(); 
 	if (this.redrawGroups)
 		this.Groups = [];
@@ -412,6 +413,9 @@ ogTasks.draw = function(){
 
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	
+	if (!bottomToolbar || !topToolbar) return;
+	
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
 	var drawOptions = topToolbar.getDrawOptions();
 	this.Groups = this.groupTasks(displayCriteria, this.Tasks);
@@ -431,6 +435,8 @@ ogTasks.draw = function(){
 	
 	//Drawing
 	var sb = new StringBuffer();
+	sb.append(ogTasks.newTaskFormTopList());	
+	
 	for (var i = 0; i < this.Groups.length; i++){
 		if (i != (this.Groups.length-1) || this.Groups[i].group_tasks.length > 0) { //If there are no unclassified or unassigned tasks, do not show unassigned group
 			if (ogTasks.userPreferences.showEmptyMilestones == 0 && displayCriteria.group_by == 'milestone' && this.Groups[i].group_tasks.length == 0) continue;
@@ -443,10 +449,7 @@ ogTasks.draw = function(){
 		var context_names = og.contextManager.getActiveContextNames();
 		if (context_names.length == 0) context_names.push(lang('all'));
 		
-		sb.append('<div id="rx__no_tasks_info">' +
-		'<button title="' + lang('add task') + '" class="no-tasks-add-task-btn add-first-btn"' + 
-			'onClick="document.getElementById(\'rx__no_tasks_info\').style.display=\'none\'; document.getElementById(\'rx__hidden_group\').style.display=\'block\'; ogTasks.drawAddNewTaskForm(\'' + this.Groups[0].group_id + '\')">' + '<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;' +
-			(lang('add first task')) + '</button>'+
+		sb.append('<div id="rx__no_tasks_info">' +	
 			'<div class="inner-message">'+lang('no tasks to display', '"'+context_names.join('", "')+'"')+ '</div>'+
 		'</div>');
 		var rx__hidden_group = new String();
@@ -457,11 +460,63 @@ ogTasks.draw = function(){
 	// *** /RX ***
 	
 	var container = document.getElementById('tasksPanelContainer');
+	
 	sb.append("<div style='height:20px'></div>")
 	container.innerHTML = sb.toString();
 	
+	ogTasks.resizeRows();
+	
+	//start all clocks on the list
+	var clocks = $(".og-timeslot-work-started span");
+	
+	for (i = 0; i < clocks.length; i++) { 
+		var clockId = clocks[i].id;
+		clockId = clockId.replace("timespan", "");
+		var user_start_time = parseInt($("#"+clockId+"user_start_time").val());
+		
+		og.startClock(clockId,user_start_time);
+	}
+	
+	
+	
 	//fire event
 	og.eventManager.fireEvent('after ogTasks.Groups list completely loaded', null);
+	og.eventManager.fireEvent('replace all empty breadcrumb', null);
+}
+
+og.eventManager.addListener('menu-panel expand', function() {
+	ogTasks.resizeRowsDelay();
+});
+
+og.eventManager.addListener('menu-panel collapse', function() {
+	ogTasks.resizeRowsDelay();
+});
+
+ogTasks.resizeRowsDelay = function(){
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+	if (currentPanel.id == 'tasks-panel') {
+		setTimeout(function(){
+			ogTasks.resizeRows();
+		}, 200);
+	}	
+}
+
+ogTasks.resizeRows = function(){
+	$(".task-name-container").width('200px');
+	var container_width = 0;
+	$(".task-list-row-template").first().children().each(function() {
+		container_width += $(this).outerWidth( true );
+	});
+
+	//set the width of the task panel container
+	if(ogTasks.currentUser.isWorking){
+		container_width = container_width + 60;
+	}
+	$("#tasksPanelContainer").width(container_width+40);
+	
+	//fill all the free space width the name of the task
+	var name = $(".task-name-container").width() + $(".task-list-row-template").first().width() - container_width ;
+	$(".task-name-container").width(name);	
 }
 
 ogTasks.toggleSubtasks = function(taskId, groupId){
@@ -531,7 +586,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	//rx__TasksDrag.haveExtDD['ogTasksPanelGroupCont'+group.group_id] = group.group_id;
 	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
 	sb.append("<table width='100%'><tr>");
-	sb.append('<td style="width:20px"><div onclick="ogTasks.expandCollapseAllTasksGroup(\'' + group.group_id + '\')" class="og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG' + group.group_id + '"></div></td>');
+	sb.append('<td style="width:13px"><div style="width: 13px;" onclick="ogTasks.expandCollapseAllTasksGroup(\'' + group.group_id + '\')" class="og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG' + group.group_id + '"></div></td>');
 	sb.append('<td style="width:20px" title="'+lang('select all tasks')+'"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onclick="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
 	
 	sb.append("<td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
@@ -589,15 +644,14 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 			sb.append('</span></td>');
 		}
 		sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
-		sb.append("<td><div class='ogTasksGroupHeaderActions' style='"+transparent_style+"padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div></td></tr></table>');
+		sb.append("<td></td></tr></table>");
 	} else {
-		sb.append("<div class='ogTasksGroupHeaderActions' style='"+transparent_style+"' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
+		//sb.append("<div class='ogTasksGroupHeaderActions' style='"+transparent_style+"' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
 	}
 	sb.append('</td></tr></table></div>');
-	
+	//35
 	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
 	//draw the group's tasks
-	var time_estimated = 0;
 	group.isExpanded = ogTasks.expandedGroups.indexOf(group.group_id) > -1;
 	for (var i = 0; i < group.group_tasks.length; i++){
 		if (i == og.noOfTasks){//Draw expander if group has more than og.noOfTasks tasks
@@ -616,33 +670,40 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		sb.append(this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1));
 	}
 
-	for (var c = 0; c < group.group_tasks.length; c++){
-		if (group.group_tasks[c].subtasks.length > 0){
-			time_estimated += this.subtasksTimeEstimate(Number(group.group_tasks[c].TimeEstimate), group.group_tasks[c], displayCriteria);
-		}else{
-			time_estimated += Number(group.group_tasks[c].TimeEstimate);
-		}
-	}
-
+	
+	var group_totals = this.calculteGroupTotals(group, displayCriteria);
+	
+	var time_estimated = 0;	
+	
 	if (drawOptions.show_time_estimates) {
-		var total_estimate_split = Math.round(time_estimated * 100 / 60) / 100;
-		var total_estimate = (total_estimate_split + '').split(".");
-		var hours_estimate = total_estimate[0] + " " + lang('hours');
-		var minutes_estimate = "";
-		if (total_estimate[1]) {
-			if (total_estimate[1].length == 1) {
-				minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 10)) + " " + lang('minutes');
-			} else {
-				minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 100)) + " " + lang('minutes');
-			}
-			var format_total_estimate = hours_estimate + minutes_estimate;
-		} else {
-			var format_total_estimate = hours_estimate;
+		var format_group_totals = {};
+		for (var key in group_totals) {
+			format_group_totals[key] = ogTasks.minutesToHoursAndMinutes(group_totals[key]);
 		}
-		sb.append("<div style='float:right;'><span style='font-weight:bold;color:#888'>" + lang('estimated time') + ':&nbsp;' + format_total_estimate + "</span>");
+		
+		sb.append("<div>");
+		sb.append(ogTasks.newTaskGroupTotals(format_group_totals));
 	}
 	sb.append("</div></div></div>");
 	return sb.toString();
+}
+
+ogTasks.minutesToHoursAndMinutes = function(minutes){
+	var total_estimate_split = Math.round(minutes * 100 / 60) / 100;
+	var total_estimate = (total_estimate_split + '').split(".");
+	var hours_estimate = total_estimate[0] + " " + lang('hours');
+	var minutes_estimate = "";
+	if (total_estimate[1]) {
+		if (total_estimate[1].length == 1) {
+			minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 10)) + " " + lang('minutes');
+		} else {
+			minutes_estimate = ", " + Math.round(((total_estimate[1] * 60) / 100)) + " " + lang('minutes');
+		}
+		var format_total_estimate = hours_estimate + minutes_estimate;
+	} else {
+		var format_total_estimate = hours_estimate;
+	}
+	return format_total_estimate;
 }
 
 ogTasks.drawGroupActions = function(group){
@@ -699,6 +760,17 @@ ogTasks.expandGroup = function(group_id){
 		div.innerHTML = html;
 		divLink.style.display = 'none';
 		ogTasks.expandedGroups.push(group.group_id);
+		
+		//init action btns
+		var btns = $("#ogTasksGroupExpandTasks"+ group_id +" .tasksActionsBtn").toArray();
+		og.initPopoverBtns(btns);
+		
+		//resize rows
+		ogTasks.resizeRows();
+		
+		//init breadcrumbs
+		og.eventManager.fireEvent('replace all empty breadcrumb', null);
+		
 /*		if (drawOptions.show_workspaces)
 			og.showWsPaths('ogTasksGroupExpandTasks' + group_id);*/
 	}
@@ -740,10 +812,7 @@ ogTasks.drawAddTask = function(id_subtask, group_id, level){
 	var padding = (15 * (level + 1)) + 10;
 	return '<div class="ogTasksTaskRow" style="padding-left:' + padding + 'px">' + 
 	'</div>';
-	
-	/*return '<div class="ogTasksAddTask ico-add">' +
-	'<a href="#" class="internalLink"  onClick="ogTasks.drawAddNewTaskForm(\'' + group_id + '\', ' + id_subtask + ', ' + level + ')">' + ((id_subtask > 0)?lang('add subtask') : lang('add task')) + '</a>' +
-	'</div></div>'; */
+		
 }
 
 
@@ -761,12 +830,14 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level)
 	// **** <RX : dragging **** //
 	var rx__drag_h = '';
 	var tgId = "T" + task.id + 'G' + group_id;
-	if(rx__TasksDrag.allowDrag)
-		rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' class='RX__tasks_og-drag ogTasksIcon' title='"+lang('click to drag task')+"' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'></div>";
-
-	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row level-'+level+'" onmouseover="rx__TasksDrag.showHandle(\''+tgId+'\',1)"  onmouseout="rx__TasksDrag.showHandle(\''+tgId+'\',0)">' + rx__drag_h 
+	//if(rx__TasksDrag.allowDrag)
+		//rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' title='"+lang('click to drag task')+"' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'>";
+	
+	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row level-'+level+'">' + rx__drag_h 
 		 + this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level) + '</div>';
 	// **** /RX **** //
+	//if(rx__TasksDrag.allowDrag)
+		//html += '</div>';
 	
 	if (task.subtasks.length > 0)
 		html += this.drawSubtasks(task, drawOptions, displayCriteria, group_id, level);
@@ -776,215 +847,266 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level)
 ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, level){
 	var sb = new StringBuffer();
 	var tgId = "T" + task.id + 'G' + group_id;
-	sb.append('<table id="ogTasksPanelTaskTable' + tgId + '" class="ogTasksTaskTable' + (task.isChecked?'Selected':'') + '" onmouseover="ogTasks.mouseMovement(' + task.id + ',\'' + group_id + '\',true)" onmouseout="ogTasks.mouseMovement(' + task.id + ',\'' + group_id + '\',false)"><tr>');
 
-	//Draw checkbox
-	var priorityColor = "white";
-	switch(task.priority){
-		case 200: priorityColor = "#DAE3F0"; break;
-		case 300: priorityColor = "#FF9088"; break;
-		case 400: priorityColor = "#FF0000"; break;
-		default: break;
+	//checkbox container class by priority
+	var priorityColor = "priority-default";
+	if (typeof task.priority != 'undefined') {
+		priorityColor = "priority-"+task.priority;
 	}
-	sb.append('<td class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
-	sb.append('<input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelChk' + tgId + '" ' + (task.isChecked?'checked':'') + ' onclick="ogTasks.TaskSelected(this,' + task.id + ', \'' + group_id + '\')"/></td>'); 
 	
-	//Draw subtasks expander
+	//subtask expander
+	var subtasksExpander = "";
 	if (task.subtasks.length > 0){
-		sb.append("<td style='padding-top:3px;width:16px;'><div id='ogTasksPanelFixedExpander" + tgId + "' class='og-task-expander " + ((task.isExpanded)?'toggle_expanded':'toggle_collapsed') + "' onclick='ogTasks.toggleSubtasks(" + task.id +", \"" + group_id + "\")'></div></td>");
-	} else {
-		// FIXME: quick add task
-		//sb.append("<td class='add-subtask-link-container'><div class='add-subtask-link'  id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='og-task-expander _____ico-add ogTasksIcon' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
-		sb.append("<td style='width:20px;min-width:20px;'>&nbsp;</td>");
+		if (task.isExpanded){
+			subtasksExpander = "toggle_expanded";
+		}else{
+			subtasksExpander = "toggle_collapsed";
+		}	 
 	}
 	
-
-	if (task.isRead){
-		sb.append("<td style=\"width:16px\" id=\"ogTasksPanelMarkasTd" + task.id + "\"><div title=\"" + lang('mark as unread') + "\" id=\"readunreadtask" + task.id + "\" class=\"db-ico ico-read\" onclick=\"ogTasks.readTask(" + task.id + ","+task.isRead+")\" /></td>");		
-	}else {
-		sb.append("<td style=\"width:16px\" id=\"ogTasksPanelMarkasTd" + task.id + "\"><div title=\"" + lang('mark as read') + "\" id=\"readunreadtask" + task.id + "\" class=\"db-ico ico-unread\" onclick=\"ogTasks.readTask(" + task.id + ","+task.isRead+")\" /> </td>");
-	}
-	
-	//Center td
-	sb.append('<td style="text-align:left;width:'+(drawOptions.show_dates ? '47' : (drawOptions.show_time_estimates ? '47' : '63'))+'%;">');
-	
-	var taskName = '';
 	//Draw the Assigned user
-	if (task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group_id)){
-		taskName += '<span class="bold">' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</span>:&nbsp;';
+	var assignedTo = false;
+	if (task.assignedToId){
+		assignedTo = og.allUsers[task.assignedToId];		
 	}
+	
+	//Draw the Assigned user
+	var assignedBy = false;
+	if (task.assignedById){
+		assignedBy = og.allUsers[task.assignedById];		
+	}
+	
 	//Draw the task name
-	taskName += og.clean(task.title);
+	taskName = og.clean(task.title);
+	var tooltip = '';
+	//if is completed
 	if (task.status > 0){
 		var user = this.getUser(task.completedById, true);
-		var tooltip = '';
 		if (user){
 			var time = new Date(task.completedOn * 1000);
 			var now = new Date();
 			var timeFormatted = time.getYear() != now.getYear() ? time.dateFormat('M j, Y'): time.dateFormat('M j');
 			tooltip = lang('completed by name on', og.clean(user.name), timeFormatted).replace(/'\''/g, '\\\'');
-		}
-		taskName = "<span style='text-decoration:line-through' title='" + tooltip + "'>" + taskName + "</span>";
+		}		
 	}
-	var viewUrl = og.getUrl('task', 'view', {id: task.id});
-	sb.append('<a class="internalLink" href="' + viewUrl + '" onclick="og.openLink(\'' + viewUrl + '\');return false;" id="rx__dd'+(++rx__dd)+'">' + taskName + '</a>');
 	
 	//Member Path
 	mem_path = "";
 	var mpath = Ext.util.JSON.decode(task.memPath);
-	if (mpath) mem_path = og.getCrumbHtml(mpath);
-	sb.append(mem_path);
+	if (mpath) mem_path = og.getEmptyCrumbHtml(mpath,".task-breadcrumb-container");
 	
-	//Draw repeat icon (if repetitive)
-	if (task.repetitive > 0){
-		sb.append('<span style="margin: 0px 8px; padding: 0px 0px 2px 12px;" class="ico-recurrent" title="'+ lang('repetitive task') +'">&nbsp;</span>');
+	//Dates
+	var start_date = '';
+	if (task.startDate){
+        var date = new Date(task.startDate * 1000);
+        date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+        var hm_format = task.useStartTime ? (og.preferences['time_format_use_24'] == 1 ? ' <br> G:i' : ' <br> g:i A') : '';
+        var now = new Date();
+        var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
+        start_date = dateFormatted;
 	}
-	
-	// Draw percent completed bar
-	sb.append('</td><td style="width:85px;">' + ogTasks.buildTaskPercentCompletedBar(task) + '</td><td>');
-
-	sb.append('</td><td align=right><table style="height:100%"><tr>');
-        
-	//Draw task actions
-	sb.append("<td class='nobr'><div id='ogTasksPanelTaskActions" + tgId + "' class='ogTaskActions'><table><tr>");
-	
-	// Add Subtask
-	if (ogTasks.userPermissions.can_add) {
-		sb.append("<td style='padding-left:8px;'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='add-subtask-link ico-add coViewAction' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
+	var due_date = '';
+	var due_date_late = false;
+	if (task.dueDate){
+	        var date = new Date((task.dueDate) * 1000);
+	        date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
+	        var hm_format = task.useDueTime ? (og.preferences['time_format_use_24'] == 1 ? ' <br> G:i' : ' <br> g:i A') : '';
+	        var now = new Date();
+	        var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
+	        due_date = dateFormatted;	
+	        
+	        if (task.status == 0 && date < now) {
+	        	due_date_late = true;
+	        }
 	}
-	
-	if (ogTasks.userPermissions.can_add) {
-		sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.drawEditTaskForm(" + task.id + ", \"" + group_id + "\")'>");
-		// FIXME: remove this function when quick add is enabled
-        //sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.goToCompleteEditForm(" + task.id + ")'>");
-		sb.append("<div class='ico-edit coViewAction' title='" + lang('edit') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('edit') + "</div></a></td>");
-	}
-	sb.append("<td style='padding-left:8px;'><a href='#' onclick='ogTasks.ToggleCompleteStatus(" + task.id + ", " + task.status + ")'>");
-	if (task.status > 0){
-		sb.append("<div class='ico-reopen coViewAction' title='" + lang('reopen this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('reopen') + "</div></a></td>");
-	} else {
-		sb.append("<div class='ico-complete coViewAction' title='" + lang('complete this task') + "' style='cursor:pointer;height:16px;padding-top:0px'>" + lang('do complete') + "</div></a></td>");
-	}
-	sb.append("</tr></table></div></td>");
-	
-        if (drawOptions.show_dates || drawOptions.show_time_estimates){
-            sb.append('<td style="color:#888;font-size:9px;padding-left:6px;padding-right:3px;width:150px;text-align:right;">');
-            
-            //Draw time stimate
-            if (drawOptions.show_time_estimates && task.estimatedTime){
-                    sb.append('<span class="estimated-time nobr">'+ lang('estimated')+': '+task.estimatedTime +'</span> ');
-            }
-
-            //Draw dates
-            if (drawOptions.show_dates && (task.startDate || task.dueDate)){
-                    sb.append('<span class="nobr"' + (task.status == 1 ? ' style="text-decoration:line-through;"' : '') + '>');
-
-                    if (task.startDate){
-                            var date = new Date(task.startDate * 1000);
-                            date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
-                            var hm_format = task.useStartTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
-                            var now = new Date();
-                            var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
-                            sb.append(lang('start') + ':&nbsp;' + dateFormatted);
-                    }
-                    if (task.startDate && task.dueDate) {
-                            sb.append('&nbsp;|&nbsp;');
-                    }
-
-                    if (task.dueDate){
-                            var date = new Date((task.dueDate) * 1000);
-                            date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
-                            var hm_format = task.useDueTime ? (og.preferences['time_format_use_24'] == 1 ? ' - G:i' : ' - g:i A') : '';
-                            var now = new Date();
-                            var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y' + hm_format): date.dateFormat('M j' + hm_format);
-                            var dueString = lang('due') + ':&nbsp;' + dateFormatted;
-                            if (task.status == 0 && date < now) {
-                                    dueString = '<span style="font-weight:bold;color:#F00">' + dueString + '</span>';
-                            }
-                            sb.append(dueString);
-                    }
-                    sb.append('</span>');
-            }
-            sb.append('</td>');
-        }
 	
 	//Draw time tracking
+	var userIsWorking = false;
+	var userPaused = false;
+	var userStartTime = 0;
+	var userState = 'started';
+	var userPausedTime = '';
+	var workingOnUsers = new Array();
+	var showWorkingOnUsers = false;
 	if (drawOptions.show_time){
+		//is working
 		if (task.workingOnIds){
 			var ids = (task.workingOnIds + ' ').split(',');
-			var userIsWorking = false;
 			for (var i = 0; i < ids.length; i++) {
 				if (this.currentUser && ids[i] == this.currentUser.id){
 					userIsWorking = true;
+					ogTasks.currentUser.isWorking = true;
+					userStartTime = task.workingOnTimes[i];
 					var pauses = (task.workingOnPauses + ' ').split(',');
-					var userPaused = pauses[i] == 1;
-				}
-			}
-			sb.append("<td class='" + (userIsWorking?(userPaused?"ogTasksPausedTimeTd": "ogTasksActiveTimeTd") : "ogTasksTimeTd") + "'><table><tr>");
-			if (userIsWorking){
-				if (userPaused) {
-					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"resume_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-play' title='" + lang('resume_work') + "'></div></a></td>");
-				} else {
-					sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"pause_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time-pause' title='" + lang('pause_work') + "'></div></a></td>");
-				}
-				sb.append("<td><a href='#' onclick='ogTasks.closeTimeslot(\"" + tgId + "\")'><div class='ogTasksTimeClock ico-time-stop' title='" + lang('close_work') + "'></div></a></td>");
-			} else {
-				sb.append("<td><a href='#' onclick='ogTasks.executeAction(\"start_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang('start_work') + "'></div></a></td>");
-			}
-			sb.append("<td style='white-space:nowrap'><b>");
-			
-			for (var i = 0; i < ids.length; i++){
-				var user = this.getUser(ids[i]);
-				if (user){
-					sb.append("" + og.clean(user.name));
-					if (i < ids.length - 1) {
-						sb.append(",");
+					userPaused = pauses[i] == 1;
+					if(userPaused){
+						userState = 'paused';
+						userPausedTime = og.calculateTimeForClock(new Date(),userStartTime);
 					}
-					sb.append("&nbsp;");
+				}else{
+					var usrId = parseInt(ids[i]);
+					workingOnUsers.push(og.allUsers[usrId]);
+					showWorkingOnUsers = true;
 				}
-			}
-			sb.append("</b>");
-			if (userIsWorking){
-				sb.append("<div id='ogTasksPanelCWD" + tgId + "' style='display:none'><table><tr><td>" + lang('description') + ":<br/><textarea tabIndex=10100 style='height:54px;width:220px;margin-right:8px' id='ogTasksPanelCWDescription" + tgId + "'></textarea></td></tr>");
-				sb.append("<tr><td style='padding-bottom:5px'><button type='submit' tabIndex=10101 onclick='ogTasks.executeAction(\"close_work\",[" + task.id + "],document.getElementById(\"ogTasksPanelCWDescription" + tgId + "\").value);return false'>" + lang('close work') + "</button>&nbsp;&nbsp;<button tabIndex=10102 type='submit' onclick='ogTasks.closeTimeslot(\"" + tgId + "\");return false'>" + lang('cancel') + "</button></td></tr></table></div>");
-			}
-			sb.append("</td></tr></table>");
-		}else{
-			sb.append("<td class='ogTasksTimeTd'>");
-			sb.append("<a href='#' onclick='ogTasks.executeAction(\"start_work\",[" + task.id + "])'><div class='ogTasksTimeClock ico-time' title='" + lang('start_work') + "'></div></a>");
-		}
-		sb.append("</td>");
+			}		
+		}		
 	}
 	
-	if (og.config.use_tasks_dependencies > 0) {
-		var dep_cls = "";
-		var dep_text = "";
-		var dep_title = "";
-		if (task.status == 0) {
-			var dep = ogTasks.getDependencyCount(task.id);
-			if (dep) {
-				dep_cls = dep.count > 0 ? "incomplete-task-bck" : "complete-task-bck";
-				dep_text = dep.count > 0 ? dep.count : "&nbsp;";
-				dep_title = dep.count > 0 ? lang('this task has x pending tasks', dep.count) : lang('this task has no pending dependencies and can be completed');
-			}
-		}
-		sb.append('<td class="'+dep_cls+'" style="width:10px;padding-left:2px;" title="'+dep_title+'">' + dep_text + '</td>');
+	//task actions
+	var taskActions = new Array();
+	taskActions.push({
+		act_collapsed: true,
+		act_onclick: "ogTasks.AddWorkTime", 
+		act_onclick_param: [{param_val: task.id}],
+		act_text: lang('add work'), 
+		act_class: "ico-time-s coViewAction"
+	});	
+	taskActions.push({
+		act_collapsed: !drawOptions.show_quick_add_sub_tasks,
+		act_onclick: "ogTasks.drawAddNewTaskForm", 
+		act_onclick_param: [{param_val: "'"+group_id+"',"},{param_val: task.id+","},{param_val: level}],
+		act_text: lang('add subtask'), 
+		act_id: "ogTasksPanelExpander"+tgId,
+		act_class: "add-subtask-link ico-add coViewAction"
+	});
+	taskActions.push({
+		act_collapsed: !drawOptions.show_quick_edit,
+		act_onclick: "ogTasks.drawEditTaskForm",
+		act_onclick_param: [{param_val: task.id+","},{param_val: "'"+group_id+"'"}],
+		act_text: lang('edit'), 
+		act_class: "ico-edit coViewAction"
+	});
+	if(task.status){
+		taskActions.push({
+			act_collapsed: !drawOptions.show_quick_complete,
+			act_onclick: "ogTasks.ToggleCompleteStatus",
+			act_onclick_param: [{param_val: task.id+","},{param_val: task.status}],
+			act_text: lang('reopen this task'), 
+			act_class: "ico-reopen coViewAction"
+		});
+	}else{
+		taskActions.push({
+			act_collapsed: !drawOptions.show_quick_complete,
+			act_onclick: "ogTasks.ToggleCompleteStatus",
+			act_onclick_param: [{param_val: task.id+","},{param_val: task.status}],
+			act_text: lang('complete this task'), 
+			act_class: "ico-complete coViewAction"
+		});
+	}
+	//mark the last collapsed action with a bool
+	for(var i = taskActions.length; i > 0; i--){
+		if(taskActions[i-1].act_collapsed){
+			taskActions[i-1].act_last = true;	    	
+	    	break;
+	    }
 	}
 	
-	sb.append('</tr></table></td></tr></table>');
+	var show_quick_actions_container = false;
+	for(var i = taskActions.length; i > 0; i--){
+		if(!taskActions[i-1].act_collapsed){
+			show_quick_actions_container = true;
+	    }
+	}
 		
+	var row_total_cols = [];
+	for (var key in ogTasks.TotalCols){
+		var row_field = ogTasks.TotalCols[key].row_field;
+		var color = '#888';
+		if(row_field == 'worked_time_string' && task.pending_time < task.worked_time){
+			color = '#f00';
+		}
+		row_total_cols.push({text : task[row_field], color: color});
+	}
+	
+	//get template for the row
+	var source = $("#task-list-row-template").html(); 
+	//compile the template
+	var template = Handlebars.compile(source);
+	
+	//template data
+	var data = {
+			task: task,
+			task_actions: taskActions,
+			show_quick_actions_container: show_quick_actions_container,
+			genid: og.genid,
+			start_date : start_date,
+			due_date : due_date,
+			due_date_late : due_date_late,
+			draw_options : drawOptions,
+			subtasksExpander: subtasksExpander,
+			priorityColor: priorityColor,
+			tgId: tgId,
+			group_id: "'"+group_id+"'",
+			assigned_to : assignedTo,
+			assigned_by : assignedBy,
+			rx__dd : ++rx__dd,
+			rx__TasksDrag : rx__TasksDrag,
+			view_url :  og.getUrl('task', 'view', {id: task.id}),
+			task_name : taskName,
+			tool_tip : tooltip,
+			mem_path: mem_path,
+			percent_completed_bar : ogTasks.buildTaskPercentCompletedBar(task),
+			level : level,
+			user_is_working : userIsWorking,
+			user_paused : userPaused,
+			user_paused_time : userPausedTime,
+			user_state : userState,
+			user_start_time : userStartTime,
+			working_on_users : workingOnUsers,
+			show_working_on_users : showWorkingOnUsers,
+			row_total_cols : row_total_cols
+	}
+	
+	//instantiate the template
+	var html = template(data);
+	
+	sb.append(html);
 	return sb.toString();
 }
 
-
-
-ogTasks.closeTimeslot = function(tgId){
-	var panel = document.getElementById('ogTasksPanelCWD' + tgId);
-	if (panel.style.display == 'block')
-		panel.style.display = 'none';
-	else {
-		panel.style.display = 'block';
-		document.getElementById('ogTasksPanelCWDescription' + tgId).focus();
+ogTasks.closeTimeslot = function(tId){
+	if(og.config.tasks_show_description_on_time_forms){
+		//get template
+		var source = $("#small-task-timespan-template").html(); 
+		//compile the template
+		var template = Handlebars.compile(source);
+		
+		//template data
+		var data = {
+				taskId: tId,			
+				genid: og.genid
+		}
+		
+		//instantiate the template
+		var html = template(data);
+			
+		var modal_params = {
+				'escClose': true,
+				'overlayClose': true,
+				'minWidth' : 400,
+				'minHeight' : 200,
+				'closeHTML': '<a id="ogTasksPanelAT_close_link" class="modal-close modal-close-img"></a>'
+			};
+		
+			
+		$.modal(html,modal_params);
+				
+		$( "#small-task-timespan-modal-form"+og.genid ).submit(function( event ) {
+			var parameters = [];
+			var form_params = $( this ).serializeArray();
+			
+			for (i = 0; i < form_params.length; i++) { 
+				    parameters[form_params[i].name] = form_params[i].value;
+			}
+					
+			ogTasks.executeAction("close_work",tId,parameters['timeslot[description]']);
+			
+			ogTasks.closeModal();
+			
+			event.preventDefault();
+		});	
+	}else{
+		ogTasks.executeAction("close_work",tId);
 	}
 }
 
@@ -1010,6 +1132,52 @@ ogTasks.subtasksTimeEstimate = function(time_estimated, task, displayCriteria){
 	}
 	return time_estimated;
 }
+
+ogTasks.subtasksTotals = function(group_totals, group_totals_keys, task, displayCriteria){
+	var orderedTasks = this.orderTasks(displayCriteria, task.subtasks);
+	for (var i = 0; i < orderedTasks.length; i++){
+		if (orderedTasks[i].subtasks.length > 0){
+			group_totals = this.subtasksTotals(group_totals, group_totals_keys, orderedTasks[i], displayCriteria);			
+		}		
+		
+		for (var j = 0; j < group_totals_keys.length; j++){
+			var key = group_totals_keys[j];
+			group_totals[key] = Number(group_totals[key]) + Number(orderedTasks[i][key]);
+		}
+	}
+	return group_totals;
+}
+
+ogTasks.calculteGroupTotals = function(group, displayCriteria, drawOptions){
+	var group_totals_keys = new Array();
+	for (var key in ogTasks.TotalCols){
+		var group_total_field = ogTasks.TotalCols[key].group_total_field;
+		group_totals_keys.push(group_total_field);
+	}
+		
+	var group_totals = {};	
+	for (var i = 0; i < group_totals_keys.length; i++){
+		var key = group_totals_keys[i];
+		group_totals[key] = 0;
+	}
+			
+	for (var c = 0; c < group.group_tasks.length; c++){
+		if (group.group_tasks[c].subtasks.length > 0){
+			group_totals = this.subtasksTotals(group_totals, group_totals_keys,group.group_tasks[c], displayCriteria);			
+		}	
+		
+		for (var i = 0; i < group_totals_keys.length; i++){
+			var key = group_totals_keys[i];
+			group_totals[key] = Number(group_totals[key]) + Number(group.group_tasks[c][key]);
+		}
+			
+	}
+	
+	return group_totals;
+}
+
+
+
 
 ogTasks.ToggleCompleteStatus = function(task_id, status) {
 	var related = false;
@@ -1073,6 +1241,74 @@ ogTasks.ToggleCompleteStatusOk = function(task_id, status, opt){
 		scope: this
 	});
 }
+
+ogTasks.AddWorkTime = function(task_id) {
+	//get template
+	var source = $("#task-timespan-template").html(); 
+	//compile the template
+	var template = Handlebars.compile(source);
+	
+	var minutes = new Array();
+	for (i = 0; i < 61; i=i+5) { 
+		minutes.push({minute:i});
+	}
+	
+	//template data
+	var data = {
+			taskId: task_id,
+			minutes: minutes,
+			showDesc: og.config.tasks_show_description_on_time_forms,
+			genid: og.genid
+	}
+	
+	//instantiate the template
+	var html = template(data);
+	
+		
+	var modal_params = {
+			'escClose': true,
+			'minWidth' : 390,
+			'minHeight' : 300,
+			'overlayClose': true,
+			'closeHTML': '<a id="ogTasksPanelAT_close_link" class="modal-close modal-close-img"></a>'
+		};
+		
+	$.modal(html,modal_params);
+	
+	// DatePicker Menu  
+	var dateCond = new og.DateField({
+		renderTo:'datepicker'+og.genid,
+		name: 'timeslot[date]',
+		id: 'timeslot[date]',
+		value: Ext.util.Format.date(new Date(), og.preferences['date_format']),
+		tabIndex: 70
+	});
+	 	
+	$( "#task-timespan-modal-form"+og.genid ).submit(function( event ) {
+		var parameters = [];
+		var form_params = $( this ).serializeArray();
+		
+		for (i = 0; i < form_params.length; i++) { 
+			    parameters[form_params[i].name] = form_params[i].value;
+		}
+		
+		og.openLink(
+				og.getUrl('time','add_timeslot'),
+				{ method:'POST' , 
+					post:parameters,
+					callback:function(success, data){
+						if (!success || data.errorCode) {
+						} else {
+							ogTasks.closeModal();	
+						}						
+					}
+				}
+			);		 
+		
+		event.preventDefault();
+	});
+}
+
 
 ogTasks.readTask = function(task_id,isUnRead){
 	var task = ogTasks.getTask(task_id);
@@ -1142,7 +1378,7 @@ ogTasks.buildTaskPercentCompletedBar = function(task) {
 	
 	var html = "<span><span class='nobr'><table style='display:inline;'><tr><td style='padding-left:15px;padding-top:5px'>" +
 			"<table style='height:7px;width:50px'><tr><td style='height:7px;width:" + percent_complete + "%;' class='"+color_cls+"'></td><td style='width:" + (100 - percent_complete) + "%;background-color:#DDD'></td></tr></table>" +
-			"</td><td style='padding-left:3px;line-height:12px'><span style='font-size:8px;color:#777'>" + percent_complete + "%</span></td></tr></table></span></span>";
+			"</td><td style='padding-left:3px;line-height:12px'><span class='percent_num' style='font-size:8px;color:#777'>" + percent_complete + "%</span></td></tr></table></span></span>";
 	
 	return html;
 }
@@ -1172,4 +1408,67 @@ ogTasks.UpdateDependants = function(task, complete, prev_status) {
 			}
 		}
 	}
+}
+
+ogTasks.newTaskFormTopList = function() {
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	
+	var drawOptions = topToolbar.getDrawOptions();
+	var draw_quick_actions = false;
+	if(drawOptions.show_quick_complete){
+		draw_quick_actions = true;
+	}
+	if(drawOptions.show_quick_add_sub_tasks){
+		draw_quick_actions = true;
+	}
+	if(drawOptions.show_quick_edit){
+		draw_quick_actions = true;
+	}
+	
+	var title_total_cols = [];
+	for (var key in ogTasks.TotalCols){
+		var title_field = ogTasks.TotalCols[key].title;
+		title_total_cols.push(lang(title_field));
+	}
+	
+	//get template for the row
+	var source = $("#task-list-col-names-template").html(); 
+	//compile the template
+	var template = Handlebars.compile(source);
+	
+	//template data
+	var data = {
+			draw_options : drawOptions,
+			title_total_cols: title_total_cols,
+			draw_quick_actions : draw_quick_actions
+	}
+	
+	//instantiate the template
+	var html = template(data);
+	
+	return '<div id="ogTasksPanelColNames">'+html+'</div>';
+		
+}
+
+ogTasks.newTaskGroupTotals = function(format_group_totals) {
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	
+	var drawOptions = topToolbar.getDrawOptions();
+	
+	//get template for the row
+	var source = $("#task-list-group-totals-template").html(); 
+	//compile the template
+	var template = Handlebars.compile(source);
+	
+	//template data
+	var data = {
+			draw_options : drawOptions,
+			format_group_totals : format_group_totals
+	}
+	
+	//instantiate the template
+	var html = template(data);
+	
+	return html;
+		
 }

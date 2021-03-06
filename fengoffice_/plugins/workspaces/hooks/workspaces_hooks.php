@@ -78,14 +78,100 @@ function workspaces_quickadd_extra_fields($parameters) {
 	}
 }
 
-function workspaces_render_widget_member_information(Member $member, $ret=null) {
+function workspaces_render_widget_member_information(Member $member, &$prop_html="") {
 	$ws_ot = ObjectTypes::findByName('workspace');
 	if ($member->getObjectTypeId() == $ws_ot->getId()) {
 		
 		$ws = Workspaces::getWorkspaceById($member->getObjectId());
 		if ($ws instanceof Workspace && $ws->getDescription() != "" && $ws->getColumnValue('show_description_in_overview')) {
-			echo '<div style="margin-bottom:5px;">'.escape_html_whitespace(convert_to_links(clean($ws->getDescription()))).'</div>';
+			$prop_html .= '<div style="margin-bottom:5px;">'.escape_html_whitespace(convert_to_links(clean($ws->getDescription()))).'</div>';
 		}
 		
 	}
+}
+
+function workspaces_render_administration_dimension_icons($ignored, &$icons){
+	if (logged_user() instanceof Contact && can_manage_dimension_members(logged_user())) {
+		$enabled_dimensions = config_option("enabled_dimensions");
+		$dimension = Dimensions::instance()->findByCode('workspaces');
+		if (in_array($dimension->getId(), $enabled_dimensions)) {
+			$icons[] = array(
+				'ico' => 'ico-large-workspace',
+				'url' => get_url('dimension', 'list_members', array('dim' => $dimension->getId())),
+				'name' => lang($dimension->getCode()),
+				'extra' => '',
+			);
+		}
+		
+		$dimension = Dimensions::instance()->findByCode('tags');
+		if (in_array($dimension->getId(), $enabled_dimensions)) {
+			$icons[] = array(
+				'ico' => 'ico-large-tags',
+				'url' => get_url('dimension', 'list_members', array('dim' => $dimension->getId())),
+				'name' => lang($dimension->getCode()),
+				'extra' => '',
+			);
+		}
+	}
+}
+
+function workspaces_more_panel_dimension_links($ignored, &$links) {
+	$dimension = Dimensions::findByCode('workspaces');
+	$enabled_dimensions = config_option("enabled_dimensions");
+	if (!in_array($dimension->getId(), $enabled_dimensions)) return;
+	
+	$dimension_options = $dimension->getOptions(true);
+	if($dimension_options && isset($dimension_options->useLangs) && $dimension_options->useLangs ) {
+		$name = lang($dimension->getCode());
+	} else {
+		$name = $dimension->getName();
+	}
+	
+	$step = Plugins::instance()->isActivePlugin('crpm') ? 5 : 4;
+	
+	$selector = '#dimension-panel-'.$dimension->getId().' .x-tool.x-tool-options';
+	$onclick = 'Ext.getCmp(\'menu-panel\').expand(true); og.highlight_link({selector:\''.$selector.'\', step:'.$step.', time_active:30000, timeout:500, animate_opacity:10, hint_text:\''.lang('click here').'\'}); return false;';
+	
+	$links[] = array(
+			'id' => 'dim_workspaces',
+			'ico' => 'ico-large-workspace',
+			'url' => get_url('dimension', 'list_members', array('dim' => $dimension->getId())),
+			'name' => $name,
+			'onclick' => $onclick,
+			'extra' => '',
+	);
+}
+
+
+function workspaces_add_member_by_type_info($data, &$info) {
+	if (array_var($data, 'dim_code') == 'workspaces') {
+		$w_ot = ObjectTypes::findByName('workspace');
+
+		if (array_var($data, 'mem_type') == $w_ot->getId()) {
+			$dimension = Dimensions::findByCode('workspaces');
+			$info = array('name' => lang('add new workspace'), 'url' => get_url('member', 'add', array('dim_id' => $dimension->getId(), 'type' => $w_ot->getId())));
+		}
+	} else if (array_var($data, 'dim_code') == 'tags') {
+		$t_ot = ObjectTypes::findByName('tag');
+		
+		if (array_var($data, 'mem_type') == $t_ot->getId()) {
+			$dimension = Dimensions::findByCode('tags');
+			$info = array('name' => lang('add new tag'), 'url' => get_url('member', 'add', array('dim_id' => $dimension->getId(), 'type' => $t_ot->getId())));
+		}
+	}
+}
+
+
+function workspaces_page_rendered() {
+	if (!Plugins::instance()->isActivePlugin('crpm')) {
+		$did = Dimensions::instance()->findByCode('workspaces')->getId();
+		
+		$one_member = Members::findOne(array('conditions' => 'dimension_id = '.$did));
+		if (!$one_member instanceof Member) {
+			echo "<script>";
+			echo "og.menuPanelCollapsed = true;";
+			echo "</script>";
+		}
+	}
+
 }

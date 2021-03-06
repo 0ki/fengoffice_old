@@ -129,7 +129,7 @@
 	padding: 10px 5px;
 }
 .configCategory.alt, .userWsConfigCategory.alt {
-	background-color: #D7E5F5;
+	background-color: #eef5f5;
 }
 
 .adminListing {
@@ -209,12 +209,16 @@
 }
 
 a.help-sign {
-	background-color: #17734C;
-	border-radius: 10px 10px 10px 10px;
+	background-color: #8b8b8b;
+	border-radius: 10px;
 	color: #FFFFFF;
 	font-weight: bold;
-	padding: 1px 4px;
+	padding: 1px 5px;
 	vertical-align: text-bottom;
+	margin-left: 5px;
+}
+.edit-form-tabs .ui-tabs-panel.ui-widget-content a.help-sign {
+	color: #FFFFFF;
 }
 
 a.help-sign:hover {
@@ -241,7 +245,7 @@ form.edit-member .member-chooser {
 }
 
 form.edit-member label {
-	margin: 7px 0 3px;
+	margin: 0px 0 3px;
 }
 
 form.edit-member .dimension-memberfields div.type-boolean {
@@ -258,6 +262,10 @@ form.edit-member .dimension-memberfields div.type-boolean input
 
 form.edit-member .dimension-memberfields div.type-boolean input{
 	margin-top: 3px; 
+}
+
+form.edit-member .dimension-selector-container {
+	min-width: 600px;
 }
 
 

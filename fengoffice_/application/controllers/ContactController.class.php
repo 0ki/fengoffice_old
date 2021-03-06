@@ -436,6 +436,7 @@ class ContactController extends ApplicationController {
 		$order = array_var($_GET,'sort');
 		$order_dir = array_var($_GET,'dir');
 		$action = array_var($_GET,'action');
+		
 		$attributes = array(
 			"ids" => explode(',', array_var($_GET, 'ids')),
 			"types" => explode(',', array_var($_GET, 'types')),
@@ -528,6 +529,8 @@ class ContactController extends ApplicationController {
 		if (logged_user()->isGuest()) {
 			$extra_conditions .= " AND user_type=0 ";
 		}
+		
+		Hook::fire("listing_extra_conditions", null, $extra_conditions);
 		
 		$content_objects = Contacts::instance()->listing(array(
 			"order" => $order,
@@ -814,7 +817,8 @@ class ContactController extends ApplicationController {
 		
 		if (!$contact->isTrashed()){
 			if($contact->canEdit(logged_user())) {
-				add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit', null, null, true);
+				$edit_lang = $contact->isUser() ? lang('edit user') : lang('edit contact');
+				add_page_action($edit_lang, $contact->getEditUrl(), 'ico-edit', null, null, true);
 			}
 		}
 		if ($contact->canDelete(logged_user())) {
@@ -829,7 +833,7 @@ class ContactController extends ApplicationController {
 						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
 					}else {
 						// user-contacts, dont send them to trash, disable them
-						add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete user'))) og.openLink('" . $contact->getDeleteUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
+						add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete user'))) og.openLink('" . $contact->getDeleteUrl() ."');", 'ico-trash',null, null, true);
 						add_page_action(lang('disable'), "javascript:if(confirm(lang('confirm disable user'))) og.openLink('" . $contact->getDisableUrl() ."',{callback:function(){og.customDashboard('contact','init',{},true)}});", 'ico-trash',null, null, true);
 
 					}
@@ -860,7 +864,7 @@ class ContactController extends ApplicationController {
 				add_page_action(lang('change password'), $contact->getEditPasswordUrl(), 'ico-password', null, null, true);
 			}
 			if($contact->getId() == logged_user()->getId()){
-				add_page_action(lang('edit preferences'), $contact->getEditPreferencesUrl(), 'ico-administration', null, null, true);
+				add_page_action(lang('edit preferences'), $contact->getEditPreferencesUrl(), 'ico-administration ico-small16', null, null, true);
 			}
 			if($contact->canUpdatePermissions(logged_user())) {
 				add_page_action(lang('permissions'), $contact->getUpdatePermissionsUrl(), 'ico-permissions', null, null, true);
@@ -903,6 +907,13 @@ class ContactController extends ApplicationController {
 			}
 		}
 		
+		if (!is_array(array_var($_POST, 'contact'))) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+		}
 		
 		$contact = new Contact();		
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
@@ -928,6 +939,12 @@ class ContactController extends ApplicationController {
 			}
 			tpl_assign('contact_mail', false);
 		}
+		
+		$contact_data['all_phones'] = array();
+		$contact_data['all_addresses'] = array();
+		$contact_data['all_webpages'] = array();
+		$contact_data['all_emails'] = array();
+		
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -955,7 +972,6 @@ class ContactController extends ApplicationController {
 				DB::beginWork();
 				$contact_data['email'] = trim($contact_data['email']);
 				
-				Contacts::validate($contact_data);
 				$newCompany = false;
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 					$company_data = array_var($_POST, 'company');
@@ -1053,6 +1069,21 @@ class ContactController extends ApplicationController {
 				
 				if ($user) {
 					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+					
+					// add user groups
+					if (isset($_REQUEST['user_groups'])) {
+						$insert_values = "";
+						$group_ids = explode(',', $_REQUEST['user_groups']);
+						foreach ($group_ids as $gid) {
+							if (trim($gid) == "" || !is_numeric($gid)) continue;
+							$insert_values .= ($insert_values == "" ? "" : ",") . "(".$contact->getId().", $gid)";
+						}
+					
+						if ($insert_values != "") {
+							DB::execute("INSERT INTO ".TABLE_PREFIX."contact_permission_groups VALUES $insert_values ON DUPLICATE KEY UPDATE contact_id=contact_id;");
+						}
+					
+					}
 						
 					if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 						ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
@@ -1063,16 +1094,34 @@ class ContactController extends ApplicationController {
 						$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
 						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
 					}
+					
+					evt_add("new user added", $contact->getArrayInfo());
 				}
 				
 				DB::commit();
 				
+				// save user permissions
+				if ($user) {
+					DB::beginWork();
+					
+					$contact = Contacts::findById($contact->getId());
+					save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
+					
+					DB::commit();
+				}
+				
 				flash_success(lang('success add contact', $contact->getObjectName()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				mark_dao_validation_error_fields($e);
 				return;
 			} // try
 			
@@ -1083,7 +1132,7 @@ class ContactController extends ApplicationController {
 					send_notification($user_data, $contact->getId());					
 				}				
 			} catch(Exception $e) {
-				flash_error($e->getMessage());				
+				flash_error($e->getMessage());
 			}
 
 		} // if
@@ -1138,7 +1187,7 @@ class ContactController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
 		
 		// telephone types
@@ -1158,6 +1207,11 @@ class ContactController extends ApplicationController {
 		$contact_data = array_var($_POST, 'contact');
 		// Populate form fields
 		if(!is_array($contact_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$contact_data = array(
 				'first_name' => $contact->getFirstName(),
 				'surname' => $contact->getSurname(),
@@ -1172,6 +1226,10 @@ class ContactController extends ApplicationController {
                 'company_id' => $contact->getCompanyId(),
       	    ); // array
 			
+			if ($contact->isUser()) {
+				$_REQUEST['is_user'] = 1;
+				tpl_assign('user_type', $contact->getUserType());
+			}
 
       	    if(is_array($im_types)) {
       	    	foreach($im_types as $im_type) {
@@ -1196,6 +1254,7 @@ class ContactController extends ApplicationController {
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
+		tpl_assign('active_tab', array_var($_REQUEST, 'active_tab'));
 		
 		
 		//Contact Submit
@@ -1314,12 +1373,30 @@ class ContactController extends ApplicationController {
 
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
-				if($user){
-					$user['username'] = str_replace(" ","",strtolower($contact->getObjectName()));
-					$this->createUserFromContactForm($user, $contact->getId(), $contact->getEmailAddress());
+				if($user && $contact->canUpdatePermissions(logged_user())){
+					if (array_var($user, 'type')) {
+						$contact->setUserType(array_var($user, 'type'));
+						$contact->save();
+					}
+					
+					// update user groups
+					if (isset($_REQUEST['user_groups'])) {
+						$insert_values = "";
+						$group_ids = explode(',', $_REQUEST['user_groups']);
+						foreach ($group_ids as $gid) {
+							if (trim($gid) == "" || !is_numeric($gid)) continue;
+							$insert_values .= ($insert_values == "" ? "" : ",") . "(".$contact->getId().", $gid)";
+						}
 
-					// Reload contact again due to 'createUserFromContactForm' changes
-					Hook::fire("after_contact_quick_add", Contacts::instance()->findById($contact->getId()), $ret);
+						ContactPermissionGroups::instance()->delete("contact_id=".$contact->getId()." AND permission_group_id <> ".$contact->getPermissionGroupId());
+						if ($insert_values != "") {
+							DB::execute("INSERT INTO ".TABLE_PREFIX."contact_permission_groups VALUES $insert_values ON DUPLICATE KEY UPDATE contact_id=contact_id;");
+						}
+						
+					}
+					
+					// save user permissions
+					save_user_permissions_background(logged_user(), $contact->getPermissionGroupId(), $contact->isGuest());
 				}
 				
 				DB::commit();
@@ -1332,6 +1409,10 @@ class ContactController extends ApplicationController {
 	     		flash_success(lang('success edit contact', $contact->getObjectName()));
 				ajx_current("back");
 
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -1447,9 +1528,36 @@ class ContactController extends ApplicationController {
 		}
 	}
 	
+	
+	
+	function tmp_picture_file_upload() {
+		ajx_current("empty");
+		$id = array_var($_GET, 'id');
+		$uploaded_file = array_var($_FILES, 'new_picture');
+		
+		$fname = ROOT . "/tmp/$id";
+		
+		if (!empty($uploaded_file['tmp_name'])) {
+			
+			copy($uploaded_file['tmp_name'], $fname);
+			$_SESSION[$id] = array(
+				'name' => $uploaded_file['name'],
+				'size' => $uploaded_file['size'],
+				'type' => $uploaded_file['type'],
+				'tmp_name' => $fname,
+				'error' => $uploaded_file['error']
+			);
+			
+			ajx_extra_data(array('url' => ROOT_URL . "/tmp/$id"));
+		}
+			Logger::log_r($_FILES);
+	}
+	
+	
+	
 	/**
 	 * Edit contact picture
-	 *
+	 * @TODO: Si es Internet exploer hacerlo como antes
 	 * @param void
 	 * @return null
 	 */
@@ -1488,66 +1596,69 @@ class ContactController extends ApplicationController {
 		tpl_assign('contact', $contact);
 		tpl_assign('reload_picture', array_var($_REQUEST, 'reload_picture'));
 		tpl_assign('new_contact', array_var($_REQUEST, 'new_contact'));
-
 		if(is_array($picture)) {
-
-			try {
-
-				if(!isset($picture['name']) || !isset($picture['type']) || !isset($picture['size']) || !isset($picture['tmp_name']) || !is_readable($picture['tmp_name'])) {
-					throw new InvalidUploadError($picture, lang('error upload file'));
-				} // if
-
-				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png','image/x-png');
-				$max_width   = config_option('max_avatar_width', 50);
-				$max_height  = config_option('max_avatar_height', 50);
-				if(!in_array($picture['type'], $valid_types) || !($image = getimagesize($picture['tmp_name']))) {
-					throw new InvalidUploadError($picture, lang('invalid upload type', 'JPG, GIF, PNG'));
-				} // if
-
-				if (!array_var($_REQUEST, 'new_contact')) {
-					$old_file = $contact->getPicturePath();
-				
-					DB::beginWork();
-	
-					if(!$contact->setPicture($picture['tmp_name'], $picture['type'], $max_width, $max_height)) {
-						throw new InvalidUploadError($avatar, lang('error edit picture'));
-					} // if
-	
-					DB::commit();
-					ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
-					
-					if(is_file($old_file)) {
-						@unlink($old_file);
-					} // if
-	
-					flash_success(lang('success edit picture'));
-					
-					if (array_var($_REQUEST, 'reload_picture')) {
-						evt_add('reload user picture', array('contact_id' => $contact->getId(), 'url' => $contact->getAvatarUrl(), 'el_id' => array_var($_REQUEST, 'reload_picture')));
-					}
-					
+			
+			//Env::useLibrary('browser');
+			include_once ROOT . "/library/browser/Browser.php";
+			
+			if (!array_var($_REQUEST, 'new_contact')) {
+				$old_file = $contact->getPicturePath();
+			
+				DB::beginWork();
+			
+				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
+					$size = getimagesize($picture['tmp_name']);
+					$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
+					$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
 				} else {
-					
-					if(!$contact->setPicture($picture['tmp_name'], $picture['type'], $max_width, $max_height, false)) {
-						throw new InvalidUploadError($avatar, lang('error edit picture'));
-					} // if
-					if (array_var($_REQUEST, 'reload_picture')) {
-						evt_add('reload user picture', array('contact_id' => $contact->getId(), 'url' => $contact->getAvatarUrl(), 'el_id' => array_var($_REQUEST, 'reload_picture'), 
-							'file_id' => $contact->getPictureFile(), 'hf_picture' => array_var($_REQUEST, 'new_contact')));
-					}
-					flash_success(lang('success edit picture'));
+					$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
+					$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
 				}
 				
-				if (array_var($_REQUEST, 'reload_picture')) ajx_current("back");
-				else ajx_current("empty");
+				if(!$contact->setPicture($image_path, 'image/png')) {
+					throw new InvalidUploadError($picture);
+				}
+			
+				DB::commit();
+				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_EDIT);
+					
+				if(is_file($old_file)) {
+					@unlink($old_file);
+				} // if
+			
+				flash_success(lang('success edit picture'));
+					
+				if (array_var($_REQUEST, 'reload_picture')) {
+					evt_add('reload user picture', array('contact_id' => $contact->getId(), 'url' => $contact->getPictureUrl(), 'el_id' => array_var($_REQUEST, 'reload_picture')));
+				}
+					
+			} else {
 				
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-				ajx_current("empty");
-			} // try
-		} // if
-	} // edit_picture
+				if (Browser::instance()->getBrowser() == Browser::BROWSER_IE && intval(Browser::instance()->getVersion()) < 10) {
+					$size = getimagesize($picture['tmp_name']);
+					$w = ($size[0] < $size[1] ? $size[0] : $size[1]);
+					$image_path = process_uploaded_cropped_picture_file($picture, array('x' => 0, 'y' => 0, 'w' => $w, 'h' => $w));
+				} else {
+					$crop_data = array('x' => array_var($_POST, 'x'), 'y' => array_var($_POST, 'y'), 'w' => array_var($_POST, 'w'), 'h' => array_var($_POST, 'h'));
+					$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
+				}
+				if(!$contact->setPicture($image_path, 'image/png')) {
+					throw new InvalidUploadError($picture);
+				}
+				
+				
+				if (array_var($_REQUEST, 'reload_picture')) {
+					evt_add('reload user picture', array('contact_id' => $contact->getId(), 'url' => $contact->getPictureUrl(), 'el_id' => array_var($_REQUEST, 'reload_picture'),
+					'file_id' => $contact->getPictureFile(), 'hf_picture' => array_var($_REQUEST, 'new_contact')));
+				}
+				flash_success(lang('success edit picture'));
+			}
+			
+			if (array_var($_REQUEST, 'reload_picture')) ajx_current("back");
+			else ajx_current("reload");
+		}
+	}
+	
 
 	
 	/**
@@ -2770,6 +2881,11 @@ class ContactController extends ApplicationController {
 		$company_data = array_var($_POST, 'company');
 		
 		if(!is_array($company_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$address = $company->getAddress('work');
 			$street = "";
 			$city = "";
@@ -2867,6 +2983,10 @@ class ContactController extends ApplicationController {
 				
 				flash_success(lang('success edit client', $company->getObjectName()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -2913,6 +3033,11 @@ class ContactController extends ApplicationController {
 		$company_data = array_var($_POST, 'company');
 
 		if(!is_array($company_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$company_data = array(
 				'timezone' => logged_user()->getTimezone(),
 			); // array
@@ -2975,126 +3100,30 @@ class ContactController extends ApplicationController {
 				flash_success(lang('success add client', $company->getObjectName()));
 				evt_add("company added", array("id" => $company->getObjectId(), "name" => $company->getObjectName()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
-				flash_error($e->getMessage());
+				if (array_var($_REQUEST, 'modal')) {
+					ajx_extra_data(array('error' => $e->getMessage()));
+				} else {
+					flash_error($e->getMessage());
+				}
 			} // try
 		} // if
 	} // add_company
 
-	
-	/**
-	 * Show and process edit company logo form
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function edit_logo() {
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-		$company = Contacts::findById(get_id());
-		if(!($company instanceof Contact)) {
-			flash_error(lang('company dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-		if (!$company->canEdit(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if)
-
-		tpl_assign('company', $company);
-
-		$logo = array_var($_FILES, 'new_logo');
-		if(is_array($logo)) {
-			try {
-				if(!isset($logo['name']) || !isset($logo['type']) || !isset($logo['size']) || !isset($logo['tmp_name']) || !is_readable($logo['tmp_name'])) {
-					throw new InvalidUploadError($logo, lang('error upload file'));
-				} // if
-
-				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png','image/x-png');
-				$max_width   = config_option('max_logo_width', 50);
-				$max_height  = config_option('max_logo_height', 50);
-
-				if(!in_array($logo['type'], $valid_types) || !($image = getimagesize($logo['tmp_name']))) {
-					throw new InvalidUploadError($logo, lang('invalid upload type', 'JPG, GIF, PNG'));
-				} // if
-
-				$old_file = $company->getLogoPath();
-
-				DB::beginWork();
-
-				if(!$company->setLogo($logo['tmp_name'], $logo['type'], $max_width, $max_height, true)) {
-					throw new InvalidUploadError($avatar, lang('error edit company logo'));
-				} // if
-
-				DB::commit();
-				
-				evt_add("logo changed", array('id' => $company->getId()));
-				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
-				
-				if(is_file($old_file)) {
-					@unlink($old_file);
-				} // uf
-
-				flash_success(lang('success edit company logo'));
-				ajx_current("back");
-			} catch(Exception $e) {
-				ajx_current("empty");
-				DB::rollback();
-				flash_error($e->getMessage());
-			} // try
-		} // if
-	} // edit_logo
-
-	
-	/**
-	 * Delete company logo
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function delete_logo() {
-		if(!logged_user()->isAdministrator()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$company = Contacts::findById(get_id());
-		if(!($company instanceof Contact)) {
-			flash_error(lang('company dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		try {
-			DB::beginWork();
-			$company->deleteLogo();
-			$company->save();
-			DB::commit();
-			ApplicationLogs::createLog($company, ApplicationLogs::ACTION_EDIT);
-			
-			flash_success(lang('success delete company logo'));
-			ajx_current("back");
-		} catch(Exception $e) {
-			DB::rollback();
-			flash_error(lang('error delete company logo'));
-			ajx_current("empty");
-		} // try
-	} // delete_logo
 	
 	
 	function get_company_data(){
 		ajx_current("empty");
 		$id = array_var($_GET, 'id');
 		$company = Contacts::findById($id);
-		
+	
 		if ($company){
 			$address = $company->getAddress('work');
 			$street = "";
@@ -3110,22 +3139,24 @@ class ContactController extends ApplicationController {
 				$country = $address->getCountry();
 			}
 			ajx_extra_data(array(
-				"id" => $company->getObjectId(),
-				"address" => $street,
-				"state" => $state,
-				"city" => $city,
-				"country" => $country,
-				"zipcode" => $zipcode,
-				"webpage" => $company->getWebpageURL('work'),
-				"phoneNumber" => $company->getPhoneNumber('work', true),
-				"faxNumber" => $company->getPhoneNumber('fax', true)
+			"id" => $company->getObjectId(),
+			"address" => $street,
+			"state" => $state,
+			"city" => $city,
+			"country" => $country,
+			"zipcode" => $zipcode,
+			"webpage" => $company->getWebpageURL('work'),
+			"phoneNumber" => $company->getPhoneNumber('work', true),
+			"faxNumber" => $company->getPhoneNumber('fax', true)
 			));
 		} else {
 			ajx_extra_data(array(
-				"id" => 0
+			"id" => 0
 			));
 		}
 	}
+	
+	
 
 	private function createUserFromContactForm ($user, $contactId, $email, $sendEmail = true) {
 		$createUser = false;
@@ -3164,7 +3195,16 @@ class ContactController extends ApplicationController {
 				);
 			}
 			$valid =  Contacts::validateUser($contactId);
-			create_user($userData, '');
+			// root permissions
+			if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+				$rp_permissions_data = array();
+				foreach ($_POST as $name => $value) {
+					if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+						$rp_permissions_data[$name] = $value;
+					}
+				}
+			}
+			create_user($userData, array_var($_REQUEST, 'permissions', ''), $rp_permissions_data);
 		}
 		return $userData;
 		
@@ -3493,6 +3533,14 @@ class ContactController extends ApplicationController {
 					$extra_conditions .= " AND ".DB::escapeField($col)." = ".DB::escape($val);
 				}
 			}
+		}
+		
+		if ($plugin_filters = array_var($_REQUEST, 'plugin_filters')) {
+			$plugin_filters = json_decode($plugin_filters, true);
+			$plugin_conditions = "";
+			Hook::fire('contact_selector_plugin_filters', $plugin_filters, $plugin_conditions);
+			
+			$extra_conditions .= $plugin_conditions;
 		}
 		
 		$info = array();

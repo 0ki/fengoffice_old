@@ -3,11 +3,10 @@
 }
 
 #header {
-	box-shadow: 0 0 3px 3px #CCCCCC;
+	/*box-shadow: 0 0 3px 3px #CCCCCC;*/
 	background-color: #000000;
 	height: 55px;
-	xoverflow: hidden;
-	z-index: 8000;
+	xoverflow: hidden;	
 }
 #content {
 	position: absolute;
@@ -28,19 +27,73 @@
 }
 
 #header .header-content-right {
-	background-color: #DDDDDD;
-	border-radius: 5px 5px 5px 5px;
 	float: right;
-	height: 21px;
-	margin-right: 6px;
-	margin-top: 9px;
+	margin-right: 15px;
+	
 	padding: 8px 0 8px 10px;
-	z-index: 10000;
+	
 }
 
-#header .header-content-right a {
-	background-color: transparent;
-	color: #333333;
+#header .header-content-right .gen-search{
+	margin-right: 10px;
+	margin-left: 5px; 
+	position: relative; 
+	top: 50%; 
+	-webkit-transform: translateY(-50%);  
+	-ms-transform: translateY(-50%);
+ 	transform: translateY(-50%);	
+}
+
+#header .header-content-right a.account
+{
+	background: transparent url(../../images/layout/gear.png) no-repeat;
+	padding: 1px 5px 10px 23px;
+	color: #fff	
+}
+
+#header .header-content-right ul.options_menu
+{
+	list-style-type: none;
+	text-align: center;
+}
+
+#header .header-content-right .options_menu li
+{
+	cursor: pointer;
+	display: inline;
+  	text-align: center;
+   	float: left;
+	color: #fff;
+	border-radius: 4px;
+	height: 35px;	
+}
+
+#header .header-content-right .options_menu li#userboxWrapper:hover {
+	background: rgb(3, 3, 3);
+	background-color: rgba(3,3,3,0.4);
+}
+
+#header .header-content-right .options_menu .account {
+	background: url("../../images/layout/gear.png") no-repeat scroll 0 0 transparent;
+	background-position: center center; 
+	float: right;
+   	height: 35px;
+   	width: 20px;
+}
+
+#userboxWrapper img{
+	border-radius: 2px;
+	height: 26px;
+	margin-left: 5px;
+	vertical-align: middle;
+	width: 26px;
+}
+
+#userboxWrapper a{
+	color: #fff;
+	font-weight: bold;
+	line-height: 32px;
+	text-shadow: 0 -1px rgba(0, 0, 0, 0.5);
 }
 
 .menuCont {
@@ -49,28 +102,43 @@
 	/*padding: 5px 0px 5px 22px;*/
 }
 .ico-overview {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -356px !important;	
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -356px !important;	*/
+	background-image: url(../../images/icons-feng-3/24x22/overview.png) !important;
+	background-position: 0 center !important;	
 }
-.ico-messages {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -418px !important;
+.ico-messages, .ico-message, .ico-projectmessage{
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -416px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/notes.png) !important;
+	background-repeat: no-repeat;
+	background-position: 0 center !important;	
 }
 .ico-contacts {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -517px !important;
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -517px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/contacts.png) !important;
+	background-position: 0 center !important;
 }
 .ico-companies {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -540px !important;
 }
 .ico-calendar {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 2px !important;
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 4px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/calendar.png) !important;
+	background-position: 0 center !important;	
 }
 .ico-documents {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -478px !important;
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -476px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/documents.png) !important;
+	background-position: 0 center !important;
 }
-.ico-tasks {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -177px !important;
+.ico-tasks, .ico-task {
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -177px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/tasks.png) !important;
+	background-position: 0 center !important;
 }
 .ico-webpages {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;
+	/*background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;*/
+	background-image: url(../../images/icons-feng-3/24x22/links.png) !important;
+	background-position: 0 center !important;
 }
 .ico-linkedobjects {
 	background: transparent url(../../images/16x16/linked-objects.png) no-repeat scroll 0 3px !important;
@@ -243,7 +311,6 @@ div#breadcrumbs-panel .x-panel-body
     padding: 10px 5px;
 	font-weight: bold;	
 	*padding-top: 10px ; /* ie7 hack */
-	font-family: Helvetica,Verdana,Arial,sans-serif;
 	/*display: none ;*/
 }
 
@@ -548,6 +615,10 @@ div.layout-container.contact .right-column {
     margin: 5px;
     box-shadow: 0 0 3px 0 #CCCCCC inset;
 }
+.dashboard-container.view-container {
+	border: none!important;
+	box-shadow: none!important;
+}
 
 /** End Contact Fluid layotu */
 
@@ -583,7 +654,7 @@ div.layout-container.contact .right-column {
 
 .late-objects-widget .widget-header {
 	color: white;
-	background: #DD4444;
+	background-color: #DD4444;
 	border-color: #CC1111;
 }
 
@@ -612,10 +683,24 @@ div.layout-container.contact .right-column {
 
 .nobr {
 	white-space: nowrap;
+	overflow:hidden;
+	text-overflow:ellipsis;
 }
 
 .completed-tasks .widget-header {
 	color: white;
 	background-color: #2D592C;
 	border-color: #2D592C;
+}
+
+.modal-container{
+	border-radius: 5px;
+}
+.modal-close-img {
+	cursor: pointer;
+	background: transparent url(../../images/layout/close16.png) no-repeat;
+	height: 16px;
+	padding-left: 16px;
+	float: right;
+	margin: 5px;
 }

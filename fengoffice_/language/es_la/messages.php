@@ -675,4 +675,5 @@
 	'disable' => 'Desactivar',
 	'and xx more' => 'y {0} más.',
 
+	'permissions successfully saved' => 'Permisos editados exitosamente',
 ); ?>

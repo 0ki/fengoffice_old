@@ -2,10 +2,17 @@
 set_page_title(lang('file extension prevention uploading'));
 ?>
 <div class="adminConfiguration" style="height:100%;background-color:white">
-    <div class="adminHeader">
-        <div class="adminTitle"><?php echo lang('file extension prevention uploading') ?></div>
-    </div>
-    <div class="adminSeparator"></div>
+    
+    <div class="coInputHeader">
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle">
+		        <?php echo lang('file extension prevention uploading') ?>
+			</div>
+		</div>
+		<div class="clear"></div>
+	  </div>
+	</div>
     <div class="adminMainBlock">
         <div class="page tab-manager">
             <form method = "POST" action="<?php echo get_url("administration", "documents_allow_submit") ?>" >

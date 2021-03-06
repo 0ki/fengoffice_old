@@ -65,7 +65,6 @@ acronym {
 
 label {
   margin: 3px 0;
-  font-size: 90%;
   font-weight: bolder;
   display: block;
   white-space: nowrap;
@@ -78,7 +77,6 @@ label.checkbox {
 
 span.label_required {
   color: red;
-  font-size: 90%;
 }
 
 input, textarea, select {
@@ -105,7 +103,6 @@ fieldset {
 }
 
 fieldset legend {
-  font-size: 90%;
   font-weight: bolder;
 }
 
@@ -135,7 +132,6 @@ button.submit {
 
 span.required {
   color: rgb(170, 33, 33);
-  font-size: 90%;
 }
 
 #formErrors {
@@ -147,13 +143,11 @@ span.required {
 }
 
 #formErrors ul li {
-  font-size: 90%;
 }
 
 /** Classes **/
 
 .desc, .desc* {
-  font-size: 90%;
   color: #666;
   font-style: italic;
 }

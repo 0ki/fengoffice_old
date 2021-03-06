@@ -41,14 +41,10 @@
 			Logger::log("Error saving permissions (1): ".$e->getMessage()."\n".$e->getTraceAsString());
 		}
 		
-		// transactions to update_sharing table
-		$sharingTablecontroller = new SharingTableController();
-		if (is_array(array_var($result, 'changed_pgs'))) {
-			$perm_array = json_decode($permissions);
-			foreach ($perm_array as $pa) {
-				if (!isset($pa->m)) $pa->m = $member->getId();
-			}
-			foreach (array_var($result, 'changed_pgs') as $pg_id) {
+		$changed_pgs = array_var($result, 'changed_pgs');
+		
+		if (is_array($changed_pgs)) {
+			foreach ($changed_pgs as $pg_id) {
 				try {
 					// create flag for this $pg_id
 					DB::beginWork();
@@ -61,11 +57,31 @@
 					$flag->save();
 					DB::commit();
 					
+				} catch (Exception $e) {
+					DB::rollback();
+					Logger::log("Error saving permissions (2): ".$e->getMessage()."\n".$e->getTraceAsString());
+				}
+			}
+		}
+		
+		$flags_to_delete = array();
+		
+		// transactions to update_sharing table
+		$sharingTablecontroller = new SharingTableController();
+		if (is_array($changed_pgs)) {
+			$perm_array = json_decode($permissions);
+			foreach ($perm_array as $pa) {
+				if (!isset($pa->m)) $pa->m = $member->getId();
+			}
+			
+			foreach ($changed_pgs as $pg_id) {
+				try {
 					// update sharing table
 					DB::beginWork();
 					$sharingTablecontroller->afterPermissionChanged($pg_id, $perm_array);
-					// delete flag
-					$flag->delete();
+					
+					$flags_to_delete[] = $pg_id;
+					
 					DB::commit();
 					
 				} catch (Exception $e) {
@@ -94,6 +110,22 @@
 		} catch (Exception $e) {
 			DB::rollback();
 			Logger::log("Error saving permissions (4): ".$e->getMessage()."\n".$e->getTraceAsString());
+		}
+		
+		
+		// delete processed flags
+		if (count($flags_to_delete) > 0) {
+			try {
+				DB::beginWork();
+				
+				// delete flags
+				SharingTableFlags::delete("member_id=$member_id AND permission_group_id IN (".implode(',', $flags_to_delete).")");
+				
+				DB::commit();
+			} catch (Exception $e) {
+				DB::rollback();
+				Logger::log("Error saving permissions (5 - failed to delete processed flags [".implode(',',$flags_to_delete)."]): ".$e->getMessage()."\n".$e->getTraceAsString());
+			}
 		}
 	}
 	

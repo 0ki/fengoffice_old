@@ -1,6 +1,17 @@
 <?php
 Hook::register('mail');
 
+function mail_render_administration_icons($ignored, &$icons){
+	if (can_manage_security(logged_user())) {
+		$icons[] = array(
+			'ico' => 'ico-large-email',
+			'url' => get_url('administration', 'mail_accounts'),
+			'name' => lang('mail accounts'),
+			'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('mail', 'add_account') . '">' . lang('add mail account') . '</a>',
+		);
+	}
+}
+
 function mail_allowed_subscribers($object, &$contacts) {
 	if ($object instanceof MailContent) {
 		$person_dim = Dimensions::findByCode('feng_persons');
@@ -27,7 +38,22 @@ function mail_delete_member($member){
 function mail_on_page_load(){
 	//check if have outbox mails
 	$usu = logged_user();
-	$conditions = array("conditions" => array("`state` >= 200 AND (`state`%2 = 0) AND `archived_on`=0 AND `trashed_on`=0 AND `created_by_id` =".$usu->getId()));
+	$accounts = MailAccounts::instance()->getMailAccountsByUser($usu);
+	$account_ids = array();
+	foreach ($accounts as $acc) {
+		$account_ids[] = $acc->getId();
+	}
+	
+	if (count($account_ids) == 0) return;
+	
+	$accounts_sql = " AND account_id IN (".implode(',', $account_ids).")";
+	
+	$user_pg_ids = $usu->getPermissionGroupIds();
+	if (count($user_pg_ids) == 0) return;
+	
+	$permissions_sql = " AND EXISTS (SELECT sh.group_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN (".implode(',',$user_pg_ids)."))";
+	
+	$conditions = array("conditions" => array("`state` >= 200 AND (`state`%2 = 0) AND `archived_on`=0 AND `trashed_on`=0 $accounts_sql $permissions_sql AND `created_by_id` =".$usu->getId()));
 	$outbox_mails = MailContents::findAll($conditions);
 	if ($outbox_mails!= null){
 		if (count($outbox_mails)>=1){

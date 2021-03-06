@@ -5,11 +5,10 @@ if($current_member instanceof Member){
    $member_id = $current_member->getId();
 }
 ?>
-
 <div class="widget-activity widget dashTableActivity">
 
 	<div class="widget-header dashHeader">
-            <div style="overflow:hidden; float: left; width: 90%;" onclick="og.dashExpand('<?php echo $genid?>');"><?php echo (isset($widget_title)) ? $widget_title : lang("activity");?></div>                
+            <div style="overflow:hidden; float: left; width: 90%; text-overflow: ellipsis; white-space: nowrap;" class="widget-title" onclick="og.dashExpand('<?php echo $genid?>');"><?php echo (isset($widget_title)) ? $widget_title : lang("activity");?></div>                
 			<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander" onclick="og.dashExpand('<?php echo $genid?>');"></div>
             <div style="z-index:1; width:16px; float: right; margin-right: 5px; margin-top: 1px;" id="<?php echo $genid; ?>configFilters" onclick="og.quickForm({ type: 'configFilter', genid: '<?php echo $genid; ?>', members:'<?php echo $member_id ?>'});">
             	<img src="public/assets/themes/default/images/16x16/administration.png"/>
@@ -25,17 +24,17 @@ if($current_member instanceof Member){
             $c++;
             $user = $acts['created_by'][$k];
             if ($activity instanceof Contact && $activity->isUser() || (isset($member_deleted) && $member_deleted)) {
-            	$crumbOptions = "";
+            	$crumbOptions = "{}";
             } else {
             	if ($activity instanceof Member){
-            		$crumbOptions = "";
+            		$crumbOptions = "{}";
             	} else if ($activity instanceof ContentDataObject) {
 					$crumbOptions = json_encode($activity->getMembersToDisplayPath());
             	} else {
             		continue;
             	}
 			}
-            $crumbJs = " og.getCrumbHtml($crumbOptions) ";
+            $crumbJs = " og.getEmptyCrumbHtml($crumbOptions,'.activity-breadcrumb-container') ";
             $class = "";
             $style = "";
             if($c > $total){
@@ -43,29 +42,30 @@ if($current_member instanceof Member){
             	$style = "style='display:none'";
             }
 			?>
-				<tr class=" activity-row <?php echo $c % 2 == 1? '':'dashAltRow';?>  <?php echo $class?>" id="<?php echo "activity-".$c?>" <?php echo $style?>>
-					<td style="width:32px">
+				<tr class="activity-row <?php echo $class?>" id="<?php echo "activity-".$c?>" <?php echo $style?>>
+					<td style="width:50px;">
+						<div style="float: left; margin-top:10px; min-width:40px;">
 					<?php if ($user instanceof Contact) : ?>
-						<img src="<?php echo $user->getAvatarUrl() ?>" width="32px;"/>
+							<img src="<?php echo $user->getPictureUrl() ?>" style="max-width:40px;max-height:40px"/>
 					<?php endif; ?>
-					</td><td style="padding-left:10px">
-						<table cellpadding="0" cellspacing="0" style="width:100%;">
-						<tr><td style="height: 17px;">
-							<div><?php echo $acts['act_data'][$k] ?><span class="breadcrumb"></span></div>
-						</td></tr>
-						<tr><td style="padding-bottom:3px;"><div class="desc"><?php echo $acts['date'][$k] ?></div>
-						</td></tr>
-                        	<script>
-                        	var crumbHtml = <?php echo $crumbJs?>;
+						</div>
+					</td><td>
+						<div style="float: left; margin-top:10px; margin-left: 10px;width: 100%;" class="activity-info">
+							<div><?php echo $acts['act_data'][$k] ?><div class="activity-breadcrumb-container"><span class="breadcrumb"></div></span></div>
+							<script>
+                        	
+                        	var crumbHtml  =  <?php echo $crumbJs?>;
                         	$("#activity-<?php echo $c?> .breadcrumb").html(crumbHtml);
                         	</script>
-						</table>
+						</div>
+					</td><td style="min-width:100px;vertical-align:bottom;">
+						<div class="desc date-container"><?php echo $acts['date'][$k] ?></div>
 					</td>
 				</tr>
 			<?php endforeach; ?>
 			<?php if (count($acts['data']) > $total) :?>
 				<tr>
-					<td colspan="2" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
+					<td colspan="3" align="right" style="padding:20px 0 5px; width: 20px; color: #003562;">
 						<span onclick="og.hideActivity('<?php echo $genid?>')" id="hidelnk<?php echo $genid?>" style="cursor:pointer; display:none;" title="<?php echo lang('hide') ?>"><?php echo lang('hide') ?></span>
 						<span onclick="og.showActivity('<?php echo $genid?>')" id="showlnk<?php echo $genid?>" style="cursor:pointer;" title="<?php echo lang('view more') ?>"><?php echo lang('view more') ?></span>
 					</td>
@@ -99,4 +99,7 @@ if($current_member instanceof Member){
 		    }
 	    });
 	}
+    $(function() {
+    	// og.eventManager.fireEvent('replace all empty breadcrumb', null);
+    });   
 </script>

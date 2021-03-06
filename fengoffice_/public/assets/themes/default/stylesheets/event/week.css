@@ -63,7 +63,6 @@ div.inset {
 
 .chip {
 	cursor:default;
-	font-size:85%;
 	overflow:hidden;
 }
 .chip .chipbody {

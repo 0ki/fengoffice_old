@@ -91,31 +91,4 @@ og.submit_csv_form = function(genid) {
 	return false;
 }
 
-
-og.reports = {};
-og.reports.createPrintWindow = function(title) {
-	var disp_setting = "toolbar=yes,location=no,directories=yes,menubar=yes,scrollbars=yes,";
-	var printWindow = window.open("","",disp_setting);
-	printWindow.document.open(); 
-	printWindow.document.write('<html><head><title>' + title + '</title>');
-	printWindow.document.write('<link href="' + og.hostName + '/public/assets/themes/default/stylesheets/website.css" rel="stylesheet" type="text/css">');
-	printWindow.document.write('<link href="' + og.hostName + '/public/assets/themes/default/stylesheets/general/rewrites.css" rel="stylesheet" type="text/css">');
-	printWindow.document.write('</head><body onLoad="self.print()" id="body" style="padding:10px;"><h1>' + title + '</h1>');             
-	return printWindow;
-}
-
-og.reports.closePrintWindow = function(printWindow) {
-	printWindow.document.write('</body></html>');    
-	printWindow.document.close();
-	printWindow.focus();
-}
-
-og.reports.printReport = function(genid, title) {
-	var printWindow = og.reports.createPrintWindow(title);
-
-	printWindow.document.write(document.getElementById(genid + 'report_container').innerHTML);
-	
-	og.reports.closePrintWindow(printWindow);
-}
-
 </script>

@@ -142,6 +142,14 @@ og.hasAllPermissions = function(genid, member_id, member_permissions) {
 	return true;
 }
 
+og.hasAnyPermissions = function(genid, member_id) {
+	var member_perms = og.getPermissionsForMember(genid, member_id);
+	for (var x=0; x<member_perms.length; x++) {
+		if (member_perms[x] && member_perms[x].r == 1) return true;
+	}
+	return false;
+}
+
 //Sets all radio permissions to a specific level for a given member
 og.ogPermSetLevel = function(genid, dim_id, level){
 	var member_id = og.permissionInfo[genid].selectedMember;
@@ -183,43 +191,70 @@ og.ogPermAllChecked = function(genid, dim_id, value){
 
 //Applies the current member permission settings to all submembers
 og.ogPermApplyToSubmembers = function(genid, dim_id, from_root_node){
+
 	var member_id = og.permissionInfo[genid].selectedMember;
 	var member_perms = og.getPermissionsForMember(genid, member_id);
 	
-	var tree = Ext.getCmp(genid + '-member-chooser-panel-' + dim_id + '-tree');
-	if (from_root_node) {
-		var node = tree.getRootNode();
-	} else {
-		var node = tree.getNodeById(member_id);
-	}
-	if (!node) return;
-	var ids = og.ogPermGetSubMemberIdsFromNode(node);
-
-	for (var i=0; i<ids.length; i++) {
-		//var old_member_perms = og.getPermissionsForMember(genid, ids[i]);
-		og.deletePermissionsForMember(genid, ids[i]);
-		
-		for (var j=0; j<member_perms.length; j++) {
-			if (!member_perms[j]) {
-				member_perms[j] = {o: og.permissionInfo[genid].allowedOt[dim_id][j].o, d: 0, w: 0, r: 0};
-				og.addPermissionsForMember(genid, member_id, member_perms[j]);
-			}
-			var radio = Ext.get(genid + 'rg_3_' + dim_id + '_' + member_perms[j].o);
-			
-		//	if (!og.canEditPermissionObjType(genid, ids[i], member_perms[j].o)) {
-		//		var perm = {o: member_perms[j].o, d: 0, w: 0, r: 0};
-		//	} else {
-				var perm = {o: member_perms[j].o, d: member_perms[j].d, w: member_perms[j].w, r: member_perms[j].r, modified:true};
-		//	}
-			og.addPermissionsForMember(genid, ids[i], perm);
-			if (member_perms[j].r) {
-				module_check = document.getElementById(genid + 'mod_perm['+member_perms[j].o+']');
-				if(module_check && !module_check.checked) module_check.checked = true; 
-			}
+	var trees = [Ext.getCmp(genid + '_with_permissions_' + dim_id + '-tree'), Ext.getCmp(genid + '_without_permissions_' + dim_id + '-tree')];
+	
+	for (var t=0; t<trees.length; t++) {
+		var tree = trees[t];
+		if (from_root_node) {
+			var node = tree.getRootNode();
+		} else {
+			var node = tree.getNodeById(member_id);
 		}
-		og.markMemberPermissionModified(genid, dim_id, ids[i]);
+		if (!node) return;
+	
+		// ensure all nodes visibles before updating permissions
+		node.expand(true, false, function(n){
+			var ids = og.ogPermGetSubMemberIdsFromNode(node);
+			
+			for (var i=0; i<ids.length; i++) {
+				og.deletePermissionsForMember(genid, ids[i]);
+				
+				for (var j=0; j<member_perms.length; j++) {
+					if (!member_perms[j]) {
+						member_perms[j] = {o: og.permissionInfo[genid].allowedOt[dim_id][j].o, d: 0, w: 0, r: 0};
+						og.addPermissionsForMember(genid, member_id, member_perms[j]);
+					}
+					
+					var radio = Ext.get(genid + 'rg_3_' + dim_id + '_' + member_perms[j].o);
+					var perm = {o: member_perms[j].o, d: member_perms[j].d, w: member_perms[j].w, r: member_perms[j].r, modified:true};
+					
+					og.addPermissionsForMember(genid, ids[i], perm);
+					if (member_perms[j].r) {
+						module_check = document.getElementById(genid + 'mod_perm['+member_perms[j].o+']');
+						if(module_check && !module_check.checked) module_check.checked = true; 
+					}
+				}
+				og.markMemberPermissionModified(genid, dim_id, ids[i]);
+			}
+			
+			og.eventManager.fireEvent('after apply permissions to submembers', {node:node, dim_id: dim_id, subids:ids, member_id:member_id});
+		});
 	}
 }
+
+og.eventManager.addListener('after apply permissions to submembers', 
+ 	function (data){
+		// relocate all children in trees
+		var node = data.node;
+		var ids = data.subids;
+		var dim_id = data.dim_id;
+		var member_id = data.member_id;
+			
+		og.ogPermRelocateNodesInTrees(genid, dim_id, ids);
+		if (!node.hasChildNodes()) {
+			// remove node if it cannot be in its tree.
+			if (tree.getId() == genid + '_with_permissions_' + dim_id + '-tree' && !og.hasAnyPermissions(genid, member_id) || 
+				tree.getId() == genid + '_without_permissions_' + dim_id + '-tree' && og.hasAnyPermissions(genid, member_id)) {
+				
+				node.remove();
+			}
+		}
+ 	}
+);
 
 //Applies the current member permission settings to all dimension members
 og.ogPermApplyToAllMembers = function(genid, dim_id){
@@ -231,17 +266,383 @@ og.ogPermGetSubMemberIdsFromNode = function(node){
 	if (node && node.firstChild){
 		var children = node.childNodes;
 		for (var i = 0; i < children.length; i++){
-			result[result.length] = children[i].id;
-			result = result.concat(og.ogPermGetSubMemberIdsFromNode(children[i]));
+			if (children[i]) {
+				result[result.length] = children[i].id;
+				result = result.concat(og.ogPermGetSubMemberIdsFromNode(children[i]));
+			}
 		}
 	}
 	return result;
 }
 
+og.ogPermRelocateNodesInTrees = function(genid, dim_id, ids) {
+	new_ids = [];
+	for (var i=0;i<ids.length;i++) new_ids.push(parseInt(ids[i]));
+	ids = new_ids;
+	
+	var perm_tree = Ext.getCmp(genid + '_with_permissions_' + dim_id + '-tree');
+	var no_perm_tree = Ext.getCmp(genid + '_without_permissions_' + dim_id + '-tree');
+	
+	var nodes_to_remove = [];
+
+	for (var i=0; i<ids.length; i++) {
+		var member_id = parseInt(ids[i]);
+		var node = perm_tree.getNodeById(member_id);
+		if (node && !og.hasAnyPermissions(genid, member_id)) {
+			var node_exist = no_perm_tree.getNodeById(node.id);
+			if (node_exist) {
+				node_exist.ensureVisible();
+			} else {
+				og.ogPermInsertNodeInTree(node, no_perm_tree, {cancel:false});
+			}
+			if (node.parentNode) {
+				if (!node.hasChildNodes()) node.remove();
+				else nodes_to_remove.push(node);
+			}
+			
+		} else {
+			
+			var node2 = no_perm_tree.getNodeById(member_id);
+			if (node2 && og.hasAnyPermissions(genid, member_id)) {
+				var node_exist = perm_tree.getNodeById(node2.id);
+				if (node_exist) {
+					node_exist.ensureVisible();
+				} else {
+					og.ogPermInsertNodeInTree(node2, perm_tree, {cancel:false});
+				}
+				if (node2.parentNode) {
+					if (!node2.hasChildNodes()) node2.remove();
+					else nodes_to_remove.push(node2);
+				}
+			}
+		}
+		
+	}
+	
+	nodes_to_remove.reverse();
+	for (var j=0; j<nodes_to_remove.length; j++) {
+		node = nodes_to_remove[j];
+		if (!node.hasChildNodes()) node.remove();
+	}
+	
+}
+
+
+og.setDefaultPermissionsForMember = function(genid, dimension_id, member_id, role_id) {
+
+	var current_permissions = og.getPermissionsForMember(genid, member_id);
+	var perms = og.defaultRolePermissions[role_id];
+	for (ot in perms) {
+		var id = '';
+		if (perms[ot].d == "1") id = (genid + 'rg_3_'+ dimension_id + '_' + ot);
+		else if (perms[ot].w == "1") id = (genid + 'rg_2_'+ dimension_id + '_' + ot);
+		else if (perms[ot].r == "1") id = (genid + 'rg_1_'+ dimension_id + '_' + ot);
+		
+		if (id != '') {
+    		for (i in current_permissions){
+				var p = current_permissions[i];
+				if (p && p.o == ot) {
+					$("#"+id).click();
+					p.d = perms[ot].d;
+					p.w = perms[ot].w;
+					p.r = perms[ot].r;
+    				p.modified = true;
+				}
+    		}
+		}
+		
+	}
+}
+
+
+og.ogPermInsertNodeHierarchy = function(node, tree_to) {
+	// remove empty nodes
+	var empty_nodes = [];
+	for (var i=0; i < tree_to.getRootNode().childNodes.length; i++) {
+		var elnode = tree_to.getRootNode().childNodes[i];
+		if (elnode && elnode.text=='') empty_nodes.push(elnode);
+	}
+	for (var i=0; i < empty_nodes.length; i++) {
+		empty_nodes[i].remove();
+	}
+
+	var node_id = node.id;
+	if (!isNaN(node.parentNode.id) && node.parentNode.id > 0) {
+		
+		var to_parent = tree_to.getNodeById(node.parentNode.id);
+		if (to_parent) {
+		
+			to_parent.expand();
+			var new_node = new Ext.tree.TreeNode({ 'id': parseInt(node.id), 'text': node.text, 'iconCls': node.getUI().getIconEl().className });
+			var ok = to_parent.appendChild(new_node);
+			
+		} else {
+			og.ogPermInsertNodeHierarchy(node.parentNode, tree_to);
+			
+			to_parent = tree_to.getNodeById(node.parentNode.id);
+			to_parent.expand();
+			var new_node = new Ext.tree.TreeNode({ 'id': parseInt(node.id), 'text': node.text, 'iconCls': node.getUI().getIconEl().className });
+			var ok = to_parent.appendChild(new_node);
+		}
+	} else {
+		var new_node = new Ext.tree.TreeNode({ 'id': parseInt(node.id), 'text': node.text, 'iconCls': node.getUI().getIconEl().className });
+		var ok = tree_to.getRootNode().appendChild(new_node);
+	}
+
+	var inserted = tree_to.getNodeById(node_id)
+	if (inserted) inserted.ensureVisible();
+
+	// add emtpy nodes, to fill container area (to allow d&d)
+	setTimeout(function() {
+		while (tree_to.getRootNode().childNodes.length < 9) {
+			var empty_node = new Ext.tree.TreeNode({ 'id': 'temp-'+Ext.id(), 'text': '', 'iconCls': '' });
+			tree_to.getRootNode().appendChild(empty_node);
+		}
+	}, 500);
+}
+
+
+og.ogPermRemoveNodeHierarchy = function(node, child_id) {
+
+	node.expand(true, false, function() {
+		var can_remove = false;
+		if (!node.childNodes || node.childNodes.length == 0) {
+			can_remove = true;
+		} else {
+			if (node.childNodes.length == 1 && child_id && (!node.firstChild || node.firstChild.id == child_id)) {
+				can_remove = true;
+			}
+		}
+
+		if (can_remove) {
+			if (node.parentNode && !isNaN(node.parentNode.id) && node.parentNode.id > 0) {
+				og.ogPermRemoveNodeHierarchy(node.parentNode, node.id);
+			}
+			node.remove();
+		}
+	});
+}
+
+og.ogPermInsertNodeInTree = function(node, tree_to, dropEvent) {
+	// rebuild hierarchy in both trees
+	og.ogPermInsertNodeHierarchy(node, tree_to);
+	og.ogPermRemoveNodeHierarchy(node);
+	dropEvent.cancel = true;
+		
+	return dropEvent;
+}
+
+
+og.permissionsDDAddRemovePermissions = function(dropEvent) {
+
+	var tree_from = dropEvent.source.tree;
+	var tree_to = dropEvent.tree;
+	var node = dropEvent.data.node;
+	
+	// if source and target trees are the same => return
+	if (tree_from.id == tree_to.id) {
+		dropEvent.cancel = true;
+		return;
+	}
+
+	// if node already exists in the tree => return
+	var node_exist = tree_to.getNodeById(node.id);
+	if (node_exist) {
+		dropEvent.cancel = true;
+		if (!node.hasChildNodes()) node.remove();
+		node_exist.ensureVisible();
+	//	return;
+	}
+
+	// insert into tree
+	if (!dropEvent.cancel) {
+		node.expand(true);
+		dropEvent = og.ogPermInsertNodeInTree(node, tree_to, dropEvent);
+	}
+
+	// modify permissions
+	var remove_permissions = true;
+	if (tree_from.id.indexOf('_without_permissions_') > 0) {
+		remove_permissions = false;
+	}
+	
+	if (!isNaN(node.id)) {
+		if (remove_permissions) {
+
+			og.permissionInfo[genid].selectedMember = node.id;
+			og.ogPermSetLevel(genid, tree_to.dimensionId, 0);
+			
+			if (node.hasChildNodes()) {
+
+				var tree_title = tree_to.title.toLowerCase().replace("&", "and");
+				var question = lang('do you want to remove permissions for all submembers too', tree_title, node.text);
+				$("#"+genid+"ask_to_remove_sumbembers_text").html(question);
+
+				$("#"+genid+"parent_member_removed_perms").val(node.id);
+				$("#"+genid+"dimension_id_removed_perms").val(tree_to.dimensionId);
+				
+				$('#'+ genid +'ask_to_remove_from_submembers').modal({
+					'escClose': true,
+					'overlayClose': true,
+					'closeHTML': '<a id="'+genid+'_remove_submembers_close_link" class="modal-close" title="'+lang('close')+'"></a>',
+					'onShow': function (dialog) {
+						$("#"+genid+"_close_link").addClass("modal-close-img");
+					}
+				});
+			}
+			
+		} else {
+			
+			og.showPermissionsPopup(genid, tree_to.dimensionId, node.id, node.text, true);
+			
+		}
+	}
+}
+
+
+og.toggleManualPermissions = function(genid, is_modal) {
+	var checked = $("#"+genid+"_set_manual_permissions_checkbox").attr('checked') == 'checked';
+	$("#"+genid+"_set_manual_permissions").val(checked ? 1 : 0);
+	if (checked) {
+		$("#"+genid+"_dimension_permissions").show();
+		$("#"+genid+"_root_permissions").show();
+		$("#"+genid+"_manual_perm_help").hide();
+		if (is_modal) {
+			setTimeout(function(){
+				$("#"+genid+"permissions").animate({
+				   scrollTop: $("#"+genid+"_set_manual_permissions_checkbox").offset().top - 120
+				});
+			}, 600);
+			og.resize_modal_form();
+		} else {
+			$("#"+genid+"permissions").closest('form').parent().animate({
+			   scrollTop: $("#"+genid+"_set_manual_permissions_checkbox").offset().top - 140
+			});
+		}
+	} else {
+		$("#"+genid+"_dimension_permissions").hide();
+		$("#"+genid+"_root_permissions").hide();
+		$("#"+genid+"_manual_perm_help").show();
+	}
+}
+
+
+og.removePermissionsForSubmembers = function(genid) {
+	var dim_id = $("#"+genid+"dimension_id_removed_perms").val();
+	og.ogPermApplyToSubmembers(genid, dim_id);
+	// now remove node from "with_permissions" tree
+	var tree = Ext.getCmp(genid + '_with_permissions_' + dim_id + '-tree');
+	node = tree.getNodeById(og.permissionInfo[genid].selectedMember);
+	if (node) node.remove();
+}
+
+og.showPermissionsPopup = function(genid, dim_id, mem_id, name, set_default_permissions) {
+
+	og.permissionInfo[genid].selectedMember = mem_id;
+	og.loadMemberPermissions(genid, dim_id, mem_id);
+	$('#'+ genid + '_' + dim_id + 'member_name').html(name);
+
+	var tree = Ext.getCmp(genid + '_with_permissions_' + dim_id + '-tree');
+
+	var tree_title = tree.title.toLowerCase().replace("&", "and");
+	$("#"+genid+ "_"+dim_id+ "_apply_to_submembers").html(lang('apply to all submembers', tree_title, name));
+	$("#"+genid+ "_"+dim_id+ "_apply_to_all_members").html(lang('apply to all members', tree_title));
+	
+	$('#'+ genid +'member_permissions' + dim_id).modal({
+		'escClose': true,
+		'overlayClose': true,
+		'closeHTML': '<a id="'+genid+'_close_link" class="modal-close" title="'+lang('close')+'"></a>',
+		'onShow': function (dialog) {
+			$("#"+genid+"_close_link").addClass("modal-close-img");
+
+			var role_id = $("#"+genid+"_user_type_sel_role").val();
+			if (set_default_permissions) {
+				og.setDefaultPermissionsForMember(genid, dim_id, mem_id, role_id);
+			}
+		}
+	});
+}
+
+og.afterChangingPermissions = function(genid) {
+}
+
+og.removePermissionsForAllMembers = function(genid) {
+	
+	var dim_ids = [];
+	var containers = $(".single-tree.member-chooser-container")
+	for (var i=0; i<containers.length; i++) {
+		var id = containers[i].id;
+		if (idx = containers[i].id.indexOf('with_permissions') >= 0) {
+			dim_id = containers[i].id.replace('-container','');
+    		dim_id = dim_id.substring(containers[i].id.lastIndexOf('_') + 1);
+
+    		var mem_id = null;
+    		for (tmp_id in og.permissionInfo[genid].permissions) {
+	    		mem_id = tmp_id;
+	    		break;
+    		}
+    		if (mem_id) {
+				og.permissionInfo[genid].selectedMember = mem_id;
+		    	
+	    		og.ogPermSetLevel(genid, dim_id, 0);
+	    		og.ogPermApplyToAllMembers(genid, dim_id);
+    		}
+
+		}
+	}
+}
+
+og.addPermissionsForAllMembers = function(genid, role_id) {
+
+	var dim_ids = [];
+	var containers = $(".single-tree.member-chooser-container")
+	for (var i=0; i<containers.length; i++) {
+		if (!containers[i]) continue;
+		var id = containers[i].id;
+		if (idx = containers[i].id.indexOf('without_permissions') >= 0) {
+			dim_id = containers[i].id.replace('-container','');
+    		dim_id = dim_id.substring(containers[i].id.lastIndexOf('_') + 1);
+
+    		var mem_id = null;
+    		for (tmp_id in og.permissionInfo[genid].permissions) {
+	    		mem_id = tmp_id;
+	    		break;
+    		}
+    		if (mem_id) {
+				og.permissionInfo[genid].selectedMember = mem_id;
+
+	    		og.ogPermSetLevel(genid, dim_id, 3);
+	    		og.ogPermApplyToAllMembers(genid, dim_id);
+    		}
+
+		}
+	}
+}
+
 og.markMemberPermissionModified = function(genid, dim_id, member_id) {
-	var tree = Ext.getCmp(genid + '-member-chooser-panel-' + dim_id + '-tree');
-	var node = tree.getNodeById(member_id);
-	node.getUI().addClass('tree-node-modified');
+	var trees = [Ext.getCmp(genid + '_with_permissions_' + dim_id + '-tree'), Ext.getCmp(genid + '_without_permissions_' + dim_id + '-tree')];
+	for (var t=0; t<trees.length; t++) {
+		var tree = trees[t];
+		if (!tree) return;
+		var node = tree.getNodeById(member_id);
+		if (node) {
+			if (og.hasAnyPermissions(genid, member_id)) {
+				node.getUI().removeClass('tree-node-no-permissions')
+				node.getUI().addClass('tree-node-modified');
+			} else {
+				node.getUI().removeClass('tree-node-modified')
+				node.getUI().addClass('tree-node-no-permissions');
+			}
+			
+			var pnode = node.parentNode;
+			while (pnode && !isNaN(pnode.id)) {
+				if (!og.hasAnyPermissions(genid, pnode.id)) {
+					pnode.getUI().addClass('tree-node-no-permissions');
+				}
+				pnode = pnode.parentNode;
+			}
+		}
+	}
 }
 
 //Sets the permission information to send inside a hidden field. 
@@ -496,6 +897,71 @@ og.userPermissions.ogPermPrepareSendData = function(genid, send_all){
 }
 
 
+og.userPermissions.afterChangingPermissions = function(genid) {
+	if (!og.userPermissions.hasAnyPermissions(genid, og.userPermissions.current_pg_id)) {
+		$('#' + genid + '_pg_' + og.userPermissions.current_pg_id).remove();
+	}
+	og.userPermissions.current_pg_id = 0;
+}
+
+og.userPermissions.showPermissionsPopup = function(container, genid) {
+	var id = $(container).attr('id');
+	var pg_id = id.substr(id.lastIndexOf('_') + 1);
+	
+	var name = $("#username_"+pg_id).html();
+	var is_guest = $("#" + genid + "_is_guest_" + pg_id).val() > 0;
+	
+	og.userPermissions.onUserSelect(genid, {id:pg_id, n:name, isg:is_guest});
+
+	og.userPermissions.current_pg_id = pg_id;
+	
+	$('#'+ genid +'member_permissions').modal({
+		'escClose': false,
+		'overlayClose': false,
+		'closeHTML': '<a id="'+genid+'_close_link" class="modal-close"></a>'
+	});
+}
+
+og.userPermissions.onUserSelect = function(genid, arguments) {
+	var panel = Ext.get(genid + 'member_permissions');
+	var pg_id = arguments['id'];
+	var name = arguments['n'];
+	
+	og.showHideNonGuestPermissionOptions(arguments['isg']);
+	og.userPermissions.permissionInfo[genid].selectedPG = pg_id;
+	og.userPermissions.loadPGPermissions(genid, pg_id);
+	Ext.get(genid + 'pg_name').dom.innerHTML = name;
+
+}
+
+og.userPermissions.drawUserListItem = function(genid, item) {
+	var el = document.getElementById(genid + '_pg_' + item.pg_id);
+	if (!el) {
+		var html = '<li class="user-data" id="'+genid+'_pg_'+item.pg_id+'" onclick="og.userPermissions.showPermissionsPopup(this, \''+genid+'\');">';
+		
+		if (item.type == 'group') {
+			html += '<div class="coViewIconImage ico-large-group"></div>';
+		} else if (item.picture_url) {
+			html += '<div class="coViewIconImage"><img src="'+item.picture_url+'" alt="'+item.name+'" /></div>';
+		} else {
+			html += '<div class="coViewIconImage ico-large-contact"></div>';
+		}
+		
+		html +=	'<div class="user-name-container">'+
+				'<span id="username_'+ item.pg_id +'" class="bold">'+item.name+'</span>'+
+				'<input id="'+genid+'_is_guest_'+ item.pg_id +'" name="is_guest" type="hidden" value="'+item.is_guest+'"/>'+
+				'<div class="desc">'+(item.company_name ? item.company_name : '')+'</div>'+
+				'<div class="desc">'+(item.role ? item.role : '')+'</div>'+
+			'</div>'+
+			'<div class="clear"></div>'+
+		'</li>';
+		$("#" + genid + "_permissions_list").append(html);
+	}
+	
+	$("#" + genid + '_pg_' + item.pg_id).click();
+}
+
+
 og.showHideNonGuestPermissionOptions = function (guest_selected) {
 	if (guest_selected) {
 		$('.radio_3').hide();
@@ -509,5 +975,83 @@ og.showHideNonGuestPermissionOptions = function (guest_selected) {
 		$('.radio-title-3').show();
 		$('.radio-title-2').show();
 		$('.perm_all_checkbox_container').show();
+	}
+}
+
+
+og.addUpdatePermissionsUserTypeChange = function(genid, type) {
+	  $('#'+genid+'userSystemPermissions :input').attr('checked', false);
+	  $('#'+genid+'userModulePermissions :input').attr('checked', false);
+	  for(i=0; i< og.userRolesPermissions[type].length;i++){
+		  $('#'+genid+'userSystemPermissions :input[name$="sys_perm['+og.userRolesPermissions[type][i]+']"]').attr('checked', true);
+	  }
+	  for(f=0; f< og.tabs_allowed[type].length;f++){
+		  $('#'+genid+og.tabs_allowed[type][f]+' :input').attr('checked', true);
+	  }
+	  
+	  og.userPermissions.enableDisableSystemPermissionsByRole(genid, type);
+
+	  var guest_selected = false;
+	  for (j=0; j<og.guest_permission_group_ids.length; j++) {
+		  if (type == og.guest_permission_group_ids[j]) {
+			  guest_selected = true;
+			  break;
+		  }
+	  }
+
+	  og.showHideNonGuestPermissionOptions(guest_selected);  
+};
+
+
+og.userPermissions.savePermissions = function(genid, member_id) {
+	
+	if (og.userPermissions.current_pg_id > 0) {
+	
+		og.userPermissions.ogPermPrepareSendData(genid);
+		var hf = document.getElementById(genid + 'hfPermsSend');
+		if (hf) {
+			var to_send = [];
+			var temp_pg_id = og.userPermissions.current_pg_id;
+			var perms = Ext.util.JSON.decode(hf.value);
+			if (perms.length > 0) {
+				for (var i=0; i<perms.length; i++) {
+					if (perms[i].pg == temp_pg_id) {
+						to_send.push(perms[i]);
+					}
+				}
+			}
+			
+			if (to_send.length > 0) {
+				og.openLink(og.getUrl('member', 'save_permission_group'), {
+					preventPanelLoad: true,
+					post: {
+						member_id: member_id,
+						perms: Ext.util.JSON.encode(to_send)
+					},
+					callback: function(success, data) {
+						if (success) {
+							// mark processed permissions as not modified to avoid sending them again
+							var permissions = og.userPermissions.permissionInfo[genid].permissions[temp_pg_id];
+							if (permissions.length > 0) {
+								for (var i=0; i<permissions.length; i++) {
+									permissions[i].modified = false;
+								}
+							}
+						}
+					}
+				});
+			}
+		}
+	}
+}
+
+og.userPermissions.enableDisableSystemPermissionsByRole = function(genid, type) {
+	$('#'+genid+'userSystemPermissions :input').prop('disabled', true);
+	$('#'+genid+'userSystemPermissions label').css('opacity', '0.7');
+	if (og.userMaxRolesPermissions[type]) {
+		for(i=0; i<og.userMaxRolesPermissions[type].length; i++){
+			$('#'+genid+'userSystemPermissions :input[name$="sys_perm['+og.userMaxRolesPermissions[type][i]+']"]').prop('disabled', false);
+			$('#'+genid+'userSystemPermissions label[for$="'+genid+'sys_perm['+og.userMaxRolesPermissions[type][i]+']"]').css('opacity', '1.0');
+		}
 	}
 }

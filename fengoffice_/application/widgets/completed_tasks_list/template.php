@@ -1,7 +1,7 @@
 <div class="completed-tasks widget">
 
 	<div style="overflow: hidden;" class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang("completed tasks");?>
+		<div class="widget-title"><?php echo (isset($widget_title)) ? $widget_title : lang("completed tasks");?></div>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	
@@ -13,7 +13,10 @@
 		$count = 1;
 		foreach ($tasks as $k => $task):
 			$crumbOptions = json_encode($task->getMembersToDisplayPath());
-			$crumbJs = " og.getCrumbHtml($crumbOptions) ";
+			if($crumbOptions == ""){
+					$crumbOptions = "{}";
+				}
+			$crumbJs = " og.getEmptyCrumbHtml($crumbOptions, '.task-row' ) ";
 		?>
 			<li id="<?php echo "task-".$task->getId()?>" class="task-row <?php echo $row_cls?>" style="<?php echo $display;?>">
 				<span class="completed-date"><?php echo $task->getCompletedOn() instanceof DateTimeValue ? format_datetime($task->getCompletedOn()) : '';?></span>
@@ -22,6 +25,7 @@
 					<span class="completed-date bold"><?php echo $task->getCompletedByName();?>: </span>
 					<span class="task-title"><?php echo clean($task->getObjectName());?></span>
 				</a>
+				<br/>
 				<span class="breadcrumb"></span>
 				<script>
 					var crumbHtml = <?php echo $crumbJs?> ;
@@ -29,7 +33,6 @@
 				</script>
 			</li>
 		<?php 
-			$row_cls = $row_cls == "" ? "dashAltRow" : "";
 			$count++;
 			if ($count > $page) $display = "display:none;"; 
 		endforeach; ?>
@@ -57,5 +60,7 @@ $(function() {
 		$(this).hide();
 		$("#<?php $genid?>view-all").show();
 	});
+
+	// og.eventManager.fireEvent('replace all empty breadcrumb', null);
 });
 </script>

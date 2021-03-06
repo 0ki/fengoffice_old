@@ -39,6 +39,7 @@ class PanelController extends ApplicationController {
 					),
 					"enabled" => $row ['enabled'], 
 					"type" => $row ['type'],
+				 	"tabTip" => lang($row ['title']),
 				);
 				
 				if (config_option('show_tab_icons')) {
@@ -52,15 +53,14 @@ class PanelController extends ApplicationController {
 						"data" => get_url ( $row ['initial_controller'], $row ['initial_action'] ) 
 					);
 				}
-				/*
-				if ( $row['title'] == "overview" ) {
-					$object["initialContent"] = array (
-						"type" => "url", 
-						"data" => ROOT_URL 
-					);
-				}*/
-				
-				$this->panels [] = $object ;
+				if ($row['id'] == 'more-panel' && config_option('getting_started_step') >= 99) {
+					$object['closable'] = true;
+					if (!user_config_option('settings_closed')) {
+						$this->panels [] = $object;
+					}
+				} else {
+					$this->panels [] = $object;
+				}
 			}
 		}
 		

@@ -34,7 +34,7 @@ require_javascript('og/modules/massmailerForm.js');
     <fieldset>
       <legend><?php echo checkbox_field('massmailer[company_' . $company_id . ']', array_var($massmailer_data, 'company_' . $company_id), array('id' => 'massmailerFormCompany' . $company_id, 'class' => 'checkbox', 'onclick' => 'App.modules.massmailerForm.companyCheckboxClick(' . $company_id . ')')) ?> <label for="massmailerFormCompany<?php echo $company_id ?>" class="checkbox"><?php echo clean($company_name) ?></label></legend>
       <div>
-        <div class="massmailercompanyLogo"><img src="<?php echo $company_details['details']->getLogoUrl() ?>" alt="<?php echo clean($company_name) ?>" /></div>
+        <div class="massmailercompanyLogo"><img src="<?php echo $company_details['details']->getPictureUrl() ?>" alt="<?php echo clean($company_name) ?>" /></div>
         <div class="massmailerRecipeints">
 <?php foreach($company_details['users'] as $user) { ?>
           <script>

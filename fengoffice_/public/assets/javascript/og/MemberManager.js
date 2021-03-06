@@ -195,7 +195,7 @@ og.MemberManager = function() {
 		id: 'member-manager',
 		stripeRows: true,
 		closable: true,
-		loadMask: false,
+		loadMask: true,
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
 			store: this.store,
@@ -245,6 +245,7 @@ Ext.extend(og.MemberManager, Ext.grid.GridPanel, {
 		    };
 		
 		
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

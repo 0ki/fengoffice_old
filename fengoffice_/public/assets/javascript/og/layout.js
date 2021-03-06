@@ -31,42 +31,40 @@ Ext.onReady(function(){
 		onSuccess: function(data) {
 			var panelData = data['panels'] ;
 			og.panels = {} ; // Array Map PANEL_NAME => PANEL
-			//alert("antes de viewport") ;
+			
 			var panels = [] ; // Array of PANELS ( backguard compatibiliy )
 			for (var i = 0 ; i < panelData.length ; i++ ) {		
 				
 				og.eventManager.fireEvent("before tab panel construct", panelData[i]);
-
 				
-				var p = new og.ContentPanel(panelData[i]) ;		
-				og.panels[p.title] = p ;
-				panels.push(p);
-				
-				
-				// Add Plugins to QuickAdd
-				var singleId = (p.title.substr(-1) == "s" ) ? p.title.slice(0, -1) : p.title ;
-					
-				if ( p.type == "plugin" && quickAdd && quickAdd.menu) {
-					quickAdd.menu.add({
-						text: p.quickAddTitle,
-						iconCls: p.iconCls,
-						defaultController: p.defaultController,
-						handler: function() {
-							var url = og.getUrl(this.defaultController, 'add');
-							og.openLink(url);
-						}
-					});
-					
+				if (panelData[i]['id'] == 'more-panel' && panelData[i]['closable']) {
+					panelData[i].onClose = og.setSettingsClosed;
 				}
+				var p = new og.ContentPanel(panelData[i]);
+				og.panels[p.title] = p;
+				
+				panels.push(p);
 			};
-			
 			
 			var tab_panel = new Ext.TabPanel({
 				id: 'tabs-panel',
 				region: 'center',
 				activeTab: 0,
-				enableTabScroll: true,
-			
+				enableTabScroll: false,
+				listeners: {
+					render: {
+						fn: function(tabp) {
+							setTimeout(function(){
+								og.checkAndAdjustTabsSize();
+							}, 1000);
+						}
+					},
+					tabchange: {
+						fn: function(tabp) {
+							og.checkAndAdjustTabsSize();
+						}
+					}
+				},
 				items: (panels && panels.length)?panels:null 
 
 			});
@@ -75,9 +73,8 @@ Ext.onReady(function(){
 				layout: 'border', 
 				id: 'center-panel',
 				region:'center',
-				enableTabScroll: true,
 				items: [
-				   	new Ext.Panel({
+				   /*	new Ext.Panel({
 				   	   id: 'breadcrumbs-panel',	
 					   region: 'north', 
 					   cls : 'breadcrumbs-container',
@@ -89,7 +86,7 @@ Ext.onReady(function(){
 					   hideBorders: true ,
 					   hideCollapseTool: true,
 					   headerAsText: true
-				   }),
+				   }),*/
 				   tab_panel
 				]
 			});
@@ -130,6 +127,20 @@ Ext.onReady(function(){
 				        	collapsed: og.menuPanelCollapsed, // This flag is set in layout.php
 				        	//autoWidth: true,
 				        	layout: 'multi-accordion',
+				        	listeners: {
+				        	    'collapse': function(p) {
+				        	      og.eventManager.fireEvent("menu-panel collapse");
+				        	      setTimeout(function(){
+				        	    	  og.checkAndAdjustTabsSize();
+								  }, 200);
+				        	    },
+				        	    'expand': function(p) {
+					        	  og.eventManager.fireEvent("menu-panel expand");
+				        	      setTimeout(function(){
+				        	    	  og.checkAndAdjustTabsSize();
+								  }, 200);
+					        	}
+				        	  },
 				        	layoutConfig: {
 				        		// layout-specific configs go here
 				        		fill: true,
@@ -145,7 +156,7 @@ Ext.onReady(function(){
 				        	items:  og.dimensionPanels,
 				        	bbar : [
 				        	    {	
-				        			iconCls: 'ico-workspace-edit ico-see-more',
+				        			iconCls: 'op-ico-details',
 				        			tooltip: '<b>'+lang('see more')+'</b>',
 				        			text: lang('see more'),
 				        			menu: {

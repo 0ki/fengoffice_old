@@ -9,10 +9,8 @@
     * @static
     */
     static private $columns = array(
-    	'id'		=> DATA_TYPE_INTEGER,
     	'object_id' => DATA_TYPE_INTEGER,
     	'group_id' => DATA_TYPE_INTEGER,
-    
 	);
   
     /**
@@ -63,7 +61,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array('id');
+      return array(array('group_id','object_id'));
     } // getPkColumns
     
     /**
@@ -74,7 +72,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return 'id';
+      return null;
     }
     
     // -------------------------------------------------------

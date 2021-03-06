@@ -5,14 +5,19 @@
 
 ?>
 <div class="adminClients" style="height: 100%; background-color: white">
-	<div class="adminHeader">
-		<div class="adminTitle"><?php echo lang('templates') ?></div>
+	<div class="coInputHeader">
+
+	  <div class="coInputHeaderUpperRow">
+		<div class="coInputTitle">
+			<?php echo lang('templates') ?>
+		</div>
+	  </div>
+	
 	</div>
-	<div class="adminSeparator"></div>
-	<div class="adminMainBlock">
+	
+	<div class="coInputMainBlock adminMainBlock">
 		<?php if(isset($templates) && is_array($templates) && count($templates)) : ?>
-		<table style="min-width: 400px; margin-top: 10px;"
-			id="<?php echo $genid ?>-ws">
+		<table style="min-width: 400px;" id="<?php echo $genid ?>-ws">
 			<tr>
 				<th><?php echo lang('template') ?></th>
 				<th style="min-width: 150px"><?php echo lang('workspaces') ?></th>
@@ -45,7 +50,7 @@
 					<span class="project-replace"><?php echo implode(',',$project_ids) ?></span>
 				</td>
 		
-				<td style="font-size: 80%;"><?php echo implode(' | ', $options) ?></td>
+				<td><?php echo implode(' | ', $options) ?></td>
 			</tr>
 			<?php endforeach; ?>
 		</table>

@@ -161,7 +161,14 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	var cell = row.insertCell(pos++);
 	mem_path = "";
 	var mpath = Ext.util.JSON.decode(timeslot.memPath);
-	if (mpath) mem_path = og.getCrumbHtml(mpath);
+	//if (mpath) mem_path = og.getCrumbHtml(mpath);
+	if (mpath){ 
+		mem_path = "<div class='breadcrumb-container' style='width: 100%;'>";
+		mem_path += "<div style='display: inline;'>";
+		mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container');
+		mem_path += "</div>";
+		mem_path += "</div>";
+	}
 	cell.innerHTML = mem_path;
 		
 	cell = row.insertCell(pos++);

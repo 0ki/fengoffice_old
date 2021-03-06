@@ -14,7 +14,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 			}
 		} // if
 		if ($milestone->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'milestone', a:'edit', params: {id:".$milestone->getId()."}});", 'ico-edit', null, null, true);
 			if (!$milestone->isArchived()) {
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $milestone->getArchiveUrl() ."');", 'ico-archive-obj');
 			} else {

@@ -8,14 +8,21 @@ if (can_add_mail_accounts(logged_user())) {
 $genid = gen_id();
 ?>
 
-<div id="<?php echo $genid ?>adminContainer" class="adminMailAccounts"
-	style="height: 100%; background-color: white">
-<div class="adminHeader">
-<div class="adminTitle"><?php echo lang('mail accounts') ?></div>
+<div id="<?php echo $genid ?>adminContainer" class="adminMailAccounts">
+
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('mail accounts') ?>
+	</div>
+  </div>
+
 </div>
-<div class="adminSeparator"></div>
-<div class="adminMainBlock"><?php if(isset($all_accounts) && is_array($all_accounts) && count($all_accounts)) { ?>
-<table class="adminListing" style="min-width: 400px; margin-top: 10px;">
+
+<div class="coInputMainBlock adminMainBlock">
+<?php if(isset($all_accounts) && is_array($all_accounts) && count($all_accounts)) { ?>
+<table class="adminListing" style="min-width: 400px;">
 	<tr>
 		<th><?php echo lang('name') ?></th>
 		<th><?php echo lang('email address') ?></th>
@@ -49,7 +56,7 @@ $genid = gen_id();
 			$options[] = '<a class="internalLink" href="'.get_url('mail', 'sync_old_sent_mails', array('id' => $account->getId())).'">' . lang('sync') . '</a>';
 		}		
 		?>
-		<td style="font-size: 80%;"><?php echo implode(' | ', $options) ?></td>
+		<td><?php echo implode(' | ', $options) ?></td>
 	</tr>
 	<?php } // foreach ?>
 </table>
@@ -62,9 +69,3 @@ $genid = gen_id();
 </div>
 
 </div>
-
-
-<script>
-	var div = document.getElementById('<?php echo $genid ?>adminContainer');
-	div.parentNode.style.backgroundColor = '#FFFFFF'; 
-</script>

@@ -1447,6 +1447,10 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getMilestoneId() > 0) {
 			$result['mid'] = $this->getMilestoneId();
 		}
+		
+		if ($this->getAssignedById() > 0) {
+			$result['assigned_by_id'] = $this->getAssignedById();
+		}
 			
 		if ($this->getAssignedToContactId() > 0) {
 			$result['atid'] = $this->getAssignedToContactId();

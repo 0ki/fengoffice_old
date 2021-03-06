@@ -1,8 +1,8 @@
 
-<?php if (can_manage_security(logged_user()) && logged_user()->isAdminGroup()) { ?>
+<?php if (can_manage_security(logged_user())) { ?>
 <table style="width:100%;"><tr><td style="padding-right:10px;width:50%;">
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userSystemPermissions',this)"><?php echo lang("system permissions") ?></legend>
-	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block">
+	<div id="<?php echo $genid ?>userSystemPermissions" style="display:block" class="user-system-permissions">
 	
 		<?php
 			$columns = SystemPermissions::instance()->getColumns();
@@ -17,7 +17,7 @@
 						$attributes['onclick'] = 'return false;';
 						$attributes['class'] = 'disabled';
 					}
-					echo checkbox_field('sys_perm['.$column_name.']', $system_permissions instanceof SystemPermission ? $system_permissions->getColumnValue($column_name) : false, $attributes) ?>
+					echo checkbox_field('sys_perm['.$column_name.']', $system_permissions instanceof SystemPermission ? $system_permissions->getColumnValue($column_name) : false, $attributes) ?> 
 			      <label for="<?php echo $genid . 'sys_perm['.$column_name.']' ?>" class="checkbox"><?php echo lang($column_name) ?></label>
 			      <a class="help-sign" href="javascript:og.toggle('<?php echo $genid . $column_name ?>_help')">?</a>
 			      <div id="<?php echo $genid . $column_name ?>_help" class="permissions-help" style="display:none"><?php echo lang($column_name . ' description') ?></div>
@@ -47,7 +47,8 @@
 			<?php }
 		?>
 		<?php if (!isset($disable_sysperm_inputs) || !$disable_sysperm_inputs) : ?>
-		<a href="#" class="internalLink ogTasksGroupAction ico-complete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = true;"><?php echo lang('check all')?></a>
+		<div style="height:10px;"></div>
+		<a href="#" class="internalLink ogTasksGroupAction ico-complete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) { if (!$(checks[i]).prop('disabled')) checks[i].checked = true;}"><?php echo lang('check all')?></a>
 		<a href="#" class="internalLink ogTasksGroupAction ico-delete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = false;"><?php echo lang('uncheck all')?></a>
 		<?php endif; ?>
 	</div>
@@ -57,12 +58,12 @@
 <?php 	if (is_array($all_modules_info) && count($all_modules_info) > 0) {?>
 </td><td style="padding-left:10px;width:50%;">
 <fieldset class=""><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>userModulePermissions',this)"><?php echo lang("module permissions") ?></legend>
-	<div id="<?php echo $genid ?>userModulePermissions" style="display:block">	
+	<div id="<?php echo $genid ?>userModulePermissions" style="display:block" class="user-module-permissions">	
 	<?php foreach ($all_modules_info as $mod_info) { ?>
 	
 		<div id="<?php echo $genid . array_var($mod_info, 'id')?>">
 	      <?php  
-	        $attributes = array('id' => $genid . 'mod_perm['.array_var($mod_info, 'ot').']', 'onchange' => 'if(!this.checked) og.removeAllPermissionsForObjType(\''.$genid.'\','.array_var($mod_info, 'ot').')');
+			$attributes = array('id' => $genid . 'mod_perm['.array_var($mod_info, 'ot').']');
 			if (isset($disable_sysperm_inputs) && $disable_sysperm_inputs) {
 				$attributes['onclick'] = 'return false;';
 				$attributes['class'] = 'disabled';
@@ -74,9 +75,9 @@
 	<?php } ?>
 	
 	<?php if (!isset($disable_sysperm_inputs) || !$disable_sysperm_inputs) : ?>
-		<a href="#" class="internalLink ogTasksGroupAction ico-complete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = true;"><?php echo lang('check all')?></a>
+		<div style="height:10px;"></div>
+		<a href="#" class="internalLink ogTasksGroupAction ico-complete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) {if (!$(checks[i]).prop('disabled')) checks[i].checked = true;}"><?php echo lang('check all')?></a>
 		<a href="#" class="internalLink ogTasksGroupAction ico-delete" onclick="checks=this.parentNode.getElementsByTagName('input'); for(i=0;i<checks.length;i++) checks[i].checked = false;"><?php echo lang('uncheck all')?></a>
-		<p class="desc"><?php echo lang('module permission uncheck warning')?></p>
 	<?php endif; ?>
 	</div>
 </fieldset>
@@ -101,6 +102,7 @@
 ?>
 
 <?php if (config_option('let_users_create_objects_in_root') && (isset($user) && $user instanceof Contact && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) ){ ?>
+<div id="<?php echo $genid?>_root_permissions" class="root-permissions" style="<?php echo (isset($is_new_user) && $is_new_user ? "display:none;" : "")?>">
 
 <fieldset><legend><span class="og-task-expander toggle_expanded" style="padding-left:20px;" 
 	onclick="og.toggle('<?php echo $genid ?>root_permissions'); if ($(this).hasClass('toggle_expanded')){$(this).removeClass('toggle_expanded');$(this).addClass('toggle_collapsed');} else {$(this).removeClass('toggle_collapsed');$(this).addClass('toggle_expanded');}">
@@ -119,6 +121,7 @@
 		(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
 	$row_cls = "";
 	$root_object_types = array();
+	
 	$root_permissions = $permission_parameters['root_permissions'];
 	foreach ($all_object_types as $ot) {
 		if ($ot->getName() == 'mail' || $ot->getName() == 'template') continue;
@@ -153,7 +156,10 @@
   <input type="hidden" name="root_perm_genid" value="<?php echo $genid?>" />
   </div>
 </fieldset>
+</div>
 <script>
+var genid = '<?php echo $genid?>';
+
 og.perm_root_object_type_ids = Ext.util.JSON.decode('<?php echo json_encode($root_object_types)?>');
 og.ogRootPermSetLevel = function (genid, level) {
 	for (i=0; i<og.perm_root_object_type_ids.length; i++) {
@@ -163,3 +169,13 @@ og.ogRootPermSetLevel = function (genid, level) {
 }
 </script>
 <?php }?>
+
+<?php $role_id = isset($user) && $user instanceof Contact ? $user->getUserType() : $pg_id;
+if ($role_id > 0) { ?>
+<script>
+$(function() {
+	var type = '<?php echo $role_id ?>';
+	og.userPermissions.enableDisableSystemPermissionsByRole(genid, type);
+});
+</script>
+<?php } ?>

@@ -60,7 +60,7 @@ abstract class DimensionObject extends ContentDataObject {
 				}
 				if (count($values) > 0) {
 					$values_str = implode(",", $values);
-					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values_str");
+					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values_str ON DUPLICATE KEY UPDATE group_id=group_id");
 				}
 			}
 		}

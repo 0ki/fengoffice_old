@@ -210,6 +210,7 @@ og.ReportingManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
+		loadMask: true,
 		stateful: og.preferences['rememberGUIState'],
         style: "padding:7px",
         bbar: new og.CurrentPagingToolbar({
@@ -270,6 +271,7 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 		} else {
 			var start = 0;
 		}
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

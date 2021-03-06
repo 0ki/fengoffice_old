@@ -1,7 +1,7 @@
 <?php
  
 $cantUsers = count($users);
-$cantPages = ceil($cantUsers / 10);
+$cantPages = floor($cantUsers / 10);
 $page = 1;
 $newPage = true;
 isset($isMemberList) && $isMemberList == true ? $isUsersList = true : $isUsersList = false;
@@ -17,7 +17,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 <div id="<?php echo $page . '-' . $user->getCompanyId()?>userspage" style="display: <?php echo $counter != 1? 'none':'block' ?>" >		
 	<?php }//newpage??>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?> <?php echo $user->getDisabled() ? 'user-disabled' : '' ?>">
-	<div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
+	<div class="userAvatar"><img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
 	<div class="userDetails">
 		<div class="userName">
 			<a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a>
@@ -31,7 +31,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
   if (!$user->getDisabled()) {
 	  if($user->canUpdateProfile(logged_user())) {
 	    $options[] = '<a class="internalLink" href="' . $user->getEditUrl() . '">' . lang('update profile') . '</a>';
-	    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl() . '">' . lang('update avatar') . '</a>';
+	    $options[] = '<a class="internalLink" href="' . $user->getUpdatePictureUrl() . '">' . lang('update avatar') . '</a>';
 	  }
 	  if ($user->canChangePassword(logged_user())) {
 	  	$options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl() . '">' . lang('change password') . '</a>';
@@ -39,7 +39,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 	  if($user->canUpdatePermissions(logged_user())) {
 	    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
 	  }
-	  
+	  /*
 	  if($user->canDelete(logged_user())) {
 	  	if (!$user->hasReferences()) {
 	  		$options[] = '<a class="internalLink" href="' . get_url('account', 'delete_user', array('id' => $user->getId())) . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm delete user')) .'\');">' . lang('delete') . '</a>';
@@ -49,7 +49,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
   } else {
 	  if($user->canDelete(logged_user())) {
 	  	$options[] = '<a class="internalLink" href="' . get_url('account', 'restore_user', array('id' => $user->getId())) . '">' . lang('activate') . '</a>';
-	  }
+	  }*/
   }
 ?>
 		<div class="userOptions"><?php echo implode(' | ', $options) ?></div>

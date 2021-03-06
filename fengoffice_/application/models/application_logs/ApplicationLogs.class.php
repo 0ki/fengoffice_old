@@ -188,9 +188,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 			)); // findAll				
 		} else {
 			$logs = self::findAll(array(
-				'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `is_private` <= ? AND `is_silent` <= ?
-					AND (`rel_object_id`IN (SELECT `object_id` FROM '.Comments::instance()->getTableName(true).' WHERE `rel_object_id` = (?)) 
-						OR `rel_object_id`IN (SELECT `object_id` FROM '.Timeslots::instance()->getTableName(true).' WHERE `rel_object_id` = (?))) '.$extra_conditions, $private_filter, $silent_filter, $object->getId(),$private_filter, $silent_filter, $object->getId(), $object->getId()),
+				'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND 
+					(`rel_object_id` = (?) OR `rel_object_id` IN (SELECT com.object_id FROM '.TABLE_PREFIX.'comments com WHERE com.rel_object_id=? )) 
+					'.$extra_conditions, $private_filter, $silent_filter, $object->getId(), $object->getId()),
 				'order' => '`created_on` DESC',
 				'limit' => $limit,
 				'offset' => $offset,

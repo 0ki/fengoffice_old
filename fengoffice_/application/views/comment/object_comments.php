@@ -7,8 +7,8 @@
 	$random = rand();
 ?>
 
-<?php if ($countComments > 0) { ?>
     <div class="commentsTitle"><?php echo lang('comments')?> </div>
+<?php if ($countComments > 0) { ?>
 
 		<div class="objectComments" id="<?php echo $random ?>objectComments" style="<?php echo $countComments > 0? '':'display:none'?>">
 <?php
@@ -50,16 +50,18 @@
 		
 			<?php 	
 				$has_avatar = false;
-				if(($comment->getCreatedBy() instanceof Contact) && ($comment->getCreatedBy()->hasAvatar())) { 
+				if(($comment->getCreatedBy() instanceof Contact) && ($comment->getCreatedBy()->hasPicture())) { 
 						$has_avatar = true;
 				}
 			?>
-				<div class="commentBody"  style="word-wrap: break-word;padding: 0 0 0 60px;position: relative;<?php echo ($has_avatar)? "min-height: 65px;":"" ?>">
+				<div class="commentBody"  style="word-wrap: break-word;padding: 0;position: relative;<?php echo ($has_avatar)? "min-height: 65px;":"" ?>">
 					<?php 	if($has_avatar) { ?>
-					<img style="left: 0;position: absolute;top: 0;" class="commentUserAvatar" src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getObjectName()) ?>" />
+					<div class="contact-picture-container">
+						<img class="commentUserAvatar" src="<?php echo $comment->getCreatedBy()->getPictureUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getObjectName()) ?>" />
+					</div>
 					<?php 	} // if ?>
 					
-					<?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?>
+					<div class="commentText"><?php echo escape_html_whitespace(convert_to_links(clean($comment->getText()))) ?></div>
 					<div class="clear"></div>
 					<?php $object_links_render = render_object_links($comment, ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()), true, false);
 						if ($object_links_render != '') { 
@@ -78,3 +80,17 @@
 <?php if(!$__comments_object->isTrashed()) {?>
 	<?php echo render_comment_form($__comments_object) ?>
 <?php } // if ?>
+
+<script>
+og.resizeCommentsText = function() {
+	var container_w = $('.objectComments .comment .commentBody').width();
+	$('.objectComments .comment .commentText').css('width', (container_w - 70)+'px');
+}
+
+$(function() {
+	og.resizeCommentsText();
+	$(window).resize(function() {
+		og.resizeCommentsText();
+	});
+});
+</script>

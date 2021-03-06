@@ -26,7 +26,7 @@
   foreach($users as $user) {
 	$counter++; ?>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
-    <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
+    <div class="userAvatar"><img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
       <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getObjectName()) ?></a></div>
       <div class="userIsAdmin">

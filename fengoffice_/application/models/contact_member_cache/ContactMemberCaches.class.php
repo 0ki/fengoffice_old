@@ -154,7 +154,11 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		
 		if(is_null($parent_member_id)){
 			$member = Members::getMemberById($member_id);
-			$member_info['parent_member_id'] = $member->getParentMemberId();
+			if ($member instanceof Member) {
+				$member_info['parent_member_id'] = $member->getParentMemberId();
+			} else {
+				$member_info['parent_member_id'] = 0;
+			}
 		}else{
 			$member_info['parent_member_id'] = $parent_member_id;
 		}

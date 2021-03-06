@@ -140,8 +140,8 @@ $genid = gen_id();
 </div>
 
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="og.clearPaintedCells();">
-<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
-<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;padding-top:0;display:block;background-color:#F0F0F0;"></div>
 <div id="<?php echo $genid."view_calendar"?>">  
 <table style="width:100%;height:100%;">
 <tr>
@@ -517,7 +517,7 @@ $genid = gen_id();
 														
 															<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter?>'
 																onclick="og.disableEventPropagation(event);"
-																class='internalLink'><span style="color:<?php echo $txt_color?>!important;font-size:93%; font-weight: <?php  if (isset($bold))echo $bold; ?>;"><?php echo $subject_toshow;?></span></a>
+																class='internalLink'><span style="color:<?php echo $txt_color?>!important; font-weight: <?php  if (isset($bold))echo $bold; ?>;"><?php echo $subject_toshow;?></span></a>
 															
 														</td><td align="right">
 														<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">

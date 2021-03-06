@@ -36,8 +36,8 @@ q:before, q:after {
 }
 
 body {
-  font-family: verdana, arial, helvetica, sans-serif;
-  font-size: 11px;
+  font-family: "Open Sans",Arial,sans-serif;
+  font-size: 13px;
   color: #333333;
   background: white;
   line-height: 150%;
@@ -119,7 +119,6 @@ pre {
   font-size: 1.2em;
   background: #e8e8e8;*/
   overflow: auto;
-  font-family:verdana,arial,helvetica,sans-serif;
 }
 
 acronym {
@@ -137,7 +136,6 @@ th, td {
 
 th {
   background: #e8e8e8;
-  font-size: 90%;
   padding: 2px 5px;
 }
 
@@ -234,7 +232,6 @@ table.blank th, table.blank td {
   margin: 10px 0;
   border: 2px solid #ccc;
   padding: 5px 10px;
-  font-size: 90%;
 }
 
 .block .header, .hint .header, .important .header, .success .header {
@@ -340,10 +337,53 @@ a.iCalSubscribe {
 	width: 100% ;
 }
 
-#menu-panel .x-small-editor {
+.dimension-selector-container .x-toolbar table {
+	width: 100% ;
+	overflow: visible;
+}
+
+#menu-panel .x-panel-tbar .x-small-editor {
+	border-width: 0;
 	padding-right: 10px ;	
 }
 
+.dimension-selector-container .dimension-panel-textfilter {
+	width: 100% ;	
+	border-width: 0;	
+	padding-left: 0!important;
+    padding-right: 0!important;
+}
+
 .dimension-panel-textfilter {
-	width: 100% ;
+	width: 100% ;	
+}
+
+.cke_wrapper {
+	background-color: #ddd !important;
+}
+
+.coInputMainBlock .ui-widget, 
+.coInputMainBlock .ui-widget input, 
+.coInputMainBlock .ui-widget select, 
+.coInputMainBlock .ui-widget textarea, 
+.coInputMainBlock .ui-widget button,
+.x-panel-tbar .x-toolbar .x-btn button,
+.x-panel-tbar .x-toolbar .ytb-text, 
+.x-menu-list .x-menu-list-item,
+.og-content-panel .x-grid3-hd-row td,
+.og-content-panel .x-grid3-row td, 
+.og-content-panel .x-grid3-summary-row td,
+#menu-panel .x-panel-header, 
+textarea {
+	font-family: "Open Sans",Arial,sans-serif;
+}
+.x-panel-tbar .x-toolbar .x-btn button,
+.x-panel-tbar .x-toolbar .ytb-text, 
+.x-menu-list .x-menu-list-item {
+	font-size: 13px;
+}
+.og-content-panel .x-grid3-hd-row td,
+.og-content-panel .x-grid3-row td, 
+.og-content-panel .x-grid3-summary-row td {
+	font-size: 12px;
 }

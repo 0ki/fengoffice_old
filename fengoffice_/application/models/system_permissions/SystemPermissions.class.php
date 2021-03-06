@@ -62,7 +62,7 @@
 		}
   		
   		function getAllRolesPermissions(){
-  			$groups = PermissionGroups::getNonPersonalPermissionGroups('`parent_id`,`id` ASC');
+  			$groups = PermissionGroups::instance()->getNonPersonalSameLevelPermissionsGroups('`parent_id`,`id` ASC');
   			$roles_permissions = array();
   			foreach($groups as $group){
   				$roles_permissions[$group->getId()] = self::getRolePermissions($group->getId());

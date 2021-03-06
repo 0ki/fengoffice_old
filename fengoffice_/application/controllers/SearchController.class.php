@@ -325,21 +325,20 @@ class SearchController extends ApplicationController {
 				(SELECT o.id
 				 FROM  ".TABLE_PREFIX."objects o
 				 WHERE	o.id = so.rel_object_id AND (	
-							 (	o.object_type_id = $revisionObjectTypeId AND  
+							(o.object_type_id = $revisionObjectTypeId AND  
 								EXISTS ( 
-									SELECT id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
+									SELECT group_id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
 									AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid )
 								)
-							 ) 
+							) 
 							OR (
 								(EXISTS
 									(SELECT object_id
-									FROM  ".TABLE_PREFIX."sharing_table sh
-									WHERE o.id = sh.object_id 
-									AND sh.group_id  IN (
-															SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-														)
-		
+										FROM  ".TABLE_PREFIX."sharing_table sh
+										WHERE o.id = sh.object_id 
+										AND sh.group_id  IN (
+											SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+										)
 									)
 								)
 			 				)
@@ -416,6 +415,167 @@ class SearchController extends ApplicationController {
 		}
 		ajx_set_no_toolbar(true);
 		
+	}
+	
+	function general_search() {
+		// Init vars
+		$search_dimension = array_var($_GET, 'search_dimension');
+						
+		$filteredResults = 0;
+		$uid = logged_user()->getId();
+		
+		if(!isset($search_dimension)){
+			$members = active_context_members(false);
+		}else{
+			if($search_dimension == 0){
+				$members = array();
+			}else{
+				$members = array($search_dimension);
+			}
+		}
+		
+		// click on search everywhere
+		if (array_var($_REQUEST, 'search_all_projects')) {
+			$members = array();
+		}
+		
+		$revisionObjectTypeId = ObjectTypes::findByName("file revision")->getId();
+		
+		$members_sql = "";
+		if(count($members) > 0){
+			$context_condition = "(EXISTS
+										(SELECT om.object_id
+											FROM  ".TABLE_PREFIX."object_members om
+											WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND so.rel_object_id = om.object_id
+											GROUP BY object_id
+											HAVING count(member_id) = ".count($members)."
+										)
+									)";
+			$context_condition_rev = "(EXISTS
+										(SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om
+															INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id
+															INNER JOIN ".TABLE_PREFIX."objects ob ON fr.object_id=ob.id
+																	WHERE fr.file_id = so.rel_object_id AND ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ")
+															GROUP BY object_id
+															HAVING count(member_id) = ".count($members)."
+										)
+									)";
+			$members_sql = "AND ( ".$context_condition." OR  ".$context_condition_rev.")";
+				
+			$this->search_dimension = implode ( ',', $members );
+		}else{
+			$this->search_dimension = 0;
+		}
+		
+		$listableObjectTypeIds = implode(",",ObjectTypes::getListableObjectTypeIds());
+		
+		$can_see_all_tasks_cond = "";
+		if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
+			$can_see_all_tasks_cond = " AND IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
+			 (SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = ".logged_user()->getId().",
+			 true)";
+		}
+				
+		$search_string = trim(array_var($_REQUEST, 'query', ''));
+		$search_string = mysql_real_escape_string($search_string, DB::connection()->getLink());
+		$start = array_var($_REQUEST, 'start' , 0);
+		$orig_limit = array_var($_REQUEST, 'limit');
+		$limit = $orig_limit + 1;
+		
+		$useLike = false;
+		if(strlen($search_string) < 4){
+			$useLike = true;
+		}
+	
+		if(strlen($search_string) > 0) {
+			$this->search_for = $search_string;
+			$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
+			
+			$sql = "
+			SELECT DISTINCT so.rel_object_id AS id, so.content AS text_match, so.column_name AS field_match
+			FROM ".TABLE_PREFIX."searchable_objects so
+			WHERE " . (($useLike) ? " so.content LIKE '%$search_string%' " : " MATCH (so.content) AGAINST ('\"$search_string\"' IN BOOLEAN MODE) ") . "
+			AND (EXISTS
+				(SELECT o.id
+				 FROM  ".TABLE_PREFIX."objects o
+							 WHERE	o.id = so.rel_object_id AND (
+							 (o.object_type_id = $revisionObjectTypeId AND
+							 EXISTS (
+							 SELECT group_id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id )
+									AND group_id IN ($logged_user_pgs)
+												)
+												)
+												OR (
+												(EXISTS
+												(SELECT object_id
+												FROM  ".TABLE_PREFIX."sharing_table sh
+										WHERE o.id = sh.object_id
+										AND sh.group_id  IN (
+											$logged_user_pgs
+														)
+														)
+														)
+														)
+														) AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . $can_see_all_tasks_cond . "
+														)
+														)															
+						GROUP BY(id)	
+						ORDER BY(id) DESC							
+						LIMIT $start, $limit";
+				
+			$rows = DB::executeAll($sql);
+			if (!is_array($rows)) $rows = array();
+				
+			// show more
+			$show_more = false;
+			if(count($rows) > $orig_limit){
+				array_pop($rows);
+				$show_more = true;
+			}
+				
+			if($show_more){
+				ajx_extra_data(array('show_more' => $show_more));
+			}
+
+			$search_results = array();
+			$object_ids = array();
+			foreach ($rows as $ob_data) {
+				// basic data
+				$data = array(
+						'id' => $ob_data['id'],
+						'text_match' => $this->highlightOneResult($ob_data['text_match']),
+						'field_match' => $ob_data['field_match'],												
+				);
+				$object_ids[] = $ob_data['id'];
+				$search_results[] = $data;
+			}
+			
+			if(count($object_ids) > 0){
+				$result = ContentDataObjects::listing(array(
+						"extra_conditions" => " AND o.id IN (".implode(",",$object_ids).") ",
+						"include_deleted" => true,
+				));
+				$objects = $result->objects;
+				foreach ($objects as $object) {
+					foreach ($search_results as $key => $search_result) {
+						if($search_result['id'] == $object->getId()){
+							$search_results[$key]['name'] = $object->getObjectName();
+							$class = 'ico-' . $object->getObjectTypeName();
+							$search_results[$key]['iconCls'] = $class;
+							$search_results[$key]['url'] = $object->getViewUrl();
+							continue;
+						}
+					}
+				}	
+			}
+			
+			$row = "search-result-row-medium";
+			ajx_extra_data(array('row_class' => $row));
+				
+			ajx_extra_data(array('search_results' => $search_results));
+				
+		}
+		ajx_current("empty");
 	}
 	
 	private function minWordLength($str) {
@@ -532,6 +692,24 @@ class SearchController extends ApplicationController {
 			$text = str_ireplace($word, "<em>".$word."</em>", $text) ;
 		}
 		return $text;
+    }
+    
+    /**
+     * Emphaisis around one search keywords and 
+     * @param unknown_type $content
+     */
+    private function highlightOneResult($text) {
+    	$text = html_to_text($text);
+    	$pieces = explode(" ", $this->search_for);
+    	
+    	if(strlen($text) > 100){
+	    	$text_ret = '...';    	    
+	    	$text_ret .= substr($text, strpos($text, $pieces[0]) , 100);
+	    	$text_ret .= '...';
+    	}else{
+    		$text_ret = $text;
+    	}
+    	return $text_ret;
     }
 
     

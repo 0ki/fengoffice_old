@@ -14,7 +14,7 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 		} // if
 
 		if($task_list->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'task', a:'edit_task', params: {id:".$task_list->getId().",reload:1}});", 'ico-edit', null, null, true);
 			if (!$task_list->isArchived())
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $task_list->getArchiveUrl() ."');", 'ico-archive-obj');
 			else
@@ -128,7 +128,7 @@ tpl_assign("status", $status);
 tpl_assign("variables", $variables);
 tpl_assign("content_template", array('task_list', 'task'));
 tpl_assign('object', $task_list);
-tpl_assign('title', clean($title));
+//tpl_assign('title', clean($title));
 tpl_assign('iconclass', $task_list->isTrashed()? 'ico-large-tasks-trashed' : ($task_list->isArchived() ? 'ico-large-tasks-archived' : 'ico-large-tasks'));
 
 

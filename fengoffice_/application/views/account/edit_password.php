@@ -1,9 +1,15 @@
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('change password') ?></div>
-  </div>
-  <div class="adminSeparator"></div>
+	<div class="coInputHeader">
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle">
+			  	<?php echo lang('change password') ?>
+			</div>
+		</div>
+		<div class="clear"></div>
+	  </div>
+	</div>
   <div class="adminMainBlock">
   
 <form class="internalForm" action="<?php echo $user->getEditPasswordUrl($redirect_to) ?>" method="post">

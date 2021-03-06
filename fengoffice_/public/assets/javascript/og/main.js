@@ -65,32 +65,15 @@ $(function(){
 	});
 	
 	
-	/******  Breadcrumbs ******/
-	
-	og.eventManager.addListener('tab activated',function(tab){
-		if ( tab.id != "overview-panel" ) {
-			$('.overviewEdit').hide();
-			$('div#breadcrumbs').show();
-		}else{
-			//$('.overviewEdit').show();
-		}
-	}, this);   
-
-
-	og.eventManager.addListener('member tree node click',function(node){
-		setTimeout(function() {og.Breadcrumbs.refresh(node)},500) ;
-	}, this);
-	
 	og.eventManager.addListener('before tab panel construct',function(tabConfig){
-	//	if (tabConfig.id == "overview-panel" ){
-			if (og.queryString != "" && og.queryString != "c=access&a=index"  ){
-				tabConfig.initialContent = {
-					type:"url", 
-					data: og.initialURL 
-				};
-				og.queryString= "";
-			}
-	//	}
+		if (og.queryString != "" && og.queryString != "c=access&a=index"  ){
+			tabConfig.initialContent = {
+				type:"url", 
+				data: og.initialURL 
+			};
+			// remove query string to avoid opening the same link in every tab
+			og.queryString= "";
+		}
 	});
 	
 });

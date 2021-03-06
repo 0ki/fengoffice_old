@@ -3,14 +3,14 @@
 <table style="width:240px">
 	<col width=12/><col width=216/><col width=12/>
 	<tr>
-		<td class="coViewHeader coViewSmallHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
+		<td class="coViewHeader coViewSmallHeader" style="border:1px solid #ccc;" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
 		<td class="coViewTopRight"></td>
 	</tr>
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 	<tr>
-		<td class="coViewBody" colspan=2>
+		<td class="coViewBody" style="border:1px solid #ccc;" colspan=2>
 			<div class="prop-col-div" style="width:200;">
 				<span style="color:#333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
 			</div>

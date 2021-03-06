@@ -452,7 +452,7 @@ class Contact extends BaseContact {
 	 */
 	 function getEmailAddress($type=null) {
 	 	$contact_id = $this->getId();
-	 	$type_condition =  ($type) ? "AND name = 'personal'" : "";
+	 	$type_condition =  ($type) ? "AND name = '$type'" : "";
 	 	
 	 	$sql = "SELECT * FROM ".TABLE_PREFIX."contact_emails ce
 				LEFT JOIN ".TABLE_PREFIX."email_types t
@@ -580,7 +580,7 @@ class Contact extends BaseContact {
 	} // getPhoneNumber
 
 	function getAllImValues() {
-		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN ".TABLE_PREFIX."im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
+		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN ".$t_prefix."im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
 		$res = array();
 		foreach ($rows as $row) {
 			$res[$row['name']] = $row['value'];
@@ -945,26 +945,36 @@ class Contact extends BaseContact {
 			} // if*/
 		}
 		else{
+			$fields = array();
 			// Validate username if present
 			if(!$this->validatePresenceOf('surname') && !$this->validatePresenceOf('first_name')) {
 				$errors[] = lang('contact identifier required');
+				$fields[] = 'first_name';
+				$fields[] = 'surname';
 			}
 
 	
-			/*FIXME //if email address is entered, it must be unique
-			if($this->validatePresenceOf('email')) {
-				$this->setEmail(trim($this->getEmailAddress()));
-				if(!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
-				if(!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
+			//if email address is entered, it must be unique
+			$user = array_var(array_var($_POST, 'contact'),'user');
+			$main_email = trim(array_var(array_var($_POST, 'contact'),'email'));
+			if($main_email || array_var($user, 'create-user')) {
+				if(!preg_match(EMAIL_FORMAT, $main_email)) {
+					$errors[] = lang('invalid email address');
+					$fields[] = 'email';
+				}
+				
+				$conditions = "email_address=".DB::escape($main_email);
+				if (!$this->isNew()) {
+					$conditions .= " AND contact_id <> ".$this->getId();
+				}
+				$em = ContactEmails::instance()->findOne(array('conditions' => $conditions));
+				if($em instanceof ContactEmail) {
+					$errors[] = lang('email address must be unique');
+					$fields[] = 'email';
+				}
 			}
-			if($this->validatePresenceOf('email2')) {
-				$this->setEmail2(trim($this->getEmailAddress()));
-				if(!$this->validateFormatOf('email2', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
-			}
-			if($this->validatePresenceOf('email3')) {
-				$this->setEmail3(trim($this->getEmailAddress()));
-				if(!$this->validateFormatOf('email3', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
-			}*/
+			
+			return $fields;
 		}
 	} // validate*/
 	
@@ -1108,7 +1118,7 @@ class Contact extends BaseContact {
 		if ($this->isAccountOwner() || $this->isOwnerCompany()) {
 			return false;
 		}
-		if (parent::getUserType() != 0) {
+		if ($this->getUserType() != 0) {
 			return can_manage_security($user) && $this->getUserType() > $user->getUserType();
 		} else {
 			return can_manage_contacts($user) || can_delete($user, $this->getMembers(), $this->getObjectTypeId());
@@ -1415,7 +1425,7 @@ class Contact extends BaseContact {
     
     
     function getArrayInfo() {
-    	$info = array('id' => $this->getId(), 'name' => $this->getObjectName(), 'cid' => $this->getCompanyId());
+    	$info = array('id' => $this->getId(), 'name' => $this->getObjectName(), 'cid' => $this->getCompanyId(), 'img_url' => $this->getPictureUrl());
     	if ($this->getId() == logged_user()->getId()) $info['isCurrent'] = 1;
     	return $info;
     }
@@ -1457,35 +1467,28 @@ class Contact extends BaseContact {
 		Env::useLibrary('simplegd');
 
 		$image = new SimpleGdImage($source);
-/*		if ($image->getImageType() == IMAGETYPE_PNG) {
-			if ($image->getHeight() > 128 || $image->getWidth() > 128) {
-				//	resize images if are png bigger than 128 px
-				$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-				$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-				$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-			} else {
-				//keep the png as it is.
-				$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
-			}
-		} else {
-*/			$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-			$thumb->saveAs($temp_file, IMAGETYPE_PNG);
+		if ($image->getImageType() != IMAGETYPE_PNG) {
+			
+			$image->convertType(IMAGETYPE_PNG);
+			$image->saveAs($temp_file, IMAGETYPE_PNG);
 			$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-//		}
+			
+		} else {
+			$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
+		}
 
 		if($public_fileId) {
 			$this->setPictureFile($public_fileId);
 			if($save) {
 				$this->save();
-			} // if
-		} // if
-
+			}
+		}
 		$result = true;
 
 		// Cleanup
 		if(!$result && $public_fileId) {
 			FileRepository::deleteFile($public_fileId);
-		} // if
+		}
 		@unlink($temp_file);
 
 		return $result;
@@ -1503,7 +1506,7 @@ class Contact extends BaseContact {
 			FileRepository::deleteFile($this->getPictureFile());
 			$this->setPictureFile('');
 		} // if
-	} // deleteLogo
+	} // deletePicture
 	
 	
 	/**
@@ -1529,258 +1532,7 @@ class Contact extends BaseContact {
 		return get_url('group', 'add', array('company_id' => $this->getId()));
 	} // getAddUserUrl
 	
-	// ---------------------------------------------------
-	//  Avatars
-	// ---------------------------------------------------
 
-	/**
-	 * Set user avatar from $source file
-	 *
-	 * @param string $source Source file
-	 * @param integer $max_width Max avatar widht
-	 * @param integer $max_height Max avatar height
-	 * @param boolean $save Save user object when done
-	 * @return string
-	 */
-	function setAvatar($source,$fileType, $max_width = 50, $max_height = 50, $save = true) {
-		if(!is_readable($source)) return false;
-
-		do {
-			$temp_file = CACHE_DIR . '/' . sha1(uniqid(rand(), true));
-		} while(is_file($temp_file));
-
-		try {
-			Env::useLibrary('simplegd');
-
-			$image = new SimpleGdImage($source);
-	        if ($image->getImageType() == IMAGETYPE_PNG) {
-	        	if ($image->getHeight() > 128 || $image->getWidth() > 128) {
-		        	//	resize images if are png bigger than 128 px
-	        		$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-	        		$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-	        		$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-	        	}else{
-	        		//keep the png as it is.
-	        		$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
-	        	}
-	        } else {
-	        	$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-	        	$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-	        	$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-	        }
-			
-			if($public_fileId) {
-				$this->setPictureFile($public_fileId);
-				if($save) {
-					$this->save();
-				} // if
-			} // if
-
-			$result = true;
-		} catch(Exception $e) {
-			$result = false;
-		} // try
-
-		// Cleanup
-		if(!$result && $public_fileId) {
-			FileRepository::deleteFile($public_fileId);
-		} // if
-		@unlink($temp_file);
-
-		return $result;
-	} // setAvatar
-
-	/**
-	 * Delete avatar
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function deleteAvatar() {
-		if($this->hasAvatar()) {
-			FileRepository::deleteFile($this->getPictureFile());
-			$this->setPictureFile('');
-		} // if
-	} // deleteAvatar
-	
-	
-	/**
-	 * Return path to the avatar file. This function just generates the path, does not check if file really exists
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getAvatarPath() {
-		return PublicFiles::getFilePath($this->getPictureFile());
-	} // getAvatarPath
-
-	
-	/**
-	 * Return URL of avatar
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getAvatarUrl() {
-		return $this->hasAvatar() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png');
-	} // getAvatarUrl
-
-	
-	/**
-	 * Return update avatar URL
-	 *
-	 * @param string
-	 * @return string
-	 */
-	function getUpdateAvatarUrl($redirect_to = null) {
-		$attributes = array('id' => $this->getId());
-		if(trim($redirect_to) <> '') {
-			$attributes['redirect_to'] = str_replace('&amp;', '&', trim($redirect_to));
-		} // if
-
-		return get_url('account', 'edit_avatar', $attributes);
-	} // getUpdateAvatarUrl
-
-	
-	/**
-	 * Return delete avatar URL
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getDeleteAvatarUrl($redirect_to = null) {
-		$attributes = array('id' => $this->getId());
-		if(trim($redirect_to) <> '') {
-			$attributes['redirect_to'] = str_replace('&amp;', '&', trim($redirect_to));
-		} // if
-
-		return get_url('account', 'delete_avatar', $attributes);
-	} // getDeleteAvatarUrl
-
-	
-	/**
-	 * Check if this user has uploaded avatar
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function hasAvatar() {
-		return (trim($this->getPictureFile()) <> '') && FileRepository::isInRepository($this->getPictureFile());
-	} // hasAvatar
-	
-	
-	// ---------------------------------------------------
-	//  Logo
-	// ---------------------------------------------------
-
-	/**
-	 * Set logo value
-	 *
-	 * @param string $source Source file
-	 * @param integer $max_width
-	 * @param integer $max_height
-	 * @param boolean $save Save object when done
-	 * @return null
-	 */
-	function setLogo($source, $fileType, $max_width = 50, $max_height = 50, $save = true) {
-		if(!is_readable($source)) return false;
-
-		do {
-			$temp_file = CACHE_DIR . '/' . sha1(uniqid(rand(), true));
-		} while(is_file($temp_file));
-
-		try {
-			Env::useLibrary('simplegd');
-			 
-			$image = new SimpleGdImage($source);
-			if ($image->getImageType() == IMAGETYPE_PNG) {
-
-				if ($image->getHeight() > 128 || $image->getWidth() > 128) {
-					//	resize images if are png bigger than 128 px
-					$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-					$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-					$public_fileid = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-				} else {
-					// keep the png as it is.
-					$public_fileid = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
-				}
-			} else {
-				$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-				$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-				$public_fileid = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
-			}
-			if ($public_fileid) {
-				$this->setPictureFile($public_fileid);
-				if ($save) {
-					$this->save();
-				} // if
-			} // if
-
-			$result = true;
-		} catch(Exception $e) {
-			$result = false;
-		} // try
-
-		// Cleanup
-		if(!$result && $public_fileid) {
-			FileRepository::deleteFile($public_fileid);
-		} // if
-		if (is_file($temp_file)) {
-			@unlink($temp_file);
-		}
-
-		return $result;
-	} // setLogo
-
-	/**
-	 * Delete logo
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function deleteLogo() {
-		if($this->hasLogo()) {
-			FileRepository::deleteFile($this->getPictureFile());
-			$this->setPictureFile('');
-		} // if
-	} // deleteLogo
-
-	/**
-	 * Returns path of company logo. This function will not check if file really exists
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getLogoPath() {
-		return PublicFiles::getFilePath($this->getPictureFile());
-	} // getLogoPath
-
-	/**
-	 * description
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getLogoUrl() {
-		return $this->hasLogo() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png');
-	} // getLogoUrl
-	
-	/**
-	 * Returns true if this company have logo file value and logo file exists
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function hasLogo() {
-		return trim($this->getPictureFile()) && FileRepository::isInRepository($this->getPictureFile());
-	} // hasLogo
-	
 	
 	/**
 	 * Check if specific user can update this profile
@@ -1826,6 +1578,7 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canUpdatePermissions(Contact $user) {
+		if (!$this->isUser()) return false;
 		$actual_user_type = array_var(self::$pg_cache, $user->getUserType());
 		if (!$actual_user_type)
 			$actual_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$user->getUserType()));
@@ -1890,12 +1643,14 @@ class Contact extends BaseContact {
 	 * @return string
 	 */
 	function getUpdatePermissionsUrl($redirect_to = null) {
+		return get_url('contact', 'edit', array('id' => $this->getId(), 'active_tab' => 'permissions'));
+		/*
 		$attributes = array('id' => $this->getId());
 		if(trim($redirect_to) <> '') {
 			$attributes['redirect_to'] = str_replace('&amp;', '&', trim($redirect_to));
 		} // if
 
-		return get_url('account', 'update_permissions', $attributes);
+		return get_url('account', 'update_permissions', $attributes);*/
 	} // getUpdatePermissionsUrl	
 	
 	
@@ -2008,21 +1763,10 @@ class Contact extends BaseContact {
 	 * @param void
 	 * @return string
 	 */
-	function getEditLogoUrl() {
-		return get_url('contact', 'edit_logo', $this->getId());
-	} // getEditLogoUrl
+	function getEditPictureUrl() {
+		return get_url('contact', 'edit_picture', $this->getId());
+	} // getEditPictureUrl
 	
-	
-	/**
-	 * Return delete logo URL
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getDeleteLogoUrl() {
-		return get_url('contact', 'delete_logo', $this->getId());
-	} // getDeleteLogoUrl
 	
 	
 	/**

@@ -310,7 +310,7 @@ class EventController extends ApplicationController {
 
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
-				if (str_starts_with($k, $compstr) && ($v == 'checked' || $v == 'on')) {
+				if (str_starts_with($k, $compstr) && ($v == '1')) {
 					$data['users_to_invite'][substr($k, strlen($compstr))] = 0; // Pending Answer
 				}
 			}
@@ -340,8 +340,8 @@ class EventController extends ApplicationController {
 			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
 			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the event'))) : flash_error(lang('no context permissions to add',lang("events"), $notAllowedMember));
 			ajx_current("empty");
-			return ;
-                }
+			return;
+		}
 	    
 		$this->setTemplate('event');
 		$event = new ProjectEvent();		
@@ -357,6 +357,11 @@ class EventController extends ApplicationController {
 		$user_filter = isset($_GET['user_filter']) ? $_GET['user_filter'] : logged_user()->getId();
 		
 		if(!is_array($event_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			// if data sent from quickadd popup (via get) we se it, else default
 			if (isset($_GET['start_time'])) $this->parseTime($_GET['start_time'], $hour, $minute);
 			else {
@@ -480,6 +485,11 @@ class EventController extends ApplicationController {
 											
 				flash_success(lang('success add event', clean($event->getObjectName())));
 				ajx_add("overview-panel", "reload");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
+				
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -783,232 +793,253 @@ class EventController extends ApplicationController {
 	
 		
 	function edit() {
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
+		if (logged_user ()->isGuest ()) {
+			flash_error ( lang ( 'no access permissions' ) );
+			ajx_current ( "empty" );
 			return;
 		}
-		$this->setTemplate('event');
-		$event = ProjectEvents::findById(get_id());
+		$this->setTemplate ( 'event' );
+		$event = ProjectEvents::findById ( get_id () );
 		
-		$user_filter = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
+		$user_filter = isset ( $_GET ['user_id'] ) ? $_GET ['user_id'] : logged_user ()->getId ();
 		
-		$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'contact_id' => $user_filter));
+		$inv = EventInvitations::findById ( array (
+				'event_id' => $event->getId (),
+				'contact_id' => $user_filter 
+		) );
 		if ($inv != null) {
-			$event->addInvitation($inv);
+			$event->addInvitation ( $inv );
 		}
 		
-		if(!$event->canEdit(logged_user())){	    	
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return ;
-                }
-	    
-		$event_data = array_var($_POST, 'event');
-		if(!is_array($event_data)) {
+		if (! $event->canEdit ( logged_user () )) {
+			flash_error ( lang ( 'no access permissions' ) );
+			ajx_current ( "empty" );
+			return;
+		}
+		
+		$event_data = array_var ( $_POST, 'event' );
+		if (! is_array ( $event_data )) {
+			// set layout for modal form
+			if (array_var ( $_REQUEST, 'modal' )) {
+				$this->setLayout ( "json" );
+				tpl_assign ( 'modal', true );
+			}
 			
 			$setlastweek = false;
-			$rsel1 = false;$rsel2=false; $rsel3=false;
-			$forever = $event->getRepeatForever();
+			$rsel1 = false;
+			$rsel2 = false;
+			$rsel3 = false;
+			$forever = $event->getRepeatForever ();
 			$occ = 1;
-			if($event->getRepeatD() > 0){ $occ = 2; $rjump = $event->getRepeatD();}
-			if($event->getRepeatD() > 0 AND $event->getRepeatD()%7==0){ $occ = 3; $rjump = $event->getRepeatD()/7;}
-			if($event->getRepeatM() > 0){ $occ = 4; $rjump = $event->getRepeatM();}
-			if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
-			if($event->getRepeatH() > 0){ $occ = 6;}
-			if($event->getRepeatH() == 2){ $setlastweek = true;}
-			if($event->getRepeatEnd()) { $rend = $event->getRepeatEnd();}
-			if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
-			if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
+			if ($event->getRepeatD () > 0) {
+				$occ = 2;
+				$rjump = $event->getRepeatD ();
+			}
+			if ($event->getRepeatD () > 0 and $event->getRepeatD () % 7 == 0) {
+				$occ = 3;
+				$rjump = $event->getRepeatD () / 7;
+			}
+			if ($event->getRepeatM () > 0) {
+				$occ = 4;
+				$rjump = $event->getRepeatM ();
+			}
+			if ($event->getRepeatY () > 0) {
+				$occ = 5;
+				$rjump = $event->getRepeatY ();
+			}
+			if ($event->getRepeatH () > 0) {
+				$occ = 6;
+			}
+			if ($event->getRepeatH () == 2) {
+				$setlastweek = true;
+			}
+			if ($event->getRepeatEnd ()) {
+				$rend = $event->getRepeatEnd ();
+			}
+			if ($event->getRepeatNum () > 0) {
+				$rnum = $event->getRepeatNum ();
+			}
+			if (! isset ( $rjump ) || ! is_numeric ( $rjump )) {
+				$rjump = 1;
+			}
 			// decide which repeat type it is
-			if($forever) $rsel1 = true; //forever
-			else if(isset($rnum) AND $rnum>0) $rsel2 = true; //repeat n-times
-			else if(isset($rend) AND $rend instanceof DateTimeValue) $rsel3 = true; //repeat until
+			if ($forever) {
+				$rsel1 = true; // forever
+			} else if (isset ( $rnum ) and $rnum > 0) {
+				$rsel2 = true; // repeat n-times
+			} else if (isset ( $rend ) and $rend instanceof DateTimeValue) {
+				$rsel3 = true; // repeat until
+			}
 			
-			//if(isset($rend) AND $rend=="9999-00-00") $rend = "";
+			// if(isset($rend) AND $rend=="9999-00-00") $rend = "";
 			// organize the time and date data for the html select drop downs.
-			$thetime = $event->getStart()->getTimestamp() + logged_user()->getTimezone()*3600;
-			$durtime = $event->getDuration()->getTimestamp() + logged_user()->getTimezone()*3600 - $thetime;
-			$hour = date('G', $thetime);
+			$thetime = $event->getStart ()->getTimestamp () + logged_user ()->getTimezone () * 3600;
+			$durtime = $event->getDuration ()->getTimestamp () + logged_user ()->getTimezone () * 3600 - $thetime;
+			$hour = date ( 'G', $thetime );
 			// format time to 24-hour or 12-hour clock.
-			if(!user_config_option('time_format_use_24')){
-				if($hour >= 12){
+			if (! user_config_option ( 'time_format_use_24' )) {
+				if ($hour >= 12) {
 					$pm = 1;
 					$hour = $hour - 12;
-				}else $pm = 0;
+				} else
+					$pm = 0;
 			}
-				
-			$event_data = array(
-                          'description' => $event->getDescription(),
-                          'name' => $event->getObjectName(),
-                          'username' => $event->getCreatedByDisplayName(),
-                          'typeofevent' => $event->getTypeId(),
-                          'forever' => $event->getRepeatForever(),
-                          'usetimeandduration' => ($event->getTypeId())==3?0:1,
-                          'occ' => $occ,
-                          'rjump' => $rjump,
-                          'setlastweek' => $setlastweek,
-                          'rend' => isset($rend)?$rend:NULL,
-                          'rnum' => isset($rnum)?$rnum:NULL,
-                          'rsel1' => $rsel1,
-                          'rsel2' => $rsel2,
-                          'rsel3' => $rsel3,
-                          'thetime' => $event->getStart()->getTimestamp(),
-			  'hour' => $hour,
-			  'minute' => date('i', $thetime),
-			  'month' => date('n', $thetime),
-			  'year' => date('Y', $thetime),
-			  'day' => date('j', $thetime),
-			  'durtime' => ($event->getDuration()->getTimestamp() - $thetime),
-			  'durationmin' => ($durtime / 60) % 60,
-			  'durationhour' => ($durtime / 3600) % 24,
-			  'durday' => floor($durtime / 86400),
-			  'pm' => isset($pm) ? $pm : 0,
-			  'repeat_dow' => $event->getRepeatDow(),
-			  'repeat_wnum' => $event->getRepeatWnum(),
-			  'repeat_mjump' => $event->getRepeatMjump(),
+			
+			$event_data = array (
+					'description' => $event->getDescription (),
+					'name' => $event->getObjectName (),
+					'username' => $event->getCreatedByDisplayName (),
+					'typeofevent' => $event->getTypeId (),
+					'forever' => $event->getRepeatForever (),
+					'usetimeandduration' => ($event->getTypeId ()) == 3 ? 0 : 1,
+					'occ' => $occ,
+					'rjump' => $rjump,
+					'setlastweek' => $setlastweek,
+					'rend' => isset ( $rend ) ? $rend : NULL,
+					'rnum' => isset ( $rnum ) ? $rnum : NULL,
+					'rsel1' => $rsel1,
+					'rsel2' => $rsel2,
+					'rsel3' => $rsel3,
+					'thetime' => $event->getStart ()->getTimestamp (),
+					'hour' => $hour,
+					'minute' => date ( 'i', $thetime ),
+					'month' => date ( 'n', $thetime ),
+					'year' => date ( 'Y', $thetime ),
+					'day' => date ( 'j', $thetime ),
+					'durtime' => ($event->getDuration ()->getTimestamp () - $thetime),
+					'durationmin' => ($durtime / 60) % 60,
+					'durationhour' => ($durtime / 3600) % 24,
+					'durday' => floor ( $durtime / 86400 ),
+					'pm' => isset ( $pm ) ? $pm : 0,
+					'repeat_dow' => $event->getRepeatDow (),
+					'repeat_wnum' => $event->getRepeatWnum (),
+					'repeat_mjump' => $event->getRepeatMjump () 
 			); // array
 		} // if
-                
-                //I find all those related to the task to find out if the original
-                $event_related = ProjectEvents::findByRelated($event->getObjectId());
-                if(!$event_related){
-                    //is not the original as the original look plus other related
-                    if($event->getOriginalEventId() != "0"){
-                        $event_related = ProjectEvents::findByEventAndRelated($event->getObjectId(),$event->getOriginalEventId());
-                    }
-                }
-                if($event_related){
-                    tpl_assign('event_related', true);
-                }else{
-                    tpl_assign('event_related', false);
-                }    
-                
-		tpl_assign('event_data', $event_data);
-		tpl_assign('event', $event);
-
-		if(is_array(array_var($_POST, 'event'))) {
-			
-			//	MANAGE CONCURRENCE WHILE EDITING
-			/* FIXME or REMOVEME
-			$upd = array_var($_POST, 'updatedon');
-			if ($upd && $event->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
-			{
-				ajx_current('empty');
-				evt_add("handle edit concurrence", array(
-					"updatedon" => $event->getUpdatedOn()->getTimestamp(),
-					"genid" => array_var($_POST,'genid')
-				));
-				return;
+		  
+		// I find all those related to the task to find out if the original
+		$event_related = ProjectEvents::findByRelated ( $event->getObjectId () );
+		if (! $event_related) {
+			// is not the original as the original look plus other related
+			if ($event->getOriginalEventId () != "0") {
+				$event_related = ProjectEvents::findByEventAndRelated ( $event->getObjectId (), $event->getOriginalEventId () );
 			}
-			if (array_var($_POST,'merge-changes') == 'true')
-			{					
-				$this->setTemplate('view_event');
-				$editedEvent = ProjectEvents::findById($event->getId());
-				$this->view();
-				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
-				ajx_extra_data(array("title" => $editedEvent->getTitle(), 'icon'=>'ico-event'));
-				ajx_set_no_toolbar(true);
-				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
-				return;
-			}
-			*/
+		}
+		if ($event_related) {
+			tpl_assign ( 'event_related', true );
+		} else {
+			tpl_assign ( 'event_related', false );
+		}
+		
+		tpl_assign ( 'event_data', $event_data );
+		tpl_assign ( 'event', $event );
+		if (is_array ( array_var ( $_POST, 'event' ) )) {
 			
+			// MANAGE CONCURRENCE WHILE EDITING
+			/*
+			 * FIXME or REMOVEME $upd = array_var($_POST, 'updatedon'); if ($upd && $event->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true') { ajx_current('empty'); evt_add("handle edit concurrence", array( "updatedon" => $event->getUpdatedOn()->getTimestamp(), "genid" => array_var($_POST,'genid') )); return; } if (array_var($_POST,'merge-changes') == 'true') { $this->setTemplate('view_event'); $editedEvent = ProjectEvents::findById($event->getId()); $this->view(); ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle()))); ajx_extra_data(array("title" => $editedEvent->getTitle(), 'icon'=>'ico-event')); ajx_set_no_toolbar(true); ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle()))); return; }
+			 */
 			try {
-				$data = $this->getData($event_data);
+				$data = $this->getData ( $event_data );
 				// run the query to set the event data
-                                $event->setFromAttributes($data);
-
-                                $this->registerInvitations($data, $event, false);
-				if (isset($data['confirmAttendance'])) {
-                                    $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
-                                }
-				    
-                                DB::beginWork();
-                                $event->save();  
-                                if($event->getSpecialID() != ""){
-                                    $this->sync_calendar_extern($event);
-                                }
-
-                                $member_ids = json_decode(array_var($_POST, 'members'));
-
-                                $object_controller = new ObjectController();
-                                $object_controller->add_to_members($event, $member_ids);
-                                $object_controller->add_subscribers($event);
-
-                                $object_controller->link_to_new_object($event);
-                                $object_controller->add_custom_properties($event);
-                                									
-								$old_reminders = ObjectReminders::getByObject($event);
-								if($old_reminders != null){								
-									$object_controller->add_reminders($event); //adding the new reminders, if any								
-									$object_controller->update_reminders($event, $old_reminders); //updating the old ones
-								}else if(user_config_option("add_event_autoreminder")){
-									$reminder = new ObjectReminder();
-									$def = explode(",",user_config_option("reminders_events"));
-									$minutes = $def[2] * $def[1];
-				          			$reminder->setMinutesBefore($minutes);
-				                    $reminder->setType($def[0]);
-				                    $reminder->setContext("start");
-				                    $reminder->setObject($event);
-				                    $reminder->setUserId(0);
-				                    $date = $event->getStart();
-									if ($date instanceof DateTimeValue) {
-										$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
-										$reminder->setDate($rdate);
-									}
-									$reminder->save();
-								}
-
-                                $event->resetIsRead();
-                                DB::commit();
-                                
-                                $is_silent = false;
-                                if (isset($data['send_notification']) && $data['send_notification']) {
-                                                    $users_to_inv = array();
-                                    foreach ($data['users_to_invite'] as $us => $v) {
-                                            if ($us != logged_user()->getId()) {
-                                                    $users_to_inv[] = Contacts::findById(array('id' => $us));
-                                            }
-                                    }
-                                    Notifier::notifEvent($event, $users_to_inv, 'modified', logged_user());
-                                    $is_silent = true;
-                                }
-
-                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT, false, $is_silent);
-                                
-                                $opt_rep_day = array();
-                                if(array_var($event_data, 'repeat_saturdays')){
-                                    $opt_rep_day['saturday'] = true;
-                                }else{
-                                    $opt_rep_day['saturday'] = false;
-                                }
-                                if(array_var($event_data, 'repeat_sundays')){
-                                    $opt_rep_day['sunday'] = true;
-                                }else{
-                                    $opt_rep_day['sunday'] = false;
-                                }
-                                
-                                //$this->repetitive_event($event, $opt_rep_day);
-                                
-                                if($_POST['type_related'] == "all" || $_POST['type_related'] == "news"){
-                                    $data['members'] = json_decode(array_var($_POST, 'members'));
-                                    $this->repetitive_event_related($event,"edit",$_POST['type_related'],$data);
-                                }
-                                
-                                flash_success(lang('success edit event', clean($event->getObjectName())));
-
-                                if (array_var($_POST, 'popup', false)) {
-                                                ajx_current("reload");
-                                } else {
-                                        ajx_current("back");
-                                }
-                                ajx_add("overview-panel", "reload");          	
-                    } catch(Exception $e) {
-                            DB::rollback();
-                                    flash_error($e->getMessage());
-                                    ajx_current("empty");
-                    } // try
+				$event->setFromAttributes ( $data );
+				
+				$this->registerInvitations ( $data, $event, false );
+				if (isset ( $data ['confirmAttendance'] )) {
+					$this->change_invitation_state ( $data ['confirmAttendance'], $event->getId (), $user_filter );
+				}
+				
+				DB::beginWork ();
+				$event->save ();
+				if ($event->getSpecialID () != "") {
+					$this->sync_calendar_extern ( $event );
+				}
+				
+				$member_ids = json_decode ( array_var ( $_POST, 'members' ) );
+				
+				$object_controller = new ObjectController ();
+				$object_controller->add_to_members ( $event, $member_ids );
+				$object_controller->add_subscribers ( $event );
+				
+				$object_controller->link_to_new_object ( $event );
+				$object_controller->add_custom_properties ( $event );
+				
+				$old_reminders = ObjectReminders::getByObject ( $event );
+				if ($old_reminders != null) {
+					$object_controller->add_reminders ( $event ); // adding the new reminders, if any
+					$object_controller->update_reminders ( $event, $old_reminders ); // updating the old ones
+				} else if (user_config_option ( "add_event_autoreminder" )) {
+					$reminder = new ObjectReminder ();
+					$def = explode ( ",", user_config_option ( "reminders_events" ) );
+					$minutes = $def [2] * $def [1];
+					$reminder->setMinutesBefore ( $minutes );
+					$reminder->setType ( $def [0] );
+					$reminder->setContext ( "start" );
+					$reminder->setObject ( $event );
+					$reminder->setUserId ( 0 );
+					$date = $event->getStart ();
+					if ($date instanceof DateTimeValue) {
+						$rdate = new DateTimeValue ( $date->getTimestamp () - $minutes * 60 );
+						$reminder->setDate ( $rdate );
+					}
+					$reminder->save ();
+				}
+				
+				$event->resetIsRead ();
+				DB::commit ();
+				
+				$is_silent = false;
+				if (isset ( $data ['send_notification'] ) && $data ['send_notification']) {
+					$users_to_inv = array ();
+					foreach ( $data ['users_to_invite'] as $us => $v ) {
+						if ($us != logged_user ()->getId ()) {
+							$users_to_inv [] = Contacts::findById ( array (
+									'id' => $us 
+							) );
+						}
+					}
+					Notifier::notifEvent ( $event, $users_to_inv, 'modified', logged_user () );
+					$is_silent = true;
+				}
+				
+				ApplicationLogs::createLog ( $event, ApplicationLogs::ACTION_EDIT, false, $is_silent );
+				
+				$opt_rep_day = array ();
+				if (array_var ( $event_data, 'repeat_saturdays' )) {
+					$opt_rep_day ['saturday'] = true;
+				} else {
+					$opt_rep_day ['saturday'] = false;
+				}
+				if (array_var ( $event_data, 'repeat_sundays' )) {
+					$opt_rep_day ['sunday'] = true;
+				} else {
+					$opt_rep_day ['sunday'] = false;
+				}
+				
+				// $this->repetitive_event($event, $opt_rep_day);
+				
+				if ($_POST ['type_related'] == "all" || $_POST ['type_related'] == "news") {
+					$data ['members'] = json_decode ( array_var ( $_POST, 'members' ) );
+					$this->repetitive_event_related ( $event, "edit", $_POST ['type_related'], $data );
+				}
+				
+				flash_success ( lang ( 'success edit event', clean ( $event->getObjectName () ) ) );
+				
+				if (array_var ( $_POST, 'popup', false )) {
+					ajx_current ( "reload" );
+				} else {
+					ajx_current ( "back" );
+				}
+				ajx_add ( "overview-panel", "reload" );
+				
+				if (array_var ( $_REQUEST, 'modal' )) {
+					evt_add ( "reload current panel" );
+				}
+			} catch ( Exception $e ) {
+				DB::rollback ();
+				flash_error ( $e->getMessage () );
+				ajx_current ( "empty" );
+			} // try
 		} // if
 	} // edit
 	

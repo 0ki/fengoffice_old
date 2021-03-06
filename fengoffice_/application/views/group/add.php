@@ -9,24 +9,27 @@
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add') : $group->getEditUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
 <div class="adminAddGroup">
-  <div class="adminHeader">
-  	<div class="adminHeaderUpperRow">
-  		<div class="adminTitle"><table style="width:535px"><tr><td>
-  			<?php echo $group->isNew() ? lang('new group') : lang('edit group') ?>
-  		</td><td style="text-align:right">
-  			<?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes'), '', array('style'=>'margin-top:0px;margin-left:10px','id'=>$genid.'submit_btn')) ?>
-  		</td></tr></table>
-  		</div>
-  	</div>
-  	
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo $group->isNew() ? lang('new group') : lang('edit group') ?>
+	</div>
+  </div>
+
   <div>
-    <?php echo label_tag(lang('name'), 'groupFormName', true) ?>
-    <?php echo text_field('group[name]', array_var($group_data, 'name'), array('class' => 'title', 'id' => $genid.'groupFormName')) ?>
+	<div class="coInputName">
+		<?php echo text_field('group[name]', array_var($group_data, 'name'), array('class' => 'title', 'id' => $genid.'groupFormName', 'placeholder' => lang('type name here'))) ?>
+	</div>
+		
+	<div class="coInputButtons">
+		<?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes'), '', array('style'=>'margin-top:0px;margin-left:10px','id'=>$genid.'submit_btn')) ?>
+	</div>
+	<div class="clear"></div>
   </div>
+</div>
   
-  </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+<div class="adminMainBlock">
 
   <fieldset class="">
 	 <legend><?php echo lang('group users') ?></legend>

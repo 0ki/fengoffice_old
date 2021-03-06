@@ -66,6 +66,30 @@
 		$flag->save();
 		DB::commit();
 		
+		// populate permission groups
+		$permissions_decoded = json_decode($permissions);
+		$to_insert = array();
+		$to_delete = array();
+		if (is_array($permissions_decoded)) {
+			foreach ($permissions_decoded as $perm) {
+				if ($perm->r) {
+					$to_insert[] = "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
+				} else {
+					$to_delete[] = "(permission_group_id='".$pg_id."' AND member_id='".$perm->m."' AND object_type_id='".$perm->o."')";
+				}
+			}
+		}
+		if (count($to_insert) > 0) {
+			$values = implode(',', $to_insert);
+			DB::execute("INSERT INTO ".TABLE_PREFIX."contact_member_permissions (permission_group_id,member_id,object_type_id,can_delete,can_write)
+			VALUES $values ON DUPLICATE KEY UPDATE member_id=member_id");
+		}
+		if (count($to_delete) > 0) {
+			$where = implode(' OR ', $to_delete);
+			DB::execute("DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE $where;");
+		}
+		
+		// root permissions
 		$root_permissions_sharing_table_add = array();
 		$root_permissions_sharing_table_delete = array();
 		

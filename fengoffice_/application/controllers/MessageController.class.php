@@ -97,6 +97,8 @@ class MessageController extends ApplicationController {
 			}
 		}
 		
+		Hook::fire("listing_extra_conditions", null, $extra_conditions);
+		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		$context = active_context();
 		$res = ProjectMessages::instance()->listing(array(
@@ -380,7 +382,12 @@ class MessageController extends ApplicationController {
 
 		$message_data = array_var($_POST, 'message');
 		if(!is_array($message_data)) {
-			$message_data = array(); // array
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+			$message_data = array();
 		} // if
 		tpl_assign('message_data', $message_data);
 
@@ -428,12 +435,14 @@ class MessageController extends ApplicationController {
 	          	} else {
 	          		ajx_current("back");
 	          	}
+	          	if (array_var($_REQUEST, 'modal')) {
+	          		evt_add("reload current panel");
+	          	}
 	          	ajx_add("overview-panel", "reload");          	
 					
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
-
 				$message->setNew(true);
 				flash_error($e->getMessage());
 				ajx_current("empty");
@@ -477,8 +486,13 @@ class MessageController extends ApplicationController {
 			$message_data = array(
 				'name' => $message->getObjectName(),
 				'text' => $message->getText(),
-                                'type_content' => $message->getTypeContent(),
-			); // array
+				'type_content' => $message->getTypeContent(),
+			);
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 		} // if
 		
 		tpl_assign('message', $message);
@@ -514,12 +528,12 @@ class MessageController extends ApplicationController {
 					return;
 				}
 				*/
-                                if(config_option("wysiwyg_messages")){
-                                    $message_data['type_content'] = "html";
-                                    $message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));  
-                                }else{
-                                    $message_data['type_content'] = "text";
-                                }
+				if(config_option("wysiwyg_messages")){
+					$message_data['type_content'] = "html";
+					$message_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($message_data, 'text'));
+				}else{
+					$message_data['type_content'] = "text";
+				}
 				$message->setFromAttributes($message_data);
 
 				DB::beginWork();
@@ -544,6 +558,10 @@ class MessageController extends ApplicationController {
 					ajx_current("reload");
 	          	} else {
 	          		ajx_current("back");
+	          	}
+	          	
+	          	if (array_var($_REQUEST, 'modal')) {
+	          		evt_add("reload current panel");
 	          	}
 
 			} catch(Exception $e) {

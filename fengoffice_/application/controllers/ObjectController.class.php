@@ -31,7 +31,7 @@ class ObjectController extends ApplicationController {
 		$this->setLayout("html");
 	}
 	
-	function add_subscribers(ContentDataObject $object) {
+	function add_subscribers(ContentDataObject $object, $subscribers = null) {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -39,28 +39,32 @@ class ObjectController extends ApplicationController {
 		}
 		$log_info = "";
 		$log_info_unsubscribe = "";
-		$subscribers = array_var($_POST, 'subscribers');
+		if ($subscribers == null) {
+			$subscribers = array_var($_POST, 'subscribers');
+		}
 		$subscribers_ids = array();
 		
 		if (is_array($subscribers)) {
 			$user_ids = array();
-			
+			$subscribers_to_remove = array();
 			//add new subscribers
 			foreach ($subscribers as $key => $checked) {
 				$user_id = substr($key, 5);
 				$subscribers_ids[] = $user_id;
-				if ($checked == "checked" && !in_array($user_id, $object->getSubscriberIds())) {
+				if ($checked == "1" && !in_array($user_id, $object->getSubscriberIds())) {
 					$user = Contacts::findById($user_id);
 					if ($user instanceof Contact) {
 						$object->subscribeUser($user);
 						$log_info .= ($log_info == "" ? "" : ",") . $user->getId();
 						$user_ids[] = $user_id;
 					}
+				} else {
+					if (!$checked || $checked=='0') $subscribers_to_remove[] = $user_id;
 				}
 			}
 			
 			//remove subscribers
-			$subscribers_to_remove = array_diff($object->getSubscriberIds(), $subscribers_ids);
+			//$subscribers_to_remove = array_diff($object->getSubscriberIds(), $subscribers_ids);
 			
 			foreach ($subscribers_to_remove as $subs_remove) {
 				$user = Contacts::findById($subs_remove);
@@ -90,6 +94,15 @@ class ObjectController extends ApplicationController {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNSUBSCRIBE, false, true, true, $log_info_unsubscribe);
 			}			
 		}
+		
+		// remove subscribers without permissions
+		$subscribed_users = $object->getSubscribers();
+		foreach ($subscribed_users as $user) {
+			if (!can_read_sharing_table($user, $object->getId())) {
+				$object->unsubscribeUser($user);
+			}
+		}
+		
 	}
 	
 	function redraw_subscribers_list() {
@@ -302,7 +315,7 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
-		if (is_array($obj_custom_properties)){
+		if (is_array($obj_custom_properties)) {
 			foreach ($obj_custom_properties as $id => &$val) {
 				$val = remove_scripts($val);
 			}
@@ -1228,6 +1241,11 @@ class ObjectController extends ApplicationController {
 	function view(){
 		$id = array_var($_GET,'id');
 		$obj = Objects::findObject($id);
+		
+		if(!$obj){
+			$obj = Members::getMemberById($id);
+		}
+		
 		if(!($obj instanceof DataObject )) {
 			flash_error(lang('object dnx'));
 			ajx_current("empty");
@@ -1239,8 +1257,17 @@ class ObjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-			
-		redirect_to($obj->getObjectUrl(),true);
+		
+		$object_type = ObjectTypes::findById($obj->getObjectTypeId());
+		if($object_type->getType() == 'dimension_object'){
+			Logger::log(print_r('entro',true));//$hola
+			ajx_current("empty");
+		}elseif($object_type->getType() == 'dimension_group'){
+			Logger::log(print_r('entro',true));//$hola
+			ajx_current("empty");
+		}else{
+			redirect_to($obj->getObjectUrl(),true);				
+		}
 	}
 
 	function do_delete_objects($objects, $permanent = false, &$deleted_object_ids, $raw_data=false) {
@@ -1765,14 +1792,32 @@ class ObjectController extends ApplicationController {
 			$context = $reminder->getContext();
 			
 			if(str_starts_with($context, "mails_in_outbox")){
+				if ($reminder->getUserId() > 0 && $reminder->getUserId() != logged_user()->getId()) {
+					continue;
+				}
+				
 				preg_match('!\d+!', $context, $matches);
 				evt_add("popup", array(
-				'title' => lang("mails_in_outbox reminder"),
-				'message' => lang("mails_in_outbox reminder desc", $matches[0]),
-				'type' => 'reminder',
-				'sound' => 'info'
-							));
+					'title' => lang("mails_in_outbox reminder"),
+					'message' => lang("mails_in_outbox reminder desc", $matches[0]),
+					'type' => 'reminder',
+					'sound' => 'info'
+				));
 				$reminder->delete();
+				continue;
+			}
+			
+			if(str_starts_with($context, "eauthfail")){
+				if ($reminder->getUserId() == logged_user()->getId()) {
+					$acc = trim(substr($context, strrpos($context, " ")));
+					evt_add("popup", array(
+						'title' => lang("failed to authenticate email account"),
+						'message' => lang("failed to authenticate email account desc", $acc),
+						'type' => 'reminder',
+						'sound' => 'info'
+					));
+					$reminder->delete();
+				}
 				continue;
 			}
 			

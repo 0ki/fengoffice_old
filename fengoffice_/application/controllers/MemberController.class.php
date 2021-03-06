@@ -157,43 +157,7 @@ class MemberController extends ApplicationController {
 			}
 			$permission_parameters['member_permissions'][logged_user()->getPermissionGroupId()] = $logged_user_pg;
 			
-			// Add default permissions for executives, managers and administrators
-			if (config_option('add_default_permissions_for_users')) {
-				if ($parent == 0) {
-					$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
-				} else {
-					$users = array();
-				}
-				foreach ($users as $user) {
-					if (!isset($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) || count($permission_parameters['member_permissions'][$user->getPermissionGroupId()]) == 0) {
-						$user_pg = array();
-						foreach ($permission_parameters['allowed_object_types'] as $ot){
-							$role_perm = RoleObjectTypePermissions::findOne(array('conditions' => array("role_id=? AND object_type_id=?", $user->getUserType(), $ot->getId())));
-							$user_pg[] = array(
-								'o' => $ot->getId(),
-								'w' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanWrite()?1:0) : 0,
-								'd' => $role_perm instanceof RoleObjectTypePermission ? ($role_perm->getCanDelete()?1:0) : 0,
-								'r' => $role_perm instanceof RoleObjectTypePermission ? 1 : 0,
-							);
-						}
-						$permission_parameters['member_permissions'][$user->getPermissionGroupId()] = $user_pg;
-					}
-				}
-			}
-			// Inherit parent permissions
-			$parent_member = Members::findById($parent);
-			if ($parent_member instanceof Member) {
-				$cmps = ContactMemberPermissions::findAll(array('conditions' => 'member_id='.$parent_member->getId()));
-				foreach ($cmps as $cmp){
-					$parent_pg = array(
-						'o' => $cmp->getObjectTypeId(),
-						'w' => $cmp->getCanWrite(),
-						'd' => $cmp->getCanDelete(),
-						'r' => 1
-					);
-					$permission_parameters['member_permissions'][$cmp->getPermissionGroupId()][] = $parent_pg;
-				}
-			}
+			$permission_parameters = get_default_member_permission($parent,$permission_parameters);
 			
 			tpl_assign('permission_parameters', $permission_parameters);
 			//--
@@ -253,22 +217,26 @@ class MemberController extends ApplicationController {
 			
 			// if added from quick-add add default permissions for executives, managers and administrators
 			if (config_option('add_default_permissions_for_users') && array_var($_GET, 'quick') && $member->getParentMemberId() == 0) {
-				$users = Contacts::findAll(array('conditions' => "user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'))"));
-				if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
-				$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
-				foreach ($users as $user) {
-					$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
-					foreach ($role_perms as $role_perm) {
-						$pg_obj = new stdClass();
-						$pg_obj->pg = $user->getPermissionGroupId();
-						$pg_obj->o = $role_perm->getObjectTypeId();
-						$pg_obj->d = $role_perm->getCanDelete();
-						$pg_obj->w = $role_perm->getCanWrite();
-						$pg_obj->r = 1;
-						$permissions_decoded[] = $pg_obj;
+				$user_types = implode(',', config_option('give_member_permissions_to_new_users'));
+				if (trim($user_types) != "") {
+					$users = Contacts::findAll(array('conditions' => "user_type IN (".$user_types.")"));
+					
+					if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
+					$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
+					foreach ($users as $user) {
+						$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
+						foreach ($role_perms as $role_perm) {
+							$pg_obj = new stdClass();
+							$pg_obj->pg = $user->getPermissionGroupId();
+							$pg_obj->o = $role_perm->getObjectTypeId();
+							$pg_obj->d = $role_perm->getCanDelete();
+							$pg_obj->w = $role_perm->getCanWrite();
+							$pg_obj->r = 1;
+							$permissions_decoded[] = $pg_obj;
+						}
 					}
+					$_REQUEST['permissions'] = json_encode($permissions_decoded);
 				}
-				$_REQUEST['permissions'] = json_encode($permissions_decoded);
 			}
 			
 			Env::useHelper('permissions');
@@ -284,7 +252,8 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(),'node' => $member->getId()));
+				//evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId(),'node' => $member->getId()));
+				evt_add("external dimension member click", array('dim_id' => $member->getDimensionId(),'member_id' => $member->getId()));
 				/*
 				$member_type = ObjectTypes::findById($member->getObjectTypeId());
 				$context = active_context();
@@ -302,16 +271,21 @@ class MemberController extends ApplicationController {
 					'sel_mem' => $sel_mem == null ? '' : clean($sel_mem->getName()),
 				));
 				*/
-				evt_add("select member after add", array(
+				/*evt_add("select member after add", array(
 					'id' => $member->getId(),
 					'parent_id' => $member->getParentMemberId(),
 					'dimension_id' => $member->getDimensionId(),
-				));
+				));*/
 				//evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
 					//ajx_current("reload");
+				}
+				if (array_var($_GET, 'current') == 'more-panel') {
+					ajx_current("back");
+				} else {
+					ajx_current("empty");
 				}
 			}
 		} catch (Exception $e) {
@@ -1223,65 +1197,78 @@ class MemberController extends ApplicationController {
 	
 	
 	function quick_add_form() {
+		ajx_current("empty");
 		$this->setLayout('empty');
 		$dimension_id = array_var($_GET, 'dimension_id');
 		$dimension = is_numeric($dimension_id) ? Dimensions::instance()->findById($dimension_id) : null;
+		
 		if ($dimension instanceof Dimension){
 			$dimensionOptions = $dimension->getOptions(true);
 
 			$object_Types = array();
 			$parent_member_id = array_var($_GET, 'parent_member_id');
 			
-			$parent_member = Members::instance()->findById($parent_member_id) ;
+			$parent_member = Members::instance()->findById($parent_member_id);
 			if ($parent_member instanceof Member) {
 				$object_types = DimensionObjectTypes::getChildObjectTypes($parent_member);
-			}else {
-				$parent_member_id = 0;
-				$parent_member = null;
+				if(count($object_types) == 0){
+					$parent_member = null;
+					$object_types = DimensionObjectTypes::instance()->findAll(array("conditions"=>"dimension_id = $dimension_id AND is_root = 1 AND object_type_id<>(SELECT id from ".TABLE_PREFIX."object_types WHERE name='company')"));
+				}				
+			} else {
 				$object_types = DimensionObjectTypes::instance()->findAll(array("conditions"=>"dimension_id = $dimension_id AND is_root = 1 AND object_type_id<>(SELECT id from ".TABLE_PREFIX."object_types WHERE name='company')"));
 			}
-			if (count($object_types)) {
-				if (count($object_types) == 1) { 
-					// Input Hidden
-					tpl_assign('object_type', $object_types[0]);
-					tpl_assign('object_type_name',ObjectTypes::instance()->findById($object_types[0]->getObjectTypeId())->getName());
-				}else{
-					// Input combo
-					tpl_assign('object_types', $object_types);
-				}
-			}else{
-				tpl_assign("error_msg", $parent_member->getName() ." does not accept child nodes ");
-			}
 			
-			$editUrls = array() ;
-			foreach ($object_types as $object_type ){ /* @var $object_type DimensionObjectType */
-				if (ObjectTypes::instance()->findById($object_type->getObjectTypeId())->getType() != 'dimension_object') continue;
+			$obj_types = array();
+			$editUrls = array();
+			foreach ($object_types as $object_type ) {
+				
 				$options = $object_type->getOptions(1);
 				if (isset($options->defaultAjax) && $options->defaultAjax->controller != "dashboard" )  {
+					
 					$editUrls[$object_type->getObjectTypeId()] = get_url( $options->defaultAjax->controller, 'add' );
+					
 				}else{
+					
 					$t = ObjectTypes::instance()->findById($object_type->getObjectTypeId());
-					/* @var $t ObjectType */
+					$obj_types[$t->getId()] = $t;
+					
 					$class_name = ucfirst($t->getName())."Controller";
-					if ( $t && controller_exists($t->getName(), $t->getPluginId())) {
-						$editUrls[$object_type->getObjectTypeId()] = get_url($t->getName(), 'add');
-					}else{
-						$editUrls[$object_type->getObjectTypeId()] = get_url( 'member', 'add' , array("dim_id"=>$dimension_id));
+					if ($t && controller_exists($t->getName(), $t->getPluginId())) {
+						$params = array("type" => $t->getId());
+						if ($parent_member instanceof Member) $params['parent'] = $parent_member->getId();
+						
+						$editUrls[$t->getId()] = get_url($t->getName(), 'add', $params);
+					} else {
+						$params = array("dim_id" => $dimension_id, "type" => $t->getId());
+						if ($parent_member instanceof Member) $params['parent'] = $parent_member->getId();
+						
+						$editUrls[$t->getId()] = get_url('member', 'add' , $params);
 					}
 				}
 			}
 			
-			tpl_assign('editUrls', $editUrls);
-			tpl_assign('parent_member_id',$parent_member_id );
-			tpl_assign('dimension_id', $dimension_id );
-			if (is_object($dimensionOptions) && is_object($dimensionOptions->quickAdd) && $dimensionOptions->quickAdd->formAction ) {
-				tpl_assign('form_action', ROOT_URL."/".$dimensionOptions->quickAdd->formAction );
-			}else{
-				tpl_assign('form_action', get_url('member', 'add', array('quick'=>'1')));
+			$urls = array();
+			foreach ($editUrls as $ot_id => $url) {
+				$ot = array_var($obj_types, $ot_id);
+				if ($ot instanceof ObjectType) {
+					$link_text = ucfirst(strtolower(lang('new '.$ot->getName())));
+					$iconcls = $ot->getIconClass();
+				} else {
+					$link_text = lang('new');
+					$iconcls = "";
+				}
+				$urls[] = array('link_text' => $link_text, 'url' => $url, 'iconcls' => $iconcls);
 			}
-		}else{
+			
+			if (count($editUrls) > 1) {
+				ajx_extra_data(array('draw_menu' => 1, 'urls' => $urls));
+			} else {
+				ajx_extra_data(array('urls' => $urls));
+			}
+			
+		} else {
 			Logger::log("Invalid dimension: $dimension_id");
-			//die("Invalid dimension");
 		}
 		
 	}
@@ -1555,4 +1542,33 @@ class MemberController extends ApplicationController {
 		
 	
 	} // get_rendered_member_selectors
+	
+	
+	
+	
+	function save_permission_group() {
+		ajx_current("empty");
+		if (!can_manage_dimension_members(logged_user())) {
+			flash_error(lang('no access permissions'));
+			return;
+		}
+		$member = Members::findById(array_var($_REQUEST, 'member_id'));
+		if (!$member instanceof Member) {
+			flash_error(lang('member dnx'));
+			return;
+		}
+		
+		$permissions = array_var($_REQUEST, 'perms');
+		try {
+			DB::beginWork();
+			save_member_permissions_background(logged_user(), $member, $permissions);
+			DB::commit();
+			
+			flash_success(lang("permissions successfully saved"));
+			
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		}
+	}
 }

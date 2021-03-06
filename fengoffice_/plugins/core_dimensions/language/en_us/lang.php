@@ -4,5 +4,11 @@
 	'all feng_persons' => 'All People',
 	'all feng_users' => 'All Users',
 	'feng_persons' => 'Contacts',
-
+	'add a new member in feng_persons' => 'Add a new person',
+	'do you want to remove permissions for all submembers too' => 'Do you want to remove permissions for all {0} below \'{1}\' too?',
+		
+	'apply to all submembers' => 'Apply the permissions above to all {0} down the hierarchy from \'{1}\'',
+	'apply to all members' => 'Apply the permissions above to all {0}',
+	'apply to all submembers desc' => '',
+	'apply to all members desc' => '',
 );

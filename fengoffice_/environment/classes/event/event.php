@@ -6,7 +6,7 @@
  * @param string $name
  * @param unknown_type $data
  */
-function evt_add($name, $data) {
+function evt_add($name, $data=array()) {
 	$events = flash_get("events");
 	if (!$events) {
 		$events = array();

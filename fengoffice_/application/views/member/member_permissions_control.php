@@ -1,3 +1,6 @@
+<style>
+
+</style>
 <?php
 	require_javascript("og/Permissions.js");
 	if (!isset($genid)) $genid = gen_id();
@@ -8,6 +11,33 @@
 	$allowed_object_types_json = array_var($permission_parameters, 'allowed_object_types_json');
 	$permission_groups = array_var($permission_parameters, 'permission_groups');
 	$member_permissions = array_var($permission_parameters, 'member_permissions');
+	
+	$pg_condition = " AND EXISTS (SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type<>'roles' AND pg.id=cmp.permission_group_id)";
+	$with_perm_pg_ids = array();
+	if ($member instanceof Member) {
+		$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$member->getId()." $pg_condition");
+	} else {
+		if (isset($parent_sel) && $parent_sel > 0) {
+			$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$parent_sel." $pg_condition");
+		} else {
+			$with_perm_pg_ids = DB::executeAll("SELECT c.permission_group_id FROM ".TABLE_PREFIX."contacts c where c.user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'));");
+		}
+	}
+	if (count($with_perm_pg_ids)) $with_perm_pg_ids = array_flat($with_perm_pg_ids);
+	else $with_perm_pg_ids = array(0);
+	
+	if (count($with_perm_pg_ids) > 0) {
+		$with_perm_pgs = PermissionGroups::instance()->FindAll(array('conditions' => 'id IN ('.implode(',', $with_perm_pg_ids).')'));
+	}
+	$users_with_perms = array();
+	$groups_with_perms = array();
+	foreach ($with_perm_pgs as $pg) {
+		if ($pg->getType() == 'user_groups') {
+			$groups_with_perms[] = $pg;
+		} else {
+			$users_with_perms[] = Contacts::findById($pg->getContactId());
+		}
+	}
 ?>
 
 	<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_permissions));?>"/>
@@ -15,15 +45,84 @@
 	
 	<input id="<?php echo $genid ?>hfPermsSend" name="permissions" type="hidden" value=""/>
 	
-	<table><tr><td>
-	  <?php	
-	  		echo select_users_or_groups("", null, $genid . "user_selector");
-	  ?>
-	</td><td style="padding-left:20px">
-	  <div id="<?php echo $genid ?>member_permissions" style="display:none;">
-	  	<div id="<?php echo $genid ?>pg_name" style="font-weight:bold;font-size:120%;padding-bottom:5px"></div>
-	  		<table>
-		  	<col align=left/><col align=center/>
+	<div class="member-permissions">
+		<div class="users-container"><ul id="<?php echo $genid?>_permissions_list">
+	<?php
+		$max_users_to_show = 10;
+		$count = 0;
+		foreach ($users_with_perms as $user) {
+			$count++;
+			$add_cls = '';
+			if ($count > $max_users_to_show) $add_cls = " hidden";
+	?>
+			<li class="user-data<?php echo $add_cls?>" id="<?php echo $genid?>_pg_<?php echo $user->getPermissionGroupId()?>">
+			<?php if ($user->hasPicture()){ ?>
+				<div class="coViewIconImage"><img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?>" /></div>
+			<?php } else { ?>
+				<div class="coViewIconImage ico-large-contact"></div>
+			<?php } ?>
+				<div class="user-name-container">
+					<span id="username_<?php echo $user->getPermissionGroupId()?>" class="bold"><?php echo $user->getObjectName()?></span>
+					<input id="<?php echo $genid ?>_is_guest_<?php echo $user->getPermissionGroupId()?>" name="is_guest" type="hidden" value="<?php echo ($user->isGuest() ? '1' : '0')?>"/>
+					
+					<?php if ($user->getCompanyId() > 0) { ?>
+					<div class="desc"><?php echo $user->getCompany()->getObjectName(); ?></div>
+					<?php } ?>
+					
+					<div class="desc"><?php echo $user->getUserTypeName(); ?></div>
+				</div>
+				<div class="clear"></div>
+			</li>
+	<?php
+		}
+		
+		foreach ($groups_with_perms as $group) {
+			$count++;
+			$add_cls = '';
+			if ($count > $max_users_to_show) $add_cls = " hidden";
+	?>
+			<li class="user-data<?php echo $add_cls?>" id="<?php echo $genid?>_pg_<?php echo $group->getId()?>">
+				<div class="coViewIconImage ico-large-group"></div>
+				<div class="user-name-container">
+					<span id="username_<?php echo $group->getId()?>" class="bold"><?php echo $group->getName()?></span>
+					<input id="<?php echo $genid ?>_is_guest_<?php echo $group->getId()?>" name="is_guest" type="hidden" value="0"/>
+					<div class="desc"><?php echo lang('group') ?></div>
+				</div>
+				<div class="clear"></div>
+			</li>
+	<?php
+		}
+	?>
+		</ul></div>
+		
+	<?php if ($count > $max_users_to_show) { ?>
+		<div class="clear"></div>
+		<div style="margin-top: 15px;">
+			<a class="db-ico coViewAction ico-expand" href="#" onclick="$('.user-data').removeClass('hidden');$(this).hide();"><?php echo lang('show all users with permissions x more', $count - $max_users_to_show)?></a>
+		</div>
+	<?php } ?>
+		
+		<div class="clear"></div>
+		<div style="margin-top: 15px; width:450px;">
+		<?php
+			// Permission group selector parameters
+			$container_id = $genid . '_pg_selector';
+			$extra_param = '0';
+			$search_function = 'ogSearchSelector.searchPermissionGroup';
+			$select_function = 'ogSearchSelector.onItemPermissionGroupSelect';
+			$search_placeholder = lang('add permissions to more users or groups');
+			$result_limit = '5';
+			$search_minLength = 0;
+			$search_delay = 500;
+			
+			include get_template_path("search_selector_view", "search_selector");			
+		?>
+		</div>
+
+
+		<div id="<?php echo $genid ?>member_permissions" class="permission-form-container" style="display:none;">
+		  <div id="<?php echo $genid ?>pg_name" style="font-weight:bold;font-size:120%;padding-bottom:5px"></div>
+	  	  <table>
 		  	<tr style="border-bottom:1px solid #888;margin-bottom:5px">
 		  	<td style="vertical-align:middle">
 		  		<span class="perm_all_checkbox_container">
@@ -51,62 +150,36 @@
 		  		<td align=center><?php echo radio_field($genid .'rg_'.$id_suffix, false, array('onchange' => 'og.userPermissions.ogPermValueChanged('. $change_parameters .')', 'value' => '0', 'style' => 'width:16px', 'id' => $genid . 'rg_0_'.$id_suffix, 'class' => "radio_0")) ?></td>
 		    </tr>
 		<?php }?>
-		    
-		    </table>
-		<!-- 
-		    <br/><?php echo checkbox_field($genid . 'chk_0', false, array('id' => $genid . 'chk_0', 'onclick' => 'og.userPermissions.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_0" class="checkbox"><?php echo lang('can assign to owners') ?></label>
-		    <br/><?php echo checkbox_field($genid . 'chk_1', false, array('id' => $genid . 'chk_1', 'onclick' => 'og.userPermissions.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_1" class="checkbox"><?php echo lang('can assign to other') ?></label>
-		 -->
-	  	
-	  </div>
-	</td></tr></table>
-
+		  </table>
+		  <div style="float:right;">
+		<?php 
+		  	if ($member instanceof Member) { 
+		  		$save_perms_fn = "og.userPermissions.savePermissions('".$genid."', ".$member->getId().");";
+			} else {
+				$save_perms_fn = "";
+			}
+		?>
+			<button title="<?php echo lang('back')?>" class="add-first-btn" onclick="$('#<?php echo $genid?>_close_link').click();<?php echo $save_perms_fn?> og.userPermissions.afterChangingPermissions('<?php echo $genid?>');" id="<?php echo $genid?>_close_btn">
+				<img src="public/assets/themes/default/images/16x16/save.png">&nbsp;<?php echo lang('save changes')?>
+			</button>
+		  </div>
+		</div>
+	
+	</div>
 
 <script>
-
-og.userPermissions.onUserSelect = function(genid, arguments) {
-	var panel = Ext.get(genid + 'member_permissions');
-	if (panel) {
-		var mili = 0;
-		if(panel.isVisible()) {
-			panel.slideOut('r', {useDisplay:true, duration:0.4});
-			mili = 100;
-		}
-	}
-	var pg_id = arguments['id'];
-	var name = arguments['n'];
- 
-	og.showHideNonGuestPermissionOptions(arguments['isg']);
-	og.userPermissions.permissionInfo[genid].selectedPG = pg_id;
-	og.userPermissions.loadPGPermissions(genid, pg_id);
-
-	// wait for the panel slideIn to render the title
-	setTimeout(function() {
-		panel.slideIn('l', {useDisplay:true});
-		Ext.get(genid + 'pg_name').dom.innerHTML = name;
-	}, mili);
-}
-
 var genid = '<?php echo $genid ?>';
-og.userPermissions.loadPermissions(genid, "user_selector");
 
-var selector = Ext.getCmp(genid + "user_selector");
-selector.on("usercheck", function(arguments, checked) {
-	if (og.userPermissions.permissionInfo[genid].selectedPG != arguments['id']) {
-		og.userPermissions.onUserSelect(genid, arguments);
-	}
-	og.userPermissions.ogPermSetLevel(genid, checked ? 3 : 0);
-}, document);
-
-selector.on("userselect", function(arguments) {
-	og.userPermissions.onUserSelect(genid, arguments);
-}, document);
-
-selector.on("noneselected", function() {
-	var panel = Ext.get(genid + 'member_permissions');
-	if (panel) panel.slideOut('l', {useDisplay:true});
-}, document);
-
-
+$(function() {
+	
+	og.userPermissions.current_pg_id = 0;
+	
+	og.userPermissions.loadPermissions(genid, "user_selector");
+	
+	$(".user-data").click(function() {
+		og.userPermissions.showPermissionsPopup($(this), genid);
+	});
+	
+});
 
 </script>

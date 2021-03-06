@@ -2,7 +2,7 @@
 
 class SharingTables extends BaseSharingTables {
 	
-	/* 
+	/** 
 	 * 
 	 * @param array $groupIds
 	 * @param int $objectId
@@ -22,7 +22,7 @@ class SharingTables extends BaseSharingTables {
 		foreach ($groupIds as $gid) {
 			$rows[] = array( $gid, $objectId);
 		}
-		massiveInsert($table, $cols, $rows);
+		massiveInsert($table, $cols, $rows, 100, " ON DUPLICATE KEY UPDATE ".$table.".group_id=".$table.".group_id;");
 		$rows = null;
 	}
 	
@@ -44,7 +44,7 @@ class SharingTables extends BaseSharingTables {
 		foreach ($objectIds as $oid) {
 			$rows[] = array($groupId, $oid );
 		}
-		massiveInsert($table, $cols, $rows, 10000);
+		massiveInsert($table, $cols, $rows, 10000, " ON DUPLICATE KEY UPDATE ".$table.".group_id=".$table.".group_id;");
 		$rows = null;
 	}
 	

@@ -2,7 +2,7 @@
 if (isset($message) && $message instanceof ProjectMessage) {
 	if (!$message->isTrashed()){
 		if($message->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'message', a:'edit', params: {id:".$message->getId()."}});", 'ico-edit', null, null, true);
 			if (!$message->isArchived())
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $message->getArchiveUrl() ."');", 'ico-archive-obj');
 			else

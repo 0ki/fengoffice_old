@@ -19,6 +19,8 @@
 	'config category desc passwords' => 'Use estas configuraciones para manejar las opciones de contraseñas.',
 	'config category name documents' => 'Documentos',
 	'config category desc documents' => 'Configuraciones para documentos.',
+  	'config category name brand_colors' => 'Colores',
+  	'config category desc brand_colors' => 'Configuración de colores del sistema',
 	'config option name site_name' => 'Nombre del sitio',
 	'config option desc site_name' => 'Este valor va a ser desplegado como el nombre del sitio en la página Panel principal',
 	'config option name file_storage_adapter' => 'Almacenamiento de archivos',
@@ -104,6 +106,8 @@
 	'only in current member' => 'Solamente hitos en el miembro (espacio, cliente, proyecto o carpeta) activo',
 	'only in current member and parents' => 'Solamente hitos en el miembro (espacio, cliente, proyecto o carpeta) activo o uno de sus padres',
 	'all milestones' => 'Todos los hitos',
+	'config option name inherit_permissions_from_parent_member' => 'Heredar permisos del cliente, proyecto o espacio padre',
+	'config option desc inherit_permissions_from_parent_member' => 'Al crear un espacio de trabajo, cliente, carpeta o proyecto, los permisos por defecto serán copiados desde el padre del mismo.',
 	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación',
 	'user config option desc access_member_after_add' => 'Si habilita esta opción, luego de haber creado un espacio de trabajo, cliente, etc; el mismo será seleccionado en el panel de la izquierda (Esta opción solo se aplica si está habilitada la opción "Recordar si acceder a un miembro al crearlo").',
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
@@ -332,7 +336,8 @@
 	'user ws config option name show_file_revisions_search' => 'Ver contenidos de los documentos al realizar búsquedas',
 	'user config option name close timeslot open' => 'Finalizar los tiempos de trabajo en ejecución al completar una tarea',
 	'user config option name reminders_events' => 'Recordatorios de eventos',
-	'user config option desc reminders_events' => '',
+	'user config option desc reminders_events' => '',		
+	'user config option name tasksShowDescriptionOnTimeForms' => 'Mostrar campo de descripción al agregar un tiempo de trabajo en una tarea desde el listado de tareas',
 	'sync' => 'Sincronizar',
 	'mails on imap acc already sync' => 'No hay más emails para sincronizar en esta cuenta',
 	'cant sync account' => 'Esta cuenta no puede ser sincronizada. Revise ajustes de IMAP',
@@ -542,5 +547,9 @@
 	
 	'user config option name auto_classify_attachments' => 'Clasificar los adjuntos de los correos automáticamente',
 	'user config option desc auto_classify_attachments' => 'Si se habilita esta opción los adjuntos de los correos van a ser clasificados junto al correo en el espacio definido en la cuenta de correos.',
-		 
+
+	'config option name brand_colors_head_back' => 'Color de fondo del encabezado',
+	'config option desc brand_colors_head_back' => '',
+	'config option name brand_colors_head_font' => 'Color de fuente del encabezado',
+	'config option desc brand_colors_head_font' => '',
 ); ?>

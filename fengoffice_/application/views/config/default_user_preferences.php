@@ -4,10 +4,18 @@ $alt = "";
 ?>
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
-	<div class="adminHeader">
-		<div class="adminTitle"><?php echo lang('edit default user preferences') ?></div>
+	
+	<div class="coInputHeader">
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle">
+				<?php echo lang('edit default user preferences') ?>
+			</div>
+		</div>
+			
+		<div class="clear"></div>
+	  </div>
 	</div>
-	<div class="adminSeparator"></div>
 	<div class="adminMainBlock">
 
 	<?php if (isset($config_categories) && is_array($config_categories) && count($config_categories)) { ?>

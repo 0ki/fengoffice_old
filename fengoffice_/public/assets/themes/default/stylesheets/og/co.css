@@ -1,7 +1,7 @@
 .coViewAction {
 	background-position:0pt 2px;
 	background-repeat:no-repeat;
-	padding:3px 0pt 2px 18px;
+	padding:3px 0pt 2px 20px;
 	
 }
 
@@ -45,15 +45,15 @@
 }
 
 .coViewHeader .coViewTitleContainer {
-	padding: 8px 12px 0px 12px;
+	padding: 8px 60px 0px 12px;
 	position:relative;
 }
 
 .coViewHeader .coViewTitle {
-  	font-size: 150%;
+  	font-size: 170%;
   	font-weight: bold;
-  	padding-bottom: 4px;
-  	border-bottom: 3px solid;
+  	padding-bottom: 5px;
+  	/*border-bottom: 3px solid;*/
 }
 
 .coViewHeader .coViewDesc {
@@ -119,8 +119,57 @@
 	width:20px;
 }
 
+.view-actions {
+	width:240px;
+	border-collapse:collapse;
+}
+.view-actions .coViewAction {
+	height: 16px;
+	margin-bottom: 4px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
 
-
+.view-actions .internalLink.coViewAction {
+	background-position: 0 3px;
+}
+.view-actions .internalLink.coViewAction.ico-history {
+	background-position: 0 4px;
+}
+.view-actions .coViewAction.ico-print {
+	background-position: 0 3px;
+}
+/*.view-actions .internalLink.coViewAction.ico-archive-obj {
+	background: url("../../images/16x16/archive_obj.png") no-repeat scroll 0 3px transparent !important;
+}*/
+/*.view-actions .internalLink.coViewAction.ico-trash {
+	background: url("../../images/16x16/all_16_16_vertical.png") no-repeat scroll 0 -137px transparent !important;
+}*/
+/*.view-actions .internalLink.coViewAction.ico-edit {
+	background: url("../../images/16x16/all_16_16_vertical.png") no-repeat scroll 0 -377px transparent !important;
+}*/
+.view-actions .internalLink.coViewAction.ico-complete, .view-actions .internalLink.coViewAction.ico-reopen, 
+.view-actions .internalLink.coViewAction.ico-mark-as-unread, .view-actions .internalLink.coViewAction.ico-properties, .view-actions .internalLink.coViewAction.ico-checkout {
+	background-position: 0 4px;
+}
+.view-actions .internalLink.coViewAction.ico-classify, .view-actions .coViewAction.ico-download, 
+.view-actions .internalLink.coViewAction.ico-undo {
+	background-position: 0 5px;
+}
+/*.view-actions .coViewAction.ico-upload {
+	background: url("../../images/16x16/all_16_16_vertical.png") no-repeat scroll 0 -117px transparent !important;
+}*/
+.view-actions .internalLink.coViewAction.ico-delete {
+	background: url("../../images/16x16/all_16_16_vertical.png") no-repeat scroll 0 -496px transparent !important;
+}
+.view-actions .ico-projecttask, .view-actions .ico-task {
+	/*background: url("../../images/16x16/tasks.png") no-repeat scroll 0 3px transparent !important;*/
+	background: url("../../images/icons-feng-3/24x22/tasks.png") no-repeat scroll -4px 0 transparent !important;
+}
+.view-actions .ico-spam {
+	background: url("../../images/layout/close16.png") no-repeat scroll 0 4px transparent !important;
+}
 /* ------------------------------------- Specific Content Objects -----------------------------*/
 
 
@@ -480,7 +529,7 @@
   	color: #717FA1;
 }
 
-.ico-large-tasks {
+.ico-large-tasks, .ico-large-task {
 	background-image: url(../../images/48x48/tasks.png);
 }
 
@@ -787,16 +836,14 @@
 .ico-map {
 	background-image: url(../../images/16x16/map.png);
 }
-.ico-more-tab {
-	background-image: url(../../images/16x16/arrowright.png) !important;
-}
+
 .ico-large-time, .ico-large-time-layout {
 	background-image: url(../../images/48x48/time.png);
 }
 .ico-large-overview {
 	background-image: url(../../images/48x48/overview.png);
 }
-.ico-large-expenses-module {
+.ico-large-expenses-module, .ico-large-expenses {
 	background-image: url(../../images/48x48/expense.png);
 }
 .ico-large-gantt-module {
@@ -810,4 +857,7 @@
 }
 .ico-large-comment {
 	background-image: url(../../images/48x48/comment.png);
+}
+.ico-large-objectives-module, .ico-large-objectives {
+	background-image: url(../../images/48x48/objective.png);
 }

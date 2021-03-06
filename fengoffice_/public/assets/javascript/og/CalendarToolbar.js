@@ -108,12 +108,14 @@ var markactions = {
 // Toolbar Items
 var topToolbarItems = { 
 	add: new Ext.Action({
+		id: 'new_button',
 		text: lang('add event'),
         tooltip: lang('add new event'),
         iconCls: 'ico-new',
         handler: function() {
-        	var date = og.calToolbarDateMenu.picker.getValue();
-			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
+        	/*var date = og.calToolbarDateMenu.picker.getValue();
+			changeView('add', date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);*/
+			og.render_modal_form('', {c:'event', a:'add'});
 		}
 	}),
 	view_month: new Ext.Action({
@@ -240,8 +242,7 @@ var topToolbarItems = {
 				if (ev_id.indexOf(',') != -1) {
 					og.err(lang('select only one event'));
 				} else {
-					var url = og.getUrl('event', 'edit', {id:ev_id});
-					og.openLink(url, null);
+					og.render_modal_form('', {c:'event', a:'edit', params: {id:ev_id}});
 				}
 			}
 		}
@@ -278,7 +279,6 @@ var topToolbarItems = {
 og.CalendarTopToolbar = function(config) {
 	Ext.applyIf(config,{
 		id: "calendarPanelTopToolbarObject",
-		height: 28,
 		style:"border:0px none"
 	});
 		
@@ -361,8 +361,7 @@ Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
 og.CalendarSecondTopToolbar = function(config) {
 	Ext.applyIf(config,{
 		id: "calendarPanelSecondTopToolbarObject",
-		height: 28,
-		style:"border:0px none"
+		style:"border:0px none; padding-top: 2px;"
 	});
 		
 	og.CalendarTopToolbar.superclass.constructor.call(this, config);

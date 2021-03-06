@@ -1,8 +1,8 @@
 .ext-el-mask {
 	background:#dadadb;
 }
-.ico-workspace, .ico-ws, .ico-project {
-	background-image: url(../../images/16x16/workspace.png) !important;
+.ico-workspace, .ico-ws{
+	background-image: url(../../images/icons-feng-3/16x16/workspace.png) !important;
 }
 .ico-workspaces {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -617px !important;

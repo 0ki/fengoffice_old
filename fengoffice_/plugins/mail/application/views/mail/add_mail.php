@@ -110,8 +110,8 @@ sig.actualHtmlSignature = '';
   	</div>
   
 	<div>
-		<table style="width:95%"><tr><td style="width: 60px;">
-    	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span></label>
+		<table style="width:100%"><tr><td style="width: 60px;">
+    	<label for='mailTo' style="margin:0;"><?php echo lang('mail to')?> <span class="label_required">*</span></label>
     	</td><td>
     	<?php echo autocomplete_textarea_field('mail[to]', $mail_to, array(), 30, 
     		array('class' => 'title', 'tabindex'=>'10', 'id' => $genid . 'mailTo' )); ?>
@@ -121,8 +121,8 @@ sig.actualHtmlSignature = '';
 	</div>
   
  	<div id="add_mail_CC" style="padding-top:2px;display:<?php echo (substr_count(array_var($mail_data, 'cc'), '@') > 0 ? 'block' : 'none')?>;">
-		<table style="width:95%"><tr><td style="width: 60px;">
-		<label for="mailCC"><?php echo lang('mail CC')?> </label>
+		<table style="width:100%"><tr><td style="width: 60px;">
+		<label for="mailCC" style="margin:0;"><?php echo lang('mail CC')?> </label>
 		</td><td>
 		<?php echo autocomplete_textarea_field('mail[cc]', array_var($mail_data, 'cc'), array(), 30, 
 			array('class' => 'title', 'tabindex'=>'20', 'id' => $genid . 'mailCC' )); ?>
@@ -132,8 +132,8 @@ sig.actualHtmlSignature = '';
 	</div>
  	
  	<div id="add_mail_BCC" style="padding-top:2px;display:<?php echo (substr_count(array_var($mail_data, 'bcc'), '@') > 0 ? 'block' : 'none')?>;">
- 		<table style="width:95%"><tr><td style="width: 60px;">
-	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
+ 		<table style="width:100%"><tr><td style="width: 60px;">
+	    <label for="mailBCC" style="margin:0;"><?php echo lang('mail BCC')?></label>
 	    </td><td>
 	    <?php echo autocomplete_textarea_field('mail[bcc]', array_var($mail_data, 'bcc'), array(), 30, 
     		array('class' => 'title', 'tabindex'=>'30', 'id' => $genid . 'mailBCC' )); ?>
@@ -143,11 +143,11 @@ sig.actualHtmlSignature = '';
 	</div>
  	
 	<div style="padding-top:2px;">
-		<table style="width:95%"><tr><td style="width: 60px;">
+		<table style="width:100%"><tr><td style="width: 60px; padding-top:6px;">
     	<label for='mailSubject'><?php echo lang('mail subject')?></label>
     	</td><td>
     	<?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    		array('class' => 'title', 'tabindex'=>'0', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;', 'autocomplete' => 'off')) ?>
+    		array('class' => 'title x-form-text', 'tabindex'=>'0', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;height:32px;border-radius: 4px;padding-right: 0px;', 'autocomplete' => 'off')) ?>
     	</td></tr></table>
 	</div>
 	
@@ -246,7 +246,7 @@ sig.actualHtmlSignature = '';
   
 </div>
 
-<div id="<?php echo $genid ?>mail_body_container" style="height: 105%; overflow-y: auto">
+<div id="<?php echo $genid ?>mail_body_container" style="height: 100%; overflow-y: auto">
     <?php 
     $display = ($type == 'html') ? 'none' : 'block';
     $display_fck = ($type == 'html') ? 'block' : 'none';
@@ -265,10 +265,10 @@ sig.actualHtmlSignature = '';
     } else $html_body = array_var($mail_data, 'body');
     
     echo textarea_field('plain_body', $plain_body, array('id' => $genid . 'mailBody', 'tabindex' => '50', 
-    	'style' => "display:$display;width:97%;height:94%;margin-left:1%;margin-right:1%;margin-top:1%; min-height:250px;", 
+    	'style' => "display:$display;width:97%;margin-left:1%;margin-right:1%; min-height:250px;", 
     	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();", 'autocomplete' => 'off')) ?>
 
-    <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
+    <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
 		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" tabindex="51"><?php echo clean($html_body) ?></textarea>
 	</div>
 </div>
@@ -290,14 +290,16 @@ var focus_editor = false;
 var h = document.getElementById(genid+"ck_editor").offsetHeight;
 try {
 var editor = CKEDITOR.replace(genid+'ckeditor', {
-	height: (h-205) + 'px',
-	enterMode: CKEDITOR.ENTER_DIV,
+	height: (h) + 'px',
+	enterMode: CKEDITOR.ENTER_BR,
+	allowedContent: true,
 	shiftEnterMode: CKEDITOR.ENTER_P,
 	disableNativeSpellChecker: false,
-	//resize_enabled: false, //this causes a bug when pasting info into Google Chrome and other browsers 
+	resize_enabled: false, //this causes a bug when pasting info into Google Chrome and other browsers 
 	customConfig: '',
 	contentsCss: og.getUrl('mail', 'get_mail_css'),
 	language: '<?php echo $loc ?>',
+	contentsCss: ['<?php echo get_javascript_url('ckeditor/contents.css').'?rev='.product_version_revision();?>', '<?php echo get_stylesheet_url('og/ckeditor_override.css').'?rev='.product_version_revision();?>'],
 	toolbar: [
 		['Bold','Italic','Underline','Strike','-',
 		'Outdent','Indent','Blockquote','-',
@@ -308,8 +310,6 @@ var editor = CKEDITOR.replace(genid+'ckeditor', {
 		'Font','FontSize','-',
 		'TextColor','BGColor','RemoveFormat']
 	],
-	skin: 'kama',
-	contentsCss: '<?php echo get_javascript_url("ckeditor/contents.css")."?rev=".product_version_revision()?>',
 	keystrokes: [
 		[ CKEDITOR.ALT + 121 /*F10*/, 'toolbarFocus' ],
 		[ CKEDITOR.ALT + 122 /*F11*/, 'elementsPathFocus' ],
@@ -330,25 +330,21 @@ var editor = CKEDITOR.replace(genid+'ckeditor', {
 
 		[ CKEDITOR.ALT + 109 /*-*/, 'toolbarCollapse' ]
 	],
-	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/public/assets/javascript/ckeditor/ck_upload_handler.php',
+	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/ck_upload_handler.php',
 	on: {
 		instanceReady: function(ev) {
-			og.adjustCkEditorArea(genid, '', true);
+			og.resizeMailDiv();
 			var mb = Ext.getDom(genid + 'mailBody');
 			mb.oldMailBody = og.getMailBodyFromUI(genid);
 			ev.editor.resetDirty();
 			if (focus_editor) ev.editor.focus();
 		},
-		selectionChange: function(ev) {
-			var p = og.getParentContentPanel(Ext.get(genid+'ckeditor'));
-			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
-		},
-		key: function(ev) {
+		change: function(ev) {
 			var p = og.getParentContentPanel(Ext.get(genid+'ckeditor'));
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		}
 	},
-	removePlugins: 'scayt,contextmenu',
+	removePlugins: 'scayt',
 	entities_additional : '#39,#336,#337,#368,#369'
 });
 } catch (e) {
@@ -367,21 +363,26 @@ og.eventManager.addListener("email saved", function(obj) {
 }, null, {replace:true});
 
 og.resizeMailDiv = function() {
-	maindiv = document.getElementById(genid+'main_div');
-	headerdiv = document.getElementById(genid+'header_div');
-	if (maindiv != null && headerdiv != null) {
-		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 30;
-		document.getElementById(genid+'mail_div').style.height = divHeight + 'px';
-		
-		var parentTd = document.getElementById('cke_contents_'+genid+'ckeditor');
-		if (parentTd) {
-			var iframe = parentTd.firstChild;
-			iframe.style.height = (divHeight - 35 ) + 'px';
-			parentTd.style.height = (divHeight - 35 ) + 'px';
+	setTimeout(function() {
+		maindiv = document.getElementById(genid+'main_div');
+		headerdiv = document.getElementById(genid+'header_div');
+		if (maindiv != null && headerdiv != null) {
+			var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight;
+			document.getElementById(genid+'mail_div').style.height = divHeight + 'px';
+			
+			var h = document.getElementById(genid + 'mail_body_container').offsetHeight;
+			var parent = document.getElementById('cke_'+genid+'ckeditor');
+			if (parent) {
+				var iframes = parent.getElementsByTagName('iframe');
+				if (iframes.length > 0) {
+					iframes[0].style.height = (h-70) + 'px';
+					parent.style.height = (h-2) + 'px';
+					$('.cke_contents').css({'height': (h - 70) + 'px'});
+				}
+			}
 		}
-	}
+	}, 100);
 }
-setTimeout('og.resizeMailDiv()', 50);
 window.onresize = og.resizeMailDiv;
 
 if (Ext.getDom(genid + 'format_html') && !Ext.getDom(genid + 'format_html').checked) {

@@ -147,4 +147,7 @@
 	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'No se pudo cargar el archivo, no se encuentra directorio temporal.',
 	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'No se pudo guardar el archivo en el disco.',
 	'upload error msg UPLOAD_ERR_EXTENSION' => 'Una extensión de PHP no permitió cargar el archivo.',
+	
+	'failed to authenticate email account' => 'No se pudo autenticar la cuenta de correo',
+	'failed to authenticate email account desc' => 'La cuenta "{0}" no se pudo autenticar para enviar notificaciones. Por favor asegúrese de que la contraseña de la cuenta sea la correcta.',
 ); ?>

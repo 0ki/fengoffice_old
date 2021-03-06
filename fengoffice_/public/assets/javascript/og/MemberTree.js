@@ -19,21 +19,7 @@ og.MemberTree = function(config) {
 			}
 		}
 	}];
-	if (config.quickAdd) {
-		tbar.push ({
-	    	xtype: 'box',
-	    	ctCls: 'member-quick-form-link', 
-			autoEl: {
-				id: 'quick-form-'+config.dimensionId,
-				tag: 'a',
-				cls: 'coViewAction ico-add',
-				href: '#',
-				html: lang('add'),
-				onclick: "og.quickForm({ dimensionId: "+config.dimensionId+",type: 'member', treeId: '"+config.id+"', elId: 'quick-form-"+config.dimensionId+"'});"
-			}
-		});
-	}
-	
+		
 	var expandM = 'root';
 	if(config.hidden) expandM = 'none';
 	Ext.applyIf(config, {
@@ -72,14 +58,10 @@ og.MemberTree = function(config) {
 	    	   hidden: !og.preferences['can_modify_navigation_panel']
 	       }, 
     	   {
-    		   id: 'close',
-    		   hidden: !og.preferences['can_modify_navigation_panel'],
+    		   id: 'options',
+    		   qtip: lang('add a new member in ' + config.dimensionCode),
     		   handler: function(e,t,p){
-	    	   		p.removeFromContext();
-	    	   		og.contextManager.setDimensionVisibility('dimension-panel-' + config.dimensionId, false);
-	    	   		
-	    	   		var dim_ids = og.contextManager.getVisibleDimensions();
-					og.openLink(og.getUrl('account', 'update_user_preference', {name:'root_dimensions', value:dim_ids.join(',')}), {hideLoading:true});
+    			   og.quickForm({ dimensionId: p.dimensionId,type: 'member', treeId: p.dimensionId, elId: t.id});	    	   		
 	       		}
     	    }
 
@@ -438,6 +420,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		} else {
 			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
 			//search on server
+			this.innerCt.mask();
 			og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.id.replace("dimension-panel-", ""),query:Ext.escapeRe(text.toLowerCase())}), {
     			hideLoading:true, 
     			hideErrors:true,
@@ -462,7 +445,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 						//add member to og.dimensions
 						og.addMemberToOgDimensions(data.dimension_id,mem);						
     				}    				
-    				//dimension_tree.innerCt.unmask();
+    				dimension_tree.innerCt.unmask();
     				
     				//filter the tree
     				dimension_tree.filterNode(dimension_tree.getRootNode(), re);
@@ -673,12 +656,16 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 					for (var prop in data.members) {  
 						var mem = data.members[prop];
 						var node_parent = dimension_tree.getNodeById(mem.parent);
+						if(mem.parent == 0){
+							node_parent = dimension_tree.root;
+						}
 						
 						mem.leaf = true;
 						mem.text = mem.name;
 						var new_node = dimension_tree.loader.createNode(mem);
 							    												
 						var node_exist = dimension_tree.getNodeById(mem.id);
+						
 						if(!node_exist){
 							if (node_parent) node_parent.appendChild(new_node);
 						}

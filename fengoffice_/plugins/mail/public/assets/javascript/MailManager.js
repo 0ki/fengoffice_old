@@ -67,12 +67,16 @@ og.MailManager = function() {
 					for (i=0; i<manager.maxrowidx; i++) {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
+						
+						$("#"+manager.id+" #text_filter").val('').focus();
 					}
 					
 					//reload columns for this folder
 					showFolderColumns();
 					
 					Ext.getCmp('mails-manager').reloadGridPagingToolbar('mail','list_all','mails-manager');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -88,7 +92,7 @@ og.MailManager = function() {
 		var strAction = 'view';
 		
 		if (r.data.isDraft) {
-			strDraft = "<span style='font-size:80%;color:red'>"+lang('draft')+"&nbsp;</style>";			
+			strDraft = "<span style='font-size:90%;color:red'>"+lang('draft')+"&nbsp;</style>";			
 			strAction = 'edit_mail';
 		}
 		else { strDraft = ''; }
@@ -309,7 +313,7 @@ og.MailManager = function() {
 	
 	var cm_info = [
 		sm,{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -317,7 +321,7 @@ og.MailManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
@@ -390,6 +394,7 @@ og.MailManager = function() {
 			id: 'actions',
 			header: lang("actions"),
 			width: 60,
+			fixed: true,
 			renderer: renderActions,
 			sortable: false
 		}];
@@ -659,6 +664,7 @@ og.MailManager = function() {
 	actions = {
 			
 		newCO: new Ext.Action({
+			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create an email'),
             iconCls: 'ico-new',
@@ -672,7 +678,7 @@ og.MailManager = function() {
 		accounts: new Ext.Action({
 			text: lang('accounts'),
             tooltip: lang('account options'),
-            iconCls: 'ico-administration',
+            iconCls: 'ico-administration ico-small16',
 			disabled: false,
 			menu: {items: [
 				accountActions.addAccount,
@@ -1027,7 +1033,7 @@ og.MailManager = function() {
 		var folderName = og.MailManager.store.reader.jsonData.folder_name;
 		var update = false;
 		var val = "";
-		 var columns = og.MailManager.store.reader.jsonData.folder_columns;
+		var columns = og.MailManager.store.reader.jsonData.folder_columns;
 		 
 		 //if you add a column else you remove a column
 		 if(!hidden){
@@ -1091,7 +1097,7 @@ og.MailManager = function() {
 		top1.push(actions.checkMails);
 		top1.push(actions.accounts);
 		top1.push(actions.sendOutbox);
-                top1.push('-');
+		top1.push('-');
 	}
 	if (og.additional_mails_top_toolbar_1_items) {
 		for ( i=0; i<og.additional_mails_top_toolbar_1_items.length; i++) {
@@ -1124,8 +1130,14 @@ og.MailManager = function() {
 		}
 	}
 	
+	if (og.additional_list_actions && og.additional_list_actions.mail) {
+		for (var i=0; i<og.additional_list_actions.mail.length; i++) {
+			top2.push(og.additional_list_actions.mail[i]);
+		}
+	}
+	
 	this.topTbar2 = new Ext.Toolbar({
-		style: 'border:0px none',
+		style: 'border:0px none; padding-top:0px;',
 		items: top2
 	});
 		    
@@ -1244,6 +1256,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	    };
 		
 		this.actionRep.checkMails.disable();
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

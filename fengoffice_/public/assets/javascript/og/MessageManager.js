@@ -48,8 +48,11 @@ og.MessageManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.messages+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					Ext.getCmp('message-manager').reloadGridPagingToolbar('message','list_all','message-manager');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -71,19 +74,25 @@ og.MessageManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 		
-		name = String.format(
-				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes) + mem_path;
-	
 		var text = '';
 		if (r.data.text != ''){
-			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
+			text = '<span style="color:#888888;white-space:nowrap">&nbsp;-&nbsp;';
 			text += og.clean(r.data.text) + "</span></i>";
 		}
 		
-		return name + text;
+		name = String.format(
+				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text), classes) + text + mem_path;
+	
+		
+		
+		return name;
 	}
 
 	function renderIsRead(value, p, r){
@@ -183,7 +192,7 @@ og.MessageManager = function() {
 	
 	var cm_info = [
 		sm,{
-			id: 'draghandle',
+	/*		id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -191,7 +200,7 @@ og.MessageManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
@@ -294,12 +303,12 @@ og.MessageManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
+			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('add new message'),
             iconCls: 'ico-new',
             handler: function() {
-				var url = og.getUrl('message', 'add');
-				og.openLink(url, null);
+				og.render_modal_form('', {c:'message', a:'add'});
 			}
 		}),
 		del: new Ext.Action({
@@ -324,8 +333,9 @@ og.MessageManager = function() {
             iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
-				var url = og.getUrl('message', 'edit', {id:getFirstSelectedId()});
-				og.openLink(url, null);
+				/*var url = og.getUrl('message', 'edit', {id:getFirstSelectedId()});
+				og.openLink(url, null);*/
+				og.render_modal_form('', {c:'message', a:'edit', params: {id:getFirstSelectedId()}});
 			},
 			scope: this
 		}),
@@ -366,6 +376,14 @@ og.MessageManager = function() {
 	}
 	tbar.push(actions.markAs);
 	
+	if (og.additional_list_actions && og.additional_list_actions.message) {
+		tbar.push('-');
+		for (var i=0; i<og.additional_list_actions.message.length; i++) {
+			tbar.push(og.additional_list_actions.message[i]);
+		}
+	}
+	
+	
 	og.MessageManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
@@ -376,7 +394,7 @@ og.MessageManager = function() {
 		id: 'message-manager',
 		stripeRows: true,
 		closable: true,
-		loadMask: false,
+		loadMask: true,
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
 			store: this.store,
@@ -400,7 +418,7 @@ og.MessageManager = function() {
 					var scroller = elem.select('.x-grid3-scroller');
 					scroller.each(function() {
 						this.dom.appendChild(msg);
-					});
+					});					
 				},
 				scope: this
 			}
@@ -423,6 +441,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			context: og.contextManager.plainContext()
 		};
 		
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

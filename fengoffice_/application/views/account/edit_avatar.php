@@ -1,6 +1,6 @@
 <?php
     set_page_title(lang('update avatar'));
-    $action = $user->getUpdateAvatarUrl();
+    $action = $user->getUpdatePictureUrl();
     if (isset($reload_picture)) {
     	$action .= "&reload_picture=$reload_picture";
     }
@@ -15,9 +15,9 @@
   
   <fieldset>
     <legend><?php echo lang('current avatar') ?></legend>
-<?php if($user->hasAvatar()) { ?>
-    <img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> avatar" />
-    <p><a class="internalLink" href="<?php echo $user->getDeleteAvatarUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete current avatar')) ?>')"><?php echo lang('delete current avatar') ?></a></p>
+<?php if($user->hasPicture()) { ?>
+    <img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?>" />
+    <p><a class="internalLink" href="<?php echo $user->getDeletePictureUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete current avatar')) ?>')"><?php echo lang('delete current avatar') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current avatar') ?>
 <?php } // if ?>
@@ -26,7 +26,7 @@
   <div>
     <?php echo label_tag(lang('new avatar'), 'avatarFormAvatar', true) ?>
     <?php echo file_field('new avatar', null, array('id' => 'avatarFormAvatar')) ?>
-<?php if($user->hasAvatar()) { ?>
+<?php if($user->hasPicture()) { ?>
     <p class="desc"><?php echo lang('new avatar notice') ?></p>
 <?php } // if ?>
   </div>

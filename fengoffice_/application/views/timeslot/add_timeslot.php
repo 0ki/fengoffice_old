@@ -145,16 +145,17 @@
 			'value' => '0', 'style' => 'width:16px')); echo '<span class="bold">' . lang('hourly billing') . '</span>'; ?>
 		<?php echo radio_field('timeslot[is_fixed_billing]',$timeslot_data['is_fixed_billing'],array('onchange' => 'og.showAndHide("' . $genid. 'fbilling",["' . $genid. 'hbilling"])', 
 		'value' => '1', 'style' => 'width:16px')); echo '<span class="bold">' . lang('fixed billing') . '</span>'; ?>
+		<br /><br />
 	  	<div id="<?php echo $genid ?>hbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'display:none':'' ?>">
-	    	<?php echo label_tag(lang('hourly rates'), 'addTimeslotHourlyBilling', false) ?>
+	    	<?php echo label_tag(lang('hourly rates'), 'addTimeslotHourlyBilling', false, array('style'=>'min-width:110px;')) ?>
 	  		<?php echo text_field('timeslot[hourly_billing]',array_var($timeslot_data, 'hourly_billing'), array('id' => 'addTimeslotHourlyBilling')) ?>
 	  	</div>
 	  	<div id="<?php echo $genid ?>fbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'':'display:none' ?>">
-	    	<?php echo label_tag(lang('billing amount'), 'addTimeslotFixedBilling', false) ?>
+	    	<?php echo label_tag(lang('billing amount'), 'addTimeslotFixedBilling', false, array('style'=>'min-width:110px;')) ?>
 	  		<?php echo text_field('timeslot[fixed_billing]',array_var($timeslot_data, 'fixed_billing'), array('id' => 'addTimeslotFixedBilling')) ?>
 	  	</div>
   	<?php } ?>
-
+	<div class="clear"></div>
     <?php echo submit_button($timeslot->isNew() ? lang('add timeslot') : lang('save changes'), 's', array('tabindex' => '80')); ?>
 </div>
 </div>

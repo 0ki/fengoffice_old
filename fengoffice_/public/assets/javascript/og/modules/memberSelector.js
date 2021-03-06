@@ -61,13 +61,14 @@ member_selector.init = function(genid) {
 			}
 		}
 		
-		og.eventManager.fireEvent('after member_selector init', null);						
+		og.eventManager.fireEvent('after member_selector init', null);	
+		og.eventManager.fireEvent('replace all empty breadcrumb', null);
 	}});
 	
 	if (selected_member_ids.length == 0) {
 		var idshf = document.getElementById(genid+'subscribers_ids_hidden');
 		if (idshf) og.reload_subscribers(genid, member_selector[genid].otid, idshf.value);
-	}
+	}	
 }
 
 member_selector.autocomplete_select = function(dimension_id, genid, combo, record, preload) {
@@ -81,7 +82,7 @@ member_selector.autocomplete_select = function(dimension_id, genid, combo, recor
 	}
 }
 
-member_selector.add_relation = function(dimension_id, genid, member_id) {
+member_selector.add_relation = function(dimension_id, genid, member_id, show_actions) {
 	if (typeof member_id == "undefined") {
 		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dimension_id);
 		var member = combo.selected_member;
@@ -91,6 +92,9 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 		member.id= member_id;
 	}
 		
+	if (typeof show_actions == "undefined") {
+		var show_actions = true;
+	}
 	
 
 	var selected_member_ids = Ext.util.JSON.decode(Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)).getValue());
@@ -98,7 +102,7 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	//check if is selected
 	var ind = selected_member_ids.indexOf(member_id);
 	if(ind >= 0) return;
-		
+	
 	var i = 0;
 	while (selected_member_ids[i] != member.id && i < selected_member_ids.length) i++;
 	
@@ -114,9 +118,11 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	html += '<div class="completePath">';
 	
 	html += '</div>';
-	html += '<div class="selected-member-actions"' + (Ext.isIE ? 'style="display:inline;margin-left:40px;float:none;"' : '') + '>';
-	html += '<a class="coViewAction ico-delete" onclick="member_selector.remove_relation('+dimension_id+',\''+genid+'\', '+member.id+')" href="#">'+lang("remove")+'</a></div>';
 	
+	if(show_actions){
+		html += '<div class="selected-member-actions"' + (Ext.isIE ? 'style="display:inline;margin-left:40px;float:none;"' : '') + '>';
+		html += '<a class="coViewAction ico-delete" onclick="member_selector.remove_relation('+dimension_id+',\''+genid+'\', '+member.id+')" href="#"></a></div>';
+	}
 	
 	html += '</div><div class="separator"></div>';
 
@@ -125,9 +131,15 @@ member_selector.add_relation = function(dimension_id, genid, member_id) {
 	sel_members_div.insertHtml('beforeEnd', html);
 	
 	//add mem_path after insert completePath div to calculate the correct width
-	mem_path = og.getCrumbHtmlWithoutLinks(member.id,dimension_id,genid);
+	
+	var tmp_member = {};
+	tmp_member[member.id] = member.id;
+	var tmp_dim = {};
+	tmp_dim[dimension_id] = tmp_member;
+	mem_path = og.getEmptyCrumbHtml(tmp_dim,".completePath",null,false);
 	$("#"+genid+"selected-member"+member.id+" .completePath").append(mem_path);
-
+	og.eventManager.fireEvent('replace all empty breadcrumb', null);
+	
 	if (!member_selector[genid].properties[dimension_id].isMultiple) {
 		var form = Ext.get(genid + 'add-member-form-dim' + dimension_id);
 		if (form) {
@@ -177,14 +189,15 @@ member_selector.remove_relation = function(dimension_id, genid, member_id, dont_
 	}
 	member_ids_input.dom.value = Ext.util.JSON.encode(member_ids);
 	
-	
-	for (var i=0;i<member_selector[genid].sel_context[dimension_id].length;i++){
-		if (member_selector[genid].sel_context[dimension_id][i] == member_id) {
-			member_selector[genid].sel_context[dimension_id].splice(i, 1);
+	if (member_selector[genid].sel_context[dimension_id]) {
+		for (var i=0;i<member_selector[genid].sel_context[dimension_id].length;i++){
+			if (member_selector[genid].sel_context[dimension_id][i] == member_id) {
+				member_selector[genid].sel_context[dimension_id].splice(i, 1);
+			}
 		}
 	}
 
-	if (member_selector[genid].properties[dimension_id].isMultiple || member_selector[genid].sel_context[dimension_id].length == 0) {
+	if (member_selector[genid].properties[dimension_id].isMultiple || !member_selector[genid].sel_context[dimension_id] || member_selector[genid].sel_context[dimension_id].length == 0) {
 		var form = Ext.get(genid + 'add-member-form-dim' + dimension_id);
 		if (form) {
 			f = Ext.fly(form);
@@ -201,6 +214,10 @@ member_selector.remove_relation = function(dimension_id, genid, member_id, dont_
 		if (member_selector[genid].properties[dimension_id].listeners.on_selection_change) {
 			eval(member_selector[genid].properties[dimension_id].listeners.on_selection_change);
 		}
+	}
+	
+	if (member_selector[genid].properties[dimension_id].listeners.on_remove_relation) {
+		eval(member_selector[genid].properties[dimension_id].listeners.on_remove_relation);
 	}
 }
 

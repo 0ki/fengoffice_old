@@ -342,7 +342,7 @@ class MailController extends ApplicationController {
 				}
 			}
 			if (array_var($mail_data, 'format') == 'html') {
-				$css = "font-family:Arial,Verdana,sans-serif;font-size:12px;color:#222;";
+				$css = "font-family:sans-serif,Arial,Verdana; font-size:14px; line-height:1.6; color:#222;";
 				Hook::fire('email_base_css', null, $css);
 				str_replace(array("\r","\n"), "", $css);
 				$body = '<div style="' . $css . '">' . $body . '</div>';
@@ -1559,7 +1559,7 @@ class MailController extends ApplicationController {
 						if (count($members) > 0) {
 							$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
 							MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, true);
+							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, false);
 						}
 					}
 					
@@ -1578,7 +1578,7 @@ class MailController extends ApplicationController {
 							
 							if ($conv_email->getHasAttachments()) {
 								if (!$after_receiving || user_config_option('auto_classify_attachments')) {
-									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, false);
 								}
 							}
 						}
@@ -1647,11 +1647,11 @@ class MailController extends ApplicationController {
 								if ($content == $att['Data']) {
 									// file already exists
 									$file_exists = $row['file_id'];
-									Logger::log($email->getId()." - ".$row['mail_id']." - $fName");
+									//Logger::log($email->getId()." - ".$row['mail_id']." - $fName");
 									if ($remove_previous_members && $row['mail_id'] != $email->getId()) {
 										$remove_previous_members = false;
 									}
-									continue;
+									break;
 								}
 							}
 						}

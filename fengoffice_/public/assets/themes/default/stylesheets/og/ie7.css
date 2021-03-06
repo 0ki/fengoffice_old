@@ -35,7 +35,7 @@ div.user-box-actions {
 	float: left ; 
 }
 
-input[type=checkbox] {
+input[type=checkbox], input[type=radio], input[type=radio]:hover {
 	padding: 0;
 	border: 0px none;
 }

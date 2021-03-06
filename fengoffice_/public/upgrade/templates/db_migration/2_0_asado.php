@@ -1146,14 +1146,16 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
  	AND `m`.`dimension_id` IN (SELECT `id` FROM `fo_dimensions` WHERE `code` = 'feng_persons')
    AND `m`.`object_type_id` IN (20,21)
    AND `m`.`object_id` IN (SELECT om.object_id FROM fo_object_members om WHERE om.member_id IN (SELECT cmp.member_id FROM fo_contact_member_permissions cmp WHERE cmp.permission_group_id=c.permission_group_id))
- ON DUPLICATE KEY UPDATE member_id=member_id;;
+ ON DUPLICATE KEY UPDATE member_id=member_id;
 
 
 
 UPDATE `fo_contact_config_options` 
  SET default_value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='root_dimensions';
-
+UPDATE `fo__config_options` 
+ SET value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
+ WHERE name='enabled_dimensions';
 
 -- TAGS object members
 

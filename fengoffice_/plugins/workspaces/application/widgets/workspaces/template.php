@@ -10,7 +10,7 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 <div class="ws-widget widget">
 
 	<div class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo lang('workspaces')?>
+		<div class="widget-title"><?php echo lang('workspaces')?></div>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	
@@ -31,7 +31,10 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 							$p->getId() => array('name' => $p->getName(), 'ot' => $p->getObjectTypeId(), 'c' => $p->getColor()),
 						);
 						$crumbOptions = json_encode(array($ws_dim->getId() => $crumb_members));
-						$crumbJs = " og.getCrumbHtml($crumbOptions)";
+						if($crumbOptions == ""){
+							$crumbOptions = "{}";
+						}
+						$crumbJs = " og.getEmptyCrumbHtml($crumbOptions, '.workspace-row-container' )";
 					?>
 				<span class="breadcrumb"></span>
 				<script>
@@ -41,7 +44,6 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 				<?php } ?>
 			</div>
 			<div class="x-clear"></div>
-			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
 		<?php endforeach;?>
 		</div>
 		
@@ -83,5 +85,7 @@ $section = $ws_widget instanceof Widget && in_array($ws_widget->getDefaultSectio
 				}
 			});
 		});
+
+		// og.eventManager.fireEvent('replace all empty breadcrumb', null);
 	});
 </script>

@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1.6
+	About Feng Office 3.0-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -87,6 +87,9 @@
 	- jQuery Collapsible - http://phpepe.com/2011/07/jquery-collapsible-plugin.html
 	- jQuery Scroll To - http://flesler.blogspot.com/2007/10/jqueryscrollto.html
 	- jQuery ModCoder - http://modcoder.com/
+	- jQuery User Interface - http://jqueryui.com/
+	- jQuery ImgAreaSelect plugin - http://odyniec.net/projects/imgareaselect/
+	- jQuery SimpleModal plugin - http://www.ericmmartin.com/projects/simplemodal/
 	- H5F (HTML 5 Forms) - http://thecssninja.com/javascript/H5F
 	- http://flowplayer.org/tools/
 	- Reece Calendar - http://sourceforge.net/projects/reececalendar
@@ -101,6 +104,29 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7.1.9
+	----------------
+	feature: Several improvements in user interface, experience and looks.
+	feature: New “Getting Started Wizard”.
+	feature: New workspaces selector.
+	feature: Improved user creation and management.
+	feature: Improved Task  Management.
+			
+	Since 2.7.1.8
+	----------------
+	feature: Allow to configure if parent permissions are inherited when creating a new workspace, client or project.
+	
+	Since 2.7.1.7
+	----------------
+	bugfix: Active context member info widget reactivated.
+	bugfix: Permissions not saved when applying to all submembers and permissions tree is collapsed.
+	
+	Since 2.7.1.6
+	----------------
+	bugfix: do not show trashed emails from other accounts.
+	bugfix: when adding a new member, inherit parent permissions.
+	bugfix: When saving permissions for a workspace, client or project, the mandatory dimensions were not being analyzed.
 	
 	Since 2.7.1.5
 	----------------

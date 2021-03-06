@@ -262,7 +262,20 @@ static function executeInstaller($name) {
 								'" . array_var ( $tab, 'type' ) . "',
 								$id,
 								" . array_var ( $tab, 'object_type_id' ) . "
-							) ON DUPLICATE KEY UPDATE name=name";
+							) ON DUPLICATE KEY UPDATE 
+								id = VALUES(`id`), 
+								title = VALUES(`title`), 
+								icon_cls = VALUES(`icon_cls`), 
+								refresh_on_context_change = VALUES(`refresh_on_context_change`), 
+								default_controller = VALUES(`default_controller`), 
+								default_action = VALUES(`default_action`), 
+								initial_controller = VALUES(`initial_controller`), 
+								initial_action = VALUES(`initial_action`), 
+								enabled = VALUES(`enabled`), 
+								type = VALUES(`type`), 
+								plugin_id = VALUES(`plugin_id`),
+								object_type_id = VALUES(`object_type_id`);
+							";
 						
 						DB::executeOne($sql);
 						

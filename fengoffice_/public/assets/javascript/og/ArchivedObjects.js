@@ -291,6 +291,7 @@ og.ArchivedObjects = function() {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
+		loadMask: true,
 		id: 'archivedobjects-manager',
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
@@ -335,6 +336,7 @@ Ext.extend(og.ArchivedObjects, Ext.grid.GridPanel, {
 		} else {
 			var start = 0;
 		}
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

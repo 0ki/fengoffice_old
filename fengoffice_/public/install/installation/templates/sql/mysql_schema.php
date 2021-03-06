@@ -211,6 +211,24 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
+CREATE TABLE `<?php echo $table_prefix ?>max_system_permissions` (
+  `permission_group_id` int(10) unsigned NOT NULL,
+  `can_manage_security` tinyint(1) unsigned NOT NULL default '0',
+  `can_manage_configuration` tinyint(1) unsigned NOT NULL default '0',
+  `can_manage_templates` tinyint(1) unsigned NOT NULL default '0',
+  `can_manage_time` tinyint(1) unsigned NOT NULL default '0',
+  `can_add_mail_accounts` tinyint(1) unsigned NOT NULL default '0',
+  `can_manage_dimensions` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_manage_dimension_members` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_manage_tasks` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_task_assignee` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_manage_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_see_assigned_to_other_tasks` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `can_manage_contacts` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY  (`permission_group_id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
 CREATE TABLE `<?php echo $table_prefix ?>specific_permissions` (
   `permission_group_id` int(10) unsigned NOT NULL,
   `can_change_project_status` tinyint(1) unsigned NOT NULL default '0',
@@ -781,12 +799,10 @@ CREATE TABLE  `<?php echo $table_prefix ?>billings` (
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>sharing_table` (
-  `id` int(10) NOT NULL auto_increment,
   `group_id` INTEGER UNSIGNED NOT NULL,
   `object_id` INTEGER UNSIGNED NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `group_id` (`group_id`),
-  KEY `object_id` (`object_id`)  
+  PRIMARY KEY (`group_id`, `object_id`),
+  INDEX `object_id`(`object_id`)  
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>sharing_table_flags` (

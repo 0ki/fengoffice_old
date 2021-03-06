@@ -51,7 +51,7 @@
 /*		if ($user && $object && $act->getAction() != 'login' && $act->getAction() != 'logout' 
 			&& !can_access($user, $object, ACCESS_LEVEL_READ)) continue;
 */
-		$avatar_url = $user->getAvatarUrl();
+		$avatar_url = $user->getPictureUrl();
 		$date = $act->getCreatedOn() instanceof DateTimeValue ? friendly_date($act->getCreatedOn()) : lang('n/a');
 		
 		$dontshow = false;

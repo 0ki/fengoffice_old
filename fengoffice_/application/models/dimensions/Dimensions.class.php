@@ -51,6 +51,11 @@
 	 * @author Pepe
 	 */
 	static function getAllowedDimensions($content_object_type_id) {
+		$enabled_dimensions_sql = "AND false";
+		$enabled_dimensions_ids = implode(',', config_option('enabled_dimensions'));
+		if ($enabled_dimensions_ids != "") {
+			$enabled_dimensions_sql = "AND d.id IN ($enabled_dimensions_ids)";
+		}
 		$sql = "
 			SELECT
 				dotc.dimension_id AS dimension_id,
@@ -68,8 +73,9 @@
 			
 			WHERE 
 				content_object_type_id = $content_object_type_id
+				$enabled_dimensions_sql
 			GROUP BY dimension_id
-			ORDER BY is_required DESC, dimension_name ASC
+			ORDER BY is_required DESC, d.default_order ASC, dimension_name ASC
 		
 		";
 		$dimensions = array();

@@ -3,7 +3,7 @@
 <div class="widget-persons widget">
 
 	<div class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang("workspace description");?>
+		<div class="widget-title"><?php echo (isset($widget_title)) ? $widget_title : lang("workspace description");?></div>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	

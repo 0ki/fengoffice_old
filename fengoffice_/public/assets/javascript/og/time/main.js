@@ -192,6 +192,7 @@ ogTimeManager.SubmitNewTimeslot = function(genid,obj_type){
 				if (!data.errorMessage || data.errorMessage == '')
 					og.err(lang("error adding timeslot"));
 			}
+			og.eventManager.fireEvent('replace all empty breadcrumb', null);
 		},
 		scope: this
 	});

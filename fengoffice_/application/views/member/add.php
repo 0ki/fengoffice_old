@@ -34,8 +34,13 @@
 		}
 		add_page_action(lang('delete'), "javascript:if(confirm('".lang('confirm delete permanently', $ot_name)."')) og.openLink('".get_url('member', 'delete', array('id' => $member->getId(),'start' => true))."');", 'ico-delete');
 	}
-	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . " $object_type_name" : lang('new member');
+	$form_title = $object_type_name ? ($member->isNew() ? lang('new') : lang('edit')) . strtolower(" $object_type_name") : lang('new member');
+	$new_member_text = $object_type_name ? ($member->isNew() ? lang('add') : lang('edit')) . strtolower(" $object_type_name") : lang('new member');
 
+	$categories = array();
+	Hook::fire('object_edit_categories', $member, $categories);
+	
+	$has_custom_properties = count(MemberCustomProperties::getCustomPropertyIdsByObjectType($obj_type_sel)) > 0;
 ?>
 
 <form 
@@ -47,80 +52,75 @@
 	onsubmit="if (og.userPermissions) og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>', <?php echo $member->isNew() ? 'true' : 'false';?>); return true"
 <?php endif;?>
 >
+	<input type="hidden" name="member[dimension_id]" value="<?php echo $current_dimension->getId()?>"/>
 
 	<div class="coInputHeader">
-	<div class="coInputHeaderUpperRow">
-		<div class="coInputTitle">
-			<table style="width:535px"><tr><td>
-				<?php echo $form_title ?>
-			</td><td style="text-align:right">
-				<?php echo submit_button($member == null || $member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
-			</td></tr></table>
+	  <div class="coInputHeaderUpperRow">
+		<div class="coInputTitle"><?php echo $form_title ?></div>
+	  </div>
+	
+	  <div>
+		<div class="coInputName">
+			<?php echo text_field('member[name]', array_var($member_data, 'name'), array('id' => $genid . 'memberFormTitle', 'class' => 'title', 'placeholder' => lang('type name here'))) ?>
 		</div>
-		
+			
+		<div class="coInputButtons">
+			<?php echo submit_button($member == null || $member->isNew() ? $new_member_text : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
 		</div>
-		
-		<?php $categories = array(); Hook::fire('object_edit_categories', $member, $categories); ?>
-		
-		<div style="padding-top:10px">
-			<!--  <div><span class="bold"><?php echo lang('dimension')?>:&nbsp;</span><span class="desc"><?php echo $current_dimension->getName()?></span></div> -->
-			<input type="hidden" id="<?php echo $genid?>dimension_id" name="member[dimension_id]" value="<?php echo $current_dimension->getId();?>" />
-			<input type="hidden" id="<?php echo $genid?>member_id" name="member[member_id]" value="<?php echo ($member == null || $member->isNew() ? '0' : $member->getId());?>" />
-		</div>
+		<div class="clear"></div>
+	  </div>
 	</div>
-	<div class="coInputSeparator"></div>
+	
 	
 	<div class="coInputMainBlock">
 	
-		<div>
-			<?php echo label_tag(lang('name'), $genid . 'memberFormTitle', true) ?>
-			<?php echo text_field('member[name]', array_var($member_data, 'name'), array('id' => $genid . 'memberFormTitle', 'class' => 'title', 'tabindex' => '1')) ?>
-		</div>
+	  <div id="<?php echo $genid?>tabs" class="edit-form-tabs">
 	
-		<div <?php echo ($member == null || $member->isNew() ? "" : 'style="display:none;"')?>>
+		<ul id="<?php echo $genid?>tab_titles">
+		
+			<li><a href="#<?php echo $genid?>member_data"><?php echo lang('details') ?></a></li>
+			
+			<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())) {?>
+			<li><a href="#<?php echo $genid?>member_permissions_div" id="<?php echo $genid?>permissions_tab"><?php echo lang('permissions') ?></a></li>
+			<?php } ?>
+			
+			<?php if ($has_custom_properties) { ?>
+			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
+			<?php } ?>
+			
+		</ul>
+		
+		<div id="<?php echo $genid?>member_data" class="form-tab">
+	
+		<div <?php echo ($member == null || $member->isNew() ? "" : 'style="display:none;"')?> class="dataBlock" id="<?php echo $genid?>_member_type_container">
 			<?php echo label_tag(lang('type'), "", true) ?>
 			<input type="hidden" id="<?php echo $genid ?>memberObjectType" name="member[object_type_id]"></input>
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
+			<div class="clear"></div>
 		</div>
 		
-		<div style="min-width:1100px;">
-		<div id="<?php echo $genid?>memberParentContainer" style="margin-top: 5px; float:left;<?php echo ($parent_sel > 0 ? "" : 'display:none;')?>">
+		<div id="<?php echo $genid?>memberParentContainer" style="width:267px;">
 			<?php  
-				
 				$selected_members = array();
 				if ($parent_sel) {
-					$selected_members[] = $parent_sel ;
+					$selected_members[] = $parent_sel;
 				}
-				echo label_tag(lang('located under'), "", false);
-				render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
+				//echo label_tag(lang('located under'), "", false);
+				//render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
+				
+				render_single_member_selector($current_dimension, $genid, $selected_members, array('is_multiple' => false, 'label' => lang('located under'), 
+					'select_function' => 'og.onParentMemberSelect', 'listeners' => array('on_remove_relation' => "og.onParentMemberRemove('".$genid."');")), false);
+				
 				
 			?>
 				<input type="hidden" id="<?php echo $genid ?>memberParent" value="<?php echo $parent_sel; ?>" name="member[parent_member_id]"></input>
-		</div>
-		<div style="margin-top: 5px; float:left;">
-		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
-			<label><?php echo lang("permissions")?></label>			
-			<?php
-				tpl_assign('genid', $genid); 
-				$this->includeTemplate(get_template_path('member_permissions_control', 'member'));
-			?>
-		<?php endif ;?>
-		</div>
+				<div class="clear"></div>
 		</div>
 		
+		
+		<div id="<?php echo $genid?>member_color_input" class="dataBlock"></div>
 		<div class="x-clear"></div>
 		
-		<div id="<?php echo $genid?>member_color_input" style="margin:15px 0;"></div>
-		
-		<div class="x-clear"></div>
-		
-		<div id="<?php echo $genid ?>add_custom_properties_div"><?php 
-			if($member->getObjectTypeId() > 0){
-				echo render_member_custom_properties($member, false);
-			}			
-		?></div>
-		
-		<div class="x-clear"></div>
 		
 		<div id="<?php echo $genid?>dimension_object_fields" style="display:none;"></div>
 		
@@ -154,41 +154,66 @@
 	<?php if (isset($prop_genid)) { ?>
 		<input type="hidden" name="prop_genid" value="<?php echo $prop_genid?>" />
 	<?php } ?>
-	<div style="margin-top:10px;"></div>
-	<?php echo submit_button($member == null || $member->isNew() ? lang('add member') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+	
+		
+		</div>
+		
+		<div id="<?php echo $genid?>member_permissions_div" class="form-tab">
+		<?php if ($current_dimension->getDefinesPermissions() && can_manage_security(logged_user())):?>
+			<label><?php echo lang("users and groups with permissions here")?></label>
+			<div class="clear"></div>
+			<?php
+				tpl_assign('genid', $genid); 
+				$this->includeTemplate(get_template_path('member_permissions_control', 'member'));
+			?>
+		<?php endif ;?>
+		</div>
+		<div class="x-clear"></div>
+		
+		<?php if ($has_custom_properties) { ?>
+		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab"><?php 
+			if($member->getObjectTypeId() > 0){
+				echo render_member_custom_properties($member, false);
+			}			
+		?></div>
+		<div class="x-clear"></div>
+		<?php } ?>
+		
 	</div>
+	<?php echo submit_button($member == null || $member->isNew() ? $new_member_text : lang('save changes'),'s',array('style'=>'margin-top:0px;')) ?>
 </form>
 
 <script>
-	var genid = '<?php echo $genid?>';
-	Ext.get('<?php echo $genid ?>memberFormTitle').focus();
 
+
+
+	og.prev_parent = null;
+	var genid = '<?php echo $genid?>';
+	
 	og.dimRestrictions.ot_with_restrictions = Ext.util.JSON.decode('<?php echo json_encode($ot_with_restrictions)?>');
 	og.dimProperties.ot_with_properties = Ext.util.JSON.decode('<?php echo json_encode($ot_with_associations)?>');
 
-	App.modules.addMemberForm.drawObjectTypesSelectBox(genid, Ext.util.JSON.decode('<?php echo json_encode($dimension_obj_types)?>'), 'object_type_combo_container', 'memberObjectType', '<?php echo (isset($obj_type_sel) ? $obj_type_sel : 0) ?>', '<?php echo (isset($can_change_type) && $can_change_type ? '0' : '1')?>');
-	App.modules.addMemberForm.objectTypeChanged('<?php echo $obj_type_sel ?>', genid);
+	$(function() {
+		$("#<?php echo $genid?>tabs").tabs();
 
-
-	var trees = Ext.getCmp(genid + "-member-chooser-panel-<?php echo $current_dimension->getId()?>").items;
-	
-	trees.each(function(tree, index, length) {
-		tree.getSelectionModel().on("selectionchange",function(sm,node) {
-			if (node.id) {
-				document.getElementById(genid+"memberParent").value = node.id;
-			}
+		Ext.get('<?php echo $genid ?>memberFormTitle').focus();
+		
+		og.eventManager.fireEvent("after member add render",{
+			genid: genid,
+			dimensionCode: '<?php echo $current_dimension->getCode()?>'
 		});
-	});
 
-	<?php if (count($selected_members) > 0) { ?>
-	App.modules.addMemberForm.drawDimensionProperties('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);
-	<?php } ?>
-	
-	og.eventManager.fireEvent("after member add render",{
-		genid: genid,
-		dimensionCode: '<?php echo $current_dimension->getCode()?>'
-	});
+		App.modules.addMemberForm.drawObjectTypesSelectBox(genid, Ext.util.JSON.decode('<?php echo json_encode($dimension_obj_types)?>'), 'object_type_combo_container', 'memberObjectType', '<?php echo (isset($obj_type_sel) ? $obj_type_sel : 0) ?>', '<?php echo (isset($can_change_type) && $can_change_type ? '0' : '1')?>');
+		App.modules.addMemberForm.objectTypeChanged('<?php echo $obj_type_sel ?>', genid, true);
 
-	document.getElementById(genid + 'member_color_input').innerHTML = og.getColorInputHtml(genid, 'member', <?php echo "$member_color"?>, 'color', '<?php echo lang('color')?>');
-	
+		<?php if (count($selected_members) > 0) { ?>
+		App.modules.addMemberForm.drawDimensionProperties('<?php echo $genid;?>', <?php echo $current_dimension->getId();?>);
+		<?php } ?>
+		
+		document.getElementById(genid + 'member_color_input').innerHTML = og.getColorInputHtml(genid, 'member', <?php echo "$member_color"?>, 'color', '<?php echo lang('color')?>');
+		
+		<?php if (isset($obj_type_sel) && $obj_type_sel) {?>
+			$("#<?php echo $genid?>_member_type_container").hide();
+		<?php }	?>
+	});
 </script>

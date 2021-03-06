@@ -873,7 +873,7 @@ class ProjectFile extends BaseProjectFile {
 					$c = Contacts::findById($mac->getContactId());
 					if ($c instanceof Contact) {
 						$values = "(".$c->getPermissionGroupId().",".$this->getId().")";
-						DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (group_id, object_id) VALUES $values;");
+						DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (group_id, object_id) VALUES $values ON DUPLICATE KEY UPDATE group_id=group_id;");
 					}
 				}
 			}

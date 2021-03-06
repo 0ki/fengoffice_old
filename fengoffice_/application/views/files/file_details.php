@@ -120,12 +120,12 @@ if (isset($file) && $file instanceof ProjectFile) {
 		if ($file->isCheckedOut()){
 			if ($file->canCheckin(logged_user()) && $file->getType() == ProjectFiles::TYPE_DOCUMENT){
 				//add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin', null, null, true); 
-				add_page_action(lang('undo checkout'), $file->getUndoCheckoutUrl() . "&show=redirect", 'ico-undo', null, null, true); 
+				add_page_action(lang('undo checkout'), $file->getUndoCheckoutUrl() . "&show=redirect", 'ico-unlocked', null, null, true); 
 			}
 			
 		} else {
 			if ($file->canCheckout(logged_user()) && $file->getType() == ProjectFiles::TYPE_DOCUMENT) { 
-				add_page_action(lang('checkout file'), $file->getCheckoutUrl(). "&show=redirect", 'ico-checkout', null, null, true);
+				add_page_action(lang('checkout file'), $file->getCheckoutUrl(). "&show=redirect", 'ico-locked', null, null, true);
 			}
 		}
 		
@@ -137,7 +137,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 				// if file is checked out, only allow to upload to the user who has checked it out
 				add_page_action(lang('upload new revision'), "javascript:og.uploadNewRevision(".$file->getId().",'".gen_id()."')", 'ico-upload', null, null, true);
 			}
-			add_page_action(lang('edit file properties'), $file->getEditUrl(), 'ico-properties',null,null,true);
+			add_page_action(lang('edit file properties'), "javascript:og.render_modal_form('', {c:'files', a:'edit_file', params: {id:".$file->getId()."}});", 'ico-properties', null, null, true);
 		}
 	}
 		
@@ -194,11 +194,11 @@ if (isset($file) && $file instanceof ProjectFile) {
 	}
 	
 	tpl_assign('description', $description);
-	if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
+	/*if ($file->getType() == ProjectFiles::TYPE_WEBLINK){
 		tpl_assign('title', '<a class="link-ico ico-open-link" href="' . $file->getUrl() . '">' . clean($file->getFilename()) . '</a>');
 	} else {
 		tpl_assign('title', clean($file->getFilename()));
-	}
+	}*/
 	$file_details_content_template_info = array('file_details_content', 'files');
 	Hook::fire('override_file_details_content', null, $file_details_content_template_info);
 	tpl_assign("content_template", $file_details_content_template_info);

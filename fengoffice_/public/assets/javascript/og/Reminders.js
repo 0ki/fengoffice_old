@@ -35,10 +35,13 @@ og.addReminder = function(parent, context, type, duration, duration_type, for_su
 		html += '>' + lang(og.reminderDurationTypes[i]) + '</option>';
 	}
 	html += '</select>';
-	html += lang('before');
+	html += '&nbsp;' + lang('before');
+	html += '<span style="margin-left:30px;position:relative;"><input class="checkbox" type="checkbox" name="reminder_subscribers[' + context + '][' + count + ']" ' + (for_subscribers ? 'checked="checked"' : "") + ' id="' + id + '" />&nbsp;' + lang("apply to subscribers") + '</span>';
 	var id = Ext.id();
-	html += '<img title="' + lang("remove object reminder") + '" class="ico ico-delete" src="s.gif" style="vertical-align:middle;width:16px;height:16px;margin: 0 5px;position:relative;top:-2px;cursor:pointer" onclick="og.removeReminder(this.parentNode, \'' + context + '\');return false;" />';
-	html += '<span style="margin-left:2px;position:relative;top:2px"><input class="checkbox" type="checkbox" name="reminder_subscribers[' + context + '][' + count + ']" ' + (for_subscribers ? 'checked="checked"' : "") + ' id="' + id + '" /><label class="checkbox" for="' + id + '">' + lang("apply to subscribers") + '</label></span>';
+	html += '<a href="#" onclick="og.removeReminder(this.parentNode, \'' + context + '\');return false;" style="margin-left:30px;">';
+	html += '<img title="' + lang("remove object reminder") + '" class="ico ico-delete" src="s.gif" style="vertical-align:middle;width:16px;height:20px;margin: 0 5px;position:relative;top:-2px;cursor:pointer" />';
+	html += lang('remove');
+	html += '</a>';
 	div.innerHTML = html;
 	parent.insertBefore(div, button);
 };

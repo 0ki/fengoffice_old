@@ -4,14 +4,15 @@
 	$default_permission_group_id = 0;
 	foreach($groups as $group){
     	$permission_groups[] = array($group->getId(), lang($group->getName()));
-    	if ($group->getName() == 'Executive') $default_permission_group_id = $group->getId();
+    	if ($group->getName() == 'Executive') {
+    		$default_permission_group_id = $group->getId();
+    	}
     }
-    $genid = gen_id();
+    if (!isset($genid)) $genid = gen_id();
     $jqid = "#$genid";
 ?>
 <script>
 	$(function(){
-		
 		function passwordError(message) {
 			$("<?php echo $jqid ?> .password input,<?php echo $jqid ?> .repeat input").addClass("field-error").val("");
 			$("<?php echo $jqid ?> .password input").addClass("field-error").focus().val('');
@@ -94,13 +95,15 @@
 
 </script>
 
-<div id = "<?php echo $genid ?>" class="access-data"> 
-	<label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" <?php if(!$contact_mail){echo "checked";}?> id="create-user"></input>
-	<div class="clear"></div>
+<div id = "<?php echo $genid ?>" class="access-data">
+	<div style="<?php echo (array_var($_REQUEST, 'is_user') == 1 ? "display:none;" : "")?>">
+		<label class="checkbox" for="create-user"><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" <?php if(!$contact_mail){echo "checked";}?> id="create-user"></input>
+		<div class="clear"></div>
+	</div>
 		<div style="display:none;" class="user-data-title"><?php echo lang('user data')?></div>
 		<div class="user-data" <?php if($contact_mail){echo "style='display:none'";}?>>
 		
-			<label class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
+			<label class="checkbox"><?php echo lang('send email notification') ?></label>
 			<input class="checkbox" type="checkbox" name="notify-user" <?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "checked";}?> id="notify-user"></input>
 	
 		<div class="clear"></div>
@@ -115,11 +118,12 @@
 			</div>
 		</div>          
 		<div class="clear"></div>
-		<div class="field role">
-			<label><?php echo lang("user type")?>:</label><?php  echo simple_select_box('contact[user][type]', $permission_groups, isset($user_type) ? $user_type : $default_permission_group_id)?>
+		<div class="field role" style="<?php echo (array_var($_REQUEST, 'is_user') == 1 && isset($user_type) && $user_type > 0 ? "display:none;" : "")?>" id="user_role_div">
+			<?php echo label_tag(lang('user type'), '', true) ?>
+			<div id="<?php echo $genid ?>_user_type_container"></div>
 		</div>
 	<?php if(isset($new_contact) && $new_contact){?>
-		<div class="field role" style="margin-top:8px;">
+		<div class="field role">
 			<label class="checkbox"><?php echo lang("specify username?")?></label>
 			<input class="checkbox" type="checkbox" name="contact[specify_username]" id="<?php echo $genid ?>specify-username"/>
 			<input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" 

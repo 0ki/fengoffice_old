@@ -1,10 +1,13 @@
-<div style="width: 100%; display: table;">
-	<label style="font-size: 100%;"><b><?php echo $dimension_name?>:</b></label>
-	<div style="float: right; width: 267px;">
+<div class="dimension-selector-container">
+	<?php if (!isset($hide_label) || !$hide_label) : ?>
+	<label style="font-size: 100%;"><?php echo (isset($label) && $label != '' ? $label : $dimension_name) ?>:</label>
+	<?php endif; ?>
+	<div class="input-container">
 		<?php	
 		include get_template_path("search_selector_view", "search_selector");			
-		?>	
-		<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
+		?>		
+	</div>
+	<div id="<?php echo $genid; ?>selected-members-dim<?php echo $dimension_id?>" class="selected-members">
 			<?php
 			$dimension_has_selection = false; 
 			if (count($dimension_selected_members) > 0) : 
@@ -27,20 +30,26 @@
 				<div class="separator"></div>
 			
 			<?php endif;?>
-		</div>
-		
 	</div>	
 </div>
-<div style="height: 4px;"></div>		
 
 <script> 
 	<?php 
 		//add bredcrumb foreach selected member
 		if (count($dimension_selected_members) > 0){
 			foreach ($dimension_selected_members as $selected_member){
-				?> $("#<?php echo $genid?>selected-member<?php echo $selected_member->getId()?> .completePath").append(og.getCrumbHtmlWithoutLinks(<?php echo $selected_member->getId()?>, <?php echo $selected_member->getDimensionId()?>, <?php echo "'$genid'"?>));	
+				?> 
+				var member_id = <?php echo $selected_member->getId()?>;
+				var dimension_id = <?php echo $selected_member->getDimensionId()?>;
+				var tmp_member = {};
+				tmp_member[member_id] = member_id;
+				var tmp_dim = {};
+				tmp_dim[dimension_id] = tmp_member;
+				mem_path = og.getEmptyCrumbHtml(tmp_dim,".completePath",null,false);
+							
+				$("#<?php echo $genid?>selected-member<?php echo $selected_member->getId()?> .completePath").append(mem_path);	
     <?php 
-			}
+			}			
 		}
-    ?>
+    ?>    
 </script>

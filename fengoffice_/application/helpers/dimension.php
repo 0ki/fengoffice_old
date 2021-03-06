@@ -21,13 +21,6 @@ function render_member_selectors($content_object_type_id, $genid = null, $select
 			}
 		}
 		
-		//sort combos
-		function cmp($a, $b)
-		{
-			return ($a['dimension_id'] < $b['dimension_id']) ? -1 : 1;
-		}
-		usort($dimensions, "cmp");
-				
 		if ($dimensions != null && count($dimensions)) {
 			if (is_null($selected_member_ids) && array_var($options, 'select_current_context')) {
 				$context = active_context();
@@ -107,6 +100,10 @@ function render_single_member_selector(Dimension $dimension, $genid = null, $sel
 	
 	$listeners = array_var($options, 'listeners', array());
 	$allowed_member_type_ids = array_var($options, 'allowedMemberTypes', null);
+	
+	$hide_label = array_var($options, 'hide_label', false);
+	
+	if (isset($options['label'])) $label = $options['label'];
 	
 	// Render view
 	include get_template_path("components/multiple_dimension_selector", "dimension");

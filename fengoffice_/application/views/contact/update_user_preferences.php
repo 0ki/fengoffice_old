@@ -1,15 +1,19 @@
 <div class="adminConfiguration" style="height:100%;background-color:white">
 <form class="internalForm" action="<?php echo $category->getUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
-	<div class="adminHeader">
-		<div class="adminTitle">
-			<table style="width:535px"><tr><td>
-				<?php echo $category->getDisplayName() ?>
-			</td><td style="text-align:right">
-				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button class="submit" type="reset"><?php echo lang('reset') ?></button>
-			</td></tr></table>
+	<div class="coInputHeader">
+
+	  <div class="coInputHeaderUpperRow"></div>
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle"><?php echo $category->getDisplayName() ?></div>
 		</div>
+		<div class="coInputButtons">
+			<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button class="submit" type="reset"><?php echo lang('reset') ?></button>
+		</div>
+		<div class="clear"></div>
+	  </div>
 	</div>
-	<div class="adminSeparator"></div>
+
 	<div class="adminMainBlock">
 
 	<?php if(isset($options) && is_array($options) && count($options)) { ?>

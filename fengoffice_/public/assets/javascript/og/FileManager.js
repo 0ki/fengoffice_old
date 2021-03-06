@@ -61,10 +61,12 @@ og.FileManager = function() {
 						cmp.objectTypeId = d.objType;
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					
 					Ext.getCmp('file-manager').reloadGridPagingToolbar('files','list_files','file-manager');
 					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -86,11 +88,14 @@ og.FileManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
-		
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 		var name = String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
-			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
+			og.clean(og.removeFileExtension(value)), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes) + mem_path;
 		
 		return name;
 	}
@@ -160,11 +165,11 @@ og.FileManager = function() {
 	function renderCheckout(value, p, r) {
 		if(r.data.ftype == 0){
 			if (value =='') {
-				return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px">'
+				return String.format('<div class="ico-unlocked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px;padding-top:3px;">'
 				+ '<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('lock'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
 			} else if (r.data.checkedOutById == og.loggedUser.id || og.loggedUser.type == 1 || og.loggedUser.type == 2) {
 				//og.loggedUser.type 1 = Super Administrator, 2 = Administrator
-				var html = String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px"><a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
+				var html = String.format('<div class="ico-locked" style="display:block;height:16px;background-repeat:no-repeat;padding-left:18px;padding-top:3px;"><a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', 
 					lang('unlock'), og.getUrl('files', 'undo_checkout', {id: r.id}));
 				
 				if (r.data.checkedOutById == og.loggedUser.id) {
@@ -191,7 +196,7 @@ og.FileManager = function() {
 	
 	function renderActions(value, p, r) {
 		var actions = '';
-		var actionStyle= ' style="font-size:105%;padding-top:2px;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
+		var actionStyle= ' style="font-size:105%;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
 		
 		if(r.data.ftype == 0){
 			if(og.config['checkout_notification_dialog'] == 0){
@@ -321,7 +326,7 @@ og.FileManager = function() {
 
 	var cm_info = [
 		sm,{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -329,7 +334,7 @@ og.FileManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -392,7 +397,8 @@ og.FileManager = function() {
 		},{
 			id: 'actions',
 			header: lang("actions"),
-			width: 50,
+			width: 60,
+			fixed: true,
 			renderer: renderActions,
 			sortable: false
 		}
@@ -462,14 +468,13 @@ og.FileManager = function() {
 	
 	actions = {
 		newCO: new Ext.Action({
-			id: 'file-manager-new-action',
+			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create an object'),
             iconCls: 'ico-new',
 			menu: {items: [
 				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
-					var url = og.getUrl('files', 'add_file');
-					og.openLink(url);
+					og.render_modal_form('', {c:'files', a:'add_file'});
 				}},
 				'-',
 				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
@@ -503,8 +508,7 @@ og.FileManager = function() {
 					
 				}},
 				{text: lang('web document'), iconCls: 'ico-weblink', handler: function() {
-					var url = og.getUrl('files', 'add_weblink');
-					og.openLink(url);
+					og.render_modal_form('', {c:'files', a:'add_weblink'});
 				}},
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
@@ -548,8 +552,7 @@ og.FileManager = function() {
 			disabled: true,
 			handler: function(e) {
 				var o = sm.getSelected();
-				var url = og.getUrl('files', 'edit_file', {id: o.data.object_id, manager: o.data.manager});
-				og.openLink(url);
+				og.render_modal_form('', {c:'files', a:'edit_file', params: {id: o.data.object_id, manager: o.data.manager}});
 			}
 		}),
 		zip_add: new Ext.Action({
@@ -634,6 +637,13 @@ og.FileManager = function() {
 	}
 	tbar.push(actions.markAs);
 	
+	if (og.additional_list_actions && og.additional_list_actions.file) {
+		tbar.push('-');
+		for (var i=0; i<og.additional_list_actions.file.length; i++) {
+			tbar.push(og.additional_list_actions.file[i]);
+		}
+	}
+	
 	og.FileManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
@@ -644,6 +654,7 @@ og.FileManager = function() {
 		stripeRows: true,
 		closable: true,
 		id: 'file-manager',
+		loadMask: true,
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
 			store: this.store,
@@ -693,6 +704,7 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 		      context: og.contextManager.plainContext()
 
 		});
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

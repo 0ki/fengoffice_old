@@ -3,11 +3,17 @@
 ?>
 
 <div class="adminConfiguration" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('administration tools') ?></div>
-  </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+	<div class="coInputHeader">
+	
+		<div class="coInputHeaderUpperRow">
+			<div class="coInputTitle">
+				<?php echo lang('administration tools') ?>
+			</div>
+	 	</div>
+		
+	</div>
+	
+	<div class="coInputMainBlock adminMainBlock">
   
 <?php if(isset($tools) && is_array($tools) && count($tools)) { ?>
 <div id="administrationTools">

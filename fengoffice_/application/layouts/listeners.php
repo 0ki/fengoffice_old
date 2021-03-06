@@ -19,10 +19,27 @@ og.eventManager.addListener('reload member restrictions',
  	}
 );
 
+og.eventManager.addListener('current panel back',
+	function () {
+		var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+		if (currentPanel) {
+			currentPanel.back();
+		}
+	}
+);
+
+og.eventManager.addListener('reload current panel',
+	function () {
+		var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+		if (currentPanel) {
+			currentPanel.reload();
+		}
+	}
+);
 og.eventManager.addListener('reload tab panel', 
  	function (name){
  		if (name) {
-			Ext.getCmp(name).reload();
+			Ext.getCmp(name).reset();
   		}
  	}
 );
@@ -108,6 +125,13 @@ og.eventManager.addListener('reset dimension tree',
 	 		}
  		}
  	}
+);
+
+og.eventManager.addListener('external dimension member click', 
+		function (data){
+			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+			og.memberTreeExternalClick(tree.dimensionCode, data.member_id);
+		}
 );
 
 og.eventManager.addListener('select dimension member', 
@@ -218,7 +242,6 @@ og.eventManager.addListener('try to select member',
 			var treenode = tree ? tree.getNodeById(member.id) : null;
 			if (treenode) {
 				treenode.fireEvent('click', treenode);
-				og.Breadcrumbs.refresh(treenode);
 				clearInterval(interval);
 			}
 		}, 1000);
@@ -267,7 +290,6 @@ og.eventManager.addListener('ask to select member',
 							var treenode = tree.getNodeById(member.id);
 							if (treenode) {
 								treenode.fireEvent('click', treenode);
-								og.Breadcrumbs.refresh(treenode);
 							} else {
 								og.eventManager.fireEvent('try to select member', member);
 							}
@@ -303,7 +325,6 @@ og.eventManager.addListener('ask to select member',
 								var treenode = tree.getNodeById(member.id);
 								if (treenode) {
 									treenode.fireEvent('click', treenode);
-									og.Breadcrumbs.refresh(treenode);
 								} else {
 									og.eventManager.fireEvent('try to select member', member);
 								}
@@ -328,24 +349,54 @@ og.eventManager.addListener('ask to select member',
 	}
 );
 
-og.eventManager.addListener('new document add save as button',
-	function (data){
-		var button = Ext.getCmp(data.genid + 'save_new_name');
-		if (button) button.show();
-		var button2 = Ext.getCmp(data.genid + 'save_as_name');
-		if (button2) button2.setText(lang('save as', '<b>'+data.name+'</b>'));
+og.eventManager.addListener('member tree node click',
+	function (node) {
+		setTimeout( function() {og.Breadcrumbs.refresh(node);}, 700 );
 	}
 );
 
-og.eventManager.addListener('download_tmp_file',
-	function (data){
-		var $form = $("<form></form>");
-		$form.attr("action", og.getUrl('reporting', 'download_file'));
-		$form.attr("method", "post");
-		$form.append('<input type="text" name="file_name" value="'+data.file_name+'" />');
-		$form.append('<input type="text" name="file_type" value="'+data.file_type+'" />');
-		
-		$form.appendTo('body').submit().remove();
-	}
+
+og.eventManager.addListener('mark_error_field', 
+ 	function (data){
+ 		if (data.field) {
+ 	 		
+ 			var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
+ 			var inputs = $("#" + currentPanel.id + " input");
+ 			
+ 	 		if (inputs && inputs.length > 0) {
+ 	 	 		for (var i=0; i<inputs.length; i++) {
+ 	 	 			var inp = inputs[i];
+ 	 	 			var name = $(inp).attr('name');
+ 	 	 			
+ 	 	 	 		if (name && name.indexOf("["+data.field+"]") > 0) {
+ 	 	 	 	 		// add error class to error field
+ 	 	 	 			$(inp).addClass('field-with-error');
+ 	 	 	 			// remove error class when writing the input
+ 	 	 	 			$(inp).keydown(function(){
+ 	 	 	 	 			$(this).removeClass('field-with-error');
+ 	 	 	 	 		});
+
+ 	 	 	 			// set the input tab visible, if input belongs to a tab
+ 	 	 	 			var tab = $(inp).closest(".form-tab");
+ 	 	 	 	 		if ($(tab).length > 0) {
+ 	 	 	 	 			$(".edit-form-tabs a[href=#"+$(tab).attr('id')+"]").click();
+ 	 	 	 			}
+ 	 	 	 	 		
+ 	 	 	 			break;
+ 	 	 	 		}
+ 	 	 		}
+ 	 	 		
+ 	 		}
+  		}
+ 	}
+);
+
+
+og.eventManager.addListener('new user added', 
+ 	function (data){
+ 		if (data && data.id > 0) { 
+ 			og.allUsers[data.id] = data;
+ 		}
+ 	}
 );
 </script>

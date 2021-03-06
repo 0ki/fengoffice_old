@@ -25,7 +25,12 @@
   width: 300px;
 }
 
-
+.configOptionControl .color-picker-container .modcoder_excolor_clrbox {
+	height: 15px !important;
+}
+.configOptionControl .color-picker-container input {
+	max-width:70px;
+}
 
 
 
@@ -76,9 +81,6 @@
   font-weight: bolder;
 }
 
-#usersList div.userIsAdmin, #usersList div.userAutoAssign {
-  font-size: 90%;
-}
 
 #usersList div.userIsAdmin span, #usersList div.userAutoAssign span {
   font-weight: bolder;
@@ -86,7 +88,6 @@
 }
 
 #usersList div.userIsGuest span {
-  font-size: 90%;
   color: #555;
   font-weight: bolder;
   font-style: italic;

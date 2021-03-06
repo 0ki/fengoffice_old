@@ -287,6 +287,7 @@ class AccountController extends ApplicationController {
 			Hook::fire('add_user_permissions', $pg_id, $more_permissions);
 			tpl_assign('more_permissions', $more_permissions);
 			
+			tpl_assign('pg_id', $pg_id);
 			
 			// Permission Groups
 			$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('`parent_id`,`id` ASC');
@@ -309,7 +310,8 @@ class AccountController extends ApplicationController {
 				DB::beginWork();
 				$do_rollback = true;
 				$pg_id = $user->getPermissionGroupId();
-				$user->setUserType(array_var($user_data, 'type'));
+				$type = array_var(array_var(array_var($_POST, 'contact'), 'user'), 'type');
+				$user->setUserType($type);
 				$user->save();
 				
 				DB::commit();
@@ -332,7 +334,7 @@ class AccountController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function edit_avatar() {
+	function edit_picture() {
 		$user = Contacts::findById(get_id());
 		if (!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
@@ -348,7 +350,7 @@ class AccountController extends ApplicationController {
 
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
-			$redirect_to = $user->getUpdateAvatarUrl();
+			$redirect_to = $user->getUpdatePictureUrl();
 		} // if
 		tpl_assign('redirect_to', $redirect_to);
 
@@ -369,11 +371,11 @@ class AccountController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('invalid upload type', 'JPG, GIF, PNG'));
 				} // if
 
-				$old_file = $user->getAvatarPath();
+				$old_file = $user->getPicturePath();
 				DB::beginWork();
 
 				$user->setUpdatedOn(DateTimeValueLib::now());
-				if(!$user->setAvatar($avatar['tmp_name'], $avatar['type'], $max_width, $max_height)) {
+				if(!$user->setPicture($avatar['tmp_name'], $avatar['type'], $max_width, $max_height)) {
 					throw new InvalidUploadError($avatar, lang('error edit avatar'));
 				} // if
 
@@ -392,7 +394,7 @@ class AccountController extends ApplicationController {
 				ajx_current("empty");
 			} // try
 		} // if
-	} // edit_avatar
+	} // edit_picture
 
 	/**
 	 * Delete avatar
@@ -400,7 +402,7 @@ class AccountController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function delete_avatar() {
+	function delete_picture() {
 		$user = Contacts::findById(get_id());
 		if(!($user instanceof Contact && $user->isUser()) || $user->getDisabled()) {
 			flash_error(lang('user dnx'));
@@ -416,11 +418,11 @@ class AccountController extends ApplicationController {
 
 		$redirect_to = array_var($_GET, 'redirect_to');
 		if((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
-			$redirect_to = $user->getUpdateAvatarUrl();
+			$redirect_to = $user->getUpdatePictureUrl();
 		} // if
 		tpl_assign('redirect_to', $redirect_to);
 
-		if(!$user->hasAvatar()) {
+		if(!$user->hasPicture()) {
 			flash_error(lang('avatar dnx'));
 			ajx_current("empty");
 			return;
@@ -429,7 +431,7 @@ class AccountController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$user->setUpdatedOn(DateTimeValueLib::now());
-			$user->deleteAvatar();
+			$user->deletePicture();
 			$user->save();
 			
 
@@ -444,7 +446,7 @@ class AccountController extends ApplicationController {
 			ajx_current("empty");
 		} // try
 
-	} // delete_avatar
+	} // delete_picture
 	
 	function update_user_preference(){
 		ajx_current("empty");
@@ -530,6 +532,7 @@ class AccountController extends ApplicationController {
 			if(array_var($_GET,'current')=="administration") {
 				ajx_current("reload");
 			}else{
+				evt_add('current panel back');
 				ajx_current("empty");
 			}
 			

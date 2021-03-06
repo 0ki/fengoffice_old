@@ -1,17 +1,19 @@
 <?php $hidden_field_name = array_var($options, 'hidden_field_name', 'members');?>
-<div id='<?php echo $component_id ?>-container'>
+<div id='<?php echo $component_id ?>-container' style="float: left;">
 	<input id='<?php echo $genid . $hidden_field_name ?>' name='<?php echo $hidden_field_name ?>' type='hidden' value="<?php echo str_replace('"', "'", $selected_members_json); ?>"></input>
 
 <?php
 
 	$is_ie = isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false);
 
+	$enabled_dimensions = config_option("enabled_dimensions");
+	
 	$members_dimension = array();
 	$sel_mem_ids = array();
 	foreach ($dimensions as $dimension) :
 	
 		$dimension_id = $dimension['dimension_id'];
-		if (isset($skipped_dimensions) && is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
+		if (isset($skipped_dimensions) && is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions) || !in_array($dimension_id, $enabled_dimensions)) continue;
 		
 		if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
 			continue;	 
@@ -34,19 +36,20 @@
 		$expgenid = gen_id();
 
 		// Render view by obj type
-		
 		$container_id = $genid."member-seleector-dim".$dimension_id;
 		$search_placeholder = lang('add new relation ' . $dimension['dimension_code']);
 		$search_function = "ogSearchSelector.searchMember";
 		$result_limit = "5";
-		$select_function = "ogSearchSelector.onItemMemberSelect";
+		$select_function = array_var($options, 'select_function', "");
 		$search_minLength = 0;
-		$extra_param = "$dimension_id";		
-		if(!$default_view && file_exists(get_template_path("components/small_view", "dimension"))){
+		$search_delay = 500;
+		$horizontal = array_var($options, 'horizontal', false);
+		$extra_param = "$dimension_id";
+		/*if(!$default_view && file_exists(get_template_path("components/small_view", "dimension"))){
 			include get_template_path("components/small_view", "dimension");
-		}else{
-			include get_template_path("components/default_view", "dimension");
-		}		 
+		}else{*/
+		include get_template_path("components/default_view", "dimension");
+		//}		 
 		
 	?>
 	
@@ -73,6 +76,7 @@
 		required: <?php echo $is_required ? '1' : '0'?>,
 		reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReload($dimension_id) ); ?>,
 		isMultiple: <?php echo $dimension['is_multiple'] ? '1' : '0'?>,
+		allowedMemberTypes: <?php echo json_encode($allowed_member_type_ids)?>,
 		listeners: <?php echo $listeners_str ?>
 	};
 
@@ -88,9 +92,12 @@
 			echo '<script>'.escape_single_quotes($function).';</script>';
 		}
 	}
+	if ($default_view) {
+		?><div class="clear"></div><?php
+	}
 ?>
-	<div class="clear"></div>
 </div>
+<div class="clear"></div>
 <script>
 
 member_selector['<?php echo $genid; ?>'].members_dimension = Ext.util.JSON.decode('<?php echo json_encode($members_dimension)?>');

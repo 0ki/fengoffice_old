@@ -22,11 +22,9 @@
 	</div>
 	<div class="x-clear" ></div>
 </div>
+
 <script>
-$(function(){
-	var div = document.getElementById('breadcrumbs');
-	if (div && div.innerHTML == '') {
-		og.Breadcrumbs.init('<?php echo lang("viewing all information") ?>');
-	}
-})
+$(function() {
+	og.eventManager.fireEvent('replace all empty breadcrumb', null);
+});
 </script>

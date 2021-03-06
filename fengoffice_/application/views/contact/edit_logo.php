@@ -17,7 +17,7 @@
   } // if
 
 ?>
-<form target="_blank" style='height:100%;background-color:white' action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $company->getEditPictureUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
 
 <div class="avatar">
 <div class="coInputSeparator"></div>
@@ -27,9 +27,9 @@
   
   <fieldset>
     <legend><?php echo lang('current logo') ?></legend>
-<?php if($company->hasLogo()) { ?>
-    <img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?> logo" />
-    <p><a class="internalLink" href="<?php echo $company->getDeleteLogoUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete company logo')) ?>')"><?php echo lang('delete company logo') ?></a></p>
+<?php if($company->hasPicture()) { ?>
+    <img src="<?php echo $company->getPictureUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?> logo" />
+    <p><a class="internalLink" href="<?php echo $company->getDeletePictureUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete company logo')) ?>')"><?php echo lang('delete company logo') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current logo') ?>
 <?php } // if ?>
@@ -38,7 +38,7 @@
   <div>
     <?php echo label_tag(lang('new logo'), 'avatarFormAvatar', true) ?>
     <?php echo file_field('new_logo', null, array('id' => 'avatarFormAvatar')) ?>
-<?php if($company->hasLogo()) { ?>
+<?php if($company->hasPicture()) { ?>
     <p class="desc"><?php echo lang('new logo notice') ?></p>
 <?php } // if ?>
   </div>

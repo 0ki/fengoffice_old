@@ -21,10 +21,33 @@
   border-width: 1px 0px 0px 0px;
   padding: 0 10px;
 }
-
+.objectComments .commentBody .commentText {
+	float:left;
+	margin-top:10px;
+}
 .objectComments .commentUserAvatar {
   float: left;
   margin: 10px 10px 10px 0;
+}
+
+.postComment .commentUserAvatar {
+	float: left;
+	margin: 1px 10px 1px 7px;
+}
+.postComment .formAddCommentText {
+	float:left;
+}
+.postComment .formAddCommentText textarea {
+	height: 50px;
+	width: 100%;
+	overflow: hidden;
+}
+.postComment .button-container {
+	margin-left: 15px;
+	float:left;
+}
+.postComment .button-container button {
+	margin-top: 0;
 }
 
 .postComment {
@@ -118,7 +141,6 @@ div.listedFile div.fileDescription p, div.listedFile div.fileDescription ul, div
 }
 
 div.listedFile div.fileLastRevision, div.listedFile div.fileDetails, div.listedFile div.fileTags {
-  font-size: 90%;
   color: #666;
 }
 
@@ -201,7 +223,6 @@ a.downloadLink {
 
 a.downloadLink span {
   font-weight: normal;
-  font-size: 90%;
 }
 
 .save {
@@ -222,7 +243,8 @@ a.downloadLink span {
 /* -------------------------------- FILES -------------------------------*/
 
 .save {
-	background-image: url(../../images/16x16/save.png) !important;
+	/*background-image: url(../../images/16x16/save.png) !important;*/
+	background-image: url(../../images/icons-feng-3/16x16/save.png) !important;
 }
 
 .save_new_revision {
@@ -230,7 +252,8 @@ a.downloadLink span {
 }
 
 .save_as {
-	background-image: url(../../images/16x16/save_as.png) !important;
+	/*background-image: url(../../images/16x16/save_as.png) !important;*/
+	background-image: url(../../images/icons-feng-3/16x16/save_as.png) !important;
 }
 
 div.filesOrderAndPagination {
@@ -281,7 +304,6 @@ div.listedFile div.fileDescription p, div.listedFile div.fileDescription ul, div
 }
 
 div.listedFile div.fileLastRevision, div.listedFile div.fileDetails, div.listedFile div.fileTags {
-  font-size: 90%;
   color: #666;
 }
 
@@ -364,7 +386,6 @@ a.downloadLink {
 
 a.downloadLink span {
   font-weight: normal;
-  font-size: 90%;
 }
 
 table.revisions {
@@ -438,7 +459,6 @@ table tr td.line_comments_icons{
 /** Linked Objects **/
 
 div.objectFiles {
-  font-size: 10px;
 }
 
 div.objectFiles ul li a span {
@@ -508,7 +528,6 @@ div.objectFiles div.objectFilesTitle span {
 
 .message .messageCommentHead {
   font-weight: bolder;
-  font-size: 90%;
 }
 
 .message .messageCommentBody {
@@ -622,7 +641,6 @@ div.objectFiles div.objectFilesTitle span {
 #people div.projectCompanyAddress, #people div.projectUserTitle, #people div.projectUserEmail {
   margin-top: 5px;
   padding-left: 5px;
-  font-size: 90%;
   color: #666;
   line-height: 120%;
 }
@@ -630,7 +648,6 @@ div.objectFiles div.objectFilesTitle span {
 #people div.projectCompanyHomepage {
   margin-top: 5px;
   padding-left: 5px;
-  font-size: 90%;
   line-height: 100%;
 }
 
@@ -755,7 +772,6 @@ div.taskList .options {
 
 div.taskList .completedTasks {
   color: #666;
-  font-size: 90%;
 }
 
 div.taskList .completedTasks td {
@@ -770,7 +786,6 @@ div.taskList span.taskCompletedOnBy {
 
 div.taskList .taskListTags {
   margin: 10px;
-  font-size: 90%;
 }
 
 div.taskList .taskListTags span {
@@ -779,6 +794,10 @@ div.taskList .taskListTags span {
 
 .mail-account-item {
 	padding: 5px 0;
+}
+
+.mail-account-item input.medium {
+	width: 300px;
 }
 
 .account_permissions_user .user_picture {

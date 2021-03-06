@@ -1,7 +1,9 @@
 locale = 'es_la';
 addLangs({
 	'check in': '<b>Devolver</b>',
+	'total': 'Total',
 	'cannot check in': 'No es posible devolver',
+	'work in progress' : 'Trabajo en progreso',
 	'to date' : 'Hasta',
 	'from date' : 'Desde',
 	'add as new revision to': 'Agregar como nueva revisión a',
@@ -28,6 +30,7 @@ addLangs({
 	'close this tag': 'Cerrar etiqueta',
 	'confirm inherit permissions': '¿Desea que el nuevo espacio herede los permisos de su espacio padre?',
 	'by': 'Por',
+	'by uppercase': 'Por',
 	'name': 'Nombre',
 	'user': 'Usuario',
 	'tag': 'Etiqueta',
@@ -140,6 +143,7 @@ addLangs({
 	'persons': 'Personas',
 	'calendar': 'Calendario',
 	'tasks': 'Tareas',
+	'add work' : 'Añadir horas trabajadas',
 	'web pages': 'Enlaces web',
 	'documents': 'Documentos',
 	'account': 'Cuenta',
@@ -391,6 +395,10 @@ addLangs({
 	'time': 'Horas',
 	'estimated times': 'Tiempos estimados',
 	'estimated time': 'Tiempo estimado',
+	'pending time': 'Tiempo pendiente',
+    'worked time': 'Tiempo trabajado',
+    'pending': 'Pendiente',
+    'worked': 'Trabajado',
 	'dates': 'Fechas',
 	'empty milestones': 'Hitos vacíos',
 	'select user or group': 'Seleccionar usuario o organización',
@@ -429,6 +437,8 @@ addLangs({
 	'after this year' : 'Posterior a este año',		
 	'start': 'inicio',
 	'due': 'fin',
+	'start m': 'Inicio',
+	'due m': 'Fin',
 	'add subtask': 'Agregar una nueva subtarea',
 	'completed by name on': 'Completado por {0} el {1}',
 	'show more tasks number': 'Ver mas ({0})...',
@@ -811,12 +821,20 @@ addLangs({
 	'general view': 'Vista general',
 	'save as' : 'Guardar como {0}',
 	
+	'quick edit': 'Acceso rápido a edición',
+	'quick complete': 'Acceso rápido a completar',
+	'quick add sub tasks': 'Acceso rápido a agregar subtarea',
+	
 	'viewing all information' : 'Viendo toda la Infomación',
 	'add a variable to this task': 'Agregar una variable a esta tarea',
 	
 	'phone number': 'Teléfono',
 	'edit_picture':'Editar foto',
 	
+	'view classification' : 'Ver clasificación',
+	'classified under' : 'Clasificado en',	
+	
 	'birthdays': 'Cumpleaños',
-	'email address': 'Correo'
+	'email address': 'Correo',
+	'home': 'Inicio'
 });

@@ -98,6 +98,13 @@
   	 */
   	protected $use_on_duplicate_key_when_insert = false;
   	
+  	/**
+  	 * Array of fields with errors after validation
+  	 * 
+  	 * @var array
+  	 */
+  	protected $fields_with_errors_after_validation = null;
+  	
   	function setUseOnDuplicateKeyWhenInsert($value) {
   		$this->use_on_duplicate_key_when_insert = $value;
   	}
@@ -413,6 +420,10 @@
   		
   	} // setColumnValue
   	
+  	
+  	function getFieldsWithErrorsAfterValidation() {
+  		return $this->fields_with_errors_after_validation;
+  	}
   	// -------------------------------------------------------------
   	//  Top level manipulation methods
   	// -------------------------------------------------------------
@@ -541,7 +552,9 @@
   	  
   	  // Prepare errors array and call validate() method
   	  $errors = array();
-  	  $this->validate($errors);
+  	  $fields = $this->validate($errors);
+  	  $this->fields_with_errors_after_validation = $fields;
+  	  
   	  Hook::fire('object_validate', $this, $errors);
   	  
   	  // If we have errors return them as array, else return NULL

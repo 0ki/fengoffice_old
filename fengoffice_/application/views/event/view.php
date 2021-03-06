@@ -21,7 +21,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	
 	if (!$event->isTrashed()){
 		if ($event->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'event', a:'edit', params: {id:".$event->getId().", view:'$view', user_id:'$user_id'}});", 'ico-edit', null, null, true);
 			
 			if (!$event->isArchived())
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $event->getArchiveUrl() ."');", 'ico-archive-obj');
@@ -96,7 +96,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 
 <?php
 	
-	$title = format_descriptive_date($event->getStart()) . ' - ' . clean($event->getObjectName());
+	$title = lang($event->getObjectTypeName()) . ": " . format_descriptive_date($event->getStart()) . ' - ' . clean($event->getObjectName());
 	$description = $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : lang('CAL_TIME').": $time" ;
   	tpl_assign('description', $description);
 

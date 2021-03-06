@@ -137,7 +137,7 @@ function check_sharing_table_flags() {
 	_log("Checking for sharing table pending updates...");
 	
 	$date = DateTimeValueLib::now();
-	$date->add('m', -30);
+	$date->add('m', -10);
 	$flags = SharingTableFlags::instance()->getFlags($date);
 	
 	if (is_array($flags) && count($flags) > 0) {

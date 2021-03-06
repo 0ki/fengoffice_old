@@ -8,8 +8,7 @@ og.TasksBottomToolbar = function(config) {
 		{
 			id:"tasksPanelBottomToolbarObject",
 			renderTo: "tasksPanelBottomToolbar",
-			height: 28,
-			style:"border:0px none"
+			style:"border:0px none; padding-left:12px; padding-top:0;"
 		});
 		
 	og.TasksBottomToolbar.superclass.constructor.call(this, config);
@@ -268,11 +267,12 @@ og.TasksBottomToolbar = function(config) {
         	},
         	'select' : function(combo, record) {
 				var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
-        		if (toolbar.filterNamesCompaniesCombo == this)
+        		if (toolbar.filterNamesCompaniesCombo == this) {
         			toolbar.load();
-        		else{
-        			if (this.initialConfig.isInternalSelector)
+        		}else{
+        			if (this.initialConfig.isInternalSelector) {
         				ogTasks.UserCompanySelected(this.initialConfig.controlName, record.data.value, this.initialConfig.taskId);
+        			}
         		}
         	}
         }

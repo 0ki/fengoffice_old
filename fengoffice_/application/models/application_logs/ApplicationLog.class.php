@@ -316,7 +316,7 @@ class ApplicationLog extends BaseApplicationLog {
 				$type = $object->getObjectTypeName() ;
 			}
 			if (($type != 'Time') || ($type == 'Time' && $object->getRelObjectId() != 0)){
-				$object_link = '<a style="font-weight:bold" href="' . $object->getObjectUrl() . '">&nbsp;'.
+				$object_link = '<br /><a style="font-weight:bold" href="' . $object->getObjectUrl() . '">'.
 				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($object->getObjectName()).'</a>';
 			} else {
 				//if it is a general timeslot
@@ -346,12 +346,12 @@ class ApplicationLog extends BaseApplicationLog {
 					$onclick = "";
 			}
 			
-			$object_link =  '<a class="internalLink" href="javascript:void(0);" onclick="'.$onclick.'">&nbsp;'.
+			$object_link =  '<br /><a class="internalLink" href="javascript:void(0);" onclick="'.$onclick.'">'.
 					'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-' . $type . $icon_class . '"/>'.clean($this->getObjectName()).'</a>';
 			
 			return lang('activity ' . $this->getAction(), lang('the '.$type," "), $userName , $object_link);
 		} else {
-			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
+			$object_link = '<br />'. clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
 			return lang('activity ' . $this->getAction(), "", $userName , $object_link);
 		}
 		if($made_several_changes){
@@ -359,9 +359,9 @@ class ApplicationLog extends BaseApplicationLog {
 		}
 		switch ($this->getAction()) {
             case ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES :
-            	$object_history = '<a style="font-weight:bold" href="' . $object->getViewHistoryUrl() . '">&nbsp;'.
-				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';
-            	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $userName," -" .$object_history);
+            	/*$object_history = '<a style="font-weight:bold" href="' . $object->getViewHistoryUrl() . '">&nbsp;'.
+				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';*/
+            	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $userName,"");
 			case ApplicationLogs::ACTION_EDIT :
 			case ApplicationLogs::ACTION_ADD :
 			case ApplicationLogs::ACTION_DELETE :
@@ -373,6 +373,7 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_UNARCHIVE :
 			case ApplicationLogs::ACTION_READ :
 			case ApplicationLogs::ACTION_DOWNLOAD :
+			case ApplicationLogs::ACTION_UPLOAD :
 			case ApplicationLogs::ACTION_CHECKIN :
 			case ApplicationLogs::ACTION_CHECKOUT :
 				if ($object instanceof ContentDataObject) {
@@ -521,9 +522,9 @@ class ApplicationLog extends BaseApplicationLog {
 						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $userName, $object_link, $to_str);
 					}
 				}
-			default: return false;
+			default: return $this->getAction();false;
 		}
-		return false;
+		return $this->getAction();false;
 	}
 	
 } // ApplicationLog

@@ -196,40 +196,49 @@ og.contextManager  = new function() {
     	}
     }
     
-    this.getMemberPath = function (dimId, memberId, separator, direction) {
+    this.getMemberPath = function (dimId, memberId, return_array, separator, direction) {
     	separator = separator || "/";
     	direction = direction || "ltr";
-    	var path = "" ;
-    	var node = this.getTreeNode(dimId, memberId) ;
+    	
+    	var path = return_array ? [] : "";
+    	var node = this.getTreeNode(dimId, memberId);
     	if (node) {
 	    	var depth = node.getDepth();
 	    	if (depth >= 2 ) {
 	    		
 	    		while ( depth > 1 ){
-	    			node  = node.parentNode ;
+	    			node  = node.parentNode;
 	    			if (node) {
-	    				if (!path) {
-	    					path = node.text  ;
-	    				}else{
-	    					if (direction == "ltr") {
-	    						path = node.text + separator + path;
-	    					}else{
-	    						path =  path + separator + node.text  ;
-	    					}
+	    				if (!return_array) {
+		    				if (!path) {
+		    					path = node.text;
+		    				}else{
+		    					if (direction == "ltr") {
+		    						path = node.text + separator + path;
+		    					}else{
+		    						path =  path + separator + node.text;
+		    					}
+		    				}
+	    				} else {
+	    					path.push(node);
 	    				}
-		    			depth-- ;
+		    			depth--;
 	    			}
 	    		}
 	    	}
-	    	if (path) {
+	    	if (!return_array && path) {
 	    		if (direction == "ltr") {
-	    			path = path + separator  ;
+	    			path = path + separator;
 	    		}else {
-	    			path = separator + path ;
+	    			path = separator + path;
 	    		}
 	    	}
     	}
-    	return path ;
+    	
+    	if (return_array && direction == "ltr") {
+    		path = path.reverse();
+    	}
+    	return path;
     	
     }
     

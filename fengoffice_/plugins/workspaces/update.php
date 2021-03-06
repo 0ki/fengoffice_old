@@ -104,3 +104,8 @@
 					WHERE name='add_timeslot_view_dimensions_combos';
 				");
 	}
+	
+	function workspaces_update_10_11() {
+		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET default_value='1' WHERE name='lp_dim_workspaces_show_as_column';");
+		DB::execute("UPDATE ".TABLE_PREFIX."contact_config_options SET default_value='1' WHERE name='lp_dim_tags_show_as_column';");
+	}

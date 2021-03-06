@@ -1,10 +1,17 @@
 <?php $genid = gen_id();?>
-<div id="<?php echo $genid ?>adminContainer" class="adminGroups" style="height:100%;background-color:white">
-<div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('tabs') ?></div>
+<div id="<?php echo $genid ?>adminContainer" class="adminGroups">
+
+<div class="coInputHeader">
+
+<div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('tabs') ?>
+	</div>
+  </div>
+  <div class="clear"></div>
 </div>
-<div class="adminSeparator"></div>
-<div class="page tab-manager adminMainBlock">
+	
+<div class="page tab-manager adminMainBlock coInputMainBlock">
 	<form method = "POST" action="<?php echo get_url("administration" , "tabs_submit" )?>" >
 		<table style="border: 1px solid #D7E5F5;">
 			<tr>

@@ -1,6 +1,5 @@
 label {
   margin: 3px 0;
-  font-size: 90%;
   font-weight: bolder;
   display: block;
 }
@@ -29,14 +28,15 @@ span.label_required {
 
 input, textarea, select {
   border: 1px solid #ccc;
+  border-radius: 2px;
   padding: 3px;
-  font-family: verdana, arial, helvetica, sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   background: white;
+  margin: 0;
 }
 
 select {
-  padding: 1px;
+  padding: 2px;
 }
 
 input:hover, textarea:hover, select:hover {
@@ -68,6 +68,15 @@ input.short { width: 50px; }
 input.medium { width: 150px; }
 input.long { width: 97%; /*99%;*/ }
 input.title { width: 530px; }
+
+.coInputName input.title {
+	width: 530px;
+	height: 28px;
+	font-size: 130%;
+}
+.coInputName input.title.short, .simplemodal-data .coInputHeader .coInputName input.title.short {
+	width: 200px;
+}
 
 textarea.textfield {
 	height: 15px !important;
@@ -114,13 +123,29 @@ textarea.editor {
   height: 300px;
 }
 
-button.submit {
+button.submit, button[reset].submit {
   margin-top: 10px;
+  padding: 5px 10px;
+  font-size: 18px;
+  height: 36px;
+  cursor: pointer;
+  background: none repeat scroll 0 0 #f8f8f8;
+  border-color: #c4c4c4;
+  border-radius: 2px;
+  border-style: solid; 
+  border-width: 1px;
+  color: #333;
+  box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, 0.22);
+  -webkit-box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.22);
+  -moz-box-shadow:    1px 1px 2px 0px rgba(0, 0, 0, 0.22);
+}
+
+button.submit:HOVER, button[reset].submit:HOVER {
+  background: none repeat scroll 0 0 #f0f0f0; 
 }
 
 span.required {
   color: red;
-  font-size: 90%;
 }
 
 form div.formBlock {
@@ -140,7 +165,6 @@ form div.formBlock label {
 }
 
 #formErrors ul li {
-  font-size: 90%;
 }
 
 /** Options block, best to put it into fieldset **/
@@ -224,7 +248,6 @@ form div.formBlock label {
 a.button {
 	padding: 3px ;
 	border: 1px solid #CCC;
-    font-family: verdana,arial,helvetica,sans-serif;
     font-size: 11px;
 	color: #000 ;
 	font-weight: normal ;
@@ -245,6 +268,32 @@ a.button {
 	z-index: 99999;
 	
 }
+
+#quick-form.menu {
+	padding: 0;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 0 0 #CCC;
+	display:none;
+	position:absolute;
+	min-height: 15px;
+	min-width: 50px;
+	color: #666;
+	z-index: 99999;
+}
+#quick-form.menu #close_ico, #quick-form.menu #close_text {
+	display: none;
+}
+#quick-form.menu ul.quick-menu-list {
+	background: #EEE;
+}
+#quick-form.menu ul.quick-menu-list li.quick-menu-item {
+	padding: 5px 10px;
+}
+#quick-form.menu ul.quick-menu-list li.quick-menu-item:hover {
+	background-color: #d9d9d9;
+	cursor: pointer;
+}
+
 
 #quick-form .close {
     background: url("../../images/12x12/close-icon-1.png") 0 0 ;
@@ -291,7 +340,21 @@ a.button {
 
 #quick-form .access-data {	
 	padding: 0 ;
-}	
+}
+
+#quick-form a.more.coViewAction.ico-edit {
+	padding-top: 0px;
+}
+
+#menu-panel .x-tool.x-tool-options.x-tool-options-over {
+	border: 1px solid #999;
+	margin-top: -1px;
+}
+#menu-panel .x-tool.x-tool-options {
+	border: 1px solid #e7e7e7;
+	margin-top: -1px;
+	border-radius: 15px;
+}
 
 /** QUICK FORMS CONFIG**/
 #quick-form-config {
@@ -376,7 +439,8 @@ div.field {
 
 div.field-error-msg {
 	color: red; 
-	font-size: 10px ;
+	font-size: 10px;
+	margin: 5px 10px;
 }
 
 div.add-person-form div.field label {
@@ -401,4 +465,138 @@ div.non-registered-person-form div.field input {
 
 div.add-person-form div.field label.checkbox {
 	width: auto;
+}
+
+.edit-form-tabs {
+	margin: 15px 0;
+}
+.edit-form-tabs.ui-tabs {
+	padding: 0px;
+}
+
+.edit-form-tabs .ui-tabs-panel.ui-widget-content a {
+	color: #003562;
+}
+
+.edit-form-tabs .editor-container {
+	
+}
+
+.edit-form-tabs .form-tab.ui-tabs-panel {
+	border: 1px solid #bbb;
+	border-top: 0px none;
+	padding: 15px;
+	min-height: 250px;
+}
+
+.edit-form-tabs.ui-tabs.ui-widget.ui-widget-content {
+	border: 0px none;
+}
+.edit-form-tabs.ui-tabs.ui-widget.ui-widget-content ul.ui-tabs-nav {
+	background: none;
+	border: 0px none;
+	border-bottom: 1px solid #bbb;
+	padding-left: 0px;
+}
+.edit-form-tabs.ui-tabs .ui-tabs-nav li.ui-tabs-active .ui-tabs-anchor,
+.edit-form-tabs.ui-tabs .ui-tabs-nav li.ui-state-disabled .ui-tabs-anchor,
+.edit-form-tabs.ui-tabs .ui-tabs-nav li.ui-tabs-loading .ui-tabs-anchor {
+	outline: none;
+}
+
+.edit-form-tabs.ui-tabs .ui-corner-all, .edit-form-tabs.ui-tabs .ui-corner-top, .edit-form-tabs.ui-tabs .ui-corner-right, .edit-form-tabs.ui-tabs .ui-corner-tr,
+.edit-form-tabs.ui-tabs .ui-corner-all, .edit-form-tabs.ui-tabs .ui-corner-top, .edit-form-tabs.ui-tabs .ui-corner-left, .edit-form-tabs.ui-tabs .ui-corner-tl,
+.edit-form-tabs.ui-tabs .ui-corner-all, .edit-form-tabs.ui-tabs .ui-corner-bottom, .edit-form-tabs.ui-tabs .ui-corner-right, .edit-form-tabs.ui-tabs .ui-corner-br,
+.edit-form-tabs.ui-tabs .ui-corner-all, .edit-form-tabs.ui-tabs .ui-corner-bottom, .edit-form-tabs.ui-tabs .ui-corner-left, .edit-form-tabs.ui-tabs .ui-corner-bl {
+	border-radius: 0px;
+}
+
+.edit-form-tabs.ui-tabs ul.ui-tabs-nav li.ui-state-default {
+	background: #e6e6e6;
+}
+.edit-form-tabs.ui-tabs ul.ui-tabs-nav li.ui-tabs-active {
+	background: #fff;
+}
+
+.edit-form-tabs .permissions-container.form-tab fieldset {
+	border: 0px none;
+    padding: 5px 10px 10px 0;
+}
+.edit-form-tabs .permissions-container.form-tab fieldset legend {
+	border-bottom: 1px solid #ccc;
+	width: 100%;
+}
+.edit-form-tabs .permissions-container.form-tab fieldset .user-system-permissions, .edit-form-tabs .permissions-container.form-tab fieldset .user-module-permissions {
+	padding-left: 20px;
+}
+.edit-form-tabs .permissions-container .user-system-permissions label, .edit-form-tabs .permissions-container .user-module-permissions label {
+	font-weight: normal;
+}
+.edit-form-tabs .permissions-container.form-tab {
+	overflow-x: hidden !important;
+}
+
+
+.simplemodal-data form {
+	min-width: 800px;
+	border-radius: 5px;
+}
+.simplemodal-data .coInputHeader {
+	padding-top: 15px;
+	border-radius: 5px 5px 0 0;
+}
+.simplemodal-data .coInputMainBlock {
+	padding-bottom: 10px;
+	border-radius: 0 0 5px 5px;
+}
+.simplemodal-data .coInputMainBlock .edit-form-tabs {
+	margin: 0px;
+}
+.simplemodal-data .coInputHeader .coInputHeaderUpperRow {
+	margin: 7px 10px 10px 0;
+	float: left;
+}
+.simplemodal-data .coInputHeader .coInputHeaderUpperRow .coInputTitle {
+	min-width: 100px;
+}
+.simplemodal-data .coInputHeader .coInputName input.title {
+	width: 450px;
+}
+.simplemodal-data .edit-form-tabs.ui-tabs .og-add-subscribers {
+	max-height: 450px;
+	overflow-y: auto;
+}
+
+.webpage .coInputMainBlock input.title {
+	width:490px;
+}
+
+
+.field-with-error {
+	border: 1px solid #cc4444;
+	box-shadow: 0 0 5px 0 #aa4444;
+}
+
+.user-typegroup-selector {
+	margin-right: 5px;
+}
+
+.coInputMainBlock .user-groups-container .user-group {
+	border: 1px dotted #ccc;
+	border-radius: 4px;
+	background-color: #f9f9f9;
+	min-width: 200px;
+	padding: 5px;
+	margin: 5px;
+	float:left;
+}
+.coInputMainBlock .user-groups-container .user-group .remove-link {
+	float: right;
+}
+.coInputMainBlock .user-groups-container .user-groups-selector {
+	padding: 5px;
+	margin-top: 20px;
+}
+.coInputMainBlock .user-groups-container .user-groups-selector-container {
+	margin-top: 5px;
 }

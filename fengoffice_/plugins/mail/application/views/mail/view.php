@@ -30,7 +30,7 @@ if (isset($email)){
 		}
 		
 		if ($email->getState() == 0 || $email->getState() == 5) {
-			add_page_action(lang('report as spam'), get_url('mail', 'change_email_folder', array("id" => $email->getId(), "newf" => 4)), 'ico-delete');
+			add_page_action(lang('report as spam'), get_url('mail', 'change_email_folder', array("id" => $email->getId(), "newf" => 4)), 'ico-spam');
 		} else if ($email->getState() == 4) {
 			add_page_action(lang('not spam'), get_url('mail', 'change_email_folder', array("id" => $email->getId(), "newf" => 0)), 'ico-unclassify');
 		}

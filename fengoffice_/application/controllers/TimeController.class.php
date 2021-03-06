@@ -135,13 +135,28 @@ class TimeController extends ApplicationController {
 	}
 	
 	function add_timeslot(){
-		if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
+		$object_id = array_var($_REQUEST, "object_id",false);
+		
 		ajx_current("empty");
 		$timeslot_data = array_var($_POST, 'timeslot');
+		
+		if($object_id){
+			$object = Objects::findObject($object_id);
+			Logger::log(print_r($object_id,true));//$hola
+			if(!($object instanceof ContentDataObject) || !($object->canAddTimeslot(logged_user()))) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			}
+		}else{
+			if (!can_add(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			}
+			
+			$object_id = 0;
+		}		
 		
 		try {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
@@ -178,7 +193,7 @@ class TimeController extends ApplicationController {
 			$timeslot_data['end_time'] = $endTime;
 			$timeslot_data['description'] = html_to_text($timeslot_data['description']);
 			$timeslot_data['name'] = $timeslot_data['description'];
-			$timeslot_data['object_id'] = 0;//array_var($timeslot_data,'project_id');
+			$timeslot_data['rel_object_id'] = $object_id;//array_var($timeslot_data,'project_id');
 			$timeslot = new Timeslot();
 		
 			

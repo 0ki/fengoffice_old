@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Provolone upgrade script will upgrade FengOffice 2.6.4-beta to FengOffice 2.7.1.6
+ * Provolone upgrade script will upgrade FengOffice 2.6.4-beta to FengOffice 2.7.1.9
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ProvoloneUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.6.4-beta');
-		$this->setVersionTo('2.7.1.6');
+		$this->setVersionTo('2.7.1.9');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -145,14 +145,32 @@ class ProvoloneUpgradeScript extends ScriptUpgraderScript {
 					KEY `by_contact` USING HASH (`contact_id`),
 					KEY `by_parent` USING HASH (`parent_member_id`),
 					KEY `last_activity` (`last_activity`)
-					) 
-					ENGINE=InnoDB ".$default_charset.";				
+					)
+					ENGINE=InnoDB ".$default_charset.";
 					";
 				}
 				
 							
 				
 				
+			}
+			
+			if (version_compare($installed_version, '2.7.1.8') < 0) {
+				$upgrade_script .= "
+					DELETE FROM ".$t_prefix."widgets WHERE name IN ('ws_description', 'summary');
+					DELETE FROM ".$t_prefix."contact_widgets WHERE widget_name IN ('ws_description', 'summary');
+					INSERT INTO `".$t_prefix."widgets` (`name`,`title`,`plugin_id`,`path`,`default_options`,`default_section`,`default_order`,`icon_cls`) VALUES
+					('active_context_info','active_context_info',0,'','','left',1,'ico-summary')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+			}
+			
+			if (version_compare($installed_version, '2.7.1.9') < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('general', 'inherit_permissions_from_parent_member', 1, 'BoolConfigHandler', '0', '0', NULL)
+					ON DUPLICATE KEY UPDATE name=name;
+				";
 			}
 			
 			if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

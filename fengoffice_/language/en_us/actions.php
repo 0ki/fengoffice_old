@@ -58,6 +58,7 @@
     
     // Comments
     'add comment' => 'Post comment',
+    'write comment' => 'Write your comment here',
     'edit comment' => 'Edit comment',
     
     // Task list
@@ -176,7 +177,7 @@
     'version' => 'version',
     'last modification' => 'Last modification',
     
-    'link object' => 'Link Object',
+    'link object' => 'Click here to link an object',
     'link objects' => 'Link Objects',
     'show all linked objects' => 'Show all ({0})',
   	'link more objects' => 'Link more objects',
@@ -207,7 +208,7 @@
   	'restore from trash' => 'Restore from trash',
   	'delete permanently' => 'Delete permanently',
   	'copy file' => 'Copy this file',
-  	'open weblink' => 'Open web link',
+  	'open weblink' => 'Open link',
   
 	'archive' => 'Archive',
  	'unarchive' => 'Unarchive',
@@ -222,8 +223,8 @@
   	
 	'confirm delete permanently' => 'Are you sure you want to delete {0}?',
 
-  	'report as spam' => 'Report as Spam',
-	'not spam' => 'Not Spam',
+  	'report as spam' => 'Mark as spam',
+	'not spam' => 'Mark as not spam',
   
   	'mark as unread' => 'Mark as unread',
   	'activate' => 'Activate',

@@ -6,10 +6,20 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 ?>
 <div id="<?php echo $genid ?>adminContainer" class="adminGroups" style="height:100%;background-color:white">
 <form method="post" action="<?php echo $form_url; ?>">
-<div class="adminHeader">
-  	<div class="adminTitle"><?php echo $title ?><div style="margin-left:50px;display:inline;"><?php echo submit_button(lang('save'))?></div></div>
+<div class="coInputHeader">
+  <div>
+	<div class="coInputName">
+		<div class="coInputTitle">
+			<?php echo $title ?>
+		</div>
+	</div>
+	<div class="coInputButtons">
+		<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>
+	</div>
+	<div class="clear"></div>
+  </div>
 </div>
-<div class="adminSeparator"></div>
+
 <div class="page widget-manager adminMainBlock">
 	<div>
 		<table style="border: 1px solid #D7E5F5;" id="<?php echo $genid?>top-widget-table">

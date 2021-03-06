@@ -59,6 +59,7 @@ og.ContactManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.contacts+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					
 					Ext.getCmp('contact-manager').reloadGridPagingToolbar('contact','list_all','contact-manager');
@@ -125,8 +126,15 @@ og.ContactManager = function() {
     }
     	
 	function renderIcon(value, p, r) {
-		var classes = "db-ico ico-unknown ico-" + r.data.type;
-		return String.format('<div class="{0}" title="{1}"/>', classes, lang(r.data.type));
+		
+		if (r.data.type == 'user' && og.allUsers[r.data.object_id]) {
+			var picture_url = og.allUsers[r.data.object_id].img_url;
+			return String.format('<div class="picture-file-small"><img src="{0}" alt="{1}" /></div>', picture_url, og.clean(r.data.name));
+		} else {
+			var classes = "db-ico ico-unknown ico-" + r.data.type;
+			return String.format('<div class="{0}" title="{1}" style="margin-left: 5px;"/>', classes, lang(r.data.type));
+		}
+		
 	}
 	
 	function renderDateUpdated(value, p, r) {
@@ -290,7 +298,7 @@ og.ContactManager = function() {
 	var cm_info = [
 		sm,
 		{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -298,11 +306,11 @@ og.ContactManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
-        	width: 28,
+        	width: 40,
         	renderer: renderIcon,
         	fixed:true,
         	resizable: false,
@@ -533,15 +541,30 @@ og.ContactManager = function() {
 	}
 	actions = {
 		newContact: new Ext.Action({
+			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('create contact or client company'),
             iconCls: 'ico-new',
 			menu: {items: [
-				{text: lang('person'), iconCls: 'ico-contact', handler: function() {
+				{text: lang('contact'), iconCls: 'ico-contact-small', handler: function() {
+					//og.render_modal_form('', {c:'contact', a:'add'});
 					var url = og.getUrl('contact', 'add');
 					og.openLink(url);
 				}},
+				{text: lang('user'), iconCls: 'ico-user', handler: function() {
+					//og.render_modal_form('', {c:'contact', a:'add'});
+					var exe_type = 0;
+					for (id in og.userRoles) {
+						if (og.userRoles[id].code == 'Executive') {
+							exe_type = id;
+							break;
+						}
+					}
+					var url = og.getUrl('contact', 'add', {is_user:1, user_type:exe_type});
+					og.openLink(url);
+				}},
 				{text: lang('company'), iconCls: 'ico-company', handler: function() {
+					//og.render_modal_form('', {c:'contact', a:'add_company'});
 					var url = og.getUrl('contact', 'add_company');
 					og.openLink(url);
 				}}				
@@ -577,6 +600,8 @@ og.ContactManager = function() {
             iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
+			//	var action = (getFirstSelectedType() == 'contact' || getFirstSelectedType() == 'user' ? 'edit' : 'edit_contact');
+			//	og.render_modal_form('', {c:'contact', a:action, params: {id:getFirstSelectedId()}});
 				var url = '';
 				if (getFirstSelectedType() == 'contact' || getFirstSelectedType() == 'user')
 					url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
@@ -706,7 +731,7 @@ og.ContactManager = function() {
 			]}
 		})
     };
-    
+	
 	var tbar = [];
 	if (!og.loggedUser.isGuest) {
 		tbar.push(actions.newContact);
@@ -725,6 +750,13 @@ og.ContactManager = function() {
 		}
 	}
 	
+	if (og.additional_list_actions && og.additional_list_actions.contact) {
+		tbar.push('-');
+		for (var i=0; i<og.additional_list_actions.contact.length; i++) {
+			tbar.push(og.additional_list_actions.contact[i]);
+		}
+	}
+	
 	og.ContactManager.superclass.constructor.call(this, {
         store: this.store,
 		layout: 'fit',
@@ -735,6 +767,7 @@ og.ContactManager = function() {
         closable: true,
 		stripeRows: true,
 		id: 'contact-manager',
+		loadMask: true,
         bbar: new og.CurrentPagingToolbar({
             pageSize: contacts_per_page,
             store: this.store,
@@ -779,6 +812,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 			context: og.contextManager.plainContext() 
 			
 		});
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

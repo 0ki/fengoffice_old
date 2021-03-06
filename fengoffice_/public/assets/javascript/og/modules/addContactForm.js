@@ -77,7 +77,8 @@ og.companySelectedIndexChanged = function(genid,data_js){
     		if (success) {
 				Ext.get(genid + 'submit1').dom.disabled = false;
 				Ext.get(genid + 'submit2').dom.disabled = false;
-				
+				/*
+				@TODO: fill work phone, work addres, etc with company data
     			if (data.id > 0){
 	    			document.getElementById(genid + 'profileFormWAddress').value = data_js['adress'] ? data_js['adress'] :  data.address;
 	    			document.getElementById(genid + 'profileFormWCity').value = data_js['city'] ? data_js['city'] : data.city;
@@ -103,6 +104,7 @@ og.companySelectedIndexChanged = function(genid,data_js){
 	    			document.getElementById(genid + 'profileFormWPhoneNumber').value = data_js['phone'] ? data_js['phone'] : text;
 	    			document.getElementById(genid + 'profileFormWFaxNumber').value = data_js['fax'] ? data_js['fax'] : text;
 	    		}
+	    		*/
     		}
     	}
     });
@@ -226,7 +228,7 @@ og.renderAddressInput = function(id, name, container_id, sel_type, sel_data) {
 	$('#'+container_id).append('<span id="'+id+'_type"></span>');
 	og.renderAddressTypeSelector(id+'_type', name+'[type]', id+'_type', sel_type);
 
-	var address_input = $('<input name="'+name+'[street]" id="'+id+'_street" value="'+sel_data.street+'" placeholder="'+lang('address')+'"/>');
+	var address_input = $('<input name="'+name+'[street]" id="'+id+'_street" value="'+sel_data.street+'" placeholder="'+lang('street address')+'"/>');
 	$('#'+container_id).append(address_input);
 
 	var city_input = $('<input name="'+name+'[city]" id="'+id+'_city" value="'+sel_data.city+'" placeholder="'+lang('city')+'"/>');

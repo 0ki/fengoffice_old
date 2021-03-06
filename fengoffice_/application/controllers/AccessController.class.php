@@ -436,7 +436,11 @@ class AccessController extends ApplicationController {
 	 * @return null
 	 */
 	function forgot_password() {
-		$your_email = trim(array_var($_REQUEST, 'your_email'));
+		if (isset($_GET['your_email'])) {
+			$your_email = trim(array_var($_GET, 'your_email'));
+		} else {
+			$your_email = trim(array_var($_POST, 'your_email'));
+		}
 		tpl_assign('your_email', $your_email);
 
 		if(array_var($_REQUEST, 'submited') == 'submited') {
@@ -509,10 +513,10 @@ class AccessController extends ApplicationController {
 				$company->save();
 				
 				// Init default colors
-				set_config_option('brand_colors_head_back', "FFFFFF");
-				set_config_option('brand_colors_tabs_back', "14780e");
-				set_config_option('brand_colors_head_font', "000000");
-				set_config_option('brand_colors_tabs_font', "ffffff");
+				set_config_option('brand_colors_head_back', "424242");
+				set_config_option('brand_colors_tabs_back', "e7e7e7");
+				set_config_option('brand_colors_head_font', "FFFFFF");
+				set_config_option('brand_colors_tabs_font', "333333");
 
 				// Create the administrator user
 				$administrator = new Contact();

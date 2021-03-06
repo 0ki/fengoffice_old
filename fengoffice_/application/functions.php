@@ -231,6 +231,14 @@ function product_version_revision() {
 	return "";
 }
 
+function get_product_logo_filename() {
+	return PRODUCT_LOGO_FILENAME;
+}
+
+function get_product_logo_url() {
+	return get_image_url(get_product_logo_filename());
+}
+
 /**
  * Return installed version, wrapper function.
  *
@@ -817,7 +825,7 @@ function create_user_from_email($email, $name, $type = 'guest', $send_notificati
 }
 
 
-function create_user($user_data, $permissionsString) {
+function create_user($user_data, $permissionsString, $rp_permissions_data = array()) {
     
 	// try to find contact by some properties 
 	$contact_id = array_var($user_data, "contact_id") ;
@@ -900,9 +908,11 @@ function create_user($user_data, $permissionsString) {
 		}
 		$sp->save();
 		
+		$permissions_sent = array_var($_POST, 'manual_permissions_setted') == 1;
+		
 		// give permissions for user if user type defined in "give_member_permissions_to_new_users" config option
 		$allowed_user_type_ids = config_option('give_member_permissions_to_new_users');
-		if ($contact->isAdministrator() || in_array($contact->getUserType(), $allowed_user_type_ids)) {
+		if ($contact->isAdministrator() || !$permissions_sent && in_array($contact->getUserType(), $allowed_user_type_ids)) {
 			ini_set('memory_limit', '512M');
 			$permissions = array();
 			$default_permissions = RoleObjectTypePermissions::instance()->findAll(array('conditions' => 'role_id = '.$contact->getUserType()));
@@ -936,18 +946,33 @@ function create_user($user_data, $permissionsString) {
 				}
 			}
 			$_POST['permissions'] = json_encode($permissions);
+		} else {
+			$_POST['permissions'] = $permissionsString;
 		}
 		
 		if (config_option('let_users_create_objects_in_root') && ($contact->isAdminGroup() || $contact->isExecutive() || $contact->isManager())) {
-			$default_permissions = RoleObjectTypePermissions::instance()->findAll(array('conditions' => 'role_id = '.$contact->getUserType()));
-			foreach ($default_permissions as $p) {
-				$cmp = new ContactMemberPermission();
-				$cmp->setPermissionGroupId($permission_group->getId());
-				$cmp->setMemberId(0);
-				$cmp->setObjectTypeId($p->getObjectTypeId());
-				$cmp->setCanDelete($p->getCanDelete());
-				$cmp->setCanWrite($p->getCanWrite());
-				$cmp->save();
+			if ($permissions_sent) {
+				foreach ($rp_permissions_data as $name => $value) {
+					$ot_id = substr($name, strrpos($name, '_')+1);
+					$cmp = new ContactMemberPermission();
+					$cmp->setPermissionGroupId($permission_group->getId());
+					$cmp->setMemberId(0);
+					$cmp->setObjectTypeId($ot_id);
+					$cmp->setCanDelete($value >= 3);
+					$cmp->setCanWrite($value >= 2);
+					$cmp->save();
+				}
+			} else {
+				$default_permissions = RoleObjectTypePermissions::instance()->findAll(array('conditions' => 'role_id = '.$contact->getUserType()));
+				foreach ($default_permissions as $p) {
+					$cmp = new ContactMemberPermission();
+					$cmp->setPermissionGroupId($permission_group->getId());
+					$cmp->setMemberId(0);
+					$cmp->setObjectTypeId($p->getObjectTypeId());
+					$cmp->setCanDelete($p->getCanDelete());
+					$cmp->setCanWrite($p->getCanWrite());
+					$cmp->save();
+				}
 			}
 		}
 	}
@@ -1181,7 +1206,7 @@ function build_context_array($context_plain) {
  * @param array $rows
  * @param int $packageSize
  */
-function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
+function massiveInsert($tableName, $cols,  $rows, $packageSize = 100, $on_duplicate_key="") {
 
 	$total = count($rows);
 	$totalPackets = ceil($total/$packageSize);
@@ -1197,6 +1222,8 @@ function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
 			}
 		}
 		
+		$sql .= $on_duplicate_key;
+			
 		if (!DB::execute($sql)){
 			throw new DBQueryError($sql);
 		}
@@ -1698,6 +1725,21 @@ function make_post_async($url, $params)	{
 }
 
 /**
+ * This function returns an array containing the column names of a table
+ *
+ * @param string $table_name Name of the table
+ * @return array of strings
+ */
+function get_table_columns($table_name) {
+	$cols = array();
+	$res = mysql_query("DESCRIBE `$table_name`", DB::connection()->getLink());
+	while($row = mysql_fetch_array($res)) {
+		$cols[] = $row['Field'];
+	}
+	return $cols;
+} // get_table_columns
+
+/**
  * Checks if a column exists in a table
  *
  *  This function returns true if the column exists
@@ -1812,3 +1854,54 @@ function convert_to_pdf($html_to_convert, $orientation='Protrait', $genid) {
 	
 }
 
+
+/**
+ * @param $picture: uploaded file data (taken from $_FILES)
+ * @param $crop_data: array with new x-y coords, width and height
+ * @return The path to the new generated image 
+ **/
+function process_uploaded_cropped_picture_file($picture, $crop_data) {
+
+	$valid_exts = array('jpeg', 'jpg', 'png', 'gif');
+
+	if (! $picture['error']) {
+			
+		$ext = strtolower(pathinfo($picture['name'], PATHINFO_EXTENSION));
+		if (in_array($ext, $valid_exts)) {
+			$path = 'tmp/' . uniqid() . '.' . $ext;
+			$size = getimagesize($picture['tmp_name']);
+
+			$x = (int) $crop_data['x'];
+			$y = (int) $crop_data['y'];
+			$w = (int) $crop_data['w'] ? $crop_data['w'] : $size[0];
+			$h = (int) $crop_data['h'] ? $crop_data['h'] : $size[1];
+
+			$nw = 200;
+			$nh = 200;
+
+			$data = file_get_contents($picture['tmp_name']);
+			$vImg = imagecreatefromstring($data);
+			$dstImg = imagecreatetruecolor($nw, $nh);
+			imagecopyresampled($dstImg, $vImg, 0, 0, $x, $y, $nw, $nh, $w, $h);
+			imagepng($dstImg, $path);
+			imagedestroy($dstImg);
+
+			return $path;
+				
+		}
+	}
+
+}
+
+
+
+
+function print_modal_json_response($data, $dont_process_response = true, $use_ajx = false) {
+	$object = array('dont_process_response' => $dont_process_response);
+	$object = array_merge($object, $data);
+	if ($use_ajx) {
+		ajx_extra_data($object);
+	} else {
+		echo json_encode($object);
+	}
+}

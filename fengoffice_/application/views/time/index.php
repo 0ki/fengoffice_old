@@ -57,7 +57,7 @@
 
 </style>
 
-<div id="timePanel" class="ogContentPanel" style="background-color:#F0F0F0;height:100%;">
+<div id="timePanel" class="ogContentPanel" style="height:100%;">
 <div style="padding:7px;">
 <input type="hidden" id="<?php echo $genid ?>hfTasks" value="<?php echo clean(json_encode($tasks_array)) ?>"/>
 <input type="hidden" id="<?php echo $genid ?>hfTimeslots" value="<?php echo clean(json_encode($timeslots_array)) ?>"/>
@@ -143,7 +143,7 @@
 					$listeners = array();
 					$listeners = array('on_selection_change' => 'ogTimeManager.renderUserCombo("'.$genid.'")');
 					if(!empty($dimensions_to_show)){
-						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), $dimensions_to_skip, null, true);	
+						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners, 'horizontal' => true, 'width' => '270'), $dimensions_to_skip, null, true);	
 					}
 					?>
 					
@@ -190,7 +190,7 @@
 			</div>
 			
 			<div class="small-member-selector submit-btns" style="margin-top: 20px;">
-				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabIndex'=>'1000','onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
+				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:5px;margin-left:0px;height:40px;', 'tabIndex'=>'1000','onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
 				<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
 					<?php echo submit_button(lang('save'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
 								'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?>
@@ -217,7 +217,7 @@
 	<td class="coViewTopRight">&nbsp;</td>
 </tr>
 <tr><td colspan="2" class="coViewRight"></td></tr>
-<tr>
+<tr style="border-left: 1px solid #ddd;">
 	<td colspan="2" class="coViewBody">
 		<div id="<?php echo $genid ?>TMTimespanContents" style="width:100%" class="TMTimespanContents">
 		<div style="padding:7px">
@@ -240,7 +240,7 @@
 	</td>
 	<td class="coViewRight"></td>
 </tr>
-<tr>
+<tr style="border-left: 1px solid #ddd;">
 	<td colspan="2" class="coViewBody">
 	<?php if ($total > 0) {
 		$page = intval($start / $limit);
@@ -298,6 +298,10 @@
 	Ext.getCmp("<?php echo $genid ?>timeslot[date]Cmp").focus();
 	$('.context-header').click(function(){
 		$('.context-body').slideToggle();
+	});
+	
+	$(function() {
+		og.eventManager.fireEvent('replace all empty breadcrumb', null);
 	});
 </script>
 </div>

@@ -177,6 +177,24 @@ Ext.override(Ext.tree.TreeNode,{
         	//alert(cs[i].text) ;
         	cs[i].expand(deep, false, callback);
         }
+    },
+    
+    ensureVisible : function(callback){
+        var tree = this.getOwnerTree();
+        tree.expandPath(this.parentNode.getPath(), false, function(){
+            var node = tree.getNodeById(this.id);
+            if (node && node.ui) {
+            	tree.getTreeEl().scrollChildIntoView(node.ui.anchor);
+            }
+            Ext.callback(callback);
+        }.createDelegate(this));
+    },
+    
+    remove : function(){
+    	if (this.parentNode && this.parentNode.ownerTree) {
+    		this.parentNode.removeChild(this);
+    	}
+        return this;
     }
 
 });

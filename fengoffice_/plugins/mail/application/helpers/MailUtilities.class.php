@@ -433,6 +433,7 @@ class MailUtilities {
 			// Conversation
 						
 			//check if exists a conversation for this mail
+			$conv_mail = "";
 			if ($in_reply_to_id != "" && $message_id != "") {
 				$conv_mail = MailContents::findOne(array("conditions" => "`account_id`=".$account->getId()." AND (`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id')"));
 				

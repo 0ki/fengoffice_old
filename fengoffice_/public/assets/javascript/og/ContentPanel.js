@@ -146,9 +146,6 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 	
 	
 	load: function(content, isBack, isReload, isReset) {
-		/*if ( content.data.indexOf("c=customer&a=view") != -1 ) {
-			alert("ENTRA a load - content: "+ content.toSource());
-		}*/
 		if (!this.confirmClose()) {
 			if (isBack) {
 				// put content back to the history stack
@@ -237,7 +234,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 				var tbar = [{
 					text: lang('cancel'),
 					handler: function() {
-						this.ownerCt.remove(this);
+						if (this.ownerCt) this.ownerCt.remove(this);
 					},
 					scope: this,
 					iconCls: 'ico-back'
@@ -273,6 +270,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 							if (content.actions[i].attributes.id) tbar_item.id = content.actions[i].attributes.id;
 							if (content.actions[i].attributes.hidden) tbar_item.hidden = content.actions[i].attributes.hidden;
 							if (content.actions[i].attributes.disabled) tbar_item.disabled = content.actions[i].attributes.disabled;
+							if (content.actions[i].attributes.type) tbar_item.xtype = content.actions[i].attributes.type;
 						}
 						tbar.push(tbar_item);
 					}

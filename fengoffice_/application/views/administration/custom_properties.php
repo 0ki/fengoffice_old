@@ -6,11 +6,17 @@
 ?>
 
 <div style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('custom properties') ?></div>
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('custom properties') ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+
+</div>
+	
+<div class="coInputMainBlock adminMainBlock">
   
   <?php echo label_tag(lang('select object type'), 'objectTypeSel');?>
   <?php echo select_box('objectTypeSel', $object_types, array('id' => 'objectTypeSel' ,'onchange' => 'og.objectTypeChanged("'.$genid.'")', 'style' => 'width:250px;')) ?>

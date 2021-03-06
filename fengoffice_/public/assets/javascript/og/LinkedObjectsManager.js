@@ -161,7 +161,7 @@ og.LinkedObjectManager = function(config) {
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -169,7 +169,7 @@ og.LinkedObjectManager = function(config) {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
         	id: 'icon',
         	header: '&nbsp;',
         	dataIndex: 'icon',
@@ -305,6 +305,7 @@ og.LinkedObjectManager = function(config) {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
+		loadMask: true,
 		id: 'linked-objects-manager',
 		bbar: new og.CurrentPagingToolbar({
 			pageSize: og.config['files_per_page'],
@@ -354,6 +355,7 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 			linkedobject: this.linked_object,
 			filtermanager: this.filter_manager
 		});
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

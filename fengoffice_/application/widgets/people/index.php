@@ -10,9 +10,9 @@
 			if ($selection instanceof Member) $active_members[] = $selection;
 		}
 	}
+	$mnames = array();
 	//if there are members selcted
 	if (count($active_members) > 0) {
-		$mnames = array();
 		$mids = array();
 		$allowed_contact_ids = array();
 		foreach ($active_members as $member) {
@@ -63,11 +63,11 @@
 		}
 		
 		//widget title
-		$widget_title = lang("people in", implode(", ", $mnames));
+		$widget_title = lang("users in", implode(", ", $mnames));
 		$mids = implode(",", $mids);
 	
 	} else {
-		$widget_title = lang("people");
+		$widget_title = lang("users");
 		$result = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => "DESC",

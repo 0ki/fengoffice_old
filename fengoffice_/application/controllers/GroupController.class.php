@@ -84,7 +84,7 @@ class GroupController extends ApplicationController {
 			// users
 			tpl_assign('groupUserIds', array());
 			tpl_assign('users', Contacts::getAllUsers());
-			
+			tpl_assign('pg_id', -1);
 		} else {
 			$group->setFromAttributes($group_data);
 			try {
@@ -99,7 +99,7 @@ class GroupController extends ApplicationController {
 				// save users
 				if ($users = array_var($_POST, 'user')) {
 					foreach ($users as $user_id => $val){
-						if ($val=='checked' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
+						if ($val=='1' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
 							$cpg = new ContactPermissionGroup();
 							$cpg->setPermissionGroupId($pg_id);
 							$cpg->setContactId($user_id);
@@ -181,6 +181,7 @@ class GroupController extends ApplicationController {
 			tpl_assign('groupUserIds', $group_users);
 			tpl_assign('users', Contacts::getAllUsers());
 			
+			tpl_assign('pg_id', $group->getId());
 			tpl_assign('group', $group);
 			tpl_assign('group_data', array('name' => $group->getName()));
 		} else {
@@ -196,7 +197,7 @@ class GroupController extends ApplicationController {
 				$gr_users_ids = array();
 				if ($post_users = array_var($_POST, 'user')) {
 					foreach ($post_users as $user_id => $val){
-						if ($val=='checked' && is_numeric($user_id)) {
+						if ($val == '1' && is_numeric($user_id)) {
 							$gr_users_ids[] = $user_id;
 						}
 					}
@@ -211,7 +212,7 @@ class GroupController extends ApplicationController {
 				ContactPermissionGroups::delete("`permission_group_id` = $pg_id");
 				if ($users = array_var($_POST, 'user')) {
 					foreach ($users as $user_id => $val){
-						if ($val=='checked' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
+						if ($val=='1' && is_numeric($user_id) && (Contacts::findById($user_id) instanceof Contact)) {
 							$cpg = new ContactPermissionGroup();
 							$cpg->setPermissionGroupId($pg_id);
 							$cpg->setContactId($user_id);
@@ -281,6 +282,86 @@ class GroupController extends ApplicationController {
 		} // try
 	} // delete_group
 
+	
+	
+	
+	function search_permission_group() {
+		$name = trim(array_var($_REQUEST, 'query', ''));
+		$start = array_var($_REQUEST, 'start' , 0);
+		$orig_limit = array_var($_REQUEST, 'limit');
+		$limit = $orig_limit + 1;
+		
+		if(strlen($name) > 0) {
+			// query for permission groups
+			$sql = "SELECT * FROM ".TABLE_PREFIX."permission_groups pg LEFT JOIN ".TABLE_PREFIX."contacts c ON pg.id=c.permission_group_id
+				WHERE pg.type IN ('permission_groups', 'user_groups') AND (c.user_type IS NULL OR c.user_type>0) AND (c.first_name LIKE '%$name%' OR c.surname LIKE '%$name%' OR pg.name LIKE '%$name%')
+				ORDER BY c.first_name, c.surname, pg.name
+				LIMIT $start, $limit";
+			
+			$rows = DB::executeAll($sql);
+			if (!is_array($rows)) $rows = array();
+			
+			// show more
+			$show_more = false;
+			if(count($rows) > $orig_limit){
+				array_pop($rows);
+				$show_more = true;
+			}
+			
+			if($show_more){
+				ajx_extra_data(array('show_more' => $show_more));
+			}
+			
+			$tmp_companies = array();
+			$tmp_roles = array();
+			
+			$permission_groups = array();
+			foreach ($rows as $pg_data) {
+				// basic data
+				$data = array(
+					'pg_id' => $pg_data['id'],
+					'type' => $pg_data['type'] == 'permission_groups' ? 'user' : 'group',
+					'iconCls' => '',
+					'name' => is_null($pg_data['first_name']) && is_null($pg_data['surname']) ? $pg_data['name'] : trim($pg_data['first_name'] . ' ' . $pg_data['surname']),
+				);
+				// company name
+				$comp_id = array_var($pg_data, 'company_id');
+				if ($comp_id > 0) {
+					if (!isset($tmp_companies[$comp_id])) $tmp_companies[$comp_id] = Contacts::findById($comp_id);
+					$c = array_var($tmp_companies, $comp_id);
+					if ($c instanceof Contact) {
+						$data['company_name'] = trim($c->getObjectName());
+					}
+				}
+				// picture
+				if ($pg_data['type'] == 'permission_groups') {
+					if (array_var($pg_data, 'picture_file') != '') {
+						$data['picture_url'] = get_url('files', 'get_public_file', array('id' => array_var($pg_data, 'picture_file')));
+					}
+				}
+				// user type
+				$user_type_id = array_var($pg_data, 'user_type');
+				if ($user_type_id > 0) {
+					if (!isset($tmp_roles[$user_type_id])) $tmp_roles[$user_type_id] = PermissionGroups::findById($user_type_id);
+					$rol = array_var($tmp_roles, $user_type_id);
+					if ($rol instanceof PermissionGroup) {
+						$data['role'] = trim($rol->getName());
+						if (in_array($rol->getName(), array('Guest', 'Guest Customer'))) {
+							$data['is_guest'] = '1';
+						}
+					}
+				}
+				$permission_groups[] = $data;
+			}
+			
+			$row = "search-result-row-medium";
+			ajx_extra_data(array('row_class' => $row));
+			
+			ajx_extra_data(array('permission_groups' => $permission_groups));
+			
+		}
+		ajx_current("empty");
+	}
 } // GroupController
 
 ?>

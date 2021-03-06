@@ -85,8 +85,8 @@ foreach($companies as $company)
 </script>
 
 <div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
-<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
-<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;padding-top:0;display:block;background-color:#F0F0F0;"></div>
 <div id="<?php echo $genid."view_calendar"?>">  
 <table style="width:100%;height:100%;">
 <tr>
@@ -537,6 +537,10 @@ foreach($companies as $company)
 										elseif($event instanceof Contact){
 											$contact = $event;
 											$bday = $contact->getBirthday();
+											if (!$bday instanceof DateTimeValue) continue;
+											if (!$dtv instanceof DateTimeValue) {
+												$dtv = DateTimeValueLib::now();
+											}
 											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
 											if ($now == mktime(0, 0, 0, $bday->getMonth(), $bday->getDay(), $dtv->getYear())) {	
 												$count++;

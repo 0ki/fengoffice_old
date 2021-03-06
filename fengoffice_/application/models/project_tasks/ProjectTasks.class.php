@@ -429,7 +429,7 @@ class ProjectTasks extends BaseProjectTasks {
 			'c' => strtotime($raw_data['created_on']),
 			'cid' => (int)$raw_data['created_by_id'],
 			'otype' => $raw_data['object_subtype'],
-			'pc' => (int)$raw_data['percent_completed'],
+			'pc' => (int)$raw_data['percent_completed'],			
 			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersIdsToDisplayPath())))
 		);
 
@@ -447,6 +447,10 @@ class ProjectTasks extends BaseProjectTasks {
 
 		if ($raw_data['milestone_id'] > 0) {
 			$result['mid'] = (int)$raw_data['milestone_id'];
+		}
+		
+		if ($raw_data['assigned_by_id'] > 0) {
+			$result['assigned_by_id'] = (int)$raw_data['assigned_by_id'];
 		}
 			
 		if ($raw_data['assigned_to_contact_id'] > 0) {
@@ -470,8 +474,8 @@ class ProjectTasks extends BaseProjectTasks {
 
 		$time_estimate = $raw_data['time_estimate'];
 		$result['te'] = $raw_data['time_estimate'];
-		if ($time_estimate > 0) $result['et'] = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ;
-
+		if ($time_estimate > 0) $result['et'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60));
+		
 
 		$result['tz'] = logged_user()->getTimezone() * 3600;
 
@@ -494,7 +498,24 @@ class ProjectTasks extends BaseProjectTasks {
 			$result['wid'] = $users;
 			$result['wp'] = $paused;
 		}
+				
+		$total_minutes = $tmp_task->getTotalMinutes();
+		
+		if ($total_minutes > 0){
+			$result['worked_time'] = $total_minutes;
+			$result['worked_time_string'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60));
+		}else{
+			$result['worked_time'] = 0;
+		}
 
+		$pending_time = $time_estimate - $total_minutes;		
+		if ($pending_time > 0){
+			$result['pending_time'] = $pending_time;
+			$result['pending_time_string'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($pending_time * 60), 'hm', 60));
+		}else{
+			$result['pending_time'] = 0;
+		}
+		
 		if ($raw_data['repeat_forever'] > 0 || $raw_data['repeat_num'] > 0 || $raw_data['repeat_end'] != EMPTY_DATETIME) {
 			$result['rep'] = 1;
 		}

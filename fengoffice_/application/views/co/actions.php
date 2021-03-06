@@ -1,16 +1,16 @@
 <!-- Actions Panel -->
 
-<table style="width:240px;border-collapse:collapse">
+<table class="view-actions">
 	<col width=12/><col width=216/><col width=12/>
 	<tr>
-		<td class="coViewHeader coViewSmallHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
+		<td class="coViewHeader coViewSmallHeader" style="border:1px solid #ccc;" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
 		<td class="coViewTopRight"></td>
 	</tr>
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 	<tr>
-		<td class="coViewBody" colspan=2> <?php
+		<td class="coViewBody" style="border:1px solid #ccc;" colspan=2> <?php
 		if (count(PageActions::instance()->getActions()) > 0 ) { ?>
 			<div id="actionsDialog1"> <?php
 				$pactions = PageActions::instance()->getActions();

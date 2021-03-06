@@ -4,12 +4,18 @@
 ?>
 
 
-<div class="adminProjects" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('dimensions') ?></div>
-  </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+<div class="adminProjects">
+	<div class="coInputHeader">
+
+	  <div class="coInputHeaderUpperRow">
+		<div class="coInputTitle">
+			<?php echo lang('dimensions') ?>
+		</div>
+	  </div>
+	  <div class="clear"></div>
+	</div>
+	
+	<div class="coInputMainBlock adminMainBlock">
   
 <?php 
 	if(is_array($dimensions) && count($dimensions) > 0) {

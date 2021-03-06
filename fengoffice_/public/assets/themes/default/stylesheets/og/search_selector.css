@@ -3,9 +3,8 @@
 }
 
 .search-selector .search-input{
-	height: 21px;	
 	border-radius: 4px;	
-	padding: 0 20px 0 0!important;
+	padding-right: 20px !important;
 	text-overflow: ellipsis;
 	width: 100%;
 }
@@ -15,30 +14,38 @@
 	position: relative;
 }
 
+.search-selector .search-input-div input{
+	width: 100%;
+}
+
 .ico-search-m{
-	background: url("../../images/16x16/search_m.png") no-repeat scroll right center white; 
-	height: 16px;
-	width: 16px;
-	position: absolute;	
-	right: 0;
-	margin-top: 4px;
-	margin-right: -20px;
-	cursor: pointer;	
+	background-image: url("../../images/16x16/search_m.png")!important;
+    background-position: right center!important;
+    background-repeat: no-repeat!important;
+    margin: 3px!important;
+    padding-right: 20px!important;
+}
+
+.coInputMainBlock .ico-search-m {
+	margin-left: 0px;
 }
 
 .search-selector-more{
-	background: #E8E5E3;
 	color: #003562;
 	text-align: center;
 }
 
 .ui-autocomplete{
-	max-height: 300px!important;
-	overflow-y: scroll;
+	max-height: 400px!important;
+	overflow-y: auto!important;
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
     /* add padding to account for vertical scrollbar */
     padding: 20px;
+}
+
+.ui-autocomplete .loading-indicator{
+	 background-position: center; 
 }
 
 /* Templates css*/
@@ -52,9 +59,25 @@
 
 .search-selector-result{
 	display: inline-block;
+	width: 100%;
+}
+
+.search-selector-result .divi{ 
+    background: none repeat scroll 0 0 #d3d7dc;
+    font-size: 0;
+    height: 1px;
+    line-height: 0;
+    float:left;
+    clear: both;
+    width: 100%;
+}
+
+.ui-menu-divider .divi{ 
+	display:none;   
 }
 
 .search-selector-result .search-result-ico{
+	background-size: 16px 16px;
 	min-width: 16px; 
 	min-height: 16px;
 }
@@ -73,14 +96,27 @@
 	min-height: 25px;	
 }
 
+.searchResultName{	
+	float: left;
+	margin-left: 2px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+  	overflow: hidden;
+}
+
 .searchResultInfo{
 	float: left;
 	margin-left: 2px;
 	text-overflow: ellipsis;
 }
+
+
+
 /*END search-selector-item-template-1*/
  
- 
+.ui-autocomplete.ui-front.ui-menu.ui-widget.ui-widget-content{
+	z-index: 9999;
+}
 
 
 

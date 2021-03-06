@@ -1,9 +1,13 @@
 
 <div class="adminConfiguration" style="height:100%;background-color:white;">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo $comment->isNew() ? lang('add comment') : lang('edit comment') ?></div>
+<div class="coInputHeader">
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo $comment->isNew() ? lang('add comment') : lang('edit comment') ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
+</div>
+  
   <div class="adminMainBlock">
   
 <?php if($comment->isNew()) {
@@ -16,7 +20,7 @@
 		<?php tpl_display(get_template_path('form_errors')) ?>
 
  		<div class="formAddCommentText">
-			<?php echo label_tag(lang('text'), 'addCommentText', true) ?>
+			<?php //echo label_tag(lang('text'), 'addCommentText', true) ?>
 			<?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'huge', 'id' => 'addCommentText')) ?>
 		</div>
 

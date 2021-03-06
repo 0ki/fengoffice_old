@@ -320,6 +320,14 @@ class FilesController extends ApplicationController {
 	
 		$file = new ProjectFile();
 		
+		if (!is_array(array_var($_POST, 'webpage'))) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+		}
+		
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
 				$type = ProjectFiles::TYPE_WEBLINK;
@@ -366,6 +374,10 @@ class FilesController extends ApplicationController {
 		
 				flash_success(lang('success add webpage', $file->getObjectName()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -401,7 +413,14 @@ class FilesController extends ApplicationController {
 		
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
-			
+		
+		if (!is_array(array_var($_POST, 'file'))) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+		}
 		
 		if (is_array(array_var($_POST, 'file'))) {
 			foreach ($file_data as $k => &$v) {
@@ -524,10 +543,15 @@ class FilesController extends ApplicationController {
 	          	}
 	          	ajx_add("overview-panel", "reload");
 	          	ajx_extra_data($ajx_file);
+	          	
+	          	if (array_var($_REQUEST, 'modal')) {
+	          		evt_add("reload current panel");
+	          	}
 
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				
 				if ($e instanceof InvalidUploadError) {
 					Logger::log("InvalidUploadError\n".$e->getTraceAsString());
 					Logger::log(print_r($e->getAdditionalParams(), 1));
@@ -584,6 +608,7 @@ class FilesController extends ApplicationController {
 			if (count($member_ids) > 0 || !array_var($file_data, 'composing_mail')) {
 				$object_controller->add_to_members($file, $member_ids);
 			}
+			$object_controller->add_subscribers($file, array('user_'.logged_user()->getId() => '1'));
 			
 			//If New file 
 			if($upload_option == -1){
@@ -622,12 +647,19 @@ class FilesController extends ApplicationController {
 		}
 	
 		$file_data = array_var($_POST, 'file');
+		
+		if (!is_array(array_var($_POST, 'file'))) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
+		}
 	
 		$file = new ProjectFile();
 			
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
-			
 	
 		if (is_array(array_var($_POST, 'file'))) {
 			
@@ -684,10 +716,15 @@ class FilesController extends ApplicationController {
 				}
 				ajx_add("overview-panel", "reload");
 				ajx_extra_data($ajx_file);
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 	
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				
 				if ($e instanceof InvalidUploadError) {
 					Logger::log("InvalidUploadError\n".$e->getTraceAsString());
 					Logger::log(print_r($e->getAdditionalParams(), 1));
@@ -696,7 +733,15 @@ class FilesController extends ApplicationController {
 				}
 				ajx_current("empty");
 			} // try
-		} // if
+		} else {
+			if (array_var($_REQUEST, 'modal')) {
+				ajx_current("empty");
+				$this->setLayout("json");
+				//print_modal_json_response(array('msg' => lang('success add file', $file_titles)));
+				$this->setTemplate(get_template_path("empty"));
+				evt_add("reload current panel");
+			}
+		}
 	} // add_file
 	
 	function quick_add_files() {
@@ -1017,73 +1062,80 @@ class FilesController extends ApplicationController {
 					return;
 				} // if
 				$file_content = array_var($_POST, 'fileContent');
-				if ($file_content == $file->getFileContent()){
+				$content_changed = $file_content != $file->getFileContent();
+				if (!$content_changed && $file->getObjectName() == $postFile['name']){
+					
 					flash_error(lang('there are no changes'));
-				}else{
-				DB::beginWork();
-				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
-				$revision_comment = array_var($postFile, 'comment');
-
-				$file_content = array_var($_POST, 'fileContent');
-				$image_file_ids = array();
-				preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
-				$urls = array_var($matches, 1);
-				if (is_array($urls)) {
-					$img_num = 1;
-					foreach ($urls as $url) {
-						if (strpos(html_entity_decode($url), get_url('files', 'download_image')) === false ) {
-							$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num);
-							$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
-							$image_file_ids[] = $img_file_id;
+					
+				} else {
+					DB::beginWork();
+					$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
+					$revision_comment = array_var($postFile, 'comment');
+	
+					$file_content = array_var($_POST, 'fileContent');
+					$image_file_ids = array();
+					preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
+					$urls = array_var($matches, 1);
+					if (is_array($urls)) {
+						$img_num = 1;
+						foreach ($urls as $url) {
+							if (strpos(html_entity_decode($url), get_url('files', 'download_image')) === false ) {
+								$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num);
+								$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
+								$image_file_ids[] = $img_file_id;
+							}
+							$img_num++;
 						}
-						$img_num++;
 					}
-				}
-				
-				$file_dt['name'] = $file->getFilename();
-				$file_dt['size'] = strlen($file_content);
-				$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
-				$file_dt['tmp_name'] = ROOT . '/tmp/' . rand () ;
-				$handler = fopen($file_dt['tmp_name'], 'w');
-				fputs($handler,$file_content);
-				fclose($handler);
-				$name = array_var($postFile, 'name');
-
-				$file->setFilename($name);
-				$file->save();
-				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
-				
-				if (array_var($_POST, 'checkin', false)) {
-					$file->checkIn();
-					ajx_current("back");
-				}
-				
-				$object_controller = new ObjectController();
-				$file_member_ids = $file->getMemberIds();
-				if (count($image_file_ids) > 0) {
-					$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
-					foreach ($image_files as $img_file) {
-						$object_controller->add_to_members($img_file, $file_member_ids, null, false);
-						$img_file->setMailId($file->getId());
-						$img_file->save();
+					
+					$file_dt['name'] = $file->getFilename();
+					$file_dt['size'] = strlen($file_content);
+					$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
+					$file_dt['tmp_name'] = ROOT . '/tmp/' . rand () ;
+					$handler = fopen($file_dt['tmp_name'], 'w');
+					fputs($handler,$file_content);
+					fclose($handler);
+					$name = array_var($postFile, 'name');
+					if (array_var($postFile, 'extension') != '') {
+						$name = $name .".". array_var($postFile, 'extension');
 					}
+	
+					$file->setFilename($name);
+					$file->save();
+					if ($content_changed) {
+						$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
+					}
+					
+					if (array_var($_POST, 'checkin', false)) {
+						$file->checkIn();
+						ajx_current("back");
+					}
+					
+					$object_controller = new ObjectController();
+					$file_member_ids = $file->getMemberIds();
+					if (count($image_file_ids) > 0) {
+						$image_files = ProjectFiles::findAll(array('conditions' => 'id IN ('.implode(',',$image_file_ids).')'));
+						foreach ($image_files as $img_file) {
+							$object_controller->add_to_members($img_file, $file_member_ids, null, false);
+							$img_file->setMailId($file->getId());
+							$img_file->save();
+						}
+					}
+					
+					//subscribe user if not subscribed
+					if(!$file->isSubscriber(logged_user())) {
+						$file->subscribeUser(logged_user());
+					} // if
+					
+					
+					DB::commit();
+					ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
+					unlink($file_dt['tmp_name']);
+	
+					flash_success(lang('success save file', $file->getFilename()));
+					evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
+					ajx_add("overview-panel", "reload");
 				}
-				
-				//subscribe user if not subscribed
-				if(!$file->isSubscriber(logged_user())) {
-					$file->subscribeUser(logged_user());
-				} // if
-				
-				
-				DB::commit();
-				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_EDIT);
-				unlink($file_dt['tmp_name']);
-
-				flash_success(lang('success save file', $file->getFilename()));
-				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
-				evt_add("new document add save as button", array("id" => $file->getId(), "name" => clean($file->getFilename()), "genid" => array_var($_POST, 'instanceName')));
-				ajx_add("overview-panel", "reload");
-			}
 			} catch(Exception $e) {
 				DB::rollback();
 				if (array_var($file_dt, 'tmp_name') && is_file(array_var($file_dt, 'tmp_name'))) {
@@ -1105,6 +1157,9 @@ class FilesController extends ApplicationController {
 			// prepare the file object
 			$file = new ProjectFile();
 			$name = array_var($postFile, 'name');
+			if (array_var($postFile, 'extension') != '') {
+				$name = $name .".". array_var($postFile, 'extension');
+			}
 			$file->setObjectTypeId($file->getObjectTypeId());
 			$file->setFilename($name);
 			$file->setIsVisible(true);
@@ -1125,6 +1180,10 @@ class FilesController extends ApplicationController {
 					}
 					$img_num++;
 				}
+			}
+			
+			if (array_var($postFile, 'extension') != '') {
+				$postFile['name'] = $postFile['name'] .".". array_var($postFile, 'extension');
 			}
 			
 			$file_dt['name'] = array_var($postFile,'name');
@@ -1173,7 +1232,6 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 				flash_success(lang('success save file', $file->getObjectName()));
 				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
-				evt_add("new document add save as button", array("id" => $file->getId(), "name" => clean($file->getFilename()), "genid" => array_var($_POST, 'instanceName')));
 				unlink($file_dt['tmp_name']);
 				
 			} catch(Exception $e) {
@@ -1797,6 +1855,8 @@ class FilesController extends ApplicationController {
 			}
 		}
 		
+		Hook::fire("listing_extra_conditions", null, $extra_conditions);
+		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		
 		$context = active_context();
@@ -1967,9 +2027,13 @@ class FilesController extends ApplicationController {
 			
 		$file_data = array_var($_POST, 'file');
 		if(!is_array($file_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$file_data = array(
 				'description' => $file->getDescription(),
-				'edit_name' => $file->getFilename(),
 				'attach_to_notification' => $file->getAttachToNotification(),
 				'default_subject' => $file->getDefaultSubject(),
 				'file_id' => get_id()
@@ -1978,7 +2042,6 @@ class FilesController extends ApplicationController {
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 
-			
 		if(is_array(array_var($_POST, 'file'))) {
 			foreach ($file_data as $k => &$v) {
 				$v = remove_scripts($v);
@@ -1997,7 +2060,12 @@ class FilesController extends ApplicationController {
 				}
 				
 				$file->setFromAttributes($file_data);
-				$file->setFilename(array_var($file_data, 'name'));
+				$fname = array_var($file_data, 'name');
+				$ext = trim(array_var($file_data, 'extension'));
+				if ($ext != '') {
+					$fname .= "." . $ext;
+				}
+				$file->setFilename($fname);
 				
 				if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
 					$url = array_var($file_data, 'url', '');
@@ -2053,11 +2121,19 @@ class FilesController extends ApplicationController {
 				
 				flash_success(lang('success edit file', $file->getFilename()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 			} catch(Exception $e) {
 				
 				DB::rollback();
 				ajx_current("empty");
-				flash_error($e->getMessage());
+				if (array_var($_REQUEST, 'modal')) {
+					ajx_extra_data(array('error' => $e->getMessage()));
+				} else {
+					flash_error($e->getMessage());
+				}
 			} // try
 		} // if
 	} // edit_file
@@ -2093,6 +2169,11 @@ class FilesController extends ApplicationController {
 		
 		$file_data = array_var($_POST, 'webpage');
 		if(!is_array($file_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$file_data = array(
 					'description' => $file->getDescription(),
 					'name' => $file->getFilename(),
@@ -2138,10 +2219,18 @@ class FilesController extends ApplicationController {
 	
 				flash_success(lang('success edit webpage', $file->getObjectName()));
 				ajx_current("back");
+				
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e->getMessage());
+				if (array_var($_REQUEST, 'modal')) {
+					ajx_extra_data(array('error' => $e->getMessage()));
+				} else {
+					flash_error($e->getMessage());
+				}
 				ajx_current("empty");
 			}
 	

@@ -67,7 +67,8 @@ class TimeslotController extends ApplicationController {
 	
 	function add_timespan() {
 	
-		$object_id = get_id('object_id');
+		//$object_id = get_id('object_id');
+		$object_id = array_var($_REQUEST, "object_id");
 		
 		$object = Objects::findObject($object_id);
 		if(!($object instanceof ContentDataObject) || !($object->canAddTimeslot(logged_user()))) {

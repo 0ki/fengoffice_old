@@ -93,6 +93,11 @@ class MilestoneController extends ApplicationController {
 		$now = DateTimeValueLib::now();
 		$due_date = DateTimeValueLib::make(0, 0, 0, array_var($_GET, 'due_month', $now->getMonth()), array_var($_GET, 'due_day', $now->getDay()), array_var($_GET, 'due_year', $now->getYear()));
 		if(!is_array($milestone_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$milestone_data = array(
 				'due_date' => $due_date,
 				'name' => array_var($_GET, 'name', ''),
@@ -179,11 +184,20 @@ class MilestoneController extends ApplicationController {
 				} else {
 					flash_success(lang('success add milestone', $milestone->getObjectName()));
 				}
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e->getMessage());
+				if (array_var($_REQUEST, 'modal')) {
+					$this->setLayout("json");
+					$this->setTemplate(get_template_path("empty"));
+					print_modal_json_response(array('errorCode' => 1, 'errorMessage' => $e->getMessage()));
+				} else {
+					flash_error($e->getMessage());
+				}
 				ajx_current("empty");
 			} // try
 		} // if
@@ -228,6 +242,11 @@ class MilestoneController extends ApplicationController {
 
 		$milestone_data = array_var($_POST, 'milestone');
 		if(!is_array($milestone_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$milestone_data = array(
 	          'name'        => $milestone->getObjectName(),
 	          'due_date'    => $milestone->getDueDate(),
@@ -283,11 +302,20 @@ class MilestoneController extends ApplicationController {
 				}
 				
 				flash_success(lang('success edit milestone', $milestone->getObjectName()));
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				}
 				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e->getMessage());
+				if (array_var($_REQUEST, 'modal')) {
+					$this->setLayout("json");
+					$this->setTemplate(get_template_path("empty"));
+					print_modal_json_response(array('errorCode' => 1, 'errorMessage' => $e->getMessage()));
+				} else {
+					flash_error($e->getMessage());
+				}
 				ajx_current("empty");
 			} // try
 		} // if

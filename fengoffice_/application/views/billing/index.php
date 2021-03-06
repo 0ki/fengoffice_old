@@ -3,11 +3,17 @@
   $isBillingEnabled = can_manage_billing(logged_user()) && isset($billing_categories) && is_array($billing_categories) && count($billing_categories);
 ?>
 <div class="adminBilling" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('billing categories') ?></div>
-  </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+  <div class="coInputHeader">
+
+	  <div class="coInputHeaderUpperRow">
+		<div class="coInputTitle">
+			<?php echo lang('billing categories') ?>
+		</div>
+	  </div>
+	
+	</div>
+	
+	<div class="coInputMainBlock adminMainBlock">
 
 <?php if($isBillingEnabled) { 
 	echo lang('billing support is enabled');

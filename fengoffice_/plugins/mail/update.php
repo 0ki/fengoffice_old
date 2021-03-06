@@ -94,10 +94,6 @@
 	}
 	
 	function mail_update_8_9() {
-		DB::execute("
-				INSERT INTO `".TABLE_PREFIX."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-						('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', 0, 0, '')						
-					ON DUPLICATE KEY UPDATE name=name;
-		");		
+		DB::execute("ALTER TABLE `".TABLE_PREFIX."mail_datas` ADD INDEX `to`(`to`(255)), ADD INDEX `subject`(`subject`(255));");
 	}
 

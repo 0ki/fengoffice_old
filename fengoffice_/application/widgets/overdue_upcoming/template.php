@@ -7,13 +7,13 @@
 <div class="late-objects-widget widget">
 
 	<div style="overflow: hidden;" class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang('late tasks and upcoming tasks'); ?>
+		<div class="widget-title"><?php echo (isset($widget_title)) ? $widget_title : lang('late tasks and upcoming tasks'); ?></div>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	
 	<div class="widget-body" id="<?php echo $genid; ?>_widget_body">
 	<?php if (isset($overdue_upcoming_objects) && count($overdue_upcoming_objects)) : ?>
-		<table id="dashTableMS" style="width:100%; margin-bottom: 10px ;">
+		<table id="dashTableMS" class="widget-table" style="width:100%; margin-bottom: 10px;">
 
 		<?php
 			$today = DateTimeValueLib::now()->beginningOfDay();
@@ -53,11 +53,14 @@
 			    	<div class="db-ico <?php echo $object->getIconClass()?>"></div>
 			    </td>
 			    
-			    <td style="padding-left:5px;padding-bottom:2px;overflow:hidden;max-width:10px;vertical-align: middle;">
+			    <td style="padding-left:5px;padding-bottom:2px;overflow:hidden;text-overflow:ellipsis;max-width:10px;vertical-align: middle;">
 			    	<div class="nobr">
 			    		<?php
 			    			$crumbOptions = json_encode($object->getMembersToDisplayPath());
-							$crumbJs = " og.getCrumbHtml($crumbOptions) "; 
+			    			if($crumbOptions == ""){
+			    				$crumbOptions = "{}";
+			    			}
+							$crumbJs = " og.getEmptyCrumbHtml($crumbOptions, '.nobr' ) "; 
 			    		?>
 			    		<a class="internalLink" href="<?php echo $object->getViewUrl() ?>" title="<?php echo clean($object->getObjectName()) ?>">
 							<?php if ($object instanceof ProjectTask && $object->getAssignedToContactId() > 0) echo "<span class='bold'>". clean($object->getAssignedToName()).": </span>"; ?>
@@ -79,7 +82,7 @@
 				</td>
 				
 			</tr>
-			<?php $row_cls = $row_cls == "" ? "dashAltRow" : ""; ?>
+			
 		<?php endforeach; ?>
 		</table>
 		
@@ -125,10 +128,10 @@
 				<?php echo pick_time_widget2('task[task_due_time]', null, $genid, 75); ?>
 			</div>
 			<?php } ?>
-			<div class="x-clear"></div>
-			
-			<button class="submit-task" ><?php echo lang('add task')?></button>
-			<a class="task-more-details coViewAction ico-edit" href="#"><?php echo lang("details")?></a>
+			<div style="padding-top:12px;">
+				<button class="submit-task add-first-btn" ><?php echo lang('add task')?></button>
+				<a class="task-more-details coViewAction ico-edit" href="#"><?php echo lang("details")?></a>
+			</div>
 			<div class="x-clear"></div>
 			
 		</div>
@@ -193,5 +196,6 @@
 			});
 		});
 
+		// og.eventManager.fireEvent('replace all empty breadcrumb', null);
 	});
 </script>

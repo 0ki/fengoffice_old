@@ -593,4 +593,25 @@ class Member extends BaseMember {
 		$contact_ids = DB::executeAll("SELECT contact_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".$imploded_pgs.")");
 		return array_unique(array_flat($contact_ids));
 	}
+	
+	function setParentMemberId($value) {
+		$parent = Members::getMemberById($value);
+		if ($parent instanceof Member) {
+			$parent_type = $parent->getObjectTypeId();
+			
+			$parents_types = DimensionObjectTypeHierarchies::getAllParentObjectTypeIds($this->getDimensionId(),$this->getObjectTypeId(),false);
+					
+			if (in_array($parent_type, $parents_types)) {
+				return parent::setParentMemberId($value);
+			}else{
+				//error
+				Logger::log("Not valid parent member type '$parent_type'," . $this->getObjectTypeId());			
+				$errors = array() ;
+				$errors[] = "Not valid parent member type";
+				throw new DAOValidationError($this, $errors);
+			}
+		} else {
+			return parent::setParentMemberId(0);
+		}
+	} // setParentMemberId()
 }

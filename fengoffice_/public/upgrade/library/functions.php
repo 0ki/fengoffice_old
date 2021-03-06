@@ -215,7 +215,7 @@ function feng_upg_autoload($load_class_name) {
 }
 
 if (!function_exists('massiveInsert')) {
-	function massiveInsert($tableName, $cols,  $rows, $packageSize = 100 ) {
+	function massiveInsert($tableName, $cols,  $rows, $packageSize = 100, $on_duplicate_key="") {
 
 		$total = count($rows);
 		$totalPackets = ceil($total/$packageSize);
@@ -230,6 +230,8 @@ if (!function_exists('massiveInsert')) {
 					$sql.=",";
 				}
 			}
+			
+			$sql .= $on_duplicate_key;
 			
 			if (!DB::execute($sql)){
 				throw new DBQueryError($sql);

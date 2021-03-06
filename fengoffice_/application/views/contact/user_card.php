@@ -5,7 +5,7 @@
 ?>
 <div class="card" style="padding:0px;">
 
-  <div class="cardIcon"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> avatar" /></div>
+  <div class="cardIcon"><img src="<?php echo $user->getPictureUrl() ?>" alt="<?php echo clean($user->getObjectName()) ?> avatar" /></div>
   <div class="cardData">
     
     <div class="cardBlock">

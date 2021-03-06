@@ -2,6 +2,7 @@
 $task_list = $object;
 $time_estimate = $task_list->getTimeEstimate();
 $total_minutes = $task_list->getTotalMinutes();
+$pending_time = $time_estimate - $total_minutes;
 $logged_user_pgs = logged_user()->getPermissionGroupIds();
 $can_manege_time = can_access_pgids($logged_user_pgs, $object->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_READ);
 
@@ -27,6 +28,11 @@ if ($time_estimate >= 0 || $total_minutes >=0){?>
 			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>
 		</span></td></tr>
 <?php } ?>
+
+<tr>
+	<td><div style="font-weight:bold"><?php echo lang('pending time'). ':&nbsp;'?></div></td>
+	<td><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($pending_time * 60), 'hm', 60)?></td>
+</tr>
 </table>
 
 <div class="desc"><?php echo lang('percent completed detail', isset($counter) ? $counter : '0') ?></div>

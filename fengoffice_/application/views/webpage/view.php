@@ -3,7 +3,7 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 	add_page_action(lang('open weblink'), clean($object->getUrl()), "ico-open-link", "_blank", null, true);
 	if (!$object->isTrashed()) {
 		if ($object->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $object->getEditUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'webpage', a:'edit', params: {id:".$object->getId()."}});", 'ico-edit', null, null, true);
 			if (!$object->isArchived()){
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $object->getArchiveUrl() ."');", 'ico-archive-obj');
 			}else{
@@ -32,7 +32,7 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 		tpl_assign("content_template", array('view_content', 'webpage'));
 		tpl_assign("object", $object);
 		tpl_assign('iconclass', $object->isTrashed()? 'ico-large-weblink-trashed' : ($object->isArchived() ? 'ico-large-weblink-archived' : 'ico-large-weblink')); 
-		tpl_assign('title', "<a class=\"link-ico ico-open-link\" target=\"_blank\" href=\"$url\">$title</a>");
+		//tpl_assign('title', "<a class=\"link-ico ico-open-link\" target=\"_blank\" href=\"$url\">$title</a>");
 		
 		$this->includeTemplate(get_template_path('view', 'co'));
 	?>

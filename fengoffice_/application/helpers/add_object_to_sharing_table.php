@@ -36,7 +36,7 @@
 		$sql_values .= ($sql_values == "" ? "" : ",") . "($id, $user_id, NOW())";
 	}
 	if ($sql_values != "") {
-		DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table_flags (object_id, created_by_id, execution_date) VALUES $sql_values");
+		DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table_flags (object_id, created_by_id, execution_date) VALUES $sql_values ON DUPLICATE KEY UPDATE object_id=object_id");
 	}
 	
 	foreach ($ids as $id) {

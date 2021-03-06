@@ -35,8 +35,6 @@ og.core_dimensions = {
 					if (n.parentNode) item.expandPath(n.parentNode.getPath(), false);
 					n.select();
 				}
-				
-				setTimeout(function() {og.Breadcrumbs.refresh(n)},200) ;
 			}
 		});
 	},

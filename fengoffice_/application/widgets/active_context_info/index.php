@@ -12,6 +12,37 @@ if(isset($context)){
 	}	
 }
 
-if (count($members) > 0) {
-	include_once 'template.php';
+if (count($members) == 1) {
+	$member = $members[0];
+	
+	$prop_html = "";
+	Hook::fire("render_widget_member_information", $member, $prop_html);
+	
+	$ot = ObjectTypes::findById($member->getObjectTypeId());
+	if ($ot->getName()=='project_folder' || $ot->getName()=='customer_folder') {
+		$ot = ObjectTypes::findByName('folder');
+	}
+	
+	$cp_html = "";
+	$custom_properties = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($ot->getId());
+	foreach ($custom_properties as $cp) {
+		$cp_name = $cp->getName();
+		$cp_values = MemberCustomPropertyValues::getMemberCustomPropertyValues($member->getId(), $cp->getId());
+		
+		$first = true;
+		foreach ($cp_values as $cp_val) {
+			if (!$first) {
+				$cp_html .= ", ";
+			} else {
+				$cp_html .= '<div class="cp-info"><span class="bold">'.$cp_name.': </span>';
+			}
+			$first = false;
+			$cp_html .= $cp_val->format_value();
+		}
+		if ($cp_html != "") $cp_html .= '</div>';
+	}
+	
+	if (trim($prop_html . $cp_html) != "") {
+		include_once 'template.php';
+	}
 }

@@ -12,6 +12,8 @@ ogTasks.Users = [];
 ogTasks.Companies = [];
 ogTasks.Milestones = [];
 
+ogTasks.TotalCols = {};
+
 ogTasks.Groups = [];
 
 ogTasks.redrawGroups = true;
@@ -36,6 +38,7 @@ ogTasksTask = function(){
 	this.priority = 200;
 	this.milestoneId;
 	this.assignedToId;
+	this.assignedById;
 	this.dueDate;
 	this.startDate;
 	this.workingOnIds;
@@ -94,6 +97,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.pr) this.priority = tdata.pr; else this.priority = 200;
 	if (tdata.mid) this.milestoneId = tdata.mid; else this.milestoneId = null;
 	if (tdata.atid) this.assignedToId = tdata.atid; else this.assignedToId = null;
+	if (tdata.assigned_by_id) this.assignedById = tdata.assigned_by_id; else this.assignedById = null;
 	if (tdata.dd) this.dueDate = tdata.dd; else this.dueDate = null;
 	if (tdata.sd) this.startDate = tdata.sd; else this.startDate = null;
 	if (tdata.wid) this.workingOnIds = tdata.wid; else this.workingOnIds = null;
@@ -109,6 +113,12 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.members) this.members = tdata.members; else this.members = [];
 	//if (tdata.estimatedTime) this.estimatedTime =  Math.round( tdata.estimatedTime * 10  / 60 ) / 10; else this.estimatedTime = '' ;
 	if (tdata.et) this.estimatedTime = tdata.et; else this.estimatedTime = '';
+	
+	if (tdata.pending_time) this.pending_time = tdata.pending_time; else this.pending_time = 0;
+	if (tdata.pending_time_string) this.pending_time_string = tdata.pending_time_string; else this.pending_time_string = '';
+	if (tdata.worked_time) this.worked_time = tdata.worked_time; else this.worked_time = 0;
+	if (tdata.worked_time_string) this.worked_time_string = tdata.worked_time_string; else this.worked_time_string = '';
+	
 	if (tdata.te) this.TimeEstimate = tdata.te; else this.TimeEstimate = 0;
 	if (tdata.depCount) this.depCount = tdata.depCount; else this.depCount = null;
 	if (tdata.memPath) this.memPath = tdata.memPath; else this.memPath = [];
@@ -174,6 +184,7 @@ ogTasks.loadDataFromHF = function(){
 
 
 ogTasks.loadData = function(data){
+	
 	var i;
 	this.Tasks = [];
 	for (i in data['tasks']){
@@ -209,6 +220,19 @@ ogTasks.loadData = function(data){
 		}
 	}
 	
+	this.TotalCols = {};
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	var drawOptions = topToolbar.getDrawOptions();	
+	if (drawOptions.show_time_estimates) {
+		this.TotalCols.estimatedTime = {title: 'estimated', group_total_field: 'TimeEstimate', row_field: 'estimatedTime'};
+	}
+	if (drawOptions.show_time_pending) {
+		this.TotalCols.pendingTime = {title: 'pending', group_total_field: 'pending_time', row_field: 'pending_time_string'};	
+	}
+	if (drawOptions.show_time_worked) {
+		this.TotalCols.workedTime = {title: 'worked', group_total_field: 'worked_time', row_field: 'worked_time_string'};	
+	}
+	
 	this.AllUsers = [];
 	for (i in data['allUsers']){
 		var udata = data['allUsers'][i];
@@ -228,17 +252,21 @@ ogTasks.loadData = function(data){
 	this.Milestones = [];
 	for (i in data['internalMilestones']){
 		var mdata = data['internalMilestones'][i];
+		if (typeof(mdata) == 'function') continue;
 		if (mdata.id){
 			with (mdata) {
 				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,true,is_urgent);
 			}
-			if (mdata.compId) milestone.completedById = mdata.compId;
-			if (mdata.compOn) milestone.completedOn = mdata.compOn;
-			this.Milestones[ogTasks.Milestones.length] = milestone;
+			if (milestone) {
+				if (mdata.compId) milestone.completedById = mdata.compId;
+				if (mdata.compOn) milestone.completedOn = mdata.compOn;
+				this.Milestones[ogTasks.Milestones.length] = milestone;
+			}
 		}
 	}
 	for (i in data['externalMilestones']){
 		var mdata = data['externalMilestones'][i];
+		if (typeof(mdata) == 'function') continue;
 		if (mdata.id){
 			with (mdata) {
 				var milestone = new ogTasksMilestone(id,t,dd,tnum,tc,false,is_urgent);
@@ -252,6 +280,7 @@ ogTasks.loadData = function(data){
 	this.ObjectSubtypes = [];
 	for (i in data['objectSubtypes']){
 		var otdata = data['objectSubtypes'][i];
+		if (typeof(otdata) == 'function') continue;
 		if (otdata.id){
 			var ot =  new ogTasksObjectSubtype(otdata.id,otdata.name);
 			this.ObjectSubtypes[ogTasks.ObjectSubtypes.length] = ot;
@@ -261,6 +290,7 @@ ogTasks.loadData = function(data){
 	this.DependencyCount = [];
 	for (i in data['dependencyCount']){
 		var dcdata = data['dependencyCount'][i];
+		if (typeof(dcdata) == 'function') continue;
 		if (dcdata.id){
 			var dc =  new ogTasksDependencyCount(dcdata.id, dcdata.count, dcdata.dependants);
 			this.DependencyCount[ogTasks.DependencyCount.length] = dc;
@@ -679,7 +709,7 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 					break;
 				default:
 			}
-			if (!swap && resolveByName){
+			if (!swap && resolveByName && tasks[j]){
 				swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
 			}
 			if (swap){
@@ -1138,3 +1168,11 @@ og.addTaskUserChanged = function(genid, user_id){
 		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = (user > 0 && !comp_obj) ? 'block':'none';
 	}
 }
+
+$(function (){
+	og.eventManager.addListener('after ogTasks.Groups list completely loaded',function(){
+		var btns = $(".tasksActionsBtn").toArray();			
+		og.initPopoverBtns(btns);
+	});
+	
+ });

@@ -137,6 +137,7 @@ og.checkFileName = function(genid) {
 			caller: this,
 			callback: function(success, data) {
 				og.checkFileNameCallback(success, data, genid);
+				og.resize_modal_form();
 			}
 		});
 	}, 100);
@@ -256,7 +257,7 @@ og.updateFileName = function(genid, name) {
 		og.checkFileName(genid);
 	else
 		document.getElementById(genid + 'addFileFilename').style.display = 'inline';
-		
+	
 }
 
 
@@ -352,8 +353,18 @@ og.addDocumentSubmit = function(genid){
 		return true;
 	}
 	
-	og.showAddDocumentDialog(genid);
-	return false;
+	var commentsRequired = (Ext.getDom(genid + "commentsRequired").value == 1) && (!form.autosave || form.autosave.value == 0);
+	if (commentsRequired) {
+		og.showAddDocumentDialog(genid);
+		return false;
+	} else {
+		
+		var editor = og.getCkEditorInstance(genid + 'ckeditor');
+		if (editor) form['fileContent'].value = editor.getData();
+		else form['fileContent'].value = "";
+		
+		return true;
+	}
 }
 
 

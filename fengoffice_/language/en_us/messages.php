@@ -203,9 +203,9 @@
     'success add event type' => 'Event Type has been added',
     'success delete event type' => 'Event Type has been deleted',
     
-    'success add webpage' => 'Web link has been added',
-    'success edit webpage' => 'Web link has been updated',
-    'success deleted webpage' => 'Web link has been deleted',
+    'success add webpage' => 'Link has been added',
+    'success edit webpage' => 'Link has been updated',
+    'success deleted webpage' => 'Link has been deleted',
     
     'success add chart' => 'Chart has been added',
     'success edit chart' => 'Chart has been updated',
@@ -363,8 +363,8 @@
 	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
-    'system error message' => 'We are sorry, but a fatal error prevented Feng Office from executing your request. An Error Report has been sent to the administrator.',
-    'execute action error message' => 'We are sorry, but Feng Office is not currently able to execute your request. An Error Report has been sent to the administrator.',
+    'system error message' => 'We are sorry, an error prevented Feng Office from executing your request.<br />Please contact your Feng Office administrator.<br /><br />To request official support, please <a href="mailto:contact@fengoffice.com" style="text-decoration:underline;">contact Feng Office</a>',
+    'execute action error message' => 'We are sorry, an error prevented Feng Office from executing your request.<br />Please contact your Feng Office administrator.<br /><br />To request official support, please <a href="mailto:contact@fengoffice.com" style="text-decoration:underline;">contact Feng Office</a>',
     
     // Log
     'log add projectmessages' => '\'{0}\' added',
@@ -704,7 +704,7 @@
   	'success sending reminders' => '{0} reminders sent.',
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to create or edit people on these workspaces: {0}',
   
-  	'weblink dnx' => 'Requested weblink doesn\'t exist.',
+  	'weblink dnx' => 'Requested link doesn\'t exist.',
   
   	'success markasread files' => 'Marked as read',
   	'success markasunread files' => 'Marked as unread',
@@ -756,7 +756,7 @@
 	'the milestone notification' => 'the milestone',
   	'the task notification' => 'the task',
   	'the webpage notification' => 'the webpage',
-        'the weblink notification' => 'the weblink',
+    'the weblink notification' => 'the link',
   	'the timeslot notification' => 'the timeslot',
         'the time notification' => 'the timeslot',
   
@@ -768,6 +768,8 @@
   	'success delete member' => '{0} has been deleted',
   	'disable' => 'Inactivate',
   	'and xx more' => 'and {0} more.',
+  	
+  	'permissions successfully saved' => 'Permissions saved successfully',
   ); // array
 
 ?>

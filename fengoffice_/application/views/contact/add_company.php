@@ -8,70 +8,76 @@
 		$form_action = $company->getEditUrl();
 	}
 	$renderContext = has_context_to_render($company->manager()->getObjectTypeId());
-	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());	
+	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+	$categories = array(); Hook::fire('object_edit_categories', $object, $categories);
 ?>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_action ?>" method="post">
 
 
 <div class="adminAddCompany">
-  <div class="adminHeader">
-  	<div class="adminHeaderUpperRow">
-  		<div class="adminTitle"><table style="width:535px"><tr><td>
-  			<?php echo $company->isNew() ? lang('new company') : lang('edit company') ?>
-  		</td><td style="text-align:right">
-  			<?php echo submit_button($company->isNew() ? lang('add company') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
-  		</td></tr></table></div>
-  	</div>
-  	
-  
-  
-  	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-  	
-  	<div style="padding-top:5px">
-	  	<?php if ( $renderContext ) :?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_context_div',this)"><?php echo lang('context') ?></a> -
-		<?php endif; ?>
-			<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
-		<?php } ?>
-		<?php foreach ($categories as $category) { ?>
-			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
-		<?php } ?>
+
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo $company->isNew() ? lang('new company') : lang('edit company') ?>
 	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
+
+  <div>
+	<div class="coInputName">
+	<?php echo text_field('company[first_name]',  array_var($company_data, 'first_name'), array('class' => 'title', 'id' => $genid . 'clientFormName', 'placeholder' => lang('type name here'))) ?>
+	</div>
+		
+	<div class="coInputButtons">
+		<?php echo submit_button($company->isNew() ? lang('add company') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
+	</div>
+	<div class="clear"></div>
+  </div>
+</div>
+
+<div class="coInputMainBlock">
+  <div id="<?php echo $genid?>tabs" class="edit-form-tabs">
+
+	<ul id="<?php echo $genid?>tab_titles">
 	
-	<?php if ( $renderContext ) :?>
-		<div id="<?php echo $genid ?>add_company_select_context_div" style="display:none">
-			<fieldset>
-				<legend><?php echo lang('context')?></legend>
-				<?php 
+		<li><a href="#<?php echo $genid?>company_data"><?php echo lang('company data') ?></a></li>
+		
+		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
+		<?php } ?>
+		
+		<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
+		
+		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
+		<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
+		<?php } ?>
+		
+		<?php foreach ($categories as $category) { ?>
+		<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
+		<?php } ?>
+	</ul>
+	
+	<div class="contact_form_container form-tab" id="<?php echo $genid?>company_data">
+		<div class="information-block no-border-bottom">
+			<!-- <div class="main-data-title"><?php //echo lang('main data')?></div> -->
+			
+			<?php if ( $renderContext ) :?>
+			<div id="<?php echo $genid ?>add_company_select_context_div"><?php 
 				$listeners = array('on_selection_change' => 'og.reload_subscribers("'.$genid.'",'.$object->manager()->getObjectTypeId().')');
 				if ($company->isNew()) {
-					render_member_selectors($company->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners));
+					render_member_selectors($company->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), null, null, false);
 				} else {
-					render_member_selectors($company->manager()->getObjectTypeId(), $genid, $company->getMemberIds(), array('listeners' => $listeners)); 
+					render_member_selectors($company->manager()->getObjectTypeId(), $genid, $company->getMemberIds(), array('listeners' => $listeners), null, null, false); 
 				} ?>
-			</fieldset>
-		</div>
-	<?php endif ;?>	
-	
-	<div style="margin-left:12px;margin-right:12px;" class="contact_form_container">
-		<div class="information-block">
-			<div class="main-data-title"><?php echo lang('main data')?></div>
-			
-			<div class="input-container">
-				<?php echo label_tag(lang('name'), $genid . 'clientFormName') ?>
-				<?php echo text_field('company[first_name]',  array_var($company_data, 'first_name'), array('class' => 'title', 'id' => $genid . 'clientFormName')) ?>
 			</div>
+			<?php endif ;?>
+		
 			<div class="clear"></div>
 			
 			<div class="input-container">
 				<?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?>
-				<?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormEmail', 'style' => 'width: 260px;')) ?>
+				<?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormEmail', 'style' => 'width: 247px;')) ?>
 			</div>
 			<div class="clear"></div>
 			
@@ -114,7 +120,7 @@
 	        
 	        <div class="input-container">
 				<div><?php echo label_tag(lang('logo')) ?></div>
-	            <div style="float:left;" id="<?php echo $genid?>_avatar_container" class="avatar-container">
+	            <div style="float:left;" id="<?php echo $genid?>_avatar_container" class="picture-container">
 	            	<img src="<?php echo $company->getPictureUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
 	            </div>
 	            <div style="padding:20px 0 0 20px; text-decoration:underline; float:left; display:none;">
@@ -141,24 +147,19 @@
 	        <div class="input-container">
 		      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
 		      <div style="float:left;width:600px;" class="notes-container">
-		      <?php echo textarea_field('company[comments]', array_var($company_data, 'comments'), array('id' => $genid.'profileFormNotes', 'style' => 'width: 100%;')) ?>
+		      <?php echo textarea_field('company[comments]', array_var($company_data, 'comments'), array('id' => $genid.'profileFormNotes', 'style' => 'width: 100%;', 'rows' => 5)) ?>
 		      </div>
 		      <div class="clear"></div>
 		    </div>
 		</div>
 	</div>
 	
-	<div id='<?php echo $genid ?>add_custom_properties_div' style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
-		<fieldset>
-			<legend><?php echo lang('custom properties') ?></legend>
-			<?php echo render_object_custom_properties($object, false) ?>
-			<?php echo render_add_custom_properties($object); ?>
-		</fieldset>
+	<div id='<?php echo $genid ?>add_custom_properties_div' class="form-tab">
+		<?php echo render_object_custom_properties($object, false) ?>
+		<?php echo render_add_custom_properties($object); ?>
 	</div>
 	
-	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
-		<fieldset>
-		<legend><?php echo lang('object subscribers') ?></legend>
+	<div id="<?php echo $genid ?>add_subscribers_div" class="form-tab">
 		<?php $subscriber_ids = array();
 			if (!$object->isNew()) {
 				$subscriber_ids = $object->getSubscriberIds();
@@ -169,35 +170,23 @@
 		<div id="<?php echo $genid ?>add_subscribers_content">
 		<?php //echo render_add_subscribers($object, $genid); ?>
 		</div>
-		</fieldset>
 	</div>
 	
 	
 
 	<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
-	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
-	<fieldset>
-		<legend><?php echo lang('linked objects') ?></legend>
+	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div" class="form-tab">
 		<?php echo render_object_link_form($object) ?>
-	</fieldset>	
 	</div>
 	<?php } // if ?>
 		
 	
-  <?php foreach ($categories as $category) { ?>
-	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
-	<fieldset>
-		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+	<?php foreach ($categories as $category) { ?>
+	<div id="<?php echo $genid . $category['name'] ?>" class="form-tab">
 		<?php echo $category['content'] ?>
-	</fieldset>
 	</div>
 	<?php } ?>
-	
-	
-	
-	
-	
-  
+  </div>
 <?php 
 	if(!$company->isNew() && $company->isOwnerCompany()) { 
 		echo submit_button(lang('save changes'));
@@ -205,6 +194,12 @@
 		echo submit_button($company->isNew() ? lang('add company') : lang('save changes'));
 	}
 ?>
+</div>
+	
+	
+	
+	
+  
 </div>
 </div>
 </form>
@@ -277,5 +272,7 @@ $(document).ready(function() {
 	<?php } ?>
 	
 	Ext.get('<?php echo $genid ?>clientFormName').focus();
+
+	$("#<?php echo $genid?>tabs").tabs();
 });
 </script>

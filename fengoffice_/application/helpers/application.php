@@ -29,9 +29,11 @@ function render_user_box(Contact $user) {
 	
 	if (logged_user()->isExecutiveGroup()) {
 		$crumbs[] = array(
-			'url' => get_url('administration', 'index'),
-			'target' => 'administration',
-			'text' => lang('administration'),
+			'id' => "userbox-settings",
+			'url' => '#',
+			'text' => lang('settings'),
+			//'onclick' => "var more_panel = Ext.getCmp('more-panel'); if (more_panel) Ext.getCmp('tabs-panel').setActiveTab(more_panel); else og.openLink(og.getUrl('more','index',{more_settings_expanded:1})); return false;",
+			'onclick' => "og.openLink(og.getUrl('more','index',{more_settings_expanded:1})); return false;",
 		);
 	}
 	
@@ -290,7 +292,6 @@ function assign_to_select_box($list_name, $context = null, $selected = null, $at
 	        triggerAction: 'all',
 	        selectOnFocus:true,
 	        width:160,
-	        tabIndex: '150',
 	        valueField: 'value',
 	        emptyText: (lang('select user or group') + '...'),
 	        valueNotFoundText: ''
@@ -627,7 +628,7 @@ function render_link_to_object($object, $text=null, $reload=false){
 	if ($text == null) $text = lang('link object');
 	$reload_param = $reload ? '&reload=1' : ''; 
 	$result = '';
-	$result .= '<a href="#" class="link-ico ico-add" onclick="og.ObjectPicker.show(function (data) {' .
+	$result .= '<a href="#" class="action-ico ico-add" onclick="og.ObjectPicker.show(function (data) {' .
 			'if (data) {' .
 				'var objects = \'\';' .
 				'for (var i=0; i < data.length; i++) {' .
@@ -881,10 +882,12 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 	$id = array_var($attributes, "id", gen_id());
 	$attributes["id"] = $id;
 	$render_to = gen_id().$name;
+	$max_height = array_var($attributes, 'max_height', 32);
 	
 	$html = '<div id="'.$render_to.'"></div>
 		<script>
 		og.render_autocomplete_field({
+			grow_max: '.$max_height.',
 			render_to: "'.$render_to.'",
 			name: "'.$name.'",
 			id: "'.$id.'",
@@ -899,7 +902,6 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 
 
 function render_add_reminders($object, $context, $defaults = null, $genid = null, $type_object = '') {
-	require_javascript('og/Reminders.js');
 	if(!is_array($defaults)) $defaults = array();
 	if($type_object == "event"){
 		$def = explode(",", user_config_option("reminders_events"));
@@ -943,7 +945,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	}
 	$output = '
 		<div id="'.$genid.'" class="og-add-reminders">
-			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', this);return false;">' . lang("add object reminder") . '</a>
+			<a id="'.$genid.'-link" class="action-ico ico-add" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', this);return false;">' . lang("add object reminder") . '</a>
 		</div>
 		<script>
 		og.reminderTypes = ['.$typecsv.'];
@@ -1462,11 +1464,19 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 		$dimension_id  = $dimension_info['dimension_id'];
 		if (is_null($genid)) $genid = gen_id();
 		$selected_members_json = json_encode($selected_members);
-		$component_id = "$genid-member-chooser-panel-$dimension_id";
+		if (!isset($options['component_id'])) {
+			$component_id = "$genid-member-chooser-panel-$dimension_id";
+		} else {
+			$component_id = $options['component_id'];
+		}
 		
 		?>
 		 
-		<input id='<?php echo $genid . array_var($options, 'pre_hf_id', '') ?>members' name='<?php echo array_var($options, 'pre_hf_id', '') ?>members' type='hidden' ></input>
+		<?php if( isset($options['use_ajax_member_tree']) && $options['use_ajax_member_tree'] ) {?>
+		<?php }else{ ?>
+			<input id='<?php echo $genid . array_var($options, 'pre_hf_id', '') ?>members' name='<?php echo array_var($options, 'pre_hf_id', '') ?>members' type='hidden' ></input> 
+		<?php } ?>
+
 		<div id='<?php echo $component_id ?>-container' class="<?php echo array_var($options, 'pre_class', '')?>single-tree member-chooser-container" ></div>
 		
 		<script>
@@ -1487,33 +1497,76 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 			var select_root = <?php echo (array_var($options, 'select_root') ? '1' : '0') ?>;
 			var config = {
 				id: '<?php echo $component_id ?>-tree',
+				genid: '<?php echo $genid ?>',
 				title: '<?php echo $dimension_name ?>',
 				dimensionId: <?php echo $dimension_id ?>,
+				search_placeholder: '<?php echo array_var($options, 'search_placeholder', lang('search') )?>',
 				filterContentType: '<?php echo array_var($options, 'filterContentType', 1)?>',		
 				collapsed: <?php echo array_var($options, 'collapsed') ? 'true' : 'false'?>,
 				collapsible: <?php echo array_var($options, 'collapsible') ? 'true' : 'false'?>,
 				all_members: <?php echo array_var($options, 'all_members') ? 'true' : 'false'?>,
 				objectTypeId: '<?php echo array_var($options, 'object_type_id', 0) ?>',
-				isMultiple: '<?php echo array_var($dimension_info, 'is_multiple', 0) ?>',
+				isMultiple: '<?php echo array_var($options, 'is_multiple', 0) ?>',
 				selModel: <?php echo (array_var($dimension_info, 'is_multiple'))?
 					'new Ext.tree.MultiSelectionModel()':
 					'new Ext.tree.DefaultSelectionModel()'?>,
-				height: 270,
+				height: <?php echo array_var($options, 'height', '270') ?>,
+				width: <?php echo array_var($options, 'width', '385') ?>,
 				listeners: {'tree rendered': function (t) {if (select_root) t.root.select();}}
 			};
 
 			<?php if( isset ($options['allowedMemberTypes'])) : ?>
-				config.allowedMemberTypes = <?php echo json_encode($options['allowedMemberTypes']) ?> ;
+				config.allowedMemberTypes = <?php echo json_encode($options['allowedMemberTypes']) ?>;
 			<?php endif; ?>
 
 			<?php if( isset ($options['checkBoxes']) && !$options['checkBoxes']) : ?>
-				config.checkBoxes = false ;
+				config.checkBoxes = false;
 			<?php endif; ?>
 
-			var tree = new og.MemberChooserTree ( config );
+			<?php if( isset ($options['loadUrl']) ) : ?>
+				config.loadUrl = '<?php echo $options['loadUrl'] ?>';
+			<?php endif; ?>
+
+			<?php if( array_var($options, 'enableDD')) : ?>
+				config.enableDD = true;
+				config.dropConfig = {
+					ddGroup: '<?php echo array_var($options, 'ddGroup')?>',
+					allowContainerDrop: true
+				};
+				config.dragConfig = {
+					ddGroup: '<?php echo array_var($options, 'ddGroup')?>',
+					containerScroll: true
+				};
+			<?php endif; ?>
+			
+			<?php if( isset ($options['loadUrl']) ) : ?>
+				config.loadUrl = '<?php echo $options['loadUrl'] ?>';
+			<?php endif; ?>
+
+			<?php if( isset($options['use_ajax_member_tree']) && $options['use_ajax_member_tree'] ) {?>
+				<?php if( isset($options['select_function'])) {?>
+					config.selectFunction = '<?php echo $options['select_function'] ?>';
+				<?php }else{ ?>
+					config.selectFunction = '<?php echo ""?>';
+				<?php } ?>
+				var tree = new og.MemberTreeAjax ( config );
+			<?php }else{ ?>
+				var tree = new og.MemberChooserTree ( config );
+			<?php } ?>
+			
+			<?php if(array_var($options, 'enableDD') && array_var($options, 'enddrag_function')) : ?>
+				tree.on('enddrag', <?php echo array_var($options, 'enddrag_function')?>);
+			<?php endif; ?>
+			<?php if(array_var($options, 'enableDD') && array_var($options, 'beforenodedrop_function')) : ?>
+				tree.on('beforenodedrop', <?php echo array_var($options, 'beforenodedrop_function')?>);
+			<?php endif; ?>
+			<?php if(array_var($options, 'enableDD') && array_var($options, 'startdrag_function')) : ?>
+				tree.on('startdrag', <?php echo array_var($options, 'startdrag_function')?>);
+			<?php endif; ?>
+			
 			memberChooserPanel.add(tree);
 			og.can_submit_members = true;
-
+			
 			<?php if (!isset($options['dont_load']) || !$options['dont_load']) : ?>
 			memberChooserPanel.initialized = true;
 			memberChooserPanel.doLayout();

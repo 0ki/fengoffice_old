@@ -113,7 +113,7 @@
     // Validate add / edit file form
     'folder id required' => 'Please select folder',
     'filename required' => 'Filename is required',
-  	'weblink required' => 'Weblink url is required',
+  	'weblink required' => 'Link url is required',
     
     // File revisions (internal)
     'file revision file_id required' => 'Revision needs to be connected with a file',
@@ -208,6 +208,9 @@
   	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'No file could be uploaded, missing temporary folder.',
   	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'Could not write file to disk.',
   	'upload error msg UPLOAD_ERR_EXTENSION' => 'A PHP extension stopped the file upload.',
+  	
+  	'failed to authenticate email account' => 'Failed to authenticate email account',
+  	'failed to authenticate email account desc' => 'Could not authenticate account "{0}" to send notifications, please make sure that the account\'s username and password are correct.',
   ); // array
 
 ?>

@@ -11,10 +11,18 @@
 
 
 <div class="adminClients" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('clients') ?></div>
-  </div>
-  <div class="adminSeparator"></div>
+	<div class="coInputHeader">
+	  <div>
+		<div class="coInputName">
+			<div class="coInputTitle">
+			  	<?php echo lang('clients') ?>
+			</div>
+		</div>
+		
+		<div class="clear"></div>
+	  </div>
+	</div>
+
   <div class="adminMainBlock">
 
 <?php if(isset($clients) && is_array($clients) && count($clients)) { ?>

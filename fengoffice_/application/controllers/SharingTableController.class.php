@@ -118,14 +118,44 @@ class  SharingTableController extends ApplicationController {
 				$stManager->delete("object_id IN (".implode(',',$oids).") AND group_id = '$group'");
 			}
 		}
-		// 2. POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
+		
+		// 2.0 POPULATE THE SHARING TABLE AGAIN WITH THE READ-PERMISSIONS (If there are)
+		// 2.1 Check mandatory dimensions, if an objects belongs to a member in a mandatory dimension then the permission group must have permissions in the member, 
+		//     if user doesn't have permissions ther, then the user cannot read the object, no matter what other permissions are active 
+		$enabled_dimensions_sql = "";
+		$enabled_dimensions_ids = implode(',', config_option('enabled_dimensions'));
+		if ($enabled_dimensions_ids != "") {
+			$enabled_dimensions_sql = "AND id IN ($enabled_dimensions_ids)";
+		}
+		
+		$mandatory_dim_ids = Dimensions::findAll(array('id' => true, 'conditions' => "`defines_permissions`=1 $enabled_dimensions_sql AND `permission_query_method`='".DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY."'"));
+		$mdim_conds = "";
+		if (count($mandatory_dim_ids) > 0) {
+			foreach ($mandatory_dim_ids as $md_id) {
+				$mdim_conds .= "
+				AND IF (
+					(SELECT count(om1.object_id) FROM ".TABLE_PREFIX."object_members om1 INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id 
+					WHERE om1.object_id=o.id AND om1.is_optimization=0 AND m1.dimension_id=$md_id)=0, 
+						true, 
+						EXISTS (SELECT cmp.permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.permission_group_id=$group AND cmp.object_type_id=o.object_type_id
+							AND cmp.member_id IN (
+								SELECT om2.member_id FROM ".TABLE_PREFIX."object_members om2 WHERE om2.object_id=o.id AND om2.is_optimization=0 AND om2.member_id IN (
+									SELECT m2.id FROM ".TABLE_PREFIX."members m2 WHERE m2.dimension_id=$md_id
+								)
+							)
+						)
+				)";
+			}
+		} 
+		
+		// 2.2 Select objects that have read permissions for this permission group
 		foreach ($all_read_conditions as $read_conditions) {
 			if (isset($read_conditions) && count($read_conditions)) {
 				$st_new_rows = "
 					SELECT $group AS group_id, object_id $from
-					WHERE om.is_optimization=0 AND (". implode(' OR ', $read_conditions) . ")";
+					WHERE om.is_optimization=0 AND (". implode(' OR ', $read_conditions) . ") $mdim_conds";
 	
-				$st_insert_sql =  "INSERT INTO ".TABLE_PREFIX."sharing_table(group_id, object_id) $st_new_rows ";
+				$st_insert_sql =  "INSERT INTO ".TABLE_PREFIX."sharing_table(group_id, object_id) $st_new_rows ON DUPLICATE KEY UPDATE ".TABLE_PREFIX."sharing_table.group_id=".TABLE_PREFIX."sharing_table.group_id;";
 				DB::execute($st_insert_sql);
 			}
 		}
@@ -176,7 +206,7 @@ class  SharingTableController extends ApplicationController {
 					foreach ($ids as $id) {
 						$values .= ($values == "" ? "" : ",") . "('$id','$group')";
 					}
-					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values;");
+					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values ON DUPLICATE KEY UPDATE group_id=group_id;");
 				}
 			}
 		}

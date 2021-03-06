@@ -4,7 +4,6 @@
   * Class that handles integer config values
   *
   * @version 1.0
-  * @author Carlos Palma <chonwil@gmail.com>
   */
   class RootDimensionsConfigHandler extends ConfigHandler {
     
@@ -48,7 +47,12 @@
     * @return mixed
     */
     function rawToPhp($value) {
-      return explode(",", $value);
+      $tmp = explode(",", $value);
+      $res = array();
+      foreach ($tmp as $val) {
+      	if (trim($val) != "") $res[] = $val;
+      }
+      return $res;
     } // rawToPhp
     
 	function phpToRaw($value) {

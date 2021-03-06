@@ -275,7 +275,6 @@ class ToolController extends ApplicationController {
 						// if found in a file => set the (key,value) in the grouped langs for this file and continue with next translation
 						if (array_key_exists($key, $langs)) {
 							$grouped_langs[$fname][$key] = $value;
-							//break;
 						}
 					}
 				}

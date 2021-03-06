@@ -714,10 +714,10 @@
 	// buttons
 	$btn_style = 'border:1px solid #bbb; width:35px; margin:2px;';
 	$html .= "<td align='center' class='og-double-list-sel-btns'>";
-	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to right')."'><a href='#' class='ico-2arrowright' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.selectAll('$id')\">&nbsp;</a></div>";
-	$html .= "<div style='margin: 5px 10px 15px;' title='".lang('move to right')."'><a href='#' class='ico-arrowright' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.selectOne('$id')\">&nbsp;</a></div>";
-	$html .= "<div style='margin: 15px 10px 5px;' title='".lang('move to left')."'><a href='#' class='ico-arrowleft' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.deselectOne('$id')\">&nbsp;</a></div>";
-	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to left')."'><a href='#' class='ico-2arrowleft' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.deselectAll('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to right')."'><a href='#' class='ico-2arrowright' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.selectAll('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 5px 10px 15px;' title='".lang('move to right')."'><a href='#' class='ico-arrowright' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.selectOne('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 15px 10px 5px;' title='".lang('move to left')."'><a href='#' class='ico-arrowleft' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.deselectOne('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to left')."'><a href='#' class='ico-2arrowleft' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.deselectAll('$id')\">&nbsp;</a></div>";
 	$html .= "</td>";
 	
 	// 2nd box
@@ -725,8 +725,8 @@
 	$html .= "<td>" . select_box($name."_box2", $options2, $attributes) . "</td>";
 	
 	$html .= "<td>";
-	$html .= "<div style='margin: 2px;' title='".lang('move up')."'><a href='#' class='ico-upload' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.moveUp('$id', '_box2')\">&nbsp;</a></div>";
-	$html .= "<div style='margin: 2px;' title='".lang('move down')."'><a href='#' class='ico-download' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.moveDown('$id', '_box2')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 2px;' title='".lang('move up')."'><a href='#' class='ico-arrowup' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.moveUp('$id', '_box2')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 2px;' title='".lang('move down')."'><a href='#' class='ico-arrowdown' style='padding: 0 0 0 12px;' onclick=\"og.doubleListSelCtrl.moveDown('$id', '_box2')\">&nbsp;</a></div>";
 	$html .= "</td></tr></table>";
 	
 	// hidden fields containing the selection
@@ -762,3 +762,14 @@
   	return $html;
   }
   
+  
+  function mark_dao_validation_error_fields($e) {
+  	if ($e instanceof DAOValidationError) {
+  		$obj = $e->getObject();
+  		if (is_array($obj->getFieldsWithErrorsAfterValidation())) {
+  			foreach ($obj->getFieldsWithErrorsAfterValidation() as $f) {
+  				evt_add('mark_error_field', array('field' => $f));
+  			}
+  		}
+  	}
+  }

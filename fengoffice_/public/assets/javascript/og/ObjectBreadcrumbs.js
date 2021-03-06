@@ -1,3 +1,30 @@
+og.emptyBreadcrumbsToRefresh = new Array();
+
+og.eventManager.addListener('replace all empty breadcrumb',function(){
+	//before insert breadcrumbs we need to have all members that we need for breadcrumbs in og.dimensions
+	//CALLBACK
+	var callback = function(emptyBreadcrumbs){
+		for (var j = 0; j < emptyBreadcrumbs.length; j++) {
+			var id = emptyBreadcrumbs[j];
+			var members = og.getMemberFromOgDimensions(id, true);
+			
+			if (members.length > 0){
+				var member = members[0];
+				og.replaceAllEmptyBreadcrumbForThisMember (0,member);
+			}
+		}
+		
+		//init popover btns that are not initialized yet
+		var btns = $(".breadcrumbBtn.btnPopoverNotInitialized").toArray();
+		og.initBreadcrumbsBtns(btns);
+	}
+	
+	var members = og.getMembersFromServer(og.emptyBreadcrumbsToRefresh,callback,og.emptyBreadcrumbsToRefresh.slice());
+
+	//empty the array after refresh
+	og.emptyBreadcrumbsToRefresh.length = 0;
+});
+
 /*
  * dims array all dimensions with members for this breadcrumb
  * draw_all_members bool if true draw all members (breadcrumb_member_count preference ignored)
@@ -36,14 +63,8 @@ og.getRealCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_
 			if (isNaN(id)) continue;
 			
 			var m = members[id];
-			var extra_params = {
-					'draw_all_members':draw_all_members,
-					'skipped_dimensions':skipped_dimensions,
-					'show_archived':show_archived,
-					'fixed_mem_len':fixed_mem_len,
-					'show_link':show_link								
-					};
-			var texts = og.getMemberTextsFromOgDimensions(id, true, og.replaceAllBreadcrumbForThisMember, extra_params);
+			
+			var texts = og.getMemberTextsFromOgDimensions(id, true);
 			
 			if (texts.length == 0){				
 				texts.push({id:id, text:m.name, ot:m.ot, c:m.c});
@@ -102,7 +123,7 @@ og.getRealCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_
 				
 				
 				member_path_content += link;
-				if (i>0) member_path_content += "/";
+				if (i>0) member_path_content += " > ";
 			}
 			member_path_span += member_path_content + '</span>';
 			
@@ -145,15 +166,8 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_arch
 		
 		for (id in members) {
 			if (isNaN(id)) continue;
-			//get the member from og.dimensions and if is not there get it form the server and execute og.replaceAllBreadcrumbForThisMember on the callback
-			var extra_params = {
-								'draw_all_members':draw_all_members,
-								'skipped_dimensions':skipped_dimensions,
-								'show_archived':show_archived,
-								'fixed_mem_len':fixed_mem_len,
-								'show_link':show_link								
-								};
-			var members = og.getMemberFromOgDimensions(id, false, og.replaceAllBreadcrumbForThisMember, extra_params);
+			
+			var members = og.getMemberFromOgDimensions(id, false);
 			
 			if (members.length > 0){
 				var member = members[0];
@@ -179,23 +193,6 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_arch
 	}
 	
 	return all_bread_crumbs;
-}
-
-//this function is used as a callback if a member is not in og.dimensions
-og.replaceAllBreadcrumbForThisMember = function(dimension_id ,member, extra_params) {
-		
-	//replace all breadcrumb for this member
-	var dim = {};
-	dim[dimension_id] = {};
-	member_info ={
-				"id":member.id,
-				"ot":member.object_type_id,
-				"c":member.color,
-				"name":member.name
-	};
-	dim[dimension_id][member.id] = member_info;
-	   
-	$(".bread-crumb-"+member.id).replaceWith(og.getCrumbHtml(dim,extra_params.draw_all_members,extra_params.skipped_dimensions,extra_params.show_archived,extra_params.fixed_mem_len,extra_params.show_link));
 }
 
 og.getCrumbHtmlWithoutLinksMemPath = function(dims, draw_all_members, skipped_dimensions, show_archived, fixed_mem_len , total_length, genid) {
@@ -360,4 +357,349 @@ og.replaceCrumbHtmlWithoutLinks = function(dimension_id ,member, extra_params) {
 	var html = og.getCrumbHtmlWithoutLinks(member.id,dimension_id,extra_params.genid);	
 	$("#"+ extra_params.genid +"selected-member"+ member.id +" > .completePath").replaceWith(html);
 }
+
+og.replaceAllEmptyBreadcrumbForThisMember = function(dimension_id ,member, extra_params) {
+	//replace all breadcrumb for this member
+	var targets = ".empty-bread-crumb.bread-crumb-"+member.id;
+	var all_targets = $(targets);
+	
+	for (var j = 0; j < all_targets.length; j++) {
+		var new_target_id = 'bread-crumb-'+ Ext.id() + member.id;
+		var container_to_fill = $(all_targets[j]).data("container-to-fill");
+		var show_link = $(all_targets[j]).data("show-link");
+		$(all_targets[j]).parent().html('<span id="'+new_target_id+'" class="bread-crumb-'+ member.id +' member-path real-breadcrumb og-wsname-color-'+ member.color +'" data-container-to-fill="'+container_to_fill+'" data-show-link="'+show_link+'"></span>');
+		
+		og.insertBreadcrumb(member.id,new_target_id,false);//.activity-info .task-breadcrumb-container
+	}	
+}
+
+/* @container_to_fill is the class or the id of the container  example .container or #container
+ * this function return empty spams for each breadcrumb, so later we can update them with the correct width.
+ * after the returned html is inserted on the dom you have to fire the event 'replace all empty breadcrumb'
+ * */
+og.getEmptyCrumbHtml = function(dims,container_to_fill,skipped_dimensions,show_link) {
+	var all_bread_crumbs = "";
+	if (typeof show_link == "undefined" || show_link == null ) {
+		var show_link = true;
+	}
+	
+	//all_bread_crumbs += '<span class="obj-breadcrumb-container">';
+	for (x in dims) {
+		if (isNaN(x)) continue;
+		if (typeof skipped_dimensions != "undefined" && skipped_dimensions != null ) {
+			if (skipped_dimensions.indexOf(x) != -1) continue;
+		}
+		var dim = {};
+		var empty_bread_crumbs = "";
+		var members = dims[x];
+		
+		for (id in members) {
+			if (isNaN(id)) continue;
+									
+			//return a target to reload on the callback after get the member from the server if is necesary
+			empty_bread_crumbs += '<span class="member-path"><span class="bread-crumb-'+ id +' empty-bread-crumb member-path" data-container-to-fill="'+container_to_fill+'" data-show-link="'+show_link+'"></span></span>';
+			if(og.emptyBreadcrumbsToRefresh.indexOf(id) == -1){  
+				og.emptyBreadcrumbsToRefresh.push(id);
+			}
+		}
+		
+		all_bread_crumbs += empty_bread_crumbs;
+	}
+	
+	//all_bread_crumbs += '</span>';
+	return all_bread_crumbs;
+}
+
+/*
+ * member_id the member id
+ * target the class or id of the target to insert the breadcrumb
+ * container_to_fill the class or id of the breadcrumb container to be fill
+ * */
+og.insertBreadcrumb = function(member_id,target,from_callback) {
+	target = "#"+target;
+	var container_to_fill = $(target).data("container-to-fill");
+	var show_link = $(target).data("show-link");
+	
+	/*SINGLE BREADCRUMB SECTION*/
+	var extra_params = {										
+			};	
+	var members = og.getMemberTextsFromOgDimensions(member_id, true);
+	
+	//title must have all parents members names
+	var title = '';
+	members.reverse();
+	for (var i=0; i<members.length; i++) {
+		var m = members[i];
+		title += m.text;
+		if(m.id != member_id){
+			title += " • ";
+		}
+		member = m;
+	}
+	$(target).attr('title', title);	
+		
+	$(target).parent().data('object-type', member.ot);	
+		
+	//calculate the container width and check if thers more elements in the same container
+	var container_width = $(target).closest(container_to_fill).width();//.parent().parent() .closest(container_to_fill)
+	var container_current_childs = $(target).parent().parent().siblings();
+	var container_current_childs_width = 0;
+	for (var j = 0; j < container_current_childs.length; j++) {
+		container_current_childs_width += $(container_current_childs[j]).outerWidth(true);
+	}
+	container_width = container_width - container_current_childs_width;
+		
+	//we clone the element because the target or a parent can be not displayed and this can generate some problems to calculate child's widths
+	var clone = $(target).closest(container_to_fill).clone(true);
+	$('body').append(clone);
+	
+	var original_container = $(target).closest(container_to_fill);
+	original_container.html('');
+	
+	//reorder members in path (one from the end, one from the start) work1*work2*work3 ->  work1*...*work3
+	var last = true;
+	var ordained_members = new Array();
+	var length = members.length;
+	for (var i=1; i<= length; i++) {
+		if(last){
+			ordained_members.push(members.pop());			
+			last = false;
+		}else{
+			ordained_members.push(members.shift());			
+			last = true;
+		}
+	}
+	
+	//add all members
+	last = true;
+	var more_members = '<span class="more-members-separator">...<span class="bullet-separator"></span></span>';
+	$(target).prepend(more_members);
+	for (var i=0; i<ordained_members.length; i++) {		
+		var m = ordained_members[i];	
+		
+		var member_name = m.text;
+		if(show_link){
+			var onclick = "return false;";
+			if (og.additional_on_dimension_object_click[m.ot]) {
+				onclick = og.additional_on_dimension_object_click[m.ot].replace('<parameters>', m.id);
+			}  
+			
+			member_name = '<a onclick="'+onclick+';" href="#">'+ m.text +'</a>';
+		}
+		
+		
+		var member_text = '<span>'+member_name+' <span class="bullet-separator"></span></span>';
+		if(m.id == member_id){
+			member_text = '<span>'+member_name+'</span>';
+		}
+			
+		var childs = $(target).children();
+		
+		var childs_width = 0;
+		for (var j = 0; j < childs.length; j++) {
+			childs_width += $(childs[j]).outerWidth(true);
+		}
+			
+		//estimate the width of member text
+		var calc = '<span id="test_width" style="display:none">' + member_text + '</span>';
+		 $('body').append(calc);
+		 var member_text_width = $('#test_width').outerWidth(true) + 30;
+		 $('#test_width').remove();		 	
+		
+		//only add if there's free space
+		if(childs_width + member_text_width < container_width ){
+			if(i == ordained_members.length-1){
+				more_members = "";
+			}
+			if(last){
+				$(target).children( ".more-members-separator" ).replaceWith(more_members + member_text);	
+				last = false;
+			}else{
+				$(target).children( ".more-members-separator" ).replaceWith(member_text + more_members);	
+				last = true;
+			}			
+		}else{
+			if(i == 0){
+				$(target).children( ".more-members-separator" ).replaceWith(more_members + member_text);
+			}
+			break;
+		}		
+	}
+		
+	//Multiple Breadcrumb	
+	og.checkMultiMemberBreadcrumb(target,container_width);
+	
+	//remove the clone
+	var final_container = clone.clone(true);
+	original_container.replaceWith(final_container);
+	clone.remove();
+}
+
+//check if there are more member paths in the same breadcrumb container and if is necesary colapse them to objet types totals
+og.checkMultiMemberBreadcrumb = function(target, container_width) {	
+	var member_paths_in_container= $(target).parent().siblings(".member-path");
+	member_paths_in_container.push($(target).parent());
+	
+	var member_paths_in_container_width = 0;
+	var object_types_totals = {};
+	
+	//get the total width for the members in the container and count how many members there are for each dimension
+	for (var i = 0, length = member_paths_in_container.length; i < length; i++) {
+		member_paths_in_container_width += $(member_paths_in_container[i]).outerWidth(true);
+		var object_type = $(member_paths_in_container[i]).data("object-type");
+		
+		if (typeof(object_type) !== 'undefined'){
+			if (typeof(object_types_totals[object_type]) !== 'undefined'){
+				object_types_totals[object_type] = object_types_totals[object_type] + 1;
+			}else{
+				object_types_totals[object_type] = 1;
+			}	
+		}
+	}
+		
+	var total_paths = member_paths_in_container.length + 1;
+		
+	//if thers overflow colapse all breadcrumbs to objet types totals
+	if(member_paths_in_container_width > container_width){
+		var object_types_totals_text = "";
+		
+		object_types_totals_text += "<button class='members-total-colapsed breadcrumbBtn btnPopoverNotInitialized'>";
+		for (var prop in object_types_totals) {
+			var total = object_types_totals[prop];
+			var plural = "";
+			if(total > 1){
+				plural = "s";
+			}			
+			object_types_totals_text += "<span class='ctmBadge'>"+total+"</span> ";
+			object_types_totals_text += lang(og.objectTypes[prop].name+plural)+" ";						
+ 	    }
+		object_types_totals_text += "</button>";
+		
+		//remove old btns
+		var old_colapsed_btns = $(target).parent().parent().children(".members-total-colapsed");
+		if(old_colapsed_btns.length > 0){
+			for (var i = 0, length = old_colapsed_btns.length; i < length; i++) {
+				 $(old_colapsed_btns[i]).remove();
+			}				
+		}
+		
+		$(target).parent().parent().prepend(object_types_totals_text);
+		
+		for (var i = 0, length = member_paths_in_container.length; i < length; i++) {
+			$(member_paths_in_container[i]).hide();
+		}
+		
+		og.checkObjectTypesTotalsOverflow(target, container_width);
+	}
+}
+
+//if thers overflow colapse all object types totals to "view classification" btn
+og.checkObjectTypesTotalsOverflow = function(target, container_width) {	
+	var object_types_in_container= $(target).parent().siblings(".members-total-colapsed");
+		
+	var object_types_in_container_width = 0;
+		
+	for (var i = 0, length = object_types_in_container.length; i < length; i++) {
+		object_types_in_container_width += $(object_types_in_container[i]).outerWidth(true);		
+	}
+		
+	//if thers overflow colapse all object types totals to "view classification" btn
+	if(object_types_in_container_width > container_width){
+		for (var i = 0, length = object_types_in_container.length; i < length; i++) {
+			$(object_types_in_container[i]).remove();
+		}
+						
+		if($(target).parent().parent().children(".breadcrumbAllBtn").length == 0){
+			var view_classification_btn = '<button class="breadcrumbAllBtn breadcrumbBtn btnPopoverNotInitialized">'+lang("view classification")+'</button>';
+			$(target).parent().parent().prepend(view_classification_btn);
+		}
+	}
+}
+
+og.initBreadcrumbsBtns = function(btns){
+	for (var i = 0; i < btns.length; i++) {
+	    var btn = $(btns[i]);
+	    
+	    var member_paths = btn.siblings(".member-path");
+	    var breadcrumbs_html = new Array();
+	    var max_width = 0;
+	    
+	    var tmp_ot = {};
+	   	for (var j = 0; j < member_paths.length; j++) {
+	   		
+	   		var ot = $(member_paths[j]).data("object-type");
+	   		   		
+	   		var ot_name = og.objectTypes[ot].name+"s";
+	   		
+	   		if(typeof tmp_ot[ot_name] == "undefined"){
+	   			tmp_ot[ot_name] = new Array();
+	   		}
+	   		
+	   		if($(member_paths[j]).outerWidth(true) > max_width){
+	   			max_width = $(member_paths[j]).outerWidth(true);
+	   		}  
+	   		
+	   		var tmp_member = {};
+			tmp_member["html"] = $(member_paths[j]).html();
+			
+			tmp_ot[ot_name].push(tmp_member);
+			
+		}
+	   	 	
+	   	var btn_id = Ext.id();
+	   	
+	  	//POPOVER	
+	   	//get template
+		var source = $("#breadcrumb-popover-template").html(); 
+		//compile the template
+		var template = Handlebars.compile(source);
+		
+		//template data
+		var data = {
+				breadcrumbs: tmp_ot,
+				btn_id: btn_id,
+				max_width: max_width
+		}
+		
+		//instantiate the template
+		var html = template(data);
+				
+		btn.attr("id",btn_id);		
+		btn.data( "visible", 0 );
+		btn.popover('destroy');
+	    btn.popover({ content: "example", 
+	    	delay: { 
+	    	       show: "100", 
+	    	       hide: "100"
+	    	    },
+	    	html: true,
+	        container: 'body',
+	    	template : html,
+	    	placement: 'auto left',
+	    	trigger: 'hover'
+        });	
+	    	    
+	    btn.removeClass("btnPopoverNotInitialized");
+	    
+	    btn.on('hide.bs.popover', function (event) {
+	    	if($(this).data( "visible")){
+	    		event.preventDefault();
+	    	}	    	  
+	    });
+		
+	}	
+}
+
+og.showBreadcrumbsPopover = function(btn_id){
+	$('#'+btn_id).data( "visible", 1 );	
+}
+
+og.hideBreadcrumbsPopover = function(btn_id,pop_id){
+	$('#'+btn_id).data( "visible", 0 );
+	$('#'+btn_id).popover('hide');
+	$('#'+pop_id).remove();	
+}
+
+
+
 

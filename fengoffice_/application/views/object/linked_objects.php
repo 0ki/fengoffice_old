@@ -1,8 +1,12 @@
 <?php 
 require_javascript('og/modules/linkToObjectForm.js');
 if (!isset($genid)) $genid = gen_id();
+
+if (!is_array($objects) || count($objects) == 0) {
+	echo '<div class="desc">' . lang('there are no linked objects yet') . '</div><br />';
+}
 ?>
-<a id="<?php echo $genid ?>before" href="#" onclick="App.modules.linkToObjectForm.pickObject(this)"><?php echo lang('link object') ?></a>
+<a id="<?php echo $genid ?>before" href="#" onclick="App.modules.linkToObjectForm.pickObject(this)"><span class="action-ico ico-open-link"><?php echo lang('link object') ?></span></a>
 
 <script>
 <?php

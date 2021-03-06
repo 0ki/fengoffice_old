@@ -3,7 +3,7 @@
 <div class="widget-comments widget dashComments">
 
 	<div style="overflow: hidden;" class="widget-header dashHeader" onclick="og.dashExpand('<?php echo $genid?>');">
-		<?php echo (isset($widget_title)) ? $widget_title : lang("latest comments");?>
+		<div class="widget-title"><?php echo (isset($widget_title)) ? $widget_title : lang("latest comments");?></div>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>
 	
@@ -15,22 +15,30 @@
 			$row_cls = "";
 			foreach ($comments as $k => $comment): /* @var $comment Comment */
 				$crumbOptions = json_encode($comment->getMembersToDisplayPath());
-				$crumbJs = " og.getCrumbHtml($crumbOptions) ";
+				if($crumbOptions == ""){
+					$crumbOptions = "{}";
+				}
+				$crumbJs = " og.getEmptyCrumbHtml($crumbOptions, '.comment-row' ) ";
 				if ($count >= 5) $style = 'display:none;';
 			?>
 				<li id="<?php echo "comment-".$comment->getId()?>" class="comment-row ico-comment <?php echo $row_cls ?>" style="<?php echo $style;?>">
 					<a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">
-						<span class="bold"><?php echo clean($comment->getCreatedByDisplayName());?>: </span>
 						<span class="comment-title"><?php echo clean($comment->getObjectName());?></span>
 						<span class="previewText"><?php echo clean($comment->getText());?></span>
 					</a>
+					<br/>
 					<span class="breadcrumb"></span>
 					<script>
 						var crumbHtml = <?php echo $crumbJs?> ;
 						$("#comment-<?php echo $comment->getId()?> .breadcrumb").html(crumbHtml);
 					</script>
+					<?php if ($comment->getUpdatedBy() instanceof Contact) { ?>
+					<div class="desc date-container"><?php 
+						echo lang('by').' '.lang('user date', $comment->getUpdatedBy()->getCardUserUrl(), clean($comment->getUpdatedByDisplayName()), strtolower(friendly_date($comment->getUpdatedOn())), clean($comment->getUpdatedByDisplayName()));
+					?></div>
+					<?php } ?>
 				</li>
-				<?php $row_cls = $row_cls == "" ? "dashAltRow" : "";
+				<?php 
 				$count++;
 				?>
 			<?php endforeach; ?>
@@ -43,3 +51,9 @@
 	</div>
 	
 </div>
+
+<script>
+$(function() {
+	// og.eventManager.fireEvent('replace all empty breadcrumb', null);
+}); 
+</script>

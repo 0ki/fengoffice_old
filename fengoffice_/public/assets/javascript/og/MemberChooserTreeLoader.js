@@ -72,7 +72,11 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 			//add members to og.dimensions
 			for (i=0; i<json_obj.dimension_members.length; i++) {
 				og.addMemberToOgDimensions(dimension_id,json_obj.dimension_members[i]);
-			}		
+			}	
+			
+			if(typeof(json_obj.dimensions_root_members) != "undefined"){
+				ogMemberCache.addDimToDimRootMembers(json_obj.dimension_id);
+			}
 			
 			// build tmp member arrays
 			var tmp_member_array = [];

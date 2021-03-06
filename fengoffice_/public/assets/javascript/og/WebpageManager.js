@@ -48,6 +48,7 @@ og.WebpageManager = function() {
 					if (cmp) {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						$("#"+cmp.id+" #text_filter").val('').focus();
 					}
 					Ext.getCmp('webpage-manager').reloadGridPagingToolbar('webpage','list_all','webpage-manager');
 				}
@@ -75,7 +76,7 @@ og.WebpageManager = function() {
 			'<a style="font-size:120%;" class="{3}" title="{2}" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>',
 			og.clean(value), og.getUrl('webpage', 'view', {id: r.id}), lang('view weblink'), classes);
 		
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
+		var actionStyle= ' style="color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat;background-position:0px 1px;" ';
 		
 		var actions = String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
@@ -185,7 +186,7 @@ og.WebpageManager = function() {
 
     var cm_info = [
 		sm,{
-			id: 'draghandle',
+			/*id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
@@ -193,7 +194,7 @@ og.WebpageManager = function() {
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
-		},{
+		},{*/
 			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
@@ -291,12 +292,12 @@ og.WebpageManager = function() {
 	
 	actions = {
 		newWebpage: new Ext.Action({
+			id: 'new_button',
 			text: lang('new'),
             tooltip: lang('add new webpage'),
             iconCls: 'ico-new',
             handler: function() {
-				var url = og.getUrl('webpage', 'add');
-				og.openLink(url, null);
+				og.render_modal_form('', {c:'webpage', a:'add'});
 			}
 		}),
 		delWebpage: new Ext.Action({
@@ -320,8 +321,7 @@ og.WebpageManager = function() {
             iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
-				var url = og.getUrl('webpage', 'edit', {id:getFirstSelectedId()});
-				og.openLink(url, null);
+				og.render_modal_form('', {c:'webpage', a:'edit', params: {id:getFirstSelectedId()}});
 			},
 			scope: this
 		}),
@@ -370,6 +370,14 @@ og.WebpageManager = function() {
 		tbar.push('-');
 	}
 	tbar.push(actions.markAs);
+
+	if (og.additional_list_actions && og.additional_list_actions.webpage) {
+		tbar.push('-');
+		for (var i=0; i<og.additional_list_actions.webpage.length; i++) {
+			tbar.push(og.additional_list_actions.webpage[i]);
+		}
+	}
+	
 	og.WebpageManager.superclass.constructor.call(this, {
         store: this.store,
 		layout: 'fit',
@@ -379,6 +387,7 @@ og.WebpageManager = function() {
 		stateful: og.preferences['rememberGUIState'],
         closable: true,
 		stripeRows: true,
+		loadMask: true,
 		id: 'webpage-manager',
 		bbar: new og.CurrentPagingToolbar({
             pageSize: og.config['files_per_page'],
@@ -426,6 +435,7 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 			context: og.contextManager.plainContext()
 		};
 		
+		this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

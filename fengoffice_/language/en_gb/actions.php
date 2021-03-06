@@ -57,7 +57,8 @@
     'unsubscribe from object' => 'Unsubscribe',
     
     // Comments
-    'add comment' => 'Post comment',
+    'add comment' => 'Write comment',
+    'post comment' => 'Post comment',
     'edit comment' => 'Edit comment',
     
     // Task list

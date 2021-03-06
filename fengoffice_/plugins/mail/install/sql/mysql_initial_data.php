@@ -2,8 +2,8 @@ INSERT INTO <?php echo $table_prefix ?>object_types (name, handler_class, table_
  ("mail", "MailContents", "mail_contents", "content_object", "mail", (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
 ON DUPLICATE KEY UPDATE name=name;
 
-INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`ordering`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`type`,`object_type_id`, `enabled`) VALUES
- ('mails-panel', 4, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1)
+INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`ordering`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`type`,`object_type_id`, `enabled`, `plugin_id`) VALUES
+ ('mails-panel', 4, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1, (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
 ON DUPLICATE KEY UPDATE id=id;
 
 
@@ -34,7 +34,6 @@ INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, 
  ('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
  ('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
  ('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
- ('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', 0, 0, ''),
  ('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL)
 ON DUPLICATE KEY UPDATE name=name;
 

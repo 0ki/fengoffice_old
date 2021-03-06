@@ -604,6 +604,13 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			
 			}
 			
+			if (config_option('getting_started_step') < 98) {
+				if (in_array($this->getObjectTypeName(), array('task','message','weblink','file','expense','objective','event'))) {
+					set_config_option('getting_started_step', 98);
+					evt_add('reload tab panel', 'more-panel');
+				}
+			}
+			
 			parent::save();
 			return true;
 		
@@ -1402,8 +1409,14 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$gids = array_values($gids_tmp);
 			$gids_tmp = null;
 			
-			// check for mandatory dimensions
-			$mandatory_dim_ids = Dimensions::findAll(array('id' => true, 'conditions' => "`defines_permissions`=1 AND `permission_query_method`='".DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY."'"));
+			// check for mandatory dimensions 
+			$enabled_dimensions_sql = "";
+			$enabled_dimensions_ids = implode(',', config_option('enabled_dimensions'));
+			if ($enabled_dimensions_ids != "") {
+				$enabled_dimensions_sql = "AND id IN ($enabled_dimensions_ids)";
+			}
+			
+			$mandatory_dim_ids = Dimensions::findAll(array('id' => true, 'conditions' => "`defines_permissions`=1 $enabled_dimensions_sql AND `permission_query_method`='".DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY."'"));
 			if (count($gids) > 0 && count($mandatory_dim_ids) > 0) {
 				$sql = "SELECT om.member_id, m.dimension_id FROM ".$table_prefix."object_members om 
 				INNER JOIN ".$table_prefix."members m ON m.id=om.member_id INNER JOIN ".$table_prefix."dimensions d ON d.id=m.dimension_id 

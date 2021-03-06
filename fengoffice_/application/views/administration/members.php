@@ -7,10 +7,16 @@
 ?>
 
 <div class="adminUsersList" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('users') . (config_option('max_users')?(' (' . Contacts::count() .' / ' .  config_option('max_users') . ')'):'') ?></div>
+<div class="coInputHeader">
+  <div>
+	<div class="coInputName">
+		<div class="coInputTitle">
+		  	<?php echo lang('users') . (config_option('max_users')?(' (' . Contacts::count() .' / ' .  config_option('max_users') . ')'):'') ?>
+		</div>
+	</div>
+	<div class="clear"></div>
   </div>
-  <div class="adminSeparator"></div>
+</div>
   <div class="adminMainBlock">
   <?php
   		foreach ($users_by_company as $company_row){

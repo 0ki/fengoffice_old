@@ -19,7 +19,10 @@ class TemplateObjects extends BaseTemplateObjects {
 		if (!is_array($all)) return array();
 		$objs = array();
 		foreach ($all as $obj) {
-			$objs[] = Objects::findObject($obj->getObjectId());
+			$o = Objects::findObject($obj->getObjectId());
+			if ($o instanceof ContentDataObject) {
+				$objs[] = $o;
+			}
 		
 		}
 		

@@ -142,14 +142,18 @@ if (defined("PLUGIN_MANAGER") && PLUGIN_MANAGER && can_manage_plugins(logged_use
 Hook::fire('render_administration_icons', null, $icons);
 if (count($icons > 0)) {}
 ?>
-<div class="adminIndex" style="height:100%;background-color:white">
-  <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('administration') ?></div>
+<div class="coInputHeader">
+
+  <div class="coInputHeaderUpperRow">
+	<div class="coInputTitle">
+		<?php echo lang('administration') ?>
+	</div>
   </div>
-  <div class="adminSeparator"></div>
-  <div class="adminMainBlock">
-    
-<div style="width:100%;max-width:700px; text-align:center;position:relative">
+
+</div>
+
+<div class="coInputMainBlock">
+
 
 <?php
 // print administration icons

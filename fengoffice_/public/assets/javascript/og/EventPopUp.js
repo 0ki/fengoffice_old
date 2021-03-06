@@ -235,6 +235,7 @@ og.EventPopUp.goToEdit = function (){
 	data.durationhour = duration_split[0];
 	data.durationmin = duration_split[1];
 	
-	og.openLink(og.getUrl('event', 'add', {name: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, start_time:st_time, type_id:ev_type, view:data.view}), null);
+	var add_params = {name: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, start_time:st_time, type_id:ev_type, view:data.view};
+	og.render_modal_form('', {c:'event', a:'add', params: add_params});
 	this.dialog.hide();	
 }

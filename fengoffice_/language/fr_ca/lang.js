@@ -189,7 +189,7 @@ addLangs({
 	'view by account': 'Vue par compte',
 	'view emails by account': 'Vue des messages par compte',
 	'edit account': 'Éditer le compte',
-	'edit email account': 'Éditer {0}',
+	'edit email account': 'Éditer le compte de messagerie',
 	'email actions': 'Actions',
 	'more email actions': 'Plus d\'actions de messagerie',
 	'view unclassified': 'Afficher les non classés',

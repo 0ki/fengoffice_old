@@ -278,7 +278,7 @@ between the cells of the main calendar.  */
   text-align: center;
 }
 #calendar td{
-	font-size: 10px;
+	font-size: 11px;
 	overflow: hidden;
 }
 #calendar div.daylink{

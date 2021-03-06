@@ -3,8 +3,8 @@ INSERT INTO `<?php echo $table_prefix ?>plugins` (`name`,`is_installed`, `is_act
  ('core_dimensions', 1, 1, 0, NOW(), 1)
  ON DUPLICATE KEY UPDATE id=id;
 
-INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`,`name`,`is_root`,`is_manageable`,`allows_multiple_selection`,`defines_permissions`, `is_system`, `options`, `permission_query_method`) VALUES
- ('feng_persons', 'People', 1, 0, 0, 1, 1,'{"useLangs":true,"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}', 'not_mandatory' )
+INSERT INTO `<?php echo $table_prefix ?>dimensions` (`code`,`name`,`is_root`,`is_manageable`,`allows_multiple_selection`,`defines_permissions`, `is_system`, `default_order`, `options`, `permission_query_method`) VALUES
+ ('feng_persons', 'People', 1, 0, 0, 1, 1, 99, '{"useLangs":true,"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"},"quickAdd":{"formAction":"?c=contact&a=quick_add"}}', 'not_mandatory' )
  ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
@@ -114,10 +114,6 @@ INSERT INTO `<?php echo $table_prefix ?>object_members` (`member_id`, `object_id
 	AND `m`.`object_id` IN (SELECT `ei`.`contact_id` FROM `<?php echo $table_prefix ?>event_invitations` `ei` WHERE `ei`.`event_id` = `o`.`id`)
 ON DUPLICATE KEY UPDATE member_id=member_id;
  
-UPDATE `<?php echo $table_prefix ?>contact_config_options` 
- SET default_value = concat(default_value,',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='feng_persons') ) 
- WHERE name='root_dimensions';
-
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`) VALUES
 	('system', 'hide_people_vinculations', '1', 'BoolConfigHandler', 1, 0)
 ON DUPLICATE KEY UPDATE name=name;

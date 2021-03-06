@@ -11,12 +11,12 @@ og.loadReportingFlags = function(){
 og.enterCondition = function(id) {
   	var deleted = document.getElementById('conditions[' + id + '][deleted]');
   	if(deleted && deleted.value == "0"){
-		Ext.get('delete' + id).setVisible(true);
+  		$("#delete"+id).css('opacity', '1.0');
  	}
 };
 
 og.leaveCondition = function(id) {
-	Ext.get('delete' + id).setVisible(false);
+	$("#delete"+id).css('opacity', '0.6');
 };
 
 og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
@@ -98,7 +98,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 		'<input type="checkbox" class="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>';	
 	}
 	
-	table = table +'<td style="padding-left:20px;"><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
+	table = table +'<td style="padding-left:20px;"><div style="opacity:0.6;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
 	'<td id="tdDelete' + count + '" style="display:none;"><b>' + lang('condition deleted') +
 	'</b><a class="internalLink" href="javascript:og.undoDeleteCondition(' + count + ',\'' + genid + '\')">&nbsp;(' + lang('undo') + ')</a></td>' +
   	'</tr></table>';
@@ -152,12 +152,14 @@ og.deleteCondition = function(id, genid){
 	conditionDiv.style.background = '#FFDEAD';
 	document.getElementById('tdDelete' + id).style.display = '';
 	document.getElementById('conditions[' + id + '][deleted]').value = 1;
+	$("#delete"+id).hide();
 	modified = true;
 };
 
 og.undoDeleteCondition = function(id, genid){
 	document.getElementById('tdDelete' + id).style.display = 'none';
 	document.getElementById('conditions[' + id + '][deleted]').value = 0;
+	$("#delete"+id).show();
 	var conditionDiv = Ext.getDom(genid);
 	for(var i=0; i < conditionDiv.childNodes.length; i++){
 		var nextCond = conditionDiv.childNodes.item(i);

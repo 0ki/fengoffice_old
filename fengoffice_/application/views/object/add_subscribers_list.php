@@ -57,7 +57,11 @@ require_javascript('og/modules/addMessageForm.js');
 	<?php if(is_array($users) && count($users)) { ?>
 		<div onclick="og.subscribeCompany(this)" class="container-div company-name<?php echo $allChecked ? ' checked' : '' ?>" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
 		<?php $theCompany = Contacts::findById($companyId) ?>
-			<label for="<?php echo $genid ?>notifyCompany<?php echo ($theCompany instanceof Contact ? $theCompany->getId() : "0") ?>" style="background: url('<?php echo ($theCompany instanceof Contact ? $theCompany->getPictureUrl() : "#") ?>') no-repeat;"><?php echo ($theCompany instanceof Contact ? clean($theCompany->getFirstName()) : lang('without company')) ?></label><br/>
+			<div class="contact-picture-container" style="float:left;margin-left:10px;padding-top:3px;">
+				<img class="commentUserAvatar" src="<?php echo ($theCompany instanceof Contact ? $theCompany->getPictureUrl() : get_image_url('48x48/company.png')) ?>" alt="<?php echo clean($theCompany instanceof Contact ? $theCompany->getObjectName() : '') ?>" />
+			</div>
+			<label style="float:left; padding-left:5px;" for="<?php echo $genid ?>notifyCompany<?php echo ($theCompany instanceof Contact ? $theCompany->getId() : "0") ?>"><?php echo ($theCompany instanceof Contact ? clean($theCompany->getFirstName()) : lang('without company')) ?></label><br/>
+			<div class="clear"></div>
 		</div>
 		<div style="padding-left:10px;">
 		<?php foreach($users as $user) { ?>
@@ -65,13 +69,16 @@ require_javascript('og/modules/addMessageForm.js');
 					$checked = in_array($user->getId(), $subscriberIds);
 				?>
 				<div id="div<?php echo $genid ?>inviteUser<?php echo $user->getId() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
-					<input <?php echo $checked? 'checked="checked"':'' ?> id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="checkbox" style="display:none" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="checked" />
-					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getPictureUrl() ?>') no-repeat;">
+					<input id="<?php echo $genid ?>inviteUser<?php echo $user->getId()?>" type="hidden" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="<?php echo $checked?'1':'0' ?>" />
+					<div class="contact-picture-container" style="float:left;padding-top:3px;">
+						<img class="commentUserAvatar" src="<?php echo ($user instanceof Contact ? $user->getPictureUrl() : get_image_url('default-avatar.png')) ?>" alt="<?php echo clean($user instanceof Contact ? $user->getObjectName() : '') ?>" />
+					</div>
+					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style="float:left; max-width: 120px; overflow:hidden; padding-left: 5px;">
 						<span class="ico-user link-ico"><?php echo clean($user->getObjectName()) ?></span>
 						<br>
 						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmailAddress()  ?> </span>
 					</label>
-					
+					<div class="clear"></div>
 					<br/>
 				</div>
 			

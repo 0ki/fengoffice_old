@@ -37,6 +37,11 @@
 	  			$parents [] = $parent;
 	  			$parents = array_unique(array_merge($parents, self::getAllParentObjectTypeIds($dimension_id, $parent, $recursive)));
 	  		}
+		}else{
+			foreach ($dimension_obj_type_hierarchy as $obj_type_hierarchy) {
+				$parent = $obj_type_hierarchy['parent_object_type_id'];
+				$parents [] = $parent;
+			}
 		}
 		
 		return $parents;

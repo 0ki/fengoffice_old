@@ -27,6 +27,15 @@ class  CustomProperties extends  BaseCustomProperties {
 	}
 	
 	/**
+	 * Count all custom properties for object type
+	 * @param $object_type
+	 * @return integer
+	 */
+	static function countAllCustomPropertiesByObjectType($object_type_id) {
+		return self::count(array("`object_type_id` = ?", $object_type_id));
+	}
+	
+	/**
 	 * Count custom properties that are visilbe by default.
 	 * @param $object_type
 	 * @return integer

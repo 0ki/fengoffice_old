@@ -16,7 +16,7 @@
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
 		<div class="coInputTitle"><?php echo lang('task time report') ?>
-		<?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></div>
+		<?php //echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></div>
 	</div>
 	<div style="padding:5px 0"><?php echo lang('task time report description') ?></div>
 </div>
@@ -182,7 +182,7 @@
 	</table>
 	
 <br/>
-<?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?>
+<?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;')) ?>
 </div>
 </div>
 

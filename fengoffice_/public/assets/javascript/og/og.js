@@ -70,6 +70,20 @@ og.updateClock = function(clockId){
 
 	var startTime = og.otherData[clockId + "starttime"];
 	var startSeconds = og.otherData[clockId + "startseconds"];
+	
+	
+
+	var ts = document.getElementById(clockId + "timespan");
+	if (ts){
+		ts.innerHTML = og.calculateTimeForClock(startTime,startSeconds);
+
+		og.eventTimeouts[clockId + "clock"] = setTimeout("og.updateClock('" + clockId + "')", 1002);
+	} else {
+		og.eventTimeouts[clockId + "clock"] = 0;
+	}
+};
+
+og.calculateTimeForClock = function(startTime, startSeconds){
 	var nowTime = new Date();
 	var elapsed = ((nowTime.getElapsed(startTime) / 1000) + startSeconds).toFixed(0);
 	var seconds = (elapsed % 60) / 1;
@@ -78,17 +92,9 @@ og.updateClock = function(clockId){
 	var totalHours = (totalMinutes - minutes) / 60;  
 	minutes = ( minutes < 10 ? "0" : "" ) + minutes;
   	seconds = ( seconds < 10 ? "0" : "" ) + seconds.toFixed(0);
-	
-
-	var ts = document.getElementById(clockId + "timespan");
-	if (ts){
-		ts.innerHTML = totalHours + ":" + minutes + ":" + seconds;
-
-		og.eventTimeouts[clockId + "clock"] = setTimeout("og.updateClock('" + clockId + "')", 1002);
-	} else {
-		og.eventTimeouts[clockId + "clock"] = 0;
-	}
-};
+  	
+  	return totalHours + ":" + minutes + ":" + seconds;
+}
 
 og.startClock = function(clockId, startSeconds){
 	og.otherData[clockId + "starttime"] = new Date();
@@ -609,7 +615,10 @@ og.openLink = function(url, options) {
 							}
 						}
 					}
-					og.processResponse(data, options);
+					var dont_process_response = typeof(data) != 'undefined' && data.dont_process_response;
+					if (!dont_process_response) {
+						og.processResponse(data, options);
+					}
 				} catch (e) {
 					og.err(e.message);
 				}
@@ -1422,11 +1431,11 @@ og.rollOut = function(div,isCompany)
 og.checkUser = function (div){
 	var hiddy = document.getElementById(div.id.substring(3));
 	if (hiddy) {
-		if (hiddy.checked) {
-			hiddy.checked = false;
+		if (hiddy.value == '1') {
+			hiddy.value = '0';
 			div.className = "container-div user-name";
 		} else {
-			hiddy.checked = true;
+			hiddy.value = '1';
 			div.className = "container-div checked-user";
 		}
 	}
@@ -1764,10 +1773,18 @@ og.getCkEditorInstance = function(name) {
 
 og.adjustCkEditorArea = function(genid, id, keep_bottom) {
 	if(id == undefined) id = '';
-	document.getElementById('cke_' + genid + 'ckeditor' + id).style.padding = '0px';
-	document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.padding = '0px';
-    document.getElementById('cke_contents_' + genid + 'ckeditor' + id).style.border = '0px none';
-	if (!keep_bottom) document.getElementById('cke_bottom_' + genid + 'ckeditor' + id).style.display = 'none';
+	var el = document.getElementById('cke_' + genid + 'ckeditor' + id);
+	if (el) el.style.padding = '0px';
+	
+	var cont = document.getElementById('cke_contents_' + genid + 'ckeditor' + id);
+	if (cont) {
+		cont.style.padding = '0px';
+		cont.style.border = '0px none';
+	}
+	if (!keep_bottom) {
+		var bot = document.getElementById('cke_bottom_' + genid + 'ckeditor' + id);
+		if (bot) bot.style.display = 'none';
+	}
 };
 
 og.hideFlashObjects = function() {
@@ -2139,17 +2156,49 @@ og.quickForm = function (config) {
 				
 				var e = $("#"+config.elId) ;
 				if (d) {
-					$("#quick-form .form-container").html('').load(og.getUrl('member', 'quick_add_form',{dimension_id: config.dimensionId, parent_member_id: parent}),function(){
-						$(this).parent().css(e.offset()).slideDown('normal', function(){
-							var bottom = $(this).css('bottom').replace('px', '');
-							if (bottom < 0) {
-								$(this).animate({"top" : "+="+bottom+"px"});
+					if (og.quick_form_visible == d && $("#quick-form").css('display') != 'none') {
+						og.quick_form_visible = 0;
+						$("#quick-form").slideUp();
+					} else {
+						og.openLink(og.getUrl('member', 'quick_add_form',{dimension_id: config.dimensionId, parent_member_id: parent}), {
+							preventPanelLoad: true,
+							callback: function(success, data) {
+								
+								og.quick_form_visible = d;
+								
+								if (data.draw_menu) {
+									var html = '<ul class="quick-menu-list">';
+									$("#quick-form").addClass("menu");
+									for (var k=0; k<data.urls.length; k++) {
+										var url_obj = data.urls[k];
+										html += '<li class="quick-menu-item">';
+										html += '<a class="link-ico '+url_obj.iconcls+'" href="#" onclick="og.openLink(\''+ url_obj.url +'\'); $(\'#quick-form\').hide(); return false;">'+ url_obj.link_text +'</a></li>';
+									}
+									html += "</ul>";
+									
+									var offset = e.offset();
+									$("#quick-form .form-container").html('').html(html);
+									$("#quick-form .form-container").parent().css({top: offset.top + 15, left: offset.left + 15}).slideDown('normal', function(){
+										var bottom = $("#quick-form .form-container").css('bottom').replace('px', '');
+										if (bottom < 0) $("#quick-form .form-container").animate({"top" : "+="+bottom+"px"});
+									});
+									
+								} else {
+									if (data.urls && data.urls.length > 0) {
+										var url_obj = data.urls[0];
+										og.openLink(url_obj.url);
+										
+										if ($("#quick-form").css('display') != 'none') {
+											og.quick_form_visible = 0;
+											$("#quick-form").slideUp();
+										}
+									}
+								}
+								
 							}
 						});
-						$("#member-name").focus();
-						return true ;
-					});
-					return false;
+					
+					}
 				}
 			}
 			break;
@@ -2401,7 +2450,7 @@ og.onPersonClose = function() {
 			}
 			
 			setTimeout(function() {
-				og.Breadcrumbs.refresh(n);
+		//		og.Breadcrumbs.refresh(n);
 				if (n.id == item.getRootNode().id) {
 					item.getSelectionModel().fireEvent('selectionchange', item.getSelectionModel(), n);
 				}
@@ -2583,7 +2632,9 @@ og.renderDimCol = function(value, p, r) {
 		for (t in mpath[dim_id]) {
 			mpath_aux[dim_id][t] = mpath[dim_id][t];
 		}
-		text = og.getCrumbHtml(mpath_aux);
+		text = "<div class='breadcrumb-container' style='width: 100%;'>";
+		text += og.getEmptyCrumbHtml(mpath_aux, '.breadcrumb-container');
+		text += "</div>";
 	}
 	return text;
 }
@@ -2666,15 +2717,538 @@ og.getTimezoneFromBrowser = function(server, genid) {
 	}
 };
 
+og.goToOverview = function(close_active_tab) {
+	var opanel = Ext.getCmp('overview-panel');
+	if (opanel) {
+		var active_tab = Ext.getCmp('tabs-panel').getActiveTab();
+		Ext.getCmp('tabs-panel').setActiveTab(opanel);
+		if (close_active_tab && active_tab) {
+			Ext.getCmp('tabs-panel').remove(active_tab);
+		}
+	}
+}
+
 og.goback = function(btn) {
 	var p = og.getParentContentPanel(Ext.fly(btn));
 	if (p) Ext.getCmp(p.id).back();
 };
 
+og.fade_background_color = function(id, color) {
+	if (!color) color = "white";
+	$("#"+id).animate({
+	   backgroundColor: color
+	}, 'slow');
+}
+
+
 og.dimensionTreeDoLayout = function(genid, dim_id) {
-	var memberChooserPanel = Ext.getCmp(genid + '-member-chooser-panel-' + dim_id);
+	var memberChooserPanel = Ext.getCmp(genid + '_with_permissions_' + dim_id);
 	if (memberChooserPanel && !memberChooserPanel.initialized) {
 		memberChooserPanel.doLayout();
 		memberChooserPanel.initialized = true;
 	}
+	var memberChooserPanel2 = Ext.getCmp(genid + '_without_permissions_' + dim_id);
+	if (memberChooserPanel2 && !memberChooserPanel2.initialized) {
+		memberChooserPanel2.doLayout();
+		memberChooserPanel2.initialized = true;
+	}
+}
+
+
+og.onParentMemberRemove = function (genid){	
+	document.getElementById(genid + "memberParent").value = 0;
+}
+/*
+og.onParentMemberSelect = function (genid, container_id, dimension_id, item){
+	if (!item) {
+		// remove member
+		document.getElementById(genid + "memberParent").value = 0;
+		return;
+	}
+	var member_id = item.value;
+	if(member_id != "more"){
+		document.getElementById(genid + "memberParent").value = member_id;
+		if (og.prev_parent) {
+			member_selector.remove_relation(dimension_id, genid, og.prev_parent, true);
+		}
+		member_selector.add_relation(dimension_id, genid, member_id);
+		og.prev_parent = member_id;
+		
+	}else if (member_id == "more"){
+		$("#"+container_id+"-input").val(item.label);
+		//increase the limit
+		ogSearchSelector.resetLimit(container_id, item.limit);
+		//fire the search
+		$("#"+container_id+"-input").keydown();
+	}	
+}*/
+
+og.onParentMemberSelect = function (genid, dimension_id, member_id){	
+	member_selector.remove_all_selections(genid);
+	if (!member_id) {
+		// remove member
+		document.getElementById(genid + "memberParent").value = 0;
+		return;
+	}
+	
+	
+	document.getElementById(genid + "memberParent").value = member_id;
+	member_selector.add_relation(dimension_id, genid, member_id,false);
+	og.prev_parent = member_id;		
+}
+
+
+
+/**
+ * Create style sheet for current colors
+ */
+og.createBrandColorsSheet = function(brand_colors) {
+	var header_back = brand_colors['brand_colors_head_back'];
+	var tabs_back = brand_colors['brand_colors_tabs_back'];
+	var tabs_font = brand_colors['brand_colors_tabs_font'];
+	var header_font = brand_colors['brand_colors_head_font'];
+
+	var texture = 'background-image: -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25)), -moz-linear-gradient(45deg, rgba(0, 0, 0, 0.25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, 0.25) 75%, rgba(0, 0, 0, 0.25));'
+			+ 'background-image: -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25)), -webkit-linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 25%, transparent 75%, rgba(0, 0, 0, .25) 75%, rgba(0, 0, 0, .25));'
+			+ 'background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05)), linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0) 75%, rgba(255, 255, 255, 0.05) 75%, rgba(255, 255, 255, 0.05));'
+			+ 'background-position: 0 0pt, 2px 2px;'
+			+ 'background-size: 4px 4px; ';
+	if (Ext.isSafari) {
+		texture = "";
+	}
+	var cssRules = '.x-accordion-hd, ul.x-tab-strip li {background-color: #' + tabs_back + '; ' + texture + '}';
+	cssRules += '.x-accordion-hd, ul.x-tab-strip {background-color: #' + tabs_back + '; ' + texture + '}';
+	cssRules += 'ul.x-tab-strip li {border-color: #' + tabs_back + '}';
+	cssRules += '#header {background-color: #' + header_back + '; ' + texture + '}';
+	cssRules += '.x-accordion-hd, .x-tab-strip span.x-tab-strip-text {color: #' + tabs_font + '}';
+
+	//cssRules += 'ul.x-tab-strip li.x-tab-strip-active span.x-tab-strip-text {color: #' + tabs_back + ' !important}';
+	cssRules += '#logodiv h1, div.og-loading, div.header-breadcrumb-container {color: #' + header_font + '}';
+	// dimension title
+	cssRules += '.x-accordion-hd {background-color: #' + tabs_back + '}';
+	
+	// selected member
+	var node_selected_back = color_utils.make_transparent_color('#' + tabs_back);
+	if (node_selected_back) {
+		cssRules += '.x-tree-node .x-tree-selected {background-color: ' + node_selected_back + '; border-color: ' + color_utils.darker_html_color(node_selected_back) + '}';
+	}
+	
+	if (Ext.isSafari) {
+		cssRules += '.widget-header, .texture-n-1 { background-image: none;}';
+	}
+	
+	var styleElement = document.createElement("style");
+	styleElement.type = "text/css";
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = cssRules;
+	} else {
+		styleElement.appendChild(document.createTextNode(cssRules));
+	}
+	document.getElementsByTagName("head")[0].appendChild(styleElement);
+}
+
+
+
+/**
+ * Renders a modal form
+ */
+og.render_modal_form = function(genid, options) {
+	var parameters = options.params || {};
+	parameters.modal = 1;
+	
+	og.openLink(og.getUrl(options.c, options.a, parameters), {
+		preventPanelLoad: true,
+		callback: function(success, data) {
+
+			var id = genid + (options.id ? options.id : '');
+			var div = document.createElement('div');
+			var close_cls = options.close_cls || '';
+			
+			div.className = options.cls || '';
+			div.id = id;
+			div.innerHTML = data.current.data;
+
+			var modal_params = {
+				'escClose': true,
+				'overlayClose': true,
+				'closeHTML': '<a id="'+genid+'_close_link" class="'+close_cls+' modal-close" title="'+lang('close')+'"></a>',
+				'onShow': function (dialog) {
+					// add close image to close-link
+					$("#"+genid+"_close_link").addClass("modal-close-img");
+					
+					// resize and reposition form when changing tab and content is larger than the available space
+					$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
+					
+					// first execution sometimes fails to center the modal
+					var offset = $(".simplemodal-data").offset();
+					if (offset.top == 0) {
+						setTimeout(function(){
+							var h = $(".simplemodal-data").innerHeight();
+							var h2 = $(".simplemodal-data").closest(".simplemodal-container").innerHeight();
+							var d = h2 - h;
+							if (d > 0) {
+								$(".simplemodal-container").css({top: Math.floor(d/2) + 'px'});
+							}
+						}, 100);
+					}
+					
+					// set main input width
+					og.update_modal_main_input_width();
+			    }
+			};
+			setTimeout(function() {
+				$.modal(div, modal_params);
+			}, 100);
+		}
+	});
+}
+
+og.resize_modal_form = function() {
+	//if form height is larger than screen height => resize it or reposition 
+	setTimeout(function() {
+		var offset = $(".simplemodal-data").offset();
+		var modalh = $(".simplemodal-data").height();
+		var winh = $(".simplemodal-overlay").height();
+		var headerh = $(".simplemodal-data .coInputHeader").height();
+		
+		if (modalh > winh) {
+			// resize and reposition
+			$(".simplemodal-container").css({top:'10px', height:(winh - 10)+'px'});
+			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 125)+'px', overflow:'auto'});
+		} else if (offset && modalh + offset.top > winh) {
+			// only reposition
+			var otop = (winh - modalh) / 2;
+			if (otop < 0) otop = 0;
+			$(".simplemodal-container").css({top:(otop)+'px'});
+		}
+	}, 500);
+}
+
+og.update_modal_main_input_width = function() {
+	var title_w = $(".simplemodal-data .coInputHeader .coInputHeaderUpperRow .coInputTitle").width();
+	var buttons_w = $(".simplemodal-data .coInputHeader .coInputButtons").width();
+	var total_w = $(".simplemodal-data .coInputHeader").width();
+	
+	var input_count = $(".simplemodal-data .coInputHeader .coInputName input.title").length;
+	if (input_count < 1) input_count = 1;
+	
+	$(".simplemodal-data .coInputHeader .coInputName input.title").css('width', (((total_w - title_w - buttons_w) / input_count) - 35) + 'px');
+}
+
+/**
+ * Submits a modal form
+ */
+og.submit_modal_form = function(form_id, callback_fn, options) {
+	options = options || {};
+	var form = document.getElementById(form_id);
+	var params = {modal: 1};
+
+	var all_inputs = $('#'+form_id+' input');
+	for (var i=0; i<all_inputs.length; i++) {
+		if(all_inputs[i].type == 'checkbox') {
+			params[all_inputs[i].name] = all_inputs[i].checked;
+		} else if (all_inputs[i].type == 'radio') {
+			if (all_inputs[i].checked) {
+				params[all_inputs[i].name] = params[all_inputs[i].name] = all_inputs[i].value;
+			}
+		} else {
+			params[all_inputs[i].name] = all_inputs[i].value;
+		}	
+	}
+	var all_selects = $('#'+form_id+' select');
+	for (var i=0; i<all_selects.length; i++) {
+		params[all_selects[i].name] = all_selects[i].options[all_selects[i].selectedIndex].value;
+	}
+	var all_textareas = $('#'+form_id+' textarea');
+	for (var i=0; i<all_textareas.length; i++) {
+		params[all_textareas[i].name] = all_textareas[i].value;
+	}
+
+	og.openLink(form.action, {
+		post: params,
+		preventPanelLoad: true,
+		hideLoading: options.hideLoading || false,
+		hideErrors: options.hideErrors || false,
+		callback: function(success, data) {
+			if (data.errorCode > 0) {
+				if (data.showMessage) og.err(data.errorMessage);
+				return;
+			} else {
+				if (callback_fn && typeof(callback_fn) == 'function') {
+					callback_fn.call(null, data);
+				}
+				
+				if (data.msg) {
+					og.msg(lang('success'), data.msg);
+				}
+				$('.modal-close').click();
+			}
+		}
+	});
+}
+
+
+og.checkAndAdjustTabsSize = function() {
+	
+	$(".x-tab-with-icon .x-tab-strip-text").css('width', 'auto');
+	
+	var total_tabs_w = 40;
+	var all_tabs = $("li.x-tab-with-icon");
+	for (var j=0; j<all_tabs.length; j++) {
+		total_tabs_w += $(all_tabs[j]).outerWidth();
+	}
+	var container_w = $(".x-tab-strip-wrap").width();
+
+	if (container_w < total_tabs_w) {
+		$(".x-tab-with-icon .x-tab-strip-text").css('width', '0px');
+		$(".x-tab-with-icon.x-tab-strip-active .x-tab-strip-text").css('width', 'auto');
+	}
+}
+
+og.removeFileExtension = function(filename) {
+	if (filename.lastIndexOf('.') >= 0) {
+		return filename.substring(0, filename.lastIndexOf('.'));
+	} else {
+		return filename;
+	}
+}
+
+// animates an element using shake effect
+og.single_shake = function(selector, direction, distance, times) {
+	direction = direction || 'up';
+	distance = distance || 3;
+	times = times || 5;
+	
+	$(selector).effect("shake", {direction:direction, distance: distance, times: times});
+}
+
+// draws a highlight hint, used when highlighting a link
+og.draw_highlight_hint = function(selector, hint_id, hint_text, hint_pos) {
+	$('.highlight-hint').remove();
+	if (!hint_pos) hint_pos = 'right';
+	if (!hint_text) hint_text = lang('click here');
+	$("<div>"+ hint_text +"</div>").attr('id', hint_id).addClass('highlight-hint').appendTo('body');
+
+	var offset = $(selector).offset();
+	$("#" + hint_id).click(function(){
+		$(selector).click();
+		$(selector).removeClass('highlighted');
+		$(this).remove();
+	});
+	switch (hint_pos) {
+		case 'right':
+			$("#" + hint_id).css('top', offset.top + 'px');
+			$("#" + hint_id).css('left', (offset.left + $(selector).width() + 25) + 'px');
+			break;
+		case 'left':
+			$("#" + hint_id).css('top', offset.top + 'px');
+			$("#" + hint_id).css('left', (offset.left - $("#" + hint_id).width() - 25) + 'px');
+			break;
+		case 'top':
+			$("#" + hint_id).css('top', (offset.top - $("#" + hint_id).width() - 25)+ 'px');
+			$("#" + hint_id).css('left', offset.left + 'px');
+			break;
+		case 'bottom':
+			$("#" + hint_id).css('top', (offset.top + $(selector).height() + 25)+ 'px');
+			$("#" + hint_id).css('left', offset.left + 'px');
+			break;
+		default: break;
+	}
+	
+	
+	$("#" + hint_id).show();
+}
+
+// highlights a link, with animation and hint
+og.highlight_link = function(config) {
+	var selector = config.selector;
+	var step = config.step;
+	var time_active = config.time_active;
+	var timeout = config.timeout;
+	var hint_text = config.hint_text;
+	
+	if (!selector) return;
+	
+	if ($(selector).length == 0) {
+		setTimeout(function() {
+			og.highlight_link(config);
+		}, 500);
+		return;
+	}
+	
+	var hint_id = Ext.id();
+	timeout = timeout || 10;
+	time_active = time_active || 3000;
+	
+	setTimeout(function(){
+		$(selector).addClass('highlighted');
+		og.draw_highlight_hint(selector, hint_id, hint_text, config.hint_pos);
+		// shake 2 times
+		if (config.shake) {
+			og.single_shake(selector, 'up', 3, 5);
+			setTimeout(function(){ og.single_shake(selector, 'up', 3, 5); }, 1500);
+		}
+		if (config.animate_opacity > 0) {
+			var animate_times = 0;
+			while (animate_times < config.animate_opacity) {
+				$(selector).animate({opacity:'.5'}, 'slow').animate({opacity:'1.0'}, 'slow');
+				animate_times++;
+			}
+		}
+		// remove class after time_active miliseconds
+		setTimeout(function(){ 
+			$(selector).removeClass('highlighted');
+			$("#" + hint_id).remove();
+		}, time_active);
+		
+		$(selector).click(function(){
+			// on click remove class
+			$(selector).removeClass('highlighted');
+			$("#" + hint_id).remove();
+			
+			// update step after clicking hint
+			if (step && step > 0) {
+				var reload = config.reload_panel ? config.reload_panel : '0';
+				og.openLink(og.getUrl('more','set_getting_started_step', {step: step, reload_panel: reload}), {hideLoading:true});
+				if (step == 99) {
+					$("#tabs-panel__more-panel").addClass("x-tab-strip-closable");
+					$("#tabs-panel__more-panel .x-tab-strip-text").removeClass("ico-more-tab");
+					$("#tabs-panel__more-panel .x-tab-strip-text").addClass("ico-administration");
+					$("#tabs-panel__more-panel .x-tab-strip-text").html(lang('more-panel'));
+				}
+			}
+		});
+	}, timeout);
+}
+
+og.initPopoverBtns = function(btns){
+	for (var i = 0; i < btns.length; i++) {
+	    var btn = $("#"+btns[i].id);
+	    btn.popover({ content: "example", 
+	    	delay: { 
+	    	       show: "100", 
+	    	       hide: "200"
+	    	    },
+        	template : $("#"+btn.data("templateid")).html()
+        });		   
+	}		
+}
+
+og.setSettingsClosed = function() {
+	og.openLink(og.getUrl('more', 'set_settings_closed'), {hideLoading: true});
+}
+
+
+
+og.renderUserTypeSelector = function(config) {
+	container_id = config.container_id;
+	if (!config.id) config.id = Ext.id() + '_user_type_sel';
+
+	var selected_type = 0;
+	for (role_id in og.userRoles) {
+		if (role_id == config.selected_value) {
+			selected_type = og.userRoles[role_id].parent;
+			break;
+		}
+	}
+
+	var sel_type = document.createElement("select");
+	sel_type.setAttribute("onchange", "og.reloadUserRoleSelector({id:'"+config.id+"', input_name:'"+config.input_name+"'}, this.value);");
+	sel_type.setAttribute("class", "user-typegroup-selector");
+	sel_type.id = config.id + '_type';
+	document.getElementById(container_id).appendChild(sel_type);
+	
+	for (type_id in og.userTypes) {
+	    var option = document.createElement("option");
+	    option.value = type_id;
+	    option.text = og.userTypes[type_id].name;
+	    if (selected_type == type_id) {
+		    option.setAttribute('selected', 'selected');
+	    }
+	    sel_type.appendChild(option);
+	}
+	
+	og.renderUserRoleSelector(config, selected_type);
+}
+
+og.renderUserRoleSelector = function(config, parent_type) {
+	container_id = config.container_id;
+
+	var sel_role = document.createElement("select");
+	if (config.input_name) sel_role.name = config.input_name;
+	sel_role.onchange = "";
+	sel_role.id = config.id + '_role';
+	sel_role.className = "user-type-selector";
+	document.getElementById(container_id).appendChild(sel_role);
+	
+	for (role_id in og.userRoles) {
+		if (og.userRoles[role_id].parent == parent_type) {
+		    var option = document.createElement("option");
+		    option.value = role_id;
+		    option.text = og.userRoles[role_id].name;
+		    if (config.selected_value) {
+			    if (config.selected_value == role_id) {
+			    	option.setAttribute('selected', 'selected');
+			    }
+		    } else {
+		    	if (role_id == og.defaultRoleByType[parent_type]) {
+		    		option.setAttribute('selected', 'selected');
+		    	}
+		    }
+		    sel_role.appendChild(option);
+		}
+	}
+}
+
+og.reloadUserRoleSelector = function(config, parent_type) {
+	var sel_role = document.getElementById(config.id + '_role');
+	for (var i=sel_role.options.length - 1; i>=0; i--) {
+		sel_role.remove(i);
+	}
+
+	for (role_id in og.userRoles) {
+		if (og.userRoles[role_id].parent == parent_type) {
+		    var option = document.createElement("option");
+		    option.value = role_id;
+		    option.text = og.userRoles[role_id].name;
+		    if (role_id == og.defaultRoleByType[parent_type]) {
+	    		option.setAttribute('selected', 'selected');
+	    	}
+		    sel_role.appendChild(option);
+		}
+	}
+	$(sel_role).change();
+}
+
+
+og.addUserGroupToUser = function(genid, container_id, group) {
+	if (typeof(group) == 'string') group = Ext.util.JSON.decode(group);
+	
+	var values = $("#"+genid+"_user_groups").val();
+	values = values.split(',');
+	var idx = values.indexOf(group.id.toString());
+	if (idx < 0) {
+		
+		var remove_link = '&nbsp;<a class="remove-link link-ico ico-delete" href="#" title="'+lang('remove')+'" onclick="og.removeUserFromUserGroup(\''+genid+'\', '+group.id+');">&nbsp;</a>';
+		//var group_link = '<a href="#" onclick="og.openLink(og.getUrl(\'group\', \'view\', {id:'+group.id+'}))">'+ group.name +'<a/>';
+		var group_link = group.name;
+		
+		var html = '<div class="user-group" id="'+genid+'user_group_'+group.id+'">' + group_link + remove_link + '</div>';
+		$("#"+container_id).append(html);
+
+		values.push(group.id);
+		$("#"+genid+"_user_groups").val(values.join());
+	}
+}
+
+og.removeUserFromUserGroup = function(genid, group_id) {
+	var values = $("#"+genid+"_user_groups").val();
+	values = values.split(',');
+	
+	var idx = values.indexOf(group_id.toString());
+	if (idx >= 0) {
+		values.splice(idx, 1);
+		$("#"+genid+"_user_groups").val(values.join());
+	}
+	$("#"+genid+"user_group_"+group_id).remove();
 }

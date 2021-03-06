@@ -95,6 +95,11 @@ og.renderContactSelector = function(config) {
 		url_params['filters'] = Ext.util.JSON.encode(config.filters);
 	}
 	
+	if (config.plugin_filters) {
+		if (!url_params) url_params = {};
+		url_params['plugin_filters'] = Ext.util.JSON.encode(config.plugin_filters);
+	}
+	
 	var store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy({
 			method: "GET",

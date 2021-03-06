@@ -24,24 +24,19 @@ og.QuickAdd = function(config) {
 					og.openLink(url/*, {caller: 'contacts-panel'}*/);
 				}, hidden: !og.config['enable_contacts_module']},
 				{id: 'quick-event', text: lang('event'), iconCls: 'ico-event', handler: function() {
-					var url = og.getUrl('event', 'add');
-					og.openLink(url/*, {caller: 'calendar-panel'}*/);
+					og.render_modal_form('', {c:'event', a:'add'});
 				}, hidden: !og.config['enable_calendar_module']},
 				{id: 'quick-task', text: lang('task'), iconCls: 'ico-task', handler: function() {
-					var url = og.getUrl('task', 'add_task');
-					og.openLink(url/*, {caller: 'tasks-panel'}*/);
+					og.render_modal_form('', {c:'task', a:'add_task', params:{reload:1}});
 				}, hidden: !og.config['enable_tasks_module']},
 				{id: 'quick-milestone', text: lang('milestone'), iconCls: 'ico-milestone', handler: function() {
-					var url = og.getUrl('milestone', 'add');
-					og.openLink(url/*, {caller: 'tasks-panel'}*/);
+					og.render_modal_form('', {c:'milestone', a:'add'});
 				}, hidden: !og.config['enable_tasks_module']},
 				{id: 'quick-weblink', text: lang('webpage'), iconCls: 'ico-webpage', handler: function() {
-					var url = og.getUrl('webpage', 'add');
-					og.openLink(url/*, {caller: 'webpages-panel'}*/);
+					og.render_modal_form('', {c:'webpage', a:'add'});
 				}, hidden: !og.config['enable_weblinks_module']},
 				{id: 'quick-note', text: lang('message'), iconCls: 'ico-message', handler: function() {
-					var url = og.getUrl('message', 'add');
-					og.openLink(url/*, {caller: 'messages-panel'}*/);
+					og.render_modal_form('', {c:'message', a:'add'});
 				}, hidden: !og.config['enable_notes_module']},
 //				{id: 'quick-document', text: lang('document'), iconCls: 'ico-doc', handler: function() {
 //					var url = og.getUrl('files', 'add_document');
@@ -56,8 +51,7 @@ og.QuickAdd = function(config) {
 //					og.openLink(url/*, {caller: 'documents-panel'}*/);
 //				}, hidden: !og.config['enable_documents_module']},
 				{id: 'quick-file', text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
-					var url = og.getUrl('files', 'add_file');
-					og.openLink(url/*, {caller: 'documents-panel'}*/);
+					og.render_modal_form('', {c:'files', a:'add_file'});
 				}, hidden: !og.config['enable_documents_module']}/*,
 				{id: 'quick-email', text: lang('email'), iconCls: 'ico-email', handler: function() {
 					var url = og.getUrl('mail', 'add_mail');

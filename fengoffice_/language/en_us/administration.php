@@ -38,6 +38,8 @@
     'config category desc passwords' => 'Use these settings to manage password options.',
 	'config category name documents' => 'Files',
     'config category desc documents' => 'Manage file configurations.',
+  	'config category name brand_colors' => 'Branding',
+  	'config category desc brand_colors' => 'Configure system colors.',
 	
 	//--------------------------------------------------
     // Validate Password
@@ -183,13 +185,21 @@
   	'config option name show_owner_company_name_header' => 'Show the company name in the header',
   	'config option desc show_owner_company_name_header' => 'When enabled, the name of the company is going to be displayed near the company logo in the header.',
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
+  	
+	'config option name inherit_permissions_from_parent_member' => 'Inherit permissions from parent workspace, client or project',
+	'config option desc inherit_permissions_from_parent_member' => 'When creating a workspace, client, folder or project, the default permissions will be copied from the parent if this option is enabled.',
   
-	'config option name milestone_selector_filter' => 'Milestone selector filters',
+  	'config option name milestone_selector_filter' => 'Milestone selector filters',
 	'config option desc milestone_selector_filter' => 'This option is used to filter the milestones selector, you can choose to show all milestones, only milestones in the current workspace, client, project or folder; or milestones in current workspace, client, project or folder and its parent hierarchy.',
 	'only in current member' => 'Only milestones in current member',
 	'only in current member and parents' => 'Only milestones in current member or parents',
 	'all milestones' => 'All milestones',
   	
+  	'config option name brand_colors_head_back' => 'Header background color',
+  	'config option desc brand_colors_head_back' => '',
+  	'config option name brand_colors_head_font' => 'Header font color',
+  	'config option desc brand_colors_head_font' => '',
+  		
   	'notify myself too' => 'Include myself in automatic notifications',
 	
   	'group users' => 'Group users',
@@ -197,8 +207,7 @@
     'module permissions' => 'Module Permissions',
     'module permission uncheck warning' => 'Module Permission Uncheck Warning',
 
-    'apply to all submembers' => 'Apply the permissions above to all submembers',
-    'apply to all members' => 'Apply the permissions above to all the members within the dimension',
+    
   	
     'user ws config category name dashboard' => 'Dashboard options',
     'user ws config category name task panel' => 'Task options',
@@ -315,6 +324,8 @@
   	
   	'user config option name view_mail_attachs_expanded' => 'Show expanded attachments when accessing an email',
   	'user config option desc view_mail_attachs_expanded' => '',
+
+	'user config option name tasksShowDescriptionOnTimeForms' => 'Show description field when adding a time entry into a task in the tasks list',
   	
   	'user config option name auto_classify_attachments' => 'Automatically classiffy email attachments when receiving emails',
   	'user config option desc auto_classify_attachments' => 'If enabled the attachments will be classiffied with the email in the place defined in the account',
@@ -776,7 +787,7 @@
 
 
     //User-box actions
-    'brand colors' => 'Brand Colors',
+    'brand colors' => 'Branding',
     'head color' => 'Head Color',
     'tabs color' => 'Tabs Color',
     'font color' => 'Font Color',

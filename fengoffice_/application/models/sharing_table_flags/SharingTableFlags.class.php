@@ -20,11 +20,7 @@ class SharingTableFlags extends BaseSharingTableFlags {
 				// update sharing table
 				$obj->addToSharingTable();
 			
-				// delete flag
-				$flag->delete();
-			
 				DB::commit();
-				return true;
 			
 			} catch(Exception $e) {
 				DB::rollback();
@@ -32,6 +28,9 @@ class SharingTableFlags extends BaseSharingTableFlags {
 				return false;
 			}
 			
+			// delete flag
+			$flag->delete();
+			return true;
 			
 		} else {
 			// heal 
@@ -53,17 +52,17 @@ class SharingTableFlags extends BaseSharingTableFlags {
 				// update sharing table
 				$controller->afterPermissionChanged($permission_group_id, $permissions);
 				
-				// delete flag
-				$flag->delete();
-				
 				DB::commit();
-				return true;
 				
 			} catch(Exception $e) {
 				DB::rollback();
 				Logger::log("Failed to heal permission group $permission_group_id (flag_id = ".$flag->getId().")\n".$e->getTraceAsString());
 				return false;
 			}
+			
+			// delete flag
+			$flag->delete();
+			return true;
 		}
 	}
 }

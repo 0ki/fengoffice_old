@@ -7,8 +7,12 @@
   */
   class TabPanelPermissions extends BaseTabPanelPermissions {
 
-     function clearByPermissionGroup($pg_id) {
-     	self::delete("`permission_group_id` = '$pg_id'");
+     function clearByPermissionGroup($pg_id, $only_active_panels = false) {
+     	$extra_conditions = "";
+     	if ($only_active_panels) {
+     		$extra_conditions = " AND tab_panel_id IN (SELECT id FROM ".TABLE_PREFIX."tab_panels WHERE enabled=1)";
+     	}
+     	self::delete("`permission_group_id` = '$pg_id' $extra_conditions");
      }
      
      
