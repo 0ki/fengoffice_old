@@ -405,20 +405,28 @@ class Reports extends BaseReports {
 					"count_results" => true,
 					"join_params" => $join_params
 				);
+				if (is_numeric($order_by_col)) {
+					$listing_parameters['cp_order'] = $order_by_col;
+				}
+				
 				if ($limit > 0) {
 					$listing_parameters["start"] = $offset;
 					$listing_parameters["limit"] = $limit;
 				}
 				if($show_archived){
 					$listing_parameters["archived"] = true;
-				}				
+				}
 				$result = $managerInstance->listing($listing_parameters);
+				
 			}else{
 				// TODO Performance Killer
 				$result = ContentDataObjects::getContentObjects(active_context(), $ot, $order_by_col, ($order_by_asc ? "ASC" : "DESC"), $allConditions);
 			}
 			$objects = $result->objects;
 			$totalResults = $result->total;
+			if (isset($result->totals)) {
+				$results['totals'] = $result->totals;
+			}
 
 			$results['pagination'] = Reports::getReportPagination($id, $params, $original_order_by_col, $order_by_asc, $offset, $limit, $totalResults);
 		
@@ -655,7 +663,7 @@ class Reports extends BaseReports {
 						$cp = CustomProperties::getCustomProperty($colCp);
 						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
 							
-							$row_values[$cp->getName()] = get_custom_property_value_for_listing($cp, $object);
+							$row_values[$cp->getId()] = get_custom_property_value_for_listing($cp, $object);
 							
 						}
 					}

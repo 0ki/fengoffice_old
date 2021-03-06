@@ -201,7 +201,7 @@ function allowed_users_to_assign($context = null, $filter_by_permissions = true)
 	}
 	
 	$comp_array = array();
-	
+	Hook::fire('contact_check_can_view_in_array', null, $contacts);
 	foreach ($contacts as $contact) { /* @var $contact Contact */
 		
 		if (!isset($comp_array[$contact->getCompanyId()])) {

@@ -183,7 +183,7 @@ og.MailManager = function() {
 		if (r.data.memberIds.length > 0) {
 			return '<div class="db-ico ico-email"></div>';
 		} else {
-			return String.format('<a href="#" onclick="{0}" title={1}><div class="db-ico ico-classify"></div></a>', "og.render_modal_form('', {c:'mail', a:'classify', params: {id: "+r.data.object_id+"},focusFirst: false})", lang('classify'));
+			return String.format('<a href="#" onclick="{0}" title={1}><div class="db-ico ico-classify"></div></a>', "og.render_modal_form('', {c:'mail', a:'classify', params: {id: "+r.data.object_id+", from_mail_list: true},focusFirst: false})", lang('classify'));
 		}
 	}
 

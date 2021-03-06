@@ -212,11 +212,13 @@ class MemberController extends ApplicationController {
 			$parent = Members::findById($parent_id);
 		} else {
 			$context = active_context();
-			foreach ($context as $sel) {
+			if (is_array($context)) {
+			  foreach ($context as $sel) {
 				if ($sel instanceof Member && $sel->getDimensionId() == $dimension->getId()) {
 					$parent = $sel;
 					break;
 				}
+			  }
 			}
 		}
 		$parent_member_cond = $parent instanceof Member ? "AND mem.parent_member_id=".$parent->getId() : "";
@@ -647,10 +649,13 @@ class MemberController extends ApplicationController {
 				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
-				//evt_add("external dimension member click", array('dim_id' => $member->getDimensionId(),'member_id' => $member->getId()));
 				
 				$select_node = intval(DimensionObjectTypeOptions::getOptionValue($member->getDimensionId(), $member->getObjectTypeId(), 'select_after_creation'));
-				evt_add("update dimension tree node", array('dim_id' => $member->getDimensionId(), 'member_id' => $member->getId(), 'select_node' => $select_node));
+				if ($select_node) {
+					evt_add("external dimension member click", array('dim_id' => $member->getDimensionId(),'member_id' => $member->getId()));
+				} else {
+					evt_add("update dimension tree node", array('dim_id' => $member->getDimensionId(), 'member_id' => $member->getId(), 'select_node' => $select_node));
+				}
 								
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
@@ -662,7 +667,6 @@ class MemberController extends ApplicationController {
 				
 			}
 		} catch (Exception $e) {
-			DB::rollback();
 			flash_error($e->getMessage());
 			ajx_current("empty");
 		}

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.1-beta2
+	About Feng Office 3.4.2-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -95,6 +95,7 @@
 	- Reece Calendar - http://sourceforge.net/projects/reececalendar
 	- Swift Mailer - http://www.swiftmailer.org
 	- Open Flash Chart - http://teethgrinder.co.uk/open-flash-chart
+	- PHPExcel - https://github.com/PHPOffice/PHPExcel
 	- Slimey - http://slimey.sourceforge.net
 	- FCKEditor - http://www.fckeditor.net
 	- JSSoundKit - http://jssoundkit.sourceforge.net
@@ -105,7 +106,12 @@
 	Changelog
 	=========
 	
-	Since 3.4.1-beta
+	Since 3.4.2-beta2
+	----------------
+	feature: Export custom reports to excel
+	bugfix: fixed object classification after changing member parent.
+	
+	Since 3.4.2-beta
 	----------------
 	bugfix: custom reports pdf export compatibility in windows (need to install wkhtmltopdf)
 	bugfix: custom report print view only shows first page

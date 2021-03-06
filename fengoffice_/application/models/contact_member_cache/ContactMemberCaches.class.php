@@ -240,7 +240,7 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		
 		//CHILDS
 		//Get all member childs recursive
-		$childs = get_all_children_sorted($member_info);
+		$childs = get_all_children_sorted(array($member_info['id']));
 		
 		$lastParentIdByDepth = array();
 		if(isset($member) && $member instanceof Member){

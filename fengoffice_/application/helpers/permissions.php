@@ -475,15 +475,19 @@
 	
 	
 	
-	function get_all_children_sorted($member_info, $order='name') {
+	function get_all_children_sorted($member_ids, $order='name') {
 		$all_children = array();
 	
-		$children = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE parent_member_id=".$member_info['id']." ORDER BY $order ASC");
+		$children = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE parent_member_id IN (".implode(',',$member_ids).") ORDER BY $order ASC");
+
+		$parents_ids = array();
 		if (is_array($children) && count($children) > 0) {
 			foreach ($children as $child) {
 				$all_children[] = $child;
-				$all_children = array_merge($all_children, get_all_children_sorted($child));
+				$parents_ids[] = $child['id'];
 			}
+
+			$all_children = array_merge($all_children, get_all_children_sorted($parents_ids));
 		}
 	
 		return $all_children;
@@ -529,7 +533,7 @@
 				  foreach ($root_members as $mem) {
 					if (!isset($members[$dim->getId()])) $members[$dim->getId()] = array();
 					$members[$dim->getId()][] = $mem;
-					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
+					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted(array($mem['id'])));
 				  }
 				}
 				
@@ -1351,7 +1355,7 @@
 			save_member_permissions($member, $permissions);
 			
 			if ($old_parent_id != -1 && $old_parent_id != $member->getParentMemberId()) {
-				member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user);
+				member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user, $member->getParentMemberId());
 			}
 		} else {
 
@@ -1535,13 +1539,13 @@
 	 * Function called after editing a member and changing its parent, it will refresh the permissions for all the objects within the member.
 	 * If it is possible this function should be executed in background
 	 */
-	function member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user) {
+	function member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user, $new_parent_id) {
 		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			
-			do_member_parent_changed_refresh_object_permisssions($member->getId(), $old_parent_id);
+			do_member_parent_changed_refresh_object_permisssions($member->getId(), $old_parent_id, $new_parent_id);
 			
 		} else {
-			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/member_parent_changed_refresh_object_permisssions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." ".$old_parent_id;
+			$command = "nice -n19 ".PHP_PATH." ". ROOT . "/application/helpers/member_parent_changed_refresh_object_permisssions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." ".$old_parent_id." ".$new_parent_id;
 			exec("$command > /dev/null &");
 			
 			//Test php command
@@ -1555,35 +1559,80 @@
 		}
 	}
 	
-	function do_member_parent_changed_refresh_object_permisssions($member_id, $old_parent_id) {
+	function do_member_parent_changed_refresh_object_permisssions($member_id, $old_parent_id, $new_parent_id) {
 		$member = Members::findById($member_id);
 		if (!$member instanceof Member) {
 			return;
 		}
 		
-		$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id=".$member->getId();
-		$object_ids = DB::executeAll($sql);
-			
-		$ids_str = "";
-		if (!is_array($object_ids)) $object_ids = array();
-		foreach ($object_ids as $row) {
-			$content_object = Objects::findObject($row['object_id']);
-			if (!$content_object instanceof ContentDataObject) continue;
-		
+		if ($old_parent_id > 0) {
 			$parent_ids = array();
-			if ($old_parent_id > 0) {
 				$all_parents = Members::findById($old_parent_id)->getAllParentMembersInHierarchy(true);
-				foreach ($all_parents as $p) $parent_ids[] = $p->getId();
-				if (count($parent_ids) > 0) {
-					DB::execute("DELETE FROM ".TABLE_PREFIX."object_members WHERE object_id=".$content_object->getId()." AND member_id IN (".implode(",",$parent_ids).")");
+			foreach ($all_parents as $p){
+				$parent_ids[] = $p->getId();
 				}
+
+			//old parent hierarchy remove optimization
+			foreach ($all_parents as $parent){
+				$childs = get_all_children_sorted(array($parent->getId()));
+
+				$childs_ids = array();
+				foreach ($childs as $child){
+					if($child['id'] != $member_id){
+						$childs_ids[] = $child['id'];
 			}
-			$content_object->addToMembers(array($member));
-			$content_object->addToSharingTable();
-			$ids_str .= ($ids_str == "" ? "" : ",") . $content_object->getId();
 		}
 			
-		//add_multilple_objects_to_sharing_table($ids_str, logged_user());
+				$childs_ids[] = $parent->getId();
+
+				//start transaction
+				if(count($childs_ids) > 0){
+
+					//Get all objects in this member that must not be any more in this parent
+					$old_obj_sql = "SELECT om.object_id
+					FROM " . TABLE_PREFIX . "object_members om
+					WHERE om.member_id=" . $member->getId() . "
+					AND NOT EXISTS (
+						SELECT omm.object_id
+						FROM " . TABLE_PREFIX . "object_members omm
+						WHERE om.object_id = omm.object_id
+						AND omm.is_optimization = 0
+						AND omm.member_id IN (" . implode(",", $childs_ids) . ")
+					)
+					";
+
+					$object_ids = DB::executeAll($old_obj_sql);
+					$object_ids = array_filter(array_flat($object_ids));
+
+					//Delete objects from this parent
+					if (count($object_ids) > 0) {
+						DB::execute("DELETE FROM " . TABLE_PREFIX . "object_members WHERE member_id=" . $parent->getId() . " AND is_optimization = 1 AND object_id IN (" . implode(",", $object_ids) . ")");
+					}
+				}
+			}
+		}
+
+		//Add optimization for new parent hierarchy
+		if ($new_parent_id > 0) {
+			$new_parent_ids = array();
+			$all_new_parents = Members::findById($new_parent_id)->getAllParentMembersInHierarchy(true);;
+
+			foreach ($all_new_parents as $np) {
+				$new_parent_ids[] = $np->getId();
+
+
+				$sql = "INSERT INTO " . TABLE_PREFIX . "object_members
+					SELECT om.object_id , " . $np->getId() . ",1
+					FROM " . TABLE_PREFIX . "object_members om
+					WHERE om.member_id=" . $member->getId() . "
+
+					ON DUPLICATE KEY UPDATE object_id=om.object_id;";
+
+				DB::execute($sql);
+			}
+
+		}
+
 	}
 
 	/*

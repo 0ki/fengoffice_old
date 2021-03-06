@@ -119,7 +119,7 @@ function render_single_member_selector(Dimension $dimension, $genid = null, $sel
 function update_all_childs_depths($member, $old_parent_id) {
 	//CHILDS
 	//Get all member childs recursive
-	$childs = get_all_children_sorted($member->getArrayInfo());
+	$childs = get_all_children_sorted(array($member->getId()));
 	if(count($childs) == 0){
 		return;
 	}

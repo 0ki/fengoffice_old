@@ -487,3 +487,18 @@ tr.list-totals-row div.x-grid3-col-checker, tr.list-totals-row td.x-grid3-td-ico
 tr.list-totals-row td.x-grid3-col.x-grid3-cell.x-grid3-td-name {
     padding-left: 30px;
 }
+
+
+.report-header-button {
+	width: 160px;
+    margin-top: 10px;
+    background-repeat: no-repeat;
+    background-position-y: 2px;
+    background-position-x: 4px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+.report-header-button:hover {
+	opacity: 0.75;
+	filter: 'alpha(opacity=75)';
+}

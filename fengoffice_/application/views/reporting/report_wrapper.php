@@ -19,20 +19,37 @@ if (!isset($allow_export)) $allow_export = true;
 		<div class="coViewTitleContainer">
 			<div class="coViewTitle" style="margin-left:55px;"><?php echo $title ?></div>
 	<?php if (is_numeric($id) && $id > 0) { // is a custom report ?>
-		<?php if (!isset($disable_print) || !$disable_print) { ?>	
-			<input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo escape_character($title) ?>', '<?php echo $id?>'); return false;" style="width:150px; margin-top:10px;"/>
-		<?php } ?>
+		<?php if (!isset($disable_print) || !$disable_print) {
 			
-		<?php if ($allow_export) { ?>
-			<input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="og.submit_csv_form('<?php echo $genid ?>');return false;" style="width:150px; margin-top:10px;"/>
-			<input type="button" name="exportPDFOptions" onclick="og.openPDFOptions('<?php echo $genid?>');" value="<?php echo lang('export pdf') ?>" style="width:150px; margin-top:10px;"/>
-		<?php } ?>
-	<?php } else { // predefined report ?>
+				render_report_header_button(array(
+					'name' => 'print', 'text' => lang("print view"), 'onclick' => "og.reports.printReport('$genid','".escape_character($title)."', '$id');return false;", 'iconcls' => "ico-print"
+				));
+			}
+		
+			if ($allow_export) {
+				
+				render_report_header_button(array(
+					'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_csv_form('$genid');return false;", 'iconcls' => "ico-text"
+				));
+				
+				render_report_header_button(array(
+					'name' => 'exportPDFOptions', 'text' => lang("export pdf"), 'onclick' => "og.openPDFOptions('$genid');", 'iconcls' => "ico-application-pdf"
+				));
+				
+				$null=null; Hook::fire('additional_custom_report_export_actions', array('genid' => $genid, 'report_id' => $id), $null);
+				
+			}
 			
-			<input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printNoPaginatedReport('<?php echo $genid?>','<?php echo escape_character($title) ?>', '<?php echo $id?>'); return false;" style="width:150px; margin-top:10px;"/>
-			<input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="og.submit_fixed_report_csv_form'<?php echo $genid ?>');return false;" style="width:150px; margin-top:10px;"/>
+		  } else { // predefined report 
 			
-	<?php } ?>
+			render_report_header_button(array(
+				'name' => 'print', 'text' => lang("print view"), 'onclick' => "og.reports.printNoPaginatedReport(('$genid','".escape_character($title)."', '$id');return false;", 'iconcls' => "ico-print"
+			));
+			render_report_header_button(array(
+				'name' => 'exportCSV', 'text' => lang("export csv"), 'onclick' => "og.submit_fixed_report_csv_form('$genid');return false;", 'iconcls' => "ico-text"
+			));
+	
+		  } ?>
 			<input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
 			<input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
 		</div>
@@ -145,6 +162,27 @@ og.get_report_parameters_of_form = function(genid) {
 		}
 	}
 	return params;
+}
+
+og.submit_export_excel_form = function(genid) {
+
+	var params = og.get_report_parameters_of_form(genid);
+	params['exportCSV'] = true;
+
+	var report_id = $("#report_id_"+genid).val();
+	og.openLink(og.getUrl('excel_export', 'export_custom_report_excel', {id: report_id}), {
+		post: params,
+		callback: function(success, data) {
+			var $form = $("<form></form>");
+			$form.attr("action", og.getUrl('reporting', 'download_file'));
+			$form.attr("method", "post");
+			$form.append('<input type="text" name="file_name" value="'+data.filename+'" />');
+			$form.append('<input type="text" name="file_type" value="application/vnd.ms-excel" />');
+			
+			$form.appendTo('body').submit().remove();				
+		}
+	});
+	return false;
 }
 
 og.submit_csv_form = function(genid) {

@@ -128,8 +128,7 @@ class MailController extends ApplicationController {
 			$re_body = $original_mail->getBodyPlain();
 		}
 		if ($type == 'html') {
-			$pre_quote = '<blockquote type="cite" style="margin-left: 10px; padding-left:10px; border-left: 1px solid #987ADD;">';
-			$post_quote = "</blockquote>";
+
 		} else {
 			$pre_quote = "";
 			$post_quote = "";
@@ -381,7 +380,6 @@ class MailController extends ApplicationController {
 				Hook::fire('email_base_css', null, $css);
 				str_replace(array("\r","\n"), "", $css);
 				$body = '<div style="' . $css . '">' . $body . '</div>';
-				$body = str_replace('<blockquote>', '<blockquote style="border-left:1px solid #987ADD;padding-left:10px;">', $body);
 			}
 			$type = 'text/' . array_var($mail_data, 'format');
 			
@@ -1672,10 +1670,15 @@ class MailController extends ApplicationController {
 			$members = json_decode(array_var($_POST, 'members'));
 			$this->do_classify_mail($email, $members);
 			// update mail list
-			if (user_config_option('mails classification filter') == 'unclassified' && count($members)>0 
+
+
+			if (user_config_option('mails classification filter') == 'unclassified' && count($members)>0
 				|| user_config_option('mails classification filter') == 'classified' && count($members)==0) {
 				evt_add("remove from email list", array('ids' => array($email->getId())));
-			} else if (array_var($_REQUEST, 'from_mail_view')) {
+			} else if (array_var($_REQUEST, 'from_mail_view') || array_var($_REQUEST, 'from_mail_list')) {
+				if(array_var($_REQUEST, 'from_mail_list')){
+					evt_pop();
+				}
 				evt_add("update email list", array('ids' => array($email->getId())));
 			}
 		} 

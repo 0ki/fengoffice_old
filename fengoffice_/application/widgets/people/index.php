@@ -4,10 +4,11 @@
 	}
 
 	$context = active_context();
-	$limit = 15;
+	$limit = 11;
 
 	$members_ids = array();
 	$active_members = array();
+	$contacts = array();
 	if (is_array($context)) {
 		foreach ($context as $member) {
 			if ($member instanceof Member){
@@ -16,7 +17,6 @@
 			}
 		}
 
-		$contacts = array();
 		if (count($members_ids) > 0) {
 		//get all users with perrmissions in this members
 			$dim_c = new DimensionController();
@@ -33,6 +33,8 @@
 		}
 	}
 	
+	Hook::fire('contact_check_can_view_in_array', null, $contacts);
+
 	$mnames = array();
 	//if there are members selcted
 	if (count($active_members) > 0) {
@@ -55,6 +57,6 @@
 	$render_add = can_manage_security(logged_user());
 	$genid = gen_id();
 	
-	if (($total > 0) && can_manage_security(logged_user())) {
+	if (($total > 0)) {
 		include_once 'template.php';
 	}

@@ -1,7 +1,17 @@
 <?php
 
-function report_table_csv($results, $report) {
+function render_report_header_button($button_data) {
 	
+	echo input_field(array_var($button_data, 'name'), array_var($button_data, 'text'), array(
+			'id' => array_var($button_data, 'id', ''),
+			'type' => 'button',
+			'onclick' => array_var($button_data, 'onclick', 'return true;'),
+			'class' => "report-header-button " . array_var($button_data, 'iconcls')
+	));
+}
+
+
+function report_values_to_arrays($results, $report) {
 	$columns = array_var($results, 'columns');
 	$rows = array_var($results, 'rows');
 	$pagination = array_var($results, 'pagination');
@@ -14,39 +24,56 @@ function report_table_csv($results, $report) {
 		$headers[] = $columns['names'][$col];
 	}
 	
-	$all_csv_rows = array();
+	$all_data_rows = array();
 	foreach($rows as $row) {
 		$values_array = array();
-		
+	
 		foreach ($columns['order'] as $col) {
 			if ($col == 'object_type_id' || $col == 'link') continue;
-		
+	
 			$value = array_var($row, $col);
-			
+				
 			$val_type = array_var($types, $col);
 			$date_format = is_numeric($col) ? "Y-m-d" : user_config_option('date_format');
-			
+				
 			if ($val_type == 'DATETIME') {
 				$formatted_val = $value;
 			} else {
 				$formatted_val = format_value_to_print($col, $value, $val_type, array_var($row, 'object_type_id'), '', $date_format);
 			}
 			if ($formatted_val == '--') $formatted_val = "";
-			
-			$formatted_val = '"'. strip_tags($formatted_val) .'"';
-			
+				
+			$formatted_val = strip_tags($formatted_val);
+				
 			$values_array[] = $formatted_val;
 		}
-		$csv_row = implode(',', $values_array);
-		$all_csv_rows[] = $csv_row;
-	}
-	$add_csv_rows = array();
-	Hook::fire('get_additional_report_rows_csv', array('results' => $results, 'report_id' => $report->getId()), $add_csv_rows);
-	if (count($add_csv_rows) > 0) {
-		$all_csv_rows = array_merge($all_csv_rows, $add_csv_rows);
+		
+		$all_data_rows[] = $values_array;
 	}
 	
-	$csv = implode(',', $headers)."\n";
+	$add_data_rows = array();
+	Hook::fire('get_additional_report_rows', array('results' => $results, 'report_id' => $report->getId()), $add_data_rows);
+	if (count($all_data_rows) > 0) {
+		$all_data_rows = array_merge($all_data_rows, $add_data_rows);
+	}
+	
+	return array('headers' => $headers, 'values' => $all_data_rows);
+}
+
+function report_table_csv($results, $report) {
+	
+	$all_data = report_values_to_arrays($results, $report);
+	
+	$headers = array_var($all_data, 'headers');
+	$all_data_rows = array_var($all_data, 'values');
+	
+	$all_csv_rows = array();
+	foreach ($all_data_rows as $r) {
+		$r = str_replace(array("\r\n","\r","\n"), " ", $r);
+		$all_csv_rows[] = '"'. implode('","', $r) .'"';
+	}
+	
+	$csv = '"'. implode('","', $headers) .'"' . "\n";
 	$csv .= implode("\n", $all_csv_rows);
 	
 	return $csv;
