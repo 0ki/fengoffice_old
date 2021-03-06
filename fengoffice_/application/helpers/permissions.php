@@ -154,7 +154,13 @@
 			
 			//check
 			if (ContactMemberPermissions::contactCanReadObjectTypeinMember($contact_pg_ids, $member->getId(), $object_type_id, true, false, $user)) {
-				return true;
+				$max_role_ot_perm = MaxRoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $user->getUserType() ."'"));
+				// if user max permission cannot write this object type then return false
+				if ($max_role_ot_perm && $max_role_ot_perm->getCanWrite()) {
+					return true;
+				} else {
+					return false;
+				}
 			}
 			//check for context permissions that allow user to add in this member
 			if ($context_members){
@@ -359,7 +365,7 @@
 				return $return;
 			}
 			
-			$max_role_ot_perm = RoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $user->getUserType() ."'"));
+			$max_role_ot_perm = MaxRoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $user->getUserType() ."'"));
 			
 			$enabled_dimensions = config_option('enabled_dimensions');
 			$dimension_permissions = array();
@@ -485,7 +491,7 @@
 			foreach ($permission_groups as $pgroup) {
 				if ($pgroup->getType() == 'permission_groups' && $pgroup->getContactId() > 0) {
 					$tmp_contact = Contacts::findById($pgroup->getContactId());
-					$max_role_ot_perm = RoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $tmp_contact->getUserType() ."'"));
+					$max_role_ot_perm = MaxRoleObjectTypePermissions::instance()->findOne(array('conditions' => "object_type_id='$object_type_id' AND role_id = '". $tmp_contact->getUserType() ."'"));
 					break;
 				}
 			}
@@ -928,7 +934,7 @@
 					if ($tmp_contact instanceof Contact) {
 						$user_type_name = $tmp_contact->getUserTypeName();
 						$role_id = $tmp_contact->getUserType();
-						$max_role_ot_perms = RoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '$role_id'"));
+						$max_role_ot_perms = MaxRoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '$role_id'"));
 					}
 					$mail_ot = ObjectTypes::findByName('mail');
 					
@@ -1306,7 +1312,7 @@
 					// check max permissions for user type
 					$tmp_contact = Contacts::findOne(array('conditions' => 'permission_group_id = '.$perm->pg));
 					if ($tmp_contact instanceof Contact) {
-						$max_role_ot_perms = RoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '". $tmp_contact->getUserType() ."'"));
+						$max_role_ot_perms = MaxRoleObjectTypePermissions::instance()->findAll(array('conditions' => "role_id = '". $tmp_contact->getUserType() ."'"));
 						$max_perm = null;
 						foreach($max_role_ot_perms as $max_role_ot_perm) {
 							if ($max_role_ot_perm->getObjectTypeId() == $perm->o) {

@@ -172,7 +172,7 @@ class ProjectEvents extends BaseProjectEvents {
 			))->objects;
 
 			// Find invitations for events and logged user
-			if (is_array($result_events) && count($result_events)) {
+			if ($user != -1 && is_array($result_events) && count($result_events)) {
 				ProjectEvents::addInvitations($result_events, $user);
 				if (!($user == null && $inv_state == null)) {
 					foreach ($result_events as $k => $event) {

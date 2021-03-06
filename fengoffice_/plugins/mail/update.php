@@ -136,3 +136,54 @@
 			ON DUPLICATE KEY UPDATE name=name;
 		");
 	}
+	
+	function mail_update_14_15() {
+		DB::execute("
+			DELETE FROM ".TABLE_PREFIX."max_role_object_type_permissions 
+			WHERE object_type_id IN (
+				 SELECT o.id
+				 FROM `".TABLE_PREFIX."object_types` o 
+				 WHERE o.`name` IN ('mail')
+			);
+ 		");
+ 		DB::execute("
+			INSERT INTO ".TABLE_PREFIX."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+			 SELECT p.id, o.id, 1, 1
+			 FROM `".TABLE_PREFIX."object_types` o JOIN `".TABLE_PREFIX."permission_groups` p
+			 WHERE o.`name` IN ('mail')
+			 AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+			ON DUPLICATE KEY UPDATE role_id=role_id;
+		");
+ 		DB::execute("
+			INSERT INTO ".TABLE_PREFIX."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+			 SELECT p.id, o.id, 0, 0
+			 FROM `".TABLE_PREFIX."object_types` o JOIN `".TABLE_PREFIX."permission_groups` p
+			 WHERE o.`name` IN ('mail')
+			 AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator','Guest Customer')
+			ON DUPLICATE KEY UPDATE role_id=role_id;
+		");
+ 		DB::execute("
+			DELETE FROM ".TABLE_PREFIX."role_object_type_permissions
+			WHERE object_type_id IN (
+				SELECT o.id
+				FROM `".TABLE_PREFIX."object_types` o
+				WHERE o.`name` IN ('mail')
+			);
+		");
+ 		DB::execute("
+			INSERT INTO ".TABLE_PREFIX."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+			 SELECT p.id, o.id, 1, 1
+			 FROM `".TABLE_PREFIX."object_types` o JOIN `".TABLE_PREFIX."permission_groups` p
+			 WHERE o.`name` IN ('mail')
+			 AND p.`name` IN ('Super Administrator','Administrator','Manager')
+			ON DUPLICATE KEY UPDATE role_id=role_id;
+		");
+ 		DB::execute("
+			INSERT INTO ".TABLE_PREFIX."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+			 SELECT p.id, o.id, 0, 1
+			 FROM `".TABLE_PREFIX."object_types` o JOIN `".TABLE_PREFIX."permission_groups` p
+			 WHERE o.`name` IN ('mail')
+			 AND p.`name` IN ('Executive')
+			ON DUPLICATE KEY UPDATE role_id=role_id;
+		");
+	}

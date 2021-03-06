@@ -222,11 +222,15 @@
 			if (is_null($group)) {
 				/* @var $obj ContentDataObject */
 				
-				$related_object = Objects::findObject($obj->getColumnValue($column));
-				if ($related_object instanceof ContentDataObject) {
-					$name = $related_object->getObjectName();
+				if ($column == 'priority') {
+					$name = lang('priority '.$gb_val);
 				} else {
-					$name = lang('unclassified');
+					$related_object = Objects::findObject($obj->getColumnValue($column));
+					if ($related_object instanceof ContentDataObject) {
+						$name = $related_object->getObjectName();
+					} else {
+						$name = lang('unclassified');
+					}
 				}
 				
 				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0, 'group_type' => 'column'), 'subgroups' => array());

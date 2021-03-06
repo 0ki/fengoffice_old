@@ -40,6 +40,8 @@ og.TrashCan = function() {
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
+					og.TrashCan.store.lastOptions.params.trashed = true;
+					Ext.getCmp('trash-can').reloadGridPagingToolbar('object','list_objects','trash-can');
 				}
 			}
 		});

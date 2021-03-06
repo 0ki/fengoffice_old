@@ -47,6 +47,7 @@ if (trim(array_var($options, 'root_lang')) != "") {
 							<div class="selected-member-actions" <?php echo $is_ie ? 'style="display:inline;margin-left:40px;float:none;"' : ''?>>
 								<a href="#" class="coViewAction ico-delete" title="<?php echo lang('remove relation')?>" onclick="member_selector.remove_relation(<?php echo $dimension_id?>,'<?php echo $genid?>', <?php echo $selected_member->getId()?>)"></a>
 							</div>	
+							<div class="clear"></div>
 							<?php endif;?>	
 						</div>	
 				<?php	$alt_cls = $alt_cls == "" ? "alt-row" : "";

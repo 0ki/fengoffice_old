@@ -249,7 +249,7 @@ class ReportingController extends ApplicationController {
 			set_user_config_option('timeReportShowBilling', isset($report_data['show_billing']) ? 1:0 , logged_user()->getId());
 			
 			$group = $report_data['group_by_1'].", ".$report_data['group_by_2'].", ".$report_data['group_by_3'];
-			$altGroup = $report_data['alt_group_by_1'].", ".$report_data['alt_group_by_2'].", ".$report_data['alt_group_by_3'];
+			$altGroup = $report_data['alt_group_by_1'].",".$report_data['alt_group_by_2'].",".$report_data['alt_group_by_3'];
 			
 			set_user_config_option('timeReportGroupBy', $group , logged_user()->getId());
 			set_user_config_option('timeReportAltGroupBy', $altGroup , logged_user()->getId());

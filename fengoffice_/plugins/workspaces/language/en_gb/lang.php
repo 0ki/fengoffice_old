@@ -17,4 +17,7 @@
     'user config option desc lp_dim_workspaces_show_as_column' => 'Show the workspaces in a separate column and not next to the list item\'s name.',
 	'user config option name lp_dim_tags_show_as_column' => 'Show tags in a separate column',
     'user config option desc lp_dim_tags_show_as_column' => 'Show the tags in a separate column and not next to the list item\'s name.',
+	
+	'add a new member in workspaces' => 'Add a new workspace',
+	'add a new member in tags' => 'Add a new tag',
 );

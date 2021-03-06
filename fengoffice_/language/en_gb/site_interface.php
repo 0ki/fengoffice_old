@@ -120,13 +120,12 @@ return array(
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
-  	'getting started' => 'Getting Started',
+  	'getting started' => 'Getting started',
  
   	'new account step actions' => 'Step {0}: Start managing your online office',
   	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
 										Click on the workspace you want to work with and <b>Add a new:</b><br/>',
 
-   	'getting started' => 'Getting Started',
  
 // Application log
     'application log details column name' => 'Details',
@@ -159,19 +158,20 @@ return array(
   	'confirm leave page' => 'If you leave or reload the page you will lose unsubmitted data.',
 
 //Contacts
-  	'add contact' => 'Add Person',
-  	'add contact here' => 'Add Person Here',
-  	'edit contact' => 'Edit Person',
-    'update contact' => 'Update Person',
-  	'edit picture' => 'Edit Picture',
-  	'delete contact' => 'Delete Person',
+  	'add contact' => 'Add contact',
+  	'add contact here' => 'Add contact here',
+  	'add contacts to' => 'Add contacts to {0}',
+  	'edit contact' => 'Edit contact',
+    'update contact' => 'Update contact',
+  	'edit picture' => 'Edit picture',
+  	'delete contact' => 'Delete contact',
   	'contact card of' => 'Contact card of',
   	'email address 2' => 'Email address 2',
   	'email address 3' => 'Email address 3',
   	'website' => 'Website',
   	'notes' => 'Notes',
   	'assigned user' => 'Assigned user',
-  	'contact information' => 'Contact Information',
+  	'contact information' => 'Contact information',
     'first name' => 'First name',
   	'last name' => 'Last name',
 	'surname' => 'Surname',
@@ -249,17 +249,17 @@ return array(
 	'success export companies' => 'Companies succesfully exported',
 
 //Webpages
-  'add webpage' => 'Add web link',
-  'delete webpage' => 'Delete web link',
-  'webpages' => 'Web links',
-  'private webpage' => 'Private web link',
+  'add webpage' => 'Add link',
+  'delete webpage' => 'Delete link',
+  'webpages' => 'Links',
+  'private webpage' => 'Private link',
   'url' => 'Url',
   'no active webpages in project' => 'No active web links found in this workspace',
   'webpage list description' => 'Description',
-  'edit webpage' => 'Edit web link',
-  'webpage' => 'Web link',
-  'webpage title required' => 'A web link title is required',
-  'webpage url required' => 'A web link URL is required',
+  'edit webpage' => 'Edit link',
+  'webpage' => 'Link',
+  'webpage title required' => 'The link title is required',
+  'webpage url required' => 'The link URL is required',
 
 //Email
   'emails' => 'Emails',
@@ -318,7 +318,7 @@ return array(
   'checkin file' => 'Upload a new version of the file',
 
   'new filename' => 'New filename',
-  'new weblink' => 'New weblink',
+  'new weblink' => 'New link',
   'add as revision' => 'Add as revision',
   'duplicate filename' => 'Duplicate filename',
   'filename exists' => 'Files with the specified filename already exists. You can select a different filename or choose among the following options',
@@ -341,8 +341,8 @@ return array(
   'can write comments' => 'Can write comments',
   'can read contacts' => 'Can read people',
   'can write contacts' => 'Can write people',
-  'can read weblinks' => 'Can read weblinks',
-  'can write weblinks' => 'Can write weblinks',
+  'can read weblinks' => 'Can read links',
+  'can write weblinks' => 'Can write links',
   'can read files' => 'Can read files',
   'can write files' => 'Can write files',
   'can read events' => 'Can read events',
@@ -355,11 +355,12 @@ return array(
   'new tag' => 'New tag',
   'new task list' => 'New task',
   'new event' => 'New event',
-  'new webpage' => 'New weblink',
+  'new webpage' => 'New link',
   'new milestone' => 'New milestone',
   'new message' => 'New note',
   'new group' => 'New group',
   'new user' => 'New user',
+  'add new user' => 'Add new user',
   'add tags' => 'Add tags',
   'save changes' => 'Save changes',
   'administrator options' => 'Administrator options',
@@ -458,7 +459,7 @@ return array(
   'tasks in progress' => 'Tasks in progress',
   'upcoming events milestones and tasks' => 'Upcoming events, milestones and tasks',
 
-  'undo checkout' => 'Unblock file edition for other users',
+  'undo checkout' => 'Unblock edition for other users',
     
   //'search for in project' => 'Search results for \'<i>{0}</i>\' in \'{1}\'',
   'search for in project' => 'Search results in \'{1}\'',
@@ -527,6 +528,7 @@ return array(
   'phone 2' => 'Phone 2',
   'fax' => 'Fax',
   'assistant' => 'Assistant',
+  'assistant number' => 'Assistant number',
   'callback' => 'Callback',
   'mobile' => 'Mobile',
   'pager' => 'Pager',
@@ -572,6 +574,8 @@ return array(
   'do complete' => 'Complete',
 
   'task data' => 'Task data',
+  'basic data' => 'Basic data',
+  'more details' => 'More details',
   'search in all workspaces' => 'Search everywhere',
 
   'paused time' => 'Paused time',
@@ -627,7 +631,7 @@ return array(
   'share notification email desc' => '{1} invited you to view/edit this email: {0}',
   'share notification file desc' => '{1} invited you to view/edit this file: {0}',
   'share notification milestone desc' => '{1} invited you to view/edit this milestone: {0}',
-  'share notification weblink desc' => '{1} invited you to view/edit this web link: {0}',
+  'share notification weblink desc' => '{1} invited you to view/edit this link: {0}',
 
   'new share notification message' => 'Note \'{0}\' has been shared',
   'new share notification event' => 'Event \'{0}\' has been shared',
@@ -639,7 +643,7 @@ return array(
   'new share notification email' => 'Email \'{0}\' has been shared',
   'new share notification file' => 'File \'{0}\' has been shared',
   'new share notification milestone' => 'Milestone \'{0}\' has been shared',
-  'new share notification weblink' => 'Web link \'{0}\' has been shared',
+  'new share notification weblink' => 'Link \'{0}\' has been shared',
 
   'billing' => 'Billing',
   'category' => 'Category',
@@ -668,15 +672,15 @@ return array(
   'new version notification title' => 'New version',
 
   'workspace contacts' => 'People',
-  'search contact' => 'Search person',
-  'add new contact' => 'Add new person',
+  'search contact' => 'Search contact',
+  'add new contact' => 'Add new contact',
   'no contacts to display' => 'No people to display',
   'workspace info' => 'Workspace information',
   'workspace description' => 'Workspace description for \'{0}\'',
   'show all amount' => 'Show all ({0})',
   'searching' => 'Searching',
 
-  'weblink' => 'Weblink',
+  'weblink' => 'Link',
 
   'add value' => 'Add value',
   'remove value' => 'Remove value',
@@ -727,7 +731,7 @@ return array(
    'web pages' => 'Web Links',	
 
 
-	'previous tasks' => 'Previous tasks',
+	'previous tasks' => 'Previous tasks that must be completed before this task',
 	'add previous task' => 'Add previous task',
 	'previous tasks must be completed before completion of this task' => 'Previous tasks must be completed before the completion of this task',
 	'task depends on incomplete tasks' => 'This task has previous open tasks',
@@ -751,12 +755,24 @@ return array(
 	'add new phone number' => 'Add new phone number',
 	'add new address' => 'Add new address',
 	'add new webpage' => 'Add new webpage',
+	'add new email address' => 'Add new email address',
+	'main email' => 'Main email',
+	'other email addresses' => 'Other email adresses',
 	'edit all person data' => 'Edit additional data',
 	'edit user data' => 'Edit user data',
 	'main data' => 'Main information',
 	'user data' => 'User data',
-	'additional data' => 'Additional data',
+	'additional data' => 'More contact info',
 	'map' => 'Map',
+	'logo' => 'Logo',
+	'update logo' => 'Update logo',
+	
+	'set manual permissions' => 'Set manual permissions',
+	'set manual permissions desc' => 'If you don\'t set the permissions manually, they will be assinged automatically depending on the user role (Administrators, Managers and Executives will be granted with all permissions).',
+	'or you can also' => 'Or you can also',
+	'template parameters description' => 'This form contains the parameters that are needed to fill the tasks to be generated.',
+	'template_task' => 'Template task',
+	'repeat options' => 'Repeat options',
 ); // array
 
 ?>

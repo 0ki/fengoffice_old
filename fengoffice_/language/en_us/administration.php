@@ -135,6 +135,10 @@
   	'config option desc check_spam_in_subject' => 'Filter all the emails that contain the word "Spam" in the subject',
     'config option name show images in document notifications' => 'Attach images in document notifications',
     'config option desc show images in document notifications' => 'If the document is an image, it is attached in the content of the notification.',
+    'config option name notification_recipients_field' => 'Notification recipients email field',
+    'config option desc notification_recipients_field' => 'Select if the recipients for each notifications will be put in the "To" field, in "CC" field or in "BCC" field (by using this last one the recipients will not see each other in the mail header).',
+  	'config option name check_unique_mail_contact_comp' => 'Check email unicity between contacts and companies',
+  	'config option desc check_unique_mail_contact_comp' => 'If this option is enabled you will not be able to add a company if its email is already used by a contact.',
 
     'config option name infinite_paging' => 'Paging',
     'config option desc infinite_paging' => 'Enables or disables the paging. When enabled, a little performance can be noticed when loading lists.',
@@ -760,6 +764,8 @@
     'user config option desc mail_account_err_check_interval' => 'Time between each verification at email accounts (0 to disable)',
     'user config option name classify_mail_with_conversation' => 'Classify mails with its conversation',
     'user config option desc classify_mail_with_conversation' => 'If enabled received mails are classified into the conversation workspaces (if email belongs to a conversation).',	
+  	'user config option name listingContactsBy' => 'List contacts by name',
+  	'user config option desc listingContactsBy' => 'If enabled contacts will be listed as "name surname" instead of "surname name".',
 
     //
     'untitled note' => 'Untitled note',

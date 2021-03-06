@@ -1868,7 +1868,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 					$to_display = user_config_option('breadcrumb_member_count');
 					$extra_cond = " AND m.dimension_id = ".$dimension['dimension_id'];
 					$extra_cond .= $selected_members_cond;
-					$dim_members = ObjectMembers::getMembersIdsByObjectAndExtraCond($this->getId(), $extra_cond,$to_display);
+					$dim_members = ObjectMembers::getMembersIdsByObjectAndExtraCond($this->getId(), $extra_cond, $to_display, false);
 					foreach ($dim_members as $mem) {
 						$member_ids[$dimension['dimension_id']][$mem] = $mem;
 					}

@@ -978,7 +978,10 @@ class Contact extends BaseContact {
 					
 					$conditions = "email_address=".DB::escape($main_email);
 					if (!$this->isNew()) {
-						$conditions .= " AND contact_id <> ".$this->getId();
+						if (!config_option('check_unique_mail_contact_comp')) {
+							$type_condition = " AND (SELECT c.is_company FROM ".TABLE_PREFIX."contacts c WHERE c.object_id=contact_id)=0";
+						}
+						$conditions .= " AND contact_id <> ".$this->getId() . $type_condition;
 					}
 					$em = ContactEmails::instance()->findOne(array('conditions' => $conditions));
 					if($em instanceof ContactEmail) {

@@ -169,23 +169,22 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".$t_prefix."system_permissions`
 				ADD COLUMN `can_link_objects` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
 				
-				
 				UPDATE `".$t_prefix."system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
 					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 				);
-				
 				
 				UPDATE `".$t_prefix."system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
 					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
 						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 					)
 				);
-				
-				
+			";
+		  }
+		  if (!$this->checkColumnExists($t_prefix."max_system_permissions", "can_link_objects", $this->database_connection)) {
+		  	$upgrade_script .= "
 				ALTER TABLE `".$t_prefix."max_system_permissions`
 				 ADD COLUMN `can_link_objects` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
-				
-				
+		
 				UPDATE `".$t_prefix."max_system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
 					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 				);

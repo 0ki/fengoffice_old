@@ -599,6 +599,7 @@
 	'log read projectmessages' => 'Vió \'{0}\'',
 	'log read mailcontents' => 'Vió \'{0}\'',
 	'log read companies' => 'Vió \'{0}\'',
+	'log read company' => 'Vió \'{0}\'',
 	'log read contacts' => 'Vió \'{0}\'',
 	'log read contact' => 'Vió \'{0}\'',
 	'log read projectevents' => 'Vió \'{0}\'',

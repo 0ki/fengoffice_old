@@ -290,6 +290,7 @@ Asunto:   {0}<br/>
 	'linked milestone tab' => 'Hitos',
 	'linked task tab' => 'Tareas',
 	'linked event tab' => 'Eventos',
+	'linked objective tab' => 'Objetivos',
 	'apply assignee to subtasks' => 'Aplicar asignado actual a subtareas',
 	'undo remove subtasks' => 'Restaurar las subtareas removidas',
 	'urgent priority' => 'Urgente',

@@ -489,7 +489,10 @@
 	
 	'user config option name auto_classify_attachments' => 'Clasificar los adjuntos de los correos automáticamente',
 	'user config option desc auto_classify_attachments' => 'Si se habilita esta opción los adjuntos de los correos van a ser clasificados junto al correo en el espacio definido en la cuenta de correos.',
-    
+
+	'user config option name listingContactsBy' => 'Listar contactos por nombre',
+	'user config option desc listingContactsBy' => 'En el listado de contactos los muestra como "nombre apellido" en vez de "apellido nombre"',
+		
        'file extension prevention uploading' => 'Prevención de subida de archivos por extensión',
         'file extension' => 'Extensión de archivo',
         'allow' => 'Permitir',

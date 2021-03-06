@@ -301,6 +301,7 @@ addLangs({
 	'sort desc': 'Sort the view',
 	
 	'confirm_mail_without_attach': 'Hello! I have noticed that you typed a word just like or similar to attach in this email, but no attachments have been found.\nWould you like to proceed sending the email anyway?',
+	'attach': 'attach',
 	
 	'no objects message': 'There are no {0} in {1}',
 	'no more objects message': 'There are no more {0} to display',
@@ -874,7 +875,7 @@ addLangs({
   	'all workspaces' : 'All workspaces',
   	'all tags' : 'All tags',
   	'see more' : 'View more',
-  	'new person' : 'New cpntact',
+  	'new person' : 'New contact',
   	'new company' : 'New company',
   	'in' : 'in',
   	'fee' : 'Fee',
@@ -949,7 +950,7 @@ addLangs({
 	
 	'view classification' : 'View classification',
 	'classified under' : 'Classified under',
-	
+	'percent completed' : 'Percent completed',
 	'birthdays': 'Birthdays',
 	'email address': 'Email address',
 	'home': 'Home',

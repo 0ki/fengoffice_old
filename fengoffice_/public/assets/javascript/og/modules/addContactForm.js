@@ -219,68 +219,6 @@ og.addNewTelephoneInput = function(container_id, pre_id, sel_type, sel_number, s
 	og.telephoneCount++;
 }
 
-og.renderAddressTypeSelector = function(id, name, container_id, selected_value) {
-	
-	var select = $('<select name="'+name+'" id="'+id+'" class="address_type_input"></select>');
-	for (var i=0; i<og.address_types.length; i++) {
-		var type = og.address_types[i];
-		var option = $('<option></option>');
-		option.attr('value', type.id);
-		if (selected_value == type.id) option.attr('selected', 'selected');
-		option.text(type.name);
-		select.append(option);
-	}
-	$('#'+container_id).empty().append(select);
-}
-
-og.renderAddressInput = function(id, name, container_id, sel_type, sel_data) {
-	if (!sel_data) sel_data = {};
-	if (!sel_data.id) sel_data.id = 0;
-	if (!sel_data.street) sel_data.street = '';
-	if (!sel_data.city) sel_data.city = '';
-	if (!sel_data.state) sel_data.state = '';
-	if (!sel_data.zip_code) sel_data.zip_code = '';
-	if (!sel_data.country) sel_data.country = '';
-	
-	$('#'+container_id).append('<input type="hidden" name="'+name+'[id]" id="'+id+'_id" value="'+sel_data.id+'" />');
-	$('#'+container_id).append('<input type="hidden" name="'+name+'[deleted]" id="'+id+'_deleted" value="0" />');
-	
-	$('#'+container_id).append('<span id="'+id+'_type" style="vertical-align:top;"></span>');
-	og.renderAddressTypeSelector(id+'_type', name+'[type]', id+'_type', sel_type);
-
-	var delete_link = $('<a href="#" onclick="og.markAsDeleted(this, \''+container_id+'\', \''+id+'\');" class="coViewAction ico-delete delete-link" title="'+lang('delete')+'">'+lang('delete')+'</a>');
-	$('#'+container_id).append(delete_link);
-	var undo_delete_link = $('<a href="#" onclick="og.undoMarkAsDeleted(this, \''+container_id+'\', \''+id+'\');" class="coViewAction ico-undo undo-delete" style="display:none;" title="'+lang('undo')+'">'+lang('undo')+'</a>');
-	$('#'+container_id).append(undo_delete_link);
-
-	var address_input = $('<textarea name="'+name+'[street]" id="'+id+'_street" class="address_street_input" placeholder="'+lang('street address')+'">'+ sel_data.street +'</textarea>');
-	$('#'+container_id).append(address_input);
-
-	var city_input = $('<input name="'+name+'[city]" id="'+id+'_city" value="'+sel_data.city+'" class="address_city_input" placeholder="'+lang('city')+'"/>');
-	$('#'+container_id).append(city_input);
-
-	var state_input = $('<input name="'+name+'[state]" id="'+id+'_state" value="'+sel_data.state+'" class="address_state_input" placeholder="'+lang('state')+'"/>');
-	$('#'+container_id).append(state_input);
-
-	var select_country = $('<select name="'+name+'[country]" id="'+id+'_country" class="address_country_input country-selector"></select>');
-	$('#'+container_id).append(select_country);
-	$('#template_select_country option').clone().appendTo('#'+id+'_country');
-	if (sel_data.country != '') {
-		var selc = document.getElementById(id+'_country');
-		for (var i=0; i<selc.options.length; i++) {
-			if (selc.options[i].value == sel_data.country) selc.options[i].setAttribute('selected','selected');
-		}
-	}
-	
-	var zip_code_input = $('<input name="'+name+'[zip_code]" id="'+id+'_zip_code" value="'+sel_data.zip_code+'" class="address_zipcode_input" placeholder="'+lang('zip_code')+'"/>');
-	$('#'+container_id).append(zip_code_input);
-	
-	if (og.loggedUser.localization) {
-		$('#'+container_id).addClass(og.loggedUser.localization);
-	}
-	
-	$('#'+container_id).append('<div class="clear"></div>');
-}
 
 og.addNewAddressInput = function(container_id, pre_id, sel_type, sel_data) {
 	if (!pre_id) pre_id = 'contact';

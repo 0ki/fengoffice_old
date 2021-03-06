@@ -555,6 +555,9 @@
 	'user config option name show_multiple_color_events' => 'Mostrar eventos en todos sus colores',
 	'user config option desc show_multiple_color_events' => 'Si un evento está clasificado en más de un espacio, cliente, etc. entonces se van a mostrar los colores de cada uno de ellos en la pestaña calendario.',
 
+	'user config option name listingContactsBy' => 'Listar contactos por nombre',
+	'user config option desc listingContactsBy' => 'En el listado de contactos los muestra como "nombre apellido" en vez de "apellido nombre"',
+		
 	'config option name brand_colors_head_back' => 'Color de fondo del encabezado',
 	'config option desc brand_colors_head_back' => '',
 	'config option name brand_colors_head_font' => 'Color de fuente del encabezado',

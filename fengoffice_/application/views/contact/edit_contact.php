@@ -243,7 +243,7 @@
 			foreach ($tmp_user_group_ids as $ugid) {
 				if ($ugid != $contact->getPermissionGroupId()) $user_group_ids[] = $ugid;
 			}
-			$ugroups_data = PermissionGroups::instance()->getUserGroupsInfo(" AND id IN (".implode(',', $user_group_ids).")");
+			$ugroups_data = PermissionGroups::instance()->getUserGroupsInfo(" AND id IN (".implode(',', $user_group_ids).")", null, false);
 		}
 		echo "<script>";
 		foreach ($ugroups_data as $ugdata) {
@@ -405,11 +405,12 @@
 	</div>
 	
 	
-	
+	<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
 	<div id='<?php echo $genid ?>add_custom_properties_div' class="form-tab">
 		<?php echo render_object_custom_properties($object, false) ?>
 		<?php echo render_add_custom_properties($object); ?>
 	</div>
+	<?php } ?>
 	
 	<div id="<?php echo $genid ?>add_subscribers_div" class="form-tab">
 		<?php $subscriber_ids = array();
@@ -514,7 +515,7 @@
 				$('[name="contact[user][type]"]').val(<?php echo $_POST['widget_user_type'] ?>);
 			<?php } ?>
 
-			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>');
+			og.checkEmailAddress("#<?php echo $genid ?>profileFormEmail",'<?php echo $contact->getId();?>','<?php echo $genid ?>', 'contact');
 			
 			Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
 

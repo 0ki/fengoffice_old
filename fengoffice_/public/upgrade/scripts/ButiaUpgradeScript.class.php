@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2-rc
+ * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1.5.3');
-		$this->setVersionTo('3.2-rc');
+		$this->setVersionTo('3.2-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -124,8 +124,13 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 			
 			$upgrade_script .= "
 				TRUNCATE TABLE `".$t_prefix."external_calendars`;
-				ALTER TABLE  `".$t_prefix."external_calendars` CHANGE `calendar_user` `original_calendar_id` varchar(255);
 			";
+			
+			if ($this->checkColumnExists($t_prefix."external_calendars", "calendar_user", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE  `".$t_prefix."external_calendars` CHANGE `calendar_user` `original_calendar_id` varchar(255);
+				";
+			}
 			
 			if (!$this->checkColumnExists($t_prefix."external_calendars", "sync", $this->database_connection)) {
 				$upgrade_script .= "
@@ -236,6 +241,172 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE `type`='roles' AND name IN ('Guest Customer'));
 				UPDATE ".$t_prefix."system_permissions SET can_see_assigned_to_other_tasks=1
 				WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE `type`='roles' AND name IN ('Guest Customer'));
+			";
+		}
+		
+		if (version_compare($installed_version, '3.2-rc2') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('general', 'listingContactsBy', '0', 'BoolConfigHandler', '0', '0', NULL),
+					('task panel', 'pushUseWorkingDays', '1', 'BoolConfigHandler', '1', '0', NULL),
+					('task panel', 'zoom in gantt', '3', 'IntegerConfigHandler', 1, 0, NULL)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+
+			//max_role_object_type_permissions
+			$upgrade_script .= "
+				DELETE FROM ".$t_prefix."max_role_object_type_permissions 
+				WHERE object_type_id IN (
+					 SELECT o.id
+					 FROM `".$t_prefix."object_types` o 
+					 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')				
+				 );
+				 
+				 INSERT INTO ".$t_prefix."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 1, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+				 AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive');
+								 
+				INSERT INTO ".$t_prefix."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','timeslot','comment','contact','report')
+				 AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator');
+				 
+				INSERT INTO ".$t_prefix."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 0
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('task','milestone','event')
+				 AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator');
+								 
+				INSERT INTO ".$t_prefix."max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 0
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
+				 AND p.`name` IN ('Guest Customer','Guest','Non-Exec Director');
+			";
+			
+			//role_object_type_permissions
+			$upgrade_script .= "
+				DELETE FROM ".$t_prefix."role_object_type_permissions
+				WHERE object_type_id IN (
+					SELECT o.id
+					FROM `".$t_prefix."object_types` o
+					WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+				);
+
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 1, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+				 AND p.`name` IN ('Super Administrator','Administrator','Manager')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				 
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+				 AND p.`name` IN ('Executive')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('file','timeslot','comment')
+				 AND p.`name` IN ('Collaborator Customer','Internal Collaborator')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 0
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('task','milestone','event','report','contact')
+				 AND p.`name` IN ('Collaborator Customer','Internal Collaborator')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('timeslot','comment')
+				 AND p.`name` IN ('External Collaborator')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 0
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('task','file','milestone')
+				 AND p.`name` IN ('External Collaborator')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+				 
+				INSERT INTO ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				 SELECT p.id, o.id, 0, 1
+				 FROM `".$t_prefix."object_types` o JOIN `".$t_prefix."permission_groups` p
+				 WHERE o.`name` IN ('comment')
+				 AND p.`name` IN ('Non-Exec Director','Guest Customer')
+				ON DUPLICATE KEY UPDATE role_id=role_id;
+			";
+			
+			//max_system_permissions
+			$upgrade_script .= "
+				UPDATE `".$t_prefix."max_system_permissions` SET `can_see_assigned_to_other_tasks`=1 WHERE `permission_group_id` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('External Collaborator','Guest')
+					);
+			";
+			
+			//system_permissions
+			$upgrade_script .= "
+				UPDATE `".$t_prefix."system_permissions` SET `can_update_other_users_invitations`=1 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Manager')
+					)
+				);
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_manage_security`=0 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Executive')
+					)
+				);
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_manage_tasks`=1 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Executive')
+					)
+				);
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_see_assigned_to_other_tasks`=1 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Collaborator Customer')
+					)
+				);
+				
+				UPDATE `".$t_prefix."system_permissions` SET `can_see_assigned_to_other_tasks`=0 WHERE `permission_group_id` IN (
+					SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Internal Collaborator')
+					)
+				);
+			";
+			
+			
+			// config option to specify mail field where the notification recipients should go
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				 ('general', 'check_unique_mail_contact_comp', '0', 'BoolConfigHandler', 0, 0, NULL),
+				 ('mailing', 'notification_recipients_field', 'to', 'MailFieldConfigHandler', '0', '10', NULL)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."tab_panels SET title='settings', icon_cls='ico-administration' WHERE id='more-panel';
+			";
+			
+			if (!$this->checkColumnExists($t_prefix."templates", "can_instance_from_mail", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."templates` ADD COLUMN `can_instance_from_mail` int(1) NOT NULL default '0';
+				";
+			}
+			
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."member_custom_property_values` ADD INDEX (`member_id`);
 			";
 		}
 		

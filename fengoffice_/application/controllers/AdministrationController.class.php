@@ -228,6 +228,7 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('object_types', $select_options);
 		$custom_properties = array_var($_POST, 'custom_properties');
 		$obj_type_id = array_var($_POST, 'objectType');
+		$delete = 0;
 		if (is_array($custom_properties)) {
 			try {
 				DB::beginWork();
@@ -241,6 +242,7 @@ class AdministrationController extends ApplicationController {
 					}
 					
 					if($data['deleted'] == "1"){
+						$delete = $delete +1;
 						if (!$new_cp->isNew()) {
 							$new_cp->delete();
 						}
@@ -268,7 +270,7 @@ class AdministrationController extends ApplicationController {
 					}
 					$new_cp->setIsRequired(isset($data['required']));
 					$new_cp->setIsMultipleValues(isset($data['multiple_values']));
-					$new_cp->setOrder($id);
+					$new_cp->setOrder($data['order']-$delete);
 					$new_cp->setVisibleByDefault(isset($data['visible_by_default']));
 					$new_cp->save();
 					

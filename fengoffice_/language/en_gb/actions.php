@@ -58,6 +58,7 @@
     
     // Comments
     'add comment' => 'Post comment',
+    'write comment' => 'Write your comment here',
     'edit comment' => 'Edit comment',
     
     // Task list
@@ -98,6 +99,7 @@
     'back to day' => 'Back to day',
     'pick a date' => 'Pick a date',
     'month' => 'Month',
+    'day' => 'Day',
     'week' => 'Week',
     
     //Groups
@@ -175,8 +177,8 @@
     'edit file revisions' => 'Edit revision',
     'version' => 'version',
     'last modification' => 'Last modification',
-    
-    'link object' => 'Link Object',
+	
+    'link object' => 'Click here to link an object',
     'link objects' => 'Link Objects',
     'show all linked objects' => 'Show all ({0})',
   	'link more objects' => 'Link more objects',
@@ -207,7 +209,7 @@
   	'restore from trash' => 'Restore from trash',
   	'delete permanently' => 'Delete permanently',
   	'copy file' => 'Copy this file',
-  	'open weblink' => 'Open web link',
+  	'open weblink' => 'Open link',
   
 	'archive' => 'Archive',
  	'unarchive' => 'Unarchive',
@@ -228,6 +230,7 @@
   	'mark as unread' => 'Mark as unread',
   	'activate' => 'Activate',
   	'disabled' => 'Disabled',
+  	'restore user' => 'Restore user',
   	
   	'template context' => 'Choose the template\'s location',
       

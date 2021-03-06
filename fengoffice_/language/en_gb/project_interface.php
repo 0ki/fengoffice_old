@@ -56,8 +56,9 @@ return array(
     
     'email sent by linktitle' => 'Sent by {1}, {0}',
 
-    'send milestone assigned to notification' => 'Send email notification to user',
-	'send task assigned to notification' => 'Send email notification to user',
+    'send milestone assigned to notification' => 'Send email notification to assignee',
+	'send task assigned to notification' => 'Send email notification to assignee',
+	'send email notification' => 'Send email notification',
 
     'edit company data' => '<a class="internalLink" href="{0}">Edit</a> company data',
     'company users involved in project' => '{0} users involved in {1}',
@@ -199,7 +200,7 @@ return array(
 
 //Contacts
 
-	'new contact' => 'New person',
+	'new contact' => 'New contact',
 	'work' => 'Work',
 	'home' => 'Home',
 	'other' => 'Other',
@@ -341,7 +342,7 @@ Subject:   {0}<br/>
 	'linked main title' => 'Links',
 	'linked file tab' => 'Files',
 	'linked email tab' => 'Email',
-	'linked weblink tab' => 'Weblinks',
+	'linked weblink tab' => 'Links',
 	'linked emailunclassified tab' => 'Unclassified Email',
 	'linked message tab' => 'Notes',
 	'linked contact tab' => 'People',
@@ -351,7 +352,8 @@ Subject:   {0}<br/>
 	'linked milestone tab' => 'Milestones',
 	'linked task tab' => 'Tasks',
 	'linked event tab' => 'Events',
-	'apply assignee to subtasks' => 'Apply assignee to subtasks',
+	'apply assignee to subtasks' => 'Apply current assignee to subtasks',
+	'undo remove subtasks' => 'Restore removed subtasks',
 
 	'attachment from email' => 'Attached to email "{0}"',
 ); // array

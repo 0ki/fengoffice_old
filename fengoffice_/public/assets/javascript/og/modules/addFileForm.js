@@ -116,20 +116,27 @@ og.checkFileName = function(genid) {
 	og.fileValidateAttempt = true;
 	og.checkFileNameResult = 0;
 	setTimeout(function(){
-		var name = document.getElementById(genid + 'fileFormFilename').value;
+		var name_el = document.getElementById(genid + 'fileFormFilename');
+		var name = "";
+		if (name_el) name = name_el.value;
+		
 		var btn = Ext.get(genid + 'add_file_submit2');
-	    Ext.get(genid + "addFileFilenameCheck").setDisplayed(true);
-	    Ext.get(genid + "addFileFilenameExists").setDisplayed(false);
+		Ext.get(genid + "addFileFilenameCheck").setDisplayed(true);
+		Ext.get(genid + "addFileFilenameExists").setDisplayed(false);
 	    
 		var eid = 0;
-		var fileIsNew = Ext.get(genid + "hfFileIsNew").getValue();
+		var hfIsNew = Ext.get(genid + "hfFileIsNew");
+		var fileIsNew = true;
+		if (hfIsNew) fileIsNew = hfIsNew.getValue();
+		
 	  	if (!fileIsNew){
-	 		eid = Ext.get(genid + 'hfFileId').getValue();
+	  		var hfFileId = Ext.get(genid + 'hfFileId');
+	 		if (hfFileId) eid = hfFileId.getValue();
 	  	}
 		
 		var members_el = member_selector[genid] ? Ext.fly(Ext.get(genid + member_selector[genid].hiddenFieldName)) : null;
 
-	    og.openLink(og.getUrl('files', 'check_filename', {
+		og.openLink(og.getUrl('files', 'check_filename', {
 			id: eid
 		}), {
 			post: {

@@ -68,7 +68,7 @@ class Contacts extends BaseContacts {
 	 * @return Contact
 	 */
 	static function getByEmail($email, $id_contact = 0) {
-		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact)));
+		$contact_email = ContactEmails::findOne(array('conditions' => array("`email_address` = ? AND `contact_id` <> ? AND (SELECT c.is_company FROM ".TABLE_PREFIX."contacts c WHERE c.object_id=contact_id)=0", $email, $id_contact)));
 		if (!is_null($contact_email))
 			return self::findById($contact_email->getContactId());
 		return null;
@@ -80,11 +80,18 @@ class Contacts extends BaseContacts {
 	 * @param string $email
 	 * @return Contact
 	 */
-	static function getByEmailCheck($email, $id_contact = 0) {
+	static function getByEmailCheck($email, $id_contact = 0, $contact_type = '') {
 		if (is_null($email) || $email == '') return null;
 		
+		$contact_type_str = "";
+		if ($contact_type == 'contact') {
+			$contact_type_str = " AND is_company=0";
+		} else if ($contact_type == 'company') {
+			$contact_type_str = " AND is_company=1";
+		}
+		
 		$contact_email = Contacts::findOne(array(
-			'conditions' => array("`email_address` = ? AND `contact_id` <> ?", $email, $id_contact),
+			'conditions' => array("`email_address` = ? AND `contact_id` <> ? $contact_type_str", $email, $id_contact),
 			'join' => array(
 				'table' => ContactEmails::instance()->getTableName(),
 				'jt_field' => 'contact_id',
@@ -311,26 +318,37 @@ class Contacts extends BaseContacts {
 	 * @param unknown_type $email
 	 * @param unknown_type $id
 	 */
-	static function validateUniqueEmail ($email, $id = null) {
+	static function validateUniqueEmail ($email, $id = null, $contact_type = "") {
 		$email = trim($email);
 		if ($id) {
 			$id_cond = " AND o.id <> $id ";
 		}else{
 			$id_cond = "" ;
 		} 	
+		
+		if (config_option('check_unique_mail_contact_comp')) {
+			$contact_type = "";
+		}
+		$contact_type_cond = "";
+		if ($contact_type == 'contact') {
+			$contact_type_cond = " AND c.is_company=0";
+		} else if ($contact_type == 'company') {
+			$contact_type_cond = " AND c.is_company=1";
+		}
+		
 		$sql = "
 			SELECT DISTINCT(contact_id) FROM ".TABLE_PREFIX."contact_emails ce 
 			INNER JOIN ".TABLE_PREFIX."objects o ON  ce.contact_id = o.id
-                        INNER JOIN ".TABLE_PREFIX."contacts c ON  c.object_id = o.id
+			INNER JOIN ".TABLE_PREFIX."contacts c ON  c.object_id = o.id
 			WHERE 
 				o.archived_by_id = 0 AND 
 				o.trashed_by_id = 0 AND 
-				ce.email_address = '$email'                               
+				ce.email_address = '$email'
 				$id_cond
+				$contact_type_cond
 				LIMIT 1 ";
 		
 		$res  = DB::execute($sql);
-		
 		return !(bool)$res->numRows();
 	}
 	
@@ -385,7 +403,7 @@ class Contacts extends BaseContacts {
 			$errors[] = lang("invalid webpage");			
 		}
 */		
-		if (trim($attributes['email']) && !self::validateUniqueEmail(trim($attributes['email']), $id)){
+		if (trim($attributes['email']) && !self::validateUniqueEmail(trim($attributes['email']), $id, array_var($attributes, 'contact_type'))){
 			$errors[] = lang("email address must be unique");
 		}
 		
@@ -405,7 +423,7 @@ class Contacts extends BaseContacts {
 	static function validateUser($attributes, $id = null) {
 		$errors = array() ;
 
-		if (trim($attributes['email']) && !self::validateUniqueEmail($attributes['email'], $id)){
+		if (trim($attributes['email']) && !self::validateUniqueEmail($attributes['email'], $id, 'contact')){
 			$errors[] = lang("email address must be unique");
 		}
 		

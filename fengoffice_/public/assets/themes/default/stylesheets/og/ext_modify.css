@@ -52,6 +52,9 @@
 	background: none !important;
 }
 
+.x-tab-strip-top .x-tab-right {
+    padding-top: 4px;
+}
 .x-tab-strip-top .x-tab-with-icon .x-tab-right {
     padding-top: 6px;
 }

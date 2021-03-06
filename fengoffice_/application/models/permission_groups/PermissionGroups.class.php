@@ -56,13 +56,18 @@
     	return $result;
     }
     
-    function getUserGroupsInfo($extra_conditions = "", $order = "name") {
+    function getUserGroupsInfo($extra_conditions = "", $order = "name", $escape=true) {
     	$result = array();
     	$extra_cond = "type = 'user_groups'";
     	$extra_cond .= $extra_conditions ? $extra_conditions : "";
     	$pgs = self::findAll(array('conditions' => $extra_cond, 'order' => $order));
     	foreach ($pgs as $pg) {
-    		$result[$pg->getId()] = array('id' => $pg->getId(), 'name' => $pg->getName());
+    		$result[$pg->getId()] = array('id' => $pg->getId());
+    		if ($escape) {
+    			$result[$pg->getId()]['name'] = str_replace("'", "\'", $pg->getName());
+    		} else {
+    			$result[$pg->getId()]['name'] = str_replace("'", "&apos;", $pg->getName());
+    		}
     	}
     	return $result;
     }

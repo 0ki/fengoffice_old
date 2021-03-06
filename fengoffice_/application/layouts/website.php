@@ -291,6 +291,7 @@ og.config = {
 	'days_on_trash': <?php echo json_encode(config_option("days_on_trash", 0)) ?>,
 	'checkout_notification_dialog': <?php echo json_encode(config_option('checkout_notification_dialog', 0)) ?>,
 	'use_time_in_task_dates': <?php echo json_encode(config_option('use_time_in_task_dates')) ?>,
+	'working_days': <?php echo json_encode(user_config_option('pushUseWorkingDays')) ?>,
 	'can_assign_tasks_to_companies': <?php echo json_encode(config_option('can_assign_tasks_to_companies')) ?>,
 	'enable_notes_module': <?php echo json_encode(module_enabled("messages")) ?>,
 	'enable_email_module': <?php echo json_encode(module_enabled("mails")) ?>,

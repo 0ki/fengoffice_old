@@ -38,6 +38,8 @@
     'config category desc passwords' => 'Use these settings to manage password options.',
 	'config category name documents' => 'Files',
     'config category desc documents' => 'Manage file configurations.',
+  	'config category name brand_colors' => 'Branding',
+  	'config category desc brand_colors' => 'Configure system colors.',
 	
 	//--------------------------------------------------
     // Validate Password
@@ -133,6 +135,10 @@
   	'config option desc check_spam_in_subject' => 'Filter all the emails that contain the word "Spam" in the subject',
     'config option name show images in document notifications' => 'Attach images in document notifications',
     'config option desc show images in document notifications' => 'If the document is an image, it is attached in the content of the notification.',
+    'config option name notification_recipients_field' => 'Notification recipients email field',
+    'config option desc notification_recipients_field' => 'Select if the recipients for each notifications will be put in the "To" field, in "CC" field or in "BCC" field (by using this last one the recipients will not see each other in the mail header).',
+  	'config option name check_unique_mail_contact_comp' => 'Check email unicity between contacts and companies',
+  	'config option desc check_unique_mail_contact_comp' => 'If this option is enabled you will not be able to add a company if its email is already used by a contact.',
 
     'config option name infinite_paging' => 'Paging',
     'config option desc infinite_paging' => 'Enables or disables the paging. When enabled, a little performance can be noticed when loading lists.',
@@ -179,15 +185,25 @@
   		
   	'config option name give_member_permissions_to_new_users' => 'Give permissions to all clients, projects, etc. for new users',
   	'config option desc give_member_permissions_to_new_users' => 'When creating a new user, if the user type is selected in this option then the user will be granted with permissions in all members.',
-
+  	
+  	'config option name show_owner_company_name_header' => 'Show the company name in the header',
+  	'config option desc show_owner_company_name_header' => 'When enabled, the name of the company is going to be displayed near the company logo in the header.',
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
+	
+  	'config option name inherit_permissions_from_parent_member' => 'Inherit permissions from parent workspace, client or project',
+  	'config option desc inherit_permissions_from_parent_member' => 'When creating a workspace, client, folder or project, the default permissions will be copied from the parent if this option is enabled.',
   
-	'config option name milestone_selector_filter' => 'Milestone selector filters',
+  	'config option name milestone_selector_filter' => 'Milestone selector filters',
 	'config option desc milestone_selector_filter' => 'This option is used to filter the milestones selector, you can choose to show all milestones, only milestones in the current workspace, client, project or folder; or milestones in current workspace, client, project or folder and its parent hierarchy.',
 	'only in current member' => 'Only milestones in current member',
 	'only in current member and parents' => 'Only milestones in current member or parents',
 	'all milestones' => 'All milestones',
   	
+  	'config option name brand_colors_head_back' => 'Header background color',
+  	'config option desc brand_colors_head_back' => '',
+  	'config option name brand_colors_head_font' => 'Header font color',
+  	'config option desc brand_colors_head_font' => '',
+  		
   	'notify myself too' => 'Include myself in automatic notifications',
 	
   	'group users' => 'Group users',
@@ -313,9 +329,14 @@
   	
   	'user config option name view_mail_attachs_expanded' => 'Show expanded attachments when accessing an email',
   	'user config option desc view_mail_attachs_expanded' => '',
+
+	'user config option name tasksShowDescriptionOnTimeForms' => 'Show description field when adding a time entry into a task in the tasks list',
   	
   	'user config option name auto_classify_attachments' => 'Automatically classiffy email attachments when receiving emails',
   	'user config option desc auto_classify_attachments' => 'If enabled the attachments will be classiffied with the email in the place defined in the account',
+  	
+  	'user config option name show_multiple_color_events' => 'Show multiple color events in calendar tab',
+  	'user config option desc show_multiple_color_events' => 'If enabled the events will be shown using the color of every member in which the event is related.',
   	
   	'show context help always' => 'Always',
     'show context help never' => 'Never',
@@ -744,6 +765,8 @@
     'user config option desc mail_account_err_check_interval' => 'Time between each verification at email accounts (0 to disable)',
     'user config option name classify_mail_with_conversation' => 'Classify mails with its conversation',
     'user config option desc classify_mail_with_conversation' => 'If enabled received mails are classified into the conversation workspaces (if email belongs to a conversation).',	
+  	'user config option name listingContactsBy' => 'List contacts by name',
+  	'user config option desc listingContactsBy' => 'If enabled contacts will be listed as "name surname" instead of "surname name".',
 
     //
     'untitled note' => 'Untitled note',
@@ -774,7 +797,7 @@
 
 
     //User-box actions
-    'brand colors' => 'Brand Colors',
+    'brand colors' => 'Branding',
     'head color' => 'Head Color',
     'tabs color' => 'Tabs Color',
     'font color' => 'Font Color',
@@ -796,6 +819,8 @@
     'can_manage_dimensions'=>'Can manage dimensions',
     'can_manage_dimension_members'=>'Can manage dimension members',
 	'can_see_assigned_to_other_tasks'=>'Can see other user\'s tasks',
+  	'can_update_other_users_invitations' => 'Can update other user\'s event invitations',
+  	'can_link_objects' => 'Can link objects',
 
     'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and groups, and modify their permissions.',
     'can_manage_configuration description' => 'If this permission is checked the user will be able to edit application configuration, information on the owner company , cron events, application upgrades, the logo shown in the upper left corner of the application and the brand colours.',
@@ -806,7 +831,9 @@
     'can_manage_dimension_members description' => 'If this permission is checked the user will have full permissions over dimension members. He will be able to create, edit and delete new members. In practice, a member could be a workspace, project, client, etc.',
     'can_manage_tasks description' => 'If this permission is checked the user will have full permissions over tasks. He will be able to assign tasks to other users and complete them.',
 	'can_see_assigned_to_other_tasks description'=>'If enabled then the user will be able to see tasks that are not assigned to him/her.',
-
+  	'can_update_other_users_invitations description' => 'If enabled then the user will be able to change the status of other users event invitations.',
+  	'can_link_objects description' => 'If this permission is checked the user will be able to link and unlink objects',
+  		
   //HIDDEN 
     'can_task_assignee'=>'Can task asignee',
     'can_manage_billing'=>'Can manage billing',
@@ -827,6 +854,8 @@
 	'user ws config option name attach_to_notification' => 'Attach documents to notifications',
 	'user ws config option desc attach_to_notification' => 'When enabled, by default, the option to send the document within the notifications is checked.',
       
+  		'invalid parent member' => 'Cannot save \'{0}\' under \'{1}\'',
+  		
         'file extension prevention uploading' => 'File extension prevention uploading',
         'file extension' => 'File extension',
         'allow' => 'Allow',

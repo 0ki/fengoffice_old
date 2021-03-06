@@ -667,6 +667,12 @@ class ContactController extends ApplicationController {
 					$personal_emails = $c->getContactEmails('personal');	
 					$w_address = $c->getAddress('work');
 					$h_address = $c->getAddress('home');
+					
+					if(user_config_option("listingContactsBy")){
+						$name = $c->getDisplayName();
+					} else {
+						$name = $c->getReverseDisplayName();
+					}
 									
 					$object["contacts"][$i] = array(
 						"id" => $i,
@@ -674,7 +680,8 @@ class ContactController extends ApplicationController {
 						"object_id" => $c->getId(),
 						"ot_id" => $c->getObjectTypeId(),
 						"type" => $c->getUserType() > 0 ? 'user' : 'contact',
-						"name" => $c->getReverseDisplayName(),
+						"name" => $name,
+						"picture" => $c->getPictureUrl(),
 						"email" => $c->getEmailAddress('personal',true),
 						"companyId" => $c->getCompanyId(),
 						"companyName" => $companyName,
@@ -1131,6 +1138,8 @@ class ContactController extends ApplicationController {
 						$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
 						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
 					}
+					$contact = Contacts::findById($contact->getId());
+					ContactMemberCaches::updateContactMemberCacheAllMembers($contact);
 					
 					evt_add("new user added", $contact->getArrayInfo());
 				}
@@ -1180,7 +1189,13 @@ class ContactController extends ApplicationController {
 		ajx_current("empty");
 		$email = array_var($_REQUEST, 'email');
 		$id_contact = array_var($_REQUEST, 'id_contact');
-		$contact = Contacts::getByEmailCheck($email, $id_contact);
+		$contact_type = array_var($_REQUEST, 'contact_type');
+		
+		// if check unicity beteween contacts and company then dont specify the type
+		if (config_option('check_unique_mail_contact_comp')) {
+			$contact_type = "";
+		}
+		$contact = Contacts::getByEmailCheck($email, $id_contact, $contact_type);
 
 		if ($contact instanceof Contact) {
 			ajx_extra_data(array(
@@ -1281,10 +1296,12 @@ class ContactController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$contact_data['email']= trim ($contact_data['email']);
+				$contact_data['contact_type'] = 'contact';
 				Contacts::validate($contact_data, get_id());
 				$newCompany = false;
 				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
 					$company_data = array_var($_POST, 'company');
+					$company_data['contact_type'] = 'company';
 
 					Contacts::validate($company_data);
 					
@@ -1798,9 +1815,7 @@ class ContactController extends ApplicationController {
 				}
 				flash_success(lang('success edit picture'));
 			}
-			
-			if (array_var($_REQUEST, 'reload_picture')) ajx_current("back");
-			else ajx_current("reload");
+			ajx_current("back");
 		}
 	}
 	
@@ -3158,6 +3173,7 @@ class ContactController extends ApplicationController {
 				$v = remove_scripts($v);
 			}
 			try {
+				$company_data['contact_type'] = 'company';
 				Contacts::validate($company_data, $_REQUEST['id']);
 				DB::beginWork();
 				
@@ -3294,6 +3310,7 @@ class ContactController extends ApplicationController {
 	
 
 			try {
+				$company_data['contact_type'] = 'company';
 				Contacts::validate($company_data); 
 				DB::beginWork();
 				if (isset($_SESSION['new_contact_picture']) && $_SESSION['new_contact_picture']) {
@@ -3517,7 +3534,7 @@ class ContactController extends ApplicationController {
 			DB::beginWork();
 			$contact->save();
 			if ($email && is_valid_email($email)) {
-				if (!Contacts::validateUniqueEmail($email)) {
+				if (!Contacts::validateUniqueEmail($email, null, $objectType)) {
 					DB::rollback();
 					flash_error(lang("email address must be unique"));
 					return false;

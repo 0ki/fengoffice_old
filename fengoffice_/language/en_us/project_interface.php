@@ -352,6 +352,7 @@ Subject:   {0}<br/>
 	'linked milestone tab' => 'Milestones',
 	'linked task tab' => 'Tasks',
 	'linked event tab' => 'Events',
+	'linked objective tab' => 'Objectives',
 	'apply assignee to subtasks' => 'Apply current assignee to subtasks',
 	'undo remove subtasks' => 'Restore removed subtasks',
 

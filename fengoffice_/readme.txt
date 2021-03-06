@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2-rc
+	About Feng Office 3.2-rc2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,58 @@
 	
 	Changelog
 	=========
+	
+	Since 3.2-rc
+	----------------
+	feature: allow to have companies and contacts with the same email address.
+	feature: clients list.
+	feature: clients and projects listings allows to show custom properties and order the list by them.
+	feature: check attach word with langs.
+	feature: listing contacts with picture.
+	feature: config option to allow choosing in which email field (to,cc,bcc) will the recipients be put when sending a notification.
+	feature: config option changing name order to name surname.
+	feature: config option remember working days preference in task's push.
+	
+	bugfix: updating percentage completed in tasks list.
+	bugfix: returning to company view after editing contact picture.
+	bugfix: number of archived objects.
+	bugfix: member selector overflow.
+	bugfix: style when changing order of deleted custom property. 
+	bugfix: custom property order. 
+	bugfix: remembering checkboxes in reports. 
+	bugfix: order by start date in tasks list.
+	bugfix: saving documents without name.
+	bugfix: refreshing read/unread ball colour in tasks list.
+	bugfix: alignment in add event.
+	bugfix: number of elements in trash.
+	bugfix: when sending email to contact with comma in their name. 
+	bugfix: showing milestones options when disable in task panel.
+	bugfix: remembering gantt zoom.
+	bugfix: classify modal autofocus.
+	bugfix: plugin installers: dont give permissions in members that users doesn't have permissions for tasks (expenses, objectives, purchase_orders, income).
+	bugfix: plugin installers: dont give permissions in members that users doesn't have permissions for tasks.
+	bugfix: members of dimensions that dont use permissions are not shown in listings.
+	bugfix: tags on memeber selectors.
+	bugfix: contact custom properties on client edit.
+	bugfix: when "adding objects without classifying": cannot create task if not filtering by member.
+	bugfix: when grouping tasks by dim-members unclassified group is shown always however it has no tasks.
+	bugfix: in additional member permissions.
+	bugfix: when setting a project's client, the client contact is not classified into the project.
+	bugfix: tab panel permission was not set when installing income plugin.
+	bugfix: tasks report headers are wrong when grouping by priority.
+	bugfix: when creating task repetition the subscribers are not copied from the original task.
+	bugfix: when creating new client classify contact or company on the client.
+	bugfix: error 500 when adding expense without payments.
+	bugfix: when adding timeslot in "view all" no user is available.
+	bugfix: when creating new client classify contact or company on the client.
+	bugfix: events without invitation are not shown.
+	bugfix: tasks workflow - only second step inherits templates variables.
+	bugfix: prevent adding duplicated nodes in left panel trees.
+	bugfix: task templates, only the first step works.
+	bugfix: error 500 when colaborator edit a timeslot.
+	bugfix: cannot edit root permissions when changing user type.
+	bugfix: notes widgets is not cutting note text correctly. 
+			
 	
 	Since 3.2-beta2
 	----------------

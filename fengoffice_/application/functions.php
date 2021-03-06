@@ -1994,6 +1994,15 @@ function associate_member_to_status_member($project_member, $old_project_status,
 				foreach ($object_members as $om) {
 					ObjectMembers::addObjectToMembers($om->getObjectId(), array($member_to_add));
 				}
+				
+				if ($member_to_add instanceof Member && $member_to_add->getObjectId()>0) {
+					$rel_obj = Objects::findObject($member_to_add->getObjectId());
+					if ($rel_obj instanceof ContentDataObject) {
+						ObjectMembers::addObjectToMembers($rel_obj->getId(), array($project_member));
+						$rel_obj->addToSharingTable();
+						$null=null; Hook::fire("after_auto_classifying_associated_object_of_member", array('obj' => $rel_obj, 'mem' => $project_member), $null);
+					}
+				}
 			}
 			
 		}
@@ -2019,6 +2028,27 @@ function associate_member_to_status_member($project_member, $old_project_status,
 
 			}
 			MemberPropertyMembers::instance()->delete('association_id = '.$a->getId().' AND member_id = '.$project_member->getId() . " AND property_member_id <> '$status_member_id'");
+		}
+		
+		
+		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('associated_dimension_id=? AND associated_object_type_id=? AND dimension_id=?'.
+				($status_ot instanceof ObjectType ? ' AND object_type_id='.$status_ot->getId() : ''),
+				$member_dimension->getId(), $project_member->getObjectTypeId(), $status_dimension->getId())));
+		
+		// create relation between members and remove old relations
+		if ($a instanceof DimensionMemberAssociation) {
+			if (is_numeric($status_member_id) && $status_member_id > 0) {
+		
+				$mpm = MemberPropertyMembers::findOne(array('id' => true, 'conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $project_member->getId(), $status_member_id)));
+				if (is_null($mpm)) {
+					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, member_id, property_member_id, is_active, created_on, created_by_id)
+						VALUES (" . $a->getId() . "," . $status_member_id . "," . $project_member->getId() . ", 1, NOW()," . logged_user()->getId() . ");";
+		
+					DB::executeAll($sql);
+				}
+		
+			}
+			MemberPropertyMembers::instance()->delete('association_id = '.$a->getId().' AND property_member_id = '.$project_member->getId() . " AND member_id <> '$status_member_id'");
 		}
 	}
 }
@@ -2119,7 +2149,7 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 				}
 				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
 				
-				Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
+				//Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
 				
 				$value = $date->add($dateUnit, $dateNum);
 			}else{

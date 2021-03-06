@@ -405,6 +405,11 @@ class ObjectController extends ApplicationController {
 					
 					if(is_array($value)){
 						if ($custom_property->getType() == 'address') {
+							if ($custom_property->getIsRequired()) {
+								if (array_var($value, 'street') == '' && array_var($value, 'city') == '' && array_var($value, 'state') == '' && array_var($value, 'country') == '' && array_var($value, 'zip_code') == '') {
+									throw new Exception(lang('custom property value required', $custom_property->getName()));
+								}
+							}
 							// Address custom property
 							$val = array_var($value, 'type') .'|'. array_var($value, 'street') .'|'. array_var($value, 'city') .'|'. array_var($value, 'state') .'|'. array_var($value, 'country') .'|'. array_var($value, 'zip_code');
 							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $id);
@@ -1934,13 +1939,15 @@ class ObjectController extends ApplicationController {
 
 	function get_cusotm_property_columns() {
 		$grouped = array();
-		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, ot.name as obj_type FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id ORDER BY ot.name");
+		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id ORDER BY ot.name");
 		if (is_array($cp_rows)) {
 			foreach ($cp_rows as $row) {
 				if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
-				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name']);
+				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name'], 'code' => $row['cp_code']);
 			}
 		}
+		Hook::fire("get_cusotm_property_columns", array(), $grouped);
+		
 		ajx_current("empty");
 		ajx_extra_data(array('properties' => $grouped));
 	}

@@ -26,9 +26,7 @@ if(count($cps) > 0){
 				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getId()));
 
 			echo label_tag(clean($customProp->getName()), $genid . 'cp' . $customProp->getId(), $customProp->getIsRequired(), array('style' => 'display:inline'), $customProp->getType() == 'boolean'?'':':');
-			if ($customProp->getDescription() != ''){
-				echo '<span class="desc"> - ' . clean($customProp->getDescription()) . '</span>';
-			}
+			
 			echo '</div>';
 
 			switch ($customProp->getType()) {
@@ -303,6 +301,12 @@ if(count($cps) > 0){
 					break;
 				default: break;
 			}
+			
+			if ($customProp->getDescription() != ''){
+				// the label is set to pad the description
+				echo '<div><label>&nbsp;</label><span class="desc">' . clean($customProp->getDescription()) . '</span></div>';
+			}
+			
 			if (!isset($value)) $value = "";
 			$ret = null;
 			Hook::fire('after_render_cp_input', array('custom_prop' => $customProp, 'value' => $value, 'input_name' => $name), $ret);

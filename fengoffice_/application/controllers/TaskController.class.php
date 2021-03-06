@@ -670,6 +670,7 @@ class TaskController extends ApplicationController {
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 							$task->calculatePercentComplete();
+							$task->save();
 						}
 						break;
 					case 'pause_work':
@@ -700,7 +701,11 @@ class TaskController extends ApplicationController {
 									$time_push += (int)$time["hours"];
 								}
 							}
-														
+							
+							if(user_config_option('pushUseWorkingDays') != isset($time["use_only_working_days"])){
+								set_user_config_option('pushUseWorkingDays', $time["use_only_working_days"], logged_user()->getId());
+							}
+													
 							if($time_push > 0){								
 								$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate() : null;
 								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate() : null;
@@ -1430,7 +1435,6 @@ class TaskController extends ApplicationController {
 		}
 		
 		if(user_config_option('tasksShowEmptyMilestones')){
-			$milestone = ProjectMilestones::getMilestonesInfo($mid);
 			//group totals
 			$join_params['join_type'] = "LEFT ";
 			$join_params['table'] = TABLE_PREFIX."project_tasks";
@@ -1676,7 +1680,9 @@ class TaskController extends ApplicationController {
 			$unknown_group['total'] = $unknown_group_totals[0]['total'];
 			$unknown_group['group_time_estimate'] = $unknown_group_totals[0]['group_time_estimate'];
 			$unknown_group['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($unknown_group['group_time_estimate'] * 60), 'hm', 60));
-			$groups[] = $unknown_group;
+			if (count($unknown_group['tasks']) > 0) {
+				$groups[] = $unknown_group;
+			}
 		}
 		//END unknown group
 		
@@ -1728,6 +1734,7 @@ class TaskController extends ApplicationController {
 				$order_dir = 'ASC';
 				break;
 			case 'due_date':
+			case 'start_date':
 			case 'created_on':
 			case 'completed_on':
 				$order = "($order='0000-00-00 00:00:00'), $order";
@@ -2186,14 +2193,30 @@ class TaskController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-
+		
+		$email = null;
+		$context = active_context();
+		$member_ids = json_decode(array_var($_POST, 'members', null));
+		if (is_array($member_ids) && count($member_ids) > 0) {
+			$context = Members::findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
+		}
+		
 		$notAllowedMember = '' ;
-		if(!ProjectTask::canAdd(logged_user(), active_context(), $notAllowedMember) && !$isTemplateTask) {
-			if (str_starts_with($notAllowedMember, '-- req dim --')) flash_error(lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in)));
-			else trim($notAllowedMember) == "" ? flash_error(lang('you must select where to keep', lang('the task'))) : flash_error(lang('no context permissions to add',lang("tasks"), $notAllowedMember));
+		if(!ProjectTask::canAdd(logged_user(), $context, $notAllowedMember) && !$isTemplateTask && is_array(array_var($_POST, 'task'))) {
+			if (str_starts_with($notAllowedMember, '-- req dim --')) $msg = lang('must choose at least one member of', str_replace_first('-- req dim --', '', $notAllowedMember, $in));
+			else trim($notAllowedMember) == "" ? $msg = lang('you must select where to keep', lang('the task')) : $msg = lang('no context permissions to add',lang("tasks"), $notAllowedMember);
+			
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				$this->setTemplate(get_template_path("empty"));
+				$params = array('errorMessage' => $msg, 'errorCode' => 1, 'showMessage' => 1, 'reload' => array_var($_REQUEST, 'reload'));
+				print_modal_json_response($params, true, array_var($_REQUEST, 'use_ajx'));
+			} else {
+				flash_success($msg);
+			}
 			ajx_current("empty");
 			return;
-		} // if
+		}
 
 		//is template task?
 		if(array_var($_REQUEST, 'template_task') == true){

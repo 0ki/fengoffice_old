@@ -203,7 +203,9 @@ Ext.form.ComboBox.override({
 Ext.grid.GridPanel.override({
 	reloadGridPagingToolbar: function (  controller , func , manager) {
 		var bba_before = Ext.getCmp(manager).getBottomToolbar();
-		bba_before.loading.disable();		
+		if (bba_before.loading){
+			bba_before.loading.disable();
+		}
 		var params = Ext.getCmp(manager).store.lastOptions.params;
 		if(typeof params != 'undefined'){
 			delete params.action;
@@ -226,7 +228,12 @@ Ext.grid.GridPanel.override({
 					bba.next.enable();
 				}
 				
-				bba.loading.enable();			
+				if((parseInt(data.totalCount) - parseInt(data.start))<= parseInt(bba.pageSize)){
+					bba.last.disable();
+					bba.next.disable();
+				}
+				
+				bba.loading.enable();
 			  }});
 		
 			params.only_result = 0;	

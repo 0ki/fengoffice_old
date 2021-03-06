@@ -51,8 +51,8 @@
     'client dnx' => 'Selected client company does not exist',
     'company dnx' => 'Selected company does not exist',
     'user dnx' => 'Requested user does not exist in database',
-    'avatar dnx' => 'Profile picture does not exist',
-    'no current avatar' => 'Profile picture is not uploaded',
+    'avatar dnx' => 'Picture does not exist',
+    'no current avatar' => 'Picture is not uploaded',
     'picture dnx' => 'Picture does not exist',
     'no current picture' => 'Picture is not uploaded',
     'no current logo' => 'You currently have no logo. Please upload a new one.',
@@ -148,8 +148,8 @@
     'success remove company from project' => 'Company has been successfully removed from the workspace',
     
     'success update profile' => 'Profile has been updated',
-    'success edit avatar' => 'Profile picture has been updated successfully',
-    'success delete avatar' => 'Profile picture has been deleted successfully',
+    'success edit avatar' => 'Picture has been updated successfully',
+    'success delete avatar' => 'Picture has been deleted successfully',
     
     'success hide welcome info' => 'Welcome info box has been successfully hidden',
     
@@ -203,9 +203,9 @@
     'success add event type' => 'Event Type has been added',
     'success delete event type' => 'Event Type has been deleted',
     
-    'success add webpage' => 'Web link has been added',
-    'success edit webpage' => 'Web link has been updated',
-    'success deleted webpage' => 'Web link has been deleted',
+    'success add webpage' => 'Link has been added',
+    'success edit webpage' => 'Link has been updated',
+    'success deleted webpage' => 'Link has been deleted',
     
     'success add chart' => 'Chart has been added',
     'success edit chart' => 'Chart has been updated',
@@ -279,8 +279,8 @@
     'error update project permissions' => 'Failed to update workspace permissions',
     'error remove user from project' => 'Failed to remove user from workspace',
     'error remove company from project' => 'Failed to remove company from workspace',
-    'error edit avatar' => 'Failed to edit profile picture',
-    'error delete avatar' => 'Failed to delete profile picture',
+    'error edit avatar' => 'Failed to edit picture',
+    'error delete avatar' => 'Failed to delete picture',
     'error edit picture' => 'Failed to edit picture',
     'error delete picture' => 'Failed to delete picture',
     'error edit contact' => 'Failed to edit contact',
@@ -345,11 +345,12 @@
     'confirm delete contact' => 'Are you sure that you want to delete selected contact?',
     'confirm delete user' => 'Are you sure that you want to delete this user account?',
    	'confirm disable user'=> 'The User will be disabled. Continue?',
+   	'confirm restore user'=> 'The User will be activated. Continue?',
     'confirm reset people form' => 'Are you sure that you want to reset this form? All modifications you made will be lost!',
     'confirm remove user from project' => 'Are you sure that you want to remove this user from this workspace?',
     'confirm remove company from project' => 'Are you sure that you want to remove this company from this workspace?',
     'confirm logout' => 'Are you sure that you want to log out?',
-    'confirm delete current avatar' => 'Are you sure that you want to delete this profile picture?',
+    'confirm delete current avatar' => 'Are you sure that you want to delete this picture?',
     'confirm unlink object' => 'Are you sure that you want to unlink this object?',
     'confirm delete company logo' => 'Are you sure that you want to delete this logo?',
     'confirm subscribe' => 'Are you sure that you want to subscribe to this object? You will receive an email everytime someone (except you) posts a comment on this object.',
@@ -363,8 +364,8 @@
 	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
-    'system error message' => 'We are sorry, but a fatal error prevented Feng Office from executing your request. An Error Report has been sent to the administrator.',
-    'execute action error message' => 'We are sorry, but Feng Office is not currently able to execute your request. An Error Report has been sent to the administrator.',
+    'system error message' => 'We are sorry, an error prevented Feng Office from executing your request.<br />Please contact your Feng Office administrator.<br /><br />To request official support, please <a href="mailto:contact@fengoffice.com" style="text-decoration:underline;">contact Feng Office</a>',
+    'execute action error message' => 'We are sorry, an error prevented Feng Office from executing your request.<br />Please contact your Feng Office administrator.<br /><br />To request official support, please <a href="mailto:contact@fengoffice.com" style="text-decoration:underline;">contact Feng Office</a>',
     
     // Log
     'log add projectmessages' => '\'{0}\' added',
@@ -659,6 +660,7 @@
   	'log read projectmessages' => 'Viewed \'{0}\'',
   	'log read mailcontents' => 'Viewed \'{0}\'',
   	'log read companies' => 'Viewed \'{0}\'',
+  	'log read company' => 'Viewed \'{0}\'',
   	'log read contacts' => 'Viewed \'{0}\'',
   	'log read contact' => 'Viewed \'{0}\'',
   	'log read projectevents' => 'Viewed \'{0}\'',
@@ -704,7 +706,7 @@
   	'success sending reminders' => '{0} reminders sent.',
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to create or edit people on these workspaces: {0}',
   
-  	'weblink dnx' => 'Requested weblink doesn\'t exist.',
+  	'weblink dnx' => 'Requested link doesn\'t exist.',
   
   	'success markasread files' => 'Marked as read',
   	'success markasunread files' => 'Marked as unread',
@@ -756,7 +758,7 @@
 	'the milestone notification' => 'the milestone',
   	'the task notification' => 'the task',
   	'the webpage notification' => 'the webpage',
-        'the weblink notification' => 'the weblink',
+    'the weblink notification' => 'the link',
   	'the timeslot notification' => 'the timeslot',
         'the time notification' => 'the timeslot',
   
@@ -768,6 +770,10 @@
   	'success delete member' => '{0} has been deleted',
   	'disable' => 'Inactivate',
   	'and xx more' => 'and {0} more.',
+  	
+  	'permissions successfully saved' => 'Permissions saved successfully',
+  	
+  	'cannot delete file' => 'You don\'t have permissions to delete file \'{0}\'',
   ); // array
 
 ?>

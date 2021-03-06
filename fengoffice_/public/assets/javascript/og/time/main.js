@@ -206,6 +206,7 @@ ogTimeManager.DeleteTimeslot = function(timeslotId){
 			if (success && !data.errorCode) {
 				this.deleteTimeslot(data.timeslotId);
 				this.drawTimespans(this.genid);
+				og.eventManager.fireEvent('replace all empty breadcrumb', null);
 			}
 		},
 		scope: this

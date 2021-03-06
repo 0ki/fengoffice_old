@@ -88,11 +88,15 @@ class TimeController extends ApplicationController {
 			} else {
 				$users = logged_user()->getCompanyId() > 0 ? Contacts::getAllUsers(" AND `company_id` = ". logged_user()->getCompanyId()) : array(logged_user());
 			}
-			$tmp_users = array();
-			foreach ($users as $user) {
-				if (can_add($user, $context, Timeslots::instance()->getObjectTypeId())) $tmp_users[] = $user;
+			// filter users by permissions only if any member is selected.
+			$selected_members = active_context_members(false);
+			if (count($selected_members) > 0) {
+				$tmp_users = array();
+				foreach ($users as $user) {
+					if (can_add($user, $context, Timeslots::instance()->getObjectTypeId())) $tmp_users[] = $user;
+				}
+				$users = $tmp_users;
 			}
-			$users = $tmp_users;
 		}
 		
 		//Get Companies Info
@@ -348,10 +352,9 @@ class TimeController extends ApplicationController {
 			$timeslot_data['name'] = $timeslot_data['description'];
 			
 			//Only admins can change timeslot user
-			if (array_var($timeslot_data, 'contact_id', false) && !logged_user()->isAdministrator()) {
+			if (!array_var($timeslot_data, 'contact_id') && !logged_user()->isAdministrator()) {
 				$timeslot_data['contact_id'] = $timeslot->getContactId();
 			}
-				
 			$timeslot->setFromAttributes($timeslot_data);
 			
 			$user = Contacts::findById($timeslot_data['contact_id']);
@@ -366,7 +369,7 @@ class TimeController extends ApplicationController {
 			}
 			DB::beginWork();
 			$timeslot->save();
-
+			
 			$member_ids = json_decode(array_var($_POST, 'members', ''));
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);

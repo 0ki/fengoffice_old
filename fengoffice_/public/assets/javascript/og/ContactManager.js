@@ -9,7 +9,7 @@ og.ContactManager = function() {
 	this.needRefresh = false;
 	
 	this.fields = [
-        'object_id', 'type', 'ot_id', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
+        'object_id', 'picture', 'type', 'ot_id', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
         'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
         'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath', 'userType', 'contacts', 'users'
     ];
@@ -115,7 +115,7 @@ og.ContactManager = function() {
     		return "";
     	}
 		if (og.loggedUserHasEmailAccounts) {
-    		var url = og.getUrl('mail', 'add_mail', {to: og.clean(r.data.name.replace("'","")) + ' <' + escape(og.clean(value)) + '>'});
+    		var url = og.getUrl('mail', 'add_mail', {to: og.clean(r.data.name.replace("'","").replace(","," ")) + ' <' + escape(og.clean(value)) + '>'});
     		return String.format('<a href="#" title="' + lang('write an email to contact', r.data.name) + '" onclick="og.openLink(\'' + url + '\');">{0}</a>', og.clean(value));
     	} else {
     		return String.format('<a target="_self" href="mailto:{0}">{0}</a>', og.clean(value));
@@ -127,9 +127,8 @@ og.ContactManager = function() {
     }
     	
 	function renderIcon(value, p, r) {
-		
-		if (r.data.type == 'user' && og.allUsers[r.data.object_id]) {
-			var picture_url = og.allUsers[r.data.object_id].img_url;
+		if (r.data.picture) {
+			var picture_url = r.data.picture;
 			return String.format('<div class="picture-file-small"><img src="{0}" alt="{1}" /></div>', picture_url, og.clean(r.data.name));
 		} else {
 			var classes = "db-ico ico-unknown ico-" + r.data.type;

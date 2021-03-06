@@ -2855,7 +2855,8 @@ class MailController extends ApplicationController {
 		foreach ($contacts as $contact ) {
 			/* @var $contact Contact */
 			if ($addr = $contact->getEmailAddress()) {
-				$addresses[] =  $contact->getObjectName()." <".$addr.">";
+				$name = str_replace(",", " ", $contact->getObjectName());
+				$addresses[] =  $name." <".$addr.">";
 			}
 		}
 		return $addresses;

@@ -24,6 +24,11 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 			return true;
 		}
 		
+		$member = Members::findById($member_id);
+		if ($member instanceof Member && !$member->getDimension()->getDefinesPermissions()) {
+			return true;
+		}
+		
 		$disabled_ots = array();
 		$disableds = DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0");
 		if (is_array($disableds)) {
@@ -39,7 +44,6 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 			$disabled_ot_cond = "AND object_type_id NOT IN (".implode(",",$disabled_ots).")";
 		}
 		
-				
 		if ($access_level == ACCESS_LEVEL_READ) {
 			if (!isset(self::$readable_members["$permission_group_ids"])) {
 				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ") $disabled_ot_cond" );

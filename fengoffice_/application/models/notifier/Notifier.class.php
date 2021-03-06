@@ -515,9 +515,9 @@ class Notifier {
 						$subject = $object->getDefaultSubject();
 						tpl_assign('description_title', $subject);
 					}
+					$recipients_field = config_option('notification_recipients_field', 'to');
 					$emails[] = array(
-							//"to" => array(self::prepareEmailAddress($toemail, $user->getObjectName())),
-							"bcc" => $to_addresses,
+							"$recipients_field" => $to_addresses,
 							"from" => self::prepareEmailAddress($senderemail, $sendername),
 							"subject" => $subject,
 							"body" => tpl_fetch(get_template_path('general', 'notifier')),
@@ -1574,7 +1574,7 @@ class Notifier {
 				$count++;
 			} catch (Exception $e) {
 				DB::rollback();
-				Logger::log('There has been a problem when sending the Queued emails. Problem:'.$e->getTraceAsString());
+				Logger::log("There has been a problem when sending the Queued emails.\nError Message: ". $e->getMessage(). "\nTrace: ". $e->getTraceAsString());
 				$msg = $e->getMessage();
 				if (strpos($msg, 'Failed to authenticate') !== false) {
 					$from_k = array_keys($from);

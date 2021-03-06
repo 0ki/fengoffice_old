@@ -334,10 +334,108 @@ function date_format_tip($format) {
 				$format = user_config_option('date_format');
 				Hook::fire("custom_property_date_format", null, $format);
 				$tmp_date = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $cp_val->getValue());
-				$cp_val->setValue($tmp_date->format($format));
+				if (str_starts_with($cp_val->getValue(), EMPTY_DATE)) {
+					$formatted = "";
+				} else {
+					if (str_ends_with($cp_val->getValue(), "00:00:00")) {
+						$formatted = $tmp_date->format(user_config_option('date_format'));
+					} else {
+						$formatted = $tmp_date->format($format);
+					}
+				}
+				$cp_val->setValue($formatted);
+			}
+			
+			if ($cp->getType() == 'address' && $cp_val instanceof CustomPropertyValue) {
+				$values = str_replace("\|", "%%_PIPE_%%", $cp_val->getValue());
+				$exploded = explode("|", $values);
+				foreach ($exploded as &$v) {
+					$v = str_replace("%%_PIPE_%%", "|", $v);
+					$v = str_replace("'", "\'", $v);
+				}
+				if (count($exploded) > 0) {
+					$address_type = array_var($exploded, 0, '');
+					$street = array_var($exploded, 1, '');
+					$city = array_var($exploded, 2, '');
+					$state = array_var($exploded, 3, '');
+					$country = array_var($exploded, 4, '');
+					$zip_code = array_var($exploded, 5, '');
+					$country_name = CountryCodes::getCountryNameByCode($country);
+					
+					$tmp = array();
+					if ($street != '') $tmp[] = $street;
+					if ($city != '') $tmp[] = $city;
+					if ($state != '') $tmp[] = $state;
+					if ($zip_code != '') $tmp[] = $zip_code;
+					if ($country_name != '') $tmp[] = $country_name;
+					$cp_val->setValue(implode(' - ', $tmp));
+				}
 			}
 			
 			$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
+		}
+		return $val_to_show;
+	}
+	
+	function get_member_custom_property_value_for_listing($cp, $member_id, $cp_vals=null) {
+		if (is_null($cp_vals)) {
+			$cp_vals = MemberCustomPropertyValues::getMemberCustomPropertyValues($member_id, $cp->getId());
+		}
+		$val_to_show = "";
+		foreach ($cp_vals as $cp_val) {
+			if ($cp->getType() == 'contact' && $cp_val instanceof MemberCustomPropertyValue) {
+				$cp_contact = Contacts::findById($cp_val->getValue());
+				if ($cp_contact instanceof Contact) {
+					$cp_val->setValue($cp_contact->getObjectName());
+				} else {
+					$cp_val->setValue("");
+				}
+			}
+				
+			if ($cp->getType() == 'date' && $cp_val instanceof MemberCustomPropertyValue) {
+	
+				$format = user_config_option('date_format');
+				Hook::fire("custom_property_date_format", null, $format);
+				$tmp_date = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $cp_val->getValue());
+				if (str_starts_with($cp_val->getValue(), EMPTY_DATE)) {
+					$formatted = "";
+				} else {
+					if (str_ends_with($cp_val->getValue(), "00:00:00")) {
+						$formatted = $tmp_date->format(user_config_option('date_format'));
+					} else {
+						$formatted = $tmp_date->format($format);
+					}
+				}
+				$cp_val->setValue($formatted);
+			}
+			
+			if ($cp->getType() == 'address' && $cp_val instanceof MemberCustomPropertyValue) {
+				$values = str_replace("\|", "%%_PIPE_%%", $cp_val->getValue());
+				$exploded = explode("|", $values);
+				foreach ($exploded as &$v) {
+					$v = str_replace("%%_PIPE_%%", "|", $v);
+					$v = str_replace("'", "\'", $v);
+				}
+				if (count($exploded) > 0) {
+					$address_type = array_var($exploded, 0, '');
+					$street = array_var($exploded, 1, '');
+					$city = array_var($exploded, 2, '');
+					$state = array_var($exploded, 3, '');
+					$country = array_var($exploded, 4, '');
+					$zip_code = array_var($exploded, 5, '');
+					$country_name = CountryCodes::getCountryNameByCode($country);
+					
+					$tmp = array();
+					if ($street != '') $tmp[] = $street;
+					if ($city != '') $tmp[] = $city;
+					if ($state != '') $tmp[] = $state;
+					if ($zip_code != '') $tmp[] = $zip_code;
+					if ($country_name != '') $tmp[] = $country_name;
+					$cp_val->setValue(implode(' - ', $tmp));
+				}
+			}
+				
+			$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof MemberCustomPropertyValue ? $cp_val->getValue() : "");
 		}
 		return $val_to_show;
 	}

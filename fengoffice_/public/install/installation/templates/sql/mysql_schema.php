@@ -766,6 +766,7 @@ CREATE TABLE `<?php echo $table_prefix ?>event_invitations` (
 CREATE TABLE `<?php echo $table_prefix ?>templates` (
   `object_id` int(10) unsigned NOT NULL auto_increment,
   `description` text <?php echo $default_collation ?>,
+  `can_instance_from_mail` int(1) NOT NULL default '0',
   PRIMARY KEY  (`object_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -1197,7 +1198,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>member_custom_property_va
   `member_id` int(10) NOT NULL,
   `custom_property_id` int(10) NOT NULL,
   `value` text <?php echo $default_collation ?> NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `member_id` USING HASH (`member_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>contact_member_cache` (

@@ -46,6 +46,8 @@ og.ArchivedObjects = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
+					og.ArchivedObjects.store.lastOptions.params.archived = true;
+					Ext.getCmp('archivedobjects-manager').reloadGridPagingToolbar('object','list_objects','archivedobjects-manager');
 				}
 			}
 		});

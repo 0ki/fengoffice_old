@@ -204,7 +204,7 @@ og.MemberTree = function(config) {
 		    				dimension_tree.innerCt.unmask();
 		    				
 		    				var current_node = dimension_tree.getNodeById(data.member_id);
-		    				current_node.attributes.gettingChildsFromServer = false;
+		    				if (current_node) current_node.attributes.gettingChildsFromServer = false;
 	    				}
 	    			}
 	    		});

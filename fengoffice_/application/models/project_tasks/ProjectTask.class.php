@@ -601,10 +601,16 @@ class ProjectTask extends BaseProjectTask {
 		foreach ($this->getSubscribers() as $sub) {
 			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
 		}
-                
+        
+		$new_subscribers = array();
+		$subscriber_ids = $this->getSubscriberIds();
+		foreach ($subscriber_ids as $user_id) {
+			$new_subscribers['user_' . $user_id] = 1;
+		}
+		
 		$obj_controller = new ObjectController();
 		$obj_controller->add_to_members($new_task, $this->getMemberIds());
-		$obj_controller->add_subscribers($new_task);
+		$obj_controller->add_subscribers($new_task, $new_subscribers);
 		
 		foreach($this->getCustomProperties() as $prop) {
 			$new_prop = new ObjectProperty();
@@ -1507,7 +1513,9 @@ class ProjectTask extends BaseProjectTask {
 				$raw_data[$key] = $raw->toMySQL();
 			}
 		}
-				
+		
+		//is read
+		$raw_data['isread'] = $task->getIsRead(logged_user()->getId());
 		return ProjectTasks::getArrayInfo($raw_data, $full);		
 	}
 	

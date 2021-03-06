@@ -670,6 +670,9 @@ og.markMemberPermissionModified = function(genid, dim_id, member_id) {
 //The id of the hidden field must be of the form: <genid> + 'hfPermsSend'
 og.ogPermPrepareSendData = function(genid){
 	var result = new Array();
+	if (!og.permissionInfo[genid]) {
+		return true;
+	}
 	var permissions = og.permissionInfo[genid].permissions;
 	for (i in permissions){
 		for (var j = 0; j < permissions[i].length; j++){
@@ -1019,6 +1022,9 @@ og.userPermissions.ogPermAllChecked = function(genid, value){
 
 og.userPermissions.ogPermPrepareSendData = function(genid, send_all){
 	var result = new Array();
+	if (!og.userPermissions.permissionInfo[genid]) {
+		return true;
+	}
 	var permissions = og.userPermissions.permissionInfo[genid].permissions;
 	for (i in permissions){
 		if (!permissions[i] || typeof(permissions[i]) == 'function') continue;
@@ -1262,7 +1268,7 @@ og.afterUserTypeChange = function(genid, type) {
 		  }
 	  }
 	  
-	  var executive_selected = og.executive_permission_group_ids.indexOf(type) >= 0;
+	  var executive_selected = og.executive_permission_group_ids.indexOf(parseInt(type)) >= 0;
 	  if (executive_selected) {
 		  $("#"+genid+"_root_permissions").show();
 	  } else {

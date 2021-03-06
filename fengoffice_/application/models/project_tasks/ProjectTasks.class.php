@@ -447,6 +447,10 @@ class ProjectTasks extends BaseProjectTasks {
 			'percentCompleted' => (int)$raw_data['percent_completed'],			
 			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersIdsToDisplayPath())))
 		);
+		
+		if(isset($raw_data['isread'])){
+			$result['isread'] = $raw_data['isread'];
+		}
 
 		$result['multiAssignment'] = (int)array_var($raw_data, 'multi_assignment');
 			

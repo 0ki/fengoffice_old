@@ -820,6 +820,7 @@ addLangs({
 	'there are no changes': 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
 	
 	'confirm_mail_without_attach': 'Hola! He notado que has ingresado una palabra igual o similar a adjunto en este correo, pero en el mismo no se encuentra ningún documento adjunto.\n¿Deseas enviar el correo de todos modos?',
+	'attach': 'adjunt',
 	
 	'new member added popup title' : '{0} {1} agregado exitosamente',
 	'new member added popup msg' : 'Has agregado exitosamente el {0} {1}.',
@@ -844,7 +845,7 @@ addLangs({
 	
 	'view classification' : 'Ver clasificación',
 	'classified under' : 'Clasificado en',
-	
+	'percent completed' : 'Porcentaje completado',	
 	'birthdays': 'Cumpleaños',
 	'email address': 'Correo',
 	'home': 'Inicio',

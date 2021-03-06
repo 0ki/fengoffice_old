@@ -86,7 +86,14 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
  SELECT p.id, o.id, 1, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
  WHERE o.`name` IN ('mail')
- AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+ AND p.`name` IN ('Super Administrator','Administrator','Manager')
+ON DUPLICATE KEY UPDATE role_id=role_id;
+
+INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('mail')
+ AND p.`name` IN ('Executive')
 ON DUPLICATE KEY UPDATE role_id=role_id;
 
 INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
@@ -94,4 +101,11 @@ INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
  WHERE o.`name` IN ('mail')
  AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+ON DUPLICATE KEY UPDATE role_id=role_id;
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('mail')
+ AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator','Guest Customer')
 ON DUPLICATE KEY UPDATE role_id=role_id;

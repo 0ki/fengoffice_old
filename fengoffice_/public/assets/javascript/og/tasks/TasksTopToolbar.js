@@ -318,7 +318,8 @@ og.TasksTopToolbar = function(config) {
 					ogTasks.redrawGroups = false;
 					ogTasks.draw();
 					ogTasks.redrawGroups = true;					
-				}
+				},
+				hidden: (!og.config.use_milestones)
 			},
             time_estimates: {
 		        text: lang('estimated time'),

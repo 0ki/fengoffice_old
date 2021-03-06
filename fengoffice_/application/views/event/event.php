@@ -244,7 +244,7 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 		  </div>
 		  
 		  
-		  <div class="dataBlock">
+		  <div class="dataBlock" style="clear: both;">
 			<?php echo label_tag(lang('CAL_DATE')) ?>
 			<?php
 				$tmph = array_var($event_data, 'hour') == -1 ? 0 : array_var($event_data, 'hour');
