@@ -177,7 +177,7 @@ function do_backup_zip() {
 	if (is_file($filename)) unlink($filename);
 	if (in_array('ZipArchive', get_declared_classes())) {
 		$backup = new ZipArchive();
-		$backup->open($filename, ZIPARCHIVE::OVERWRITE);
+		$backup->open($filename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
 		$count = 0;
 		foreach ($files as $file) {
 			if (str_starts_with($file, "./tmp")) continue; // don't backup tmp folder

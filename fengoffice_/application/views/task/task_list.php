@@ -18,9 +18,9 @@ $task_list = $object;
 
 <?php if ($task_list->getStartDate() instanceof DateTimeValue) { ?>
 	<?php if ($task_list->getStartDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_date($task_list->getStartDate(), null, 0) ?></div>
 	<?php } else { ?> 
-	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+	  <div class="startDate"><b><?php echo lang('start date') ?>: </b><?php echo format_descriptive_date($task_list->getStartDate(), 0) ?></div>
 	<?php } // if ?>
 <?php } // if ?>
 

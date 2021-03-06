@@ -535,13 +535,13 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	
 	//draw the group's tasks
 	for (var i = 0; i < group.group_tasks.length; i++){
-		if (i == 8){			//Draw expander if group has more than 8 tasks
+		if (i == og.noOfTasks){			//Draw expander if group has more than og.noOfTasks tasks
 			sb.append("<div class='ogTasksTaskRow' style='display:" + (group.isExpanded? "none" : "inline") + "' id='ogTasksGroupExpandTasksTitle" + group.group_id + "'>");
 			sb.append("<a href='#' class='internalLink' onclick='ogTasks.expandGroup(\"" + group.group_id + "\")'>" + lang('show more tasks number', (group.group_tasks.length - i)) + "</a>");
 			sb.append("</div>");
 			sb.append("<div id='ogTasksGroupExpandTasks" + group.group_id + "'>");
 			if (group.isExpanded)
-				for (var j = 8; j < group.group_tasks.length; j++)
+				for (var j = og.noOfTasks; j < group.group_tasks.length; j++)
 					sb.append(this.drawTask(group.group_tasks[j], drawOptions, displayCriteria, group.group_id, 1));
 			sb.append("</div>");
 			break;
@@ -597,7 +597,7 @@ ogTasks.expandGroup = function(group_id){
 		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 		var displayCriteria = bottomToolbar.getDisplayCriteria();
 		var drawOptions = bottomToolbar.getDrawOptions();
-		for (var i = 8; i < group.group_tasks.length; i++)
+		for (var i = og.noOfTasks; i < group.group_tasks.length; i++)
 			html += this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1);
 		div.innerHTML = html;
 		divLink.style.display = 'none';

@@ -104,7 +104,7 @@
 	'field ProjectFiles expiration_time' => 'Ablauf der Frist',
 	'field ProjectFiles comments_enabled' => 'Kommentare aktiviert',
 	'field ProjectFiles anonymous_comments_enabled' => 'Anonyme Kommentare aktiviert',
-	'field ProjectFiles url' => 'Url',
+	'field ProjectFiles url' => 'U',
 	'field ProjectFiles created_on' => 'Erstellt am',
 	'field ProjectFiles updated_on' => 'Aktualisiert am',
 	'field ProjectFiles checked_out_on' => 'Checked out am',
@@ -187,4 +187,6 @@
 	'field Projects created_by_id' => 'Erstellt von',
 	'field Projects updated_by_id' => 'Aktualisiert von',
 	'field Projects completed_by_id' => 'Abgeschlossen von',
+	'field Projects created_on_id' => 'Erstellt von',
+	'field Projects updated_on_id' => 'Aktualisiert von',
 ); ?>

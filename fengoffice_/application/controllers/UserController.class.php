@@ -188,11 +188,20 @@ class UserController extends ApplicationController {
 			$contact->setCompanyId($user->getCompanyId());
 			$contact->save();
 		} else {
-			// if contact with same email exists use it as user's contact, without changing it
-			$contact = Contacts::getByEmail($user->getEmail(), true);
+			$contact_id = array_var($user_data, 'contact_id');
+			$contact = Contacts::findById($contact_id);
 			if ($contact instanceof Contact) {
+				// user created from a contact 
 				$contact->setUserId($user->getId());
-				if ($contact->isTrashed()) $contact->untrash();
+				$contact->save();
+			} else {
+				// if contact with same email exists use it as user's contact, without changing it
+				$contact = Contacts::getByEmail($user->getEmail(), true);
+				if ($contact instanceof Contact) {
+					$contact->setUserId($user->getId());
+					if ($contact->isTrashed()) $contact->untrash();
+					$contact->save();
+				}
 			}
 		}
 

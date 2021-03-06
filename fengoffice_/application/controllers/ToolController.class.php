@@ -238,7 +238,7 @@ function download_zip_lang($locale) {
 	$filename = "tmp/$locale.zip";
 	if (is_file($filename)) unlink($filename);
 	$zip = new ZipArchive();
-	$zip->open($filename, ZIPARCHIVE::OVERWRITE);
+	$zip->open($filename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
 	$zip->addFile(LANG_DIR . "/$locale.php", "$locale.php");
 	$zip->addEmptyDir($locale);
 	$dir = opendir(LANG_DIR . "/" . $locale);

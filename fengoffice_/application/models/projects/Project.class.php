@@ -1784,6 +1784,7 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	protected function deleteSingle() {
+		set_time_limit(0);
 		$this->clearMessages();
 		$this->clearTasks();
 		$this->clearMilestones();

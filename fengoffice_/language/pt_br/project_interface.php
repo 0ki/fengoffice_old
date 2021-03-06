@@ -215,4 +215,8 @@
 	'add subscribers desc' => 'Increver pessoas selecionadas para este objeto.Usuários inscritos irão receber avisos sobre mudanças neste objeto.',
 	'add custom property' => 'Adicionar propriedade customizada',
 	'edit revision comment' => 'Editar comentário da revisão',
+	'fetch imap folders' => 'Obter pastas IMAP',
+	'no reports found' => 'Não há relatórios para {0}',
+	'remove this widget' => 'Remover este item',
+	'add a new' => 'Adicionar um novo',
 ); ?>

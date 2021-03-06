@@ -1,7 +1,7 @@
 <?php 
 $show_help_option = user_config_option('show_context_help', 'until_close'); 
 if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_comments_widget_context_help', true, logged_user()->getId()))) { 
-	render_context_help($this, 'chelp comments widget', 'comments widget');
+	render_context_help($this, 'chelp comments widget', 'comments_widget');
 } ?>
 
 <div style="padding:10px">

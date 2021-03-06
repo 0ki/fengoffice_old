@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Nutria upgrade script will upgrade OpenGoo 1.3.1 to OpenGoo 1.4.1
+ * Nutria upgrade script will upgrade OpenGoo 1.3.1 to OpenGoo 1.4.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.4
@@ -41,7 +41,7 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.3.1');
-		$this->setVersionTo('1.4.1');
+		$this->setVersionTo('1.4.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -312,6 +312,10 @@ class NutriaUpgradeScript extends ScriptUpgraderScript {
 			}
 		}
 
+		$upgrade_script .= "
+			UPDATE `".TABLE_PREFIX."user_ws_config_categories` SET `is_system` = 0 WHERE `name` = 'calendar_panel';
+		";
+		
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
 		} else {

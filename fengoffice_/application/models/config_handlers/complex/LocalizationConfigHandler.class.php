@@ -30,20 +30,32 @@ class LocalizationConfigHandler extends ConfigHandler {
 				} // if
 			} // while
 			$d->close();
+			sort($this->available_locales);
 		} // if
 	} // __construct
 
+	function getValue() {
+		$value = $this->rawToPhp($this->getRawValue());
+		if ($value == "") {
+			return DEFAULT_LOCALIZATION;
+		} else {
+			return $value;
+		}
+	}
+	
 	/**
 	 * Render form control
 	 *
 	 * @param string $control_name
 	 * @return string
 	 */
-	function render($control_name) {
+	function render($control_name, $default = null) {
 		$options = array();
-
+		if ($default){
+			$options[] = option_tag($default['text'], $default['value'], array('selected' => true));
+		}
 		foreach($this->available_locales as $locale) {
-			$option_attributes = $this->getValue() == $locale ? array('selected' => true) : null;
+			$option_attributes = $this->getValue() == $locale && !$default ? array('selected' => true) : null;
 			$options[] = option_tag($locale, $locale, $option_attributes);
 		} // foreach
 

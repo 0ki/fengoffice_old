@@ -131,7 +131,7 @@ function cal_month_name($month){
   cal_month_short()
    same as month_name() above except it returns an abreviation.
 ###################################################################*/
-function cal_month_short($month){
+function cal_month_short($month) {
 	$month = ($month - 1) % 12 + 1;
 	switch($month) {
 		case 1:  return substr(lang('CAL_JANUARY'),0,3);

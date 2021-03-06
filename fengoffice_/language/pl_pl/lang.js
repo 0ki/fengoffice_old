@@ -1,5 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿locale = 'pl_pl';
-  // translation provided by: eR System - http://www.ersystem.biz/ [http://www.ersystem.biz/] - Wiktor Falana, Robert Rychcicki (QA)
+locale = 'pl_pl';
 addLangs({
 	'check in': '<b>Wgraj zmiany</b>',
 	'cannot check in': 'Nie można wgrać zmian',
@@ -22,8 +21,6 @@ addLangs({
 	'last updated by on': '{0}, dnia {1}',
 	'last updated by': 'Ostatnio zmieniony przez',
 	'close this tag': 'Zamknij tego taga',
-	
-	/* file manager */
 	'by': 'przez',
 	'name': 'Nazwa',
 	'project': 'Projekt',
@@ -87,7 +84,6 @@ addLangs({
 	'compress selected files': 'Spakuj zaznaczone pliki',
 	'add files to zip': 'Dodaj pliki do archiwum zip',
 	'new compressed file': 'Nowy spakowany plik',
-	
 	'song': 'Utwór',
 	'artist': 'Artysta',
 	'album': 'Album',
@@ -99,7 +95,7 @@ addLangs({
 	'play': 'Odtwarzaj',
 	'pause': 'Pauza',
 	'stop': 'Zatrzymaj',
-	'next': 'Nastepny',
+	'next': 'Następny',
 	'mute': 'Wycisz',
 	'unmute': 'Przywróć dźwięk',
 	'load from current workspace': 'Załaduj z aktualnego projektu',
@@ -114,13 +110,10 @@ addLangs({
 	'queue this file': 'Dodaj ten plik do kolejki w odtwarzaczu',
 	'must choose a file': 'Musisz wskazać plik',
 	'file has no valid songs': 'Wskazany plik nie zawiera żadnych utworów',
-	
 	'error': 'Błąd',
 	'success': 'Operacja zakończona sukcesem',
 	'unexpected server response': 'Nieoczekiwana odpowiedź serwera',
 	'new tab': 'Nowa zakładka',
-	
-	/* dashboard */
 	'dashboard': 'Pulpit',
 	'upload file': 'Wyślij plik',
 	'contact': 'Kontakt',
@@ -129,8 +122,6 @@ addLangs({
 	'milestone': 'Etap',
 	'refresh': 'Odśwież',
 	'author': 'Autor',
-		
-	/* tabs */
 	'overview': 'Przegląd',
 	'messages': 'Notatki',
 	'contacts': 'Kontakty',
@@ -139,32 +130,25 @@ addLangs({
 	'web pages': 'Odnośniki',
 	'documents': 'Dokumenty',
 	'account': 'Konto',
-	'administration': 'Administracja',
 	'search': 'Szukaj',
-	'webpage': 'Odnośniki',
+	'webpage': 'Strona WWW',
 	'message': 'E-mail',
-	
 	'workspaces': 'Projekty',
 	'all': 'Wszystkie',
 	'create a workspace': 'Utwórz nowy projekt',
 	'delete selected workspace': 'Usuń zaznaczony projekt',
-		
-	/* object picker */
 	'select an object': 'Zaznacz obiekt ...',
 	'filter': 'Filtr',
 	'all ws': 'Wszystkie projekty',
 	'all type': 'Wszystkie typy',
 	'all tag': 'Wszystkie tagi',
-	'view': 'Widok',
+	'view': 'Pokaż',
 	'details': 'Szczegóły',
 	'icons': 'Ikony',
 	'displaying objects of': 'Wyświetlane obiekty {0} do {1} z {2}',
 	'no objects to display': 'Brak obiektów do wyświetlenia',
 	'ok': 'OK',
 	'cancel': 'Anuluj',
-		
-	/* contact manager*/
-	'company': 'Firma',
 	'email': 'E-mail',
 	'email tab': 'Email (BETA)',
 	'add new contact': 'Dodaj nowy kontakt',
@@ -195,8 +179,6 @@ addLangs({
 	'import/export': 'Import / Eksport',
 	'import - export': 'Import i eksport kontaktów',
 	'not csv file continue': 'Wskazany plik nie jest plikiem csv.\nCzy na pewno chcesz kontynuować?',
-		
-	/* webpage manager*/
 	'description': 'Opis',
 	'title': 'Tytuł',
 	'add new webpage': 'Dodaj nowy odnośnik',
@@ -207,8 +189,6 @@ addLangs({
 	'tag selected webpages': 'Otaguj zaznaczone odnośniki',
 	'edit': 'Edytuj',
 	'edit selected webpage': 'Edytuj zaznaczony odnośnik',
-	
-	/* message manager */
 	'text': 'Treść',
 	'date': 'Data',
 	'add mail account': 'Dodaj konto e-mail',
@@ -226,7 +206,6 @@ addLangs({
 	'view all accounts': 'Pokaż wszystkie konta',
 	'hide messages': 'Ukryj wiadomości',
 	'show messages': 'Pokaż wiadomości',
-	'view': 'Pokaż',
 	'view all': 'Pokaż wszystko',
 	'all emails': 'Wszystkie wiadomości',
 	'unclassified emails': 'Niesklasyfikowane wiadomości',
@@ -239,7 +218,6 @@ addLangs({
 	'yes': 'Tak',
 	'no': 'Nie',
 	'delete account emails': 'Usuń również wiadomości e-mail',
-	
 	'filter workspaces': 'Filtruj projekty...',
 	'filter tags': 'Filtruj tagi...',
 	'alphabetical': 'Alfabetycznie',
@@ -247,45 +225,30 @@ addLangs({
 	'alphabetical desc': 'Sortuj alfabetycznie',
 	'most active desc': 'Sortuj według aktywności',
 	'sort desc': 'Zmiana sortowania',
-	
 	'no objects message': 'Brak \'{0}\' w \'{1}\'',
 	'no objects with tag message': 'Brak obiektów {0} otagowanych jako \'{2}\' w \'{1}\'',
 	'objects': 'Obiekty',
-	
 	'checkout description': 'Zablokuj ten plik do edycji',
 	'undo checkout description': 'Usuń blokadę pliku do edycji',
 	'checkin description': 'Wgraj nową wersję tego pliku',
-	
 	'created by on': 'Utworzył {0} dnia {1}',
-	
-	/*  */
 	'write': 'Napisz',
 	'write new mail': 'Napisz wiadomość',
 	'weblink': 'Odnośnik',
-	'webpage': 'Strona WWW',
-	'task': 'Zadanie',
-	'milestone': 'Etap',
 	'emailunclassified': 'E-mail',
 	'file': 'Plik',
-	'contact': 'Kontakt',
-	'event': 'Wydarzenie',
-	
 	'debug': 'Debug',
 	'incomplete': 'Niekompletne',
 	'complete': 'Zakończone',
 	'do complete': 'Zakończ',
 	'late': 'Opóźniony',
 	'status': 'Status',
-	
 	'open link in new window': 'Otwórz \'{0}\' w nowym oknie',
-	
 	'wschooser desc from': 'Dostępne projekty',
 	'wschooser desc to': 'Obiekty w projektach',
-	
 	'updated by': 'Zmienione przez',
 	'created by': 'Utworzone przez',
 	'view as dashboard': 'Zobacz Pulpit',
-	/* Events*/
 	'subject': 'Temat',
 	'add event': 'Dodaj wydarzenie',
 	'next month': 'Następny miesiąc',
@@ -306,12 +269,9 @@ addLangs({
 	'by user': 'Według użytkownika',
 	'add new event': 'Dodaj nowe wydarzenie',
 	'prev': 'Poprzedni',
-	'next':'Następny',
 	'my calendar': 'Mój Kalendarz',
 	'edit event details': 'Edytuj szczegóły wydarzenia',
 	'duration': 'Czas trwania',
-	
-	/* Charts */
 	'reporting': 'Raportowanie',
 	'add new chart': 'Dodaj nowy wykres',
 	'delete selected charts': 'Usuń zaznaczone wykresy',
@@ -324,8 +284,6 @@ addLangs({
 	'unlock': 'W użyciu',
 	'lock': 'Dostępny',
 	'edit this document': 'Edytuj ten dokument',
-	
-	/* tasks */
 	'assigned to': 'Przypisane do',
 	'assign to': 'Przypisz do',
 	'add subtask to': 'Dodaj zadanie podrzędne do \'{0}\'',
@@ -335,7 +293,6 @@ addLangs({
 	'add new task': 'Dodaj nowe zadanie',
 	'add new milestone': 'Dodaj nowy etap',
 	'confirm delete task': 'Czy na pewno chcesz usunąć to zadanie i wszystkie jego zadania podrzędne?',
-	'confirm delete milestone': 'Czy na pewno chcesz usunąć ten etap?',
 	'due date': 'Termin realizacji',
 	'milestone delete tip': 'Usuń ten etap',
 	'milestone edit tip': 'Edytuj ten etap',
@@ -349,13 +306,11 @@ addLangs({
 	'task view tip': 'Zadanie: {0} (Kliknij aby zobaczyć więcej)',
 	'task move down tip': 'Przesuń zadanie o jedną pozycję w dół',
 	'dont assign': 'Nie przypisuj',
-	
 	'new milestone': 'Nowy etap',
 	'new task': 'Nowe zadanie',
 	'error adding task': 'Wystąpił błąd przy dodawaniu zadania',
 	'error adding milestone': 'Wystąpił błąd przy dodawaniu etapu',
 	'error fetching tasks': 'Wystąpił błąd przy pobieraniu zadań',
-	
 	'confirm unload page': 'Masz niezapisane dane. Jeśli opuścisz tą stronę stracisz wszelkie niezapisane dane.',
 	'confirm leave panel': 'Masz niezapisane dane. Jeśli chcesz kontynuować stracisz wszelkie niezapisane dane.\nKontynuować?',
 	'unread emails': 'Nieprzeczytane wiadomości',
@@ -365,9 +320,7 @@ addLangs({
 	'draft': 'Szkic',
 	'create contact or client company': 'Utwórz kontakt lub firmę kliencką',
 	'mail sent': 'Wiadomość została wysłana',
-	
 	'click to remove': 'Kliknij aby schować',
-	
 	'confirm merge tags': 'Czy na pewno chcesz scalić taga \'{0}\' z tagiem \'{1}\'?\n(Operacji scalania tagów nie można cofnąć)',
 	'save': 'Zapisz',
 	'choose a filename': 'Wybierz nazwę pliku',
@@ -377,7 +330,6 @@ addLangs({
 	'inbox': 'Odebrane',
 	'sent': 'Wysłane',
 	'unread': 'Nieprzeczytane',
-	
 	'more options': 'Więcej ustawień',
 	'login': 'Zaloguj się',
 	'username': 'Nazwa użytkownika',
@@ -386,7 +338,6 @@ addLangs({
 	'completed': 'Zakończone',
 	'notify': 'Powiadom',
 	'hours worked': 'Godzin przepracowanych',
-	
 	'completed by': 'Zakończone przez',
 	'assigned by': 'Przypisane przez',
 	'priority': 'Priorytet',
@@ -412,7 +363,6 @@ addLangs({
 	'high': 'Wysoki',
 	'me': 'Ja',
 	'complete selected tasks': 'Zakończ zaznaczone zadania',
-	'unclassified' : 'Niesklasyfikowane',
 	'earlier than one year': 'Wcześniej niż rok wstecz',
 	'last year': '3 miesiące do roku wstecz',
 	'last three months': 'miesiąc do 3 miesięcy wstecz',
@@ -420,7 +370,6 @@ addLangs({
 	'last two weeks': 'tydzień do 2 tygodni wstecz',
 	'last week': 'Wczoraj do 1 tygodnia wstecz',
 	'yesterday': 'Wczoraj',
-	'today' : 'Dzisiaj',
 	'tomorrow': 'Jutro',
 	'one week': 'W ciągu tygodnia',
 	'two weeks': 'W ciągu 2 tygodni',
@@ -432,7 +381,6 @@ addLangs({
 	'due': 'termin',
 	'add subtask': 'Dodaj nowe zadanie podrzędne',
 	'completed by name on': 'Zakończone przez {0} dnia {1}',
-	'completed by' : 'Zakończone przez',
 	'show more tasks number': 'Pokaż więcej ({0})...',
 	'start_work': 'Rozpocznij pracę nad tym zadaniem',
 	'close_work': 'Zakończ pracę nad tym zadaniem',
@@ -452,11 +400,9 @@ addLangs({
 	'hide other groups': 'Ukryj pozostałe grupy',
 	'show all': 'Pokaż wszystkie',
 	'show all groups': 'Pokaż wszystkie grupy',
-	
 	'send notification': 'Wyślij powiadomienie na maila',
 	'all options': 'Wszystkie ustawienia',
 	'click to change workspace': 'Kliknij aby zmienić projekt',
-	
 	'month 1': 'Styczeń',
 	'month 2': 'Luty',
 	'month 3': 'Marzec',
@@ -469,7 +415,6 @@ addLangs({
 	'month 10': 'Październik',
 	'month 11': 'Listopad',
 	'month 12': 'Grudzień',
-	
 	'monday': 'Poniedziałek',
 	'tuesday': 'Wtorek',
 	'wednesday': 'Środa',
@@ -478,21 +423,16 @@ addLangs({
 	'saturday': 'Sobota',
 	'sunday': 'Niedziela',
 	'comment': 'Komentarz',
-	
 	'change user': 'Zmień użytkownika',
 	'start work': 'Rozpocznij pracę',
-	'click to change workspace': 'Kliknij aby zmienić projekt',
 	'add a new task to this group': 'Dodaj nowe zadanie do tej grupy',
 	'login dialog desc': 'Twoja sesja przeterminowała się z powodu braku aktywności. Wypełnij ten formularz by zalogować się ponownie.',
 	'user not found': 'Nie znaleziono użytkownika (id:{0})',
-	
 	'date format': 'd/m/Y',
 	'date format alternatives': 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
 	'warning start date greater than due date': 'Uwaga: data rozpoczęcia jest późniejsza od daty realizacji',
-	
 	'event start time': 'Czas',
 	'all day event': 'Cały dzień',
-	
 	'choose an image': 'Wybierz obraz',
 	'sort by': 'Sortuj według',
 	'file size': 'Rozmiar pliku',
@@ -500,16 +440,13 @@ addLangs({
 	'image name': 'Nazwa obrazu',
 	'size': 'Rozmiar',
 	'completed on': 'Zakończono dnia',
-	
 	'save changes': 'Zapisz zmiany',
 	'no filter': 'Nie filtruj',
 	'nothing (groups)': 'Niczym',
 	'none': 'Żaden',
 	'new task time report': 'Nowy raport czasów zadań',
 	'no images match the specified filter': 'Żaden obraz nie odpowiada ustawionym kryteriom',
-	
 	'print': 'Drukuj',
-	
 	'no deleted objects message': 'Brak usuniętych {0} w \'{1}\'',
 	'no deleted objects with tag message': 'Brak usuniętych {0} otagowanych jako \'{2}\' w \'{1}\'',
 	'deleted on': 'Usunięte dnia',
@@ -519,13 +456,11 @@ addLangs({
 	'restore selected objects': 'Przywróć zaznaczone obiekty',
 	'delete selected objects permanently': 'Usuń bezpowrotnie zaznaczone obiekty',
 	'confirm delete objects permanently': 'Po ich skasowaniu nie będzie możliwe przywrócenie tych obiektów.\nCzy na pewno chcesz je usunąć?',
-	
 	'n/a': '<acronym title="Niedostępny">n/a</acronym>',
 	'move to trash': 'Przenieś do kosza',
 	'move selected objects to trash': 'Przenieś zaznaczone obiekty do kosza',
 	'confirm move to trash': 'Czy na pewno chcesz przenieść zaznaczone obiekty do kosza?',
 	'confirm restore objects': 'Czy na pewno chcesz przywrócić zaznaczone obiekty?',
-	
 	'file_revision': 'Wersja pliku',
 	'trash emptied periodically': 'Obiekty pozostawione w koszu na dłużej niż {0} dni zostaną usunięte.',
 	'remove': 'Usuń',
@@ -534,7 +469,6 @@ addLangs({
 	'confirm delete permanently': 'Czy na pewno chcesz usunąć ten obiekt?',
 	'no items selected': 'Nie zaznaczono żadnych obiektów',
 	'error adding timeslot': 'Wystąpił błąd podczas dodawania przedziału czasowego',
-	
 	'no due date': 'Brak daty realizacji',
 	'no start date': 'Brak daty rozpoczęcia',
 	'untagged': 'Nieotagowane',
@@ -544,23 +478,85 @@ addLangs({
 	'sort tags': 'Sortuj Tagi',
 	'sort tags alphabetically': 'Alfabetycznie',
 	'sort tags by count': 'Według liczby wystąpień',
-	'actions' : 'Działania',
-	'show more' : 'Pokaż więcej',
+	'actions': 'Działania',
+	'show more': 'Pokaż więcej',
 	'confirm template with no objects': 'Czy na pewno chcesz utworzyć szablon bez żadnych obiektów? (Obiekty możesz dodać później)',
 	'confirm delete tag': 'Czy na pewno chcesz zupełnie usunąć taga \'\'?',
-    'delete tag': 'Usuń taga',
-    
-    'reminder_popup': 'Wiadomość popup',
-    'reminder_email': 'E-mail',
-    'minutes': 'minut',
-    'weeks': 'tygodni',
-    'days': 'dni',
-    'before': 'przed',
-    'remove object reminder': 'Usuń przypomnienie',
-    'apply to subscribers': 'Zastosuj do wszystkich subskrybentów',
-    
-    'must choose company': 'Musisz wybrać firmę',
-    'contact import - export': 'Import i eksport kontaktów',
-    'calendar import - export': 'Import i eksport kalendarza',
-    'view weblink': 'Zobacz odnośnik'
+	'delete tag': 'Usuń taga',
+	'reminder_popup': 'Wiadomość popup',
+	'reminder_email': 'E-mail',
+	'minutes': 'minut',
+	'weeks': 'tygodni',
+	'days': 'dni',
+	'before': 'przed',
+	'remove object reminder': 'Usuń przypomnienie',
+	'apply to subscribers': 'Zastosuj do wszystkich subskrybentów',
+	'must choose company': 'Musisz wybrać firmę',
+	'contact import - export': 'Import i eksport kontaktów',
+	'calendar import - export': 'Import i eksport kalendarza',
+	'view weblink': 'Zobacz odnośnik',
+	'you': 'Ty',
+	'checkout notification': 'Powiadomienie o zablokowaniu pliku do edycji',
+	'document checked out by': 'Ten dokument jest obecnie zablokowany do edycji przez {0}',
+	'checkout confirmation': 'Potwierdzenie ablokowania do edycji',
+	'checkout and download': 'Zablokowanie pliku do edycji i pobieranie',
+	'download only': 'Tylko pobieranie',
+	'checkout recommendation': 'Czy zamierzasz edytować ten dokument? Jeśli tak, zalecane jest zablokowanie go do edycji podczas pobierania',
+	'file revision comments required': 'Komentarze dla nowych wersji plików są obowiązkowe',
+	'classify email': 'Klasyfikacja wiadomości e-mail',
+	'confirm unclassify email': 'Czy na pewno chcesz usunąć klasyfikację tej wiadomości e-mail? Zostanie ona usunięta z projektów a jej załączniki nie będą wyświetlane w zakładce Dokumenty.',
+	'save as a new document': 'Zapisz jako nowy dokument',
+	'add': 'Dodaj',
+	'no results found': 'Brak wyników',
+	'contact is already assigned': 'Ten kontakt jest już przypisany',
+	'confirm remove contact': 'Czy na pewno chcesz usunąć {0}?',
+	'role for this contact': 'Rola dla tego kontaktu',
+	'print all groups': 'Drukuj wszystkie grupy',
+	'print this group': 'Drukuj tą grupę',
+	'new version notification title': 'Nowa wersja',
+	'numeric': 'Numerycznie',
+	'boolean': 'Logicznie (p/f)',
+	'list': 'Lista',
+	'values comma separated': 'Wartości (przedzielone przecinkami)',
+	'default value': 'Domyślna wartość',
+	'checked': 'Sprawdzona?',
+	'required': 'Wymagana?',
+	'multiple values': 'Wiele wartości?',
+	'visible by default': 'Domyślnie widoczne?',
+	'add custom property': 'Dodaj własną właściwość',
+	'delete custom property confirmation': 'Czy na pewno chcesz usunąć własną właściwość?',
+	'undo': 'Cofnij operację',
+	'confirm discard changes': 'Odrzucić zmiany?',
+	'custom property deleted': 'Ta właściwość i wszystkie jej elementy zostaną usunięte',
+	'custom property name empty': 'Nazwy własnych włąsciwości nie mogą być puste',
+	'custom property values empty': 'Musisz podać wartości dla własnej właściwości: {0}',
+	'custom property wrong default value': 'Domyślna wartość musi pochodzi z listy wartości przedzielonych przecinkami dla własnej właściwości: {0}',
+	'custom property duplicate name': 'Własne właściwości muszą mieć unikalne nazwy: {0}',
+	'custom property invalid numeric value': 'Domyślna wartość musi być liczbą dla własnej właściwości: {0}',
+	'value cannot be empty': 'Wartość nie może być pusta',
+	'value must be numeric': 'Wartość musi być liczbą',
+	'memo': 'Notatka',
+	'add value': 'Dodaj wartość',
+	'delete condition confirmation': 'Czy na pewno chcesz usunąć ten warunek?',
+	'delete report confirmation': 'Czy na pewno chcesz usunąć ten raport?',
+	'object type not selected': 'Typ obiektu musi zostać wybrany zanim możliwe będzie dodanie warunku',
+	'condition deleted': 'Ten warunek zostanie usunięty',
+	'field': 'Pole',
+	'condition': 'Warunek',
+	'value': 'Wartość',
+	'parametrizable': 'Parametr',
+	'like': 'Podobny',
+	'not like': 'Niepodobny',
+	'equals': 'Równa się',
+	'not equals': 'Nie równa się',
+	'true': 'Prawda',
+	'false': 'Fałsz',
+	'ends with': 'Kończy się na',
+	'report cols not selected': 'Nie wybrano kolumn do raportu',
+	'no report conditions': 'Brak warunków dla raportu',
+	'condition value empty': 'Musisz podać wartość dla warunku pola {0}',
+	'condition value not numeric': 'Wartość pola {0} musi być liczbą',
+	'milestones': 'Etapy',
+	'no subject': 'Bez tematu',
+	'value is already in the list': 'Wartość jest już na liście'
 });

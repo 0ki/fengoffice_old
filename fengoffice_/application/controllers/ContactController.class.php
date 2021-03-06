@@ -538,7 +538,7 @@ class ContactController extends ApplicationController {
 		}
 		$this->setTemplate('edit_contact');
 
-		if(!Contact::canAdd(logged_user(),active_project())) {
+		if(!(active_project() instanceof Project ? Contact::canAdd(logged_user(),active_project()) : can_manage_contacts(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

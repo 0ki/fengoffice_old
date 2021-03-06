@@ -1730,6 +1730,10 @@ class FilesController extends ApplicationController {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
 		} else {
+			if (php_config_value_to_bytes($old_memory_limit) < 96*1024*1024) {
+				ini_set('memory_limit', '96M');
+			}
+			set_time_limit(0);
 			session_commit();
 			$content = $file->getLastRevision()->getFileContent();
 			$filepath = ROOT.'/tmp/'.rand().'.zip';
@@ -1773,13 +1777,8 @@ class FilesController extends ApplicationController {
 				$file->setCreatedOn(new DateTimeValue(time()));
 			}
 
-			$handle = fopen($path, "r");
-			$size = filesize($path);
-			$content = fread($handle, $size);
-			fclose($handle);
-
 			$file_dt['name'] = $file->getFilename();
-			$file_dt['size'] = strlen($content);
+			$file_dt['size'] = filesize($path);
 			$file_dt['tmp_name'] = $path;
 			$extension = trim(get_file_extension($filename));
 			$file_dt['type'] = Mime_Types::instance()->get_type($extension);

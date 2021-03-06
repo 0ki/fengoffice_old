@@ -1384,7 +1384,7 @@ class ObjectController extends ApplicationController {
 			if (!$date instanceof DateTimeValue) continue;
 			// convert time to the user's locale
 			$timezone = logged_user()->getTimezone();
-			if ($date->getTimestamp() + 5*60 < DateTimeValueLib::now()->getTimestamp() + $timezone * 60*60) {
+			if ($date->getTimestamp() + 5*60 < DateTimeValueLib::now()->getTimestamp()) {
 				// don't show popups older than 5 minutes
 				$reminder->delete();
 				continue;
@@ -1408,7 +1408,7 @@ class ObjectController extends ApplicationController {
 			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.$object->getObjectName().'</a>';
 			evt_add("popup", array(
 				'title' => lang("$context $type reminder"),
-				'message' => lang("$context $type reminder desc", $link, format_datetime($date, null, 0)),
+				'message' => lang("$context $type reminder desc", $link, format_datetime($date)),
 				'type' => 'reminder',
 				'sound' => 'info'
 			));

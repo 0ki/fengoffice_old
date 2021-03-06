@@ -41,7 +41,7 @@ class FilesServices extends WebServicesBase {
 		$this->WebServicesBase();
 	}
 	
-	function listFiles($username, $password, $tags, $workspaces, $name, $offset, $limit) {
+	function listFiles($username, $password, $tags, $workspaces, $name, $offset=0, $limit=1000) {
 		$result = '';
 		if ($this->loginUser($username, $password)) {
 			$wspaces = Projects::findByCSVIds($workspaces);

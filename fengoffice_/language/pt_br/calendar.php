@@ -132,4 +132,13 @@
 	'calendar name desc' => 'Nome do calendário para exportar',
 	'calendar will be exported in icalendar format' => 'Calendário será exportado no formato iCalendar',
 	'view date title' => 'l, d/m/Y',
+	'event invitation response' => 'Resposta de convite de evento',
+	'user will attend to event' => '{0} vai assistir a este evento.',
+	'user will not attend to event' => '{0} não irá assistir a este evento.',
+	'copy this url in your calendar client software' => 'Copie esta URL em seu calendário software cliente, a fim de importar eventos a partir deste calendário',
+	'import events from third party software' => 'Importe eventos de software de terceiros ',
+	'subws' => 'Sub ET.',
+	'check to include sub ws' => 'Selecione isto para incluir subespaço de trabalho na URL',
+	'week short' => 'Semana',
+	'week number x' => 'Semana {0}',
 ); ?>

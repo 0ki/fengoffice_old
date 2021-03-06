@@ -16,8 +16,8 @@
 	'false' => 'Faux',
 	'field' => 'Champs',
 	'condition' => 'Condition',
-	'ends with' => 'Fins avec',
+	'ends with' => 'Finit par',
 	'select unselect all' => 'Sélectionner/déselectionner tout',
-	'ascending' => 'Montant',
-	'descending' => 'Descendant',
+	'ascending' => 'Croissant',
+	'descending' => 'Décroissant',
 ); ?>

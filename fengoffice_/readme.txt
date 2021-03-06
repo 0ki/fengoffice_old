@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.4.1
+    About OpenGoo 1.4.2
     ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4.1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.4.2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4.1
+    	from your current version to 1.4.2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,20 @@
 
 	Changelog
 	=========
+	
+	Since 1.4.1
+	-----------
+	- bugfix: Error when adding contacts when DEBUG mode is off and All workspace is selected
+	- bugfix: Tasks showed due date instead of start date
+	- bugfix: When editing an event on the 31st of a month it appeared on the 1st of the month
+	- bugfix: An error when making backups.
+	- bugfix: 'Number of tasks to display' config option fixed.
+	- bugfix: When creating a user from a contact it wasn't being assigned to the contact
+	
+	- usability: Language selection displayed in alphabetical order
+	- usability: Custom properties are no longer truncated.
+	
+	- langs: Updated translations
 
 	Since 1.4
 	---------

@@ -451,10 +451,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<tr style="padding-bottom:4px">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
 		<td align='left'><?php
-				$dv_start = new DateTimeValue(time());
-				$dv_start->setDay($day);
-				$dv_start->setMonth($month);
-				$dv_start->setYear($year);
+				$dv_start = DateTimeValueLib::make(array_var($event_data, 'hour'), array_var($event_data, 'minute'), 0, $month, $day, $year);
 				$event->setStart($dv_start);
 				echo pick_date_widget2('event[start_value]', $event->getStart(), $genid, 120); ?>
 		</td>

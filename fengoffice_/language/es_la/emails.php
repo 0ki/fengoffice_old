@@ -138,6 +138,8 @@ return array(
     'deleted notification webpage desc' => 'Enlace web \'{0}\' ha sido enviado a la papelera {1}.',
     'deleted notification milestone' => 'Hito \'{0}\' ha sido enviado a la papelera',
     'deleted notification milestone desc' => 'Hito \'{0}\' ha sido enviado a la papelera por {1}.',
+	'deleted notification email' => 'Correo \'{0}\' ha sido enviado a la papelera',
+	'deleted notification email desc' => 'Correo \'{0}\' ha sido enviado a la papelera por {1}.',
 
 	'view file' => 'Ver archivo',
     'view message' => 'Ver nota',

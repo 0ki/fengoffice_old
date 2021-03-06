@@ -1,7 +1,7 @@
 <?php return array(
 	'register' => 'Enregistrer',
-	'login' => 'Connecté',
-	'logout' => 'Déconnecté',
+	'login' => 'Connexion',
+	'logout' => 'Déconnexion',
 	'hide welcome info' => '» Cacher cette information',
 	'add company' => 'Ajouter une société',
 	'edit company' => 'Éditer une société',

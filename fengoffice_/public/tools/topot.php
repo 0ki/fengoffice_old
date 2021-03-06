@@ -28,7 +28,7 @@ function download_zip() {
 	$filename = "tmp/$locale.zip";
 	if (is_file($filename)) unlink($filename);
 	$zip = new ZipArchive();
-	$zip->open($filename, ZIPARCHIVE::OVERWRITE);
+	$zip->open($filename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
 	$zip->addFile(LANG_DIR . "/$locale.php", "$locale.php");
 	$zip->addEmptyDir($locale);
 	$dir = opendir(LANG_DIR . "/" . $locale);
@@ -85,7 +85,7 @@ msgstr ""
 $zipname = "tmp/gettext.zip";
 if (is_file($zipname)) unlink($zipname);
 $zip = new ZipArchive();
-$zip->open($zipname, ZIPARCHIVE::OVERWRITE);
+$zip->open($zipname, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE);
 foreach ($translations as $file => $pairs) {
 	$filename = "tmp/$file.pot";
 	if (is_file($filename)) unlink($filename);
