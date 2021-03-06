@@ -351,11 +351,10 @@ function select_milestone($name, $context = null, $selected = null, $attributes 
 		//add conditions
 		if(isset($attributes['template_id']) && $attributes['template_id'] != 0){
 			$tmp_id = $attributes['template_id'];
-			$conditions = '`session_id` =  0 AND `template_id` = '.$tmp_id.'';
+			$conditions = '(`session_id` =  0 AND `template_id` = '.$tmp_id.' OR `session_id` =  '.logged_user()->getId().' AND `template_id` = 0)';
 		}else{
 			$conditions = '`session_id` =  '.logged_user()->getId().' AND `template_id` = 0';
 		}
-		
 		$milestones = TemplateMilestones::findAll(array('conditions' => $conditions));
 	}
 	

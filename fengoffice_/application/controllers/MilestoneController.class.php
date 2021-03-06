@@ -154,6 +154,7 @@ class MilestoneController extends ApplicationController {
 				//Send Template milestone to view
 				if($milestone instanceof TemplateMilestone){
 					$object = array(
+							"action" => "add",
 							"object_id" => $milestone->getObjectId(),
 							"type" => $milestone->getObjectTypeName(),
 							"id" => $milestone->getId(),
@@ -266,6 +267,21 @@ class MilestoneController extends ApplicationController {
 			    
 				DB::commit();
 				ApplicationLogs::createLog($milestone, ApplicationLogs::ACTION_EDIT);
+				
+				//Send Template milestone to view
+				if($milestone instanceof TemplateMilestone){
+					$object = array(
+							"action" => "edit",
+							"object_id" => $milestone->getObjectId(),
+							"type" => $milestone->getObjectTypeName(),
+							"id" => $milestone->getId(),
+							"name" => $milestone->getObjectName(),
+							"ico" => "ico-milestone",
+							"manager" => get_class($milestone->manager())
+					);
+						
+					evt_add("template object added", $object);
+				}
 				
 				flash_success(lang('success edit milestone', $milestone->getObjectName()));
 				ajx_current("back");

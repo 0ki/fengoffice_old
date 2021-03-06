@@ -198,7 +198,12 @@ class ReportingController extends ApplicationController {
 		$cp_ids = CustomProperties::getCustomPropertyIdsByObjectType(ProjectTasks::instance()->getObjectTypeId());
 		tpl_assign('has_custom_properties', count($cp_ids) > 0);
 		
-		$users = allowed_users_in_context(Timeslots::instance()->getObjectTypeId(), active_context());
+		$sel_member_ids = active_context_members(false);
+		if (count($sel_member_ids) == 0) {
+			$users = Contacts::getAllUsers();
+		} else {
+			$users = allowed_users_in_context(Timeslots::instance()->getObjectTypeId(), active_context());
+		}
 		$_SESSION['total_task_times_report_data'] = $report_data;
 		tpl_assign('report_data', $report_data);
 		tpl_assign('users', $users);
@@ -305,6 +310,9 @@ class ReportingController extends ApplicationController {
 				break;
 		}
 		
+		$st->add('h',-logged_user()->getTimezone());
+		$et->add('h',-logged_user()->getTimezone());
+				
 		$timeslotType = array_var($report_data, 'timeslot_type', 0);
 		$group_by = array();
 		for ($i = 1; $i <= 3; $i++){
@@ -552,6 +560,8 @@ class ReportingController extends ApplicationController {
 					if (!$no_need_to_add_to_members) {
 						$object_controller = new ObjectController();
 						$object_controller->add_to_members($newReport, $member_ids);
+					} else {
+						$newReport->addToSharingTable();
 					}
 					
 					DB::commit();

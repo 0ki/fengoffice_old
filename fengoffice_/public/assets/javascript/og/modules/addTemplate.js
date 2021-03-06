@@ -126,7 +126,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	div.innerHTML =
 		'<input class="objectID" type="hidden" name="objects[' + obj.object_id + ']" value="' + obj.object_id + '" />' +
 		'<div style="float: left;" class="db-ico '+obj.ico+'"></div>' +
-		'<a href="#" class="internalLink" onclick="og.viewTempObj('+obj.object_id+',  \''+obj.type+'\')">'+og.clean(obj.name)+'</a>';
+		'<a id="template-object-name' + obj.object_id + '" href="#" class="internalLink" onclick="og.viewTempObj('+obj.object_id+',  \''+obj.type+'\')">'+og.clean(obj.name)+'</a>';
 			
 	var divActions = document.createElement('div');
 	divActions.className = "template-object-actions";

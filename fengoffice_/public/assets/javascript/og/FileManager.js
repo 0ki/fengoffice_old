@@ -182,8 +182,8 @@ og.FileManager = function() {
 				actions += String.format('<a class="list-action ico-download" href="{0}" target="_self" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 			}else{
-				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>&nbsp;</a>',
-				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
+				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\', \'{4}\');" title="{3}" ' + actionStyle + '>&nbsp;</a>',
+				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'), r.id);
 			}			
 		}else{
 			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + ">&nbsp;</a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
@@ -455,10 +455,7 @@ og.FileManager = function() {
 					var url = og.getUrl('files', 'add_file');
 					og.openLink(url);
 				}},
-				{text: lang('weblink'), iconCls: 'ico-weblink', handler: function() {
-					var url = og.getUrl('files', 'add_weblink');
-					og.openLink(url);
-				}},'-',
+				'-',
 				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');
 					
@@ -488,6 +485,10 @@ og.FileManager = function() {
 						og.err(lang('you must select a member from the following dimensions', dim_names));
 					}
 					
+				}},
+				{text: lang('web document'), iconCls: 'ico-weblink', handler: function() {
+					var url = og.getUrl('files', 'add_weblink');
+					og.openLink(url);
 				}},
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');

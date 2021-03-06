@@ -32,14 +32,12 @@ member_selector.init = function(genid) {
 		if (!data.dim_ids) return;
 		
 		for (var i=0;i<data.dim_ids.length;i++){
-			data.dim_ids[i]
 			if (!member_selector[genid].sel_context[data.dim_ids[i].dim_id]) {
 				member_selector[genid].sel_context[data.dim_ids[i].dim_id] = [];
 			}
 			
 			member_selector[genid].sel_context[data.dim_ids[i].dim_id].push(data.dim_ids[i].member_id);
 			member_selector[genid].members_dimension[data.dim_ids[i].member_id] = data.dim_ids[i].dim_id;
-			
 		}
 						
 		//RENDER
@@ -51,6 +49,13 @@ member_selector.init = function(genid) {
 		//render Invited people in event
 		if ($("#"+genid+"add_event_invitation_div").length > 0) {
 			og.redrawPeopleList(genid);
+		}
+		
+		for (dim in member_selector[genid].sel_context) {
+			if (!dim) continue;
+			if (member_selector[genid].sel_context[dim].length > 0) {
+				member_selector.reload_dependant_selectors(dim, genid);
+			}
 		}
 						
 	}});
@@ -214,11 +219,16 @@ member_selector.reload_dependant_selectors = function(dimension_id, genid) {
 					var combo = Ext.getCmp(genid + 'add-member-input-dim' + data.dimension_id);
 					if (combo) {
 						combo.disable();
-						var store = [];
+						var records = [];
 						for (x=0; x<data.dimension_members.length; x++) {
 							dm = data.dimension_members[x];
 							
-							store[store.length] = [dm.id, dm.name, dm.path, dm.to_show, dm.ico, dm.dim];
+							var to_show = dm.path == '' ? dm.name : dm.name + " ("+dm.path+")";
+							var record = new Ext.data.Record(
+								{'id':dm.id, 'name':dm.name, 'path':dm.path, 'to_show':to_show, 'ico':dm.ico, 'dim':dim_id},
+								dm.id
+							);
+							records.push(record);
 
 							if(!member_selector[genid].members_dimension[dm.id]) {
 								member_selector[genid].members_dimension[dm.id] = dm.dim;
@@ -226,7 +236,7 @@ member_selector.reload_dependant_selectors = function(dimension_id, genid) {
 						}
 						combo.reset();
 						combo.store.removeAll();
-						combo.store.loadData(store);
+						combo.store.add(records);
 						combo.enable();
 					}
             	}

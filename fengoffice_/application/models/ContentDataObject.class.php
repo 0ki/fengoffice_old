@@ -1400,7 +1400,8 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		$sql_where = "($member_where_conditions member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0)) AND cmp.object_type_id = $tid";
 
 		//3. If there are dimensions that defines permissions containing any of the object members
-		if ( count($dids) ){
+		if ( count($dids) || config_option('let_users_create_objects_in_root')){
+			if (config_option('let_users_create_objects_in_root') && count($dids)==0) $dids[] = 0;
 			// 3.1 get permission groups with permissions over the object.
 			$sql_fields = "permission_group_id  AS group_id";
 			

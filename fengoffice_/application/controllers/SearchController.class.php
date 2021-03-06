@@ -174,7 +174,7 @@ class SearchController extends ApplicationController {
 										(SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om
 															INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id
 															INNER JOIN ".TABLE_PREFIX."objects ob ON fr.object_id=ob.id
-															WHERE fr.object_id = om.object_id AND ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ") 
+															WHERE fr.file_id = om.object_id AND ob.object_type_id = $revisionObjectTypeId AND member_id IN (" . implode ( ',', $members ) . ") 
 															GROUP BY object_id 
 															HAVING count(member_id) = ".count($members)."
 										)

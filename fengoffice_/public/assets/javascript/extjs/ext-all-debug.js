@@ -11560,7 +11560,7 @@ Ext.extend(Ext.data.JsonReader, Ext.data.DataReader, {
             }
         }
 
-    	var root = this.getRoot(o), c = root.length, totalRecords = c, success = true;
+    	var root = this.getRoot(o), c = root ? root.length : 0, totalRecords = c, success = true;
     	if(s.totalProperty){
             var v = parseInt(this.getTotal(o), 10);
             if(!isNaN(v)){

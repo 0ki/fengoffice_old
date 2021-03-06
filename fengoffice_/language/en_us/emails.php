@@ -217,7 +217,7 @@ return array(
     'mail attachments' => 'Attachments',
     'select attachment' => 'Select and upload attachment',
     'attach from workspace' => 'Attach from workspace',
-    'attach from fengoffice' => 'Attach from Feng Office',
+    'attach from fengoffice' => 'Attach an existing document',
     'attach from file system' => 'Attach from computer',
 
     'subscribed notification task' => 'Subscribed to Task: {0}',

@@ -3,7 +3,9 @@
 <html>
   <head>
     <title><?php echo get_page_title() ?></title>
-<?php echo add_favicon_to_page('favicon.ico') ?>
+<?php $favicon_name = 'favicon.ico';
+	Hook::fire('change_favicon', null, $favicon_name);?>
+<?php echo add_favicon_to_page($favicon_name) ?>
 <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?> 
 <?php echo render_page_head() ?>
     <style>

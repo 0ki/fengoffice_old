@@ -158,4 +158,12 @@
 	'log read weblink' => 'L\'utilisateur a consulté  le lien',
 	'warning file extension type' => 'Attention: le document que vous voulez sauvez a une extension différente du précédent (cela peut créer des problèmes pour les ouvrir)',
 	'the Time activity' => 'Un intervalle de temps',
+	'the workspace activity' => 'l\'espace de travail{0}',
+	'the workspace' => 'l\'espace de travail',
+	'the folder' => 'le dossier',
+	'the tag' => 'le tag',
+	'the object' => 'l\'objet',
+	'the customer_folder' => 'le dossier',
+	'the project_folder' => 'le dossier',
+	'activity made several changes' => '{1} apporté plusieurs changements sur {0} {2}',
 ); ?>

@@ -316,6 +316,7 @@ addLangs({
 	'attach contents' : 'Attach Contents',
 	'email tab': 'Email',
 	'weblink': 'Web link',
+	'web document': 'Web Document',
 	'webpage': 'Web link',
 	'task': 'Task',
 	'milestone': 'Milestone',

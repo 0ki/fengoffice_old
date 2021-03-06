@@ -23,6 +23,8 @@ $object = $file;
 	<input id="<?php echo $genid ?>no_msg" name="no_msg" value="" type="hidden" />
 	<input id="<?php echo $genid ?>temp_id" name="temp_id" value="" type="hidden" />        
 	
+	<input id="<?php echo $genid ?>subscribers" name="subscribers[user_<?php echo logged_user()->getId()?>]" value="checked" type="hidden" />
+	
 	<h1><?php echo lang('upload file')?></h1>
 
 
@@ -127,6 +129,7 @@ function supportMultiple() {
 if(supportMultiple()) {
 	$('#<?php echo $genid ?>quickaddfile').attr("action", "<?php echo get_url('files', 'quick_add_multiple_files') ?>");
 	$('#<?php echo $genid ?>fileFormFile').attr("name", "file_file[]");
+	$('#<?php echo $genid ?>fileFormFile').attr("multiple", "multiple");
 }
 
 $('#<?php echo $genid ?>fileFormFile').change(function (){

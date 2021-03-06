@@ -192,7 +192,7 @@
 	'mail attachments' => 'Adjuntos',
 	'select attachment' => 'Seleccionar y subir el adjunto',
 	'attach from workspace' => 'Adjuntar desde espacio de trabajo',
-        'attach from fengoffice' => 'Adjuntar desde Feng Office',
+	'attach from fengoffice' => 'Adjuntar un documento existente',
 	'attach from file system' => 'Adjuntar desde computadora',
 	'mail format options' => 'Formato',
 	'modified notification email' => 'El correo \'{0}\' ha sido modificado',

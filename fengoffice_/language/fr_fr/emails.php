@@ -219,4 +219,6 @@
 	'subscribed notification weblink' => 'Inscrit au Lien Web: {0}',
 	'subscribed notification weblink desc' => '{1} vous a inscrit au lien web:',
 	'view timeslots' => 'Voir intervalles de temps',
+	'mails_in_outbox reminder' => 'Courriels dans la boite d’envoi.',
+	'mails_in_outbox reminder desc' => 'il y a {0} courriels dans la boite d’envoi et qui n\'ont pas été envoyés.S\'il vous plaît regarder  votre dossier Boîte d\'envoi pour plus d\'informations.',
 ); ?>

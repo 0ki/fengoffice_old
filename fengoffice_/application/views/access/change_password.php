@@ -72,6 +72,6 @@ foreach ($css as $c) {
 </div>
 <div class="login-footer">
 	<div class="powered-by">
-		<?php echo lang('footer powered', 'http://www.fengoffice.com/', clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
+		<?php echo lang('footer powered', clean(PRODUCT_URL), clean(product_name())) . ' - ' . lang('version') . ' ' . product_version();?>
 	</div>
 </div>

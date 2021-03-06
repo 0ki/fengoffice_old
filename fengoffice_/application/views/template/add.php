@@ -59,7 +59,7 @@
 		
 		 		<div class="db-ico ico-milestone" style="float: left;"></div>
 			
-			<a id="<?php echo $genid ?>add_template_milestone" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('milestone', 'add', {template_milestone:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
+			<a id="<?php echo $genid ?>add_template_milestone" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('milestone', 'add', {template_milestone:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
 		 	<?php echo lang('add a new milestone to this template') ?></a>
 		 <?php }?>
 		
@@ -131,21 +131,53 @@
 
 	og.redrawTemplateTaskList = function(data){
 		if(data.action == "edit"){
-			$('#objectDiv'+data.id).remove();
-		}
-		if(data.milestone_id){
-			og.addObjectToTemplate(('subTasksDiv'+data.milestone_id), data, true);
-			$('#subtasksExpander'+data.milestone_id).show();
-		}else if(data.parent_id){
-			og.addObjectToTemplate(('subTasksDiv'+data.parent_id), data, true);
-			$('#subtasksExpander'+data.parent_id).show();
+			//refresh name			
+			$('#template-object-name'+data.id).text(data.name);
+
+			//refresh milestone
+			if($('#subTasksDiv'+data.milestone_id).length && $('#subTasksDiv'+data.milestone_id).has($('#objectDiv'+data.id)).length == 0){
+				var div = $('#objectDiv'+data.id);
+				$('#objectDiv'+data.id).remove();
+				$('#subTasksDiv'+data.milestone_id).append(div);
+				$('#subtasksExpander'+data.milestone_id).show();
+			}
+
+			//refresh parent
+			if($('#subTasksDiv'+data.parent_id).length && $('#subTasksDiv'+data.parent_id).has($('#objectDiv'+data.id)).length == 0){
+				var div = $('#objectDiv'+data.id);
+				$('#objectDiv'+data.id).remove();
+				$('#subTasksDiv'+data.parent_id).append(div);
+				$('#subtasksExpander'+data.parent_id).show();
+			}
+
+			//if not have parent or milestone
+			if(data.milestone_id == 0 && data.parent_id == 0){
+				var div = $('#objectDiv'+data.id);
+				$('#objectDiv'+data.id).remove();
+				$('#<?php echo $genid ?>template_tasks_div').append(div);				
+			}
+					
 		}else{
-			og.addObjectToTemplate(('<?php echo $genid ?>template_tasks_div'), data, true);
+			if(data.milestone_id && !data.parent_id){
+				og.addObjectToTemplate(('subTasksDiv'+data.milestone_id), data, true);
+				$('#subtasksExpander'+data.milestone_id).show();
+			}else if(data.parent_id){
+				og.addObjectToTemplate(('subTasksDiv'+data.parent_id), data, true);
+				$('#subtasksExpander'+data.parent_id).show();
+			}else{
+				og.addObjectToTemplate(('<?php echo $genid ?>template_tasks_div'), data, true);
+			}
 		}
+		
 	}
 
 	og.redrawTemplateMilestoneList = function(data){
-		og.addObjectToTemplate(('<?php echo $genid ?>template_tasks_div'), data, true);
+		if(data.action == "edit"){
+			//refresh name			
+			$('#template-object-name'+data.id).text(data.name);					
+		}else{
+			og.addObjectToTemplate(('<?php echo $genid ?>template_tasks_div'), data, true);
+		}
 	}
 
 	
@@ -189,7 +221,7 @@
 			
 	og.editTempObj = function(id, type){
 		if(type == "template_task"){
-			og.openLink(og.getUrl('task', 'edit_task', {id: id, template_task:1}), {caller:'new_task_template'});
+			og.openLink(og.getUrl('task', 'edit_task', {id: id, template_task:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}), {caller:'new_task_template'});
 		}else if(type == "template_milestone"){
 			og.openLink(og.getUrl('milestone', 'edit', {id: id, template_milestone:1}), {caller:'new_task_template'});
 		}

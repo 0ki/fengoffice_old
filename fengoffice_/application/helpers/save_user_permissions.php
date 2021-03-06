@@ -10,7 +10,6 @@ ini_set('memory_limit', '1024M');
 
 try {
 	Env::useHelper('permissions');
-	DB::beginWork();
 	
 	$user_id = array_var($argv, 2);
 	$token = array_var($argv, 3);
@@ -52,8 +51,6 @@ try {
 	@unlink($mod_permissions_filename);
 	@unlink($root_permissions_filename);
 	
-	DB::commit();
 } catch (Exception $e) {
-	DB::rollback();
 	Logger::log("Error saving permissions: ".$e->getMessage()."\n".$e->getTraceAsString());
 }

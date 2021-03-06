@@ -660,4 +660,7 @@
 	'log edit contact' => 'Utilisateur {0} a édité',
 	'log delete contact' => 'Utilisateur {0} a supprimé',
 	'log add contact' => 'Utilisateur {0} a ajouté',
+	'log read contact' => 'Vu \'{0}\'',
+	'objects removed from' => 'Vous avez supprimé avec succès {0} parmi les objets sélectionnés',
+	'object removed from' => 'Vous avez supprimé avec succès {0} parmi l\'objet sélectionné',
 ); ?>

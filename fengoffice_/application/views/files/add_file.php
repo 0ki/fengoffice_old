@@ -386,6 +386,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 				if(supportMultiple()) {
 	            	$('#<?php echo $genid ?>addfile').attr("action", "<?php echo get_url('files', 'add_multiple_files') ?>");
 	            	$('#<?php echo $genid ?>fileFormFile').attr("name", "file_file[]");
+	            	$('#<?php echo $genid ?>fileFormFile').attr("multiple", "multiple");
 	            }else{
 					og.msg(lang("upload multiple files"), lang("for upload multiple files upgrade your browser"), 6, "err");
 				}

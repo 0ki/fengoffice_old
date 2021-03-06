@@ -1719,7 +1719,7 @@ class FilesController extends ApplicationController {
 		}else if ($order == 'customProp') {
 			$order = 'IF(ISNULL(jt.value),1,0),jt.value';
 			$join_params['join_type'] = "LEFT ";
-			$join_params['table'] = "fo_custom_property_values";
+			$join_params['table'] = "".TABLE_PREFIX."custom_property_values";
 			$join_params['jt_field'] = "object_id";
 			$join_params['e_field'] = "object_id";
 			$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
@@ -2874,6 +2874,32 @@ class FilesController extends ApplicationController {
 		$ret .= 'window.parent.OnUploadCompleted(' . $errorNumber . ',"' . strtr( $fileUrl, $rpl ) . '","' . strtr( $fileName, $rpl ) . '", "' . strtr( $customMsg, $rpl ) . '") ;' ;
 		$ret .= '</script>' ;
 		return $ret;
+	}
+	
+	
+	function reload_file_view() {
+		ajx_current("reload");
+		$file = ProjectFiles::findById(get_id());
+		if(!($file instanceof ProjectFile)) {
+			flash_error(lang('file dnx'));
+			return;
+		}
+		if(!$file->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			return;
+		}
+		
+		if (array_var($_REQUEST, 'checkout')) {
+			try{
+				DB::beginWork();
+				$file->checkOut();
+				DB::commit();
+				ApplicationLogs::createLog($file, ApplicationLogs::ACTION_CHECKOUT);
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+			}
+		}
 	}
 
 } // FilesController

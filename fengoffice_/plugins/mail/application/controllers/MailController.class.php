@@ -1891,11 +1891,15 @@ class MailController extends ApplicationController {
 				}
 
 				// Restore old emails, if account was deleted and its emails weren't
-				DB::executeAll("UPDATE ".TABLE_PREFIX."mail_contents SET account_id=".$mailAccount->getId()." WHERE `created_by_id` = " . $mail_account_user->getId() . " AND `account_email` = '" . $mailAccount->getEmail() . "' AND `account_id` NOT IN (SELECT `id` FROM `" . TABLE_PREFIX . "mail_accounts`)");
-				
+				DB::executeAll("
+						UPDATE ".TABLE_PREFIX."mail_contents mc INNER JOIN ".TABLE_PREFIX."objects o ON mc.object_id = o.id
+							SET mc.account_id=".$mailAccount->getId()." 
+							WHERE o.`created_by_id` = " . $mail_account_user->getId() . " 
+									AND mc.`account_email` = '" . $mailAccount->getEmail() . "' 
+									AND mc.`account_id` NOT IN (SELECT `id` FROM `" . TABLE_PREFIX . "mail_accounts`)");
 				
 				DB::commit();
-
+				
 				flash_success(lang('success add mail account', $mailAccount->getName()));
 				ajx_current("back");
 				// Error...

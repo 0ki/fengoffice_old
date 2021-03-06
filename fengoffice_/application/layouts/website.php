@@ -3,7 +3,9 @@
 <html>
 <head>
 	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getFirstName()) . ' - ' . PRODUCT_NAME ?></title>
-	<?php echo link_tag(with_slash(ROOT_URL)."favicon.ico", "rel", "shortcut icon") ?>
+	<?php $favicon_name = 'favicon.ico';
+		Hook::fire('change_favicon', null, $favicon_name); ?>
+	<?php echo link_tag(with_slash(ROOT_URL).$favicon_name, "rel", "shortcut icon") ?>
 	<?php echo add_javascript_to_page("og/app.js") // loaded first because it's needed for translating?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation_default")); ?>
@@ -13,7 +15,8 @@
 	<!--[if IE 8]>
 	<?php echo stylesheet_tag("og/ie8.css"); ?>
 	<![endif]-->
-	
+	<?php $loading_url = get_image_url("layout/loading.gif");
+		Hook::fire('change_loading_img', null, $loading_url); ?>
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
 <?php
 
@@ -94,7 +97,7 @@
 <iframe name="_download" style="display:none"></iframe>
 
 <div id="loading">
-	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;vertical-align: middle;"/><?php echo lang("loading") ?>...
+	<img src="<?php echo $loading_url ?>" width="32" height="32" style="margin-right:8px;vertical-align: middle;"/><?php echo lang("loading") ?>...
 </div>
 
 <div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px;"></div>

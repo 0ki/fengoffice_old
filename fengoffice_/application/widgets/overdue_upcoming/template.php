@@ -28,6 +28,7 @@
 					$cls = 'completed';
 				} else {
 					if ($object->getDueDate()){
+						$object->getDueDate()->advance(logged_user()->getTimezone() * 3600, true);
 						if ($object->getDueDate()->getTimestamp() < $today->getTimestamp()) {
 							$days_str = lang('days late', $object->getLateInDays());
 							$cls = 'late';

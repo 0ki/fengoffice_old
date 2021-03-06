@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1.1
+	About Feng Office 2.5.1.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,28 @@
 	Changelog
 	=========
 	
+	
+	Since 2.5.1.1
+	----------------
+	bugfix: gantt subtasks of subtasks not displayed.
+	bugfix: mysql error when edit mail account.
+	bugfix: search on dimensions doesn't work with files. 
+	bugfix: getDaysLate and getDayLeft tasks functions fixed.
+	bugfix: delete repeat number of times if "This Day Only" is selected on repeatinig tasks.
+	bugfix: fo_ prefix table hardcoded.
+	bugfix: templates errors when edit tasks.
+	bugfix: milestones problems on template task.
+	bugfix: can't add milestones in template task from edit.
+	bugfix: mail plugin update failed if column conversation_last exists.
+	bugfix: task dates are not shown with user timezone in custom reports.
+	bugfix: logged user is not subscribed when uploading a file in the object picker (linked objects).
+	bugfix: tasks widget shows tasks 1 day earlier for some user timezones > 0.
+	bugfix: reload view (to show checkout information) when download and checkout in the same request.
+	bugfix: in extjs when reloading combos.
+	bugfix: if no member selected, in total tasks times report parameters, show all users.
+	bugfix: separate transactions for saving user permissions.
+	bugfix: multiple file upload enabled when uploading a new version.
+	
 	Since 2.5.1
 	----------------
 	bugfix: Cannot edit unclassified timeslot.
@@ -142,7 +164,8 @@
 	bugfix: when edit a template if have milestones you can't see tasks.
 	bugfix: don't show members that cannot be used in member selector.
 	
-	
+	feature: Dashboards can be customized by user, and so can their widgets. 
+		
 	Since 2.5.0.5
 	----------------
 	bugfix: Tasks grouping by dimension fixed.

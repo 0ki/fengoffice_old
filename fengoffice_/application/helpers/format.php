@@ -289,6 +289,9 @@ function date_format_tip($format) {
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
 					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
+					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() || $obj_type_id == ProjectTasks::instance()->getObjectTypeId()) {
+						$dtVal->advance(logged_user()->getTimezone() * 3600, true);
+					}
 					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && ($col == 'start'|| $col == 'duration')) $formatted = format_datetime($dtVal);
 					else $formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';

@@ -261,7 +261,7 @@ function installed_version() {
  */
 function product_signature() {
 	if(function_exists('logged_user') && (logged_user() instanceof Contact) && logged_user()->isMemberOfOwnerCompany()) {
-		$result = lang('footer powered', 'http://www.fengoffice.com/', clean(product_name()) . ' ' . product_version());
+		$result = lang('footer powered', clean(PRODUCT_URL), clean(product_name()) . ' ' . product_version());
 		if(Env::isDebugging()) {
 			ob_start();
 			benchmark_timer_display(false);
@@ -272,7 +272,7 @@ function product_signature() {
 		} // if
 		return $result;
 	} else {
-		return  lang('footer powered', 'http://www.fengoffice.com/', clean(product_name()));
+		return  lang('footer powered', clean(PRODUCT_URL), clean(product_name()));
 	} // if
 } // product_signature
 

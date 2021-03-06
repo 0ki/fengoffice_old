@@ -32,4 +32,8 @@
 	'report font size' => 'Taille de la police',
 	'showing information for' => 'Montrer les informations pour',
 	'columns' => 'Colonnes',
+	'general reports' => 'Rapports généraux',
+	'show always' => 'Afficher toujours ce rapport (utiliser l\'option "liés à" uniquement pour vérifier les permissions et non pour filtrer la liste des rapports).',
+	'subtotal' => 'Sous-total',
+	'print this page' => 'Imprimer cette page',
 ); ?>

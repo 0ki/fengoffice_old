@@ -236,20 +236,22 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	function getLateInDays() {
 		if (!$this->getDueDate() instanceof DateTimeValue) return 0;
-		$due_date_start = $this->getDueDate()->beginningOfDay();
+		$due_date_start = $this->getDueDate();
+		$due_date_start->add('h', logged_user()->getTimezone());
 		$today = DateTimeValueLib::now();
-		$today = $today->add('h', logged_user()->getTimezone())->beginningOfDay();
+		$today = $today->add('h', logged_user()->getTimezone());
 		
-		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
+		return abs(floor($due_date_start->getTimestamp() / 86400) - floor($today->getTimestamp() / 86400));
 	} // getLateInDays
 	
 	function getLeftInDays() {
 		if (!$this->getDueDate() instanceof DateTimeValue) return 0;
-		$due_date_start = $this->getDueDate()->endOfDay();
+		$due_date_start = $this->getDueDate();
+		$due_date_start->add('h', logged_user()->getTimezone());
 		$today = DateTimeValueLib::now();
-		$today = $today->add('h', logged_user()->getTimezone())->beginningOfDay();
+		$today = $today->add('h', logged_user()->getTimezone());
 		
-		return floor(abs($due_date_start->getTimestamp() - $today->getTimestamp()) / 86400);
+		return abs(floor($due_date_start->getTimestamp() / 86400) - floor($today->getTimestamp() / 86400));
 	}
 	
 	

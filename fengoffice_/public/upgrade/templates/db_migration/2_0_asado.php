@@ -1214,9 +1214,13 @@ update fo_objects set updated_by_id=0 where updated_by_id is null;
 
 
 -- companies comments
-update fo_comments set fo_comments.rel_object_id = (select o.id from fo_objects o inner join fo_contacts co on co.object_id=o.id where o.object_type_id=16 and co.is_company=1 and o.f1_id=(
-  select ogc.rel_object_id FROM og_comments ogc where ogc.rel_object_manager='Companies' AND ogc.`text`=fo_comments.`text` limit 1
-)) where fo_comments.rel_object_id=0;
+update fo_comments set rel_object_id = (
+  select o.id from fo_objects o
+    inner join og_comments og on o.f1_id=og.rel_object_id and o.object_type_id=(select id from fo_object_types where name='contact')
+    where og.text=fo_comments.text
+    limit 1
+)
+where rel_object_id=0;
 
 -- fix null contact fields
 update fo_contacts set company_id=0 where company_id is null;

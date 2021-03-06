@@ -79,7 +79,7 @@ class MessageController extends ApplicationController {
 			case 'customProp':
 				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
 				$join_params['join_type'] = "LEFT ";
-				$join_params['table'] = "fo_custom_property_values";
+				$join_params['table'] = "".TABLE_PREFIX."custom_property_values";
 				$join_params['jt_field'] = "object_id";
 				$join_params['e_field'] = "object_id";
 				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;

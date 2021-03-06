@@ -1018,12 +1018,12 @@ class ContactController extends ApplicationController {
 				//link it!
 				$object_controller = new ObjectController();
 				
-				if($newCompany) {
-					$object_controller->add_to_members($company, $member_ids);
-				}
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				if (count($member_ids) && !array_var(array_var($contact_data, 'user'), 'create_user')) {
 					$object_controller->add_to_members($contact, $member_ids);
+				}
+				if($newCompany) {
+					$object_controller->add_to_members($company, $member_ids);
 				}
 				$object_controller->link_to_new_object($contact);
 				$object_controller->add_subscribers($contact);

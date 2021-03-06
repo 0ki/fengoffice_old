@@ -1189,10 +1189,20 @@ og.billingEditValue = function(id){
 	document.getElementById(id + 'text').focus();
 };
 
-og.checkDownload = function(url, checkedOutById, checkedOutBy) {
+og.checkDownload = function(url, checkedOutById, checkedOutBy, file_id) {
 	var checkOut = function() {
 		og.ExtendedDialog.dialog.destroy();
-		location.href = url + "&checkout=1";
+		if (file_id) {
+			og.openLink(og.getUrl('files', 'reload_file_view', {id:file_id, checkout:1}), {
+				hideLoading:true, 
+				hideErrors:true,
+				callback: function(){
+					setTimeout(function(){location.href = url + "&checkout=0";},1000);
+				}
+			});
+		} else {
+			location.href = url + "&checkout=1";
+		}
 	};
 	var readOnly = function() {
 		og.ExtendedDialog.dialog.destroy();

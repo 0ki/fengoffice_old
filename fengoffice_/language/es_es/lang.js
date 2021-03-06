@@ -265,6 +265,7 @@ addLangs({
 	'write': 'Escribir',
 	'write new mail': 'Redactar correo electrónico',
 	'weblink': 'Enlace web',
+	'web document': 'Documento Web',
 	'emailunclassified': 'Correo electrónico no clasificado',
 	'file': 'Archivo',
 	'debug': 'Depurar',

@@ -1491,6 +1491,12 @@ class TaskController extends ApplicationController {
 		if(array_var($_REQUEST, "template_task")){
 			$task = TemplateTasks::findById(array_var($_REQUEST, "template_task_id",get_id()));
 			$this->setTemplate(get_template_path('add_template_task', 'template_task'));
+			if(array_var($_REQUEST, 'template_id')){
+				$template_id = array_var($_REQUEST, 'template_id');
+			}else{
+				$template_id = $task->getTemplateId();
+			}			
+			tpl_assign('template_id', $template_id);
 			if(!($task instanceof TemplateTask)) {
 				flash_error(lang('task list dnx'));
 				ajx_current("empty");
@@ -2460,6 +2466,7 @@ class TaskController extends ApplicationController {
 				$task_data['repeat_d'] = 0;
 				$task_data['repeat_m'] = 0;
 				$task_data['repeat_y'] = 0;
+				$rnum = 0;
 				$task_data['repeat_by'] = '';
 				break;
 			case "2":
