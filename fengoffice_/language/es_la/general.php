@@ -53,6 +53,7 @@
 	'completed' => 'Completado',
 	'open task status' => 'Abierta',
 	'administrator' => 'Administrador',
+	'deleted user' => 'un usuario borrado',
 	'error' => 'Error',
 	'yes' => 'Sí',
 	'no' => 'No',
@@ -250,6 +251,5 @@
 	'wizard new user title' => 'Invita a otras Personas',
   	'wizard new user' => 'Debes registrar a una persona y darle permisos en el espacio de trabajo del Cliente o Proyecto para asignarle una tarea y permitirle que trabaje en el sistema. También puedes invitar a otras personas y darle permisos a través de la opción <strong>Administración/Nuevos usuarios</strong> ubicada en la parte superior derecha de la pantalla.',
 	
-  	'wizard close action' => 'Puedes volver a esta Ayuda haciendo doble click en la opción “Resumen” del Menú Principal',
-  	'wizard close button' => 'closeActionEs'	
+  	'wizard close action' => 'Puedes volver a esta Ayuda haciendo doble click en la opción “Resumen” del Menú Principal',	
 ); ?>

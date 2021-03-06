@@ -68,7 +68,7 @@ class MailController extends ApplicationController {
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';
-			
+			$original_mail->setIsRead(logged_user()->getId(), true);
 			$re_body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
 			if ($type == 'html') {
 				$pre_quote = '<blockquote type="cite" style="padding-left:10px; border-left: 1px solid #987ADD;">';
@@ -1028,7 +1028,8 @@ class MailController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
-		if (!$email->canView(logged_user())) {
+		
+		if (!$email->canView(logged_user())) {			
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -2145,7 +2146,7 @@ class MailController extends ApplicationController {
 
 		if(!is_array($mail_data)) {
 			$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
-			
+			$original_mail->setIsRead(logged_user()->getId(), true);
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';

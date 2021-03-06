@@ -118,6 +118,7 @@
     'events' => 'Events',
     'Event' => 'Event',
     'Events' => 'Events',
+  	'deleted user' => 'a deleted user',
     
     'project calendar' => '{0} calendar',
     'user calendar' => '{0}\'s calendar',
@@ -263,7 +264,7 @@
 	'wizard new customer project' => 'Selecting the Customer as "Parent Workspace" indicate that the Project will be part of the Customer.<br />The Overview tab in the main menu displays an information summary of the selected workspace in the left panel.',
   	
 	'wizard new customer task title' => 'Add a task to this Customer',	
-	'wizard new customer task' => 'You can add tasks directly into a Customer\'s Workspace or a Customer’s Project Workspace. It is also possible to assign tasks to other persons –after inviting them to Feng-, add a due date, configure repeating tasks, or set task priority. You are also given the possibility to attach sub-tasks, milestones, documents, notes, and reminders, emails, working time and more. To see the tasks for a project,  go to the left panel  and select the project, then click on "Tasks" on the main menu.',
+	'wizard new customer task' => 'You can add tasks directly into a Customer\'s Workspace or a Customer\'s Project Workspace. It is also possible to assign tasks to other persons –after inviting them to Feng-, add a due date, configure repeating tasks, or set task priority. You are also given the possibility to attach sub-tasks, milestones, documents, notes, and reminders, emails, working time and more. To see the tasks for a project,  go to the left panel  and select the project, then click on "Tasks" on the main menu.',
 	
 	'wizard new project task title' => 'Add a Task to this Project',	
 	'wizard new project task' => 'Assign tasks to other persons –after inviting them to Feng-, add a due date, configure repeating tasks, or set task priority. You are also given the possibility to attach sub-tasks, milestones, documents, notes, and reminders, emails, working time and more. To see the tasks for a project, go to the left panel and select the project, then click on "Tasks" on the main menu.',
@@ -272,7 +273,6 @@
   	'wizard new user' => 'To add other persons to your workspaces you have to invite them to Feng Office and assign them permissions. You can also add users through Add User option in the administration panel (the link is on the upper right corner).',
 	
 	'wizard close action' => 'Double-Click on "Overview" tab in the main menu to return to this Wizard.',
-	'wizard close button' => 'closeActionEn'
   
   ); // array
 

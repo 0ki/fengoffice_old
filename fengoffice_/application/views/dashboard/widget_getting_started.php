@@ -4,14 +4,18 @@
 	/**
 	 * Deteminate the events to attach
 	 */
-
 	if(!isset($_SESSION['wizard']))
 	{
+		if(can_manage_workspaces(logged_user()))
+			$canAddWS = "1";
+		else 
+			$canAddWS = "0";
+		
 		echo
 	   	"Ext.query('#addNewProject')[0].onclick = function(){og.openLink(og.getUrl('project', 'add', {wizard:'newproject'}), {caller:'project', iswizard:'true'});}; 
 	   	 Ext.query('#addNewCustomer')[0].onclick = function(){og.openLink(og.getUrl('project', 'add', {wizard:'newcustomer'}), {caller:'project'});};
 		 var wsCount = Ext.getCmp('workspace-panel').getWsList();
-		 if(wsCount.length > 2)
+		 if(wsCount.length > 2 || !$canAddWS)
 		 {
 			if(Ext.query('div.dashGettingStarted'))
 				Ext.get(Ext.query('div.dashGettingStarted')).remove();
@@ -206,7 +210,15 @@
     
     <div class="buttons">
         <div class="action">
-        	<a href="Javascript:;" id="wizardDoneAction" class="<?php echo lang('wizard close button')?>"></a>
+        	<a href="Javascript:;" id="wizardDoneAction" class="
+	        	<?php
+		        	if(Localization::instance()->getLocale()=="es_la" || Localization::instance()->getLocale()=="es_es"){
+		        		echo"closeActionEs";
+		        	}else{
+		        		echo"closeActionEn";
+		        	}    	 
+	        	?>">
+        	</a>
         </div>
         <div class="message">
         	<p><?php echo lang('wizard close action') ?></p>

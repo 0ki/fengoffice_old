@@ -33,7 +33,9 @@ class WorkspaceObjects extends BaseWorkspaceObjects {
 		if (!is_array($all) || count($all) == 0) return array();
 		$wss = array();
 		foreach ($all as $w) {
-			$wss[] = Projects::findById($w->getWorkspaceId());		
+			$ws = Projects::findById($w->getWorkspaceId());
+			if ($ws == null) continue;
+			$wss[] = $ws;		
 		}
 		return $wss;				
 	}
