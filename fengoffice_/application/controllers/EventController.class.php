@@ -390,7 +390,6 @@ class EventController extends ApplicationController {
 					}
 				}
 				
-				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD, false, $is_silent);
 				
 				$object_controller = new ObjectController();
 				$object_controller->add_to_members($event, $member_ids);
@@ -455,7 +454,8 @@ class EventController extends ApplicationController {
 					Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
 					$is_silent = true;
 				}
-							
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD, false, $is_silent);
+											
 				flash_success(lang('success add event', clean($event->getObjectName())));
 				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {
@@ -1684,19 +1684,24 @@ class EventController extends ApplicationController {
                 } 
 	}
         
-	function sync_calendar_extern($event){
+	function sync_calendar_extern($event, $user = NULL){
 		require_once 'Zend/Loader.php';
 
 		Zend_Loader::loadClass('Zend_Gdata');
 		Zend_Loader::loadClass('Zend_Gdata_AuthSub');
 		Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
 		Zend_Loader::loadClass('Zend_Gdata_Calendar');
-
-		$users = ExternalCalendarUsers::findByContactId();
+		
+		if($user = NULL){
+			$users = ExternalCalendarUsers::findByContactId();
+		}else{
+			$users = $user;
+		}
+		
 		if (!$users instanceof ExternalCalendarUser) return;
 		$calendar = ExternalCalendars::findById($event->getExtCalId());
 		if (!$calendar instanceof ExternalCalendar) return;
-		if($calendar->getCalendarUser() != logged_user()->getId()){
+		//if($calendar->getCalendarUser() != logged_user()->getId()){
 			 
 			$event_inv = EventInvitations::findSyncByEvent($event->getId());
 			foreach ($event_inv as $invitation){
@@ -1715,7 +1720,7 @@ class EventController extends ApplicationController {
 					$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$invitation->getSpecialId();
 
 					$gcal = new Zend_Gdata_Calendar($client);
-					// ver lo que esta mal 
+					 
 					$edit_event = $gcal->getCalendarEventEntry($event_id);
 					$edit_event->title = $gcal->newTitle($event->getObjectName());
 					$edit_event->content = $gcal->newContent($event->getDescription());
@@ -1743,48 +1748,6 @@ class EventController extends ApplicationController {
 					ajx_current("empty");
 				}
 			}
-
-		}else{
-			$user = $users->getAuthUser();
-			$pass = $users->getAuthPass();
-			$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-			try
-			{
-				$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-				 
-				$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
-				 
-				$gcal = new Zend_Gdata_Calendar($client);
-				 
-				$edit_event = $gcal->getCalendarEventEntry($event_id);
-				$edit_event->title = $gcal->newTitle($event->getObjectName());
-				$edit_event->content = $gcal->newContent($event->getDescription());
-				 
-				$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-				$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-				 
-				if($event->getTypeId() == 2){
-					$when = $gcal->newWhen();
-					$when->startTime = $star_time[0];
-					$when->endTime = $end_time[0];
-					$edit_event->when = array($when);
-				}else{
-					$when = $gcal->newWhen();
-					$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-					$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-					$edit_event->when = array($when);
-				}
-				 
-				$edit_event->save();
-			}
-			catch(Exception $e)
-			{
-				flash_error($e->getMessage());
-				ajx_current("empty");
-			}
-		}
-
 	}
         
 	function delete_event_calendar_extern($event){
@@ -1915,6 +1878,7 @@ class EventController extends ApplicationController {
                                     $query->setStartMin($start_sel);
                                     $query->setStartMax($end_sel);
                                     $query->setMaxResults(50);
+                                    $query->setParam('showdeleted', 'true');
                                     // execute and get results
                                     $event_list = $gdataCal->getCalendarEventFeed($query);
 
@@ -1929,6 +1893,20 @@ class EventController extends ApplicationController {
                                         $array_events_google[] = $special_id;
                                         $new_event = ProjectEvents::findBySpecialId($special_id);
                                         $is_invitation = EventInvitations::findBySpecialId($special_id);
+                                        if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                        	if($new_event || $is_invitation){
+                                            	if($is_invitation){
+                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            	}
+                                        		$event_controller->delete_event_calendar_extern($new_event);
+                                        		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
+                                        		$new_event->trash();
+                                        		 
+                                        		$new_event->setSpecialID("");
+                                        		$new_event->setExtCalId(0);
+                                        		$new_event->save();
+                                        	}
+                                        }else{
                                         if($new_event|| $is_invitation){
                                             	if($is_invitation){
                                             		$new_event = ProjectEvents::findById($is_invitation->getEventId());
@@ -2031,39 +2009,9 @@ class EventController extends ApplicationController {
                                                 $object_controller->add_to_members($new_event, $member_ids); 
                                             }  
                                         }                                           
+                                        }
                                         }           
                                     }// foreach event list 
-
-                                    //check the deleted events
-                                    $events_delete = ProjectEvents::findAll(array(
-                                    'conditions' => array('trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND ext_cal_id = '.$calendar->getId().' AND update_sync <> "1970-01-01 00:00:00"')));
-                                    if($events_delete){
-                                        foreach($events_delete as $event_delete){  
-                                        	if(!in_array($event_delete->getSpecialID(), $array_events_google)){
-												 $this->delete_event_calendar_extern($event_delete);
-                                        		$event_delete->trash();
-                                                
-                                                $event_delete->setSpecialID("");
-                                                $event_delete->setExtCalId(0);
-                                                $event_delete->save();    
-                                            }                                        
-                                        }  
-                                    }
-                                    $inv_delete = EventInvitations::findSyncById($users->getId());
-                                    if($inv_delete){
-                                    	foreach($inv_delete as $invs_delete){
-                                    		if(!in_array($invs_delete->getSpecialID(), $array_events_google)){
-                                    			$event_delete = ProjectEvents::findById($invs_delete->getEventId());
-                                    			$this->delete_event_calendar_extern($event_delete);
-                                    			$event_delete->trash();
-                                    
-                                    			$event_delete->setSpecialID("");
-                                    			$event_delete->setExtCalId(0);
-                                    			$event_delete->save();
-                                    		}
-                                    	}
-                                    }
-                                    
                                 }else{                
                                     $events = ProjectEvents::findByExtCalId($calendar->getId());
                                     if($calendar->delete()){

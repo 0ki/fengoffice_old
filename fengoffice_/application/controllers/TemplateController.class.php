@@ -187,7 +187,7 @@ class TemplateController extends ApplicationController {
 				foreach ($objects as $objid) {
 					
 					$object = Objects::findObject($objid);
-					COTemplates::validateObjectContext($object, $member_ids);
+					//COTemplates::validateObjectContext($object, $member_ids);
 					$additional_attributes = array();
 					if ($object instanceof ProjectTask) {
 						$add_attr_milestones = array_var($_POST, "milestones");
@@ -246,8 +246,8 @@ class TemplateController extends ApplicationController {
 					}
 				}
 				
-				$object_controller = new ObjectController();
-				$object_controller->add_to_members($cotemplate, $member_ids);
+//				$object_controller = new ObjectController();
+//				$object_controller->add_to_members($cotemplate, $member_ids);
 				
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, ApplicationLogs::ACTION_EDIT);

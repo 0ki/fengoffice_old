@@ -18,7 +18,7 @@ class ProjectEvents extends BaseProjectEvents {
 	const ORDER_BY_MODIFYTIME = 'dateUpdated';
         
         function findBySpecialId($special_id) {
-                return ProjectEvents::findOne(array('conditions' => array('`special_id` = ?', $special_id)));
+                return ProjectEvents::findOne(array('conditions' => array('`special_id` = ? AND trashed_on =\''.EMPTY_DATETIME.'\' AND trashed_by_id = 0', $special_id)));
         }
         
         function findByExtCalId($ext_cal_id) {
@@ -409,6 +409,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $query->setStartMin($start_sel);
                                         $query->setStartMax($end_sel);
                                         $query->setMaxResults(2000);
+                                        $query->setParam('showdeleted', 'true');
                                         // execute and get results
                                         $event_list = $gdataCal->getCalendarEventFeed($query);
                                         $array_events_google = array();
@@ -421,8 +422,23 @@ class ProjectEvents extends BaseProjectEvents {
                                             }
                                             $array_events_google[] = $special_id;
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
-                                            $is_invitation = EventInvitations::findBySpecialId($special_id);                                            
-                                           
+                                            $is_invitation = EventInvitations::findBySpecialId($special_id);  
+                                          
+                                            if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
+                                            	if($new_event|| $is_invitation){
+                                            		if($is_invitation){
+                                            			$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            		}
+                                            		$event_controller->delete_event_calendar_extern($new_event);
+                                            		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
+                                            		$new_event->trash();
+                                            		 
+                                            		$new_event->setSpecialID("");
+                                            		$new_event->setExtCalId(0);
+                                            		$new_event->save();                                            	
+                                            	}
+                                            }else{
+                                            
                                             if($new_event || $is_invitation){
                                             	if($is_invitation){
                                             		$new_event = ProjectEvents::findById($is_invitation->getEventId());
@@ -456,7 +472,7 @@ class ProjectEvents extends BaseProjectEvents {
                                                     if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
                                                     $new_event->save();
                                                     
-                                                    $event_controller->sync_calendar_extern($new_event);
+                                                    $event_controller->sync_calendar_extern($new_event, $users);
                                                 }                                                
                                             }else{
                                             	if(!$is_invitation){
@@ -544,42 +560,9 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                                 }                                                
                                             }
-                                            }          
-                                        }// foreach event list 
-
-                                        //check the deleted events
-                                     	$events_delete = ProjectEvents::findAll(array(
-                                        		'conditions' => array('trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND ext_cal_id = '.$calendar->getId().' AND update_sync <> "1970-01-01 00:00:00"')));
-                                        if($events_delete){
-                                            foreach($events_delete as $event_delete){  
-                                                if(!in_array($event_delete->getSpecialID(), $array_events_google)){
-                                                	$is_invitation = EventInvitations::findBySpecialId($special_id);
-                                                	if($is_invitation){
-                                                		
-                                                	$event_controller->delete_event_calendar_extern($event_delete);
-                                                	$event_delete->trash();
-
-                                                    $event_delete->setSpecialID("");
-                                                    $event_delete->setExtCalId(0);
-                                                    $event_delete->save();    
-                                                }   }                                     
-                                            }  
-                                        } 
-                                        $inv_delete = EventInvitations::findSyncById($users->getContactId());
-                                        if($inv_delete){
-                                        	foreach($inv_delete as $invs_delete){
-                                        		if(!in_array($invs_delete->getSpecialID(), $array_events_google)){
-                                        			$event_delete = ProjectEvents::findById($invs_delete->getEventId());
-                                        			$event_controller->delete_event_calendar_extern($event_delete);
-                                        			$event_delete->trash();
-                                        
-                                        			$event_delete->setSpecialID("");
-                                        			$event_delete->setExtCalId(0);
-                                        			$event_delete->save();
-                                        			//**
-                                        		}
-                                        	}
-                                        }                                       
+                                            }	
+                                            }        
+                                        }                             
                                     }else{
                                         $events = ProjectEvents::findByExtCalId($calendar->getId());
                                         if($calendar->delete()){

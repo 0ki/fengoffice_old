@@ -51,8 +51,12 @@
     if ($format){
     	$l = new Localization();
     	$l->setDateTimeFormat($format);
-    }else
+    }else{
     	$l = Localization::instance();
+    	$formatTime = user_config_option('time_format_use_24') ? 'G:i' : 'g:i A';
+    	$format = user_config_option('date_format').' '.$formatTime;   	
+    	$l->setDateTimeFormat($format);
+    }	
     return $l->formatDateTime($datetime, $timezone);
   } // format_datetime
   
@@ -74,8 +78,11 @@
     if ($format){
     	$l = new Localization();
     	$l->setDateFormat($format);
-    }else
+    }else{
     	$l = Localization::instance();
+    	$format = user_config_option('date_format');
+    	$l->setDateTimeFormat($format);
+    }
     return $l->formatDate($datetime, $timezone);
   } // format_date
   
@@ -116,6 +123,8 @@
     	$l->setTimeFormat($format);
     } else {
     	$l = Localization::instance();
+    	$format = user_config_option('time_format_use_24') ? 'G:i' : 'g:i A';
+    	$l->setTimeFormat($format);
     }
     return $l->formatTime($datetime, $timezone);
   } // format_time

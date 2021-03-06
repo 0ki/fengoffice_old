@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3.1-beta
+	About Feng Office 2.3.1 final
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,14 @@
 	Changelog
 	=========
 	
+	Since 2.3.1-rc
+	----------------
+	bugfix: When adding users username field is not used.
+	bugfix: In Archived Objects breadcrumbs are not displayed if members is archived, same happens in Trash can.
+	bugfix: Synchronization with google calendar now deletes old events using "cancelled" status.
+	bugfix: In some places don't display dates with the format of the config option(military time).
+	
+	
 	Since 2.3.1-beta
 	----------------
 	feature: View Contacts direct url if config option is enabled.
@@ -115,9 +123,10 @@
 	bugfix: Exchange compatibility option has been removed.
 	bugfix: When listing tasks timezones were not being taken into account.
 	bugfix: Last login field was not being updated.
-	bugfix: Gantt chart was showing some tasks as completed when their percentage was over 100% and they were not completed
-	bugfix: When adding a timeslot for someone else within a task, the billing value was not being taken into account
-	bugfix: Gantt chart tasks resizing has been improved
+	bugfix: Gantt chart was showing some tasks as completed when their percentage was over 100% and they were not completed.
+	bugfix: When adding a timeslot for someone else within a task, the billing value was not being taken into account.
+	bugfix: Gantt chart tasks resizing has been improved.
+	
 	
 	Since 2.3
 	----------------
@@ -169,6 +178,7 @@
 	bugfix: Description not set for all tasks when listing.
 	bugfix: Left menu expands after adding first client or project
 	
+	
 	Since 2.3-rc
 	----------------
 	
@@ -191,6 +201,7 @@
 	bugfix: Show "save with new name" button after saving a new document.
 	bugfix: Object picker pagination shows wrong total.
 	bugfix: Several missing langs fixed (en_us, es_la).
+	
 	
 	Since 2.3-beta
 	----------------

@@ -959,10 +959,18 @@ class ContactController extends ApplicationController {
 				} // foreach
 				
 				ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
-				
 				//NEW ! User data in the same form 
 				$user = array_var(array_var($_POST, 'contact'),'user');
-				$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
+				if(isset($contact_data['specify_username'])){
+					if($contact_data['user']['username'] != ""){
+						$user['username'] = $contact_data['user']['username'];
+					}else{
+						$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
+					}
+				}else{
+					$user['username'] = str_replace(" ","",strtolower($contact_data['name'])) ;
+				}
+				
 				$this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
 
 				if(isset($_POST['notify-user'])){

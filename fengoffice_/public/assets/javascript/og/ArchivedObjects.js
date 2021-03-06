@@ -71,7 +71,7 @@ og.ArchivedObjects = function() {
 	
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath,false,false,true);
 		
 		var name = mem_path + String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), viewUrl);
 		

@@ -2160,7 +2160,7 @@ og.flash2img = function() {
 }
 
 
-og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions) {
+og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_archived) {
 	var html = '';
 	var dim_index = 0;
 	var max_members_per_dim = 2;
@@ -2187,6 +2187,9 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions) {
 		for (id in members) {
 			var m = members[id];
 			var texts = og.getMemberFromTrees(x, id, true);
+			if (texts.length == 0 && show_archived){
+				texts.push({id:id, text:m.name, ot:m.ot, c:m.c});
+			}
 			total_texts += texts.length;
 			
 			all_texts[id] = texts;

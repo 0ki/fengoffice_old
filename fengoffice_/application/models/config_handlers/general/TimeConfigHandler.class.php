@@ -15,7 +15,8 @@
     * @return string
     */
     function render($control_name) {
-    	return pick_time_widget2($control_name, $this->getValue(), null, null, 'G:i');
+    	$value = DateTimeValueLib::makeFromString($this->getValue());
+    	return pick_time_widget2($control_name, $value, null, null, null);
     } // render
     
   }    
