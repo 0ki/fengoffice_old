@@ -332,7 +332,7 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	if(width == null || width == 0){
 		width = 240;
 	}
-	//cambiar esta funcion $hola
+	
 	var callback_extra_params = {genid:genid}; 
 	var texts = og.getMemberTextsFromOgDimensions(member_id, false, og.replaceCrumbHtmlWithoutLinks, callback_extra_params);
 	

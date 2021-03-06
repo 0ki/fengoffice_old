@@ -36,7 +36,7 @@ og.download_exported_file = function() {
 </div>
 </div>
 <span class="bold"><?php echo lang('field delimiter')?>: </span>
-<select name="delimiter">
+<select name="delimiter" style="font-size:18px; padding:0 2px;">
 	<option value=",">,</option>
 	<option value=";">;</option>
 </select>

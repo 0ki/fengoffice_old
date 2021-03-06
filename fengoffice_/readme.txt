@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.5.1
+	About Feng Office 3.0.6
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,9 +105,25 @@
 	Changelog
 	=========
 	
+	Since 3.0.5.1
+	----------------
+	feature: multiple status factors for each status.
+	feature: add/edit billing category in modal form.
+	feature: cancel button added to permissions popup in member edition
+	
+	performance: on tasks list view.
+	
+	bugfix: cannot upload logo when adding company or client.
+	bugfix: cannot add company when creating a client with type=person.
+	bugfix: unclassify user from members where permissions have been removed.
+	bugfix: when replying an email and changing the "from" the mail content is lost.
+	bugfix: calendar events only shows one member color (fixed for week and day views, must be activated in user preferences).
+	bugfix: expenses plugin - totals row doesn't check permissions.
+	bugfix: csv export should only export the contacts, users or companies if they are being shown in the contacts tab.
+		
 	Since 3.0.5
 	----------------
-	bugfix: Error when creating user from company view.
+	bugfix: Error when creating user from company view
 	bugfix: Error when viewing empty custom property if it is of type=contact.
 	bugfix: Installer error, missing column 'can_update_other_users_invitations'.
 	

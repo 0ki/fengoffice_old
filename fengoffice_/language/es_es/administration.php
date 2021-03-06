@@ -549,6 +549,9 @@
 	
 	'user config option name auto_classify_attachments' => 'Clasificar los adjuntos de los correos automáticamente',
 	'user config option desc auto_classify_attachments' => 'Si se habilita esta opción los adjuntos de los correos van a ser clasificados junto al correo en el espacio definido en la cuenta de correos.',
+		
+	'user config option name show_multiple_color_events' => 'Mostrar eventos en todos sus colores',
+	'user config option desc show_multiple_color_events' => 'Si un evento está clasificado en más de un espacio, cliente, etc. entonces se van a mostrar los colores de cada uno de ellos en la pestaña calendario.',
 
 	'config option name brand_colors_head_back' => 'Color de fondo del encabezado',
 	'config option desc brand_colors_head_back' => '',

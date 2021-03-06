@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.5.1
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.6
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0.5.1');
+		$this->setVersionTo('3.0.6');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -264,6 +264,14 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 					WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Super Administrator', 'Administrator', 'Manager', 'Executive'));
 				";
 			}
+		}
+		
+		if (version_compare($installed_version, '3.0.6') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('calendar panel', 'show_multiple_color_events', '0', 'BoolConfigHandler', 0, 0, '')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
 		}
 		
 		// Execute all queries

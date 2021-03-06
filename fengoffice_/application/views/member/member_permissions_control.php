@@ -66,6 +66,7 @@
 				<div class="user-name-container">
 					<span id="username_<?php echo $user->getPermissionGroupId()?>" class="bold"><?php echo $user->getObjectName()?></span>
 					<input id="<?php echo $genid ?>_is_guest_<?php echo $user->getPermissionGroupId()?>" name="is_guest" type="hidden" value="<?php echo ($user->isGuest() ? '1' : '0')?>"/>
+					<input id="<?php echo $genid ?>_user_id_<?php echo $user->getPermissionGroupId()?>" name="user_id" type="hidden" value="<?php echo $user->getId()?>"/>
 					
 					<?php if ($user->getCompanyId() > 0) { ?>
 					<div class="desc"><?php echo $user->getCompany()->getObjectName(); ?></div>
@@ -161,9 +162,14 @@
 				$save_perms_fn = "";
 			}
 		?>
-			<button title="<?php echo lang('back')?>" class="add-first-btn" onclick="$('#<?php echo $genid?>_close_link').click();<?php echo $save_perms_fn?> og.userPermissions.afterChangingPermissions('<?php echo $genid?>');" id="<?php echo $genid?>_close_btn">
+			<button title="<?php echo lang('save changes')?>" class="add-first-btn" onclick="<?php echo $save_perms_fn?> og.userPermissions.afterChangingPermissions('<?php echo $genid?>'); $('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_close_btn">
 				<img src="public/assets/themes/default/images/16x16/save.png">&nbsp;<?php echo lang('save changes')?>
 			</button>
+			
+			<button title="<?php echo lang('cancel')?>" class="add-first-btn" onclick="$('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_cancel_btn" style="margin-left:10px;">
+				<img src="public/assets/themes/default/images/16x16/del.png">&nbsp;<?php echo lang('cancel')?>
+			</button>
+			
 		  </div>
 		</div>
 	

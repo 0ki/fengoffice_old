@@ -849,6 +849,7 @@ og.userPermissions.loadPermissions = function (genid, selector_id) {
 
 		og.userPermissions.permissionInfo[genid] = {
 			permissions: Ext.util.JSON.decode(hf.value),
+			original_permissions: Ext.util.JSON.decode(hf.value),
 			allowedOt: Ext.util.JSON.decode(hf_ot.value)		
 		}
 
@@ -993,7 +994,7 @@ og.userPermissions.ogPermPrepareSendData = function(genid, send_all){
 	var result = new Array();
 	var permissions = og.userPermissions.permissionInfo[genid].permissions;
 	for (i in permissions){
-		if (typeof(permissions[i]) == 'function') continue;
+		if (!permissions[i] || typeof(permissions[i]) == 'function') continue;
 		for (var j = 0; j < permissions[i].length; j++){
 			var p = permissions[i][j];
 			if (p && typeof(p) != 'function' && (p.modified || send_all)) {
@@ -1030,10 +1031,62 @@ og.userPermissions.showPermissionsPopup = function(container, genid) {
 	og.userPermissions.current_pg_id = pg_id;
 	
 	$('#'+ genid +'member_permissions').modal({
-		'escClose': false,
-		'overlayClose': false,
-		'closeHTML': '<a id="'+genid+'_close_link" class="modal-close"></a>'
+		'closeHTML': '<a id="'+genid+'_close_link" class="modal-close" title="'+lang('close')+'"></a>',
+		'onShow': function (dialog) {
+			$("#"+genid+"_close_link").addClass("modal-close-img");
+			
+			// show only the possible radio buttons for permissions (depending on role)
+			var user_id = $("#" + genid + "_user_id_" + pg_id).val();
+			if (user_id > 0) {
+				var role_id = 0;
+				if (og.allUsers[user_id]) {
+					role_id = og.allUsers[user_id].role;
+				}
+				if (role_id > 0) {
+					og.userPermissions.showHidePermissionsRadioButtonsByRole(genid, role_id);
+				}
+			}
+			// set as modified to save them all 
+			var permissions = og.userPermissions.permissionInfo[genid].permissions[pg_id];
+			if (permissions.length > 0) {
+				for (var i=0; i<permissions.length; i++) {
+					if (permissions[i]) permissions[i].modified = true;
+				}
+			}
+		},
+		'onClose': function (dialog) {
+			og.userPermissions.cancelPermissionsModification(genid, og.userPermissions.current_pg_id);
+			$.modal.close();
+		}
 	});
+}
+
+og.userPermissions.cancelPermissionsModification = function(genid, pg_id) {
+	// make a copy of the origial permissions and set as current
+	var json = Ext.util.JSON.encode(og.userPermissions.permissionInfo[genid].original_permissions[pg_id]);
+	og.userPermissions.permissionInfo[genid].permissions[pg_id] = Ext.util.JSON.decode(json);
+}
+
+og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_id) {
+	// cambiar a max_perms = og.maxRoleObjectTypePermissions[role_id];
+	var max_perms = og.defaultRoleObjectTypePermissions[role_id];
+	
+	var object_types = [];
+	var ot_radios = $("#"+genid+"member_permissions input.radio_3");
+	for (var j=0; j<ot_radios.length; j++) {
+		var ot = ot_radios[j].id.substring(ot_radios[j].id.lastIndexOf('_')+1);
+		object_types.push(ot);
+	}
+		
+	for (var i=0; i<object_types.length; i++) {
+		var ot = object_types[i];
+		
+		if (max_perms[ot] && max_perms[ot].can_delete) $("#" + genid + "rg_3_" + ot).show();
+		else $("#" + genid + "rg_3_" + ot).hide();
+		
+		if (max_perms[ot] && max_perms[ot].can_write) $("#" + genid + "rg_2_" + ot).show();
+		else $("#" + genid + "rg_2_" + ot).hide();
+	}
 }
 
 og.userPermissions.onUserSelect = function(genid, arguments) {
@@ -1165,8 +1218,12 @@ og.userPermissions.savePermissions = function(genid, member_id) {
 							var permissions = og.userPermissions.permissionInfo[genid].permissions[temp_pg_id];
 							if (permissions.length > 0) {
 								for (var i=0; i<permissions.length; i++) {
-									permissions[i].modified = false;
+									if (permissions[i]) permissions[i].modified = false;
 								}
+								
+								// modify the original permissions (making a copy)
+								var json = Ext.util.JSON.encode(permissions);
+								og.userPermissions.permissionInfo[genid].original_permissions[temp_pg_id] = Ext.util.JSON.decode(json);
 							}
 						}
 					}

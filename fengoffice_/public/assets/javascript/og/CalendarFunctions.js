@@ -215,6 +215,18 @@
 											els[i].innerHTML = data.ev_data.start + (cal_actual_view == 'viewweek' || cal_actual_view == 'viewweek5days' ? "" : " - " + data.ev_data.end);												
 										}
 									}
+									
+									var color_divs = $("." + div_id + "_colors");
+									
+									var event_offset = $("#" + div_id).offset()
+									var total_w = $("#" + div_id).outerWidth();
+									var idx = 0;
+									while (idx < color_divs.length) {
+										var color_div = color_divs[idx];
+										var color_div_left = event_offset.left + idx * (total_w / color_divs.length);
+										$(color_div).offset({top: event_offset.top, left: color_div_left});
+										idx++;
+									}
 								}
 							}
 						});
@@ -283,6 +295,7 @@
 				callback: function(success, data) {
 					ev_data = data.ev_data;
 					if (ev_data) updateTip(div_id, ev_data.subject, ev_data.start + " - " + ev_data.end);
+					$("." + div_id + "_colors").height($("#" + div_id).outerHeight()+'px');
 				}
 			});
 		});

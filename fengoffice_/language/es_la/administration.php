@@ -217,6 +217,9 @@
 	'user config option name breadcrumb_member_count' => 'Cantidad de breadcrumbs a mostrar cuando se listan los objetos',
 	'user config option name attach_to_notification' => 'Cuando se trate de un documento, adjuntar el mismo a la notificación enviada',
 		
+	'user config option name show_multiple_color_events' => 'Mostrar eventos en todos sus colores',
+	'user config option desc show_multiple_color_events' => 'Si un evento está clasificado en más de un espacio, cliente, etc. entonces se van a mostrar los colores de cada uno de ellos en la pestaña calendario.',
+		
 	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
 
     'config option name days_on_trash' => 'Días en la papelera',

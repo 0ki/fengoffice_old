@@ -1896,6 +1896,24 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		return $color;
 	}
 	
+	function getObjectColors($default = null) {
+		$colors = array();
+	
+		$members = $this->getMembers();
+		foreach ($members as $member) {
+			if ($member->getDimension()->getIsManageable()) {
+				$color = $member->getColor() > 0 ? $member->getColor() : (is_numeric($default) ? $default : 1);
+				$colors[] = $color;
+			}
+		}
+		
+		if (count($colors) == 0) {
+			$colors[] = is_null($default) || !is_numeric($default) ? 1 : $default;
+		}
+	
+		return $colors;
+	}
+	
 	function canAddTimeslot($user) {
 		return can_add_timeslots($user, $this->getMembers());
 	}

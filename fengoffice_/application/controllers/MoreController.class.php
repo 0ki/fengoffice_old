@@ -88,7 +88,7 @@ class MoreController extends ApplicationController {
 			);
 			$other_modules[] = $gantt_info;
 		}
-		
+/*		
 		// member_custom_properties
 		$member_custom_properties_plugin = Plugins::instance()->findOne(array('conditions' => "name='member_custom_properties'"));
 		if ($member_custom_properties_plugin instanceof Plugin) {
@@ -101,7 +101,7 @@ class MoreController extends ApplicationController {
 			);
 			$other_modules[] = $member_custom_properties_plugin;
 		}
-
+*/
 		
 		
 /*		

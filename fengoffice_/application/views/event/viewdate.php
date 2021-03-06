@@ -362,9 +362,13 @@ $genid = gen_id();
 												$event_id = $event->getId();
 												$subject = clean($event->getObjectName());
 
-												$ws_color = $event->getObjectColor($event instanceof ProjectEvent ? 1 : 12);
-											
-												cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+												$ws_colors = $event->getObjectColors($event instanceof ProjectEvent ? 1 : 12);
+												$all_event_colors = array();
+												foreach ($ws_colors as $ws_color) {
+													cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+													$all_event_colors[$ws_color] = $ws_class;
+													if (!user_config_option('show_multiple_color_events')) break;
+												}
 												
 												$hr_start = $event_start->getHour();
 												$min_start = $event_start->getMinute();
@@ -495,10 +499,23 @@ $genid = gen_id();
 													addTip('d_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getObjectName())) ?>, <?php echo json_encode($tipBody); ?>);
 												</script>
 												
+<?php
+				$all_event_colors = array_reverse($all_event_colors);
+				$color_left = $left;
+				$color_idx = 0;
+				foreach ($all_event_colors as $color => $color_class) {
+					$color_width = $width / count($all_event_colors);
+					$color_left = $left + $color_width * $color_idx;
+					$color_idx++;
+?>
+						<div id="d_ev_div_<?php echo $event->getId() . $id_suffix?>_colors_<?php echo $color_idx?>" class="chip <?php echo $color_class ?> d_ev_div_<?php echo $event->getId() . $id_suffix?>_colors"
+						style="position: absolute; top: <?php echo $top?>px; left: <?php echo $color_left?>%; width: <?php echo $color_width?>%;height:<?php echo $height ?>px;z-index:100;"></div>
+<?php 			} ?>
+												
 												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;height: <?php echo $height ?>px;"  onclick="og.disableEventPropagation(event)">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>;"></div>
-													<div id="inner_d_ev_div_<?php echo $event->getId()?>" class="chipbody edit og-wsname-color-<?php echo  $ws_color?>" style="height: <?php echo $height ?>px;">
+													<div id="inner_d_ev_div_<?php echo $event->getId()?>" class="chipbody edit" style="height: <?php echo $height ?>px;">
 													<div style="overflow:hidden;height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
 														<table style="width:100%;"><tr><td>
 														<?php if ($event instanceof ProjectEvent) { ?>

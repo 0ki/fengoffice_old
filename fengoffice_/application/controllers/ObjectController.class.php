@@ -1283,10 +1283,8 @@ class ObjectController extends ApplicationController {
 		
 		$object_type = ObjectTypes::findById($obj->getObjectTypeId());
 		if($object_type->getType() == 'dimension_object'){
-			Logger::log(print_r('entro',true));//$hola
 			ajx_current("empty");
 		}elseif($object_type->getType() == 'dimension_group'){
-			Logger::log(print_r('entro',true));//$hola
 			ajx_current("empty");
 		}else{
 			redirect_to($obj->getObjectUrl(),true);				

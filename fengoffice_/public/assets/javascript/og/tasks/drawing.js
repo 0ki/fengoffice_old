@@ -1021,9 +1021,13 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	//get template for the row
-	var source = $("#task-list-row-template").html(); 
-	//compile the template
-	var template = Handlebars.compile(source);
+	if(typeof ogTasks.task_list_row_template == "undefined"){
+		var source = $("#task-list-row-template").html(); 
+		//compile the template
+		var template = Handlebars.compile(source);
+		ogTasks.task_list_row_template = template;		
+	}
+	
 	
 	//template data
 	var data = {
@@ -1060,7 +1064,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	//instantiate the template
-	var html = template(data);
+	var html = ogTasks.task_list_row_template(data);
 	
 	sb.append(html);
 	return sb.toString();

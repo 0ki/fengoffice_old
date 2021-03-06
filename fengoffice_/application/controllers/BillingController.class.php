@@ -5,7 +5,7 @@ class BillingController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-		ajx_set_panel("administration");
+		//ajx_set_panel("administration");
 
 		// Access permissios
 		if(!logged_user()->isCompanyAdmin(owner_company())) {
@@ -27,6 +27,11 @@ class BillingController extends ApplicationController {
 		$billingCategory = new BillingCategory();
 		$billing_data = array_var($_POST, 'billing');
 		if (!is_array($billing_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$billing_data = array(
 				'name' => '',
 				'description' => '',
@@ -41,7 +46,11 @@ class BillingController extends ApplicationController {
 				$billingCategory->save();
 				DB::commit();
 				flash_success(lang("success add billing category"));
-				ajx_current("back");
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				} else {
+					ajx_current("back");
+				}
 			} catch (Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -71,6 +80,11 @@ class BillingController extends ApplicationController {
 		
 		$billing_data = array_var($_POST, 'billing');
 		if (!is_array($billing_data)) {
+			// set layout for modal form
+			if (array_var($_REQUEST, 'modal')) {
+				$this->setLayout("json");
+				tpl_assign('modal', true);
+			}
 			$billing_data = array(
 				'name' => $billingCategory->getName(),
 				'description' => $billingCategory->getDescription(),
@@ -84,7 +98,11 @@ class BillingController extends ApplicationController {
 				$billingCategory->save();
 				DB::commit();
 				flash_success(lang("success edit billing category"));
-				ajx_current("back");
+				if (array_var($_REQUEST, 'modal')) {
+					evt_add("reload current panel");
+				} else {
+					ajx_current("back");
+				}
 			} catch (Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());

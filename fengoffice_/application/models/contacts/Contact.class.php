@@ -1429,7 +1429,7 @@ class Contact extends BaseContact {
     
     
     function getArrayInfo() {
-    	$info = array('id' => $this->getId(), 'name' => $this->getObjectName(), 'cid' => $this->getCompanyId(), 'img_url' => $this->getPictureUrl());
+    	$info = array('id' => $this->getId(), 'name' => $this->getObjectName(), 'cid' => $this->getCompanyId(), 'img_url' => $this->getPictureUrl(), 'role' => $this->getUserType());
     	if ($this->getId() == logged_user()->getId()) $info['isCurrent'] = 1;
     	return $info;
     }
@@ -1495,7 +1495,7 @@ class Contact extends BaseContact {
 		}
 		@unlink($temp_file);
 
-		return $result;
+		return $public_fileId;
 	} // setPicture
 	
 	

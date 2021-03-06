@@ -467,7 +467,7 @@ class ContactController extends ApplicationController {
 			if(user_config_option("viewCompaniesChecked")){
 				$extra_conditions = ' AND `is_company` = 1 ';
 				if(user_config_option("viewUsersChecked")){
-					$extra_conditions = ' AND `is_company` = 1  OR `user_type` != 0 ';
+					$extra_conditions = ' AND (`is_company` = 1  OR `user_type` != 0) ';
 				}
 			}else{
 				$extra_conditions.= ' AND `user_type` != 0  ';
@@ -1604,8 +1604,10 @@ class ContactController extends ApplicationController {
 				$redirect_to = $contact->getUpdatePictureUrl();
 			} // if
 			tpl_assign('redirect_to', $redirect_to);
+			$is_new = false;
 		} else {
 			$contact = new Contact();
+			$is_new = true;
 		}
 		
 		$picture = array_var($_FILES, 'new_picture');
@@ -1664,12 +1666,17 @@ class ContactController extends ApplicationController {
 						$image_path = process_uploaded_cropped_picture_file($picture, $crop_data);
 					}
 				} else {
-					$image_path = $picture['tmp_name'];;
-				}
-				if(!$contact->setPicture($image_path, 'image/png')) {
-					throw new InvalidUploadError($picture);
+					$image_path = $picture['tmp_name'];
 				}
 				
+				if ($is_new) {
+					$file_id = $contact->setPicture($image_path, 'image/png', null, null, false);
+					$_SESSION['new_contact_picture'] = $file_id;
+				} else {
+					if(!$contact->setPicture($image_path, 'image/png')) {
+						throw new InvalidUploadError($picture);
+					}
+				}
 				
 				if (array_var($_REQUEST, 'reload_picture')) {
 					evt_add('reload user picture', array('contact_id' => $contact->getId(), 'url' => $contact->getPictureUrl(), 'el_id' => array_var($_REQUEST, 'reload_picture'),
@@ -2101,11 +2108,31 @@ class ContactController extends ApplicationController {
 				}
 				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 			}
-				
+			
+			// export the same type of contact objects that are enabled in the contacts tab.
+			$extra_conditions = "";
+			if(!user_config_option("viewCompaniesChecked")){
+				$extra_conditions = '  `is_company` = 0 ';
+			}
+			if(!user_config_option("viewContactsChecked")){
+				if(user_config_option("viewCompaniesChecked")){
+					$extra_conditions = '  `is_company` = 1 ';
+					if(user_config_option("viewUsersChecked")){
+						$extra_conditions = '  (`is_company` = 1  OR `user_type` != 0) ';
+					}
+				}else{
+					$extra_conditions.= ($extra_conditions=="" ? "" : " AND") . ' `user_type` != 0  ';
+				}
+			}
+			if(!user_config_option("viewUsersChecked")){
+				$extra_conditions.= ($extra_conditions=="" ? "" : " AND") . ' `user_type` < 1 ';
+			}
+			// --
+			
 			$filename = rand().'.tmp';
 			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
 			fwrite($handle, $titles);
-			$conditions = '';
+			$conditions = $extra_conditions;
 			$ids_sql = "";
 			if (!$export_all) {
 				$ids_sql = ($ids)? " AND id IN (".$ids.") " : "";
@@ -3099,6 +3126,10 @@ class ContactController extends ApplicationController {
 			try {
 				Contacts::validate($company_data); 
 				DB::beginWork();
+				if (isset($_SESSION['new_contact_picture']) && $_SESSION['new_contact_picture']) {
+					$company->setPictureFile($_SESSION['new_contact_picture']);
+					$_SESSION['new_contact_picture'] = null;
+				}
 				$company->save();
 				
 				// save phones, addresses and webpages

@@ -31,7 +31,9 @@
 foreach($billing_categories as $billing) { 
 	$isAlt = !$isAlt; ?>
   <tr class="<?php echo $isAlt? 'altRow' : ''?>">
-    <td style="padding:5px;padding-left:10px;padding-right:10px;font-weight:bold"><a class="internalLink" href="<?php echo $billing->getEditUrl() ?>" title="<?php echo lang('edit') ?>"><?php echo clean($billing->getName()) ?></a></td>
+    <td style="padding:5px;padding-left:10px;padding-right:10px;font-weight:bold">
+    	<a class="internalLink" href="javascript:og.render_modal_form('', {c:'billing', a:'edit', params: {id:<?php echo $billing->getId() ?>}});" title="<?php echo lang('edit') ?>"><?php echo clean($billing->getName()) ?></a>
+    </td>
     <td style="text-align: center;padding:5px;padding-left:10px;padding-right:10px;"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo clean($billing->getDefaultValue()) ?></td>
     <td style="padding:5px;padding-left:10px;padding-right:10px;"><?php echo clean($billing->getDescription()) ?></td>
 <?php 
@@ -60,7 +62,7 @@ foreach($billing_categories as $billing) {
 	echo lang('no billing categories desc') . '<br/>';
 } // if ?>
 <div style="margin-top:10px">
-	<a class="internalLink coViewAction ico-add" href="<?php echo get_url('billing', 'add') ?>"><?php echo lang('add billing category') ?></a>
+	<a class="internalLink coViewAction ico-add" href="javascript:og.render_modal_form('', {c:'billing', a:'add'});"><?php echo lang('add billing category') ?></a>
 </div>
 <?php if($isBillingEnabled) { ?>
 <div style="margin-top:10px">

@@ -667,7 +667,8 @@
 						}
 						$mem_pgs = array();
 						if (is_array($tmp_ids) && count($tmp_ids)) {
-							$pgs = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id AND member_id IN (".implode(',',$tmp_ids).")");
+							$pgs = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id AND member_id IN (".implode(',',$tmp_ids).")
+									AND object_type_id IN (SELECT ot.id FROM ".TABLE_PREFIX."object_types ot WHERE ot.type IN ('content_object','located'))");
 							if(is_array($pgs)){
 								foreach ($pgs as $p) {
 									if (!isset($mem_pgs[$p['member_id']])) $mem_pgs[$p['member_id']] = array();
@@ -1063,6 +1064,16 @@
 		
 		if ($fire_hook) {
 			Hook::fire('after_save_contact_permissions', $pg_id, $pg_id);
+		}
+		
+		// remove contact object from members where permissions were deleted
+		$user = Contacts::findOne(array('conditions' => 'permission_group_id='.$pg_id));
+		if ($user instanceof Contact) {
+			$to_remove = array();
+			foreach ($all_perm_deleted as $m_id => $must_remove) {
+				if ($must_remove) $to_remove[] = $m_id;
+			}
+			ObjectMembers::removeObjectFromMembers($user, logged_user(), null, $to_remove);
 		}
 	}
 	

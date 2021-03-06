@@ -330,6 +330,9 @@
   	'user config option name auto_classify_attachments' => 'Automatically classiffy email attachments when receiving emails',
   	'user config option desc auto_classify_attachments' => 'If enabled the attachments will be classiffied with the email in the place defined in the account',
   	
+  	'user config option name show_multiple_color_events' => 'Show multiple color events in calendar tab',
+  	'user config option desc show_multiple_color_events' => 'If enabled the events will be shown using the color of every member in which the event is related.',
+  	
   	'show context help always' => 'Always',
     'show context help never' => 'Never',
     'show context help until close' => 'Until close',

@@ -24,15 +24,33 @@ og.reloadCompanies = function ( context, genid ){
 
 
 og.addNewCompany = function(genid){
-	var show = document.getElementById(genid + 'new_company').style.display == 'none';
-	document.getElementById(genid + 'new_company').style.display = show ? 'block':'none';
-	document.getElementById(genid + 'existing_company').style.display = show? 'none': 'block';
-	document.getElementById(genid + 'hfIsNewCompany').value = show;
-	document.getElementById(genid + 'duplicateCompanyName').style.display = 'none';
-	document.getElementById(genid + 'profileFormNewCompanyName').value = '';
-	if (show) document.getElementById(genid + 'profileFormNewCompanyName').focus();
-	Ext.get(genid + 'submit1').dom.disabled = false;
-	Ext.get(genid + 'submit2').dom.disabled = false;
+
+	var name_el = document.getElementById(genid + 'profileFormNewCompanyName');
+	if (name_el) name_el.value = '';
+	
+	var el0 = document.getElementById(genid + 'new_company');
+	var show = el0 && el0.style.display == 'none';
+	
+	var el1 = document.getElementById(genid + 'new_company');
+	if (el1) el1.style.display = show ? 'block':'none';
+	
+	var el2 = document.getElementById(genid + 'existing_company');
+	if (el2) el2.style.display = show ? 'none': 'block';
+	
+	var el3 = document.getElementById(genid + 'hfIsNewCompany');
+	if (el3) el3.value = show;
+	
+	var el4 = document.getElementById(genid + 'duplicateCompanyName');
+	if (el4) el4.style.display = 'none';
+	
+	if (name_el && show) name_el.focus();
+	
+	var el5 = Ext.get(genid + 'submit1');
+	if (el5) el5.dom.disabled = false;
+	
+	var el6 = Ext.get(genid + 'submit2');
+	if (el6) el6.dom.disabled = false;
+
 };
 
 og.checkNewCompanyName = function(genid) {

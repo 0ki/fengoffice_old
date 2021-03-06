@@ -160,10 +160,18 @@ og.changeSignature = function(genid, acc_id) {
 	if (setting_autoreply || Ext.getDom(genid + 'format_html').checked) {
 		var iname = genid + 'ckeditor';
 		var editor = og.getCkEditorInstance(iname);
-		html = editor.getData();
+		var html = editor.getData();
+		
+		var original_content = "";
+		var pos = html.indexOf('<div id="original_mail">');
+		if (pos > -1) {
+			original_content = html.substring(pos);
+		}
+		
 		html = html.replace(/\n/g, '');
-		html = html.replace(/<div class="fengoffice_signature">.*<\/div>/i, new_htmlsig);
+		html = html.replace(/<div class="fengoffice_signature">.*<\/div>/i, new_htmlsig) + original_content;
 		editor.setData(html);
+		
 	} else {
 		if (Ext.getDom('mailBody').value.indexOf('--\n' + sig.actualTextSignature) != -1) {
 			Ext.getDom('mailBody').value = Ext.getDom('mailBody').value.replace('--\n' + sig.actualTextSignature, '--\n' + new_textsig);

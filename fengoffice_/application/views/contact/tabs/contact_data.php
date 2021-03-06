@@ -140,5 +140,9 @@ $(document).ready(function() {
 	<?php if (count(array_var($contact_data, 'all_phones')) == 0) { ?>
 	og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', def_phone_type);
 	<?php } ?>
+
+	$('#<?php echo $genid?>clientFormAssistantNumber').change(function(){
+		$("input[name='company[email]']").val($(this).val());
+	});
 });
 </script>

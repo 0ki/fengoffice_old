@@ -165,6 +165,16 @@
 		Logger::log("Error saving permissions (4): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	
+	// remove contact object from members where permissions were deleted
+	$user = Contacts::findOne(array('conditions' => 'permission_group_id='.$pg_id));
+	if ($user instanceof Contact) {
+		$to_remove = array();
+		foreach ($all_perm_deleted as $m_id => $must_remove) {
+			if ($must_remove) $to_remove[] = $m_id;
+		}
+		ObjectMembers::removeObjectFromMembers($user, logged_user(), null, $to_remove);
+	}
+	
 	@unlink($permissions_filename);
 	@unlink($sys_permissions_filename);
 	@unlink($mod_permissions_filename);
