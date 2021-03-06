@@ -629,17 +629,6 @@ class TemplateController extends ApplicationController {
 			}
 			
 			$controller->add_to_members($copy, $object_members);
-			// copy linked objects
-			$copy->copyLinkedObjectsFrom($object);
-			// copy subtasks if applicable
-			if ($copy instanceof ProjectTask) {
-				$manager = $copy->manager();
-			} else if ($copy instanceof ProjectMilestone) {
-				$manager = $copy->manager();
-			}
-			
-			// copy custom properties
-			$copy->copyCustomPropertiesFrom($object);
 			
 			// set property values as defined in template
 			instantiate_template_task_parameters($object, $copy, $parameterValues);
@@ -661,26 +650,7 @@ class TemplateController extends ApplicationController {
 					}
 				}
 			}
-			$obj_controller = new ObjectController();
-			$obj_controller->add_subscribers($copy);
 			
-			// copy reminders
-			$reminders = ObjectReminders::getByObject($object);
-			foreach ($reminders as $reminder) {
-				$copy_reminder = new ObjectReminder();
-				$copy_reminder->setContext($reminder->getContext());
-				$reminder_date = $copy->getColumnValue($reminder->getContext());
-				if ($reminder_date instanceof DateTimeValue) {
-					$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
-					$reminder_date->add('m', -$reminder->getMinutesBefore());
-				}
-				$copy_reminder->setDate($reminder_date);
-				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
-				$copy_reminder->setObject($copy);
-				$copy_reminder->setType($reminder->getType());
-				$copy_reminder->setUserId($reminder->getUserId());
-				$copy_reminder->save();
-			}
 		}
 
 		foreach ($copies as $c) {
@@ -733,12 +703,14 @@ class TemplateController extends ApplicationController {
 			$this->instantiate();
 		}else{
 			$id = get_id();
+			$member_id = get_id('member_id');
 			$parameters = TemplateParameters::getParametersByTemplate($id);
 			$params = array();
 			foreach($parameters as $parameter){
 				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType(), 'default_value' => $parameter->getDefaultValue());
 			}
 			tpl_assign('id', $id);
+			tpl_assign('member_id', $member_id);
 			tpl_assign('parameters', $params);
 		}
 	}

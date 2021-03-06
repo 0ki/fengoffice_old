@@ -456,6 +456,9 @@ class TemplateMilestone extends BaseTemplateMilestone {
 		$new->setDueDate($this->getDueDate());
 		$new->setFromTemplateId($this->getTemplateId());
 		$new->setFromTemplateObjectId($this->getId());
+		
+		copy_additional_object_data($this, $new);
+		
 		return $new;
 	}
 	
@@ -505,6 +508,8 @@ class TemplateMilestone extends BaseTemplateMilestone {
 			
 			}
 		}
+		
+		copy_additional_object_data($project_milestone, $new);
 		
 		return $new;
 	}

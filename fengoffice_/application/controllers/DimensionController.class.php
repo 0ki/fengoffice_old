@@ -113,7 +113,7 @@ class DimensionController extends ApplicationController {
 		}else{
 			$extra_conditions = "";
 		}
-        return $this->initial_list_dimension_members($dimension_id, $object_type_id,$allowed_member_type_ids, false, $extra_conditions);
+        return $this->initial_list_dimension_members($dimension_id,null, array($object_type_id), false, $extra_conditions);
 	}
 	
 	/**

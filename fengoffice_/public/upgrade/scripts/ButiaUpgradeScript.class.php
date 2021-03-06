@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2.1-beta
+ * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2.1-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1.5.3');
-		$this->setVersionTo('3.2.1-beta');
+		$this->setVersionTo('3.2.1-rc');
 	} // __construct
 
 	function getCheckIsWritable() {

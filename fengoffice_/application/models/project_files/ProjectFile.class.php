@@ -737,7 +737,8 @@ class ProjectFile extends BaseProjectFile {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('name') || ($this->getFilename() == ".slim") || ($this->getFilename() == ".html")) {
+		$extension = get_file_extension(basename($this->getFilename()));
+		if(!$this->validatePresenceOf('name') || ($this->getFilename() == ".".$extension)) {
 			$errors[] = lang('filename required');
 		}
 		if ($this->getType() != ProjectFiles::TYPE_DOCUMENT){

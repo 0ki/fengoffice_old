@@ -29,17 +29,18 @@ if (count($members) == 1) {
 		$cp_name = $cp->getName();
 		$cp_values = MemberCustomPropertyValues::getMemberCustomPropertyValues($member->getId(), $cp->getId());
 		
-		$first = true;
-		foreach ($cp_values as $cp_val) {
-			if (!$first) {
-				$cp_html .= ", ";
-			} else {
-				$cp_html .= '<div class="cp-info"><span class="bold">'.$cp_name.': </span>';
+		if(is_array($cp_values) && count($cp_values) > 0){
+			$first = true;
+			$cp_html .= '<div class="cp-info"><span class="bold">'.$cp_name.': </span>';
+			foreach ($cp_values as $cp_val) {
+				if (!$first) {
+					$cp_html .= ", ";
+				} 
+				$first = false;
+				$cp_html .= $cp_val->format_value();
 			}
-			$first = false;
-			$cp_html .= $cp_val->format_value();
+			$cp_html .= '</div>';
 		}
-		if ($cp_html != "") $cp_html .= '</div>';
 	}
 	
 	if (trim($prop_html . $cp_html) != "") {

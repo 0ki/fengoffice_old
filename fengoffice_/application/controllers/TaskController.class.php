@@ -1318,7 +1318,7 @@ class TaskController extends ApplicationController {
 		
 		//no date EMPTY_DATETIME
 		$group_17 = array();
-		$group_17['group_name'] = lang('uncompleted tasks');
+		$group_17['group_name'] = lang('unknown');
 		$group_17['group_order'] = 17;
 		$group_17['id'] = 'group_undefined';
 		$group_17['conditions'] = $date_field." = '".EMPTY_DATETIME."'";

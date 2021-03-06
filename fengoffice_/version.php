@@ -12,6 +12,6 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  return '3.2.1-beta';
+  return '3.2.1-rc';
   
 ?>

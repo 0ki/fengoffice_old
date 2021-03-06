@@ -137,7 +137,11 @@ Sound.prototype.call = function(method) {
 	for (var i=1; i < arguments.length; i++) {
 		args.push(arguments[i]);
 	}
-	return Sound.getMovie(this.id).proxyMethods(method, args);
+	var movie = Sound.getMovie(this.id);
+	if (movie && typeof(movie.proxyMethods)=='function') {
+		return movie.proxyMethods(method, args);
+	}
+	return null;
 };
 
 Sound.prototype.debug = function(value) {

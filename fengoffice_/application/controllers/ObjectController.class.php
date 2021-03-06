@@ -1951,7 +1951,7 @@ class ObjectController extends ApplicationController {
 				$members = $extra_member_ids;
 			}
 		}
-		if (isset($members) && is_array($members) && count($members) > 0) {
+		if (isset($members) && is_array($members) && count($members) > 0 && !(isset($template_id) || $template_id==0)) {
 			$sql_members = "
 				AND (EXISTS (SELECT om.object_id
 					FROM  ".TABLE_PREFIX."object_members om

@@ -269,7 +269,7 @@ class MailController extends ApplicationController {
                                 }
                                 
 				DB::commit();
-                                redirect_to('index.php?c=mail&a=init');
+				ajx_current("back");
 				return;
 			} catch(Exception $e) {
 				DB::rollback();
@@ -1149,7 +1149,7 @@ class MailController extends ApplicationController {
 		if ($email instanceof MailContent) {
 			$object_controler = new ObjectController();
 			$object_controler->do_mark_as_read_unread_objects(array($email->getId()), false);
-			redirect_to(get_url('mail', 'init'));
+			ajx_current("back");
 		} else {
 			flash_error(lang("email dnx"));
 		}
@@ -2003,6 +2003,7 @@ class MailController extends ApplicationController {
 				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 				if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
+				$mailAccount->setServer(trim($mailAccount->getServer()));
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 				$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
 				$outbox_folder = array_var($_POST, 'outbox_select_box');
@@ -2251,6 +2252,7 @@ class MailController extends ApplicationController {
 					if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 					if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
 					$mailAccount->setFromAttributes($mailAccount_data);
+					$mailAccount->setServer(trim($mailAccount->getServer()));
 					$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
 					$mailAccount->setSmtpPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()));
 					$outbox_folder = array_var($_POST, 'outbox_select_box');
@@ -3094,10 +3096,10 @@ class MailController extends ApplicationController {
 	}
 
 	function fetch_imap_folders() {
-		$server = array_var($_GET, 'server');
+		$server = trim(array_var($_GET, 'server'));
 		$ssl = array_var($_GET, 'ssl') == "checked";
 		$port = array_var($_GET, 'port');
-		$email = array_var($_GET, 'email');
+		$email = trim(array_var($_GET, 'email'));
 		$pass = array_var($_GET, 'pass');
 		$genid = array_var($_GET, 'genid');
 		tpl_assign('genid', $genid);

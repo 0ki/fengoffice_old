@@ -342,11 +342,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			if (isReset) {
 				if (content.panel) content.panel.reset();
-			} else {//if (!isBack) {//if (isReload) {
-				if (!isBack || content.data != 'mails-containerpanel') {
-					
-					//if (content.panel) content.panel.load(); //FIXME Pepe
-					if (content.panel.data != "overview") content.panel.load(); //FIXME Pepe
+			} else {
+				if (content.panel.data != "overview") {
+					content.panel.load(); //FIXME Pepe
 				}
 			}
 

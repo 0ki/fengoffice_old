@@ -649,6 +649,8 @@ class FilesController extends ApplicationController {
 			if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 				FileRepository::deleteFile($revision->getRepositoryId());
 			} // if			
+			
+			flash_error($e->getMessage());
 		} // try
 		
 	} // add_file

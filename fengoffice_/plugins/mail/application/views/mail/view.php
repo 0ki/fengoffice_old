@@ -13,7 +13,7 @@ if (isset($email)){
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore', null, null, true);
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else {
-			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) {og.openLink('" . $email->getTrashUrl() . "'); og.closeView();}", 'ico-trash', null, null, true);
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) {og.openLink('" . $email->getTrashUrl() . "');}", 'ico-trash', null, null, true);
 		}
 	}
 	if ($email->canEdit(logged_user()) && !$email->isTrashed()){

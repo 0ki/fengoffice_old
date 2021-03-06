@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.1-beta
+	About Feng Office 3.2.1-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,18 @@
 	Changelog
 	=========
 	
+	Since 3.2.1-beta
+	----------------
+	bugfix: mobile client's list.
+	bugfix: uploading file with empty name.
+	bugfix: mail panel navigation history.
+	bugfix: when instantiating tasks from template in second step, subscribers are not copied changes: new function to centralize the copy of the subscribers, reminders, linked objs, members and custom props.
+	bugfix: lang unknown group on tasks list for dates groups.
+	bugfix: instantiate template parameters is not filtering by recently created member (when using member templates).
+	bugfix: member custom properties values close div on active feed.
+	bugfix: lang nl_nl contains enters inside the langs and that causes javascript to be broken.
+	bugfix: when adding/editing an email account, if a blank is after mail server address then cannot connect to mail server.
+		
 	Since 3.2
 	----------------
 	bugfix: feng1 upgrade

@@ -556,58 +556,14 @@ class TemplateTask extends BaseTemplateTask {
 			if ($new_task->getDueDate() instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
 		}
 		$new_task->save();
-	
-		if (is_array($this->getAllLinkedObjects())) {
-			foreach ($this->getAllLinkedObjects() as $lo) {
-				$new_task->linkObject($lo);
-			}
+		
+		// Copy members, linked_objects, custom_properties, subscribers, reminders and comments
+		copy_additional_object_data($this, $new_task);
+
+		// Ensure that assigned user is subscribed
+		if ($new_task->getAssignedTo() instanceof Contact) {
+			$new_task->subscribeUser($new_task->getAssignedTo());
 		}
-	
-		foreach ($this->getAllComments() as $com) {
-			$new_com = new Comment();
-			$new_com->setAuthorEmail($com->getAuthorEmail());
-			$new_com->setAuthorName($com->getAuthorName());
-			$new_com->setAuthorHomepage($com->getAuthorHomepage());
-			$new_com->setCreatedById($com->getCreatedById());
-			$new_com->setCreatedOn($com->getCreatedOn());
-			$new_com->setUpdatedById($com->getUpdatedById());
-			$new_com->setUpdatedOn($com->getUpdatedOn());
-			$new_com->setText($com->getText());
-			$new_com->setRelObjectId($new_task->getId());
-				
-			$new_com->save();
-		}
-	
-		$_POST['subscribers'] = array();
-		foreach ($this->getSubscribers() as $sub) {
-			$_POST['subscribers']["user_" . $sub->getId()] = "1";
-		}
-	
-		//$obj_controller = new ObjectController();
-		//$obj_controller->add_to_members($new_task, $this->getMemberIds());
-		//$obj_controller->add_subscribers($new_task);
-	
-		foreach($this->getCustomProperties() as $prop) {
-			$new_prop = new ObjectProperty();
-			$new_prop->setRelObjectId($new_task->getId());
-			$new_prop->setPropertyName($prop->getPropertyName());
-			$new_prop->setPropertyValue($prop->getPropertyValue());
-			$new_prop->save();
-		}
-	
-		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId());
-		foreach ($custom_props as $c_prop) {
-			$values = CustomPropertyValues::getCustomPropertyValues($this->getId(), $c_prop->getId());
-			if (is_array($values)) {
-				foreach ($values as $val) {
-					$cp = new CustomPropertyValue();
-					$cp->setObjectId($new_task->getId());
-					$cp->setCustomPropertyId($val->getCustomPropertyId());
-					$cp->setValue($val->getValue());
-					$cp->save();
-				}
-			}
-		}		
 		
 		return $new_task;
 	}
@@ -661,67 +617,14 @@ class TemplateTask extends BaseTemplateTask {
 			if ($new_task->getDueDate() instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
 		}
 		$new_task->save();
-	
-		//Link to the same LinkedObjects of the task
-		if (is_array($project_task->getAllLinkedObjects())) {
-			foreach ($project_task->getAllLinkedObjects() as $lo) {
-				$new_task->linkObject($lo);
-			}
+		
+		// Copy members, linked_objects, custom_properties, subscribers, reminders and comments
+		copy_additional_object_data($project_task, $new_task);
+		
+		// Ensure that assigned user is subscribed
+		if ($new_task->getAssignedTo() instanceof Contact) {
+			$new_task->subscribeUser($new_task->getAssignedTo());
 		}
-		
-		//Copy Subscribers
-		$_POST['subscribers'] = array();
-		foreach ($project_task->getSubscribers() as $sub) {
-			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
-		}	
-		$obj_controller = new ObjectController();		
-		$obj_controller->add_subscribers($new_task);
-	
-		/*
-		foreach($project_task->getCustomProperties() as $prop) {
-			$new_prop = new ObjectProperty();
-			$new_prop->setRelObjectId($new_task->getId());
-			$new_prop->setPropertyName($prop->getPropertyName());
-			$new_prop->setPropertyValue($prop->getPropertyValue());
-			$new_prop->save();
-		}*/
-	
-		//Copy Custom Properties
-		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType("TemplateTasks");
-		foreach ($custom_props as $c_prop) {
-			$values = CustomPropertyValues::getCustomPropertyValues($project_task->getId(), $c_prop->getId());
-			if (is_array($values)) {
-				foreach ($values as $val) {
-					$cp = new CustomPropertyValue();
-					$cp->setObjectId($new_task->getId());
-					$cp->setCustomPropertyId($val->getCustomPropertyId());
-					$cp->setValue($val->getValue());
-					$cp->save();
-				}
-			}
-		}
-		
-		// Copy Reminders
-		/*$reminders = ObjectReminders::getByObject($project_task);
-		foreach($reminders as $reminder) {
-			$copy_reminder = new ObjectReminder();
-			$copy_reminder->setContext($reminder->getContext());
-			$reminder_date = $new_task->getColumnValue($reminder->getContext());
-			if ($reminder_date instanceof DateTimeValue) {
-				$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
-				$reminder_date->add('m', -$reminder->getMinutesBefore());
-			}
-			$copy_reminder->setDate($reminder_date);
-			$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
-			$copy_reminder->setObject($new_task);
-			$copy_reminder->setType($reminder->getType());
-			$copy_reminder->setUserId($reminder->getUserId());
-			$copy_reminder->save();
-		}*/
-		
-		//Copy Members
-		$members = $project_task->getMemberIds();
-		$obj_controller->add_to_members($new_task, $members);
 		
 		return $new_task;
 	}

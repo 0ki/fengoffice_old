@@ -3075,7 +3075,7 @@ og.reload_active_tab = function() {
 }
 
 og.removeFileExtension = function(filename) {
-	if (filename.lastIndexOf('.') >= 0) {
+	if (filename.lastIndexOf('.') > 0) {
 		return filename.substring(0, filename.lastIndexOf('.'));
 	} else {
 		return filename;

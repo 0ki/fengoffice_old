@@ -39,7 +39,15 @@ if (array_var($_REQUEST, 'modal')) {
 					<?php }else{ ?>
 						<select name="<?php echo 'parameterValues['.$parameter['name'].']'; ?>">
 						<?php
-							$companies  = allowed_users_to_assign(active_context());
+							$context = active_context();
+							if (isset($member_id) && $member_id > 0) {
+								// filter by context passed by parameter
+								$additional_member = Members::findById($member_id);
+								if ($additional_member instanceof Member) {
+									$context = array($additional_member);
+								}
+							}
+							$companies  = allowed_users_to_assign($context);
 							foreach ($companies as $c) {
 								if (config_option('can_assign_tasks_to_companies')) { ?>
 								<option value="<?php echo $c['id']; ?>"> <?php echo $c['name']; ?></option>

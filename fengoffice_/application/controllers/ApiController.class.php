@@ -112,7 +112,7 @@ class ApiController extends ApplicationController {
         }
         $ids = array();
         $dimensionController = new DimensionController();
-        foreach ($dimensionController->initial_list_dimension_members($dimension_id, $typeId) as $member) {
+        foreach ($dimensionController->initial_list_dimension_members($dimension_id, null, array($typeId)) as $member) {
             $ids [] = $member['object_id'];
         }
 

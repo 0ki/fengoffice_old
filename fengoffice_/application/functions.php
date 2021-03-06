@@ -2168,6 +2168,119 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 		
 	}
 	
+	// Ensure that assigned user is subscribed
+	if ($copy->getAssignedTo() instanceof Contact) {
+		$copy->subscribeUser($copy->getAssignedTo());
+	}
+	
 	$ret = null;
 	Hook::fire('after_template_object_param_instantiation', array('template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy, 'parameter_values' => $parameterValues), $ret);
+}
+
+
+
+/**
+ * Copies related data from an object to another (members, linked_objects, custom_properties, subscribers, reminders and comments)
+ * @param $object: Original object to copy data
+ * @param $copy: Object to be modified with the data of the $orignal object
+ * @param $options: set which type of data will not be copied
+ */
+function copy_additional_object_data($object, &$copy, $options=array()) {
+	if (!$object instanceof ContentDataObject || !$copy instanceof ContentDataObject) {
+		// if not valid objects return
+		return;
+	}
+
+	$copy_members = !array_var($options, 'dont_copy_members');
+	$copy_linked_objects = !array_var($options, 'dont_copy_linked_objects');
+	$copy_custom_properties = !array_var($options, 'dont_copy_custom_properties');
+	$copy_subscribers = !array_var($options, 'dont_copy_subscribers');
+	$copy_reminders = !array_var($options, 'dont_copy_reminders');
+	$copy_comments = !array_var($options, 'dont_copy_comments');
+
+	$controller = new ObjectController();
+
+	// copy members
+	if ($copy_members) {
+		$object_members = $object->getMemberIds();
+		$controller->add_to_members($copy, $object_members);
+	}
+
+	// copy linked objects
+	if ($copy_linked_objects) {
+		$copy->copyLinkedObjectsFrom($object);
+	}
+
+	// copy custom properties
+	if ($copy_custom_properties) {
+		// custom properties defined in "settings"
+		$cp_object_type_id = $object->getObjectTypeId();
+		if ($object instanceof TemplateTask || $object instanceof TemplateMilestone) {
+			$cp_object_type_id = $copy->getObjectTypeId();
+		}
+		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType($cp_object_type_id);
+		foreach ($custom_props as $c_prop) {
+			$values = CustomPropertyValues::getCustomPropertyValues($object->getId(), $c_prop->getId());
+			if (is_array($values)) {
+				foreach ($values as $val) {
+					$cp = new CustomPropertyValue();
+					$cp->setObjectId($copy->getId());
+					$cp->setCustomPropertyId($val->getCustomPropertyId());
+					$cp->setValue($val->getValue());
+					$cp->save();
+				}
+			}
+		}
+
+		// object properties (key-value)
+		$copy->copyCustomPropertiesFrom($object);
+	}
+
+	// copy subscribers
+	if ($copy_subscribers) {
+		$subscribers_array = array();
+		foreach ($object->getSubscriberIds() as $user_id) {
+			$subscribers_array["user_" . $user_id] = "1";
+		}
+		$controller->add_subscribers($copy, $subscribers_array);
+	}
+
+	// copy reminders
+	if ($copy_reminders) {
+		$reminders = ObjectReminders::getByObject($object);
+		foreach ($reminders as $reminder) {
+			$copy_reminder = new ObjectReminder();
+			$copy_reminder->setContext($reminder->getContext());
+			$reminder_date = $copy->getColumnValue($reminder->getContext());
+			if ($reminder_date instanceof DateTimeValue) {
+				$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
+				$reminder_date->add('m', -$reminder->getMinutesBefore());
+			}
+			$copy_reminder->setDate($reminder_date);
+			$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+			$copy_reminder->setObject($copy);
+			$copy_reminder->setType($reminder->getType());
+			$copy_reminder->setUserId($reminder->getUserId());
+			$copy_reminder->save();
+		}
+	}
+
+	// copy comments
+	if ($copy_comments) {
+		foreach ($object->getAllComments() as $com) {
+			$new_com = new Comment();
+			$new_com->setAuthorEmail($com->getAuthorEmail());
+			$new_com->setAuthorName($com->getAuthorName());
+			$new_com->setAuthorHomepage($com->getAuthorHomepage());
+			$new_com->setCreatedById($com->getCreatedById());
+			$new_com->setCreatedOn($com->getCreatedOn());
+			$new_com->setUpdatedById($com->getUpdatedById());
+			$new_com->setUpdatedOn($com->getUpdatedOn());
+			$new_com->setText($com->getText());
+			$new_com->setRelObjectId($copy->getId());
+
+			$new_com->save();
+		}
+	}
+
 }
