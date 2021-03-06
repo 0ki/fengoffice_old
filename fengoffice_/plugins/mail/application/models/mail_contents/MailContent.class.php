@@ -755,7 +755,7 @@ class MailContent extends BaseMailContent {
 	 * @return array
 	 */
 	function getComments() {
-		return Comments::getCommentsByObjectIds(implode(',',$this->getConversationMailIds(true)), 'MailContents');
+		return Comments::getCommentsByObjectIds(implode(',',$this->getConversationMailIds(true)));
 	} // getComments
 	
 	

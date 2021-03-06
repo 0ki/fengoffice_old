@@ -1317,7 +1317,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	function addToMembers($members_array, $remove_old_comment_members = false){
 		ObjectMembers::addObjectToMembers($this->getId(),$members_array);
-		if ($this instanceof ProjectFile) {
+		if (Plugins::instance()->isActivePlugin('mail') && $this instanceof MailContent) {
 			$inline_images = ProjectFiles::findAll(array("conditions" => "mail_id = ".$this->getId()));
 			foreach ($inline_images as $inline_img) {
 				$inline_img->addToMembers($members_array);

@@ -449,6 +449,7 @@
   	'can_manage_dimensions'=>'Puede administrar la configuración de dimensiones',
 	'can_manage_dimension_members'=>'Puede agregar o editar miembros de dimensiones',
 	'can_see_assigned_to_other_tasks'=>'Puede ver tareas asignadas a otros usuarios',
+  	'can_update_other_users_invitations' => 'Puede modificar el estado de las invitaciones a eventos de otros usuarios',
 
 	'can_manage_security description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar usuarios y grupos y modificar sus permisos.',
 	'can_manage_configuration description' => 'Si este permiso está marcado el usuario podrá modificar la Configuración de la aplicación, Eventos de Cron, Actualizar la aplicación, cambiar el logo mostrado en la esquina superior izquierda y los colores.',
@@ -459,6 +460,7 @@
 	'can_manage_dimension_members description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre los miembros de dimensiones. Podrá crear, editar y eliminar miembros. En la práctica, los miembros pueden ser espacios de trabajo, clientes, proyectos, etc.',
 	'can_manage_tasks description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre tareas. Podrá asignar tareas a otros y completarlas.',
 	'can_see_assigned_to_other_tasks description' => 'Si este permiso está marcado el usuario podrá ver tareas asignadas a otros usuarios.',
+  	'can_update_other_users_invitations description' => 'Si este permiso está marcado el usuario podrá especificar si otros usuarios concurren o no a determinado evento.',
 
 	'member custom properties' => 'Propiedades personalizadas para miembros de dimensiones.',
 	'select member type' => 'Seleccione tipo',

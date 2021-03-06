@@ -34,7 +34,7 @@
 					</script>
 					<?php if ($comment->getUpdatedBy() instanceof Contact) { ?>
 					<div class="desc date-container"><?php 
-						echo lang('by').' '.lang('user date', $comment->getUpdatedBy()->getCardUserUrl(), clean($comment->getUpdatedByDisplayName()), strtolower(friendly_date($comment->getUpdatedOn())), clean($comment->getUpdatedByDisplayName()));
+						echo lang('by').' '.lang('user date', $comment->getUpdatedBy()->getCardUserUrl(), clean($comment->getUpdatedByDisplayName()), lcfirst(friendly_date($comment->getUpdatedOn())), clean($comment->getUpdatedByDisplayName()));
 					?></div>
 					<?php } ?>
 				</li>

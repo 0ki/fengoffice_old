@@ -145,16 +145,18 @@ if(count($cps) > 0){
 					echo select_box('aux_'.$name, $options, array('tabindex' => $startTi + $ti, 'style' => 'min-width:140px',
 						'id' => $genid . 'cp' . $customProp->getId(), 'onchange' => "og.cp_list_selected(this, '$genid', '$name', $cp_id, $is_mult);"));
 					
+					$display = $customProp->getIsMultipleValues() ? "" : "display:none;";
+					
 					echo '<div id="'.$genid.'cp_list_selected'.$cp_id.'">';
 					$i = 0;
 					foreach ($toSelect as $value) {
-						echo '<div style="width:200px;">'.$value
+						echo '<div style="width:200px;'.$display.'">'.$value
 							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
 							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($value).'" /></div>';
 						$i++;
 					}
 					if (count($toSelect) == 0 && $default_value != '') {
-						echo '<div style="width:200px;">'.$default_value
+						echo '<div style="width:200px;'.$display.'">'.$default_value
 							.'&nbsp;<a href="#" onclick="og.cp_list_remove(this, \''.$genid.'\', '.$cp_id.');" class="db-ico coViewAction ico-delete" title="'.lang('remove').'">&nbsp;</a>'
 							.'<input type="hidden" name="'.$name.'['.$i.']" value="'.clean($default_value).'" /></div>';
 						$i++;

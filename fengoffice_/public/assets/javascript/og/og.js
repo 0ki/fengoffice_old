@@ -2657,7 +2657,7 @@ og.expandMenuPanel = function(options) {
 
 og.addNodesToTree = function(tree_id) {
 	var tree = Ext.getCmp(tree_id);
-	var o = og.tmp_members_to_add[tree.dimensionId].pop();
+	var o = og.tmp_members_to_add[tree_id].pop();
 	
 	if (o) {
 		for (i=0; i<o.length; i++) {

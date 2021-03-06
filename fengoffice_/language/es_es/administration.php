@@ -537,6 +537,8 @@
 	'can_manage_dimension_members description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre los miembros de dimensiones. Podrá crear, editar y eliminar miembros. En la práctica, los miembros pueden ser espacios de trabajo, clientes, proyectos, etc.',
 	'can_manage_tasks description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre tareas. Podrá asignar tareas a otros y completarlas.',
 	'can_see_assigned_to_other_tasks description' => 'Si este permiso está marcado el usuario podrá ver tareas asignadas a otros usuarios.',
+  	'can_update_other_users_invitations' => 'Puede modificar el estado de las invitaciones a eventos de otros usuarios',
+  	'can_update_other_users_invitations description' => 'Si este permiso está marcado el usuario podrá especificar si otros usuarios concurren o no a determinado evento.',
 	'can_task_assignee' => 'Puede asignarsele tareas',
 	'can_manage_billing' => 'Puede manejar facturación',
 	'can_manage_billing description'=>'Si este permiso está marcado el usuario podrá modificar las configuraciones de facturación.',

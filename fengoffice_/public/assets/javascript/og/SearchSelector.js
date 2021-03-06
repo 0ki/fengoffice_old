@@ -310,7 +310,9 @@ ogSearchSelector.onItemPermissionGroupSelect = function (genid, container_id, ig
 		$("#"+container_id+"-input").val('');
 		
 	} else if (item.value == "more") {
-		
+		if(item.label == "more"){
+			item.label = "";
+		}
 		$("#"+container_id+"-input").val(item.label);
 		
 		//increase the limit

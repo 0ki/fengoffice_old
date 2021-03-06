@@ -656,6 +656,7 @@ class DimensionController extends ApplicationController {
 					"id" => $m->getId(),
 					"name" => $m->getName(),
 					"path" => $path,
+					"depth" => $m->getDepth(),
 					"to_show" => $m->getName() . ($path != "" ? " ($path)" : ""),
 					"dim" => $m->getDimensionId(),
 					"ico" => $m->getIconClass(),
@@ -732,7 +733,7 @@ class DimensionController extends ApplicationController {
 		// re-sort by parent and name
 		$tmp_members = array();
 		foreach ($members as $m) {
-			$tmp_members[str_pad(array_var($m, 'parent'), 20, "0", STR_PAD_LEFT) . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
+			$tmp_members[str_pad(array_var($m, 'depth'), 20, "0", STR_PAD_LEFT) . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
 		}
 		ksort($tmp_members, SORT_STRING);
 		$members = $tmp_members;		

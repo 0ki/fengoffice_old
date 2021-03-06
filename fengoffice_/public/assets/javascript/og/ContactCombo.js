@@ -84,6 +84,7 @@ og.renderContactSelector = function(config) {
 	var selected = config.selected;
 	var selected_name = config.selected_name;
 	var onchange_fn = config.onchange_fn;
+	var is_multiple = config.is_multiple;
 	
 	var url_params = null;
 	if (!isNaN(selected) && selected > 0){
@@ -169,7 +170,7 @@ og.renderContactSelector = function(config) {
     		            this.fireEvent('select', combo, r, 0);
     		            
     		            // set selected value
-    		            og.selectContactFromCombo(obj.object_id, obj.name, combo, genid+render_to, genid+id, onchange_fn);
+    		            og.selectContactFromCombo(obj.object_id, obj.name, combo, genid+render_to, genid+id, onchange_fn, is_multiple);
     				}
     			}
     		}, combo, {
@@ -179,7 +180,7 @@ og.renderContactSelector = function(config) {
     			selected_type: 'contact'
     		});
 		} else {
-			og.selectContactFromCombo(record.data.id, record.data.name, combo, genid+render_to, genid+id, onchange_fn);
+			og.selectContactFromCombo(record.data.id, record.data.name, combo, genid+render_to, genid+id, onchange_fn, is_multiple);
 		}
 		
 	});
@@ -192,17 +193,17 @@ og.renderContactSelector = function(config) {
 	document.getElementById(genid + render_to).appendChild(input);
 	
 	if (!isNaN(selected) && selected > 0) {
-		og.selectContactFromCombo(selected, selected_name, contactsCombo, genid+render_to, genid+id, onchange_fn);
+		og.selectContactFromCombo(selected, selected_name, contactsCombo, genid+render_to, genid+id, onchange_fn, is_multiple);
 	}
 }
 
-og.selectContactFromCombo = function(contact_id, contact_name, combo, container_id, hf_id, onchange_fn) {
+og.selectContactFromCombo = function(contact_id, contact_name, combo, container_id, hf_id, onchange_fn, is_multiple) {
 	// set hidden field value
 	document.getElementById(hf_id).value = contact_id;
 	// draw contact div and hide combo
-	combo.hide();
-	var html = '<div class="db-ico coViewAction ico-contact" style="min-width:300px;">'+contact_name+
-		'<a href="#" onclick="document.getElementById(\''+hf_id+'\').value=0;og.showContactCombo(\''+combo.getId()+'\'); Ext.get(this).parent().remove();" style="float:right;padding-left:18px;" class="db-ico ico-delete">'+lang('remove')+'</a></div>';
+	if (!is_multiple) combo.hide();
+	var html = '<div class="" style="min-width:600px; width:600px;">'+contact_name+
+		'<a href="#" onclick="document.getElementById(\''+hf_id+'\').value=0;og.showContactCombo(\''+combo.getId()+'\'); Ext.get(this).parent().remove();" style="float:right;padding-left:18px;" class="link-ico ico-delete">'+lang('remove')+'</a></div>';
 	Ext.get(container_id).insertHtml('beforeEnd', html);
 	
 	if (typeof(onchange_fn) == 'function') {

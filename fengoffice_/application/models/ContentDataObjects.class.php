@@ -397,7 +397,7 @@ abstract class ContentDataObjects extends DataManager {
 	    	if ($this instanceof ContentDataObjects && $this->object_type_name == 'timeslot') {
 	    		// if object is a timeslot and is related to a content object => check for members of the related content object.
 	    		$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON IF(e.rel_object_id > 0, e.rel_object_id, e.object_id) = o.id ";
-	    		$SQL_TYPE_CONDITION = "object_type_id = IF(e.rel_object_id > 0, (SELECT z.object_type_id FROM ".TABLE_PREFIX."objects z WHERE z.id = e.rel_object_id), $type_id)";
+	    		$SQL_TYPE_CONDITION = "o.object_type_id = IF(e.rel_object_id > 0, (SELECT z.object_type_id FROM ".TABLE_PREFIX."objects z WHERE z.id = e.rel_object_id), $type_id)";
 	    	} else {
 	    		$SQL_BASE_JOIN = " INNER JOIN  $table_name e ON e.object_id = o.id ";
 	    		$SQL_TYPE_CONDITION = "o.object_type_id = $type_id";

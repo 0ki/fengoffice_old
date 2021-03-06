@@ -1426,11 +1426,15 @@
 		return defined('SAVE_PERMISSIONS_IN_BACKGROUND') && SAVE_PERMISSIONS_IN_BACKGROUND && is_exec_available();
 	}
 	
-	function save_member_permissions_background($user, $member, $permissions) {
+	function save_member_permissions_background($user, $member, $permissions, $old_parent_id=-1) {
 		
 		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			//pclose(popen("start /B ". $command, "r"));
 			save_member_permissions($member, $permissions);
+			
+			if ($old_parent_id != $member->getParentMemberId()) {
+				member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user);
+			}
 		} else {
 
 			// populate permission groups
@@ -1460,7 +1464,7 @@
 			$perm_filename = ROOT ."/tmp/perm_".gen_id();
 			file_put_contents($perm_filename, $permissions);
 			
-			$command = "nice -n19 php ". ROOT . "/application/helpers/save_member_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." $perm_filename";
+			$command = "nice -n19 php ". ROOT . "/application/helpers/save_member_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." $perm_filename $old_parent_id";
 			exec("$command > /dev/null &");
 		}
 	}
@@ -1587,3 +1591,48 @@
 		}
 	}
 	
+	/**
+	 * Function called after editing a member and changing its parent, it will refresh the permissions for all the objects within the member.
+	 * If it is possible this function should be executed in background
+	 */
+	function member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user) {
+		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
+			
+			do_member_parent_changed_refresh_object_permisssions($member->getId(), $old_parent_id);
+			
+		} else {
+			$command = "nice -n19 php ". ROOT . "/application/helpers/member_parent_changed_refresh_object_permisssions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$member->getId()." ".$old_parent_id;
+			exec("$command > /dev/null &");
+		}
+	}
+	
+	function do_member_parent_changed_refresh_object_permisssions($member_id, $old_parent_id) {
+		$member = Members::findById($member_id);
+		if (!$member instanceof Member) {
+			return;
+		}
+		
+		$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id=".$member->getId();
+		$object_ids = DB::executeAll($sql);
+			
+		$ids_str = "";
+		if (!is_array($object_ids)) $object_ids = array();
+		foreach ($object_ids as $row) {
+			$content_object = Objects::findObject($row['object_id']);
+			if (!$content_object instanceof ContentDataObject) continue;
+		
+			$parent_ids = array();
+			if ($old_parent_id > 0) {
+				$all_parents = Members::findById($old_parent_id)->getAllParentMembersInHierarchy(true);
+				foreach ($all_parents as $p) $parent_ids[] = $p->getId();
+				if (count($parent_ids) > 0) {
+					DB::execute("DELETE FROM ".TABLE_PREFIX."object_members WHERE object_id=".$content_object->getId()." AND member_id IN (".implode(",",$parent_ids).")");
+				}
+			}
+			$content_object->addToMembers(array($member));
+			$content_object->addToSharingTable();
+			$ids_str .= ($ids_str == "" ? "" : ",") . $content_object->getId();
+		}
+			
+		//add_multilple_objects_to_sharing_table($ids_str, logged_user());
+	}

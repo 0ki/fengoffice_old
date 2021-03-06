@@ -1172,6 +1172,21 @@ class ObjectController extends ApplicationController {
 		$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
 			 (SELECT t.is_template FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = 0, true)";
 		
+		// don't include unclassified mails from other accounts
+		if (Plugins::instance()->isActivePlugin('mail')) {
+			$accounts_of_loggued_user = MailAccountContacts::getByContact(logged_user());
+			$account_ids = array(0);
+			foreach ($accounts_of_loggued_user as $acc) {
+				$account_ids[] = $acc->getAccountId();
+			}
+			$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='mail',
+				 (SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=o.id) IN (".implode(',', $account_ids).") 
+				 		OR EXISTS (SELECT om1.object_id FROM ".TABLE_PREFIX."object_members om1 
+				 				INNER JOIN ".TABLE_PREFIX."members m1 ON m1.id=om1.member_id INNER JOIN ".TABLE_PREFIX."dimensions d1 ON d1.id=m1.dimension_id
+				 				WHERE om1.object_id=o.id AND d1.is_manageable=1),
+				 true)";
+		}
+		
 		$only_count_result = array_var($_GET, 'only_result',false);
 		$count_results = array_var($_GET, 'count_results',false);
 		

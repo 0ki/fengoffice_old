@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.3
+	About Feng Office 3.0.5
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,25 @@
 	
 	Changelog
 	=========
+	
+	Since 3.0.4.1
+	----------------
+	bugfix: Performance issue when changing workspace parent.
+	bugfix: Cannot add user from exisiting contact.
+	
+	feature: System permission to let some users change event invitations state for other users.
+	
+	Since 3.0.3.1
+	----------------
+	bugfix: Performance issue when ordering documents list by size.
+	
+	Since 3.0.3
+	----------------
+
+	bugfix: do not show trashed comments on mails view.
+	bugfix: member tree filter not working properly in some cases.
+	bugfix: revision number in file view header shows the number including trashed revisions
+	bugfix: show more on users selector not working.
 	
 	Since 3.0.2
 	----------------

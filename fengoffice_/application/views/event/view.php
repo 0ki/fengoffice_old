@@ -106,21 +106,23 @@ if (isset($event) && $event instanceof ProjectEvent) {
 		if ($event_inv != null) {
 			$event->addInvitation($event_inv);
 			$event_inv_state = $event_inv->getInvitationState();
-			$options = array(
-				option_tag(lang('yes'), 1, ($event_inv_state == 1)?array('selected' => 'selected'):null),
-				option_tag(lang('no'), 2, ($event_inv_state == 2)?array('selected' => 'selected'):null),
-				option_tag(lang('maybe'), 3, ($event_inv_state == 3)?array('selected' => 'selected'):null)
-			);
-			if ($event_inv_state == 0) {
-				$options[] = option_tag(lang('decide later'), 0, ($event_inv_state == 0) ? array('selected' => 'selected'):null);
-			}
+			if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_update_other_users_invitations')) {
+				$options = array(
+					option_tag(lang('yes'), 1, ($event_inv_state == 1)?array('selected' => 'selected'):null),
+					option_tag(lang('no'), 2, ($event_inv_state == 2)?array('selected' => 'selected'):null),
+					option_tag(lang('maybe'), 3, ($event_inv_state == 3)?array('selected' => 'selected'):null)
+				);
+				if ($event_inv_state == 0) {
+					$options[] = option_tag(lang('decide later'), 0, ($event_inv_state == 0) ? array('selected' => 'selected'):null);
+				}
 			
-			$att_form = '<form style="height:100%;background-color:white" class="internalForm" action="' . get_url('event', 'change_invitation_state') . '" method="post">';
-			$att_form .= '<table><tr><td style="padding-right:6px;"><b>' . lang('attendance') . '<b></td><td>';
-			$att_form .= select_box('event_attendance', $options, array('id' => 'viewEventFormComboAttendance')) . '</td><td>';
-			$att_form .= input_field('event_id', $event->getId(), array('type' => 'hidden'));
-			$att_form .= input_field('user_id', logged_user()->getId(), array('type' => 'hidden'));
-			$att_form .= submit_button(lang('Save'), null, array('style'=>'margin-top:0px;margin-left:10px')) . '</td></tr></table></form>';
+				$att_form = '<form style="height:100%;background-color:white" class="internalForm" action="' . get_url('event', 'change_invitation_state') . '" method="post">';
+				$att_form .= '<table><tr><td style="padding-right:6px;"><b>' . lang('attendance') . '<b></td><td>';
+				$att_form .= select_box('event_attendance', $options, array('id' => 'viewEventFormComboAttendance')) . '</td><td>';
+				$att_form .= input_field('event_id', $event->getId(), array('type' => 'hidden'));
+				$att_form .= input_field('user_id', logged_user()->getId(), array('type' => 'hidden'));
+				$att_form .= submit_button(lang('Save'), null, array('style'=>'margin-top:0px;margin-left:10px')) . '</td></tr></table></form>';
+			}
 		} //if
 	} // if
 
@@ -137,11 +139,31 @@ if (isset($event) && $event instanceof ProjectEvent) {
 				$inv_user = Contacts::findById($inv->getContactId());
 				if ($inv_user instanceof Contact) {
 					if (can_access($inv_user, $event->getMembers(),ProjectEvents::instance()->getObjectTypeId(), ACCESS_LEVEL_READ)) {
-						$state_desc = lang('pending response');
-						if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
-						else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
-						else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-						$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getObjectName()) . '</td><td>' . $state_desc . '</td></tr>';
+
+						if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_update_other_users_invitations')) {
+							// only show status
+							$state_desc = lang('pending response');
+							if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
+							else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
+							else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
+							$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getObjectName()) . '</td><td>' . $state_desc . '</td></tr>';
+							
+						} else {
+							// draw status selector and let modify
+							$options = array(option_tag(lang('decide later'), 0, $inv->getInvitationState() == 0 ? array('selected' => "selected") : array()), 
+								option_tag(lang('yes'), 1, $inv->getInvitationState() == 1 ? array('selected' => "selected") : array()),
+								option_tag(lang('no'), 2, $inv->getInvitationState() == 2 ? array('selected' => "selected") : array()),
+								option_tag(lang('maybe'), 3, $inv->getInvitationState() == 3 ? array('selected' => "selected") : array()),
+							);
+
+							$genid = gen_id();
+							$state_sel_html = '<form method="post" action="'.get_url('event', 'change_invitation_state', array('silent' => 1)).'">';
+							$state_sel_html .= '<input type="hidden" name="event_id" value="'.$event->getId().'" /><input type="hidden" name="user_id" value="'.$inv_user->getId().'" />';
+							$state_sel_html .= select_box('event_attendance', $options, array('onchange' => '$(this).parent().submit();')) . '</form>';
+							
+							$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getObjectName()) . '</td><td>' . $state_sel_html . '</td></tr>';
+						}
+						
 						$isAlt = !$isAlt;
 						$cant++;
 					}

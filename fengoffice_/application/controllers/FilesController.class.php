@@ -1824,9 +1824,10 @@ class FilesController extends ApplicationController {
 			$order = '`jt`.`filesize`';
 			$join_params = array(
 				'table' => ProjectFileRevisions::instance()->getTableName(),
-				'jt_field' => 'object_id',
-				'j_sub_q' => "SELECT max(`x`.`object_id`) FROM ".ProjectFileRevisions::instance()->getTableName()." `x` WHERE `x`.`file_id` = `e`.`object_id`"
+				'jt_field' => 'file_id',
+				'e_field' => 'object_id',
 			);
+			$extra_conditions .= " AND `jt`.`object_id` = (SELECT max(`x`.`object_id`) FROM fo_project_file_revisions `x` WHERE `x`.`file_id` = `e`.`object_id`)";
 		}else if ($order == 'customProp') {
 			$order = 'IF(ISNULL(jt.value),1,0),jt.value';
 			$join_params['join_type'] = "LEFT ";
@@ -2289,8 +2290,8 @@ class FilesController extends ApplicationController {
 		if(is_array(array_var($_POST, 'file'))) {
 			try {
 				DB::beginWork();
-				$handle_file      = true; // change file?
-				$post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
+				$handle_file = true; // change file?
+				$post_revision = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
 				$revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
 
 				$file->setFromAttributes($file_data);
@@ -2310,8 +2311,10 @@ class FilesController extends ApplicationController {
 					// handle uploaded file
 					$upload_id = array_var($file_data, 'upload_id');
 					$uploaded_file = array_var($_SESSION, $upload_id, array());
-					$file->handleUploadedFile($uploaded_file, $post_revision, $revision_comment); // handle uploaded file
-					@unlink($uploaded_file['tmp_name']);
+					if (count($uploaded_file) > 0) {
+						$file->handleUploadedFile($uploaded_file, $post_revision, $revision_comment); // handle uploaded file
+						@unlink($uploaded_file['tmp_name']);
+					}
 				} // if
 
 				$object_controller = new ObjectController();

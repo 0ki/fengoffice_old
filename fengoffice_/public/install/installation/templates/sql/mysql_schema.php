@@ -208,6 +208,7 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `can_view_billing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_see_assigned_to_other_tasks` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `can_manage_contacts` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_update_other_users_invitations` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -567,6 +568,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_file_revisions` (
   `filesize` int(10) unsigned NOT NULL default '0',
   `hash` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`object_id`),
+  KEY `filesize` (`filesize`),
   KEY `file_id` USING BTREE (`file_id`,`revision_number`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 

@@ -25,7 +25,7 @@
 					<?php } ?>
 					<?php if ($message->getUpdatedBy() instanceof Contact) { ?>
 					<div class="desc date-container"><?php 
-						echo lang('last updated by').' '.lang('user date', $message->getUpdatedBy()->getCardUserUrl(), clean($message->getUpdatedByDisplayName()), strtolower(friendly_date($message->getUpdatedOn())), clean($message->getUpdatedByDisplayName()));
+						echo lang('last updated by').' '.lang('user date', $message->getUpdatedBy()->getCardUserUrl(), clean($message->getUpdatedByDisplayName()), lcfirst(friendly_date($message->getUpdatedOn())), clean($message->getUpdatedByDisplayName()));
 					?></div>
 					<?php } ?>
 					<div class="message-breadcrumb-container">

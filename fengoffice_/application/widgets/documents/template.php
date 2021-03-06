@@ -31,7 +31,7 @@
 					</script>
 					<?php if ($document->getUpdatedBy() instanceof Contact) { ?>
 					<div class="desc date-container"><?php 
-						echo lang('last updated by').' '.lang('user date', $document->getUpdatedBy()->getCardUserUrl(), clean($document->getUpdatedByDisplayName()), strtolower(friendly_date($document->getUpdatedOn())), clean($document->getUpdatedByDisplayName()));
+						echo lang('last updated by').' '.lang('user date', $document->getUpdatedBy()->getCardUserUrl(), clean($document->getUpdatedByDisplayName()), lcfirst(friendly_date($document->getUpdatedOn())), clean($document->getUpdatedByDisplayName()));
 					?></div>
 					<?php } ?>
 				</li>
@@ -47,9 +47,3 @@
 	</div>
 	
 </div>
-
-<script>
-$(function() {
-	// og.eventManager.fireEvent('replace all empty breadcrumb', null);
-});
-</script>

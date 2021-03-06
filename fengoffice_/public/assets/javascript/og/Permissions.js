@@ -162,6 +162,12 @@ og.ogPermSetLevel = function(genid, dim_id, level){
 			og.addPermissionsForMember(genid, member_id, member_perms[i]);
 		}
 		
+		// if radio element is not visible => it cannot be selected
+		var radio_el = document.getElementById(genid + "rg_" + level + "_" + dim_id + "_" + member_perms[i].o);
+		if (!radio_el || radio_el.style.display == 'none') {
+			continue;
+		}
+		
 		member_perms[i].d = (level == 3);
 		member_perms[i].w = (level >= 2);
 		member_perms[i].r = (level >= 1);
@@ -519,8 +525,17 @@ og.toggleManualPermissions = function(genid, is_modal) {
 	$("#"+genid+"_set_manual_permissions").val(checked ? 1 : 0);
 	if (checked) {
 		$("#"+genid+"_dimension_permissions").show();
-		$("#"+genid+"_root_permissions").show();
 		$("#"+genid+"_manual_perm_help").hide();
+		
+		// show root permissions only if user is executive, manager or administrator
+		var type = $("#" + genid + "_user_type_sel_role").find('option:selected').val();
+		var executive_selected = og.executive_permission_group_ids.indexOf(parseInt(type)) >= 0;
+		if (executive_selected) {
+			$("#"+genid+"_root_permissions").show();
+		} else {
+			$("#"+genid+"_root_permissions").hide();
+		}
+		
 		if (is_modal) {
 			setTimeout(function(){
 				$("#"+genid+"permissions").animate({
@@ -737,11 +752,11 @@ og.checkMemberPermissionsForRole = function(genid) {
     		var dp = def_perms[parseInt(p.o)];
     		if (!dp) dp = {};
     		
-    		if (!dp.d && p.d || !dp.w && p.w || !dp.r && p.r) {
+    		if (!parseInt(dp.d) && parseInt(p.d) || !parseInt(dp.w) && parseInt(p.w) || !parseInt(dp.r) && parseInt(p.r)) {
 	    		p.modified = true;
-	    		if (!dp.d) p.d=0;
-	    		if (!dp.w) p.w=0;
-	    		if (!dp.r) p.r=0;
+	    		if (!parseInt(dp.d)) p.d=0;
+	    		if (!parseInt(dp.w)) p.w=0;
+	    		if (!parseInt(dp.r)) p.r=0;
 	    		
 	    		all_mem_ids.push(mem_id);
     		}

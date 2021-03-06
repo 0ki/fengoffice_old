@@ -96,6 +96,8 @@ class EventController extends ApplicationController {
 		if ($event_id == null) $event_id = array_var($_GET, 'e');
 		if ($user_id == null) $user_id = array_var($_GET, 'u');
 		
+		$silent = array_var($_REQUEST, 'silent');
+		
 		if ($attendance == null || $event_id == null) {
 			flash_error('Missing parameters');
 			ajx_current("back");
@@ -105,7 +107,7 @@ class EventController extends ApplicationController {
 			$conditions_all = array('conditions' => "`event_id` = " . DB::escape($event_id));
 			$invs = EventInvitations::findAll($conditions_all);			
 			if ($inv != null) {
-				if ($inv->getContactId() != logged_user()->getId()) {
+				if (!SystemPermissions::userHasSystemPermission(logged_user(), 'can_update_other_users_invitations') && $inv->getContactId() != logged_user()->getId()) {
 					flash_error(lang('no access permissions'));					
 					self::view_calendar();
 					return;
@@ -129,15 +131,23 @@ class EventController extends ApplicationController {
 					$user = Contacts::findById(array('id' => $user_id));
 					session_commit();
 					Notifier::notifEventAssistance($event, $inv, $user, $invs);
-					if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
-					else flash_success(lang('invitation rejected'));
+					if (!$silent) {
+						if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
+						else flash_success(lang('invitation rejected'));
+					}
 				} else {
-					flash_success(lang('success edit event', $event instanceof ProjectEvent ? clean($event->getObjectName()) : ''));
+					if (!$silent) {
+						flash_success(lang('success edit event', $event instanceof ProjectEvent ? clean($event->getObjectName()) : ''));
+					}
 				}
 				if (array_var($_GET, 'at')) {
 					self::view_calendar();
 				} else {
-					ajx_current("reload");
+					if (!$silent) {
+						ajx_current("reload");
+					} else {
+						ajx_current("empty");
+					}
 				}
 			}
 		}

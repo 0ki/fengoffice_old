@@ -35,18 +35,13 @@
     * @param boolean $exclude_private Exclude private comments
     * @return array
     */
-    static function getCommentsByObjectIds($object_ids, $exclude_private = false) {
-      if($exclude_private) {
-        return self::findAll(array(
-          'conditions' => array('`rel_object_id` IN(' . $object_ids . ')'),
+    static function getCommentsByObjectIds($object_ids, $include_trashed = false) {
+      $trashed_condition = $include_trashed ? "" : " AND `trashed_on`=0";
+     
+      return self::findAll(array(
+          'conditions' => array('`rel_object_id` IN(' . $object_ids . ')'.$trashed_condition),
           'order' => '`created_on`'
-        )); // array
-      } else {
-        return self::findAll(array(
-          'conditions' => array('`rel_object_id` IN(' . $object_ids . ')'),
-          'order' => '`created_on`'
-        )); // array
-      } // if
+      )); // array      
     } // getCommentsByObject
     
     /**

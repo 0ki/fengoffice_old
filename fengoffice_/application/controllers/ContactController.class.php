@@ -125,6 +125,7 @@ class ContactController extends ApplicationController {
 		if (!is_array($user_data)) {
 			//if it is a new user
 			$contact_id = get_id('contact_id');
+			tpl_assign('contact_id', $contact_id);
 			$contact = Contacts::findById($contact_id);
 			
 			if ($contact instanceof Contact) {
@@ -199,7 +200,7 @@ class ContactController extends ApplicationController {
 				$user_data['personal_project'] = 0;
 			}
 			try {
-				Contacts::validateUser($user_data);
+				Contacts::validateUser($user_data, array_var($_REQUEST, 'contact_id'));
 				
 				DB::beginWork();
 				$user = $this->createUser($user_data, array_var($_POST,'permissions'));

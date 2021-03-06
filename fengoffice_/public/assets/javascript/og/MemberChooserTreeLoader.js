@@ -86,9 +86,10 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 				count++;
 			}
 			tmp_member_array.reverse();
-			og.tmp_members_to_add[dimension_id] = tmp_member_array;
 			
 			var tree_id = this.ownerTree.id;
+			og.tmp_members_to_add[tree_id] = tmp_member_array;
+			
 			if (!og.tmp_node) og.tmp_node = [];
 			og.tmp_node[dimension_id] = node;
 			

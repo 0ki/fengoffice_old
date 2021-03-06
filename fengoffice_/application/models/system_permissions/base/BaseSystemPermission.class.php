@@ -218,6 +218,15 @@
 		return $this->setColumnValue('can_view_billing', $value);
     }    
     
+    
+    function getUpdateOtherUsersInvitations(){
+    	return $this->getColumnValue('can_update_other_users_invitations');
+    }
+    
+    function setUpdateOtherUsersInvitations($value){
+    	return $this->setColumnValue('can_update_other_users_invitations', $value);
+    }
+    
   	function getSettedPermissions(){
 		$columns=$this->getColumns();
 		$permissions=array();

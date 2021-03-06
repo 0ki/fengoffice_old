@@ -117,11 +117,10 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getLastRevision() {
 		if(is_null($this->last_revision)) {
-
 			$this->last_revision = ProjectFileRevisions::findOne(array(
-          'conditions' => array('`file_id` = ?', $this->getId()),
-		  'order' => '`created_on` DESC',
-          'limit' => 1,
+	          'conditions' => array('`file_id` = ? and `trashed_by_id`=0', $this->getId()),
+			  'order' => '`created_on` DESC',
+	          'limit' => 1,
 			)); // findOne
 		} // if
 		return $this->last_revision;

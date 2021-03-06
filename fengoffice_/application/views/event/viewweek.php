@@ -33,7 +33,7 @@ $(function(){
 	
 	$user_filter = $userPreferences['user_filter'];
 	$status_filter = $userPreferences['status_filter'];
-        $task_filter = $userPreferences['task_filter'];
+	$task_filter = $userPreferences['task_filter'];
 	
 	$user = Contacts::findById(array('id' => $user_filter));
 	if ($user == null) $user = logged_user();
@@ -48,7 +48,7 @@ $(function(){
 	if (user_config_option("start_monday")) {
 		$startday = $day - date("N", mktime(0, 0, 0, $month, $day, $year)) + 1; // beginning of the week, monday
 	} else {
-		$startday = $day - date("N", mktime(0, 0, 0, $month, $day, $year)); // beginning of the week, sunday
+		$startday = $day - (date("N", mktime(0, 0, 0, $month, $day, $year)) % 7); // beginning of the week, sunday
 	}
 
 	$endday = $startday + 7; // end of week

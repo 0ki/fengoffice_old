@@ -171,7 +171,9 @@ og.cp_list_remove = function(remove_link, genid, cp_id) {
 }
 
 og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
-	document.getElementById(genid+'_remove_cp_'+cp_id).value = 0;
+try {
+	var rem = document.getElementById(genid+'_remove_cp_'+cp_id);
+	if (rem) rem.value = 0;
 	var i = og.cp_list_selected_index[cp_id][genid];
 	var div = document.getElementById(genid + 'cp_list_selected' + cp_id);
 	
@@ -182,9 +184,14 @@ og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
 	var val = combo.options[combo.selectedIndex].value;
 	if (val == '' || og.cp_list_selected_values[cp_id][genid].indexOf(val) >= 0) return;
 	
-	var html = '<div>'+ og.clean(val);
-	html += '&nbsp;<a href=\"#\" onclick=\"og.cp_list_remove(this, \''+genid+'\', '+cp_id+');\" class=\"db-ico coViewAction ico-delete\">&nbsp;</a>';
-	html += '<input type=\"hidden\" name=\"'+name+'['+i+']\" value=\"'+val+'\" /></div>';
+	var html = '';
+	if (is_multiple) {
+		html = '<div>'+ og.clean(val) + '&nbsp;<a href=\"#\" onclick=\"og.cp_list_remove(this, \''+genid+'\', '+cp_id+');\" class=\"db-ico coViewAction ico-delete\">&nbsp;</a>';
+	}
+	html += '<input type=\"hidden\" name=\"'+name+'['+i+']\" value=\"'+val+'\" />';
+	if (is_multiple) {
+		html += '</div>';
+	}
 	
 	if (is_multiple) {
 		div.innerHTML += html;
@@ -200,4 +207,7 @@ og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
 		genid: genid,
 		values: og.cp_list_selected_values[cp_id][genid]
 	}]);
+} catch (e) {
+	console.log(e);
+}
 }

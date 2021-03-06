@@ -26,6 +26,7 @@
 	// save permissions
 	$member_id = array_var($argv, 4);
 	$permissions_filename = array_var($argv, 5);
+	$old_parent_id = array_var($argv, 6);
 	
 	$permissions = file_get_contents($permissions_filename);
 	
@@ -35,6 +36,9 @@
 		try {
 			DB::beginWork();
 			$result = save_member_permissions($member, $permissions, true, false, false, false);
+			if ($old_parent_id != -1 && $old_parent_id != $member->getParentMemberId()) {
+				do_member_parent_changed_refresh_object_permisssions($member_id, $old_parent_id);
+			}
 			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();

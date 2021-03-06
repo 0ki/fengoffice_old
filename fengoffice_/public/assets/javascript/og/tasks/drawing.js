@@ -879,7 +879,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	//Draw the task name
-	taskName = og.clean(task.title);
+	taskName = task.title;
 	var tooltip = '';
 	//if is completed
 	if (task.status > 0){

@@ -368,10 +368,12 @@ class MemberController extends ApplicationController {
 			
 		} else {
 			try {
+				$old_parent = $member->getParentMemberId();
+				
 				$ok = $this->saveMember($member_data, $member, false);
 				
 				Env::useHelper('permissions');
-				save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'));
+				save_member_permissions_background(logged_user(), $member, array_var($_REQUEST, 'permissions'), $old_parent);
 				
 				if ($ok) {
 					ApplicationLogs::createLog($member, ApplicationLogs::ACTION_EDIT);
@@ -654,31 +656,13 @@ class MemberController extends ApplicationController {
 				}
 				
 			} else {
+				
 				// if parent changed rebuild object_members for every object in this member
+				// if possible this function will execute the rebuild in background
 				if ($old_parent != $member->getParentMemberId()) {
-					$sql = "SELECT om.object_id FROM ".TABLE_PREFIX."object_members om WHERE om.member_id=".$member->getId();
-					$object_ids = DB::executeAll($sql);
 					
-					$ids_str = "";
-					if (!is_array($object_ids)) $object_ids = array();
-					foreach ($object_ids as $row) {
-						$content_object = Objects::findObject($row['object_id']);
-						if (!$content_object instanceof ContentDataObject) continue;
-						
-						$parent_ids = array();
-						if ($old_parent > 0) {
-							$all_parents = Members::findById($old_parent)->getAllParentMembersInHierarchy(true);
-							foreach ($all_parents as $p) $parent_ids[] = $p->getId();
-							if (count($parent_ids) > 0) {
-								DB::execute("DELETE FROM ".TABLE_PREFIX."object_members WHERE object_id=".$content_object->getId()." AND member_id IN (".implode(",",$parent_ids).")");
-							}
-						}
-						$content_object->addToMembers(array($member));
-						//$content_object->addToSharingTable();
-						$ids_str .= ($ids_str == "" ? "" : ",") . $content_object->getId();
-					}
+			//		member_parent_changed_refresh_object_permisssions($member, $old_parent, logged_user());
 					
-					add_multilple_objects_to_sharing_table($ids_str, logged_user());
 				}
 			}
 			

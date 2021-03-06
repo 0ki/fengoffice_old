@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.3
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.4
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0.3');
+		$this->setVersionTo('3.0.5');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -241,6 +241,29 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 				WHERE object_type_id = (SELECT id FROM ".$t_prefix."object_types WHERE name='comment') 
 					AND role_id IN (SELECT p.id FROM `".$t_prefix."permission_groups` p WHERE p.`name` IN ('Guest'));
 			";
+		}
+		
+		if (version_compare($installed_version, '3.0.4') < 0) {
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."project_file_revisions` ADD INDEX (`filesize`);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.0.5') < 0) {
+			if (!$this->checkColumnExists($t_prefix."system_permissions", "can_update_other_users_invitations", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_update_other_users_invitations` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+					UPDATE ".$t_prefix."system_permissions SET can_update_other_users_invitations=1
+					WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Super Administrator', 'Administrator'));
+				";
+			}
+			if (!$this->checkColumnExists($t_prefix."max_system_permissions", "can_update_other_users_invitations", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."max_system_permissions` ADD COLUMN `can_update_other_users_invitations` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0;
+					UPDATE ".$t_prefix."max_system_permissions SET can_update_other_users_invitations=1
+					WHERE permission_group_id IN (SELECT id FROM ".$t_prefix."permission_groups WHERE name IN ('Super Administrator', 'Administrator', 'Manager', 'Executive'));
+				";
+			}
 		}
 		
 		// Execute all queries

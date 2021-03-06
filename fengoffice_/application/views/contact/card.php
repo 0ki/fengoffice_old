@@ -27,7 +27,7 @@
 	$description = "";
 	$company = $contact->getCompany();
 	if ($company instanceof Contact)
-		$description = '<a class="internalLink coViewAction ico-company" href="' . $company->getCardUrl() . '">' . clean($company->getObjectName()) . '</a>';
+		$description = '<a class="internalLink coViewAction ico-company" style="padding-top:0px;" href="' . $company->getCardUrl() . '">' . clean($company->getObjectName()) . '</a>';
 	
 	if ($contact->getJobTitle() != ''){
 		if($description != '')

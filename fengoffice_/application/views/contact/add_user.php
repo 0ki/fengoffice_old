@@ -8,7 +8,7 @@
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 ?>
 
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('contact', 'add_user', array('contact_id' => $user->getId())); ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('contact', 'add_user', array('contact_id' => $contact_id)); ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 <div class="adminAddUser">
   <div class="adminHeader">
   	<div class="adminHeaderUpperRow">
