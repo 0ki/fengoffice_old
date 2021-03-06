@@ -72,8 +72,8 @@ class EventController extends ApplicationController {
 				$invitation->setContactId($id);
 				$invitation->setInvitationState(logged_user() instanceof Contact && logged_user()->getId() == $id ? 1 : 0);
 				$invitation->save();
-				if ((array_var($data, 'subscribe_invited', false) && is_array(array_var($_POST, 'subscribers')) || (array_var($_POST, 'popup') && user_config_option('event_subscribe_invited')))) {
-					$_POST['subscribers']['user_' . $id] = 'checked';
+				if ((array_var($data, 'subscribe_invited') && is_array(array_var($_POST, 'subscribers')) || (array_var($_POST, 'popup') && user_config_option('event_subscribe_invited')))) {
+					$_POST['subscribers']['user_' . $id] = '1';
 				}
 			}
 		}
@@ -330,10 +330,10 @@ class EventController extends ApplicationController {
 			}			
 			
 			if (isset($event_data['send_notification'])) {
-				$data['send_notification'] = array_var($event_data,'send_notification') == 'checked';
+				$data['send_notification'] = array_var($event_data,'send_notification');
 			}
 			if (isset($event_data['subscribe_invited'])) {
-				$data['subscribe_invited'] = array_var($event_data,'subscribe_invited') == 'checked';
+				$data['subscribe_invited'] = array_var($event_data,'subscribe_invited');
 			}
 			return $data;
 	}

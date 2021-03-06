@@ -820,8 +820,8 @@ ogTasks.drawTaskRowAfterEdit = function(data) {
 	
 	var task = ogTasksCache.addTasks(data.task);
 	
-	//get the groups thtat this task belongs to and draw
-	ogTasks.getGroupsForTask(task.id);		
+	//get the groups that this task belongs to and draw
+	ogTasks.getGroupsForTask(task.id);	
 }
 
 

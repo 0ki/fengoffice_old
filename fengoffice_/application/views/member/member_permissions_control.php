@@ -154,9 +154,15 @@
 		    </tr>
 		<?php }?>
 		  </table>
+		  
+		  <div class="additional-member-permissions">
+		<?php $ret=null; Hook::fire('render_additional_member_permissions', array('member' => $member, 'genid' => $genid, 'dim' => $current_dimension, 'ot_id' => $obj_type_sel), $ret); ?>
+		  </div>
+		  
 		  <div style="float:right;">
 		<?php 
 		  	if ($member instanceof Member) { 
+				?><input id="<?php echo $genid?>_member_id" type="hidden" name="member_id" value="<?php echo $member->getId()?>"/><?php 
 		  		$save_perms_fn = "og.userPermissions.savePermissions('".$genid."', ".$member->getId().");";
 			} else {
 				$save_perms_fn = "";

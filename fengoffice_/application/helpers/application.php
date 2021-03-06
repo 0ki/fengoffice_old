@@ -901,37 +901,40 @@ function autocomplete_textarea_field($name, $value, $options, $max_options, $att
 }
 
 
-function render_add_reminders($object, $context, $defaults = null, $genid = null, $type_object = '') {
+function render_add_reminders($object, $context, $defaults = null, $genid = null, $type_object = '', $render_defaults = true) {
 	if(!is_array($defaults)) $defaults = array();
-	if($type_object == "event"){
-		$def = explode(",", user_config_option("reminders_events"));
-		$default_defaults = array(
-			'type' => array_var($def, 0),
-			'duration' => array_var($def, 1),
-			'duration_type' => array_var($def, 2),
-			'for_subscribers' => true,
-		);
-	} else if ($type_object == "task"){
-		$def = explode(",", user_config_option("reminders_tasks"));
-		$default_defaults = array(
-			'type' => array_var($def, 0),
-			'duration' => array_var($def, 1),
-			'duration_type' => array_var($def, 2),
-			'for_subscribers' => true,
-		);
-	} else {
-		$default_defaults = array(
-			'type' => 'reminder_popup',
-			'duration' => '15',
-			'duration_type' => '1',
-			'for_subscribers' => true,
-		);
-	}
 	
-	foreach ($default_defaults as $k => $v) {
-		if (!isset($defaults[$k])) $defaults[$k] = $v;
+	if($render_defaults){
+		if($type_object == "event"){
+			$def = explode(",", user_config_option("reminders_events"));
+			$default_defaults = array(
+				'type' => array_var($def, 0),
+				'duration' => array_var($def, 1),
+				'duration_type' => array_var($def, 2),
+				'for_subscribers' => true,
+			);
+		} else if ($type_object == "task"){
+			$def = explode(",", user_config_option("reminders_tasks"));
+			$default_defaults = array(
+				'type' => array_var($def, 0),
+				'duration' => array_var($def, 1),
+				'duration_type' => array_var($def, 2),
+				'for_subscribers' => true,
+			);
+		} else {
+			$default_defaults = array(
+				'type' => 'reminder_popup',
+				'duration' => '15',
+				'duration_type' => '1',
+				'for_subscribers' => true,
+			);
+		}
+		
+		foreach ($default_defaults as $k => $v) {
+			if (!isset($defaults[$k])) $defaults[$k] = $v;
+		}
 	}
-        
+	   
 	if (is_null($genid)) {
 		$genid = gen_id();
 	}
@@ -953,7 +956,9 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 	';
 	
 	if ($object->isNew()) {
-		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', document.getElementById("'.$genid.'-link"));</script>';
+		if($render_defaults){
+			$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), \''.$context.'\', \''.array_var($defaults, 'type').'\', \''.array_var($defaults, 'duration').'\', \''.array_var($defaults, 'duration_type').'\', \''.array_var($defaults, 'for_subscribers').'\', document.getElementById("'.$genid.'-link"));</script>';
+		}
 	} else {
 		$reminders = ObjectReminders::getAllRemindersByObjectAndUser($object, logged_user(), $context, true);
 		foreach($reminders as $reminder) {

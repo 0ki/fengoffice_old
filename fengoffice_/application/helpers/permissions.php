@@ -765,10 +765,7 @@
 				TabPanelPermissions::clearByPermissionGroup($pg_id, true);
 				if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
 					foreach($mod_permissions_data as $tab_id => $val) {
-						$tpp = new TabPanelPermission();
-						$tpp->setPermissionGroupId($pg_id);
-						$tpp->setTabPanelId($tab_id);
-						$tpp->save();
+						DB::execute("INSERT INTO ".TABLE_PREFIX."tab_panel_permissions (permission_group_id,tab_panel_id) VALUES ('$pg_id','$tab_id') ON DUPLICATE KEY UPDATE permission_group_id=permission_group_id");
 					}
 				}
 			} catch (Exception $e) {
@@ -1035,7 +1032,7 @@
 						}
 						$users = $group->getUsers();
 						$users_ids_checked = array();
-						Logger::log_r("Cant users: ".count($users));
+						
 						foreach ($users as $us) {
 							$users_ids_checked[] = $us->getId();
 							$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
@@ -1351,7 +1348,7 @@
 		}
 		
 		if ($fire_hook) {
-			Hook::fire('after_save_member_permissions', $member, $member);
+			Hook::fire('after_save_member_permissions', array('member' => $member, 'user_id' => logged_user()->getId()), $member);
 		}
 		
 		return array('changed_pgs' => $changed_pgs, 'member' => $member);

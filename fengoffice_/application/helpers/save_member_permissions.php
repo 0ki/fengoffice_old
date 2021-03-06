@@ -109,7 +109,7 @@
 		// transaction for the hooks
 		try {
 			DB::beginWork();
-			Hook::fire('after_save_member_permissions', array_var($result, 'member'), array_var($result, 'member'));
+			Hook::fire('after_save_member_permissions', array('member' => array_var($result, 'member'), 'user_id' => $user_id), array_var($result, 'member'));
 			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();

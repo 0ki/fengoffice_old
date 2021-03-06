@@ -871,6 +871,9 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 	$permission_group->save();
 	$contact->setPermissionGroupId($permission_group->getId());
 	
+	$null=null;
+	Hook::fire('on_create_user_perm_group', $permission_group, $null);
+	
 	$contact_pg = new ContactPermissionGroup();
 	$contact_pg->setContactId($contact->getId());
 	$contact_pg->setPermissionGroupId($permission_group->getId());

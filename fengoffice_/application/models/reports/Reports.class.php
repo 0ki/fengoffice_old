@@ -578,13 +578,17 @@ class Reports extends BaseReports {
 						$colCp = $column->getCustomPropertyId();
 						$cp = CustomProperties::getCustomProperty($colCp);
 						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
-							$cp_val = CustomPropertyValues::getCustomPropertyValue($object instanceof Timeslot ? $object->getRelObjectId() : $object->getId(), $colCp);
-							if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
-								$cp_contact = Contacts::findById($cp_val->getValue());
-								$cp_val->setValue($cp_contact->getObjectName());
+							$cp_vals = CustomPropertyValues::getCustomPropertyValues($object instanceof Timeslot ? $object->getRelObjectId() : $object->getId(), $colCp);
+							$val_to_show = "";
+							foreach ($cp_vals as $cp_val) {
+								//$cp_val = CustomPropertyValues::getCustomPropertyValue($object instanceof Timeslot ? $object->getRelObjectId() : $object->getId(), $colCp);
+								if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
+									$cp_contact = Contacts::findById($cp_val->getValue());
+									$cp_val->setValue($cp_contact->getObjectName());
+								}
+								$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
 							}
-							$row_values[$cp->getName()] = $cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "";
-							
+							$row_values[$cp->getName()] = $val_to_show;
 							$results['columns'][$colCp] = $cp->getName();
 							$results['db_columns'][$cp->getName()] = $colCp;
 							

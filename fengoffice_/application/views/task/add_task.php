@@ -424,12 +424,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 		<div id="<?php echo $genid ?>add_reminders_div" class="form-tab">
 			<div id="<?php echo $genid ?>add_reminders_content">
-				<?php echo render_add_reminders($task, 'due_date', array(
-					'type' => 'reminder_email',
-					'duration' => 1,
-					'duration_type' => 1440,
-					'for_subscribers' => true,
-				)); ?>
+					<?php 
+					$render_defaults = false;
+					if ($task->isNew()) {
+						$render_defaults = user_config_option("add_task_default_reminder");
+					}
+					?>
+					<?php echo render_add_reminders($task, 'due_date',null,null,"task",$render_defaults); ?>
 			</div>
 		</div>
 		

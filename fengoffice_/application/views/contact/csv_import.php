@@ -74,7 +74,9 @@ og.submitCsv = function(genid) {
 		if ($import_type == 'contact') 
 			$contact_fields = Contacts::getContactFieldNames();
 		else $contact_fields = Contacts::getCompanyFieldNames();
-
+		
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(Contacts::instance()->getObjectTypeId());+
+		
 		$isAlt = false;
 		$i = 0; $label_w = $label_h = $label_o = false;
 		foreach ($contact_fields as $c_field => $c_label) {
@@ -98,6 +100,25 @@ og.submitCsv = function(genid) {
 				<td><?php echo checkbox_field('check_'.$c_field, true,array( 'tabindex' => 50+$i)) ?></td><td><?php echo $c_label ?></td><td><?php echo select_box('select_'.$c_field, $options); ?></td></tr>	
 	<?php	
 		} //foreach	?>
+		
+	<?php if (is_array($custom_properties) && count($custom_properties)>0) { ?>
+		<tr><td colspan="3" style="text-align:center;"><b><?php echo lang('custom properties')?></b></td></tr>
+	<?php
+			foreach ($custom_properties as $cp) {/* @var $cp CustomProperty */
+				$isAlt = !$isAlt;
+				$options = array(option_tag('', -1));
+				
+				foreach ($titles as $k => $t) $options[] = option_tag($t, $k, $t == $cp->getName() ? array('selected' => 'selected') : null);
+				$i++;
+				
+				?><tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
+					<td><?php echo checkbox_field('check_custom_properties['.$cp->getId().']', true,array( 'tabindex' => 50+$i)) ?></td><td><?php echo $cp->getName() ?></td>
+					<td><?php echo select_box('select_custom_properties['.$cp->getId().']', $options); ?></td>
+				</tr>
+	<?php
+			} 
+	?>
+	<?php } //if?>
 	</table>
 	
 	<div><table style="width:535px">

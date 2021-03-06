@@ -1032,11 +1032,7 @@ class TaskController extends ApplicationController {
 			if(!is_null($groupId) && $group_conditions['id'] != $groupId){
 				continue;
 			}
-			
 			$group_conditions_cond = $conditions ." AND ". $group_conditions['conditions'];
-			
-			
-			
 			
 			$group = ProjectTasks::instance()->listing(array(
 					"select_columns" => array("COUNT(o.id) AS total "),
@@ -1050,7 +1046,9 @@ class TaskController extends ApplicationController {
 				$group[0]["group_order"] = $group_conditions['group_order'];
 				$group[0]["group_id"] = $group_conditions['id'];								
 				
-				$group[0]['group_tasks'] = $this->getTasksInGroup($group_conditions_cond.$list_subtasks_cond, $start, $limit);
+				$tasks_in_group = $this->getTasksInGroup($group_conditions_cond.$list_subtasks_cond, $start, $limit);
+				$group[0]['root_total'] = $tasks_in_group['total_roots_tasks'];				
+				$group[0]['group_tasks'] = $tasks_in_group['tasks'];
 				
 				//group totals
 				$totals = $this->getGroupTotals($group_conditions_cond);
@@ -1071,8 +1069,8 @@ class TaskController extends ApplicationController {
 		
 		$current = DateTimeValueLib::now();
 		$current->advance(logged_user()->getTimezone() * 3600);
-		
-		//Relative dates
+				
+		//Relative dates starts
 		$relative = array();
 		$relative['first_day_of_year'] = strToTime('first day of January this year', $current->getTimestamp());
 		$relative['first_day_of_last_month'] = strToTime('first day of previous month', $current->getTimestamp());
@@ -1090,33 +1088,58 @@ class TaskController extends ApplicationController {
 		$relative['last_day_of_next_3_months'] = strToTime('last day of +3 month', $current->getTimestamp());
 		$relative['last_day_of_this_year'] = strToTime('last day of december this year', $current->getTimestamp());
 		
-		foreach($relative as &$value)
+		foreach($relative as $key => &$value)
 		{
 		     $value = DateTimeValueLib::makeFromString(date(DATE_MYSQL,$value));
+		     $value->beginningOfDay();
 		}
+		
+		//Relative dates ends
+		$relative_ends = array();
+		foreach($relative as $key => $value)
+		{
+			$new_value = clone $value;					
+			$relative_ends[$key] = $new_value->endOfDay();
+		}
+		
+		//if use_time_in_task_dates today condition is `due_date` >= '2015-03-04 02:00:00' AND `due_date` <= '2015-03-05 01:59:59' in GMT - 2
+		//else today condition is `due_date` >= '2015-03-04 00:00:00' AND `due_date` <= '2015-03-04 23:59:59'
+		//example date 04/03/2015
+		if(config_option('use_time_in_task_dates') || $date_field ==  "`created_on`"){
+			foreach($relative as $key => &$value)
+			{
+				$value->advance(-logged_user()->getTimezone() * 3600);	
+			}
+						
+			foreach($relative_ends as $key => &$value)
+			{
+				$value->advance(-logged_user()->getTimezone() * 3600);
+			}		
+		}
+		
 		$not_empty_date = " AND ".$date_field." <> '0000-00-00 00:00:00'";
-				
+						
 		//before this year //check if last month is on last year
 		$group_1 = array();
 		$group_1['group_name'] = lang('before this year');
 		$group_1['group_order'] = 1;
 		$group_1['id'] = 'group_before_this_year';
-		if($relative['first_day_of_year']->beginningOfDay() < $relative['first_day_of_last_month']->beginningOfDay()){
-			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_year']->beginningOfDay()->toMySQL()."'".$not_empty_date;
+		if($relative['first_day_of_year'] < $relative['first_day_of_last_month']){
+			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_year']->toMySQL()."'".$not_empty_date;
 		}else{
-			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'".$not_empty_date;
+			$group_1['conditions'] = $date_field." < '".$relative['first_day_of_last_month']->toMySQL()."'".$not_empty_date;
 		}
 		$date_groups[] = $group_1;
 		
 		//this year (before last month)
-		if($relative['first_day_of_year']->beginningOfDay() < $relative['first_day_of_last_month']->beginningOfDay()){
+		if($relative['first_day_of_year'] < $relative['first_day_of_last_month']){
 			$group_2 = array();
 			$group_2['group_name'] = lang('this year (before last month)');
 			$group_2['group_order'] = 2;
 			$group_2['id'] = 'group_this_year_before_last_month';
-			$condition = $date_field." >= '".$relative['first_day_of_year']->beginningOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'";
-			$date_groups['conditions'] = $condition;
+			$condition = $date_field." >= '".$relative['first_day_of_year']->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_month']->toMySQL()."'";
+			$group_2['conditions'] = $condition;
 			$date_groups[] = $group_2;
 		}
 		
@@ -1125,19 +1148,23 @@ class TaskController extends ApplicationController {
 		$group_3['group_name'] = lang('last month');
 		$group_3['group_order'] = 3;
 		$group_3['id'] = 'group_last_month';
-		$condition = $date_field." >= '".$relative['first_day_of_last_month']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_month']->beginningOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['first_day_of_last_month']->toMySQL()."'";
+		if($relative['first_day_of_this_month'] < $relative['first_day_of_last_week']){
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_month']->toMySQL()."'";
+		}else{
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_week']->toMySQL()."'";
+		}
 		$group_3['conditions'] = $condition;
 		$date_groups[] = $group_3;
 		
 		//this month(before last week)
-		if($relative['first_day_of_this_month']->beginningOfDay() < $relative['first_day_of_last_week']->beginningOfDay()){
+		if($relative['first_day_of_this_month'] < $relative['first_day_of_last_week']){
 			$group_4 = array();
 			$group_4['group_name'] = lang('this month(before last week)');
 			$group_4['group_order'] = 4;
 			$group_4['id'] = 'group_this_month_before_last_week';
-			$condition = $date_field." >= '".$relative['first_day_of_this_month']->beginningOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_week']->beginningOfDay()->toMySQL()."'";
+			$condition = $date_field." >= '".$relative['first_day_of_this_month']->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['first_day_of_last_week']->toMySQL()."'";
 			$group_4['conditions'] = $condition;
 			$date_groups[] = $group_4;
 		}
@@ -1147,19 +1174,19 @@ class TaskController extends ApplicationController {
 		$group_5['group_name'] = lang('last week');
 		$group_5['group_order'] = 5;
 		$group_5['id'] = 'group_last_week';		
-		$condition = $date_field." >= '".$relative['first_day_of_last_week']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_week']->beginningOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['first_day_of_last_week']->toMySQL()."'";
+		$condition .= " AND ".$date_field." < '".$relative['first_day_of_this_week']->toMySQL()."'";
 		$group_5['conditions'] = $condition;
 		$date_groups[] = $group_5;
 		
 		//this week(before yesterday)
-		if($relative['first_day_of_this_week']->beginningOfDay() < $relative['yesterday']->beginningOfDay()){
+		if($relative['first_day_of_this_week'] < $relative['yesterday']){
 			$group_6 = array();
 			$group_6['group_name'] = lang('this week(before yesterday)');
 			$group_6['group_order'] = 6;
 			$group_6['id'] = 'group_this_week_before_yesterday';
-			$condition = $date_field." >= '".$relative['first_day_of_this_week']->beginningOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." < '".$relative['yesterday']->beginningOfDay()->toMySQL()."'";
+			$condition = $date_field." >= '".$relative['first_day_of_this_week']->toMySQL()."'";
+			$condition .= " AND ".$date_field." < '".$relative['yesterday']->toMySQL()."'";
 			$group_6['conditions'] = $condition;
 			$date_groups[] = $group_6;
 		}
@@ -1169,8 +1196,8 @@ class TaskController extends ApplicationController {
 		$group_7['group_name'] = lang('yesterday');
 		$group_7['group_order'] = 7;
 		$group_7['id'] = 'group_yesterday';
-		$condition = $date_field." >= '".$relative['yesterday']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." <= '".$relative['yesterday']->endOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['yesterday']->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative_ends['yesterday']->toMySQL()."'";
 		$group_7['conditions'] = $condition;
 		$date_groups[] = $group_7;
 		
@@ -1179,29 +1206,30 @@ class TaskController extends ApplicationController {
 		$group_8['group_name'] = lang('today');
 		$group_8['group_order'] = 8;
 		$group_8['id'] = 'group_today';
-		$condition = $date_field." >= '".$relative['today']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." <= '".$relative['today']->endOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['today']->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative_ends['today']->toMySQL()."'";
 		$group_8['conditions'] = $condition;
 		$date_groups[] = $group_8;
+		
 		
 		//tomorrow
 		$group_9 = array();
 		$group_9['group_name'] = lang('tomorrow');
 		$group_9['group_order'] = 9;
 		$group_9['id'] = 'group_tomorrow';
-		$condition = $date_field." >= '".$relative['tomorrow']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." <= '".$relative['tomorrow']->endOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['tomorrow']->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative_ends['tomorrow']->toMySQL()."'";
 		$group_9['conditions'] = $condition;
 		$date_groups[] = $group_9;
 		
 		//this week(later tomorrow)
-		if($relative['tomorrow']->beginningOfDay() < $relative['last_day_of_this_week']->beginningOfDay()){
+		if($relative['tomorrow'] < $relative['last_day_of_this_week']){
 			$group_10 = array();
 			$group_10['group_name'] = lang('this week(later tomorrow)');
 			$group_10['group_order'] = 10;
 			$group_10['id'] = 'group_this_week_later_tomorrow';
-			$condition = $date_field." > '".$relative['tomorrow']->endOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_week']->endOfDay()->toMySQL()."'";
+			$condition = $date_field." > '".$relative_ends['tomorrow']->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_this_week']->toMySQL()."'";
 			$group_10['conditions'] = $condition;
 			$date_groups[] = $group_10;
 		}
@@ -1211,19 +1239,19 @@ class TaskController extends ApplicationController {
 		$group_11['group_name'] = lang('next week');
 		$group_11['group_order'] = 11;
 		$group_11['id'] = 'group_next_week';
-		$condition = $date_field." >= '".$relative['first_day_of_next_week']->beginningOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
+		$condition = $date_field." >= '".$relative['first_day_of_next_week']->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_next_week']->toMySQL()."'";
 		$group_11['conditions'] = $condition;
 		$date_groups[] = $group_11;
 		
 		//this month(after next week)
-		if($relative['last_day_of_next_week']->beginningOfDay() < $relative['last_day_of_this_month']->beginningOfDay()){
+		if($relative['last_day_of_next_week'] < $relative['last_day_of_this_month']){
 			$group_12 = array();
 			$group_12['group_name'] = lang('this month(after next week)');
 			$group_12['group_order'] = 12;
 			$group_12['id'] = 'group_this_month_after_next_week';
-			$condition = $date_field." > '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_month']->endOfDay()->toMySQL()."'";
+			$condition = $date_field." > '".$relative_ends['last_day_of_next_week']->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_this_month']->toMySQL()."'";
 			$group_12['conditions'] = $condition;
 			$date_groups[] = $group_12;
 		}
@@ -1233,13 +1261,13 @@ class TaskController extends ApplicationController {
 		$group_13['group_name'] = lang('next month');
 		$group_13['group_order'] = 13;
 		$group_13['id'] = 'group_next_month';
-		if($relative['last_day_of_next_week']->beginningOfDay() < $relative['last_day_of_this_month']->beginningOfDay()){
-			$condition = $date_field." > '".$relative['last_day_of_this_month']->endOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
+		if($relative['last_day_of_next_week'] < $relative['last_day_of_this_month']){
+			$condition = $date_field." > '".$relative_ends['last_day_of_this_month']->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_next_month']->toMySQL()."'";
 			$group_13['conditions'] = $condition;
 		}else{
-			$condition = $date_field." > '".$relative['last_day_of_next_week']->endOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
+			$condition = $date_field." > '".$relative_ends['last_day_of_next_week']->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_next_month']->toMySQL()."'";
 			$group_13['conditions'] = $condition;
 		}
 		$date_groups[] = $group_13;
@@ -1249,19 +1277,19 @@ class TaskController extends ApplicationController {
 		$group_14['group_name'] = lang('next three months(after next month)');
 		$group_14['group_order'] = 14;
 		$group_14['id'] = 'group_next_three_months_after_next_month';
-		$condition = $date_field." > '".$relative['last_day_of_next_month']->endOfDay()->toMySQL()."'";
-		$condition .= " AND ".$date_field." <= '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'";
+		$condition = $date_field." > '".$relative_ends['last_day_of_next_month']->toMySQL()."'";
+		$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_next_3_months']->toMySQL()."'";
 		$group_14['conditions'] = $condition;
 		$date_groups[] = $group_14;
 		
 		//this year
-		if($relative['last_day_of_next_3_months']->beginningOfDay() < $relative['last_day_of_this_year']->beginningOfDay()){
+		if($relative['last_day_of_next_3_months'] < $relative['last_day_of_this_year']){
 			$group_15 = array();
 			$group_15['group_name'] = lang('this year');
 			$group_15['group_order'] = 15;
 			$group_15['id'] = 'group_this_year';
-			$condition = $date_field." > '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'";
-			$condition .= " AND ".$date_field." <= '".$relative['last_day_of_this_year']->endOfDay()->toMySQL()."'";
+			$condition = $date_field." > '".$relative_ends['last_day_of_next_3_months']->toMySQL()."'";
+			$condition .= " AND ".$date_field." <= '".$relative_ends['last_day_of_this_year']->toMySQL()."'";
 			$group_15['conditions'] = $condition;
 			$date_groups[] = $group_15;
 		}
@@ -1271,11 +1299,11 @@ class TaskController extends ApplicationController {
 		$group_16['group_name'] = lang('after this year');
 		$group_16['group_order'] = 16;
 		$group_16['id'] = 'group_after_this_year';
-		if($relative['last_day_of_next_3_months']->beginningOfDay() < $relative['last_day_of_this_year']->beginningOfDay()){
-			$condition = $date_field." > '".$relative['last_day_of_this_year']->endOfDay()->toMySQL()."'".$not_empty_date;
+		if($relative['last_day_of_next_3_months'] < $relative['last_day_of_this_year']){
+			$condition = $date_field." > '".$relative_ends['last_day_of_this_year']->toMySQL()."'".$not_empty_date;
 			$group_16['conditions'] = $condition;
 		}else{
-			$condition = $date_field." > '".$relative['last_day_of_next_3_months']->endOfDay()->toMySQL()."'".$not_empty_date;
+			$condition = $date_field." > '".$relative_ends['last_day_of_next_3_months']->toMySQL()."'".$not_empty_date;
 			$group_16['conditions'] = $condition;
 		}
 		$date_groups[] = $group_16;
@@ -1311,7 +1339,9 @@ class TaskController extends ApplicationController {
 				continue;
 			}
 			$group_conditions = " AND ".$priority_field." = '".$group['group_id']."'";
-			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+			$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
 			
 			$groups[$key]['group_name'] = lang('priority '.$group['group_id']);
 			switch ($group['group_id']) {
@@ -1372,8 +1402,10 @@ class TaskController extends ApplicationController {
 				continue;
 			}
 			$group_conditions = " AND ".$milestone_field." = '".$group['group_id']."'";
-			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
-
+			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+			$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
+			
 			if($group['group_id'] > 0){
 				$milestone = ProjectMilestones::findById($group['group_id']);
 				$groups[$key]['group_name'] = $milestone->getName();
@@ -1465,7 +1497,9 @@ class TaskController extends ApplicationController {
 			}
 			
 			$group_conditions = " AND ".$user_field." = '".$group['group_id']."'";	
-			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+			$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
 			
 			$contact = Contacts::findById($group['group_id']);
 			if($contact instanceof Contact){
@@ -1525,7 +1559,9 @@ class TaskController extends ApplicationController {
 			}
 			
 			if($group_conditions != ""){
-				$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+				$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+				$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+				$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
 				
 				//group totals
 				$totals = $this->getGroupTotals($conditions.$group_conditions);
@@ -1583,8 +1619,10 @@ class TaskController extends ApplicationController {
 				
 				$group_conditions = " AND `jtm`.`id` = ".$group['group_id'];
 							
-				$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit, $join_params);
-		
+				$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit, $join_params);
+				$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+				$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
+				
 				//group totals
 				$group_time_estimate = ProjectTasks::instance()->listing(array(
 						"select_columns" => array("SUM(time_estimate) AS group_time_estimate "),
@@ -1615,7 +1653,9 @@ class TaskController extends ApplicationController {
 			$join_params['join_type'] = "LEFT ";
 			$join_params['on_extra'] = " LEFT  JOIN `".TABLE_PREFIX."members` `jtm` ON `jt`.`member_id` = `jtm`.`id` AND `jtm`.`dimension_id` = $dim_id AND `jt`.`is_optimization` = 0";
 			
-			$unknown_group['group_tasks'] = $this->getTasksInGroup($conditions.$list_subtasks_cond, $start, $limit, $join_params, " `e`.`object_id` HAVING SUM(`jtm`.`dimension_id`) is null");
+			$tasks_in_group = $this->getTasksInGroup($conditions.$list_subtasks_cond, $start, $limit, $join_params, " `e`.`object_id` HAVING SUM(`jtm`.`dimension_id`) is null");
+			$unknown_group['root_total'] = $tasks_in_group['total_roots_tasks'];
+			$unknown_group['group_tasks'] = $tasks_in_group['tasks'];
 			
 			$unknown_group_totals = ProjectTasks::instance()->listing(array(
 					"select_columns" => array("time_estimate"),
@@ -1658,8 +1698,10 @@ class TaskController extends ApplicationController {
 			$groups[$key]['group_name'] = lang('tasks');
 			$groups[$key]['group_icon'] = 'ico-task';
 							
-			$groups[$key]['group_tasks'] = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
-	
+			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
+			$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
+			
 			//group totals
 			$totals = $this->getGroupTotals($conditions.$group_conditions);
 			foreach($totals as $total_key => $total){
@@ -1688,6 +1730,31 @@ class TaskController extends ApplicationController {
 				break;			
 		}
 		
+		
+		//START tasks tree
+		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
+		if($list_subtasks){
+			$tasks_tree = ProjectTasks::instance()->listing(array(
+					"select_columns" => array("e.object_id","e.parent_id","e.depth","e.parents_path"),
+					"extra_conditions" => $conditions,
+					"join_params"=> $join_params,
+					"group_by" => $group_by,				
+					"count_results" => false,
+					"raw_data" => true,
+			))->objects;
+			if(is_array($tasks_tree)){
+				$root_nodes = $this->getRootNodes($tasks_tree);
+				$see_roots_ids = implode(',', $root_nodes);
+				$conditions .= " AND e.object_id  IN ($see_roots_ids)"; 
+				$total_see_roots_tasks = count($root_nodes);
+			}else{
+				$total_see_roots_tasks = 0;
+			}
+		}else{
+			$total_see_roots_tasks = 0;
+		}
+		//END tasks tree
+		
 		$tasks = ProjectTasks::instance()->listing(array(
 				"select_columns" => array("e.*","o.*"),
 				"extra_conditions" => $conditions,
@@ -1705,7 +1772,43 @@ class TaskController extends ApplicationController {
 		foreach ($tasks as $task){
 			$tasks_array[] = ProjectTasks::getArrayInfo($task);
 		}
-		return $tasks_array;
+		
+		$return_array = array();
+		$return_array['total_roots_tasks'] = $total_see_roots_tasks;
+		$return_array['tasks'] = $tasks_array;
+		return $return_array;
+	}
+	
+	private function getRootNodes(array $dataset_see) {
+		$root_nodes_ids = array();
+		
+		$ids_array = array();	
+		foreach ($dataset_see as $node) {
+			$ids_array[] = $node['object_id'];
+		}			
+		
+		foreach ($dataset_see as $node) {
+			//is root 
+			if($node['parent_id'] == 0){
+				$root_nodes_ids[] = $node['object_id'];
+				continue;
+			}
+			
+			//check if there's an ancestor
+			$is_root = true;
+			$parents_ids = explode ( ",", $node['parents_path']);
+			foreach ($parents_ids as $parent_id) {
+				if(in_array($parent_id, $ids_array)){
+					$is_root = false;
+					continue;
+				}
+			}	
+			if($is_root){
+				$root_nodes_ids[] = $node['object_id'];		
+			}					
+		}		
+		
+		return $root_nodes_ids;
 	}
 	
 	private function getGroups($groupBy,$conditions,$show_more_conditions){
@@ -1717,16 +1820,9 @@ class TaskController extends ApplicationController {
 		$group_by_status = array('status');
 		$group_by_nothing = array('nothing');
 		$group_by_milestone = array('milestone');
-		
-		
 				
-		//subtasks structure
-		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
 		$list_subtasks_cond = "";
-		if($list_subtasks){
-			$list_subtasks_cond = " AND `parent_id` = 0";
-		}
-		
+			
 		//Group by date
 		if(in_array($groupBy,$group_by_date)){
 			$groups = $this->getDateGroups($groupBy,$conditions,$show_more_conditions,$list_subtasks_cond);			
@@ -1750,6 +1846,13 @@ class TaskController extends ApplicationController {
 			$dim_id = (int) substr( $groupBy, 10);			
 			$groups = $this->getDimensionGroups($dim_id,$conditions,$show_more_conditions,$list_subtasks_cond);
 		}
+		
+		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
+		if(!$list_subtasks){
+			foreach ($groups as &$group) {
+				$group['root_total'] = $group['total'];
+			}
+		}		
 		
 		return $groups;
 	}
@@ -1783,7 +1886,12 @@ class TaskController extends ApplicationController {
 		$show_more_conditions = array("groupId" => $groupId,"start" => $start,"limit" => $limit);
 		
 		//Groups
-		$groupBy = user_config_option('tasksGroupBy');
+		$groupBy = array_var($_REQUEST,'tasksGroupBy',user_config_option('tasksGroupBy'));
+		
+		if(array_var($_REQUEST,'tasksOrderBy',false)){
+			set_user_config_option('tasksOrderBy',array_var($_REQUEST,'tasksOrderBy'),logged_user()->getId());			
+		}		
+		
 		$groups = $this->getGroups($groupBy,$conditions,$show_more_conditions);		
 		
 		if(is_null($groups)){
@@ -2329,11 +2437,8 @@ class TaskController extends ApplicationController {
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
 				
-				if (user_config_option("add_task_default_reminder")){
-					$object_controller->add_reminders($task);
-				}
-				
-				
+				$object_controller->add_reminders($task);
+								
 				if(config_option('repeating_task') == 1){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;
@@ -2392,7 +2497,7 @@ class TaskController extends ApplicationController {
 				}
 				$isSailent = true;
 				// notify asignee
-				if($task->getAssignedToContactId() != $task->getAssignedById()) {
+				if($task instanceof ProjectTask && $task->getAssignedToContactId() != $task->getAssignedById()) {
 					$isSailent = false;
 					try {
 						Notifier::taskAssigned($task);						
@@ -2402,7 +2507,7 @@ class TaskController extends ApplicationController {
 				}
 				// notify asignee for subtasks
 				foreach ($sub_tasks_to_log['assigned'] as $st_to_log) {
-					if($st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
+					if($st_to_log instanceof ProjectTask && $st_to_log->getAssignedToContactId() != $st_to_log->getAssignedById()) {
 						try {
 							Notifier::taskAssigned($st_to_log);
 						} catch(Exception $e) {
@@ -2917,7 +3022,7 @@ class TaskController extends ApplicationController {
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
 				
-				if (!$task->isCompleted() && $task->getSubscriberIds() != null){ //to make sure the task it is not completed yet, and that it has subscribed people											
+				if (!$task->isCompleted()){ //to make sure the task it is not completed yet, and that it has subscribed people											
 					$old_reminders = ObjectReminders::getByObject($task);
 					
 					$object_controller->add_reminders($task); //adding the new reminders, if any
@@ -2926,7 +3031,7 @@ class TaskController extends ApplicationController {
 					if (logged_user() instanceof Contact && (!is_array($old_reminders) || count($old_reminders)==0)
 							  && (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedToContactId() //if the user is going to set up reminders for tasks assigned to its colleagues
 					 		  || user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedToContactId() //if the user is going to set up reminders for his own tasks
-					 		  || $task->getAssignedTo() == null )){ //if there is no asignee, but it still has subscribers
+					 		  )){ //if there is no asignee, but it still has subscribers
 						
 						$reminder = new ObjectReminder();
 						$def = explode(",",user_config_option("reminders_tasks"));          			

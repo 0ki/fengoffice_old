@@ -249,7 +249,7 @@ class ObjectController extends ApplicationController {
 		}
 		
 		if ((!can_add($user, $check_allowed_members ? $object->getAllowedMembersToAdd($user, $manageable_members):$manageable_members, $object->getObjectTypeId()))
-			&& !($object instanceof TemplateTask || $object instanceof TemplateMilestone)) {
+			&& !($object instanceof TemplateTask || $object instanceof TemplateMilestone || ($object instanceof Contact && $object->isUser()))) {
 			
 			$dinfos = DB::executeAll("SELECT name, code, options FROM ".TABLE_PREFIX."dimensions WHERE is_manageable = 1");
 			$dimension_names = array();

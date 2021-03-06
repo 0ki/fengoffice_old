@@ -12,7 +12,8 @@ ogTasks.addNewTaskGroup = function(data, group_index, draw){
 	group.total_tasks_loaded = 0;
 		
 	group.total = parseInt(group.total);	
-	
+	group.root_total = parseInt(group.root_total);	
+		
 	group.offset = parseInt(og.noOfTasks);
 	
 	
@@ -140,6 +141,9 @@ ogTasks.addTaskToGroup = function(group, task, draw){
 			$("#rx__no_tasks_info").remove(); 
 			
 			ogTasks.drawTask(task, drawOptions, displayCriteria, group.group_id, 1);
+			
+			var btns = $("#ogTasksPanelTask" + task.id + "G"+group.group_id +" .tasksActionsBtn").toArray();
+			og.initPopoverBtns(btns);	
 		}	
 	}	
 };

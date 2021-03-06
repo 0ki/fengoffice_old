@@ -566,6 +566,9 @@ class TemplateController extends ApplicationController {
 			$copies[] = $copy;
 			$copiesIds[$object->getId()] = $copy->getId();
 			
+			$ret = null;
+			Hook::fire('after_template_object_instantiation', array('original' => $object, 'copy' => $copy), $ret);
+			
 			
 			/* Set instantiated object members:
 			 * 		if no member is active then the instantiated object is put in the same members as the original

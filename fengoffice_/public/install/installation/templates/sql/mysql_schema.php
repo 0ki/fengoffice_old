@@ -629,6 +629,8 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
 CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `object_id` int(10) unsigned NOT NULL,
   `parent_id` int(10) unsigned default NULL,
+  `parents_path` varchar(255) NOT NULL default '',
+  `depth` int(2) unsigned NOT NULL default '0',
   `text` text <?php echo $default_collation ?>,
   `due_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `start_date` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -1079,6 +1081,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_tasks` (
   `session_id` int(10) DEFAULT NULL,
   `object_id` int(10) unsigned NOT NULL,
   `parent_id` int(10) unsigned DEFAULT NULL,
+  `parents_path` varchar(255) NOT NULL default '',
+  `depth` int(2) unsigned NOT NULL default '0',
   `text` text <?php echo $default_collation ?>,
   `due_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `start_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',

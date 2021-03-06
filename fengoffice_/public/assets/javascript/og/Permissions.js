@@ -34,6 +34,8 @@ og.ogLoadPermissions = function(genid, isNew){
 	} else {
 		og.permissionInfo[genid] = {};
 	}
+	
+	og.eventManager.fireEvent('on load user permissions', {});
 }
 
 og.getPermissionsForMember = function(genid, member_id) {
@@ -667,6 +669,10 @@ og.ogPermPrepareSendData = function(genid){
 	if (hf) {
 		hf.value = Ext.util.JSON.encode(result);
 	}
+	
+	var hfpg = document.getElementById(genid + 'hfPgId');
+	var pg_id = hfpg ? hfpg.value : 0;
+	og.eventManager.fireEvent('on send user permissions', {pg_id: pg_id, perms: result});
 		
 	return true;
 }
@@ -1017,6 +1023,16 @@ og.userPermissions.afterChangingPermissions = function(genid) {
 	if (!og.userPermissions.hasAnyPermissions(genid, og.userPermissions.current_pg_id)) {
 		$('#' + genid + '_pg_' + og.userPermissions.current_pg_id).remove();
 	}
+	
+	if (og.on_member_permissions_after_change && og.on_member_permissions_after_change.length > 0) {
+		for (var x=0; x<og.on_member_permissions_after_change.length; x++) {
+			var func = og.on_member_permissions_after_change[x];
+			if (typeof(func) == 'function') {
+				func.call(null, genid, og.userPermissions.current_pg_id);
+			}
+		}
+	}
+	
 	og.userPermissions.current_pg_id = 0;
 }
 
@@ -1100,6 +1116,14 @@ og.userPermissions.onUserSelect = function(genid, arguments) {
 	og.userPermissions.loadPGPermissions(genid, pg_id);
 	Ext.get(genid + 'pg_name').dom.innerHTML = name;
 
+	if (og.on_member_permissions_user_select && og.on_member_permissions_user_select.length > 0) {
+		for (var x=0; x<og.on_member_permissions_user_select.length; x++) {
+			var func = og.on_member_permissions_user_select[x];
+			if (typeof(func) == 'function') {
+				func.call(null, genid, pg_id);
+			}
+		}
+	}
 }
 
 og.userPermissions.drawUserListItem = function(genid, item) {
@@ -1207,12 +1231,23 @@ og.userPermissions.savePermissions = function(genid, member_id) {
 			}
 			
 			if (to_send.length > 0) {
+				var post_vars = {
+					pg_id: og.userPermissions.current_pg_id,
+					member_id: member_id,
+					perms: Ext.util.JSON.encode(to_send)
+				};
+				if (og.before_send_member_permissions && og.before_send_member_permissions.length > 0) {
+					for (var x=0; x<og.before_send_member_permissions.length; x++) {
+						var func = og.before_send_member_permissions[x];
+						if (typeof(func) == 'function') {
+							func.call(null, genid, post_vars);
+						}
+					}
+				}
+				
 				og.openLink(og.getUrl('member', 'save_permission_group'), {
 					preventPanelLoad: true,
-					post: {
-						member_id: member_id,
-						perms: Ext.util.JSON.encode(to_send)
-					},
+					post: post_vars,
 					callback: function(success, data) {
 						if (success) {
 							// mark processed permissions as not modified to avoid sending them again

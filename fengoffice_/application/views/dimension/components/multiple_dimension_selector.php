@@ -37,7 +37,7 @@
 
 		// Render view by obj type
 		$container_id = $genid."member-seleector-dim".$dimension_id;
-		$search_placeholder = lang('add new relation ' . $dimension['dimension_code']);
+		$search_placeholder = str_replace("'", "\'", lang('add new relation ' . $dimension['dimension_code']));
 		$search_function = "ogSearchSelector.searchMember";
 		$result_limit = "5";
 		$select_function = array_var($options, 'select_function', "");

@@ -3,11 +3,12 @@ if (!member_selector) var member_selector = {};
 member_selector.init = function(genid) {
 
 	member_selector[genid].sel_context = {};
-	var json_sel_ids = $("#" + genid + member_selector[genid].hiddenFieldName).val();
+	var json_sel_ids = document.getElementById(genid + member_selector[genid].hiddenFieldName).value;
 	var selected_member_ids = json_sel_ids == "" ? [] : Ext.util.JSON.decode(json_sel_ids);
 	
 	var dimension_to_get = new Array();
-	for (i=0; i<selected_member_ids.length; i++) {
+	if (selected_member_ids) {
+	  for (i=0; i<selected_member_ids.length; i++) {
 		var mid = selected_member_ids[i];
 		if (member_selector[genid].members_dimension[mid] > 0) {
 			var dim = member_selector[genid].members_dimension[mid];
@@ -23,6 +24,7 @@ member_selector.init = function(genid) {
 		} else {
 			dimension_to_get.push(mid);
 		}
+	  }
 	}
 	
 	// fill store with preloaded members

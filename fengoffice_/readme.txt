@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1
+	About Feng Office 3.1.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,26 @@
 	Changelog
 	=========
 	
+	Since 3.1
+	----------------
+	bugfix: Sql error in tasks list.
+	bugfix: In upgrader script, if DEFAULT_LOCALIZATION not defined then define it with value "en_us".
+	bugfix: After adding tasks, actions buttons not working.
+	bugfix: Reminders on task templates are not saved.
+	bugfix: Can't see subtasks if parent task  is not displayed.
+	bugfix: If email account is set as default, then the "Sender name" field is ignored.
+	bugfix: After change group by on tasks list the groups are still the same.
+	bugfix: Timezones on tasks list groups.
+	bugfix: When adding an event checkboxes "subscribe invited users" and "send email notifications" are not working.
+	bugfix: Duplicated tasks on tasks list in last month and last week when this groups are overlapping.
+	bugfix: Sql error table missing prefix. table im_types.
+	bugfix: Can't add tasks in french.
+	
+	feature: in contact csv import allow to match custom properties
+	
+	language: fr_ca updated.
+	
+	
 	Since 3.1-beta
 	----------------	
 	bugfix: Template tasks subscribers were not copied when instantiating the tasks.
@@ -208,7 +228,7 @@
 	
 	Since 3.0.2
 	----------------
-	feature: Choose if you want to exclude a client or project from automatic status changes.‏
+	feature: Choose if you want to exclude a client or project from automatic status changes.
 	feature: Added custom properties to choose a default status when creating a new project or client. 
 	feature: When creating a new client, you can now choose if its a company, a contact, or nothing. 
 	
@@ -1117,7 +1137,7 @@
 	feature: Gantt Chart now displays tasks with only start or due date
 	feature: archive/unarchive dimension members from administration->dimensions.
 	feature: when uploading a file with the same name as another that has been uploaded by other user and you don't have permissions over it, don't show as if exists.
-	feature: New Projects by default will start with â€œgoodâ€� status
+	feature: New Projects by default will start with â€œgoodâ€? status
 	feature: Listing function does not use limit if start parameter is not specified
 	feature: When adding a client/project the initial focus is on name
 	 
@@ -1151,7 +1171,7 @@
 	bugfix: Trash fails when mail plugin is not installed
 	bugfix: Member selector fixed for IE
 	bugfix: Some permissions were not set when adding new member
-	bugfix: Creating reports of â€œgrouping by userâ€� and â€œmembersâ€� at the same time issue fix
+	bugfix: Creating reports of â€œgrouping by userâ€? and â€œmembersâ€? at the same time issue fix
 	bugfix: Report not showing correct Date in condition legend
 	bugfix: SQL issue in Report fixed
 	bugfix: Description not set for all tasks when listing.

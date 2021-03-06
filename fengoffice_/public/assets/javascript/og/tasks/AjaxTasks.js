@@ -5,6 +5,13 @@ ogTasks.getGroups = function(){
 	if (!bottomToolbar) return;
 	var filters = bottomToolbar.getFilters();
 	
+	if(bottomToolbar.groupcombo){
+		filters.tasksGroupBy = bottomToolbar.groupcombo.value;
+	}	
+	if(bottomToolbar.ordercombo){
+		filters.tasksOrderBy = bottomToolbar.ordercombo.value;
+	}
+	
 	//for gantt we load all tasks untill we have ajax support for gantt
 	if (typeof ogTasks.userPreferences.showTasksListAsGantt != 'undefined' && ogTasks.userPreferences.showTasksListAsGantt) {
 		filters.limit = 500;
@@ -38,6 +45,12 @@ ogTasks.showMoreTasks = function(group_id, show_all){
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	if (!bottomToolbar) return;
 	var filters = bottomToolbar.getFilters();
+	if(bottomToolbar.groupcombo){
+		filters.tasksGroupBy = bottomToolbar.groupcombo.value;
+	}	
+	if(bottomToolbar.ordercombo){
+		filters.tasksOrderBy = bottomToolbar.ordercombo.value;
+	}
 	
 	var group = ogTasks.getGroup(group_id);
 	
@@ -50,7 +63,7 @@ ogTasks.showMoreTasks = function(group_id, show_all){
 	}
 	
 	if(show_all){
-		filters.limit = group.total;
+		filters.limit = group.root_total;
 	}	
 	
 	filters.groupId = group.group_id;
@@ -102,7 +115,12 @@ ogTasks.refreshGroupsTotals = function(group_id){
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	if (!bottomToolbar) return;
 	var filters = bottomToolbar.getFilters();
-	
+	if(bottomToolbar.groupcombo){
+		filters.tasksGroupBy = bottomToolbar.groupcombo.value;
+	}	
+	if(bottomToolbar.ordercombo){
+		filters.tasksOrderBy = bottomToolbar.ordercombo.value;
+	}		
 	
 	filters.start = 0;	
 	filters.limit = 0;

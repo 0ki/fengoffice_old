@@ -619,7 +619,7 @@ class MailController extends ApplicationController {
 					$mail->setBodyHtml('');
 				}
 				$mail->setFrom($account->getEmailAddress());
-				if ($accountUser->getIsDefault()) {
+				if ($accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
 					$mail->setFromName(logged_user()->getObjectName());
 				} else {
 					$mail->setFromName($accountUser->getSenderName());
@@ -866,7 +866,7 @@ class MailController extends ApplicationController {
 						if (!$accountUser instanceof MailAccountContact) {
 							$from = array($account->getEmailAddress() => $account->getFromName());
 						} else {
-							if (logged_user() instanceof Contact && $accountUser->getIsDefault()) {
+							if (logged_user() instanceof Contact && $accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
 								$from = array($account->getEmailAddress() => logged_user()->getObjectName());
 							} else {
 								$from = array($account->getEmailAddress() => $accountUser->getSenderName());
@@ -2769,12 +2769,16 @@ class MailController extends ApplicationController {
 			}
 			
 			foreach ($custom_properties as $cp) {
-				$cp_value = CustomPropertyValues::getCustomPropertyValue($email->getId(), $cp->getId());
-				if ($cp->getType() == 'contact' && $cp_value instanceof CustomPropertyValue) {
-					$contact = Contacts::findById($cp_value->getValue());
-					if ($contact instanceof Contact) $cp_value->setValue($contact->getObjectName());
+				$cp_vals = CustomPropertyValues::getCustomPropertyValues($email->getId(), $cp->getId());
+				$val_to_show = "";
+				foreach ($cp_vals as $cp_val) {
+					if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
+						$cp_contact = Contacts::findById($cp_val->getValue());
+						$cp_val->setValue($cp_contact->getObjectName());
+					}
+					$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
 				}
-				$object["messages"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+				$object["messages"][$i]['cp_'.$cp->getId()] = $val_to_show;
 			}
 			$i++;
 		}

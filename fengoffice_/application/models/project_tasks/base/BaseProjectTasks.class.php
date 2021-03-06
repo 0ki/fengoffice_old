@@ -16,6 +16,8 @@ abstract class BaseProjectTasks extends ContentDataObjects {
 	static private $columns = array(
     	'object_id' => DATA_TYPE_INTEGER,
     	'parent_id' => DATA_TYPE_INTEGER, 
+		'parents_path' => DATA_TYPE_STRING,
+		'depth' => DATA_TYPE_INTEGER,
         'text' => DATA_TYPE_STRING,
         'assigned_to_contact_id' => DATA_TYPE_INTEGER,
         'completed_on' => DATA_TYPE_DATETIME, 
@@ -115,7 +117,7 @@ abstract class BaseProjectTasks extends ContentDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'object_subtype', 'parent_id', 'assigned_to_contact_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 
+      		'object_subtype', 'parent_id', 'parents_path',	'depth', 'assigned_to_contact_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 
                 'from_template_id', 'from_template_object_id', 'use_due_time', 'use_start_time', 'original_task_id', 'multi_assignment')
 		);
 	} // getSystemColumns

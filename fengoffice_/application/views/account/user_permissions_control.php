@@ -19,6 +19,7 @@ foreach ($default_user_permissions as $perm_info) {
 <input id="<?php echo $genid ?>hfAllowedOTbyMemType" type="hidden" value="<?php echo str_replace('"',"'", json_encode($allowed_object_types_by_member_type));?>" />
 <input id="<?php echo $genid ?>hfMemTypes" type="hidden" value="<?php echo str_replace('"',"'", json_encode($member_types));?>" />
 <input id="<?php echo $genid ?>hfPermsSend" name="<?php echo $name ?>" type="hidden" value="" />
+<input id="<?php echo $genid ?>hfPgId" name="hfPgId" type="hidden" value="<?php echo $pg_id?>" />
 
 <?php 
 	$display_permissions = true; 

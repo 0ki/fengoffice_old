@@ -211,7 +211,8 @@ function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
 }
 
 
-function core_dimensions_after_save_member_permissions($member, &$ignored) {
+function core_dimensions_after_save_member_permissions($params, &$ignored) {
+	$member = array_var($params, 'member');
 	if (!$member instanceof Member || !($member->getId()>0)) return;
 	$permission_group_ids = array();
 	

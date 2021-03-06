@@ -143,6 +143,14 @@ class MemberController extends ApplicationController {
 			}
 			tpl_assign('member_data', $member_data);
 			
+			$ret = array();
+			Hook::fire('check_additional_member_permissions', array('action' => 'add', 'parent_member_id' => $parent, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+			if (count($ret) > 0 && !array_var($ret, 'ok')) {
+				flash_error(array_var($ret, 'message'));
+				ajx_current("empty");
+				return;
+			}
+			
 			// Permissions
 			$permission_parameters = permission_member_form_parameters();
 			
@@ -210,6 +218,8 @@ class MemberController extends ApplicationController {
 			
 			if (array_var($_GET, 'rest_genid') != "") tpl_assign('rest_genid', array_var($_GET, 'rest_genid'));
 			if (array_var($_GET, 'prop_genid') != "") tpl_assign('prop_genid', array_var($_GET, 'prop_genid'));
+			
+			Hook::fire('before_add_member', array('member'=>$member, 'parent'=>$parent), $ret);
 			
 		} else {
 		try {
@@ -289,7 +299,13 @@ class MemberController extends ApplicationController {
 			return;
 		}
 		
-		
+		$ret = array();
+		Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+		if (count($ret) > 0 && !array_var($ret, 'ok')) {
+			flash_error(array_var($ret, 'message'));
+			ajx_current("empty");
+			return;
+		}
 		
 		$this->setTemplate('add');
 		$member_data = array_var($_POST, 'member');
@@ -384,7 +400,7 @@ class MemberController extends ApplicationController {
 			$member_data['name'] = remove_css_and_scripts($member_data['name']);
 						
 			$member->setFromAttributes($member_data);
-			
+				
 			/* @var $member Member */
 			$object_type = ObjectTypes::findById($member->getObjectTypeId());
 			
@@ -420,6 +436,16 @@ class MemberController extends ApplicationController {
 				$parent = Members::findById($member->getParentMemberId());
 				if ($parent instanceof Member) $member->setDepth($parent->getDepth() + 1);
 				else $member->setDepth(1);
+			}
+				
+			$ret = array();
+			if ($is_new) {
+				Hook::fire('check_additional_member_permissions', array('action' => 'add', 'member' => $member, 'parent_member_id' => $member->getParentMemberId(), 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+			} else {
+				Hook::fire('check_additional_member_permissions', array('action' => 'edit', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+			}
+			if (count($ret) > 0 && !array_var($ret, 'ok')) {
+				throw new Exception(array_var($ret, 'message'));
 			}
 			
 			if ($object_type->getType() == 'dimension_object') {
@@ -559,7 +585,7 @@ class MemberController extends ApplicationController {
 			
 			
 			$ret = null;
-			Hook::fire('after_member_save', $member, $ret);
+			Hook::fire('after_member_save', array('member' => $member, 'is_new' => $is_new), $ret);
 			
 			if ($is_new) {
 				// set all permissions for the creator
@@ -681,6 +707,15 @@ class MemberController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		}
+		
+		$ret = array();
+		Hook::fire('check_additional_member_permissions', array('action' => 'delete', 'member' => $member, 'pg_id' => logged_user()->getPermissionGroupId()), $ret);
+		if (count($ret) > 0 && !array_var($ret, 'ok')) {
+			flash_error(array_var($ret, 'message'));
+			ajx_current("empty");
+			return;
+		}
+		
 		try {
 			
 			DB::beginWork();
@@ -1581,9 +1616,13 @@ class MemberController extends ApplicationController {
 		$permissions = array_var($_REQUEST, 'perms');
 		try {
 			DB::beginWork();
-			save_member_permissions_background(logged_user(), $member, $permissions);
-			DB::commit();
 			
+			save_member_permissions_background(logged_user(), $member, $permissions);
+			
+			$null = null;
+			Hook::fire('after_save_member_permissions_for_pg', $_REQUEST, $null);
+			
+			DB::commit();
 			flash_success(lang("permissions successfully saved"));
 			
 		} catch (Exception $e) {

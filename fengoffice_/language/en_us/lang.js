@@ -919,6 +919,7 @@ addLangs({
 	'quick edit': 'Quick edit',
 	'quick complete': 'Quick complete',
 	'quick add sub tasks': 'Quick add sub tasks',
+	'subtasks structure': 'Subtasks structure',	
 	
 	'new member added popup title' : '{0} {1} successfully added',
 	'new member added popup msg' : 'You have succesfully added the new {0} named {1}.',

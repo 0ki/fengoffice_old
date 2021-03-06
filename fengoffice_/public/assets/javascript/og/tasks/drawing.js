@@ -1551,7 +1551,7 @@ ogTasks.newTaskGroupTotals = function(group) {
 	var drawOptions = topToolbar.getDrawOptions();
 	drawOptions.groupId = group.group_id;
 	
-	if(group.total_tasks_loaded < group.total){
+	if(group.total_tasks_loaded < group.root_total){
 		drawOptions.showMore = true;				
 	}
 	

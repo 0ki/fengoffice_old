@@ -760,7 +760,7 @@ class ContactController extends ApplicationController {
 						if ($j == 0){
 							$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
 						}else{
-							$object["contacts"][$i]['cp_'.$cp->getId()] .= "; ";
+							$object["contacts"][$i]['cp_'.$cp->getId()] .= ", ";
 							$object["contacts"][$i]['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
 						}
 					}
@@ -1883,10 +1883,10 @@ class ContactController extends ApplicationController {
 							$contact = Contacts::findOne(array(
 								"conditions" => "first_name = ".$fname." AND surname = ".$lname." $email_cond",
 								'join' => array(
-                                                                    'table' => ContactEmails::instance()->getTableName(),
-                                                                    'jt_field' => 'contact_id',
-                                                                    'e_field' => 'object_id',
-                                                                )));
+										'table' => ContactEmails::instance()->getTableName(),
+										'jt_field' => 'contact_id',
+										'e_field' => 'object_id',
+								)));
 							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$contact) {
 								$contact = new Contact();
@@ -1955,6 +1955,23 @@ class ContactController extends ApplicationController {
 							    if(count(active_context_members(false)) > 0 ){
                                     $object_controller->add_to_members($contact, active_context_members(false));
                                 }
+                                
+                                
+                                // custom properties
+                                $custom_properties_info = array_var($_POST, 'select_custom_properties');
+                                $custom_properties_checked = array_var($_POST, 'check_custom_properties');
+                                if (count($custom_properties_info) > 0) {
+                                	$_POST['object_custom_properties'] = array();
+	                                foreach ($custom_properties_info as $cp_id => $col_index) {
+	                                	
+	                                	if (array_var($custom_properties_checked, $cp_id) == 'checked') {
+		                                	$_POST['object_custom_properties'][$cp_id] = array_var($registers[$i], $col_index);
+	                                	}
+	                                	
+	                                }
+	                                $object_controller->add_custom_properties($contact);
+                                }
+                                
 								ApplicationLogs::createLog($contact, null, $log_action);
 								$import_result['import_ok'][] = $contact_data;
 							} else {
@@ -1993,6 +2010,22 @@ class ContactController extends ApplicationController {
 								if(count(active_context_members(false)) > 0 ){
                                     $object_controller->add_to_members($company, active_context_members(false));
                                 }
+                                
+                                // custom properties
+                                $custom_properties_info = array_var($_POST, 'select_custom_properties');
+                                $custom_properties_checked = array_var($_POST, 'check_custom_properties');
+                                if (count($custom_properties_info) > 0) {
+                                	$_POST['object_custom_properties'] = array();
+                                	foreach ($custom_properties_info as $cp_id => $col_index) {
+                                
+                                		if (array_var($custom_properties_checked, $cp_id) == 'checked') {
+                                			$_POST['object_custom_properties'][$cp_id] = array_var($registers[$i], $col_index);
+                                		}
+                                		
+                                	}
+                                	$object_controller->add_custom_properties($company);
+                                }
+                                
 								ApplicationLogs::createLog($company, null, $log_action);
 								
 								$import_result['import_ok'][] = $contact_data;

@@ -113,7 +113,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			<?php } ?>
 			
 			<?php foreach ($categories as $category) { ?>
-			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
+			<li><a href="#<?php echo $genid . $category['id'] ?>"><?php echo $category['name'] ?></a></li>
 			<?php } ?>
 		</ul>
 		
@@ -423,12 +423,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 		<div id="<?php echo $genid ?>add_reminders_div" class="form-tab">
 			<div id="<?php echo $genid ?>add_reminders_content">
-				<?php echo render_add_reminders($task, 'due_date', array(
-					'type' => 'reminder_email',
-					'duration' => 1,
-					'duration_type' => 1440,
-					'for_subscribers' => true,
-				)); ?>
+				<?php 
+				$render_defaults = false;
+				if ($task->isNew()) {
+					$render_defaults = user_config_option("add_task_default_reminder");
+				}
+				?>
+				<?php echo render_add_reminders($task, 'due_date',null,null,"task",$render_defaults); ?>
 			</div>
 		</div>
 		
@@ -584,7 +585,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	<?php } // if ?>
 	
 	<?php foreach ($categories as $category) { ?>
-		<div id="<?php echo $genid . $category['name'] ?>" class="form-tab">
+		<div id="<?php echo $genid . $category['id'] ?>" class="form-tab">
 			<?php echo $category['content'] ?>
 		</div>
 	<?php } ?>

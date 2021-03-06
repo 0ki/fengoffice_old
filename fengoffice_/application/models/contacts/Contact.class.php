@@ -580,7 +580,7 @@ class Contact extends BaseContact {
 	} // getPhoneNumber
 
 	function getAllImValues() {
-		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN ".$t_prefix."im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
+		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN ".TABLE_PREFIX."im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
 		$res = array();
 		foreach ($rows as $row) {
 			$res[$row['name']] = $row['value'];

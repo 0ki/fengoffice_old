@@ -368,6 +368,10 @@ class ProjectTask extends BaseProjectTask {
 			ajx_current("empty");
 			return;
 		}
+		
+		$ret=null;
+		Hook::fire("before_completing_task", array('task' => $this), $ret);
+		
 		$this->setCompletedOn(DateTimeValueLib::now());
 		$this->setCompletedById(logged_user()->getId());
 
@@ -1247,6 +1251,19 @@ class ProjectTask extends BaseProjectTask {
 				}
 			}
 		}
+		
+		//update Depth And Parents Path
+		$parent_id_changed = false;
+		$new_parent_id = $this->getParentId();
+		if (!$this->isNew()) {
+			$old_parent_id = $old_me->getParentId();			
+			if($old_parent_id != $new_parent_id){				
+				$this->updateDepthAndParentsPath($new_parent_id);
+			}
+		}else{
+			$this->updateDepthAndParentsPath($new_parent_id);
+		}
+		
 		parent::save();
 		
 		if ($due_date_changed) {
@@ -1264,10 +1281,47 @@ class ProjectTask extends BaseProjectTask {
 				$task_ids[] = $task->getId();
 			} // if
 		} // if
+		
+		//update Depth And Parents Path for subtasks
+		$subtasks = $this->getSubTasks();
+		if(is_array($subtasks)) {
+			foreach($subtasks as $subtask) {
+				$subtask->updateDepthAndParentsPath($this->getId());
+				$subtask->save();
+			} // if
+		} // if
 
 		return true;
 
 	} // save
+	
+	function updateDepthAndParentsPath($new_parent_id){
+		if($new_parent_id > 0){
+			//set Parents Path
+			$parents_ids = array();
+			$parent = $this->getParent();
+			if(!$parent instanceof ProjectTask){
+				return;
+			}
+			$stop = false;
+			while (!$stop) {
+				$parents_ids[] = $parent->getId();
+				if($parent->getParentId() > 0){
+					$parent = $parent->getParent();
+				}else{
+					$stop = true;
+				}
+			}			
+			$parents_path = implode(',', $parents_ids);
+			$this->setParentsPath($parents_path);		
+			
+			//set Depth
+			$this->setDepth(count($parents_ids));				
+		}else{
+			$this->setParentsPath('');
+			$this->setDepth(0);
+		}	
+	}
 
 	function unarchive($unarchive_children = true){
 		$archiveTime = $this->getArchivedOn();

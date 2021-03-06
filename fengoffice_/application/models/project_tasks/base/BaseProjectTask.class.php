@@ -54,6 +54,51 @@ abstract class BaseProjectTask extends ContentDataObject {
 	function setParentId($value) {
 		return $this->setColumnValue('parent_id', $value);
 	} // setparentId()
+	
+	/**
+	 * Return value of 'parents_path' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getParentsPath() {
+		return $this->getColumnValue('parents_path');
+	} // getParentsPath()
+	
+	/**
+	 * Set value of 'parents_path' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setParentsPath($value) {
+		return $this->setColumnValue('parents_path', $value);
+	} // setParentsPath()
+	
+	/**
+	 * Return value of 'depth' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getDepth() {
+		return $this->getColumnValue('depth');
+	} //  getDepth()
+	
+	/**
+	 * Set value of 'depth' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setDepth($value) {
+		return $this->setColumnValue('depth', $value);
+	} // setDepth()
+	
 
 	/**
 	 * Return value of 'text' field

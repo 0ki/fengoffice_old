@@ -36,7 +36,8 @@
   require_once INSTALLATION_PATH . '/environment/classes/container/IContainer.class.php';
   require_once INSTALLATION_PATH . '/environment/classes/container/Container.class.php';
   
-Localization::instance()->loadSettings(DEFAULT_LOCALIZATION, INSTALLATION_PATH . '/language');
+  if (!defined('DEFAULT_LOCALIZATION')) define('DEFAULT_LOCALIZATION', 'en_us');
+  Localization::instance()->loadSettings(DEFAULT_LOCALIZATION, INSTALLATION_PATH . '/language');
   // Set exception handler
   set_exception_handler('dump_upgrader_exception');
 

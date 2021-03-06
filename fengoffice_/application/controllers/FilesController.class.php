@@ -1963,7 +1963,7 @@ class FilesController extends ApplicationController {
 						if ($j == 0){
 							$values['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
 						}else{
-							$values['cp_'.$cp->getId()] .= "; ";
+							$values['cp_'.$cp->getId()] .= ", ";
 							$values['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
 						}
 					}
