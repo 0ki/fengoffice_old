@@ -128,4 +128,5 @@
 	'content too long not loaded' => 'Le mail joint ne peut être affiché, mais sera envoyé avec ce mail.',
 	'member name already exists in dimension' => 'Ce membre \'{0}\' existe déjà dans la dimension (traduction approx.)',
 	'must choose at least one member of' => 'Vous devez au moins choisir un membre de {0}.',
+	'timeslot dnx' => 'Intervalle de Temps inexistant',
 ); ?>

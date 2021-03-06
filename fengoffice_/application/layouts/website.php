@@ -514,19 +514,25 @@ og.dimension_object_type_contents = [];
 	} 
 ?>
 
-document.getElementById("change-logo-link").onclick = function(e){
-	if(e && e.stopPropagation) {
-		e.stopPropagation();
-	} else {
-		e = window.event;
-		e.cancelBubble = true;
+$(document).ready(function() {
+	var logo_link = document.getElementById("change-logo-link");
+	if (logo_link) {
+		logo_link.onclick = function(e){
+			if(e && e.stopPropagation) {
+				e.stopPropagation();
+			} else {
+				e = window.event;
+				e.cancelBubble = true;
+			}
+		}
 	}
-}
 
-og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
-	callback: function(success, data){
-		og.custom_properties_by_type = data.properties;
-	}
+	og.custom_properties_by_type = [];
+	og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
+		callback: function(success, data){
+			og.custom_properties_by_type = data.properties;
+		}
+	});
 });
 
 </script>

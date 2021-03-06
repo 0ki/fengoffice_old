@@ -1228,7 +1228,6 @@ function executeMultipleQueries($sql, &$total_queries = null , &$executed_querie
 	if(!trim($sql)) {
 		$total_queries = 0;
 		$executed_queries = 0;
-		return true;
 	} // if
 
 	// Make it work on PHP 5.0.4
@@ -1238,20 +1237,15 @@ function executeMultipleQueries($sql, &$total_queries = null , &$executed_querie
 	if(!is_array($queries) || !count($queries)) {
 		$total_queries = 0;
 		$executed_queries = 0;
-		return true;
 	} 
 
 	$total_queries = count($queries);
 	foreach($queries as $query) {
 		if(trim($query)) {
-			if(@mysql_query(trim($query))) {
-				$executed_queries++;
-			} else {
-				return false; 
-			} 
+			DB::executeOne(trim($query));
+			$executed_queries++;
 		}
 	}
-	return true ;
 }
 
 function getAllRoleUsers($role){

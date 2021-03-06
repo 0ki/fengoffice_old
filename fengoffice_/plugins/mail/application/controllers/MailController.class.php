@@ -76,7 +76,7 @@ class MailController extends ApplicationController {
 			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
 				if (!defined('SANDBOX_URL')) {
 					$re_body = purify_html($original_mail->getBodyHtml());
-				} else {					
+				} else {
 					$html_content = $original_mail->getBodyHtml();
 					if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
 						$p1 = strpos($html_content, "/* Font Definitions */", 0);
@@ -1070,6 +1070,8 @@ class MailController extends ApplicationController {
 		}
 		 
 		tpl_assign('email', $email);
+		
+		$additional_body = "";
 
 		$attachments = array();
 		if($email->getState()>= 200) {
@@ -1101,6 +1103,17 @@ class MailController extends ApplicationController {
 			$to_remove = array();
 			foreach($attachments as $k => &$attach) {
 				if (array_var($parsedEmail, 'FileDisposition') == 'inline' && array_var($attach, 'Type') == 'html') $attach['hide'] = true;
+				if (array_var($attach, 'Type') == 'html') {
+					$attach_tmp = $attach['Data'];
+					$attach_tmp = preg_replace('/<html[^>]*[>]/', '', $attach_tmp);
+					$attach_tmp = preg_replace('/<\/html>/', '', $attach_tmp);
+					$attach_tmp = preg_replace('/<head>*<\/head>/', '', $attach_tmp);
+					$attach_tmp = preg_replace('/<body[^>]*[>]/', '', $attach_tmp);
+					$attach_tmp = preg_replace('/<\/body>/', '', $attach_tmp);
+					
+					$additional_body .= $attach_tmp;
+					//break;
+				}
 			 	$attach['size'] = format_filesize(strlen($attach["Data"]));
 			 	unset($attach['Data']);
 			}
@@ -1109,7 +1122,7 @@ class MailController extends ApplicationController {
 			$tmp_folder = "/tmp/" . $email->getAccountId() . "_" . logged_user()->getId()."_". $email->getId() . "_temp_mail_content_res";
 			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
 			$parts_array = array_var($decoded, 0, array('Parts' => ''));
-			$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), array_var($parts_array, 'Parts'), $tmp_folder));
+			$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), array_var($parts_array, 'Parts'), $tmp_folder) . $additional_body);
 		}
 		
 		tpl_assign('attachments', $attachments);

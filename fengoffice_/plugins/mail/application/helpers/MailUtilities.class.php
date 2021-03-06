@@ -235,24 +235,20 @@ class MailUtilities {
 		}
                 
 		//if you are in the table spam MailSpamFilters
-                $spam_email = MailSpamFilters::getFrom($account->getId(),$from);
-                if($spam_email)
-                {
-                    $state = 0;
-                    if($spam_email[0]->getSpamState() == "spam")
-                    {
-                        $state = 4;
-                    }
-                }
-                else
-                {
-                    if ($state == 0) {
-                            if ($from == $account->getEmailAddress()) {
-                                    if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
-                                    else $state = 1; //Show only in sent folder
-                            }
-                    }
-                }
+		$spam_email = MailSpamFilters::getFrom($account->getId(),$from);
+		if($spam_email) {
+			$state = 0;
+			if($spam_email[0]->getSpamState() == "spam") {
+				$state = 4;
+			}
+		} else {
+			if ($state == 0) {
+				if ($from == $account->getEmailAddress()) {
+					if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
+					else $state = 1; //Show only in sent folder
+				}
+			}
+		}
 
 		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
 		$mail = new MailContent();

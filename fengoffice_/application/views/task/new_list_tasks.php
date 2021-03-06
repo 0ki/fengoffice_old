@@ -240,12 +240,12 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 			language: '<?php echo $loc ?>',
 			customConfig: '',
 			toolbar: [
-				['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
-					'SpellChecker', 'Scayt','-',
-					'TextColor','BGColor','RemoveFormat','-',
-					'Link','Unlink','-',
-					'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'
-				]
+					['Font','FontSize','-','Bold','Italic','Underline', 'Strike', '-',
+					 'Blockquote', 'SpellChecker', 'Scayt','-',
+					 'TextColor','BGColor','RemoveFormat','-',
+					 'Link','Unlink','-',
+					 'NumberedList','BulletedList','-',
+					 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
 			],
 			on: {
 				instanceReady: function(ev) {

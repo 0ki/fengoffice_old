@@ -308,6 +308,7 @@ var editor = CKEDITOR.replace(genid+'ckeditor', {
 		['Bold','Italic','Underline','Strike','-',
 		'Outdent','Indent','Blockquote','-',
 		'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-',
+		'NumberedList','BulletedList','-',
 		'Link','Unlink','-',
 		'Image','Table','HorizontalRule','Smiley','-',
 		'Font','FontSize','-',

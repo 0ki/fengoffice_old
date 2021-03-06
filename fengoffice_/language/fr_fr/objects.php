@@ -149,7 +149,7 @@
 	'the timeslot' => 'le timeslot',
 	'activity checkout' => '{1} a verrouillé {0} {2}',
 	'activity checkin' => '{1} a déverrouillé {0} {2}',
-	'activity made ​​several changes' => '{1} a fait des changements sur {0} {2}',
+	'activity made ​​several changes' => '{1} a fait plusieurs changements sur {0} {2}',
 	'log read task' => 'L\'utilisateur a consulté la tâche',
 	'log read message' => 'L\'utilisateur a consulté la note',
 	'log read file' => 'L\'utilisateur a consulté le document',
@@ -157,4 +157,5 @@
 	'log read event' => 'L\'utilisateur a consulté l\'événement',
 	'log read weblink' => 'L\'utilisateur a consulté  le lien',
 	'warning file extension type' => 'Attention: le document que vous voulez sauvez a une extension différente du précédent (cela peut créer des problèmes pour les ouvrir)',
+	'the Time activity' => 'Un intervalle de temps',
 ); ?>

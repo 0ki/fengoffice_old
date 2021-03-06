@@ -32,4 +32,6 @@
 	'report font size' => 'Schriftgröße',
 	'showing indformation for' => 'Zeige Informationen für:',
 	'columns' => 'Spalten',
+	'showing information for' => 'zeige Information für ',
+	'show always' => 'diesen Bericht immer anzeigen',
 ); ?>

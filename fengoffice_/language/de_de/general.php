@@ -222,7 +222,7 @@
 	'viewing all information' => 'Alle Informationen',
 	'late tasks and upcoming tasks' => 'Verspätete und kommende Aufgaben',
 	'no data to show' => 'Keine Daten anzuzeigen',
-	'email or username' => 'Email oder Benutzer',
+	'email or username' => 'Email oder Benutzername',
 	'contact info' => 'Kontaktinformation',
 	'more info' => 'Mehr Information',
 	'less info' => 'Weniger Information',
@@ -296,4 +296,9 @@
 	'field Objects percent_completed' => 'Prozent erledigt',
 	'field Objects name' => 'Name',
 	'field Objects id' => 'ID',
+	'blank_google_doc' => 'wenn die Seite leer ist a) bitte im google-account anmelden oder b) zugriff zum Dokument ist gesperrt',
+	'percent completed detail' => 'details zum Grad der erledigten Arbeit',
+	'task percent completed must be greater than 0' => 'Zahl muss grösser 0 sein',
+	'task percent completed must be lower than 100' => 'Zahl muss kleiner gleich 100 sein',
+	'option repetitive task completed' => 'diese aufgabe ist beendet. Um Wiederholungen zu ändern, bitte noch offene Aufgaben dieser Serie editieren',
 ); ?>

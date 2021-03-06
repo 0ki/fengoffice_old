@@ -58,19 +58,6 @@ class Contact extends BaseContact {
 	function hasReferences() {
 		$id = $this->getId();
 		
-		//Check for objects in Person Member
-		$objects_in_person_member_count = 0;
-		if (Plugins::instance()->isActivePlugin('core_dimensions')) {
-			$persons_dim = Dimensions::findByCode('feng_persons');
-			$members = Members::findByObjectId($this->getId(), $persons_dim->getId());
-			$member_ids = array();
-			foreach ($members as $member) $member_ids[] = $member->getId();
-			$objects_in_person_member_count = ObjectMembers::count("`member_id` IN (".implode(",", $member_ids).") AND object_id <> $id ");
-		}
-		if ($objects_in_person_member_count > 0){
-			return true ;
-		}
-		
 		// Check form linked objects
 		$linked_obj_references_count = LinkedObjects::count("`created_by_id` = $id");
 		if ($linked_obj_references_count > 0){
@@ -80,7 +67,7 @@ class Contact extends BaseContact {
 		// Check direct references
 		$references = DB::executeAll("SELECT id FROM ".TABLE_PREFIX."objects WHERE `created_by_id` = $id OR `updated_by_id` = $id OR `trashed_by_id` = $id OR `archived_by_id` = $id limit 1");
 		if (count($references) > 0){
-			return true ;
+			return true;
 		}
 		
 		return false;

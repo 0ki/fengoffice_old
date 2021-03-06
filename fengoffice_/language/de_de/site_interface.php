@@ -574,4 +574,8 @@ Wenn Sie diesen Arbeitsbereich bearbeiten, wird der Benutzer vollen Zugriff auf 
 	'estimated time' => 'geschätzte Zeit',
 	'total time worked' => 'Gesamtarbeitszeit',
 	'print calendar' => 'Kalender ausdrucken',
+	'surname' => 'Nachname',
+	'password confirmation' => 'bestätige das Passwort',
+	'mail account password confirmation' => 'bestätige das Passwort',
+	'wrong password confirmation' => 'nicht identisches Passwort bitte überprüfen',
 ); ?>

@@ -247,4 +247,11 @@
 	'field MailContents body' => 'Message',
 	'field ProjectFileRevisions filecontent' => 'Contenu du fichier',
 	'field ProjectTasks original_task_id' => 'Id original de la tâche',
+	'field Companies id' => 'Id',
+	'field Contacts id' => 'Id',
+	'field MailContents id' => 'Id',
+	'field ProjectEvents id' => 'Id',
+	'field ProjectFiles id' => 'Id',
+	'field ProjectMessages id' => 'Id',
+	'field ProjectTasks id' => 'Id',
 ); ?>

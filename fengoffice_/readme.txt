@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.4-beta
+	About Feng Office 2.2.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,22 @@
 	Changelog
 	=========
 	
+	Since 2.2.4-beta
+	----------------
+	
+	bugfix: Cannot delete user with no objects associated.
+	bugfix: Javascript error when loading and change logo link does not exists.
+	bugfix: plugin administration fixes.
+	bugfix: Email content parts that come in attachments are not shown.
+	bugfix: Tasks edition in gantt chart loses task description.
+	bugfix: Adding client or project under another member does not remember selected parent when using quickadd and details button.
+	
+	feature: More options for tasks edition.
+	feature: More options for composing emails.
+	
+	language: Languages updated: German, French, Japanese, Polski.
+	
+	
 	Since 2.2.3.1
 	-------------
 	
@@ -120,7 +136,7 @@
 	bugfix: New client/project from overview fixed.
 	bugfix: Breadcrumbs only show 2 members x dimension.
 	bugfix: Total tasks time reports csv export does not work.
-	bugfix: Fix en cálculo de porcentaje de avance de tareas.
+	bugfix: Fix en cï¿½lculo de porcentaje de avance de tareas.
 	bugfix: Forwarding or replying mails in German only prints "null".
 	bugfix: Function getCustomPropertyByName fixed.
 	bugfix: Activity widget popup wider to put all buttons in one line.

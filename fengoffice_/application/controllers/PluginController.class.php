@@ -41,20 +41,34 @@ class PluginController extends ApplicationController {
 	
 	function update($id = null) {
 		ajx_current("empty");
-		if (!$id) {
-			$id = array_var($_REQUEST,'id');
+		$from_post = false;
+		if (empty($id)){
+			$id = array_var($_POST, 'id');
+			$from_post = true;
 		}
-		if ( $plg = Plugins::instance()->findById($id)) {
-			if ($plg->isInstalled() && $plg->updateAvailable()){
-				$plg->update();
+		try {
+			if ( $plg = Plugins::instance()->findById($id)) {
+				if ($plg->isInstalled() && $plg->updateAvailable()){
+					$plg->update();
+				}
+			}
+		} catch (Exception $e) {
+			if ($from_post) {
+				ajx_extra_data(array('errorMessage' => "Error updating plugin '$name': " . $e->getMessage()));
+			} else {
+				throw new Error("Error installing plugin '$name': " . $e->getMessage());
 			}
 		}
 	}
 	
 	function updateAll() {
-		$plugins = Plugins::instance()->findAll(array('conditions' => 'is_installed=1'));
-		foreach ($plugins as $plg) {
-			$plg->update();
+		try {
+			$plugins = Plugins::instance()->findAll(array('conditions' => 'is_installed=1'));
+			foreach ($plugins as $plg) {
+				$plg->update();
+			}
+		} catch (Exception $e) {
+			throw new Error("Error updating plugin '$name': " . $e->getMessage());
 		}
 	}
 	
@@ -75,20 +89,25 @@ class PluginController extends ApplicationController {
 		}
 	}
 	
-	function install($id = null ){
+	function install($id = null){
 		ajx_current("empty");
+		$from_post = false;
 		if (empty($id)){
-			$id=array_var($_POST,'id');
+			$id = array_var($_POST, 'id');
+			$from_post = true;
 		}
-		if ( $plg  = Plugins::instance()->findById($id)) {
-			//if ($plg->isInstalled()) return ;
+		if ($plg = Plugins::instance()->findById($id)) {
 			$name = $plg->getName();
-			
-			if ($this->executeInstaller($name)){
+			try {
+				$this->executeInstaller($name);
 				$plg->setIsInstalled(1);
 				$plg->save();
-			}else{
-				throw new ErrorException("Error installing plg");
+			} catch (Exception $e) {
+				if ($from_post) {
+					ajx_extra_data(array('errorMessage' => "Error installing plugin '$name': " . $e->getMessage()));
+				} else {
+					throw new Error("Error installing plugin '$name': " . $e->getMessage());
+				}
 			}	
 		}
 	}
@@ -133,36 +152,32 @@ class PluginController extends ApplicationController {
 		return $plugins ;
 	}
 	
-	/**
-	 * @param array of string $pluginNames
-	 */
-	static function executeInstaller($name) {
+/**
+ * @param array of string $pluginNames
+ */
+static function executeInstaller($name) {
+	
+	$table_prefix = TABLE_PREFIX;
+	tpl_assign('table_prefix', $table_prefix);
+	
+	$default_charset = 'DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci';
+	tpl_assign('default_charset', $default_charset);
+	
+	$default_collation = 'collate utf8_unicode_ci';
+	tpl_assign('default_collation', $default_collation);
+	
+	$engine = DB_ENGINE;
+	tpl_assign('engine', $engine);
 		
-		$table_prefix = TABLE_PREFIX;
-		tpl_assign('table_prefix', $table_prefix);
-		
-		$default_charset = 'DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci';
-		tpl_assign('default_charset', $default_charset);
-		
-		$default_collation = 'collate utf8_unicode_ci';
-		tpl_assign('default_collation', $default_collation);
-		
-		$engine = DB_ENGINE;
-		tpl_assign('engine', $engine);
-		
-		
+	try {
 		$path = ROOT . "/plugins/$name/info.php";
 		if (file_exists ( $path )) {
 			DB::beginWork ();
 			$pluginInfo = include_once $path;
+			
 			//0. Check if exists in plg table
 			$sql = "SELECT id FROM " . TABLE_PREFIX . "plugins WHERE name = '$name' ";
-			$res = @mysql_query ( $sql );
-			if (! $res) {
-				DB::rollback ();
-				return false;
-			}
-			$plg_obj = mysql_fetch_object ( $res );
+			$plg_obj = DB::executeOne($sql);
 			if (! $plg_obj) {
 				//1. Insert into PLUGIN TABLE
 				$cols = "name, is_installed, is_activated, version";
@@ -172,18 +187,15 @@ class PluginController extends ApplicationController {
 					$values = array_var ( $pluginInfo, 'id' ) . ", " . $values;
 				}
 				$sql = "INSERT INTO " . TABLE_PREFIX . "plugins ($cols) VALUES ($values) ";
-				if (@mysql_query ( $sql )) {
-					$id = @mysql_insert_id ();
-					$pluginInfo ['id'] = $id;
-				} else {
-					echo "ERROR: " . mysql_error ();
-					@mysql_query ( 'ROLLBACK' );
-					return false;
-				}
+				DB::executeOne($sql);
+				$id = DB::lastInsertId();
+				$pluginInfo ['id'] = $id;
+				
 			} else {
-				$id = $plg_obj->id;
+				$id = $plg_obj['id'];
 				$pluginInfo ['id'] = $id;
 			}
+			
 			//2. IF Plugin defines types, INSERT INTO ITS TABLE
 			if (count ( array_var ( $pluginInfo, 'types' ) )) {
 				foreach ( $pluginInfo ['types'] as $k => $type ) {
@@ -198,20 +210,15 @@ class PluginController extends ApplicationController {
 							 	'" . array_var ( $type, "icon" ) . "', 
 								$id
 							)";
-						if (@mysql_query ( $sql )) {
-							$pluginInfo ['types'] [$k] ['id'] = @mysql_insert_id ();
-							$type ['id'] = @mysql_insert_id ();
 						
-						} else {
-							echo $sql . "<br/>";
-							echo mysql_error () . "<br/>";
-							DB::rollback ();
-							return false;
-						}
-					
+						DB::executeOne($sql);
+						$last_id = DB::lastInsertId();
+						$pluginInfo['types'][$k]['id'] = $last_id;
+						$type['id'] = $last_id;
 					}
 				}
 			}
+			
 			//2. IF Plugin defines tabs, INSERT INTO ITS TABLE
 			if (count ( array_var ( $pluginInfo, 'tabs' ) )) {
 				foreach ( $pluginInfo ['tabs'] as $k => $tab ) {
@@ -246,12 +253,7 @@ class PluginController extends ApplicationController {
 								" . array_var ( $tab, 'object_type_id' ) . "
 							)";
 						
-						if (! @mysql_query ( $sql )) {
-							echo $sql;
-							echo mysql_error ();
-							DB::rollback ();
-							return false;
-						}
+						DB::executeOne($sql);
 						
 						// INSERT INTO TAB PANEL PERMISSSION
 						$sql = "
@@ -261,13 +263,7 @@ class PluginController extends ApplicationController {
 							)
 						 	VALUES ( 1,'" . array_var ( $tab, 'id' ) . "' ),  ( 2,'" . array_var ( $tab, 'id' ) . "' )  ON DUPLICATE KEY UPDATE permission_group_id = permission_group_id ";
 						
-						if (! @mysql_query ( $sql )) {
-							echo $sql;
-							echo mysql_error ();
-							@mysql_query ( 'ROLLBACK' );
-							DB::rollback ();
-							return false;
-						}
+						DB::executeOne($sql);
 					}
 				}
 			}
@@ -278,28 +274,16 @@ class PluginController extends ApplicationController {
 			if (file_exists ( $schema_creation )) {
 				$total_queries = 0;
 				$executed_queries = 0;
-				if (executeMultipleQueries ( tpl_fetch ( $schema_creation ), $total_queries, $executed_queries )) {
-					Logger::log ( "Schema created for plugin $name " );
-				} else {
-					//echo tpl_fetch ( $schema_creation );
-					echo mysql_error() ;
-					echo "llega <br>";
-					DB::rollback ();
-					return false;
-				}
+				executeMultipleQueries ( tpl_fetch ( $schema_creation ), $total_queries, $executed_queries );
+				Logger::log("Schema created for plugin $name");
 			}
 			// Create schema sql query
 			$schema_query = ROOT . "/plugins/$name/install/sql/mysql_initial_data.php";
 			if (file_exists ( $schema_query )) {
 				$total_queries = 0;
 				$executed_queries = 0;
-				if (executeMultipleQueries ( tpl_fetch ( $schema_query ), $total_queries, $executed_queries )) {
-					Logger::log ( "Initial data loaded for plugin  '$name'." . mysql_error () );
-				} else {
-					echo mysql_error ();
-					DB::rollback ();
-					return false;
-				}
+				executeMultipleQueries ( tpl_fetch ( $schema_query ), $total_queries, $executed_queries );
+				Logger::log ( "Initial data loaded for plugin  '$name'." . mysql_error () );
 			}
 			
 			$install_script = ROOT . "/plugins/$name/install/install.php";
@@ -309,8 +293,15 @@ class PluginController extends ApplicationController {
 			DB::commit ();
 			return true;
 		}
-		return false;
+		
+	} catch (Exception $e) {
+		//echo $e->getMessage();
+		DB::rollback();
+		throw $e;
 	}
+	
+	return false;
+}
 	
 }
 

@@ -27,7 +27,7 @@
 	'country bm' => 'Bermudy',
 	'country bt' => 'Bhutan',
 	'country bo' => 'Boliwia',
-	'country ba' => 'Bośnia and Hercegowina',
+	'country ba' => 'Bośnia i Hercegowina',
 	'country bw' => 'Botswana',
 	'country bv' => 'Wyspa Bouveta',
 	'country br' => 'Brazylia',

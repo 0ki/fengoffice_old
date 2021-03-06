@@ -288,14 +288,18 @@ class TaskController extends ApplicationController {
 					$parent->setUseDueTime(array_var($task_data, 'use_due_time',0));
 				}
 				// calculate and set estimated time
-				$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
-				$parent->setTimeEstimate($totalMinutes);
+				if (array_var($task_data, 'hours') !== null || array_var($task_data, 'minutes') !== null) {
+					$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
+					$parent->setTimeEstimate($totalMinutes);
+				}
 				$parent->save();
 			}
 				
 			if(config_option("wysiwyg_tasks")){
 				$task_data['type_content'] = "html";
-				$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+				if (array_var($task_data, 'text') !== null) {
+					$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+				}
 			}else{
 				$task_data['type_content'] = "text";
 			}
@@ -316,8 +320,10 @@ class TaskController extends ApplicationController {
 				}
 
 				// calculate and set estimated time
-				$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
-				$task->setTimeEstimate($totalMinutes);
+				if (array_var($task_data, 'hours') !== null || array_var($task_data, 'minutes') !== null) {
+					$totalMinutes = (array_var($task_data, 'hours') * 60) + (array_var($task_data, 'minutes'));
+					$task->setTimeEstimate($totalMinutes);
+				}
 				$task->save();
 
 				$task->calculatePercentComplete();

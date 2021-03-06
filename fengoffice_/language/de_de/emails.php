@@ -219,4 +219,5 @@
 	'view object and comments' => 'ansehen von {0} und aller Kommentare',
 	'open notification task' => 'Aufgabe gestartet {0}',
 	'open notification task desc' => 'Aufgabe gestartet von {1}',
+	'new notification event invitation' => '{1} wurde eingeladen zu:',
 ); ?>

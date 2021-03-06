@@ -494,10 +494,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                         language: '<?php echo $loc ?>',
                         customConfig: '',                      
                         toolbar: [
-									['Font','FontSize','-','Bold','Italic','Underline', 'Blockquote','-',
-									 'SpellChecker', 'Scayt','-',
+									['Font','FontSize','-','Bold','Italic','Underline', 'Strike', '-',
+									 'Blockquote', 'SpellChecker', 'Scayt','-',
 									 'TextColor','BGColor','RemoveFormat','-',
 									 'Link','Unlink','-',
+									 'NumberedList','BulletedList','-',
 									 'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
                                 ],
                         on: {

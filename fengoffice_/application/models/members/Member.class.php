@@ -181,6 +181,9 @@ class Member extends BaseMember {
 	    		$obj->delete();
 	    	}
     	}
+    	
+    	// clean object_members
+    	ObjectMembers::delete("member_id = ".$this->getId());
 		
 		// delete object if member is a dimension_object
 		if ($this->getObjectId()) {

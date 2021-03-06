@@ -56,12 +56,17 @@ og.pluginManager.init = function () {
 					return ;
 				}
 				
-				var ct = $(button).parents(".inactive");
-				ct.removeClass("inactive").addClass("active");
-				ct.find(".activate ,  .uninstall").hide();
-				ct.find(".deactivate").show();
-				$(".contextualHelp.reload").fadeIn();
-				$(".error").html("").hide();
+				if (jsonData.errorMessage != "") {
+					$(".error").html(jsonData.errorMessage).fadeIn();
+					$(".contextualHelp.reload").hide();
+				} else {
+					var ct = $(button).parents(".inactive");
+					ct.removeClass("inactive").addClass("active");
+					ct.find(".activate ,  .uninstall").hide();
+					ct.find(".deactivate").show();
+					$(".contextualHelp.reload").fadeIn();
+					$(".error").html("").hide();
+				}
 			}
 		});
 	});
@@ -85,11 +90,14 @@ og.pluginManager.init = function () {
 					$(".error").html(response.responseText).fadeIn();
 					return ;
 				}
-				$(button).parent().hide().parent().find(".uninstall , .activate").show();
-				$(".contextualHelp.reload").fadeIn();
-				$(".error").html("").hide();
-
-				
+				if (jsonData.errorMessage != "") {
+					$(".error").html(jsonData.errorMessage).fadeIn();
+					$(".contextualHelp.reload").hide();
+				} else {
+					$(button).parent().hide().parent().find(".uninstall , .activate").show();
+					$(".contextualHelp.reload").fadeIn();
+					$(".error").html("").hide();
+				}
 			}
 		});
 	});
@@ -115,11 +123,14 @@ og.pluginManager.init = function () {
 					$(".error").html(response.responseText).fadeIn();
 					return ;
 				}
-				$(button).parent().hide().parent().find(".install").show().parent().find(".activate").hide();
-				$(".contextualHelp.reload").fadeIn();
-				$(".error").html("").hide();
-				
-				
+				if (jsonData.errorMessage != "") {
+					$(".error").html(jsonData.errorMessage).fadeIn();
+					$(".contextualHelp.reload").hide();
+				} else {
+					$(button).parent().hide().parent().find(".install").show().parent().find(".activate").hide();
+					$(".contextualHelp.reload").fadeIn();
+					$(".error").html("").hide();
+				}
 			}
 		});
 	});
@@ -146,7 +157,12 @@ og.pluginManager.init = function () {
 					$(".error").html(response.responseText).fadeIn();
 					return ;
 				}
-				$(button).closest('tr').fadeOut("slow") ;
+				if (jsonData.errorMessage != "") {
+					$(".error").html(jsonData.errorMessage).fadeIn();
+					$(".contextualHelp.reload").hide();
+				} else {
+					$(button).closest('tr').fadeOut("slow") ;
+				}
 			}
 		});
 	});

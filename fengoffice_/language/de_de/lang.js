@@ -616,7 +616,7 @@ addLangs({
 	'mark as read desc': 'Markiert die ausgewählten Objekte als „gelesen“.',
 	'no users to display': 'Keine Benutzer zum Anzeigen!',
 	'fixed user': 'Fester Benutzer',
-	'parametric user': 'Parametrischer Benutzer',
+	'parametric user': 'Benutzer durch Parameter ausgewählt',
 	'from csv': 'Von csv',
 	'from vcard': 'Von vCard',
 	'to csv': 'Zu csv',
@@ -761,5 +761,12 @@ addLangs({
 	'all events related': 'alle zugehörigen Termine',
 	'select context members': 'wähle relevante mitglieder',
 	'email already taken by': 'Email wurde schon von {0} gelesen',
-	'apply changes to': 'Änderungen ausführen für'
+	'apply changes to': 'Änderungen ausführen für',
+	'this task has x pending tasks': 'diese Aufgabe hat {0} offene Aufgaben',
+	'this task has no pending dependencies and can be completed': 'Diese Aufgabe hat keine unerledigten Teile und kann geschlossen werden',
+	'company not found': 'Firma nicht gefunden (id: {0})',
+	'complete task and subtask': 'Diese Aufgabe enthält Unteraufgaben welche noch offen sind. Sollen diese auch beendet werden?',
+	'option repetitive title popup': 'Diese Aufgabe ist geschlossen. Weitere Anweisungen?',
+	'option repetitive pending task': 'sollen alle sich wiederholenden aufgaben geändert werden?',
+	'and number more': 'und {0} weitere'
 });

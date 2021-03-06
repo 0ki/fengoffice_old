@@ -6,7 +6,7 @@ addLangs({
 	'some text': 'Irgendein Text',
 	'new slide text': 'Mich kann man ändern!',
 	'slide {0}': 'Folie {0}',
-	'no slide to delete': 'Keine Folie zum Löschen!',
+	'no slide to delete': 'Keine Folie zum Löschen vorhanden!',
 	'click top left button to add a slide': 'Um eine Folie hinzuzufügen, auf die obere linke Schaltfläche klicken.',
 	'drag the bottom right corner to resize': 'Zum Ändern der Größe die Schaltfläche an der rechten Ecke ziehen.',
 	'no slide to move': 'Keine Folie zu bewegen',

@@ -7,65 +7,80 @@ define("PLUGIN_MANAGER_CONSOLE", true );
 if(!defined('PUBLIC_FOLDER')) define('PUBLIC_FOLDER', 'public');
 require_once 'init.php';
 
-if(!isset($argv) || !is_array($argv)) {
-	die("There is no input arguments\n");
-} // if
+$success_message = "";
 
-$command = array_var($argv, 1);
-$arg1 = array_var($argv, 2);
-$usr = Contacts::findOne(array("conditions" => "user_type > 0", "order" => "user_type"));
-$usr or die("No users found\n");
-CompanyWebsite::instance()->logUserIn($usr);
-
-$ctrl = new PluginController();
-trim($command) or die("Command is required \n".$usage);
-
-$plugins = $ctrl->index();
-
-if ($command == 'list') {
-	foreach ($plugins as $plg){
-		/* @var $plg Plugin */
-		echo "---------------------------------------------\n";
-		echo "NAME: \t\t".$plg->getSystemName() ."\n" ;
-		echo "VERSION: \t".$plg->getVersion() ."\n"  ;
-		echo "STATUS: \t".( ($plg->isInstalled())?'Installed ':'Uninstalled ' ).( ($plg->isActive())?'Activated ':'Inactive ' ) ."\n";
-
-		if ( $plg->updateAvailable() ) {
-			echo "*** There is a new version of this plugin *** \n";
+try {
+	
+	
+	if(!isset($argv) || !is_array($argv)) {
+		die("There is no input arguments\n");
+	} // if
+	
+	$command = array_var($argv, 1);
+	$arg1 = array_var($argv, 2);
+	$usr = Contacts::findOne(array("conditions" => "user_type > 0", "order" => "user_type"));
+	$usr or die("No users found\n");
+	CompanyWebsite::instance()->logUserIn($usr);
+	
+	$ctrl = new PluginController();
+	trim($command) or die("Command is required \n".$usage);
+	
+	$plugins = $ctrl->index();
+	
+	if ($command == 'list') {
+		foreach ($plugins as $plg){
+			/* @var $plg Plugin */
+			echo "---------------------------------------------\n";
+			echo "NAME: \t\t".$plg->getSystemName() ."\n" ;
+			echo "VERSION: \t".$plg->getVersion() ."\n"  ;
+			echo "STATUS: \t".( ($plg->isInstalled())?'Installed ':'Uninstalled ' ).( ($plg->isActive())?'Activated ':'Inactive ' ) ."\n";
+	
+			if ( $plg->updateAvailable() ) {
+				echo "*** There is a new version of this plugin *** \n";
+			}
 		}
+	} else if ($command == 'update_all') {
+		$ctrl->updateAll();
+	} else {
+		$arg1 or die("Plugin is required \n$usage");
+		$plg = Plugins::instance()->findOne(array("conditions"=>" name = '$arg1'"));
+		$plg or die("ERROR: plugin $arg1 not found\n");
+		
+		switch($command) {
+			case 'update':
+				$ctrl->update($plg->getId());
+				$success_message = "Plugin ".$plg->getName()." successfully updated.";
+				break;
+			case 'install':
+				$ctrl->install($plg->getId());
+				$success_message = "Plugin ".$plg->getName()." successfully installed.";
+				break;
+			case 'activate':
+				$plg->activate();
+				$success_message = "Plugin ".$plg->getName()." successfully activated.";
+				break;
+			case 'install_activate':
+				$ctrl->install($plg->getId());
+				$plg->activate();
+				$success_message = "Plugin ".$plg->getName()." successfully installed and activated.";
+				break;
+			case 'deactivate':
+				$plg->deactivate();
+				$success_message = "Plugin ".$plg->getName()." successfully deactivated.";
+				break;
+			case 'uninstall':
+				$ctrl->uninstall($plg->getId());
+				$success_message = "Plugin ".$plg->getName()." successfully uninstalled.";
+				break;
+			default:
+				die("Invalid command \n$usage");
+				break;	
+		}
+		
 	}
-} else if ($command == 'update_all') {
-	$ctrl->updateAll();
-} else {
-	$arg1 or die("Plugin is required \n$usage");
-	$plg = Plugins::instance()->findOne(array("conditions"=>" name = '$arg1'"));
-	$plg or die("ERROR: plugin $arg1 not found\n");
-	
-	switch($command) {
-		case 'update':
-			$ctrl->update($plg->getId());
-			break;
-		case 'install':
-			$ctrl->install($plg->getId());
-			break;
-		case 'activate':
-			$plg->activate();
-			break;
-		case 'install_activate':
-			$ctrl->install($plg->getId());
-			$plg->activate();
-			break;
-		case 'deactivate':
-			$plg->deactivate();
-			break;
-		case 'uninstall':
-			$ctrl->uninstall($plg->getId());
-			break;
-		default:
-			die("Invalid command \n$usage");
-			break;	
-	}
-	
+
+} catch (Exception $e) {
+	echo $e->getMessage();
 }
 
-echo "\n";
+echo "$success_message\n";
