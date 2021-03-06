@@ -191,10 +191,7 @@ og.FileManager = function() {
 		return '';
 	}
 	
-	function zipFiles() {
-		zipFileName = og.ConfirmDialog.getTextBoxValue();
-		og.ConfirmDialog.hide();
-		
+	function zipFiles(zipFileName) {
 		if (zipFileName.length == 0) zipFileName = 'new compressed file.zip';
 		
 		if (zipFileName.lastIndexOf('.zip') == -1 || zipFileName.lastIndexOf('.zip') != zipFileName.length - 4 ) 
@@ -343,7 +340,15 @@ og.FileManager = function() {
             iconCls: 'ico-zip-add',
 			disabled: true,
 			handler: function() {
-				og.ConfirmDialog.show(null, {ok_fn:zipFiles, text_title:lang('name'), title:lang('new compressed file')}, '');
+				Ext.Msg.prompt(lang('new compressed file'),
+					lang('name'),
+					function (btn, text) {
+						if (btn == 'ok' && text) {
+							zipFiles(text);
+						}
+					},
+					this	
+				);
 			},
 			scope: this
 		}),

@@ -1,4 +1,7 @@
-<?php return array(
+<?php
+
+return array(
+
 	'new message' => 'Neue Nachricht',
 	'new comment' => 'Neuer Kommentar',
 	'your account created' => 'Dein Account wurde erstellt',
@@ -60,9 +63,11 @@
 	'discard' => 'Abbrechen',
 	'mail address' => 'Email Adresse',
 	'mail address description' => 'Email Adresse ist die Adresse die andere benutzen um dich zu erreichen',
+
 	'unread emails' => 'Ungelesene Nachrichten',
 	'view due task' => 'Anstehende Aufgabe ansehen',
 	'due task email' => 'Aufgabe "{0}" ist fällig am "{1}" und ist noch nicht abgeschlossen',
+	'due task reminder' => 'Erinnerung an fällige Aufgaben',
 	'due task' => 'Aufgabe ist bald fällig',
 	'task has been modified' => 'Aufgabe "{0}" im Arbeitsbereich "{1}" wurde modifiziert',
 	'task modified' => 'Aufgabe modifiziert',

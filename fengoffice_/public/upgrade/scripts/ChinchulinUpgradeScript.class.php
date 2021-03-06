@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chinchulin upgrade script will upgrade OpenGoo 1.1 to OpenGoo 1.2
+ * Chinchulin upgrade script will upgrade OpenGoo 1.1+ to OpenGoo 1.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.1');
-		$this->setVersionTo('1.2');
+		$this->setVersionTo('1.2.0.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -50,6 +50,10 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 
 	function getCheckExtensions() {
 		return $this->check_extensions;
+	}
+	
+	function worksFor($version) {
+		return version_compare($version, '1.1') >= 0 && version_compare($version, '1.2') <= 0;
 	}
 	
 	/**
@@ -123,7 +127,14 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 
 		$total_queries = 0;
 		$executed_queries = 0;
-		$upgrade_script = tpl_fetch(get_template_path('db_migration/chinchulin'));
+		$installed_version = installed_version();
+		if (version_compare($installed_version, "1.1") <= 0) {
+			$upgrade_script = tpl_fetch(get_template_path('db_migration/chinchulin'));
+		} else {
+			$upgrade_script = "DELETE FROM `".TABLE_PREFIX."config_options` WHERE `name` = 'time_format_use_24';
+			UPDATE `".TABLE_PREFIX."config_options` SET `category_name` = 'modules' WHERE `name` = 'enable_email_module'";
+		}
+		@unlink('../../language/de_de/._lang.js');
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 			$this->printMessage("Database schema transformations executed (total queries: $total_queries)");

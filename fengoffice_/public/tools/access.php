@@ -7,7 +7,6 @@
 return array(
 	'combine.php',
 	'checklang.php',
-	'translate.php',
 );
 
 ?>

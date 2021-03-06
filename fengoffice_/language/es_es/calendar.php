@@ -4,7 +4,7 @@
 	'CAL_SUBM_LOGOUT' => 'Log Out',
 	'CAL_SUBM_LOGIN' => 'Log In',
 	'CAL_SUBM_ADMINPAGE' => 'Admin Page',
-	'CAL_SUBM_SEARCH' => 'Buscar',
+	'CAL_SUBM_SEARCH' => 'Buscar', 
 	'CAL_SUBM_BACK_CALENDAR' => 'Atrás al calendario',
 	'CAL_SUBM_VIEW_TODAY' => 'Ver eventos de hoy',
 	'CAL_SUBM_ADD' => 'Agregar evento hoy',

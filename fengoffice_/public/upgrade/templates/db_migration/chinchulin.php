@@ -6,14 +6,15 @@
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` MODIFY COLUMN `action` ENUM('upload','open','close','delete','edit','add','trash','untrash', 'subscribe', 'unsubscribe', 'tag', 'comment', 'link', 'unlink') DEFAULT NULL;
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` ADD COLUMN `log_data` TEXT;
 
-DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` IN ('enable_email_module', 'time_format_use_24');
-
 INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`, `category_order`) VALUES
  ('system', 1, 0),
  ('general', 0, 1),
  ('mailing', 0, 2),
  ('modules', 0, 3)
 ON DUPLICATE KEY UPDATE id=id;
+
+DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` = 'enable_email_module';
+DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` = 'time_format_use_24';
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
  ('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
@@ -235,3 +236,4 @@ ALTER TABLE `<?php echo $table_prefix ?>users` MODIFY COLUMN `timezone` float(3,
 -- add PPT file type
 
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES ('ppt', 'ppt.png', 0, 0);
+ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD INDEX `sent_date` USING BTREE(`sent_date`);

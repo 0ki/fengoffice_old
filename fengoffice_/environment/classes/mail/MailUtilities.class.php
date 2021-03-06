@@ -5,6 +5,9 @@ class MailUtilities {
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
+		
+		$old_memory_limit = ini_get('memory_limit');
+		ini_set('memory_limit', '96M');
 
 		$err = 0;
 		$succ = 0;
@@ -31,6 +34,9 @@ class MailUtilities {
 				}
 			}
 		}
+		
+		ini_set('memory_limit', $old_memory_limit);
+		
 		tpl_assign('err',$err);
 		tpl_assign('errAccounts',$errAccounts);
 		tpl_assign('accounts',$accounts);
@@ -52,7 +58,7 @@ class MailUtilities {
 		return $f;
 	}
 
-	private function SaveMail($content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
+	private function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 
@@ -89,7 +95,8 @@ class MailUtilities {
 		}
 		$mail->setUid($uid);
 
-		switch($parsedMail['Type']) {
+		$type = array_var($parsedMail, 'Type', 'text');
+		switch($type) {
 			case 'html': $mail->setBodyHtml(iconv($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
 			case 'text': $mail->setBodyPlain(iconv($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
 			case 'delivery-status': $mail->setBodyPlain(iconv($encoding, 'UTF-8//IGNORE', $parsedMail['Response'])); break;
@@ -111,9 +118,10 @@ class MailUtilities {
 		} catch(Exception $e) {
 			DB::rollback();
 		}
+		unset($parsedMail);
 	}
 
-	function parseMail($message, &$decoded, &$results, &$warnings) {
+	function parseMail(&$message, &$decoded, &$results, &$warnings) {
 		$mime = new mime_parser_class;
 		$mime->mbox = 0;
 		$mime->decode_bodies = 1;
@@ -122,8 +130,8 @@ class MailUtilities {
 		$parameters=array('Data'=>$message);
 
 		if($mime->Decode($parameters, $decoded)) {
-			for($message = 0; $message < count($decoded); $message++) {
-				$mime->Analyze($decoded[$message], $results);
+			for($msg = 0; $msg < count($decoded); $msg++) {
+				$mime->Analyze($decoded[$msg], $results);
 			}
 			for($warning = 0, Reset($mime->warnings); $warning < count($mime->warnings); Next($mime->warnings), $warning++) {
 				$w = Key($mime->warnings);

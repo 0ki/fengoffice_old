@@ -104,8 +104,17 @@ class AccountController extends ApplicationController {
 			}
 			try {
 				DB::beginWork();
-
-				$user->setFromAttributes($user_data);
+			
+				$user->setDisplayName(array_var($user_data,'display_name'));
+				$user->setEmail(array_var($user_data,'email'));
+				$user->setTimezone(array_var($user_data,'timezone'));
+				$user->setTitle(array_var($user_data,'title'));
+				
+				if (logged_user()->isAdministrator()){
+					$user->setCompanyId(array_var($user_data,'company_id'));
+					$user->setUsername(array_var($user_data,'username'));
+				}
+				
 				$user->save();
 
 				if ($user->getId() != 1) //System admin cannot change its own admin status

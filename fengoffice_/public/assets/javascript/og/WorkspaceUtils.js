@@ -139,9 +139,9 @@ og.trimMax = function(str, size, append){
 		
 		
 
-og.expandSubWsCrumbs = function(){
+og.expandSubWsCrumbs = function(id){
 	var tree = Ext.getCmp('workspaces-tree');
-	var node = tree.tree.getNode(og.triggerSubWsCrumbsID);
+	var node = tree.tree.getNode(id?id:og.triggerSubWsCrumbsID);
 	
 	if (node && node.childNodes.length > 0){
 		og.showSubWsMenu(node);
@@ -188,6 +188,7 @@ og.updateWsCrumbs = function(newWs) {
 	var html = '';
 	var first = true;
 	var tree = Ext.getCmp('workspaces-tree');
+	og.triggerSubWsCrumbsID = newWs.id;
 	while (newWs.id != 0){
 		var actNode = tree.tree.getNodeById('ws' + newWs.id);
 		if (!actNode)

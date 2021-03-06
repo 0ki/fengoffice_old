@@ -80,4 +80,7 @@
 	'error delete backup' => 'Erro ao apagar backup da Base de Dados,',
 	'success delete backup' => 'O Backup foi apagado',
 	'name must be unique' => 'Desculpe, o nome selecionado já existe',
+	'backup command failed' => 'Comando de BackUp falhou. Verificar a constante MYSQLDUMP_COMMAND.',
+	'success db backup' => 'BackUp criado com sucesso.',
+	'not implemented' => 'Não implementado',
 ); ?>

@@ -233,6 +233,14 @@ abstract class ScriptUpgraderScript {
 	} // setOutput
 
 	/**
+	 * Returns whether this script can upgrade from $version
+	 *
+	 * @param string $version
+	 */
+	function worksFor($version) {
+		return version_compare($this->getVersionFrom(), $version) == 0;
+	}
+	/**
 	 * Print message to the output
 	 *
 	 * @param string $message

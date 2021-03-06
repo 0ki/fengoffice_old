@@ -105,7 +105,7 @@ abstract class ApplicationDataObject extends DataObject {
 		 
 		//Add Unique ID to search
 		if ($wasNew){
-			SearchableObjects::dropContentByObjectColumns($this,'uid'); // Fixes Query failed with message 'Duplicate entry 'xxxxx-31-uid' for key 1'
+			SearchableObjects::dropContentByObjectColumns($this, array('uid')); // Fixes Query failed with message 'Duplicate entry 'xxxxx-31-uid' for key 1'
 			
 			$searchable_object = new SearchableObject();
 

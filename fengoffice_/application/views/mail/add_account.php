@@ -152,13 +152,16 @@
 <script type="text/javascript">
 	Ext.get('mailAccountFormName').focus();
 	
-	og.deleteAllMails = function() {
+	account_id = 0;
+	
+	og.deleteAllMails = function(acc_id) {
 		checked = og.ConfirmDialog.getConfirmCheckValue();
-		og.openLink(og.getUrl('mail', 'delete_account', {id:<?php echo $mailAccount->isNew() ? 0 : $mailAccount->getId() ?>, deleteMails:checked ? 1 : 0}));
+		og.openLink(og.getUrl('mail', 'delete_account', {id:account_id, deleteMails:checked ? 1 : 0}));
 		og.ConfirmDialog.hide();
 	}
 	
 	og.promptDeleteAccount = function() {
+		account_id = <?php echo $mailAccount->isNew() ? 0 : $mailAccount->getId() ?>;
 		og.ConfirmDialog.show(null, {ok_fn:og.deleteAllMails, check_title:lang('delete account emails'), title:lang('confirm delete mail account')}, '');
 	}
 </script>

@@ -287,7 +287,7 @@ class TaskController extends ApplicationController {
 					case 'start_work':
 						if ($task->canEdit(logged_user())){
 							$task->addTimeslot(logged_user());
-							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_OPEN);
+							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 							
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
@@ -296,7 +296,7 @@ class TaskController extends ApplicationController {
 					case 'close_work':
 						if ($task->canEdit(logged_user())){
 							$task->closeTimeslots(logged_user(),array_var($_POST, 'options'));
-							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_CLOSE);
+							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 							
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;

@@ -881,10 +881,10 @@ ogTasks.existsSoloGroup = function(){
 //Written for edit task view
 og.addTaskUserChanged = function(genid, user_id){
 	var ddUser = document.getElementById(genid + 'taskFormAssignedTo');
-	if (ddUser){
+	var chk = document.getElementById(genid + 'taskFormSendNotification');
+	if (ddUser && chk){
 		var values = ddUser.value.split(':');
 		var user = values[1];
-		var chk = document.getElementById(genid + 'taskFormSendNotification');
 		chk.checked = (user > 0 && user != user_id);
 		document.getElementById(genid + 'taskFormSendNotificationDiv').style.display = user > 0 ? 'block':'none';
 	}

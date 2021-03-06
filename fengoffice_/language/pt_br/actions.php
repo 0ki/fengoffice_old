@@ -143,4 +143,7 @@
 	'move to trash' => 'Mover para lixeira',
 	'restore from trash' => 'Restaurar da lixeira',
 	'delete permanently' => 'Apagar permanentemente',
+	'extract' => 'Extrair',
+	'add files to zip' => 'Adicionar arquivos ao zip',
+	'copy file' => 'Copiar este arquivo',
 ); ?>

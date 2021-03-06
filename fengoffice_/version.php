@@ -13,6 +13,6 @@
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
 
-  return '1.2 RC2';
+  return '1.2.0.1';
   
 ?>

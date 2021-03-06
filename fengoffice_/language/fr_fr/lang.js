@@ -476,5 +476,8 @@ addLangs({
 	'import - export': 'Contacts des importations et exportations',
 	'extract files': 'Extraire les fichiers',
 	'not csv file continue': 'Le fichier sélectionné n\'est pas un fichier CVS.\nÊtes-vous sûr de vouloir continuer ?',
-	'confirm template with no objects': 'Êtes-vous sûr de vouloir créer un modèle sans objet dedans (vous pourrez en rajouter plus tard) ?'
+	'confirm template with no objects': 'Êtes-vous sûr de vouloir créer un modèle sans objet dedans (vous pourrez en rajouter plus tard) ?',
+	
+	'show more': 'Voir plus',
+	'actions': 'Actions'
 });

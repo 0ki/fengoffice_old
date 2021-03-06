@@ -323,7 +323,7 @@ class Notifier {
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
-		$task->getProject()->getName() . ' - ' . lang('due task'),
+		$task->getProject()->getName() . ' - ' . lang('due task reminder'),
 		tpl_fetch(get_template_path('due_task', 'notifier'))
 		); // send
 	} // taskDue

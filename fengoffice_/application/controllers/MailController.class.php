@@ -550,6 +550,12 @@
       tpl_assign('mailAccount_data', $mailAccount_data);
       
       if(is_array(array_var($_POST, 'mailAccount'))) {
+      	$email_address = array_var(array_var($_POST, 'mailAccount'), 'email_addr');
+      	if (MailAccounts::findOne(array('conditions' => "`email` = '$email_address'")) != null) {
+      		flash_error(lang('email address already exists'));
+      		ajx_current("empty");
+      		return;
+      	}
         
         try {
           $mailAccount_data['user_id'] = logged_user()->getId();
@@ -775,7 +781,10 @@
 	    		flash_error(lang('error delete mail account'));
 				ajx_current("empty");
 	    	}
-    	}
+    	} else {
+    		flash_error(lang('error delete mail account'));
+			ajx_current("empty");
+		}
     } // delete
     
     
@@ -1016,18 +1025,13 @@
 
 		$table_name = TABLE_PREFIX . "mail_contents";
 		
-		$not_classified_by_other_user = " NOT EXISTS (SELECT `id` FROM $table_name mc WHERE mc.`subject` = $table_name.`subject` AND mc.`sent_date` = $table_name.`sent_date` AND mc.`from` = $table_name.`from` AND mc.`account_id` <> $table_name.`account_id` AND $wspace_obj_string)";
+		//$not_classified_by_other_user = " NOT EXISTS (SELECT `id` FROM $table_name mc WHERE mc.`subject` = $table_name.`subject` AND mc.`sent_date` = $table_name.`sent_date` AND mc.`from` = $table_name.`from` AND mc.`account_id` <> $table_name.`account_id` AND $wspace_obj_string)";
 		
 		$query = "SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from $table_name where " . 
 			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions
-			. " AND $not_classified_by_other_user" 
-			. " ORDER BY `sent_date` DESC";
+			. " ORDER BY `sent_date` DESC"; //. " AND $not_classified_by_other_user"
 		$res = DB::execute($query);
 
-/*		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 AND `account_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_accounts` WHERE `user_id` = " . logged_user()->getId() . ") " . $permissions 
-			. " ORDER BY `sent_date` DESC");
-*/
 		if(!$res) return null;
 		return $res->fetchAll();
 	
@@ -1068,20 +1072,20 @@
 							"type" => 'email',
 							"hasAttachment" => $msg->getHasAttachments(),
 							"accountId" => $msg->getAccountId(),
-							"accountName" => $msg->getAccount()->getName(),
+							"accountName" => ($msg->getAccount() != null ? $msg->getAccount()->getName() : lang('n/a')),
 							"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
 							"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"title" => $msg->getSubject(),
 							"text" => $text,
-							"date" => ($msg->getSentDate() != null ? $msg->getSentDate()->getTimestamp() : $msg->getCreatedOn()->getTimestamp()),
-							"userId" => $msg->getAccount()->getOwner()->getId(),
-							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
+							"date" => ($msg->getSentDate() != null ? $msg->getSentDate()->getTimestamp() : ($msg->getCreatedOn() instanceof DateTimeValue ? $msg->getCreatedOn()->getTimestamp() : 0)),
+							"userId" => ($msg->getAccount() != null ? $msg->getAccount()->getOwner()->getId() : 0),
+							"userName" => ($msg->getAccount() != null ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
 							"tags" => project_object_tags($msg),
 							"isRead" => $msg->getIsRead(logged_user()->getId()),
 							"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
 							"from_email" => $msg->getFrom(),
-							"isDraft" => $msg->getIsDraft(),							
+							"isDraft" => $msg->getIsDraft(),
 							"isSent" => $msg->getIsSent(),
 							"folder" => $msg->getImapFolderName()
 						);

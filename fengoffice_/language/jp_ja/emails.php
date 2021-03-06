@@ -64,6 +64,7 @@
   "view due task" => "期限タスクの表示",
   "due task email" => "未完了の \"{0}\" タスクは \"{1}\" が期限です",
   "due task" => "期限タスク",
+  "due task reminder" => "期限タスク",
   "task has been modified" => "ワークスペース \"{1}\" のタスク \"{0}\" は更新されました",
   "task modified" => "タスクが変更された",
   "view task" => "タスクの表示",

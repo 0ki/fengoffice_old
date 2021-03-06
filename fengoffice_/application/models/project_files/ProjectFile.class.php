@@ -76,6 +76,9 @@ class ProjectFile extends BaseProjectFile {
 	} // __construct
 
 
+	function getTitle(){
+		return $this->getFilename();
+	}
 
 	/**
 	 * Return all file revisions

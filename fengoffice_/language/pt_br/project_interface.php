@@ -211,4 +211,7 @@
 	'assign contact to workspace desc' => 'Para atribui o contato ao Espaço de Trabalho, Marque o Espaço e preencha a regra de segurança no campo texto.',
 	'cannot change parent workspace' => 'Sem permissão de acesso para executar esta atividade.',
 	'cannot change parent workspace description' => 'Este espaço deve ser filho de um que voçê não tem acesso.',
+	'copy of file' => 'Cópia de {0}',
+	'add subscribers desc' => 'Increver pessoas selecionadas para este objeto.Usuários inscritos irão receber avisos sobre mudanças neste objeto.',
+	'add custom property' => 'Adicionar propriedade customizada',
 ); ?>

@@ -186,7 +186,7 @@
 	<br/><br/><br/>
   	<fieldset>	
 	<legend><?php echo lang('properties') ?></legend>
-	<table><?php if ($project->getCreatedBy() instanceof User){ ?><tr>
+	<table><tr><?php if ($project->getCreatedBy() instanceof User){ ?>
 		<td><b><?php echo lang('created by') ?>:</b></td>
 		<td style="padding-left:10px"><?php 
 				if (logged_user()->getId() == $project->getCreatedById())

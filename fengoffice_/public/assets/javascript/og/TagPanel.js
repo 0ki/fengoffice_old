@@ -70,7 +70,9 @@ og.TagPanel = function(config) {
 	
 	this.tree.getSelectionModel().on({
 		'selectionchange' : function(sm, node) {
-			this.getTopToolbar().items.get('rename').setDisabled(!node || node == this.tree.tags);
+			var rename = this.getTopToolbar().items.get('rename');
+			if (rename)
+				rename.setDisabled(!node || node == this.tree.tags);
 		},
 		scope:this
 	});

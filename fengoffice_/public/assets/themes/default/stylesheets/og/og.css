@@ -12,6 +12,12 @@
 	background-color: white;
 }
 
+.dash-expander {
+	height:16px;
+	width:16px;
+	cursor:pointer;
+}
+
 .project-replace {
 	display: none;	
 }

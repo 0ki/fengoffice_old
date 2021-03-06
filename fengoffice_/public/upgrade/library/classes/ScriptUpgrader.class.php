@@ -75,7 +75,7 @@ final class ScriptUpgrader {
 			$exists = false;
 			$current = $version_from;
 			foreach ($scripts as $script) {
-				if (version_compare($script->getVersionFrom(), $current) == 0) {
+				if ($script->worksFor($current)) {
 					$current = $script->getVersionTo();
 					if (version_compare($current, $version_to) == 0) {
 						$exists = true;

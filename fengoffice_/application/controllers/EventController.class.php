@@ -51,9 +51,9 @@ class EventController extends ApplicationController {
 		
 		$_SESSION['active_calendar_view'] = 'index';
 				 
-		$year = isset($_GET['year']) ? $_GET['year'] : date('Y');
-		$month = isset($_GET['month']) ? $_GET['month'] : date('n');
-		$day = isset($_GET['day']) ? $_GET['day'] : date('j');
+		$year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
 	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
@@ -126,9 +126,9 @@ class EventController extends ApplicationController {
 	       		$month = $parsedDate['month'];
 	       		$year = $parsedDate['year'];
 			} else {
-				$month = isset($_GET['month'])?$_GET['month']:date('n');
-				$day = isset($_GET['day'])?$_GET['day']:date('j');
-				$year = isset($_GET['year'])?$_GET['year']:date('Y');
+				$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+				$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+				$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 			}
        		
 			if (array_var($event_data, 'start_time') != '') {
@@ -271,9 +271,9 @@ class EventController extends ApplicationController {
 		$event_data = array_var($_POST, 'event');
 		$event_subject = array_var($_GET, 'subject'); //if sent from pupup
 		
-		$month = isset($_GET['month'])?$_GET['month']:date('n');
-		$day = isset($_GET['day'])?$_GET['day']:date('j');
-		$year = isset($_GET['year'])?$_GET['year']:date('Y');
+		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		
 		$user_filter = isset($_GET['user_filter']) ? $_GET['user_filter'] : logged_user()->getId();
 		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
@@ -293,9 +293,9 @@ class EventController extends ApplicationController {
 				} else $pm = 0;
 			}
 			$event_data = array(
-				'month' => isset($_GET['month']) ? $_GET['month'] : date('n'),
-				'year' => isset($_GET['year']) ? $_GET['year'] : date('Y'),
-				'day' => isset($_GET['day']) ? $_GET['day'] : date('n'),
+				'month' => isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
+				'year' => isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
+				'day' => isset($_GET['day']) ? $_GET['day'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600),
 				'hour' => $hour,
 				'minute' => $minute,
 				'pm' => (isset($pm) ? $pm : 0),
@@ -431,9 +431,9 @@ class EventController extends ApplicationController {
 		
 		$_SESSION['active_calendar_view'] = 'viewdate';
 		
-		$day = isset($_GET['day'])?$_GET['day']:date('j');
-		$month = isset($_GET['month'])?$_GET['month']:date('n');
-	    $year = isset($_GET['year'])?$_GET['year']:date('Y');
+		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+	    $year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
 	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
@@ -450,10 +450,10 @@ class EventController extends ApplicationController {
 		
 		$_SESSION['active_calendar_view'] = 'viewweek';
 				
-		$day = isset($_GET['day']) ? $_GET['day'] : date('j');
-		$month = isset($_GET['month']) ? $_GET['month'] : date('n');
-	    $year = isset($_GET['year']) ? $_GET['year'] : date('Y');
-	    
+		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+	    $year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
+
 		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
 	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
 	    $state_filter = explode(' ', $state_filter); // make an array of filters
@@ -775,7 +775,7 @@ class EventController extends ApplicationController {
 					    $this->registerInvitations($ev_data, $event);
 						if (isset($ev_data['confirmAttendance'])) {
 							if ($event->getCreatedBy() instanceof User)
-								$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
+			            		$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
 			            }
 					}
 					DB::commit();
@@ -854,7 +854,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.71.2.1 2009/01/26 13:00:21 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.71.2.2 2009/02/10 19:28:34 alvarotm01 Exp $
  *
  ***************************************************************************/
 

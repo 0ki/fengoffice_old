@@ -247,7 +247,11 @@
     * @return boolean
     */
     static function dropContentByObjectColumns(ApplicationDataObject $object, $columns = array()) {
-    	$columns_csv = "'" . implode("','",$columns) . "'";
+    	if (count($columns) > 0) {
+    		$columns_csv = "'" . implode("','",$columns) . "'";
+    	} else {
+    		$columns_csv = "";
+    	}
     	
     	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` in ('. $columns_csv . ')' , get_class($object->manager()), $object->getObjectId()));
     } // dropContentByObject

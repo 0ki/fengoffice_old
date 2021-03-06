@@ -63,7 +63,7 @@
 	'unread emails' => 'Unread emails',
 	'view due task' => 'View due task',
 	'due task email' => 'Task "{0}" is due on "{1}" and is still pending',
-	'due task' => 'Due task soon',
+	'due task reminder' => 'Due task reminder',
 	'task has been modified' => 'Opgave "{0}" i turneringen "{1}" er blevet opdateret',
 	'task modified' => 'Opgave opdateren',
 	'view task' => 'Vis opgave',

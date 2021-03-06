@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.2 RC2 
-    =====================
+    About OpenGoo 1.2 
+    =================
 
     OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
@@ -60,12 +60,12 @@
     Upgrade instructions
     ====================
     
-    1. Backup you current installation (important !)
-    2. Download OpenGoo 1.2 RC2 - http://www.opengoo.org/
+    1. Backup you current installation (important!)
+    2. Download OpenGoo 1.2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
-    5. If upgrading from 1.1 or older, go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.
-    6. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.   
+    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.0.1.
+    6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
 	Open Source Libraries 
@@ -85,6 +85,14 @@
 
 	Changelog
 	=========
+
+	Since 1.2 RC2
+	-------------
+	- bugfix: "No Title!!!" shown on some comment notifications.
+	- bugfix: Displaying documents on the dashboard didn't work for some languages.
+	- bugfix: Events on a workspace with no color had no name on the monthly view.
+	- bugfix: Clicking on Compress action would show the delete email account dialog.
+	- bugfix: Error 500 when closing a timeslot on a task.
 
 	Since 1.2 RC1
 	-------------
@@ -154,7 +162,7 @@
 		- Email accounts configuration option to delete emails from the server after N days
 	feature: Spreadsheets integration - An alpha version of the Spreadsheets module of OpenGoo.
 	feature: Automatize OpenGoo upgrade - OpenGoo's upgrade now can download and install new versions with just one click. (Your webserver needs write permission on all OpenGoo files and folders).
-	feature: Cron events - Some common procedures like checking email or backing up OpenGoo can be configured to be done by a cron job so that you don't have to do them manually saving you time and improving the user experience (just refresh the email panel to get new email).
+	feature: Cron events - Some common procedures like checking email can be configured to be done by a cron job so that you don't have to do them manually saving you time and improving the user experience (just refresh the email panel to get new email).
 	feature: Improved Content Object subscriptions - Now you can subscribe other users and you will be notified when the object is created, modified, commented on or deleted.
 	feature: Enhanced custom properties - Now you can add an unlimited amount of custom properties and you can see them on the object's view, as well as search them.
 	feature: Copy documents - You can now create copies of a document.

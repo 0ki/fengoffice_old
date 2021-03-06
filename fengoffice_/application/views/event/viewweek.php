@@ -65,7 +65,7 @@ $tags = active_tag();
 		} elseif($day_of_month < 1) {								
 			$w = $day_of_month;
 		} else {
-			if($day_of_month == $lastday + 1) {
+			if($day_of_month > $lastday) {
 				$month_aux++;
 				if($month_aux == 13){
 					$month_aux = 1;

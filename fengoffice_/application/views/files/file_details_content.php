@@ -19,8 +19,8 @@
 
 
 <?php if ($file->isDisplayable()) {?>
-<table><tr><td>
-	<div id="<?php echo $genid ?>file_contents" style="display:none;">
+	<fieldset><legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>file_contents',this)"><?php echo lang('file contents') ?></legend>
+	<div id="<?php echo $genid ?>file_contents" style="display:none">
 		<?php if ($file->getTypeString() == "text/html"){
 			echo remove_css_and_scripts($file->getFileContent());
 		} else if ($file->getTypeString() == "text/xml"){
@@ -28,17 +28,8 @@
 		} else {
 			$filecontent = $file->getFileContent();
 			echo nl2br(htmlEntities(iconv(mb_detect_encoding($filecontent, array('UTF-8','ISO-8859-1')),'UTF-8',$filecontent), null, 'UTF-8'));
-}?>
-	</div>
-</td></tr><tr><td>
-	<div id="<?php echo $genid ?>file_display" style="background-color:#FCFCFC;padding:10px;"></div>
-	<br/>
-</td></tr><tr><td>
-
-<script type="text/javascript">
-og.displayFileContents('<?php echo $genid ?>', false);
-</script>
-</td></tr></table>
+}?></div>
+	</fieldset><br/>
 <?php } // if ?> 
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>

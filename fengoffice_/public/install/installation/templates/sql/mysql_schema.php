@@ -650,7 +650,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `imap_folder_name` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `account_email` varchar(100) <?php echo $default_collation ?> default '',
   PRIMARY KEY  (`id`),
-  KEY `account_id` (`account_id`)
+  KEY `account_id` (`account_id`),
+  KEY `sent_date` USING BTREE (`sent_date`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (

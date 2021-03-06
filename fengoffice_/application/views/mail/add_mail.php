@@ -93,7 +93,7 @@ function setDiscard(val){
     $allEmails = array();
     foreach ($contacts as $contact) {
     	if (trim($contact->getEmail()) != "") {
-    		$allEmails[] = str_replace(",", " ", $contact->getFirstname() . ' ' . $contact->getLastname() . '<' . $contact->getEmail() . '>');
+    		$allEmails[] = str_replace(",", " ", $contact->getFirstname() . ' ' . $contact->getLastname() . ' <' . $contact->getEmail() . '>');
     	}
     } 
 ?>

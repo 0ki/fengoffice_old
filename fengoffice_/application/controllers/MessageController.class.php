@@ -287,7 +287,7 @@ class MessageController extends ApplicationController {
 							"accountName" => '',
 							"title" => $msg->getTitle(),
 							"text" => $text,
-							"date" => $msg->getUpdatedOn()->getTimestamp(),
+							"date" => $msg->getUpdatedOn() instanceof DateTimeValue ? $msg->getUpdatedOn()->getTimestamp() : 0,
 							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getCreatedById(),
 							"userName" => $msg->getCreatedByDisplayName(),

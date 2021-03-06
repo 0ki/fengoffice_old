@@ -419,10 +419,10 @@ class ContactController extends ApplicationController {
 						"homePhone1" => $c->getHPhoneNumber(),
 						"homePhone2" => $c->getHPhoneNumber2(),
 						"mobilePhone" =>$c->getHMobileNumber(),
-						"createdOn" => $c->getCreatedOn()->getTimestamp(),
+						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->getTimestamp() : 0,
 						"createdBy" => $c->getCreatedByDisplayName(),
 						"createdById" => $c->getCreatedById(),
-						"updatedOn" => $c->getUpdatedOn()->getTimestamp(),
+						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->getTimestamp() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById()
 					);
@@ -466,10 +466,10 @@ class ContactController extends ApplicationController {
 						"homePhone1" => '',
 						"homePhone2" => '',
 						"mobilePhone" =>'',
-						"createdOn" => $c->getCreatedOn()->getTimestamp(),
+						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->getTimestamp() : 0,
 						"createdBy" => $c->getCreatedByDisplayName(),
 						"createdById" => $c->getCreatedById(),
-						"updatedOn" => $c->getUpdatedOn()->getTimestamp(),
+						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->getTimestamp() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById()
 					);

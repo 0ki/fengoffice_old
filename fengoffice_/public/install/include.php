@@ -24,7 +24,7 @@ define('INSTALLATION_PATH', realpath(INSTALLER_PATH . '/../../'));
 $config_path = INSTALLATION_PATH . '/config/config.php';
 $config_is_set = false;
 if (is_file($config_path)) {
-	$config_is_set = $config_path;
+	$config_is_set = @include $config_path;
 }
 if(is_bool($config_is_set) && $config_is_set) {
 	die('<strong>Installation error:</strong> OpenGoo is already installed');

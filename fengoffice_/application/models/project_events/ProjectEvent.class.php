@@ -96,6 +96,9 @@ class ProjectEvent extends BaseProjectEvent {
 		return $this->getModifyUrl();
 	} // getOpenUrl
 	 
+	function getTitle(){
+		return $this->getSubject();
+	}
 	 
 	/**
 	 * Return Event details URL

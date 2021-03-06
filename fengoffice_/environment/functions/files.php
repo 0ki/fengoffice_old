@@ -322,6 +322,10 @@ function insert_before_file_extension($filename, $insert) {
  * @return boolean
  */
 function download_file($path, $type = 'application/octet-stream', $name = '', $force_download = false) {
+	if (!function_exists('readfile')) {
+		$contents = file_get_contents($path);
+		return download_contents($contents, $type, $name, $force_download);
+	}
 	if (!is_readable($path)) return false;
 
 	$name = trim($name) == '' ? basename($path) : trim($name);

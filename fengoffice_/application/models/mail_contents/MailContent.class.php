@@ -106,6 +106,10 @@ class MailContent extends BaseMailContent {
 		return true;
 	}
 
+	
+	function getTitle(){
+		return $this->getSubject();
+	}
 
 
 	/**

@@ -35,7 +35,8 @@ function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$bord
 		$txt_color = '#003562';
 		$ws_class = "og-wsname-color-$ws_color";	
 	}else {
-		$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
+		$ws_style = "color: #000000;background-color: #C5C7C1;border-color: #C5C7C1;";
+		$txt_color = '#000000';
 		$ws_class = "";	
 	}
 	

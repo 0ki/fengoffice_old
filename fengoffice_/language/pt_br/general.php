@@ -163,4 +163,5 @@
 	'date format' => 'm/d/Y',
 	'date format description' => '(mm/dd/yyyy)',
 	'confirm move to trash' => 'Confirma envio do objeto para lixeira?',
+	'add' => 'Adicionar',
 ); ?>
