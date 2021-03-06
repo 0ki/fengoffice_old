@@ -1,5 +1,5 @@
 
-	About Feng Office 2.5.1.2
+	About Feng Office 2.5.1.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,27 @@
 	Changelog
 	=========
 	
+	
+	Since 2.5.1.2
+	----------------
+	bugfix: When edit timeslots show all members.
+	bugfix: Error occurs sometimes when attaching files to send mails.
+	bugfix: Several "undefined variable" fixes.
+	bugfix: Non utf-8 characters in custom reports produces an error when rendering.
+	bugfix: After deleting a folder the top breadcrumb is not refreshed correctly.
+	bugfix: Missing langs in document report columns.
+	bugfix: When classifying emails a new revision is generated always for every attachment.
+	bugfix: Attribute title not escaped in reports when renedering object links.
+	bugfix: Workspace selectors are not preloaded in time panel.
+	bugfix: add web document  fail if have http in the url.
+	bugfix: Missing argument 3 for save_user_permissions_background() in GroupController
+		
+	performance: When classifying emails classify attachments in background.
+	
+	Since 2.5.1.2
+	----------------	
+	bugxix: add web document  fail if have http in the url.
+	bugfix: search query problem with members.
 	
 	Since 2.5.1.1
 	----------------

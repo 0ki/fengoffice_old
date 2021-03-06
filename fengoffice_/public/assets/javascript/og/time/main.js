@@ -284,7 +284,8 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'tsHours').focus();
 		
 		member_selector.remove_all_selections(this.genid);
-		member_selector.set_selected(this.genid, ts.memberIds);
+		
+		member_selector.set_selected(this.genid, ts.memberIds, false);
 	}
 }
 

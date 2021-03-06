@@ -346,6 +346,9 @@ return array(
 	'Non-Exec Director' => 'Non executive Director',
 	'permissions for unclassified objects' => 'Permissions for objects without classification',
 
+	'field Objects attach_to_notification' => 'Attach document to the notification',
+	'field Objects default_subject' => 'Default subject for notification',
+
 	'attach to notification' => 'Attach document to the notification',
 	'subject for email notification' => 'Subject for e-mail notification:',
 	'use default subject' => 'Use default Subject',

@@ -18,6 +18,10 @@
 	        	$member_deleted = true;
 	        } else {
 	        	$object = Objects::findObject($activity->getRelObjectId());
+	        	if ($object instanceof Timeslot && $object->getRelObjectId() > 0) {
+	        		$rel_obj = Objects::findObject($object->getRelObjectId());
+	        		if (!$rel_obj->canView(logged_user())) continue;
+	        	}
 	        }
     	}
         if($object || $member_deleted){
@@ -56,6 +60,5 @@
     $total = $limit ;
     $genid = gen_id();
     if (count($acts['data']) > 0) {
-            include_once 'template.php';
+    	include_once 'template.php';
     }
-?>

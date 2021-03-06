@@ -454,13 +454,11 @@ abstract class ContentDataObjects extends DataManager {
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
-					
-			$permissions_condition = "EXISTS (
+			
+			$permissions_condition = "o.id in (
 											SELECT object_id FROM ".TABLE_PREFIX."sharing_table sh
 											WHERE o.id = sh.object_id
-											AND sh.group_id  IN (
-																SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-																)
+											AND sh.group_id  IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid)
 									)";
 			
 			if ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user())) {

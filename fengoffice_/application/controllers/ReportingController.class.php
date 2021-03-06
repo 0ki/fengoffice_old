@@ -502,8 +502,6 @@ class ReportingController extends ApplicationController {
 					return;
 				}
 				
-				$members = Members::findAll(array("conditions" => array("`id` IN(?)", $member_ids)));
-
 				$newReport->setObjectName($report_data['name']);
 				$newReport->setDescription($report_data['description']);
 				$newReport->setReportObjectTypeId($report_data['report_object_type_id']);
@@ -612,13 +610,7 @@ class ReportingController extends ApplicationController {
 				$report_data = array_var($_POST, 'report');
 				
 				$member_ids = json_decode(array_var($_POST, 'members'));
-				if (!is_array($member_ids) || count($member_ids) == 0) {
-					flash_error(lang('must choose at least one member'));
-					ajx_current("empty");
-					return;
-				}
-				$members = Members::findAll(array("conditions" => array("`id` IN(?)", $member_ids)));
-		
+				
 				DB::beginWork();
 				$report->setObjectName($report_data['name']);
 				$report->setDescription($report_data['description']);

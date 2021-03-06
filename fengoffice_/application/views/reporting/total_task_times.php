@@ -385,11 +385,11 @@ if (count($timeslotsArray) > 0) {
 	foreach ($timeslotsArray as $t) {
 		if (isset($has_conditions) && $has_conditions && $t->getObjectManager() == 'Projects') continue;
 		$sumTime += $t->getMinutes();
-                if($ts->getIsFixedBilling()){
-                    $sumBilling += $t->getFixedBilling();
-                }else{
-                    $sumBillings[$i] += ($ts->getHourlyBilling()/60) * $ts->getMinutes();
-                }		
+		if($ts->getIsFixedBilling()){
+			$sumBilling += $t->getFixedBilling();
+		}else{
+			$sumBilling += ($ts->getHourlyBilling()/60) * $ts->getMinutes();
+		}
 	}
 ?>
 <tr><td style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;" colspan=<?php echo ($showBillingCol)? $totCols -1 : $totCols ?>>

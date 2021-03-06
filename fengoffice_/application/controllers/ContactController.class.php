@@ -1486,7 +1486,7 @@ class ContactController extends ApplicationController {
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				if($user){
-					$user['username'] = str_replace(" ","",strtolower($name));
+					$user['username'] = str_replace(" ","",strtolower($contact->getObjectName()));
 					$this->createUserFromContactForm($user, $contact->getId(), $contact->getEmailAddress());
 
 					// Reload contact again due to 'createUserFromContactForm' changes

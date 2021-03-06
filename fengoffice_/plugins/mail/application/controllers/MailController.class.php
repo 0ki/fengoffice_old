@@ -1557,12 +1557,14 @@ class MailController extends ApplicationController {
 				$type_file_allow = FileTypes::getByExtension($extension);
 				if(!($type_file_allow instanceof FileType) || $type_file_allow->getIsAllow() == 1){
 					try {
+						$file = ProjectFiles::findOne(array('conditions' => "mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName).""));
+						/*
 						//$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND f.mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName)."";
 						$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND o.name = ".DB::escape($fName)."";
 						$db_res = DB::execute($sql);
 						$row = $db_res->fetchRow();
-
 						$file = ProjectFiles::findById($row['id']);
+						*/
 						DB::beginWork();
 						if ($file == null){
 							$fileIsNew = true;
@@ -1586,7 +1588,10 @@ class MailController extends ApplicationController {
 						}
 
 						$file->addToMembers($members);
-						$file->addToSharingTable();
+						
+						// fill sharing table in background
+						add_object_to_sharing_table($file, logged_user());
+						//$file->addToSharingTable();
 
 						$enc = array_var($parsedMail,'Encoding','UTF-8');
 						$ext = utf8_substr($fName, strrpos($fName, '.') + 1, utf8_strlen($fName, $enc), $enc);
@@ -1617,13 +1622,13 @@ class MailController extends ApplicationController {
 							$revision->setCreatedById($account_owner->getId());
 							$revision->save();
 							ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-						}else{
+					/*	}else{
 							$revision = $file->getLastRevision();
 							$new_hash = hash_file("sha256", $tempFileName);
 							if ($revision->getHash() != $new_hash) {
 								$revision = $file->handleUploadedFile($fileToSave, true, lang('attachment from email', $email->getSubject())); // handle uploaded file
 								ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
-							}
+							}*/
 						}
 						DB::commit();
 						// Error...

@@ -66,14 +66,16 @@ member_selector.init = function(genid) {
 	}
 }
 
-member_selector.autocomplete_select = function(dimension_id, genid, combo, record) {
+member_selector.autocomplete_select = function(dimension_id, genid, combo, record, preload) {
 	combo.setValue(record.data.name);
 	combo.selected_member = record.data;
 
 	member_selector.add_relation(dimension_id, genid);
 	
 	// fill store with preloaded members
-	member_selector.preload_members(genid, dimension_id);
+	if(preload){
+		member_selector.preload_members(genid, dimension_id);
+	}
 }
 
 member_selector.add_relation = function(dimension_id, genid) {
@@ -263,7 +265,7 @@ member_selector.remove_all_selections = function(genid) {
 	}
 }
 
-member_selector.set_selected = function(genid, sel_member_ids) {
+member_selector.set_selected = function(genid, sel_member_ids, preload) {
 	for (dim_id in member_selector[genid].properties) {
 		var combo = Ext.getCmp(genid + 'add-member-input-dim' + dim_id);
 		
@@ -273,8 +275,7 @@ member_selector.set_selected = function(genid, sel_member_ids) {
 			
 			for (i=0; i<store.data.items.length; i++) {
 				if (store.data.items[i].data.id == sel_id) {
-					member_selector.autocomplete_select(dim_id, genid, combo, store.data.items[i]);
-					break;
+					member_selector.autocomplete_select(dim_id, genid, combo, store.data.items[i], preload);
 				}
 			}
 		}

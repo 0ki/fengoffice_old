@@ -698,6 +698,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return boolean
 	 */
 	function canEdit(Contact $user) {
+		if ($this->isCheckedOut() && $this->getCheckedOutById() != $user->getId())return false;
 		return can_write($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canEdit
 
@@ -710,6 +711,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return boolean
 	 */
 	function canDelete(Contact $user) {
+		if ($this->isCheckedOut() && $this->getCheckedOutById() != $user->getId())return false;
 		return can_delete($user,$this->getMembers(), $this->getObjectTypeId());
 	} // canDelete
 

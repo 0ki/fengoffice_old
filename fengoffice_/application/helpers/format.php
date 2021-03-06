@@ -245,6 +245,8 @@ function date_format_tip($format) {
 					if ($col == 'is_user') {
 						$formatted = ($value == 1 ? lang('yes') : lang('no'));
 					} else {
+						if (strpos($value, "\xA0") !== false) $value = preg_replace('/\xA0/s', ' ', $value);
+						$value = utf8_safe($value);
 						$formatted = $textWrapper . clean($value) . $textWrapper;
 					}
 				}

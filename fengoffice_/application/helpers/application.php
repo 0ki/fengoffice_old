@@ -1551,6 +1551,7 @@ function render_add_working_days() {
 function render_widget_option_input($widget_option, $genid=null) {
 	if (is_null($genid)) $genid = gen_id();
 	$output = "";
+	$name = 'widgets['.$widget_option['widget'].'][options]['.$widget_option['option'].']';
 	switch ($widget_option['handler']) {
 		case 'UserCompanyConfigHandler' :
 			if ($widget_option['widget'] == 'overdue_upcoming') $ot = ObjectTypes::findByName('task');
@@ -1566,7 +1567,6 @@ function render_widget_option_input($widget_option, $genid=null) {
 			$output .= "</select>";
 			break;
 		case 'BooleanConfigHandler' :
-			$name = "widgets[".$widget_option['widget']."][options]"."[".$widget_option['option']."]";
 			$output .= yes_no_widget($name, $genid.$name, $widget_option['value'], lang('yes'), lang('no'));
 			break;
 		default: break;

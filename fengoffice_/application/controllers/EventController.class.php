@@ -678,10 +678,12 @@ class EventController extends ApplicationController {
 	function setViewVariables($view_type, $user_filter, $status_filter, $task_filter) {
 		$context = active_context();
 		$member_selected = false;
-		foreach ($context as $selection) {
-			if ($selection instanceof Member) {
-				$member_selected = true;
-				break;
+		if (is_array($context)) {
+			foreach ($context as $selection) {
+				if ($selection instanceof Member) {
+					$member_selected = true;
+					break;
+				}
 			}
 		}
 		

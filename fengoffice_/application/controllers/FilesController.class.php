@@ -331,9 +331,12 @@ class FilesController extends ApplicationController {
 				if ($url && strpos($url, ':') === false) {
 					$url = $this->protocol ."://". $url;
 					$file->setUrl($url);
-					$file->save();
-				}
 					
+				}
+				
+				DB::beginWork();
+				$file->save();
+				
 				$revision = new ProjectFileRevision();
 				$revision->setFileId($file->getId());
 				$revision->setRevisionNumber($file->getNextRevisionNumber());
@@ -343,7 +346,8 @@ class FilesController extends ApplicationController {
 				$revision_comment = array_var($file_data, 'revision_comment', lang('initial versions'));
 				$revision->setComment($revision_comment);
 				
-				DB::beginWork();
+				
+				
 				$revision->save();
 		
 				$member_ids = json_decode(array_var($_POST, 'members'));
@@ -699,7 +703,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 		tpl_assign('genid', array_var($_GET, 'genid'));
-                tpl_assign('object_id', array_var($_GET, 'object_id'));
+		tpl_assign('object_id', array_var($_GET, 'object_id'));
 			
 		if (is_array(array_var($_POST, 'file'))) {
 			//$this->setLayout("html");
@@ -856,6 +860,7 @@ class FilesController extends ApplicationController {
 				$files_data_to_return = array();
 				foreach ($file_ids as $file_id) {
 					$file_to_ret = ProjectFiles::findById($file_id);
+					if (!$file_to_ret instanceof ProjectFile) continue;
 					$file_data = array();
 					$file_data["file_id"] = $file_to_ret->getId();
 					$file_data["file_name"] = $file_to_ret->getFilename();

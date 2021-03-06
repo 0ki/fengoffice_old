@@ -248,8 +248,12 @@ class Reports extends BaseReports {
 								$value = '%'.$value.'%';
 							}
 							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
-								$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
-								$value = $dtValue->format('Y-m-d');
+								if ($value == date_format_tip($dateFormat)) {
+									$value = EMPTY_DATE;
+								} else {
+									$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+									$value = $dtValue->format('Y-m-d');
+								}
 							}
 							if($condField->getCondition() != '%'){
 								if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
@@ -432,7 +436,7 @@ class Reports extends BaseReports {
 				$row_values = array('object_type_id' => $object->getObjectTypeId());
 				
 				if (!$to_print) {
-					$row_values['link'] = '<a class="link-ico '.$icon_class.'" title="' . $obj_name . '" target="new" href="' . $object->getViewUrl() . '">&nbsp;</a>';
+					$row_values['link'] = '<a class="link-ico '.$icon_class.'" title="' . clean($obj_name) . '" target="new" href="' . $object->getViewUrl() . '">&nbsp;</a>';
 				}
 				
 				foreach($report_columns as $column){

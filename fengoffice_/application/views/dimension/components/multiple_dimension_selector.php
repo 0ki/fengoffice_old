@@ -82,7 +82,7 @@ Logger::log(__FILE__." : ".__LINE__." - $dimension_id - ".date('H:i:s'));
 			<div id="<?php echo $genid; ?>add-member-form-dim<?php echo $dimension_id?>" class="add-member-form" style="display:<?php echo ($form_visible?'block':'none')?>;">
 				<?php
 				$combo_listeners = array(
-					"select" => "function (combo, record, index) { member_selector.autocomplete_select($dimension_id, '$genid', combo, record); }",
+					"select" => "function (combo, record, index) { member_selector.autocomplete_select($dimension_id, '$genid', combo, record, 1); }",
 					"blur" => "function (combo) { var rec = combo.store.getAt(0); if (combo.getValue().trim() != '' && rec) { combo.select(0, true); combo.fireEvent('select', combo, rec, 0); } }"
 				);
 				$empty_text = array_var($options, 'empty_text', lang('add new relation ' . $dimension['dimension_code']));

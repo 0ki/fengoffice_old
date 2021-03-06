@@ -117,6 +117,7 @@
     'the comment activity' => 'the comment{0}',
     'the user activity' => 'the user{0}',
     'the project activity' => 'the workspace{0}',
+	'the timeslot activity' => 'the timeslot{0}',
     'the Time activity' => 'a timeslot',
       
     'the message' => 'the note',

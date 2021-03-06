@@ -267,8 +267,10 @@ class MemberController extends ApplicationController {
 				$member_type = ObjectTypes::findById($member->getObjectTypeId());
 				$context = active_context();
 				$sel_mem = null;
-				foreach ($context as $selection) {
-					if ($selection instanceof Member && $selection->getDimensionId() == $member->getDimensionId()) $sel_mem = $selection;
+				if (is_array($context)) {
+					foreach ($context as $selection) {
+						if ($selection instanceof Member && $selection->getDimensionId() == $member->getDimensionId()) $sel_mem = $selection;
+					}
 				}
 				evt_add("ask to select member", array(
 					'id' => $member->getId(),
@@ -1277,7 +1279,9 @@ class MemberController extends ApplicationController {
 									ObjectMembers::delete('`object_id` = ' . $timeslot->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
 								}
 								$timeslot->addToMembers(array($member));
-								$timeslot->addToSharingTable();
+								//$timeslot->addToSharingTable();
+								// fill sharing table in background
+								add_object_to_sharing_table($timeslot, logged_user());
 								$objects[] = $timeslot;
 							}
 						}

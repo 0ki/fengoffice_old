@@ -1249,7 +1249,7 @@
 	
 	
 	
-	function save_user_permissions_background($user, $pg_id, $is_guest) {
+	function save_user_permissions_background($user, $pg_id, $is_guest=false) {
 		
 		// system permissions
 		$sys_permissions_data = array_var($_POST, 'sys_perm');
@@ -1312,6 +1312,19 @@
 			
 			$is_guest_str = $is_guest ? "1" : "0";
 			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $rp_genid";
+			exec("$command > /dev/null &");
+		}
+	}
+	
+	
+	
+	function add_object_to_sharing_table($object, $user) {
+		if (!$object instanceof ContentDataObject) return;
+		
+		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
+			$object->addToSharingTable();
+		} else {
+			$command = "nice -n19 php ". ROOT . "/application/helpers/add_object_to_sharing_table.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." ".$object->getId();
 			exec("$command > /dev/null &");
 		}
 	}

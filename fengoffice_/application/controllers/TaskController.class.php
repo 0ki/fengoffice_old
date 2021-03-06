@@ -1564,6 +1564,7 @@ class TaskController extends ApplicationController {
 			}else{
 				$text_post = array_var($_POST, 'text', $task->getText());
 			}
+			
 			$task_data = array(
 				'name' => array_var($_POST, 'name', $task->getObjectName()),
 				'text' => $text_post,

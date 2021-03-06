@@ -335,7 +335,7 @@ class DimensionController extends ApplicationController {
 		
 		$ot_extra_cond = "";
 		Hook::fire('available_object_types_extra_cond', null, $ot_extra_cond);
-		$ots = ObjectTypes::getAvailableObjectTypes($ot_extra_cond);
+		$ots = ObjectTypes::getAvailableObjectTypesWithTimeslots($ot_extra_cond);
 		
 		$dims_info = array();
 		$perms_info = array();
