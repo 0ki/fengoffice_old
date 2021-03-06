@@ -372,7 +372,10 @@
 	 */
 	function can_access(User $user, ApplicationDataObject $object, $access_level){
 		try {
-			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company ) {
+			if ($object instanceof Comment) {
+				return can_access($user, $object->getObject(), $access_level);
+			}
+			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company || $object instanceof MailContent) {
 				// handle object in multiple workspaces
 				$user_id = $user->getId();
 				if($object->getCreatedById() == $user_id) {

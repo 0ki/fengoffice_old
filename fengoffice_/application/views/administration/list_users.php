@@ -29,7 +29,7 @@
     $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl(/*$company->getViewUrl()*/) . '">' . lang('permissions') . '</a>';
   } // if
   if($user->canDelete(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $user->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete user') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete user')) . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
       <div class="userOptions"><?php echo implode(' | ', $options) ?></div>

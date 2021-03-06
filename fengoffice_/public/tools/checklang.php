@@ -54,8 +54,8 @@ while (false !== ($file = readdir($handle))) {
 }
 echo "</ul>";
 closedir($handle);
-$a = $_GET["a"];
-$b = $_GET["b"];
+$a = isset($_GET["a"])?$_GET["a"]:null;
+$b = isset($_GET["b"])?$_GET["b"]:null;
 if (isset($a) && isset($b)) {
 	echo "<h2>$b translation files</h2>";
 	echo "<p>Next you can see the missing translation files in red, and the missing translation keys under each file, along with the english text</p>";

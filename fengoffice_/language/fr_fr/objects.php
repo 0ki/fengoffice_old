@@ -72,4 +72,5 @@
 	'private task list' => 'Tâche privée',
 	'private comment' => 'Commentaire privé',
 	'private file' => 'Fichier privé',
+	'file contents' => 'Contenus du fichier',
 ); ?>

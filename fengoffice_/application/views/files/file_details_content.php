@@ -19,6 +19,7 @@
 
 
 <?php if ($file->isDisplayable()) {?>
+<table><tr><td>
 	<div id="<?php echo $genid ?>file_contents" style="display:none;">
 		<?php if ($file->getTypeString() == "text/html"){
 			echo remove_css_and_scripts($file->getFileContent());
@@ -29,11 +30,15 @@
 			echo nl2br(htmlEntities(iconv(mb_detect_encoding($filecontent, array('UTF-8','ISO-8859-1')),'UTF-8',$filecontent), null, 'UTF-8'));
 }?>
 	</div>
+</td></tr><tr><td>
 	<div id="<?php echo $genid ?>file_display" style="background-color:#FCFCFC;padding:10px;"></div>
 	<br/>
+</td></tr><tr><td>
+
 <script type="text/javascript">
 og.displayFileContents('<?php echo $genid ?>', false);
 </script>
+</td></tr></table>
 <?php } // if ?> 
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
@@ -65,7 +70,7 @@ og.displayFileContents('<?php echo $genid ?>', false);
   $options = array();
   if($file->canDownload(logged_user())) $options[] = '<a href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
   if($file->canEdit(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($file->canDelete(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . str_replace("'", "\\'", lang('confirm move to trash')) . '\')">' . lang('move to trash') . '</a>';
+  if($file->canDelete(logged_user()) && !$file->isTrashed()) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' .escape_single_quotes(lang('confirm move to trash')) . '\')">' . lang('move to trash') . '</a>';
 ?>
 <?php if(count($revisions)) { ?>
     <div class="revisionOptions"><?php echo implode(' | ', $options) ?></div>

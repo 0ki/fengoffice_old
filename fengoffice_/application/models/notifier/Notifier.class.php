@@ -150,7 +150,7 @@ class Notifier {
 		
 		return self::sendEmail(
 			$recepients,
-			self::prepareEmailAddress($email(), $displayName()),
+			self::prepareEmailAddress($email, $displayName),
 			lang('deleted notification ' . $object->getObjectTypeName(), $object->getObjectName()),
 			tpl_fetch(get_template_path('object_deleted', 'notifier'))
 		); // send

@@ -31,7 +31,7 @@ if ($linked_objects_object->isNew()){
 			<a class="internalLink" href="<?php echo $linked_object->getEditUrl() ?>"><?php echo lang('edit')?></a> |
 		<?php }
 		if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 
-			echo '<a class="internalLink" href="' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '" onclick="return confirm(\'' . lang('confirm unlink object') . '\')" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';
+			echo '<a class="internalLink" href="' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm unlink object')) . '\')" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';
 		} ?>
 		</td></tr>
 	<?php 	} // foreach ?>

@@ -43,7 +43,7 @@ foreach($clients as $client) {
     $options[] = '<a class="internalLink" href="' . $client->getEditUrl() . '">' . lang('edit') . '</a>';
   } // if
   if($client->canDelete(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $client->getDeleteClientUrl() . '" onclick="return confirm(\'' . lang('confirm delete client') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $client->getDeleteClientUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete client')) . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
     <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>

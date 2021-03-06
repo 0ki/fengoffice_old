@@ -23,7 +23,7 @@
     <legend><?php echo lang('current avatar') ?></legend>
 <?php if($user->hasAvatar()) { ?>
     <img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> avatar" />
-    <p><a class="internalLink" href="<?php echo $user->getDeleteAvatarUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete current avatar') ?>')"><?php echo lang('delete current avatar') ?></a></p>
+    <p><a class="internalLink" href="<?php echo $user->getDeleteAvatarUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete current avatar')) ?>')"><?php echo lang('delete current avatar') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current avatar') ?>
 <?php } // if ?>

@@ -16,7 +16,7 @@
     $options[] = '<a class="internalLink" href="' . $contact->getUpdatePictureUrl() . '">' . lang('edit picture') . '</a>';
   } // if
   if($contact->canDelete(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $contact->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete contact') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $contact->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete contact')) . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
 		</td></tr><tr><td>

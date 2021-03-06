@@ -55,14 +55,14 @@ class DashboardController extends ApplicationController {
 			$charts = ProjectCharts::findAll(array(
 				'conditions' => '(project_id in ('. $wscsv . ') AND show_in_parents = 1)' 
 					. (active_project() instanceof Project? ' OR (project_id = '. active_project()->getId() . ' AND show_in_project = 1)' : '')
-					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectCharts')"):'')
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectCharts')"):'')
 					, 'order' => 'updated_on DESC', 'limit' => 5));
 			tpl_assign('charts', $charts);
 		}
 		if(user_config_option('show messages widget') && config_option('enable_notes_module')){
 			$messages = ProjectMessages::findAll(array(
 				'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
-					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMessages')"):'')
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMessages')"):'')
 					 . ' AND ' .permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ,logged_user())
 					, 'order' => 'updated_on DESC', 'limit' => 10));
 			tpl_assign('messages', $messages);
@@ -74,7 +74,7 @@ class DashboardController extends ApplicationController {
 		if(user_config_option('show documents widget') && config_option('enable_documents_module')){
 			$documents = ProjectFiles::findAll(array(
 				'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
-					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectFiles')"):'')
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectFiles')"):'')
 					. ' AND ' .permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ,logged_user())
 					, 'order' => 'updated_on DESC', 'limit' => 10));
 					

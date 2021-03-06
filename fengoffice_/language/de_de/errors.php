@@ -82,4 +82,5 @@
 	'name must be unique' => 'Sorry, aber der ausgewählte Name ist bereits vergeben.',
 	'success db backup' => 'Backup wurde erfolgreich erstellt.',
 	'not implemented' => 'Nicht implementiert',
+	'backup command failed' => 'Backup-Befehl fehlgeschlagen. Überprüfe MYSQLDUMP_COMMAND Variable.',
 ); ?>

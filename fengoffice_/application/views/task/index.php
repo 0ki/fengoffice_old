@@ -124,7 +124,7 @@ var butt = new Ext.Button({
 		?>
 		,'-',{
 			disabled: false,
-			text: '<?php echo lang('all') ?>',
+			text: '<?php echo escape_single_quotes(lang('all')) ?>',
 			iconCls: 'ico-template-task',
 			cls: 'scrollable-menu',
 			menu:{items: [

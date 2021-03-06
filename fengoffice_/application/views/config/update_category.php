@@ -7,7 +7,7 @@
   <div class="adminMainBlock">
   
 <?php if(isset($options) && is_array($options) && count($options)) { ?>
-<form class="internalForm" action="<?php echo $category->getUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo lang('confirm reset form') ?>')">
+<form class="internalForm" action="<?php echo $category->getUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
   <div id="configCategoryOptions">
 <?php $counter = 0; ?>
 <?php foreach($options as $option) { ?>

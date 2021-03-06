@@ -278,7 +278,12 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 						icon = 'ico-user';
 					} else {
 						if (split[0] > 0){
-							name = this.getCompany(split[0]).name;
+							var company = this.getCompany(split[0]);
+							if (company) {
+								name = company.name;
+							} else {
+								name = lang('company not found', split[1])
+							}
 							icon = 'ico-company';
 						}
 					}

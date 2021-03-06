@@ -102,6 +102,15 @@
     		}
     		$trashed .= ')';
     	}
+
+    	// if search criteria is a mail address, remove its domain to avoid matching emails with same domain that are not from this address
+    	$pos = strpos($search_for, '@');
+    	while ($pos !== FALSE) {
+    		$esp = strpos($search_for, ' ', $pos);
+    		if ($esp !== FALSE) $search_for = substr($search_for, 0, $pos) . ' ' . substr($search_for, $esp+1);
+    		else $search_for = substr($search_for, 0, $pos);
+    		$pos = strpos($search_for, '@');
+    	}
     	
     	if($include_private) {
     		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );

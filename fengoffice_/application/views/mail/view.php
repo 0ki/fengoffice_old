@@ -4,7 +4,7 @@
 		add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
 		add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
 	}
-	if($email->canDelete(logged_user())) {
+	if($email->canDelete(logged_user()) && $email->getCreatedById() == logged_user()->getId()) {
 		if ($email->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $email->getUntrashUrl() ."');", 'ico-restore');
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $email->getDeletePermanentlyUrl() ."');", 'ico-delete');
@@ -12,7 +12,7 @@
 			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $email->getTrashUrl() ."');", 'ico-trash');
 		}
 	}
-	if ($email->canEdit(logged_user()) && !$email->isTrashed()){
+	if ($email->canEdit(logged_user()) && !$email->isTrashed() && $email->getCreatedById() == logged_user()->getId()){
 		add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
 	}
   

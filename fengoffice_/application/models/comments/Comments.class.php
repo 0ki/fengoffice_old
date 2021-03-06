@@ -74,21 +74,22 @@
 		$query .=  " LIMIT " . $start . "," . $limit . " ";
     	$res = DB::execute($query);
 
-    	$objects = array();
-    	if (!$res) return $objects;
+    	$comments = array();
+    	if (!$res) return $comments;
     	$rows = $res->fetchAll();
-    	if (!$rows) return $objects;
+    	if (!$rows) return $comments;
     	foreach ($rows as $row){
     		$manager = $row['object_manager_value'];
     		$id = $row['oid'];
     		if ($id && $manager) {
-    			$obj = get_object_by_manager_and_id($id, $manager);    			
-    			if ($obj->canView(logged_user())) {
-    				$objects[] = $obj;
+    			$comment = get_object_by_manager_and_id($id, $manager);
+    			$object = $comment->getObject();
+    			if ($object instanceof ProjectDataObject && $object->isSubscriber(logged_user())) {
+    				$comments[] = $comment;
     			}
     		}
     	}
-    	return $objects;
+    	return $comments;
     }
   } // Comments 
 

@@ -37,7 +37,7 @@ foreach($task_templates as $task_template) {
     $options[] = '<a class="internalLink" href="' . $task_template->getAssignTemplateToWSUrl() . '">' . lang('assign to workspace') . '</a>';
   } // if
   if($task_template->canDelete(logged_user())) {
-  	$options[] = '<a class="internalLink" href="' . $task_template->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete task template') . '\')">' . lang('delete template') . '</a>';
+  	$options[] = '<a class="internalLink" href="' . $task_template->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete task template')) . '\')">' . lang('delete template') . '</a>';
   }
 ?>
     <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>

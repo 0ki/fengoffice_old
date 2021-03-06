@@ -61,7 +61,7 @@ class ProjectTasks extends BaseProjectTasks {
 		. $user->getId() . " AND t.object_manager='ProjectTasks' AND t.end_time='" . EMPTY_DATETIME . "')";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectTasks')"):'';
+		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND t.rel_object_manager='ProjectTasks')"):'';
 	
 
 		$assignedToStr = "";
@@ -136,7 +136,7 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectTasks')"):'';
+		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND t.rel_object_manager='ProjectTasks')"):'';
 
 		$result = self::findAll(array(
         'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` in (' .$project_ids . ')' . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $from_date, $to_date)
@@ -175,7 +175,7 @@ class ProjectTasks extends BaseProjectTasks {
 			
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectTasks')"):'';
+		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND t.rel_object_manager='ProjectTasks')"):'';
 
 		$result = self::findAll(array(
         'conditions' => array('`is_template` = false AND `completed_on` = ? AND `due_date` > \'00:00:00 00-00-0000\' AND `due_date` < ? AND `project_id` in (' .$project_ids . ')' . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $to_date),
@@ -415,7 +415,7 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		$limitation = " AND (`project_id` IN ($pids))";
 		if (isset($tags) && $tags && $tags!='') {
-			$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tags."' AND  ".TABLE_PREFIX."project_tasks.id=t.rel_object_id AND t.rel_object_manager='ProjectTasks') ";
+			$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND  ".TABLE_PREFIX."project_tasks.id=t.rel_object_id AND t.rel_object_manager='ProjectTasks') ";
 		} else {
 			$tag_str= "";
 		}

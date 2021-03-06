@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.2 beta 2 
-    ========================
+    About OpenGoo 1.2 RC1 
+    =====================
 
     OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
@@ -61,7 +61,7 @@
     ====================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.2 beta 2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.2 RC1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from your current version to 1.2.
@@ -85,6 +85,30 @@
 
 	Changelog
 	=========
+	
+	Since 1.2 beta 2
+	----------------
+	
+	usability: A Task's due date was not being shown on the task's view.
+	usability: Client users can't be admins, so now you won't be allowed to add them to the Administrators group.
+	usability: If an email was sent to two users, and one user classified the email, the other user would see both emails.
+	bugfix: Sometimes it was not possible to add a task through the quick add (clicking the button wouldn't do aything).
+	bugfix: Could not filter the Dashboard by tags with a quote in the name.
+	bugfix: Error 411 when adding a task.
+	bugfix: Error in Notifier when deleting a task.
+	bugfix: Error when filtering tasks by milestone = None or assigned to = anyone.
+	bugfix: Only comments made by the logged user were being shown.
+	bugfix: Some single quotes weren't being escaped from langs.
+	bugfix: Actions column (documents tab) didn't display icons correctly in IE, Chrome and Safari.
+	bugfix: Contacts role wasn't being shown sometimes on the listing.
+	bugfix: Searching an email address returend all emails from the same domain (e.g. searching for john@opengoo.org returned all emails ending in @opengoo.org).
+	bugfix: Error when editing imap account when the imap extension is not installed.
+	bugfix: Mail with some special characters made mail check hang. 1.1.
+	bugfix: Multilple workspaces selector was taking too much time to load when there were lots of workspaces.
+	bugfix: Some controls were not showing when quick-adding a task to an unassigned category.
+	bugfix: User filter menu had no scrollbars on IE when too many users.
+	bugfix: Weekly calendar: when advancing week by week sometimes it skiped more than one week.
+	bugfix: When displaying some html files content, the revision list sometimes lost some format and was put on the right of the screen.
 	
 	Since 1.2 beta
 	--------------

@@ -62,14 +62,14 @@ $status = '<div class="taskStatus">';
 if(!$task_list->isCompleted()) {
 	if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
 	$status .= '<a class=\'internalLink og-ico ico-delete\' style="color:white;" href=\'' . $task_list->getCompleteUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) . '\' title=\''
-	.lang('complete task') . '\'>' . lang('incomplete') . '</a>';
+	.escape_single_quotes(lang('complete task')) . '\'>' . lang('incomplete') . '</a>';
 	else
 	$status .= '<div style="display:inline;" class="og-ico ico-delete">' . lang('incomplete') . '</div>';
 }
 else {
 	if ($task_list->canEdit(logged_user()) && !$task_list->isTrashed())
 	$status .= '<a class=\'internalLink og-ico ico-complete\' style="color:white;" href=\'' . $task_list->getOpenUrl(rawurlencode(get_url('task','view_task',array('id'=>$task_list->getId())))) . '\' title=\''
-	. lang('open task') . '\'>' . lang('complete') . '</a>';
+	. escape_single_quotes(lang('open task')) . '\'>' . lang('complete') . '</a>';
 	else
 	$status .= '<div style="display:inline;" class="og-ico ico-complete">' . lang('complete') . '</div>';
 }
@@ -77,11 +77,11 @@ $status.= '</div>';
 
 if ($task_list->getAssignedTo()){
 	$description .= '<span style="font-weight:bold">' . lang("assigned to") . ': </span><a class=\'internalLink\' style="color:white" href=\''
-	. $task_list->getAssignedTo()->getCardUrl() . '\' title=\'' . lang('user card of', clean($task_list->getAssignedToName())). '\'>'
+	. $task_list->getAssignedTo()->getCardUrl() . '\' title=\'' . escape_single_quotes(lang('user card of', clean($task_list->getAssignedToName()))). '\'>'
 	. clean($task_list->getAssignedToName()) . '</a>';
 	if ($task_list->getAssignedBy() instanceof User) {
 		$description .= ' <span style="font-weight:bold">' . lang("by") . ': </span> <a class=\'internalLink\' style="color:white" href=\''
-		. $task_list->getAssignedBy()->getCardUrl() . '\' title=\'' . lang('user card of', clean($task_list->getAssignedBy()->getDisplayName())). '\'>'
+		. $task_list->getAssignedBy()->getCardUrl() . '\' title=\'' . escape_single_quotes(lang('user card of', clean($task_list->getAssignedBy()->getDisplayName()))). '\'>'
 		. clean($task_list->getAssignedBy()->getDisplayName()) . '</a>';
 		if ($task_list->getAssignedOn() instanceof DateTimeValue) {
 			$description .= ' <span style="font-weight:bold">' . lang("on") . ': </span>'
@@ -94,7 +94,7 @@ $milestone = '';
 if ($task_list->getMilestone() instanceof ProjectMilestone){
 	$m = $task_list->getMilestone();
 	$milestone .= '<div><div class="og-ico ico-milestone"><a class=\'internalLink\' style="color:white" href=\''
-	. $m->getViewUrl() . '\' title=\'' . lang('view milestone') . '\'>' . clean($m->getName()) . '</a></div>';
+	. $m->getViewUrl() . '\' title=\'' . escape_single_quotes(lang('view milestone') . '\'>' . clean($m->getName())) . '</a></div>';
 }
 
 $priority = '';

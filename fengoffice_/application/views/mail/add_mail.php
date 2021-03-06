@@ -33,7 +33,7 @@ function FCKeditor_OnComplete(fck) {
 function alertFormat(iname, opt) {
 	var oEditor = FCKeditorAPI.GetInstance(iname);
 	if(opt == 'plain'){
-		Ext.MessageBox.confirm('Warning', '<?php echo lang('switch format warn')?>', function(btn){
+		Ext.MessageBox.confirm('Warning', '<?php echo escape_single_quotes(lang('switch format warn'))?>', function(btn){
 			if (btn == 'yes') {
 				var mailBody = Ext.getDom('mailBody')
 				mailBody.style.display = 'block';				
@@ -125,19 +125,19 @@ function setDiscard(val){
 	<div>
     	<label for='mailTo'><?php echo lang('mail to')?> <span class="label_required">*</span>  
     	</label>
-    	<?php echo autocomplete_textfield('mail[to]', array_var($mail_data, 'to'), $allEmails, '', 
+    	<?php echo autocomplete_emailfield('mail[to]', array_var($mail_data, 'to'), $allEmails, '', 
     		array('class' => 'title', 'tabindex'=>'10', 'id' => 'mailTo'), false); ?>
 	</div>
   
  	<div id="add_mail_CC" style="<?php  array_var($mail_data, 'cc')==''? print('display:none;'):print('')?>">
     	<label for="mailCC"><?php echo lang('mail CC')?> </label>
-    	<?php echo autocomplete_textfield('mail[CC]', array_var($mail_data, 'cc'), $allEmails, '', 
+    	<?php echo autocomplete_emailfield('mail[CC]', array_var($mail_data, 'cc'), $allEmails, '', 
     		array('class' => 'title', 'tabindex'=>'20', 'id' => 'mailCC'), false); ?>
  	</div>
  	
  	<div id="add_mail_BCC" style="display:none;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
-	    <?php echo autocomplete_textfield('mail[BCC]', array_var($mail_data, 'BCC'), $allEmails, '', 
+	    <?php echo autocomplete_emailfield('mail[BCC]', array_var($mail_data, 'BCC'), $allEmails, '', 
     		array('class' => 'title', 'tabindex'=>'30', 'id' => 'mailBCC'), false); ?>
 	</div>
  	

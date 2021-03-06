@@ -41,7 +41,7 @@ foreach($groups as $group) {
     $options[] = '<a class="internalLink" href="' . $group->getEditUrl() . '">' . lang('edit') . '</a>';
   } // if
   if($group->canDelete(logged_user()) && !$group->isAdministratorGroup()) {
-    $options[] = '<a class="internalLink" href="' . $group->getDeleteGroupUrl() . '" onclick="return confirm(\'' . lang('confirm delete group') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $group->getDeleteGroupUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete group')) . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
     <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>

@@ -38,6 +38,7 @@ og.ContactManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					cm.setHidden(cm.getIndexById('role'), Ext.getCmp('workspace-panel').getActiveWorkspace().id == 0);
 				}
 			}
 	    });
@@ -544,11 +545,6 @@ og.ContactManager = function() {
 		} else {
     		this.needRefresh = true;
     	}
-	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		if (this.store.lastOptions) {
-			cm.setHidden(cm.getIndexById('role'), this.store.lastOptions.params.active_project == 0);
-		}
 	}, this);
 };
 

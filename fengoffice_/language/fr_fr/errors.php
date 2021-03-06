@@ -80,4 +80,6 @@
 	'error delete backup' => 'Erreur en supprimant la sauvegarde de la base de données,',
 	'success delete backup' => 'La sauvegarde a été supprimée',
 	'name must be unique' => 'Désolé, mais le nom sélectionné est déjà pris',
+	'success db backup' => 'La sauvegarde a bien été créée.',
+	'not implemented' => 'Non implémenté',
 ); ?>

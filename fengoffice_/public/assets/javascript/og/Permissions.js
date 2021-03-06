@@ -147,6 +147,10 @@ function ogPermApplyToSubworkspaces(genid){
 	var node = tree.getNodeById('ws' + ws.id);
 	var ids = ogPermGetSubWsIdsFromNode(node);
 	
+	// holds the nodes that that were expanded once, to avoid expanding again the same node.
+	// 1 expansion per node is needed to fix a view issue when checking collapsed child nodes.
+	var already_expanded_once = []; 
+	
 	var i;
 	var hasPerm = permission.hasAnyPermission();
 	for (i in ids){
@@ -159,6 +163,20 @@ function ogPermApplyToSubworkspaces(genid){
 		 	//update the treenode 'checked' attribute
 		 	var node2 = tree.getNodeById('ws' + ids[i]);
 			if (node2){
+			
+				var parent_expanded = false;
+				for (i=0; i<already_expanded_once.length && !parent_expanded; i++)
+					parent_expanded = already_expanded_once[i] == node2.ws.p;
+				// if parent was expanded before then dont do anything, otherwise expand it and add it to 'once expanded nodes' array.
+				if (!parent_expanded) {
+					var parent = tree.getNodeById('ws' + node2.ws.p);
+					if (parent && !parent.expanded) {
+						parent.expand();
+						parent.collapse();
+					}
+					already_expanded_once[already_expanded_once.length] = node2.ws.p;
+				}
+				
 				node2.suspendEvents();
 				node2.ui.toggleCheck(hasPerm);
 				node2.attributes.checked = true;

@@ -39,6 +39,7 @@ return array(
 		'og/GooPlayer.js',
 		'og/ObjectPicker.js',
 		'og/CSVCombo.js',
+		'og/EmailCombo.js',
 		'og/LoginDialog.js',
 		'og/HtmlPanel.js',
 		'og/WorkspacePanel.js',

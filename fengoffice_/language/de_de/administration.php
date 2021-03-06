@@ -2,10 +2,10 @@
 
   /**
   * Administration interface langs
-  * UTF-8
-  * @version 1.2 beta, Keine Unterscheidung Du- oder Sie-Version
   * @author OpenGoo
-  * @translation 01/21/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
+  * UTF-8
+  * @version 1.2 beta2, Keine Unterscheidung Du- oder Sie-Version
+  * @translation 01/27/2009 by Karl, bitte Fehler und Korrekturen per Email an <karl@mountainbird.net> senden
   */
 
   return array(
@@ -141,7 +141,7 @@
     'user ws config option name tasksShowWorkspaces' => 'Zeige Arbeitsbereiche (Workspaces)',
     'user ws config option name tasksShowTime' => 'Zeige die Zeit an',
     'user ws config option name tasksShowDates' => 'Zeige das Datum an',
-    'user ws config option name tasksShowTags' => 'Zeige Tags',
+    'user ws config option name tasksShowTags' => 'Zeige Schlagworte (Tags)',
     'user ws config option name tasksGroupBy' => 'Gruppiere nach',
     'user ws config option name tasksOrderBy' => 'Sortiere nach',
     'user ws config option name task panel status' => 'Status',

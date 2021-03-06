@@ -290,7 +290,7 @@ class MailUtilities {
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
-				if ($box->getCheckFolder()) {
+				if ($box->getCheckFolder() && function_exists("imap_open")) {
 					$mailbox = imap_open ($mailbox_string.$box->getFolderName(), $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 					$check = imap_check($mailbox);
 					if ($check) {
@@ -339,17 +339,19 @@ class MailUtilities {
 	
 	function getImapFolders(MailAccount $account) {
 		$result = array();
-		$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
-		$mailbox = imap_open ($mailbox_string, $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-		if ($mailbox) {
-			$check = imap_check($mailbox);
-			
-			$list = imap_list($mailbox, $mailbox_string, '*');
-			if (is_array($list)) {
-			    foreach ($list as $val) {
-			    	$val = imap_utf7_decode($val);
-			        $result[] = substr($val, strpos($val, '}') + 1);
-			    }
+		if (function_exists("imap_open")) {
+			$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
+			$mailbox = imap_open ($mailbox_string, $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+			if ($mailbox) {
+				$check = imap_check($mailbox);
+				
+				$list = imap_list($mailbox, $mailbox_string, '*');
+				if (is_array($list)) {
+				    foreach ($list as $val) {
+				    	$val = imap_utf7_decode($val);
+				        $result[] = substr($val, strpos($val, '}') + 1);
+				    }
+				}
 			}
 		}
 		return $result;
@@ -360,23 +362,25 @@ class MailUtilities {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {
-				$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
-				$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
-				if (is_array($mailboxes)) {
-					foreach ($mailboxes as $box) {
-						if ($box->getCheckFolder()) {
-							$mailbox = imap_open ($mailbox_string.$box->getFolderName(), $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-							$check = imap_check($mailbox);
-							for ($i = 1; $i < $check->Nmsgs; $i++) {
-								$info = imap_header($mailbox, $i);
-								if ($info) {
-									if ($max_date->getTimestamp() > $info->udate) {
-										imap_delete($mailbox, $i);
-									} else break;
+				if (function_exists("imap_open")) {
+					$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
+					$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
+					if (is_array($mailboxes)) {
+						foreach ($mailboxes as $box) {
+							if ($box->getCheckFolder()) {
+								$mailbox = imap_open ($mailbox_string.$box->getFolderName(), $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+								$check = imap_check($mailbox);
+								for ($i = 1; $i < $check->Nmsgs; $i++) {
+									$info = imap_header($mailbox, $i);
+									if ($info) {
+										if ($max_date->getTimestamp() > $info->udate) {
+											imap_delete($mailbox, $i);
+										} else break;
+									}
 								}
+								imap_expunge($mailbox);
+								imap_close($mailbox);
 							}
-							imap_expunge($mailbox);
-							imap_close($mailbox);
 						}
 					}
 				}

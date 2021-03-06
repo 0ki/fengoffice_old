@@ -90,7 +90,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 			} // if 
 			if($task->canDelete(logged_user())) { 
 				$content .= '<a class="internalLink blank" href="' . $task->getDeleteUrl() .'" onclick="return confirm(\'' . 
-			  		lang('confirm delete task') . '\')" title="' . lang('delete task') . '">
+			  		escape_single_quotes(lang('confirm delete task')) . '\')" title="' . lang('delete task') . '">
 			  		<img src="' . icon_url('cancel_gray.gif') .'" alt="" /></a>';
 			} // if 
 		    $content .= ' </td>     </tr>';
@@ -129,7 +129,7 @@ $on_list_page = false;
 				} // if 
 				if($task->canDelete(logged_user())) { 
 					$content .= '<a href="'. $task->getDeleteUrl() .'" class="blank internalLink" onclick="return confirm(\'' . 
-						lang('confirm delete task') . '\')" title="' . lang('delete task') . '"><img src="' . icon_url('cancel_gray.gif') .
+						escape_single_quotes(lang('confirm delete task')) . '\')" title="' . lang('delete task') . '"><img src="' . icon_url('cancel_gray.gif') .
 						'" alt="" /></a> ';
 				} // if <br />
 	          $content .= '<span class="taskCompletedOnBy">(' .lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) . ')</span>

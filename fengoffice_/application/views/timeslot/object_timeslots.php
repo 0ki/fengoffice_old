@@ -25,7 +25,7 @@
 				$options[] = '<a class="internalLink" href="' . $timeslot->getEditUrl() . '">' . lang('edit') . '</a>';
 			}
 			if (!$__timeslots_object->isTrashed() && $timeslot->canDelete(logged_user())) 
-				$options[] = '<a class="internalLink" href="' . $timeslot->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete timeslot') . '\')">' . lang('delete') . '</a>';
+				$options[] = '<a class="internalLink" href="' . $timeslot->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete timeslot')) . '\')">' . lang('delete') . '</a>';
 				
 			if (!$__timeslots_object->isTrashed() && $timeslot->isOpen() && $timeslot->getUserId() == logged_user()->getId() && $timeslot->canEdit(logged_user())){
 				$open_timeslot = $timeslot;

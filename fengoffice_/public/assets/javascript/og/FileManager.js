@@ -131,14 +131,14 @@ og.FileManager = function() {
 	
 	function renderActions(value, p, r) {
 		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
+		var actionStyle= ' style="font-size:105%;color:#FFFFFF;padding-top:2px;padding-bottom:3px;padding-left:18px;background-repeat:no-repeat;" '; 
 		
-		actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
-			og.getUrl('files', 'download_file', {id: r.id}),lang('download file'));
+		actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '>.</a>',
+			og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 		
 		if (r.data.isModifiable) {
 			actions += String.format(
-			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>.</a>',
 			r.data.modifyUrl,lang('edit this document'));
 		}
 		
@@ -161,7 +161,7 @@ og.FileManager = function() {
 		
 		if (r.data.mimeType == "application/zip") {
 			actions += String.format(
-			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>' + lang('extract') + '</a>',
+			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>.</a>',
 			r.data.object_id,lang('extract files'));
 		}
 		
@@ -299,11 +299,11 @@ og.FileManager = function() {
 				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
-				}},
+				}}/*,
 				{text: lang('spreadsheet') + ' (ALPHA)', iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
-				}}
+				}}*/
 			]}
 		}),
 		tag: new Ext.Action({

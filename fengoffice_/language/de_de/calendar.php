@@ -106,7 +106,7 @@
 	'new event created' => 'Neues Ereignis erstellt',
 	'event changed' => 'Ereignis geändert',
 	'event deleted' => 'Ereignis gelöscht',
-	'calendar of' => '{0}\'s Kalender',
+	'calendar of' => '{0}s Kalender',
 	'all users' => 'Alle Benutzer',
 	'error delete event' => 'Konnte Ereignis nicht löschen',
 	'days' => 'Tag(e)',

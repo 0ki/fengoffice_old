@@ -12,7 +12,13 @@
     };
   } // if
 </script>
-  
+
+<?php if ($task_list->getDueDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
+  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_date($task_list->getDueDate(), null, 0) ?></div>
+<?php } else { ?> 
+  <div class="dueDate"><span><?php echo lang('due date') ?>: </span><?php echo format_descriptive_date($task_list->getDueDate(), 0) ?></div>
+<?php } // if ?>
+
 <?php if($task_list->getText()) { ?>
   <div style="padding-bottom:20px;color:#333"><table><tr><td style="padding-right:5px;"><b>
   <?php echo lang('description') ?>:</b></td><td style="padding-left:5px;border-left:0px solid #CCC"><?php echo convert_to_links(nl2br(clean($task_list->getText())))?></td></tr></table></div>
@@ -44,7 +50,7 @@
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
           <?php } // if ?>
           <?php if($task->canDelete(logged_user()) && !$task->isTrashed()) { ?>
-          	<a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>&taskview=true" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
+          	<a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>&taskview=true" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete task')) ?>')" title="<?php echo lang('delete task') ?>">
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>
         </td>
@@ -115,7 +121,7 @@
           	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
           <?php } // if ?> 
           <?php if($task->canDelete(logged_user()) && !$task->isTrashed()) { ?>
-          	<a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
+          	<a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete task')) ?>')" title="<?php echo lang('delete task') ?>">
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>
           <br />

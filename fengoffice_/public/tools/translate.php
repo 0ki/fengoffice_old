@@ -3,7 +3,6 @@ $allowed = include 'access.php';
 if (!in_array('translate.php', $allowed)) die("This tool is disabled.");
 
 define('LANG_DIR', 'language');
-define('TEST_LIST_PATH', 'all_langs.txt');
 chdir("../.."); 
 
 function escape($string) {

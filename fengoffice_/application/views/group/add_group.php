@@ -46,6 +46,10 @@
     <div>
       <?php echo checkbox_field('group[can_manage_contacts]', array_var($group_data,'can_manage_contacts'), array('id' => 'group[can_manage_contacts]' )) ?> 
       <label for="<?php echo 'group[can_manage_contacts]' ?>" class="checkbox"><?php echo lang('can manage contacts') ?></label>
+    </div>
+    <div>
+      <?php echo checkbox_field('group[can_manage_templates]', array_var($group_data,'can_manage_templates'), array('id' => 'group[can_manage_templates]' )) ?> 
+      <label for="<?php echo 'group[can_manage_templates]' ?>" class="checkbox"><?php echo lang('can manage templates') ?></label>
     </div>     
   </fieldset>
   
@@ -57,7 +61,7 @@
 		<?php if ($group->isAdministratorGroup() && $user->isAccountOwner()) { ?>
 				<img src="<?php echo icon_url('ok.gif') ?>" title="<?php echo lang('admin cannot be removed from admin group') ?>" alt="" /> <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
 				<input type="hidden" name="<?php echo $ctrl_name  ?>" value="checked" id="<?php echo $ctrl_name ?>" />
-		<?php } else { ?>    	
+		<?php } else if (!$group->isAdministratorGroup() || $user->isMemberOfOwnerCompany()) { ?>    	
 	    <div>
 	      <?php echo checkbox_field($ctrl_name , array_var($group_data, $ctrl_name), array('id' => $ctrl_name  )) ?> 
 	      <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getUsername()) ?></label>

@@ -7,7 +7,7 @@ return array(
 
     'recent activities' => 'Recent activities',
     'search button caption' => 'Search',
-    'search result description' => 'Displaying <strong>{0} of {1}</strong> objects that match <strong>"{2}"</strong>',
+    'search result description' => 'Displaying <strong>{0} of {1}</strong> objects that match <strong>\\"{2}"</strong>',
     'search result description short' => '{0} to {1} of {2}',
 
 // Options and descriptions

@@ -14,6 +14,11 @@ og.UserMenu = function(config, users) {
 		}]
 	}));
 	
+	if (Ext.isIE) { // Add scrollbar in IE
+		this.getEl().child('ul.x-menu-list').addClass('iemenulist');
+		this.getEl().child('ul.x-menu-list').setWidth(this.getEl().child('ul.x-menu-list').getWidth()+20);
+	}
+	
 	this.addEvents({userselect: true});
 	this.userids = {};
 	if (users) {

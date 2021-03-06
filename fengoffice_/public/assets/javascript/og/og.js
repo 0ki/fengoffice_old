@@ -420,34 +420,33 @@ og.openLink = function(url, options) {
 		// don't add params to HTML pages (this prevents 405 errors from apache 1.3)
 		url = og.makeAjaxUrl(url, params);
 	}
-	if (!options.post) options.post = " ";
 	if (typeof options.timeout != "undefined") {
 		var oldTimeout = Ext.Ajax.timeout;
 		Ext.Ajax.timeout = options.timeout;
 	}
 	Ext.Ajax.request({
 		url: url,
-		method: options.post == " " ? 'GET' : 'POST',
 		params: options.post,
-		headers: {
-			'Content-Length': '' + options.post.length
-		},
 		callback: function(options, success, response) {
 			og.hideLoading();
 			if (success) {
 				try {
-					var data = Ext.util.JSON.decode(response.responseText);
-					og.processResponse(data, options);
-				} catch (e) {
-					// response isn't valid JSON, display it on the caller panel or new tab
-					if (!options.preventPanelLoad) {
-						var p = Ext.getCmp(options.caller);
-						if (p) {
-							p.load(response.responseText);
-						} else {
-							og.newTab(response.responseText);
+					try {
+						var data = Ext.util.JSON.decode(response.responseText);
+					} catch (e) {
+						// response isn't valid JSON, display it on the caller panel or new tab
+						if (!options.preventPanelLoad) {
+							var p = Ext.getCmp(options.caller);
+							if (p) {
+								p.load(response.responseText);
+							} else {
+								og.newTab(response.responseText);
+							}
 						}
 					}
+					og.processResponse(data, options);
+				} catch (e) {
+					og.err(e.message);
 				}
 				var ok = typeof data == 'object' && data.errorCode == 0;
 				if (options.postProcess) options.postProcess.call(options.scope || this, ok, data || response.responseText, options.options);
@@ -591,7 +590,6 @@ og.processResponse = function(data, options, url) {
 			Ext.getCmp('help-panel').load(data.help_content);
 		}
 	}
-	
 	//Show messages if any
 	if (data.errorCode != 0) {
 		og.err(data.errorMessage);
@@ -673,23 +671,23 @@ og.extractScripts = function(html) {
 	html += '<span id="' + id + '"></span>';
 	Ext.lib.Event.onAvailable(id, function() {
 		try {
-		var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
-		var match;
-		while (match = re.exec(html)) {
-			if (match[2] && match[2].length > 0) {
-				try {
-					if (window.execScript) {
-						window.execScript(match[2]);
-					} else {
-						window.eval(match[2]);
+			var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
+			var match;
+			while (match = re.exec(html)) {
+				if (match[2] && match[2].length > 0) {
+					try {
+						if (window.execScript) {
+							window.execScript(match[2]);
+						} else {
+							window.eval(match[2]);
+						}
+					} catch (e) {
+						og.err(e.message);
 					}
-				} catch (e) {
-					og.err(e.message);
 				}
 			}
-		}
-		var el = document.getElementById(id);
-		if (el) { Ext.removeNode(el); }
+			var el = document.getElementById(id);
+			if (el) { Ext.removeNode(el); }
 		} catch (e) { alert(e);}
 	});
 	

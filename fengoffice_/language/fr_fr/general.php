@@ -163,4 +163,5 @@
 	'date format description' => '(dd/mm/yyyy)',
 	'add work' => 'Ajouter un travail',
 	'confirm move to trash' => 'Êtes-vous sûr de vouloir mettre les objets sélectionnés à la corbeille ?',
+	'add' => 'Ajouter',
 ); ?>

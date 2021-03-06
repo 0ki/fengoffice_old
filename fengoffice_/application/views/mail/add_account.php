@@ -91,9 +91,9 @@
   <div>
     <label for="mailAccountDelMailFromServer"><?php echo lang('delete mails from server')?>
     <span class="desc"><?php echo lang('mail account delete mails from server description') ?></span></label>
-    <?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', array_var($mailAccount_data, 'del_from_server', 0) > 0, lang('yes'), lang('no'), 8) ?>
+    <?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', array_var($mailAccount_data, 'del_from_server', 0) > 0, lang('yes'), lang('no'), 22) ?>
     <?php echo '<br>' . lang('after')?>
-    <?php echo text_field('mailAccount[del_from_server]', array_var($mailAccount_data, 'del_from_server', 0), array('id' => 'mailAccountDelFromServer', 'tabindex'=>'9', 'style'=>'width:25px')) ?>
+    <?php echo text_field('mailAccount[del_from_server]', array_var($mailAccount_data, 'del_from_server', 0), array('id' => 'mailAccountDelFromServer', 'tabindex'=>'23', 'style'=>'width:25px')) ?>
     <?php echo lang('days'); ?>
   </div>
     

@@ -44,7 +44,7 @@ class ProjectEvents extends BaseProjectEvents {
 		}
 		$limitation = " AND (`project_id` IN ($pids))";
 		if (isset($tags) && $tags && $tags!='') {
-	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tags."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
+	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
 		} else {
 			$tag_str= "";
 		}

@@ -25,7 +25,7 @@
     <legend><?php echo lang('current logo') ?></legend>
 <?php if($company->hasLogo()) { ?>
     <img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?> logo" />
-    <p><a class="internalLink" href="<?php echo $company->getDeleteLogoUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete company logo') ?>')"><?php echo lang('delete company logo') ?></a></p>
+    <p><a class="internalLink" href="<?php echo $company->getDeleteLogoUrl() ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm delete company logo')) ?>')"><?php echo lang('delete company logo') ?></a></p>
 <?php } else { ?>
     <?php echo lang('no current logo') ?>
 <?php } // if ?>

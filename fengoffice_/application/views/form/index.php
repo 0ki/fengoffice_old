@@ -34,7 +34,7 @@
   $options = array();
   if($form->canSubmit(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getSubmitUrl() . '">' . lang('submit project form') . '</a>';
   if($form->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($form->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete project form') . '\')">' . lang('delete') . '</a>';
+  if($form->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete project form')) . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($options)) { ?>
       <div class="options"><?php echo implode(' | ', $options) ?></div>

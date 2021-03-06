@@ -545,6 +545,9 @@ function make_ajax_url($url) {
 	}
 }
 
+function escape_single_quotes($text) {
+	return str_replace("'", "\\'", $text);
+}
 
 /**
  * Generates a random id to be used as id of HTML elements.

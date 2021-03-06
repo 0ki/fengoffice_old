@@ -552,10 +552,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 
 // Mantain the actual values after refresh by clicking Calendar tab.
 	cal_actual_view = '<?php echo $_SESSION['active_calendar_view'] ?>';
-	var dtv = new Date();
-	dtv.setFullYear(<?php echo $year ?>);
-	dtv.setMonth(<?php echo ($month-1) ?>);
-	dtv.setDate(<?php echo $day ?>);
+	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
 	calToolbarDateMenu.picker.setValue(dtv);
 //----------
 

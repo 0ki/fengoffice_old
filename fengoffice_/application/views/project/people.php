@@ -35,7 +35,7 @@
 <?php
   $options = array();
   if($company->canEdit(logged_user())) $options[] = lang('edit company data', $company->getEditUrl());
-  if(active_project()->canRemoveCompanyFromProject(logged_user(), $company)) $options[] = '<a class="internalLink" href="' . active_project()->getRemoveCompanyUrl($company) . '" onclick="return confirm(\'' . lang('confirm remove company from project') . '\')">' . lang('remove company from project') . '</a>';
+  if(active_project()->canRemoveCompanyFromProject(logged_user(), $company)) $options[] = '<a class="internalLink" href="' . active_project()->getRemoveCompanyUrl($company) . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm remove company from project')) . '\')">' . lang('remove company from project') . '</a>';
 ?>
 <?php if(count($options)) { ?>
         <div class="projectCompanyOptions"><?php echo implode(' | ', $options) ?></div>
@@ -58,7 +58,7 @@
               <div class="projectUserEmail"><a href="mailto:<?php echo $user->getEmail() ?>"><?php echo $user->getEmail() ?></a></div>
             </td>
 <?php if(active_project()->canRemoveUserFromProject(logged_user(), $user)) { ?>
-            <td><a class="internalLink" href="<?php echo active_project()->getRemoveUserUrl($user) ?>" onclick="return confirm('<?php echo lang('confirm remove user from project') ?>')"><?php echo lang('remove user from project') ?></a></td>
+            <td><a class="internalLink" href="<?php echo active_project()->getRemoveUserUrl($user) ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm remove user from project')) ?>')"><?php echo lang('remove user from project') ?></a></td>
 <?php } // if ?>
           </tr>
 <?php } // foreach ?>

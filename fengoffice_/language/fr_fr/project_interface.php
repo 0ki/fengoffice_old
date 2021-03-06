@@ -211,4 +211,7 @@
 	'edit task template' => 'Éditer le modèle de tâche',
 	'cannot change parent workspace' => 'Vous n\'avez pas assez de droits pour changer le parent de ce contexte.',
 	'cannot change parent workspace description' => 'Ce contexte est un enfant de contexte dont vous n\'avez pas accès.',
+	'copy of file' => 'Copie de (0)',
+	'add custom property' => 'Ajouter une propriété personnalisée',
+	'add subscribers desc' => 'Souscrire à cet objet par les personnes sélectionnées. Les souscripteurs recevront une notification des changements effectués à cet objet.',
 ); ?>

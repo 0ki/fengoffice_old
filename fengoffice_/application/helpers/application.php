@@ -926,7 +926,7 @@ function render_link_to_new_object( $text=null){
 	if($text==null)
 	$text=lang('link object');
 	$result = '';
-	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data){	if(data) {	og.addLinkedObjectRow(\'tbl_linked_objects\',data[0].data.type,data[0].data.object_id, data[0].data.name,data[0].data.manager,\''.lang('confirm unlink object').'\',\''.lang('unlink').'\'); } })">';
+	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data){	if(data) {	og.addLinkedObjectRow(\'tbl_linked_objects\',data[0].data.type,data[0].data.object_id, data[0].data.name,data[0].data.manager,\''.escape_single_quotes(lang('confirm unlink object')).'\',\''.escape_single_quotes(lang('unlink')).'\'); } })">';
 	$result .=  $text;
 	$result .= '</a>';
 	return $result;
@@ -1019,6 +1019,54 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 	';
 	return $html;
 }
+
+/**
+ * Comma separated values from a set of options.
+ *
+ * @param string $name Control name
+ * @param string $value Initial value
+ * @param string $options
+ * 		An array of arrays with the values that will be shown when autocompleting.
+ * 		The first value of each array will be assumed as the value and the second as the display name.
+ * @param array $attributes Other control attributes
+ * @return string
+ */
+function autocomplete_emailfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true) {
+	$jsArray = "";
+	foreach ($options as $o) {
+		if ($jsArray != "") $jsArray .= ",";
+		if (count($o) < 2) {
+			$jsArray .= '['.json_encode($o).','.json_encode(clean($o)).','.json_encode(clean($o)).']';
+		} else {
+			$jsArray .= '['.json_encode($o[0]).','.json_encode(clean($o[1])).','.json_encode(clean($o[1])).']';
+		}
+	}
+	$jsArray = "[$jsArray]";
+
+	$id = array_var($attributes, "id", gen_id());
+	$attributes["id"] = $id;
+
+	$html = text_field($name, $value, $attributes) . '
+		<script type="text/javascript">
+		new og.EmailCombo({
+			store: new Ext.data.SimpleStore({
+        		fields: ["value", "name", "clean"],
+        		data: '.$jsArray.'
+			}),
+			valueField: "value",
+        	displayField: "name",
+        	mode: "local",
+        	forceSelection: '.($forceSelection?'true':'false').',
+        	triggerAction: "all",
+        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
+        	emptyText: "",
+        	applyTo: "'.$id.'"
+    	});
+		</script>
+	';
+	return $html;
+}
+
 
 function autocomplete_tags_field($name, $value, $id = null) {
 	if (!isset($id)) $id = gen_id();

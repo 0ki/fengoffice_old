@@ -642,3 +642,12 @@ select.select_milestone, select.select_task_list, select.select_message {
 .options {
   margin: 10px 0 0 0;
 }
+
+.iemenulist {
+  background:transparent;
+  border:0 none;
+  height: expression( this.scrollHeight > 300 ? "300px" : "auto" ); 
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

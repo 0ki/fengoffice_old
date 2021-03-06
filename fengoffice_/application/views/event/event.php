@@ -31,19 +31,19 @@
 		cal_hide("cal_extra2");
 		cal_hide("cal_extra3");
 		if(document.getElementById("daily").selected){
-			document.getElementById("word").innerHTML = '<?php echo lang("days")?>';
+			document.getElementById("word").innerHTML = '<?php echo escape_single_quotes(lang("days"))?>';
 			cal_show("cal_extra1");
 			cal_show("cal_extra2");
 		} else if(document.getElementById("weekly").selected){
-			document.getElementById("word").innerHTML =  '<?php echo lang("weeks")?>';
+			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("weeks"))?>';
 			cal_show("cal_extra1");
 			cal_show("cal_extra2");
 		} else if(document.getElementById("monthly").selected){
-			document.getElementById("word").innerHTML =  '<?php echo lang("months")?>';
+			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("months"))?>';
 			cal_show("cal_extra1");
 			cal_show("cal_extra2");
 		} else if(document.getElementById("yearly").selected){
-			document.getElementById("word").innerHTML =  '<?php echo lang("years")?>';
+			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("years"))?>';
 			cal_show("cal_extra1");
 			cal_show("cal_extra2");
 		} else if(document.getElementById("holiday").selected){

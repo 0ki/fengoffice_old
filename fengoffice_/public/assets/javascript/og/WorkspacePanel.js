@@ -396,6 +396,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							this.pauseEvents = true;
 							this.select(this.initialWorkspaceId);
 							this.pauseEvents = false;
+							og.updateWsCrumbs(this.getActiveWorkspace());
 						}
 						this.addTrash();
 					}

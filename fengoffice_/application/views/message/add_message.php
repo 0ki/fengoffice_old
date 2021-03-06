@@ -138,7 +138,7 @@
 		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
 	<?php } /* else { ?>
 		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?> (<a href="#" onclick="return App.modules.addMessageForm.toggleAdditionalText(this, '<?php echo $genid ?>messageFormAdditionalText', 
-				'<?php echo lang('expand additional text') ?>', '<?php echo lang('collapse additional text') ?>')"><?php echo lang('expand additional text') ?></a>):</label>
+				'<?php echo escape_single_quotes(lang('expand additional text')) ?>', '<?php echo escape_single_quotes(lang('collapse additional text')) ?>')"><?php echo lang('expand additional text') ?></a>):</label>
 		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
 		<script type="text/javascript">
 		document.getElementById('<?php echo $genid ?>messageFormAdditionalText').style.display = 'none';</script>

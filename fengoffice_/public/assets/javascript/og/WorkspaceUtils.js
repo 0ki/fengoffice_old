@@ -246,7 +246,7 @@ og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extr
 		var node = tree.tree.getNodeById('ws' + workspaceId);
 		if (node) {
 			ws = node.ws;
-		} else {
+		} else if (extraWS) {
 			// look in the extra workspaces
 			for (var i=0; i < extraWS.length; i++) {
 				if (extraWS[i].id == workspaceId) {

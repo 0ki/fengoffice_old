@@ -43,7 +43,7 @@ foreach($projects as $project) {
 <?php
   $options = array();
   if($project->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getEditUrl() .'">' . lang('edit') . '</a>';
-  if($project->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete project') . '\')">' . lang('delete') . '</a>';
+  if($project->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getDeleteUrl() . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete project')) . '\')">' . lang('delete') . '</a>';
 ?>
     <td class="middle" style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
   </tr>

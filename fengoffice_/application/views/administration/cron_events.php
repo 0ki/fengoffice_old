@@ -11,7 +11,7 @@
 	</div>
 
 <?php if (is_array($events) && count($events)) { ?>
-<form class="internalForm" action="<?php echo get_url("administration", "cron_events") ?>" method="post" onreset="return confirm('<?php echo lang('confirm reset form') ?>')">
+<form class="internalForm" action="<?php echo get_url("administration", "cron_events") ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
 	<table class="cronEventsTable"><tbody>
 		<tr class="cronEventsHeader even">
 			<th class="cronEventsName"><?php echo lang("name") ?></th>

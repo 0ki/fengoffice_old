@@ -42,7 +42,7 @@ foreach($templates as $cotemplate) {
     $options[] = '<a class="internalLink" href="' . $cotemplate->getAssignTemplateToWSUrl() . '">' . lang('assign to workspace') . '</a>';
   } // if
   if($cotemplate->canDelete(logged_user())) {
-  	$options[] = '<a class="internalLink" href="' . $cotemplate->getDeleteUrl() .'&popup=true" onclick="return confirm(\'' . lang('confirm delete template') . '\')">' . lang('delete template') . '</a>';
+  	$options[] = '<a class="internalLink" href="' . $cotemplate->getDeleteUrl() .'&popup=true" onclick="return confirm(\'' . escape_single_quotes(lang('confirm delete template')) . '\')">' . lang('delete template') . '</a>';
   }
 ?>
 		<td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
