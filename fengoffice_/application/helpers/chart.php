@@ -57,6 +57,7 @@ function render_chart($options = array()) {
 	$x_labels = array_var($options, 'x_labels', array());
 	$y_axis_right = array_var($options, 'y_axis_right');
 	$y_values = array_var($options, 'data');
+	$shapes = array_var($options, 'shapes', array());
 	$label_step = array_var($options, 'label_step', 7);
 	
 	$title = new OFC_Elements_Title($title);
@@ -106,6 +107,17 @@ function render_chart($options = array()) {
 	$chart->set_y_axis($y_axis);
 	$chart->set_bg_colour(array_var($options, 'back_color', '#FFFFFF'));
 	if ($y_axis_right) $chart->set_y_axis_right($y_axis);
+	
+	foreach ($shapes as $s) {
+		$shape = new shape(array_var($s, 'color', '#FA6900'));
+		$points = array_var($s, 'points', array());
+		foreach ($points as $p) {
+			$shape->append_value( new shape_point($p['x'], $p['y']));
+		}
+		if (array_var($s, 'text')) $shape->set_text(array_var($s, 'text'));
+		if (array_var($s, 'alpha')) $shape->set_alpha(array_var($s, 'alpha'));
+		$chart->add_element($shape);
+	}
 	
 	$filename = 'tmp/' . gen_id().'.json';
 	file_put_contents(ROOT . "/$filename", $chart->toPrettyString());

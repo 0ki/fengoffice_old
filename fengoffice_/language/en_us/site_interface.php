@@ -425,7 +425,7 @@ return array(
 
   'x ago' => '{0} ago',
 
-  'object time slots' => 'Object time slots',
+  'object time slots' => 'Registered timeslots',
   'start work' => 'Start work',
   'end work' => 'End work',
   'confirm delete timeslot' => 'Are you sure you want to permanently delete this timeslot?',
@@ -695,7 +695,7 @@ return array(
   'auto detect user timezone' => 'Auto-detect user timezone from browser',
   'confirm discard email' => 'Are you sure you wish to discard this email?',
   'download email' => 'Download email',
-  'instantiate' => 'Instantiate',
+  'instantiate' => 'Create tasks',
   'template parameters' => 'Template parameters',
   'add image' => 'Add image',
   'update image' => 'Update image',

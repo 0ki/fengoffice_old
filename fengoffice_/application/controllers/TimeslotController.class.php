@@ -126,6 +126,7 @@ class TimeslotController extends ApplicationController {
 				}
 				$timeslot_percent = round(($hours * 100) / ($task->getTimeEstimate() / 60));
 				$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+				if ($total_percentComplete < 0) $total_percentComplete = 0;
 				$task->setPercentCompleted($total_percentComplete);
 				$task->save();
 
@@ -413,6 +414,7 @@ class TimeslotController extends ApplicationController {
 				if($task->getTimeEstimate() > 0){
 					$timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
 					$total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+					if ($total_percentComplete < 0) $total_percentComplete = 0;
 					$task->setPercentCompleted($total_percentComplete);
 					$task->save();
 				}
@@ -489,6 +491,7 @@ class TimeslotController extends ApplicationController {
             if($task->getTimeEstimate() > 0){
                 $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
                 $total_percentComplete = $task->getPercentCompleted() - $timeslot_percent;
+				if ($total_percentComplete < 0) $total_percentComplete = 0;
                 $task->setPercentCompleted($total_percentComplete);
                 $task->save();
             }            

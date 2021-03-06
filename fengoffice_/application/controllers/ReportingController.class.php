@@ -336,11 +336,9 @@ class ReportingController extends ApplicationController {
 			case 6: //Date interval
 				$st = getDateValue(array_var($report_data, 'start_value'));
 				$st = $st->beginningOfDay();
-				$st->advance(logged_user()->getTimezone()*3600, true);
 				
 				$et = getDateValue(array_var($report_data, 'end_value'));
-				$et = $et->beginningOfDay()->add('d',1);
-				$et->advance(logged_user()->getTimezone()*3600, true);
+				$et = $et->endOfDay();
 				break;
 		}
 		
@@ -375,6 +373,10 @@ class ReportingController extends ApplicationController {
 		tpl_assign('columns', $columns);
 		tpl_assign('timeslotsArray', array());                        
 		tpl_assign('grouped_timeslots', $grouped_timeslots);
+		if (array_var($report_data, 'date_type') == 6) {
+			$st->advance(logged_user()->getTimezone()*3600, true);
+			$et->advance(logged_user()->getTimezone()*3600, true);
+		}
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
 		tpl_assign('user', $user);

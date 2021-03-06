@@ -28,7 +28,7 @@ $disabled = $type_object ? false : true;
 
 <div id="headerDiv" class="searchDescription">
 <?php 
-        if (array_var($_GET, 'search_all_projects') != 'true' && current_member_search()){            
+        if ( current_member_search() && $search_dimension != 0){            
             $context = '';
             foreach (current_member_search() as $context_){
                  $context .= $context_->getName() . ", ";
@@ -37,8 +37,8 @@ $disabled = $type_object ? false : true;
         }else{
             echo lang("search for", clean($search_string));
         }
-	if (array_var($_GET, 'search_all_projects') != 'true' && current_member_search()) { ?>
-	<br/><a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true", "advanced" => $advanced)) ?>"><?php echo lang('search in all workspaces') ?></a>
+	if ( current_member_search() && $search_dimension != 0) { ?>
+	<br/><a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_dimension" => "0", "advanced" => $advanced)) ?>"><?php echo lang('search in all workspaces') ?></a>
         <?php } ?>
 </div>
 <div id="<?php echo $genid; ?>Search" class="search-container">

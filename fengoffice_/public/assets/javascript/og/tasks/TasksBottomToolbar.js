@@ -196,6 +196,7 @@ og.TasksBottomToolbar = function(config) {
 		for(j in companiesArray) {
 			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
 				companyName = companiesArray[j].name;
+				break;
 			}
 		}
 		if (usersArray[i] && typeof(usersArray[i]) != 'function') {
@@ -214,7 +215,6 @@ og.TasksBottomToolbar = function(config) {
 	
 	//ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
 	ucsData = ucsData.concat(ucsOtherUsers).concat(compData);
-    
     this.filterNamesCompaniesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCompaniesCombo',
         store: new Ext.data.SimpleStore({
@@ -252,11 +252,21 @@ og.TasksBottomToolbar = function(config) {
 	var uData = [[currentUser, lang('me')],['0',lang('everyone')],['0','--']];
 	uDOtherUsers = [];
 	for (i in usersArray){
-		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id)
-			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, og.clean(usersArray[i].name)];
+		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id) {
+			var companyName = '';
+			var j;
+			for(j in companiesArray) {
+				if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid) {
+					companyName = companiesArray[j].name;
+					break;
+				}
+			}
+
+			var toshow = og.clean(usersArray[i].name) + (usersArray[i].cid ? ' : ' + og.clean(companyName) : "");
+			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, toshow];
+		}
 	}
-	//ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers)).concat(compData);
-	ucsData = ucsData.concat(ucsOtherUsers).concat(compData);
+	uData = uData.concat(uDOtherUsers).concat(compData);
     this.filterNamesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCombo',
         store: new Ext.data.SimpleStore({

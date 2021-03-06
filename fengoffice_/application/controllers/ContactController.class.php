@@ -761,7 +761,7 @@ class ContactController extends ApplicationController {
 					add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
 				}
 			}
-			if ($contact->canEdit(logged_user())) {
+			if (!$contact->isUser() && $contact->canEdit(logged_user())) {
 				if (!$contact->isArchived()) {
 					add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $contact->getArchiveUrl() ."');", 'ico-archive-obj');
 				} else {

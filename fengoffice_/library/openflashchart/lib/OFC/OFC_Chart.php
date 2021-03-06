@@ -114,3 +114,43 @@ class OFC_Chart
 	}
 }
 
+class shape_point
+{
+	function shape_point( $x, $y )
+	{
+		$this->x = $x;
+		$this->y = $y;
+	}
+}
+
+class shape
+{
+	function shape( $colour )
+	{
+		$this->type = "shape";
+		$this->colour = $colour;
+		$this->values = array();
+	}
+	
+	function append_value( $p )
+	{
+		$this->values[] = $p;	
+	}
+	
+	function set_text($text) {
+		$this->text = $text;
+	}
+	function set_alpha($alpha) {
+		$this->alpha = $alpha;
+	}
+	
+	function set_line_color($color) {
+		$this->{'line-colour'} = $color;
+	}
+	function set_line_alpha($alpha) {
+		$this->{'line-alpha'} = $alpha;
+	}
+	function set_line_width($w) {
+		$this->width = $w;
+	}
+}

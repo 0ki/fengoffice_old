@@ -54,6 +54,13 @@ class Notifier {
 		if ($action == ApplicationLogs::ACTION_ADD) {
 			self::objectNotification($object, $subscribers, logged_user(), 'new');
 		} else if ($action == ApplicationLogs::ACTION_EDIT) {
+                        $contactIds = $log_data ;
+			if ($contactIds) {
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+                                foreach ($contacts as $contact){
+                                    $subscribers[] = $contact;
+                                }
+			}
 			self::objectNotification($object, $subscribers, logged_user(), 'modified');
 		} else if ($action == ApplicationLogs::ACTION_TRASH) {
 			self::objectNotification($object, $subscribers, logged_user(), 'deleted');
@@ -153,35 +160,19 @@ class Notifier {
 		}
                 
                 //context
-                $workspaces = '';
-                $tags = '';
-                $projects = '';
-                $customers = '';
-                $folders = '';
+                $contexts = array();
                 if($object->getMembersToDisplayPath()){
                     $members = $object->getMembersToDisplayPath();
                     foreach ($members as $key => $member){                        
                         $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "workspaces"){
-                            foreach($members[$key] as $member){
-                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
-                        if ($dim->getCode() == "tags"){
-                            foreach($members[$key] as $member){
-                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                if($obj_type->getName() == 'project'){
-                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'customer'){
-                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'folder'){
-                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
+                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }else{
+                            foreach($members[$key] as $member){
+                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
                             }
                         }
                     }
@@ -211,11 +202,7 @@ class Notifier {
                 tpl_assign('asigned', $assigned_to);//assigned to
                 tpl_assign('description', $text);//descripction
                 tpl_assign('revision_comment', $text_comment);//revision_comment
-                tpl_assign('workspaces', $workspaces);//workspaces
-                tpl_assign('tags', $tags);//tags
-                tpl_assign('projects', $projects);//projects
-                tpl_assign('customers', $customers);//customers
-                tpl_assign('folders', $folders);//folders
+                tpl_assign('contexts', $contexts);//contexts
                                 
 		$emails = array();		
 		foreach($people as $user) {
@@ -361,22 +348,25 @@ class Notifier {
                         }
 
                         $toemail = $user->getEmailAddress();
-                        $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                        $file_path = ROOT . "/upload/logo_empresa.png";
-                        $handle = fopen($file_path, 'wb');
-                        fwrite($handle, $content);
-                        fclose($handle);
-                        if($content != ""){
-                            $attachments['logo'] = array(
-                                    'cid' => gen_id() . substr($toemail, strpos($toemail, '@')),
-                                    'path' => $file_path,
-                                    'type' => 'image/png',
-                                    'disposition' => 'inline',
-                                    'name' => 'logo_empresa.png',
-                            );
-                            tpl_assign('attachments', $attachments);// attachments
-                        }                                
-
+						try {
+	                        $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+	                        $file_path = ROOT . "/upload/logo_empresa.png";
+	                        $handle = fopen($file_path, 'wb');
+	                        fwrite($handle, $content);
+	                        fclose($handle);
+	                        if($content != ""){
+	                            $attachments['logo'] = array(
+	                                    'cid' => gen_id() . substr($toemail, strpos($toemail, '@')),
+	                                    'path' => $file_path,
+	                                    'type' => 'image/png',
+	                                    'disposition' => 'inline',
+	                                    'name' => 'logo_empresa.png',
+	                            );
+	                        }
+						} catch (FileNotInRepositoryError $e) {
+							// If no logo is set, don't interrupt notifications.
+						}
+						tpl_assign('attachments', $attachments);// attachments
                         $from = self::prepareEmailAddress($senderemail, $sendername);
                         if (!$toemail) continue;
                         $emails[] = array(
@@ -601,47 +591,27 @@ class Notifier {
                 tpl_assign('description', escape_html_whitespace(convert_to_links(clean($object->getDescription()))));//descripction
                 
                 //context
-                $workspaces = '';
-                $tags = '';
-                $projects = '';
-                $customers = '';
-                $folders = '';
+                $contexts = array();
                 if($object->getMembersToDisplayPath()){
                     $members = $object->getMembersToDisplayPath();
                     foreach ($members as $key => $member){                        
                         $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "workspaces"){
-                            foreach($members[$key] as $member){
-                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
-                        if ($dim->getCode() == "tags"){
-                            foreach($members[$key] as $member){
-                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                if($obj_type->getName() == 'project'){
-                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'customer'){
-                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'folder'){
-                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
+                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }else{
+                            foreach($members[$key] as $member){
+                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
                             }
                         }
                     }
                 }
-                
-                tpl_assign('workspaces', $workspaces);//workspaces
-                tpl_assign('tags', $tags);//tags
-                tpl_assign('projects', $projects);//projects
-                tpl_assign('customers', $customers);//customers
-                tpl_assign('folders', $folders);//folders
+                tpl_assign('contexts', $contexts);//folders
 		
-		$attachments = array();                    
+		$attachments = array();
+		try {
                 $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
                 $file_path = ROOT . "/upload/logo_empresa.png";
                 $handle = fopen($file_path, 'wb');
@@ -655,9 +625,11 @@ class Notifier {
                             'disposition' => 'inline',
                             'name' => 'logo_empresa.png',
                     );
-                    tpl_assign('attachments', $attachments);// attachments
-                }                
-                
+                }
+		} catch (FileNotInRepositoryError $e) {
+			// If no logo is set, don't interrupt notifications.
+		}
+		tpl_assign('attachments', $attachments);// attachments
                 //invitations
                 $invitations = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $object->getId()));
                 if (isset($invitations) && is_array($invitations)) {
@@ -905,44 +877,24 @@ class Notifier {
 		}
                 
                 //context
-                $workspaces = '';
-                $tags = '';
-                $projects = '';
-                $customers = '';
-                $folders = '';
+                $contexts = array();
                 if($task->getMembersToDisplayPath()){
                     $members = $task->getMembersToDisplayPath();
                     foreach ($members as $key => $member){                        
                         $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "workspaces"){
-                            foreach($members[$key] as $member){
-                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
-                        if ($dim->getCode() == "tags"){
-                            foreach($members[$key] as $member){
-                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                if($obj_type->getName() == 'project'){
-                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'customer'){
-                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'folder'){
-                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
+                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }else{
+                            foreach($members[$key] as $member){
+                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
                             }
                         }
                     }
                 }
-                tpl_assign('workspaces', $workspaces);//workspaces
-                tpl_assign('tags', $tags);//tags
-                tpl_assign('projects', $projects);//projects
-                tpl_assign('customers', $customers);//customers
-                tpl_assign('folders', $folders);//folders
+                tpl_assign('contexts', $contexts);//workspaces
                 
                 //start date, due date or start
                 if ($task->getStartDate() instanceof DateTimeValue) {
@@ -961,7 +913,8 @@ class Notifier {
                         tpl_assign('due_date', $date);//due_date
 		}
 		
-		$attachments = array();                    
+		$attachments = array();
+		try {
                 $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
                 $file_path = ROOT . "/upload/logo_empresa.png";
                 $handle = fopen($file_path, 'wb');
@@ -976,9 +929,13 @@ class Notifier {
                             'name' => 'logo_empresa.png',
                     );
                     tpl_assign('attachments', $attachments);// attachments
-                }                
-                
-                self::queueEmail(
+                }
+		} catch (FileNotInRepositoryError $e) {
+			// If no logo is set, don't interrupt notifications.
+		}
+		tpl_assign('attachments', $attachments);// attachments
+		
+		self::queueEmail(
 			array(self::prepareEmailAddress($task->getAssignedTo()->getEmailAddress(), $task->getAssignedTo()->getObjectName())),
 			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
 			lang('new task assigned to you',$task->getObjectName()),
@@ -993,8 +950,15 @@ class Notifier {
 	} 
 
         
-        function workEstimate(ProjectTask $task) {
+	function workEstimate(ProjectTask $task) {
 		tpl_assign('task_assigned', $task);
+		
+		if(!($task->getAssignedTo() instanceof Contact)) {
+			return true; // not assigned to user
+		}
+		if (!is_valid_email($task->getAssignedTo()->getEmailAddress())) {
+			return true;
+		}
 
 		$locale = $task->getAssignedTo()->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -1030,44 +994,24 @@ class Notifier {
 		}
                 
                 //context
-                $workspaces = '';
-                $tags = '';
-                $projects = '';
-                $customers = '';
-                $folders = '';
+                $contexts = array();
                 if($task->getMembersToDisplayPath()){
                     $members = $task->getMembersToDisplayPath();
                     foreach ($members as $key => $member){                        
                         $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "workspaces"){
-                            foreach($members[$key] as $member){
-                                $workspaces .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
-                        if ($dim->getCode() == "tags"){
-                            foreach($members[$key] as $member){
-                                $tags .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }                        
                         if ($dim->getCode() == "customer_project"){
                             foreach($members[$key] as $member){
                                 $obj_type = ObjectTypes::findById($member['ot']);
-                                if($obj_type->getName() == 'project'){
-                                    $projects .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'customer'){
-                                    $customers .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }elseif($obj_type->getName() == 'folder'){
-                                    $folders .= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                                }
+                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+                            }
+                        }else{
+                            foreach($members[$key] as $member){
+                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
                             }
                         }
                     }
                 }
-                tpl_assign('workspaces', $workspaces);//workspaces
-                tpl_assign('tags', $tags);//tags
-                tpl_assign('projects', $projects);//projects
-                tpl_assign('customers', $customers);//customers
-                tpl_assign('folders', $folders);//folders
+                tpl_assign('contexts', $contexts);//workspaces
                 
                 //start date, due date or start
                 if ($task->getStartDate() instanceof DateTimeValue) {
@@ -1086,7 +1030,8 @@ class Notifier {
                         tpl_assign('due_date', $date);//due_date
 		}
 		
-		$attachments = array();                      
+		$attachments = array();
+		try {
                 $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
                 $file_path = ROOT . "/upload/logo_empresa.png";
                 $handle = fopen($file_path, 'wb');
@@ -1101,9 +1046,13 @@ class Notifier {
                             'name' => 'logo_empresa.png',
                     );
                     tpl_assign('attachments', $attachments);// attachments
-                }                
-                                
-                self::queueEmail(
+                }
+		} catch (FileNotInRepositoryError $e) {
+			// If no logo is set, don't interrupt notifications.
+		}
+		tpl_assign('attachments', $attachments);// attachments
+		
+		self::queueEmail(
 			array(self::prepareEmailAddress($task->getCreatedBy()->getEmailAddress(), $task->getCreatedBy()->getObjectName())),
 			self::prepareEmailAddress($task->getUpdatedBy()->getEmailAddress(), $task->getUpdatedByDisplayName()),
 			lang('work estimate title'),

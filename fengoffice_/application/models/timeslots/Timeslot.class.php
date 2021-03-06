@@ -135,6 +135,7 @@ class Timeslot extends BaseTimeslot {
         if ($task->getTimeEstimate() > 0) {
 	        $timeslot_percent = ($timeslot_time * 100) / ($task->getTimeEstimate() / 60);
 	        $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
+	        if ($total_percentComplete < 0) $total_percentComplete = 0;
 	        $task->setPercentCompleted($total_percentComplete);
 	        $task->save();
         }

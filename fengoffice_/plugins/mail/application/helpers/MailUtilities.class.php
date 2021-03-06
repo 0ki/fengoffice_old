@@ -208,7 +208,7 @@ class MailUtilities {
 			if (trim($message_id) != "") {
 				$id_condition = " AND `message_id`='".trim($message_id)."'";
 			} else {
-				$id_condition = " AND `subject`='". trim(array_var($parsedMail, 'Subject')) ."' AND `from`='$from'";
+				$id_condition = " AND `name`='". trim(array_var($parsedMail, 'Subject')) ."' AND `from`='$from'";
 				if (array_var($parsedMail, 'Date')) {
 					$sent_date_dt = new DateTimeValue(strtotime(array_var($parsedMail, 'Date')));
 					$sent_date_str = $sent_date_dt->toMySQL();

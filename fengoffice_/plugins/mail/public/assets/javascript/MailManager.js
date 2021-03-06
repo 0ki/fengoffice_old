@@ -56,8 +56,6 @@ og.MailManager = function() {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
-                                        var sm = Ext.getCmp('mails-manager').getSelectionModel();
-                                        sm.clearSelections();
 				}
 			}
 		});
@@ -1139,6 +1137,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	
 	reset: function() {
 		this.load({start:0});
+                this.getSelectionModel().clearSelections();
 	},
 	
 	showMessage: function(text) {

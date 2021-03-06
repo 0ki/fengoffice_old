@@ -237,7 +237,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
             var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor' + id, {
                 uiColor: '#BBCCEA',
                 height: '100px',
-                enterMode: CKEDITOR.ENTER_P,
+                enterMode: CKEDITOR.ENTER_BR,
                 shiftEnterMode: CKEDITOR.ENTER_BR,
                 disableNativeSpellChecker: false,
                 language: '<?php echo $loc ?>',

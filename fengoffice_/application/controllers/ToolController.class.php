@@ -95,7 +95,7 @@ class ToolController extends ApplicationController {
 		$handle = opendir($dir);
 		$languages = array();
 		while (false !== ($f = readdir($handle))) {
-			if ($f != "." && $f != ".." && $f != "CVS" && $f != $from && is_dir("$dir/$f")) {
+			if ($f != "." && $f != ".." && $f != "CVS" && $f != ".svn" && $f != $from && is_dir("$dir/$f")) {
 				$languages[] = $f;
 			}
 		}
@@ -107,7 +107,7 @@ class ToolController extends ApplicationController {
 		if (!is_array($files)) $files = array();
 		$handle = opendir($dir);
 		while (false !== ($f = readdir($handle))) {
-			if ($f == '.' || $f == '..' || $f == 'CVS') continue;
+			if ($f == '.' || $f == '..' || $f == 'CVS' || $f == '.svn') continue;
 			if (is_dir("$dir/$f")) {
 				$this->load_language_files($files, "$dir/$f", $base . $f . "/");
 			} else if (substr($f, -4) == '.php' || substr($f, -3) == '.js') {
@@ -116,9 +116,34 @@ class ToolController extends ApplicationController {
 		}
 		closedir($handle);
 	}
+        
+        private function load_language_files_plugins(&$files, $dir, $dir_plugin) {
+		if (!is_array($files)) $files = array();                
+                $handle_plugin = opendir($dir_plugin);                
+		while (false !== ($f_p = readdir($handle_plugin))) {
+                        if ($f_p != "." && $f_p != ".." && $f_p != "CVS" && $f_p != ".svn" && is_dir("$dir_plugin/$f_p/$dir")) {
+                                $handle = opendir($dir_plugin . "/" . $f_p . "/" . $dir);
+                                while (false !== ($f = readdir($handle))) {
+                                        if ($f == '.' || $f == '..' || $f == 'CVS' || $f == '.svn') continue;
+                                        if (substr($f, -4) == '.php') {
+                                                $files[] = $f_p;
+                                                //$files[] = array($f_p => $f);
+                                        }
+                                }
+                                closedir($handle);
+                        }
+		}
+		closedir($handle_plugin);
+	}
 	
 	private function load_file_translations($locale, $file) {
-		$fullpath = LANG_DIR . "/" . $locale . "/" . $file;
+                if (substr($file, -4) == '.php') {
+                    $fullpath = LANG_DIR . "/" . $locale . "/" . $file;
+                }else{
+                    $name_plugin = $file;
+                    $file = "lang.php";
+                    $fullpath = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" . LANG_DIR . "/" . $locale . "/" . $file;
+                }		
 		if (!is_file($fullpath)) return array();
 		if (substr($file, -4) == ".php") {
 			return include $fullpath;
@@ -206,7 +231,8 @@ class ToolController extends ApplicationController {
 		}
 		
 		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');
-		
+		if (!defined('PLUGIN_LANG_DIR')) define('PLUGIN_LANG_DIR', 'plugins');
+                
 		$download = array_var($_GET, 'download');
 		if (isset($download)) {
 			// download zip file and die
@@ -220,9 +246,17 @@ class ToolController extends ApplicationController {
 		if (isset($lang)) {
 			$file = array_var($_POST, 'file');
 			$locale = array_var($_POST, 'locale');
-			$rootfile = LANG_DIR . "/" . $locale . ".php";
-			$dirname = LANG_DIR . "/" . $locale;
-			$filename = $dirname . "/" . $file;
+			if (substr($file, -4) == '.php') {
+				$rootfile = LANG_DIR . "/" . $locale . ".php";
+				$dirname = LANG_DIR . "/" . $locale;
+				$filename = $dirname . "/" . $file;
+			}else{
+				$name_plugin = $file;
+				$file = "lang.php";
+				$rootfile = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale . ".php";
+				$dirname = PLUGIN_LANG_DIR . "/" . $name_plugin . "/" .LANG_DIR . "/" . $locale;
+				$filename = $dirname . "/" . $file;
+			}
 			if (!is_file($rootfile)) {
 				$f = fopen($rootfile, "w");
 				fwrite($f, '<?php if(!isset($this) || !($this instanceof Localization)) {
@@ -291,6 +325,7 @@ class ToolController extends ApplicationController {
 			// load from files
 			$from_files = array();
 			$this->load_language_files($from_files, LANG_DIR . "/$from");
+			$this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
 			sort($from_files);
 			tpl_assign('from_files', $from_files);
 			
@@ -312,6 +347,7 @@ class ToolController extends ApplicationController {
 	
 	function checklang() {
 		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');
+		if (!defined('PLUGIN_LANG_DIR')) define('PLUGIN_LANG_DIR', 'plugins');
 		
 		$from = array_var($_GET, 'from', 'en_us');
 		$to = array_var($_GET, "to");
@@ -325,6 +361,7 @@ class ToolController extends ApplicationController {
 			$missing = array();
 			$files = array();
 			$this->load_language_files($files, LANG_DIR . "/$from");
+			$this->load_language_files_plugins($from_files, LANG_DIR . "/$from", PLUGIN_LANG_DIR);
 			foreach ($files as $file) {
 				if (is_file(LANG_DIR . "/$to/$file")) {
 					$missing[$file] = array();

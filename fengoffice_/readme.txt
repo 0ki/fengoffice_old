@@ -98,11 +98,41 @@
     Changelog
     =========
     
+    Since 2.0 RC
+ 	----------------
+ 	bugfix: Notifications not sent when no company logo is uploaded.
+ 	bugfix: Invited people does not show in certain conditions.
+ 	bugfix: Invited people query performance improvements.
+ 	bugfix: Email fix when enabling message_id verification.
+ 	bugfix: Tasks does not save progress when no estimated time is set.
+ 	bugfix: Templates instantiation does not susbscribe assigned users.
+ 	bugfix: Total tasks time report fixed date parameters.
+ 	bugfix: Timeslots permissions fixed, for read/write of any user type.
+ 	bugfix: Performance improvements in tasks list and tasks widget.
+ 	bugfix: Subscribers permissions fix.
+ 	bugfix: Fixed dimension member deletion.
+ 	bugfix: Fixed events fatal error.
+ 	bugfix: Added several missing langs (en_us, es_la).
+ 	bugfix: Events description goes out the event region in calendar views.
+ 	bugfix: Tasks name and description goes out the widget in dashboard. 
+ 	bugfix: Several bugfixes in task's module drag & drop.
+ 	bugfix: Drag & drop: Drag bugfixes when dragging from grids to dimension members.
+ 	bugfix: Bugfix when adding subworkspaces and error.
+ 	bugfix: Task reclassiffication bugfix with due date and parent data.
+ 	bugfix: User task toolbar's selectboxes only show "me" when filtering by anything but assigned to. 
+ 	bugfix: Repetitive task fixes
+ 	bugfix: Bugfix in google-calendar import-export cron job and synchronization.
+ 	bugfix: Task's quick add and quick edit is not subscribing the creator.
+ 	bugfix: Translation tool now includes plugin's language files.
+ 	
+ 	usability: Dimension panels' selected member color now is similar to tabs color.
+ 	
+    
     Since 2.0.0.8
     ----------------
     bugfix: Google Calendar issues solved
 	bugfix: 'Executive' users not being able to assign tasks to themseleves at some places
-	bugfix: Admins and Superadmins may now unblock bloqued documents
+	bugfix: Admins and Superadmins may now unblock blocked documents
 	bugfix: Subscriptions and permissions issues solved
 	bugfix: Solved some issues when editing objects
 	bugfix: Solved issue when classifying emails and then accesing them

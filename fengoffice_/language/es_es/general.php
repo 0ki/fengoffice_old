@@ -92,6 +92,7 @@
 	'download' => 'Descarga',
 	'downloads' => 'Descargass',
 	'replace' => 'Reemplazar',
+	'specify password?' => 'Especificar password?',
 	'expand' => 'Expandir',
 	'collapse' => 'Contraer',
 	'author' => 'Autor',

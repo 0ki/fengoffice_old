@@ -25,6 +25,12 @@ class SearchController extends ApplicationController {
 	 * @var unknown_type
 	 */
 	var $search_for ;
+        
+        /**
+	 * Search dimension
+	 * @var unknown_type
+	 */
+	var $search_dimension ;
 	
 	/**
 	 * Page size
@@ -114,6 +120,7 @@ class SearchController extends ApplicationController {
 	function search() {
 		// Init vars
 		$search_for = array_var($_GET, 'search_for');
+                $search_dimension = array_var($_GET, 'search_dimension');
                 $advanced = array_var($_GET, 'advanced');
 		$minWordLength = $this->minWordLength($search_for);
 		$useLike = ( $minWordLength && ($this->ignoreMinWordLength) && ($minWordLength < self::$MYSQL_MIN_WORD_LENGHT) );
@@ -148,14 +155,24 @@ class SearchController extends ApplicationController {
 		$limitTest = max( $this->limitTest , $this->limit);
 		$filteredResults = 0 ;
 		$uid = logged_user()->getId();
-		
-		$members = active_context_members(false);
+                
+                if(!isset($search_dimension)){
+                    $members = active_context_members(false);
+                }else{
+                    if($search_dimension == 0){
+                        $members = array();
+                    }else{
+                        $members = array($search_dimension);
+                    }                                        
+                }
                 $members_sql = "";
-                $search_all_projects = array_var($_GET, 'search_all_projects');
-                if(count($members) > 0 && !$search_all_projects){
+                if(count($members) > 0){
                     $members_sql = "AND rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
                                     GROUP BY object_id
                                     HAVING count(member_id) = ".count($members).")";
+                    $this->search_dimension = implode ( ',', $members );
+                }else{
+                    $this->search_dimension = 0;
                 }
             
 		$revisionObjectTypeId = ObjectTypes::findByName("file revision")->getId();
@@ -182,9 +199,9 @@ class SearchController extends ApplicationController {
                                 $value = $condValue;
                         }              
                         if($condition['condition'] == "like"){
-                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "%'";
+                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "%' ";
                         }else{
-                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "'";
+                            $where_condiition .= " AND " . $condition['field_name'] . " " . $condition['condition'] . " '" . $value . "' ";
                         }
                         $conditions_view[$cont]['id'] = $condition['id'];
                         $conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
@@ -283,6 +300,7 @@ class SearchController extends ApplicationController {
 		// Template asigns
 		tpl_assign('pagination', $this->pagination);
 		tpl_assign('search_string', $search_for);
+                tpl_assign('search_dimension', $this->search_dimension);
 		tpl_assign('search_results', $search_results);
                 tpl_assign('advanced', $advanced);                
 		tpl_assign('extra', $extra );      
@@ -332,14 +350,15 @@ class SearchController extends ApplicationController {
 		$limit = $this->limit;
 		$total = $this->total;
 		$search_for = $this->search_for ;
+                $search_dimension = $this->search_dimension;
 		$this->pagination = new StdClass() ;
 		$this->pagination->currentPage = ceil (( $start+1 ) / $limit)  ;
 		$this->pagination->currentStart = $start+1 ;
 		$this->pagination->currentEnd = $start + count($search_results) ;
 		$this->pagination->hasNext = ( count($search_results) == $limit ) ;
 		$this->pagination->hasPrevious = ($start-$limit >= 0); 
-		$this->pagination->nextUrl = get_url("search", "search" , array("start" => $start+$limit , "search_for"=>$search_for));
-		$this->pagination->previousUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for"=>$search_for));
+		$this->pagination->nextUrl = get_url("search", "search" , array("start" => $start+$limit , "search_for" => $search_for , "search_dimension" => $search_dimension));
+		$this->pagination->previousUrl = get_url("search", "search" , array("start" => $start-$limit , "search_for" => $search_for , "search_dimension" => $search_dimension));
 		$this->pagination->total = $total ;
 		$this->pagination->nextPages = array();
 		$this->pagination->links = $this->buildPaginationLinks();			
@@ -441,7 +460,8 @@ class SearchController extends ApplicationController {
 		for ($i = $startPage ; $i <=$endPage ; $i++) {
 			$links[$i] = get_url("search", "search" , array(
 				"start" =>  ($i-1 ) * $this->limit , 
-				"search_for"=>$this->search_for)
+				"search_for"=>$this->search_for,
+                                "search_dimension"=>$this->search_dimension)
 			);
 		}
 		return $links ;

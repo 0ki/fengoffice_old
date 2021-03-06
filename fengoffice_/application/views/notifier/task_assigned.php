@@ -72,36 +72,27 @@
         <!-- END ASSIGNED TO, BY AND PRIORITY -->
         <div>
             <span style="width: 100%; line-height: 20px; display: block;">
-                <!-- WORKSPACES -->
-                <?php if (isset($workspaces) && $workspaces != "") {?>
-                    <?php echo lang('workspaces')?>: 
-                    <?php echo $workspaces ?> 
-                <?php }?>  
-                <!-- END WORKSPACES -->  
-                <!-- PROJECTS -->
-                <?php if (isset($projects) && $projects != "") {?>
-                    <?php echo lang('projects')?>: 
-                    <?php echo $projects ?> 
-                <?php }?>  
-                <!-- END PROJECTS --> 
-                <!-- CUSTOMERS -->
-                <?php if (isset($customers) && $customers != "") {?>
-                    <?php echo lang('client')?>: 
-                    <?php echo $customers ?> 
-                <?php }?> 
-                <!-- END CUSTOMERS -->
-                <!-- FOLDERS -->
-                <?php if (isset($folders) && $folders != "") {?>
-                    <?php echo lang('folder')?>: 
-                    <?php echo $folders ?> 
-                <?php }?> 
-                <!-- END FOLDERS -->
-                <!-- TAGS -->
-                <?php if (isset($tags) && $tags != "") {?>
-                    <?php echo lang('tags')?>: 
-                    <?php echo $tags ?> 
-                <?php }?> 
-                <!-- END TAGS -->
+                <!-- CONTEXTS -->
+                <?php 
+                    foreach ($contexts as $dimension => $context) { 
+                        if($dimension == "customer_project"){
+                            foreach ($context as $obj => $cont){
+                                echo lang($obj). ": ";
+                                foreach ($cont as $c){
+                                    echo $c;
+                                } 
+                                echo "&nbsp;";
+                            }
+                        }else{
+                            echo lang($dimension). ": ";
+                            foreach ($context as $c){
+                                echo $c;
+                            }
+                            echo "&nbsp;";
+                        }                        
+                    }
+                ?>
+                <!-- CONTEXTS -->
             </span>
         </div>
         <div>

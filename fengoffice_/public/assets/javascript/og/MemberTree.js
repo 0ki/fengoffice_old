@@ -127,12 +127,6 @@ og.MemberTree = function(config) {
 						}
 					});
 				}
-                                
-                                if(Ext.getCmp('mails-manager') !== undefined){
-                                    var sm = Ext.getCmp('mails-manager').getSelectionModel();
-                                    sm.clearSelections();
-                                }
-
 			}
 			return false;
 		}

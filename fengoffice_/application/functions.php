@@ -1296,8 +1296,8 @@ function feng_sort($array, $field = 'getName', $id = 'getId', $removeDuplicateId
 
 function controller_exists($name, $plugin_id) {
 	$class_filename = ucfirst($name)."Controller.class.php";
-	if ($plugin_id){
-		$plgName= Plugins::instance()->findById($plugin_id)->getName();
+	if ($plugin_id && ($plugin = Plugins::instance()->findById($plugin_id)) instanceof Plugin ){
+		$plgName = $plugin->getName();
 		return file_exists(ROOT."/plugins/".$plgName."/application/controllers/".$class_filename);
 	}else{
 		return file_exists(ROOT."/application/controllers/".$class_filename);

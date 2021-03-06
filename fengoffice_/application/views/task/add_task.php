@@ -477,8 +477,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
                     var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
                     var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
                         uiColor: '#BBCCEA',
-                        height: (h-60) + 'px',
-                        enterMode: CKEDITOR.ENTER_P,
+                        height: h,
+                        enterMode: CKEDITOR.ENTER_BR,
                         shiftEnterMode: CKEDITOR.ENTER_BR,
                         disableNativeSpellChecker: false,
                         language: '<?php echo $loc ?>',

@@ -73,8 +73,14 @@
 			echo "<td class='name'>" . clean($ts->getDescription()) ."</td>";
 			echo "<td class='person'>" . clean($ts->getUser()->getObjectName()) ."</td>";
 			if (array_var($options, 'show_billing') == 'checked') {
-				echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format($ts->getFixedBilling(), 2) . "</td>";
-				$sub_total_billing += $ts->getFixedBilling();
+                                if($ts->getIsFixedBilling()){
+                                    echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format($ts->getFixedBilling(), 2) . "</td>";
+                                    $sub_total_billing += $ts->getFixedBilling();
+                                }else{
+                                    $min = $ts->getMinutes();
+                                    echo "<td class='nobr right'>" . config_option('currency_code', '$') . " " . number_format(($ts->getHourlyBilling()/60) * $min, 2) . "</td>";
+                                    $sub_total_billing += ($ts->getHourlyBilling()/60) * $min;
+                                }				
 			}
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
 			echo "<td class='time nobr right'>" . DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ."</td>";
@@ -134,11 +140,16 @@
 	$totCols = 6 + count_extra_cols($columns);
 	$date_format = user_config_option('date_format');
 
-	if (array_var($post, 'start_value')) { ?>
-		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo array_var($post, 'start_value') ?>
+	if (array_var($post, 'date_type') == 6) {
+		if ($start_time instanceof DateTimeValue) $start_time->advance(-3600*logged_user()->getTimezone(), true);
+		if ($end_time instanceof DateTimeValue) $end_time->advance(-3600*logged_user()->getTimezone(), true);
+	}
+	
+	if ($start_time instanceof DateTimeValue) { ?>
+		<span class="bold"><?php echo lang('from')?></span>:&nbsp;<?php echo $start_time->format($date_format) ?>
 	<?php }
-	if (array_var($post, 'end_value')) { ?>
-		<span class="bold" style="padding-left:10px"><?php echo lang('to date')?></span>:&nbsp;<?php echo array_var($post, 'end_value') ?>
+	if ($end_time instanceof DateTimeValue) { ?>
+		<span class="bold" style="padding-left:10px"><?php echo lang('to date')?></span>:&nbsp;<?php echo $end_time->format($date_format) ?>
 	<?php } ?>
 	
 	<?php if ($user instanceof Contact) { ?>
@@ -251,7 +262,11 @@
 
 <?php 		}
 			$sumTimes[$i] += $ts->getMinutes();
-			$sumBillings[$i] += $ts->getFixedBilling();
+                        if($ts->getIsFixedBilling()){
+                            $sumBillings[$i] += $ts->getFixedBilling();
+                        }else{
+                            $sumBillings[$i] += ($ts->getHourlyBilling()/60) * $ts->getMinutes();
+                        }
 		}
 		
 		$isAlt = !$isAlt;
@@ -331,7 +346,11 @@ if (count($timeslotsArray) > 0) {
 	foreach ($timeslotsArray as $t) {
 		if (isset($has_conditions) && $has_conditions && $t->getObjectManager() == 'Projects') continue;
 		$sumTime += $t->getMinutes();
-		$sumBilling += $t->getFixedBilling();
+                if($ts->getIsFixedBilling()){
+                    $sumBilling += $t->getFixedBilling();
+                }else{
+                    $sumBillings[$i] += ($ts->getHourlyBilling()/60) * $ts->getMinutes();
+                }		
 	}
 ?>
 <tr><td style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;" colspan=<?php echo ($showBillingCol)? $totCols -1 : $totCols ?>>

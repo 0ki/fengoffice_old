@@ -12,6 +12,8 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`id` ,`extension` ,`icon` ,
  ('34', 'odt', 'doc.png', '1', '0'), ('35', 'fodt', 'doc.png', '1', '0')
 ON DUPLICATE KEY UPDATE id=id;
 
+ALTER TABLE `<?php echo $table_prefix ?>file_types` ADD COLUMN `is_allow` TINYINT(1) NOT NULL DEFAULT '1';
+
 ALTER TABLE `<?php echo $table_prefix ?>external_calendar_users` ADD `related_to` VARCHAR( 255 ) NOT NULL;
                                 
 ALTER TABLE `<?php echo $table_prefix ?>project_events` ADD `update_sync` DATETIME NOT NULL AFTER `special_id`;

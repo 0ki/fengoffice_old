@@ -467,20 +467,23 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedById(0);
 		$this->save();
                 
-                $timeslots = $this->getTimeslots();
-                if ($timeslots){
+                if($this->getTimeEstimate() > 0){
+                    $timeslots = $this->getTimeslots();
+                    if ($timeslots){
+                            $total_percentComplete = 0;
+                            $this->setPercentCompleted(0);
+                            foreach ($timeslots as $timeslot){
+                                    $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+                                    $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
+                                    $total_percentComplete += $timeslot_percent;                                
+                            }
+                            $this->setPercentCompleted($total_percentComplete);
+                            $this->save();
+                    }else{
                         $this->setPercentCompleted(0);
-                        foreach ($timeslots as $timeslot){
-                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-                                $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
-                                $total_percentComplete = $timeslot_percent + $total_percentComplete;                                
-                        }
-                        $this->setPercentCompleted($total_percentComplete);
                         $this->save();
-                }else{
-                    $this->setPercentCompleted(0);
-                    $this->save();
-                }
+                    }
+                }                
 
 		$log_info = "";
 		if (config_option('use tasks dependencies')) {                    

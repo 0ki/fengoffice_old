@@ -76,6 +76,22 @@ if (isset($_REQUEST['activity']) && $_REQUEST['activity']) {
 	$all_statistics['last_month_activity'] = $last_month_activity;
 }
 
+// get db size and filesystem size
+if (isset($_REQUEST['sizes']) && $_REQUEST['sizes']) {
+	$sizes = array();
+	
+	$db_res = mysql_query("select sum(data_length + index_length) as bytes from `information_schema`.`TABLES` WHERE table_schema = '".DB_NAME."'");
+	while ($row = mysql_fetch_assoc($db_res)) {
+		$sizes['db'] = $row['bytes'];
+	}
+	
+	$du_output = shell_exec("du -sb " . getcwd() . "/upload/");
+	$splitted_output = preg_split("/[\s]+/", $du_output);
+	if (count($splitted_output) > 0) $sizes['fs'] = $splitted_output[0];
+	
+	$all_statistics['sizes'] = $sizes;
+}
+
 // print response
 echo "\r\n\r\n";
 echo json_encode($all_statistics);

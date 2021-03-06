@@ -404,7 +404,7 @@ class EventController extends ApplicationController {
                                 if (array_var($_POST, 'popup', false)) {
                                         // create default reminder
                                         $def = explode(",",user_config_option("reminders_events"));
-                                        $minutes = $def[1];
+                                        $minutes = $def[2] * $def[1];
                                         $reminder = new ObjectReminder();
                                         $reminder->setMinutesBefore($minutes);
                                         $reminder->setType($def[0]);
@@ -1005,7 +1005,7 @@ class EventController extends ApplicationController {
 					}
 				}
 				if (count($comp_data['users']) > 0) {
-					$comp_array[$comp['name']] = $comp_data;
+					$comp_array[] = $comp_data;
 				}
 			}
 		}

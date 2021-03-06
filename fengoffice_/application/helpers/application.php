@@ -884,7 +884,7 @@ function render_add_reminders_config() {
         $durations = array(0,1,2,5,10,15,30);
         $duration_types = array("1" => "minutes","60" => "hours","1440" => "days","10080" => "weeks");
 
-        $output .= '<select name="options[reminders_events][reminder_type]">';        
+        $output = '<select name="options[reminders_events][reminder_type]">';        
 	foreach ($typecsv as $type) {
                 $output .= '<option value="' . $type . '"';
 		if ($type == $defaults['type']) {

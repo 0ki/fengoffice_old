@@ -169,29 +169,31 @@
 		}
 		
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-		foreach($context as $selection){
-			$sel_dimension = $selection instanceof Dimension ? $selection : ($selection instanceof Member ? $selection->getDimension() : null);
-			if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
-			//$can_add = false;
-			if ($selection instanceof Member){
-				$membersInContext++;
-				if (can_add_to_member($user, $selection, $context, $object_type_id)){
-					//if ($no_required_dimensions) return true;
-					$dimension_id = $selection->getDimensionId();
-					$can_add = true;
-					$dimensions_in_context[$dimension_id]=true;
-				}else{
-					$notAllowedMember = $selection->getName();
-					return false;
+		if (is_array($context)) {
+			foreach($context as $selection){
+				$sel_dimension = $selection instanceof Dimension ? $selection : ($selection instanceof Member ? $selection->getDimension() : null);
+				if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
+				//$can_add = false;
+				if ($selection instanceof Member){
+					$membersInContext++;
+					if (can_add_to_member($user, $selection, $context, $object_type_id)){
+						//if ($no_required_dimensions) return true;
+						$dimension_id = $selection->getDimensionId();
+						$can_add = true;
+						$dimensions_in_context[$dimension_id]=true;
+					}else{
+						$notAllowedMember = $selection->getName();
+						return false;
+					}
 				}
-			}
-
-			// Revoke explicty permission
-			if ($can_add && !$no_required_dimensions){
-				foreach ($dimensions_in_context as $key=>$value){
-					$dim = Dimensions::getDimensionById($key);
-					if(!$value && $dim->getDefinesPermissions() && $dim->deniesAllForContact($contact_pg_ids)){
-						$can_add = false;
+	
+				// Revoke explicty permission
+				if ($can_add && !$no_required_dimensions){
+					foreach ($dimensions_in_context as $key=>$value){
+						$dim = Dimensions::getDimensionById($key);
+						if(!$value && $dim->getDefinesPermissions() && $dim->deniesAllForContact($contact_pg_ids)){
+							$can_add = false;
+						}
 					}
 				}
 			}

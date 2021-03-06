@@ -21,6 +21,7 @@
 	'search results' => 'Resultados de la búsqueda',
 	'account' => 'Cuenta',
 	'settings' => 'Configuraciones',
+	'specify password?' => 'Especificar password?',
 	'index' => 'Índice',
 	'view' => 'Ver',
 	'edit' => 'Editar',

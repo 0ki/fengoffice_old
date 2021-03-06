@@ -96,6 +96,8 @@
 
     'object reminders' => 'Reminders',
     'add object reminder' => 'Add reminder',
+    'reminder_popup' => 'Pop-up message',
+    'reminder_email' => 'E-mail',
 
     'create document' => 'Create Documents',
     'create presentation' => 'Create Presentations',
@@ -117,7 +119,7 @@
 //    'the file_revision' => 'the file revision{0}',
       
     'the message' => 'the note',
-    'the email' => 'the email',
+    'the mail' => 'the email',
     'the emailunclassified' => 'the email',
     'the contact' => 'the contact',
     'the company' => 'the company',

@@ -2115,7 +2115,12 @@ og.quickForm = function (config) {
 				var e = $("#"+config.elId) ;
 				if (d) {
 					$("#quick-form .form-container").html('').load(og.getUrl('member', 'quick_add_form',{dimension_id: config.dimensionId, parent_member_id: parent}),function(){
-						$(this).parent().css(e.offset()).slideDown();
+						$(this).parent().css(e.offset()).slideDown('normal', function(){
+							var bottom = $(this).css('bottom').replace('px', '');
+							if (bottom < 0) {
+								$(this).animate({"top" : "+="+bottom+"px"});
+							}
+						});
 						$("#member-name").focus();
 						return true ;
 					});
