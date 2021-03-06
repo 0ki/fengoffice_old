@@ -7,30 +7,52 @@ file=fengoffice_
 ext=.zip
 openapp=unzip
 
-git init
-git add init.sh
-git commit -m "initial magical version"
+[ ! -d ".git" ] && git init
 
-mkdir $file
+mkdir -p $file
 
-versionlist=$(curl "$listurl" | grep "<span class=\"name\">" | striptags | tr $'\n' , | tr -d "[:space:]")
+baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)_[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+versionlist1="$(echo "$baselist1" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
+
+
+baselist="$baselist1"
+versionlist="$versionlist1"
+
+preversionlist2=$(curl "$listurl" | grep "<span class=\"name\">" | striptags | sed -E 's/^\s+//g;s/\s+$//g' | tac)
+
+for v in $preversionlist2; do 
+ baselist_t="$(curl -s "https://sourceforge.net/projects/opengoo/rss?path=/fengoffice/$v" | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)_[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+ versionlist_t="$(echo "$baselist_t" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
+ baselist="$baselist $baselist_t"
+ versionlist="$versionlist $versionlist_t"
+ echo added "$versionlist_t" to list
+done
+
 echo Versions: $versionlist
 
+versionlist=($versionlist)
+baselist=($baselist)
+for i in "${!versionlist[@]}"; do
+    echo "${versionlist[i]}#${baselist[i]}"
+done > versions.list
 
-for version in $(echo "$versionlist" | tr , $'\n' |tac ); do 
+
+while IFS= read -r line; do
+ version="$(echo $line |cut -d \# -f 1)"
+ path="$(echo $line |cut -d \# -f 2-)"
  echo Downloading version $version
  mkdir -p versions/$version/
  mkdir -p versionfiles
- echo "$baseurl/$version/$version$ext?r=&ts=$(date +%s)&user_mirror=$mirror"
- curl -L -C- "$baseurl/$version/$version$ext?r=&ts=$(date +%s)&user_mirror=$mirror" -o versionfiles/$version$ext
+ curl -L -C- "$path" -o versionfiles/$version$ext
  unzip -o versionfiles/$version$ext -d versions/$version/
  od="$(ls -1 versions/$version/)"
- f=$(echo $od | wc -l )
+ f=$(echo "$od" | wc -l )
  if [ "$f" == "1" ]; then
-  mv -f versions/$version/$od/{.,}* versions/$version/
+  echo moving files up a step: $od
+  mv -f versions/$version/$od/{.,}[^.]* versions/$version/
   rmdir versions/$version/$od
  fi
- cp -af versions/$version/.* $file/
+ cp -af versions/$version/{.,}[^.]* $file/
  git add $file/
  git commit -m "$version"
-done
+done < versions.list
