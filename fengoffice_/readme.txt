@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2-rc2
+	About Feng Office 3.2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,12 @@
 	
 	Changelog
 	=========
+	
+	Since 3.2-rc2
+	----------------
+	bugfix:	ie fixes.
+	bugfix: custom properties description in forms is not aligned.
+	
 	
 	Since 3.2-rc
 	----------------

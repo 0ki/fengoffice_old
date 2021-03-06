@@ -864,7 +864,7 @@ og.eventManager = {
 		return id;
 	},
 	
-	removeListener: function(id) {	
+	removeListener: function(id) {
 		var ev = this.eventsById[id];
 		if (!ev) {
 			return;
@@ -875,25 +875,27 @@ og.eventManager = {
 			if ( (i) && this.events[i] ){
 				if (this.events[i].length) {
 					for ( var j in this.events[i] ) {
-						if( j=="remove" ) continue ;
-						//alert(j);
-						event = this.events[i][j];
-						if (event) {
-							if (event.id && event.id == id ) {
-								this.events[i][j] = null ;
-								this.events[i].splice(j,1);
-								if (this.events[i].length == 0) {
-									this.events[i] = null;
-									this.events.splice(i,1);
+						if( j=="remove" ) continue;
+						try {
+							event = this.events[i][j];
+							if (event) {
+								if (event.id && event.id == id ) {
+									this.events[i][j] = null ;
+									this.events[i].splice(j,1);
+									if (this.events[i].length == 0) {
+										this.events[i] = null;
+										this.events.splice(i,1);
+									}
+	
 								}
-
 							}
+						} catch (e) {
+							 if (!Ext.isIE) og.err(e.message);
 						}
 					}
 				}
 			}
-		}	
-		
+		}
 	},
 	
 	fireEvent: function(event, arguments) {
@@ -907,7 +909,9 @@ og.eventManager = {
 			}
 			var ret = "";
 			try {
-				ret = list[i].callback.call(list[i].scope, arguments, list[i].id);
+				if (list[i] && list[i].callback && typeof(list[i].callback) == 'function') {
+					ret = list[i].callback.call(list[i].scope, arguments, list[i].id);
+				}
 			} catch (e) {
 				og.err(e.message);
 			}

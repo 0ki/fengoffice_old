@@ -97,3 +97,11 @@ ul.x-tab-strip li:hover {
 .big-checkbox label, .big-checkbox label:after {
 	display:none;
 }
+
+#header .header-content-right .gen-search{
+	top: 20%!important; 	
+}
+
+.options_menu .gen-search {
+	width: 60%;
+}

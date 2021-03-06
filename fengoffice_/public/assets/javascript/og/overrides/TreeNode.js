@@ -188,6 +188,7 @@ Ext.override(Ext.tree.TreeNode,{
     
     ensureVisible : function(callback){
         var tree = this.getOwnerTree();
+        if (!tree || !this.parentNode) return;
         tree.expandPath(this.parentNode.getPath(), false, function(){
             var node = tree.getNodeById(this.id);
             if (node && node.ui) {

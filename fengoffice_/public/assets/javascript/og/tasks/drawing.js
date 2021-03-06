@@ -1194,8 +1194,8 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	
 	var action_trigger = "focus";
-	var is_safari = navigator.userAgent.indexOf("Safari") > -1;
-	var is_safari_vendor = navigator.vendor.indexOf("Apple") > -1;
+	var is_safari = navigator.userAgent ? navigator.userAgent.indexOf("Safari") > -1 : false;
+	var is_safari_vendor = navigator.vendor ? navigator.vendor.indexOf("Apple") > -1 : false;
 	if(is_safari && is_safari_vendor){
 		action_trigger = "click";
 	}

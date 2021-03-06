@@ -5983,7 +5983,7 @@ function root( elem, cur ) {
 }
 
 function cloneCopyEvent( src, dest ) {
-
+	if (!dest) return;
 	if ( dest.nodeType !== 1 || !jQuery.hasData( src ) ) {
 		return;
 	}

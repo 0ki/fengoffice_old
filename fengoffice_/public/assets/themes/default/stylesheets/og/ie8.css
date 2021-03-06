@@ -19,7 +19,11 @@
 
 div.user-box-actions {
 	width: 252px;
-	float: left ; 
+	float: left;
+	filter: none !important;
+}
+div.user-box-actions img {
+	filter: none !important;
 }
 
 input[type=checkbox], input[type=radio], input[type=radio]:hover {
@@ -88,4 +92,14 @@ ul.x-tab-strip li:hover {
 	border-bottom-width: 2px!important;
 }
 
+.search-selector .search-input-div input {
+	width: 60%;
+}
 
+.dimension-selector-container label {
+	width: 200px;
+} 
+
+.task-action-icon {
+	filter: none !important;
+}

@@ -231,6 +231,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				render_member_selectors($task->manager()->getObjectTypeId(), $genid, array_var($task_data, 'selected_members_ids', $task->getMemberIds()), array('listeners' => $listeners), null, null, false);
 			}
 		?>
+		<div class="clear"></div>
 		</div>
 		
 		<?php if (config_option('use_milestones')) : ?>
