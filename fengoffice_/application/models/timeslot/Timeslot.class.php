@@ -426,7 +426,7 @@ class Timeslot extends BaseTimeslot {
 		return $this->getViewUrl();
 	} // getObjectUrl
 
-	function getArrayInfo(){
+	function getArrayInfo($return_billing = false) {
 		$task_name = '';
 		$project_id = 0;
 		
@@ -461,6 +461,10 @@ class Timeslot extends BaseTimeslot {
 			'lastupdated' => $lastUpdated,
 			'lastupdatedby' => $lastUpdatedBy
 		);
+		if ($return_billing) {
+			$result['hourlybilling'] = $this->getHourlyBilling();
+			$result['totalbilling'] = $this->getFixedBilling();
+		}
 		
 		if ($this->getDescription() != '')
 			$result['desc'] = $this->getDescription();

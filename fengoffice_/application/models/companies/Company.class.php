@@ -121,6 +121,13 @@ class Company extends BaseCompany {
 		return Companies::getCompanyClients($this);
 	} // getClientCompanies
 
+	function trash($trashDate = null) {
+		if ($this->isOwner()) {
+			throw new Exception(lang("owner company cannot be deleted"));
+		}
+		parent::trash($trashDate);
+	}
+	
 	/**
 	 * Return number of client companies
 	 *

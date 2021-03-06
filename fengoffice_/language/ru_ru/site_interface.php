@@ -225,6 +225,13 @@ http://code.google.com/p/opengooru/
 	'contacts import fail help' => 'Процесс импорта потерпел неудачу из-за существующих данных в базе данных, таких как имя или адрес электронной почты и т.д.',
 	'import fail reason' => 'Причина ошибки',
 	'select a file in order to load its data' => 'Выберите  csv файл для импорта его содержимого',
+
+ 
+	'import contacts from vcard' => 'Импорт контактов из файла VCard',
+	'select a vcard file to load its data' => 'Выберите VCard файл (.vcf) для начала импорта.',
+	'you can tag the contacts before running the import' => 'Вы можете пометить контакты до запуска импорта.',
+	'you must select the contacts from the grid' => 'Вы должны выбрать контакты, которые нужно экспортировать.',
+	'vcard successfully created' => 'VCard успешно создан, {0} контакт(ов) экспортирован(о).',
 	
   // Contact export
 	'export contacts to csv' => 'Экспорт контактов в .csv файл',
@@ -298,6 +305,8 @@ http://code.google.com/p/opengooru/
   'mail add contacts' => 'Добавить новый контакт',
   'no contacts to add' => 'Нет контакта для добавления.',
   'linked attachments' => 'Связанные вложения',	
+  'conversation x mails' => 'Переписка ({0} адресов/сообщений)',
+  'show quoted text' => 'Показать цитируемый текст',
 
   // Checkout
 	'checkout file' => 'Заблокировать',
@@ -495,6 +504,26 @@ http://code.google.com/p/opengooru/
 	'mobile' => 'Мобильный',
 	'pager' => 'Пейджер',
 	
+  'hphone title' => 'Телефон',
+  'wphone title' => 'Телефон',
+  'ophone title' => 'Телефон',
+
+  'hphone' => 'Телефон',
+  'hphone 2' => 'Телефон 2',
+  'hfax' => 'Факс',
+  'hmobile' => 'Мобильный',
+  'hpager' => 'Пейджер',
+
+  'wphone' => 'Телефон',
+  'wphone 2' => 'Телефон 2',
+  'wfax' => 'Факс',
+  'wassistant' => 'Помощник',
+  'wcallback' => 'Обратный звонок',
+
+  'ophone' => 'Телефон',
+  'ophone 2' => 'Телефон 2',
+  'ofax' => 'Факс',	
+  
 	'roles' => 'Роли',
 	'last updated by on' => '{0}, на {1}',
 	'updated' => 'Обновлено',
@@ -524,7 +553,7 @@ http://code.google.com/p/opengooru/
 	'timeslots' => 'Затраченное время',
 	
 	'task timeslots' => 'Затраченное время на задачу',
-	'time timeslots' => 'Общее затраченное время',
+	'time timeslots' => 'Затраченное время на проект',
 	'all timeslots' => 'Общее затраченное время',
 	
 	'print report' => 'Печать отчёта',
@@ -630,4 +659,33 @@ http://code.google.com/p/opengooru/
   
   'wiki help link' => 'http://code.google.com/p/opengooru/wiki/Home',
   'last language' => 'Последний',
-); ?>
+  
+  'reset password expired' => 'Запрос на сброс пароля истек. Пожалуйста получите новый, нажав на кнопку "{0}"',
+  'invalid parameters' => 'Неверные параметры',
+  'reset password' => 'Сброс пароля',
+  'reset password form desc' => '<b>{0}</b>, введите ваш новый пароль дважды:',
+  'success reset password' => 'Ваш новый пароль сохранен',
+
+  'auto detect user timezone' => 'Автоматическое определение часового пояса пользователя из браузера',
+  'confirm discard email' => 'Вы уверены, что хотите отказаться от этого письма?',
+  'download email' => 'Скачать email',
+  'instantiate' => 'Подтвердить',
+  'template parameters' => 'Параметры шаблона',
+  'add image' => 'Добавить изображение',
+  'update image' => 'Обновить изображение',
+
+  'can_edit_company_data description' => 'Если данное разрешение отмечено, то пользователь сможет редактировать данные владельца компании.',
+  'can_manage_security description' => 'Если данное разрешение отмечено, то пользователь сможет изменять и удалять пользователей и группы, а также их разрешения.',
+  'can_manage_workspaces description' => 'Если данное разрешение отмечено, то пользователь сможет создавать, изменять и удалять проекты.',
+  'can_manage_configuration description' => 'Если данное разрешение отмечено, то пользователь сможет изменять настройки приложения, конфигурацию, пользовательские параметры, запланированные задания системы (cron).',
+  'can_manage_contacts description' => 'Если данное разрешение отмечено, то пользователь сможет создавать, изменять, удалять и просматривать все контакты в системе.',
+  'can_manage_templates description' => 'Если данное разрешение отмечено, то пользователь сможет создавать, изменять и удалять шаблоны.',
+  'can_manage_reports description' => 'Если данное разрешение отмечено, то пользователь сможет создавать, изменять и удалять пользовательские отчеты.',
+  'can_manage_time description' => 'Если данное разрешение отмечено, то пользователь сможет управлять модулем Время и добавлять временные интервалы задачам.',
+  'can_add_mail_accounts description' => 'Если данное разрешение отмечено, то пользователь сможет создавать новые учетные записи электронной почты.',
+
+  'archived by' => 'Архивировал',
+  
+); 
+
+?>

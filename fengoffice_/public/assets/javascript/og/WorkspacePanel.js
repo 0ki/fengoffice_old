@@ -237,9 +237,11 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			if (node.isSelected()) {
 				this.workspaces.select();
 			}
-			Ext.fly(node.ui.elNode).ghost('l', {
-				callback: node.remove, scope: node, duration: .4
-			});
+			if (node.ui && node.ui.elNode) {
+				Ext.fly(node.ui.elNode).ghost('l', {
+					callback: node.remove, scope: node, duration: .4
+				});
+			}
 		}
 	},
 	

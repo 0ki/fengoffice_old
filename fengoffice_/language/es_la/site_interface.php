@@ -556,4 +556,5 @@
 	'can_manage_time description' => 'Si este permiso está marcado el usuario podrá usar el módulo de Tiempo y agregar tiempos de trabajo a tareas.',
 	'can_add_mail_accounts description' => 'Si este permiso está marcado el usuario podrá crear nuevas cuentas de Correo.',
 	'archived by' => 'Archivado por',
+	'hidden quoted text' => 'Texto citado oculto',
 ); ?>

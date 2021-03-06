@@ -188,6 +188,26 @@ return array(
 	'mail attachments' => 'Вложения',
 	'select attachment' => 'Выбрать и загрузить вложение',
 	'attach from workspace' => 'Выбрать вложение из проекта',
+    'attach from file system' => 'Выбрать вложение на копьютере',
+
+	'subscribed notification task' => 'Подписка на задачу \'{0}\'',
+	'subscribed notification task desc' => 'Вы были подписаны на задачу \'{0}\' ({1}).',
+	'subscribed notification event' => 'Подписка на событие \'{0}\'',
+	'subscribed notification event desc' => 'Вы были подписаны на событие \'{0}\' ({1}).',
+	'subscribed notification company' => 'Подписка на компанию \'{0}\'',
+	'subscribed notification company desc' => 'Вы были подписаны на компанию \'{0}\' ({1}).',
+	'subscribed notification contact' => 'Подписка на контакт \'{0}\'',
+	'subscribed notification contact desc' => 'Вы были подписаны на контакт \'{0}\' ({1}).',
+	'subscribed notification message' => 'Подписка на заметку \'{0}\'',
+	'subscribed notification message desc' => 'Вы были подписаны на заметку \'{0}\' ({1}).',
+	'subscribed notification file' => 'Подписка на файл \'{0}\'',
+	'subscribed notification file desc' => 'Вы были подписаны на файл \'{0}\' ({1}).',
+	'subscribed notification webpage' => 'Подписка на Веб-ссылку \'{0}\'',
+	'subscribed notification webpage desc' => 'Вы били подписаны на Веб-ссылку \'{0}\' ({1}).',
+	'subscribed notification milestone' => 'Подписка на этап \'{0}\'',
+	'subscribed notification milestone desc' => 'Вы были подписаны на этап \'{0}\' ({1}).',
+	'subscribed notification email' => 'Подписка на Email \'{0}\'',
+	'subscribed notification email desc' => 'Вы были подписаны на Email \'{0}\' ({1}).',
     
 	); // array
 

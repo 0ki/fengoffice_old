@@ -1054,7 +1054,7 @@ class ObjectController extends ApplicationController {
 			if ($filterName!=''){
 				$fn = " AND title LIKE '%". $filterName ."%'";
 			}
-			$completed = $trashed? '': 'AND `completed_by_id` = 0';
+			$completed = $trashed? '': 'AND `completed_on` = ' . DB::escape(EMPTY_DATETIME);
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectTasks")
 			$res['Tasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, $order_crit_tasks AS `order_value` FROM `" .
@@ -1142,7 +1142,7 @@ class ObjectController extends ApplicationController {
 		if ($archived) {
 			if ($filterManager == '' || $filterManager == "Projects")
 			$res['Projects'] = "SELECT  'Projects' AS `object_manager_value`, `id` AS `oid`, $order_crit_workspaces AS `order_value` FROM `" .
-			TABLE_PREFIX . "projects` `co` WHERE `completed_by_id` <> 0 AND `id` IN (".logged_user()->getWorkspacesQuery().")";
+			TABLE_PREFIX . "projects` `co` WHERE `completed_on` <> ".DB::escape(EMPTY_DATETIME)." AND `id` IN (".logged_user()->getWorkspacesQuery().")";
 		}
 		
 		if($count){

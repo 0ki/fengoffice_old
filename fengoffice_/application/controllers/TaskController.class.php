@@ -563,10 +563,10 @@ class TaskController extends ApplicationController {
 		$task_status_condition = "";
 		switch($status){
 			case 0: // Incomplete tasks
-				$task_status_condition = " AND `completed_by_id` = 0 ";
+				$task_status_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
 				break;
 			case 1: // Complete tasks
-				$task_status_condition = " AND `completed_by_id` > 0 ";
+				$task_status_condition = " AND `completed_on` > " . DB::escape(EMPTY_DATETIME);
 				break;
 			case 2: // All tasks
 				break;

@@ -175,8 +175,7 @@ class Contact extends BaseContact {
 	 */
 	function getDisplayName() {
 		$mn = "";
-		if (parent::getMiddlename() != "")
-		$mn = " " . parent::getMiddlename();
+		if (parent::getMiddlename() != "") $mn = " " . parent::getMiddlename();
 		$display = parent::getFirstName(). $mn ." ".parent::getLastName();
 		return trim($display);
 	} // getDisplayName

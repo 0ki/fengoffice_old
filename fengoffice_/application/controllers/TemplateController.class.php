@@ -374,12 +374,7 @@ class TemplateController extends ApplicationController {
 			$tags = implode(',', $object->getTagNames());
 			$copy->setTagsFromCSV($tags . "," . array_var($_POST, 'tags'));
 			// copy linked objects
-			$linked_objects = $object->getAllLinkedObjects();
-			if (is_array($linked_objects)) {
-				foreach ($linked_objects as $lo) {
-					$copy->linkObject($lo);
-				}
-			}
+			$copy->copyLinkedObjectsFrom($object);
 			// copy subtasks if applicable
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);

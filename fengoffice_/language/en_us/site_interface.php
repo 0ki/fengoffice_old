@@ -690,6 +690,7 @@ return array(
   'can_add_mail_accounts description' => 'If this permission is checked the user will be able to create new Email accounts',
 
   'archived by' => 'Archived by',
+  'hidden quoted text' => 'Hidden quoted text',
 ); // array
 
 ?>

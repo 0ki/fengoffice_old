@@ -935,6 +935,7 @@ class EventController extends ApplicationController {
 	}
 	
 	function icalendar_import() {
+		@set_time_limit(0);
 		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['history_back']);
 		if (isset($_SESSION['history_back'])) {
 			if ($_SESSION['history_back'] > 0) $_SESSION['history_back'] = $_SESSION['history_back'] - 1;
@@ -952,32 +953,35 @@ class EventController extends ApplicationController {
 				
 				$events_data = CalFormatUtilities::decode_ical_file($filename);
 				if (count($events_data)) {
-					DB::beginWork();		
-					foreach ($events_data as $ev_data) {
-						$event = new ProjectEvent();
-				 		$project = active_or_personal_project();
-						if ($ev_data['subject'] == '') $ev_data['subject'] = lang('no subject');
-			
-					    $event->setFromAttributes($ev_data);
-					    
-					    $event->save();
-					    $event->addToWorkspace($project);
-					    $object_controller = new ObjectController();
-					    $object_controller->add_subscribers($event);
-					    ApplicationLogs::createLog($event, null, ApplicationLogs::ACTION_ADD);
-					    
-					    $this->registerInvitations($ev_data, $event);
-						if (isset($ev_data['confirmAttendance'])) {
-							if ($event->getCreatedBy() instanceof User)
-			            		$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
-			            }
+					try {
+						DB::beginWork();		
+						foreach ($events_data as $ev_data) {
+							$event = new ProjectEvent();
+					 		$project = active_or_personal_project();
+							if ($ev_data['subject'] == '') $ev_data['subject'] = lang('no subject');
+				
+						    $event->setFromAttributes($ev_data);
+						    
+						    $event->save();
+						    $event->addToWorkspace($project);
+						    $object_controller = new ObjectController();
+						    $object_controller->add_subscribers($event);
+						    ApplicationLogs::createLog($event, null, ApplicationLogs::ACTION_ADD);
+						    
+						    $this->registerInvitations($ev_data, $event);
+							if (isset($ev_data['confirmAttendance'])) {
+								if ($event->getCreatedBy() instanceof User)
+				            		$this->change_invitation_state($ev_data['confirmAttendance'], $event->getId(), $event->getCreatedBy()->getId());
+				            }
+						}
+						DB::commit();
+						$ok = true;
+						flash_success(lang('success import events', count($events_data)));
+						$_SESSION['history_back'] = 1;
+					} catch (Exception $e) {
+						DB::rollback();
+						flash_error($e->getMessage());
 					}
-					DB::commit();
-					
-					$ok = true;
-					flash_success(lang('success import events', count($events_data)));
-					$_SESSION['history_back'] = 1;
-					
 				} else {
 					flash_error(lang('no events to import'));
 				}
@@ -1198,7 +1202,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.104.2.1 2009/11/13 21:56:38 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.104.2.2 2009/12/01 21:02:15 idesoto Exp $
  *
  ***************************************************************************/
 

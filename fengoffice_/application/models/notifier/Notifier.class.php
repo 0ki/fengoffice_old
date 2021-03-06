@@ -228,14 +228,14 @@ class Notifier {
 		tpl_assign('new_account', $user);
 		tpl_assign('raw_password', $raw_password);
 
-		if (! $user->getCreatedBy() instanceof User) return;
+		$sender = $user->getCreatedBy() instanceof User ? $user->getCreatedBy() : owner_company()->getCreatedBy();
 		
 		$locale = $user->getLocale();
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
 		
 		self::queueEmail(
 			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-			self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $user->getCreatedByDisplayName()),
+			self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName()),
 			lang('your account created'),
 			tpl_fetch(get_template_path('new_account', 'notifier'))
 		); // send

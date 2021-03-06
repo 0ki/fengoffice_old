@@ -39,7 +39,13 @@ Hook::register("opengoo");
  *   			Text to be displayed on the crumb.
  *   		- target
  *   			Panel where the link will be opened (or _blank for new page).
- *   
+ * 
+ * - email_base_css: Called to allow altering email styling when composing an email. Append
+ *   CSS rules to the $css argument to alter how email is displayed and sent on HTML emails.
+ *   For example, to change font size and color: $css .= 'font-size: 12px; color: red';
+ *  	- $ignored,
+ *  	- &$css : CSS string to apply to the email's body. 
+ * 
  * - autoload_javascripts: Tells which javascripts should be load when the application starts.
  *  	- $ignored,
  *  	- &$js : array of javascript urls to load. Add to this array.

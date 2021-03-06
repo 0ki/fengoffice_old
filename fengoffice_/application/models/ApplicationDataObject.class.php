@@ -557,6 +557,15 @@ abstract class ApplicationDataObject extends DataObject {
 		}
 	} // getLinkedObjects
 	
+	function copyLinkedObjectsFrom($object) {
+		$linked_objects = $object->getAllLinkedObjects();
+		if (is_array($linked_objects)) {
+			foreach ($linked_objects as $lo) {
+				$this->linkObject($lo);
+			}
+		}
+	}
+	
 	/**
 	 * Drop all relations with linked objects for this object
 	 *

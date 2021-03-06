@@ -178,4 +178,8 @@ return array(
   	'cant modify subscribers' => 'Неудалось изменить подписчиков',
   	'this object must belong to a ws to modify its subscribers' => 'Этот объект должен принадлежать проекту, чтобы изменить его подписчиков.',
 
-); ?>
+  	'mailAccount dnx' => 'Учетной записи электронной почты не существует',
+  	'error add contact from user' => 'Не удалось добавить контакт с пользователем.',
+
+	); 
+?>

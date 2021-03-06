@@ -17,7 +17,7 @@
 	$c++;
 	?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'noDispLM':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-	<td class="db-ico ico-milestone"></td>
+	<td><div class="db-ico ico-milestone">&nbsp;</div></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php $dws = $milestone->getWorkspaces(logged_user()->getWorkspacesQuery());
 		$projectLinks = array();
@@ -65,7 +65,7 @@
 	foreach($late_tasks as $task) { 
 	$c++;
 	?>
-    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ; echo ' ' . ($c > 5? 'noDispLT':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td class="db-ico ico-task"></td>
+    <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ; echo ' ' . ($c > 5? 'noDispLT':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td><div class="db-ico ico-task"></div></td>
     
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
@@ -125,7 +125,7 @@
 	foreach($today_milestones as $milestone) { 
 	$c++;?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'noDispToday':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-    <td class="db-ico ico-milestone"></td>
+    <td><div class="db-ico ico-milestone"></div></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
 		$dws = $milestone->getWorkspaces(logged_user()->getWorkspacesQuery());
@@ -172,7 +172,7 @@
 	$c++;?>
 	
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ; echo ' ' . ($c > 5? 'noDispTodayT':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-    <td class="db-ico ico-task"></td>
+    <td><div class="db-ico ico-task"></div></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
 		$dws = $task->getWorkspaces(logged_user()->getWorkspacesQuery());

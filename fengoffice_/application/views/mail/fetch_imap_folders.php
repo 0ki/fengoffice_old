@@ -1,4 +1,4 @@
-<?php if (!is_array($imap_folders)) $imap_folders = array(); ?>
+<?php if (!isset($imap_folders) || !is_array($imap_folders)) $imap_folders = array(); ?>
 <?php $base_tabindex = 71 ?>
 <table style="min-width: 400px; margin-top: 10px;">
 	<tr>

@@ -394,6 +394,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 			$new->save();
 			$new->setProject($milestoneTo->getProject());
 			$new->copyCustomPropertiesFrom($sub);
+			$new->copyLinkedObjectsFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
 		}

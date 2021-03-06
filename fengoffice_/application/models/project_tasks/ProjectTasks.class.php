@@ -528,6 +528,7 @@ class ProjectTasks extends BaseProjectTasks {
 			$new->save();
 			$new->setProject($taskTo->getProject());
 			$new->copyCustomPropertiesFrom($sub);
+			$new->copyLinkedObjectsFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
 		}

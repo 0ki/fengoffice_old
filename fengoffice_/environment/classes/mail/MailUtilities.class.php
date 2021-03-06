@@ -191,18 +191,18 @@ class MailUtilities {
 			if ($enc_conv->hasError()) {
 				$utf8_from = utf8_encode($from_name);
 			}
-			$utf8_from = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_from);
+			$utf8_from = utf8_safe($utf8_from);
 			$mail->setFromName($utf8_from);
 			
 			$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $parsedMail['Subject']);
 			if ($enc_conv->hasError()) {
 				$utf8_subject = utf8_encode($parsedMail['Subject']);
 			}
-			$utf8_subject = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_subject);
+			$utf8_subject = utf8_safe($utf8_subject);
 			$mail->setSubject($utf8_subject);
 		} else {
 			$mail->setFromName($from_name);
-			$utf8_subject = @iconv("UTF-8", "UTF-8//IGNORE", $parsedMail['Subject']);
+			$utf8_subject = utf8_safe($parsedMail['Subject']);
 			$mail->setSubject($utf8_subject);
 		}
 		$mail->setTo($to_addresses);
@@ -232,19 +232,19 @@ class MailUtilities {
 			case 'html':
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
-				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
+				$utf8_body = utf8_safe($utf8_body);
 				$mail->setBodyHtml($utf8_body);
 				break;
 			case 'text': 
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
-				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
+				$utf8_body = utf8_safe($utf8_body);
 				$mail->setBodyPlain($utf8_body);
 				break;
 			case 'delivery-status': 
 				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Response', ''));
 				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Response', ''));
-				$utf8_body = @iconv("UTF-8", "UTF-8//IGNORE", $utf8_body);
+				$utf8_body = utf8_safe($utf8_body);
 				$mail->setBodyPlain($utf8_body);
 				break;
 			default: break;
@@ -262,7 +262,7 @@ class MailUtilities {
 					// remove html comments
 					$body = preg_replace('/<!--.*-->/i', '', $body);
 				}
-				$body = @iconv("UTF-8", "UTF-8//IGNORE", $body);
+				$body = utf8_safe($body);
 				if ($alt['Type'] == 'html') {
 					$mail->setBodyHtml($body);
 				} else if ($alt['Type'] == 'text') {
@@ -818,46 +818,41 @@ class MailUtilities {
 		return $this->saveContentToFilesystem("UID".rand(), $content);
 	}
 	
-	public function removeQuotedText($text) {
-		//TODO: remove lines starting with '>'
+	public function replaceQuotedText($text, $replacement = "") {
 		$lines = explode("\n", $text);
-		$result = array('unquoted' => '', 'quoted' => '');
+		$text = "";
+		$quoted = false;
 		foreach ($lines as $line) {
 			if (!str_starts_with($line, ">")) {
-				$result['unquoted'] .= $line . "\n";
+				if ($quoted) $text .= $replacement . "\n";
+				$quoted = false;
+				$text .= $line . "\n";
 			} else {
-				$result['quoted'] .= $line . "\n";
+				$quoted = true;
 			}
 		}
-		return $result;
+		return $text;
 	}
 	
-	public function removeQuotedBlocks($html) {
-		$result = array();
-		
+	public function hasQuotedText($text) {
+		return strpos($text, "\n>") === false ? false : true;
+	}
+	
+	public function replaceQuotedBlocks($html, $replacement = "") {
 		$start = stripos($html, "<blockquote");
-		if ($start !== FALSE) {
-			$end = strripos($html, "</blockquote>");
-			if ($end === FALSE) $end = $start;
+		while ($start !== false) {
+			$end = stripos($html, "</blockquote>", $start);
+			if ($end === false) $end = strlen($html);
 			else $end += strlen("</blockquote>");
-			
-			$result['quoted'] = substr($html, $start, $end - $start);
-			$result['unquoted'] = substr($html, 0, $start) . substr($html, $end);
-		} else {
-			$result['unquoted'] = $html;
+			$html = substr($html, 0, $start) . $replacement . substr($html, $end);
+			$start = stripos($html, "<blockquote");
 		}
-		
-		return $result;
+		return $html;
 	}
 	
-	public function getUnquotedInfo($mail) {
-		if (!$mail instanceof MailContent ) return '';
-		if ($mail->getBodyHtml() != '') {
-			$res = self::removeQuotedBlocks($mail->getBodyHtml());
-		} else {
-			$res = self::removeQuotedText($mail->getBodyPlain());
-		}
-		return array_var($res, 'unquoted', '');
+	public function hasQuotedBlocks($html) {
+		return stripos($html, "<blockquote") !== false;
 	}
+	
 }
 ?>

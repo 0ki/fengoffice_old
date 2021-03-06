@@ -26,7 +26,7 @@ if (isset($message) && $message instanceof ProjectMessage) {
 		$content = escape_html_whitespace(convert_to_links(clean($message->getText())));
 		if(trim($message->getAdditionalText())) {
     		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div>' 
-    			. escape_html_whitespace(clean($message->getAdditionalText()));
+    			. escape_html_whitespace(convert_to_links(clean($message->getAdditionalText())));
 		}
 		
 		tpl_assign("content", $content);

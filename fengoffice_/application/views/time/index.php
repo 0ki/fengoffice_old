@@ -3,15 +3,18 @@
 	require_javascript('og/time/main.js');
 	require_javascript('og/time/drawing.js');
 
+	$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
 	$genid = gen_id();
 	$tasks_array = array();
 	$timeslots_array = array();
+	$users_array = array();
+	$companies_array = array();
 	if (isset($tasks))
 		foreach($tasks as $task)
 			$tasks_array[] = $task->getArrayInfo();
 	if (isset($timeslots))
 		foreach($timeslots as $timeslot)
-			$timeslots_array[] = $timeslot->getArrayInfo();
+			$timeslots_array[] = $timeslot->getArrayInfo($show_billing);
 	if (isset($users))
 		foreach($users as $user)
 			$users_array[] = $user->getArrayInfo();
@@ -28,10 +31,10 @@
 
 <div id="timePanel" class="ogContentPanel" style="background-color:#F0F0F0;height:100%;">
 <div style="padding:7px;max-width:929px;">
-<input type="hidden" id="<?php echo $genid ?>hfTasks" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($tasks_array)))) ?>"/>
-<input type="hidden" id="<?php echo $genid ?>hfTimeslots" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($timeslots_array)))) ?>"/>
-<input type="hidden" id="<?php echo $genid ?>hfUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
-<input type="hidden" id="<?php echo $genid ?>hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfTasks" value="<?php echo clean(json_encode($tasks_array)) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfTimeslots" value="<?php echo clean(json_encode($timeslots_array)) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfUsers" value="<?php echo clean(json_encode($users_array)) ?>"/>
+<input type="hidden" id="<?php echo $genid ?>hfCompanies" value="<?php echo clean(json_encode($companies_array)) ?>"/>
 
 <table style="width:100%;max-width:924px">
 	<col width=12/><col /><col width=12/><tr>
@@ -78,59 +81,73 @@
 				<?php echo lang('time timeslots') ?>
 			</td>
 			<td align="right" style="font-size:80%;font-weight:normal">
-				<a href="<?php echo get_url("reporting",'total_task_times_p', array('type' => '1')) ?>" class="internalLink coViewAction ico-print" style="color:white;font-weight:bold"><?php echo lang('print report') ?></a>
+				<a href="<?php echo get_url("reporting",'total_task_times_p', array('type' => '1', 'ws' => active_project() instanceof Project ? active_project()->getId() : 0)) ?>" class="internalLink coViewAction ico-print" style="color:white;font-weight:bold"><?php echo lang('print report') ?></a>
 			</td>
 		</tr></table>
 		</div>
 	</div>
+	<script type="text/javascript">
+	//submit the form when the user press enter
+	og.checkEnterPress = function (e,genid)
+	{
+		var characterCode;
+		if(e && e.which){
+			characterCode = e.which;
+		}
+		else{
+			e = event;
+			characterCode = e.keyCode;
+		}
+		if(characterCode == 13){
+			ogTimeManager.SubmitNewTimeslot(genid);
+			return false;
+		}
+	}
+	</script>
 	<div id="<?php echo $genid ?>TMTimespanAddNew" class="TMTimespanAddNew">
 		<input type="hidden" id="<?php echo $genid ?>tsId" name="timeslot[id]" value=""/>
 		<div style="padding:7px;">
 		<table style="width:100%;"><tr>
-			<td style="padding-right: 10px; width:140px;">
+			<td style="padding-right: 10px; width:140px;vertical-align:bottom">
 				<?php echo label_tag(lang('date')) ?>
+			</td>
+			<td style="padding-right:10px; width:140px;vertical-align:bottom">
+				<?php echo label_tag(lang('workspace')); ?>
+			</td>
+			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;vertical-align:bottom">
+				<?php echo label_tag(lang('user')) ?>
+			</td><?php } else { ?><td style="padding-right: 10px;">				
+			</td><?php } ?>
+			<td style="padding-right: 10px; width:140px;vertical-align:bottom">
+				<?php echo label_tag(lang('time')) ?>
+			</td>
+			<td style="padding-right: 10px; width:95%; margin-top: 0px;vertical-align:bottom">
+				<?php echo label_tag(lang('description')) ?>
+			</td>
+			<td style="padding-left: 10px;text-align:right; vertical-align: middle;">
+			</td>
+		</tr><tr>
+			<td style="padding-right: 10px; width:140px;">
 				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 100, false) ?>
 			</td>
 			<td style="padding-right:10px; width:140px;">
-				<?php echo label_tag(lang('workspace'));
-				 echo select_project2('timeslot[project_id]', active_or_personal_project()->getId(), $genid); ?>
+				 <?php echo select_project2('timeslot[project_id]', active_or_personal_project()->getId(), $genid); ?>
 			</td>
 			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;">
-				<?php echo label_tag(lang('user')) ?>
 				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(), array('id' => $genid . 'tsUser', 'tabindex' => '150')) ?>
-			</td><?php } else { ?><td style="padding-right: 10px">
-						<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>				
+			</td><?php } else { ?><td style="padding-right: 10px">	
+				<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>
 			</td><?php } ?>
 			<td style="padding-right: 10px; width:140px;">
-			<script type="text/javascript">
-			//submit the form when the user press enter
-			og.checkEnterPress = function (e,genid)
-			{
-				var characterCode;
-				if(e && e.which){
-					characterCode = e.which;
-				}
-				else{
-					e = event;
-					characterCode = e.keyCode;
-				}
-				if(characterCode == 13){
-					ogTimeManager.SubmitNewTimeslot(genid);
-					return false;
-				}
-			}
-			</script>
-				<?php echo label_tag(lang('time')) ?>
 				<?php echo text_field('timeslot[hours]', 0, 
 		    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
 		    		<br/><span class="desc" style="font-style:normal;font-size:80%">(<?php echo lang('hours') ?>)</span>
 			</td>
 			<td style="padding-right: 10px; width:95%; margin-top: 0px;">
-				<?php echo label_tag(lang('description')) ?>
 				<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '250', 'id' => $genid . 'tsDesc')) ?>
 			</td>
-			<td style="padding-left: 10px;text-align:right; vertical-align: middle;">
-				<br/><div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
+			<td style="padding-left: 10px;text-align:right; vertical-align: top">
+				<div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
 				<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
 					<?php echo submit_button(lang('update'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
 						'tabindex' => '310', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
@@ -166,6 +183,9 @@
 				<td width='15%'><b><?php echo lang('user') ?></b></td>
 				<td width='150px'><b><?php echo lang('last updated by') ?></b></td>
 				<td width='60px'><b><?php echo lang('time') ?></b></td>
+				<?php if ($show_billing) { ?>
+					<td width="100px"><b><?php echo lang('billing') ?></b></td>
+				<?php } ?>
 				<td><b><?php echo lang('description') ?></b></td>
 				<td></td>
 			</tr>

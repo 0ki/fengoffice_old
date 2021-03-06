@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-rc
+ * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6-rc');
+		$this->setVersionTo('1.6');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -128,6 +128,12 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 					INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 						('mails panel', 'hide_quoted_text_in_emails', '1', 'BoolConfigHandler', 0, 110, NULL)
 		 			ON DUPLICATE KEY UPDATE id=id;
+				";
+			}
+			if (version_compare($installed_version, "1.6") < 0) {
+				$upgrade_script .= "
+		 			ALTER TABLE `".TABLE_PREFIX."mail_contents`
+		 			  ADD INDEX `state` (`state`);
 				";
 			}
 		}

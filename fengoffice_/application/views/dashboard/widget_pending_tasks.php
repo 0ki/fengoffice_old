@@ -20,7 +20,7 @@ foreach ($dashtasks as $task){
 	$text = clean($text);
 	?>
 		<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-		<td class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></td>
+		<td><div class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></div></td>
 		<td style="padding-left:5px;padding-bottom:2px">
 	<?php 
 	$dws = $task->getWorkspaces(logged_user()->getWorkspacesQuery());

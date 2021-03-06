@@ -272,7 +272,7 @@ while (!feof($fp))
 				$data = str_replace('Z', '', $data);
 				
 				// TIME LIMITED EVENT
-				peg_match('/([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{0,2})([0-9]{0,2})([0-9]{0,2})/', $data, $date);
+				preg_match('/([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{0,2})([0-9]{0,2})([0-9]{0,2})/', $data, $date);
 					
 				// UNIX timestamps can't deal with pre 1970 dates
 				if ($date[1] <= 1970) 

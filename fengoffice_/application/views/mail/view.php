@@ -38,32 +38,36 @@
 ?>
 
 <script>
-	var viewing_quotes = false;
-	var viewing_images = false;
-	var genid = '<?php echo $genid ?>';
-	var tt = '<?php echo logged_user()->getTwistedToken() ?>';
-	og.showMailImages = function(pre, rand) {
-		if (viewing_quotes) pre = "wiq_" + pre.substring(pre.indexOf("_")+1);
-		og.changeContentIframeSrc(pre, rand);
+	og.showQuotedText = function(genid) {
+		document.getElementById(genid + 'noQuoteMail').style.display = 'none';
+		document.getElementById(genid + 'quotedLink').style.display = 'none';
+		document.getElementById(genid + 'completeMail').style.display = 'block';
+	}
+	og.showMailImages = function(pre, rand, genid, tt) {
+		if (document.getElementById(genid + 'viewingQuoted').value != 'yes') {
+			pre = "q_" + pre;
+		}
+		og.changeContentIframeSrc(pre, rand, genid, tt);
 		document.getElementById(genid + 'showImagesLink').style.display = 'none';
-		viewing_images = true;
+		document.getElementById(genid + 'viewingImages').value = "yes";
 	}
 	
-	og.showQuotedHtml = function(pre, rand) {
-		if (viewing_images) pre = "wi" + pre;
-		og.changeContentIframeSrc(pre, rand); 
+	og.showQuotedHtml = function(pre, rand, genid, tt) {
+		if (document.getElementById(genid + 'viewingImages').value != 'yes') {
+			pre = "i_" + pre;
+		}
+		og.changeContentIframeSrc(pre, rand, genid, tt); 
 		document.getElementById(genid + 'showQuotedText').style.display = 'none';
-		viewing_quotes = true;
+		document.getElementById(genid + 'viewingQuoted').value = "yes";
 	}
 	
-	og.changeContentIframeSrc = function(pre, rand) {
+	og.changeContentIframeSrc = function(pre, rand, genid, tt) {
 		var iframe = document.getElementById(genid + 'ifr');
 		if (og.sandboxName) {
 			iframe.src = og.getSandboxUrl('feed', 'show_html_mail', {pre: pre, r: rand, id: og.loggedUser.id, token: tt});
 		} else {
-			iframe.src = og.getUrl('mail', 'show_html_mail', {pre: pre, r: rand, id: og.loggedUser.id, token: tt});
+			iframe.src = og.getUrl('mail', 'show_html_mail', {pre: pre, r: rand});
 		}
-
 		/*iframe.style.display = 'none';
 		iframe.style.display = 'block';
 		if (Ext.isIE) iframe.contentWindow.location.reload();*/
@@ -187,38 +191,65 @@
 			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
 			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
 			
-			
-			$mail_html_content = MailUtilities::removeQuotedBlocks($html_content);
-			$html_content = array_var($mail_html_content, 'unquoted', '');
-			$quoted_html_content = array_var($mail_html_content, 'quoted');
-			
-			// put content into an iframe, in order to avoid css to affect the rest of the interface
-			$tmphtml = $email->getAccountId() . '_' . logged_user()->getId() . '_temp_mail_content.html';
-			
-			$content = '';
-			if (user_config_option('block_email_images') && html_has_images($html_content)) {
-				// save content with images
-				$filename_with_images = ROOT.'/tmp/wi_'.$tmphtml;
-				if (file_exists($filename_with_images)) unlink($filename_with_images);
-				$handle = fopen($filename_with_images, 'wb');
-				fwrite($handle, $html_content);		
-				fclose($handle);
-				$content_wimages = $html_content;
-				
-				$html_content = remove_images_from_html($html_content);
-				$content = '<div id="'.$genid.'showImagesLink" style="background-color:#FFFFCC">'.lang('images are blocked').' 
-					<a href="#" onclick="og.showMailImages(\'wi_'.$email->getAccountId().'_'.logged_user()->getId().'\', '.rand().');" style="text-decoration: underline;">'.lang('show images').'</a>
-				</div>';
-			}
-			
-			if (file_exists(ROOT.'/tmp/'.$tmphtml)) unlink(ROOT.'/tmp/'.$tmphtml);
-			$handle = fopen(ROOT.'/tmp/'.$tmphtml, 'wb');
+			// HIDE QUOTED TEXT AND IMAGES IF APPLICABLE
+			$tmpfile = $email->getAccountId() . '_' . logged_user()->getId() . '_temp_mail_content.html';
+			// FULL CONTENT
+			$tmppath = ROOT.'/tmp/'.$tmpfile;
+			$handle = fopen($tmppath, 'wb');
 			fwrite($handle, $html_content);
 			fclose($handle);
-			if (defined('SANDBOX_URL')) {
-				$url = get_sandbox_url('feed', 'show_html_mail', array('pre' => $email->getAccountId() ."_". logged_user()->getId(), 'r' => gen_id(), 'id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken()));
+			
+			// CONTENT NO IMAGES
+			$html_no_images = remove_images_from_html($html_content);
+			$tmppath = ROOT.'/tmp/i_'.$tmpfile;
+			$handle = fopen($tmppath, 'wb');
+			fwrite($handle, $html_no_images);
+			fclose($handle);
+			
+			// CONTENT NO QUOTED
+			$html_no_quoted = MailUtilities::replaceQuotedBlocks($html_content, '<div style="color: #777;font-style:italic;padding: 5px 20px">&lt;'.lang('hidden quoted text').'&gt;</div>');
+			$tmppath = ROOT.'/tmp/q_'.$tmpfile;
+			$handle = fopen($tmppath, 'wb');
+			fwrite($handle, $html_no_quoted);
+			fclose($handle);
+			
+			// CONTENT NO QUOTED NO IMAGES
+			$html_no_quoted_no_images = MailUtilities::replaceQuotedBlocks($html_no_images, '<div style="color: #777;font-style:italic;padding: 5px 20px">&lt;'.lang('hidden quoted text').'&gt;</div>');
+			$tmppath = ROOT.'/tmp/iq_'.$tmpfile;
+			$handle = fopen($tmppath, 'wb');
+			fwrite($handle, $html_no_quoted_no_images);
+			fclose($handle);
+			
+			// VIEW CONTENT (iframe and links)
+			$remove_images = false;
+			$remove_quoted = false;
+			if (user_config_option('block_email_images') && html_has_images($html_content)) {
+				$remove_images = true;
+			}
+			if ($hide_quoted_text_in_emails && MailUtilities::hasQuotedBlocks($html_content)) {
+				$remove_quoted = true;
+			}
+			$pre = $email->getAccountId() . '_' . logged_user()->getId();
+			$user_token = defined('SANDBOX_URL') ? logged_user()->getTwistedToken() : '';
+			$content = "";
+			if ($remove_images) {
+				$content = '<div id="'.$genid.'showImagesLink" style="background-color:#FFFFCC">'.lang('images are blocked').' 
+					<a href="#" onclick="og.showMailImages(\''.$pre.'\', \''.gen_id().'\', \''.$genid.'\', \''.$user_token.'\');" style="text-decoration: underline;">'.lang('show images').'</a>
+				</div>';
+			}
+			if ($remove_images && $remove_quoted) {
+				$tpre = "iq_" . $pre;
+			} else if ($remove_images) {
+				$tpre = "i_" . $pre;
+			} else if ($remove_quoted) {
+				$tpre = "q_" . $pre;
 			} else {
-				$url = get_url('mail', 'show_html_mail', array('pre' => $email->getAccountId() ."_". logged_user()->getId(), 'r' => gen_id()));
+				$tpre = $pre;
+			}
+			if (defined('SANDBOX_URL')) {
+				$url = get_sandbox_url('feed', 'show_html_mail', array('pre' => $tpre, 'r' => gen_id(), 'id' => logged_user()->getId(), 'token' => $user_token));
+			} else {
+				$url = get_url('mail', 'show_html_mail', array('pre' => $tpre, 'r' => gen_id()));
 			}
 			$content .= '<div style="position: relative; left:0; top: 0; width: 100%; height: 100px; background-color: white">';
 			$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;height:100%" frameborder="0" src="'.$url.'" 
@@ -228,38 +259,26 @@
 			$content .= '<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="' . lang('expand') . '" onclick="og.expandDocumentView.call(this)"></a>
 				</div>';
 
-			if ($quoted_html_content) {
-				if ($hide_quoted_text_in_emails) {
-					$q_link = "<a id='".$genid."showQuotedText' style='font-family:verdana,arial,helvetica,sans-serif; font-size:11px; line-height:150%; cursor:pointer; color:#003562; padding-left:10px;'";
-					$q_link .= " onclick='og.showQuotedHtml(\"q_".$email->getAccountId().'_'.logged_user()->getId()."\", ".rand().");'>";
-					$q_link .= ":: ".lang('show quoted text')." ::</a>";
-					
-					file_put_contents(ROOT."/tmp/q_".$tmphtml, $html_content . $quoted_html_content);
-					if (isset($content_wimages)) {
-						file_put_contents(ROOT."/tmp/wiq_".$tmphtml, $content_wimages . $quoted_html_content);
-					}
-					$content .= $q_link;
-				} else {
-
-					$content .= $quoted_html_content;
-				}
+			if ($remove_quoted) {
+				$content .= '<a id="'.$genid.'showQuotedText" style="font-family:verdana,arial,helvetica,sans-serif; font-size:11px; line-height:150%; cursor:pointer; color:#003562; padding-left:10px;"
+						onclick="og.showQuotedHtml(\''.$pre.'\', \''.gen_id().'\', \''.$genid.'\', \''.$user_token.'\');">
+						:: '.lang('show quoted text').' ::</a>';					
 			}
-			
+			$content .= '
+				<input type="hidden" id="'.$genid.'viewingImages" value="'.($remove_images?'no':'yes').'" />
+				<input type="hidden" id="'.$genid.'viewingQuoted" value="'.($remove_quoted?'no':'yes').'" />
+			';
 		} else {
-			if ($email->getBodyPlain() != ''){
-				$mail_content = MailUtilities::removeQuotedText($email->getBodyPlain());
-				$content = array_var($mail_content, 'unquoted', '');
-				$quoted_content = array_var($mail_content, 'quoted');
-				
-				$content =  '<div>' . nl2br(convert_to_links(clean($content))) . '</div>';
-				if ($quoted_content != '') {
-					if ($hide_quoted_text_in_emails) {
-						$content .= "<a class='internalLink' style='padding-left:10px;' href='#' onclick='document.getElementById(\"".$genid."quoted_text\").style.display=\"block\"; this.style.display = \"none\";'>
-						:: ".lang('show quoted text')." ::</a><div id='".$genid."quoted_text' style='display:none'>". nl2br(convert_to_links(clean($quoted_content))) ."</div>";
-					} else {
-						$content .= nl2br(convert_to_links(clean($quoted_content)));
-					}
+			if ($email->getBodyPlain() != '') {
+				$remove_quoted = MailUtilities::hasQuotedText($email->getBodyPlain()) && $hide_quoted_text_in_emails;
+				$content = "";
+				if ($remove_quoted) {
+					$content = MailUtilities::replaceQuotedText($email->getBodyPlain(), '-----'.lang('hidden quoted text').'-----');
+					$content = '<div id="'.$genid.'noQuoteMail">' . escape_html_whitespace(convert_to_links(clean($content))) . '</div>';
+					$content = str_replace('-----'.lang('hidden quoted text')."-----", '<span style="color: #777;font-style:italic;padding: 5px 20px">&lt;'.lang('hidden quoted text').'&gt;</span>', $content);
+					$content .= '<a class="internalLink" style="padding-left:10px;" id="'.$genid.'quotedLink" href="#" onclick="og.showQuotedText(\''.$genid.'\')">:: '.lang('show quoted text').' ::</a>';
 				}
+				$content .= '<div id="'.$genid.'completeMail"'.($remove_quoted ? ' style="display:none"' : '').'>' . escape_html_whitespace(convert_to_links(clean($email->getBodyPlain()))) . '</div>';
 				$content = '<div style="max-height: 600px; overflow: auto;">' . $content . '</div>';
 			} else $content = '<div></div>';
 		}

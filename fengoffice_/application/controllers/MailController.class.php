@@ -226,7 +226,10 @@ class MailController extends ApplicationController {
 			$subject = array_var($mail_data, 'subject');
 			$body = array_var($mail_data, 'body');
 			if (array_var($mail_data, 'format') == 'html') {
-				$body = '<div style="font-family:Arial,Verdana,sans-serif;font-size:12px;color:#222">' . $body . '</div>';
+				$css = "font-family:Arial,Verdana,sans-serif;font-size:12px;color:#222;";
+				Hook::fire('email_base_css', null, $css);
+				str_replace(array("\r","\n"), "", $css);
+				$body = '<div style="' . $css . '">' . $body . '</div>';
 			}
 			$type = 'text/' . array_var($mail_data, 'format');
 			
@@ -961,6 +964,8 @@ class MailController extends ApplicationController {
 	function classifyFile($classification_data, $email, $parsedEmail, $validWS, $mantainWs = true, $csv = '') {
 		if (!is_array($classification_data)) $classification_data = array();
 
+		if (!isset($parsedEmail["Attachments"])) throw new Exception(lang('no attachments found for email'));
+		
 		for ($c = 0; $c < count($classification_data); $c++) {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
 				$att = $parsedEmail["Attachments"][$c];
@@ -1050,7 +1055,7 @@ class MailController extends ApplicationController {
 	}
 	
 	function show_html_mail() {
-		$pre = $_GET['pre'];
+		$pre = array_var($_GET, 'pre');
 		$filename = ROOT."/tmp/".$pre."_temp_mail_content.html";		
 		if (!file_exists($filename)) {
 			ajx_current("empty");
@@ -1101,6 +1106,7 @@ class MailController extends ApplicationController {
 			$max = config_option("user_email_fetch_count", 10);
 			MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived, $max);
 
+			$errMessage = "";
 			if ($succ > 0) {
 				$errMessage = lang('success check mail', $mailsReceived);
 			}
@@ -1738,6 +1744,7 @@ class MailController extends ApplicationController {
 		$order = array_var($_GET,'sort');
 		switch ($order){
 			case 'title':
+			case 'subject':
 				$order = '`subject`';
 			break;
 			case 'accountName':
@@ -2326,6 +2333,16 @@ class MailController extends ApplicationController {
 			download_from_repository($email->getContentFileId(), 'message/rfc822', $email->getSubject() . ".eml", true);
 			die();
 		}
+	}
+	
+	function get_mail_css() {
+		$css = file_get_contents('public/assets/javascript/ckeditor/contents.css');
+		$css .= "\nbody {\n";
+		Hook::fire('email_base_css', null, $css);
+		$css .= "\n}\n";
+		header("Content-type: text/css");
+		echo $css;
+		die();
 	}
 
 } // MailController

@@ -9,6 +9,7 @@ http://code.google.com/p/opengooru/
 
  return array(
   // Empty, dnx et
+  'object dnx' => 'Объект не существует',
 	'no mail accounts set' => 'Не определена учетная запись Email, с которой можно было бы послать почту, пожалуйста, сначала создайте её',
 	'no mail accounts set for check' => 'У Вас нет учетной записи Email, пожалуйста, сначала создайте её',
 	'email dnx' => 'Запрошенное сообщение не существует',
@@ -211,6 +212,8 @@ http://code.google.com/p/opengooru/
 	'success delete email' => 'Сообщение удалено',
   	'success unclassify email' => 'Сообщение успешно неклассифицировано',
   	'error unclassify email' => 'Ошибка обработки сообщения',	
+	'success unclassify emails' => "{0} сообщения успешно неклассифицированы",
+	'error unclassify emails' => "Ошибка обработки {0} сообщений",
 	
 	'success delete mail account' => 'Учетная запись Email удалена',
 	'success add mail account' => 'Учетная запись Email успешно создана',
@@ -226,6 +229,12 @@ http://code.google.com/p/opengooru/
 	'error tag objects' => 'Не удалось пометить {0} объект(ов)',
 	'success move objects' => '{0} объект(ов) успешно перемещено',
 	'error move objects' => 'Не удалось переместить {0} объект(ов)',
+	'success untag objects' => "Теги были удалены из {0} объекта(ов)",
+	'error untag objects' => "Неудалось удалить теги из {0} объекта(ов)",
+	'success archive objects' => "{0} Объект(ы) архивирован(ы) успешно",
+	'error archive objects' => "Недалось архивировать {0} объект(ы)",
+	'success unarchive objects' => "{0} Объект(ы) разархивированы успешно",
+	'error unarchive objects' => "Неудалось разархивировать {0} объект(ы)",
 	
 	'success checkout file' => 'Файл успешно заблокирован на сервере',
 	'success checkin file' => 'Файл успешно разблокирован на сервере',
@@ -237,6 +246,7 @@ http://code.google.com/p/opengooru/
 	'success delete billing category' => 'Категория биллинга успешно удалена',
 	'success edit billing category' => 'Категория биллинга успешно обновлена',
 	'success assign user billing categories' => 'Категории биллинга успешно присвоены пользователям',
+	'success update billing values' => 'Значение интервала времени биллинга успешно обновлено: {0} запись изменена.',
 	
   // Failures
 	'error edit timeslot' => 'Не удалось сохранить интервал времени',
@@ -306,6 +316,7 @@ http://code.google.com/p/opengooru/
 	'error classifying attachment cant open file' => 'Ошибка классификации вложения: невозможно открыть файл',
 	'error contact added but not assigned' => 'Контакт \'{0}\' был добавлен, но не привязан к проекту \'{1}\' из-за отсутствия полномочий',
 	'error cannot set workspace as parent' => 'Невозможно установить проект \'{0}\' как родительский, слишком много уровней вложений',
+  	'error cannot link object to self' => 'Вы не можете указывать ссылку на сам объект',	
 	
   // Access or data errors
 	'no access permissions' => 'У Вас нет прав доступа к запрошенной странице',
@@ -598,6 +609,11 @@ http://code.google.com/p/opengooru/
 	'error untrash object' => 'Ошибка восстановления объекта из корзины',
 	'success trash objects' => '{0} объектов успешно перемещены в корзину',
 	'error trash objects' => 'Ошибка перемещения {0} объектов в корзину',
+  	'success markasread objects' => '{0} объекты успешно помечены как прочитанные',
+  	'error markasread objects' => 'Ошибка установки пометки \'прочинано\' для {0} объектов',
+  	'success markasunread objects' => '{0} объекты успешно помечены как прочитанные',
+  	'error markasunread objects' => 'Ошибка установки пометки \'непрочинано\' для {0} объектов',
+	
 	'success untrash objects' => '{0} объектов успешно восстановлено из корзины',
 	'error untrash objects' => 'Ошибка восстановления {0} объектов из корзины',
 	'success delete object' => 'Объект успешно удалён',
@@ -605,6 +621,8 @@ http://code.google.com/p/opengooru/
 	
   'recipient must be specified' => 'Должны быть указаны получатели Emailа',
 	'copied from file' => 'Скопировано из файла {0} ({1})',
+
+  	'copied from file' => 'Скопированные из файла {0} ({1})',
 	
 'check file name advice' => 'После того как имя файла было изменено, нажмите TAB для проверки имени файла, и кнопка "Сохранить" станет доступной.',
 	'filename already exists' => 'Это имя файла уже используется',
@@ -614,9 +632,17 @@ http://code.google.com/p/opengooru/
 	'failed to assign contact due to permissions' => 'Вы не имеете прав для записи контактов для этих проектов: {0}',
 
 	'weblink dnx' => 'Запрошенная web-ссылка не существует.',
-  	'some objects could not be linked' => '{0} объект(ы) не могут быть связаны, в связи с ограничениями пользовательских разрешений',
+
+  	'success markasread files' => 'Отмечены как прочитанные',
+  	'success markasunread files' => 'Отмечены как непрочитанные',
+  	'error markasread files' => 'Не удалось отмечены как прочитанные',
+  	'error markasunread files' => 'Не удалось отмечены как непрочитанные',
+  	
+	'some objects could not be linked' => '{0} объект(ы) не могут быть связаны, в связи с ограничениями пользовательских разрешений',
   	'user cannot link objects' => 'Недостаточно прав для создания ссылки на объект',
    'ie browser outdated' => 'Ваш браузер не поддерживается. Обновите или используетй другой браузер.',
+  
+  'short search query warning' => 'Ваш запрос слишком короткий. Вы можете попробовать указать в поиске "<b>{0}*</b>", чтобы найти слова, начинающиеся с "<b>{0}</b>".',
 //	'no linked objects' => 'Нет прикрепленных объектов ',
 //	'object not linked to object' => 'Между выбранными объектами не существует связи',
 ); ?>

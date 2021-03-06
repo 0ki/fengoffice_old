@@ -102,8 +102,9 @@ sig.actualHtmlSignature = '';
 	<div class="coInputHeaderUpperRow">
   		<div class="coInputTitle"><table style="width:535px"><tr><td>
   			<?php echo lang('send mail') ?>
+  		</td><td>
+  			<input type="image" src="s.gif" style="width:1px;height:1px;border:0;background:transparent;cursor:default" /><!-- Opera and IE seem to use first submit button when pressing enter on a form field. If this button is not present the first submit button would be the "Send" button and so the email would be sent -->
   		</td><td style="text-align:right">
-			<input type="image" src="s.gif" style="width:1px;height:1px;border:0;background:transparent;cursor:default" /><!-- Opera and IE seem to use first submit button when pressing enter on a form field. If this button is not present the first submit button would be the "Send" button and so the email would be sent -->
   			<?php echo submit_button(lang('send mail'), '', 
   			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"og.setHfValue('$genid', 'isDraft', 'false');og.stopAutosave('$genid');"))?>
   		</td>
@@ -115,7 +116,7 @@ sig.actualHtmlSignature = '';
   			<?php
   			$strDisabled = "";//array_var($mail_data, 'id') == ''?'disabled':'';
   			echo submit_button(lang('discard'), '', 
-  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"if (!confirm('" . escape_single_quotes(lang('confirm discard email')) . "')) return false;og.setDiscard('$genid', true);og.stopAutosave('$genid');",$strDisabled=>'')) ?>
+  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"if (!confirm('" . escape_single_quotes(lang('confirm discard email')) . "')) return false; else {var p = og.getParentContentPanel(Ext.get('{$genid}form'));Ext.getCmp(p.id).setPreventClose(false);} og.setDiscard('$genid', true);og.stopAutosave('$genid');",$strDisabled=>'')) ?>
   		</td>
   		</tr></table>
   		</div>
@@ -279,7 +280,7 @@ sig.actualHtmlSignature = '';
     	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();", 'autocomplete' => 'off')) ?>
 
     <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
-		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" autocomplete="off"><?php echo clean($html_body) ?></textarea>
+		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" autocomplete="off" tabindex="51"><?php echo clean($html_body) ?></textarea>
 	</div>
 </div>
 </div>
@@ -302,6 +303,7 @@ var editor = CKEDITOR.replace(genid + 'ckeditor', {
 	shiftEnterMode: CKEDITOR.ENTER_P,
 	resize_enabled: false,
 	customConfig: '',
+	contentsCss: og.getUrl('mail', 'get_mail_css'),
 	language: '<?php echo $loc ?>',
 	toolbar: [
 		['Bold','Italic','Underline','Strike','-',

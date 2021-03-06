@@ -10,7 +10,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 <?php $c = 0;
 	foreach ($comments as $comment){ $c++;?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMCoC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-	<td class="db-ico ico-comment"></td>
+	<td><div class="db-ico ico-comment"></div></td>
 	<td style="padding-left:5px">
 	<a class="internalLink" href="<?php echo $comment->getViewUrl()?>"
 		title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">

@@ -336,15 +336,15 @@ foreach($companies as $company)
 										$bold = "normal";
 									}
 
-									$tags = $event->getTags();
+									$ev_tags = $event->getTags();
 									$eventTagString = '';
-									if (is_array($tags) && count($tags)>0){													
+									if (is_array($ev_tags) && count($ev_tags)>0){													
 										$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
 										$c= 0;
-										foreach ($tags as $t){
+										foreach ($ev_tags as $t){
 											$eventTagString .= $t;
 											$c++;
-											count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
+											count($ev_tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
 										}
 									}
 								?>

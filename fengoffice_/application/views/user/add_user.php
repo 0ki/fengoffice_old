@@ -61,7 +61,7 @@
   	</script>
     <?php echo label_tag(lang('company'), $genid.'userFormCompany', true) ?>
     <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
-    	array('id' => $genid.'userFormCompany', 'tabindex' => '300','onchange' => "og.validateOwnerCompany(this,'$genid')")) ?>
+    	array('id' => $genid.'userFormCompany', 'tabindex' => '300','onchange' => "og.validateOwnerCompany(this,'$genid')"), false) ?>
     	
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 

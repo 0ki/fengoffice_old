@@ -685,6 +685,7 @@ function create_user($user_data, $is_admin, $permissionsString) {
 	} // if
 	
 	$user->setPassword($password);
+	$user->save();
 
 	$user_password = new UserPassword();
 	$user_password->setUserId($user->getId());
@@ -834,6 +835,11 @@ function create_user($user_data, $is_admin, $permissionsString) {
 	
 	} // try
 	return $user;
+}
+
+function utf8_safe($text) {
+	$safe = @iconv("UTF-8", "UTF-8//IGNORE", $text);
+	return preg_replace('/[\xF0-\xF4][\x80-\xBF][\x80-\xBF][\x80-\xBF]/', "", $safe);
 }
 
 ?>

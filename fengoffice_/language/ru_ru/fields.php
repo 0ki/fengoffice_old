@@ -27,6 +27,8 @@ return array(
 	'field Companies updated_on' => 'Изменен',
 	'field Companies created_by_id' => 'Создал',
 	'field Companies updated_by_id' => 'Изменил',
+	'field Companies archived_on' => 'Архивирован',
+	'field Companies archived_by_id' => 'Архивировал',	
 
 	// Contact fields
 	'field Contacts company_id' => 'Компания',
@@ -77,6 +79,8 @@ return array(
 	'field Contacts updated_on' => 'Изменен',
 	'field Contacts created_by_id' => 'Создал',
 	'field Contacts updated_by_id' => 'Изменил',
+	'field Contacts archived_on' => 'Архивирован',
+	'field Contacts archived_by_id' => 'Архивировал',	
 
 	// Email fields
     'field MailContents from' => 'От',
@@ -100,6 +104,8 @@ return array(
 	'field MailContents updated_by_id' => 'Изменил',
 	'field MailContents cc' => 'Копия',
 	'field MailContents bcc' => 'Скрытая копия',
+	'field MailContents archived_on' => 'Архивировано',
+	'field MailContents archived_by_id' => 'Архивировал',	
 
 	// Event fields
     'field ProjectEvents duration' => 'Продолжительность',
@@ -118,6 +124,11 @@ return array(
 	'field ProjectEvents updated_on' => 'Изменено',
 	'field ProjectEvents created_by_id' => 'Создал',
 	'field ProjectEvents updated_by_id' => 'Изменил',
+	'field ProjectEvents archived_on' => 'Архивировано',
+	'field ProjectEvents archived_by_id' => 'Архивировал',
+	'field ProjectEvents repeat_dow' => 'Повторить день недели',
+	'field ProjectEvents repeat_mjump' => 'Повторить месяц',
+	'field ProjectEvents repeat_wnum' => 'Повторить номер недели',	
 
 	// File fields
 	'field ProjectFiles filename' => 'Имя файла', 
@@ -134,7 +145,9 @@ return array(
 	'field ProjectFiles checked_out_on' => 'Проверено ',
 	'field ProjectFiles created_by_id' => 'Создал',
 	'field ProjectFiles updated_by_id' => 'Изменил',
-
+	'field ProjectFiles archived_on' => 'Архивирован',
+	'field ProjectFiles archived_by_id' => 'Архивировал',
+	
 	// Milestone fields
     'field ProjectMilestones name' => 'Название',
     'field ProjectMilestones description' => 'Описание',
@@ -147,7 +160,9 @@ return array(
 	'field ProjectMilestones updated_by_id' => 'Изменил',
 	'field ProjectMilestones assigned_to_company_id' => 'Присвоено компании',		
 	'field ProjectMilestones assigned_to_user_id' => 'Присвоено пользователю',
-
+	'field ProjectMilestones archived_on' => 'Архивирован',
+	'field ProjectMilestones archived_by_id' => 'Архивировал',
+	
 	// Message fields
 	'field ProjectMessages title' => 'Заголовок', 
     'field ProjectMessages text' => 'Текст', 
@@ -160,6 +175,8 @@ return array(
 	'field ProjectMessages created_by_id' => 'Создал',
 	'field ProjectMessages updated_by_id' => 'Изменил',
 	'field ProjectMessages milestone_id' => 'Этап',
+	'field ProjectMessages archived_on' => 'Архивировано',
+	'field ProjectMessages archived_by_id' => 'Архивировал',	
 
 	// Task fields
 	'field ProjectTasks text' => 'Текст',
@@ -181,6 +198,8 @@ return array(
 	'field ProjectTasks assigned_to_company_id' => 'Присвоено компании',		
 	'field ProjectTasks assigned_to_user_id' => 'Присвоено пользователю',
 	'field ProjectTasks completed_by_id' => 'Завершил',
+	'field ProjectTasks archived_on' => 'Архивирована',
+	'field ProjectTasks archived_by_id' => 'Архивировал',	
 	'field ProjectTasks repeat_by' => 'Повторить',
 	'field ProjectTasks repeat_end' => 'Повторить конец',
   'field ProjectTasks repeat_num' => 'Повторить (раз)',
@@ -210,7 +229,9 @@ return array(
 	'field Users created_by_id' => 'Создал',
 	'field Users updated_by_id' => 'Изменил',
 	'field Users company_id' => 'Компания',
-
+	'field Users archived_on' => 'Архивирован',
+	'field Users archived_by_id' => 'Архивировал',
+	
 	// Webpage fields
     'field ProjectWebpages url' => 'WEB-ссылка', 
     'field ProjectWebpages title' => 'Заголовок', 
@@ -219,6 +240,8 @@ return array(
     'field ProjectWebpages updated_on' => 'Изменено',
 	'field ProjectWebpages created_by_id' => 'Создал',
 	'field ProjectWebpages updated_by_id' => 'Изменил',
+	'field ProjectWebpages archived_on' => 'Архивирован',
+	'field ProjectWebpages archived_by_id' => 'Архивировал',	
 
 	// Project fields
 	'field Projects name' => 'Название', 
@@ -229,7 +252,9 @@ return array(
     'field Projects updated_on' => 'Изменено',
 	'field Projects created_by_id' => 'Создал', 
     'field Projects updated_by_id' => 'Изменен',
-	'field Projects completed_by_id' => 'Завершил'  
+	'field Projects completed_by_id' => 'Завершил',
+	'field Projects archived_on' => 'Archived on',
+	'field Projects archived_by_id' => 'Archived by',	
 );
 
 ?>

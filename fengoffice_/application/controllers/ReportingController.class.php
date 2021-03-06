@@ -245,6 +245,13 @@ class ReportingController extends ApplicationController {
 	// ---------------------------------------------------
 
 	function total_task_times_p(){
+		if (array_var($_GET, 'ws') !== null) {
+			$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
+			$report_data['project_id'] = array_var($_GET, 'ws');
+			$_SESSION['total_task_times_report_data'] = $report_data;
+			$this->redirectTo('reporting', 'total_task_times_p', array('type' => array_var($_GET, 'type', '')));
+		}
+		
 		$comp = logged_user()->getCompany();
 		$users = ( $comp instanceof Company ? $comp->getUsers() : owner_company()->getUsers());
 		$workspaces = logged_user()->getActiveProjects();

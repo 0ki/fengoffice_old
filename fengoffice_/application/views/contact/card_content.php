@@ -1,11 +1,12 @@
 <?php
 	$contact = $object;
+	$hasEmailAddrs = false;
 ?>
     <table width=100%><col width=250px/><col/>
     <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()
     || is_array($im_values = $contact->getImValues()) && count($contact) || $contact->getOBirthday()) {?>
     <tr><td>
-	  <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()){ $hasEmailAddrs = true?>
+	  <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()){ $hasEmailAddrs = true; ?>
 	  <span style="font-weight:bold"><?php echo lang('email addresses') ?>:</span>
       <?php if ($contact->getEmail()) { ?><div style="padding-left:10px"><a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($contact->getEmail()))) . '"' : 'target="_self" href="mailto:' . clean($contact->getEmail()) . '"' ?>><?php echo clean($contact->getEmail());?></a></div><?php } ?>
       <?php if ($contact->getEmail2()) { ?><div style="padding-left:10px"><a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($contact->getEmail2()))) . '"' : 'target="_self" href="mailto:' . clean($contact->getEmail2()) . '"';?>"><?php echo clean($contact->getEmail2());?></a></div><?php } ?>

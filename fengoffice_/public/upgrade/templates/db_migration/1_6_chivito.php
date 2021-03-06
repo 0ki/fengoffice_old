@@ -135,11 +135,12 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_contents`
  ADD COLUMN `in_reply_to_id` varchar(255) <?php echo $default_collation ?> NOT NULL COMMENT 'Message-Id header of the previous email in the conversation',
  ADD COLUMN `conversation_id` int(10) unsigned NOT NULL default '0',
  ADD COLUMN `received_date` datetime NOT NULL default '0000-00-00 00:00:00',
- CHANGE COLUMN `sent_date` `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
- CHANGE COLUMN `uid` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
+ MODIFY COLUMN `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
+ MODIFY COLUMN `uid` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
  ADD INDEX `conversation_id` (`conversation_id`),
  ADD INDEX `message_id` (`message_id`),
  ADD INDEX `received_date` (`received_date`),
+ ADD INDEX `state` (`state`),
  ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
 
 

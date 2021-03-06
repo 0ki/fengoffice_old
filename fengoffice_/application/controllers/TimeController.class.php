@@ -170,7 +170,8 @@ class TimeController extends ApplicationController {
 			$timeslot->save();
 			DB::commit();
 			
-			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
+			$show_billing = can_manage_security(logged_user()) && logged_user()->isAdministrator();
+			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo($show_billing)));
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

@@ -677,5 +677,7 @@ addLangs({
 	'warning': 'Attention',
 	'new email in conversation text': 'Il n\'y a pas de nouveau message dans la conversation à laquele vous répondez. Voulez vous envoyer quand même le message ou le visualiser dans un nouvel onglet ?',
 	'send anyway': 'Envoyer quand même',
-	'view new email': 'Visualiser le message ?'
+	'view new email': 'Visualiser le message ?',
+	'confirm delete permanently company': 'Etes vous certains de vouloir supprimer définitivement cette société ?\nTous les utilisateurs affiliés à cette société seront également supprimés.',
+	'confirm move to trash company': 'Etes vous certains de vouloir supprimer cette société ?\nTous les utilisateurs affiliés à cette société seront également supprimés.'
 });

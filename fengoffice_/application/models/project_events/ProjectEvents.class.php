@@ -56,7 +56,7 @@ class ProjectEvents extends BaseProjectEvents {
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
-			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tags) . " AND  `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
+			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` IN (" . DB::escape($tags) . ") AND  `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
 		} else {
 			$tag_str = "";
 		}
@@ -95,7 +95,7 @@ class ProjectEvents extends BaseProjectEvents {
 							MOD( DATEDIFF(ADDDATE(`start`, INTERVAL ".logged_user()->getTimezone()." HOUR), '$year-$month-$day') ,repeat_d) = 0
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_date_str' 
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_d) DAY) >= '$start_date_str' 
 								OR
 								repeat_forever = 1
 								OR
@@ -109,7 +109,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day 
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_date_str' 
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_m) MONTH) >= '$start_date_str' 
 								OR
 								repeat_forever = 1
 								OR
@@ -123,7 +123,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day AND MONTH(`start`) = $month 
 							AND
 							(
-								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_date_str' 
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_y) YEAR) >= '$start_date_str' 
 								OR
 								repeat_forever = 1
 								OR
@@ -221,7 +221,7 @@ class ProjectEvents extends BaseProjectEvents {
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
-			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tags) . " AND `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
+			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` IN (" . DB::escape($tags) . ") AND `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
 		} else {
 			$tag_str= "";
 		}
@@ -262,7 +262,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					(							
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$start_date_str' 
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_d) DAY) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -270,7 +270,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$start_date_str' 
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_m) MONTH) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -278,7 +278,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$start_date_str' 
+							ADDDATE(DATE(`start`), INTERVAL ((repeat_num)*repeat_y) YEAR) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR

@@ -124,7 +124,7 @@
     <div id ="<?php echo $genid?>detectTimeZone">
     <?php echo yes_no_widget('user[autodetect_time_zone]', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', null, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
     </div>
-    <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', false, $user->getId())) echo 'style="display:none"'; ?>>
+    <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', null, $user->getId())) echo 'style="display:none"'; ?>>
     <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
     	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600' )) ?>
     </div>

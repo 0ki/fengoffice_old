@@ -100,9 +100,9 @@ addLangs({
 	'checkout': 'Заблокирован на сервере',
 	'checked out by': 'Заблокировал на сервере {0}',
 	'add file checked out by': '{1} заблокировал на сервере {0}',
-  'extract': 'Извлечь', 	
-  'extract files': 'Извлечь файлы', 	
-  'compress': 'Сжать', 	
+  'extract': 'Извлечь',	
+  'extract files': 'Извлечь файлы',	
+  'compress': 'Сжать',	
   'compress selected files': 'Сжать выбранные файлы',	
 	'add files to zip': 'Добавить файлы в архив ZIP',
 	'new compressed file': 'Новый архив',
@@ -213,7 +213,11 @@ addLangs({
 	'import/export': 'Импорт / Экспорт',
 	'import - export': 'Импорт и экспорт контактов',
 	'not csv file continue': 'Выбранный файл не является csv файлом.\n Вы уверены, что хотите продолжить?',
-
+	'from csv': 'Из csv файла',
+	'from vcard': 'Из файла VCard',
+	'to csv': 'В файл csv',
+	'to vcard': 'В файл VCard',
+	
   /* webpage manager */	
 	'description': 'Описание',
 	'title': 'Заголовок',
@@ -251,21 +255,26 @@ addLangs({
 	'view options': 'Просмотр опций',
 	'check mails': 'Проверить почту',
 	'emails': 'E-mail',
-	'create an email': 'Создать учётную запись e-mail',
+	'create an email': 'Создать новое сообщение e-mail',
 	'checking email accounts' : 'Проверка учетных записей email...',
 	'folder' : 'Папка',
 	'yes' : 'Да',
 	'no' : 'Нет',
 	'delete account emails': 'Удалить сообщения',	
 	'select' : 'Выбрать',
-  'read' : 'Прочитать',
-  'classified' : 'Классифицировано',
+  'read' : 'Прочитанные',
+  'classified' : 'Классифицированные',
   'accounts' : 'Email аккаунт',
   'account options' : 'Настройка Email аккаунта',
   'to' : 'Кому',
   'view by state' : 'Сортировать по состоянию',
   'view by account' : 'Сортировать по аккаунтам',
   'view by classification' : 'Сортировать по классификации',	
+	'outbox' : 'Исходящие',
+	'mail sent msg' : 'Сообщение отправлено.',
+	'send outbox' : 'Отправить исходящие',
+	'send outbox title' : 'Отправить письма из папки Исходящие',
+	'sending outbox mails' : 'Отправка почты из папки Исходящие...', 
 
 	'filter workspaces': 'Фильтр проектов...',
 	'filter tags': 'Фильтр тегов...',
@@ -276,6 +285,7 @@ addLangs({
 	'sort desc': 'Сортировать список',
 	
 	'no objects message': 'Нет \'{0}\' в \'{1}\'',
+	'no more objects message': 'Нет объектов для просмотра',	
 	'no objects with tag message': 'Нет {0}, помеченных как \'{2}\' в \'{1}\'',
 	'objects': 'Объекты',
 	
@@ -336,6 +346,7 @@ addLangs({
 	'by user': 'Пользователем',
 	'add new event': 'Добавить событие',
 	'prev': 'Предыдущий',
+	'next':'Следующий',	
 	'my calendar': 'Мой календарь',
 	'edit event details': 'Редактировать событие',
 	'duration': 'Период',
@@ -406,7 +417,11 @@ addLangs({
 	'duplicate company name': '<span style="color:#F00">Компания с именем \'{0}\' уже существует. </span> Вы можете<a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})">выбрать эту компанию</a>, или ввести другое имя',
 	'inbox': 'Входящие',
 	'sent': 'Исходящие',
-	'unread': 'Непрочитанное',
+	'unread': 'Непрочитанные',
+	'confirm unclassify emails': 'Вы уверенны, что хотите выбрать неклассифицированные email?',
+	
+	'confirm remove tags': 'Вы уверены, что хотите удалить все теги из выбранных объектов?',
+	'remove tags': 'Удалите теги',
 	
 	'more options': 'Расширенно',
 	'login': 'Вход',
@@ -613,6 +628,7 @@ addLangs({
     'boolean' : 'Булево',
     'list' : 'Список',
     'values comma separated': 'Значения (разделять запятой)',
+    'columns comma separated': 'Колонки (разделять запятой)',	
     'default value' : 'Значние по умолчанию',
     'checked': 'Отмечено?',
     'required' : 'Обязательное?',
@@ -661,6 +677,7 @@ addLangs({
   	
   	'value is already in the list' : 'Значение уже есть в списке',
     'click to drag task' : 'Для переноса задачи нажмите и удерживайте ее переместите',
+  	'click to drag': 'Нажмите и удерживайте, чтобы перетащить',
  	
   	'parameter name empty': 'Имя параметра не может быть пустым',
   	'parameter name exists': 'Указанный параметр уже существует ',
@@ -689,11 +706,72 @@ addLangs({
     'keep old workspaces': 'Сохранить проекты',
     'move to workspace or keep old ones': 'Переместить или добавить к проекту',
     'do you want to move objects to this ws or keep old ones and add this ws': 'Вы хотите переместить выбранный объект(ы) в этот проект или просто добавить к этому проекту?',
-    
+    'classify mail attachments': 'Классифицировать почтовые вложения',
+    'do you want to classify the unclassified emails attachments': 'Вы хотите добавить новый документ для каждого вложения этих неклассифицированных писем?',
+
     'tag selected events': 'Тег выбранного события',
     'edit selected event': 'Редактировать выбранное событие',
     'apply milestone to subtasks': 'Применить этап к подзадачам',
   	'apply workspace to subtasks': 'Применить проект к подзадачам',
   	
-  	'click here to download the csv file': 'Нажмите здесь, чтоб скачать csv файл.'
+	'click here to download the csv file': 'Нажмите здесь, чтобы загрузить CSV файл.',
+	
+	'junk': 'Спам',
+	'you must select the contacts from the grid': 'Вы должны выбрать контакты, которые нужно экспортировать.',
+	'reply mail': 'Ответить',
+	'reply to all mail': 'Ответить всем',
+	'forward mail': 'Переслать',
+  	
+  	'archive': 'Архивировать',
+  	'unarchive': 'Разархивировать',
+  	'archived objects': 'Архив объектов',
+  	'archive selected object': 'Архивировать выделенные объекты',
+  	'unarchive selected objects': 'Разархивировать выделенные объекты',
+  	'confirm archive selected objects': 'Вы действительно хотите архивировать выбранные объекты?',
+  	'confirm unarchive selected objects': 'Вы действительно хотите разархивировать выбранные объекты?',
+  	'confirm archive object': 'Вы уверены, что хотите архивировать этот объект?',
+  	'confirm unarchive object': 'Вы действительно хотите разархивировать этот объект?',
+  	'archived on': 'Архивирован',
+  	'archived by': 'Архивировал',
+  	'is archived': 'Архивируется',
+	'no archived objects message': 'Есть не архивированные {0} в \'{1}\'',
+	'no archived objects with tag message': 'Есть неархивированные {0} с тегом \'{2}\' в \'{1}\'',
+   	
+  	'task milestone does not belong to workspace' : 'Задача(и) с этапом не принадлежат указанному проекту, если будете продолжать, то задание будет удалено из этого этапа. Вы уверены, что хотите продолжить?',
+  	'task milestone workspace inconsistency' : 'ПРИМЕЧАНИЕ: это действие установит проект у задачи с выбранным этапом. Вы уверены, что хотите продолжить?',
+
+  	'autoconfig gmail message' : 'Автоматически сконфигурирован доступ к Gmail. <br> Помните, что Вы должны включить IMAP сервис в Вашем аккаунте Gmail. Более подробную информацию смотрите <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">здесь</a>',
+  	'autoconfig hotmail message' : 'Автоматически сконфигурирован доступ к Hotmail',
+  	'autoconfig yahoo message' : 'Автоматически сконфигурирован доступ к Yahoo Mail. <br> Для того, чтобы использовать POP3, необходима иметь услугу Yahoo Plus на вашем аккаунте. Более подробную информацию смотрите <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">здесь</a>',
+  		
+  	//concurrence
+  	'allready updated object' : 'Кто-то обновил этот объект, пока вы его редактировали.',
+  	'allready updated object desc' : 'Вы хотите объединить изменения? <br> <br> Выберите <strong> Да </ STRONG>, чтобы увидеть объект на новой закладке, чтобы сравнить его с текущим изменениям. <br> <br> Выберите <strong> Нет </ STRONG>, чтобы закрыть это окно и переписать изменения.',
+  	
+  	'updated on' : 'Обновлено',
+  	'delete all tag': 'Удалить все теги',
+  	'mark as': 'Отметить как ...',
+  	'mark as desc': 'Отметить выбранные как Прочтенные/Непрочтенные',
+  	
+  	'filter users and groups': 'Фильтр пользователей и групп...',
+  	'users': 'Пользователи',
+  	'groups': 'Группы',
+  	'no recipient': 'Нет получателя',
+  	'object type' : 'Тип объекта',
+  	'applies to' : 'Применимо к:',
+  	'select co types to apply' : 'Выберите тип объекта, к которому применить',
+  	'write an email to contact': 'Написать письмо {0}',
+  	'quick upload desc': 'Ссылка на новый файл с вашего компьютера',
+  	'switch format warn': 'Переход к тексту, будет утеряно все форматирование HTML. Продолжить?',
+  	
+  	'expand': 'Развернуть',
+  	'collapse': 'Свернуть',
+  	'warning': 'Внимание',
+  	'new email in conversation text': 'There\'s a new email in the conversation you are replying to. Do you want to send the email anyway or view the new email in a new tab?',
+  	'send anyway': 'Отправить в любом случае',
+  	'view new email': 'Открыть новую почту',
+	'mark as read' : 'Пометить как прочтенное',
+	'mark as unread' : 'Пометить как непрочтенное'
+	
+ // 	'click here to download the csv file': 'Нажмите здесь, чтоб скачать csv файл.'
 });

@@ -19,7 +19,7 @@ foreach ($tasks_in_progress as $task) {
 		$text = substr_utf($text,0,100) . " ...";
 	$text = clean($text);
 	?>
-		<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
+		<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td><div class="db-ico ico-task">&nbsp;></div></td><td style="padding-left:5px;padding-bottom:2px">
 	<?php $dws = $task->getWorkspaces(logged_user()->getWorkspacesQuery());
 	$projectLinks = array();
 	foreach ($dws as $ws) {

@@ -93,7 +93,13 @@ if($has_search_results) {
 			<a class="<?php echo $linkIcon ?>" href="<?php echo $object->getObjectUrl() ?>" style="font-size:120%;"><?php echo $object_name ?></a>
 		<?php } // if ?>
 		</td>
-		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $object->getUpdatedByCardUrl(), ($object->getUpdatedBy() instanceof User ? clean($object->getUpdatedByDisplayName()) : clean($object->getCreatedByDisplayName())), format_descriptive_date($object->getObjectUpdateTime())) ?></td>
+		<td style="padding:6px;vertical-align:middle" align=right><?php
+			if ($object instanceof MailContent) {
+				echo lang("created by on short", $object->getSenderUrl(), clean($object->getSenderName()), format_descriptive_date($object->getReceivedDate()));
+			} else {
+				echo lang("modified by on short", $object->getUpdatedByCardUrl(), ($object->getUpdatedBy() instanceof User ? clean($object->getUpdatedByDisplayName()) : clean($object->getCreatedByDisplayName())), format_descriptive_date($object->getObjectUpdateTime()));
+			}
+		?></td>
 		</tr>
 		<?php foreach ($srrow['context'] as $context) {  // Draw context
 			if ($context['context'] != '' 

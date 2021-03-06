@@ -208,5 +208,13 @@ http://code.google.com/p/opengooru/
 	'delete permanently' => 'Удалить навсегда',
 	'copy file' => 'Копировать файл',
 	'open weblink' => 'Открыть ссылку',
+	
+	'archive' => 'Архивировать',
+ 	'unarchive' => 'Разархивировать',
+  	'confirm archive selected objects' => 'Вы действительно хотите архивировать выбранные объекты?',
+	'confirm archive object' => 'Вы уверены, что хотите архивировать этот объект?',
+	'confirm unarchive object' => 'Вы действительно хотите разархивировать этот объект?',
+  
+	
 ); 
 ?>

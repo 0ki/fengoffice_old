@@ -271,4 +271,6 @@ Ces valeurs ne s\'appliquent qu\'aux utilisateurs n\'ayant pas encore modifié l
 	'user ws config option desc search_engine' => 'Choisissez le moteur de recherche à utiliser. L\'utilisation de "Précis" est plus performante mais moins rapide que l\'utilisation de "Rapide".',
 	'search engine mysql like' => 'Précis',
 	'search engine mysql match' => 'Rapide',
+	'user ws config option name hide_quoted_text_in_emails' => 'Masquer les citations dans les messages',
+	'user ws config option desc hide_quoted_text_in_emails' => 'Si vous activez cette fonction, le texte cité n\'apparaitra pas lors de l\'affichage des messages. Une option vous permettra de le visualiser lors de la lecture.',
 ); ?>

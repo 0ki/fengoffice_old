@@ -32,6 +32,10 @@ http://code.google.com/p/opengooru/
   	'ascending' => 'По возрастанию',
   	'descending' => 'По убыванию',
  'parametrizable'=> 'Параметр?',
+   	'columns to print' => 'Столбцы для печати',
+  	'columns to print desc' => 'Переместите столбцы, которые вы хотите печатать на поле справа.',
+  	'reporting workspace' => 'Проект',
+  	'reporting user' => 'Пользователь',
   );
   
 ?>

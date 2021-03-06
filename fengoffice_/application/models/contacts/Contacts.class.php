@@ -207,7 +207,9 @@ class Contacts extends BaseContacts {
 		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user());
 		$sql = "SELECT `firstname`, `lastname`, `email`, `email2`, `email3` FROM `" . TABLE_PREFIX . "contacts` WHERE " .
 			"`trashed_by_id` = 0 AND $permissions AND (`email` <> '' OR `email2` <> '' OR `email3` <> '')";
-		return DB::executeAll($sql);
+		$all = DB::executeAll($sql);
+		if (is_array($all)) return $all;
+		return array();
 	}
 } // Contacts
 

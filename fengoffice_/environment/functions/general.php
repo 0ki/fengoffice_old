@@ -95,11 +95,11 @@ function getDateValue($value = '', $default = EMPTY_DATETIME){
 /**
  * Checks a string to see if it is a valid url address and appends http:// if it doesn't have it
  */
-function cleanUrl($url){
+function cleanUrl($url, $clean = true){
 	if (strpos($url,'://')<=0){
 		$url = 'http://' . $url;
 	}
-	return clean($url);
+	return $clean ? clean($url) : $url;
 }
 
 /**

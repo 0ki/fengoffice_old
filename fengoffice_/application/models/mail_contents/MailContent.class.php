@@ -138,10 +138,7 @@ class MailContent extends BaseMailContent {
 		$this->clearTags();
 		$this->clearSearchIndex();
 		$this->clearLinkedObjects();
-		$readobj = ReadObjects::findOne(array(
-						        'conditions' => array('`rel_object_id` = ? AND `rel_object_manager` = ?', $this->getId(), get_class($this->manager()))
-						      )); // findOne
-		if ($readobj!=null) $readobj->delete();
+		ReadObjects::delete(array('`rel_object_id` = ? AND `rel_object_manager` = ?', $this->getId(), get_class($this->manager()))); // findOne
 		return true;
 	}
 
@@ -318,6 +315,32 @@ class MailContent extends BaseMailContent {
 	function getPrintUrl() {
 		return get_url('mail', 'print_mail', array( 'id' => $this->getId()));
 	} // getPrintUrl
+	
+	function getSenderName() {
+		$user = Users::getByEmail($this->getFrom());
+		if ($user instanceof User && $user->canSeeUser(logged_user())) {
+			return $user->getDisplayName();
+		} else {
+			$contact = Contacts::getByEmail($this->getFrom());
+			if ($contact instanceof Contact && $contact->canView(logged_user())) {
+				return $contact->getDisplayName();
+			}
+		}
+		return $this->getFromName();
+	}
+	
+	function getSenderUrl() {
+		$user = Users::getByEmail($this->getFrom());
+		if ($user instanceof User && $user->canSeeUser(logged_user())) {
+			return $user->getCardUrl();
+		} else {
+			$contact = Contacts::getByEmail($this->getFrom());
+			if ($contact instanceof Contact && $contact->canView(logged_user())) {
+				return $contact->getCardUrl();
+			}
+		}
+		return $this->getViewUrl();
+	}
 	
 	// ---------------------------------------------------
 	//  Permissions
@@ -560,7 +583,7 @@ class MailContent extends BaseMailContent {
 	
 	function getFromContact(){
 		$contacts = Contacts::findAll(array('conditions' => " email = '" . clean($this->getFrom()) . "' OR email2 = '" . clean($this->getFrom()) . "' OR email3 = '" . clean($this->getFrom()) . "' "));
-		if (is_array($contacts)){
+		if (is_array($contacts) && count($contacts) > 0){
 			$best_level = 4;
 			$best_contact = null;
 			if (count($contacts) > 1){

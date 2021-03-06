@@ -150,6 +150,12 @@ http://code.google.com/p/opengooru/
 	'saturday short' => 'Сб',
 	'sunday short' => 'Вс',
 	
+  	'1st' => '1ый',
+  	'2nd' => '2ой',
+  	'3rd' => '3ий',
+  	'4th' => '4ый',
+  	'5th' => '5ый',	
+	
 	'copy of' => 'Копия {0}',
 	'task templates' => 'Шаблоны задач',
 	'add task template' => 'Добавить шаблон задачи',
@@ -213,5 +219,15 @@ http://code.google.com/p/opengooru/
   	'new task repetition generated' => 'Новая повторяющаяся задача создана',
 
 	'reminders will not apply to repeating events' => 'Предупреждение: на повторяющиеся события, напоминаний не будет.',
+  
+	'move all to right' => 'Переместить все вправо',
+	'move to right' => 'Переместить вправо',
+	'move to left' => 'Переместить влево',
+	'move all to left' => 'Переместить все влево',
+	'move up' => 'Переместить вверх',
+	'move down' => 'Переместить вниз',
+  
+	'this file is included in document' => "Этот файл включен в документ: {0}",
 	
-); ?>
+	); 
+?>

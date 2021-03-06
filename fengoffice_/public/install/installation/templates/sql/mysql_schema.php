@@ -696,7 +696,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   KEY `received_date` (`received_date`),
   KEY `uid` (`uid`),
   KEY `conversation_id` (`conversation_id`),
-  KEY `message_id` (`message_id`)
+  KEY `message_id` (`message_id`),
+  KEY `state` (`state`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (

@@ -285,4 +285,62 @@ http://code.google.com/p/opengooru/
 	'attach contents' => 'Вложить документ',
 	'set parent task' => 'Установить родителя задачи',
 
-); ?>
+	'add milestone change workspace warning' => 'ВНИМАНИЕ! Этот этап задач принадлежит уже к этому проекту или под-проетку. Если изменить проект, то все задачи этапа будут перемещены, в выбранный проект',
+	'update unset billing values' => 'Обновить временные интервалы с неустановленными значениями биллинга',
+	'update unset billing values desc' => 'ПРИМЕЧАНИЕ: Это действие будет применяться к новым значениям биллинга для всех временных интервалов. Вы уверены, что хотите продолжить?',
+
+	'field title' => 'Название',
+	'field text' => 'Текст',
+	'field email' => 'Email',
+	'field from' => 'От',
+	'field to' => 'Кому',
+	'field subject' => 'Тема',
+	'field comment' => 'Комментарий',
+	'field email2' => 'Дополнительный адрес электронной почты',
+	'field body_plain' => 'Тело сообщения',
+	'field from_name' => 'От',
+	'field firstname' => 'Имя',
+	'field lastname' => 'Фамилия',
+	'field filecontent' => 'Содержание',
+	'field uid' => 'Уникальный ID',
+	'field h_address' => 'Домашний адрес',
+	'field w_address' => 'Рабочий адрес',
+	'field o_address' => 'Прочий адрес',
+
+	'create task from email' => 'Создать задачу из этого сообщения',
+	'create task from email description' => 'От:      {1}
+Тема:   {0}
+
+{2}',
+	'suggested workspaces' => 'Предлагаемые проекты',
+
+	'mail account sender name' => 'Имя отправителя',
+	'mail account sender name description' => 'Если поле оставить пустым, то будет использовано имя как в поле "От:", при отправке электронной почты.',
+	'classify mails on workspace' => 'Автоматическая классификация в проекте',
+	'classify mails on workspace desc' => 'Если выбрано, то все сообщения, отправленные с/на этой уч.записи, будут автоматически классифицироваться в выбранном проекте.',
+	'signature' => 'Подпись',
+	'signature description' => 'Эта подпись будет добавлена к каждому вашему электронному письму отправленному с этой уч.записи.',
+
+	'mail account permissions' => 'Разрешения уч.записи',
+	'mail account permissions desc' => 'Выберите, кто может читать/создавать и отправлять письма с данной уч.записи. Изменять общие сведения уч.записи и прочее.<br/><b>Примечание</b>: Почтовые сообщения классифицированные к проекту, буду доступны всем пользователям этого проекта, которым доступно чтение почты.',
+	'cannot access account' => 'Нет доступа',
+	'can view account emails' => 'Можно читать / создавать письма',
+	'can view account emails and edit' => 'Можно читать / создавать электронные письма и изменить учетную запись', 
+	'personal settings' => 'Персональные настройки',
+	'personal settings desc' => 'Эти параметры зависят от конкретного пользователя и не влияют на других пользователей, имеющих доступ к этой уч.записи.',
+
+	'linked main title' => 'Ссылки',
+	'linked file tab' => 'Файлы',
+	'linked email tab' => 'Email',
+	'linked emailunclassified tab' => 'Неклассифицированные Email',
+	'linked message tab' => 'Заметки',
+	'linked contact tab' => 'Контакты',
+	'linked comment tab' => 'Комментарии',
+	'linked webpage tab' => 'Веб-ссылки',
+	'linked company tab' => 'Компании',
+	'linked milestone tab' => 'Этапы',
+	'linked task tab' => 'Задачи',
+	'linked event tab' => 'События',
+	
+); 
+?>

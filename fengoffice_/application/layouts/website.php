@@ -142,7 +142,7 @@ og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER
 <?php if (user_config_option("rememberGUIState")) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>
-<?php if (user_config_option("autodetect_time_zone", 0)) {
+<?php if (user_config_option("autodetect_time_zone", null)) {
 $now = DateTimeValueLib::now(); ?>
 og.usertimezone = og.calculate_time_zone(new Date(<?php echo $now->getYear() ?>,<?php echo $now->getMonth() - 1 ?>,<?php echo $now->getDay() ?>,<?php echo $now->getHour() ?>,<?php echo $now->getMinute() ?>,<?php echo $now->getSecond() ?>));
 og.initialURL += '&utz=' + og.usertimezone;

@@ -568,7 +568,6 @@ class FilesController extends ApplicationController {
 
 				$file->setFilename($name);
 				$file->save();
-				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				if (array_var($_POST, 'checkin', false)) {
@@ -642,7 +641,6 @@ class FilesController extends ApplicationController {
 				$file->save();
 				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
-				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true, $revision_comment);
 
 				if (config_option('checkout_for_editing_online')) {
@@ -698,7 +696,6 @@ class FilesController extends ApplicationController {
 				fclose($handler);
 				$file->setFilename(array_var($postFile, 'name'));
 				$file->save();
-				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
 				if (array_var($_POST, 'checkin', false)) {
@@ -757,7 +754,6 @@ class FilesController extends ApplicationController {
 				$file->save();
 				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
-				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true);
 
 				if (config_option('checkout_for_editing_online')) {
@@ -869,7 +865,6 @@ class FilesController extends ApplicationController {
 				$file->save();
 				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
-				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
 				
 				$ws = $file->getWorkspaces();

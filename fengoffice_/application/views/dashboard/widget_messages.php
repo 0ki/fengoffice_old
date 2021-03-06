@@ -9,7 +9,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 <?php $c = 0;
 	foreach ($messages as $message){ $c++;?>
 	<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMMC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-	<td class="db-ico ico-message"></td>
+	<td><div class="db-ico ico-message"></div></td>
 	<td style="padding-left:5px">
 	<?php 
 		$mws = $message->getWorkspaces(logged_user()->getWorkspacesQuery());

@@ -155,7 +155,8 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	if (position % 2 == 1)
 		row.style.backgroundColor = '#F0F6FF';
 	
-	var cell = row.insertCell(0);
+	var pos = 0;
+	var cell = row.insertCell(pos++);
 	if (date.dateFormat('Y') != now.dateFormat('Y'))
 		var textNode = document.createTextNode(date.dateFormat('M j, Y'));
 	else
@@ -163,17 +164,17 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(1);
+	cell = row.insertCell(pos++);
 	var span = document.createElement('span');
 	span.className = 'project-replace';
 	span.innerHTML = timeslot.workspaceId;
 	cell.appendChild(span);
 	
-	cell = row.insertCell(2);
+	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(timeslot.userName);
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(3);
+	cell = row.insertCell(pos++);
 	updatedInfo = '';
 	if (timeslot.lastUpdated != '') {
 		updatedInfo = lang('last updated by on', timeslot.lastUpdatedBy, timeslot.lastUpdated);
@@ -181,23 +182,29 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	textNode = document.createTextNode(updatedInfo);
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(4);
+	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(hours + ":" + minutes);
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(5);
+	if (table.rows[0].cells.length >= 8) {
+		cell = row.insertCell(pos++);
+		textNode = document.createTextNode(timeslot.hourlyBilling + " (" + timeslot.totalBilling + ")");
+		cell.appendChild(textNode);
+	}
+	
+	cell = row.insertCell(pos++);
 	textNode = document.createTextNode(timeslot.description);
 	cell.appendChild(textNode);
 	
-	cell = row.insertCell(6);
+	cell = row.insertCell(pos++);
 	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('edit') + '">&nbsp;</a>';
 	cell.width = 18;
 	
-	cell = row.insertCell(7);
+	cell = row.insertCell(pos++);
 	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
 	cell.width = 18;
 	
-	cell = row.insertCell(8);
+	cell = row.insertCell(pos++);
 	var textNode = document.createTextNode(timeslot.id);
 	cell.appendChild(textNode);
 	cell.style.display = 'none';

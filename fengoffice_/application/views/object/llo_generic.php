@@ -13,10 +13,10 @@ if ($linked_object instanceof ProjectFile)
 	<span><?php echo clean($linked_object->getObjectName()) ?></span></a></td>
 	
 	<td style="text-align:right;">
-	<?php if ($linked_object instanceof ProjectFile){ ?>
+	<?php if ($linked_object instanceof ProjectFile && $linked_object->getType() == ProjectFiles::TYPE_DOCUMENT){ ?>
 		<a target="_self" href="<?php echo $linked_object->getDownloadUrl() ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
 	<?php }
-	if ($linked_object instanceof ProjectWebpage) { ?>
+	if ($linked_object instanceof ProjectWebpage || $linked_object instanceof ProjectFile && $linked_object->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
 		<a target="_blank" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |
 	<?php }
 	if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 

@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.6 RC
-    ====================
+    About OpenGoo 1.6
+    =================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.6 RC - http://www.opengoo.org/
+    2. Download OpenGoo 1.6 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.6 RC
+    	from your current version to 1.6
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -90,6 +90,30 @@
 
 	Changelog
 	=========
+	
+	Since 1.6-rc
+	------------
+	
+	bugfix: Some widgets in the dashboard showed wrong icons when item spanned more than one line.
+	bugfix: Template subtasks don't keep linked objects.
+	bugfix: Query error when upgrading from 1.5.3.
+	bugfix: Missing lang for archived objects in objects' history.
+	bugfix: Don't allow trashing the owner company.
+	bugfix: Opengoo stops working if owner company was trashed.
+	bugfix: When discarding an email, two confirmation prompts pop up.
+	bugfix: When clicking on print report, on time module, the active workspace should be set as the workspace for the report.
+	bugfix: Linked "Weblink files" showed a "Download" shortcut instead of an "Open weblink" shortcut.
+	bigfix: Importing calendar ics file wasn't working.
+	bugfix: When editing a document, tags were lost.
+	bugfix: Send email buttons unaligned on some languages.
+	bugfix: Some contact websites were missing the "http://" in the contacts listing.
+	bugfix: Fixed detection of autodetect timezone config option.
+	bugfix: Repeating events a fixed number of times didn't show the last repetition.
+	bugfix: Changed how quoted text is hidden.
+	bugfix: Added a tabstop to HTML email composing.
+	bugfix: Sorting emails by subject sorted by date.
+	bugfix: Sometimes completed tasks were shown when filtering by "Pending" (completed_by_id was 0).
+
 	
 	Since 1.6-beta3
 	---------------

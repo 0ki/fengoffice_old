@@ -19,6 +19,8 @@ ogTimeTimeslot = function(){
 	this.userName;
 	this.lastUpdated;
 	this.lastUpdatedBy;
+	this.hourlyBilling;
+	this.totalBilling;
 
 	this.description = '';
 	this.taskName;
@@ -33,6 +35,8 @@ ogTimeTimeslot.prototype.setFromTdata = function(tdata){
 	this.userName = tdata.uname;
 	this.lastUpdated = tdata.lastupdated;
 	this.lastUpdatedBy = tdata.lastupdatedby;
+	this.hourlyBilling = tdata.hourlybilling || 0;
+	this.totalBilling = tdata.totalbilling || 0;
 	
 	if (tdata.desc)	this.description = tdata.desc; else this.description = '';
 	if (tdata.tn)	this.taskName = tdata.tn; else this.taskName = null;
