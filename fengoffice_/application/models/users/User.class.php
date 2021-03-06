@@ -948,22 +948,10 @@ class User extends BaseUser {
 			return true;
 		} // if
 
-		// Lets companye projects for company of this user and for $company and
-		// compare if we have projects where both companies work together
-		$projects_1 = DB::executeAll("SELECT `project_id` FROM " . ProjectCompanies::instance()->getTableName(true) . " WHERE `company_id` = ?", $this->getCompanyId());
-		$projects_2 = DB::executeAll("SELECT `project_id` FROM " . ProjectCompanies::instance()->getTableName(true) . " WHERE `company_id` = ?", $company->getId());
-
-		if(!is_array($projects_1) || !is_array($projects_2)) {
-			$this->visible_companies[$company->getId()] = false;
-			return false;
-		} // if
-
-		foreach($projects_1 as $project_id) {
-			if(in_array($project_id, $projects_2)) {
-				$this->visible_companies[$company->getId()] = true;
-				return true;
-			} // if
-		} // foreach
+		if ($company->canView($this)) {
+			$this->visible_companies[$company->getId()] = true;
+			return true;
+		}
 
 		$this->visible_companies[$company->getId()] = false;
 		return false;
@@ -1277,27 +1265,24 @@ class User extends BaseUser {
 	 * @return void
 	 */
 	function validate(&$errors) {
-
 		// Validate username if present
-		if($this->validatePresenceOf('username')) {
-			if(!$this->validateUniquenessOf('username')) $errors[] = lang('username must be unique');
+		if ($this->validatePresenceOf('username')) {
+			if (!$this->validateUniquenessOf('username')) $errors[] = lang('username must be unique');
 		} else {
 			$errors[] = lang('username value required');
 		} // if
 
-		if(!$this->validatePresenceOf('token')) $errors[] = lang('password value required');
+		if (!$this->validatePresenceOf('token')) $errors[] = lang('password value required');
 
 		// Validate email if present
-		if($this->validatePresenceOf('email')) {
-			if(!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
-			if(!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
+		if ($this->validatePresenceOf('email')) {
+			if (!$this->validateFormatOf('email', EMAIL_FORMAT)) $errors[] = lang('invalid email address');
+			if (!$this->validateUniquenessOf('email')) $errors[] = lang('email address must be unique');
 		} else {
 			$errors[] = lang('email value is required');
 		} // if
-
 		// Company ID
-		if(!$this->validatePresenceOf('company_id')) $errors[] = lang('company value required');
-
+		if (!$this->validatePresenceOf('company_id')) $errors[] = lang('company value required');
 	} // validate
 
 	/**

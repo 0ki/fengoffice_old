@@ -348,7 +348,7 @@ class Reports extends BaseReports {
 				$id = $row['id'];
 				unset($row['id']);
 				$row = array_slice($row, count($titleCols));
-				$row = array('link' => '<a class="internalLink" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">'.$title.'</a>') + $row;
+				//$row = array('link' => '<a class="internalLink" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">'.$title.'</a>') + $row;
 				foreach($row as $col => &$value){
 					if(in_array($col, $managerInstance->getExternalColumns())){
 						$value = self::getExternalColumnValue($col, $value);
@@ -357,9 +357,9 @@ class Reports extends BaseReports {
 				$row = str_replace('|', ',', $row);
 			}
 			if (is_array($results['columns'])) {
-				array_unshift($results['columns'], '');
+				//array_unshift($results['columns'], '');
 			} else {
-				$results['columns'] = array('');
+				//$results['columns'] = array('');
 			}
 			$results['rows'] = $rows;
 		}

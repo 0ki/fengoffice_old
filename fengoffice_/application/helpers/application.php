@@ -1246,7 +1246,7 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 		"autocomplete" => "off",
 		"onkeypress" => "if (event.keyCode == 13) return false;",
 	);
-	if (isset($tabindex)) $attributes['tabindex'] = $tabindex;
+	if ($tabindex != null) $attributes['tabindex'] = $tabindex;
 
 	if (trim($value) != "") $value .= ", ";
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
@@ -1267,6 +1267,7 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
         	forceSelection: true,
         	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
         	emptyText: "",
+        	'. ($tabindex != null ? "tabIndex: $tabindex," : "") .'
         	applyTo: "'.$id.'"
     	});
     	</script>

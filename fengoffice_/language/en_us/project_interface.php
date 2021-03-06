@@ -325,6 +325,19 @@ Subject:   {0}
 	'can view account emails and edit' => 'Can read/write emails and edit account', 
 	'personal settings' => 'Personal settings',
 	'personal settings desc' => 'These settings are specific to your user and don\'t affect other users with access to this account.',
+
+	'linked main title' => 'Links',
+	'linked file tab' => 'Files',
+	'linked email tab' => 'Email',
+	'linked emailunclassified tab' => 'Unclassified Email',
+	'linked message tab' => 'Notes',
+	'linked contact tab' => 'Contacts',
+	'linked comment tab' => 'Comments',
+	'linked webpage tab' => 'Web links',
+	'linked company tab' => 'Companies',
+	'linked milestone tab' => 'Milestones',
+	'linked task tab' => 'Tasks',
+	'linked event tab' => 'Events',
 ); // array
 
 ?>

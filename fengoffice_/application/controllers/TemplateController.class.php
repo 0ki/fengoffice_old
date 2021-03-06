@@ -51,7 +51,7 @@ class TemplateController extends ApplicationController {
 				if (is_array($objectPropertyValues)) {
 					foreach($objectPropertyValues as $objInfo => $propertyValues){
 						foreach($propertyValues as $property => $value){
-							$split = split(":", $objInfo);
+							$split = explode(":", $objInfo);
 							$object_id = $split[1];
 							$templateObjPropValue = new TemplateObjectProperty();
 							$templateObjPropValue->setTemplateId($cotemplate->getId());
@@ -185,7 +185,7 @@ class TemplateController extends ApplicationController {
 				if (is_array($objectPropertyValues)) {
 					foreach($objectPropertyValues as $objInfo => $propertyValues){
 						foreach($propertyValues as $property => $value){
-							$split = split(":", $objInfo);
+							$split = explode(":", $objInfo);
 							$object_id = $split[1];
 							$templateObjPropValue = new TemplateObjectProperty();
 							$templateObjPropValue->setTemplateId($cotemplate->getId());

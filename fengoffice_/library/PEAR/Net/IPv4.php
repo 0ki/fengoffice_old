@@ -17,7 +17,7 @@
 * @author     Florian Anderiasch <fa@php.net>
 * @copyright  1997-2005 The PHP Group
 * @license    http://www.php.net/license/3_01.txt  PHP License 3.01
-* @version    CVS: $Id: IPv4.php,v 1.1 2008/11/27 12:11:20 alvarotm01 Exp $
+* @version    CVS: $Id: IPv4.php,v 1.1.12.1 2009/10/27 21:04:52 idesoto Exp $
 * @link       http://pear.php.net/package/Net_IPv4
 */
 
@@ -212,7 +212,7 @@ class Net_IPv4
             /*
              *  a hexadecimal string was entered
              */
-            if (eregi("^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$", $parts[1], $regs)) {
+            if (preg_match("/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i", $parts[1], $regs)) {
                 // hexadecimal string
                 $myself->netmask = hexdec($regs[1]) . "." .  hexdec($regs[2]) . "." .
                     hexdec($regs[3]) . "." .  hexdec($regs[4]);
@@ -394,7 +394,7 @@ class Net_IPv4
      */
     function htoa($addr)
     {
-        if (eregi("^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$",
+        if (preg_match("/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i",
                     $addr, $regs)) {
             return hexdec($regs[1]) . "." .  hexdec($regs[2]) . "." .
                    hexdec($regs[3]) . "." .  hexdec($regs[4]);

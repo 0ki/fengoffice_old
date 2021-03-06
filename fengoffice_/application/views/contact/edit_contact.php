@@ -30,6 +30,12 @@
 			<?php echo text_field('contact[lastname]', array_var($contact_data, 'lastname'), 
 			array('id' => $genid . 'profileFormLastName', 'tabindex' => '2', 'maxlength' => 50)) ?>
 		</div>
+	</td><td style="padding-left:20px">
+		<div>
+			<?php echo label_tag(lang('email address'), $genid.'profileFormEmail') ?>
+			<?php echo text_field('contact[email]', array_var($contact_data, 'email'), 
+				array('id' => $genid.'profileFormEmail', 'tabindex' => '3', 'maxlength' => 100)) ?>
+		</div>
 	</td></tr></table>
 	
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
@@ -397,18 +403,11 @@
 		</div>
 	<?php }?>
 
-
-	<div>
-		<?php echo label_tag(lang('email address'), $genid.'profileFormEmail') ?>
-		<?php echo text_field('contact[email]', array_var($contact_data, 'email'), 
-			array('id' => $genid.'profileFormEmail', 'tabindex' => '3', 'maxlength' => 100)) ?>
-	</div>
-
 	<div>
 		<?php echo render_object_custom_properties($object, 'Contacts', true) ?>
 	</div><br/>
 	
-  	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '400', 'id' => $genid . 'submit2')) ?>
+  	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '20000', 'id' => $genid . 'submit2')) ?>
 
 <script>
 	Ext.get('<?php echo $genid ?>profileFormFirstName').focus();

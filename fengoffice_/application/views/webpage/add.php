@@ -161,7 +161,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 </div>
 <?php } // if ?>
 
-<div><?php echo label_tag(lang('url'), 'webpageFormURL', true) ?> <?php echo text_field('webpage[url]', array_var($webpage_data, 'url'), array('class' => 'title', 'tabindex' => '10', 'id' => 'webpageFormURL')) ?>
+<div><?php echo label_tag(lang('url'), 'webpageFormURL', true) ?> <?php echo text_field('webpage[url]', array_var($webpage_data, 'url'), array('class' => 'title', 'tabindex' => '50', 'id' => 'webpageFormURL')) ?>
 </div>
 
 <?php foreach ($categories as $category) { ?>
@@ -177,7 +177,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 <br />
 
 <?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'), 's',
-array('tabindex' => '200')) ?></div>
+array('tabindex' => '20000')) ?></div>
 </div>
 </form>
 

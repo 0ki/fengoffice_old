@@ -327,7 +327,16 @@ class Company extends BaseCompany {
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() ;
+		if (can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator()) {
+			return true;
+		} else {
+			$workspaces = $this->getWorkspaces();
+			foreach ($workspaces as $ws) {
+				if (can_add($user, $ws, get_class(Companies::instance()))) {
+					return true;
+				}
+			}
+		}
 	} // canEdit
 
 	/**
@@ -355,7 +364,7 @@ class Company extends BaseCompany {
 	 * @return boolean
 	 */
 	function canDelete(User $user) {
-		return ($user->isAccountOwner() || $user->isAdministrator()) && !$this->isOwner();
+		return $this->canEdit($user);
 	} // canDelete
 
 	/**
@@ -379,7 +388,7 @@ class Company extends BaseCompany {
 	 * @return boolean
 	 */
 	function canAdd(User $user, Project $project){
-		return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() || can_add($user, $project, get_class(Copmanies::instance()));
+		return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() || can_add($user, $project, get_class(Companies::instance()));
 	} // canAddClient
 
 	/**

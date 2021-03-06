@@ -117,4 +117,6 @@
 	'no files to compress' => 'Keine Dateien zum komprimieren',
 	'cant modify subscribers' => 'Kann Abonnenten nicht ändern',
 	'this object must belong to a ws to modify its subscribers' => 'Dieses Objekt muß zu einem Arbeitsbereich gehören, um seine Abonnenten zu ändern.',
+	'mailAccount dnx' => 'Email-Konto existiert nicht',
+	'error add contact from user' => 'Konnte Kontakt vom Benutzer nicht hinzufügen.',
 ); ?>

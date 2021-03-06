@@ -6,9 +6,19 @@
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('general', 'reset_password', '', 'StringConfigHandler', '1', '0', 'Used to store per-user tokens to validate password reset requests'),
  ('general', 'drag_drop_prompt', 'prompt', 'DragDropPromptConfigHandler', '0', '0', NULL),
+ ('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),
  ('mails panel', 'mail_drag_drop_prompt', 'prompt', 'MailDragDropPromptConfigHandler', '0', '102', NULL),
- ('mails panel', 'show_emails_as_conversations', '1', 'BoolConfigHandler', '0', '0', NULL)
+ ('mails panel', 'show_emails_as_conversations', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
+ ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+ ('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+ ('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('general', 'autodetect_time_zone', '0', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
+ ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL)
 ON DUPLICATE KEY UPDATE id=id;
+
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `category_name` = 'general' WHERE `name` = 'work_day_start_time';
 
 ALTER TABLE `<?php echo $table_prefix ?>contacts`
  ADD COLUMN `archived_on` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -53,12 +63,6 @@ ALTER TABLE `<?php echo $table_prefix ?>project_events`
 
 DELETE FROM `<?php echo $table_prefix ?>report_conditions` WHERE `custom_property_id` <> 0 AND `custom_property_id` NOT IN (SELECT `id` FROM `<?php echo $table_prefix ?>custom_properties`);
 DELETE FROM `<?php echo $table_prefix ?>report_columns` WHERE `custom_property_id` <> 0 AND `custom_property_id` NOT IN (SELECT `id` FROM `<?php echo $table_prefix ?>custom_properties`);
-
-INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
- ('general', 'autodetect_time_zone', '0', 'BoolConfigHandler', '0', '0', NULL),
- ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
- ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL)
-ON DUPLICATE KEY UPDATE id=id;
  
 ALTER TABLE `<?php echo $table_prefix ?>mail_accounts`
   ADD COLUMN `workspace` INT(10) UNSIGNED NOT NULL DEFAULT 0,
@@ -128,6 +132,7 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_contents`
  ADD COLUMN `conversation_id` int(10) unsigned NOT NULL default '0',
  CHANGE COLUMN `sent_date` `sent_date` datetime NOT NULL default '0000-00-00 00:00:00',
  ADD INDEX `conversation_id` (`conversation_id`),
- ADD INDEX `message_id` (`message_id`);
+ ADD INDEX `message_id` (`message_id`),
+ ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
 
 OPTIMIZE TABLE `<?php echo $table_prefix ?>_mail_contents`;

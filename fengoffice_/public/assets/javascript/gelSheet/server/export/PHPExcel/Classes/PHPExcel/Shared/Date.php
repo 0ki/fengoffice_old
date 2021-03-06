@@ -248,7 +248,7 @@ class PHPExcel_Shared_Date
 
 		// Try checking all possible characters
 		foreach (self::$possibleCharacters as $possibleCharacter) {
-			if (eregi($possibleCharacter, $pFormatCode)) {
+			if (preg_match('@' . $possibleCharacter . '@i', $pFormatCode)) {
 				return true;
 			}
 		}

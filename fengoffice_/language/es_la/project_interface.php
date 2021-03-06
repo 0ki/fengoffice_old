@@ -264,4 +264,17 @@ Asunto:   {0}
 	'field w_address' => 'Dirección trabajo',
 	'field o_address' => 'Otra dirección',
 	'mail account permissions desc' => 'Elija quiénes podrán leer y escribir correos desde esta cuenta, quiénes podrán editar información general de la cuenta y quiénes no tendrán acceso a esta cuenta.<br/><b>Nota:</b> Los correos clasificados en un espacio siempre serán visibles por los usuarios que tengan permiso de lectura sobre el espacio, sin importar estos permisos.',
+
+	'linked main title' => 'Vínculos',
+	'linked file tab' => 'Archivos',
+	'linked email tab' => 'Correo',
+	'linked emailunclassified tab' => 'Correo no clasificado',
+	'linked message tab' => 'Notas',
+	'linked contact tab' => 'Contactos',
+	'linked comment tab' => 'Comentarios',
+	'linked webpage tab' => 'Enlaces web',
+	'linked company tab' => 'Empresas',
+	'linked milestone tab' => 'Hitos',
+	'linked task tab' => 'Tareas',
+	'linked event tab' => 'Eventos',
 ); ?>

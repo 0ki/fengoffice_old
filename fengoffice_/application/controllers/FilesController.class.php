@@ -493,7 +493,7 @@ class FilesController extends ApplicationController {
 	
 	private function upload_document_image($url, $filename, $img_num, $tags = '') {
 		$file_dt = array();
-		$file_content = file_get_contents($url);
+		$file_content = file_get_contents(html_entity_decode($url));
 		$extension = get_file_extension($url);
 		$name = $filename . "-img-$img_num.$extension";
 		$description = lang("this file is included in document", $filename);
@@ -538,7 +538,6 @@ class FilesController extends ApplicationController {
 		if($fileId > 0) {
 			//edit document
 			try {
-				// edit document
 				$file = ProjectFiles::findById($fileId);
 				if (!$file->canEdit(logged_user())) {
 					flash_error(lang('no access permissions'));
@@ -555,8 +554,10 @@ class FilesController extends ApplicationController {
 				if (is_array($urls)) {
 					$img_num = 1;
 					foreach ($urls as $url) {
-						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
-						$file_content = str_replace($url, "ProjectFiles:$img_file_id", $file_content);
+						if (strpos(html_entity_decode($url), get_url('files', 'download_image')) === false ) {
+							$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+							$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
+						}
 					}
 				}
 				
@@ -622,8 +623,10 @@ class FilesController extends ApplicationController {
 			if (is_array($urls)) {
 				$img_num = 1;
 				foreach ($urls as $url) {
-					$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
-					$file_content = str_replace($url, "ProjectFiles:$img_file_id", $file_content);
+					if (strpos($url, get_url('files', 'download_image')) === false ) {
+						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+						$file_content = str_replace($url, get_url('files', 'download_image', array('id' => $img_file_id, 'inline' => 1)) , $file_content);
+					}
 				}
 			}
 			
@@ -2148,11 +2151,14 @@ class FilesController extends ApplicationController {
 		} else {
 			$html_content = purify_html($file->getFileContentWithRealUrls());
 		}
-		$encoding = detect_encoding($html_content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
-		
+		$charset = "";
+		if ($file->getTypeString() == "text/html") {
+			$encoding = detect_encoding($html_content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
+			$charset = ";charset=".$encoding;
+		}
 		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-		header("Content-Type: " . $file->getTypeString() . ";charset=".$encoding);
+		header("Content-Type: " . $file->getTypeString() . $charset);
 		header("Content-Length: " . (string) $file->getFileSize());
 		
 		if ($file->getTypeString() == 'text/html') {

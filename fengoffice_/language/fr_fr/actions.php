@@ -151,4 +151,9 @@
 	'show all linked objects' => 'Afficher tous les objets liés({0})',
 	'apply milestone to subtasks' => 'Appliquer le jalon aux sous-tâches',
 	'apply workspace to subtasks' => 'Appliquer le contexte aux sous-tâches',
+	'archive' => 'Archiver',
+	'unarchive' => 'Désarchiver',
+	'confirm archive selected objects' => 'Etes vous certain de vouloir archiver les objets sélectionnés ?',
+	'confirm archive object' => 'Etes vous certain de vouloir archiver cet objet ?',
+	'confirm unarchive object' => 'Etes vous certain de vouloir désarchiver cet objet ?',
 ); ?>

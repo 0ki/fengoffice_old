@@ -80,12 +80,17 @@ if($has_search_results) {
 		<?php } else { 
 			$object_name = $object->getObjectName();
 			$context_on_name = SearchableObjects::getContext($object_name,$search_string);
-			if ($context_on_name != '')
+			if ($context_on_name != '') {
 				$object_name = $context_on_name;
-			else
+			} else {
 				$object_name = clean($object_name);
-			?>
-			<a class="internalLink" href="<?php echo $object->getObjectUrl() ?>" style="font-size:120%;"><?php echo $object_name ?></a>
+			}
+			if ($object instanceof MailContent && $object->getHasAttachments()) {
+				$linkIcon = 'link-ico ico-attachment';
+			} else {
+				$linkIcon = '';
+			} ?>
+			<a class="<?php echo $linkIcon ?>" href="<?php echo $object->getObjectUrl() ?>" style="font-size:120%;"><?php echo $object_name ?></a>
 		<?php } // if ?>
 		</td>
 		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $object->getUpdatedByCardUrl(), ($object->getUpdatedBy() instanceof User ? clean($object->getUpdatedByDisplayName()) : clean($object->getCreatedByDisplayName())), format_descriptive_date($object->getObjectUpdateTime())) ?></td>

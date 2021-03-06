@@ -565,10 +565,8 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return array
 	 */
 	function getTagNames() {
-		if(!$this->isTaggable())
-		return array();
-		if (!is_null($this->tags))
-		{
+		if(!$this->isTaggable()) return array();
+		if (!is_null($this->tags)) {
 			$result = array();
 			for($i = 0; $i < count($this->tags); $i++){
 				$result[] = $this->tags[$i]->getTag();
@@ -627,9 +625,10 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			throw new Error('Object not taggable');
 		$args = array_flat(func_get_args());
 		Tags::setObjectTags($args, $this, get_class($this->manager()));
-		if ($this->isSearchable())
-			$this->addTagsToSearchableObject();
 		$this->tags = null; // Initializes tags cache
+		if ($this->isSearchable()) {
+			$this->addTagsToSearchableObject();
+		}
 		return true;
 	} // setTags
 
@@ -647,6 +646,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		$tag->setRelObjectManager(get_class($this->manager()));
 		$tag->setIsPrivate($this->isPrivate());
 		$tag->save();
+		$this->tags = null;
 		if ($this->isSearchable()) {
 			$this->addTagsToSearchableObject();
 		}
@@ -1348,7 +1348,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
     		$deletedBy = lang("n/a");
     	}
 		
-    	if ($this instanceof Comment ) {
+    	if ($this instanceof Comment || $this instanceof ProjectFileRevision ) {
     		$archivedBy = lang("n/a");
     		$archivedOn = lang("n/a");
     	} else {
@@ -1381,7 +1381,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				"deletedById" => $this->getTrashedById(),
     			"deletedBy" => $deletedBy,
     			"dateDeleted" => $deletedOn,
-    			"archivedById" => $this instanceof Comment ? 0 : $this->getArchivedById(),
+    			"archivedById" => $this instanceof Comment || $this instanceof ProjectFileRevision ? 0 : $this->getArchivedById(),
     			"archivedBy" => $archivedBy,
     			"dateArchived" => $archivedOn
 		);

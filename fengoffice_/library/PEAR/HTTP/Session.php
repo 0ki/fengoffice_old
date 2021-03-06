@@ -27,7 +27,7 @@
  * @author    Torsten Roehr <torsten.roehr@gmx.de>
  * @copyright 1997-2005 The PHP Group
  * @license   http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version   CVS: $Id: Session.php,v 1.1 2008/11/27 12:11:20 alvarotm01 Exp $
+ * @version   CVS: $Id: Session.php,v 1.1.12.1 2009/10/27 21:04:48 idesoto Exp $
  * @link      http://pear.php.net/package/HTTP_Session
  * @since     File available since Release 0.4.0
  */
@@ -511,7 +511,7 @@ class HTTP_Session
      */
     function register($name)
     {
-        return session_register($name);
+    	return false;
     }
 
     /**
@@ -528,7 +528,7 @@ class HTTP_Session
      */
     function unregister($name)
     {
-        return session_unregister($name);
+        return false;
     }
 
     /**
@@ -544,7 +544,7 @@ class HTTP_Session
      */
     function registered($name)
     {
-        return session_is_registered($name);
+        return false;
     }
 
     /**

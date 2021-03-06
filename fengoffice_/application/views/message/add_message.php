@@ -13,7 +13,7 @@
 		<table style="width:535px"><tr><td>
 			<?php echo $message->isNew() ? lang('new message') : lang('edit message') ?>
 		</td><td style="text-align:right">
-			<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '100')) ?>
+			<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
 		</td></tr></table>
 	</div>
 	
@@ -87,7 +87,7 @@
 			</div>
 		<?php }?>
 	<legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags'), null, 40); ?>
+		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags'), null, 20); ?>
 	</fieldset>
 	</div>
 
@@ -109,13 +109,13 @@
 
 		<div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
-			<div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', $genid.'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no'), 45) ?></div>
+			<div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', $genid.'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no'), 35) ?></div>
 			<div class="optionDesc"><?php echo lang('enable comments desc') ?></div>
 		</div>
 
 		<div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('enable anonymous comments') ?>:</label></div>
-			<div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', $genid.'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no'), 50) ?></div>
+			<div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', $genid.'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no'), 40) ?></div>
 			<div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
 		</div>
 	</fieldset>
@@ -190,7 +190,7 @@
 	<div>
 	<?php echo label_tag(lang('text'), 'messageFormText', false) ?>
 	<?php echo editor_widget('message[text]', array_var($message_data, 'text'), 
-		array('id' => $genid . 'messageFormText', 'tabindex' => '20')) ?>
+		array('id' => $genid . 'messageFormText', 'tabindex' => '50')) ?>
 	</div>
 	
 	<?php foreach ($categories as $category) { ?>
@@ -214,7 +214,7 @@
 	</div><br/>
 	
 	<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',
-		array('style'=>'margin-top:0px', 'tabindex' => '30')) ?>
+		array('style'=>'margin-top:0px', 'tabindex' => '20000')) ?>
 </div>
 </div>
 </form>

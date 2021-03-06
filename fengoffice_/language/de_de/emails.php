@@ -168,4 +168,5 @@
 	'mail format options' => 'Format',
 	'modified notification email' => 'Email \'{0}\' wurde geändert',
 	'modified notification email desc' => 'Email \'{0}\' wurde von {1} geändert.',
+	'attach from file system' => 'Anhang vom Computer',
 ); ?>

@@ -3,7 +3,8 @@ $genid = gen_id();
 if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects)) { ?>
 	<div>
 	<div style="border-bottom:1px solid #CCCCCC;"><table style="width:100%"><tr><td>
-	<div id="bt<?php echo $genid?>">
+	<strong><?php echo lang("linked main title") ?>:</strong>&nbsp;&nbsp;&nbsp;
+	<span id="bt<?php echo $genid?>">
 	<?php 
 	$amountOfObjects = user_config_option('amount_objects_to_show', null,logged_user()->getId());
 	$sorted_objects = array();
@@ -18,15 +19,14 @@ if (isset($linked_objects) && is_array($linked_objects) && count($linked_objects
 			$maxcount = count($sorted_objects[$linked_object->getObjectTypeName()]);
 			$maxkey = $linked_object->getObjectTypeName();
 		}
-	}
-	
+	}	
 	foreach ($sorted_objects as $key => $object_group){ ?>
 		<a href="#" style="<?php echo $key == $maxkey ? 'font-weight:bold' : 'font-weight:normal'?>;margin-right:10px" onclick="og.toggleSimpleTab('<?php echo $genid . $key ?>LO', 'hp<?php echo $genid ?>', 'bt<?php echo $genid ?>', this)">
-		<?php echo lang($key) ?><span style="font-size:80%"><?php echo ' (' . count($object_group) . ')' ?></span></a>
+		<?php echo lang("linked $key tab") ?><span style="font-size:80%"><?php echo ' (' . count($object_group) . ')' ?></span></a>
 		
 	<?php
 	}
-	?></div></td><td style="text-align:right;"><?php 
+	?></span></td><td style="text-align:right;"><?php 
 		$displayShowAll = count($sorted_objects) > 1;
 		$displayLinkObjects = $linked_objects_object->canLinkObject(logged_user()) && $enableAdding;
 		

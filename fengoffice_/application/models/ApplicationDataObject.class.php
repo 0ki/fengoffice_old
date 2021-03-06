@@ -73,7 +73,7 @@ abstract class ApplicationDataObject extends DataObject {
 		return SearchableObjects::dropContentByObject($this);
 	} // clearSearchIndex
 
-	function addToSearchableObjects($wasNew){
+	function addToSearchableObjects($wasNew = false){
 		$columns_to_drop = array();
 		if ($wasNew)
 			$columns_to_drop = $this->getSearchableColumns();

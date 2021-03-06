@@ -2,7 +2,7 @@
 $genid = gen_id();
   	/*add_page_action(lang('print view'), '#', "ico-print", "_blank", array('onclick' => 'this.form' . $genid . '.submit'));*/
 ?>
-<form name="form<?php echo $genid ?>" action="<?php echo get_url('reporting', $template_name . '_print') ?>" method="post" enctype="multipart/form-data" target="_blank">
+<form id="form<?php echo $genid ?>" name="form<?php echo $genid ?>" action="<?php echo get_url('reporting', $template_name . '_print') ?>" method="post" enctype="multipart/form-data" target="_download">
 
 <input name="post" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
 
@@ -16,7 +16,7 @@ $genid = gen_id();
 	<td rowspan=2 colspan="1" class="coViewHeader" style="width:auto;">
 		<div class="coViewTitleContainer">
 			<div class="coViewTitle"><?php echo $title ?></div>
-			<input type="submit" value="<?php echo lang('print view') ?>" style="width:120px; margin-top:10px;"/>
+			<input type="submit" value="<?php echo lang('print view') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_blank' + Ext.id()" style="width:120px; margin-top:10px;"/>
 		</div>
 	</td>
 	

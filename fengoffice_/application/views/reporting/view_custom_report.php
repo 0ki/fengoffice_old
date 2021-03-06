@@ -5,7 +5,7 @@
 				break;
 			case DATA_TYPE_INTEGER: $formatted = clean($value);
 				break;
-			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('true') : lang('false'));
+			case DATA_TYPE_BOOLEAN: $formatted = ($value == 1 ? lang('yes') : lang('no'));
 				break;
 			case DATA_TYPE_DATE:
 				if ($value != 0) { 
@@ -22,6 +22,9 @@
 				} else $formatted = '';
 				break;
 			default: $formatted = $value;
+		}
+		if($formatted == ''){
+			$formatted = '--';
 		}
 		
 		return $formatted;

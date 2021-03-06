@@ -407,7 +407,7 @@ class AccessController extends ApplicationController {
 				$this->redirectTo('access', 'forgot_password');
 			} // if
 
-			$token = sha1(gen_id() . defined('SEED') ? SEED : '');
+			$token = sha1(gen_id() . (defined('SEED') ? SEED : ''));
 			$timestamp = time() + 60*60*24;
 			set_user_config_option('reset_password', $token . ";" . $timestamp, $user->getId());
 			

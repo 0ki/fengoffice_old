@@ -40,10 +40,10 @@ og.QuickAdd = function(config) {
 				var url = og.getUrl('files', 'add_document');
 				og.openLink(url/*, {caller: 'documents-panel'}*/);
 			}, hidden: !og.config['enable_documents_module']},
-			/*{id: 'quick-spreadsheet', text: lang('spreadsheet'), iconCls: 'ico-sprd', handler: function() {
-				var url = og.getUrl('files', 'add_spreadsheet');
-				og.openLink(url/*, {caller: 'documents-panel'}*//*);
-			}, hidden: !og.config['enable_documents_module']},*/
+//			{id: 'quick-spreadsheet', text: lang('spreadsheet'), iconCls: 'ico-sprd', handler: function() {
+//				var url = og.getUrl('files', 'add_spreadsheet');
+//				og.openLink(url/*, {caller: 'documents-panel'}*/);
+//			}, hidden: !og.config['enable_documents_module']},
 			{id: 'quick-presentation', text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 				var url = og.getUrl('files', 'add_presentation');
 				og.openLink(url/*, {caller: 'documents-panel'}*/);

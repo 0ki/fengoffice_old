@@ -109,7 +109,7 @@
 			<br />
 		</div>
 		<?php } ?>
-		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project->getId(), $genid) .'</div>'?>
+		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
 
 		<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>
@@ -444,7 +444,7 @@
 	
 	<script>
 	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
-	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.previousValue = <?php echo $project instanceof Project ? $project->getId() : 0 ?>;
 	wsTree.on("click", function(ws) {
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
@@ -535,7 +535,7 @@
 		</div><br/>
 	</div>
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
-  <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '170')) ?>
+  <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
 </div>
 </form>

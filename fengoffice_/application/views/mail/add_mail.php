@@ -24,7 +24,7 @@ sig.actualTextSignature = '';
 sig.actualHtmlSignature = '';
 
 </script>
-<div id="main_div" style="height:100%; overflow-y: hidden;">
+<div id="<?php echo $genid ?>main_div" style="height:100%; overflow-y: hidden;">
 <form style="height:100%;background-color:white;" id="<?php echo $genid ?>form" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return og.mailSetBody('<?php echo $genid ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $genid?>" />
 <input type="hidden" name="mail[body]" value="" />
@@ -150,7 +150,7 @@ sig.actualHtmlSignature = '';
     	<label for='mailSubject'><?php echo lang('mail subject')?></label>
     	</td><td>
     	<?php echo text_field('mail[subject]', array_var($mail_data, 'subject'), 
-    		array('class' => 'title', 'tabindex'=>'40', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;')) ?>
+    		array('class' => 'title', 'tabindex'=>'40', 'id' => $genid . 'mailSubject', 'style' => 'width:100%;', 'autocomplete' => 'off')) ?>
     	</td></tr></table>
 	</div>
 		
@@ -253,7 +253,7 @@ sig.actualHtmlSignature = '';
   
 </div>
 <div class="coInputSeparator"></div>
-<div id="<?php echo $genid ?>mail_body_container" style="height: 100%; overflow-y: auto">
+<div id="<?php echo $genid ?>mail_body_container" style="height: 105%; overflow-y: auto">
     <?php 
     $display = ($type == 'html') ? 'none' : 'block';
     $display_fck = ($type == 'html') ? 'block' : 'none';
@@ -273,18 +273,20 @@ sig.actualHtmlSignature = '';
     
     echo textarea_field('plain_body', $plain_body, array('id' => $genid . 'mailBody', 'tabindex' => '50', 
     	'style' => "display:$display;width:97%;height:94%;margin-left:1%;margin-right:1%;margin-top:1%; min-height:250px;", 
-    	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();")) ?>
+    	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();", 'autocomplete' => 'off')) ?>
 
     <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
-		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor">
-			<?php echo $html_body ?>
-		</textarea>
+		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor"><?php echo clean($html_body) ?></textarea>
 	</div>
 </div>
 </div>
 </form>
 </div>
 
+<?php
+	$loc = user_config_option('localization');
+	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
+?>
 <script>
 
 var genid = '<?php echo $genid ?>';
@@ -297,6 +299,7 @@ var editor = CKEDITOR.replace(genid + 'ckeditor', {
 	shiftEnterMode: CKEDITOR.ENTER_P,
 	resize_enabled: false,
 	customConfig: '',
+	language: '<?php echo $loc ?>',
 	toolbar: [
 		['Bold','Italic','Underline','Strike','-',
 		'Outdent','Indent','Blockquote','-',
@@ -365,6 +368,13 @@ og.resizeMailDiv = function() {
 	if (maindiv != null && headerdiv != null) {
 		var divHeight = maindiv.offsetHeight - headerdiv.offsetHeight - 15;
 		document.getElementById('<?php echo $genid ?>mail_div').style.height = divHeight + 'px';
+		
+		var parentTd = document.getElementById('cke_contents_' + genid + 'ckeditor');
+		if (parentTd) {
+			var iframe = parentTd.firstChild;
+			iframe.style.height = (divHeight - 20 ) + 'px';
+			parentTd.style.height = (divHeight - 20 ) + 'px';
+		}
 	}
 }
 og.resizeMailDiv();

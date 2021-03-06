@@ -418,7 +418,7 @@ class ProjectFile extends BaseProjectFile {
 	
 	function getFileContentWithRealUrls() {
 		$content = $this->getFileContent();
-		if ($this->getTypeString() == 'text/html') {
+		/*if ($this->getTypeString() == 'text/html') {
 			// Search for images
 			preg_match_all("/<img[^>]*src=[\"ProjectFiles:']([^\"']*)[\"']/", $content, $matches);
 			$file_ids = array_var($matches, 1);
@@ -436,7 +436,7 @@ class ProjectFile extends BaseProjectFile {
 					$content = str_replace($file_id, ROOT_URL . "/tmp/$tmp_fname", $content);
 				}
 			}
-		}
+		}*/
 		return $content;
 	}
 	

@@ -8,7 +8,6 @@ define('ROOT', dirname(__FILE__));
 
 define('APPLICATION_PATH', ROOT . '/application');
 define('LIBRARY_PATH',     ROOT . '/library');
-define('FILES_DIR',        ROOT . '/upload'); // place where we will upload project files
 define('CACHE_DIR',        ROOT . '/cache');
 define('THEMES_DIR',       ROOT . '/public/assets/themes');
 
@@ -61,6 +60,7 @@ if(!is_bool($config_is_set) || !$config_is_set) {
 //  config.php + extended config
 // ---------------------------------------------------
 
+if (!defined('FILES_DIR')) define('FILES_DIR', ROOT . '/upload'); // place where we will upload project files
 define('PRODUCT_NAME', 'OpenGoo');
 define('PRODUCT_URL', 'http://www.opengoo.org');
 define('DEFAULT_HELP_LINK', 'http://wiki.opengoo.org');

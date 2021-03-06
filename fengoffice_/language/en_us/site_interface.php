@@ -658,6 +658,16 @@ return array(
   'template parameters' => 'Template parameters',
   'add image' => 'Add image',
   'update image' => 'Update image',
+
+  'can_edit_company_data description' => 'If this permission is checked the user will be able to edit the owner company\'s data.',
+  'can_manage_security description' => 'If this permission is checked the user will be able to create, update and delete users and grorps, and modify their permissions.',
+  'can_manage_workspaces description' => 'If this permission is checked the user will be able to create, update or delete workspaces.',
+  'can_manage_configuration description' => 'If this permission is checked the user will be able to edit application settings like Configuration, Custom Properties and Cron Events, and Upgrade the application.',
+  'can_manage_contacts description' => 'If this permission is checked the user will be able to create, update, delete and view all Contacts in the system.',
+  'can_manage_templates description' => 'If this permission is checked the user will be able to create, update and delete Templates.',
+  'can_manage_reports description' => 'If this permission is checked the user will be able to create, update and delete Custom Reports.',
+  'can_manage_time description' => 'If this permission is checked the user will be able to use the Time module and add timeslots to tasks.',
+  'can_add_mail_accounts description' => 'If this permission is checked the user will be able to create new Email accounts',
 ); // array
 
 ?>

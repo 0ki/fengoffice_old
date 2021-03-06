@@ -1647,7 +1647,7 @@ class TaskController extends ApplicationController {
 		if ($companies != null) {
 			foreach ($companies as $comp) {
 				if ($ws != null) $users = $comp->getUsersOnProject($ws);
-				else $users = $comp->getUsers();
+				else continue;
 				if (is_array($users)) {
 					foreach ($users as $k => $user) {
 						// if logged_user can assign tasks to user and user can read tasks the user is allowed

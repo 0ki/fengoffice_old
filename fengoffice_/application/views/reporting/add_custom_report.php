@@ -16,7 +16,7 @@ $genid = gen_id();
 	<tr>
 		<td><?php echo (isset($id) ? lang('edit custom report') : lang('new custom report')) ?>
 		</td>
-		<td style="text-align: right"><?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '100')) ?></td>
+		<td style="text-align: right"><?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '20')) ?></td>
 	</tr>
 </table>
 </div>
@@ -45,7 +45,7 @@ foreach ($object_types as $type) {
 ?>
 <?php $strDisabled = count($options) > 1 ? '' : 'disabled'; 
 echo select_box('objectTypeSel', $options,
-array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '')) ?>
+array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10')) ?>
 
 </div>
 <div id="showhideOptions" style="padding-top:5px">
@@ -77,7 +77,7 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 		}//foreach 
 		echo $hidWs;
 		echo '<div style="margin-top:5px; margin-right:5px; float:left;">' . select_project2('report[workspace]',(isset($selected_ws) ? $selected_ws:0 ), $genid , true).'</div>'; 
-		echo '<div style="margin-top:5px;padding-top:3px; margin-right:5px; float:left;">' . checkbox_field('parametizable_ws',$parameter_ws) . lang('parametrizable') .'</div>';		
+		echo '<div style="margin-top:5px;padding-top:3px; margin-right:5px; float:left;">' . checkbox_field('parametizable_ws', $parameter_ws, array('tabindex' => '30')) . lang('parametrizable') .'</div>';		
 		 ?>
 	</div>
 </fieldset>
@@ -87,7 +87,7 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 			<?php
 			echo $hidTg; 
 			echo '<div style="margin-top:5px; margin-right:5px; float:left;">' . autocomplete_tags_field("report[tags]", (isset($selected_tag) ?$selected_tag:null ), null, 40) . '</div>';
-			echo '<div  style="float: left; margin-top: 8px; margin-left: 5px;">' . checkbox_field('parametizable_tags',$parameter_tag) . lang('parametrizable') .'</div>';
+			echo '<div  style="float: left; margin-top: 8px; margin-left: 5px;">' . checkbox_field('parametizable_tags', $parameter_tag, array('tabindex' => '50')) . lang('parametrizable') .'</div>';
 		 ?>
 	</div>
 </fieldset>
@@ -103,7 +103,7 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 <fieldset><legend><?php echo lang('columns and order') ?></legend>
 	<div id="columnListContainer"></div>
 </fieldset>
-<?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')))?>
+<?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')), 's', array('tabindex' => '20000'))?>
 
 </div>
 
@@ -120,4 +120,7 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 			}//if
 		}//foreach ?>
 	<?php }//if ?>
+	
+	var first = document.getElementById('<?php echo $genid ?>reportFormName');
+	if (first) first.focus();
 </script>

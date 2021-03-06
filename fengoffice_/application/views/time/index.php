@@ -78,7 +78,7 @@
 				<?php echo lang('time timeslots') ?>
 			</td>
 			<td align="right" style="font-size:80%;font-weight:normal">
-				<a href="<?php echo get_url("reporting",'total_task_times_p') ?>" class="internalLink coViewAction ico-print" style="color:white;font-weight:bold"><?php echo lang('print report') ?></a>
+				<a href="<?php echo get_url("reporting",'total_task_times_p', array('type' => '1')) ?>" class="internalLink coViewAction ico-print" style="color:white;font-weight:bold"><?php echo lang('print report') ?></a>
 			</td>
 		</tr></table>
 		</div>
@@ -89,7 +89,7 @@
 		<table style="width:100%;"><tr>
 			<td style="padding-right: 10px; width:140px;">
 				<?php echo label_tag(lang('date')) ?>
-				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(),$genid,null, false) ?>
+				<?php echo pick_date_widget2('timeslot[date]', DateTimeValueLib::now(), $genid, 100, false) ?>
 			</td>
 			<td style="padding-right:10px; width:140px;">
 				<?php echo label_tag(lang('workspace'));
@@ -97,7 +97,7 @@
 			</td>
 			<?php if(logged_user()->isAdministrator()) {?><td style="padding-right: 10px; width:140px;">
 				<?php echo label_tag(lang('user')) ?>
-				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(),array('id' => $genid . 'tsUser')) ?>
+				<?php echo user_select_box("timeslot[user_id]", logged_user()->getId(), array('id' => $genid . 'tsUser', 'tabindex' => '150')) ?>
 			</td><?php } else { ?><td style="padding-right: 10px">
 						<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>				
 			</td><?php } ?>
@@ -122,20 +122,20 @@
 			</script>
 				<?php echo label_tag(lang('time')) ?>
 				<?php echo text_field('timeslot[hours]', 0, 
-		    		array('style' => 'width:28px', 'tabindex' => '100', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
+		    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
 		    		<br/><span class="desc" style="font-style:normal;font-size:80%">(<?php echo lang('hours') ?>)</span>
 			</td>
 			<td style="padding-right: 10px; width:95%; margin-top: 0px;">
 				<?php echo label_tag(lang('description')) ?>
-				<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '200', 'id' => $genid . 'tsDesc')) ?>
+				<?php echo textarea_field('timeslot[description]', '', array('class' => 'short', 'style' => 'height:30px;width:100%;min-width:200px', 'tabindex' => '250', 'id' => $genid . 'tsDesc')) ?>
 			</td>
 			<td style="padding-left: 10px;text-align:right; vertical-align: middle;">
 				<br/><div id="<?php echo $genid ?>TMTimespanSubmitAdd"><?php echo submit_button(lang('add'),'s',array('style'=>'margin-top:0px;margin-left:0px', 'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?></div>
 				<div id="<?php echo $genid ?>TMTimespanSubmitEdit" style="display:none">
 					<?php echo submit_button(lang('update'),'s',array('style'=>'margin-top:0px;margin-left:0px', 
-						'tabindex' => '300', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
+						'tabindex' => '310', 'onclick' => 'ogTimeManager.SubmitNewTimeslot(\'' .$genid . '\');return false;')) ?><br/>
 					<?php echo submit_button(lang('cancel'),'c',array('style'=>'margin-top:0px;margin-left:0px', 
-						'tabindex' => '310', 'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>
+						'tabindex' => '320', 'onclick' => 'ogTimeManager.CancelEdit();return false;')) ?>
 				</div>
 			</td>
 		</tr></table>
@@ -187,5 +187,7 @@
 ogTimeManager.loadDataFromHF('<?php echo $genid ?>');
 ogTimeManager.drawTasks('<?php echo $genid ?>');
 ogTimeManager.drawTimespans('<?php echo $genid ?>');
+
+Ext.getCmp("<?php echo $genid ?>timeslot[date]Cmp").focus();
 </script>
 </div>

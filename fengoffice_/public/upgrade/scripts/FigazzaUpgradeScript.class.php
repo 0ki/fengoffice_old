@@ -30,6 +30,7 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	 */
 	private $check_is_writable = array(
 		'/config/config.php',
+		'/config/installed_version.php',
 		'/config',
 		'/cache',
 		'/tmp',

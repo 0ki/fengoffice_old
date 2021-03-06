@@ -24,9 +24,11 @@ class EncodingConverter
 		$this->_last_err = "[Encoding Conversion Error] Msg: $msg in '".$this->_last_err_filename."' on line ".$this->_last_err_line." (error code: $err)";
 	}
 
-	function convert($in_enc, $out_enc, $str, $return_original_on_error = true) {
+	function convert($in_enc, $out_enc, $str, $return_original_on_error = true, $ignore_non_compatible = true) {
 		$this->_last_err = null;
 		set_error_handler(array(&$this, '_handleError'));
+		
+		if ($ignore_non_compatible) $out_enc .= "//IGNORE";
 		
 		$retval = iconv($in_enc, $out_enc, $str);
 		

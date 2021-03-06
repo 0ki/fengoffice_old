@@ -37,16 +37,22 @@
 ?>
 
 <script>
+	var viewing_quotes = false;
+	var viewing_images = false;
 	var genid = '<?php echo $genid ?>';
 	var tt = '<?php echo logged_user()->getTwistedToken() ?>';
 	og.showMailImages = function(pre, rand) {
+		if (viewing_quotes) pre = "wiq_" + pre.substring(pre.indexOf("_")+1);
 		og.changeContentIframeSrc(pre, rand);
 		document.getElementById(genid + 'showImagesLink').style.display = 'none';
+		viewing_images = true;
 	}
 	
 	og.showQuotedHtml = function(pre, rand) {
+		if (viewing_images) pre = "wi" + pre;
 		og.changeContentIframeSrc(pre, rand); 
 		document.getElementById(genid + 'showQuotedText').style.display = 'none';
+		viewing_quotes = true;
 	}
 	
 	og.changeContentIframeSrc = function(pre, rand) {
@@ -165,13 +171,13 @@
 			} else {
 				$html_content = purify_html($email->getBodyHtml());
 			}
+			// links must open in a new tab or window
+			$html_content = str_replace('href', 'target="_blank" href', $html_content);
+			
 			$mail_html_content = MailUtilities::removeQuotedBlocks($html_content);
 			$html_content = array_var($mail_html_content, 'unquoted', '');
 			$quoted_html_content = array_var($mail_html_content, 'quoted');
 			
-			// links must open in a new tab or window
-			$html_content = str_replace('href', 'target="_blank" href', $html_content);
-						
 			// put content into an iframe, in order to avoid css to affect the rest of the interface
 			$tmphtml = $email->getAccountId().'temp_mail_content.html';
 			
@@ -183,6 +189,7 @@
 				$handle = fopen($filename_with_images, 'wb');
 				fwrite($handle, $html_content);		
 				fclose($handle);
+				$content_wimages = $html_content;
 				
 				$html_content = remove_images_from_html($html_content);
 				$content = '<div id="'.$genid.'showImagesLink" style="background-color:#FFFFCC">'.lang('images are blocked').' 
@@ -195,11 +202,11 @@
 			fwrite($handle, $html_content);
 			fclose($handle);
 			if (defined('SANDBOX_URL')) {
-				$url = get_sandbox_url('feed', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => rand(), 'id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken()));
+				$url = get_sandbox_url('feed', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => gen_id(), 'id' => logged_user()->getId(), 'token' => logged_user()->getTwistedToken()));
 			} else {
-				$url = get_url('mail', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => rand()));
+				$url = get_url('mail', 'show_html_mail', array('acc' => $email->getAccountId(), 'r' => gen_id()));
 			}
-			$content .= '<iframe id="'.$genid.'ifr" name="ifr" style="width:100%;" frameborder="0" src="'.$url.'" 
+			$content .= '<iframe id="'.$genid.'ifr" name="'.$genid.'ifr" style="width:100%;" frameborder="0" src="'.$url.'" 
 							onload="javascipt:iframe=document.getElementById(\''.$genid.'ifr\'); iframe.height = Math.min(600, iframe.contentWindow.document.body.scrollHeight) ;">
 						</iframe>';
 			'<script>if (Ext.isIE) document.getElementById(\''.$genid.'ifr\').contentWindow.location.reload();</script>';
@@ -210,6 +217,9 @@
 				$q_link .= ":: ".lang('show quoted text')." ::</a>";
 				
 				file_put_contents(ROOT."/tmp/q_".$tmphtml, $html_content . $quoted_html_content);
+				if (isset($content_wimages)) {
+					file_put_contents(ROOT."/tmp/wiq_".$tmphtml, $content_wimages . $quoted_html_content);
+				}
 				$content .= $q_link;
 			}
 			

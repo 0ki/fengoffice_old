@@ -167,7 +167,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	function setFileAttribute($file_id, $attribute_name, $attribute_value) {
 		
 		if(!$this->isInRepository($file_id)) {
-			throw new FileNotInRepositoryError($file_id);
+			//throw new FileNotInRepositoryError($file_id);
 		} // if
 
 		if(is_object($attribute_value) || is_resource($attribute_value)) {

@@ -113,16 +113,23 @@
     	}
     	
     	if($include_private) {
-    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh') {
-    			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\'' . $wsSearch . $trashed . $otSearch . $columnsSearch );
-    		} else
-    			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
+    		$privSearch = 'AND `is_private` = 0';
     	} else {
-    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh') {
-    			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\' AND `is_private` = 0' . $wsSearch . $trashed . $otSearch . $columnsSearch );
-    		} else
-    			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $trashed . $otSearch . $columnsSearch);
-    	} // if
+    		$privSearch = '';
+    	}
+    	if (user_config_option('search_engine', substr(Localization::instance()->getLocale(),0,2) == 'zh' ? 'like' : null) == 'like') {
+    		$search_for = str_replace("*", "%", $search_for);
+    		return DB::prepareString("`content` LIKE '%$search_for%' $privSearch $wsSearch $trashed $otSearch $columnsSearch");
+    	} else {
+    		$search_words = preg_split('/[\s\.\+\-\~]/', $search_for);
+    		$search_for = "";
+    		foreach ($search_words as $word) {
+    			if ($word != "" && $word[0] != "+" && $word[0] != "-") {
+    				$search_for .= " +$word";
+    			}
+    		}
+    		return DB::prepareString("MATCH (`content`) AGAINST ('$search_for' IN BOOLEAN MODE) $privSearch $wsSearch $trashed $otSearch $columnsSearch");
+    	}
     } // getSearchConditions
     
     /** Prepare search conditions string based on input params

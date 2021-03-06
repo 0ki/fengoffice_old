@@ -22,9 +22,9 @@
   	</div>
   	
   <div>
-    <?php echo label_tag(lang('name'), 'clientFormName', true) ?>
+    <?php echo label_tag(lang('name'), $genid.'clientFormName', true) ?>
     <?php echo text_field('company[name]', array_var($company_data, 'name'), 
-    	array('class' => 'title', 'tabindex' => '1', 'id' => 'clientFormName')) ?>
+    	array('class' => 'title', 'tabindex' => '1', 'id' => $genid.'clientFormName')) ?>
   </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
@@ -192,14 +192,14 @@
 	</div><br/>	
   
 <?php if(!$company->isNew() && $company->isOwner()) { ?>
-  <?php echo submit_button(lang('save changes'), 's', array('tabindex' => '200')) ?>
+  <?php echo submit_button(lang('save changes'), 's', array('tabindex' => '20000')) ?>
 <?php } else { ?>
-  <?php echo submit_button($company->isNew() ? lang('add company') : lang('save changes'), 's', array('tabindex' => '200')) ?>
+  <?php echo submit_button($company->isNew() ? lang('add company') : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 <?php } // if ?>
 </div>
 </div>
 </form>
 
 <script>
-	Ext.get('clientFormName').focus();
+	Ext.get('<?php echo $genid ?>clientFormName').focus();
 </script>

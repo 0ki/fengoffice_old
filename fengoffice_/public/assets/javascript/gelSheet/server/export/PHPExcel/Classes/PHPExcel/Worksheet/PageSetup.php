@@ -525,9 +525,9 @@ class PHPExcel_Worksheet_PageSetup
 	 * @throws Exception
 	 */
 	public function setPrintArea($value) {
-    	if (!eregi(':', $value)) {
+    	if (strpos(':', $value) === false) {
     		throw new Exception('Cell coordinate must be a range of cells.');
-    	} else if (eregi('\$', $value)) {
+    	} else if (strpos('$', $value) !== false) {
     		throw new Exception('Cell coordinate must not be absolute.');
     	} else {
 			$this->_printArea = strtoupper($value);

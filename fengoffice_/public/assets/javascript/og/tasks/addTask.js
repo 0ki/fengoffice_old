@@ -166,9 +166,8 @@ ogTasks.drawTaskForm = function(container_id, data){
 	if (data.isEdit) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
 	html += "</tr></table></div>";
 	html += "<div id='ogTasksPanelATTags' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('tags') + ":&nbsp;</b></td><td><input id='ogTasksPanelTagsSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.tags?data.tags + ',':'') + "' name='task[tags]'/></td></tr></table></div>";
-	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;" + (data.isEdit && ogTasks.ObjectSubtypes.length > 0 ? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
-	
-	
+	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
+
 	//Second column
 	html += "</td><td style='padding-left:10px; margin-right:10px;width:300px;'>";
 	
@@ -228,12 +227,14 @@ ogTasks.drawTaskForm = function(container_id, data){
         mode: 'local',
         triggerAction: 'all',
         selectOnFocus:true,
-        width:140,        
-        //emptyText: (lang('select object type') + '...'),
+        width:140,
         valueNotFoundText: '',
        	applyTo: "ogTasksPanelObjectTypeSelector"
    	});
-	
+	if (co_types.length == 0) {
+   		document.getElementById('ogTasksPanelATObjectType').style.display = 'none';
+   	}
+
 	var tags = Ext.getCmp("tag-panel").getTags();
 	var arr = [];
 	for (var i=0; i < tags.length; i++) {
@@ -346,8 +347,11 @@ ogTasks.addNewTaskShowMore = function(){
 	document.getElementById('ogTasksPanelATWorkspace').style.display = 'block';
 	document.getElementById('ogTasksPanelATMilestone').style.display = 'block';
 	document.getElementById('ogTasksPanelATTags').style.display = 'block';
-	document.getElementById('ogTasksPanelATObjectType').style.display = 'block';
-	
+	if (ogTasks.ObjectSubtypes && ogTasks.ObjectSubtypes.length > 0) {
+		document.getElementById('ogTasksPanelATObjectType').style.display = 'block';
+	} else {
+		document.getElementById('ogTasksPanelATObjectType').style.display = 'none';
+	}
 	document.getElementById('ogTasksPanelATDesc').focus();
 }
 

@@ -150,4 +150,9 @@
 	'show all linked objects' => 'Zeige alle verknüpften Objekte({0})',
 	'apply milestone to subtasks' => 'Meilenstein zur Unteraufgabe zuordnen',
 	'apply workspace to subtasks' => 'Arbeitsbereich zur Unteraufgabe zuordnen',
+	'archive' => 'Archivieren',
+	'unarchive' => 'Aus dem Archiv entfernen',
+	'confirm archive selected objects' => 'Wirklich sicher, die ausgewählten Objekte zu archivieren?',
+	'confirm archive object' => 'Wirklich sicher, dieses Objekt zu archivieren?',
+	'confirm unarchive object' => 'Wirklich sicher, dieses Objekt aus dem Archiv zu entfernen?',
 ); ?>

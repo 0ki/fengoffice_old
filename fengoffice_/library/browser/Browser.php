@@ -183,7 +183,7 @@
 		 * Set the version of the browser
 		 * @param $version The version of the Browser
 		 */
-		public function setVersion($version) { $this->_version = ereg_replace('[^0-9,.,a-z,A-Z]','',$version); }
+		public function setVersion($version) { $this->_version = preg_replace('/[^0-9,.,a-z,A-Z]/','',$version); }
 		/**
 		 * The version of AOL.
 		 * @return string Version of AOL (will only contain alpha-numeric characters and a period)
@@ -193,7 +193,7 @@
 		 * Set the version of AOL
 		 * @param $version The version of AOL
 		 */
-		public function setAolVersion($version) { $this->_aol_version = ereg_replace('[^0-9,.,a-z,A-Z]','',$version); }
+		public function setAolVersion($version) { $this->_aol_version = preg_replace('/[^0-9,.,a-z,A-Z]/','',$version); }
 		/**
 		 * Is the browser from AOL?
 		 * @return boolean True if the browser is from AOL otherwise false

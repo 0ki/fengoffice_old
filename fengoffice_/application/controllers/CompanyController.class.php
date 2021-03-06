@@ -147,7 +147,7 @@ class CompanyController extends ApplicationController {
 			$enteredWS = Projects::findByCSVIds($ids);
 			$validWS = array();
 			foreach ($enteredWS as $ws) {
-				if (Company::canAddClient(logged_user())) {
+				if (Company::canAdd(logged_user(), $ws)) {
 					$validWS[] = $ws;
 				}
 			}
@@ -289,15 +289,14 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_client() {
-		if(!logged_user()->isAdministrator(owner_company())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('client dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+		if (!$company->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} // if

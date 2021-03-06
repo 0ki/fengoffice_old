@@ -151,8 +151,10 @@ final class DB {
 			if (Env::isDebuggingTime()) {
 				TimeIt::add("DB", $end - $start, $start, $end);
 			}
-		} catch (Exception $e){
-			Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+		} catch (Exception $e) {
+			if (defined('LOG_SQL_ERRORS') && LOG_SQL_ERRORS) {
+				Logger::log("SQL ERROR: " . $e->getMessage() . " - " .  DB::prepareString($sql, $arguments));
+			}
 			throw $e;
 		}
 

@@ -94,7 +94,7 @@ class Notifier {
 			$text = str_replace("\n", "\r\n>", $text);
 			$properties['description'] = $text;
 		}
-		if ($object instanceof ProjectFile) {
+		if ($object instanceof ProjectFile && $object->getType() == ProjectFiles::TYPE_DOCUMENT) {
 			$revision = $object->getLastRevision();
 			if (trim($revision->getComment())) {
 				$text = "\r\n" . $revision->getComment();

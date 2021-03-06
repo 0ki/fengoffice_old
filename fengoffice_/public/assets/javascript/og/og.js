@@ -443,7 +443,7 @@ og.captureLinks = function(id, caller) {
 	var links = element.getElementsByTagName("a");
 	for (var i=0; i < links.length; i++) {
 		var link = links[i];
-		if (!link.href || Ext.isGecko && link.href == link.baseURI || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
+		if (!link.href || Ext.isGecko && link.href == link.baseURI || link.href.indexOf('mailto:') == 0 || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
 		if (link.target == '_blank' || link.target == '_self' || link.target == '_download') continue;
 		if (caller && !link.target) {
 			link.target = caller.id;

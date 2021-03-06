@@ -18,7 +18,7 @@
     
     // Loop units bigger than byte
     foreach($units as $current_unit => $unit_min_value) {
-      if($in_bytes > $unit_min_value) {
+      if($in_bytes >= $unit_min_value) {
         $formated_number = number_format($in_bytes / $unit_min_value, 2);
         
         while(str_ends_with($formated_number, '0')) $formated_number = substr($formated_number, 0, strlen($formated_number) - 1); // remove zeros from the end

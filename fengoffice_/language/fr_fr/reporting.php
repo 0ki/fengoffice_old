@@ -21,4 +21,8 @@
 	'ascending' => 'Croissant',
 	'descending' => 'Décroissant',
 	'parametrizable' => 'Paramètre ?',
+	'columns to print' => 'Colonnes à imprimer',
+	'columns to print desc' => 'Déplacez les colonnes à imprimer dans la boite située à droite',
+	'reporting workspace' => 'Contexte',
+	'reporting user' => 'Utilisateur',
 ); ?>

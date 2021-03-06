@@ -354,7 +354,7 @@ class ObjectController extends ApplicationController {
 			$split = explode(",", $str_obj);
 			$succ = 0; $err = 0; $permission_err = false; $object_dnx_err = false;
 			foreach ($split as $objid) {
-				$parts = split(":", $objid);
+				$parts = explode(":", $objid);
 				if ($parts[1] == $object_id && $parts[0] == $manager_class){
 					$err++;
 					$err_message_list .= ' - ' . lang('error cannot link object to self') . "\n";
@@ -430,6 +430,7 @@ class ObjectController extends ApplicationController {
 			foreach ($objects as $objid) {
 				$split = explode(":", $objid);
 				if(count($split) == 2){
+					if (!class_exists($split[0], true)) continue;
 					$object = get_object_by_manager_and_id($split[1], $split[0]);
 				}else if (count($split) == 3 && $split[2] == 'isName'){
 					$object = ProjectFiles::getByFilename($split[1]);
@@ -1227,9 +1228,9 @@ class ObjectController extends ApplicationController {
 	 *
 	 * @return unknown
 	 */
-	function countDashboardObjects($tag = null, $types = null, $project = null, $trashed = false, $order = null, $filterName = '', $archived = false, $filterManager = ''){
+	function countDashboardObjects($tag = null, $types = null, $project = null, $trashed = false, $linkedObject = null, $filterName = '', $archived = false, $filterManager = ''){
 		///TODO: this method is also horrible in performance and should not be here!!!!
-		$queries = $this->getDashboardObjectQueries($project, $tag, true, $trashed, null, $order, $filterName, $archived, $filterManager);
+		$queries = $this->getDashboardObjectQueries($project, $tag, true, $trashed, $linkedObject, null, $filterName, $archived, $filterManager);
 		if (isset($types) && $types) {
 			$query = '';
 			foreach ($types as $type) {
@@ -1483,7 +1484,7 @@ class ObjectController extends ApplicationController {
 		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
 		$project_id = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($project_id);
-		$total_items = $this->countDashboardObjects($tag, $types, $project, $trashed, null, $filterName, $archived, $filterManager);
+		$total_items = $this->countDashboardObjects($tag, $types, $project, $trashed, $linkedObject, $filterName, $archived, $filterManager);
 		if ($total_items < ($page - 1) * $limit){
 			$page = 1;
 			$start = 0;
@@ -1704,7 +1705,7 @@ class ObjectController extends ApplicationController {
 		$err = 0;
 		$succ = 0;
 		foreach ($id_list as $cid) {
-			list($manager, $id) = split(":", $cid);
+			list($manager, $id) = explode(":", $cid);
 			try {
 				$obj = get_object_by_manager_and_id($id, $manager);
 				if (!$obj) {
@@ -2101,15 +2102,23 @@ class ObjectController extends ApplicationController {
 				if (trim($email) != '') {
 					$user = Users::findOne(array('conditions' => "`email` = '" . $email . "'"));
 					if (!($user instanceof User)) { // User not exists -> create one with minimum permissions
-						$user = $this->createMinimumUser($email, $companies[$k]);
+						try {
+							DB::beginWork();
+							$user = $this->createMinimumUser($email, $companies[$k]);
+							DB::commit();
+						} catch (Exception $e) {
+							DB::rollback();
+						}
 					}
-					$people[] = $user;
-					$canWrite = array_var($share_data, 'allow_edit');
-
-					if ($canWrite && !$obj->canEdit($user) || !$obj->canView($user)) {
-						$this->setObjUserPermission($user, $obj, $canWrite);
+					if ($user instanceof User) {
+						$people[] = $user;
+						$canWrite = array_var($share_data, 'allow_edit');
+	
+						if ($canWrite && !$obj->canEdit($user) || !$obj->canView($user)) {
+							$this->setObjUserPermission($user, $obj, $canWrite);
+						}
+						$this->saveSharedObject($obj, $user);
 					}
-					$this->saveSharedObject($obj, $user);
 				}
 			}
 			Notifier::shareObject($obj, $people);

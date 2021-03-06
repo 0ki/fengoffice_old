@@ -302,6 +302,8 @@
   	'user ws config option desc show_emails_as_conversations' => 'If enabled email will be grouped into conversations in the Emails listing, showing all emails belonging to a same thread (replies, forwards, etc) as one entry in the listing.',
   	'user ws config option name autodetect_time_zone' => 'Autodetect timezone',
   	'user ws config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
+  	'user ws config option name search_engine' => 'Search engine',
+  	'user ws config option desc search_engine' => 'Choose which search engine to use. "LIKE" will do a more exhaustive search but will take much longer than "MATCH".',
   ); // array
 
 ?>

@@ -2,6 +2,9 @@
 	require_javascript("og/modules/addFileForm.js");
 	$genid = gen_id();
 	$comments_required = config_option('file_revision_comments_required');
+	
+	$loc = user_config_option('localization');
+	if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 ?>
 
 <form class="internalForm" style="height:100%; overflow:hidden;" id="<?php echo $genid ?>form" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og.addDocumentSubmit('<?php echo $genid ?>');">
@@ -35,9 +38,7 @@
 	
 
 	<div id="<?php echo $genid ?>ckcontainer" style="height: 100%">
-		<textarea style="display:none;" cols="80" id="<?php echo $genid ?>ckeditor" name="editor" rows="10">
-			<?php echo $ckEditorContent ?>
-		</textarea>
+		<textarea style="display:none;" cols="80" id="<?php echo $genid ?>ckeditor" name="editor" rows="10"><?php echo clean($ckEditorContent) ?></textarea>
 	</div>
 </form>
 
@@ -49,6 +50,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 	height: (h-60) + 'px',
 	enterMode: CKEDITOR.ENTER_P,
 	shiftEnterMode: CKEDITOR.ENTER_BR,
+	language: '<?php echo $loc ?>',
 	customConfig: '',
 	toolbar: [
 				['Source','-','PasteText','PasteFromWord','-','Print', 'SpellChecker', 'Scayt','-',
@@ -111,5 +113,22 @@ og.eventManager.addListener("document saved", function(obj) {
 		Ext.getCmp(p.id).setPreventClose(false);
 	}
 }, null, {replace:true});
+
+
+og.resizeresizeCkSpaceAux = function() {
+	var container = document.getElementById('<?php echo $genid ?>form');
+	var parentTd = document.getElementById('cke_contents_<?php echo $genid ?>ckeditor');
+	if (container && parentTd) {
+		var iframe = parentTd.firstChild;
+		iframe.style.height = (container.offsetHeight - 60 ) + 'px';
+		parentTd.style.height = (container.offsetHeight - 60 ) + 'px';
+	}
+}
+og.resizeCkSpace = function() {
+	if (Ext.isIE) setTimeout('og.resizeresizeCkSpaceAux()', 100);
+	else og.resizeresizeCkSpaceAux();
+}
+og.resizeCkSpace();
+window.onresize = og.resizeCkSpace;
 
 </script>

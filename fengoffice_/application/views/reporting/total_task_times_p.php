@@ -2,6 +2,7 @@
 	$genid = gen_id();
 	$project_id = 0;
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
+	if ($type) $report_data['timeslot_type'] = $type;
 	if (count($report_data) == 0)
 		$report_data['show_billing'] = $has_billing;
 	if (array_var($report_data, "project_id") != null) {

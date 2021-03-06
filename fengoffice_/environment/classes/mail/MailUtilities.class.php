@@ -241,7 +241,7 @@ class MailUtilities {
 		if (isset($parsedMail['Alternative'])) {
 			foreach ($parsedMail['Alternative'] as $alt) {
 				if ($alt['Type'] == 'html' || $alt['Type'] == 'text') {
-					$body = $enc_conv->convert(array_var($alt,'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($alt, 'Data', ''));
+					$body = $enc_conv->convert(array_var($alt,'Encoding','UTF-8'),'UTF-8', array_var($alt, 'Data', ''));
 					if ($enc_conv->hasError()) $body = utf8_encode(array_var($alt, 'Data', ''));
 					
 					// remove large white spaces
@@ -511,12 +511,10 @@ class MailUtilities {
  				$body = str_replace($image_url, $cid, $body);
  			}
  		}
- 		
- 		if (is_array($inline_images) || is_array($attachments)){
- 			self::adjustBody($mailer, $type, $body);
-	 		$mailer->addPart($body, $type); // real body
-	 		$body = false; // multipart
- 		}
+
+ 		self::adjustBody($mailer, $type, $body);
+ 		$mailer->addPart($body, $type); // real body
+ 		$body = false; // multipart
  		
 		// add attachments
  		if (is_array($attachments)) {
@@ -551,8 +549,7 @@ class MailUtilities {
 		
 		// add text/plain alternative part
 		if ($type == 'text/html') {
- 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
- 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
+			$onlytext = html_to_text($body);
  			$mailer->addPart($onlytext, 'text/plain');
  		}
 	}

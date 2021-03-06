@@ -28,7 +28,7 @@
 
   <div class="formAddCommentText">
     <?php echo label_tag(lang('text'), 'addCommentText', true) ?>
-    <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'long', 'id' => 'addCommentText')) ?>
+    <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'huge', 'id' => 'addCommentText')) ?>
   </div>
 
 <?php if($comment->columnExists('comments_enabled') && !$comment->getCommentsEnabled() && logged_user()->isAdministrator()) { ?>

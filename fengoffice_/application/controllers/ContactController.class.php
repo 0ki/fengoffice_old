@@ -1403,8 +1403,11 @@ class ContactController extends ApplicationController {
 								$contact = new Contact();
 								$contact_data['import_status'] = '('.lang('new').')';
 								$log_action = ApplicationLogs::ACTION_ADD;
+								$can_import = active_project() != null ? $contact->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user());
+							} else {
+								$can_import = $contact->canEdit(logged_user());
 							}
-							if ($contact->canEdit(logged_user())) {
+							if ($can_import) {
 								$comp_name = mysql_real_escape_string(array_var($contact_data, "company_id"));
 								if ($comp_name != '') {
 									$company = Companies::findOne(array("conditions" => "name = '$comp_name'"));
@@ -1445,6 +1448,8 @@ class ContactController extends ApplicationController {
 									}
 								}
 								$import_result['import_ok'][] = $contact_data;
+							} else {
+								throw new Exception(lang('no access permissions'));
 							}
 							
 						} else if ($type == 'company') {
@@ -1457,8 +1462,11 @@ class ContactController extends ApplicationController {
 								$company = new Company();
 								$contact_data['import_status'] = '('.lang('new').')';
 								$log_action = ApplicationLogs::ACTION_ADD;
+								$can_import = active_project() != null ? $company->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user() || logged_user()->isAccountOwner() || logged_user()->isAdministrator());
+							} else {
+								$can_import = $company->canEdit(logged_user());
 							}
-							if ($company->canEdit(logged_user())) {
+							if ($can_import) {
 								$company->setFromAttributes($contact_data);
 								if ($company->isOwner()) 
 									$company->setClientOfId(0);
@@ -1470,6 +1478,8 @@ class ContactController extends ApplicationController {
 								if (active_project() instanceof Project) $company->addToWorkspace(active_project());
 								
 								$import_result['import_ok'][] = $contact_data;
+							} else {
+								throw new Exception(lang('no access permissions'));
 							}
 						}
 
@@ -1911,29 +1921,34 @@ class ContactController extends ApplicationController {
 						$contact = new Contact();
 						$contact_data['import_status'] = '('.lang('new').')';
 						$log_action = ApplicationLogs::ACTION_ADD;
+						$can_import = active_project() != null ? $contact->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user());
+					} else {
+						$can_import = $contact->canEdit(logged_user());
 					}
-					
-					$contact->setFromAttributes($contact_data);
-					$contact->save();
-					ApplicationLogs::createLog($contact, null, $log_action);
-					$contact->setTagsFromCSV(array_var($_GET, 'tags'));
-					if(active_project() instanceof Project) {
-						$pc = ProjectContacts::findOne(array("conditions" => "contact_id = ".$contact->getId()." AND project_id = ".active_project()->getId()));
-						if (!$pc) {
-							$pc = new ProjectContact();
-							$pc->setContactId($contact->getId());
-							$pc->setProjectId(active_project()->getId());
-							$pc->setRole(array_var($contact_data,'role'));
-							$pc->save();
+					if ($can_import) {
+						$contact->setFromAttributes($contact_data);
+						$contact->save();
+						ApplicationLogs::createLog($contact, null, $log_action);
+						$contact->setTagsFromCSV(array_var($_GET, 'tags'));
+						if(active_project() instanceof Project) {
+							$pc = ProjectContacts::findOne(array("conditions" => "contact_id = ".$contact->getId()." AND project_id = ".active_project()->getId()));
+							if (!$pc) {
+								$pc = new ProjectContact();
+								$pc->setContactId($contact->getId());
+								$pc->setProjectId(active_project()->getId());
+								$pc->setRole(array_var($contact_data,'role'));
+								$pc->save();
+							}
 						}
+						$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
+					} else {
+						throw new Exception(lang('no access permissions'));
 					}
-					$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
-					
 					DB::commit();					
 				} catch (Exception $e) {
 					DB::rollback();
-					flash_error($e->getMessage());
-					$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
+					$fail_msg = substr_utf($e->getMessage(), strpos_utf($e->getMessage(), "\r\n"));
+					$import_result['import_fail'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status'], 'fail_message' => $fail_msg);
 				}
 			}
 			$_SESSION['go_back'] = true;
@@ -1953,11 +1968,11 @@ class ContactController extends ApplicationController {
         $in_block = true;
         $results = array();
         while (($line = fgets($handle)) !== false) {
-            if (ereg('^BEGIN:VCARD', $line)) {
+            if (preg_match('/^BEGIN:VCARD/', $line)) {
                 // START OF CONTACT
                 $in_block = true;
                 $block_data = array();
-            } else if (ereg('^END:VCARD', $line)) {
+            } else if (preg_match('/^END:VCARD/', $line)) {
                 // END OF CONTACT
                 $in_block = false;
 				if (isset($photo_data))
@@ -1974,17 +1989,17 @@ class ContactController extends ApplicationController {
 				
                 $results[] = $block_data;
                 if ($only_first_record && count($results) > 0) return $results;
-            } else if (eregi('^N(:|;charset=[-a-zA-Z0-9.]+:)([^;]*);([^;]*)', $line, $matches)) {
+            } else if (preg_match('/^N(:|;charset=[-a-zA-Z0-9.]+:)([^;]*);([^;]*)/i', $line, $matches)) {
             	// NAME
                 $block_data["firstname"] = trim($matches[count($matches)-1]);
                 $block_data["lastname"] = trim($matches[count($matches)-2]);
-            } else if (eregi('^ORG(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)', $line, $matches)) {
+            } else if (preg_match('/^ORG(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
             	// ORGANIZATION
                 $block_data["company_name"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
-            } else if (eregi('^NOTE(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)', $line, $matches)) {
+            } else if (preg_match('/^NOTE(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
             	// NOTES
                 $block_data["notes"] = trim($matches[count($matches)-1]);
-            } else if (eregi('EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)', $line, $matches)) {
+            } else if (preg_match('/EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)/i', $line, $matches)) {
             	// EMAIL
                 $email = trim($matches[count($matches)-1]);
                 if (!isset($block_data["email"])) 
@@ -1994,7 +2009,7 @@ class ContactController extends ApplicationController {
                 else if (!isset($block_data["email3"])) 
                 	$block_data["email3"] = $email;
                 
-            } else if (eregi('URL(;type=(HOME|WORK))?.*:(.+)', $line, $matches)) {
+            } else if (preg_match('/URL(;type=(HOME|WORK))?.*:(.+)/i', $line, $matches)) {
             	// WEB URL
                 $url = trim($matches[3]);
                 $url = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $url);
@@ -2005,7 +2020,7 @@ class ContactController extends ApplicationController {
                 } else {
                 	$block_data['o_web_page'] = $url;
                 }
-            } else if (eregi('TEL(;type=(HOME|WORK|CELL|FAX)[,A-Z]*)?.*:(.+)', $line, $matches)) {
+            } else if (preg_match('/TEL(;type=(HOME|WORK|CELL|FAX)[,A-Z]*)?.*:(.+)/i', $line, $matches)) {
             	// PHONE
                 $phone = trim($matches[3]);
                 $phone = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $phone);
@@ -2020,7 +2035,7 @@ class ContactController extends ApplicationController {
                 } else {
                     $block_data["o_phone_number"] = $phone;
                 }
-            } else if (eregi('ADR;type=(HOME|WORK)[,A-Z]*;(charset=[-a-zA-Z0-9.]+|type=pref):;;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)', $line, $matches)) {
+            } else if (preg_match('/ADR;type=(HOME|WORK)[,A-Z]*;(charset=[-a-zA-Z0-9.]+|type=pref):;;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)/i', $line, $matches)) {
             	// ADDRESS
                 // $matches is
                 // [1] <-- street
@@ -2049,16 +2064,16 @@ class ContactController extends ApplicationController {
                     $block_data["o_zipcode"] = $addr[3];
                     $block_data["o_country"] = CountryCodes::getCountryCodeByName($addr[4]);
                 }
-            } else if (eregi('^BDAY[;value=date]*:([0-9]+)-([0-9]+)-([0-9]+)', $line, $matches)) {
+            } else if (preg_match('/^BDAY[;value=date]*:([0-9]+)-([0-9]+)-([0-9]+)/i', $line, $matches)) {
                 // BIRTHDAY
                 // $matches[1]  <-- year     $matches[2]  <-- month    $matches[3]  <-- day
                 $block_data["o_birthday"] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . "00:00:00";
                 
-            } else if (eregi('TITLE(:|;charset=[-a-zA-Z0-9.]+:)(.*)', $line, $matches)) {
+            } else if (preg_match('/TITLE(:|;charset=[-a-zA-Z0-9.]+:)(.*)/i', $line, $matches)) {
             	// JOB TITLE
                 $block_data["job_title"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
                 
-            } else if (eregi('PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)', $line, $matches)) {
+            } else if (preg_match('/PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)/i', $line, $matches)) {
             	
             	foreach ($matches as $k => $v) {
             		if (str_starts_with(strtoupper($v), ";ENCODING")) $enc_idx = $k+1;

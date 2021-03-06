@@ -121,10 +121,12 @@
 	<fieldset>
 	<legend><?php echo lang('options') ?></legend>
 	<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
+	<!-- 
 		<div class="objectOptions">
 		<div class="optionLabel"><label><?php echo lang('private milestone') ?>: <span class="desc">(<?php echo lang('private milestone desc') ?>)</span></label></div>
 		<div class="optionControl"><?php echo yes_no_widget('milestone[is_private]', $genid . 'milestoneFormIsPrivate', array_var($milestone_data, 'is_private'), lang('yes'), lang('no'), 30) ?></div>
 		</div>
+	 -->
 	<?php } // if ?>
 		<div class="objectOption">
 		<div class="optionLabel"><?php echo label_tag(lang('assign to'), $genid . 'milestoneFormAssignedTo') ?></div>
@@ -244,7 +246,7 @@
 		<?php echo render_object_custom_properties($object, 'ProjectMilestones', true) ?>
 	</div><br/>
 
-	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '100')) ?>
+	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '20000')) ?>
 </div>
 </div>
 </form>

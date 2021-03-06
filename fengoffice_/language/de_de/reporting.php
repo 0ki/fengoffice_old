@@ -21,4 +21,8 @@
 	'ascending' => 'Aufsteigend',
 	'descending' => 'Absteigend',
 	'parametrizable' => 'Parameter?',
+	'columns to print' => 'Spalten zu drucken',
+	'columns to print desc' => 'Verschiebt die zu druckenden Spalten in die Box rechts.',
+	'reporting workspace' => 'Arbeitsbereich',
+	'reporting user' => 'Benutzer',
 ); ?>

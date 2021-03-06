@@ -374,7 +374,7 @@ class PHPExcel_Cell
      */
     public static function coordinateFromString($pCoordinateString = 'A1')
     {
-    	if (eregi(':', $pCoordinateString)) {
+    	if (strpos(':', $pCoordinateString) !== false) {
     		throw new Exception('Cell coordinate string can not be a range of cells.');
     	} else if ($pCoordinateString == '') {
     		throw new Exception('Cell coordinate can not be zero-length string.');
@@ -404,7 +404,7 @@ class PHPExcel_Cell
      */
     public static function absoluteCoordinate($pCoordinateString = 'A1')
     {
-    	if (!eregi(':', $pCoordinateString)) {
+    	if (strpos(':', $pCoordinateString) === false) {
 	    	// Return value
 	    	$returnValue = '';
 

@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_client.php,v 1.2 2009/09/15 21:33:43 idesoto Exp $
+// $Id: interop_client.php,v 1.2.2.1 2009/10/27 21:04:52 idesoto Exp $
 //
 require_once 'DB.php'; // PEAR/DB
 require_once 'SOAP/Client.php';
@@ -723,7 +723,7 @@ class Interop_Client
             $info = explode(':', $method);
             echo "<td class='BLANK' valign='top'>";
             foreach ($info as $m) {
-                $hi = split(',', $m);
+                $hi = explode(',', $m);
                 echo '<b>'. $hi[0] . "</b><br>\n";
                 if (count($hi) > 1) {
                     echo "&nbsp;&nbsp;Actor="

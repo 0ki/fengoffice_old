@@ -420,7 +420,7 @@ class PHPExcel_ReferenceHelper
      * @throws 	Exception
      */
     private function _updateCellRange($pCellRange = 'A1:A1', $pBefore = 'A1', $pNumCols = 0, $pNumRows = 0) {
-    	if (eregi(':', $pCellRange)) {
+    	if (strpos(':', $pCellRange) !== false) {
 			// Range
 			$referenceA = '';
 			$referenceB = '';

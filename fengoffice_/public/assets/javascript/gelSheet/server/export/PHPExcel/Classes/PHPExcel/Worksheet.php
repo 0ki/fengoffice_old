@@ -697,9 +697,9 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCoordinate = strtoupper($pCoordinate);
 
-    	if (eregi(':', $pCoordinate)) {
+    	if (strpos(':', $pCoordinate) !== false) {
     		throw new Exception('Cell coordinate can not be a range of cells.');
-    	} else if (eregi('\$', $pCoordinate)) {
+    	} else if (strpos('$', $pCoordinate) !== false) {
     		throw new Exception('Cell coordinate must not be absolute.');
     	} else {
 	    	// Coordinates
@@ -758,9 +758,9 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCoordinate = strtoupper($pCoordinate);
 
-    	if (eregi(':', $pCoordinate)) {
+    	if (strpos(':', $pCoordinate) !== false) {
     		throw new Exception('Cell coordinate can not be a range of cells.');
-    	} else if (eregi('\$', $pCoordinate)) {
+    	} else if (strpos('$', $pCoordinate) !== false) {
     		throw new Exception('Cell coordinate must not be absolute.');
     	} else {
 	    	// Coordinates
@@ -883,9 +883,9 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCellCoordinate = strtoupper($pCellCoordinate);
 
-    	if (eregi(':', $pCellCoordinate)) {
+    	if (strpos(':', $pCellCoordinate) !== false) {
     		throw new Exception('Cell coordinate string can not be a range of cells.');
-    	} else if (eregi('\$', $pCellCoordinate)) {
+    	} else if (strpos('$', $pCellCoordinate) !== false) {
     		throw new Exception('Cell coordinate string must not be absolute.');
     	} else if ($pCellCoordinate == '') {
     		throw new Exception('Cell coordinate can not be zero-length string.');
@@ -1122,7 +1122,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pRange = strtoupper($pRange);
 
-    	if (eregi(':', $pRange)) {
+    	if (strpos(':', $pRange) !== false) {
     		$this->_mergeCells[$pRange] = $pRange;
     	} else {
     		throw new Exception('Merge must be set on a range of cells.');
@@ -1155,7 +1155,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pRange = strtoupper($pRange);
 
-    	if (eregi(':', $pRange)) {
+    	if (strpos(':', $pRange) !== false) {
     		if (isset($this->_mergeCells[$pRange])) {
     			unset($this->_mergeCells[$pRange]);
     		} else {
@@ -1293,7 +1293,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pRange = strtoupper($pRange);
 
-    	if (eregi(':', $pRange)) {
+    	if (strpos(':', $pRange) !== false) {
     		$this->_autoFilter = $pRange;
     	} else {
     		throw new Exception('Autofilter must be set on a range of cells.');
@@ -1339,7 +1339,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCell = strtoupper($pCell);
 
-    	if (!eregi(':', $pCell)) {
+    	if (strpos(':', $pCell) === false) {
     		$this->_freezePane = $pCell;
     	} else {
     		throw new Exception('Freeze pane can not be set on a range of cells.');
@@ -1575,9 +1575,9 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCellCoordinate = strtoupper($pCellCoordinate);
 
-    	if (eregi(':', $pCellCoordinate)) {
+    	if (strpos(':', $pCellCoordinate) !== false) {
     		throw new Exception('Cell coordinate string can not be a range of cells.');
-    	} else if (eregi('\$', $pCellCoordinate)) {
+    	} else if (strpos('$', $pCellCoordinate) !== false) {
     		throw new Exception('Cell coordinate string must not be absolute.');
     	} else if ($pCellCoordinate == '') {
     		throw new Exception('Cell coordinate can not be zero-length string.');
@@ -1627,7 +1627,7 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     	// Uppercase coordinate
     	$pCell = strtoupper($pCell);
 
-    	if (!eregi(':', $pCell)) {
+    	if (strpos(':', $pCell) === false) {
     		$this->_selectedCell = $pCell;
     	} else {
     		throw new Exception('Selected cell can not be set on a range of cells.');

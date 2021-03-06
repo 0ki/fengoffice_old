@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.6 beta
-    ======================
+    About OpenGoo 1.6 beta 2
+    ========================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -8,6 +8,7 @@
     visit:
         * http://www.opengoo.org/
         * http://forums.opengoo.org/
+        * http://wiki.opengoo.org/
         * http://sourceforge.net/projects/opengoo
 
     contact:
@@ -52,6 +53,9 @@
 
     You should be finished in a matter of minutes.
     
+    4. Some functionality may require further configuration, like setting up a cron job.
+    Check the wiki for more information: http://wiki.opengoo.org/doku.php/setup
+    
     WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
     This can be solved by setting "memory_limit=32" in php.ini.    
@@ -86,6 +90,38 @@
 
 	Changelog
 	=========
+	
+	Since 1.6-beta
+	--------------
+	
+	feature: Added an experimental new search mechanism. It can be much slower but finds more results.
+	
+	usability: Added description to system permissions
+	usability: CKEditor is shown in user's language
+	usability: Linked objects section in an object's view has no title telling what it is
+		
+	bugfix: Check write permissions for file installed_version.php when upgrading
+	bugfix: CKEditor images should point to the actual image in OpenGoo
+	bugfix: Contact import from csv does not import contacts if user does not have 'can manage contacts' permission but has write permissions on the workspace.
+	bugfix: Custom reports can only be printed once in Chrome.
+	bugfix: Edit comment textbox is too small.
+	bugfix: Email links are opened on the email's body when showing quoted text.
+	bugfix: Error 500 when adding a file web link.
+	bugfix: Forgot password token is always the same.
+	bugfix: If I click on 'Print' when on 'Time' tab it should print by default 'General Timeslots' or 'All timeslots', not 'Task timeslots'.
+	bugfix: If you delete a signature with images from the email's body, the images are sent anyway.
+	bugfix: MySQL Error Message when adding a user and no data has been entered.	
+	bugfix: Removed private milestone options.
+	bugfix: Search ignores tags on newly uploaded files.
+	bugfix: Show all linked objects pagination is not working correctly.
+	bugfix: Show that an email has attachment on search results.
+	bugfix: Changed all PHP 5.3 deprecated functions for non-depracated alternatives.
+	bugfix: When printing reports: substitute true/false with yes/no.
+	bugfix: When user does not have write contact permissions over a workspace, import from csv does not display errors.
+	bugfix: HTML editor's height is not adjusted correctly when changing format in a new email.
+	bugfix: Error when creating new user.
+	bugfix: Error when adding a task.
+
 	
 	Since 1.5.3
 	-----------

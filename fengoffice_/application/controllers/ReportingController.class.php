@@ -249,6 +249,7 @@ class ReportingController extends ApplicationController {
 		$users = ( $comp instanceof Company ? $comp->getUsers() : owner_company()->getUsers());
 		$workspaces = logged_user()->getActiveProjects();
 
+		tpl_assign('type', array_var($_GET, 'type'));
 		tpl_assign('workspaces', $workspaces);
 		tpl_assign('users', $users);
 		tpl_assign('has_billing',BillingCategories::count() > 0);

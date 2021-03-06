@@ -39,7 +39,7 @@ class MailController extends ApplicationController {
 		$loc = new Localization();
 		$loc->setDateTimeFormat("D, d M Y H:i:s O");
 		if ($type == 'plain') {
-			$str = "\n\n\n----- ".lang('original message')."-----\n".lang('mail from').": ".$original_mail->getFrom()."\n".lang('mail to').": ".$original_mail->getTo()."\n".lang('mail sent').": ".$loc->formatDateTime($original_mail->getSentDate(), logged_user()->getTimezone())."\n".lang('mail subject').": ".$original_mail->getSubject()."\n\n";
+			$str = "\n\n----- ".lang('original message')."-----\n".lang('mail from').": ".$original_mail->getFrom()."\n".lang('mail to').": ".$original_mail->getTo()."\n".lang('mail sent').": ".$loc->formatDateTime($original_mail->getSentDate(), logged_user()->getTimezone())."\n".lang('mail subject').": ".$original_mail->getSubject()."\n\n";
 		} else {
 			$str = "<br><br><table><tr><td>----- ".lang('original message')." -----</td></tr><tr><td>".lang('mail from').": ".$original_mail->getFrom()."</td></tr><tr><td>".lang('mail to').": ".$original_mail->getTo()."</td></tr><tr><td>".lang('mail sent').": ".$loc->formatDateTime($original_mail->getSentDate(), logged_user()->getTimezone())."</td></tr><tr><td>".lang('mail subject').": ".$original_mail->getSubject()."</td></tr></table><br>";
 		}		 
@@ -67,22 +67,22 @@ class MailController extends ApplicationController {
 			if (!$type) $type = 'plain';
 			
 			$re_body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
-			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
-				$re_body = str_replace("\n", "<br>", $re_body);
-			}
-			$sep = $type == 'plain' ? "\n\n" : "<br><br>";
-			$re_info = $this->build_original_mail_info($original_mail, $type);
-			
-			if ($original_mail->getBodyHtml() != '') {
-				$pre_quote = "<blockquote type='cite' style='padding:0 10px; border-left-color:#987ADD;'>";
+			if ($type == 'html') {
+				$pre_quote = "<blockquote type='cite' style='padding:0 15px; border-left:1px solid #987ADD;'>";
 				$post_quote = "</blockquote>";
 			} else {
 				$pre_quote = "";
 				$post_quote = "";
 				$lines = explode("\n", $re_body);
 				$re_body = "";
-				foreach($lines as $line) $re_body .= ">$line\n";
+				foreach($lines as $line) {
+					$re_body .= ">$line\n";
+				}
 			}
+			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
+				$re_body = str_replace("\n", "<br>", $re_body);
+			}
+			$re_info = $this->build_original_mail_info($original_mail, $type);
 			
 			$pos = stripos($re_body, "<body");
 			if ($pos !== FALSE) {
@@ -94,7 +94,7 @@ class MailController extends ApplicationController {
 			} else {
 				$re_body = $re_info . $pre_quote . $re_body . $post_quote;
 			}
-			$re_body = $sep . $re_body;
+			$re_body = $re_body;
 			
 			// Put original mail images in the reply
 			if ($original_mail->getBodyHtml() != '') {
@@ -568,13 +568,10 @@ class MailController extends ApplicationController {
 	
 					$attachments = self::readAttachmentsFromFileSystem($mail);
 					
-					// search signature for images
-					$sig = $accountUser->getSignature();
-					$images = get_image_paths($sig);
-					
 					if ($mail->getBodyHtml() != '') {
-						$body_images = get_image_paths($body);
-						$images = array_merge($images, $body_images);
+						$images = get_image_paths($body);
+					} else {
+						$images = null;
 					}
 					
 					$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType(), $msg_id, $in_reply_to_id, $images, $complete_mail);
@@ -1557,13 +1554,7 @@ class MailController extends ApplicationController {
 			if (!$type) $type = 'plain';
 			
 			$body = $original_mail->getBodyHtml() != '' && $type == 'html' ? $original_mail->getBodyHtml() : $original_mail->getBodyPlain();
-			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
-				$body = str_replace("\n", "<br>", $body);
-			}
-			$sep = $type == 'plain' ? "\n\n" : "<br><br>";
-			$fwd_info = $this->build_original_mail_info($original_mail, $type);
-			
-			if ($original_mail->getBodyHtml() != '') {
+			if ($type == 'html') {
 				$pre_quote = "<blockquote type='cite' style='padding:0 10px; border-left-color:#987ADD;'>";
 				$post_quote = "</blockquote>";
 			} else {
@@ -1571,9 +1562,15 @@ class MailController extends ApplicationController {
 				$post_quote = "";
 				$lines = explode("\n", $body);
 				$body = "";
-				foreach($lines as $line) $body .= ">$line\n";
+				foreach($lines as $line) {
+					$body .= ">$line\n";
+				}
 			}
-			
+			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
+				$body = str_replace("\n", "<br>", $body);
+			}
+			$fwd_info = $this->build_original_mail_info($original_mail, $type);
+						
 			$pos = stripos($body, "<body");
 			if ($pos !== FALSE) {
 				$pos = stripos($body, ">", $pos);
@@ -1584,7 +1581,7 @@ class MailController extends ApplicationController {
 			} else {
 				$fwd_body = $fwd_info . $pre_quote . $body . $post_quote;
 			}
-			$fwd_body = $sep . $fwd_body;
+			$fwd_body = $fwd_body;
 			
 			// Put original mail images in the forwarded mail
 			if ($original_mail->getBodyHtml() != '') {

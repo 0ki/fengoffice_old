@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-beta
+ * Chivito upgrade script will upgrade OpenGoo 1.5 to OpenGoo 1.6-beta2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -16,6 +16,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	 */
 	private $check_is_writable = array(
 		'/config/config.php',
+		'/config/installed_version.php',
 		'/config',
 		'/cache',
 		'/tmp',
@@ -40,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6-beta');
+		$this->setVersionTo('1.6-beta2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -93,8 +94,17 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 		} else {
 			// upgrading from a pre-release of this version (beta, rc, etc)
 			$upgrade_script = "";
-			if (version_compare($installed_version, "1.5-beta3") < 0) {
+			if (version_compare($installed_version, "1.6-beta2") < 0) {
 				$upgrade_script .= "
+					INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),
+					 	('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
+						('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+						('mails panel', 'mails read filter', 'all', 'StringConfigHandler', '1', '0', NULL),
+		 				('dashboard', 'show_two_weeks_calendar', '1', 'BoolConfigHandler', '0', '0', NULL)
+		 			ON DUPLICATE KEY UPDATE id=id;
+		 			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `category_name` = 'general' WHERE `name` = 'work_day_start_time';
+		 			ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD INDEX `in_reply_to_id` (`in_reply_to_id`);
 				";
 			}
 		}
