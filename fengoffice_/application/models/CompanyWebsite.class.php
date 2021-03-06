@@ -260,14 +260,9 @@ final class CompanyWebsite {
 			$last_activity_mod_timestamp = array_var($_SESSION, 'last_activity_mod_timestamp', null);
 			if (!$last_activity_mod_timestamp || $last_activity_mod_timestamp < time() - 60 * 10) {
 				
-				$user->setLastActivity(DateTimeValueLib::now());
+				$sql = "UPDATE ".TABLE_PREFIX."contacts SET last_activity = '".DateTimeValueLib::now()->toMySQL()."' WHERE object_id = ".$user->getId();
+				DB::execute($sql);
 				
-				// Disable updating user info
-				$old_updated_on = $user->getUpdatedOn();
-				$user->setUpdatedOn(DateTimeValueLib::now()); 
-				$user->setUpdatedOn($old_updated_on);
-				
-				$user->save();
 				$_SESSION['last_activity_mod_timestamp'] = time();
 			}
 		}

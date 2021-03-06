@@ -159,7 +159,6 @@ class FilesServices extends WebServicesBase {
 							$file->setFilename($filename);
 							$file->setIsVisible(true);
 							$file->setIsPrivate(false);
-							$file->setIsImportant(false);
 							$file->setCommentsEnabled(true);
 							$file->setAnonymousCommentsEnabled(false);
 							$file->setCreatedOn(new DateTimeValue(time()) );
@@ -292,7 +291,6 @@ class FilesServices extends WebServicesBase {
 	
 				try {
 					$old_is_private = $file->isPrivate();
-					$old_is_important = $file->getIsImportant();
 					$old_comments_enabled = $file->getCommentsEnabled();
 					$old_anonymous_comments_enabled = $file->getAnonymousCommentsEnabled();
 						
@@ -302,7 +300,6 @@ class FilesServices extends WebServicesBase {
 	
 					if(!logged_user()->isMemberOfOwnerCompany()) {
 						$file->setIsPrivate($old_is_private);
-						$file->setIsImportant($old_is_important);
 						$file->setCommentsEnabled($old_comments_enabled);
 						$file->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
 					} // if

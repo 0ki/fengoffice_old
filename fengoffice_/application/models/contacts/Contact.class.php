@@ -1137,34 +1137,68 @@ class Contact extends BaseContact {
     }
     
     
+    private static $pg_cache = array();
+    
     /**
      * @author pepe
      * 
      */
     function isAdministrator() {
     	$type = parent::getUserType();
-    	$name = PermissionGroups::findById($type)->getName();
-		return  $name == 'Super Administrator';
+    	if (!$type) return false;
+    	if (!array_var(self::$pg_cache, $type)) {
+    		$pg = PermissionGroups::findById($type);
+    		self::$pg_cache[$type] = $pg;
+    	} else {
+    		$pg = array_var(self::$pg_cache, $type);
+    	}
+    	$name = $pg->getName();
+		return $name == 'Super Administrator';
     }
+    
     function isModerator() {
     	$type = $this->getUserType();
-    	$name=PermissionGroups::findById($type)->getName();
-		return  $name == 'Administrator';
+    	if (!$type) return false;
+    	if (!array_var(self::$pg_cache, $type)) {
+    		$pg = PermissionGroups::findById($type);
+    		self::$pg_cache[$type] = $pg;
+    	} else {
+    		$pg = array_var(self::$pg_cache, $type);
+    	}
+    	$name = $pg->getName();
+		return $name == 'Administrator';
     }
+    
     function isExecutive(){
     	$type = $this->getUserType();
-    	$name=PermissionGroups::findById($type)->getName();
-		return  $name == 'Executive';
+    	if (!$type) return false;
+    	if (!array_var(self::$pg_cache, $type)) {
+    		$pg = PermissionGroups::findById($type);
+    		self::$pg_cache[$type] = $pg;
+    	} else {
+    		$pg = array_var(self::$pg_cache, $type);
+    	}
+    	$name = $pg->getName();
+		return $name == 'Executive';
     }
     
     function isManager(){
     	$type = $this->getUserType();
-    	$name=PermissionGroups::findById($type)->getName();
-		return  $name == 'Manager';
+    	if (!$type) return false;
+    	if (!array_var(self::$pg_cache, $type)) {
+    		$pg = PermissionGroups::findById($type);
+    		self::$pg_cache[$type] = $pg;
+    	} else {
+    		$pg = array_var(self::$pg_cache, $type);
+    	}
+    	$name = $pg->getName();
+		return $name == 'Manager';
     }
+    
     function isExecutiveGroup(){
     	return $this->isAdministrator()||$this->isManager()||$this->isModerator()||$this->isExecutive();
     }
+    
     function isAdminGroup(){
     	return $this->isModerator()||$this->isAdministrator();
     }
@@ -1175,7 +1209,13 @@ class Contact extends BaseContact {
      */
     function getUserTypeName(){
     	$type = $this->getUserType();
-    	$pg=PermissionGroups::instance()->findOne(array("conditions" => "id = $type"));
+    	if (!$type) return null;
+    	if (!array_var(self::$pg_cache, $type)) {
+    		$pg = PermissionGroups::findById($type);
+    		self::$pg_cache[$type] = $pg;
+    	} else {
+    		$pg = array_var(self::$pg_cache, $type);
+    	}
     	return $pg->getName();
     }
     
@@ -1610,8 +1650,13 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canUpdatePermissions(Contact $user) {
-		$actual_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$user->getUserType()));
-		$this_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$this->getUserType()));
+		$actual_user_type = array_var(self::$pg_cache, $user->getUserType());
+		if (!$actual_user_type)
+			$actual_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$user->getUserType()));
+		
+		$this_user_type = array_var(self::$pg_cache, $this->getUserType());
+		if (!$this_user_type)
+			$this_user_type = PermissionGroups::instance()->findOne(array("conditions" => "id = ".$this->getUserType()));
 		
 		$can_change_type = $actual_user_type->getId() < $this_user_type->getId() || $user->isAdminGroup() && $this->getId() == $user->getId();
 		

@@ -27,6 +27,20 @@ require_javascript('og/modules/addMessageForm.js');
 	}
 	$companyUsers = $grouped;
 ?>
+<script>
+	var orig_subs_input = document.getElementById("<?php echo $genid?>original_subscribers");
+	if (!orig_subs_input) {
+		var container = document.getElementById("<?php echo $genid ?>add_subscribers_content");
+		if (container) {
+			var element = document.createElement('input');
+			element.setAttribute("type", "hidden");
+			element.setAttribute("id", "<?php echo $genid?>original_subscribers");
+			element.setAttribute("name", "original_subscribers");
+			element.setAttribute("value", "<?php echo implode(",", $subscriberIds)?>");
+			container.parentNode.insertBefore(element, container);
+		}
+	}
+</script>
 <div id="<?php echo $genid ?>notify_companies">
 
 <?php 

@@ -129,7 +129,7 @@ class TemplateController extends ApplicationController {
 		$objects = array();
 		if (array_var($_GET, 'id')) {
 			/*	TODO: Feng 2 
-		  	$object = get_object_by_manager_and_id(array_var($_GET, 'id'), array_var($_GET, 'manager'));
+		  	$object = Objects::findObject(array_var($_GET, 'id'));
 			if ($object instanceof ProjectDataObject) {
 				$objects[] = $object;
 				tpl_assign('add_to', true);

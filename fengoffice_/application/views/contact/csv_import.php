@@ -68,7 +68,7 @@ og.submitCsv = function(genid) {
 	<?php
 		if ($import_type == 'contact') 
 			$contact_fields = Contacts::getContactFieldNames();
-		else $contact_fields = Companies::getCompanyFieldNames();
+		else $contact_fields = Contacts::getCompanyFieldNames();
 
 		$isAlt = false;
 		$i = 0; $label_w = $label_h = $label_o = false;

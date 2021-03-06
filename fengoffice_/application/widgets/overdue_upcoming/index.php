@@ -33,5 +33,6 @@ foreach ( allowed_users_to_assign() as $company ){
 	}
 } 
 
-//$total = ProjectTasks::count();
+// Render only when the context isnt 'all' and you have perms 
+$render_add = ( active_context_members(false) && ProjectTask::canAdd(logged_user(), active_context()) ) ;
 include_once 'template.php';

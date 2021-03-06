@@ -220,7 +220,7 @@ function allowed_users_to_assign_all($context = null) {
 	
 	// only companies with users
 	$companies = Contacts::findAll(array(
-		"conditions" => "e.is_company = 1",
+		"conditions" => "e.is_company = 1 AND EXISTS (SELECT object_id FROM ".TABLE_PREFIX."contacts WHERE is_company = 0 AND user_type > 0 AND company_id = o.id  )",
 		"join" => array(
 			"table" => Contacts::instance()->getTableName(),
 			"jt_field" => "object_id",
@@ -228,6 +228,7 @@ function allowed_users_to_assign_all($context = null) {
 		),
 		"order" => "name"
 	));
+	
 
 	$comp_ids = array("0");
 	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
@@ -1176,7 +1177,7 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 				}
 				?>
 				 
-				<input id='<?php echo $genid; ?>members' name='members' type='hidden' ></input>
+				<input id='<?php echo $genid; ?>members' name='members' type='hidden' value="<?php echo $selected_members_json; ?>"></input>
 				<div id='<?php echo $component_id ?>-container' class="member-chooser-container" ></div>
 				
 				<script>
@@ -1243,8 +1244,10 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
 					
 					memberChooserPanel.add(tree);
 					<?php endforeach; ?>
-					
+
+					og.can_submit_members = false;
 					memberChooserPanel.on('all trees rendered', function(panel) {
+						og.can_submit_members = true;
 						var trees_to_reload = [];
 						panel.items.each(function(item, index, length) {
 							var checked = item.getLastChecked();

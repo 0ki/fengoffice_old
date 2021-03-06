@@ -77,8 +77,13 @@ class AdministrationController extends ApplicationController {
 	function scolors () {
 		if (can_manage_configuration(logged_user())) {
 			$colors = array_var($_POST,'colors');
-			owner_company()->setBrandColors($colors);
-			owner_company()->save();
+			$owner_company = owner_company();
+			$owner_company->setBrandColors($colors);
+			$owner_company->save();
+			
+			if (GlobalCache::isAvailable()) {
+				GlobalCache::update('owner_company', $owner_company);
+			}
 		}
 		exit;
     }

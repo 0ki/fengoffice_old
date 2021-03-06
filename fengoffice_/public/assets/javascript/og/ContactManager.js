@@ -493,20 +493,20 @@ og.ContactManager = function() {
 		            	})
 					]}
 				}),
-//				new Ext.Action({
-//					text: lang('companies'),
-//					iconCls: 'ico-company',
-//                                      menu: { items: [
-//						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
-//							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company', from_menu:1});
-//							og.openLink(url);
-//						}},
-//						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
-//							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company'});
-//							og.openLink(url);
-//						}}
-//					]}
-//				})
+				new Ext.Action({
+					text: lang('companies'),
+					iconCls: 'ico-company',
+                                        menu: { items: [
+						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
+							var url = og.getUrl('contact', 'import_from_csv_file', {type:'company', from_menu:1});
+							og.openLink(url);
+						}},
+						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
+							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company'});
+							og.openLink(url);
+						}}
+					]}
+				})
 			]}
 		})
     };

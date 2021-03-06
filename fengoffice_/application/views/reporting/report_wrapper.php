@@ -3,7 +3,10 @@ if (!isset($genid)) $genid = gen_id();
 if (!isset($allow_export)) $allow_export = true;
   	/*add_page_action(lang('print view'), '#', "ico-print", "_blank", array('onclick' => 'this.form' . $genid . '.submit'));*/
 ?>
+<form id="form<?php echo $genid ?>" name="form<?php echo $genid ?>" action="<?php echo get_url('reporting', $template_name . '_print') ?>" method="post" enctype="multipart/form-data" target="_download">
 
+    <input name="post" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
+    
 <div class="report" style="padding:7px">
 <table style="min-width:600px">
 
@@ -13,19 +16,16 @@ if (!isset($allow_export)) $allow_export = true;
 	</td>
 	<td rowspan=2 colspan="1" class="coViewHeader" style="width:auto;">
 		<div class="coViewTitleContainer">
-			<div class="coViewTitle"><?php echo $title ?></div>
-			<form id="<?php echo $genid?>_csv_form" name="<?php echo $genid?>_csv_form" action="<?php echo get_url('reporting', $template_name, array('export' => 'csv')) ?>" method="post" enctype="multipart/form-data" target="_download">
-				<input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo $title ?>'); return false;" style="width:120px; margin-top:10px;"/>
-				
-				<input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" style="width:120px; margin-top:10px;"
-					onclick="og.openLink('<?php echo get_url('reporting', $template_name, array('export' => 'csv')) ?>', {target:'_download', silent:true})"/>
-				<?php if ($allow_export) { ?>
-				<input type="button" name="exportPDFOptions" onclick="og.showPDFOptions();" value="<?php echo lang('export pdf') ?>" style="width:120px; margin-top:10px;"/>
-				<?php } ?>
-				
-				<input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
-				<input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
-			</form>
+			<div class="coViewTitle"><?php echo $title ?></div>			
+                        <input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="og.reports.printReport('<?php echo $genid?>','<?php echo $title ?>'); return false;" style="width:120px; margin-top:10px;"/>
+
+                        <input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
+                        <?php if ($allow_export) { ?>
+                        <input type="button" name="exportPDFOptions" onclick="og.showPDFOptions();" value="<?php echo lang('export pdf') ?>" style="width:120px; margin-top:10px;"/>
+                        <?php } ?>
+
+                        <input name="parameters" type="hidden" value="<?php echo str_replace('"',"'", json_encode($post))?>"/>
+                        <input name="context" type="hidden" value="" id="<?php echo $genid?>_plain_context"/>
 		</div>
 	</td>
 	
@@ -49,7 +49,7 @@ if (!isset($allow_export)) $allow_export = true;
 </table>
 
 </div>
-
+</form>
 <script>
 document.getElementById('<?php echo $genid?>_plain_context').value = og.contextManager.plainContext();
 

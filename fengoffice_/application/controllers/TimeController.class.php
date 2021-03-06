@@ -61,7 +61,14 @@ class TimeController extends ApplicationController {
 		$timeslotsUser = Contacts::findById($timeslotsUserId);	
 		
 		//Active tasks view
-		$tasks = ProjectTasks::getOpenTimeslotTasks(active_context(), $tasksUser);
+		$open_timeslots = Timeslots::instance()->listing(array(
+			"extra_conditions" => " AND end_time = '".EMPTY_DATETIME."' AND contact_id = ".$tasksUserId 
+		))->objects;
+		$tasks = array();
+		foreach($open_timeslots as $open_timeslot) {
+			$task = ProjectTasks::findById($open_timeslot->getRelObjectId());
+			if ($task instanceof ProjectTask && !$task->isCompleted() && !$task->isTrashed() && !$task->isArchived()) $tasks[] = $task;
+		}
 		ProjectTasks::populateTimeslots($tasks);
 		
 		//Timeslots view
@@ -102,18 +109,21 @@ class TimeController extends ApplicationController {
 			if (logged_user()->getCompanyId() > 0) $companies[] = logged_user()->getCompany();
 		}
 		
-		$draw_inputs = false;
-		$ts_ots = DimensionObjectTypeContents::getDimensionObjectTypesforObject(Timeslots::instance()->getObjectTypeId());
-		$context = active_context();
-		foreach ($context as $sel) {
-			if ($sel instanceof Member) {
-				foreach ($ts_ots as $ts_ot) {
-					if ($sel->getDimensionId() == $ts_ot->getDimensionId() && $sel->getObjectTypeId() == $ts_ot->getDimensionObjectTypeId()) {
-						$draw_inputs = true;
-						break;
+		$required_dimensions = DimensionObjectTypeContents::getRequiredDimensions(Timeslots::instance()->getObjectTypeId());
+		$draw_inputs = !$required_dimensions || count($required_dimensions) == 0;
+		if (!$draw_inputs) {
+			$ts_ots = DimensionObjectTypeContents::getDimensionObjectTypesforObject(Timeslots::instance()->getObjectTypeId());
+			$context = active_context();
+			foreach ($context as $sel) {
+				if ($sel instanceof Member) {
+					foreach ($ts_ots as $ts_ot) {
+						if ($sel->getDimensionId() == $ts_ot->getDimensionId() && $sel->getObjectTypeId() == $ts_ot->getDimensionObjectTypeId()) {
+							$draw_inputs = true;
+							break;
+						}
 					}
+					if ($draw_inputs) break;
 				}
-				if ($draw_inputs) break;
 			}
 		}
 		

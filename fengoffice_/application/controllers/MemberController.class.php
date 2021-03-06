@@ -113,13 +113,20 @@ class MemberController extends ApplicationController {
 			save_member_permissions($member);
 			
 			if ($ok) {
+				ajx_extra_data( array(
+					"member"=>array(
+						"id" => $member->getId(),
+						"dimension_id" => $member->getDimensionId()
+					)
+				));
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
 				evt_add("reload dimension tree", $member->getDimensionId());
+			//	evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
-					ajx_current("reload");	
+					ajx_current("reload");
 				}
 			}
 		}
@@ -278,10 +285,11 @@ class MemberController extends ApplicationController {
 				}
 			} else {
 				$member->save();
+				
 			}
 			
 			
-
+			
 			
 			// Other dimensions member restrictions
 			$restricted_members = array_var($_POST, 'restricted_members');
@@ -452,8 +460,13 @@ class MemberController extends ApplicationController {
 			}
 			
 			DB::commit();
-			flash_success(lang('success save member', lang(ObjectTypes::findById($member->getObjectTypeId())->getName())));
+			flash_success(lang('success save member', lang(ObjectTypes::findById($member->getObjectTypeId())->getName()), $member->getName()));
 			ajx_current("back");
+			// Add od to array on new members
+			if ($is_new) {
+				$member_data['member_id'] = $member->getId();
+			}
+			evt_add("after member save", $member_data) ;
 			return $member;
 		} catch (Exception $e) {
 			DB::rollback();
@@ -473,9 +486,14 @@ class MemberController extends ApplicationController {
 		
 		try {
 			
-			// Remove from shring table
 			DB::beginWork();
 			
+			if (!$member->canBeDeleted($error_message)) {
+				throw new Exception(lang($error_message));
+			}
+			$dim_id = $member->getDimensionId();
+			
+			// Remove from shring table
 			SharingTables::instance()->delete(" 
 				object_id IN (
  				 SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members WHERE member_id = ".get_id()." AND is_optimization = 0
@@ -490,23 +508,17 @@ class MemberController extends ApplicationController {
 					if ($object) {
 						if ( $object instanceof ContentDataObject ) {
 							$object->addToSharingTable();
-							
 						}
 					}	 
 				}
 			}
 			
-			if (!$member->canBeDeleted($error_message)) {
-				throw new Exception(lang($error_message));
-			}
-			$dim_id = $member->getDimensionId();
-			
 			$args=array($member);
 			Hook::fire('delete_member', $args, $ret);
-			
+
+//			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
 			$ok = $member->delete();
 			if ($ok) evt_add("reload dimension tree", $dim_id);
-//			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
@@ -977,20 +989,33 @@ class MemberController extends ApplicationController {
 		try {
 			DB::beginWork();
 			
+			$objects = array();
+			$from = array();
 			foreach ($ids as $oid) {
 				/* @var $obj ContentDataObject */
 				$obj = Objects::findObject($oid);
 				$dim_obj_type_content = DimensionObjectTypeContents::findOne(array('conditions' => array('`dimension_id`=? AND `dimension_object_type_id`=? AND `content_object_type_id`=?', $member->getDimensionId(), $member->getObjectTypeId(), $obj->getObjectTypeId())));
 				if (!($dim_obj_type_content instanceof DimensionObjectTypeContent)) continue;
 				if (!$dim_obj_type_content->getIsMultiple() || array_var($_POST, 'remove_prev')) {
+					$db_res = DB::execute("SELECT group_concat(om.member_id) as old_members FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON om.member_id=m.id WHERE m.dimension_id=".$member->getDimensionId()." AND om.object_id=".$obj->getId());
+					$row = $db_res->fetchRow();
+					if (array_var($row, 'old_members') != "") $from[$obj->getId()] = $row['old_members'];
 					// remove from previous members
 					ObjectMembers::delete('`object_id` = ' . $obj->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
 				}
 				$obj->addToMembers(array($member));
 				$obj->addToSharingTable();
+				$objects[] = $obj;
 			}
 			
 			DB::commit();
+			
+			// add to application logs
+			foreach ($objects as $object) {
+				$action = array_var($from, $obj->getId()) ? ApplicationLogs::ACTION_MOVE : ApplicationLogs::ACTION_COPY;
+				$log_data = (array_var($from, $obj->getId()) ? "from:" . array_var($from, $obj->getId()) . ";" : "") . "to:" . $member->getId();
+				ApplicationLogs::instance()->createLog($object, $action, false, true, true, $log_data);
+			}
 			
 			$lang_key = count($ids)>1 ? 'objects moved to member success' : 'object moved to member success';
 			flash_success(lang($lang_key, $member->getName()));

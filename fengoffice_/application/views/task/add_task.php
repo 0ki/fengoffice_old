@@ -430,7 +430,7 @@
 		<?php $defaultNotifyValue = user_config_option('can notify from quick add'); ?>
 		<label><?php echo lang('assign to') ?>:</label> 
 		<table><tr><td>
-			<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to_contact_id]"></input>
+			<input type="hidden" id="<?php echo $genid ?>taskFormAssignedTo" name="task[assigned_to_contact_id]" value="<?php echo array_var($task_data, 'assigned_to_contact_id')?>"></input>
 			<div id="<?php echo $genid ?>assignto_container_div"></div>
 			
 		</td><td style="padding-left:10px"><div  id="<?php echo $genid ?>taskFormSendNotificationDiv" style="display:none">

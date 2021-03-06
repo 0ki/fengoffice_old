@@ -334,11 +334,16 @@ abstract class ContentDataObjects extends DataManager {
 	 * 		start = 0 
 	 * 		limit = null	
 	 * 		ignore_context
+	 *		include_deleted 
 	 *		count_results : if true calc found rows else show 'many'	 
+	 *      extra_member_ids : Search also objects in this slist of members 
+	 *      member_ids : force to search objects in this list of members (strinct)
 	 *  	 
 	 */
 	public function listing($args = array()) {
-		
+		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
+			$start_time = microtime(1);
+		} 
 		$result = new stdClass ;
 		$result->objects =array();
 		$result->total =array();
@@ -346,16 +351,15 @@ abstract class ContentDataObjects extends DataManager {
 		$SQL_BASE_JOIN = '';
 		$SQL_EXTRA_JOINS = '' ;
 		$SQL_TYPE_CONDITION = 'true' ;
-		//$count_results = array_var($args, 'count_results', config_option('infinite_paging', !(bool)INFINITE_PAGING));
-		//$count_results = max(
-		//!config_option("infinite_paging",0), 
-		//	array_var($args, 'count_results',0)
-		//); 
+
 		$count_results = ! ( defined('INFINITE_PAGING') && INFINITE_PAGING ) ; 
 		$start = array_var($args,'start');
 		$limit = array_var($args,'limit');
 		$member_ids = array_var($args, 'member_ids');
+		$extra_member_ids =  array_var($args,'extra_member_ids');
 		$ignore_context = array_var($args,'ignore_context');
+		$include_deleted = (bool) array_var($args,'include_deleted');
+		
 		if ($count_results) {
 			$SQL_FOUND_ROWS = "SQL_CALC_FOUND_ROWS";
 		}else{
@@ -363,10 +367,7 @@ abstract class ContentDataObjects extends DataManager {
 		}
 		
 		$handler_class = "Objects";
-		//$handler_class = '' ;
-		
-		
-		
+	
 		if ($type_id){
 			// If isset type, is a concrete instance linsting. Otherwise is a generic listing of objects
 			$type = ObjectTypes::findById($type_id); /* @var $object_type ObjectType */
@@ -390,6 +391,9 @@ abstract class ContentDataObjects extends DataManager {
 		}elseif ( count($member_ids) ) {
 			$members = $member_ids ;
 		}
+		if  (is_array($extra_member_ids)) {
+			$members = array_merge($members,$extra_member_ids);
+		}
 		$uid = logged_user()->getId() ;
 
 		// Order statement
@@ -402,7 +406,6 @@ abstract class ContentDataObjects extends DataManager {
 			$SQL_LIMIT = '' ;
 		}
 		
-		///alert_r("START:". microtime(1));	
 		$SQL_CONTEXT_CONDITION = " true ";
 		if (!empty($members) && count($members)) {
 		
@@ -428,8 +431,8 @@ abstract class ContentDataObjects extends DataManager {
 		
 		// Trash && Archived CONDITIONS
     	$trashed_archived_conditions = self::prepareTrashandArchivedConditions(array_var($args,'trashed'), array_var($args,'archived'));
-    	$SQL_TRASHED_CONDITION = $trashed_archived_conditions[0];
-    	$SQL_ARCHIVED_CONDITION = $trashed_archived_conditions[1];
+    	$SQL_TRASHED_CONDITION = ($include_deleted) ? ' TRUE '  : $trashed_archived_conditions[0];
+    	$SQL_ARCHIVED_CONDITION =($include_deleted) ? ' AND TRUE ' :  $trashed_archived_conditions[1];
     	
 		// Extra CONDITIONS
 		if (array_var($args,'extra_conditions')) {
@@ -482,7 +485,10 @@ abstract class ContentDataObjects extends DataManager {
 				$result->total = $start + count($result->objects) ;
 			}
 		}
-	
+		
+		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
+			alert("Query time: ". (microtime(1) - $start_time) ) ;
+		}
 		return $result;
 	}
 	

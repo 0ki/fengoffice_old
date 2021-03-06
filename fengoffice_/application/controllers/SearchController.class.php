@@ -14,6 +14,11 @@ class SearchController extends ApplicationController {
 	 */
 	var $showQueryTime = false ;
 	
+	/**
+	 * Characters that mysql take as word separator
+	 * @var array
+	 */
+	var $mysqlWordSeparator = array('@' , '.' , ',');
 	
 	/**
 	 * Search string
@@ -116,11 +121,18 @@ class SearchController extends ApplicationController {
 		if (!$useLike){
 			// Prepare MATCH AGAINST string
 			foreach ($search_pieces as $word ) {
-				$search_string.= mysql_escape_string($word);
-				if ($this->wildCardSearch) {
-					$search_string.="*";
+				if (( strpos($word, "@") || strpos($word, ".") || strpos($word, ",")) === false ) {
+					// STRING Dont containt special characheters that mysql use as separator. Noramal  flow 
+					if ($this->wildCardSearch) {
+						$word.="*";
+					}
+				}else{
+					$word =  str_replace($this->mysqlWordSeparator, " +", $word) ;
 				}
-				$search_string.=" ";
+				if ( !str_starts_with($word, " ") ) {
+					$word = " +".$word;
+				}
+				$search_string .= mysql_escape_string( $word ). " ";
 			}
 			$search_string = substr($search_string, 0 , -1);
 		}else{
@@ -147,7 +159,7 @@ class SearchController extends ApplicationController {
 				(	
 					o.object_type_id = $revisionObjectTypeId AND  
 					EXISTS ( 
-						SELECT id FROM fo_sharing_table WHERE object_id  = ( SELECT file_id FROM fo_project_file_revisions WHERE object_id = o.id ) 
+						SELECT id FROM ".TABLE_PREFIX."sharing_table WHERE object_id  = ( SELECT file_id FROM ".TABLE_PREFIX."project_file_revisions WHERE object_id = o.id ) 
 						AND group_id IN (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid )
 					)
 					

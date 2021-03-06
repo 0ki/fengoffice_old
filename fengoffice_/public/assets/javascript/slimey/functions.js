@@ -128,12 +128,13 @@ function addEventHandler(elem, ev, fun, scope) {
 }
 
 /**
+ * 	renamed $ to 'slimeyGet' because of jquery conflicts
  *  returns document.getElementById(id);
  *  	id: id of the element
  *		container: (optional) where to search (default: document.body)
  *  	frame: (optional) frame where the element is (default: window)
  */
-function $(id, container, frame) {
+function slimeyGet(id, container, frame) {
 	if (!frame) frame = window;
 	if (!container) container = document.body;
 	

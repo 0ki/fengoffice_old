@@ -22,7 +22,9 @@ function core_dimensions_after_add_to_members($object, &$ignored) {
 	if ($object instanceof Report || $object instanceof Timeslot) return;
 	
 	// Add to persons and users dimensions
-	$user_ids = array(logged_user()->getId());
+	$user_ids = array();
+	if (logged_user() instanceof Contact) $user_ids[] = logged_user()->getId();
+	
 	if ($object instanceof ProjectTask) {
 		/* @var $object ProjectTask */
 		if ($object->getAssignedById() > 0) $user_ids[] = $object->getAssignedById();

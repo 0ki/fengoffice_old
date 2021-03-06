@@ -743,5 +743,6 @@
 }
 
 .member-path-dim-block .mname {
-	color: #444;
+	padding: 2px;
+	border-radius: 3px;
 }

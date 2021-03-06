@@ -506,8 +506,14 @@ class AccountController extends ApplicationController {
 			$ret = null ; 
 			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
+			
+			if(array_var($_GET,'current')=="administration") {
+				ajx_current("reload");
+			}else{
+				ajx_current("empty");
+			}
+			
 			flash_success('success disable user');
-			ajx_current("empty");
 			
 		} catch (Exception $e) {
 			flash_error($e->getMessage());

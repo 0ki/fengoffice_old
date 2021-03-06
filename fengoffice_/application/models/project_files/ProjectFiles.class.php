@@ -68,7 +68,7 @@ class ProjectFiles extends BaseProjectFiles {
 	 * @return array
 	 */
 	static function getByFilename($filename, $order = '`id` DESC') {
-		$conditions = array ('`filename` = ?', $filename );
+		$conditions = array ('`name` = ?', $filename );
 		
 		return self::findOne ( array ('conditions' => $conditions, 'order' => $order ) );
 	} // getByFilename

@@ -40,7 +40,11 @@ og.eventManager.addListener('reload dimension tree',
 		 		tree.loader.load(tree.getRootNode(), function() {
 			 		tree.expanded_once = false;
 		 			og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
-			 		og.reloadingDimensions[dim_id] = false ;
+			 		og.reloadingDimensions[dim_id] = false;
+			 		if (og.select_member_after_reload) {
+			 			og.selectDimensionTreeMember(og.select_member_after_reload);
+			 			og.select_member_after_reload = null;
+			 		}
 			 	});
 		 		tree.resumeEvents();
 	 		}
@@ -72,7 +76,11 @@ og.eventManager.addListener('reset dimension tree',
 
 og.eventManager.addListener('select dimension member', 
 	function (data){
-		og.selectDimensionTreeMember(data);
+		if (og.reloadingDimensions[data.dim_id]) {
+		//	og.select_member_after_reload = data;
+		} else {
+			og.selectDimensionTreeMember(data);
+		}
 	}
 );
 
@@ -164,4 +172,28 @@ og.eventManager.addListener('expand menu panel',
 		Ext.getCmp('menu-panel').expand(true);
 	}		
 );
+
+og.eventManager.addListener('after member save', 
+	function (member){
+		/*
+		member = {
+    		dimension_id:"1", 
+			member_id:"368", 
+			name:"Weekly Planningg", 
+			object_type_id:"1", 
+			parent_member_id:"8"
+		}
+		*/
+
+		if (og.dimensions[member.dimension_id]){
+			if (!og.dimensions[member.dimension_id][member.member_id]) {
+				og.dimensions[member.dimension_id][member.member_id] = {};
+				og.dimensions[member.dimension_id][member.member_id].id = member.member_id ;
+			}
+			og.dimensions[member.dimension_id][member.member_id].name=member.name; 
+			og.dimensions[member.dimension_id][member.member_id].ot=member.object_type_id;
+		}
+	}
+);
+
 </script>

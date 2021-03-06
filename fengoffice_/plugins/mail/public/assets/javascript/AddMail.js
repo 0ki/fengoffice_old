@@ -270,11 +270,16 @@ og.attachFromWorkspace = function(genid) {
 		if (objs) {
 			var container = document.getElementById(genid + 'attachments');
 			for (var i=0; i < objs.length; i++) {
-				var obj = objs[i].data;
+				var o = objs[i].data;
+				var obj = {object_id: o.object_id, manager: 'ProjectFiles', name: o.name, icocls: o.ico};
 				og.addMailAttachment(container, obj);
 			}
 		}
-	}, this, {selected_type:'ProjectFiles'});
+	}, this, 
+	{
+		selected_type:'file',
+		types: ['file']
+	});
 };
 og.getMailBodyFromUI = function(genid) {
 	var format_html = Ext.getDom(genid + 'format_html');

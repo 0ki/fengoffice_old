@@ -387,11 +387,12 @@
 }
 
 .widget-body .co-row {
-	padding-left: 22px ;		
+	padding: 2px 0 2px 22px ;		
 }
 
 .widget-messages .message-row {
-	padding-left: 22px ;		
+	padding: 2px 0 2px 22px ;
+	background-position: 0 center !important;
 }
 .widget-messages ul {
 	/* margin-top: 10px;*/ 	

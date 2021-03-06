@@ -76,6 +76,7 @@
 	}
 	
 	?>
+	<?php echo add_javascript_to_page(get_url('dimension', 'dimensions_js')); // loaded first because it's needed for translating?>
 	<style>
 		#loading {
 		    font-size: 20px;

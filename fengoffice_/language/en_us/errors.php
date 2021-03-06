@@ -177,6 +177,7 @@
 	'error assign task permissions company' => 'You don\'t have permissions to assign a task to that company',
   	'account already being checked' => 'Account is already being checked.',
   	'no files to compress' => 'No files to compress',
+	'error cannot assign task to user' => '{0} cannot be task asignee for {1}.',
   
   	//Subscribers
   	

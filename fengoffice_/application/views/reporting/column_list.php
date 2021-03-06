@@ -34,8 +34,10 @@
 				'selected' => false,
 			);
 		}
-		if(!isset($order_by) || $order_by == '') $order_by = 'updated_on'; 
-		$options[] = option_tag($acol['name'], $acol['id'], $acol['id'] == $order_by ? array('selected' => 'selected') : null);
+		if(!isset($order_by) || $order_by == '') $order_by = 'updated_on';
+		if (!str_starts_with($acol['id'], "dim_")) {
+			$options[] = option_tag($acol['name'], $acol['id'], $acol['id'] == $order_by ? array('selected' => 'selected') : null);
+		}
 	}
 	
 	// Render Order By combos

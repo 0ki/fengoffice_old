@@ -124,14 +124,13 @@ class Timeslot extends BaseTimeslot {
     
     function close($description = null){
     	if ($this->isPaused()) {
-            print_r($this->getPausedOn());die();
     		$this->setEndTime($this->getPausedOn());
     	} else {
     	  	$dt = DateTimeValueLib::now();
 			$this->setEndTime($dt);
     	}
         
-        $timeslot_time = ($this->getEndTime()->getTimestamp() - $this->getStartTime()->getTimestamp()) / 3600;
+        $timeslot_time = ($this->getEndTime()->getTimestamp() - ($this->getStartTime()->getTimestamp() + $this->getSubtract())) / 3600;
         $task = ProjectTasks::findById($this->getRelObjectId());
         $timeslot_percent = ($timeslot_time * 100) / ($task->getTimeEstimate() / 60);
         $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();

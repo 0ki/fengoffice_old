@@ -358,83 +358,83 @@ class EventController extends ApplicationController {
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
 				$data = $this->getData($event_data);
+
+				$event->setFromAttributes($data);
+
+				DB::beginWork();
+				$event->save();
+
+				$this->registerInvitations($data, $event);
+
+				if (isset($data['confirmAttendance'])) {
+					$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
+				}
 				
-                                $event->setFromAttributes($data);
-
-                                DB::beginWork();
-                                $event->save();
-	          	
-                                $this->registerInvitations($data, $event);
-
-                                if (isset($data['confirmAttendance'])) {
-                                    $this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
-                                }
-	            
 				if (isset($data['send_notification']) && $data['send_notification']) {
-                                    $users_to_inv = array();
-                                    foreach ($data['users_to_invite'] as $us => $v) {
-                                            if ($us != logged_user()->getId()) {
-                                                    $users_to_inv[] = Contacts::findById(array('id' => $us));
-                                            }
-                                    }
-                                    Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
-                                }
+					$users_to_inv = array();
+					foreach ($data['users_to_invite'] as $us => $v) {
+						if ($us != logged_user()->getId()) {
+							$users_to_inv[] = Contacts::findById(array('id' => $us));
+						}
+					}
+					Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
+				}
 
-                                if (array_var($_POST, 'members')) {
-                                        $member_ids = json_decode(array_var($_POST, 'members'));
-                                } else {
-                                        $member_ids = array();
-                                        $context = active_context();
-                                        foreach ($context as $selection) {
-                                                if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                                        }
-                                }
-		        
-                                $object_controller = new ObjectController();
-                                $object_controller->add_to_members($event, $member_ids);
-                                $object_controller->add_subscribers($event);
-                                $object_controller->link_to_new_object($event);
-                                $object_controller->add_custom_properties($event);
-                                $object_controller->add_reminders($event);
+				if (array_var($_POST, 'members')) {
+					$member_ids = json_decode(array_var($_POST, 'members'));
+				} else {
+					$member_ids = array();
+					$context = active_context();
+					foreach ($context as $selection) {
+						if ($selection instanceof Member) $member_ids[] = $selection->getId();
+					}
+				}
 
-                                if (array_var($_POST, 'popup', false)) {
-                                        // create default reminder
-                                        $minutes = 15;
-                                        $reminder = new ObjectReminder();
-                                        $reminder->setMinutesBefore($minutes);
-                                        $reminder->setType("reminder_popup");
-                                        $reminder->setContext("start");
-                                        $reminder->setObject($event);
-                                        $reminder->setUserId(0);
-                                        $date = $event->getStart();
-                                        if ($date instanceof DateTimeValue) {
-                                                $rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
-                                                $reminder->setDate($rdate);
-                                        }
-                                        $reminder->save();
-                                }
+				$object_controller = new ObjectController();
+				$object_controller->add_to_members($event, $member_ids);
+				$object_controller->add_subscribers($event);
+				$object_controller->link_to_new_object($event);
+				$object_controller->add_custom_properties($event);
+				$object_controller->add_reminders($event);
 
-                                ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
+				if (array_var($_POST, 'popup', false)) {
+					// create default reminder
+					$minutes = 15;
+					$reminder = new ObjectReminder();
+					$reminder->setMinutesBefore($minutes);
+					$reminder->setType("reminder_popup");
+					$reminder->setContext("start");
+					$reminder->setObject($event);
+					$reminder->setUserId(0);
+					$date = $event->getStart();
+					if ($date instanceof DateTimeValue) {
+						$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+						$reminder->setDate($rdate);
+					}
+					$reminder->save();
+				}
 
-                                $this->repetitive_event($event);
+				ApplicationLogs::createLog($event, ApplicationLogs::ACTION_ADD);
 
-                                if (array_var($_POST, 'popup', false)) {
-                                $event->subscribeUser(logged_user());
-                                        ajx_current("reload");
-                                } else {
-                                        ajx_current("back");
-                                }
-                                DB::commit();
-	          	
-                                flash_success(lang('success add event', clean($event->getObjectName())));
-                                ajx_add("overview-panel", "reload");
-                        } catch(Exception $e) {
-                                DB::rollback();
-                                        flash_error($e->getMessage());
-                                        ajx_current("empty");
-                        } // try
+				$this->repetitive_event($event);
 
-                    }
+				if (array_var($_POST, 'popup', false)) {
+					$event->subscribeUser(logged_user());
+					ajx_current("reload");
+				} else {
+					ajx_current("back");
+				}
+				DB::commit();
+
+				flash_success(lang('success add event', clean($event->getObjectName())));
+				ajx_add("overview-panel", "reload");
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			} // try
+
+		}
 	}
 	
 	function delete() {
@@ -1490,7 +1490,9 @@ class EventController extends ApplicationController {
             Zend_Loader::loadClass('Zend_Gdata_Calendar');
 
             $users = ExternalCalendarUsers::findByContactId();
+            if (!$users instanceof ExternalCalendarUser) return;
             $calendar = ExternalCalendars::findById($event->getExtCalId());
+            if (!$calendar instanceof ExternalCalendar) return;
 
             $user = $users->getAuthUser();
             $pass = $users->getAuthPass();
@@ -1597,40 +1599,40 @@ class EventController extends ApplicationController {
                 flash_success(lang('success add sync'));
                 ajx_current("reload");                
 	}
-        
-        function repetitive_event($event){
-            if($event->isRepetitive()){
-                if ($event->getRepeatNum() > 0) {
-                    $event->setRepeatNum($event->getRepeatNum() - 1);
-                    while($event->getRepeatNum() > 0){
-                        $this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
-                        $event->setRepeatNum($event->getRepeatNum() - 1);
-                        // generate completed task
-                        $event->cloneEvent($new_st_date,$new_due_date);
-                        // set next values for repetetive task
-                        if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
-                        if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
-                    }
-                    $event->save();
-                }else{
-                    $event_end = $event->getRepeatEnd();
-                    $new_st_date = "";
-                    $new_due_date = "";
-                    while($new_st_date <= $event_end || $new_due_date <= $event_end){
-                        $this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
-                        // generate completed task
-                        $event->cloneEvent($new_st_date,$new_due_date);
-                        // set next values for repetetive task
-                        if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
-                        if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
-                    }
-                    $event->setRepeatEnd(EMPTY_DATETIME);
-                    $event->save();
-                }
-            }
-        }
-        
-        private function getNextRepetitionDates($event, &$new_st_date, &$new_due_date) {
+
+	function repetitive_event($event){
+		if($event->isRepetitive()){
+			if ($event->getRepeatNum() > 0) {
+				$event->setRepeatNum($event->getRepeatNum() - 1);
+				while($event->getRepeatNum() > 0){
+					$this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
+					$event->setRepeatNum($event->getRepeatNum() - 1);
+					// generate completed task
+					$event->cloneEvent($new_st_date,$new_due_date);
+					// set next values for repetetive task
+					if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
+					if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
+				}
+				$event->save();
+			}else{
+				$event_end = $event->getRepeatEnd();
+				$new_st_date = "";
+				$new_due_date = "";
+				while($new_st_date <= $event_end || $new_due_date <= $event_end){
+					$this->getNextRepetitionDates($event, $new_st_date, $new_due_date);
+					// generate completed task
+					$event->cloneEvent($new_st_date,$new_due_date);
+					// set next values for repetetive task
+					if ($event->getStart() instanceof DateTimeValue ) $event->setStart($new_st_date);
+					if ($event->getDuration() instanceof DateTimeValue ) $event->setDuration($new_due_date);
+				}
+				$event->setRepeatEnd(EMPTY_DATETIME);
+				$event->save();
+			}
+		}
+	}
+
+	private function getNextRepetitionDates($event, &$new_st_date, &$new_due_date) {
 		$new_due_date = null;
 		$new_st_date = null;
 
@@ -1647,19 +1649,19 @@ class EventController extends ApplicationController {
 			if ($new_due_date instanceof DateTimeValue) {
 				$new_due_date = $new_due_date->add('d', $event->getRepeatD());
 			}
-		} else if ($task->getRepeatM() > 0) {
+		} else if ($event->getRepeatM() > 0) {
 			if ($new_st_date instanceof DateTimeValue) {
-				$new_st_date = $new_st_date->add('M', $task->getRepeatM());
+				$new_st_date = $new_st_date->add('M', $event->getRepeatM());
 			}
 			if ($new_due_date instanceof DateTimeValue) {
-				$new_due_date = $new_due_date->add('M', $task->getRepeatM());
+				$new_due_date = $new_due_date->add('M', $event->getRepeatM());
 			}
-		} else if ($task->getRepeatY() > 0) {
+		} else if ($event->getRepeatY() > 0) {
 			if ($new_st_date instanceof DateTimeValue) {
-				$new_st_date = $new_st_date->add('y', $task->getRepeatY());
+				$new_st_date = $new_st_date->add('y', $event->getRepeatY());
 			}
 			if ($new_due_date instanceof DateTimeValue) {
-				$new_due_date = $new_due_date->add('y', $task->getRepeatY());
+				$new_due_date = $new_due_date->add('y', $event->getRepeatY());
 			}
 		}
 	}

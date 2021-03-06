@@ -218,7 +218,23 @@ class MailUtilities {
 			$same = MailContents::findOne(array('conditions' => "`account_id`=".$account->getId() . $id_condition, 'include_trashed' => true));
 			if ($same instanceof MailContent) return;
 		}
-		//if you are in the table spam
+                
+                $from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
+			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
+		$user_id = logged_user() instanceof Contact ? logged_user()->getId() : $account->getContactId();
+		$max_spam_level = user_config_option('max_spam_level', null, $user_id);
+		if ($max_spam_level < 0) $max_spam_level = 0;
+		$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
+		// if max_spam_level >= 10 then nothing goes to junk folder
+		$spam_in_subject = false;
+		if (config_option('check_spam_in_subject')) {
+			$spam_in_subject = strpos_utf(strtoupper(array_var($parsedMail, 'Subject')), "**SPAM**") !== false;
+		}
+		if (($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) || $spam_in_subject) {
+			$state = 4; // send to Junk folder
+		}
+                
+		//if you are in the table spam MailSpamFilters
                 $spam_email = MailSpamFilters::getFrom($account->getId(),$from);
                 if($spam_email)
                 {
@@ -237,21 +253,6 @@ class MailUtilities {
                             }
                     }
                 }
-		
-		$from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
-			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
-		$user_id = logged_user() instanceof Contact ? logged_user()->getId() : $account->getContactId();
-		$max_spam_level = user_config_option('max_spam_level', null, $user_id);
-		if ($max_spam_level < 0) $max_spam_level = 0;
-		$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
-		// if max_spam_level >= 10 then nothing goes to junk folder
-		$spam_in_subject = false;
-		if (config_option('check_spam_in_subject')) {
-			$spam_in_subject = strpos_utf(strtoupper(array_var($parsedMail, 'Subject')), "**SPAM**") !== false;
-		}
-		if (($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) || $spam_in_subject) {
-			$state = 4; // send to Junk folder
-		}
 
 		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
 		$mail = new MailContent();
@@ -448,29 +449,25 @@ class MailUtilities {
 			
 			$mail->save();
 
+			
 			// CLASSIFY RECEIVED MAIL WITH THE CONVERSATION
+			$member_ids = array();
 			if (user_config_option('classify_mail_with_conversation', null, $account->getContactId()) && isset($conv_mail) && $conv_mail instanceof MailContent) {
-				// TODO FEng 2 members
-				/*
-				$wss = $conv_mail->getWorkspaces();
-				foreach($wss as $ws) {
-					$acc_user = Contacts::findById($account->getContactId());
-					if ($acc_user instanceof Contact && $acc_user->hasProjectPermission($ws, ProjectUsers::CAN_READ_MAILS)) {
-						$mail->addToWorkspace($ws);
-					}
-				}
-				*/
+				$member_ids = array_merge($member_ids, $conv_mail->getMemberIds());
 			}
-			// CLASSIFY MAILS IF THE ACCOUNT HAS A WORKSPACE
-			$memberId = $account->getMemberId();
-			if ($memberId != 0) {
+			
+			// CLASSIFY MAILS IF THE ACCOUNT HAS A DIMENSION MEMBER
+			$account_owner = Contacts::findById($account->getContactId());
+			if ($account->getMemberId() != 0) {
 				$member = $account->getMember() ;
-				//$workspace = Projects::findById($account->getColumnValue('workspace',0));
 				if ($member && $member instanceof Member ) {
-					$mail->addToMembers(array($member));
-					$ctrl = new ObjectController() ;
-					$ctrl->add_to_members($mail, array($member->getId()));
+					$member_ids[] = $member->getId();
 			 	}
+			}
+			
+			if (count($member_ids) > 0) {
+				$ctrl = new ObjectController();
+				$ctrl->add_to_members($mail, $member_ids, $account_owner);
 			}
 		
 			$user = Contacts::findById($account->getContactId());
@@ -479,8 +476,9 @@ class MailUtilities {
 			}
 			$mail->addToSharingTable();
                         
-                        // to apply email rules
-			Hook::fire('after_mail_download', $mail);
+			// to apply email rules
+			$null = null;
+			Hook::fire('after_mail_download', $mail, $null);
 			
 		} catch(Exception $e) {
 			FileRepository::deleteFile($repository_id);

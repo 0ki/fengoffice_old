@@ -265,6 +265,14 @@ class TaskController extends ApplicationController {
 					}
 				}
 				
+				if ($task->getAssignedToContactId() > 0 && !can_read($task->getAssignedToContact(), Members::findAll(array("conditions" => "id IN (".implode(",",$member_ids).")")), $task->getObjectTypeId())) {
+					if ($task->getAssignedToContact() instanceof Contact) {
+						flash_error(lang('error cannot assign task to user', $task->getAssignedToContact()->getObjectName(), $task->getObjectName()));
+					}
+					$task->setAssignedToContactId(0);
+					$task->save();
+				}
+				
 				if (array_var($_GET, 'dont_mark_as_read') && !$is_read) {
 					$task->setIsRead(logged_user()->getId(), false);
 				}					
@@ -1356,18 +1364,25 @@ class TaskController extends ApplicationController {
 			}
 		}
 		try {
+			
+			// generate new pending task
+			$new_task = $task->cloneTask($new_st_date, $new_due_date);
+			$task->clearRepeatOptions();
+			foreach ($new_task->getAllSubTasks() as $subt) {
+				$subt->setCompletedById(0);
+				$subt->setCompletedOn(EMPTY_DATETIME);
+				$subt->save();
+			}
+			
 			DB::beginWork();
-			$new_task = $task->cloneTask();
+			
 			$new_task->save();
-				
-			// set next values for repetetive task
-			if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
-			if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
-
 			$task->save();
+			
 			DB::commit();
 			flash_success(lang("new task repetition generated"));
-			ajx_current("reload");
+			
+			ajx_current("back");
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1407,6 +1422,7 @@ class TaskController extends ApplicationController {
 		} // if
 
 		try {
+			$reload_view = false;
 			DB::beginWork();
 			// if task is repetitive, generate a complete instance of this task and modify repeat values
 			if ($task->isRepetitive()) {
@@ -1426,34 +1442,27 @@ class TaskController extends ApplicationController {
 						$complete_last_task = true;
 					}
 				}
+				
 				if (!$complete_last_task) {
-					// generate completed task
-					$new_task = $task->cloneTask($new_st_date,$new_due_date,true);
-					$new_task->completeTask();
-						
-					// set next values for repetetive task
-					if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
-					if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
-
-					foreach ($task->getAllSubTasks() as $subt) {
+					// generate new pending task
+					$new_task = $task->cloneTask($new_st_date, $new_due_date);
+					$task->clearRepeatOptions();
+					foreach ($new_task->getAllSubTasks() as $subt) {
 						$subt->setCompletedById(0);
 						$subt->setCompletedOn(EMPTY_DATETIME);
 						$subt->save();
 					}
-					$task->save();
-				} else {
-					// if this is the last repetition, complete this
-					$task->completeTask();
+					$reload_view = true;
 				}
-			} else {
-				$task->completeTask();
 			}
+			
+			$task->completeTask();
 							
 			DB::commit();
 			flash_success(lang('success complete task'));
 				
 			$redirect_to = array_var($_GET, 'redirect_to', false);
-			if (array_var($_GET, 'quick', false) && !$task->isRepetitive()) {
+			if (array_var($_GET, 'quick', false) && !$reload_view) {
 				ajx_current("empty");
 				ajx_extra_data(array("task" => $task->getArrayInfo()));
 			} else {

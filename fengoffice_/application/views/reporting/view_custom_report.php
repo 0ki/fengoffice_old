@@ -96,8 +96,12 @@
 	<td style="padding-right:10px;border-bottom:1px solid #666" class="bold">
 <?php if($to_print){
 		echo clean($col);
-	  }else if($col != ''){ ?>
-		<a href="<?php echo is_numeric(array_var($db_columns, $col)) ? "#" : get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>" <?php echo (is_numeric(array_var($db_columns, $col)) ? 'style="cursor:default;"' : "") ?>><?php echo clean($col) ?></a>
+	  }else if($col != ''){
+	  	$echo_link = !(is_numeric(array_var($db_columns, $col)) || str_starts_with(array_var($db_columns, $col), "dim_")); 
+	  	?>
+		<a href="<?php echo $echo_link ? get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL : "#" ?>" <?php echo ($echo_link ? "" : 'style="cursor:default;"') ?>>
+			<?php echo clean($col) ?>
+		</a>
 <?php }
 	  if(!$to_print && $sorted){ ?>
 		<span class="db-ico ico-<?php echo $asc ? 'asc' : 'desc' ?>" style="padding:2px 0 0 18px;">&nbsp;</span>

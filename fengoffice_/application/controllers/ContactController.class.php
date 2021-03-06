@@ -280,9 +280,6 @@ class ContactController extends ApplicationController {
 			try{                            
 				DB::beginWork();
 				foreach($options as $option) {
-                                        if($option->getName()){
-                                            
-                                        }
 					// update cache if available
 					if (GlobalCache::isAvailable()) {
 						GlobalCache::delete('user_config_option_'.logged_user()->getId().'_'.$option->getName());
@@ -1673,6 +1670,32 @@ class ContactController extends ApplicationController {
 								throw new Exception(lang('no access permissions'));
 							}
 							
+						}else if ($type == 'company') {
+							$contact_data = $this->buildCompanyData(array_var($_POST, 'select_company'), array_var($_POST, 'check_company'), $registers[$i]);
+							$contact_data['import_status'] = '('.lang('updated').')';
+							$comp_name = mysql_real_escape_string(array_var($contact_data, "first_name"));
+							$company = Contacts::findOne(array("conditions" => "first_name = '$comp_name' AND is_company = 1"));
+							$log_action = ApplicationLogs::ACTION_EDIT;
+							if (!$company) {
+								$company = new Contact();
+								$contact_data['import_status'] = '('.lang('new').')';
+								$log_action = ApplicationLogs::ACTION_ADD;
+								$can_import = $company->canAdd(logged_user(), active_context());
+								
+							} else {
+								$can_import = $company->canEdit(logged_user());
+							}
+							if ($can_import) {
+                                                                $contact_data['name'] = $contact_data['first_name'];
+                                                                $contact_data['is_company'] = 1;
+								$company->setFromAttributes($contact_data);
+								$company->save();
+								ApplicationLogs::createLog($company, null, $log_action);
+								
+								$import_result['import_ok'][] = $contact_data;
+							} else {
+								throw new Exception(lang('no access permissions'));
+							}
 						}
 
 						DB::commit();						
@@ -1764,7 +1787,15 @@ class ContactController extends ApplicationController {
 						$titles .= $field_names["contact[$k]"] . ',';
 				}
 				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
-			}
+			}else{
+                                $field_names = Contacts::getCompanyFieldNames();
+				
+				foreach($checked_fields as $k => $v) {
+					if (isset($field_names["company[$k]"]) && $v == 'checked')
+						$titles .= $field_names["company[$k]"] . ',';
+				}
+				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
+                        }
 				
 			$filename = rand().'.tmp';
 			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
@@ -1778,7 +1809,14 @@ class ContactController extends ApplicationController {
 				foreach ($contacts as $contact) {
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
 				}
-			}
+			}else{
+                                $conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+                                $conditions .=$ids_sql;
+				$companies = Contacts::getVisibleCompanies(logged_user(), $conditions);
+				foreach ($companies as $company) {
+					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
+				}
+                        }
 			
 			fclose($handle);
 
@@ -2354,7 +2392,7 @@ class ContactController extends ApplicationController {
 	
 	function buildCompanyData($position, $checked, $fields) {
 		$contact_data = array();
-		if (isset($checked['name']) && $checked['name']) $contact_data['name'] = array_var($fields, $position['name']);
+		if (isset($checked['first_name']) && $checked['first_name']) $contact_data['first_name'] = array_var($fields, $position['first_name']);
 		if (isset($checked['email']) && $checked['email']) $contact_data['email'] = array_var($fields, $position['email']);
 		if (isset($checked['homepage']) && $checked['homepage']) $contact_data['homepage'] = array_var($fields, $position['homepage']);
 		if (isset($checked['address']) && $checked['address']) $contact_data['address'] = array_var($fields, $position['address']);
@@ -2372,10 +2410,10 @@ class ContactController extends ApplicationController {
 	}
 	
 	
-	function build_csv_from_company(Company $company, $checked) {
+	function build_csv_from_company(Contact $company, $checked) {
 		$str = '';
 		
-		if (isset($checked['name']) && $checked['name'] == 'checked') $str .= self::build_csv_field($company->getObjectName());
+		if (isset($checked['first_name']) && $checked['first_name'] == 'checked') $str .= self::build_csv_field($company->getObjectName());
 		
 		$address = $company->getAddress('work', true);
 		if ($address){
@@ -2441,16 +2479,16 @@ class ContactController extends ApplicationController {
 			}
 			
 			$company_data = array(
-	          'first_name' => $company->getFirstName(),
-	          'timezone' => $company->getTimezone(),
-	          'email' => $company->getEmailAddress(),
+                          'first_name' => $company->getFirstName(),
+                          'timezone' => $company->getTimezone(),
+                          'email' => $company->getEmailAddress(),
 			  'phone_number' => $company->getPhoneNumber('work',true),
 			  'fax_number' => $company->getPhoneNumber('fax',true),
-	          'homepage' => $company->getWebpageURL('work'),
-	          'address' => $street,
-	          'city' => $city,
-	          'state' => $state,
-	          'zipcode' => $zipcode,
+                          'homepage' => $company->getWebpageURL('work'),
+                          'address' => $street,
+                          'city' => $city,
+                          'state' => $state,
+                          'zipcode' => $zipcode,
 			  'country'=> $country,
 			); // array
 		} // if
@@ -2575,22 +2613,22 @@ class ContactController extends ApplicationController {
 		tpl_assign('company_data', $company_data);
 	
 		if (is_array(array_var($_POST, 'company'))) {
-
+                    
 			$company->setFromAttributes($company_data);
 			$company->setObjectName();
 
-			if($company_data['address'] != "")
-				$company->addAddress($company_data['address'], $company_data['city'], $company_data['state'], $company_data['country'], $company_data['zipcode'], 'work', true);
-			if($company_data['phone_number'] != "") $company->addPhone($company_data['phone_number'], 'work', true);
-			if($company_data['fax_number'] != "") $company->addPhone($company_data['fax_number'], 'fax', true);
-			if($company_data['homepage'] != "") $company->addWebpage($company_data['homepage'], 'work');
-			if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work' , true);
 	
 
 			try {
 				Contacts::validate($company_data); 
 				DB::beginWork();
 				$company->save();
+				if($company_data['address'] != "")
+				$company->addAddress($company_data['address'], $company_data['city'], $company_data['state'], $company_data['country'], $company_data['zipcode'], 'work', true);
+				if($company_data['phone_number'] != "") $company->addPhone($company_data['phone_number'], 'work', true);
+				if($company_data['fax_number'] != "") $company->addPhone($company_data['fax_number'], 'fax', true);
+				if($company_data['homepage'] != "") $company->addWebpage($company_data['homepage'], 'work');
+				if($company_data['email'] != "") $company->addEmail($company_data['email'], 'work' , true);
 				
 				$object_controller = new ObjectController();
 				$object_controller->add_subscribers($company);
@@ -2598,7 +2636,7 @@ class ContactController extends ApplicationController {
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				if (!is_null($member_ids))
 					$object_controller->add_to_members($company, $member_ids);
-			    $object_controller->link_to_new_object($company);
+                                $object_controller->link_to_new_object($company);
 				$object_controller->add_custom_properties($company);
 				
 				ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);

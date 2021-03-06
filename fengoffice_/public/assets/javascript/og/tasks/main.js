@@ -721,7 +721,7 @@ ogTasks.setAllExpandedValue = function(expanded){
 }
 
 ogTasks.getUserCompanyName = function(assigned_to){
-	var user = this.getUser(assigned_to);
+	var user = this.getUser(assigned_to, true);
 	if (user) {
 		return user.name;
 	} else {

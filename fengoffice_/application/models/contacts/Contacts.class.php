@@ -90,14 +90,8 @@ class Contacts extends BaseContacts {
 	 * @return array
 	 */
 	static function getCompaniesWithUsers() {
-		$companies =  self::findAll(array('conditions' => array("`is_company` = 1")));
-		$companies_with_users = array();
-        foreach ($companies as $company){
-        	if(!is_null($company->getUsersByCompany()))
-        		$companies_with_users[] = $company;
-        }
-        return $companies_with_users;
-
+		$companies = self::findAll(array('conditions' => array("`is_company` = 1 AND EXISTS (SELECT c.object_id FROM ".TABLE_PREFIX."contacts c WHERE c.company_id=o.id AND c.user_type > 0)")));
+		return is_array($companies) ? $companies : array();
 	} // getCompaniesWithUsers
 	
 	
@@ -108,27 +102,39 @@ class Contacts extends BaseContacts {
 	 * @return array
 	 */
 	static function getGroupedByCompany($include_disabled = true) {
-		$companies = self::getCompaniesWithUsers();
+		$companies = self::findAll(array('conditions' => array("`is_company` = 1")));
 		if(!is_array($companies) || !count($companies)) {
 			//return null;
 		}
 
 		$result = array();
-		foreach($companies as $company) {
-			$users = $company->getUsersByCompany();
-			if(is_array($users) && count($users)) {
-				$result[$company->getObjectName()] = array(
-            		'details' => $company,
-            		'users' => $users,
-				);
-			}
+		$comp_ids = array(0);
+		foreach ($companies as $company) {
+			$comp_ids[] = $company->getId();
+			$result[$company->getId()] = array(
+            	'details' => $company,
+            	'users' => array(),
+			);
 		}
+		
+		$company_users = Contacts::findAll(array('conditions' => 'user_type<>0 AND company_id IN ('.implode(',', $comp_ids).')' . ($include_disabled ? "" : " AND disabled=0")));
+		foreach ($company_users as $user) {
+			$result[$user->getCompanyId()]['users'][] = $user;
+		}
+
+		$res = array();
+		foreach ($result as $comp_info) {
+			if ($comp_info['details'] instanceof Contact)
+				$res[$comp_info['details']->getObjectName()] = $comp_info;
+		}
+		$result = $res;
+
 		
 		$no_company_users = Contacts::getAllUsers("AND `company_id` = 0", $include_disabled);
 		if (count($no_company_users) > 0) {
 			$result[lang('without company')] = array('details' => null, 'users' => $no_company_users);
 		}
-		
+
 		return count($result) ? $result : null;
 	} // getGroupedByCompany
 
@@ -212,7 +218,7 @@ class Contacts extends BaseContacts {
 	
 	
 	static function getCompanyFieldNames() {
-		return array('company[name]' => lang('name'),
+		return array('company[first_name]' => lang('name'),
 			'company[address]' => lang('address'),
 			'company[city]' => lang('city'),
 			'company[state]' => lang('state'),
@@ -242,8 +248,12 @@ class Contacts extends BaseContacts {
 				return $owner_company;
 			}
 		}
-		
-		$owner_company = Contacts::findOne(array("conditions" => "is_company<>0 AND NOT EXISTS(SELECT x.object_id FROM ".TABLE_PREFIX."contacts x WHERE x.is_company<>0 AND x.object_id<object_id)"));
+
+		$owner_company = Contacts::findOne(array(
+			"conditions" => " is_company > 0",
+			"limit" => 1,
+			"order" => "object_id ASC"
+		));
 		
 		if (GlobalCache::isAvailable()) {
 			GlobalCache::update('owner_company', $owner_company);

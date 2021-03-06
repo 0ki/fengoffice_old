@@ -46,7 +46,7 @@
 		
 	foreach ($activities as $act) {
 		$user = Users::findById($act->getCreatedById());
-		$object = get_object_by_manager_and_id($act->getRelObjectId(), $act->getRelObjectManager());
+		$object = Objects::findObject($act->getRelObjectId());
 		if (!$user || !$object) continue;
 /*		if ($user && $object && $act->getAction() != 'login' && $act->getAction() != 'logout' 
 			&& !can_access($user, $object, ACCESS_LEVEL_READ)) continue;

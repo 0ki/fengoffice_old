@@ -1921,13 +1921,15 @@ og.handleMemberChooserSubmit = function(genid, objectType, preHfId) {
 		var members = [] ;
 		if ( memberChoosers ) {
 			memberChoosers.each(function(item, index, length) {
-				var checked = item.getChecked("id") ;
+				var checked = item.getChecked("id");
 				for (var j = 0 ; j < checked.length ; j++ ) {
-					members.push(checked[j]) ;
+					members.push(checked[j]);
 				}
-			}) ;
+			});
+			if (og.can_submit_members){
+				document.getElementById(genid + preHfId + "members").value = Ext.util.JSON.encode(members);
+			}
 		}
-		document.getElementById(genid + preHfId + "members").value = Ext.util.JSON.encode(members) ;
 	}
 	return true;
 }
@@ -2156,8 +2158,16 @@ og.getCrumbHtml = function(dims) {
 		for (id in members) {
 			texts = all_texts[id];
 			if (title != "") title += '- ';
+			var color = members[id]['c'];
+			var member_path_span = '<span class="member-path og-wsname-color-'+ color +'">';
+			var member_path_content = "";
+			
 			for (i=texts.length-1; i>=0; i--) {
-				str = texts[i].text.length > max_len ? texts[i].text.substring(0, max_len-3) + "..." : texts[i].text;
+				if (i>0) {
+					str = texts[i].text.length > max_len ? texts[i].text.substring(0, max_len-3) + ".." : texts[i].text;
+				} else {
+					str = texts[i].text.length > 12 ? texts[i].text.substring(0, 10) + ".." : texts[i].text;
+				}
 				title += texts[i].text + (i>0 ? "/" : " ");
 				
 				var onclick = "return false;";
@@ -2165,15 +2175,30 @@ og.getCrumbHtml = function(dims) {
 					onclick = og.additional_on_dimension_object_click[texts[i].ot].replace('<parameters>', texts[i].id);
 				}
 				var link = '<a href="#" onclick="' + onclick + '">' + str + '</a>';
-				inner_html += '<span>' + link + '</span>';
-				if (i>0) inner_html += "/";
+				
+				member_path_content += link;
+				if (i>0) member_path_content += "/";
 			}
+			member_path_span += member_path_content + '</span>';
+			
+			if (member_path_content != '') inner_html += member_path_span;
 		}
-		if (inner_html != "") html += '<span class="member-path og-wsname-color-'+ m['c'] +'" title="'+title+'">' + inner_html + '</span>';
+		if (inner_html != "") html += '<span class="member-path" title="'+title+'">' + inner_html + '</span>';
 		dim_index++;
 	}
 	
 	return html;
+}
+
+og.getMemberTreeNodeColor = function(node) {
+	var color = "";
+	if (node.ui && node.ui.getIconEl()) {
+		classes = node.ui.getIconEl().className.split(" ");
+		for(j=0; j<classes.length; j++) {
+			if (classes[j].indexOf('ico-color') >= 0) color = classes[j].replace('ico-color', "");
+		}
+	}
+	return color;
 }
 
 og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
@@ -2187,11 +2212,11 @@ og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
 		node = tree.getNodeById(mem_id);
 		if (node) {
 			if (node.id != selnode_id) {
-				texts.push({id:node.id, text:node.text, ot:node.object_type_id});
+				texts.push({id:node.id, text:node.text, ot:node.object_type_id, c:og.getMemberTreeNodeColor(node)});
 				if (include_parents) {
 					while(node.parentNode && node.parentNode.id > 0 && node.parentNode.id != selnode_id) {
 						node = node.parentNode;
-						if (node) texts.push({id:node.id, text:node.text, ot:node.object_type_id});
+						if (node) texts.push({id:node.id, text:node.text, ot:node.object_type_id, c:og.getMemberTreeNodeColor(node)});
 					}
 				}
 			}
@@ -2264,6 +2289,7 @@ og.selectDimensionTreeMember = function(data) {
 			var treenode = tree.getNodeById(data.node);
 			if (treenode) {
 				treenode.select();
+				treenode.ensureVisible();
 				if (!tree.hidden) og.contextManager.addActiveMember(node, data.dim_id, treenode);
 			}
 		}

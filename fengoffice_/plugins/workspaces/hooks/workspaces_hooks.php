@@ -8,6 +8,23 @@ function workspaces_total_task_timeslots_group_by_criterias($args, &$ret) {
 	$ret[] = array('val' => 'dim_'.$tdimension->getId(), 'name' => $tdimension->getName());
 }
 
+
+function workspaces_custom_reports_additional_columns($args, &$ret) {
+	$dimensions = Dimensions::findAll ( array("conditions" => "code IN ('workspaces','tags')") );
+	foreach ($dimensions as $dimension) {
+		$doptions = $dimension->getOptions(true);
+		
+		if( $doptions && isset($doptions->useLangs) && $doptions->useLangs ) {
+			$name = lang($dimension['dimension_code']);
+		} else {
+			$name = $dimension->getName();
+		}
+		
+		$ret[] =  array('id' => 'dim_'.$dimension->getId(), 'name' => $name, 'type' => DATA_TYPE_STRING);
+	}
+}
+
+
 function workspaces_include_tasks_template($ignored, &$more_content_templates) {
 	$more_content_templates[] = array(
 		'template' => 'groupby',

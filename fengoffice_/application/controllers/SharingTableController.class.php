@@ -1,6 +1,4 @@
 <?php 
-
-
 class  SharingTableController extends ApplicationController {
 	
 	/**
@@ -15,6 +13,7 @@ class  SharingTableController extends ApplicationController {
 	 * @throws Exception
 	 */
 	function afterPermissionChanged($group , $permissions) {
+		
 		// CHECK PARAMETERS
 		if(!count($permissions)){
 			return false;
@@ -36,16 +35,9 @@ class  SharingTableController extends ApplicationController {
 		foreach ($permissions as $permission) {
 			$memberId = $permission->m;
 			$objectTypeId = $permission->o;
-			$delete_condition = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) AND om.object_id NOT IN (
-				SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members om
-				INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp on om.member_id = cmp.member_id
-				WHERE permission_group_id = $group  AND  om.member_id <> $memberId AND is_optimization = 0 
-			)" ;
-			$read_condition = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) ";
-			// Falta chequear las dimensiones allowAll 
-			$delete_conditions[] = $delete_condition ;
+			$delete_conditions[] = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId )" ;
 			if ($permission->r) {
-				$read_conditions[] = $read_condition ; 
+				$read_conditions[] = " (  object_type_id = $objectTypeId AND om.member_id =  $memberId ) "; 
 			}
 		}
 		
@@ -62,8 +54,5 @@ class  SharingTableController extends ApplicationController {
 			DB::execute($st_insert_sql);
 		}
 	}
-	
-	
-	
 	
 }

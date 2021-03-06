@@ -220,43 +220,14 @@ class MailController extends ApplicationController {
 		if (is_numeric($folder)) {
 			try {
 				DB::beginWork();
-                                if($folder == 4 || $folder == 0)
-                                {
-                                    if($folder == 0)
-                                    {
-                                        $spam_state = "no spam";
-                                    }   
-                                    else if($folder == 4)
-                                    {
-                                        $spam_state = "spam";
-                                    }
-                                    try {                                            
-                                            $spam_email = MailSpamFilters::getRow($email);                                            
-                                            if ($spam_email)
-                                            {
-                                                $spam_filter = MailSpamFilters::findById($spam_email[0]->getId());
-                                                $spam_filter->setSpamState($spam_state);
-                                                $spam_filter->save();
-                                            }
-                                            else
-                                            {
-                                                $spam_filter = new MailSpamFilter();
-                                                $spam_filter->setAccountId($email->getAccountId());
-                                                $spam_filter->setTextType('email_address');
-                                                $spam_filter->setText($email->getFrom());
-                                                $spam_filter->setSpamState($spam_state);
-                                                $spam_filter->save();
-                                            }                                             
-                                    }
-                                    catch(Exception $e) {
-                                            DB::rollback();
-                                            flash_error($e->getMessage());
-                                            ajx_current("empty");
-                                    }
-                                    
-                                }
 				$email->setState($folder);
 				$email->save();
+                                
+                                if($folder == 4 || $folder == 0)
+                                {
+                                    $this->mark_spam_no_spam($folder,$email);                                    
+                                }
+                                
 				DB::commit();
                                 redirect_to('index.php?c=mail&a=init');
 				return;
@@ -532,7 +503,7 @@ class MailController extends ApplicationController {
 						$linked_atts .= $type == 'text/html' ? '<li><a href="'.$att['data'].'">' . $att['name'] . ' (' . $att['type'] . ')</a></li>' : $att['name'] . ' (' . $att['type'] . '): ' . $att['data'] . "\n";
 						foreach ($linked_users as $linked_user) {
 							try {
-								$linked_user->giveAccessToObject(get_object_by_manager_and_id($att['id'], $att['manager']));
+								$linked_user->giveAccessToObject(Objects::findObject($att['id']));
 							} catch (Exception $e) {
 								//Logger::log($e->getMessage());
 							}
@@ -610,8 +581,6 @@ class MailController extends ApplicationController {
 				
 				$mail->setUid(gen_id());
 				$mail->setState($isDraft ? 2 : 200);
-				//$mail->setIsPrivate(false);
-				// TODO FENG 2 - is private ?
 				
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
 				$body = utf8_safe($body);
@@ -627,46 +596,34 @@ class MailController extends ApplicationController {
 
 				$mail->save();
 				$mail->setIsRead(logged_user()->getId(), true);
-				//$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
-				// TODO Feng 2 Set Members 
+				
 				
 				// autoclassify sent email
+				$member_ids = active_context_members(false);
+				if ($account->getMember() instanceof Member) {
+					$member_ids[] = $account->getMember()->getId();
+				}
+				
 				// if replying a classified email classify on same workspace
-				$classified = false;
-				if (array_var($mail_data, 'original_id')) {
+				if (array_var($mail_data, 'original_id') && user_config_option('classify_mail_with_conversation')) {
 					$in_reply_to = MailContents::findById(array_var($mail_data, 'original_id'));
 					if ($in_reply_to instanceof MailContent) {
-						// TODO Feng 2 get Members 
-						/*
-						$workspaces = $in_reply_to->getWorkspaces();
-						foreach ($workspaces as $w) {
-							if ($mail->canAdd(logged_user(), $w)) {
-								$mail->addToWorkspace($w);
-								$classified = true;
-							}
-						}
-						*/
+						$member_ids = array_merge($member_ids, $in_reply_to->getMemberIds());
 					}
 				}
-
-				if (!$classified && $account->getMember() instanceof Member) {
-					//$mail->addToMembers(array($account->getMember()));
-					$ctrl = new ObjectController() ;
-					$ctrl->add_to_members($mail, array($account->getMember()->getId()));
-				}
-				/*
-				if (!$classified && active_project() instanceof Project) {
-					$mail->addToWorkspace(active_project());
-				}*/ // TODO feng 2 Members 
-
+				
 				$object_controller = new ObjectController();
+				if (count($member_ids) > 0) {
+					$object_controller->add_to_members($mail, $member_ids);
+				}
 				$object_controller->link_to_new_object($mail);
+				
 				/*
 				if (array_var($mail_data, 'link_to_objects') != ''){
 					$lto = explode('|', array_var($mail_data, 'link_to_objects'));
 					foreach ($lto as $object_string){
 						$split_object = explode('-', $object_string);
-						$object = get_object_by_manager_and_id($split_object[1], $split_object[0]);
+						$object = Objects::findObject($split_object[1]);
 						if ($object instanceof ContentDataObject){
 							$mail->linkObject($object);
 						}
@@ -1043,10 +1000,13 @@ class MailController extends ApplicationController {
 		$err = 0;
 		foreach ($ids as $id) {
 			list($manager, $objid) = explode(":", $id);
-			$mail = get_object_by_manager_and_id($objid, $manager);
+			$mail = Objects::findObject($objid);
 			if ($mail instanceof MailContent) {
 				$mail->setState(4);
 				$mail->save();
+                                
+                                $this->mark_spam_no_spam("4",$mail);
+                                
 				$succ++;
 			} else {
 				$err++;
@@ -1067,10 +1027,13 @@ class MailController extends ApplicationController {
 		$err = 0;
 		foreach ($ids as $id) {
 			list($manager, $objid) = explode(":", $id);
-			$mail = get_object_by_manager_and_id($objid, $manager);
+			$mail = Objects::findObject($objid);
 			if ($mail instanceof MailContent) {
 				$mail->setState(0);
 				$mail->save();
+                                
+                                $this->mark_spam_no_spam("0",$mail);
+                                
 				$succ++;
 			} else {
 				$err++;
@@ -1861,8 +1824,11 @@ class MailController extends ApplicationController {
 		$mailAccountUsers = MailAccountContacts::getByAccount($mailAccount);
 		$mau = array();
 		foreach ($mailAccountUsers as $au) {
+			$contact = $au->getContact();
+			if (!$contact instanceof Contact) continue;
+			
 			$mau[$au->getContactId()] = array(
-				'name' => $au->getContact()->getObjectName(),
+				'name' => $contact->getObjectName(),
 				'can_edit' => $au->getCanEdit(),
 			);
 		}
@@ -3017,5 +2983,39 @@ class MailController extends ApplicationController {
 		echo $css;
 		die();
 	}
+        
+        function mark_spam_no_spam($folder,$email){
+            if($folder == 0)
+            {
+                $spam_state = "no spam";
+            }   
+            else if($folder == 4)
+            {
+                $spam_state = "spam";
+            }
+            try {                                            
+                    $spam_email = MailSpamFilters::getRow($email);                                            
+                    if ($spam_email)
+                    {
+                        $spam_filter = MailSpamFilters::findById($spam_email[0]->getId());
+                        $spam_filter->setSpamState($spam_state);
+                        $spam_filter->save();
+                    }
+                    else
+                    {
+                        $spam_filter = new MailSpamFilter();
+                        $spam_filter->setAccountId($email->getAccountId());
+                        $spam_filter->setTextType('email_address');
+                        $spam_filter->setText($email->getFrom());
+                        $spam_filter->setSpamState($spam_state);
+                        $spam_filter->save();
+                    }                                             
+            }
+            catch(Exception $e) {
+                    DB::rollback();
+                    flash_error($e->getMessage());
+                    ajx_current("empty");
+            }
+        }
 
 } // MailController

@@ -415,7 +415,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 			<p><?php echo lang('event invitations desc') ?></p>
 			<p><?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => $genid . 'eventFormSendNotification', 'tabindex' => '110')) ?>
 			<label for="<?php echo $genid ?>eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label></p>
-			<p><?php echo checkbox_field('event[subscribe_invited]', array_var($event_data, 'subscribe_invited', false), array('id' => $genid . 'eventFormSubscribeInvited', 'tabindex' => '111')) ?>
+			<p><?php echo checkbox_field('event[subscribe_invited]', ($event->isNew())?true:array_var($event_data, 'subscribe_invited', false), array('id' => $genid . 'eventFormSubscribeInvited', 'tabindex' => '111')) ?>
 			<label for="<?php echo $genid ?>eventFormSubscribeInvited" class="checkbox"><?php echo lang('subscribe invited users') ?></label></p>
 			
 	</fieldset>

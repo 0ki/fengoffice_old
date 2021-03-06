@@ -125,25 +125,6 @@ og.config.time_format_use_24 = '<?php echo user_config_option('time_format_use_2
 </div>
 
 <script type="text/javascript">
-	og.dimensions = [];
-	<?php
-		$dimensions = Dimensions::findAll(); 
-		foreach ($dimensions as $dim) :
-			$members = $dim->getAllMembers(); 
-	?>
-			var members = [];
-	<?php	foreach ($members as $member) : ?>
-				members[<?php echo $member->getId()?>] = {
-					id:<?php echo $member->getId()?>,
-					name:'<?php echo str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName())) ?>',
-					ot:<?php echo $member->getObjectTypeId()?>,
-					ico:'<?php echo $member->getIconClass()?>'
-				};
-	<?php 	endforeach; ?>
-			og.dimensions[<?php echo $dim->getId()?>] = members;
-			
-	<?php endforeach;?>
-	
 	if (!ogTasks.tasks_object_type_id) ogTasks.tasks_object_type_id = '<?php echo ProjectTasks::instance()->getObjectTypeId() ?>';
 	if (rx__TasksDrag)
 		rx__TasksDrag.initialize();

@@ -8,11 +8,33 @@
   */
   class SystemPermissions extends BaseSystemPermissions {
     
-  		function userHasSystemPermission(Contact $user, $system_permission){
-  			if($user->isAdministrator())return true;
-			$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
-			$permission = self::findOne(array('conditions' => "`$system_permission` = 1 
-										AND `permission_group_id` IN ($contact_pg_ids)"));
+  		private static $permission_cache = array();
+  		private static $permission_group_ids_cache = array();
+  	
+  		static function userHasSystemPermission(Contact $user, $system_permission){
+  			if($user->isAdministrator()) return true;
+  			
+  			if (array_var(self::$permission_cache, $user->getId())) {
+  				if (array_key_exists($system_permission, self::$permission_cache[$user->getId()])) {
+  					return array_var(self::$permission_cache[$user->getId()], $system_permission);
+  				}
+  			}
+  			
+  			if (array_var(self::$permission_group_ids_cache, $user->getId())) {
+  				$contact_pg_ids = self::$permission_group_ids_cache[$user->getId()];
+  			} else {
+				$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV($user->getId(),false);
+				self::$permission_group_ids_cache[$user->getId()] = $contact_pg_ids;
+  			}
+  			
+			$permission = self::findOne(array('conditions' => "`$system_permission` = 1 AND `permission_group_id` IN ($contact_pg_ids)"));
+			
+			if (!array_var(self::$permission_cache, $user->getId())) {
+				self::$permission_cache[$user->getId()] = array();
+			}
+			if (!array_key_exists($system_permission, self::$permission_cache[$user->getId()])) {
+				self::$permission_cache[$user->getId()][$system_permission] = !is_null($permission);
+			}
 			
 			if (!is_null($permission)) return true;
 			return false;

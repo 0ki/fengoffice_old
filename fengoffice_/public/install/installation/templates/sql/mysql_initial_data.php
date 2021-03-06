@@ -49,7 +49,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'currency_code', '$', 'StringConfigHandler', '0', '0', NULL),
 	('general', 'checkout_for_editing_online', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
-	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'use_owner_company_logo_at_header', '1', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL),
 	('general', 'use tasks dependencies', 0, 'BoolConfigHandler', 0, 0, NULL),
     ('general', 'untitled_notes', '0', 'BoolConfigHandler', '0', '0', NULL),

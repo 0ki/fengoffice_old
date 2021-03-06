@@ -90,16 +90,21 @@ og.MemberTree = function(config) {
 		beforenodedrop: function(e) {
 			if (!isNaN(e.target.id) && e.data.grid) {
 				
+				var has_relations = false;
 				var ids = [];
 				for (var i=0; i<e.data.selections.length; i++) {
 					ids.push(e.data.selections[i].data.object_id);
+					if (!has_relations) {
+						var mpath = Ext.util.JSON.decode(e.data.selections[i].data.memPath);
+						if (mpath && mpath[config.dimensionId]) has_relations = true;
+					}
 				}
 				
 				if (og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id] &&
 						og.dimension_object_type_contents[config.dimensionId][e.target.object_type_id][e.data.selections[0].data.ot_id].multiple) {
 					
 					if (og.preferences['drag_drop_prompt'] == 'prompt') {
-						var rm_prev = confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1";
+						var rm_prev = has_relations ? (confirm(lang('do you want to mantain the current associations of this obj with members of', config.title)) ? "0" : "1") : "1";
 					}else if (og.preferences['drag_drop_prompt'] == 'move') {
 						var rm_prev = true ;
 					}else if (og.preferences['drag_drop_prompt'] == 'keep') {
@@ -108,12 +113,18 @@ og.MemberTree = function(config) {
 					
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
-						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1, remove_prev:rm_prev}
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, remove_prev:rm_prev},
+						callback: function(){
+							e.data.grid.load();
+						}
 					});
 				} else {
 					og.openLink(og.getUrl('member', 'add_objects_to_member'),{
 						method: 'POST',
-						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id, reload:1}
+						post: {objects: Ext.util.JSON.encode(ids), member: e.target.id},
+						callback: function(){
+							e.data.grid.load();
+						}
 					});
 				}
 

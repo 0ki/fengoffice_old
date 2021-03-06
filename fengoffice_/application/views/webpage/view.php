@@ -4,18 +4,19 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 	if (!$object->isTrashed()) {
 		if ($object->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $object->getEditUrl(), 'ico-edit', null, null, true);
-			//if (!$object->isArchived())
-			//	add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $object->getArchiveUrl() ."');", 'ico-archive-obj');
-			//else
-			//	add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $object->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
-		} // if
+			if (!$object->isArchived()){
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $object->getArchiveUrl() ."');", 'ico-archive-obj');
+			}else{
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $object->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
+			}
+		} 
 	}
 	if ($object->canDelete(logged_user())) {
 		if ($object->isTrashed()) {
 			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $object->getUntrashUrl() ."');", 'ico-restore', null, null, true);
 			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $object->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else {
-			//add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $object->getTrashUrl() ."');", 'ico-trash', null, null, true);
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $object->getTrashUrl() ."');", 'ico-trash', null, null, true);
 		}
 	} // if
 ?>

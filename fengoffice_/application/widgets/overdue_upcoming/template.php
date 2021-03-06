@@ -95,7 +95,7 @@
 		</div>
 	<?php endif; ?>
 	
-	<?php if (ProjectTask::canAdd(logged_user(), active_context())) : ?>
+	<?php if ($render_add) : ?>
 		<div class="new-task">
 		
 			<div class="field name">

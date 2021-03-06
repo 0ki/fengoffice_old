@@ -19,11 +19,11 @@ $genid = gen_id();
 
 <?php if ($task_list->getStartDate() instanceof DateTimeValue) { ?>
 	<?php if ($task_list->getStartDate()->getYear() > DateTimeValueLib::now()->getYear()) { ?> 
-	  <div class="startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php echo format_datetime($task_list->getStartDate(), null, 0) ?></div>
+	  <div class="startDate"><span class="bold"><?php echo lang('start date') ?>: </span><?php echo format_datetime($task_list->getStartDate(), null) ?></div>
 	<?php } else { ?> 
 	  <div class="startDate"><span class="bold"><?php echo lang('start date') ?>: </span>
 	  <?php 
-	  	echo format_descriptive_date($task_list->getStartDate(), 0);
+	  	echo format_descriptive_date($task_list->getStartDate());
 	  	if ($task_list->getUseStartTime()) {
 	  		echo ", " . format_time($task_list->getStartDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
 	  	}
@@ -38,7 +38,7 @@ $genid = gen_id();
 	<?php } else { ?> 
 	  <div class="dueDate"><span class="bold"><?php echo lang('due date') ?>: </span>
 	  <?php 
-	  	echo format_descriptive_date($task_list->getDueDate(), 0);
+	  	echo format_descriptive_date($task_list->getDueDate());
 	  	if ($task_list->getUseDueTime()) {
 	  		echo ", " . format_time($task_list->getDueDate(), user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
 	  	}
@@ -246,7 +246,7 @@ if($showCompletedSubtasksDiv) { ?>
           	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
           <?php } // if ?>
           <br />
-          <?php if ($task->getCompletedBy() instanceof User) {?>
+          <?php if ($task->getCompletedBy() instanceof Contact) {?>
           	<span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUserUrl(), clean($task->getCompletedBy()->getObjectName())) ?>)</span>
           <?php } else { ?>
           <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), "#", lang("n/a")) ?>)</span>

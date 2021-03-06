@@ -773,7 +773,7 @@ class ReportingController extends ApplicationController {
 				if(!isset($order_by)) $order_by = '';
 				tpl_assign('order_by', $order_by);
 				$order_by_asc = array_var($_GET, 'order_by_asc');
-				if(!isset($order_by_asc)) $order_by_asc = true;
+				if(!isset($order_by_asc)) $order_by_asc = null;
 				tpl_assign('order_by_asc', $order_by_asc);
 				$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, $offset, $limit);
 				if(!isset($results['columns'])) $results['columns'] = array(); 
@@ -850,14 +850,12 @@ class ReportingController extends ApplicationController {
 		}
 		echo "\n";
 		foreach($results['rows'] as $row) {
+                    $i = 0;
 			foreach($row as $k => $value){
-				$type = '';
-				if($k == 'link'){
-					$value = strip_tags($value);
-				}else{
-					$type = $types[$k];
-				}
-				$cell = format_value_to_print($k, $value, $type, $report->getReportObjectTypeId());				
+				if ($k == 'object_type_id') continue;
+				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
+                                
+                                $cell = format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 				$cell = iconv(mb_internal_encoding(),"ISO-8859-1",html_entity_decode($cell ,ENT_COMPAT));
 				echo $cell.';';
 			}
@@ -881,13 +879,14 @@ class ReportingController extends ApplicationController {
 		$pdf->SetFont('Arial','',$fontSize);
 		$pdf->Cell(80);
 		$report_title = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($report->getObjectName(), ENT_COMPAT));
-    	$pdf->Cell(30, 10, $report_title);
-    	$pdf->Ln(20);
-    	$colSizes = array();
-    	$maxValue = array();
-    	$fixed_col_sizes = array();
+                $pdf->Cell(30, 10, $report_title);
+                $pdf->Ln(20);
+                $colSizes = array();
+                $maxValue = array();
+                $fixed_col_sizes = array();
 		foreach($results['rows'] as $row) {
 			$i = 0;			
+                        array_shift ($row);
 			foreach($row as $k => $value){	
 				if(!isset($maxValue[$i])) $maxValue[$i] = '';
 				if(strlen(strip_tags($value)) > strlen($maxValue[$i])){
@@ -931,13 +930,11 @@ class ReportingController extends ApplicationController {
 			$i = 0;
 			$more_lines = array();
 			$col_offsets = array();
-			foreach($row as $k => $value){				
-				if($k == 'link'){
-					$value = strip_tags($value);	
-					$cell = $value;					
-				}else{
-					$cell = format_value_to_print($k, $value, $types[$k], $report->getObjectTypeName());	
-				}
+			foreach($row as $k => $value){                                
+                                if ($k == 'object_type_id') continue;
+				$db_col = isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
+                                
+                                $cell = format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 							
 				$cell = iconv(mb_internal_encoding(), "ISO-8859-1", html_entity_decode($cell, ENT_COMPAT));
 				
@@ -1245,6 +1242,10 @@ class ReportingController extends ApplicationController {
 				if (is_null($field_name)) $field_name = lang('field Objects '.$extField);
 				
 				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+			}
+			
+			if (!array_var($_REQUEST, 'noaddcol')) {
+				Hook::fire('custom_reports_additional_columns', null, $fields);
 			}
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));

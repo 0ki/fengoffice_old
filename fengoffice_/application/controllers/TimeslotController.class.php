@@ -423,7 +423,7 @@ class TimeslotController extends ApplicationController {
 				DB::beginWork();
 				$timeslot->save();      
                                 
-                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - ($timeslot->getStartTime()->getTimestamp() + $timeslot->getSubtract())) / 3600;
                                 $task = ProjectTasks::findById($timeslot->getRelObjectId());
                                 $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
                                 $total_percentComplete = $timeslot_percent + $task->getPercentCompleted();
@@ -500,7 +500,7 @@ class TimeslotController extends ApplicationController {
 	} // delete
         
         function percent_complete_delete($time_slot){
-            $timeslot_time = ($time_slot->getEndTime()->getTimestamp() - $time_slot->getStartTime()->getTimestamp()) / 3600;
+            $timeslot_time = ($time_slot->getEndTime()->getTimestamp() - ($time_slot->getStartTime()->getTimestamp() + $time_slot->getSubtract())) / 3600;
             $task = ProjectTasks::findById($time_slot->getRelObjectId());
             $timeslot_percent = round(($timeslot_time * 100) / ($task->getTimeEstimate() / 60));
             $total_percentComplete = $task->getPercentCompleted() - $timeslot_percent;

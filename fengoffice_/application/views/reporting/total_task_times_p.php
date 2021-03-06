@@ -102,17 +102,6 @@
 			?></td>
 		</tr>
 		
-		<?php if (false) { //FIXME ?>
-		<tr style='height:30px;'>
-			<td><span class="bold"><?php echo lang("workspace") ?>:&nbsp;</span></td>
-			<td align='left'><table><tr><td>
-				<?php //echo select_project2('report[project_id]', $project_id, $genid, true);?></td><td style="padding-left:25px">
-				<?php //echo checkbox_field('report[include_subworkspaces]', array_var($report_data, "include_subworkspaces", true), array('id' => 'report[include_subworkspaces]' )) ?>
-	      <label for="<?php echo 'report[include_subworkspaces]' ?>" class="checkbox"><?php echo lang('include subworkspaces') ?></label>
-				</td></tr></table> 
-			</td>
-		</tr>
-		<?php } ?>
 		
 		<tr style='height:30px;' id="<?php echo $genid ?>repGroupBy">
 			<td><span class="bold"><?php echo lang("group by") ?>:&nbsp;</span></td>

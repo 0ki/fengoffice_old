@@ -102,7 +102,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter, $archived = false) {
+	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $task_filter = null, $archived = false) {
 		
 		$from_date = new DateTimeValue ( $date_start->getTimestamp () );
 		$from_date = $from_date->beginningOfDay ();
@@ -119,16 +119,17 @@ class ProjectTasks extends BaseProjectTasks {
 			$archived_cond = " AND `archived_on` <> 0";
 		else
 			$archived_cond = " AND `archived_on` = 0";
-                
-                switch($task_filter){
+		
+		switch($task_filter){
 			case 'complete':
 				$conditions = DB::prepareString(' AND `completed_on` <> ?', array(EMPTY_DATETIME));
 				break;
-                        case 'pending': default:
-                                $conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
-                                break;
-                }
-                
+			case 'pending':
+			default:
+				$conditions = DB::prepareString(' AND `is_template` = false AND `completed_on` = ? AND (IF(due_date>0,(`due_date` >= ? AND `due_date` < ?),false) OR IF(start_date>0,(`start_date` >= ? AND `start_date` < ?),false) OR ' . $rep_condition . ') ' . $archived_cond . $assignedFilter, array(EMPTY_DATETIME,$from_date, $to_date, $from_date, $to_date));
+				break;
+		}
+		
 		$result = self::instance()->listing(array(
 			"extra_conditions" => $conditions
 		));
@@ -168,6 +169,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	function copySubTasks(ProjectTask $taskFrom, ProjectTask $taskTo, $as_template = false) {
 		foreach ( $taskFrom->getSubTasks () as $sub ) {
+			if ($sub->getId() == $taskTo->getId()) continue;
 			$new = ProjectTasks::createTaskCopy ( $sub );
 			$new->setIsTemplate ( $as_template );
 			$new->setParentId ( $taskTo->getId () );

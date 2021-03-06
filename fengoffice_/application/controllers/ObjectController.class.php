@@ -57,7 +57,7 @@ class ObjectController extends ApplicationController {
 			Hook::fire ('after_add_subscribers', array('object' => $object, 'user_ids' => $user_ids), $null);
 			
 			if ($log_info != "") {
-				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_SUBSCRIBE, false, true, true, $log_info);
+				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_SUBSCRIBE, false, false, true, $log_info);
 			}
 		}
 	}
@@ -147,8 +147,10 @@ class ObjectController extends ApplicationController {
 	}
 	
 	
-	function add_to_members($object, $member_ids) {
-		if (logged_user()->isGuest()) {
+	function add_to_members($object, $member_ids, $user = null) {
+		if (!$user instanceof Contact) $user = logged_user();
+		
+		if ($user->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -182,9 +184,9 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		
-		$object->removeFromMembers(logged_user(), $enteredMembers);
+		$object->removeFromMembers($user, $enteredMembers);
 		/* @var $object ContentDataObject */
-		$validMembers = $object->getAllowedMembersToAdd(logged_user(),$enteredMembers);
+		$validMembers = $object->getAllowedMembersToAdd($user,$enteredMembers);
 
 		foreach($required_dimensions as $rdim){
 			$exists = false;
@@ -782,7 +784,12 @@ class ObjectController extends ApplicationController {
 		/* if there's an action to execute, do so */
 		if (array_var($_GET, 'action') == 'delete') {
 			$ids = explode(',', array_var($_GET, 'objects'));
-			$result = Objects::getObjectsFromContext(active_context(), null, null, false, false, array('object_ids' => implode(",",$ids)));
+ 			
+ 			$result = ContentDataObjects::listing(array(
+ 				"extra_conditions" => " AND o.id IN (".implode(",",$ids).") ",
+ 				"include_deleted" => true 	
+ 			));
+ 			
 			$objects = $result->objects;
 			
 			list($succ, $err) = $this->do_delete_objects($objects);

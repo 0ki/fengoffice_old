@@ -84,14 +84,14 @@ class DimensionController extends ApplicationController {
 	 * parameter. It is called when the application is first loaded. 
 	*/
 	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false){
-		
+		$allowed_object_type_ids = array();
+		$item_object = null ;
 		if(logged_user()->isAdministrator())$return_all_members=true;
 		$contact_pg_ids = ContactPermissionGroups::getPermissionGroupIdsByContactCSV(logged_user()->getId(),false);
 		$dimension = Dimensions::findById($dimension_id);
 		
 		if ($object_type_id != null){
 			$dimension_object_type_contents = $dimension->getObjectTypeContent($object_type_id);
-			$allowed_object_type_ids = array();
 			foreach ($dimension_object_type_contents as $dotc){
 				$dot_id = $dotc->getDimensionObjectTypeId();
 				if (is_null($allowed_member_type_ids) || in_array($dot_id, $allowed_member_type_ids))
@@ -106,9 +106,7 @@ class DimensionController extends ApplicationController {
 				}
 			}
 		}
-		
 		if ($dimension instanceof Dimension){
-			
 			$parent = 0;
 			if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids) || $return_all_members){
 				$all_members = $dimension->getAllMembers(false,"parent, name",true);
@@ -122,86 +120,10 @@ class DimensionController extends ApplicationController {
 				}
 				$all_members = $allowed_members;
 			}
-			
-			if (!isset($all_members)) $all_members = array();
-			
-			$membersset = array();
-			foreach ($all_members as $m) {
-				$membersset[$m->getId()] = true;
+			if (!isset($all_members)) {
+				$all_members = array();	
 			}
-			$members = array();
-			foreach ($all_members as $m) {
-
-				/* @var  $m Member */
-				if ($object_type_id != null){
-					$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
-					if ($selectable && isset($item_object)) {
-						if (! $item_object->canAdd(logged_user(), array($m)) ) continue;
-					}
-					
-				}else{
-					$selectable = true ;
-				}
-				
-				if ( count($allowed_member_type_ids) && !in_array($m->getObjectTypeId(), $allowed_member_type_ids) ) {
-					continue;	
-				}
-				
-				$tempParent = $m->getParentMemberId();
-				$x = $m;
-				while ($x instanceof Member && !isset($membersset[$tempParent])) {
-					$tempParent = $x->getParentMemberId();
-					$x = $x->getParentMember();
-				}
-				if (!$x instanceof Member) {
-					$tempParent = 0;
-				}
-
-				if ($dot = DimensionObjectTypes::instance()->findOne(array("conditions" =>"
-					dimension_id = ".$dimension->getId() ." AND
-					object_type_id = ".$m->getObjectTypeId() 
-				))){
-					$memberOptions = $dot->getOptions(true);
-				}else{
-					$memberOptions = "not found $dimension_id ".$m->getObjectTypeId() ;
-				}
-				
-				/* @var $m Member */
-				$member = array(
-					"id" => $m->getId(),
-					"name" => clean($m->getName()),
-					"parent" => $tempParent,
-					"realParent" => $m->getParentMemberId(),
-					"object_id" => $m->getObjectId(),
-					"options"  => $memberOptions,
-					"depth" => $m->getDepth(),
-					"iconCls" => $m->getIconClass(),
-					"selectable" => isset($selectable) ? $selectable : false,
-					"dimension_id" => $m->getDimensionId() ,
-					"object_type_id" => $m->getObjectTypeId(),
-					"allow_childs" => $m->allowChilds()
-				
-				);
-				
-				
-				// Member Actions
-				if (can_manage_dimension_members(logged_user())){
-					if ($oid = $m->getObjectId() ) {
-						if ( $obj = Objects::instance()->findObject($oid) ){
-							$editUrl = $obj->getEditUrl();
-						}
-					}else{
-						$editUrl =  get_url('member', 'edit', array('id'=> $m->getId())) ;
-					}
-					$member['actions'] = array(array(
-						'url' => $editUrl,
-			  			'text' =>  '',
-			  			'iconCls' =>  'ico-edit'
-					));	
-				}
-				$members[] = $member;
-			}
-			return $members ;
+			return $this->buildMemberList($all_members, $dimension, $allowed_member_type_ids,$allowed_object_type_ids, $item_object, $object_type_id );
 		}
 		return null;
 	}
@@ -220,7 +142,6 @@ class DimensionController extends ApplicationController {
 			
 			if ($object_type_id != null){
 				$dimension_object_type_contents = $dimension->getObjectTypeContent($object_type_id);
-				$allowed_object_type_ids = array();
 				foreach ($dimension_object_type_contents as $dotc){
 					$dot_id = $dotc->getDimensionObjectTypeId();
 					if (is_null($allowed_member_type_ids) || in_array($dot_id, $allowed_member_type_ids))
@@ -295,6 +216,7 @@ class DimensionController extends ApplicationController {
 					$membersset[$m->getId()] = true;
 				}
 				$members = array();
+				// Todo adapt this code to call "buildMemberList" - (performance and code improvement)
 				foreach ($members_to_retrieve as $m) {
 					
 					if ($object_type_id!=null){
@@ -408,5 +330,126 @@ class DimensionController extends ApplicationController {
 		$tree = buildTree($memberList,  "parent", "children", "id", "name", $checkedField) ;
 		ajx_current("empty");		
 		ajx_extra_data(array('dimension_members' => $tree ));	
+	}
+	
+	function dimensions_js () {
+		session_write_close();
+		header("Content-Type: text/javascript" ); 
+		$dimensions = Dimensions::findAll();
+		echo "og.dimensions = [];\n" ;
+		foreach ($dimensions as $dim) {
+			$members = $dim->getAllMembers();
+			echo "var members = [];\n";
+			foreach ($members as $member) { 
+				echo "members[".$member->getId()."] = {\n";
+				echo "  id: ".$member->getId().",\n";
+				echo "  name:'". str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName()))."',\n";
+				echo "  ot:". $member->getObjectTypeId().",\n" ;
+				echo "  ico:'".$member->getIconClass()."'\n" ;
+				echo "};\n";
+			}
+			echo "og.dimensions[".$dim->getId()."] = members;\n\n";
+		}
+		exit ;
+	}
+	
+	
+	
+	function buildMemberList($all_members, $dimension,  $allowed_member_type_ids, $allowed_object_type_ids, $item_object, $object_type_id) {
+		$dot_array = array(); // Dimensio Object Types array (cache)
+		$start_time = microtime(1);
+		$membersset = array();
+		foreach ($all_members as $m) {
+			$membersset[$m->getId()] = true;
+		}
+		$members = array();
+		foreach ($all_members as $m) {
+			/* @var  $m Member */
+			if ($object_type_id != null){
+				$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
+				if ($selectable && isset($item_object)) {
+					if (! $item_object->canAdd(logged_user(), array($m)) ) continue;
+				}
+			}else{
+				$selectable = true ;
+			}
+			if ( count($allowed_member_type_ids) && !in_array($m->getObjectTypeId(), $allowed_member_type_ids) ) {
+				continue;	
+			}
+			$tempParent = $m->getParentMemberId();
+			$x = $m;
+			while ($x instanceof Member && !isset($membersset[$tempParent])) {
+				$tempParent = $x->getParentMemberId();
+				$x = $x->getParentMember();
+			}
+			if (!$x instanceof Member) {
+				$tempParent = 0;
+			}
+			$memberOptions = '';
+			// SET member options (dimension object types table)
+			// CHeck dot cache, if not set goto database and add to cache
+			if ( empty($dot_array[$dimension->getId()]) || empty ($dot_array[$dimension->getId()][$m->getObjectTypeId()]) ) {
+				if ($dot = DimensionObjectTypes::instance()->findOne(array("conditions" =>"
+					dimension_id = ".$dimension->getId() ." AND
+					object_type_id = ".$m->getObjectTypeId() 
+				))){
+					if (empty($dot_array['dimension_id'])) {
+						$dot_array[$dimension->getId()] = array();
+					}
+					$dot_array[$dimension->getId()][$m->getObjectTypeId()]= $dot ;
+				}
+			}
+			if ( !empty($dot_array[$dimension->getId()]) || ($dot_array[$dimension->getId()][$m->getObjectTypeId()]) instanceof DimensionObjectType ) {
+				$dot =  $dot_array[$dimension->getId()][$m->getObjectTypeId()];
+				$memberOptions = $dot->getOptions(true);
+			}
+			
+			/* @var $m Member */
+			$member = array(
+				"id" => $m->getId(),
+				"name" => clean($m->getName()),
+				"parent" => $tempParent,
+				"realParent" => $m->getParentMemberId(),
+				"object_id" => $m->getObjectId(),
+				"options"  => $memberOptions,
+				"depth" => $m->getDepth(),
+				"iconCls" => $m->getIconClass(),
+				"selectable" => isset($selectable) ? $selectable : false,
+				"dimension_id" => $m->getDimensionId() ,
+				"object_type_id" => $m->getObjectTypeId(),
+				"allow_childs" => $m->allowChilds()
+			);
+			// Member Actions
+			if (can_manage_dimension_members(logged_user())){
+				$editUrl = '';			
+				// If member has an object linked, take object edit url 
+				if ($otid = $m->getObjectTypeId()){
+					if ($ot = ObjectTypes::findById($otid)) {
+						if ($handler = $ot->getHandlerClass() ){
+							eval ("\$itemClass = $handler::instance()->getItemClass();");
+							if ($itemClass) {
+								$instance = new $itemClass();
+								$instance->setId($m->getObjectId());
+								$instance->setObjectId($m->getObjectId());
+								if ($instance) {
+									$editUrl = $instance->getEditUrl();
+								}
+							}
+						}
+					}
+				}
+				// Take default membewr edit url if not overwitten
+				if (!$editUrl) {
+					$editUrl =  get_url('member', 'edit', array('id'=> $m->getId())) ;
+				}
+				$member['actions'] = array(array(
+					'url' => $editUrl,
+		  			'text' =>  '',
+		  			'iconCls' =>  'ico-edit'
+				));	
+			}
+			$members[] = $member;
+		}
+		return $members ;
 	}
 }

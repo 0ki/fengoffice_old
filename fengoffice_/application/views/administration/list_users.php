@@ -9,7 +9,8 @@ isset($isMemberList) && $isMemberList == true ? $isUsersList = true : $isUsersLi
 if(isset($users) && is_array($users) && $cantUsers) { ?>
 <div id="usersList">
 <?php $counter = 0; 
-  foreach($users as $user) {
+  foreach($users as $user) { /* @var $user Contact */
+  	
 	$counter++; ?>
 	<?php if ($newPage && $isUsersList ) {
 		$newPage = false;
@@ -39,8 +40,12 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
 	  if($user->canUpdatePermissions(logged_user())) {
 	    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
 	  }
+	  
 	  if($user->canDelete(logged_user())) {
-	  	$options[] = '<a class="internalLink" href="' . get_url('account', 'delete_user', array('id' => $user->getId())) . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm delete user')) .'\');">' . lang('delete') . '</a>';
+	  	if (!$user->hasReferences()) {
+	  		$options[] = '<a class="internalLink" href="' . get_url('account', 'delete_user', array('id' => $user->getId())) . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm delete user')) .'\');">' . lang('delete') . '</a>';
+	  	}
+  		$options[] = '<a class="internalLink" href="' . $user->getDisableUrl() . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm disable user')) .'\');">' . lang('disable') . '</a>';
 	  }
   } else {
 	  if($user->canDelete(logged_user())) {

@@ -195,7 +195,7 @@ sig.actualHtmlSignature = '';
  	    <legend><?php echo lang('mail attachments')?></legend>
  	    <div id="<?php echo $genid ?>attachments"></div>
  	<a href="#" onclick="og.attachFromWorkspace('<?php echo $genid ?>')">
- 		<?php  //echo lang('attach from workspace') ?>		
+ 		<?php  echo lang('attach from fengoffice') ?>		
  	</a>
  	<br/>
  	<a href="#" onclick="og.attachFromFileSystem('<?php echo $genid ?>')">

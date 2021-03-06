@@ -442,18 +442,19 @@ class ProjectTask extends BaseProjectTask {
 		$this->setCompletedOn(null);
 		$this->setCompletedById(0);
 		$this->save();
-                
-                $timeslots = $this->getTimeslots();
-                if ($timeslots){
-                        $this->setPercentCompleted(0);
-                        foreach ($timeslots as $timeslot){
-                                $timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
-                                $timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
-                                $total_percentComplete = $timeslot_percent + $total_percentComplete;                                
-                        }
-                        $this->setPercentCompleted($total_percentComplete);
-                        $this->save();
-                }
+
+		$timeslots = $this->getTimeslots();
+		if ($timeslots){
+			$this->setPercentCompleted(0);
+			foreach ($timeslots as $timeslot){
+				if (!$timeslot->getEndTime() instanceof DateTimeValue || !$timeslot->getStartTime() instanceof DateTimeValue) continue;
+				$timeslot_time = ($timeslot->getEndTime()->getTimestamp() - $timeslot->getStartTime()->getTimestamp()) / 3600;
+				$timeslot_percent = round(($timeslot_time * 100) / ($this->getTimeEstimate() / 60));
+				$total_percentComplete = $timeslot_percent + $total_percentComplete;
+			}
+			$this->setPercentCompleted($total_percentComplete);
+			$this->save();
+		}
 
 		if (config_option('use tasks dependencies')) {
 			$saved_stasks = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
@@ -487,8 +488,8 @@ class ProjectTask extends BaseProjectTask {
 		}
 	}
 	
-	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false) {
-		//FIXME
+	function cloneTask($new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true) {
+
 		$new_task = new ProjectTask();
 				
 		$new_task->setParentId($this->getParentId());
@@ -516,13 +517,25 @@ class ProjectTask extends BaseProjectTask {
 			$new_task->setCompletedById($this->getCompletedById());
 			$new_task->setCompletedOn($this->getCompletedOn());
 		}
+		if ($copy_repeat_options) {
+			$new_task->setRepeatEnd($this->getRepeatEnd());
+			$new_task->setRepeatForever($this->getRepeatForever());
+			$new_task->setRepeatNum($this->getRepeatNum());
+			$new_task->setRepeatBy($this->getRepeatBy());
+			$new_task->setRepeatD($this->getRepeatD());
+			$new_task->setRepeatM($this->getRepeatM());
+			$new_task->setRepeatY($this->getRepeatY());
+		}
+		
+		if($new_st_date != "") {
+			if ($new_task->getStartDate() instanceof DateTimeValue) $new_task->setStartDate($new_st_date);
+		}
+		if($new_due_date != "") {
+			if ($new_task->getDueDate() instanceof DateTimeValue) $new_task->setDueDate($new_due_date);
+		}
 		
 		$new_task->save();
-                
-                if($new_st_date != "" && $new_due_date != ""){
-                    if ($new_task->getStart() instanceof DateTimeValue ) $new_task->setStart($new_st_date);
-                    if ($new_task->getDuration() instanceof DateTimeValue ) $new_task->setDuration($new_due_date);
-                }
+		
 		if (is_array($this->getAllLinkedObjects())) {
 			foreach ($this->getAllLinkedObjects() as $lo) {
 				$new_task->linkObject($lo);
@@ -606,8 +619,18 @@ class ProjectTask extends BaseProjectTask {
 		
 		return $new_task;
 	}
+	
+	function clearRepeatOptions() {
+		$this->setRepeatEnd(EMPTY_DATETIME);
+		$this->setRepeatForever(0);
+		$this->setRepeatNum(0);
+		$this->setRepeatBy('');
+		$this->setRepeatD(0);
+		$this->setRepeatM(0);
+		$this->setRepeatY(0);
+	}
         
-        function getNextRepetitionDates($task, &$new_st_date, &$new_due_date) {
+	function getNextRepetitionDates($task, &$new_st_date, &$new_due_date) {
 		$new_due_date = null;
 		$new_st_date = null;
 

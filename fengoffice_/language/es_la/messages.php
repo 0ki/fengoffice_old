@@ -278,6 +278,7 @@
 	'confirm delete client' => '¿Realmente quiere eliminar el cliente de la organización y todos sus usuarios?\\nEsta acción también eliminará el espacio personal de cada usuario.',
 	'confirm delete contact' => '¿Realmente quiere eliminar esta persona?',
 	'confirm delete user' => '¿Realmente quiere eliminar esta cuenta?',
+  	'confirm disable user' => '¿Realmente quiere desactivar esta cuenta?',
 	'confirm reset people form' => '¿Realmente quiere reiniciar este formulario? Todas las modificaciones que fueron hechas se perderán!',
 	'confirm remove user from project' => '¿Realmente quiere eliminar este usuario de su espacio?',
 	'confirm remove company from project' => '¿Realmente quiere eliminar esta organización de su espacio?',
@@ -645,5 +646,6 @@
 	'objects moved to member success' => 'Los objetos se han agregado a {0} exitosamente',
 	'object moved to member success' => 'El objeto se ha agregado a {0} exitosamente',
   	'contact email is required to create user' => 'Para crear un usuario, la persona debe tener una direccón de correo válida. Por favor edite la persona e intente nuevamente.',
+	'disable' => 'Deshabilitar',
 
 ); ?>

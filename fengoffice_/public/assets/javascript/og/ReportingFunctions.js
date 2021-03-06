@@ -93,9 +93,10 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 	'<td ' + style + ' id="tdValue' + count + '"><b>' + lang('value') + '</b>:<br/>' +
 	'<input type="text" style="width:100px;" id="conditions[' + count + '][value]" name="conditions[' + count + '][value]" name="conditions[' + count + '][value]" value="{1}" ></td>';	
 	
-	if (!time_report)
-		table = table + '<td ' + style + '><b>' + lang('parametrizable') + '</b>:<br/>' + 
+	if (!time_report) {
+		table = table + '<td ' + style + '><label for="conditions[' + count + '][is_parametrizable]">' + lang('parametrizable') + '</label>' + 
 		'<input type="checkbox" class="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>';	
+	}
 	
 	table = table +'<td style="padding-left:20px;"><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
 	'<td id="tdDelete' + count + '" style="display:none;"><b>' + lang('condition deleted') +
@@ -110,12 +111,12 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 	newCondition.className = classname;
 	newCondition.innerHTML = table;
 	condDiv.appendChild(newCondition);
-	og.openLink(og.getUrl('reporting', get_object_fields, {object_type: type}), {
+	og.openLink(og.getUrl('reporting', get_object_fields, {object_type: type, noaddcol:1}), {
 		callback: function(success, data) {
 			if (success) {
 				var disabled = ((cpId > 0 || fieldName != '') ? 'disabled' : '');
-				var fields = '<span class="bold">' + lang('field') +
-				'</span>:<br/><select class="reportConditionDD" onchange="og.fieldChanged(' + count + ', \'\', \'\')" id="conditions[' + count + '][custom_property_id]" name="conditions[' + count + '][custom_property_id]" ' + disabled + ' >';					
+				var fields = '<label for="conditions[' + count + '][custom_property_id]">' + lang('field') + '</label>' + 
+				'<select class="reportConditionDD" onchange="og.fieldChanged(' + count + ', \'\', \'\')" id="conditions[' + count + '][custom_property_id]" name="conditions[' + count + '][custom_property_id]" ' + disabled + ' >';					
 				for(var i=0; i < data.fields.length; i++){
 					var field = data.fields[i];
 					if(id > 0 && (field.id != cpId && fieldName != field.id)) continue;
@@ -179,11 +180,9 @@ og.fieldChanged = function(id, condition, value){
 		var fieldType = fields[selField].className;
 		var type_and_name = '<input type="hidden" name="conditions[' + id + '][field_name]" value="' + fields[selField].value + '"/>' +
 		'<input type="hidden" name="conditions[' + id + '][field_type]" value="' + fieldType + '"/>'; 
-		var conditions = '<b>' + lang('condition') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][condition]" name="conditions[' + id + '][condition]">';
-		var textValueField = '<b>' + lang('value') + '</b>:<br/><input type="text" style="width:100px;" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]" value="' + value + '"/>' + type_and_name;
-		var dateValueField = '<b>' + lang('value') + '</b>:<br/>' + '<span id="containerConditions[' + id + '][value]"></span>' + type_and_name; 
-		var wsValueField = '<b>' + lang('value') + '</b>:<br/>' + '<span id="containerConditions[' + id + '][value]"></span>' + type_and_name;
-		var tagValueField = '<b>' + lang('value') + '</b>:<br/>' + '<div class="og-csvcombo-container"><input type="text" style="width:100px;" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]" value="' + value + '"/></div>' + type_and_name;
+		var conditions = '<label for="conditions[' + id + '][condition]">' + lang('condition') + '</label><select class="reportConditionDD" id="conditions[' + id + '][condition]" name="conditions[' + id + '][condition]">';
+		var textValueField = '<label for="conditions[' + id + '][value]">' + lang('value') + '</label><input type="text" style="width:100px;" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]" value="' + value + '"/>' + type_and_name;
+		var dateValueField = '<label for="containerConditions[' + id + '][value]">' + lang('value') + '</label>' + '<span id="containerConditions[' + id + '][value]"></span>' + type_and_name; 
 		
 		if(fieldType == "text" || fieldType == "memo"){
 			document.getElementById('tdValue' + id).innerHTML = textValueField;
@@ -233,7 +232,7 @@ og.fieldChanged = function(id, condition, value){
 			});
 		}else if(fieldType == "list"){
 			var valuesList = fieldValues[id][selField].split(',');
-			var listValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
+			var listValueField = '<label for="conditions[' + id + '][value]">' + lang('value') + '</label><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
 			for(var i=0; i < valuesList.length; i++){
 				listValueField += '<option ' + (valuesList[i] == value ? "selected" : "") + '>' + valuesList[i] + '</option>';
 			}
@@ -244,52 +243,29 @@ og.fieldChanged = function(id, condition, value){
 			conditions += '</select>';
 			document.getElementById('tdConditions' + id).innerHTML = conditions;
 		}else if(fieldType == "external"){
-			if(fields[selField].value == 'workspace'){
-				document.getElementById('tdValue' + id).innerHTML = wsValueField;
-				og.drawWorkspaceSelector('containerConditions[' + id + '][value]', value, 'conditions[' + id + '][value]', true, '');
-			}else if(fields[selField].value == 'tag'){
-				document.getElementById('tdValue' + id).innerHTML = tagValueField;
-				
-				var arr = [];
-				for (var i=0; i < tags.length; i++) {
-					arr.push([tags[i].name, og.clean(tags[i].name)]);
-				}
-				var tagSel = new og.CSVCombo({
-					store: new Ext.data.SimpleStore({
-		        		fields: ["value", "clean"],
-		        		data: arr
-					}),
-					valueField: "value",
-		        	displayField: "value",
-		        	mode: "local",
-		        	forceSelection: true,
-		        	tpl: "<tpl for=\".\"><div class=\"x-combo-list-item\">{clean}</div></tpl>",
-		        	emptyText: "",
-		        	applyTo: "conditions[" + id + "][value]"
-		    	});			
-			}else{
-				var objectTypeSel = document.getElementById('objectTypeSel');
-				og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value, report_type: objectTypeSel[objectTypeSel.selectedIndex].value}), {
-					callback: function(success, data) {
-						if (success) {
-							var externalValueField = '<b>' + lang('value') + '</b>:<br/><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
-							for(var j=0; j < data.values.length; j++){
-								var extValue = data.values[j];
-								externalValueField += '<option value="' + extValue.id + '" ' + (extValue.id == value ? "selected" : "") + '>' + extValue.name + '</option>';
-							}
-							externalValueField += '</select>' + type_and_name; 
-							document.getElementById('tdValue' + id).innerHTML = externalValueField;
-							
-							if(condition != ""){
-								var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
-								var parametrizable = isparam_el && isparam_el.checked;
-								var valueField = document.getElementById('conditions[' + id + '][value]');
-								valueField.disabled = parametrizable;
-							}
+			
+			var objectTypeSel = document.getElementById('objectTypeSel');
+			og.openLink(og.getUrl('reporting', 'get_external_field_values', {external_field: fields[selField].value, report_type: objectTypeSel[objectTypeSel.selectedIndex].value}), {
+				callback: function(success, data) {
+					if (success) {
+						var externalValueField = '<label for="conditions[' + id + '][value]">' + lang('value') + '</label><select class="reportConditionDD" id="conditions[' + id + '][value]" name="conditions[' + id + '][value]">';
+						for(var j=0; j < data.values.length; j++){
+							var extValue = data.values[j];
+							externalValueField += '<option value="' + extValue.id + '" ' + (extValue.id == value ? "selected" : "") + '>' + extValue.name + '</option>';
+						}
+						externalValueField += '</select>' + type_and_name; 
+						document.getElementById('tdValue' + id).innerHTML = externalValueField;
+						
+						if(condition != ""){
+							var isparam_el = document.getElementById('conditions[' + id + '][is_parametrizable]');
+							var parametrizable = isparam_el && isparam_el.checked;
+							var valueField = document.getElementById('conditions[' + id + '][value]');
+							valueField.disabled = parametrizable;
 						}
 					}
-				});
-			}
+				}
+			});
+			
 			conditions += '<option value="=">=</option>';
 			conditions += '<option value="<>"><></option>';
 			conditions += '</select>';

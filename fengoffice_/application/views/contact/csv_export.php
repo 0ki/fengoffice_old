@@ -40,7 +40,9 @@ og.download_exported_file = function() {
 	
 	<?php
 		if ($import_type == 'contact') 
-			$contact_fields = Contacts::getContactFieldNames();		
+			$contact_fields = Contacts::getContactFieldNames();
+		else $contact_fields = Contacts::getCompanyFieldNames();
+                
 		$isAlt = false;
 		$i = 0; $label_w = $label_h = $label_o = false;
 		foreach ($contact_fields as $c_field => $c_label) {

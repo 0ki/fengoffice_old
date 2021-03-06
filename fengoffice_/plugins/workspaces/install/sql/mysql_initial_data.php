@@ -31,64 +31,14 @@ INSERT INTO `<?php echo $table_prefix ?>contact_dimension_permissions` (`permiss
  (1, (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'), 'allow all');
 
 
-DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `name` IN (
-	'user_email_fetch_count',
-	'sent_mails_sync',
-	'check_spam_in_subject'
-);
-
-DELETE FROM `<?php echo $table_prefix ?>contact_config_options` WHERE `name` IN (
-	'view deleted accounts emails',
-	'block_email_images',
-	'draft_autosave_timeout',
-	'attach_docs_content',
-	'email_polling',
-	'show_unread_on_title',
-	'max_spam_level',
-	'create_contacts_from_email_recipients',
-	'mail_drag_drop_prompt',
-	'show_emails_as_conversations',
-	'mails account filter',
-	'mails classification filter',
-	'mails read filter',
-	'hide_quoted_text_in_emails',
-	'mail_account_err_check_interval',
-	'classify_mail_with_conversation',
-	'TM show time type',
-	'TM report show time type',
-	'TM user filter',
-	'TM tasks user filter',
-	'show emails widget',
-	'always show unread mail in dashboard',
-	'emails_widget_expanded',
-	'show_context_help',
-	'show charts widget',
-	'show dashboard info widget',
-	'drag_drop_prompt',
-	'rememberGUIState'
-);
-
 UPDATE `<?php echo $table_prefix ?>contact_config_options` 
  SET default_value = concat(default_value,',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces') ) 
  WHERE name='root_dimensions';
 
-DELETE FROM `<?php echo $table_prefix ?>contact_config_categories` WHERE `name` IN (
-	'time panel',
-	'mails panel'
-);
-
-DELETE FROM `<?php echo $table_prefix ?>administration_tools` WHERE `name` IN (
-	'mass_mailer'
-);
-
-DELETE FROM `<?php echo $table_prefix ?>cron_events` WHERE `name` IN (
-	'check_mail',
-	'check_upgrade'	
-);
 
 INSERT INTO `<?php echo $table_prefix ?>contact_dimension_permissions` (permission_group_id, dimension_id, permission_type)
   SELECT DISTINCT(permission_group_id), (SELECT id FROM `<?php echo $table_prefix ?>dimensions` WHERE code = 'workspaces'), 'allow all'
-  FROM fo_contacts WHERE user_type IN (SELECT id FROM `<?php echo $table_prefix ?>permission_groups` WHERE name IN ('Super Administrator', 'Administrator'))
+  FROM <?php echo $table_prefix ?>contacts WHERE user_type IN (SELECT id FROM `<?php echo $table_prefix ?>permission_groups` WHERE name IN ('Super Administrator', 'Administrator'))
 ON duplicate key UPDATE dimension_id = dimension_id;
 
 UPDATE `<?php echo $table_prefix ?>tab_panels` SET default_action = 'main_dashboard', initial_action = 'main_dashboard' WHERE id = 'overview-panel' ;
@@ -96,8 +46,6 @@ UPDATE `<?php echo $table_prefix ?>tab_panels` SET default_action = 'main_dashbo
 UPDATE <?php echo $table_prefix ?>widgets SET default_section = 'none' WHERE name = 'people' AND NOT EXISTS (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'crpm');
 
 INSERT INTO <?php echo $table_prefix ?>widgets(name, title, plugin_id, default_section,default_order) 
-VALUES ('ws_description', 'workspace description', (SELECT id from fo_plugins WHERE name = 'workspaces'), 'top', -100)
+VALUES ('ws_description', 'workspace description', (SELECT id from <?php echo $table_prefix ?>plugins WHERE name = 'workspaces'), 'top', -100)
 ON DUPLICATE KEY update name = name ;
-
-
 

@@ -699,11 +699,12 @@
 			$permissions = json_decode($permissionsString);
 		}
 		
+		$sharingTablecontroller = new SharingTableController();
 		$changed_pgs = array();
 		
 		if (!is_null($permissions) && is_array($permissions)) {
 			$allowed_pg_ids= array();
-			foreach ($permissions as $perm) {
+			foreach ($permissions as &$perm) {
 				$cmp = ContactMemberPermissions::findById(array('permission_group_id' => $perm->pg, 'member_id' => $member->getId(), 'object_type_id' => $perm->o));
 				if (!$cmp instanceof ContactMemberPermission) {
 					$cmp = new ContactMemberPermission();
@@ -734,8 +735,14 @@
 					$cmp->delete();
 				}
 				
+				$perm->m = $member->getId();
 				$changed_pgs[] = $perm->pg;
 			}
+			
+			foreach ($changed_pgs as $pg_id) {
+				$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
+			}
+			
 			
 			foreach ($allowed_pg_ids as $key=>$mids){
 				$root_cmp = ContactMemberPermissions::findById(array('permission_group_id' => $key, 'member_id' => $member->getId(), 'object_type_id' => $member->getObjectTypeId()));

@@ -266,7 +266,7 @@
   	'context' => 'Related to',
   	'next' => 'Next',
   	'previews' => 'Previews',
-  	'success save member' => '{0} added successfully' ,
+  	'success save member' => '{0} \'{1}\' was added successfully' ,
   	'tabs' => 'Tabs',
   	'tab' => 'Tab',
 	'vinculations' => 'Vinculations',	  

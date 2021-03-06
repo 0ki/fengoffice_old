@@ -169,6 +169,7 @@
 	'mail attachments' => 'Adjuntos',
 	'select attachment' => 'Seleccionar y subir el adjunto',
 	'attach from workspace' => 'Adjuntar desde espacio de trabajo',
+    'attach from fengoffice' => 'Adjuntar desde Feng Office',
 	'attach from file system' => 'Adjuntar desde computadora',
 	'new notification comment' => 'Nuevo comentario en \'{0}\'',
 	'new notification comment desc' => 'Un nuevo comentario en \'{0}\' fue agregado por {1}.',

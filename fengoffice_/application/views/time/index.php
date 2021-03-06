@@ -135,7 +135,7 @@
 						<?php echo label_tag(lang('user')) ?>
 					</td>
 					<td style="padding-right: 10px; width:140px;vertical-align:bottom">
-						<?php echo label_tag(lang('time')) ?>
+						<?php echo label_tag(lang('hours')) ?>
 					</td>
                                         <td style="padding-right: 10px; width:140px;vertical-align:bottom">
 						<?php echo label_tag(lang('minutes')) ?>
@@ -163,7 +163,6 @@
 					<td style="padding-right: 10px; width:140px;">
 						<?php echo text_field('timeslot[hours]', 0, 
 				    		array('style' => 'width:28px', 'tabindex' => '200', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
-				    		<br/><span class="desc" style="font-style:normal;font-size:80%">(<?php echo lang('hours') ?>)</span>
 					</td>
                                         <td style="padding-right: 10px; width:140px;">
                                                 <select name="timeslot[minutes]" size="1" tabindex="85" id="<?php echo $genid . 'tsMinutes'?>">

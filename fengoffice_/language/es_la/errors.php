@@ -114,6 +114,7 @@
 	'error assign task permissions user' => 'No tiene permisos para asignar la tarea al usuario',
 	'error assign task company dnx' => 'Asignando una tarea a una organización inexistente',
 	'error assign task permissions company' => 'No tiene permisos para asignar la tarea a la organización',
+	'error cannot assign task to user' => '{0} no puede ser asignado a la tarea {1}.',
 	'account already being checked' => 'La cuenta ya se está verificando.',
 	'no files to compress' => 'No hay documentos para comprimir.',
 	'cant modify subscribers' => 'No es posible modificar los subscriptores',

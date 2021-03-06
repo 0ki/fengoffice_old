@@ -18,7 +18,8 @@ class QueuedEmails extends BaseQueuedEmails {
 				'conditions' => array(
 					'`timestamp` >= ?',
 					$date
-				)
+				),
+                                'order' => '`timestamp` ASC'
 			));
 			self::delete(array(
 				'`timestamp` < ?',

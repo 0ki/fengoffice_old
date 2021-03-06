@@ -195,6 +195,43 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 						$m->save();
 					}
 				}
+				
+				$app_move_logs = ApplicationLogs::findAll(array("conditions" => "action = 'move'"));
+				foreach ($app_move_logs as &$app_log) {/* @var $app_log ApplicationLog */
+					
+					$exp_log_data = explode(";", $app_log->getLogData());
+					
+					if (count($exp_log_data) > 1) {
+						$old_to = array_var($exp_log_data, 1);
+						$old_from = array_var($exp_log_data, 0);
+					} else {
+						$old_to = array_var($exp_log_data, 0);
+						$old_from = "";
+					}
+					
+					$to_id = str_replace("to:", "", $old_to);
+					$new_to_id = Members::instance()->findOne(array("id" => true, "conditions" => "ws_id = '$to_id'"));
+					if (count($new_to_id) > 0) $new_to_id = $new_to_id[0];
+					
+					$new_from_ids = "";
+					$from_ids = str_replace("from:", "", $old_from);
+					if ($from_ids != "") {
+						$new_from_ids_array = Members::instance()->findAll(array("id" => true, "conditions" => "ws_id IN ($from_ids)"));
+						$new_from_ids = implode(",", $new_from_ids_array);
+					}
+					
+					if ($new_to_id) {
+						if ($new_from_ids) {
+							$log_data = "from:$new_from_ids;to:$new_to_id";
+						} else {
+							$log_data = "to:$new_to_id";
+						}						
+						$app_log->setLogData($log_data);
+						$app_log->save();
+					}
+				}
+				
+				
 /*				
 				$sql = "";
 				$first_row = true;
@@ -209,14 +246,12 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 						// add mails to sharing table for account owners
 						if ($cobj instanceof MailContent) {
 							//$macs = MailAccountContacts::findAll(array('conditions' => array('`account_id` = ?', $cobj->getAccountId())));
-							$sql = "SELECT contact_id FROM ".$t_prefix."mail_accounts WHERE account_id = ".$cobj->getAccountId();
-							$db_result = DB::execute($sql);
+							$db_result = DB::execute("SELECT contact_id FROM ".$t_prefix."mail_accounts WHERE id = ".$cobj->getAccountId());
 							$macs = $db_result->fetchAll();
 							$pgs = array();
 							foreach ($macs as $mac) {
 								$contact_id = $mac['contact_id'];
-								$sql = "SELECT permission_group_id FROM ".$t_prefix."contact_permission_groups WHERE contact_id = ".$contact_id;
-								$db_result = DB::execute($sql);
+								$db_result = DB::execute("SELECT permission_group_id FROM ".$t_prefix."contact_permission_groups WHERE contact_id = ".$contact_id);
 								$mac_pgs = $db_result->fetchAll();
 								foreach ($mac_pgs as $mac_pg) $pgs[$mac_pg['permission_group_id']] = $mac_pg['permission_group_id'];
 								//$mac_pgs = ContactPermissionGroups::findAll(array("conditions" => "contact_id = ".$mac->getContactId()));
@@ -477,31 +512,19 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
                                                            ('export_google_calendar', '1', '10', '0', '0', '0000-00-00 00:00:00');
 					";
 				
-				$upgrade_script .= "DELETE FROM `".$t_prefix."config_options` WHERE `name`='use_time_in_task_dates' AND NOT EXISTS (SELECT id FROM `".$t_prefix."plugins` WHERE `name`='crpm' AND is_activated=1);";
+				$upgrade_script .= "
+					DELETE FROM `".$t_prefix."config_options` WHERE `name`='use_time_in_task_dates' AND NOT EXISTS (SELECT id FROM `".$t_prefix."plugins` WHERE `name`='crpm' AND is_activated=1);
+					INSERT INTO ".$t_prefix."contact_config_options (category_name, name, default_value, config_handler_class, is_system, option_order) VALUES
+						('general','show_object_direct_url',0,'BoolConfigHandler',0,0),
+						('general','drag_drop_prompt','prompt','DragDropPromptConfigHandler',0,0)
+					 ON DUPLICATE KEY UPDATE name = name;
+				";
 				
-				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
-					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
-				} else {
-					$this->printMessage('Failed to execute DB schema transformations. MySQL said: ' . mysql_error(), true);
-					return false;
-				}
-				
-				
-				// Config options
-				$upgrade_script = '' ;
-				
-				$upgrade_script .= 
-					"INSERT INTO ".$t_prefix."contact_config_options (category_name, name, default_value, config_handler_class, is_system, option_order)
-					VALUES('general','show_object_direct_url',0,'BoolConfigHandler',0,0) ON DUPLICATE KEY UPDATE name = name;
-					";
+				$upgrade_script .= "
+					INSERT INTO `".$t_prefix."tab_panels` (`id`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`enabled`,`type`,`ordering`,`plugin_id`,`object_type_id`) VALUES 
+					('contacts-panel','contacts','ico-contacts',1,'contact','init','','',0,'system',7,0,16) ON DUPLICATE KEY UPDATE title=title;
+				";
 
-				$upgrade_script .= 
-					"INSERT INTO ".$t_prefix."contact_config_options (category_name, name, default_value, config_handler_class, is_system, option_order)
-					VALUES('general','drag_drop_prompt','prompt','DragDropPromptConfigHandler',0,0) ON DUPLICATE KEY UPDATE name = name;
-					";
-				
-
-				
 				if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
 					$this->printMessage("Database schema transformations executed (total queries: $total_queries)");
 				} else {

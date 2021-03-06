@@ -616,3 +616,6 @@ div.layout-container.contact .right-column {
 	background: none ;
 }
 	
+.nobr {
+	white-space: nowrap;
+}

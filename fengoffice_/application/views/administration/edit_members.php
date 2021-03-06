@@ -22,7 +22,7 @@
 <?php
 			$dim_members = array_var($members, $dimension->getId());
 			if (is_array($dim_members)) {
-				foreach ($dim_members as $mem) {
+				foreach ($dim_members as $mem) {/* @var $mem Member */
 					$indent = 16 * $mem->getDepth();
 ?>
 						<div style="margin-left:<?php echo $indent?>px;width:<?php echo 800 - $indent?>px;" id="abm-members-item-container-<?php echo $mem->getId() ?>"
@@ -30,6 +30,7 @@
 							onmouseout="og.editMembers.showHideOptions('<?php echo $genid?>actions<?php echo $mem->getId()?>', <?php echo $mem->getId()?>, false);">
 
 							<table style="width:100%;"><tr><td style="width:500px;">
+								<span class="coViewAction <?php echo $mem->getIconClass()?>">&nbsp;</span>
 								<span class="abm-members-name"><?php echo $mem->getName();?></span>
 							</td><td>
 								<span style="float:right;visibility:hidden;font-weight:normal;" id="<?php echo $genid?>actions<?php echo $mem->getId()?>">
@@ -37,7 +38,7 @@
 								<?php if ($dimension->getDefinesPermissions()) : ?>	
 									<a href="<?php echo get_url('member', 'edit_permissions', array('id' => $mem->getId()))?>" class="db-ico ico-permissions" style="padding:4px 10px 0 16px;"><?php echo lang('permissions')?></a>
 								<?php endif; ?>
-									<a href="<?php echo "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . get_url('member', 'delete', array('id' => $mem->getId(), 'dont_reload' => true)) ."', {callback: function(){Ext.get('abm-members-item-container-".$mem->getId()."').remove()}});"?>" 
+									<a href="<?php echo "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . get_url('member', 'delete', array('id' => $mem->getId(), 'dont_reload' => true)) ."', {callback: function(success, data){if (success) Ext.get('abm-members-item-container-".$mem->getId()."').remove()}});"?>" 
 										class="db-ico ico-delete" style="padding:4px 0 0 16px;"><?php echo lang('delete')?></a>
 								</span>
 							</td></tr></table>

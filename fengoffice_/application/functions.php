@@ -132,17 +132,9 @@ function get_url($controller_name = null, $action_name = null, $params = null, $
 	$action = trim($action_name) ? $action_name : DEFAULT_ACTION;
 	if(!is_array($params) && !is_null($params)) {
 		$params = array('id' => $params);
-	} // if
+	}
 
 	$url_params = array('c=' . $controller, 'a=' . $action);
-
-	if($include_project_id) {
-		if(function_exists('active_project') && (active_project() instanceof Project)) {
-			if(!(is_array($params) && isset($params['active_project']))) {
-				$url_params[] = 'active_project=' . active_project()->getId();
-			} // if
-		} // if
-	} // if
 
 	if(is_array($params)) {
 		foreach($params as $param_name => $param_value) {
@@ -150,13 +142,13 @@ function get_url($controller_name = null, $action_name = null, $params = null, $
 				$url_params[] = $param_name . '=1';
 			} else {
 				$url_params[] = $param_name . '=' . urlencode($param_value);
-			} // if
-		} // foreach
-	} // if
+			}
+		}
+	}
 
 	if(trim($anchor) <> '') {
 		$anchor = '#' . $anchor;
-	} // if
+	}
 
 	return with_slash(ROOT_URL) . 'index.php?' . implode('&', $url_params) . $anchor;
 } // get_url
@@ -311,6 +303,8 @@ function request_action() {
  */
 function prepare_company_website_controller(PageController $controller, $layout = 'website') {
 
+	if (defined('CONSOLE_MODE') && CONSOLE_MODE) return;
+	
 	// If we don't have logged user prepare referer params and redirect user to login page
 	if(!(logged_user() instanceof Contact)) {
 		$ref_params = array();
@@ -1592,5 +1586,3 @@ function readZippedXML($archiveFile, $dataFile) {
     // In case of failure return empty string
     return "";
 } 
-
-

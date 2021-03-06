@@ -203,11 +203,14 @@ class Member extends BaseMember {
 			$error_message = "cannot delete member is associated";
 			return false;
 		}
+		
+		$continue_check = false;
 		if (count($childs) == 0) {
-			return true;
+			$continue_check = true;
 		} else {
-			if ($this->getParentMemberId() > 0) 
+			if ($this->getParentMemberId() > 0) {
 				$child_ots = DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds($this->getDimensionId(), $this->getParentMember()->getObjectTypeId(), false);
+			}
 			foreach ($childs as $child) {
 				// check if child can be put in the parent (or root)
 				if ($this->getParentMemberId() == 0) {
@@ -223,8 +226,41 @@ class Member extends BaseMember {
 					}
 				}
 			}
-			return true;
+			$continue_check = true;
 		}
+		
+		if (!$continue_check){
+			return false;
+		} else {
+			$objects_in_member = ObjectMembers::instance()->findAll(array('conditions' => 'member_id = '.$this->getId()));
+			if (!$objects_in_member || count($objects_in_member) == 0) {
+				return true;
+			} else {
+				$more_conditions = "";
+				if (Plugins::instance()->isActivePlugin('core_dimensions')) {
+					$person_dim = Dimensions::findByCode('feng_persons')->getId();
+					$more_conditions = " AND member_id NOT IN (SELECT id FROM ".TABLE_PREFIX."members WHERE dimension_id=$person_dim)";
+				}
+				foreach ($objects_in_member as $om) {
+					$obj_members = ObjectMembers::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0".$more_conditions, $om->getObjectId())));
+					if (count($obj_members) <= 1) {
+						$error_message = "cannot delete member has objects";
+						return false;
+					}
+					$db_res = DB::execute("SELECT object_type_id FROM ".TABLE_PREFIX."objects WHERE id=".$om->getObjectId());
+					$row = $db_res->fetchRow();
+					if ($row && array_var($row, 'object_type_id')) {
+						$req_dim_ids = DimensionObjectTypeContents::getRequiredDimensions(array_var($row, 'object_type_id'));
+						if (in_array($this->getDimensionId(), $req_dim_ids)) {
+							$error_message = "cannot delete member is required for objects";
+							return false;
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	function validate(&$errors) {
@@ -260,22 +296,48 @@ class Member extends BaseMember {
 		return $color;
 	}
 	
+	function getObjectClass() {
+		if ($handler = $this->getObjectHandlerClass() ) {
+			eval ("\$itemClass = $handler::instance()->getItemClass();");
+			if ($itemClass) {
+				return $itemClass ;
+			}
+		}
+		return '' ;
+	}
+	
+	function getObjectHandlerClass() {
+		if ($otid = $this->getObjectTypeId()){
+			if ($ot = ObjectTypes::findById($otid)) {
+				if ($handler = $ot->getHandlerClass() ){
+					return $handler;
+				}
+			}
+		}
+		return '';
+	}
+	
+	
 	/**
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	function getIconClass() {
 		if (!$this->icon_class) {
-			if ($oid = $this->getObjectId()) {
-				$o = Objects::findObject($oid);
-				if ($o instanceof DimensionObject && $icon_cls = $o->getIconClass()) {
-					return $icon_cls;
+			if( $itemClass = $this->getObjectClass() ) {
+				eval ("\$o = new $itemClass();");
+				if ($o instanceof DimensionObject ) {
+					$o->setId($this->getObjectId());
+					$o->setObjectId($this->getObjectId());
+					if( $icon_cls = $o->getIconClass()){
+						$this->icon_class = $icon_cls;
+						return $this->icon_class;
+					}
 				}
-				
 			}
+			// If Obj instance do not define icon class, return object type definition
+			$type = ObjectTypes::instance()->findById($this->getObjectTypeId());
+			$this->icon_class = $type->getIconClass();
 		}
-		
-		$type = ObjectTypes::instance()->findById($this->getObjectTypeId());
-		$this->icon_class = $type->getIconClass();
 		return $this->icon_class;
 	}
 	
@@ -319,7 +381,15 @@ class Member extends BaseMember {
 	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 */
 	function allowChilds() {
-		return count(DimensionObjectTypes::getChildObjectTypes($this->getId()));
+  		$d = $this->getDimensionId() ;
+  		$parent_object_type_id = $this->getObjectTypeId() ;
+  		$sql = "
+  			SELECT count(*) as total  FROM ".TABLE_PREFIX."dimension_object_type_hierarchies 
+  			WHERE 
+  		 		dimension_id = $d AND 
+  		 		parent_object_type_id = $parent_object_type_id ";
+  		$res =  DB::executeOne($sql) ;
+  		return (bool) array_var($res,'total');
 	}
 
 	

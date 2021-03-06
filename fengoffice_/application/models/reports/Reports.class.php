@@ -196,6 +196,9 @@ class Reports extends BaseReports {
 					}
 				}
 			}
+			
+			if ($order_by_col == '') $order_by_col = $report->getOrderBy();
+			if ($order_by_asc == null) $order_by_asc = $report->getIsOrderByAsc();
 
 			if ($managerInstance) {
 				$result = $managerInstance->listing(array(
@@ -212,20 +215,33 @@ class Reports extends BaseReports {
 
 			$results['pagination'] = Reports::getReportPagination($id, $params, $order_by_col, $order_by_asc, $offset, $limit, $totalResults);
 		
+			$dimensions_cache = array();
+			
 			foreach($report_columns as $column){
 				if ($column->getCustomPropertyId() == 0) {
 					$field = $column->getFieldName();
-					if ($managerInstance->columnExists($field) || Objects::instance()->columnExists($field)) {
-						$column_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$field);
-						if (is_null($column_name)) $column_name = lang('field Objects '.$field);
+					if (str_starts_with($field, 'dim_')) {
+						$dim_id = str_replace("dim_", "", $field);
+						$dimension = Dimensions::findById($dim_id);
+						$dimensions_cache[$dim_id] = $dimension;
+						$doptions = $dimension->getOptions(true);
+						$column_name = $doptions && isset($doptions->useLangs) && $doptions->useLangs ? lang($dimension->getCode()) : $dimension->getName();
+						
 						$results['columns'][] = $column_name;
 						$results['db_columns'][$column_name] = $field;
+					} else {
+						if ($managerInstance->columnExists($field) || Objects::instance()->columnExists($field)) {
+							$column_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$field);
+							if (is_null($column_name)) $column_name = lang('field Objects '.$field);
+							$results['columns'][] = $column_name;
+							$results['db_columns'][$column_name] = $field;
+						}
 					}
 				}
 			}
 			
 			$report_rows = array();
-			foreach($objects as &$object){
+			foreach($objects as &$object){/* @var $object Object */
 				$obj_name = $object->getObjectName();
 				$icon_class = $object->getIconClass();
 				
@@ -239,27 +255,50 @@ class Reports extends BaseReports {
 					if ($column->getCustomPropertyId() == 0) {
 						
 						$field = $column->getFieldName();
-						$value = $object->getColumnValue($field);
-							
-						if ($value instanceof DateTimeValue) {
-							$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
-							$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
-						}
-							
-						if(in_array($field, $managerInstance->getExternalColumns())){
-							$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
-						} else if ($field != 'link'){
-							$value = html_to_text($value);
-						}
-						if(self::isReportColumnEmail($value)) {
-							if(logged_user()->hasMailAccounts()){
-								$value = '<a class="internalLink" href="'.get_url('mail', 'add_mail', array('to' => clean($value))).'">'.clean($value).'</a></div>';
-							}else{
-								$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>';
-							}
-						}	
-						$row_values[$field] = $value;
 						
+						if (str_starts_with($field, 'dim_')) {
+							$dim_id = str_replace("dim_", "", $field);
+							if (!array_var($dimensions_cache, $dim_id) instanceof Dimension) {
+								$dimension = Dimensions::findById($dim_id);
+								$dimensions_cache[$dim_id] = $dimension;
+							} else {
+								$dimension = array_var($dimensions_cache, $dim_id);
+							}
+							$members = ObjectMembers::getMembersByObjectAndDimension($object->getId(), $dim_id, " AND om.is_optimization=0");
+							
+							$value = "";
+							foreach ($members as $member) {/* @var $member Member */
+								$val = $member->getPath();
+								$val .= ($val == "" ? "" : "/") . $member->getName();
+								
+								if ($value != "") $val = " - $val";
+								$value .= $val;
+							}
+							
+							$row_values[$field] = $value;
+						} else {
+						
+							$value = $object->getColumnValue($field);
+								
+							if ($value instanceof DateTimeValue) {
+								$field_type = $managerInstance->columnExists($field) ? $managerInstance->getColumnType($field) : Objects::instance()->getColumnType($field);
+								$value = format_value_to_print($field, $value->toMySQL(), $field_type, $report->getReportObjectTypeId());
+							}
+								
+							if(in_array($field, $managerInstance->getExternalColumns())){
+								$value = self::instance()->getExternalColumnValue($field, $value, $managerInstance);
+							} else if ($field != 'link'){
+								$value = html_to_text($value);
+							}
+							if(self::isReportColumnEmail($value)) {
+								if(logged_user()->hasMailAccounts()){
+									$value = '<a class="internalLink" href="'.get_url('mail', 'add_mail', array('to' => clean($value))).'">'.clean($value).'</a></div>';
+								}else{
+									$value = '<a class="internalLink" target="_self" href="mailto:'.clean($value).'">'.clean($value).'</a></div>';
+								}
+							}	
+							$row_values[$field] = $value;
+						}
 					} else {
 						
 						$colCp = $column->getCustomPropertyId();

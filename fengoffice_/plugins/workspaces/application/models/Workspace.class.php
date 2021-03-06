@@ -150,12 +150,8 @@ class Workspace extends BaseWorkspace {
 	 * @return string
 	 */
 	function getEditUrl() {
-		$member = Members::findOneByObjectId($this->getId(), Dimensions::findByCode('workspaces')->getId() );
-		if ($member) {
-			$memberId = Members::findOneByObjectId($this->getId(), Dimensions::findByCode('workspaces')->getId() )->getId();
-			return get_url('member', 'edit', array('id' => $memberId));
-		}
-	} // getEditUrl
+		return null;
+	} 
 
 
 	/**
@@ -234,11 +230,20 @@ class Workspace extends BaseWorkspace {
     }
     
     function getIconClass() {
-    	$colorCode = $this->getColumnValue("color");
+    	
+    	if ($this->isLoaded()) {
+    		$colorCode = $this->getColumnValue("color");
+    	}else{
+    		if ($id = $this->getId()) {
+    			if ( $row = DB::executeOne("SELECT color FROM ".TABLE_PREFIX. "workspaces WHERE object_id =$id") ){
+    				$colorCode =  array_var ($row, 'color');
+    			}
+    		}
+    	}
     	if ( $colorCode ) {
     		return "ico-color".$colorCode;
     	}else{
-    		return "ico-color13";	
+    		return "ico-color0";	
     	}
     }
     

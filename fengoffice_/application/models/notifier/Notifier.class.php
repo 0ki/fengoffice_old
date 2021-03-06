@@ -61,8 +61,12 @@ class Notifier {
 		} else if ($action == ApplicationLogs::ACTION_CLOSE) {
 			self::objectNotification($object, $subscribers, logged_user(), 'closed');
 		} else if ($action == ApplicationLogs::ACTION_SUBSCRIBE) {
-			$contact = Contacts::instance()->findById(explode(",", $log_data));
-			$contacts = array($contact);
+			$contactIds = $log_data ;
+			if ($contactIds) {
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+			}else {
+				$contacts = array();
+			}
 			self::objectNotification($object, $contacts, logged_user(), 'subscribed');
 		} else if ($action == ApplicationLogs::ACTION_COMMENT) {
 			self::newObjectComment($object, $subscribers);
@@ -163,11 +167,13 @@ class Notifier {
 					"body" => tpl_fetch(get_template_path('general', 'notifier')),
 					"attachments" => $attachments,
 				);
+				
 			}
 		} 
 		$locale = logged_user() instanceof Contact ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
 		Localization::instance()->loadSettings($locale, ROOT . '/language');
-
+		
+		
 		self::queueEmails($emails);
 	}
 		

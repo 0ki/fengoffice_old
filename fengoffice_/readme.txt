@@ -1,5 +1,5 @@
 
-    About Feng Office 2.0.0 - Beta 4
+    About Feng Office 2.0.0.8 - Stable
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -59,7 +59,17 @@
     WARNING: Default memory limit por PHP is 8MB. As a new Feng Office install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
     This can be solved by setting "memory_limit=32" in php.ini.   
- 
+
+	Upgrade
+	=======
+	
+	Run the upgrade script 'public/upgrade'. (Please read the notes above)
+	
+	Notes
+	-----
+    
+   	- After upgrading make sure to run public/upgrade/complete_migration.php to set up object permissions.
+    - Custom reports are not yet migrated due to potential incompatibilites between versions. 
    
     Open Source Libraries
     =====================
@@ -86,6 +96,19 @@
  
     Changelog
     =========
+
+ 	Since 2.0 RC 1
+ 	----------------
+ 	bugfix: Uploading files fom CKEditor.
+ 	bugfix: Some data was not save creating a company.
+ 	bugfix: Error produced from documents tab - New Presentation.
+ 	bugfix: Problems with task dates in some views.
+ 	bugfix: Fatal error when you post a comment on a task page.
+ 	bugfix: Generation of task repetitions in new tasks.
+ 	bugfix: Do not let assign tasks (via drag & drop) to users that doesn't have permissions.
+ 	usability: Interface localization improvements.
+ 	system: Performance improvements.
+
 
  	Since 2.0 Beta 4
  	----------------

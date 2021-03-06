@@ -57,7 +57,11 @@ App.modules.addMessageForm = {
    * @param integer company_id Company ID
    */
   getCheckedUsers: function(genid) {
-  	var ids = "", ret = '';
+  	var ids = '', ret = '';
+  	var orig_subs_input = document.getElementById(genid + "original_subscribers");
+	if (orig_subs_input) {
+		ids = orig_subs_input.value;
+	}
   	var notcomp = Ext.getDom(genid + 'notify_companies');
   	if (notcomp) {
   		var companies_divs = new Array();  		

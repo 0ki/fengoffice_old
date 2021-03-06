@@ -61,7 +61,7 @@ INSERT INTO fo_dimension_object_types (dimension_id, object_type_id, is_root, op
  ((SELECT id FROM fo_dimensions WHERE code = 'feng_persons'), (SELECT id FROM fo_object_types WHERE name = 'company'), 1, '{"defaultAjax":{"controller":"contact", "action": "company_card"}}');
 
 INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_type_id, content_object_type_id, is_required, is_multiple)
- SELECT (SELECT id FROM fo_dimensions WHERE code = 'workspaces'), (SELECT id FROM fo_object_types WHERE name='workspace'), ot.id, 1, 1
+ SELECT (SELECT id FROM fo_dimensions WHERE code = 'workspaces'), (SELECT id FROM fo_object_types WHERE name='workspace'), ot.id, 0, 1
  FROM fo_object_types ot WHERE ot.type IN ('content_object', 'comment', 'located');
 
 INSERT INTO fo_dimension_object_type_contents (dimension_id, dimension_object_type_id, content_object_type_id, is_required, is_multiple)
@@ -205,10 +205,10 @@ INSERT INTO `fo_contact_permission_groups` (`contact_id`, `permission_group_id`)
  WHERE `user_type` != 0
 ON DUPLICATE KEY UPDATE `contact_id`=`contact_id`;
 
-INSERT INTO `fo_system_permissions` (`permission_group_id`, `can_manage_security`, `can_manage_configuration`, `can_manage_templates`, `can_manage_time`, `can_add_mail_accounts`, `can_manage_dimension_members`, `can_manage_dimensions`, `can_manage_tasks`, `can_task_assignee`)
- SELECT `c`.`permission_group_id`, `u`.`can_manage_security`, `u`.`can_manage_configuration`, `u`.`can_manage_templates`, `u`.`can_manage_time`, `u`.`can_add_mail_accounts`, `u`.`can_manage_workspaces`, `c`.`user_type`=1, `c`.`user_type`=1, 1
- FROM `og_users` `u` INNER JOIN `fo_objects` `o` ON `u`.`id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id`
- WHERE `c`.`user_type` != 0;
+INSERT INTO fo_system_permissions (permission_group_id, can_manage_security, can_manage_configuration, can_manage_templates, can_manage_time, can_add_mail_accounts, can_manage_dimension_members, can_manage_dimensions, can_manage_tasks, can_task_assignee, can_manage_billing, can_view_billing)
+ SELECT c.permission_group_id, pg.can_manage_security, pg.can_manage_configuration, pg.can_manage_templates, pg.can_manage_time, pg.can_add_mail_accounts, pg.can_manage_dimension_members, pg.can_manage_dimensions, pg.can_manage_tasks, pg.can_task_assignee, pg.can_manage_billing, pg.can_view_billing
+ FROM fo_contacts c INNER JOIN fo_system_permissions pg ON pg.permission_group_id = c.user_type
+ WHERE c.user_type > 0;
 
 INSERT INTO `fo_tab_panel_permissions` (`permission_group_id`, `tab_panel_id`)
  SELECT `c`.`permission_group_id`, `tp`.`id`
@@ -410,7 +410,13 @@ INSERT INTO `fo_objects` (`name`, `f1_id`, `object_type_id`, `created_on`, `crea
  FROM `og_project_tasks` c;
 
 INSERT INTO `fo_project_tasks` (`object_id`, `text`, `parent_id`, `due_date`, `start_date`, `assigned_on`, `assigned_by_id`, `time_estimate`, `completed_on`, `completed_by_id`, `started_on`, `started_by_id`, `priority`, `state`, `order`, `milestone_id`, `is_template`, `from_template_id`, `repeat_end`, `repeat_forever`, `repeat_num`, `repeat_d`, `repeat_m`, `repeat_y`, `repeat_by`, `object_subtype`, `percent_completed`, `assigned_to_contact_id`)
- SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='task')), `c`.`text`, `c`.`parent_id`, `c`.`due_date`, `c`.`start_date`, `c`.`assigned_on`, `c`.`assigned_by_id`, `c`.`time_estimate`, `c`.`completed_on`, `c`.`completed_by_id`, `c`.`started_on`, `c`.`started_by_id`, `c`.`priority`, `c`.`state`, `c`.`order`,
+ SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='task')), `c`.`text`, `c`.`parent_id`, `c`.`due_date`, `c`.`start_date`, `c`.`assigned_on`, 
+ IF(`c`.`assigned_by_id` > 0, (SELECT o.id FROM fo_objects o WHERE o.f1_id = c.assigned_by_id AND o.object_type_id = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), 0),
+ `c`.`time_estimate`, `c`.`completed_on`,
+ IF(`c`.`completed_by_id` > 0, (SELECT o.id FROM fo_objects o WHERE o.f1_id = c.completed_by_id AND o.object_type_id = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), 0), 
+ `c`.`started_on`, 
+ IF(`c`.`started_by_id` > 0, (SELECT o.id FROM fo_objects o WHERE o.f1_id = c.started_by_id AND o.object_type_id = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), 0),
+ `c`.`priority`, `c`.`state`, `c`.`order`,
  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`milestone_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='milestone')),
  `c`.`is_template`, `c`.`from_template_id`, `c`.`repeat_end`, `c`.`repeat_forever`, `c`.`repeat_num`, `c`.`repeat_d`, `c`.`repeat_m`, `c`.`repeat_y`, `c`.`repeat_by`, `c`.`object_subtype`, 0,
  IF (`c`.`assigned_to_user_id`> 0,
@@ -465,6 +471,7 @@ INSERT INTO `fo_project_file_revisions` (`object_id`, `file_id`, `file_type_id`,
  `c`.`file_type_id`, `c`.`repository_id`, `c`.`thumb_filename`, `c`.`revision_number`, `c`.`comment`, `c`.`type_string`, `c`.`filesize`
  FROM `og_project_file_revisions` `c`;
 
+UPDATE fo_project_file_revisions r SET r.file_type_id = (SELECT f.id FROM fo_file_types f INNER JOIN og_file_types o ON f.extension=o.extension WHERE o.id=r.file_type_id) WHERE r.file_type_id>0;
 
 -- events
 
@@ -734,20 +741,64 @@ INSERT INTO `fo_linked_objects` (`rel_object_id`, `object_id`, `created_on`, `cr
 ON DUPLICATE KEY UPDATE `fo_linked_objects`.`rel_object_id`=`fo_linked_objects`.`rel_object_id`;
 DELETE FROM `fo_linked_objects` WHERE rel_object_id=null OR rel_object_id = 0 OR object_id=null OR object_id = 0;
 
--- read objects: No se migra
--- application logs: Por ahora no se migra
--- INSERT INTO `fo_application_logs` (`taken_by_id`, `rel_object_id`, `object_name`, `created_on`, `created_by_id`, `action`, `is_private`, `is_silent`, `log_data`)
---  SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`taken_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')), 
---  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager`)), 
---  `c`.`object_name`, `c`.`created_on`, `c`.`created_by_id`, `c`.`action`, `c`.`is_private`, `c`.`is_silent`, `c`.`log_data`
---  FROM `og_application_logs` `c`;
 
--- application read logs: Por ahora no se migra
--- INSERT INTO `fo_application_read_logs` (`taken_by_id`, `rel_object_id`, `created_on`, `created_by_id`, `action`)
---  SELECT (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`taken_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
---  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager`)), 
---  `c`.`created_on`, `c`.`created_by_id`, `c`.`action`
---  FROM `og_application_read_logs` `c`;
+-- APPLICATION LOGS ***********************************************************
+
+INSERT INTO `fo_application_logs` (`taken_by_id`, `rel_object_id`, `object_name`, `created_on`, `created_by_id`, `action`, `is_private`, `is_silent`, `log_data`)
+ SELECT
+  (SELECT `id` FROM `fo_objects` INNER JOIN fo_contacts k ON k.object_id=id WHERE k.user_type>0 AND `f1_id` = `c`.`taken_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')) as USERID,
+  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager` AND `ot`.`type`='content_object') limit 1) as OBJECTID,
+  `c`.`object_name`, `c`.`created_on`, `c`.`created_by_id`, `c`.`action`, `c`.`is_private`, `c`.`is_silent`, `c`.`log_data`
+ FROM `og_application_logs` `c`
+ WHERE exists (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager` AND `ot`.`type`='content_object')
+ON DUPLICATE KEY UPDATE fo_application_logs.taken_by_id=fo_application_logs.taken_by_id;
+DELETE FROM fo_application_logs WHERE rel_object_id=0 OR rel_object_id IS NULL OR taken_by_id=0 OR taken_by_id IS NULL;
+UPDATE fo_application_logs SET created_by_id = taken_by_id;
+
+UPDATE fo_application_logs SET
+  log_data = (SELECT `id` FROM `fo_objects` WHERE `f1_id` = SUBSTRING_INDEX(log_data, ':', -1) AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class` = SUBSTRING_INDEX(log_data, ':', 1) AND `ot`.`type`='content_object') limit 1)
+WHERE `action` IN ('link', 'unlink');
+
+UPDATE fo_application_logs SET
+  log_data = CONCAT('to:', (SELECT `id` FROM `fo_members` WHERE ws_id = SUBSTRING_INDEX(log_data, ':', -1)))
+WHERE `action` = 'copy';
+
+-- move actions are migrated in AsadoUpgradeScript
+
+-- ****************************************************************************
+
+
+-- READ OBJECTS
+INSERT INTO `fo_read_objects` (`rel_object_id`, `contact_id`, `is_read`, `created_on`)
+ SELECT
+  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager` AND `ot`.`type`='content_object') limit 1),
+  (SELECT `id` FROM `fo_objects` INNER JOIN fo_contacts k ON k.object_id=id WHERE k.user_type>0 AND `f1_id` = `c`.`user_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
+  `c`.`is_read`, `c`.`created_on`
+ FROM `og_read_objects` `c`
+ON DUPLICATE KEY UPDATE fo_read_objects.rel_object_id=fo_read_objects.rel_object_id;
+DELETE FROM fo_read_objects WHERE rel_object_id=0;
+
+
+-- APPLICATION READ LOGS
+INSERT INTO `fo_application_read_logs` (`taken_by_id`, `rel_object_id`, `created_on`, `created_by_id`, `action`)
+ SELECT
+  (SELECT `id` FROM `fo_objects` INNER JOIN fo_contacts k ON k.object_id=id WHERE k.user_type>0 AND `f1_id` = `c`.`taken_by_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`name`='contact')),
+  (SELECT `id` FROM `fo_objects` WHERE `f1_id` = `c`.`rel_object_id` AND `object_type_id` = (SELECT `ot`.`id` FROM `fo_object_types` `ot` WHERE `ot`.`handler_class`=`c`.`rel_object_manager` AND `ot`.`type`='content_object') limit 1),
+  `c`.`created_on`, `c`.`created_by_id`, `c`.`action`
+ FROM `og_application_read_logs` `c`
+ON DUPLICATE KEY UPDATE fo_application_read_logs.taken_by_id=fo_application_read_logs.taken_by_id;
+DELETE FROM fo_application_read_logs WHERE rel_object_id=0;
+UPDATE fo_application_read_logs SET created_by_id = taken_by_id;
+
+-- ****************************************************************************
+
+
+-- REMINDERS
+INSERT INTO fo_object_reminders (`object_id`, `contact_id`, `type`, `context`, `minutes_before`, `date`)
+ SELECT (SELECT o.id FROM fo_objects o WHERE o.f1_id=r.object_id AND o.object_type_id=(SELECT ot.id FROM fo_object_types ot WHERE ot.handler_class=r.object_manager)),
+  IF (r.user_id > 0, (SELECT `id` FROM `fo_objects` WHERE f1_id = r.user_id AND object_type_id = (SELECT ot.id FROM fo_object_types ot WHERE ot.name='contact') limit 1), 0),
+  r.`type`, r.`context`, r.`minutes_before`, r.`date`
+ FROM og_object_reminders r;
 
 
 -- file repo
@@ -1021,6 +1072,7 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
  	AND `c`.`user_type`!=0 
 	AND `ot`.`type` IN ('content_object', 'located', 'comment')
  	AND `m`.`dimension_id` IN (SELECT `id` FROM `fo_dimensions` WHERE `code` = 'feng_persons')
+ 	AND `c`.`object_id` = `m`.`object_id`
  ON DUPLICATE KEY UPDATE member_id=member_id;
 
 
@@ -1028,6 +1080,27 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
 UPDATE `fo_contact_config_options` 
  SET default_value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='root_dimensions';
+
+
+
+
+-- EMAIL CONFIG OPTIONS
+
+INSERT INTO `fo_config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+ SELECT o.category_name, o.name, o.value, o.config_handler_class, o.is_system, o.option_order, o.dev_comment FROM og_config_options o
+ WHERE o.category_name = 'mailing'
+ON DUPLICATE KEY UPDATE `fo_config_options`.`value`=`o`.`value`;
+
+INSERT INTO fo_contact_config_options (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+ SELECT o.category_name, o.name, o.default_value, o.config_handler_class, o.is_system, o.option_order, o.dev_comment FROM og_user_ws_config_options o
+ WHERE o.category_name = 'mails panel'
+ON DUPLICATE KEY UPDATE `fo_contact_config_options`.`default_value`=`o`.`default_value`;
+
+INSERT INTO `fo_contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
+ ('mails panel', 0, 0, 5)
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `fo_cron_events` (name, recursive, delay, is_system, enabled) VALUES ('check_mail', 1, 10, 0, 1) ON DUPLICATE KEY UPDATE name=name;
 
 
 -- personal workspaces

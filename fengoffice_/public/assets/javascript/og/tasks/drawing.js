@@ -503,7 +503,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 				}
 				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>");
 				if (milestone.completedById){
-					var user = this.getUser(milestone.completedById);
+					var user = this.getUser(milestone.completedById, true);
 					var tooltip = '';
 					if (user){
 						var time = new Date(milestone.completedOn * 1000);
@@ -715,7 +715,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	} else {
 		// FIXME: quick add task
 		//sb.append("<td class='add-subtask-link-container'><div class='add-subtask-link'  id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='og-task-expander _____ico-add ogTasksIcon' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'>"+lang('add sub task')+"</div></td>");
-		sb.append("<td style='width:20px;'>&nbsp;</td>");
+		sb.append("<td style='width:20px;min-width:20px;'>&nbsp;</td>");
 	}
 	
 
@@ -737,12 +737,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	var taskName = '';
 	//Draw the Assigned user
 	if (task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group_id)){
-		taskName += '<b>' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;';
+		taskName += '<span class="bold">' + og.clean(this.getUserCompanyName(task.assignedToId)) + '</span>:&nbsp;';
 	}
 	//Draw the task name
 	taskName += og.clean(task.title);
 	if (task.status > 0){
-		var user = this.getUser(task.completedById);
+		var user = this.getUser(task.completedById, true);
 		var tooltip = '';
 		if (user){
 			var time = new Date(task.completedOn * 1000);
