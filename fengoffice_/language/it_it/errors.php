@@ -82,4 +82,9 @@
 	'name must be unique' => 'Spiacente, il nome selezionato è già stato assegnato',
 	'success db backup' => 'Backup creato con successo',
 	'not implemented' => 'Non implementato',
+	'send mail error' => 'Errore durante l\'invio mail. Possibile misconfigurazione SMTP.',
+	'email address already exists' => 'Indirizzo email già in uso.',
+	'backup command failed' => 'Comando di backup fallito. Controlla la costante MYSQLDUMP_COMMAND.',
+	'return code' => 'Codice di ritorno: {0}',
+	'task filter criteria not recognised' => 'Criterio di filtro \'{0}\' non riconosciuto',
 ); ?>

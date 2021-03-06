@@ -22,20 +22,29 @@ if (! class_exists("Connection") ) {
 class Connection{
 
 	/**
+	 * Function that collects connection info
+	 * returns a Content list used for error handling (only on debugging mode)
+	 * 
+	 * @return ContentList
+	 */
+	private function getDebuggingContentList() {
+		$contents = new ContentList ( "Server", $this->host );
+		$contents->addContent ( "User", $this->user );
+		$contents->addContent ( "Password", $this->password );
+		$contents->addContent ( "Schema", $this->schema );
+		$contents->addContent ( "MySQL Error", mysql_error () );
+		return $contents;
+	}
+	
+	/**
 	 * Constructor.
 	 * Conecta con la base de datos
 	 */
 	public function __construct($host=null, $user=null, $pwd=null,$schema=null){
 		global $cnf;
-		//TODO: Sacar por los por defecto
-		/*$this->host 	= 'localhost';
-		$this->user 	= 'opengoo';
-		$this->password = 'opengoo';
-		$this->schema 	= 'excel';
-		*/
-		
+				
 		$this->host = $cnf['db']['url'] ;
-		$this->user = $cnf['db']['user'] ;
+		$this->user = $cnf['db']['user'];
 		$this->password = $cnf['db']['pass'];
 		$this->schema 	= $cnf['db']['name'];
 		
@@ -63,11 +72,27 @@ class Connection{
 	/**
 	 * Conecta con la base de datos
 	 */
-	public function connect(){
-		$this->enlace = mysql_connect($this->host, $this->user, $this->password);
-		if (!$this->enlace)
-    		die('Could not connect: ' . mysql_error());
-    	mysql_select_db($this->schema) or die('No pudo seleccionarse la BD.');
+	public function connect(){			
+		$this->enlace = @mysql_connect ( $this->host, $this->user, $this->password );
+		
+		if (! $this->enlace){
+			$error = new Error ( 101, "Could not connecto to Databse Server.");
+			if ($error->isDebugging ()) {				
+				$error->addContentList ( $this->getDebuggingContentList() );
+			}
+			throw $error;
+		}
+			
+		$result = mysql_select_db ( $this->schema );
+		
+		if (! $result) {
+			$error = new Error ( 102, "Can not find select Schema" );
+			if ($error->isDebugging ()) {				
+				$error->addContentList ( $this->getDebuggingContentList() );
+			}
+			throw $error;
+		}
+	
 	}
 
 	/**

@@ -3,12 +3,16 @@
 	font-size: 10pt;
 	font-weight: normal;
 	color: #000;
-	border: solid 1px #4B4B6F;
+	text-align:center;
+	border: 1px solid #9AC6FF ;
+	
+	/* border: solid 1px #4B4B6F; */
 	overflow: hidden;
-	background-color:#DFDFEA;
+	/* background-color:#DFDFEA; */
+	background-color: #D4E1F1 ;
 	/*background-image:url(./img/backgroundShadow.png);*/
 	/*background-image:url(./img/backgroundShadowLight.png);*/
-	background-image:url(./toolbar/img/backgroundShadowLight.png);
+	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
 }
 
 .ColumnSelected{
@@ -19,7 +23,7 @@
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#003F90;
-	background-image:url(./toolbar/img/backgroundShadowLight.png);
+	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
 }
 
 
@@ -31,7 +35,7 @@
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#FFC06F;
-	background-image:url(./toolbar/img/backgroundShadowLight.png);
+	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
 }
 
 .RowUnselected{
@@ -39,10 +43,13 @@
 	font-size: 10pt;
 	font-weight: normal;
 	color: #000;
-	border: solid 1px #4B4B6F;
+	border: 1px solid #9AC6FF ;
+	
+/*	border: solid 1px #4B4B6F; */
 	overflow: hidden;
-	background-color:#DFDFEA;
-	background-image:url(./toolbar/img/hBackgroundShadowLight.png);
+	background-color:#D4E1F1;
+	/* background-color:#DFDFEA; */
+	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
 }
 
 .RowSelected{
@@ -53,7 +60,7 @@
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#003F90;
-	background-image:url(./toolbar/img/hBackgroundShadowLight.png);
+	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
 }
 
 
@@ -65,7 +72,8 @@
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#FFC06F;
-	background-image:url(./toolbar/img/hBackgroundShadowLight.png);
+	
+	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
 }
 
 .CellSelected{
@@ -139,4 +147,16 @@
 	font-size: 10pt;
 	width: 150px;
 	height: 18px;
+}
+
+#logo{	
+	background-image: url(./img/gelsheet_logo-113x54-transparent.png);  
+	background-repeat: no-repeat ;
+	width: 107px;
+	height: 30px;
+	
+	top: 8px;
+	right:5px;
+	position: absolute ;
+	float: right ;		
 }

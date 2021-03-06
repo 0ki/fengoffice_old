@@ -14,30 +14,23 @@
 
 	class BookController{
 
-
 		public function __construct(){}
 
 		public function __destruct(){}
 
-
 		public function saveBook($book, $inputFormat = 'jsonss', $outputFormat = 'dbs'){
-
-		//echo "save book ".$inputFormat." ".$outputFormat."<hr>";
-			
 			$book = stripslashes($book);
-			//$book= '{"bookId":null,"bookName":"PPEPEPEPE","sheets":[{"sheetId":null,"cells":[{"dataRow":"0","dataColumn":"1","cellFormula":"PPP","fontStyleId":"0","layoutStyleId":"0"}]}],"fontStyles":[{"fontStyleId":"0","fontId":"1","fontBold":"0","fontItalic":"0","fontSize":"10","fontColor":"#000000","fontUnderline":"0"}]}';
-		//$book = "{bookId:null,bookName:'PPEPEPEPE', sheets:[{sheetId:null,cells:[{dataRow:'0',dataColumn:'1',cellFormula:'PPP',fontStyleId:'0,layoutStyleId:'0'}]}],fontStyles:[{fontStyleId:'0',fontId:'1',fontBold:'0',fontItalic:'0',fontSize:'10',fontColor:'#000000',fontUnderline:'0'}]}";
-			//echo $book;
 			$newBook = new Book();
 		
 			switch ($inputFormat) {
 				case 'json':
 					$json_obj = json_decode($book);
-					//var_dump($json_obj);
-					//var_dump($book);
 					if(!isset($json_obj)){
-						echo "{'Error':2,'Message':'Ups!!! Sorry, Book has not received properly to server. Be aware you are running an alpha version.','Data':0}";
-						exit();
+						$error =  new Error(401,"Ups!!! Sorry, Book has not received properly to server. Be aware you are running an alpha version.");
+						if($error->isDebugging()){
+							$error->addContentElement("Recieved data",$book);
+						}
+						throw $error;
 					}
 					$newBook->fromJson($json_obj);
 					break ;
@@ -50,8 +43,11 @@
 					break ;
 
 				default :
-					$json_obj = json_decode($book);
-					$newBook->fromJson($json_obj);
+					$error =  new Error(401,"Unsupported Format");
+					if($error->isDebugging()){
+						$error->addContentElement("Format",$inputFormat);
+					}
+					throw $error; 
 					break ;
 			}
 
@@ -92,24 +88,17 @@
 
 		/*returns the book. id cant be null*/
 		public function find ($id= null){
-
 			if ($id!= null){
-
 				$book= new Book();
 				$book->load($id);
-
 				return $book;
-
 			}
 			else{
-
 				return -1;
-
 			}
 		}
 
 		public function getBooks(){
-
 			$sql = "select * from ".table('books');
 			$result= mysql_query($sql);
 
@@ -119,12 +108,8 @@
 					'bookId'	=>	$row->bookId	,
 					'bookName'	=> 	$row->bookName
 				);
-
 			}
-
 			return $books;
-
-
 		}
 		
 		
@@ -196,10 +181,16 @@
 					@mysql_query("DELETE FROM `" . table('fontStyles') . "` WHERE `BookId` = $bookId") &&
 					@mysql_query("DELETE FROM `" . table('books') . "` WHERE `BookId` = $bookId") &&
 					@mysql_query("COMMIT")) {
-				echo "{'Error':0,'Message':'Book $bookId deleted succesfully','Data':{'BookId':".$bookId."}}";	
+//				echo "{'Error':0,'Message':'Book $bookId deleted succesfully','Data':{'BookId':".$bookId."}}";
+				throw new Success('Book deleted succesfully',"{'BookId':$bookId}");
 			} else {
-				$err = str_replace("'", '"', mysql_error());
-				echo "{'Error':1,'Message':'Error deleting book: $err','Data':{'BookId':$bookId}}";
+				$error = new Error(302,"Error deleting book.");
+				if($error->isDebugging()){
+					$err = str_replace("'", '"', mysql_error());
+					$error->addContentElement("BookId",$bookId);
+					$error->addContentElement("MySql Error",$err);
+				}
+				throw $error;					
 			}
 		}
 	}

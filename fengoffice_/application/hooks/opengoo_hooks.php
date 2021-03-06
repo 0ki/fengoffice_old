@@ -3,10 +3,11 @@ Hook::register("opengoo");
 
 /* List of available hooks:
  * - render_page_actions($object:(ProjectDataObject), &$unused)
+ * - render_object_properties($object:(ProjectDataObject), &$unused)
+ * 
  * - reminder_email($reminder:(ObjectReminder), &$count:(count of reminders sent))
  * - render_userbox_crumbs($unused, &$array:(array of assoc(url, text, target)))
  * - autoload_javascripts($unused, &$array:(array of javascripts to load))
- * 
  */
 
 function opengoo_reminder_email($reminder, &$ret) {

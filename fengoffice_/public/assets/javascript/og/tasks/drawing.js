@@ -295,8 +295,8 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		for(var i = 0; i < ids.length; i++)
 			if (!(displayCriteria.group_by == 'workspace' && group_id == ids[i]))
 				ids_to_show.push(ids[i]);
-
-		projectsString += '<span class="project-replace">' + ids_to_show.join[','] + '</span>&nbsp;';
+		if (ids_to_show.length >= 1)
+			projectsString += '<span class="project-replace">' + ids_to_show.join(',') + '</span>&nbsp;';
 		sb.append(projectsString);
 	}
 	

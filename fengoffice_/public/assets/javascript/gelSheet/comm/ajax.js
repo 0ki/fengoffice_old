@@ -39,13 +39,13 @@ function getServerData(callback,url,params){
 	dataRequest.onreadystatechange = function(){
 		if (dataRequest.readyState == 4){
 			if (dataRequest.status == 200){
-			    //try{
+			    try{
 				    var data = eval("("+dataRequest.responseText+")");
 				    callback(data);
 				    //application.loadSheet(data);
-				/*}catch(e){
-					alert("ajax.js:getServerData =>"+e);
-				}*/
+				}catch(e){
+					alert("ajax.js:getServerData =>"+e.toSource());
+				}
 
 			}
     	}

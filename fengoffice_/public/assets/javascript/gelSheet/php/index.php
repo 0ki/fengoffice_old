@@ -24,6 +24,7 @@
 	function __autoload($classname){
 		global $cnf ;
 		if(isset($cnf['path'][$classname])){
+//			echo $cnf['site']['path']."/". $cnf['path'][$classname]."<br>";
 			include_once ($cnf['site']['path']."/". $cnf['path'][$classname]);
 		}
 		else {
@@ -31,6 +32,21 @@
 		}
 	}
 
+	/**
+	 * Callback Function that handles PHP Exceptions and 
+	 * Filter user defined	 
+	 * @param Exception $ex
+	 * @return boolean
+	 */
+	function exceptionHandler($ex) {
+		if (is_subclass_of ( $ex, "Message" )) {
+			return false;
+		}
+	}
+	
+	//Set the Execption Handler to  
+	set_exception_handler ( "exceptionHandler" );
+	
 	/**
 	 * Takes param from REQUEST..
 	 * and makes an array..
@@ -54,6 +70,14 @@
 	}
 
 	$connection  = new Connection();
+
+	if(!isset($_REQUEST['c'])){
+		$err = new Error(201,"Bad Command Request");
+		if($err->isDebugging())
+			$err->addContentElement("Param Required","Controller is needed, c=ControllerName should be passed");
+		throw $err;
+	}
+	
 	$controller = $_REQUEST['c']."Controller";
 	$method = $_REQUEST['m'];
 	$params = splitParameters("param");

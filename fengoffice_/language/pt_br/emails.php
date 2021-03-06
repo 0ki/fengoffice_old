@@ -89,7 +89,7 @@
 	'view timeslot' => 'Ver contagem de tempo',
 	'view user' => 'Ver usuário',
 	'new notification task' => 'Nova tarefa \'{0}\'',
-	'new notification task desc' => 'Uma nova tarefa intitulada "(0) \', foi acrescentada por (1).',
+	'new notification task desc' => 'Uma nova tarefa intitulada "{0} \', foi acrescentada por {1}.',
 	'new notification event' => 'Novo evento \'{0}\'',
 	'new notification event desc' => 'Um novo evento intitulado \'{0}\' foi acrescentado por {1}.',
 	'new notification company' => 'Nova empresa \'{0}\'',

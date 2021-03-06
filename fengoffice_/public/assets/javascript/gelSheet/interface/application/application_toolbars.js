@@ -17,7 +17,7 @@ function MenuBar(){
 	var item = new CommandButton("Save As","./toolbar/img/icons/saveAs-32x32.png" ,"Save As",window.saveBookConfirm);
 	var save = new CommandButton("Save","./toolbar/img/icons/save-32x32.png" ,"Save Book",window.editBook);
 
-	var item2 = new CommandButton("Load","./toolbar/img/icons/open-32x32.png" ,"Open Book",window.loadBookWindow);
+	var item2 = new CommandButton("Load","./toolbar/img/icons/open-32x32.png" ,"Open Book",loadBookWindow);
 	var item3 = new CommandButton("New","./toolbar/img/icons/new-32x32.png" ,"New Book",window.newBookConfirm);
 	var item4 = new CommandButton("ExportToPDF","./toolbar/img/icons/PDF-32x32.png" ,"Export to PDF",window.exportPDF);
 	var item5 = new CommandButton("ExportToXLS","./toolbar/img/icons/XLS-32x32.png" ,"Export to XLS",window.exportXLS);
@@ -29,8 +29,8 @@ function MenuBar(){
 	//Icons from:www.iconarchive.com
 	self.appendChild(save);
 	self.appendChild(item);
-	/*self.appendChild(item2);
-	self.appendChild(item3);*/
+	self.appendChild(item2);
+	self.appendChild(item3);
 	self.appendChild(separator1);
 	self.appendChild(item4);
 	self.appendChild(item5);

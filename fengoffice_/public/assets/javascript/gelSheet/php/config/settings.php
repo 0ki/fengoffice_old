@@ -12,11 +12,12 @@
  */
 
 	global $cnf ;
-	global $debug ;
+	global $debugging;
 
 	include_once "../../../../../config/config.php";
 
-	$debug =true;
+	$debugging = true; //Set true iif on debugging mode
+	
 	# # # # # INSTALLATION DEPENDENT VARIABLES # # # # # #
 	$cnf['db']['url'] 	 = DB_HOST;
 	$cnf['db']['name'] 	 = DB_NAME;

@@ -56,7 +56,8 @@ function scSetCell(sheet,cell){
 }
 
 function scLoadSheet(sheet, book){
-	//alert(book.toSource());
+//	var book = response.data;
+//	alert(book.toSource());
 	//application.activeBook.setId(book.id);
 	application.setBookName(book.name);
 	var values = book.sheets[0].cells;

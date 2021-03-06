@@ -99,7 +99,7 @@ function createOpenFileDialog() {
         applyTo     : 'loadBook',
         layout      : 'fit',
         width       : 500,
-        height      : 500,
+        height      : 400,
         closeAction :'hide',
         plain       : true,
         modal 		: true, // por que no anda?
@@ -112,7 +112,7 @@ function createOpenFileDialog() {
         		if (bookid == undefined) 
         			Ext.MessageBox.alert("Status","You must select a book") ;
         		else {
-        			loadData(bookid);
+        			CommManager.loadBook(bookid);
 	        		ct.hide();
 	                win.hide();
         		}    

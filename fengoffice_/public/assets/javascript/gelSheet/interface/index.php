@@ -17,8 +17,8 @@
     <script type="text/javascript" src="../../extjs/ext-all.js"></script>
     
     <!--******************* Server Side Scripts *********************-->
-     <!--script type="text/javascript" src="../comm/fonts.js.php"></script-->
-	 <script type="text/javascript" src="../interface/fonts.js"></script>
+	<script type="text/javascript" src="../interface/fonts.js"></script>
+	<script type="text/javascript" src="../interface/toolbar/ext_tooolbar/combos/functions.js"></script>
 	 
     <!--******************* Auxiliary Functions *********************-->
 	<script type="text/javascript" src="./debug/debugger.js"></script>
@@ -35,9 +35,16 @@
    	
    	<!--******************* Comunication Classes *********************-->
     <script type="text/javascript" src="../comm/ajax.js"></script>
+    <script type="text/javascript" src="../comm/comm_manager.js"></script>
     
    	<!--******************* Interface Classes *********************-->
-   	<script type="text/javascript" src="toolbar/toolbar.js"></script>
+   	
+   	<script type="text/javascript" src="toolbar/ext_tooolbar/toolbar_callback.js"></script>
+   	<script type="text/javascript" src="toolbar/ext_tooolbar/toolbar.js"></script>
+   	
+   	
+   	
+   	
    	<script type="text/javascript" src="./application/openFile_dialogBox.js"></script>
    	<script type="text/javascript" src="./application/colorPalette.js"></script>
    	
@@ -91,7 +98,7 @@
 <?php if (isset($_GET['id'])) { ?>
 			window.ogID = <?php echo $_GET['id'] ?>;
 <?php } ?>
-   			application.model.refresh();
+//   			application.model.refresh();
 
         	
         	/*
@@ -125,7 +132,14 @@
         }
     </script>
 </head>
-<body onload="load();" >
-
+<body id="body" onload="load();" >
+  <div id="logo" style="z-index: 1001" ></div>
+  <div id="west"></div>
+  <div id="north">
+  </div>
+  <div id="center"></div>
+  <div id="east" style="width:200px;height:200px;overflow:hidden;">
+  </div>
+  <div id="south"></div>
 </body>
 </html>

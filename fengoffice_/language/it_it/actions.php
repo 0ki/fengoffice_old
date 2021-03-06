@@ -120,7 +120,7 @@
 	'edit folder' => 'Modifica cartella',
 	'delete folder' => 'Cancella cartella',
 	'edit file revisions' => 'Modifica revisione',
-	'version' => 'ver',
+	'version' => 'versione',
 	'last modification' => 'Ultima modifica',
 	'link object' => 'Collega Oggetto',
 	'link objects' => 'Collega Oggetti',
@@ -146,4 +146,5 @@
 	'extract' => 'Estrai',
 	'add files to zip' => 'Aggiungi file allo zip',
 	'copy file' => 'Copia questo file',
+	'open weblink' => 'Apri collegamento web',
 ); ?>

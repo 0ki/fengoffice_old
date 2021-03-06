@@ -2,7 +2,7 @@
 	$genid = gen_id();
 	$object = $task;
 	if ($task->isNew()) {
-		$project = active_or_personal_project();
+		$project = Projects::findById(array_var($task_data, 'project_id'));
 	} else {
 		$project = $task->getProject();
 	}
@@ -79,7 +79,7 @@
     	
     	<div style="padding-top:4px">
     		<?php echo label_tag(lang('parent task'), $genid . 'addTaskTaskList') ?>
-			<?php echo select_task_list('task[parent_id]', active_or_personal_project(), array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
+			<?php echo select_task_list('task[parent_id]', $project, array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
     	</div>
     	
     	<div style="padding-top:4px">	
@@ -247,7 +247,6 @@
 </form>
 
 <script type="text/javascript">
-
 	var wsSelector = Ext.get('<?php echo $genid ?>wsSel');
 	var prevWsValue = -1;
 	var assigned_user = '<?php echo array_var($task_data, 'assigned_to', 0) ?>';
@@ -316,7 +315,10 @@
 		assignCombo.on('select', og.onAssignToComboSelect);
 
 		assignedto = document.getElementById('<?php echo $genid ?>taskFormAssignedTo');
-		if (assignedto) assignedto.value = assigned_user;
+		if (assignedto){
+			assignedto.value = assigned_user;
+			og.addTaskUserChanged('<?php echo $genid ?>', '<?php echo logged_user()->getId() ?>');
+		}
 	}
 	
 	og.onAssignToComboSelect = function() {

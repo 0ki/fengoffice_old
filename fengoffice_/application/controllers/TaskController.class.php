@@ -351,17 +351,16 @@ class TaskController extends ApplicationController {
 	}
 	
 	function new_list_tasks(){
-			
 		// get query parameters, save user preferences if necessary
-		$status = array_var($_GET,'status');
-		if (is_null($status)) {
+		$status = array_var($_GET,'status',null);
+		if (is_null($status) || $status == '') {
 			$status = user_config_option('task panel status',2);
 		} else
 			if (user_config_option('task panel status') != $status)
 				set_user_config_option('task panel status', $status, logged_user()->getId());
 				
 		$filter = array_var($_GET,'filter');
-		if (is_null($filter)) {
+		if (is_null($filter) || $filter == '') {
 			$filter = user_config_option('task panel filter','assigned_to');
 		} else
 			if (user_config_option('task panel filter') != $filter)
@@ -369,13 +368,12 @@ class TaskController extends ApplicationController {
 		
 		if ($filter != 'no_filter'){
 			$filter_value = array_var($_GET,'fval');
-			if (is_null($filter_value)) {
+			if (is_null($filter_value) || $filter_value == '') {
 				$filter_value = user_config_option('task panel filter value',logged_user()->getCompanyId() . ':' . logged_user()->getId());
 			} else
 				if (user_config_option('task panel filter value') != $filter_value)
 					set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
 		}
-		
 		$isJson = array_var($_GET,'isJson',false);
 		if ($isJson)
 			ajx_current("empty");
@@ -637,7 +635,7 @@ class TaskController extends ApplicationController {
 		if(!is_array($task_data)) {
 			$task_data = array(
 				'milestone_id' => array_var($_POST, 'milestone_id',0),
-				'project_id' => array_var($_POST, 'project_id',0),
+				'project_id' => array_var($_POST, 'project_id',active_or_personal_project()->getId()),
 				'title' => array_var($_POST, 'title', ''),
 				'assigned_to' => array_var($_POST, 'assigned_to', '0:0'),
 				'parent_id' => array_var($_POST, 'parent_id', 0),

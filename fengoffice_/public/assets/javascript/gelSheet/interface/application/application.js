@@ -53,27 +53,73 @@ function Application(container){
 		//this.NameSpace = new NameSpace();
 		//Define Application (Window) Sections
     	this.sections = new SectionHandler(container);
-
+		
+		this.CommManager = new CommHandler();
+		
     	//Header Section Definition
-    	this.header = new Section(0,0,10,100);
-    	this.sections.addSection(header,false);
+    	//PEPE - Comentado porque metia un div de mas 
+    	//this.header = new Section(0,0,10,100);
+    	//this.sections.addSection(header,false);
 
-		this.formulaBar = new FormulaBar();
-		loadToolbars(self,this.header);
+		//this.formulaBar = new FormulaBar();
+		//loadToolbars(self,this.header);
 
-		header.appendChild(this.formulaBar);
-
+		//header.appendChild(this.formulaBar);
+		
 
     	//Data Section Definition
-    	this.data = new Section(10,0,90,100);
-    	this.sections.addSection(data,true); //True = forces update
+//    	this.data = new Section(10,0,90,100);
+		createToolbars();
+		
+		var dataSection = new Ext.Viewport({
+		    layout: 'border',
+		    renderTo:'body',
+		    items: [{
+		        region: 'north',
+		        el:'north',
+		        autoHeight: true,
+		        border: false,
+		        margins: '0 0 5 0'
+		    }, {
+		        region: 'west',
+		        el:'west',
+		        hidden:true,
+		        collapsible: true,
+		        title: 'Navigation'
+		        
+		    }, {
+		        region: 'center',
+		        el:'center',
+		        xtype: 'tabpanel',
+		        items: {
+		            title: 'Default Tab',
+		            html: 'The first tab\'s content. Others may be added dynamically'
+		        }
+		    }, {
+		        region: 'south',
+		        el:'south',
+		        hidden:true,
+		        title: 'Information',
+		        collapsible: true,
+		        html: 'Information goes here',
+		        split: true,
+		        height: 100,
+		        minHeight: 100
+		    }]
+		});
 
-    	this.grid = new Grid(this.data.offsetWidth,this.data.offsetHeight);
-    	data.appendChild(this.grid);
+		
+		var center = document.getElementById("center");
+		this.grid = new Grid(center.offsetWidth,center.offsetHeight);
+    	center.appendChild(this.grid);
     	this.grid.inicialize();
+//    	dataSection.on('afterlayout',function(e){alert(e);});
+//    	this.sections.addSection(data,true); //True = forces update
+
+    	
 
 
-		//Model Definition
+//		Model Definition
 		this.model = new GridModel(this.grid);
 		this.model.setDataModel(this.activeSheet);
 		this.model.refresh();
@@ -149,11 +195,17 @@ function Application(container){
     }
 
 
-    self.loadSheet = function(data){
-    	scLoadSheet(this.activeSheet, data);
+    self.loadSheet = function(response){
+    	scLoadSheet(this.activeSheet, response.data);
     	//this.model.setDataModel(this.activeSheet);
     	this.model.refresh();
 		//this.grid.update(); //Update Grid contents
+    }
+    
+    self.bookLoaded = function(data){
+    	scLoadSheet(this.activeSheet, data);
+    	//this.model.setDataModel(this.activeSheet);
+    	this.model.refresh();
     }
 
 

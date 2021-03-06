@@ -25,8 +25,12 @@ class SpreadsheetController {
 
 		$bookController = new BookController();
 		$book = $bookController->find($bookId);
-		if ($book != -1) 
-			echo $book->toJson();
+		
+		if ($book != -1)
+			$message = new Success(null,$book->toJson());
+		else 
+			throw new Error(301,"Book is not found.");
+//			echo $book->toJson();
 			//echo '<pre>'.print_r($book,1).'</pre>';
 	}
 	

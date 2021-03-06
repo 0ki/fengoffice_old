@@ -41,7 +41,7 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.2.1');
-		$this->setVersionTo('1.3-rc');
+		$this->setVersionTo('1.3-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -152,25 +152,16 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 		@unlink('templates/db_migration/bondiola.php');
 		@unlink('templates/db_migration/chinchulin.php');
 		@unlink('templates/db_migration/matambrito.php');
+		@unlink('scripts/OnionUpgradeScript.class.php');
+		@unlink('scripts/PapayaUpgradeScript.class.php');
 		@unlink(INSTALLATION_PATH . '/language/es_uy.php');
 		@unlink_dir(INSTALLATION_PATH . '/language/es_uy');
 		
-		// write cookie_path config option
-		if (substr(ROOT_URL, 0, 1) == "/") {
-			$cookiepath = ROOT_URL;
-		} else if (substr(ROOT_URL, 0, 4) == "http") {
-			$offset = strpos(ROOT_URL, "//") + 2;
-			$start = strpos(ROOT_URL, "/", $offset);
-			$cookiepath = substr(ROOT_URL, $start);
-		} else {
-			$cookiepath = "/";
-		}
+		$cookiepath = "/";
 		$configfile = @file_get_contents(INSTALLATION_PATH . '/config/config.php');
 		if ($configfile) {
 			$configfile = str_replace("es_uy", "es_la", $configfile);
-			if (strpos($configfile, "COOKIE_PATH") <= 0) {
-				$configfile = str_replace("return true;", "define('COOKIE_PATH', '$cookiepath');\n  return true;", $configfile);
-			}
+			$configfile = preg_replace("/[^\\(]*COOKIE_PATH[^,]*,[^\\)]*/", "'COOKIE_PATH', '/'", $configfile);
 			@file_put_contents(INSTALLATION_PATH . '/config/config.php', $configfile);
 		}
 

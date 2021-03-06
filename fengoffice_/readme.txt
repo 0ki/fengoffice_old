@@ -1,6 +1,11 @@
 
-    About OpenGoo 1.3-rc 
-    ====================
+    About OpenGoo 1.3-rc2
+    =====================
+    
+    This version corrects a problem with cookie management introduced in 1.3 RC,
+    that caused that many people couldn't login or logout from the system.
+    
+    Besides that it only updates some translations.
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +66,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.3-rc - http://www.opengoo.org/
+    2. Download OpenGoo 1.3-rc2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.3-rc.
+    	from your current version to 1.3-rc2.
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +91,11 @@
 
 	Changelog
 	=========
+
+	Since 1.3-rc
+	------------
+	- bugfix: Rollbacked change in cookie handling because it caused too many problems.
+	- langs: Updated translations: it_it, ru_ru, pt_br, zh_cn, zh_tw.
 
 	Since 1.3-beta
 	--------------

@@ -110,7 +110,13 @@
         return false;
       } // if
       
-      $this->xml_object = @simplexml_load_file($this->getFeedUrl());
+      try {
+      	$this->xml_object = @simplexml_load_file($this->getFeedUrl());
+      } catch (Error $e) {
+      	if (Env::isDebugging()) {
+      		Logger::log($e->getMessage());
+      	}
+      }
       if(!($this->xml_object instanceof SimpleXMLElement)) {
         $this->xml_object = null;
         return false;

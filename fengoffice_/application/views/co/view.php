@@ -237,7 +237,9 @@
 		<?php echo render_custom_properties($object) ?>
 	</div>
 	<?php } ?>
-	
+	<?php 
+	Hook::fire("render_object_properties", $object, $ret = 0);
+	?>
 		</td>
 	</tr>
 	

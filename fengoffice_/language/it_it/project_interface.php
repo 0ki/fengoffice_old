@@ -213,4 +213,6 @@
 	'cannot change parent workspace description' => 'Questo progetto può essere figlio di un progetto a cui non hai accesso.',
 	'copy of file' => 'Copia di {0}',
 	'add subscribers desc' => 'Sottoscrivi questo oggetto per le persone selezionate. I Sottoscrittori riceveranno notifica email delle relative modifiche ',
+	'edit revision comment' => 'Modifica il commento alla revisione',
+	'add custom property' => 'Aggiungi una proprietà personalizzata',
 ); ?>

@@ -28,6 +28,15 @@
 	$cnf['path']['BookController']			= "controller/BookController.class.php";
 	$cnf['path']['ExportController']		= "controller/ExportController.class.php";
 
+	/*************** COMUNICATION PATHS *****************/
+	$cnf['path']['MessageHandler']	= "comm/MessageHandler.php";
+	$cnf['path']['Message']	= "comm/Message.php";
+	$cnf['path']['Error']	= "comm/Message.php";
+	$cnf['path']['Warning']	= "comm/Message.php";
+	$cnf['path']['Success']	= "comm/Message.php";	
+	$cnf['path']['Notice']	= "comm/Message.php";	
+	$cnf['path']['ContentList']	= "comm/Message.php";
+	
 	/*************** EXPORT LIBRARY PATHS *****************/
 	$cnf['path']['PHPOds']	= "export/PHPOds/PHPOds.php";
 	$cnf['path']['PHPExcel']= "export/PHPExcel/Classes/PHPExcel.php";
