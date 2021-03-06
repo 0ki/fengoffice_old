@@ -367,7 +367,7 @@ class Reports extends BaseReports {
 							if($ot->getHandlerClass() == 'Contacts'){
 								if($managerInstance instanceof Contacts){
 									$conta = Contacts::findOne(array("conditions" => "object_id = ".$object->getId()));
-									if ($field = "email_address"){									
+									if ($field == "email_address"){									
 										$row_values[$field] = $conta->getEmailAddress();
 									}
 									

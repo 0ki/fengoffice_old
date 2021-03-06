@@ -182,8 +182,8 @@
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
 	'user config option desc access_member_after_add_remember' => 'Habilitar esta opción le permite saltear la pregunta de que hacer luego de crear un espacio de trabajo, cliente, etc.',
 
-	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
-	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
+	'config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
+	'config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
 		
 		
     'config option name days_on_trash' => 'Días en la papelera',

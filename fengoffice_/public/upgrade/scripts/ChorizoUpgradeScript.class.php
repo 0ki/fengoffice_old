@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.1
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.1.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3.1');
+		$this->setVersionTo('2.3.1.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -164,21 +164,36 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 					update ".$t_prefix."contacts set personal_member_id=0 where personal_member_id is null;
 					UPDATE `".$t_prefix."config_options` SET `is_system` = '1' WHERE `name`='viewUsersChecked';
 
-					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
-					VALUES ('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others')ON DUPLICATE KEY UPDATE name=name;
-							
-					ALTER TABLE ".$t_prefix."event_invitations ADD synced int(1) DEFAULT '0';
-					ALTER TABLE ".$t_prefix."event_invitations ADD  special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
 				";
+
+				if (!$this->checkColumnExists($t_prefix."event_invitations", "synced", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE ".$t_prefix."event_invitations ADD synced int(1) DEFAULT '0';
+					";
+				}
+				if (!$this->checkColumnExists($t_prefix."event_invitations", "special_id", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE ".$t_prefix."event_invitations ADD special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';
+					";
+				}
 			}
 			
 			if (version_compare($installed_version, '2.3.1-rc') < 0) {
 				$upgrade_script .= "
-					update ".$t_prefix."config_options set is_system=1 where name='exchange_compatible';
+					UPDATE `".$t_prefix."config_options` SET `is_system`=1 WHERE `name`='exchange_compatible';
+					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+						VALUES ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list')
+					ON DUPLICATE KEY UPDATE name=name;
+				";
+			}
+			if (version_compare($installed_version, '2.3.1.1') < 0) {
+				$upgrade_script .= "
+					DELETE FROM `".$t_prefix."contact_config_option_values` WHERE `option_id` = ( SELECT `id` FROM `".$t_prefix."contact_config_options` WHERE `name` = 'updateOnLinkedObjects');
+					DELETE FROM `".$t_prefix."contact_config_options` WHERE `name` = 'updateOnLinkedObjects';
 							
-				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
-				VALUES ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list')
-				ON DUPLICATE KEY UPDATE name=name;
+					INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+					VALUES ('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others')
+					ON DUPLICATE KEY UPDATE name=name;
 				";
 			}
 		}

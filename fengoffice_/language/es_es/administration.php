@@ -478,8 +478,8 @@
 	'user config option name reminders_tasks' =>'Recordatorio de tareas',
     'user config option desc reminders_tasks' =>'Valor por defecto para los recordatorios de tareas',
 		
-	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
-	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
+	'config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
+	'config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
 		 	
 	'user config option name add_event_autoreminder' =>'Crear recordatorios automáticamente',
     'user config option desc add_event_autoreminder' =>'Habilite esta opción si desea crear recordatorios automáticamente si edita un evento que no tiene más recordatorios',

@@ -239,8 +239,8 @@
     'user ws config option desc displayed events amount' => 'The number of events per day that are shown in the month view',
   
 	'user config option name access_member_after_add' => 'Access new member after its creation.',
-	'user config option desc access_member_after_add' => 'If you enable this option, after creating a workspace, client, etc; it will be selected in the left panel (this option only works if "Remeber to access member or not when member is created" is enabled).',
-	'user config option name access_member_after_add_remember' => 'Remeber to access member or not when member is created',
+	'user config option desc access_member_after_add' => 'If you enable this option, after creating a workspace, client, etc; it will be selected in the left panel (this option only works if "Remember to access member or not when member is created" is enabled).',
+	'user config option name access_member_after_add_remember' => 'Remember to access member or not when member is created',
 	'user config option desc access_member_after_add_remember' => 'Enabling this option allows you to skip the question about what to do after creating a workspace, client, etc.',
 
     'user config option name show_object_direct_url'=> 'Show direct object urls',
@@ -249,8 +249,8 @@
     'user config option name reminders_events' =>'Event Reminders',
     'user config option desc reminders_events' =>'Default value for event reminders',
   		
-  	'user config option name updateOnLinkedObjects' => 'Update objects when linking others:',
-  	'user config option desc updateOnLinkedObjects' => 'If this option is enabled, whenever you link or unlink an object with another, both their Updated On fields will be modified.',
+  	'config option name updateOnLinkedObjects' => 'Update objects when linking others:',
+  	'config option desc updateOnLinkedObjects' => 'If this option is enabled, whenever you link or unlink an object with another, both their Updated On fields will be modified.',
   		 
   
   	'user config option name reminders_tasks' =>'Task Reminders',

@@ -21,13 +21,16 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  	('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
  	('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  	('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
- 	('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
  	('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
 	('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL)
 ON DUPLICATE KEY UPDATE name=name;
 
+DELETE FROM `<?php echo $table_prefix ?>contact_config_option_values` WHERE `option_id` = ( SELECT `id` FROM `<?php echo $table_prefix ?>contact_config_options` WHERE `name` = 'updateOnLinkedObjects');
+DELETE FROM `<?php echo $table_prefix ?>contact_config_options` WHERE `name` = 'updateOnLinkedObjects';
+
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`,`name`,`value`,`config_handler_class`,`is_system`) VALUES
 	('general', 'can_assign_tasks_to_companies', '1', 'BoolConfigHandler', '0'),
+	('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0'),
 	('general', 'use_object_properties', '0', 'BoolConfigHandler', '0')
 ON DUPLICATE KEY UPDATE name=name;
 UPDATE `<?php echo $table_prefix ?>config_options` SET `value` = if ((SELECT count(*) FROM <?php echo $table_prefix ?>object_properties)>0, 1, 0) WHERE `name`='use_object_properties';
@@ -50,7 +53,7 @@ INSERT INTO <?php echo $table_prefix ?>searchable_objects (rel_object_id, column
 ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
 
 ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD synced int(1) DEFAULT '0';
-ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
+ALTER TABLE  <?php echo $table_prefix ?>event_invitations ADD special_id text <?php echo $default_collation ?> NOT NULL DEFAULT '';
 
 update <?php echo $table_prefix ?>contacts set company_id=0 where company_id is null;
 update <?php echo $table_prefix ?>contacts set display_name='' where display_name is null;

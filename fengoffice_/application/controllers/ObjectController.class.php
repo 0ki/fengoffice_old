@@ -496,7 +496,7 @@ class ObjectController extends ApplicationController {
 				} // if
 				try {
 					$object->linkObject($rel_object);
-					if (user_config_option('updateOnLinkedObjects')){
+					if (config_option('updateOnLinkedObjects')){
 						$object->save();
 						$rel_object->save();
 					}
@@ -634,7 +634,7 @@ class ObjectController extends ApplicationController {
 				} // if
 				
 				$linked_object->delete();
-				if (user_config_option('updateOnLinkedObjects')){
+				if (config_option('updateOnLinkedObjects')){
 					$object1->save();
 					$object2->save();
 				}
@@ -1027,6 +1027,10 @@ class ObjectController extends ApplicationController {
 			 (SELECT t.assigned_to_contact_id FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = ".logged_user()->getId().",
 			 true)";
 		}
+		
+		// don't include tasks which have is_template=1
+		$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
+			 (SELECT t.is_template FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = 0, true)";
 		
 		if($object_ids_filter == "" && $show_all_linked_objects){
 			$pagination = array();
