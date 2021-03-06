@@ -166,11 +166,13 @@ while (!feof($fp))
 				break;
 				
 				case 'TZOFFSETFROM':
-				$cal[0]['tzoffsetfrom'] = $data;
+				if (!isset($cal[0]['tzoffsetfrom']))
+					$cal[0]['tzoffsetfrom'] = $data;
 				break;
 				
 				case 'TZOFFSETTO':
-				$cal[0]['tzoffsetto'] = $data;
+				if (!isset($cal[0]['tzoffsetto']))
+					$cal[0]['tzoffsetto'] = $data;
 				break;
 				
 				// Calendar ID

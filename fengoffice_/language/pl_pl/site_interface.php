@@ -383,7 +383,7 @@
 	'user subscribed to object' => 'Subskrybujesz ten obiekt.',
 	'user not subscribed to object' => 'Nie subskrybujesz tego obiektu.',
 	'tasks updated' => 'Zadanie(a) zaktualizowane',
-	'too many tasks to display' => 'Zbyt wiele zadań do wyświetlenia, wyświetlono 500 najnowszych. Aby pozbyć się tego ostrzeżenia przefiltruj zadania według projektu, tagów, filtru zadań lub statusu.',
+	'too many tasks to display' => 'Zbyt wiele zadań do wyświetlenia, wyświetlono {0} najnowszych. Aby pozbyć się tego ostrzeżenia przefiltruj zadania według projektu, tagów, filtru zadań lub statusu.',
 	'show image in new page' => 'Pokaż obraz na nowej stronie',
 	'no tasks to display' => 'Brak zadań do wyświetlenia',
 	'do complete' => 'Zakończ',

@@ -475,7 +475,7 @@
   'user not subscribed to object' => '你还没有订阅本对象。',
   
   'tasks updated' => '任务已成功更新',
-  'too many tasks to display' => '有太多的任务需要被显示，仅有最近的500条任务可以被显示，为了正确显示并移除本警告，请过滤任务通过工作区、标签、任务过滤器或者状态。',
+  'too many tasks to display' => '有太多的任务需要被显示，仅有最近的{0}条任务可以被显示，为了正确显示并移除本警告，请过滤任务通过工作区、标签、任务过滤器或者状态。',
   
   
   'show image in new page' => '在新页里显示图片',

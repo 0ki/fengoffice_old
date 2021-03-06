@@ -24,7 +24,14 @@
 		} else {
 			add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $email->getUnarchiveUrl() ."');", 'ico-unarchive-obj', null, null, true);
 		}
+		
+		if ($email->getState() == 0 || $email->getState() == 5) {
+			add_page_action(lang('report as spam'), get_url('mail', 'change_email_folder', array("id" => $email->getId(), "newf" => 4)), 'ico-delete');
+		} else if ($email->getState() == 4) {
+			add_page_action(lang('not spam'), get_url('mail', 'change_email_folder', array("id" => $email->getId(), "newf" => 0)), 'ico-unclassify');
+		}
 	}
+	add_page_action(lang('mark as unread'), get_url('mail', 'mark_as_unread', array('id' => $email->getId())), 'ico-mark-as-unread');
 	if (count($email->getWorkspaces())) {
 		add_page_action(lang('create task from email'), get_url('task', 'add_task', array('from_email' => $email->getId())), 'ico-task', null, null, true);
 	}
@@ -187,10 +194,12 @@
 			}
 			//$html_content = convert_to_links($html_content); // commented because it can break HTML (e.g. if an URL or email is found on the title of an element)
 			// links must open in a new tab or window
-			$html_content = str_replace('<a ', '<a target="_blank" ', $html_content);
+			$html_content = preg_replace('/<a\s/', '<a target="_blank" ', $html_content);
 			
 			$html_content = str_replace("<head>", '<head><link rel="stylesheet" type="text/css" href="'.ROOT_URL.'/public/assets/javascript/ckeditor/contents.css" />', $html_content);
 			$html_content = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\n" . $html_content;
+			
+			if (!is_dir(ROOT.'/tmp')) mkdir(ROOT.'/tmp');
 			
 			// HIDE QUOTED TEXT AND IMAGES IF APPLICABLE
 			$tmpfile = $email->getAccountId() . '_' . logged_user()->getId() . '_temp_mail_content.html';

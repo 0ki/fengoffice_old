@@ -451,7 +451,7 @@ function user_has_config_option($option_name, $user_id = 0, $workspace_id = 0) {
 	} else {
 		return false;
 	}
-	$option = UserWsConfigOptions::getByName($option);
+	$option = UserWsConfigOptions::getByName($option_name);
 	if (!$option instanceof UserWsConfigOption) return false;
 	$value = UserWsConfigOptionValues::findById(array(
 		'option_id' => $option->getId(),
@@ -837,5 +837,39 @@ function utf8_safe($text) {
 	$safe = @iconv("UTF-8", "UTF-8//IGNORE", $text);
 	return preg_replace('/[\xF0-\xF4][\x80-\xBF][\x80-\xBF][\x80-\xBF]/', "", $safe);
 }
+
+function clean_csv_addresses($csv) {
+		$addrs = explode(",", $csv);
+		$parsed = array();
+		$pending = false;
+		foreach ($addrs as $addr) {
+			$addr = trim($addr);
+			if ($pending) {
+				$addr = $pending . ", " . $addr;
+				$pending = false;
+			}
+			if ($addr == "") continue;
+			if ($addr[0] == '"') {
+				$pos = strpos($addr, '"', 1);
+				if ($pos !== false) {
+					// valid address
+				} else {
+					// name contained a comma so it was split
+					$pending = $addr;
+					continue;
+				}
+				if (strpos($addr, '<') === false) {
+					// invalid address. has quoted name part but no email address. leave it as is just in case
+					$parsed[] = $addr;
+					continue;
+				}
+			}
+			if (strpos($addr, '<') === false) {
+				$addr = "<$addr>";
+			}
+			$parsed[] = $addr;
+		}
+		return implode(",", $parsed);
+	}
 
 ?>

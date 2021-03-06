@@ -928,7 +928,7 @@ class ObjectController extends ApplicationController {
 		$proj_cond_companies = Companies::getWorkspaceString($proj_ids);
 		$proj_cond_messages = ProjectMessages::getWorkspaceString($proj_ids);
 		$proj_cond_documents = ProjectFiles::getWorkspaceString($proj_ids);
-		$proj_cond_emails = MailContents::getWorkspaceString($proj_ids);
+		$proj_cond_emails = "(" . MailContents::getWorkspaceString($proj_ids) . (!isset($project) ? ' OR ' . MailContents::getNotClassifiedString() : '' ) . ")";
 		$proj_cond_events = ProjectEvents::getWorkspaceString($proj_ids);
 		$proj_cond_tasks = ProjectTasks::getWorkspaceString($proj_ids);
 		$proj_cond_charts = ProjectCharts::getWorkspaceString($proj_ids);
@@ -969,14 +969,8 @@ class ObjectController extends ApplicationController {
 		
 		$tag_str .= $link_str;
 
-		$extraMailConditions = "";
-		if (!isset($project)){
-			$accountIds = logged_user()->getMailAccountIdsCSV();
-			if ($accountIds != "")
-			$extraMailConditions = " OR ($archived_cond AND $trashed_cond AND `is_deleted` = 0 AND `account_id` IN (" . $accountIds . ") " . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . ")";
-		}
+		
 		$res = array();
-			
 		/** If the name of the query ends with Comments it is assumed to be a list of Comments **/
 			$cfn = '';
 			if ($filterName!=''){
@@ -1100,14 +1094,14 @@ class ObjectController extends ApplicationController {
 			if ($filterName!=''){
 				$fn = " AND subject LIKE '%". $filterName ."%'";
 			}
-			$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), isset($project)?$project->getId():0, '`co`') .')';
+			$permissions = ' AND ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), isset($project)?$project->getId():0, '`co`');
 			if ($filterManager == '' || $filterManager == "MailContents")
 			$res['Emails'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" .
-			TABLE_PREFIX . "mail_contents` `co` WHERE (" . $trashed_cond ." AND $archived_cond AND `is_deleted` = 0 AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $extraMailConditions .") $fn" ;
+			TABLE_PREFIX . "mail_contents` `co` WHERE (" . $trashed_cond ." AND $archived_cond AND `is_deleted` = 0 AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions .") $fn" ;
 			if ($filterManager == '' || $filterManager == "Comments")
 			$res['EmailsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
-			TABLE_PREFIX . "mail_contents` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $cfn . $extraMailConditions . ")";
+			TABLE_PREFIX . "mail_contents` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $cfn . ")";
 		}
 		
 		// Conacts and Companies
@@ -1283,9 +1277,19 @@ class ObjectController extends ApplicationController {
 		}//foreach
 		return $ret;
 	}
+	
+	function mark_as_read() {
+		ajx_current('empty');
+		$this->do_mark_as_read_unread_objects(array(array_var($_GET, 'ids')), true, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+	}
+	
+	function mark_as_unread() {
+		ajx_current('empty');
+		$ids = $this->do_mark_as_read_unread_objects(array(array_var($_GET, 'ids')), false, user_config_option('show_emails_as_conversations', true, logged_user()->getId()));
+	}
 
 	function list_objects() {
-			
+		
 		/* get query parameters */
 		$filesPerPage = config_option('files_per_page');
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
@@ -1669,30 +1673,38 @@ class ObjectController extends ApplicationController {
 						if ($obj->canEdit(logged_user())) {
 							if ($action == 'archive') {
 								$obj->archive();
+								$succ++;
 								ApplicationLogs::createLog($obj, $obj->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
 							} else if ($action == 'unarchive') {
 								$obj->unarchive();
+								$succ++;
 								ApplicationLogs::createLog($obj, $obj->getWorkspaces(), ApplicationLogs::ACTION_UNARCHIVE);
 							}
+						} else {
+							$err ++;
 						}
 					} else { //call from dashboard, format is manager:id
 						$split = explode(":", $id);
 						$obj = get_object_by_manager_and_id($split[1], $split[0]);
 						if (!$obj instanceof ApplicationDataObject) {
-							break;
+							$err ++;
+							continue;
 						}
 						if ($obj->canEdit(logged_user())) {
 							$workspaces = $obj instanceof Project ? null : $obj->getWorkspaces();
 							if ($action == 'archive') {
 								$obj->archive();
+								$succ++;
 								ApplicationLogs::createLog($obj, $workspaces, ApplicationLogs::ACTION_ARCHIVE);
 							} else if ($action == 'unarchive') {
 								$obj->unarchive();
+								$succ++;
 								ApplicationLogs::createLog($obj, $workspaces, ApplicationLogs::ACTION_UNARCHIVE);
 							}
+						} else {
+							$err ++;
 						}
 					}
-					$succ++;
 				}
 			} catch(Exception $e) {
 				$err ++;
@@ -1701,7 +1713,7 @@ class ObjectController extends ApplicationController {
 		return array($succ, $err);
 	}
 
-	function do_mark_as_read_unread_objects($ids, $read) {
+	function do_mark_as_read_unread_objects($ids, $read, $mark_conversation = false) {
 		$err = 0; // count errors
 		$succ = 0; // count updated objects
 		foreach ($ids as $str_id) {
@@ -1714,6 +1726,12 @@ class ObjectController extends ApplicationController {
 						$obj = get_object_by_manager_and_id($id, $manager);
 						if ($obj) {
 							$obj->setIsRead(logged_user()->getId(), $read);
+							if ($obj instanceof MailContent && $mark_conversation) {
+								$emails_in_conversation = MailContents::getMailsFromConversation($obj);
+								foreach ($emails_in_conversation as $email) {
+									$email->setIsRead(logged_user()->getId(), $read);
+								}
+							};
 						}
 					}
 					$succ++;

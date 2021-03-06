@@ -180,7 +180,7 @@ og.config = {
 og.preferences = {
 	'rememberGUIState': <?php echo user_config_option('rememberGUIState') ? '1' : '0' ?>,
 	'show_unread_on_title': <?php echo user_config_option('show_unread_on_title') ? '1' : '0' ?>,
-	'email_polling': <?php echo json_encode(user_config_option('email_polling', 0)) ?> ,
+	'email_polling': <?php echo json_encode(user_config_option('email_polling')) ?> ,
 	'date_format': <?php echo json_encode(user_config_option('date_format')) ?>,
 	'start_monday': <?php echo user_config_option('start_monday') ? '1' : '0' ?>,
 	'draft_autosave_timeout': <?php echo json_encode(user_config_option('draft_autosave_timeout')) ?>,

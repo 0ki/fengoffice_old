@@ -75,7 +75,7 @@
       <div>
         <?php echo label_tag(lang('personal project'), $genid . 'userPersonalProject', true) ?>
         <div class="desc"><?php echo lang('personal project desc') ?></div>
-        <?php echo select_project2('user[personal_project_id]', $user->getPersonalProjectId()) ?>
+        <?php echo select_project2('user[personal_project_id]', $user->getPersonalProjectId(), $genid, false, null, Projects::getActiveProjects()) ?>
       </div>
       
 

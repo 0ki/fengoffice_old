@@ -101,7 +101,7 @@ return array(
 	'field MailContents archived_by_id' => 'Archived by',
 
 	// Event fields
-    'field ProjectEvents duration' => 'Duration',
+    'field ProjectEvents duration' => 'End',
     'field ProjectEvents start' => 'Start',
     'field ProjectEvents subject' => 'Subject',
     'field ProjectEvents repeat_forever'=> 'Repeat forever',
@@ -211,7 +211,7 @@ return array(
     'field Users last_login' => 'Last login', 
     'field Users last_visit' => 'Last visit', 
     'field Users last_activity' => 'Last activity', 
-    'field Users can_edit_company_data' => 'Can edit company data',
+    'field Users can_edit_company_data' => 'Can edit owner company data',
     'field Users can_manage_workspaces'=> 'Can manage workspaces',
     'field Users can_manage_security' => 'Can manage security',
     'field Users can_manage_configuration' => 'Can manage configuration', 

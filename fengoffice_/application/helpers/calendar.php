@@ -98,7 +98,9 @@ function cal_month_short($month) {
 function forwardRepDate(ProjectTask $task, $min_date) {
 	if ($task->isRepetitive()) {
 		if (($task->getRepeatBy() == 'start_date' && !$task->getStartDate() instanceof DateTimeValue) ||
-			($task->getRepeatBy() == 'due_date' && !$task->getDueDate() instanceof DateTimeValue)) {
+			($task->getRepeatBy() == 'due_date' && !$task->getDueDate() instanceof DateTimeValue) ||
+			$task->getRepeatBy() != 'due_date' && $task->getRepeatBy() != 'start_date' ||
+			!$min_date instanceof DateTimeValue) {
 				return array('date' => $min_date, 'count' => 0); //This should not happen...
 		}
 		$date = new DateTimeValue($task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp());

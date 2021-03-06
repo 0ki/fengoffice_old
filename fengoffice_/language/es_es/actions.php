@@ -75,7 +75,7 @@
     'week' => 'Semana',
     
     //Groups
-    'can edit company data' => 'Permitir la edición de los datos de la empresa',
+    'can edit company data' => 'Permitir la edición de los datos de la empresa propietaria',
     'can manage security' => 'Permitir la modificación de las configuraciones de seguridad',
     'can manage workspaces' => 'Permitir la modificación de las configuraciones de áreas de trabajo',
     'can manage configuration' => 'Permitir la modificación de las configuraciones',
@@ -183,4 +183,8 @@
 	'confirm archive object' => '¿Está seguro que desea archivar este objeto?',
 	'confirm unarchive object' => '¿Está seguro que desea desarchivar este objeto?',
 
+	'report as spam' => 'Reportar como Spam',
+	'not spam' => 'No es Spam',
+
+	'mark as unread' => 'Marcar como no leído',
 ); ?>

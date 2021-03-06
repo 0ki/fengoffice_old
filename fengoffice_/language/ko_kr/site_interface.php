@@ -442,7 +442,7 @@
 	'checked out by' => '체크아웃자',
 	'undo checkout' => '파일 체크아웃 되돌리기',
 	'callback' => '콜백',
-	'too many tasks to display' => '보여줄 작업이 너무 맣아서, 오직 최근 500개 만 보여집니다. 작업을 제대로 보고 싶고 이 경고를 제거하고 싶다면, 작업장, 태그, 작업거르개나 상태로 작업을 걸려내세요',
+	'too many tasks to display' => '보여줄 작업이 너무 맣아서, 오직 최근 {0}개 만 보여집니다. 작업을 제대로 보고 싶고 이 경고를 제거하고 싶다면, 작업장, 태그, 작업거르개나 상태로 작업을 걸려내세요',
 	'release notes' => '릴리즈 노트',
 	'share object desc' => '이 객체를 보느 각 사람에게 초개 메일이 발송됩니다.',
 	'actually sharing with' => '실제 다음과 공유',

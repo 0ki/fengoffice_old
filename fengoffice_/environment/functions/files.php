@@ -413,10 +413,9 @@ function download_from_repository($id, $type, $name, $force_download = false) {
 			// this method allows downloading big files without exhausting php's memory
 			return download_file($path, $type, $name, $force_download);
 		}
-	} else {
-		$content = FileRepository::getBackend()->getFileContent($id);
-		return download_contents($content, $type, $name, strlen($content), $force_download);
 	}
+	$content = FileRepository::getBackend()->getFileContent($id);
+	return download_contents($content, $type, $name, strlen($content), $force_download);
 }
 
 /**

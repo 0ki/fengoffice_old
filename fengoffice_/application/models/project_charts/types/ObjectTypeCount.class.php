@@ -16,7 +16,8 @@
   			
   			$queries = ObjectController::getDashboardObjectQueries(active_project(), null, true);
 			$query = '';
-			foreach ($queries as $q){
+			foreach ($queries as $k => $q){
+				if (substr($k, -8) == 'Comments') continue;
 				if($query == '')
 					$query = $q;
 				else 

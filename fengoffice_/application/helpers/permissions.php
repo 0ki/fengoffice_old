@@ -379,6 +379,16 @@
 					AND `xx_pu`.$can_manage_object = true ) ) ";
 			}
 		}
+		
+		// check account permissions in case of emails
+		if ($manager instanceof MailContents) {
+			$maccTableName = MailAccountUsers::instance()->getTableName(true);
+			$str .= "\n OR EXISTS(SELECT `id` FROM $maccTableName WHERE `account_id` = $object_table_name.`account_id` AND `user_id` = $user_id)";
+			if (user_config_option('view deleted accounts emails', null, $user_id)) {
+				$str .= "\n OR ((SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = $object_table_name.`account_id`) = 0) AND `created_by_id` = $user_id";
+			}
+		}
+		
 		$hookargs = array(
 			'manager' => $manager,
 			'access_level' => $access_level,
@@ -521,6 +531,13 @@
 				$user_id = $user->getId();
 				if($object->getCreatedById() == $user_id) {
 					return true; // the user is the creator of the object
+				}
+				
+				if ($object instanceof MailContent) {
+					$acc = MailAccounts::findById($object->getAccountId());
+					if (($access_level == ACCESS_LEVEL_READ && $acc->canView($user)) || ($access_level == ACCESS_LEVEL_WRITE && $acc->canDelete($user))){
+						return true;
+					}
 				}
 				
 				$perms = ObjectUserPermissions::getAllPermissionsByObject($object, $user->getId());		

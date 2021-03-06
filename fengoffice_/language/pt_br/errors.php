@@ -117,4 +117,7 @@
 	'no files to compress' => 'Nenhum arquivo para comprimir.',
 	'cant modify subscribers' => 'Não é possível modificar assinantes',
 	'this object must belong to a ws to modify its subscribers' => 'Este objeto deve pertencer a um espaço de trabalho para modificar seus assinantes.',
+	'mailAccount dnx' => 'Conta de email não existe',
+	'error add contact from user' => 'Não foi possível adicionar contato do usuário.',
+	'zip not supported' => 'ZIP não é suportado pelo servidor',
 ); ?>

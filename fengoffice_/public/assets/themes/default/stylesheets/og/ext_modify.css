@@ -1,3 +1,8 @@
+/*--- fix width of date pickers in IE8 ---*/
+.x-date-menu {
+	width: 175px !important;
+}
+
 /*--- layout.css ---*/
 .x-layout-collapsed{
     border:0px;

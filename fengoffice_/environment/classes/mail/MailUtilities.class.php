@@ -166,10 +166,12 @@ class MailUtilities {
 		
 		$from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
 			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
-		$max_spam_level = user_config_option('max_spam_level');
+		$user_id = logged_user() instanceof User ? logged_user()->getId() : $account->getUserId();
+		$max_spam_level = user_config_option('max_spam_level', null, $user_id);
 		if ($max_spam_level < 0) $max_spam_level = 0;
 		$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
-		if ($mail_spam_level > $max_spam_level || $from_spam_junk_folder) {
+		// if max_spam_level >= 10 then nothing goes to junk folder
+		if ($max_spam_level < 10 && ($mail_spam_level > $max_spam_level || $from_spam_junk_folder)) {
 			$state = 4; // send to Junk folder
 		}
 
@@ -203,15 +205,33 @@ class MailUtilities {
 			$mail->setSubject($utf8_subject);
 		}
 		$mail->setTo($to_addresses);
+		$sent_timestamp = false;
 		if (array_key_exists("Date", $parsedMail)) {
-			$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
-		}else{
-			$mail->setSentDate(new DateTimeValue(DateTimeValueLib::now()));
+			$sent_timestamp = strtotime($parsedMail["Date"]);
 		}
+		if ($sent_timestamp === false || $sent_timestamp === -1 || $sent_timestamp === 0) {
+			$mail->setSentDate(DateTimeValueLib::now());
+		} else {
+			$mail->setSentDate(new DateTimeValue($sent_timestamp));
+		}
+		
+		// if this constant is defined, mails older than this date will not be fetched 
+		if (defined('FIRST_MAIL_DATE')) {
+			$first_mail_date = DateTimeValueLib::makeFromString(FIRST_MAIL_DATE);
+			if ($mail->getSentDate()->getTimestamp() < $first_mail_date->getTimestamp()) {
+				// return true to stop getting older mails from the server
+				return true;
+			}
+		}
+		
+		$received_timestamp = false;
 		if (array_key_exists("Received", $parsedMail) && $parsedMail["Received"]) {
-			$mail->setReceivedDate(new DateTimeValue(strtotime($parsedMail["Received"])));
-		}else{
-			$mail->setReceivedDate(new DateTimeValue(DateTimeValueLib::now()));
+			$received_timestamp = strtotime($parsedMail["Received"]);
+		}
+		if ($received_timestamp === false || $received_timestamp === -1 || $received_timestamp === 0) {
+			$mail->setReceivedDate($mail->getSentDate());
+		} else {
+			$mail->setReceivedDate(new DateTimeValue($received_timestamp));
 		}
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
@@ -308,9 +328,13 @@ class MailUtilities {
 				$mail->subscribeUser($user);
 			}
 		} catch(Exception $e) {
-			Logger::log($e->getMessage());
+			FileRepository::deleteFile($repository_id);
+			if (strpos($e->getMessage(), "Query failed with message 'Got a packet bigger than 'max_allowed_packet' bytes'") === false) {
+				Logger::log($e->getMessage());
+			}
 		}
 		unset($parsedMail);
+		return false;
 	}
 	
 	function parseMail(&$message, &$decoded, &$results, &$warnings) {
@@ -370,7 +394,8 @@ class MailUtilities {
 			$content = $pop3->getMsg($idx+1); // message index is 1..N
 			if ($content != '') {
 				$uid = $summary[$idx]['uidl'];
-				self::SaveMail($content, $account, $uid);
+				$stop_checking = self::SaveMail($content, $account, $uid);
+				if ($stop_checking) break;
 				unset($content);
 				$received++;
 			}
@@ -644,7 +669,8 @@ class MailUtilities {
 									}
 									$content = array_var($messages, $index, '');
 									if ($content != '') {
-										self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
+										$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
+										if ($stop_checking) break;
 										$received++;
 									} // if content
 								}
@@ -861,6 +887,20 @@ class MailUtilities {
 	public function hasQuotedBlocks($html) {
 		return stripos($html, "<blockquote") !== false;
 	}
+	
+	static function generateMessageId($email_address = null) {
+		$id_right = null;
+		if ($email_address) {
+			// get a valid right-part id from the email address (domain name)
+			$id_right = substr($email_address, strpos($email_address, '@'));
+			if (strpos($id_right, ">") !== false) {
+				$id_right = substr($id_right, 0, strpos($id_right, ">"));
+			}
+			$id_right = preg_replace('/[^a-zA-Z0-9\.\!\#\/\$\%\&\'\*\+\-\=\?\^\_\`\{\|\}\~]/', '', $id_right);
+		}
+		if (!$id_right) $id_right = gen_id();
+	 	return "<" . gen_id() . "@" . $id_right . ">";
+ 	}
 	
 }
 ?>

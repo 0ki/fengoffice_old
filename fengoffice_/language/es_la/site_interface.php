@@ -425,7 +425,7 @@
 	'show image in new page' => 'Mostrar imagen en nueva página',
 	'no tasks to display' => 'No hay tareas para mostrar',
 	'total' => 'Total',
-	'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
+	'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las {0} tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
 	'success create timeslot' => 'Tiempo de trabajo creado en forma satisfactoria',
 	'do complete' => 'Completar',
 	'task data' => 'Datos de tarea',

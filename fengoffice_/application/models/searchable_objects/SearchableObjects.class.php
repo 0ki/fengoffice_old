@@ -119,7 +119,13 @@
     	}
     	if (user_config_option('search_engine', substr(Localization::instance()->getLocale(),0,2) == 'zh' ? 'like' : null) == 'like') {
     		$search_for = str_replace("*", "%", $search_for);
-    		return DB::prepareString("`content` LIKE '%$search_for%' $privSearch $wsSearch $trashed $otSearch $columnsSearch");
+    		$search_words = explode(" ", $search_for);
+    		$search_string = "";
+    		foreach ($search_words as $word) {
+    			if ($search_string) $search_string .= " AND "; 
+    			$search_string .= "`content` LIKE '%$word%'";
+    		}
+    		return DB::prepareString("$search_string $privSearch $wsSearch $trashed $otSearch $columnsSearch");
     	} else {
     		$search_words = preg_split('/[\s\.\+\-\~]/', $search_for);
     		$search_for = "";

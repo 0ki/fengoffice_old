@@ -98,10 +98,24 @@ if($showOpenSubtasksDiv) { ?>
   
     <div id="addTaskForm<?php echo $task_list->getId() ?>" style="display:none">
       <form class="internalForm" action="<?php echo $task_list->getAddTaskUrl(false) ?>" method="post">
-        <div class="taskListAddTaskText">
-          <label for="addTaskText<?php echo $task_list->getId() ?>"><?php echo lang('name') ?>:</label>
-          <?php echo textarea_field("task[title]", null, array('class' => 'short', 'id' => 'addTaskText' . $task_list->getId())) ?>
+        <div class="taskListAddTaskFields">
+          <label for="addTaskTitle<?php echo $task_list->getId() ?>"><?php echo lang('name') ?>:</label>
+          <?php echo text_field("task[title]", null, array('class' => 'title', 'id' => 'addTaskTitle' . $task_list->getId())) ?>
+          <label for="addTaskText<?php echo $task_list->getId() ?>"><?php echo lang('description') ?>:</label>
+          <?php echo textarea_field("task[text]", null, array('class' => 'short', 'id' => 'addTaskText' . $task_list->getId())) ?>
         </div>
+        <div style="padding-top:4px">   
+	       <?php /*echo label_tag(lang('dates'))*/ ?>
+	       <table><tbody><tr><td style="padding-right: 10px">
+	       <?php echo label_tag(lang('start date')) ?>            
+	       </td><td>
+	      <?php echo pick_date_widget2('task[start_date]', array_var($task_data, 'start_date'),$genid, 60) ?>
+	      </td></tr><tr><td style="padding-right: 10px">
+	      <?php echo label_tag(lang('due date')) ?>
+	       </td><td>
+	      <?php echo pick_date_widget2('task[due_date]', array_var($task_data, 'due_date'),$genid, 70) ?>
+	      </td></tr></tbody></table>
+		</div>
         <div class="taskListAddTaskAssignedTo">
           <label for="addTaskAssignTo<?php echo $task_list->getId() ?>"><?php echo lang('assign to') ?>:</label>
           <?php echo assign_to_select_box("task[assigned_to]", $task_list->getProject(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>

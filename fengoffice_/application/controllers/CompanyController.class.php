@@ -381,18 +381,17 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function edit_logo() {
-		if(!logged_user()->isAdministrator(owner_company())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
 			ajx_current("empty");
 			return;
 		} // if
+		if (!$company->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if)
 
 		tpl_assign('company', $company);
 

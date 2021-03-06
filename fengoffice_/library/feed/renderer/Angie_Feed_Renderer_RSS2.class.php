@@ -59,7 +59,7 @@
       
       $pubdate = $item->getPublicationDate();
       if($pubdate instanceof DateTimeValue) {
-        $result .= '<pubdate>' . $pubdate->toRSS() . "</pubdate>\n";
+        $result .= '<pubDate>' . $pubdate->toRSS() . "</pubDate>\n";
       } // if
       
       $result .= '</item>';

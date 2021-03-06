@@ -301,6 +301,7 @@ var editor = CKEDITOR.replace(genid + 'ckeditor', {
 	height: (h-205) + 'px',
 	enterMode: CKEDITOR.ENTER_BR,
 	shiftEnterMode: CKEDITOR.ENTER_P,
+	disableNativeSpellChecker: false,
 	resize_enabled: false,
 	customConfig: '',
 	contentsCss: og.getUrl('mail', 'get_mail_css'),

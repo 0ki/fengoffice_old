@@ -54,22 +54,36 @@ og.OverviewManager = function() {
 		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'overview-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
+	var readClass = 'read-unread-' + Ext.id();
+	var notReadable = {
+			'Contacts': true,
+			'Companies': true,
+			'Comments': true,
+			'ProjectFileRevisions': true
+	};
 	function renderIsRead(value, p, r){
-		div = '';
-		if (r.data.manager != 'Contacts' && r.data.manager != 'Companies' && r.data.manager != 'Comments' && r.data.manager != 'ProjectFileRevisions') {
-			if (value){
-				div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'overview-manager\').load({action: 'markasunread', objects:'" + r.data.manager+":"+r.data.object_id + "'});Ext.getCmp(\'overview-manager\').getSelectionModel().clearSelections(); \" />";
-			}else{			
-				div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('overview-manager').load({action: 'markasread', objects:'" + r.data.manager+":"+r.data.object_id + "'});Ext.getCmp('overview-manager').getSelectionModel().clearSelections(); \" />";
-			}
+		if (!notReadable[r.data.manager]) {
+			var idr = Ext.id();
+			var idu = Ext.id();
+			var jsr = 'og.OverviewManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:\'' + r.data.manager + ':' + r.data.object_id + '\'}));'; 
+			var jsu = 'og.OverviewManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:\'' + r.data.manager + ':' + r.data.object_id + '\'}));';
+			return String.format(
+				'<div id="{0}" title="{1}" class="db-ico ico-read" style="display:{2}" onclick="{3}"></div>' + 
+				'<div id="{4}" title="{5}" class="db-ico ico-unread" style="display:{6}" onclick="{7}"></div>',
+				idu, lang('mark as unread'), value ? 'block' : 'none', jsu, idr, lang('mark as read'), value ? 'none' : 'block', jsr
+			);
+		} else {
+			return "";
 		}
-		return div;
 	}
 	
 	function renderName(value, p, r) {
 		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
 
 		var viewUrl = r.data.url;
+		
+		var classes = readClass + r.id;
+		if (!r.data.isRead && !notReadable[r.data.manager]) classes += " bold";
 		
 		var actions = '';
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
@@ -85,7 +99,7 @@ og.OverviewManager = function() {
 		} else {
 			var cleanvalue = og.clean(value);
 		}
-		var name = String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
+		var name = String.format('<a style="font-size:120%" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes);
 		
 		return projectsString + name + actions;
 	}
@@ -110,7 +124,12 @@ og.OverviewManager = function() {
 
 	function renderUser(value, p, r) {
 		if (r.data.updatedById) {
-			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
+			var classes = readClass + r.id;
+			if (!r.data.isRead && !notReadable[r.data.manager]) classes += " bold";
+			
+			return String.format('<a href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}), classes);
+		} else if (value) {
+			return og.clean(value);
 		} else {
 			return lang("n/a");
 		}
@@ -119,6 +138,8 @@ og.OverviewManager = function() {
 	function renderAuthor(value, p, r) {
 		if (r.data.createdById) {
 			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+		} else if (value) {
+			return og.clean(value);
 		} else {
 			return lang("n/a");
 		}

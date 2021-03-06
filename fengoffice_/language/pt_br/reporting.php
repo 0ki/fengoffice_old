@@ -21,4 +21,8 @@
 	'ascending' => 'Ascendente',
 	'descending' => 'Descendente',
 	'parametrizable' => 'Parâmetro?',
+	'columns to print' => 'Colunas para impressão',
+	'columns to print desc' => 'Mova as colunas que pretende imprimir para a caixa na direita, clicando nos ícones de seta.',
+	'reporting workspace' => 'Área de Trabalho',
+	'reporting user' => 'usuário',
 ); ?>

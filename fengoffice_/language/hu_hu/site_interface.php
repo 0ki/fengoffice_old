@@ -499,7 +499,7 @@ return array(
 	'user not subscribed to object' => 'Nincs feliratkozva erre az elemre.',
 
 	'tasks updated' => 'A feladat sikeresen frissítve',
-	'too many tasks to display' => 'Túl sok feladat van. Csak a legutóbbi 500 feladat lesz megjelenítve. A feladatok megtekintéséhez - és e figyelmeztetés törléséhez - szűrje a feladatokat projekt, címke, feladat szűrő vagy státusz szerint!',
+	'too many tasks to display' => 'Túl sok feladat van. Csak a legutóbbi {0} feladat lesz megjelenítve. A feladatok megtekintéséhez - és e figyelmeztetés törléséhez - szűrje a feladatokat projekt, címke, feladat szűrő vagy státusz szerint!',
 
 
 	'show image in new page' => 'A kép megtekintése új lapon',

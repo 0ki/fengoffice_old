@@ -774,5 +774,6 @@ addLangs({
   	'warning': 'Warning',
   	'new email in conversation text': 'There\'s a new email in the conversation you are replying to. Do you want to send the email anyway or view the new email in a new tab?',
   	'send anyway': 'Send anyway',
-  	'view new email': 'View new email'
+  	'view new email': 'View new email',
+  	'apply assignee to subtasks': 'Apply assignee to subtasks'
 });

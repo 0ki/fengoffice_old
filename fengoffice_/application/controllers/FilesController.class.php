@@ -1298,9 +1298,9 @@ class FilesController extends ApplicationController {
 				}
 			}
 			if ($succ > 0) {
-				flash_success(lang("success archive files", $succ));
+				flash_success(lang("success archive objects", $succ));
 			} else {
-				flash_error(lang("error archive files", $err));
+				flash_error(lang("error archive objects", $err));
 			}
 		}
 		

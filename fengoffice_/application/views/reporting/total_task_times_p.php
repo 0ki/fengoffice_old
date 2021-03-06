@@ -105,7 +105,7 @@
 						$gbVal = array_var($report_data, "group_by_$i");
 						?>
 					<select id="<?php echo $genid ?>group_by_<?php echo $i ?>" name="report[group_by_<?php echo $i ?>]" )">
-						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- None --</option>
+						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- <?php echo lang('none') ?> --</option>
 						<option value="id"<?php if ($gbVal == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
 						<option value="user_id"<?php if ($gbVal == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
 						<option value="project_id"<?php if ($gbVal == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
@@ -119,7 +119,7 @@
 						$gbVal = array_var($report_data, "alt_group_by_$i");
 						?>
 					<select id="<?php echo $genid ?>alt_group_by_<?php echo $i ?>" name="report[alt_group_by_<?php echo $i ?>]" )">
-						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- None --</option>
+						<option value="0"<?php if ($gbVal == null) echo ' selected="selected"' ?>>-- <?php echo lang('none') ?> --</option>
 						<option value="user_id"<?php if ($gbVal == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
 						<option value="project_id"<?php if ($gbVal == "project_id") echo ' selected="selected"' ?>><?php echo lang('workspace')?></option>
 					</select>

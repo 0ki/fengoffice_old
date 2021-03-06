@@ -11,6 +11,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('general', 'reset_password', '', 'StringConfigHandler', '1', '0', 'Used to store per-user tokens to validate password reset requests'),
  ('general', 'drag_drop_prompt', 'prompt', 'DragDropPromptConfigHandler', '0', '0', NULL),
  ('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),
+ ('task panel', 'task_display_limit', '500', 'IntegerConfigHandler', '0', '200', NULL),
  ('mails panel', 'mail_drag_drop_prompt', 'prompt', 'MailDragDropPromptConfigHandler', '0', '102', NULL),
  ('mails panel', 'show_emails_as_conversations', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),

@@ -383,7 +383,7 @@
 	'user subscribed to object' => 'U hebt een abonnement op dit object',
 	'user not subscribed to object' => 'U hebt geen abonnement op dit object',
 	'tasks updated' => 'Taak bijgewerkt',
-	'too many tasks to display' => 'Er zijn te veel taken om weer te geven, de 500 meest recente exemplaren worden getoond. Om taken correct te tonen en deze waarschuwing te verwijderen kunt u de taken filteren op werkomgeving, labels of status.',
+	'too many tasks to display' => 'Er zijn te veel taken om weer te geven, de {0} meest recente exemplaren worden getoond. Om taken correct te tonen en deze waarschuwing te verwijderen kunt u de taken filteren op werkomgeving, labels of status.',
 	'show image in new page' => 'Toon afbeelding op een nieuwe pagina',
 	'no tasks to display' => 'Er zijn geen taken om weer te geven',
 	'do complete' => 'Behandeld',

@@ -216,9 +216,15 @@ class AccessController extends ApplicationController {
 			
 			$changePassword_data = array_var($_POST, 'changePassword');
 		
+			$username = array_var($changePassword_data, 'username');
 			$old_password = array_var($changePassword_data, 'oldPassword');
 			$new_password = array_var($changePassword_data, 'newPassword');
 			$repeat_password = array_var($changePassword_data, 'repeatPassword');
+			
+			if (trim($username) != $user->getUsername()) {
+				tpl_assign('error', new Error(lang('invalid login data')));
+				$this->render();
+			}
 			
 			if(trim($old_password) == '') {
 				tpl_assign('error', new Error(lang('old password required')));

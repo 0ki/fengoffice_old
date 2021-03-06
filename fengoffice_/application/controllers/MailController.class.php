@@ -153,6 +153,46 @@ class MailController extends ApplicationController {
 		}
 		return $errors;
 	}
+	
+	function change_email_folder() {
+		$email = MailContents::findById(get_id());
+		if (!$email instanceof MailContent) {
+			flash_error(lang('email dnx'));
+			ajx_current("empty");
+			return;
+		}
+		if ($email->getIsDeleted()) {
+			flash_error(lang('email dnx deleted'));
+			ajx_current("empty");
+			return;
+		}
+		if (!$email->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		
+		$folder = array_var($_GET, 'newf');
+		if (is_numeric($folder)) {
+			try {
+				DB::beginWork();
+				$email->setState($folder);
+				$email->save();
+				DB::commit();
+				ajx_current("back");
+				return;
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+				return;
+			}
+		} else {
+			flash_error($e->getMessage());
+			ajx_current("empty");
+			return;
+		}
+	}
 
 	/**
 	 * Add single mail
@@ -395,7 +435,7 @@ class MailController extends ApplicationController {
  				
 				DB::beginWork();
 				
-				$msg_id = "<" . gen_id() . substr($account->getEmailAddress(), strpos($account->getEmailAddress(), '@')) . ">";
+				$msg_id = MailUtilities::generateMessageId($account->getEmailAddress());
 				$conversation_id = array_var($mail_data, 'conversation_id');
 				$in_reply_to_id = array_var($mail_data, 'in_reply_to_id');
 				if ($conversation_id) {
@@ -414,12 +454,13 @@ class MailController extends ApplicationController {
 				
 				$mail->setUid(gen_id());
 				$mail->setState($isDraft ? 2 : 200);
-				$mail->setIsPrivate(true);
+				$mail->setIsPrivate(false);
 				
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
+				$body = utf8_safe($body);
 				if (array_var($mail_data,'format') == 'html') {
 					$mail->setBodyHtml($body);
-					$mail->setBodyPlain(html_to_text($body));
+					$mail->setBodyPlain(utf8_safe(html_to_text($body)));
 				} else {
 					$mail->setBodyPlain($body);
 					$mail->setBodyHtml('');
@@ -651,6 +692,18 @@ class MailController extends ApplicationController {
 		}
 		ajx_current("empty");
 	}
+	
+	function mark_as_unread() {
+		ajx_current("empty");
+		$email = MailContents::findById(array_var($_GET, 'id', 0));
+		if ($email instanceof MailContent) {
+			$email->setIsRead(logged_user()->getId(), false);
+			ajx_current("back");
+		} else {
+			flash_error(lang("email dnx"));
+		}
+	}
+	
 	/**
 	 * View specific email
 	 *

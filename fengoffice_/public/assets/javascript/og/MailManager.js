@@ -59,10 +59,12 @@ og.MailManager = function() {
 	this.store = og.MailManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 	
+	var readClass = 'read-unread-' + Ext.id();
+	
 	function renderName(value, p, r) {
 		var name = '';
-		var bold = 'font-weight:normal;';
-		if (!r.data.isRead) {bold = 'font-weight:bold;';}
+		var classes = readClass + r.id;
+		if (!r.data.isRead) classes += " bold";
 		var strAction = 'view';
 		
 		if (r.data.isDraft) {
@@ -75,8 +77,8 @@ og.MailManager = function() {
 		var conv_str = r.data.conv_total > 1 ? " <span class='db-ico ico-comment' style='margin-left:3px;padding-left: 18px;'><span style='font-size:80%'>(" + (r.data.conv_unread > 0 ? '<b style="font-size:130%">' + r.data.conv_unread + '</b>/' : '') + r.data.conv_total + ")</span></span>" : "";
 		
 		name = String.format(
-				'{4}<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-				subject + conv_str, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
+				'{4}<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				subject + conv_str, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),classes,strDraft);
 				
 		if (r.data.isSent) {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
@@ -94,17 +96,17 @@ og.MailManager = function() {
 	}
 
 	function renderFrom(value, p, r){
-		var bold = 'font-weight:normal;';
 		var strAction = 'view';
+		var classes = readClass + r.id;
 		
 		if (r.data.isDraft) strAction = 'edit_mail';
-		if (!r.data.isRead) bold = 'font-weight:bold;';
+		if (!r.data.isRead) classes += ' bold';
 		
 		var sender = og.clean(value.trim()) || '<i>' + lang("no sender") + '</i>';
 
 		name = String.format(
-				'<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-				sender, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),bold);
+				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				sender, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),classes);
 		return name;
 	}
 	
@@ -127,12 +129,15 @@ og.MailManager = function() {
 	}
 	
 	function renderIsRead(value, p, r){
-		if (value) {
-			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'mails-manager\').load({action: 'markAsUnRead',ids:'" + r.data.object_id + "',types:'email'});Ext.getCmp(\'message-manager\').getSelectionModel().clearSelections(); \" />";
-		} else {
-			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('mails-manager').load({action: 'markAsRead',ids:'" + r.data.object_id + "',types:'email'});Ext.getCmp('message-manager').getSelectionModel().clearSelections(); \" />";
-		}
-		return div;
+		var idr = Ext.id();
+		var idu = Ext.id();
+		var jsr = 'og.MailManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:\'MailContents:' + r.data.object_id + '\'}));'; 
+		var jsu = 'og.MailManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:\'MailContents:' + r.data.object_id + '\'}));';
+		return String.format(
+			'<div id="{0}" title="{1}" class="db-ico ico-read" style="display:{2}" onclick="{3}"></div>' + 
+			'<div id="{4}" title="{5}" class="db-ico ico-unread" style="display:{6}" onclick="{7}"></div>',
+			idu, lang('mark as unread'), value ? 'block' : 'none', jsu, idr, lang('mark as read'), value ? 'none' : 'block', jsr
+		);
 	}
 
 	function renderAccount(value, p, r) {
@@ -140,17 +145,17 @@ og.MailManager = function() {
 	}
 	
 	function renderTo(value, p, r) {
-		var bold = 'font-weight:normal;';
+		var classes = readClass + r.id;
 		var strAction = 'view';
 		
 		if (r.data.isDraft) strAction = 'edit_mail';
-		if (!r.data.isRead) bold = 'font-weight:bold;';
+		if (!r.data.isRead) classes += ' bold';
 		
 		var receiver = og.clean(value.trim()) || '<i>' + lang("no recipient") + '</i>';
 
 		name = String.format(
-				'<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
-				receiver, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(value), bold);
+				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				receiver, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(value), classes);
 		return name;
 	}
 	

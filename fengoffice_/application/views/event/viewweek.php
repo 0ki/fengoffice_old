@@ -183,7 +183,7 @@ require_javascript('og/EventPopUp.js');
 		<table style="width:100%;"><tr><td style="height:15px;">
 			<span id="chead0">
 			<?php if (user_config_option("show_week_numbers")) {
-				$weeknumber = date("W", mktime(0, 0, 0, $month, $startday, $year));
+				$weeknumber = date("W", mktime(0, 0, 0, $month, $startday + 1, $year));
 				echo lang("week number x", $weeknumber) . " - "; 
 			}?>
 			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))

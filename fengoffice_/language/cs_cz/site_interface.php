@@ -395,7 +395,7 @@
 	'user subscribed to object' => 'Jste přihlášen/a k odběru tohoto objektu.',
 	'user not subscribed to object' => 'Nejste přihlášen/a k odběru tohoto objektu.',
 	'tasks updated' => 'Úloha(y) úspěšně aktualizován(y)',
-	'too many tasks to display' => 'Příliš mnoho úloh ke zobrazení. Bude zobrazeno pouze nejnovějších 500 úloh. Pro správné zobrazení úloh a odstranění tohoto varování, prosíme filtrujte úlohy podle projektu, úloh, štítků, nebo stavu.',
+	'too many tasks to display' => 'Příliš mnoho úloh ke zobrazení. Bude zobrazeno pouze nejnovějších {0} úloh. Pro správné zobrazení úloh a odstranění tohoto varování, prosíme filtrujte úlohy podle projektu, úloh, štítků, nebo stavu.',
 	'show image in new page' => 'Zobrazit obrázek na nové stránce',
 	'no tasks to display' => 'Žádné úlohy ke zobrazení',
 	'do complete' => 'Zkompletovat',

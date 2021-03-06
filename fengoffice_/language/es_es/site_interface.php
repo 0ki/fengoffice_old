@@ -425,7 +425,7 @@
 	'tasks updated' => 'Tareas(s) actualizadas exitosamente',
 	'show image in new page' => 'Mostrar imagen en nueva página',
 	'no tasks to display' => 'No hay tareas para mostrar',
-	'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por área de trabajo, tag, estado o filtro.',
+	'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las {0} tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por área de trabajo, tag, estado o filtro.',
 	'enter tags desc' => 'Ingrese etiquetas separadas por coma ...',
 	'do complete' => 'Completar',
 	'task data' => 'Datos de tarea',

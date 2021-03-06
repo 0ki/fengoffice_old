@@ -381,7 +381,7 @@
  "user subscribed to object" => "您已訂閱此物件。",
  "user not subscribed to object" => "您未訂閱此物件。",
  "tasks updated" => "任務更新成功",
- "too many tasks to display" => "太多的任務要顯示，只顯示最近的 500 項。要正確查看任務和移除此警告，請依工作區、標籤、任務篩選或狀態來篩選任務。",
+ "too many tasks to display" => "太多的任務要顯示，只顯示最近的 {0} 項。要正確查看任務和移除此警告，請依工作區、標籤、任務篩選或狀態來篩選任務。",
  "show image in new page" => "顯示影像於新頁",
  "no tasks to display" => "無任務可顯示",
  "do complete" => "完成",

@@ -295,7 +295,7 @@ else
 //----------------------------------------
 
 
-og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extraWS){
+og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extraWS, workspaces){
 	var container = document.getElementById(renderTo);
 	if (container){
 		var tree = Ext.getCmp('workspaces-tree');
@@ -303,7 +303,8 @@ og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extr
 		var node = tree.tree.getNodeById('ws' + workspaceId);
 		if (node) {
 			ws = node.ws;
-		} else if (extraWS) {
+		}
+		if (!ws && extraWS) {
 			// look in the extra workspaces
 			for (var i=0; i < extraWS.length; i++) {
 				if (extraWS[i].id == workspaceId) {
@@ -312,35 +313,37 @@ og.drawWorkspaceSelector = function(renderTo, workspaceId, name, allowNone, extr
 				}
 			}
 		}
-		if (!ws) ws = tree.tree.getActiveOrPersonalWorkspace();
-	
-		var extra = "";
-		if (extraWS) {
-			for (var i=0; i < extraWS.length; i++) {
-				if (extra != "") extra += ",";
-				extra += Ext.util.JSON.encode(extraWS[i]);
+		if (!ws && workspaces) {
+			// look in supplied workspaces
+			for (var i=0; i < workspaces.length; i++) {
+				if (workspaces[i].id == workspaceId) {
+					ws = workspaces[i];
+					break;
+				}
 			}
 		}
-		extra = "[" + extra + "]";
+		if (!ws) ws = tree.tree.getActiveOrPersonalWorkspace();
+	
+		var extra = Ext.util.JSON.encode(extraWS);
+		var wss = Ext.util.JSON.encode(workspaces);
 		var html = "<input type='hidden' id='" + renderTo + "Value' name='" + name + "' value='" + ws.id + "'/>";
 		html +="<div class='x-form-field-wrap'><table><tr><td><div id='" + renderTo + "Header' class='og-ws-selector-header'>";
 		var path = og.getFullWorkspacePath(ws.id,true);
 		if (path == '')
 			path = ws.id == 0 && allowNone || !ws.name ? lang('none') : ws.name;
-		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ")' title='" + path + "'>" + path + "</div>";
-		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
-		
+		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ", " + wss + ")' title='" + path + "'>" + path + "</div>";
+		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\",\"" + ws.id + "\", " + (allowNone? 'true':'false') + ", " + extra + ", " + wss + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
 		container.innerHTML = html;
 	}
 }
 
-og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone, extra){
+og.ShowWorkspaceSelector = function(controlName, workspaceId, allowNone, extra, wsList){
 	if (document.getElementById(controlName + 'Panel').style.display == 'block')
 		document.getElementById(controlName + 'Panel').style.display = 'none';
 	else {
 		if (document.getElementById(controlName + 'Panel').innerHTML == ''){
 			var tree = Ext.getCmp('workspace-panel');
-			var wsList = tree.getWsList();
+			if (!wsList) wsList = tree.getWsList();
 			var newTree = new og.WorkspaceTree({
 				id: controlName + 'Tree',
 				renderTo: controlName + 'Panel',

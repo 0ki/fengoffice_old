@@ -679,5 +679,6 @@ addLangs({
 	'send anyway': 'Enviar de todos modos',
 	'view new email': 'Ver correo nuevo',
 	'confirm delete permanently company': '¿Está seguro de que desea borrar permanentemente esta empresa?\nTodos los usuarios de la empresa también serán borrados.',
-	'confirm move to trash company': '¿Está seguro de que desea borrar esta empresa?\nTodos los usuarios de la empresa también serán borrados.'
+	'confirm move to trash company': '¿Está seguro de que desea borrar esta empresa?\nTodos los usuarios de la empresa también serán borrados.',
+	'apply assignee to subtasks': 'Aplicar asignado a subtareas'
 });

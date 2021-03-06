@@ -133,7 +133,7 @@
   	'config option name checkout_for_editing_online' => 'Automatically checkout when editing online',
   	'config option desc checkout_for_editing_online' => 'When a user edits a document online it will be checkout so that no one else can edit it at the same time',
   
- 	'can edit company data' => 'Can edit company data',
+ 	'can edit company data' => 'Can edit owner company data',
   	'can manage security' => 'Can manage security',
   	'can manage workspaces' => 'Can manage workspaces',
   	'can manage configuration' => 'Can manage configuration',
@@ -313,6 +313,9 @@
   
   	'search engine mysql like' => 'Full',
   	'search engine mysql match' => 'Quick',
+  
+  	'user ws config option name task_display_limit' => 'Maximum number of tasks to display',
+  	'user ws config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit.',
   ); // array
 
 ?>

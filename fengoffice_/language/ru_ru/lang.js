@@ -416,7 +416,7 @@ addLangs({
 	'enter a new name for the tag': 'Задайте новое имя для тега',
 	'duplicate company name': '<span style="color:#F00">Компания с именем \'{0}\' уже существует. </span> Вы можете<a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})">выбрать эту компанию</a>, или ввести другое имя',
 	'inbox': 'Входящие',
-	'sent': 'Исходящие',
+	'sent': 'Отправленные',
 	'unread': 'Непрочитанные',
 	'confirm unclassify emails': 'Вы уверенны, что хотите выбрать неклассифицированные email?',
 	

@@ -368,7 +368,7 @@
 	'user subscribed to object' => 'Du hast dieses Objekt abonniert.',
 	'user not subscribed to object' => 'Du hast dieses Objekt nicht abonniert.',
 	'tasks updated' => 'Aufgabe(n) erfolgreich aktualisiert',
-	'too many tasks to display' => 'Zu viele Aufgaben zum Anzeigen, daher werden nur die letzten 500 Aufgaben angezeigt. Nutze die Filterfunktion nach Arbeitsbereichen, Tags, Aufgaben oder Status zur weiteren Anzeige.',
+	'too many tasks to display' => 'Zu viele Aufgaben zum Anzeigen, daher werden nur die letzten {0} Aufgaben angezeigt. Nutze die Filterfunktion nach Arbeitsbereichen, Tags, Aufgaben oder Status zur weiteren Anzeige.',
 	'show image in new page' => 'Bild in neuer Seite anzeigen',
 	'no tasks to display' => 'Keine Aufgaben zum Anzeigen',
 	'do complete' => '[Fertig]',

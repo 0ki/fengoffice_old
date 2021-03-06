@@ -408,7 +408,7 @@
 	'user subscribed to object' => 'Us heu subscrit a aquest objecte.',
 	'user not subscribed to object' => 'Heu cancel·lat la subscripció a aquest objecte.',
 	'tasks updated' => 'Tasques actualitzades correctament',
-	'too many tasks to display' => 'Hi ha masses tasques per mostrar, només es mostren les 500 tasques més recents. Per mostrar totes les tasques i suprimir aquest avís, si us plau filtreu les tasques per espai de treball, etiquetes, filtres de tasques o estat.',
+	'too many tasks to display' => 'Hi ha masses tasques per mostrar, només es mostren les {0} tasques més recents. Per mostrar totes les tasques i suprimir aquest avís, si us plau filtreu les tasques per espai de treball, etiquetes, filtres de tasques o estat.',
 	'show image in new page' => 'Mostra la imatge a una nova pàgina',
 	'no tasks to display' => 'No hi ha tasques per mostrar',
 	'do complete' => 'Completa',

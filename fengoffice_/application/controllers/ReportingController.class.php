@@ -33,6 +33,12 @@ class ReportingController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 	}
 
+	function init() {
+		require_javascript("og/ReportingManager.js");
+		ajx_current("panel", "reporting");
+		ajx_replace(true);
+	}
+	
 	/**
 	 * Show reporting index page
 	 *

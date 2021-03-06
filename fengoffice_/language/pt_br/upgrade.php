@@ -8,4 +8,11 @@
 	'upgrade process log' => 'Log do processo de atualização',
 	'upgrade fengoffice' => 'Atualizar Feng Office',
 	'upgrade your fengoffice installation' => 'Atualizar sua instalação do Feng Office',
+	'upgrade from to' => 'Atualizar de {0} to {1}',
+	'error upgrade version must be specified' => 'Nenhuma versão especificada. Não é possível continuar com a atualização automática. Por favor, tente novamente mais tarde ou tente a atualização manual em vez disso.',
+	'error upgrade version not found' => 'Versão inválida ({0}). Não é possível continuar com a atualização automática. Por favor, tente novamente mais tarde ou tente a atualização manual em vez disso.',
+	'error upgrade invalid zip url' => 'URL inválido para download da versão especificada. Não é possível continuar com a atualização automática. Por favor, tente novamente mais tarde ou tente a atualização manual em vez disso.',
+	'error upgrade cannot open zip file' => 'Não é possível abrir o arquivo zip da nova versão. Não é possível continuar com a atualização automática. Por favor, tente novamente mais tarde ou tente a atualização manual em vez disso.',
+	'upgrade warning' => 'Aviso',
+	'upgrade warning desc' => 'Por favor <a href="{0}" target="_blank">backup</a> sua instalação antes de atualizar!',
 ); ?>

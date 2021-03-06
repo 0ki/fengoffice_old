@@ -45,7 +45,6 @@ $today->add('h', logged_user()->getTimezone());
 $currentday = $today->format("j");
 $currentmonth = $today->format("n");
 $currentyear = $today->format("Y");
-$firstweek = date("W", mktime(0, 0, 0, $month, 1, $year));
 
 if(user_config_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year)) - 1) % 7;
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
@@ -172,15 +171,17 @@ foreach($companies as $company)
 					
 					// Loop to render the calendar
 					for ($week_index = 0;; $week_index++) {
+						$month_aux = $month;
+						$year_aux = $year;
+						$day_of_month = $week_index * 7 + 2 - $firstday;
+						$weeknumber = date("W", mktime(0, 0, 0, $month, $day_of_month, $year));
 					?>
 						<tr>
 						<?php if(user_config_option("show_week_numbers")) { ?>
-							<td style="width:20px" class="weeknumber" valign="top"><?php echo $week_index + $firstweek?></td>
+							<td style="width:20px" class="weeknumber" valign="top"><?php echo $weeknumber?></td>
 						<?php } ?>
 					<?php
-						$month_aux = $month;
-						$year_aux = $year;
-						
+
 						for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {
 							$i = $week_index * 7 + $day_of_week;
 							$day_of_month = $i - $firstday + 1;

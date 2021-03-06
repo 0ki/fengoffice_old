@@ -7,7 +7,11 @@
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div id="oldPasswordDiv">
+  <div id="changePasswordDiv">
+    <label for="username"><?php echo lang('username') ?>:</label>
+    <?php echo text_field('changePassword[username]', null, array('id' => 'username', 'class' => 'medium')) ?>
+  </div>
+  <div id="repeatPasswordDiv">
     <label for="oldPassword"><?php echo lang('old password') ?>:</label>
     <?php echo password_field('changePassword[oldPassword]', null, array('id' => 'oldPassword', 'class' => 'medium')) ?>
   </div>

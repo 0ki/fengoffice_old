@@ -101,7 +101,7 @@
     'week' => 'Week',
     
     //Groups
-    'can edit company data' => 'Can edit company data',
+    'can edit company data' => 'Can edit owner company data',
     'can manage security' => 'Can manage security',
     'can manage workspaces' => 'Can manage workspaces',
     'can manage configuration' => 'Can manage configuration',
@@ -211,7 +211,11 @@
   	'confirm archive selected objects' => 'Are you sure you want to archive the selected objects?',
 	'confirm archive object' => 'Are you sure you want to archive this object?',
 	'confirm unarchive object' => 'Are you sure you want to unarchive this object?',
+
+  	'report as spam' => 'Report as Spam',
+	'not spam' => 'Not Spam',
   
+  	'mark as unread' => 'Mark as unread',
   ); // array
 
 ?>

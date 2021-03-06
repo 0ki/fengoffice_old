@@ -84,6 +84,10 @@ class MailContents extends BaseMailContents {
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'MailContents' AND `workspace_id` IN ($ids)) ";
 	}
 	
+	public static function getNotClassifiedString() {
+		return " NOT EXISTS(SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'MailContents' AND `object_id` = `id`) ";
+	}
+	
 	static function mailRecordExists($account_id, $uid, $folder = null, $is_deleted = null) {
 		if (!$uid) return false;
 		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = " . DB::escape($folder);
@@ -147,31 +151,8 @@ class MailContents extends BaseMailContents {
 	function getEmails($tag = null, $account_id = null, $state = null, $read_filter = "", $classif_filter = "", $project = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $archived = false, $count = false) {
 		// Check for accounts
 		$accountConditions = "";
-		$singleAccount = false;
 		if (isset($account_id) && $account_id > 0) { //Single account
-			$acc = MailAccounts::findById($account_id);
-			if ($acc && $acc->canView(logged_user())) {
-				$singleAccount = true;
-				$accounts = array($acc);
-			}
-		} else { // All user accounts
-			$accounts = MailAccounts::getMailAccountsByUser(logged_user());
-		}
-
-		if (isset($accounts) && count($accounts) > 0) {
-			$list = "";
-			foreach ($accounts as $acc) {
-				$list .= "," . $acc->getId();
-			}
-			$accountConditions = "`account_id` IN (" . substr($list, 1) . ")";
-		}
-		if ($accountConditions == "") {
-			$accountConditions = "`account_id` = 0";  // cannot view any valid accounts but can see project emails
-		}
-
-		// Show deleted accounts' mails
-		if (user_config_option('view deleted accounts emails')) {
-			$accountConditions = "($accountConditions OR ((SELECT count(*) FROM `" . TABLE_PREFIX . "mail_accounts` WHERE `id` = `account_id`) = 0) AND `created_by_id` = " . DB::escape(logged_user()->getId()) . ")";
+			$accountConditions = " AND `account_id` = " . DB::escape($account_id);
 		}
 					
 		// Check for unclassified emails
@@ -228,32 +209,15 @@ class MailContents extends BaseMailContents {
 					TABLE_PREFIX . "tags`.`tag` = " . DB::escape($tag) . " AND `" . TABLE_PREFIX . "tags`.`rel_object_manager` ='MailContents' ) > 0 ";
 		}
 
-		$permissions = ' ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
+		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
 		
 		//Check for projects (uses accountConditions
 		if ($project instanceof Project) {
 			$pids = $project->getAllSubWorkspacesQuery(!$archived, logged_user());
-			$wspace_obj_string = self::getWorkspaceString($pids);
-
-			if ($singleAccount) {
-				$projectConditions = " AND ($accountConditions AND $wspace_obj_string)";
-			} else {
-				$projectConditions = " AND " . (logged_user()->isMemberOfOwnerCompany() ?
-						$wspace_obj_string : "(($accountConditions AND $wspace_obj_string) OR ($wspace_obj_string AND `is_private` = 0))");
-			}
+			$projectConditions = " AND " . self::getWorkspaceString($pids);
 		} else {
-			$pids = logged_user()->getWorkspacesQuery(!$archived);
-			$wspace_obj_string = self::getWorkspaceString($pids);
-
-			if ($singleAccount) {
-				$projectConditions = "AND $accountConditions";
-			} else {
-				$projectConditions = "AND ($accountConditions OR $wspace_obj_string)" .
-						(logged_user()->isMemberOfOwnerCompany() ? '' : " AND is_private = 0");
-			}
-			$permissions = "( $permissions OR $accountConditions )";
+			$projectConditions = "";
 		}
-		$permissions = "AND $permissions";
 
 		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
 		else $archived_cond = "AND `archived_by_id` = 0";
@@ -271,8 +235,7 @@ class MailContents extends BaseMailContents {
 			$box_cond = "AND $stateConditions";
 		}
 
-		//$not_classified_by_other_user = " NOT EXISTS (SELECT `id` FROM $table_name mc WHERE mc.`subject` = $table_name.`subject` AND mc.`sent_date` = $table_name.`sent_date` AND mc.`from` = $table_name.`from` AND mc.`account_id` <> $table_name.`account_id` AND $wspace_obj_string)";
-		$conditions = "`trashed_by_id` = 0 AND `is_deleted` = 0 $archived_cond $projectConditions $tagstr $classified $read $permissions $conversation_cond $box_cond";	//. " AND $not_classified_by_other_user";
+		$conditions = "`trashed_by_id` = 0 AND `is_deleted` = 0 $archived_cond $projectConditions $accountConditions $tagstr $classified $read $permissions $conversation_cond $box_cond";
 
 		if ($count) {
 			return self::count($conditions);
@@ -284,11 +247,34 @@ class MailContents extends BaseMailContents {
 			$pagination = new DataPagination($count ? $count : self::count($conditions), $limit, $page);
 			$ids = self::findAll(array(
 				'conditions' => $conditions,
-				'order' => $order,
-				'offset' => $pagination->getLimitStart(),
-				'limit' => $pagination->getItemsPerPage(),
 				'id' => true,
 			));
+			
+			$ids = array_reverse($ids);
+			$ret_ids = array();
+			$offset = 0;
+			$block_len = $pagination->getItemsPerPage();
+			while (count($ret_ids) < $pagination->getLimitStart() + $pagination->getItemsPerPage() && $offset < count($ids)) {
+				$tmp_ids = array();
+				for ($i=$offset; $i<count($ids) && $i<$offset + $block_len; $i++) {
+					$tmp_ids[] = $ids[$i];
+				}
+				
+				$tmp_ids = self::findAll(array(
+					'conditions' => "`id` IN (".implode(",", $tmp_ids).") $permissions $conversation_cond $box_cond",
+					'order' => $order,
+					'id' => true,
+				));
+				
+				$ret_ids = array_merge($ret_ids, $tmp_ids);
+				
+				$offset += $block_len;
+			}
+			$ids = array();
+			for ($i=$pagination->getLimitStart(); $i<count($ret_ids); $i++) {
+				$ids[] = $ret_ids[$i];
+			}
+			
 			$objects = array();
 			foreach ($ids as $id) {
 				$objects[] = self::findById($id);

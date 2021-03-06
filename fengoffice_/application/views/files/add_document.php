@@ -50,6 +50,7 @@ var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
 	height: (h-60) + 'px',
 	enterMode: CKEDITOR.ENTER_P,
 	shiftEnterMode: CKEDITOR.ENTER_BR,
+	disableNativeSpellChecker: false,
 	language: '<?php echo $loc ?>',
 	customConfig: '',
 	toolbar: [

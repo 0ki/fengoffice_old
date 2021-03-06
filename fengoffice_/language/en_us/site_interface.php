@@ -540,7 +540,7 @@ return array(
   'user not subscribed to object' => 'You are not subscribed to this object.',
 
   'tasks updated' => 'Task(s) updated successfully',
-  'too many tasks to display' => 'There are too many tasks to display, only the most recent 500 tasks are being displayed. To show tasks correctly and remove this warning, please filter tasks by workspace, tags, task filters or status.',
+  'too many tasks to display' => 'There are too many tasks to display, only the most recent {0} tasks are being displayed. To show tasks correctly and remove this warning, please filter tasks by workspace, tags, task filters or status.',
 
 
   'show image in new page' => 'Show image in new page',

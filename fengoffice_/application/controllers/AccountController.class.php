@@ -124,10 +124,13 @@ class AccountController extends ApplicationController {
 					$project = Projects::findById(array_var($user_data, 'personal_project_id'));
 					if ($project instanceof Project && $user->getPersonalProjectId() != $project->getId()) {
 						$user->setPersonalProjectId($project->getId());
-						$project_user = new ProjectUser();
+						$project_user = ProjectUsers::findById(array('project_id' => $project->getId(), 'user_id' => $user->getId()));
+						if (!$project_user) {
+							$project_user = new ProjectUser();
+							$project_user->setUserId($user->getId());
+							$project_user->setProjectId($project->getId());
+						}
 						$project_user->setAllPermissions(true);
-						$project_user->setUserId($user->getId());
-						$project_user->setProjectId($project->getId());
 						$project_user->save();
 					}
 				}

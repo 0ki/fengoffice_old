@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chivito upgrade script will upgrade Feng Office 1.5 to Feng Office 1.6.1
+ * Chivito upgrade script will upgrade Feng Office 1.5 to Feng Office 1.6.2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -41,7 +41,7 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.5.3');
-		$this->setVersionTo('1.6.1');
+		$this->setVersionTo('1.6.2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -142,6 +142,13 @@ class ChivitoUpgradeScript extends ScriptUpgraderScript {
 					  ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', '0', '0', NULL)
 					ON DUPLICATE KEY UPDATE id=id;
 					UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `config_handler_class` = 'RememberGUIConfigHandler' WHERE `name` = 'rememberGUIState';
+				";
+			}
+			if (version_compare($installed_version, "1.6.2") < 0) {
+				$upgrade_script .= "
+					INSERT INTO `".TABLE_PREFIX."user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					  ('task panel', 'task_display_limit', '500', 'IntegerConfigHandler', '0', '200', NULL)
+					ON DUPLICATE KEY UPDATE id=id;
 				";
 			}
 		}

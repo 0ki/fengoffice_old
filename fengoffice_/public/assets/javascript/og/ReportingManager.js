@@ -203,6 +203,8 @@ og.ReportingManager = function() {
     };
     
 	og.ReportingManager.superclass.constructor.call(this, {
+		enableDrag: true,
+		ddGroup : 'disabled',
         store: this.store,
 		layout: 'fit',
         cm: cm,
@@ -226,7 +228,7 @@ og.ReportingManager = function() {
 			'-',
 			actions.tag,
 			actions.delChart,
-			actions.editChart,
+			//actions.editChart,
 			'-',
 			actions.refresh
         ],

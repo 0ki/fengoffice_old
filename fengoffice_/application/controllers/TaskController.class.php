@@ -276,27 +276,29 @@ class TaskController extends ApplicationController {
 						}
 					}
 				}
-				
 				$apply_ws = array_var($task_data, 'apply_ws_subtasks', '') == "checked";
 				$apply_ms = array_var($task_data, 'apply_milestone_subtasks', '') == "checked";
+				$apply_at = array_var($task_data, 'apply_assignee_subtasks', '') == "checked";
 				$modified_subtasks = array();
 				foreach ($subtasks as $sub) {
-					$add_current = false;
-					if (!$sub->getAssignedTo() instanceof ApplicationDataObject) {
+					$modified = false;
+					if ($apply_at || !$sub->getAssignedTo() instanceof ApplicationDataObject) {
 						$sub->setAssignedToCompanyId($company_id);
 						$sub->setAssignedToUserId($user_id);
-						$add_current = true;
+						$modified = true;
 					}
 					if ($apply_ws) {
 						$sub->setProject($project);
-						$add_current = true;
+						$modified = true;
 					}
 					if ($apply_ms) {
 						$sub->setMilestoneId($milestone_id);
-						$sub->save();
-						$add_current = true;
+						$modified = true;
 					}
-					if ($add_current) $modified_subtasks[] = $sub;
+					if ($modified) {
+						$sub->save();
+						$modified_subtasks[] = $sub;
+					}
 				}
 
 				//Add new work timeslot for this task
@@ -480,6 +482,7 @@ class TaskController extends ApplicationController {
 			set_user_config_option('task panel status', $status, logged_user()->getId());
 		}
 
+		$previous_filter = user_config_option('task panel filter','assigned_to');
 		$filter = array_var($_GET,'filter');
 		if (is_null($filter) || $filter == '') {
 			$filter = user_config_option('task panel filter','assigned_to');
@@ -493,6 +496,8 @@ class TaskController extends ApplicationController {
 			if (is_null($filter_value) || $filter_value == '') {
 				$filter_value = user_config_option('task panel filter value',logged_user()->getCompanyId() . ':' . logged_user()->getId());
 				set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
+				$filter = $previous_filter;
+				set_user_config_option('task panel filter', $filter, logged_user()->getId());
 			} else
 			if (user_config_option('task panel filter value') != $filter_value) {
 				set_user_config_option('task panel filter value', $filter_value, logged_user()->getId());
@@ -585,7 +590,7 @@ class TaskController extends ApplicationController {
 		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr . " AND `trashed_by_id` = 0 AND `archived_by_id` = 0";
 
 		//Now get the tasks
-		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => '501'));
+		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => user_config_option('task_display_limit') > 0 ? user_config_option('task_display_limit') + 1 : null));
 		ProjectTasks::populateData($tasks);
 		//Find all internal milestones for these tasks
 		$internalMilestones = ProjectMilestones::getProjectMilestones($project, null, 'DESC', $tag, null, null, null, ($status == 0), false);
@@ -664,10 +669,11 @@ class TaskController extends ApplicationController {
 			}
 			tpl_assign('project_templates', $task_templates);
 			tpl_assign('all_templates', COTemplates::findAll());
-			tpl_assign('tasks', $tasks);
-			if (count($tasks) > 500) {
+			if (user_config_option('task_display_limit') > 0 && count($tasks) > user_config_option('task_display_limit')) {
 				tpl_assign('displayTooManyTasks', true);
+				array_pop($tasks);
 			}
+			tpl_assign('tasks', $tasks);
 				
 			tpl_assign('object_subtypes', ProjectCoTypes::getObjectTypesByManager('ProjectTasks'));
 			tpl_assign('internalMilestones', $internalMilestones);
@@ -1161,16 +1167,23 @@ class TaskController extends ApplicationController {
 				$milestone_id = $task->getMilestoneId();
 				$apply_ws = array_var($task_data, 'apply_ws_subtasks') == "checked";
 				$apply_ms = array_var($task_data, 'apply_milestone_subtasks') == "checked";
+				$apply_at = array_var($task_data, 'apply_assignee_subtasks', '') == "checked";
 				foreach ($subtasks as $sub) {
-					if (!$sub->getAssignedTo() instanceof ApplicationDataObject) {
+					$modified = false;
+					if ($apply_at || !$sub->getAssignedTo() instanceof ApplicationDataObject) {
 						$sub->setAssignedToCompanyId($company_id);
 						$sub->setAssignedToUserId($user_id);
+						$modified = true;
 					}
 					if ($apply_ws) {
 						$sub->setProject($project);
+						$modified = true;
 					}
 					if ($apply_ms) {
 						$sub->setMilestoneId($milestone_id);
+						$modified = true;
+					}
+					if ($modified) {
 						$sub->save();
 					}
 				}

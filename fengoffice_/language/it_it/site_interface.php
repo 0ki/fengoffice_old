@@ -444,7 +444,7 @@
 	'timeslots' => 'Compito',
 	'to' => 'A',
 	'today at' => 'Oggi alle {0}',
-	'too many tasks to display' => 'Troppe attività, saranno visualizzate solo le 500 più recenti. Per una visualizzazione corretta e per rimuovere questo avvertimento filtrare le attività per progetto, etichetta, filtro o stato.',
+	'too many tasks to display' => 'Troppe attività, saranno visualizzate solo le {0} più recenti. Per una visualizzazione corretta e per rimuovere questo avvertimento filtrare le attività per progetto, etichetta, filtro o stato.',
 	'total' => 'Totale',
 	'total billing by user' => 'Totale fatturazione per utente',
 	'total pause time' => 'Tempo totale di sospensione',

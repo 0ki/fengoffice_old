@@ -144,7 +144,7 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
 	return select_box($name, $options, $attributes);
 } // select_project
 
-function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS = null) {
+function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS = null, $workspaces = null) {
 	$extra = "";
 	if (is_array($extraWS)) {
 		foreach ($extraWS as $ws) {
@@ -152,10 +152,40 @@ function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS
 			$extra .= json_encode($ws);
 		}
 	}
+	if (is_array($workspaces)) {
+		$workspacesToJson = array();
+		$wsset = array();
+		foreach ($workspaces as $w) {
+			$wsset[$w->getId()] = true;
+		}
+		foreach ($workspaces as $w){
+			$tempParent = $w->getParentId();
+			$x = $w;
+			while ($x instanceof Project && !isset($wsset[$tempParent])) {
+				$tempParent = $x->getParentId();
+				$x = $x->getParentWorkspace();
+			}
+			if (!$x instanceof Project) {
+				$tempParent = 0;
+			}
+			
+			$workspacesToJson[] = array(
+				"id" => $w->getId(),
+				"name" => $w->getName(),
+				"parent" => $tempParent,
+				"realParent" => $w->getParentId(),
+				"depth" => $w->getDepth(),
+				"color" => $w->getColor(),
+				);
+		}
+		$wsList = json_encode($workspacesToJson);
+	} else {
+		$wsList = "null";
+	}
 	$extra = "[$extra]";
 	$html = "<div id='" . $genid  . "wsSel'></div>
 		<script>
-		og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra);
+		og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra, $wsList);
 		</script>
 	";
 	

@@ -150,4 +150,9 @@
 	'show all linked objects' => 'Exibir todos os objetos vinculados({0})',
 	'apply milestone to subtasks' => 'Aplicar Marco a Subtarefas',
 	'apply workspace to subtasks' => 'Aplicar Espaço de Trabalho a Subtarefas',
+	'archive' => 'Arquivar',
+	'unarchive' => 'Não Arquivar',
+	'confirm archive selected objects' => 'Confirma o arquivamento do objeto selecionado?',
+	'confirm archive object' => 'Confirma o arquivamento deste objeto?',
+	'confirm unarchive object' => 'Confirma que deseja desarquivar este objeto?',
 ); ?>

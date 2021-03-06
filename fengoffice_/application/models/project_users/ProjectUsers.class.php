@@ -180,7 +180,7 @@ class ProjectUsers extends BaseProjectUsers {
 	 * @param User $user
 	 * @return boolean
 	 */
-	static function clearByUser(User $user, $ids = null) {
+	static function clearByUser($user, $ids = null) {
 		$ids_condition = "";
 		if (!is_null($ids) && $ids != '')
 		$ids_condition = " and `project_id` in (" . $ids . ")";

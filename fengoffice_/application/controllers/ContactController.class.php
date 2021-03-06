@@ -780,12 +780,11 @@ class ContactController extends ApplicationController {
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
 				$contact->setIsPrivate(false);
-
-				//link it!
-			    $object_controller = new ObjectController();
-			    $object_controller->link_to_new_object($contact);								
 				
 				$contact->save();
+				//link it!
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($contact);
 				$contact->setTagsFromCSV(array_var($contact_data, 'tags'));
 				
 				$object_controller->add_subscribers($contact);
@@ -1472,7 +1471,7 @@ class ContactController extends ApplicationController {
 								$company = new Company();
 								$contact_data['import_status'] = '('.lang('new').')';
 								$log_action = ApplicationLogs::ACTION_ADD;
-								$can_import = active_project() != null ? $company->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user() || logged_user()->isAccountOwner() || logged_user()->isAdministrator());
+								$can_import = active_project() != null ? $company->canAdd(logged_user(), active_project()) : can_manage_contacts(logged_user()) || logged_user()->isAccountOwner() || logged_user()->isAdministrator();
 							} else {
 								$can_import = $company->canEdit(logged_user());
 							}
@@ -2005,11 +2004,11 @@ class ContactController extends ApplicationController {
                 $block_data["lastname"] = trim($matches[count($matches)-2]);
             } else if (preg_match('/^ORG(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
             	// ORGANIZATION
-                $block_data["company_name"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
+                $block_data["company_name"] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($matches[2]));
             } else if (preg_match('/^NOTE(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)/i', $line, $matches)) {
             	// NOTES
                 $block_data["notes"] = trim($matches[count($matches)-1]);
-            } else if (preg_match('/EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)/i', $line, $matches)) {
+            } else if (preg_match('/EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?(;type=PREF)?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)/i', $line, $matches)) {
             	// EMAIL
                 $email = trim($matches[count($matches)-1]);
                 if (!isset($block_data["email"])) 
@@ -2022,7 +2021,7 @@ class ContactController extends ApplicationController {
             } else if (preg_match('/URL(;type=(HOME|WORK))?.*:(.+)/i', $line, $matches)) {
             	// WEB URL
                 $url = trim($matches[3]);
-                $url = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $url);
+                $url = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", $url);
                 if ($matches[2] == "HOME") {
                 	$block_data['h_web_page'] = $url;
                 } else if ($matches[2] == "WORK") {
@@ -2033,7 +2032,7 @@ class ContactController extends ApplicationController {
             } else if (preg_match('/TEL(;type=(HOME|WORK|CELL|FAX)[,A-Z]*)?.*:(.+)/i', $line, $matches)) {
             	// PHONE
                 $phone = trim($matches[3]);
-                $phone = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $phone);
+                $phone = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", $phone);
                 if ($matches[2] == "HOME") {
                     $block_data["h_phone_number"] = $phone;
                 } else if ($matches[2] == "CELL") {
@@ -2054,7 +2053,7 @@ class ContactController extends ApplicationController {
                 // [4] <-- zip
                 // [5] <-- country
                 $addr = array_slice($matches, count($matches)-5);
-                foreach ($addr as $k=>$v) $addr[$k] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($v));
+                foreach ($addr as $k=>$v) $addr[$k] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($v));
                 if ($matches[1] == "HOME") {
                     $block_data["h_address"] = $addr[0];
                     $block_data["h_city"] = $addr[1];
@@ -2081,7 +2080,7 @@ class ContactController extends ApplicationController {
                 
             } else if (preg_match('/TITLE(:|;charset=[-a-zA-Z0-9.]+:)(.*)/i', $line, $matches)) {
             	// JOB TITLE
-                $block_data["job_title"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
+                $block_data["job_title"] = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", trim($matches[2]));
                 
             } else if (preg_match('/PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)/i', $line, $matches)) {
             	

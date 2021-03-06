@@ -62,23 +62,29 @@ og.FileManager = function() {
 		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'file-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
+	var readClass = 'read-unread-' + Ext.id();
 	function renderName(value, p, r) {
 		var result = '';
-		var bold = 'normal';
-		if (!r.data.isRead) {bold = 'bold';}
+		
+		var classes = readClass + r.id;
+		if (!r.data.isRead) classes += " bold";
+		
 		var name = String.format(
-			'<a style="font-size:120%; font-weight:'+ bold+';" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
-			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
+			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
+			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}), classes);
 		
 		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
 	}
 	function renderIsRead(value, p, r){
-		if (value){
-			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'file-manager\').load({action: 'markasunread',objects:" + r.id + "});Ext.getCmp(\'file-manager\').getSelectionModel().clearSelections(); \" />";
-		}else{
-			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('file-manager').load({action: 'markasread',objects:" + r.id + "});Ext.getCmp('file-manager').getSelectionModel().clearSelections(); \" />";			
-		}
-		return div;
+		var idr = Ext.id();
+		var idu = Ext.id();
+		var jsr = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:\'ProjectFiles:' + r.data.object_id + '\'}));'; 
+		var jsu = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = false; Ext.select(\'.' + readClass + r.id + '\').addClass(\'bold\'); Ext.get(\'' + idr + '\').setDisplayed(true); Ext.get(\'' + idu + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_unread\', {ids:\'ProjectFiles:' + r.data.object_id + '\'}));';
+		return String.format(
+			'<div id="{0}" title="{1}" class="db-ico ico-read" style="display:{2}" onclick="{3}"></div>' + 
+			'<div id="{4}" title="{5}" class="db-ico ico-unread" style="display:{6}" onclick="{7}"></div>',
+			idu, lang('mark as unread'), value ? 'block' : 'none', jsu, idr, lang('mark as read'), value ? 'none' : 'block', jsr
+		);
 	}	
 
 	function renderIcon(value, p, r) {

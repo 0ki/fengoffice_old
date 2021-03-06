@@ -75,7 +75,7 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 		<?php }?>
 	<?php if (isset($displayTooManyTasks) && $displayTooManyTasks){ ?>
 	<div class="tasksPanelWarning ico-warning32" style="font-size:10px;color:#666;background-repeat:no-repeat;padding-left:40px;max-width:920px; margin:20px;border:1px solid #E3AD00;background-color:#FFF690;background-position:4px 4px;">
-		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display') ?></div>
+		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display', user_config_option('task_display_limit')) ?></div>
 	</div>
 	<?php } ?>
 		<div id="tasksPanelContainer" style="background-color:white;padding:7px;padding-top:0px;">

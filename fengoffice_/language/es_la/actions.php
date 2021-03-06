@@ -70,7 +70,7 @@
 	'pick a date' => 'Elegir fecha',
 	'month' => 'Mes',
 	'week' => 'Semana',
-	'can edit company data' => 'Permitirle editar datos de la empresa',
+	'can edit company data' => 'Permitirle editar datos de la empresa propietaria',
 	'can manage security' => 'Permitirle modificar configuraciones de seguridad',
 	'can manage workspaces' => 'Permitirle modificar configuraciones de espacios',
 	'can manage configuration' => 'Permitirle modificar las configuraciones',
@@ -158,4 +158,9 @@
 
 	'copy file' => 'Copiar este archivo',
   	'open weblink' => 'Abrir enlace web',
+
+	'report as spam' => 'Reportar como Spam',
+	'not spam' => 'No es Spam',
+
+	'mark as unread' => 'Marcar como no leído',
 ); ?>

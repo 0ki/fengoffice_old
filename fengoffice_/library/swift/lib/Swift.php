@@ -1623,7 +1623,11 @@ class Swift
 	 */
 	public function buildMail($to, $from, $subject, $body, $type='text/plain', $encoding='8bit', $return_data_part=true, &$complete_mail)
 	{
-		$msg_id = $this->message_id ? $this->message_id : "<" . gen_id() . substr($from, strpos($from, '@')) . (str_ends_with($from, ">")?'':">");
+		if ($this->message_id) {
+			$msg_id = $this->message_id;
+		} else {
+			$msg_id = MailUtilities::generateMessageId($from);
+		}
 		
 		$date = date('r'); //RFC 2822 date
 		$return_path = $this->returnPath ? $this->returnPath : $this->getAddress($from);

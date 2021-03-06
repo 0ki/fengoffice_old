@@ -1,5 +1,5 @@
 
-    About Feng Office 1.6.1
+    About Feng Office 1.6.2
     =======================
 
     Feng Office is a free and open source Web Office, project management
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download Feng Office 1.6.1 - http://fengoffice.com/web/community/
+    2. Download Feng Office 1.6.2 - http://fengoffice.com/web/community/
     3. Unpack into your Feng Office installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_feng>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.6.1
+    	from your current version to 1.6.2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -91,6 +91,39 @@
 	Changelog
 	=========
 	
+	Since 1.6.1
+	-----------
+	
+	feature: Apply a task's assignee to all subtasks.
+	
+	usability: Allow changing the maximum tasks display limit in the Tasks module.
+	usability: Speeded up the quick mark as read (blue dots in listings).
+	usability: Added actions in the email view to move to and out of the Junk folder and to mark as unread.
+	usability: Allow to set a subtask's start and due date when adding it from the parent task's view.
+	
+	bugfix: When I'm editing a user, the user gains access to my personal workspace if I don't have access to his.
+	bugfix: When editing a user's personal workspace you should be able to chose from all workspaces, not only yours.
+	bugfix: Full search engine now matches words individually instead of matching the whole phrase.
+	bugfix: White screen of death when downloading files added before version 1.4.
+	bugfix: Week numbers for january were incorrect.
+	bugfix: Error 500 when importing companies.
+	bugfix: Some links in email didn't open in new windows.
+	bugfix: When creating a contact, objects linked to the contact were ignored.
+	bugfix: Escape invalid UTF8 characters before saving an email to avoid database errors.
+	bugfix: Pick date widgets were not being shown full size on IE8.
+	bugfix: Convert \n, \r, etc in vcard files when importing contacts.
+	bugfix: Improved compatibility with RSS readers - changed the "pubdate" tag to "pubDate"
+	bugfix: When checking email through cron, the "max spam level" user config option was disregarded.
+	bugfix: The User column for emails in the Oveview List was the owner of the email account and not the user who wrote the email.
+	bugfix: User with read access to an email account didn't view emails in the Overview List.
+	bugfix: Missing lang 'success archive files'.
+	bugfix: The string "None" was hardcoded in english in some fields of the time report.
+	bugfix: User with permissions to edit owner company data cannot edit the logo.
+	bugfix:  
+	
+	system: Request username when changing old password for increased security.
+	
+
 	Since 1.6
 	---------
 	

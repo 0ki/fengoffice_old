@@ -66,8 +66,8 @@
 	'config option name validate_password_history' => 'Validar historial de contraseñas',
 	'config option desc validate_password_history' => 'Validar que la nueva contraseña no coincida con ninguna de las últimas 10 contraseñas utilizadas por el usuario',
 	'config option name detect_mime_type_from_extension' => 'Detectar tipo mime a partir de la extensión',
-  	'config option desc detect_mime_type_from_extension' => 'Si se habilita, el tipo mime de los archivos es generado a partir de la extensión del archivo.',
-	'can edit company data' => 'Puede modificar los datos de la empresa',
+	'config option desc detect_mime_type_from_extension' => 'Si se habilita, el tipo mime de los archivos es generado a partir de la extensión del archivo.',
+	'can edit company data' => 'Puede modificar los datos de la empresa propietaria',
 	'can manage security' => 'Puede modificar configuraciones de seguridad',
 	'can manage workspaces' => 'Puede modificar configuraciones de espacios',
 	'can manage configuration' => 'Puede modificar las configuraciones',
@@ -257,4 +257,6 @@
 	'search engine mysql match' => 'Rápida',
 	'user ws config option name hide_quoted_text_in_emails' => 'Ocultar texto citado al ver correos',
 	'user ws config option desc hide_quoted_text_in_emails' => 'Si se habilita, los correos se mostraran sin texto citado. Habrá una opción para podrá mostrar el texto citado en la vista del correo.',
+	'user ws config option name task_display_limit' => 'Número máximo de tareas a desplegar',
+	'user ws config option desc task_display_limit' => 'Por motivos de agilidad, este número no debe ser muy grande. Use 0 para no limitar.',
 ); ?>

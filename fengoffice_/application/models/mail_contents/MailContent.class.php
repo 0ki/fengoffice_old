@@ -123,12 +123,14 @@ class MailContent extends BaseMailContent {
 			return parent::delete();
 		} else {
 			$this->setIsDeleted(true);
+			$this->clearTags();
 			return $this->save();
 		}
 	}
 	
 	function mark_as_deleted(){
 		$this->setIsDeleted(true);
+		$this->clearTags();
 		return $this->save();
 	}
 
@@ -526,15 +528,15 @@ class MailContent extends BaseMailContent {
     		$deletedBy = lang("n/a");
     	}
 		
-    	$owner_id = $this->getAccount() instanceof MailAccount ? $this->getAccount()->getUserId() : 0;
-    	if ($owner_id > 0)
-			$createdBy = Users::findById($owner_id);
+    	if ($this->getState() == 1 || $this->getState() == 3 || $this->getState() == 5) {
+    		$createdBy = $this->getCreatedBy();
+    	}
     	if (isset($createdBy) && $createdBy instanceof User) {
     		$createdById = $createdBy->getId();
     		$createdBy = $createdBy->getDisplayName();
     	} else {
     		$createdById = 0;
-    		$createdBy = lang("n/a");
+    		$createdBy = $this->getFromName();
     	}
     	
   		$archivedOn = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn(), 'M j')) : lang('n/a');
