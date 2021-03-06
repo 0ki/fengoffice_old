@@ -55,7 +55,7 @@
     'no current avatar' => 'Avatar is not uploaded',
     'picture dnx' => 'Picture does not exist',
     'no current picture' => 'Picture is not uploaded',
-    'no current logo' => 'A logo is not uploaded',
+    'no current logo' => 'You currently have no logo. Please upload a new one.',
     'user not on project' => 'Selected user is not involved in selected workspace',
     'company not on project' => 'Selected company is not involved in selected workspace',
     'user cant be removed from project' => 'Selected user can\'t be removed from workspace',

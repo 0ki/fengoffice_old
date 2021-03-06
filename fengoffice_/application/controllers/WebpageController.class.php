@@ -320,13 +320,14 @@ class WebpageController extends ApplicationController {
 			"start" => $start,
 			"webpages" => array()
 		);
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(ProjectWebpages::instance()->getObjectTypeId());
 		if (isset($res->objects)) {
 			$index = 0;
 			$ids = array();
 			foreach ($res->objects as $w) {
 				$ids[] = $w->getId();
-				$object["webpages"][] = array(
-					"ix" => $index++,
+				$object["webpages"][$index] = array(
+					"ix" => $index,
 					"id" => $w->getId(),
 					"object_id" => $w->getObjectId(),
 					"ot_id" => $w->getObjectTypeId(),
@@ -339,6 +340,12 @@ class WebpageController extends ApplicationController {
 					"updatedById" => $w->getUpdatedById(),
 					"memPath" => json_encode($w->getMembersToDisplayPath()),
 				);
+				
+				foreach ($custom_properties as $cp) {
+					$cp_value = CustomPropertyValues::getCustomPropertyValue($w->getId(), $cp->getId());
+					$object["webpages"][$index]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+				}
+				$index++;
 			}
 			
 			$read_objects = ReadObjects::getReadByObjectList($ids, logged_user()->getId());

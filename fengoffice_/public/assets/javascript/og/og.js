@@ -2157,12 +2157,23 @@ og.flash2img = function() {
 }
 
 
-og.getCrumbHtml = function(dims, draw_all_members) {
+og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions) {
 	var html = '';
 	var dim_index = 0;
 	var max_members_per_dim = 2;
 	for (x in dims) {
 		if (isNaN(x)) continue;
+		
+		var skip_this_dimension = false;
+		if (skipped_dimensions) {
+			for (sd in skipped_dimensions) {
+				if (skipped_dimensions[sd] == x) {
+					skip_this_dimension = true;
+					break;
+				}
+			}
+		}
+		if (skip_this_dimension) continue;
 		
 		var members = dims[x];
 		var inner_html = "";
@@ -2588,4 +2599,22 @@ og.clearDimensionSelection = function() {
 	if (currentPanel && currentPanel.id != 'overview') {
 		currentPanel.reload();
 	}
+}
+
+/**
+ * Dimension column renderer for ext grid listings
+ */
+og.renderDimCol= function(value, p, r) {
+	var dim_id = p.id.replace(/dim_/, '');
+	var text = '';
+	
+	var mpath = Ext.util.JSON.decode(r.data.memPath);
+	if (mpath) {
+		for (t in mpath[dim_id]) {
+			if (mpath[dim_id][t].name) {
+				text += (text=='' ? '' : ', ') + mpath[dim_id][t].name;
+			}
+		}
+	}
+	return text;
 }

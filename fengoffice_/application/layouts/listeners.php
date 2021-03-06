@@ -27,6 +27,9 @@ og.eventManager.addListener('reload dimension tree',
 		}
 		if (!og.reloadingDimensions[data.dim_id]){
 			og.reloadingDimensions[data.dim_id] = true;
+			setTimeout(function(){
+				og.reloadingDimensions[data.dim_id] = false;
+			}, 1000);
 
 			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
 			if (tree) {
@@ -38,9 +41,9 @@ og.eventManager.addListener('reload dimension tree',
 					if (this.isExpanded()) expanded.push(this.id);
 				});
 				tree.loader.load(tree.getRootNode(), function() {
+					og.reloadingDimensions[data.dim_id] = false;
 					tree.expanded_once = false;
 					og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
-					og.reloadingDimensions[data.dim_id] = false;
 					if(selection){
 						og.Breadcrumbs.refresh(selection);
 						og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
@@ -48,8 +51,6 @@ og.eventManager.addListener('reload dimension tree',
 					if (data.node) {
 						var treenode = tree.getNodeById(data.node);
 						if (treenode) {
-					//		treenode.select();
-					//		treenode.ensureVisible();
 							treenode.fireEvent('click', treenode);
 						}
 						og.Breadcrumbs.refresh(treenode);
@@ -167,18 +168,20 @@ og.eventManager.addListener('user preference changed',
 
 og.eventManager.addListener('tabs changed',
 	function(option) {
-		window.location.href = '<?php echo ROOT_URL?>' ;
+		window.location.href = '<?php echo ROOT_URL?>';
 	}
 );
 og.eventManager.addListener('logo changed',
 	function(option) {
-		window.location.href = '<?php echo ROOT_URL?>' ;
+		window.location.href = '<?php echo ROOT_URL?>';
 	}
 );
 og.eventManager.addListener('expand menu panel',
-	function(option) {
-		Ext.getCmp('menu-panel').expand(true);
-	}		
+	function(options) {
+		var animate = options.animate ? options.animate : true;
+		if (options.expand) Ext.getCmp('menu-panel').expand(animate);
+		else if (options.collapse) Ext.getCmp('menu-panel').collapse(animate);
+	}
 );
 
 og.eventManager.addListener('after member save', 

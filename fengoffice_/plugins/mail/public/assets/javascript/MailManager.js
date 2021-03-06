@@ -14,12 +14,20 @@ og.MailManager = function() {
 	this.needRefresh = false;
 	this.maxrowidx = 0;
 
-	var fields = [
+	this.fields = [
 		'object_id', 'type', 'ot_id', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
 		'memberIds', 'projectName', 'userId', 'userName', 'workspaceColors','isRead', 'from', 'memPath',
 		'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread', 'conv_hasatt'
 	];
-	this.Record = Ext.data.Record.create(fields);
+
+	var cps = og.custom_properties_by_type['mail'] ? og.custom_properties_by_type['mail'] : [];
+   	var cp_names = [];
+   	for (i=0; i<cps.length; i++) {
+   		cp_names.push('cp_' + cps[i].id);
+   	}
+   	this.fields = this.fields.concat(cp_names);
+   	
+	this.Record = Ext.data.Record.create(this.fields);
 	
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
@@ -31,7 +39,7 @@ og.MailManager = function() {
 				root: 'messages',
 				totalProperty: 'totalCount',
 				id: 'id',
-				fields: fields
+				fields: this.fields
 			}),
 			remoteSort: true,
 			listeners: {
@@ -81,7 +89,7 @@ og.MailManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
 		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();return false;';
 		name = String.format(
@@ -290,7 +298,7 @@ og.MailManager = function() {
 			}
 		});
 	
-	var cm = new Ext.grid.ColumnModel([
+	var cm_info = [
 		sm,{
 			id: 'draghandle',
 			header: '&nbsp;',
@@ -375,7 +383,35 @@ og.MailManager = function() {
 			width: 60,
 			renderer: renderActions,
 			sortable: false
-		}]);
+		}];
+	// custom property columns
+	var cps = og.custom_properties_by_type['mail'] ? og.custom_properties_by_type['mail'] : [];
+	for (i=0; i<cps.length; i++) {
+		cm_info.push({
+			id: 'cp_' + cps[i].id,
+			header: cps[i].name,
+			dataIndex: 'cp_' + cps[i].id,
+			sortable: false,
+			renderer: og.clean
+		});
+	}
+	// dimension columns
+	for (did in og.dimensions) {
+		if (isNaN(did)) continue;
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			cm_info.push({
+				id: 'dim_' + did,
+				header: og.dimensions_info[did].name,
+				dataIndex: 'dim_' + did,
+				sortable: false,
+				renderer: og.renderDimCol
+			});
+			og.breadcrumbs_skipped_dimensions[did] = did;
+		}
+	}
+	// create column model
+	var cm = new Ext.grid.ColumnModel(cm_info);
 	cm.defaultSortable = true;
 
 	moreActions = {};

@@ -40,7 +40,7 @@
 	'today' => 'Hoy',
 	'yesterday' => 'Ayer',
 	'tomorrow' => 'Mañana',
-	'n/a' => '<acronym title="No Disponible">n/a</acronym>',
+	'n/a' => 'n/a',
 	'anyone' => 'Todos',
 	'nobody' => 'Nadie',
 	'none' => '-- Ninguno --',

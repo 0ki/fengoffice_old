@@ -6,6 +6,17 @@ og.WebpageManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
+	this.fields = [
+        'name', 'description', 'url', 'updatedBy', 'updatedById',
+        'updatedOn', 'updatedOn_today', 'ix', 'isRead', 'memPath'
+    ];
+	var cps = og.custom_properties_by_type['weblink'] ? og.custom_properties_by_type['weblink'] : [];
+   	var cp_names = [];
+   	for (i=0; i<cps.length; i++) {
+   		cp_names.push('cp_' + cps[i].id);
+   	}
+   	this.fields = this.fields.concat(cp_names);
+	
 	if (!og.WebpageManager.store) {
 		og.WebpageManager.store = new Ext.data.Store({
 	        proxy: new og.GooProxy({
@@ -15,10 +26,7 @@ og.WebpageManager = function() {
 	            root: 'webpages',
 	            totalProperty: 'totalCount',
 	            id: 'id',
-	            fields: [
-	                'name', 'description', 'url', 'updatedBy', 'updatedById',
-	                'updatedOn', 'updatedOn_today', 'ix', 'isRead', 'memPath'
-	            ]
+	            fields: this.fields
 	        }),
 	        remoteSort: true,
 			listeners: {
@@ -76,7 +84,7 @@ og.WebpageManager = function() {
 		
 		var mem_path = "";
 		var mpath = r.data.memPath ? Ext.util.JSON.decode(r.data.memPath) : "";
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 	    
 		return mem_path + name + actions + text;
 	}
@@ -170,7 +178,7 @@ og.WebpageManager = function() {
 			}
 		});
 
-    var cm = new Ext.grid.ColumnModel([
+    var cm_info = [
 		sm,{
 			id: 'draghandle',
 			header: '&nbsp;',
@@ -214,7 +222,35 @@ og.WebpageManager = function() {
 			width: 90,
 			renderer: renderDateUpdated,
 			sortable: true
-        }]);
+        }];
+    // custom property columns
+	var cps = og.custom_properties_by_type['weblink'] ? og.custom_properties_by_type['weblink'] : [];
+	for (i=0; i<cps.length; i++) {
+		cm_info.push({
+			id: 'cp_' + cps[i].id,
+			header: cps[i].name,
+			dataIndex: 'cp_' + cps[i].id,
+			sortable: false,
+			renderer: og.clean
+		});
+	}
+	// dimension columns
+	for (did in og.dimensions) {
+		if (isNaN(did)) continue;
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			cm_info.push({
+				id: 'dim_' + did,
+				header: og.dimensions_info[did].name,
+				dataIndex: 'dim_' + did,
+				sortable: false,
+				renderer: og.renderDimCol
+			});
+			og.breadcrumbs_skipped_dimensions[did] = did;
+		}
+	}
+	// create column model
+	var cm = new Ext.grid.ColumnModel(cm_info);
     cm.defaultSortable = false;
     
     markactions = {

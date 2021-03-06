@@ -94,6 +94,7 @@
 	'user ws config category name task panel' => 'Opciones del panel de tareas',
 	'user ws config category name calendar panel' => 'Opciones del Calendario',
 	'user ws config category name mails panel' => 'Opciones del módulo de Email',
+	'user ws config category name listing preferences' => 'Opciones de listados',
 	'user config category name mails panel' => 'Opciones del módulo de Email',
 	'user config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
 	'user config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',

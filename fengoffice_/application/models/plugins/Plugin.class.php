@@ -32,11 +32,11 @@ class Plugin extends BasePlugin {
 		foreach ( $this->getUpdateFunctions () as $updateFunction ) {
 			if (function_exists($updateFunction)) {
 				call_user_func($updateFunction);
+				$tmp_ver = substr($updateFunction, strrpos($updateFunction, "_") + 1);
+				$this->setVersion($tmp_ver);
+				$this->save();
 			}
 		}
-		$meta = $this->getMetadata ();
-		$this->setVersion(array_var($meta,'version'));
-		$this->save();
 	}
 	
 	function getSystemName() {
@@ -48,7 +48,6 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path of the controller folder 
-	 * 
 	 */
 	function getControllerPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/application/controllers/";
@@ -64,7 +63,6 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path of the plugin folder  
-	 * 
 	 */
 	function getHooksPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/hooks/";
@@ -72,16 +70,11 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path to the view folder 
-	 * 
 	 */
 	function getViewPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/application/views/";
 	}
 	
-	/**
-	 * 
-	 * 
-	 */
 	function getLanguagePath() {
 		return PLUGIN_PATH . "/" . $this->getSystemName () . "/language";
 	}
@@ -93,7 +86,6 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * @return mixed - false if not update avalable - update function otherwise 	
-	 * @author Ignacio Vazquez <elpepe.uy at gmail.com>
 	 */
 	function updateAvailable() {
 		$meta = $this->getMetadata ();
@@ -103,9 +95,6 @@ class Plugin extends BasePlugin {
 		return ($installedVersion && ($installedVersion < $nextVersion));
 	}
 	
-	/**
-	 * @author Ignacio Vazquez <elpepe.uy at gmail.com>
-	 */
 	function getUpdateFunctions() {
 		$functions = array ();
 		$meta = $this->getMetadata ();

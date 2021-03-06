@@ -24,7 +24,7 @@ class Notifier {
 	 * @var boolean
 	 */
 	static public $exchange_compatible = null;
-
+	
 	function notifyAction($object, $action, $log_data) {
 		
 		if (!$object instanceof ContentDataObject) {
@@ -255,7 +255,7 @@ class Notifier {
                         }
                         
                         if (!isset($description)) {
-                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedBy()->getObjectName());
+                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName());
                             $description = "$notification notification $type desc";
                         }else{//reminders
                             $date = "";
@@ -277,7 +277,7 @@ class Notifier {
                                             $date .= " " . $time;
                                 }
                             }
-                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedBy()->getObjectName(),$date);
+                            $descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName(),$date);
                         }                        
                         tpl_assign('description_title', langA($description, $descArgs));//description_title     
                         

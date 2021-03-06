@@ -215,8 +215,10 @@ class ApplicationLog extends BaseApplicationLog {
 				if ($object)
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $users_text);
 			case ApplicationLogs::ACTION_COMMENT :
-				if ($object) {
+				if ($object instanceof Comment) {
 					return lang('activity ' . $this->getAction(), lang('the '.$object->getRelObject()->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
+				} else {
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()), $user->getDisplayName(), $object_link, $this->getLogData());
 				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :

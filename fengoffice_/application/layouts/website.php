@@ -374,8 +374,20 @@ og.preferences = {
 	'start_monday': <?php echo user_config_option('start_monday') ? '1' : '0' ?>,
 	'draft_autosave_timeout': <?php echo json_encode(user_config_option('draft_autosave_timeout')) ?>,
 	'drag_drop_prompt': <?php echo json_encode(user_config_option('drag_drop_prompt')) ?>,
-	'mail_drag_drop_prompt': <?php echo json_encode(user_config_option('mail_drag_drop_prompt')) ?>
+	'mail_drag_drop_prompt': <?php echo json_encode(user_config_option('mail_drag_drop_prompt')) ?>,
+	'listing_preferences': []
 };
+<?php
+	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');
+	foreach ($listing_preferences as $lp) {
+		if (str_starts_with($lp->getName(), 'lp_dim_')) {
+			$dcode = str_replace('lp_dim_', '', str_replace('_show_as_column', '', $lp->getName()));
+			$dim = Dimensions::findByCode($dcode);
+			?>og.preferences['listing_preferences']['<?php echo 'lp_dim_'.$dim->getId().'_show_as_column' ?>'] = <?php echo user_config_option($lp->getName()) ? '1' : '0'?>;<?php
+		}
+	} 
+?>
+og.breadcrumbs_skipped_dimensions = [];
 
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin to PHP's timeout ?>;
 og.musicSound = new Sound();
@@ -450,26 +462,30 @@ og.dimensionPanels = [
 ];
 
 
-if (! og.dimensionPanels.length ){
-	alert("In order to continue, you need to create dimensions (directly from database).");
-}
 og.contextManager.construct();
 og.objPickerTypeFilters = [];
 <?php
-	$pg_id = logged_user()->getPermissionGroupId();
 	$obj_picker_type_filters = ObjectTypes::findAll(array("conditions" => "`type` = 'content_object'
 		AND (plugin_id IS NULL OR plugin_id IN (SELECT distinct(id) FROM ".TABLE_PREFIX."plugins WHERE is_installed = 1 AND is_activated = 1 ))
 		AND `name` <> 'file revision' AND `id` NOT IN (
 			SELECT `object_type_id` FROM ".TabPanels::instance()->getTableName(true)." WHERE `enabled` = 0
 		)  OR `type` = 'comment' OR `name` = 'milestone'"));
 	
-
+	$pg_ids = logged_user()->getPermissionGroupIds();
+	if (!is_array($pg_ids) || count($pg_ids) == 0) $pg_ids = array(0);
 	
 	foreach ($obj_picker_type_filters as $type) {
 		if (! $type instanceof  ObjectType ) continue ;
 		/* @var $type ObjectType */
 		$linkable = $type->getIsLinkableObjectType();
 		if ($linkable) {
+			$tab_ids = DB::executeAll("SELECT id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id = ".$type->getId());
+			if (count($tab_ids) > 0) {
+				$tab_id = $tab_ids[0]['id'];
+				if (!TabPanelPermissions::isModuleEnabled($tab_id, implode(',', $pg_ids))) {
+					continue;
+				}
+			}
 ?>
 			og.objPickerTypeFilters.push({
 				id: '<?php echo $type->getName() ?>',

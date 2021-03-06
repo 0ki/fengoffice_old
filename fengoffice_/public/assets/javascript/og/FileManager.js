@@ -79,7 +79,7 @@ og.FileManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
 		var name = mem_path + String.format(
 			'<a style="font-size:120%;" class="{3}" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
@@ -381,7 +381,7 @@ og.FileManager = function() {
 			sortable: false
 		}
 	];
-	
+	// custom property columns
 	var cps = og.custom_properties_by_type['file'] ? og.custom_properties_by_type['file'] : [];
 	for (i=0; i<cps.length; i++) {
 		cm_info.push({
@@ -392,6 +392,22 @@ og.FileManager = function() {
 			renderer: og.clean
 		});
 	}
+	// dimension columns
+	for (did in og.dimensions) {
+		if (isNaN(did)) continue;
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			cm_info.push({
+				id: 'dim_' + did,
+				header: og.dimensions_info[did].name,
+				dataIndex: 'dim_' + did,
+				sortable: false,
+				renderer: og.renderDimCol
+			});
+			og.breadcrumbs_skipped_dimensions[did] = did;
+		}
+	}
+	// create column model
 	var cm = new Ext.grid.ColumnModel(cm_info);
 	cm.defaultSortable = false;
 

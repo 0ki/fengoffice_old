@@ -52,8 +52,10 @@ if (!member_selector) var member_selector = {};
 		$members = $dim_controller->initial_list_dimension_members($dimension_id, $content_object_type_id, $allowed_member_type_ids, false, "", null, false, null, true, $initial_selected_members, ACCESS_LEVEL_WRITE);
 		
 		foreach ($members as $m) {
-			$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);
-			$members_dimension[$m['id']] = $m['dim'];
+			if (can_add_to_member(logged_user(), $m, active_context(), $content_object_type_id)) {
+				$autocomplete_options[] = array($m['id'], $m['name'], $m['path'], $m['to_show'], $m['ico'], $m['dim']);
+				$members_dimension[$m['id']] = $m['dim'];
+			}
 		}
 		
 		$expgenid = gen_id();
@@ -97,9 +99,10 @@ if (!member_selector) var member_selector = {};
 				<?php
 				$combo_listeners = array(
 					"select" => "function (combo, record, index) { member_selector.autocomplete_select($dimension_id, '$genid', combo, record); }",
+					"blur" => "function (combo) { var rec = combo.store.getAt(0); if (combo.getValue().trim() != '' && rec) { combo.select(0, true); combo.fireEvent('select', combo, rec, 0); } }"
 				);
 				echo autocomplete_member_combo("member_autocomplete-dim".$dimension_id, $dimension_id, $autocomplete_options, 
-					lang('add new relation ' . $dimension['dimension_code']), array('class' => 'member-name-input'), false, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
+					lang('add new relation ' . $dimension['dimension_code']), array('class' => 'member-name-input'), true, $genid .'add-member-input-dim'. $dimension_id, $combo_listeners);
 				?>
 				<div class="clear"></div>
 			</div>

@@ -1753,12 +1753,12 @@ class MailController extends ApplicationController {
 				
 				
 				// process users
-				$account_users = Contacts::findAll();
+				$account_users = Contacts::getAllUsers();
 				$user_access = array_var($_POST, 'user_access');
 				foreach ($account_users as $account_user) {
 					$user_id = $account_user->getId();
-					$access = $user_access[$user_id];
-					if ($access != 'none' || $user_id == $mail_account_user->getId()) {
+					$access = array_var($user_access, $user_id);
+					if (!is_null($access) && $access != 'none' || $user_id == $mail_account_user->getId()) {
 						$account_user = new MailAccountContact();
 						$account_user->setAccountId($mailAccount->getId());
 						$account_user->setContactId($user_id);
@@ -2552,13 +2552,18 @@ class MailController extends ApplicationController {
 			"start" => $start,//(integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
 			"messages" => array()
 		);
-		
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(MailContents::instance()->getObjectTypeId());
 		$i=0;
 		foreach ($emails as $email) {
 			if ($email instanceof MailContent) {/* @var $email MailContent */
-				$properties = $this->getMailProperties($email, $i++);
-				$object["messages"][] = $properties;
+				$properties = $this->getMailProperties($email, $i);
+				$object["messages"][$i] = $properties;
 			}
+			foreach ($custom_properties as $cp) {
+				$cp_value = CustomPropertyValues::getCustomPropertyValue($email->getId(), $cp->getId());
+				$object["messages"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+			}
+			$i++;
 		}
 		return $object;
 	}

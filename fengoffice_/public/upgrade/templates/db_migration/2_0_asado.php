@@ -283,19 +283,12 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
  WHERE `c`.`user_type` != 0 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1
 ON DUPLICATE KEY UPDATE member_id=member_id;
 
--- give permissions over timeslots in all workspaces where the user can manage tasks, if the user can manage time. Idem for templates and reports.
+-- give permissions over timeslots, reports and templates in all workspaces where the user can manage tasks.
 INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
- SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, 1, 1
- FROM `og_project_users` `pu`
-     INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id`
-     INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id`
-     INNER JOIN `og_users` `u` ON `u`.`id` = `pu`.`user_id`
-     JOIN `fo_object_types` `ot`
-     INNER JOIN `fo_system_permissions` `sp` ON `sp`.`permission_group_id` = `c`.`permission_group_id`
- WHERE `c`.`user_type` != 0 AND (`ot`.`name` = 'timeslot' AND `pu`.`can_read_tasks`=1 AND `sp`.`can_manage_time`=1
- 	OR `ot`.`name` = 'template' AND `pu`.`can_read_tasks`=1 AND `sp`.`can_manage_templates`=1
- 	OR `ot`.`name` = 'report' AND `u`.`can_manage_reports`=1)
-ON DUPLICATE KEY UPDATE `can_write`=`can_write`;
+ SELECT `c`.`permission_group_id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_tasks`=1), (`pu`.`can_write_tasks`=1)
+ FROM `og_project_users` `pu` INNER JOIN `fo_objects` `o` ON `pu`.`user_id` = `o`.`f1_id` INNER JOIN `fo_contacts` `c` ON `c`.`object_id` = `o`.`id` JOIN `fo_object_types` `ot`
+ WHERE `c`.`user_type` != 0 AND `ot`.`name` IN ('template','report','timeslot') AND `pu`.`can_read_tasks`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
 
 
 -- GROUP PERMISSIONS
@@ -371,6 +364,13 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
  SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_comments`=1), (`pu`.`can_write_comments`=1)
  FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
  WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` = 'comment' AND `pu`.`can_read_comments`=1
+ON DUPLICATE KEY UPDATE member_id=member_id;
+
+-- give permissions over timeslots, reports and templates (same permissions as tasks)
+INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_delete`, `can_write`)
+ SELECT `pg`.`id`, (SELECT `m`.`id` FROM `fo_members` `m` WHERE `m`.`ws_id` = `pu`.`project_id` AND `m`.`dimension_id` = (SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces')), `ot`.`id`, (`pu`.`can_write_tasks`=1), (`pu`.`can_write_tasks`=1)
+ FROM `og_project_users` `pu` INNER JOIN `fo_permission_groups` `pg` ON `pu`.`user_id` = `pg`.`contact_id` JOIN `fo_object_types` `ot`
+ WHERE `pu`.`user_id` >= 10000000 AND `ot`.`name` IN ('template','report','timeslot') AND `pu`.`can_read_tasks`=1
 ON DUPLICATE KEY UPDATE member_id=member_id;
 
 UPDATE `fo_permission_groups` SET `contact_id` = 0 WHERE `contact_id` >= 10000000;

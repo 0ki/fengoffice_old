@@ -767,5 +767,6 @@ addLangs({
 	'complete task and subtask': 'Esta tarefa contém subtarefas que ainda estão pendentes. <br/> Gostaria de também completá-las?',
 	'option repetitive title popup': 'Esta tarefa já está concluída. <br/> Você deseja:',
 	'option repetitive only task': 'Modificar esses dados para a tarefa?',
-	'option repetitive pending task': 'Modificar toda a série de tarefas? (Editar tarefa próximas pendente)'
+	'option repetitive pending task': 'Modificar toda a série de tarefas? (Editar tarefa próximas pendente)',
+	'and number more': 'e {0} mais.'
 });

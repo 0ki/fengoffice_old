@@ -83,21 +83,23 @@ class Member extends BaseMember {
 	 * Returns all the parent members that are in the same hierachic line, including itself if param is set to true
 	 * @return array of Member
 	 */
-	function getAllParentMembersInHierarchy($include_itself = false){
+	function getAllParentMembersInHierarchy($include_itself = false, $check_permissions = true){
 		
 		$child = $this;
 		$members = array();		
 		
 		if ($include_itself){
 			while($child != null){
-				$members [] = $child;
+				$members[] = $child;
 				$child = $child->getParentMember();
 			}
 		}
 		else{
 			while ($child->getParentMember()!= null){
 				$child = $child->getParentMember();
-				$members [] = $child;
+				if (!$check_permissions || (function_exists('logged_user') && logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll(implode(',', logged_user()->getPermissionGroupIds()), $child->getId(), logged_user(), ACCESS_LEVEL_READ))) {
+					$members[] = $child;
+				}
 			}
 		}
 		return $members;
@@ -118,7 +120,7 @@ class Member extends BaseMember {
 	
 	
 	function canBeReadByContact($permission_group_ids, $user){
-		return ContactMemberPermissions::contactCanReadMember($permission_group_ids, $this->getId(), $user);
+		return ContactMemberPermissions::contactCanAccessMemberAll($permission_group_ids, $this->getId(), $user, ACCESS_LEVEL_READ);
 	}
 	
 	/**
@@ -198,9 +200,7 @@ class Member extends BaseMember {
 
 	
 	function canContainObject($object_type_id){
-		$res = DB::execute("SELECT dimension_id FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$this->getDimensionId()." AND 
-				`dimension_object_type_id` = ".$this->getObjectTypeId()." AND `content_object_type_id` = '$object_type_id'");
-		return $res->numRows() > 0;
+		return Members::instance()->canContainObject($object_type_id, $this->getObjectTypeId(), $this->getDimensionId());
 	}
 	
 	

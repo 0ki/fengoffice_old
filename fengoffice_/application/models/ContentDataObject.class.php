@@ -27,6 +27,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	function __construct() {
 		$this->object = new Object();
 		$this->object->setObjectTypeId($this->manager()->getObjectTypeId());
+		if ($this->is_searchable) {
+			$this->searchable_columns[] = 'object_id';
+		}
 	}
 	
 	function __destruct() {

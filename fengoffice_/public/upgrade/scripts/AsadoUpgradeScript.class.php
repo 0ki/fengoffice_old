@@ -171,7 +171,7 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				$sql = "";
 				$first_row = true;
 				foreach ($members as $member) {
-					$parents = $member->getAllParentMembersInHierarchy();
+					$parents = $member->getAllParentMembersInHierarchy(false, false);
 					$obj_members = ObjectMembers::findAll(array("conditions" => "`is_optimization` = 0 AND `member_id` = ".$member->getId()));
 					$sql = "";
 					$first_row = true;

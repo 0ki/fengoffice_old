@@ -60,5 +60,12 @@
 		}
 		return $m;
 	}
+	
+	
+	function canContainObject($object_type_id, $member_type_id, $dimension_id){
+		$res = DB::execute("SELECT dimension_id FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$dimension_id." AND 
+				`dimension_object_type_id` = ".$member_type_id." AND `content_object_type_id` = '$object_type_id'");
+		return $res->numRows() > 0;
+	}
 
-  } 
+  }

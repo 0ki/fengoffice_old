@@ -217,6 +217,7 @@ class MessageController extends ApplicationController {
 			"start" => $start,
 			"messages" => array()
 		);
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(ProjectMessages::instance()->getObjectTypeId());
 		$ids = array();
 		for ($i = 0; $i < $limit; $i++){
 			if (isset($totMsg[$i])){
@@ -224,7 +225,7 @@ class MessageController extends ApplicationController {
 				if ($msg instanceof ProjectMessage){
 					$text = $msg->getText();
 					if (strlen($text) > 100) $text = substr_utf($text,0,100) . "...";
-					$object["messages"][] = array(
+					$object["messages"][$i] = array(
 					    "id" => $i,
 						"ix" => $i,
 						"object_id" => $msg->getId(),
@@ -241,6 +242,11 @@ class MessageController extends ApplicationController {
 						"memPath" => json_encode($msg->getMembersToDisplayPath()),
 					);
 					$ids[] = $msg->getId();
+					
+					foreach ($custom_properties as $cp) {
+						$cp_value = CustomPropertyValues::getCustomPropertyValue($msg->getId(), $cp->getId());
+						$object["messages"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+					}
     			}
 			}
 		}

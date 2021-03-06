@@ -62,3 +62,13 @@ ON DUPLICATE KEY UPDATE name=name;
 ALTER TABLE `<?php echo $table_prefix ?>reports`
  ADD COLUMN `ignore_context` BOOLEAN NOT NULL DEFAULT 1,
  ADD INDEX `object_type`(`report_object_type_id`);
+
+ALTER TABLE `<?php echo $table_prefix ?>dimensions` ADD COLUMN `is_required` BOOLEAN NOT NULL DEFAULT 0;
+
+INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES
+ ('listing preferences', 0, 0, 10)
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO <?php echo $table_prefix ?>searchable_objects (rel_object_id, column_name, content, contact_id)
+ SELECT id, 'object_id', id, 0 FROM <?php echo $table_prefix ?>objects
+ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;

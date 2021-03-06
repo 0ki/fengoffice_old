@@ -304,19 +304,21 @@ class DimensionController extends ApplicationController {
 		session_write_close();
 		header("Content-Type: text/javascript" ); 
 		$dimensions = Dimensions::findAll();
-		echo "og.dimensions = [];\n" ;
+		echo "og.dimensions = [];\n";
+		echo "og.dimensions_info = [];\n";
 		foreach ($dimensions as $dim) {
 			$members = $dim->getAllMembers();
 			echo "var members = [];\n";
-			foreach ($members as $member) { 
+			foreach ($members as $member) {
 				echo "members[".$member->getId()."] = {\n";
 				echo "  id: ".$member->getId().",\n";
 				echo "  name:'". str_replace(array("'", "\\"), array("","\\\\" ), clean($member->getName()))."',\n";
-				echo "  ot:". $member->getObjectTypeId().",\n" ;
-				echo "  ico:'".$member->getIconClass()."'\n" ;
+				echo "  ot:". $member->getObjectTypeId().",\n";
+				echo "  ico:'".$member->getIconClass()."'\n";
 				echo "};\n";
 			}
 			echo "og.dimensions[".$dim->getId()."] = members;\n\n";
+			echo "og.dimensions_info[".$dim->getId()."] = {name:'".clean($dim->getName())."'};\n\n";
 		}
 		exit ;
 	}

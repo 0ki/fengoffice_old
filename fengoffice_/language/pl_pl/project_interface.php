@@ -278,4 +278,9 @@ Temat:       {0}
 	'linked event tab' => 'Wydarzenia',
 	'urgent priority' => 'Pilne',
 	'apply assignee to subtasks' => 'Zastosuj przypisanego do zadań podrzędnych',
+	'completed subtasks' => 'Wykonane zadania podrzędne',
+	'open subtasks' => 'Bieżące zadania podrzędne',
+	'field workspace color' => 'Kolor obszaru roboczego',
+	'linked weblink tab' => 'Odnośniki',
+	'attachment from email' => 'Załączono do wiadomości e-mail "{0}"',
 ); ?>

@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.4
+	About Feng Office 2.2.4.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,21 @@
 	
 	Changelog
 	=========
+	
+	Since 2.2.4.1
+	----------------
+	
+	bugfix: Add/edit member form permissions goes down if screen is not wide enough.
+	bugfix: Member selector onblur must select one of the list if there is any match and there is at least one character written.
+	bugfix: Object picker: do not show object types not allowed for the user in the left panel
+	bugfix: D&D classify is allowing to classify in read only members.
+	bugfix: Do not show parent members in member selector if user has no permissions over them.
+	bugfix: Upgrade 1.7 -> 2.X: give permissions over timeslots, reports and templates in all workspaces where the user can manage tasks.
+	bugfix: Non admin users cannot delete timeslots.
+	
+	feature: Can define required dimension without specifying object types.
+	feature: Option to view members in a separate column.
+	
 	
 	Since 2.2.4-beta
 	----------------

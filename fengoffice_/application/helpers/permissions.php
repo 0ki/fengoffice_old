@@ -107,7 +107,11 @@
 	 * @param $object_type_id
 	 * @return boolean
 	 */
-	function can_add_to_member(Contact $user, Member $member, $context_members, $object_type_id, $check_dimension = true){
+	function can_add_to_member(Contact $user, $member, $context_members, $object_type_id, $check_dimension = true){
+		
+		if (!$member instanceof Member && is_array($member) && isset($member['id'])) {
+			$member = Members::findById($member['id']);
+		}
 		
 		if ( $user->isGuest() || !$member || !$member->canContainObject($object_type_id)) {
 			return false;	

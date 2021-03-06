@@ -1160,47 +1160,53 @@ class MemberController extends ApplicationController {
 			foreach ($ids as $oid) {
 				/* @var $obj ContentDataObject */
 				$obj = Objects::findObject($oid);
-				$dim_obj_type_content = DimensionObjectTypeContents::findOne(array('conditions' => array('`dimension_id`=? AND `dimension_object_type_id`=? AND `content_object_type_id`=?', $member->getDimensionId(), $member->getObjectTypeId(), $obj->getObjectTypeId())));
-				if (!($dim_obj_type_content instanceof DimensionObjectTypeContent)) continue;
-				if (!$dim_obj_type_content->getIsMultiple() || array_var($_POST, 'remove_prev')) {
-					$db_res = DB::execute("SELECT group_concat(om.member_id) as old_members FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON om.member_id=m.id WHERE m.dimension_id=".$member->getDimensionId()." AND om.object_id=".$obj->getId());
-					$row = $db_res->fetchRow();
-					if (array_var($row, 'old_members') != "") $from[$obj->getId()] = $row['old_members'];
-					// remove from previous members
-					ObjectMembers::delete('`object_id` = ' . $obj->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
-				}
-				$obj->addToMembers(array($member));
-				$obj->addToSharingTable();
-				$objects[] = $obj;
-				
-				if ($obj->allowsTimeslots()) {
-					$timeslots = $obj->getTimeslots();
-					foreach ($timeslots as $timeslot) {
-						$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
-						// if classified then reclassify
-						if (count($ts_mids)) {
-							if (array_var($_POST, 'remove_prev')) {
-								ObjectMembers::delete('`object_id` = ' . $timeslot->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
+				if ($obj instanceof ContentDataObject && $obj->canAddToMember(logged_user(), $member, active_context())) {
+					
+					$dim_obj_type_content = DimensionObjectTypeContents::findOne(array('conditions' => array('`dimension_id`=? AND `dimension_object_type_id`=? AND `content_object_type_id`=?', $member->getDimensionId(), $member->getObjectTypeId(), $obj->getObjectTypeId())));
+					if (!($dim_obj_type_content instanceof DimensionObjectTypeContent)) continue;
+					if (!$dim_obj_type_content->getIsMultiple() || array_var($_POST, 'remove_prev')) {
+						$db_res = DB::execute("SELECT group_concat(om.member_id) as old_members FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."members m ON om.member_id=m.id WHERE m.dimension_id=".$member->getDimensionId()." AND om.object_id=".$obj->getId());
+						$row = $db_res->fetchRow();
+						if (array_var($row, 'old_members') != "") $from[$obj->getId()] = $row['old_members'];
+						// remove from previous members
+						ObjectMembers::delete('`object_id` = ' . $obj->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
+					}
+					
+					$obj->addToMembers(array($member));
+					$obj->addToSharingTable();
+					$objects[] = $obj;
+					
+					if ($obj->allowsTimeslots()) {
+						$timeslots = $obj->getTimeslots();
+						foreach ($timeslots as $timeslot) {
+							$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
+							// if classified then reclassify
+							if (count($ts_mids)) {
+								if (array_var($_POST, 'remove_prev')) {
+									ObjectMembers::delete('`object_id` = ' . $timeslot->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
+								}
+								$timeslot->addToMembers(array($member));
+								$timeslot->addToSharingTable();
+								$objects[] = $timeslot;
 							}
-							$timeslot->addToMembers(array($member));
-							$timeslot->addToSharingTable();
-							$objects[] = $timeslot;
 						}
 					}
-				}
-
-				if ($obj instanceof MailContent) {
-					$conversation = MailContents::getMailsFromConversation($obj);
-					foreach ($conversation as $conv_email) {
-						if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
-							MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-							$classification_data = array();
-							for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-								$classification_data["att_".$j] = true;
+					
+					if ($obj instanceof MailContent) {
+						$conversation = MailContents::getMailsFromConversation($obj);
+						foreach ($conversation as $conv_email) {
+							if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
+								MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+								$classification_data = array();
+								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+									$classification_data["att_".$j] = true;
+								}
+								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($member), array_var($_POST, 'remove_prev'));
 							}
-							MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($member), array_var($_POST, 'remove_prev'));
 						}
 					}
+				} else {
+					throw new Exception(lang('you dont have permissions to classify object in member', $obj->getName(), $member->getName()));
 				}
 			}
 			
@@ -1223,7 +1229,7 @@ class MemberController extends ApplicationController {
 		} catch (Exception $e) {
 			DB::rollback();
 			ajx_current("empty");
-			flash_error(lang('unable to move objects'));
+			flash_error($e->getMessage());
 		}
 	}
 	

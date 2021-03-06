@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.4
+ * Pamplona upgrade script will upgrade FengOffice 2.1 to FengOffice 2.2.4.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2.4');
+		$this->setVersionTo('2.2.4.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -214,6 +214,20 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 						ALTER TABLE `".$t_prefix."reports`
 						 ADD COLUMN `ignore_context` BOOLEAN NOT NULL DEFAULT 1,
 						 ADD INDEX `object_type`(`report_object_type_id`);
+					";
+				}
+			}
+			
+			if (version_compare($installed_version, '2.2.4.1') < 0 ) {
+				if (!$this->checkColumnExists($t_prefix."dimensions", "is_required", $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."dimensions` ADD COLUMN `is_required` BOOLEAN NOT NULL DEFAULT 0;
+						INSERT INTO `".$t_prefix."contact_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES
+						 ('listing preferences', 0, 0, 10)
+						ON DUPLICATE KEY UPDATE name=name;
+						INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						 SELECT id, 'object_id', id, 0 FROM ".$t_prefix."objects
+						ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
 					";
 				}
 			}

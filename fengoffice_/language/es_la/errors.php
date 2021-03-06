@@ -132,4 +132,5 @@
 	'member name already exists in dimension' => 'Ya existe un miembro de nombre \'{0}\' en la dimensión seleccionada.',
 	'start date > closure date' => 'La fecha de cierre debe ser mayor que la fecha de inicio.',	
 	'timeslot dnx' => 'No existe el tiempo de trabajo',
+	'you dont have permissions to classify object in member' => 'No tiene permisos para clasificar \'{0}\' en \'{1}\'',
 ); ?>

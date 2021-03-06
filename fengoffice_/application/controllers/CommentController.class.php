@@ -63,6 +63,7 @@ class CommentController extends ApplicationController {
 				$comment->save();
 				
 				$comment->addToMembers($object->getMembers());
+				$comment->addToSharingTable();
 				
 				if(is_array($attached_files)) {
 					foreach($attached_files as $attached_file) {

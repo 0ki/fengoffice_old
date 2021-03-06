@@ -3,5 +3,5 @@
 	'feng_persons' => 'Personen',
 	'all feng_users' => 'Alle Benutzer',
 	'my stuff' => 'meine Inhalte',
-	'personal member warning' => 'wenn kein mitglied ausgewählt wurde, dann wird "mein Inhalt" benutzt',
+	'personal member warning' => 'wenn kein mitglied ausgewählt wurde, dann wird \'mein Inhalt\' benutzt',
 ); ?>

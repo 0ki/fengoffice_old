@@ -204,8 +204,6 @@ ogTimeManager.DeleteTimeslot = function(timeslotId){
 			if (success && !data.errorCode) {
 				this.deleteTimeslot(data.timeslotId);
 				this.drawTimespans(this.genid);
-			} else {
-				og.err(lang("error adding timeslot"));
 			}
 		},
 		scope: this

@@ -30,4 +30,8 @@
 	'success enable all context help' => 'Pomoc kontekstowa została ponownie otwarta.',
 	'success enable context help' => 'Pomoc kontekstowa została włączona.',
 	'success disable context help' => 'Pomoc kontekstowa została wyłączona.',
+	'how to purchase' => 'Jak kupić',
+	'how to purchase desc' => 'Informacja o innych planach i zyskach',
+	'add ticket' => 'Dodaj nowe zgłoszenie',
+	'add ticket desc' => 'Uzyskanie spersonalizowanej pomocy dot. Feng Office',
 ); ?>

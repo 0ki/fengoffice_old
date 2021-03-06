@@ -120,7 +120,9 @@
 
 				var ajaxOptions = {
 					post : postVars,
-					callback : function() {}
+					callback : function() {
+						Ext.getCmp('menu-panel').expand(true); //ensure dimensions panel is expanded
+					}
 				};	
 
 				var url = og.getUrl('contact', 'quick_add', {quick:1});

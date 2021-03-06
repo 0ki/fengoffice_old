@@ -55,3 +55,12 @@
 			save_member_permissions($ws_mem);
 		}
 	}
+	
+	function workspaces_update_6_7() {
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`) VALUES
+			 ('listing preferences', concat('lp_dim_workspaces_show_as_column'), '0', 'BoolConfigHandler', 0, 0),
+			 ('listing preferences', concat('lp_dim_tags_show_as_column'), '0', 'BoolConfigHandler', 0, 0)
+			ON DUPLICATE KEY UPDATE name=name;
+		");
+	}

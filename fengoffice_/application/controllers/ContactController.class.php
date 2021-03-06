@@ -525,6 +525,7 @@ class ContactController extends ApplicationController {
 			"start" => $start,
 			"contacts" => array()
 		);
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(Contacts::instance()->getObjectTypeId());
 		for ($i = 0; $i < count($objects); $i++){
 			if (isset($objects[$i])){
 				$c= $objects[$i];
@@ -539,7 +540,7 @@ class ContactController extends ApplicationController {
 					$w_address = $c->getAddress('work');
 					$h_address = $c->getAddress('home');
 									
-					$object["contacts"][] = array(
+					$object["contacts"][$i] = array(
 						"id" => $i,
 						"ix" => $i,
 						"object_id" => $c->getId(),
@@ -573,10 +574,10 @@ class ContactController extends ApplicationController {
 						"updatedById" => $c->getUpdatedById(),
 						"memPath" => json_encode($c->getMembersToDisplayPath()),
 					);
-				} else if ($c instanceof Contact){					
+				} else if ($c instanceof Contact){
 					
 					$w_address = $c->getAddress('work');
-					$object["contacts"][] = array(
+					$object["contacts"][$i] = array(
 						"id" => $i,
 						"ix" => $i,
 						"object_id" => $c->getId(),
@@ -610,6 +611,11 @@ class ContactController extends ApplicationController {
 						"updatedById" => $c->getUpdatedById(),
 						"memPath" => json_encode($c->getMembersToDisplayPath()),
 					);
+				}
+				
+				foreach ($custom_properties as $cp) {
+					$cp_value = CustomPropertyValues::getCustomPropertyValue($c->getId(), $cp->getId());
+					$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
 				}
     		}
 		}

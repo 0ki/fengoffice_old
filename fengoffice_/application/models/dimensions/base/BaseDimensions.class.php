@@ -41,6 +41,7 @@ define('DIMENSION_PERMISSION_QUERY_METHOD_NOT_MANDATORY', 'not_mandatory');
     	'default_order' => DATA_TYPE_INTEGER,
     	'options' => DATA_TYPE_STRING,
     	'permission_query_method' => DATA_TYPE_STRING,
+    	'is_required' => DATA_TYPE_BOOLEAN,
     );
   
     /**

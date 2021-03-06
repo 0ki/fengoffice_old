@@ -65,8 +65,6 @@ $(function(){
 	});
 	
 	
-	
-	
 	/******  Breadcrumbs ******/
 	
 	og.eventManager.addListener('tab activated',function(tab){
@@ -74,7 +72,7 @@ $(function(){
 			$('.overviewEdit').hide();
 			$('div#breadcrumbs').show();
 		}else{
-			$('.overviewEdit').show();
+			//$('.overviewEdit').show();
 		}
 	}, this);   
 

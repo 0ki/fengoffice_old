@@ -176,6 +176,7 @@
     'user ws config category name general' => 'General',
     'user ws config category name calendar panel' => 'Calendar options',
     'user ws config category name mails panel' => 'Email options',
+	'user ws config category name listing preferences' => 'Listing options',
     'user ws config option name show pending tasks widget' => 'Show pending tasks widget',
     'user ws config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
     'user ws config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',

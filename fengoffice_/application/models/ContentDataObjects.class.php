@@ -631,6 +631,10 @@ abstract class ContentDataObjects extends DataManager {
     	} else {
     		$archived_cond = "AND `o`.`archived_on` " .($archived ? ">" : "="). " " . DB::escape(EMPTY_DATETIME);
     	}
+    	if ($trashed && Plugins::instance()->isActivePlugin('mail')) {
+    		$mcot_id = MailContents::instance()->getObjectTypeId();
+    		$trashed_cond .= " AND IF(o.object_type_id=$mcot_id, NOT (SELECT mcx.is_deleted FROM ".TABLE_PREFIX."mail_contents mcx WHERE mcx.object_id=o.id), 1)";
+    	}
     	return array($trashed_cond, $archived_cond);
     }
     

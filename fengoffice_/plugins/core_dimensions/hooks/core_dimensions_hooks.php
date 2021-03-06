@@ -99,6 +99,18 @@ function core_dimensions_after_add_to_members($object, &$added_members) {
  * @param $all_members Members where the object belongs
  */
 function core_dim_create_member_associations(Contact $contact, $contact_member, $all_members, $reload_dim = true) {
+	
+	$creator = logged_user();
+	if (!$creator instanceof Contact) {
+		$oc = Contacts::instance()->getOwnerCompany();
+		if ($oc instanceof Contact) {
+			$creator = $oc->getCreatedBy();
+		}
+	}
+	if (!$creator instanceof Contact) {
+		return array();
+	}
+	
 	$affected_dimensions = array();
 	if ($contact->isUser()) {
 		$del_sub_query = "SELECT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id='".$contact->getPermissionGroupId()."'";
@@ -476,8 +488,13 @@ function core_dim_add_new_contact_to_person_dimension($object) {
 		
 		// NEW! Add contact to its own member to be searchable
 		if (logged_user() instanceof Contact ){
-			$ctrl = new ObjectController();
-			$ctrl->add_to_members($object, array($member->getId()));
+			if (!(isset($_REQUEST['contact']['user']) && array_var($_REQUEST['contact']['user'], 'type') > 0)) {
+				$ctrl = new ObjectController();
+				$ctrl->add_to_members($object, array($member->getId()));
+			} else {
+				$object->addToMembers(array($member));
+				$object->addToSharingTable();
+			}
 		}else{
 			$object->addToMembers(array($member));
 			$object->addToSharingTable();

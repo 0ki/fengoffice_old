@@ -121,3 +121,12 @@ UPDATE `<?php echo $table_prefix ?>contact_config_options`
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`) VALUES
 	('system', 'hide_people_vinculations', '1', 'BoolConfigHandler', 1, 0)
 ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `<?php echo $table_prefix ?>contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
+ SELECT `c`.`permission_group_id`, `m`.`id` as member_id, `ot`.`id` as object_type_id, 1, 1
+ FROM `<?php echo $table_prefix ?>contacts` `c` JOIN `<?php echo $table_prefix ?>members` `m`, `<?php echo $table_prefix ?>object_types` `ot`
+ WHERE `c`.`object_id`=m.object_id
+   AND `c`.`permission_group_id` > 0
+ 	AND `ot`.`type` IN ('located')
+ 	AND `m`.`dimension_id` IN (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code` = 'feng_persons')
+ON DUPLICATE KEY UPDATE <?php echo $table_prefix ?>contact_member_permissions.member_id=<?php echo $table_prefix ?>contact_member_permissions.member_id;

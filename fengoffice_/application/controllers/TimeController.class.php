@@ -316,11 +316,6 @@ class TimeController extends ApplicationController {
 	}
 	
 	function delete_timeslot(){
-		if (!can_delete(logged_user(), active_context(), Timeslots::instance()->getObjectTypeId())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
 		ajx_current("empty");
 		$timeslot = Timeslots::findById(get_id());
 		
@@ -337,7 +332,7 @@ class TimeController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$timeslot->delete();
-                        ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
+			ApplicationLogs::createLog($timeslot, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 			
 			ajx_extra_data(array("timeslotId" => get_id()));

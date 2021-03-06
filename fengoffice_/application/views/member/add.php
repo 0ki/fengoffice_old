@@ -75,6 +75,7 @@
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
 		</div>
 		
+		<div style="min-width:1100px;">
 		<div id="<?php echo $genid?>memberParentContainer" style="margin-top: 5px; float:left;<?php echo ($parent_sel > 0 ? "" : 'display:none;')?>">
 			<?php  
 				
@@ -96,6 +97,7 @@
 				$this->includeTemplate(get_template_path('member_permissions_control', 'member'));
 			?>
 		<?php endif ;?>
+		</div>
 		</div>
 		
 		<div class="x-clear"></div>

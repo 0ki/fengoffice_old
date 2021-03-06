@@ -30,4 +30,7 @@
 	'report pdf vertical' => 'Pionowo',
 	'report pdf landscape' => 'Poziomo',
 	'report font size' => 'Rozmiar czcionki',
+	'columns' => 'Kolumny',
+	'showing information for' => 'Pokazanie informacji dla',
+	'show always' => 'Zawsze pokazuj ten raport (użyj opcji "Powiązane z" jedynie do sprawdzenia uprawnień i nie filtruj listy raportów)',
 ); ?>

@@ -35,7 +35,6 @@ class DashboardController extends ApplicationController {
 		require_javascript("og/modules/dashboardComments.js");
 		require_javascript("jquery/jquery.scrollTo-min.js");
 		
-		/* get query parameters */
 		$filesPerPage = config_option('files_per_page');
 		$start = array_var($_GET,'start') ? (integer)array_var($_GET,'start') : 0;
 		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
@@ -43,241 +42,48 @@ class DashboardController extends ApplicationController {
 		$order = array_var($_GET,'sort');
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit) + 1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 		
-		$typeCSV = array_var($_GET, 'type');
-		$types = null;
-		if ($typeCSV) {
-			$types = explode(",", $typeCSV);
-		}
-		$name_filter = array_var($_GET, 'name');
-		$linked_obj_filter = array_var($_GET, 'linkedobject');
-		$object_ids_filter = '';
-		if (!is_null($linked_obj_filter)) {
-			$linkedObject = Objects::findObject($linked_obj_filter);
-			$objs = $linkedObject->getLinkedObjects();
-			foreach ($objs as $obj) $object_ids_filter .= ($object_ids_filter == '' ? '' : ',') . $obj->getId();
-		}
+		$extra_conditions = " AND jt.type IN ('content_object', 'comment')";
 		
-		$filters = array();
-		if (!is_null($types)) $filters['types'] = $types;
-		if (!is_null($name_filter)) $filters['name'] = $name_filter;
-		if ($object_ids_filter != '') $filters['object_ids'] = $object_ids_filter;
-
-		$user = array_var($_GET,'user');
 		$trashed = array_var($_GET, 'trashed', false);
 		$archived = array_var($_GET, 'archived', false);
 
-		/* if there's an action to execute, do so */
-		if (array_var($_GET, 'action') == 'delete') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$result = Objects::getObjectsFromContext(active_context(), null, null, false, false, array('object_ids' => implode(",",$ids)));
-			$objects = $result->objects;
-			
-			list($succ, $err) = $this->do_delete_objects($objects);
-			
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			} else {
-				flash_success(lang('success delete objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'delete_permanently') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$result = Objects::getObjectsFromContext(active_context(), null, null, true, false, array('object_ids' => implode(",",$ids)));
-			$objects = $result->objects;
-			
-			list($succ, $err) = $this->do_delete_objects($objects, true);
-			
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			}
-			if ($succ > 0) {
-				flash_success(lang('success delete objects', $succ));
-			}
-		}else if (array_var($_GET, 'action') == 'markasread') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, true);
-			
-		}else if (array_var($_GET, 'action') == 'markasunread') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
-			
-		}else if (array_var($_GET, 'action') == 'empty_trash_can') {
-
-			$result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
-			$objects = $result->objects;
-
-			list($succ, $err) = $this->do_delete_objects($objects, true);		
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			}
-			if ($succ > 0) {
-				flash_success(lang('success delete objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'archive') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
-			if ($err > 0) {
-				flash_error(lang('error archive objects', $err));
-			} else {
-				flash_success(lang('success archive objects', $succ));
-			}
-		} else if (array_var($_GET, 'action') == 'unarchive') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'unarchive');
-			if ($err > 0) {
-				flash_error(lang('error unarchive objects', $err));
-			} else {
-				flash_success(lang('success unarchive objects', $succ));
-			}
-		}
-		else if (array_var($_GET, 'action') == 'unclassify') {
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$err = 0;
-			$succ = 0;
-			foreach ($ids as $id) {
-				$split = explode(":", $id);
-				$type = $split[0];
-				if ($type == 'MailContents') {
-					$email = MailContents::findById($split[1]);
-					if (isset($email) && !$email->isDeleted() && $email->canEdit(logged_user())){
-						if (MailController::do_unclassify($email)) $succ++;
-						else $err++;
-					} else $err++;
-				}
-			}
-			if ($err > 0) {
-				flash_error(lang('error unclassify emails', $err));
-			} else {
-				flash_success(lang('success unclassify emails', $succ));
-			}
-		}
-		else if (array_var($_GET, 'action') == 'restore') {
-			$errorMessage = null;
-			$ids = explode(',', array_var($_GET, 'objects'));
-			$success = 0; $error = 0;
-			foreach ($ids as $id) {
-				$obj = Objects::findObject($id);
-				if ($obj->canDelete(logged_user())) {
-					try {
-						$obj->untrash($errorMessage);
-						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_UNTRASH);
-						$success++;
-					} catch (Exception $e) {
-						$error++;
-					}
-				} else {
-					$error++;
-				}
-			}
-			if ($success > 0) {
-				flash_success(lang("success untrash objects", $success));
-			}
-			if ($error > 0) {
-				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
-				flash_error($errorString);
-			}
-		} 
-		/*FIXME else if (array_var($_GET, 'action') == 'move') {
-			$wsid = array_var($_GET, "moveTo");
-			$destination = Projects::findById($wsid);
-			if (!$destination instanceof Project) {
-				$resultMessage = lang('project dnx');
-				$resultCode = 1;
-			} else if (!can_add(logged_user(), $destination, 'ProjectMessages')) {
-				$resultMessage = lang('no access permissions');
-				$resultCode = 1;
-			} else {
-				$ids = explode(',', array_var($_GET, 'objects'));
-				$count = 0;
-				DB::beginWork();
-				foreach ($ids as $id) {
-					$split = explode(":", $id);
-					$type = $split[0];
-					$obj = Objects::findObject($split[1]);
-					$mantainWs = array_var($_GET, "mantainWs");
-					if ($type != 'Projects' && $obj->canEdit(logged_user())) {
-						if ($type == 'MailContents') {
-							$email = MailContents::findById($split[1]);
-							$conversation = MailContents::getMailsFromConversation($email);
-							foreach ($conversation as $conv_email) {
-								$count += MailController::addEmailToWorkspace($conv_email->getId(), $destination, $mantainWs);
-								if (array_var($_GET, 'classify_atts') && $conv_email->getHasAttachments()) {
-									MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-									$classification_data = array();
-									for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-										$classification_data["att_".$j] = true;		
-									}
-									MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), $mantainWs, $tags);
-								}								
-							}
-							$count++;
-						} else {
-							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectMilestones') {
-								$removed = "";
-								$ws = $obj->getWorkspaces();
-								foreach ($ws as $w) {
-									if (can_add(logged_user(), $w, $type)) {
-										$obj->removeFromWorkspace($w);
-										$removed .= $w->getId() . ",";
-									}
-								}
-								$removed = substr($removed, 0, -1);
-								$log_action = ApplicationLogs::ACTION_MOVE;
-								$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-							} else {
-								$log_action = ApplicationLogs::ACTION_COPY;
-								$log_data = "to:$wsid";
-							}
-							$obj->addToWorkspace($destination);
-							ApplicationLogs::createLog($obj, $log_action, false, null, true, $log_data);
-							$count++;
-						}
-					}
-				}
-				if ($count > 0) {
-					$reload = true;
-					DB::commit();
-					flash_success(lang("success move objects", $count));
-				} else {
-					DB::rollback();
-				}
-			}
-		}*/
-		
-		$filterName = array_var($_GET,'name');
-		$result = null;
-		
-		$context = active_context();
-
-		$obj_type_types = array('content_object');
-		if (array_var($_GET, 'include_comments')) $obj_type_types[] = 'comment';
-		
-		$pagination = Objects::getObjects($context,$start,$limit,$order,$orderdir,$trashed,$archived, $filters,$start, $limit, $obj_type_types);
+		$pagination = ContentDataObjects::listing(array(
+			"start" => $start,
+			"limit" => $limit,
+			"order" => $order,
+			"order_dir" => $orderdir,
+			"trashed" => $trashed,
+			"archived" => $archived,
+			"count_results" => false,
+			"extra_conditions" => $extra_conditions,
+			"join_params" => array(
+				"jt_field" => "id",
+				"e_field" => "object_type_id",
+				"table" => TABLE_PREFIX."object_types",
+			)
+		));
 		$result = $pagination->objects; 
 		$total_items = $pagination->total ;
 		 
 		if(!$result) $result = array();
 
-		/* prepare response object */
 		$info = array();
-
-		foreach ($result as $obj /* @var $obj Object */) {
+		foreach ($result as $obj) {
 			
 			$info_elem =  $obj->getArrayInfo($trashed, $archived);
 			
 			$instance = Objects::instance()->findObject($info_elem['object_id']);
 			$info_elem['url'] = $instance->getViewUrl();
 		
-			if( method_exists($instance, "getText"))
+			if( method_exists($instance, "getText")) {
 				$info_elem['content'] = $instance->getText();
-			
+			}
 			$info_elem['picture'] = $instance->getCreatedBy()->getPictureUrl();
 			$info_elem['friendly_date'] = friendly_date($instance->getCreatedOn());
 			$info_elem['comment'] = $instance->getComments();		
 			
-			/* @var $instance Contact  */
-			if ($instance instanceof  Contact /* @var $instance Contact  */ ) {
+			if ($instance instanceof  Contact) {
 				if( $instance->isCompany() ) {
 					$info_elem['icon'] = 'ico-company';
 					$info_elem['type'] = 'company';
@@ -287,7 +93,6 @@ class DashboardController extends ApplicationController {
 			$info_elem['manager'] = get_class($instance->manager()) ;
 			
 			$info[] = $info_elem;
-			
 		}
 		
 		$listing = array(

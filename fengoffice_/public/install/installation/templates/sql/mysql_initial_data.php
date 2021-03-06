@@ -134,7 +134,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 	('task panel', 0, 0, 2),
 	('calendar panel', 0, 0, 4),
 	('context help', 1, 0, 5),
-	('time panel', 1, 0, 3);
+	('time panel', 1, 0, 3),
+	('listing preferences', 0, 0, 10);
 	
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),

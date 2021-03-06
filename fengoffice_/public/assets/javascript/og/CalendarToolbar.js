@@ -429,32 +429,43 @@ og.CalendarSecondTopToolbar = function(config) {
     cal_actual_view = ogCalendarUserPreferences.view_type || 'viewweek';
     actual_status_filter = ogCalendarUserPreferences.status_filter;
     if (actual_status_filter == null) actual_status_filter = ' 0 1 3';
-	
-    filterTaskCombo = new Ext.form.ComboBox({
-        id: 'ogCalendarfilterTaskCombo',
-        store: new Ext.data.SimpleStore({
-        	fields: ['value', 'text'],
-        	data :  [["no filter", '--' + lang('no filter') + '--'],["pending", lang('pending')],["complete", lang('complete')], ["hide", lang('none')]]
-		}),
-        displayField:'text',
-        typeAhead: true,
-        mode: 'local',
-        triggerAction: 'all',
-        selectOnFocus:true,
-        width:160,
-        valueField: 'value',
-        listeners: {
-        	'select' : function(combo, record) {
-        		actual_task_filter = record.data.value;
-        		var date = og.calToolbarDateMenu.picker.getValue();
-				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
-        	}
-        }
-    });
     
-    actual_task_filter = ogCalendarUserPreferences.task_filter;
-    t_filter = ogCalendarUserPreferences.task_filter; 
-    filterTaskCombo.setValue(t_filter);
+    var show_task_options = false;
+    for (i=0; i<og.objPickerTypeFilters.length; i++) {
+    	console.log(og.objPickerTypeFilters[i]);
+    	if (og.objPickerTypeFilters[i].id == 'task') {
+    		show_task_options = true;
+    		break;
+    	}
+    }
+	
+    if (show_task_options) {
+	    filterTaskCombo = new Ext.form.ComboBox({
+	        id: 'ogCalendarfilterTaskCombo',
+	        store: new Ext.data.SimpleStore({
+	        	fields: ['value', 'text'],
+	        	data :  [["no filter", '--' + lang('no filter') + '--'],["pending", lang('pending')],["complete", lang('complete')], ["hide", lang('none')]]
+			}),
+	        displayField:'text',
+	        typeAhead: true,
+	        mode: 'local',
+	        triggerAction: 'all',
+	        selectOnFocus:true,
+	        width:160,
+	        valueField: 'value',
+	        listeners: {
+	        	'select' : function(combo, record) {
+	        		actual_task_filter = record.data.value;
+	        		var date = og.calToolbarDateMenu.picker.getValue();
+					changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
+	        	}
+	        }
+	    });
+	    
+	    actual_task_filter = ogCalendarUserPreferences.task_filter;
+	    t_filter = ogCalendarUserPreferences.task_filter; 
+	    filterTaskCombo.setValue(t_filter);
+    }
     
     // Filter by Invitation State
 	var viewActionsState = {
@@ -539,10 +550,12 @@ og.CalendarSecondTopToolbar = function(config) {
 	this.add(' ');
 	this.add(status_menu);
 	this.add(' ');
-	this.add(lang('tasks'));
-	this.add(' ');
-	this.add(filterTaskCombo);
-	this.add(' ');
+	if (show_task_options) {
+		this.add(lang('tasks'));
+		this.add(' ');
+		this.add(filterTaskCombo);
+		this.add(' ');
+	}
 }
 
 Ext.extend(og.CalendarSecondTopToolbar, Ext.Toolbar, {});

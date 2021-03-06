@@ -45,3 +45,16 @@ function core_dimensions_update_3_4() {
 		ON DUPLICATE KEY UPDATE name=name;
 	");
 }
+
+function core_dimensions_update_4_5() {
+	DB::execute("
+		INSERT INTO `".TABLE_PREFIX."contact_member_permissions` (`permission_group_id`, `member_id`, `object_type_id`, `can_write`, `can_delete`)
+		 SELECT `c`.`permission_group_id`, `m`.`id` as member_id, `ot`.`id` as object_type_id, 1, 1
+		 FROM `".TABLE_PREFIX."contacts` `c` JOIN `".TABLE_PREFIX."members` `m`, `".TABLE_PREFIX."object_types` `ot`
+		 WHERE `c`.`object_id`=m.object_id
+		   AND `c`.`permission_group_id` > 0
+		 	AND `ot`.`type` IN ('located')
+		 	AND `m`.`dimension_id` IN (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code` = 'feng_persons')
+		ON DUPLICATE KEY UPDATE ".TABLE_PREFIX."contact_member_permissions.member_id=".TABLE_PREFIX."contact_member_permissions.member_id;
+	");
+}

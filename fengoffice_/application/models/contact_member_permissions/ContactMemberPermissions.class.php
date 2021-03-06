@@ -11,7 +11,12 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 	private static $writable_members = array();
 	
 	/**
-	 * Same as contactCanReadMember but uses a permission cache to avoid similar queries for the same user
+	 * 
+	 * Checks if user can access the member for a specified access level
+	 * @param $permission_group_ids - array: User permission group ids
+	 * @param $member_id - integer: Member Id
+	 * @param $user - Contact
+	 * @param $access_level - enum: ACCESS_LEVEL_READ, ACCESS_LEVEL_WRITE, ACCESS_LEVEL_DELETE
 	 */
 	function contactCanAccessMemberAll($permission_group_ids, $member_id, $user, $access_level) {
 		if ($user instanceof Contact && $user->isAdministrator ()) {
@@ -47,15 +52,6 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 			return in_array($member_id, self::$writable_members["$permission_group_ids"]);
 			
 		}
-	}
-	
-	function contactCanReadMember($permission_group_ids, $member_id, $user) {
-		if ($user instanceof Contact && $user->isAdministrator ()) {
-			return true;
-		}
-		
-		$res = DB::execute("SELECT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE `member_id` = '$member_id' AND `permission_group_id` IN (" . $permission_group_ids . ") limit 1" );
-		return ($res->numRows() > 0);
 	}
 	
 	function contactCanReadObjectTypeinMember($permission_group_ids, $member_id, $object_type_id, $can_write = false, $can_delete = false, $user = null) {

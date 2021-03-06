@@ -7,7 +7,13 @@ include "init.php";
 Env::useHelper('format');
 
 define('SCRIPT_MEMORY_LIMIT', 1024 * 1024 * 1024); // 1 GB
-
+// amount of objects to be processed
+if (isset($argv[1]) && is_numeric($argv[1])) {
+	define('OBJECT_COUNT', $argv[1]);
+} else {
+	define('OBJECT_COUNT', 1000000);
+}
+$separator = "-----------------------------------------------------";
 
 if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
 	define('COMPLETE_MIGRATION_OUT', 'console');
@@ -54,7 +60,7 @@ $processed_objects = array();
 
 $user = Contacts::findOne(array("conditions"=>"user_type = (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE name='Super Administrator')"));
 $object_controller = new ObjectController();
-$objects = Objects::findAll(array('id'=>true, "conditions" => "id NOT IN(SELECT object_id FROM ".TABLE_PREFIX."processed_objects)"));
+$objects = Objects::findAll(array('id'=>true, "conditions" => "id NOT IN(SELECT object_id FROM ".TABLE_PREFIX."processed_objects)", "limit" => OBJECT_COUNT));
 
 foreach ($objects as $obj) {
 	$cobj = Objects::findObject($obj);
@@ -94,7 +100,7 @@ foreach ($objects as $obj) {
 		$processed_objects[] = $cobj->getId();
 		
 		// check memory to stop script
-		if (memory_get_usage(true) > SCRIPT_MEMORY_LIMIT) {
+		if (count($processed_objects) >= OBJECT_COUNT || memory_get_usage(true) > SCRIPT_MEMORY_LIMIT) {
 			$processed_objects_ids = "(" . implode("),(", $processed_objects) . ")";
 			DB::execute("INSERT INTO ".TABLE_PREFIX."processed_objects (object_id) VALUES $processed_objects_ids ON DUPLICATE KEY UPDATE object_id=object_id");
 			
@@ -105,7 +111,7 @@ foreach ($objects as $obj) {
 			$status_message = "Memory limit exceeded (".format_filesize(memory_get_usage(true))."). Script terminated. Processed Objects: $proc_count. Total: ".($proc_count+$rest).". Please execute 'Fill searchable objects and sharing table' again.";
 			$_SESSION['hide_back_button'] = 1;
 			
-			complete_migration_print("\n".date("H:i:s")." - Memory limit exceeded (".format_filesize(memory_get_usage(true)).") script terminated. Processed Objects: ".count($processed_objects). ". Total: $proc_count.");
+			complete_migration_print("\n".date("H:i:s")." - Iteration finished or Memory limit exceeded (".format_filesize(memory_get_usage(true)).") script terminated.\nProcessed Objects: ".count($processed_objects). ".\nTotal processed objects: $proc_count.\n$rest objects left.\n$separator\n");
 			$processed_objects = array();
 			break;
 		}

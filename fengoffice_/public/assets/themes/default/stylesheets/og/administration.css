@@ -227,6 +227,7 @@ input.disabled {
 form.edit-member {
 	height:100%;
 	background-color:white;
+	min-width: 1120px;
 }
 
 form.edit-member .member-chooser {

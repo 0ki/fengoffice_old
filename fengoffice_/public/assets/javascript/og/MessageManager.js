@@ -7,6 +7,17 @@ og.MessageManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
+	this.fields = [
+		'object_id', 'type', 'ot_id', 'name', 'text', 'date', 'is_today',
+		'userId', 'userName', 'updaterId', 'updaterName', 'ix', 'isRead', 'memPath'
+   	];
+   	var cps = og.custom_properties_by_type['message'] ? og.custom_properties_by_type['message'] : [];
+   	var cp_names = [];
+   	for (i=0; i<cps.length; i++) {
+   		cp_names.push('cp_' + cps[i].id);
+   	}
+   	this.fields = this.fields.concat(cp_names);
+	
 	if (!og.MessageManager.store) {
 		og.MessageManager.store = new Ext.data.Store({
 			proxy: new og.GooProxy({
@@ -16,10 +27,7 @@ og.MessageManager = function() {
 				root: 'messages',
 				totalProperty: 'totalCount',
 				id: 'id',
-				fields: [
-					'object_id', 'type', 'ot_id', 'name', 'text', 'date', 'is_today',
-					'userId', 'userName', 'updaterId', 'updaterName', 'ix', 'isRead', 'memPath'
-				]
+				fields: this.fields
 			}),
 			remoteSort: true,
 			listeners: {
@@ -59,7 +67,7 @@ og.MessageManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
 		name = mem_path + String.format(
 				'<a style="font-size:120%;" class="{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
@@ -169,7 +177,7 @@ og.MessageManager = function() {
 			}
 		});
 	
-	var cm = new Ext.grid.ColumnModel([
+	var cm_info = [
 		sm,{
 			id: 'draghandle',
 			header: '&nbsp;',
@@ -213,7 +221,37 @@ og.MessageManager = function() {
 			width: 50,
 			sortable: true,
 			renderer: renderDate
-        }]);
+        }
+    ];
+	
+	// custom property columns
+	var cps = og.custom_properties_by_type['message'] ? og.custom_properties_by_type['message'] : [];
+	for (i=0; i<cps.length; i++) {
+		cm_info.push({
+			id: 'cp_' + cps[i].id,
+			header: cps[i].name,
+			dataIndex: 'cp_' + cps[i].id,
+			sortable: false,
+			renderer: og.clean
+		});
+	}
+	// dimension columns
+	for (did in og.dimensions) {
+		if (isNaN(did)) continue;
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			cm_info.push({
+				id: 'dim_' + did,
+				header: og.dimensions_info[did].name,
+				dataIndex: 'dim_' + did,
+				sortable: false,
+				renderer: og.renderDimCol
+			});
+			og.breadcrumbs_skipped_dimensions[did] = did;
+		}
+	}
+	// create column model
+	var cm = new Ext.grid.ColumnModel(cm_info);
 	cm.defaultSortable = false;
 
 	moreActions = {};

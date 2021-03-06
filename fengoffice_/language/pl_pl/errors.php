@@ -121,4 +121,12 @@
 	'error add contact from user' => 'Nie udało się dodać kontaktu opartego o użytkownika',
 	'zip not supported' => 'Format ZIP nie jest obsługiwany przez serwer',
 	'no tag specified' => 'Nie podano taga',
+	'error invalid recipients' => 'W polu "{0}" zanleziono nieprawidłowy adres e-mail: {1}',
+	'no context permissions to add' => 'Brak Ci uprawnień, by dodać {0} w {1}',
+	'error cannot assign task to user' => '{0} nie można przypisać zadania {1}.',
+	'no mailAccount error' => 'Dzaiłanie niedostępne. Nie dodałeś/aś konta e-mail.',
+	'content too long not loaded' => 'Zawartość poprzednich wiadomości e-mail jest zbyt długa i nie została załadowana, ale zostanie wysłana z tą wiadonością e-mail.',
+	'member name already exists in dimension' => 'Element \'{0}\' już istnieje w wybranym wymiarze.',
+	'must choose at least one member of' => 'Należy wybrać przynajmniej jeden element z {0}.',
+	'timeslot dnx' => 'Przedzial czasowy nie istnieje',
 ); ?>

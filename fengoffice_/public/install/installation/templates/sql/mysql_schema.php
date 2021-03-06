@@ -30,6 +30,7 @@ CREATE TABLE `<?php echo $table_prefix ?>dimensions` (
   `default_order` int(10) NOT NULL default '0',
   `options` TEXT NOT NULL,
   `permission_query_method` enum('mandatory','not_mandatory') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'mandatory',
+  `is_required` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `code` (`code`) USING BTREE,
   KEY `by_name` (`name`),

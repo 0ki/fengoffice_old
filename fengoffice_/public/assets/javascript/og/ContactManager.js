@@ -7,6 +7,18 @@ og.ContactManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
+	this.fields = [
+        'object_id', 'type', 'ot_id', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
+        'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
+        'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath'
+    ];
+	var cps = og.custom_properties_by_type['contact'] ? og.custom_properties_by_type['contact'] : [];
+   	var cp_names = [];
+   	for (i=0; i<cps.length; i++) {
+   		cp_names.push('cp_' + cps[i].id);
+   	}
+   	this.fields = this.fields.concat(cp_names);
+	
 	if (!og.ContactManager.store) {
 		og.ContactManager.store = new Ext.data.Store({
 	        proxy: new og.GooProxy({
@@ -16,11 +28,7 @@ og.ContactManager = function() {
 	            root: 'contacts',
 	            totalProperty: 'totalCount',
 	            id: 'id',
-	            fields: [
-	                'object_id', 'type', 'ot_id', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
-	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today', 'ix', 'memPath'
-	            ]
+	            fields: this.fields
 	        }),
 	        remoteSort: true,
 			listeners: {
@@ -76,7 +84,7 @@ og.ContactManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
 		
 		return name + mem_path;
     }
@@ -177,7 +185,7 @@ og.ContactManager = function() {
 				actions.archive.setDisabled(false);
 			}
 		});
-    var cm = new Ext.grid.ColumnModel([
+	var cm_info = [
 		sm,
 		{
 			id: 'draghandle',
@@ -314,7 +322,35 @@ og.ContactManager = function() {
 			hidden: true,
 			renderer: renderDateCreated,
 			sortable: true
-		}]);
+		}];
+	// custom property columns
+	var cps = og.custom_properties_by_type['contact'] ? og.custom_properties_by_type['contact'] : [];
+	for (i=0; i<cps.length; i++) {
+		cm_info.push({
+			id: 'cp_' + cps[i].id,
+			header: cps[i].name,
+			dataIndex: 'cp_' + cps[i].id,
+			sortable: false,
+			renderer: og.clean
+		});
+	}
+	// dimension columns
+	for (did in og.dimensions) {
+		if (isNaN(did)) continue;
+		var key = 'lp_dim_' + did + '_show_as_column';
+		if (og.preferences['listing_preferences'][key]) {
+			cm_info.push({
+				id: 'dim_' + did,
+				header: og.dimensions_info[did].name,
+				dataIndex: 'dim_' + did,
+				sortable: false,
+				renderer: og.renderDimCol
+			});
+			og.breadcrumbs_skipped_dimensions[did] = did;
+		}
+	}
+	// create column model
+	var cm = new Ext.grid.ColumnModel(cm_info);
     cm.defaultSortable = false;
 
 	viewActions = {

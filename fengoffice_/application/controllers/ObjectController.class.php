@@ -172,7 +172,7 @@ class ObjectController extends ApplicationController {
 				$required_dimension_ids[] = $dot->getDimensionId();
 			}
 		}
-		$required_dimensions = Dimensions::findAll(array("conditions" => "id IN (".implode(",",$required_dimension_ids).")"));
+		$required_dimensions = Dimensions::findAll(array("conditions" => "id IN (".implode(",",$required_dimension_ids).") OR is_required=1"));
 		
 		// If not entered members
 		if (count($member_ids) <= 0){
@@ -879,7 +879,11 @@ class ObjectController extends ApplicationController {
 
                         }else if (array_var($_GET, 'action') == 'empty_trash_can') {
 
-                                $result = Objects::getObjectsFromContext(active_context(), 'trashed_on', 'desc', true);
+                                $result = ContentDataObjects::listing(array(
+									"order" => 'trashed_on',
+									"order_dir" => 'desc',
+									"trashed" => true
+                                ));
                                 $objects = $result->objects;
 
                                 list($succ, $err) = $this->do_delete_objects($objects, true);		
@@ -1023,9 +1027,9 @@ class ObjectController extends ApplicationController {
 			));
 		}
 		
-		$result = $pagination->objects; 
-		$total_items = $pagination->total ;
-		 
+		$result = $pagination->objects;
+		$total_items = $pagination->total;
+		
 		if(!$result) $result = array();
 
 		/* prepare response object */
@@ -1783,9 +1787,11 @@ class ObjectController extends ApplicationController {
 	function get_cusotm_property_columns() {
 		$grouped = array();
 		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, ot.name as obj_type FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id ORDER BY ot.name");
-		foreach ($cp_rows as $row) {
-			if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
-			$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name']);
+		if (is_array($cp_rows)) {
+			foreach ($cp_rows as $row) {
+				if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
+				$grouped[$row['obj_type']][] = array('id' => $row['id'], 'name' => $row['cp_name']);
+			}
 		}
 		ajx_current("empty");
 		ajx_extra_data(array('properties' => $grouped));

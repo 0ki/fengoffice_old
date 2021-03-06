@@ -108,6 +108,15 @@
     	$this->setColumnValue("is_default", $value);
     }
     
+    
+  	function getIsRequired() {
+    	return $this->getColumnValue('is_required');
+    }
+    
+    function setIsRequired($value) {
+    	$this->setColumnValue("is_required", $value);
+    }
+    
     /**
     * Return value of 'is_manageable' field
     *

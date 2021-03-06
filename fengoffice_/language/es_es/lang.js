@@ -498,7 +498,7 @@ addLangs({
 	'restore selected objects': 'Restaurar objetos seleccionados',
 	'delete selected objects permanently': 'Eliminar los objetos seleccionados permanentemente',
 	'confirm delete objects permanently': 'Una vez eliminados, no podrá recuperar estos objetos.\n¿Está seguro que desea eliminar permanentemente los objetos seleccionados?',
-	'n/a': '<acronym title="No Disponible">n/a</acronym>',
+	'n/a': 'n/a',
 	'move to trash': 'Enviar a la papelera',
 	'move selected objects to trash': 'Enviar los objetos seleccionados a la papelera',
 	'confirm move to trash': '¿Está seguro que desea enviar los objetos seleccionados a la papelera?',
