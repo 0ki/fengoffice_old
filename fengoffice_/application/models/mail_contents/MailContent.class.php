@@ -508,7 +508,7 @@ class MailContent extends BaseMailContent {
 	            $searchable_object->setContent($content);
 	            $searchable_object->setProjectId(0);
 	            $searchable_object->setIsPrivate(false);
-	            $searchable_object->setUserId($this->getAccount()->getUserId());
+	            $searchable_object->setUserId($this->getAccount() instanceof MailAccount ? $this->getAccount()->getUserId() : 0);
 	            
 	            $searchable_object->save();
 	          } // if

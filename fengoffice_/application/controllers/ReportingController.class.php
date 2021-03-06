@@ -193,7 +193,7 @@ class ReportingController extends ApplicationController {
 
 		//$conditions = logged_user()->isMemberOfOwnerCompany() ? '' : ' `is_private` = 0';
 		if ($tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
+			$tagstr = " 1=1" ; // dummy condition
 		} else {
 			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
 			TABLE_PREFIX . "project_charts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
@@ -278,6 +278,7 @@ class ReportingController extends ApplicationController {
 	}
 
 	function total_task_times($report_data = null, $task = null){
+		tpl_assign('allow_export', false);
 		$this->setTemplate('report_wrapper');
 
 		if (!$report_data) {

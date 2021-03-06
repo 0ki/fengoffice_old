@@ -657,8 +657,10 @@ class MailController extends ApplicationController {
 			$errorMailId = 0;
 			
 			try {
-				DB::beginWork();
-				$mails = MailContents::findAll(array("conditions" => array("`state` >= 200 AND `account_id` = ? AND `created_by_id` = ?", $account->getId(), logged_user()->getId())));
+				$mails = MailContents::findAll(array(
+					"conditions" => array("`is_deleted`=0 AND `state` >= 200 AND `account_id` = ? AND `created_by_id` = ?", $account->getId(), logged_user()->getId()),
+					"order" => "`state` ASC"
+				));
 				foreach ($mails as $mail) {
 					$errorMailId = $mail->getId();
 					$to = preg_split('/;|,/', $mail->getTo());
@@ -679,41 +681,53 @@ class MailController extends ApplicationController {
 						$images = null;
 					}
 					
-					$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType(), $msg_id, $in_reply_to_id, $images, $complete_mail);
-
-					if ($sentOK) {
-						if (FileRepository::isInRepository($mail->getContentFileId())) {
-							FileRepository::deleteFile($mail->getContentFileId());
+					try {
+						$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType(), $msg_id, $in_reply_to_id, $images, $complete_mail);
+					} catch (Exception $e) {
+						// actions are taken below depending on the sentOK variable
+					}
+					
+					try {
+						DB::beginWork();
+						if ($sentOK) {
+							if (FileRepository::isInRepository($mail->getContentFileId())) {
+								FileRepository::deleteFile($mail->getContentFileId());
+							}
+							
+							//$content = $utils->getContent($account->getSmtpServer(), $account->getSmtpPort(), $account->getOutgoingTrasnportType(), $account->smtpUsername(), $account->smtpPassword(), $body, $attachments);
+							$content = $complete_mail;
+							$repository_id = $utils->saveContent($content);
+							
+							$mail->setContentFileId($repository_id);
+							$mail->setSize(strlen($content));
+							$mail->setState(3);
+							$mail->setSentDate(DateTimeValueLib::now());
+							$mail->setReceivedDate(DateTimeValueLib::now());
+							$mail->save();
+							evt_add("mail sent", array("mail_id" => $mail->getId()));
+						} else {
+							$mail->setState($mail->getState() + 2);
+							$mail->save();
 						}
-						
-						//$content = $utils->getContent($account->getSmtpServer(), $account->getSmtpPort(), $account->getOutgoingTrasnportType(), $account->smtpUsername(), $account->smtpPassword(), $body, $attachments);
-						$content = $complete_mail;
-						$repository_id = $utils->saveContent($content);
-						
-						$mail->setContentFileId($repository_id);
-						$mail->setSize(strlen($content));
-						$mail->setState(3);
-						$mail->setSentDate(DateTimeValueLib::now());
-						$mail->setReceivedDate(DateTimeValueLib::now());
-						$mail->save();
-						evt_add("mail sent", array("mail_id" => $mail->getId()));
-					} else {
-						throw new Exception(lang('send mail error'));
+						DB::commit();
+					} catch (Exception $e) {
+						DB::rollback();
 					}
 				}
-				DB::commit();
-			} catch (Exception $e) {
-				DB::rollback();
 				
-				//Change email state
+			} catch (Exception $e) {
 				$errorEmailUrl = '';
 				if ($errorMailId > 0){
 					$email = MailContents::findById($errorMailId);
 					if ($email instanceof MailContent){
-						DB::beginWork();
-						$email->setState(2);
-						$email->save();
-						DB::commit();
+						try {
+							DB::beginWork();
+							$email->setState($mail->getState() + 2);
+							$email->save();
+							DB::commit();
+						} catch (Exception $e) {
+							DB::rollback();
+						}
 						
 						$errorEmailUrl = $email->getEditUrl();
 					}
@@ -1832,6 +1846,7 @@ class MailController extends ApplicationController {
 			); // array
 		} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		tpl_assign('link_to_objects', 'MailContents-' . $original_mail->getId());
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);

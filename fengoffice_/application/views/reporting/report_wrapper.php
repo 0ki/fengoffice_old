@@ -1,5 +1,6 @@
 <?php
 $genid = gen_id();
+if (!isset($allow_export)) $allow_export = true;
   	/*add_page_action(lang('print view'), '#', "ico-print", "_blank", array('onclick' => 'this.form' . $genid . '.submit'));*/
 ?>
 <form id="form<?php echo $genid ?>" name="form<?php echo $genid ?>" action="<?php echo get_url('reporting', $template_name . '_print') ?>" method="post" enctype="multipart/form-data" target="_download">
@@ -17,8 +18,10 @@ $genid = gen_id();
 		<div class="coViewTitleContainer">
 			<div class="coViewTitle"><?php echo $title ?></div>
 			<input type="submit" name="print" value="<?php echo lang('print view') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_blank' + Ext.id()" style="width:120px; margin-top:10px;"/>
+			<?php if ($allow_export) { ?>
 			<input type="submit" name="exportCSV" value="<?php echo lang('export csv') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width:120px; margin-top:10px;"/>
 			<input type="button" name="exportPDFOptions" onclick="og.showPDFOptions();" value="<?php echo lang('export pdf') ?>" style="width:120px; margin-top:10px;"/>
+			<?php } ?>
 		</div>
 	</td>
 	

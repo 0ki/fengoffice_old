@@ -195,13 +195,13 @@ class User extends BaseUser {
     }
     
     /**
-    * Returns true if user has at least one email account.
+    * Returns true if user has at least one email account to send emails from.
     *
     * @access public
     * @return boolean
     */
     function hasEmailAccounts() {
-    	$accounts = MailAccounts::find(array('conditions' => '`user_id` = '.$this->getId()));
+    	$accounts = MailAccountUsers::find(array('conditions' => '`user_id` = '.$this->getId()));
     	return is_array($accounts) && count($accounts) > 0;
     } // hasEmailAccounts
 

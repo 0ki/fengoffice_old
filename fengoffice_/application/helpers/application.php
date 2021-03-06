@@ -1209,7 +1209,7 @@ function render_action_taken_on_by(ApplicationLog $application_log_entry) {
  * @param array $attributes Other control attributes
  * @return string
  */
-function autocomplete_textfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true) {
+function autocomplete_textfield($name, $value, $options, $emptyText, $attributes, $forceSelection = true, $cmp_id = '') {
 	require_javascript("og/CSVCombo.js");
 	$jsArray = "";
 	foreach ($options as $o) {
@@ -1234,6 +1234,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
         		fields: ["value", "name", "clean"],
         		data: '.$jsArray.'
 			}),
+			'.($cmp_id == ''?'':'id:"'.$cmp_id.'",').'
 			valueField: "value",
         	displayField: "name",
         	mode: "local",

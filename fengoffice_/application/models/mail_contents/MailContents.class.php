@@ -235,7 +235,7 @@ class MailContents extends BaseMailContents {
 		else $archived_cond = "AND `archived_by_id` = 0";
 
 		$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " `state` <> '2' AND ";
-		$state_conv_cond_2 = $state != 'received' ? " AND (`mc`.`state` = '1' OR `mc`.`state` = '3' OR `mc`.`state` = '5') " : " AND `mc`.`state` <> '2' ";
+		$state_conv_cond_2 = " AND (`mc`.`state` = '1' OR `mc`.`state` = '3' OR `mc`.`state` = '5') ";
 		
 		if (user_config_option('show_emails_as_conversations')) {
 			$archived_by_id = $archived ? "AND `mc`.`archived_by_id` != 0" : "AND `mc`.`archived_by_id` = 0";
@@ -252,48 +252,53 @@ class MailContents extends BaseMailContents {
 		if ($count) {
 			return self::count($conditions);
 		} else {
-			return self::paginate(array('conditions' => $conditions, 'order' => "$order_by $dir"), config_option('files_per_page'), $start / $limit + 1);
-			/* COMPLEX WORKAROUND FOR PERFORMANCE
-			$page = (integer) ($start / $limit) + 1;
-			$order = "$order_by $dir";
-			$count = null;
-			if (defined('INFINITE_PAGING') && INFINITE_PAGING) $count = 10000000;
-			$pagination = new DataPagination($count ? $count : self::count($conditions), $limit, $page);
-			$ids = self::findAll(array(
-				'conditions' => $conditions,
-				'id' => true,
-			));
-			
-			$ids = array_reverse($ids);
-			$ret_ids = array();
-			$offset = 0;
-			$block_len = $pagination->getItemsPerPage();
-			while (count($ret_ids) < $pagination->getLimitStart() + $pagination->getItemsPerPage() && $offset < count($ids)) {
-				$tmp_ids = array();
-				for ($i=$offset; $i<count($ids) && $i<$offset + $block_len; $i++) {
-					$tmp_ids[] = $ids[$i];
-				}
+			if (!defined('EMAIL_PERFORMANCE_WORKAROUND') || !EMAIL_PERFORMANCE_WORKAROUND) {
+				return self::paginate(array('conditions' => $conditions, 'order' => "$order_by $dir"), config_option('files_per_page'), $start / $limit + 1);
+			} else {
+				/* COMPLEX WORKAROUND FOR PERFORMANCE */
+				$conditions = "`trashed_by_id` = 0 AND `is_deleted` = 0 $archived_cond $projectConditions $tagstr $classified $read $accountConditions";
 				
-				$tmp_ids = self::findAll(array(
-					'conditions' => "`id` IN (".implode(",", $tmp_ids).") $permissions $conversation_cond $box_cond",
-					'order' => $order,
+				$page = (integer) ($start / $limit) + 1;
+				$order = "$order_by $dir";
+				$count = null;
+				if (defined('INFINITE_PAGING') && INFINITE_PAGING) $count = 10000000;
+				$pagination = new DataPagination($count ? $count : self::count($conditions), $limit, $page);
+				$ids = self::findAll(array(
+					'conditions' => $conditions,
 					'id' => true,
 				));
 				
-				$ret_ids = array_merge($ret_ids, $tmp_ids);
+				$ids = array_reverse($ids);
+				$ret_ids = array();
+				$offset = 0;
+				$block_len = $pagination->getItemsPerPage();
+				while (count($ret_ids) < $pagination->getLimitStart() + $pagination->getItemsPerPage() && $offset < count($ids)) {
+					$tmp_ids = array();
+					for ($i=$offset; $i<count($ids) && $i<$offset + $block_len; $i++) {
+						$tmp_ids[] = $ids[$i];
+					}
+					
+					$tmp_ids = self::findAll(array(
+						'conditions' => "`id` IN (".implode(",", $tmp_ids).") $permissions $conversation_cond $box_cond",
+						'order' => $order,
+						'id' => true,
+					));
+					
+					$ret_ids = array_merge($ret_ids, $tmp_ids);
+					
+					$offset += $block_len;
+				}
+				$ids = array();
+				for ($i=$pagination->getLimitStart(); $i<count($ret_ids); $i++) {
+					$ids[] = $ret_ids[$i];
+				}
 				
-				$offset += $block_len;
+				$objects = array();
+				foreach ($ids as $id) {
+					$objects[] = self::findById($id);
+				}
+	      		return array($objects, $pagination);
 			}
-			$ids = array();
-			for ($i=$pagination->getLimitStart(); $i<count($ret_ids); $i++) {
-				$ids[] = $ret_ids[$i];
-			}
-			
-			$objects = array();
-			foreach ($ids as $id) {
-				$objects[] = self::findById($id);
-			}
-      		return array($objects, $pagination);*/
 		}
 	}
 	

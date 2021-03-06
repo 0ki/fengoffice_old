@@ -877,37 +877,49 @@ function utf8_safe($text) {
 }
 
 function clean_csv_addresses($csv) {
-		$addrs = explode(",", $csv);
-		$parsed = array();
-		$pending = false;
-		foreach ($addrs as $addr) {
-			$addr = trim($addr);
-			if ($pending) {
-				$addr = $pending . ", " . $addr;
-				$pending = false;
-			}
-			if ($addr == "") continue;
-			if ($addr[0] == '"') {
-				$pos = strpos($addr, '"', 1);
-				if ($pos !== false) {
-					// valid address
-				} else {
-					// name contained a comma so it was split
-					$pending = $addr;
-					continue;
-				}
-				if (strpos($addr, '<') === false) {
-					// invalid address. has quoted name part but no email address. leave it as is just in case
-					$parsed[] = $addr;
-					continue;
-				}
+	$addrs = explode(",", $csv);
+	$parsed = array();
+	$pending = false;
+	foreach ($addrs as $addr) {
+		$addr = trim($addr);
+		if ($pending) {
+			$addr = $pending . ", " . $addr;
+			$pending = false;
+		}
+		if ($addr == "") continue;
+		if ($addr[0] == '"') {
+			$pos = strpos($addr, '"', 1);
+			if ($pos !== false) {
+				// valid address
+			} else {
+				// name contained a comma so it was split
+				$pending = $addr;
+				continue;
 			}
 			if (strpos($addr, '<') === false) {
-				$addr = "<$addr>";
+				// invalid address. has quoted name part but no email address. leave it as is just in case
+				$parsed[] = $addr;
+				continue;
 			}
-			$parsed[] = $addr;
 		}
-		return implode(",", $parsed);
+		if (strpos($addr, '<') === false) {
+			$addr = "<$addr>";
+		}
+		$parsed[] = $addr;
 	}
+	return implode(",", $parsed);
+}
+
+/**
+ * Converts HTML to plain text
+ * @param $html
+ * @return string
+ */
+function html_to_text($html) {
+	include_once "library/html2text/class.html2text.inc";
+	$h2t = new html2text($html);
+	return $h2t->get_text(); 
+}
+
 
 ?>

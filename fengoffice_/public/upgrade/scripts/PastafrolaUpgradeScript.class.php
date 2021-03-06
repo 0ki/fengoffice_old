@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade OpenGoo 1.6 to OpenGoo 1.7-beta2
+ * Pastafrola upgrade script will upgrade OpenGoo 1.6 to OpenGoo 1.7-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -39,8 +39,8 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	 */
 	function __construct(Output $output) {
 		parent::__construct($output);
-		$this->setVersionFrom('1.6');
-		$this->setVersionTo('1.7-beta2');
+		$this->setVersionFrom('1.6.2');
+		$this->setVersionTo('1.7-rc');
 	} // __construct
 
 	function getCheckIsWritable() {

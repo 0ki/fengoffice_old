@@ -1265,7 +1265,6 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.7.2.1 2010/03/31 17:18:42 acio Exp $
  *
  ***************************************************************************/
 

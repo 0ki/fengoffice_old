@@ -193,7 +193,7 @@
 	'edit mail account' => 'Editar cuenta de correo',
 	'delete mail account' => 'Eliminar cuenta de correo',
 	'subject' => 'Asunto',
-	'email' => 'Ver correo',
+	'email' => 'Correo',
 	'from' => 'De',
 	'to' => 'Para',
 	'date' => 'Fecha',

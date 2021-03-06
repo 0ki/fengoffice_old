@@ -18274,11 +18274,11 @@ Ext.DatePicker = Ext.extend(Ext.Component, {
                 '<tr><td colspan="3"><table class="x-date-inner" cellspacing="0"><thead><tr>'];
         var dn = this.dayNames;
         for(var i = 0; i < 7; i++){
-            var d = this.startDay+i;
-            if(d > 6){
+            var d = parseInt(this.startDay+i);
+            while(d > 6){
                 d = d-7;
             }
-            m.push("<th><span>", dn[parseInt(d)].substr(0,1), "</span></th>");
+            m.push("<th><span>", (dn[d] && dn[d].length > 0 ? dn[d].substr(0,1) : ' '), "</span></th>");
         }
         m[m.length] = "</tr></thead><tbody><tr>";
         for(var i = 0; i < 42; i++) {

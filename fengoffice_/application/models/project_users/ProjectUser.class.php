@@ -105,50 +105,6 @@ class ProjectUser extends BaseProjectUser {
 		parent::setUserId($value);
 	}
 	 
-	/*function getCanWriteMessages() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getcanWriteMessages();
-	}
-	
-	function getCanWriteTasks() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteTasks();
-	}
-	
-	function getCanWriteWeblinks() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteWeblinks();
-	}
-	
-	function getCanWriteMilestones() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteMilestones();
-	}
-	
-	function getCanWriteMails() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteMails();
-	}
-	
-	function getCanWriteContacts() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteContacts();
-	}
-	
-	function getCanWriteComments() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteComments();
-	}
-	
-	function getCanWriteFiles() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteFiles();
-	}
-	
-	function getCanWriteEvents() {
-		if ($this->getUser()->isGuest()) return false;
-		return parent::getCanWriteEvents();
-	}*/
 } // ProjectUser
 
 ?>

@@ -1,6 +1,6 @@
 
-    About Feng Office 1.7-beta2
-    ==========================
+    About Feng Office 1.7-RC
+    ========================
 
     Feng Office is a free and open source Web Office, project management
     and collaboration tool, licensed under the Affero GPL 3 license.
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download Feng Office 1.7-beta2 - http://fengoffice.com/web/community/
+    2. Download Feng Office 1.7-RC - http://fengoffice.com/web/community/
     3. Unpack into your Feng Office installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_feng>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.7-beta2
+    	from your current version to 1.7-RC
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -91,18 +91,41 @@
 	Changelog
 	=========
 	
+	Since 1.7-beta2
+	---------------
+	
+	usability: Forwarded emails are linked to the original email.
+
+	bugfix: when importing contacts from csv or vcard add them to the selected workspace
+	bugfix: improved compatibility with vcard
+	bugfix: When sending several emails, an error in one email will not stop the rest of being sent.
+	bugfix: removed export buttons for task times report
+	bugfix: archived milestones were still being shown
+	bugfix: set the can_manage_time permission by default when creating a user
+	bugfix: set all permissions when the user type is 'admin'
+	bugfix: Error when sending email reminders (function 'html_to_text')
+	bugfix: delete references to workspaces when deleting a group
+	bugfix: Popup calendar was sometimes not displayed
+	bugfix: Object picker doesn't filter correctly by type
+	bugfix: Tabs are sometimes switched abruptly when content is loaded into a panel.
+	
+	system: small performance tweaks for listings
+	system: limit the amount of reminders to send at once
+	
+	
 	Since 1.7-beta
 	--------------
-	- bugfix: Error when deleting an email from the trash.
-	- bugfix: Improved the workspace filter's performance
-	- bugfix: Missing lang: log comment projectfiles data
-	- bugfix: Tags of objects without workspaces were not being shown.
-	- bugfix: Permissions are now better considered when listing tags. (type permissions are taken into account)	
-	- bugfix: Error whgen editting workspace permissions assigned to a group.
-	- bugfix: Error when adding a subtask from the task's view
-	- bugfix: Current time marker in 5 day view is one day ahead.	
-	- bugfix: Task list view shows date one day ahead on some timezones
-	- usability: Don't ask whether to keep workspaces when dragging an email to a workspace if the email has no workspaces.
+	
+	bugfix: Error when deleting an email from the trash.
+	bugfix: Improved the workspace filter's performance
+	bugfix: Missing lang: log comment projectfiles data
+	bugfix: Tags of objects without workspaces were not being shown.
+	bugfix: Permissions are now better considered when listing tags. (type permissions are taken into account)	
+	bugfix: Error whgen editting workspace permissions assigned to a group.
+	bugfix: Error when adding a subtask from the task's view
+	bugfix: Current time marker in 5 day view is one day ahead.	
+	bugfix: Task list view shows date one day ahead on some timezones
+	usability: Don't ask whether to keep workspaces when dragging an email to a workspace if the email has no workspaces.
 	
 	Since 1.6.2
 	-----------

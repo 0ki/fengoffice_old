@@ -147,6 +147,9 @@ Hook::register("fengoffice");
 function fengoffice_reminder_email($reminder, &$ret) {
 	$object = $reminder->getObject();
 	$date = $object->getColumnValue($reminder->getContext());
+	$valid = true;
+	Hook::fire('validate_reminder_email', $reminder, $valid);
+	if (!$valid) return;
 	if ($reminder->getContext() == "due_date" && ($object instanceof ProjectTask || $object instanceof ProjectMilestone)) {
 		if ($object->isCompleted() || $object->isTrashed()) {
 			// don't send due date reminders for completed or trashed tasks

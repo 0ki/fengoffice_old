@@ -6,7 +6,7 @@
 	'new password' => 'Nueva contraseña',
 	'remember me' => 'Recordarme por 14 días',
 	'email address' => 'Dirección de correo electrónico',
-	'display name' => 'Desplegar nombre',
+	'display name' => 'Nombre visible',
 	'overview' => 'Vista general',
 	'search' => 'Buscar',
 	'search results' => 'Resultados de la búsqueda',

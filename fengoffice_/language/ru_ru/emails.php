@@ -15,7 +15,7 @@ return array(
     'your account created' => 'Ваша новая учетная запись создана',
     'your password' => 'Ваш пароль',
     'milestone assigned to you' => 'Работа по этапу возложена на вас',
-    'task assigned to you' => 'Зачада возложена на вас',
+    'task assigned to you' => 'На вас возложена задача',
 
 // Interface
     'hi john doe' => 'Привет {0}',

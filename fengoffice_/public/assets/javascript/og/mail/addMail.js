@@ -270,7 +270,7 @@ og.attachFromWorkspace = function(genid) {
 				og.addMailAttachment(container, obj);
 			}
 		}
-	});
+	}, this, {selected_type:'ProjectFiles'});
 };
 // </attachments>
 

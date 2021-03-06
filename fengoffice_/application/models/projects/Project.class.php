@@ -1907,6 +1907,7 @@ class Project extends BaseProject {
     	$result = array();
     	if (is_array($project_permissions)) {
 	    	foreach ($project_permissions as $perm){
+	    		if (!$perm->getUserOrGroup() instanceof User && $perm->getUserOrGroup() instanceof Group) continue;
 	    		$chkArray = array();
 	    		$chkArray[0] = ($perm->getCanAssignToOwners() ? 1 : 0);
 	    		$chkArray[1] = ($perm->getCanAssignToOther() ? 1 : 0);

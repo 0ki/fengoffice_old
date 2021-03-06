@@ -1472,6 +1472,7 @@ class ContactController extends ApplicationController {
 										$pc->setRole(array_var($contact_data,'role'));
 										$pc->save();
 									}
+									$contact->addToWorkspace(active_project());
 								}
 								$import_result['import_ok'][] = $contact_data;
 							} else {
@@ -1982,6 +1983,7 @@ class ContactController extends ApplicationController {
 								$pc->setRole(array_var($contact_data,'role'));
 								$pc->save();
 							}
+							$contact->addToWorkspace(active_project());
 						}
 						$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
 					} else {
@@ -2052,7 +2054,7 @@ class ContactController extends ApplicationController {
                 else if (!isset($block_data["email3"])) 
                 	$block_data["email3"] = $email;
                 
-            } else if (preg_match('/URL(;type=(HOME|WORK))?.*:(.+)/i', $line, $matches)) {
+            } else if (preg_match('/URL(;type=(HOME|WORK))?.*?:(.+)/i', $line, $matches)) {
             	// WEB URL
                 $url = trim($matches[3]);
                 $url = str_replace(array("\r\n", "\n", "\r", "\t", '\r\n', '\n', '\r', '\t'), " ", $url);
@@ -2078,7 +2080,7 @@ class ContactController extends ApplicationController {
                 } else {
                     $block_data["o_phone_number"] = $phone;
                 }
-            } else if (preg_match('/ADR;type=(HOME|WORK)[,A-Z]*;(charset=[-a-zA-Z0-9.]+|type=pref):;;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)/i', $line, $matches)) {
+			} else if (preg_match('/ADR;type=(HOME|WORK|[A-Z0-9]*)[,A-Z]*(:|;charset=[-a-zA-Z0-9.]+:|;type=pref:);;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)/i', $line, $matches)) {
             	// ADDRESS
                 // $matches is
                 // [1] <-- street
@@ -2152,40 +2154,39 @@ class ContactController extends ApplicationController {
     } // read_vcard_file
     
     private function build_vcard($contacts) {
-    	$charset = ";CHARSET=UTF-8";
     	$vcard = "";
 
     	foreach($contacts as $contact) {
     		$vcard .= "BEGIN:VCARD\nVERSION:3.0\n";
     		
-    		$vcard .= "N$charset:" . $contact->getLastname() . ";" . $contact->getFirstname() . "\n";
-    		$vcard .= "FN$charset:" . $contact->getFirstname() . " " . $contact->getLastname() . "\n";
+    		$vcard .= "N:" . $contact->getLastname() . ";" . $contact->getFirstname() . "\n";
+    		$vcard .= "FN:" . $contact->getFirstname() . " " . $contact->getLastname() . "\n";
     		if ($contact->getCompany() instanceof Company)
-    			$vcard .= "ORG$charset:" . $contact->getCompany()->getName() . "\n";
+    			$vcard .= "ORG:" . $contact->getCompany()->getName() . "\n";
     		if ($contact->getJobTitle())
-    			$vcard .= "TITLE$charset:" . $contact->getJobTitle() . "\n";
+    			$vcard .= "TITLE:" . $contact->getJobTitle() . "\n";
     		if ($contact->getOBirthday() instanceof DateTimeValue)
     			$vcard .= "BDAY:" . $contact->getOBirthday()->format("Y-m-d") . "\n";
     		if ($contact->getHAddress())
-    			$vcard .= "ADR;TYPE=HOME$charset:;;" . $contact->getHAddress() .",". $contact->getHCity() .",". $contact->getHState() .",". $contact->getHZipcode() .",". $contact->getHCountryName() . "\n";
+    			$vcard .= "ADR;TYPE=HOME:;;" . $contact->getHAddress() .";". $contact->getHCity() .";". $contact->getHState() .";". $contact->getHZipcode() .";". $contact->getHCountryName() . "\n";
     		if ($contact->getWAddress())
-    			$vcard .= "ADR;TYPE=WORK$charset:;;" . $contact->getWAddress() .",". $contact->getWCity() .",". $contact->getWState() .",". $contact->getWZipcode() .",". $contact->getWCountryName() . "\n";
+    			$vcard .= "ADR;TYPE=WORK:;;" . $contact->getWAddress() .";". $contact->getWCity() .";". $contact->getWState() .";". $contact->getWZipcode() .";". $contact->getWCountryName() . "\n";
     		if ($contact->getOAddress())
-    			$vcard .= "ADR;TYPE=INTL$charset:;;" . $contact->getOAddress() .",". $contact->getOCity() .",". $contact->getOState() .",". $contact->getOZipcode() .",". $contact->getOCountryName() . "\n";
+    			$vcard .= "ADR;TYPE=INTL:;;" . $contact->getOAddress() .";". $contact->getOCity() .";". $contact->getOState() .";". $contact->getOZipcode() .";". $contact->getOCountryName() . "\n";
     		if ($contact->getHPhoneNumber())
-    			$vcard .= "TEL;TYPE=HOME,VOICE$charset:" . $contact->getHPhoneNumber() . "\n";
+    			$vcard .= "TEL;TYPE=HOME,VOICE:" . $contact->getHPhoneNumber() . "\n";
     		if ($contact->getWPhoneNumber())
-    			$vcard .= "TEL;TYPE=WORK,VOICE$charset:" . $contact->getWPhoneNumber() . "\n";
+    			$vcard .= "TEL;TYPE=WORK,VOICE:" . $contact->getWPhoneNumber() . "\n";
     		if ($contact->getOPhoneNumber())
-    			$vcard .= "TEL;TYPE=VOICE$charset:" . $contact->getOPhoneNumber() . "\n";
+    			$vcard .= "TEL;TYPE=VOICE:" . $contact->getOPhoneNumber() . "\n";
     		if ($contact->getHFaxNumber())
-    			$vcard .= "TEL;TYPE=HOME,FAX$charset:" . $contact->getHFaxNumber() . "\n";
+    			$vcard .= "TEL;TYPE=HOME,FAX:" . $contact->getHFaxNumber() . "\n";
     		if ($contact->getWFaxNumber())
-    			$vcard .= "TEL;TYPE=WORK,FAX$charset:" . $contact->getWFaxNumber() . "\n";
+    			$vcard .= "TEL;TYPE=WORK,FAX:" . $contact->getWFaxNumber() . "\n";
     		if ($contact->getOFaxNumber())
-    			$vcard .= "TEL;TYPE=FAX$charset:" . $contact->getOFaxNumber() . "\n";
+    			$vcard .= "TEL;TYPE=FAX:" . $contact->getOFaxNumber() . "\n";
     		if ($contact->getHMobileNumber())
-    			$vcard .= "TEL;TYPE=CELL,VOICE$charset:" . $contact->getHMobileNumber() . "\n";
+    			$vcard .= "TEL;TYPE=CELL,VOICE:" . $contact->getHMobileNumber() . "\n";
     		if ($contact->getHWebPage())
     			$vcard .= "URL;TYPE=HOME:" . $contact->getHWebPage() . "\n";
     		if ($contact->getWWebPage())
@@ -2199,11 +2200,15 @@ class ContactController extends ApplicationController {
     		if ($contact->getEmail3())
     			$vcard .= "EMAIL;TYPE=INTERNET:" . $contact->getEmail3() . "\n";
 			if ($contact->getNotes())
-    			$vcard .= "NOTE$charset:" . $contact->getNotes() . "\n";
+    			$vcard .= "NOTE:" . $contact->getNotes() . "\n";
     		if ($contact->hasPicture()) {
     			$data = FileRepository::getFileContent($contact->getPictureFile());
-    			$enc_data = chunk_split(base64_encode($data));
-    			$vcard .= "PHOTO;ENCODING=BASE64;TYPE=PNG:" . $enc_data . "\n";
+    			$chunklen = 62;
+    			$pre = "PHOTO;ENCODING=BASE64;TYPE=PNG:";
+    			$b64 = base64_encode($data);
+    			$enc_data = substr($b64, 0, $chunklen + 1 - strlen($pre)) . "\n ";
+    			$enc_data .= chunk_split(substr($b64, $chunklen + 1 - strlen($pre)), $chunklen, "\n ");
+    			$vcard .= $pre . $enc_data . "\n";
     		}
 
 			$vcard .= "END:VCARD\n";

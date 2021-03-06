@@ -209,7 +209,7 @@ class Group extends BaseGroup {
 			throw new Error(lang('error delete group'));
 			return false;
 		} // if
-
+		ProjectUsers::clearByUser($this);
 		return parent::delete();
 	} // delete
 

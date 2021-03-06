@@ -611,7 +611,7 @@ class TaskController extends ApplicationController {
 		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => user_config_option('task_display_limit') > 0 ? user_config_option('task_display_limit') + 1 : null));
 		ProjectTasks::populateData($tasks);
 		//Find all internal milestones for these tasks
-		$internalMilestones = ProjectMilestones::getProjectMilestones($project, null, 'DESC', $tag, null, null, null, ($status == 0), false);
+		$internalMilestones = ProjectMilestones::getProjectMilestones(active_or_personal_project(), null, 'DESC', $tag, null, null, null, ($status == 0), false);
 		ProjectMilestones::populateData($internalMilestones);
 		
 		//Find all external milestones for these tasks
@@ -642,9 +642,9 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "project_milestones.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMilestones' ) > 0 ";
 		}
-		$projectstr = " AND " . ProjectMilestones::getWorkspaceString($pids);
+		$projectstr = " AND (" . ProjectMilestones::getWorkspaceString($pids) . $milestone_ids_condition . ")";
 		$archivedstr = " AND `archived_by_id` = 0 ";
-		$milestone_conditions = " `is_template` = false " . $archivedstr . $projectstr . $pendingstr . $tagstr . $milestone_ids_condition;
+		$milestone_conditions = " `is_template` = false " . $archivedstr . $projectstr . $pendingstr . $tagstr;
 		$externalMilestonesTemp = ProjectMilestones::findAll(array('conditions' => $milestone_conditions));
 		$externalMilestones = array();
 		if($externalMilestonesTemp){

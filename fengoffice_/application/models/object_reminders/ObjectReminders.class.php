@@ -52,9 +52,12 @@ class ObjectReminders extends BaseObjectReminders {
 		} else {
 			$extra = "";
 		}
-		return ObjectReminders::findAll(array('conditions' => array(
-			"`date` > '0000-00-00 00:00:00' AND `date` < ?" . $extra, DateTimeValueLib::now()
-		)));
+		return ObjectReminders::findAll(array(
+			'conditions' => array(
+				"`date` > '0000-00-00 00:00:00' AND `date` < ?" . $extra, DateTimeValueLib::now(),
+			),
+			'limit' => config_option('cron reminder limit', 100)
+		));
 	}
 	
 	/**

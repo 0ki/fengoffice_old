@@ -92,9 +92,6 @@
   	'config option name currency_code' => 'Currency',
   	'config option desc currency_code' => 'Currency symbol',
   
-	'config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
-  	'config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
-    
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
     'config option desc exchange_compatible' => 'If you are using Microsoft Exchange Server set this option to yes to avoid some known mailing problems.',
@@ -196,6 +193,9 @@
 	'user ws config option desc block_email_images' => 'Do not show images that are embedded in mail objects.',
 	'user ws config option name draft_autosave_timeout' => 'Draft autosave interval',
 	'user ws config option desc draft_autosave_timeout' => 'Seconds between each autosave operation for draft mails (0 to disable autosave)',
+
+	'user ws config option name detect_mime_type_from_extension' => 'Detect mime type from extension',
+  	'user ws config option desc detect_mime_type_from_extension' => 'Enable this to detect file\'s mime type by its extension',
   
 	'show context help always' => 'Always',
 	'show context help never' => 'Never',

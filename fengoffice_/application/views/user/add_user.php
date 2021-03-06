@@ -66,6 +66,23 @@
     <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
   <?php } // if ?>
   
+  <script>
+  og.addUserTypeChange = function(genid, type) {
+	  Ext.get(genid + 'userSystemPermissions').setDisplayed(type != 'guest');
+	  og.ogPermReadOnly(genid, type == 'guest');
+	  var div = document.getElementById(genid + 'userSystemPermissions');
+	  var cbs = div.getElementsByTagName('input');
+	  for (var i=0; i < cbs.length; i++) {
+		  if (cbs[i].type == 'checkbox') {
+			  if (cbs[i].name == 'user[can_manage_time]') {
+				  cbs[i].checked = true;
+			  } else {
+				  cbs[i].checked = type == 'admin';
+			  }
+		  }
+	  }
+  };
+  </script>
   <!-- user type -->
   <div>
     <?php echo label_tag(lang('user type'), null, true) ?>
@@ -75,7 +92,7 @@
 	    		array('guest', lang('guest user')),
 	    		), array_var($user_data, 'type', 'normal'),
 	    		array(
-	    			'onchange' => "Ext.get('{$genid}userSystemPermissions').setDisplayed(this.value != 'guest');og.ogPermReadOnly('$genid', this.value == 'guest')"
+	    			'onchange' => "og.addUserTypeChange('{$genid}', this.value)"
 	    		)) ?>
   </div>
   
@@ -179,59 +196,59 @@
 		<fieldset id="<?php echo $genid ?>userSystemPermissions" style="display:block;">
 			<legend><?php echo lang('system permissions') ?></legend>
 			<div>
-				<?php echo checkbox_field('user[can_edit_company_data]',array_var($user_data,'can_edit_company_data'), array('id' => 'user[can_edit_company_data]' )) ?> 
-				<label for="<?php echo 'user[can_edit_company_data]' ?>" class="checkbox"><?php echo lang('can edit company data') ?></label>
-				<a href="javascript:og.toggle('can_edit_company_data_help')">?</a>
+				<?php echo checkbox_field('user[can_edit_company_data]',array_var($user_data,'can_edit_company_data'), array('id' => $genid . 'user[can_edit_company_data]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_edit_company_data]' ?>" class="checkbox"><?php echo lang('can edit company data') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_edit_company_data_help')">?</a>
 			</div>
-			<div id="can_edit_company_data_help" class="permissions-help" style="display:none"><?php echo lang('can_edit_company_data description') ?></div>
+			<div id="<?php echo $genid ?>can_edit_company_data_help" class="permissions-help" style="display:none"><?php echo lang('can_edit_company_data description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_security]', array_var($user_data,'can_manage_security'), array('id' => 'user[can_manage_security]' )) ?> 
-				<label for="<?php echo 'user[can_manage_security]' ?>" class="checkbox"><?php echo lang('can manage security') ?></label>
-				<a href="javascript:og.toggle('can_manage_security_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_security]', array_var($user_data,'can_manage_security'), array('id' => $genid . 'user[can_manage_security]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_security]' ?>" class="checkbox"><?php echo lang('can manage security') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_security_help')">?</a>
 			</div>
-			<div id="can_manage_security_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_security description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_security_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_security description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_workspaces]', array_var($user_data,'can_manage_workspaces'), array('id' => 'user[can_manage_workspaces]' )) ?> 
-				<label for="<?php echo 'user[can_manage_workspaces]' ?>" class="checkbox"><?php echo lang('can manage workspaces') ?></label>
-				<a href="javascript:og.toggle('can_manage_workspaces_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_workspaces]', array_var($user_data,'can_manage_workspaces'), array('id' => $genid . 'user[can_manage_workspaces]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_workspaces]' ?>" class="checkbox"><?php echo lang('can manage workspaces') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_workspaces_help')">?</a>
 			</div>
-			<div id="can_manage_workspaces_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_workspaces description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_workspaces_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_workspaces description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_configuration]', array_var($user_data,'can_manage_configuration'), array('id' => 'user[can_manage_configuration]' )) ?> 
-				<label for="<?php echo 'user[can_manage_configuration]' ?>" class="checkbox"><?php echo lang('can manage configuration') ?></label>
-				<a href="javascript:og.toggle('can_manage_configuration_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_configuration]', array_var($user_data,'can_manage_configuration'), array('id' => $genid . 'user[can_manage_configuration]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_configuration]' ?>" class="checkbox"><?php echo lang('can manage configuration') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_configuration_help')">?</a>
 			</div>
-			<div id="can_manage_configuration_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_configuration description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_configuration_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_configuration description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_contacts]', array_var($user_data,'can_manage_contacts'), array('id' => 'user[can_manage_contacts]' )) ?> 
-				<label for="<?php echo 'user[can_manage_contacts]' ?>" class="checkbox"><?php echo lang('can manage contacts') ?></label>
-				<a href="javascript:og.toggle('can_manage_contacts_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_contacts]', array_var($user_data,'can_manage_contacts'), array('id' => $genid . 'user[can_manage_contacts]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_contacts]' ?>" class="checkbox"><?php echo lang('can manage contacts') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_contacts_help')">?</a>
 			</div>
-			<div id="can_manage_contacts_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_contacts description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_contacts_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_contacts description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_templates]', array_var($user_data,'can_manage_templates'), array('id' => 'user[can_manage_templates]' )) ?> 
-				<label for="<?php echo 'user[can_manage_templates]' ?>" class="checkbox"><?php echo lang('can manage templates') ?></label>
-				<a href="javascript:og.toggle('can_manage_templates_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_templates]', array_var($user_data,'can_manage_templates'), array('id' => $genid . 'user[can_manage_templates]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_templates]' ?>" class="checkbox"><?php echo lang('can manage templates') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_templates_help')">?</a>
 			</div>
-			<div id="can_manage_templates_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_templates description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_templates_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_templates description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_reports]', array_var($user_data,'can_manage_reports'), array('id' => 'user[can_manage_reports]' )) ?> 
-				<label for="<?php echo 'user[can_manage_reports]' ?>" class="checkbox"><?php echo lang('can manage reports') ?></label>
-				<a href="javascript:og.toggle('can_manage_reports_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_reports]', array_var($user_data,'can_manage_reports'), array('id' => $genid . 'user[can_manage_reports]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_reports]' ?>" class="checkbox"><?php echo lang('can manage reports') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_reports_help')">?</a>
 			</div>
-			<div id="can_manage_reports_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_reports description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_reports_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_reports description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_manage_time]', array_var($user_data,'can_manage_time'), array('id' => 'user[can_manage_time]' )) ?> 
-				<label for="<?php echo 'user[can_manage_time]' ?>" class="checkbox"><?php echo lang('can manage time') ?></label>
-				<a href="javascript:og.toggle('can_manage_time_help')">?</a>
+				<?php echo checkbox_field('user[can_manage_time]', array_var($user_data,'can_manage_time'), array('id' => $genid . 'user[can_manage_time]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_manage_time]' ?>" class="checkbox"><?php echo lang('can manage time') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_manage_time_help')">?</a>
 			</div>
-			<div id="can_manage_time_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_time description') ?></div>
+			<div id="<?php echo $genid ?>can_manage_time_help" class="permissions-help" style="display:none"><?php echo lang('can_manage_time description') ?></div>
 			<div>
-				<?php echo checkbox_field('user[can_add_mail_accounts]', array_var($user_data,'can_add_mail_accounts'), array('id' => 'user[can_add_mail_accounts]' )) ?> 
-				<label for="<?php echo 'user[can_add_mail_accounts]' ?>" class="checkbox"><?php echo lang('can add mail accounts') ?></label>
-				<a href="javascript:og.toggle('can_add_mail_accounts_help')">?</a>
+				<?php echo checkbox_field('user[can_add_mail_accounts]', array_var($user_data,'can_add_mail_accounts'), array('id' => $genid . 'user[can_add_mail_accounts]' )) ?> 
+				<label for="<?php echo $genid . 'user[can_add_mail_accounts]' ?>" class="checkbox"><?php echo lang('can add mail accounts') ?></label>
+				<a href="javascript:og.toggle('<?php echo $genid ?>can_add_mail_accounts_help')">?</a>
 			</div>
-			<div id="can_add_mail_accounts_help" class="permissions-help" style="display:none"><?php echo lang('can_add_mail_accounts description') ?></div>
+			<div id="<?php echo $genid ?>can_add_mail_accounts_help" class="permissions-help" style="display:none"><?php echo lang('can_add_mail_accounts description') ?></div>
 		</fieldset>
 		<fieldset>
 			<legend><?php echo lang('project permissions') ?></legend>

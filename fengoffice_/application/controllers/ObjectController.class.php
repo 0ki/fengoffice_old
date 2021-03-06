@@ -1002,11 +1002,11 @@ class ObjectController extends ApplicationController {
 		
 		
 		if ($trashed) {
-			$trashed_cond = '`trashed_by_id` > 0';
+			$trashed_cond = '`trashed_on` > ' . DB::escape(EMPTY_DATETIME);
 			$archived_cond = '1 = 1'; // Show all objects in trash
 			$comments_arch_cond = "1 = 1";
 		} else {
-			$trashed_cond = '`trashed_by_id` = 0';
+			$trashed_cond = '`trashed_on` = ' . DB::escape(EMPTY_DATETIME);
 			if ($archived) {
 				$archived_cond = "`archived_by_id` > 0";
 				$comments_arch_cond = "1 = 0"; // Don't show comments in archived objects listings
@@ -1290,6 +1290,7 @@ class ObjectController extends ApplicationController {
 	 * @return unknown
 	 */
 	function countDashboardObjects($tag = null, $types = null, $project = null, $trashed = false, $linkedObject = null, $filterName = '', $archived = false, $filterManager = ''){
+		if (defined('INFINITE_PAGING') && INFINITE_PAGING) return 10000000;
 		///TODO: this method is also horrible in performance and should not be here!!!!
 		$queries = $this->getDashboardObjectQueries($project, $tag, true, $trashed, $linkedObject, null, $filterName, $archived, $filterManager);
 		if (isset($types) && $types) {
@@ -1844,7 +1845,7 @@ class ObjectController extends ApplicationController {
 							$removed = "";
 							$ws = $obj->getWorkspaces();
 							foreach ($ws as $w) {
-								if (can_add(logged_user(), $w, $type)) {
+								if (can_add(logged_user(), $w, get_class($obj->manager()))) {
 									$obj->removeFromWorkspace($w);
 									$removed .= $w->getId() . ",";
 								} else {

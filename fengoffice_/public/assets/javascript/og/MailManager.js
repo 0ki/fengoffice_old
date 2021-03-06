@@ -12,6 +12,7 @@ og.MailManager = function() {
 	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
+	this.maxrowidx = 0;
 
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
@@ -50,6 +51,13 @@ og.MailManager = function() {
 					//Ext.getCmp('mails-manager').getView().focusRow(og.lastSelectedRow.mails+1);
 					if (typeof d.unreadCount != 'undefined') {
 						og.updateUnreadEmail(d.unreadCount);
+					}
+					
+					var manager = Ext.getCmp('mails-manager');
+					var view = manager.getView();
+					for (i=0; i<manager.maxrowidx; i++) {
+						var el = view.getRow(i);
+						el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"')
 					}
 				}
 			}
@@ -115,6 +123,7 @@ og.MailManager = function() {
 	}
 	
 	function renderDragHandle(value, p, r) {
+		Ext.getCmp('mails-manager').maxrowidx = r.data.ix;
 		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
@@ -1116,6 +1125,7 @@ og.MailManager = function() {
 			return;
 		}
 		if (this.ownerCt.ownerCt.active) {// ownerCt is MailManagerPanel, must ask his ownerCt to see if tab is active
+			this.needRefresh = false;
 			this.load({start:0});
 		} else {
     		this.needRefresh = true;
@@ -1141,9 +1151,12 @@ og.MailManager = function() {
 		og.msg(lang('success'), lang('mail sent msg'), 2);
 	}, this);
 	
+	// auto refresh emails
 	var me = this;
 	this.emailRefreshInterval = setInterval(function() {
-		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel') {
+		var p = me.getBottomToolbar().getPageData().activePage;
+		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel' && p == 1) {
+			me.needRefresh = false;
 			og.MailManager.store.load();
 		} else {
 			me.needRefresh = true;

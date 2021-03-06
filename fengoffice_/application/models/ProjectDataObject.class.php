@@ -268,7 +268,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		} else {
 			$ids = array();
 			$wss = $this->getWorkspaces($wsIds);
-			if($wsIds){
+			if ($wss) {
 				foreach ($wss as $w) {
 					$ids[] = $w->getName();
 				}

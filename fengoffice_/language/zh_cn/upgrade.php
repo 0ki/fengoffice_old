@@ -1,0 +1,17 @@
+<?php return array(
+	'upgrade' => '升级',
+	'upgrade from' => '升级自',
+	'upgrade to' => '升级到',
+	'already upgraded' => '已经升级到最新版本了',
+	'back to opengoo' => '返回访问opengoo',
+	'all rights reserved' => '版权所有',
+	'upgrade process log' => '升级进度和日志',
+	'upgrade opengoo' => '升级opengoo内核',
+	'upgrade your opengoo installation' => '升级您的opengoo安装包',
+	'upgrade from to' => '从{0}升级到{1}',
+	'back to fengoffice' => '返回OA系统',
+	'upgrade fengoffice' => '升级OA系统',
+	'upgrade your fengoffice installation' => '升级你的OA系统程序',
+	'upgrade warning' => '警告',
+	'upgrade warning desc' => '升级之前请<a href="{0}" target="_blank">备份</a>你目前的数据！',
+); ?>

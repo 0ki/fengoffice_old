@@ -541,9 +541,9 @@ og.openLink = function(url, options) {
 						if (!options.preventPanelLoad && !options.options.silent) {
 							var p = Ext.getCmp(options.caller);
 							if (p) {
-								p.load(response.responseText);
 								var tp = p.ownerCt;
-								if (tp.setActiveTab) {
+								p.load(response.responseText);
+								if (tp && tp.setActiveTab && options.options.show) {
 									tp.setActiveTab(p);
 								}
 							} else {
@@ -700,7 +700,7 @@ og.processResponse = function(data, options, url) {
 						if (p) {
 							var tp = p.ownerCt;
 							p.load(data.current);
-							if (tp.setActiveTab && Ext.getCmp(panelName)) {
+							if (tp && tp.setActiveTab && Ext.getCmp(panelName) && options.options.show) {
 								tp.setActiveTab(p);
 							}
 							

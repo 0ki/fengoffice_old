@@ -200,6 +200,7 @@ og.ObjectPicker = function(config) {
 				iconCls: config.iconCls || 'ico-' + filter.filter,
 				leaf: true,
 				text: filter.name,
+				cls: filter.type == config.selected_type ? 'x-tree-selected' : '',
 				id: filter.filter + (filter.id?filter.id:filter.name)
 			});
 			var node = new Ext.tree.TreeNode(config);
@@ -207,7 +208,7 @@ og.ObjectPicker = function(config) {
 			this.filters.appendChild(node);
 			return node;
 		},
-		loadFilters: function(types) {
+		loadFilters: function(types, selected_type) {
 			this.removeAll();
 			if (types) {
 				var csv = "";
@@ -220,42 +221,42 @@ og.ObjectPicker = function(config) {
 				this.filters.filter.type = csv;
 			} else {
 				types = {
-					'Messages':true,
-					'Emails':true,
-					'Calendar':true,
+					'ProjectMessages':true,
+					'MailContents':true,
+					'ProjectEvents':true,
 					'Contacts':true,
 					'Companies':true,
-					'Documents':true,
-					'Tasks':true,
-					'Milestones':true,
-					'WebPages':true
+					'ProjectFiles':true,
+					'ProjectTasks':true,
+					'ProjectMilestones':true,
+					'ProjectWebPages':true
 				}
 				this.filters.filter.type = '';
 			}
 			// load types
-			if (types['Messages']) {
+			if (types['ProjectMessages']) {
 				this.addFilter({
 					id: 'messages',
 					name: lang('messages'),
-					type: 'Messages',
+					type: 'ProjectMessages',
 					filter: 'type'
-				}, {iconCls: 'ico-message'});
+				}, {iconCls: 'ico-message', selected_type: selected_type});
 			}
-			if (types['Emails']) {
+			if (types['MailContents']) {
 				this.addFilter({
 					id: 'email',
 					name: lang('email'),
-					type: 'Emails',
+					type: 'MailContents',
 					filter: 'type'
-				}, {iconCls: 'ico-email'});
+				}, {iconCls: 'ico-email', selected_type: selected_type});
 			}
-			if (types['Calendar']) {
+			if (types['ProjectEvents']) {
 				this.addFilter({
 					id: 'calendar',
 					name: lang('calendar'),
-					type: 'Calendar',
+					type: 'ProjectEvents',
 					filter: 'type'
-				}, {iconCls: 'ico-calendar'});
+				}, {iconCls: 'ico-calendar', selected_type: selected_type});
 			}
 			if (types['Contacts']) {
 				this.addFilter({
@@ -263,7 +264,7 @@ og.ObjectPicker = function(config) {
 					name: lang('contacts'),
 					type: 'Contacts',
 					filter: 'type'
-				}, {iconCls: 'ico-contacts'});
+				}, {iconCls: 'ico-contacts', selected_type: selected_type});
 			}
 			if (types['Companies']) {
 				this.addFilter({
@@ -271,39 +272,42 @@ og.ObjectPicker = function(config) {
 					name: lang('companies'),
 					type: 'Companies',
 					filter: 'type'
-				}, {iconCls: 'ico-companies'});
+				}, {iconCls: 'ico-companies', selected_type: selected_type});
 			}
-			if (types['Documents']) {
+			if (types['ProjectFiles']) {
 				this.addFilter({
 					id: 'documents',
 					name: lang('documents'),
-					type: 'Documents',
+					type: 'ProjectFiles',
 					filter: 'type'
-				}, {iconCls: 'ico-documents'});
+				}, {iconCls: 'ico-documents', selected_type: selected_type});
 			}
-			if (types['Tasks']) {
+			if (types['ProjectTasks']) {
 				this.addFilter({
 					id: 'tasks',
 					name: lang('tasks'),
-					type: 'Tasks',
+					type: 'ProjectTasks',
 					filter: 'type'
-				}, {iconCls: 'ico-tasks'});
+				}, {iconCls: 'ico-tasks', selected_type: selected_type});
 			}
-			if (types['Milestones']) {
+			if (types['ProjectMilestones']) {
 				this.addFilter({
 					id: 'milestones',
 					name: lang('milestones'),
-					type: 'Milestones',
+					type: 'ProjectMilestones',
 					filter: 'type'
-				}, {iconCls: 'ico-milestone'});
+				}, {iconCls: 'ico-milestone', selected_type: selected_type});
 			}
-			if (types['WebPages']) {
+			if (types['ProjectWebPages']) {
 				this.addFilter({
 					id: 'webpages',
 					name: lang('web pages'),
-					type: 'WebPages',
+					type: 'ProjectWebPages',
 					filter: 'type'
-				}, {iconCls: 'ico-webpages'});
+				}, {iconCls: 'ico-webpages', selected_type: selected_type});
+			}
+			if (selected_type) {
+				this.filters.filter.type = selected_type;
 			}
 			this.filters.expand();
 			
@@ -530,7 +534,7 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		var wsf = this.findById('wsFilter');
 		wsf.loadWorkspaces();
 		tagf.loadTags();
-		typef.loadFilters(config.types);
+		typef.loadFilters(config.types, config.selected_type);
 		this.grid.store.baseParams.type = typef.filters.filter.type;
 	},
 	filterName: function(value) {

@@ -356,7 +356,7 @@
 		// user is creator
 		$str = " ( `created_by_id` = $user_id) ";
 		// element belongs to personal project
-		if($is_project_data_object) // TODO: type of element belongs to a project
+		/*if($is_project_data_object) // TODO: type of element belongs to a project
 			if (!in_array('project_id', $manager->getColumns())) {
 				$str .= "\n OR ( EXISTS(SELECT * FROM $users_table_name `xx_u`, $wo_tablename `xx_wo`
 				WHERE `xx_u`.`id` = $user_id
@@ -366,6 +366,7 @@
 			} else {
 				$str .= "\n OR ( $project_id = (SELECT `personal_project_id` FROM $users_table_name `xx_u` WHERE `xx_u`.`id` = $user_id)) ";
 			}
+		*/
 		// user or group has specific permissions over object
 		$group_ids = $user->getGroupsCSV();
 		$all_ids = '(' . $user_id . ($group_ids != '' ? ',' . $group_ids : '' ) . ')';

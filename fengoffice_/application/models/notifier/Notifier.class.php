@@ -518,6 +518,8 @@ class Notifier {
 		if (config_option('notification_from_address')) {
 			$from = config_option('notification_from_address');
 		}
+		Hook::fire('notifier_email_body', $body, $body);
+		Hook::fire('notifier_email_subject', $subject, $subject);
 		Hook::fire('notifier_send_email', array(
 			'to' => $to,
 			'from' => $from,
@@ -614,6 +616,9 @@ class Notifier {
 			try {
 				
 				$body = $email->getBody();
+				$subject = $email->getSubject();
+				Hook::fire('notifier_email_body', $body, $body);
+				Hook::fire('notifier_email_subject', $subject, $subject);
 				
 				$mailer->addPart($body, 'text/html');
 		
@@ -628,7 +633,7 @@ class Notifier {
 				$result = $mailer->send(
 					explode(";", $email->getTo()),
 					$fromSMTP ? self::prepareEmailAddress(config_option("smtp_username"), $email->getFrom()) : $email->getFrom(),
-					$email->getSubject(),
+					$subject,
 					$body,
 					'text/html',
 					'8bit',

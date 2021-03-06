@@ -273,7 +273,7 @@ return array(
   'edit mail account' => 'Edit mail account',
   'delete mail account' => 'Delete mail account',
   'subject' => 'Subject',
-  'email' => 'View email',
+  'email' => 'Email',
   'from' => 'From',
   'to' => 'To',
   'date' => 'Date',

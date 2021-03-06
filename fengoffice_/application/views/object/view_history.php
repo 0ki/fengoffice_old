@@ -39,7 +39,7 @@ if (is_array($logs)) {
 			else
 				$date = format_time($log->getCreatedOn(), "M d, H:i");
 		}
-		echo $date . ' </td><td style="padding:5px;padding-right:15px;"><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
+		echo $date . ' </td><td style="padding:5px;padding-right:15px;"><a class="internalLink" href="' . ($log->getTakenBy() instanceof User ? $log->getTakenBy()->getCardUrl() : '#') . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
 		echo '</td></tr>';
 	}
 }
@@ -68,7 +68,7 @@ if (is_array($logs_read)) {
 			else
 				$date = format_time($log->getCreatedOn(), "M d, H:i");
 		}
-		echo $date . ' </td><td style="padding:5px;padding-right:15px;"><a class="internalLink" href="' . $log->getTakenBy()->getCardUrl() . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
+		echo $date . ' </td><td style="padding:5px;padding-right:15px;"><a class="internalLink" href="' . ($log->getTakenBy() instanceof User ? $log->getTakenBy()->getCardUrl() : '#') . '">'  . clean($log->getTakenByDisplayName()) . '</a></td><td style="padding:5px;padding-right:15px;"> ' . $log->getText();
 		echo '</td></tr>';
 	}
 }

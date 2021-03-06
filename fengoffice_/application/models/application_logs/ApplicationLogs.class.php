@@ -324,6 +324,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 				)); // findAll
 				$logs = array_merge($logs, $other_logs);
 				$next_offset += $removed;
+				if (count($logs) > $limit) $logs = array_slice($logs, 0, $limit);
 			}
 		} while ($removed > 0);
 		

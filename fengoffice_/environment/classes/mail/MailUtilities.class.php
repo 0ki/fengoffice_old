@@ -320,7 +320,7 @@ class MailUtilities {
 			// CLASSIFY MAILS IF THE ACCOUNT HAS A WORKSPACE
 			if ($account->getColumnValue('workspace',0) != 0) {
 				$workspace = Projects::findById($account->getColumnValue('workspace',0));
-				if ($workspace && $workspace instanceof Project) {
+				if ($workspace && $workspace instanceof Project && !$mail->hasWorkspace($workspace)) {
 					$mail->addToWorkspace($workspace);
 			 	}
 			}
