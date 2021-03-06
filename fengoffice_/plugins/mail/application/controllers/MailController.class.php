@@ -2058,6 +2058,7 @@ class MailController extends ApplicationController {
 
 				if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 				if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
+				if (!array_var($mailAccount_data, 'get_read_state_from_server', false)) $mailAccount_data['get_read_state_from_server'] = 0;
 				$mailAccount->setFromAttributes($mailAccount_data);
 				$mailAccount->setServer(trim($mailAccount->getServer()));
 				$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
@@ -2251,6 +2252,7 @@ class MailController extends ApplicationController {
 		          'smtp_use_auth' => $mailAccount->getSmtpUseAuth(),
 		          'del_from_server' => $mailAccount->getDelFromServer(),
 				  'mark_read_on_server' => $mailAccount->getMarkReadOnServer(),
+				  'get_read_state_from_server' => $mailAccount->getGetReadStateFromServer(),
 		          'outgoing_transport_type' => $mailAccount->getOutgoingTrasnportType(),
 			); // array
 			if(config_option('sent_mails_sync')){								
@@ -2276,7 +2278,7 @@ class MailController extends ApplicationController {
 		if(array_var($_POST, 'submitted')) {
 			try {
 				$user_changed = false;
-				$selected_user = array_var($_POST, 'users_select_box');					
+				$selected_user = array_var($_POST, 'users_select_box');
 				if(!$is_admin){
 					$selected_user = $mailAccount->getContactId();
 				}
@@ -2296,6 +2298,7 @@ class MailController extends ApplicationController {
 				if ($logged_user_can_edit || $is_admin) {
 					if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 					if (!array_var($mailAccount_data, 'mark_read_on_server', false)) $mailAccount_data['mark_read_on_server'] = 0;
+					if (!array_var($mailAccount_data, 'get_read_state_from_server', false)) $mailAccount_data['get_read_state_from_server'] = 0;
 					$mailAccount->setFromAttributes($mailAccount_data);
 					$mailAccount->setServer(trim($mailAccount->getServer()));
 					$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));

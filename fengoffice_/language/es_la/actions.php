@@ -68,6 +68,7 @@
 	'back to calendar' => 'Volver al calendario',
 	'back to day' => 'Volver al día',
 	'pick a date' => 'Elegir fecha',
+    'year' => 'Año',
 	'month' => 'Mes',
 	'week' => 'Semana',
 	'can edit company data' => 'Permitirle editar datos de la organización propietaria',

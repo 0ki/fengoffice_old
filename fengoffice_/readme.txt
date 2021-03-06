@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.1-beta
+	About Feng Office 3.4.1-rc
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,13 +105,35 @@
 	Changelog
 	=========
 	
-	Since 3.4.0.22
+	Since 3.4.1-beta
+	----------------
+	bugfix: in firefox monthly calendar view does not expand the boxes if there are more events to show.
+	bugfix: duplicate mails when to and from are the same mail.
+	bugfix: google calendar sync permission issue when importing events on root.
+	bugfix: in advanced search when cutting results name substr_utf function must be used.
+	bugfix: missing config option for amount of events shown in monthly view.
+	bugfix: events repeating by fixed day aren't shown correctly in monthly view.
+	bugfix: events repeating until date doesn't include the last day in monthly view.
+	
+	Since 3.4.0.24
 	----------------
 	feature: Tasks list drag & drop between task groups.
 	feature: Tasks list drag & drop to dimension members.
 	feature: Newsletters plugin.
 	feature: Include member custom properties in member reports.
 	feature: Make client sectors dimension multiple and hierarchical.
+	feature: add address and phones info to client dashboard information
+	feature: imap config option preserve emails state (read, unread)
+	
+	bugfix: Non-working days calculation in template instantiation fixes.
+	bugfix: search associated members was being filtered by current context.
+	
+	Since 3.4.0.23
+	----------------
+	bugfix: Private plugins modifications.
+	
+	Since 3.4.0.22
+	----------------
 	bugfix: Contact member cache generation fixed for new users.
 	
 	Since 3.4.0.21

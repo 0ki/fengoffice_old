@@ -300,6 +300,7 @@ return array(
   'folders to check' => 'Folders to check',
   'after' => 'after',
   'delete mails from server' => 'Delete mails from server',
+  'get read state from server' => 'Preserve emails state (read, unread) when receiving them in Feng Office',
   'mark as read mails from server' => 'Mark emails as read in the email server when receiving them in Feng Office',
   'mail account delete mails from server description' => 'Enable this option in order to delete mails from server after desired time.',
   'show images' => 'Show images.',

@@ -138,6 +138,26 @@ function workspaces_page_rendered() {
 
 }
 
+function workspaces_render_widget_member_information(Member $member, &$prop_html="") {
+	$ws_ot = ObjectTypes::findByName('workspace');
+
+	if ($member->getObjectTypeId() == $ws_ot->getId()) {
+
+		if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
+			$desc_custom_prop = MemberCustomProperties::getCustomPropertyByCode($member->getObjectTypeId(), 'description_special');
+
+			if($desc_custom_prop instanceof MemberCustomProperty && !$desc_custom_prop->getIsDisabled()){
+				return;
+			}
+		}
+
+		$ws = Workspaces::getWorkspaceById($member->getObjectId());
+		if ($ws instanceof Workspace && trim($member->getDescription()) != "" && $ws->getColumnValue('show_description_in_overview')) {
+			$prop_html .= '<div style="margin-bottom:5px;">'.escape_html_whitespace(convert_to_links(clean($member->getDescription()))).'</div>';
+		}
+	}
+}
+
 function workspaces_after_user_add($object, $ignored) {
 	/* @var $object Contact */
 	$workspaces_dim = Dimensions::findOne(array("conditions" => "`code` = 'workspaces'"));

@@ -73,16 +73,13 @@ og.ObjectSelector = function(config, object_id, object_id_no_select, ignore_cont
 		genid: genid,
 		extra_list_params: extra_list_param
 	};
-	if (ignore_context) {
-		url_params['ignore_context'] = ignore_context ? '1' : '0';
-	}
 	
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects_to_select', url_params)
+            	url: og.getUrl('object', 'list_objects_to_select')
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
@@ -119,24 +116,25 @@ og.ObjectSelector = function(config, object_id, object_id_no_select, ignore_cont
 	        					}
 	        				}
 	        			}
-	        			
+
+						this.lastOptions.params = this.baseParams;
+						this.lastOptions.params.count_results = 1;
+
+						Ext.getCmp(config.id).reloadGridPagingToolbar('object','list_objects_to_select',config.id);
+
 	        			// fix count query to be quick and then don't hide texts and reloadGridPagingToolbar
-        				var bbar = grid.getBottomToolbar();
-        				if (bbar) {
-        					bbar.displayMsg = '';
-        					bbar.afterPageText = '';
-        				}
         			}
         		}
         	}
     	});
-		
+
+
 		if (config.id != 'obj_selector_grid'){
 			
 	    	this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_all_selected_objects', url_params)
+            	url: og.getUrl('object', 'list_all_selected_objects')
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
@@ -153,19 +151,20 @@ og.ObjectSelector = function(config, object_id, object_id_no_select, ignore_cont
         		'load': function(store, result) {
         			// fix count query to be quick and then don't hide texts and reloadGridPagingToolbar
         			var grid = Ext.getCmp(config.id);
-        			if (grid) {
-        				var bbar = grid.getBottomToolbar();
-        				if (bbar) {
-	        				bbar.displayMsg = '';
-	        				bbar.afterPageText = '';
-        				}
+					if (grid) {
+						this.lastOptions.params = this.baseParams;
+						this.lastOptions.params.count_results = 1;
+
+						Ext.getCmp(config.id).reloadGridPagingToolbar('object','list_all_selected_objects',config.id);
         			}
         		}
         	}
     	});
 	    }
 
-			
+		this.store.baseParams = jQuery.extend({}, url_params);
+		this.store.baseParams.ignore_context = ignore_context ? '1' : '0';
+
     	this.store.setDefaultSort('dateUpdated', 'desc');
 
 		function renderIcon(value, p, r) {
@@ -474,7 +473,7 @@ og.ObjectSelector = function(config, object_id, object_id_no_select, ignore_cont
 			tbarItems.push(config.more_tbar_items[i]);
 		}
 	}
-	
+
 	og.ObjectSelector.superclass.constructor.call(this, Ext.apply(config, {
 		y: 50,
 		width: 900,
@@ -511,6 +510,7 @@ og.ObjectSelector = function(config, object_id, object_id_no_select, ignore_cont
 				layout: 'fit',
 				id:'obj_selector_grid_selected_panel',
 				tbar: selectedTbarItems,
+				width: 400,
 				items: [
 					this.grid_selected = new Grid({id : 'obj_selector_grid_selected', chkBox: false})
 				]
@@ -645,6 +645,9 @@ Ext.extend(og.ObjectSelector, Ext.Window, {
     	}
     	
     	og.openLink(og.getUrl('object', 'revert_object_selector_changes', {genid: genid}));
+	},
+	isReadyToLoad : function() {
+		return this.all_type_menu_items_rendered && this.all_cp_filters_rendered;
 	}
 	
 });
@@ -652,14 +655,44 @@ Ext.extend(og.ObjectSelector, Ext.Window, {
 og.ObjectSelector.show = function(callback, scope, config, object_id, object_id_no_select) {
 	if (!config) config = {};
 	if (!config.ignore_context) config.ignore_context = 0;
-    
+	
+	var cp_array = [];
+	var object_type = config.types && config.types.length > 0 ? config.types[0] : null;
+	if (object_type && og.custom_properties_by_type[object_type]) {
+		cp_array = og.custom_properties_by_type[object_type];
+	}
+	
 	this.dialog = new og.ObjectSelector(config, object_id, object_id_no_select, config.ignore_context);
 	
 	//this.dialog.loadFilters(config);
 	if (config.context) {
 		this.dialog.grid.store.baseParams.context = config.context;
 	}
-	this.dialog.load();
+	
+	// if no type menu set all_type_menu_items_rendered as true
+	this.dialog.all_type_menu_items_rendered = !config.registered_types_of_objects || config.registered_types_of_objects.length==0;
+	// if no cp filters set all_cp_filters_rendered as true
+	this.dialog.all_cp_filters_rendered = cp_array.length==0;
+	
+	
+	// add current context to the selected member ids variable
+	var member_ids = [];
+	var context = Ext.util.JSON.decode(og.contextManager.plainContext());
+	for (var did in context) {
+		var members = context[did];
+		for (var k=0; k<members.length; k++) {
+			if (members[k] > 0) member_ids.push(members[k]);
+		}
+	}
+	if (member_ids.length > 0) {
+		this.dialog.grid.store.baseParams.extra_member_ids = Ext.util.JSON.encode(member_ids);
+	}
+	
+	// if grid can be loaded (no filters) => then load it
+	if (this.dialog.isReadyToLoad()) {
+		this.dialog.load();
+	}
+	
 	this.dialog.purgeListeners();
 	
 	if (!config.keep_selector_changes) {
@@ -705,3 +738,26 @@ og.ObjectSelector.show = function(callback, scope, config, object_id, object_id_
 		});
 	}
 }
+
+og.eventManager.addListener('object selector all type menu items rendered', function(data){
+	var selector = Ext.getCmp('object-selector');
+	if (!selector) return;
+	
+	selector.all_type_menu_items_rendered = true;
+	if (selector.isReadyToLoad()) {
+		selector.load();
+	}
+	
+});
+
+og.eventManager.addListener('object selector all cp filters rendered', function(data){
+	var selector = Ext.getCmp('object-selector');
+	if (!selector) return;
+	
+	selector.all_cp_filters_rendered = true;
+	if (selector.isReadyToLoad()) {
+		selector.load();
+	}
+	
+});
+

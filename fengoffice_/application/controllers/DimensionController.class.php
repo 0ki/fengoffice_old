@@ -507,12 +507,15 @@ class DimensionController extends ApplicationController {
 				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? AND archived_by_id=0 $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
 				
 				// filter $childs by other dimension associations
-				$context = active_context();
-				$filter_by_members = array();
-				foreach ($context as $selection) {
-					if ($selection instanceof Member) $filter_by_members[] = $selection;
+				$ignore_context_filters = array_var($_REQUEST, 'ignore_context_filters');
+				if (!$ignore_context_filters) {
+					$context = active_context();
+					$filter_by_members = array();
+					foreach ($context as $selection) {
+						if ($selection instanceof Member) $filter_by_members[] = $selection;
+					}
+					$memberList = $this->apply_association_filters($dimension, $memberList, $filter_by_members);
 				}
-				$memberList = $this->apply_association_filters($dimension, $memberList, $filter_by_members);
 				
 				//include all parents
 				//Check hierarchy
@@ -522,15 +525,18 @@ class DimensionController extends ApplicationController {
 					foreach ($memberList as $mem){
 						$members_ids[] = $mem->getId();
 					}
-					foreach ($memberList as $mem){
+				/*	foreach ($memberList as $mem){
 						$parents = $mem->getAllParentMembersInHierarchy(false);
 						foreach ($parents as $parent){
 							if(!in_array($parent->getId(), $members_ids)){
 								$members_ids[] = $parent->getId();	
 								$parent_members[] = $parent;
 							}
-						}				
-					}
+						}
+					}*/
+					
+					$parent_members = Members::getAllParentsInHierarchy($members_ids);
+					
 					$memberList = array_merge($memberList,$parent_members);
 				}
 			}else{

@@ -6,15 +6,21 @@ og.ObjectList = function(config, ignore_context) {
 		count_results : 0		
 	};
 
-	if (ignore_context) {
-		url_params['ignore_context'] = ignore_context ? '1' : '0';
-	}
+
 	
-	var list_url = og.getUrl('object', 'list_objects', url_params);
+	var list_url = og.getUrl('object', 'list_objects');
 	if (config.url) {
 		list_url = config.url;
 	}
-	
+
+	if (config.store_params) {
+		url_params = config.store_params;
+	}
+
+	if (ignore_context) {
+		url_params['ignore_context'] = ignore_context ? '1' : '0';
+	}
+
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
@@ -36,15 +42,18 @@ og.ObjectList = function(config, ignore_context) {
         	listeners: {
         		'load': function(store, result) {
         			// fix count query to be quick and then don't hide texts and reloadGridPagingToolbar
-        			var bbar = Ext.getCmp('obj_list_grid').getBottomToolbar();
-        			if (bbar) {
-        				bbar.displayMsg = '';
-        				bbar.afterPageText = '';
-        			}        			
+        			var grid = Ext.getCmp('obj_list_grid');
+					if (grid) {
+						this.lastOptions.params = this.baseParams;
+						this.lastOptions.params.count_results = 1;
+						console.log(this);
+
+						Ext.getCmp('obj_list_grid').reloadGridPagingToolbar(this.baseParams.url_controller,this.baseParams.url_action,'obj_list_grid');
+					}
         		}
         	}
     	});
-		
+		this.store.baseParams = jQuery.extend({}, url_params);;
 	   	this.store.setDefaultSort('dateUpdated', 'desc');
 
 		function renderIcon(value, p, r) {

@@ -149,7 +149,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 					$attributes['selected'] = "selected";
 				}
 				$options[] = option_tag(lang('pop3'), '0', $attributes);
-				$onchange = "var ssl = document.getElementById('$genid' + 'sslport');var folders = document.getElementById('$genid' + 'folders');var readOnServer = document.getElementById('$genid' + 'readOnServer');if (this.value == 1) { folders.style.display = 'block'; readOnServer.style.display = 'block'; ssl.value = '993'; } else { folders.style.display = 'none'; readOnServer.style.display = 'none'; ssl.value = '995'; }";
+				$onchange = "var ssl = document.getElementById('$genid' + 'sslport');var folders = document.getElementById('$genid' + 'folders');var readOnServer = document.getElementById('$genid' + 'readOnServer');var get_read_state_from_server = document.getElementById('$genid' + 'get_read_state_from_server');if (this.value == 1) { folders.style.display = 'block'; readOnServer.style.display = 'block'; get_read_state_from_server.style.display = 'block'; ssl.value = '993'; } else { folders.style.display = 'none'; readOnServer.style.display = 'none'; get_read_state_from_server.style.display = 'none'; ssl.value = '995'; }";
 				echo '<div style="float:left;">'. select_box('mailAccount[is_imap]', $options, array("onchange" => $onchange, 'tabindex' => '60', 'id' => $genid . 'method')) . '</div>';
 			?>
 		</div>
@@ -194,6 +194,15 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 			<?php $mark_read_on_server = array_var($mailAccount_data, 'mark_read_on_server', 0) ?>
 			<?php echo yes_no_widget('mailAccount[mark_read_on_server]', 'mailAccountMarkReadOnServer', $mark_read_on_server > 0, lang('yes'), lang('no'), 130) ?>
 			
+		</div>
+
+		<div id="<?php echo $genid ?>get_read_state_from_server" style="<?php if (!array_var($mailAccount_data, 'is_imap', false)) echo 'display:none'; ?>" class="mail-account-item dataBlock">
+			<label for="mailAccountGetReadStateFromServer">
+				<?php echo lang('get read state from server')?>
+			</label>
+			<?php $get_read_state_from_server = array_var($mailAccount_data, 'get_read_state_from_server', 1) ?>
+			<?php echo yes_no_widget('mailAccount[get_read_state_from_server]', 'mailAccountGetReadStateFromServer', $get_read_state_from_server > 0, lang('yes'), lang('no'), 130) ?>
+
 		</div>
 		
 		<div class="mail-account-item dataBlock">

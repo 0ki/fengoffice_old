@@ -141,6 +141,7 @@ INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `dela
 	('sharing_table_partial_rebuild', '1', '1440', '1', '1', '0000-00-00 00:00:00'),
 	('check_sharing_table_flags', '1', '10', '1', '1', '0000-00-00 00:00:00'),
 	('clean_object_selector_temp_selection', '1', '360', '1', '1', '0000-00-00 00:00:00'),
+	('send_outbox_mails', '1', '1', '1', '1', '0000-00-00 00:00:00'),
 	('rebuild_contact_member_cache', '1', '1440', '1', '1', '0000-00-00 00:00:00');
 	
 INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
@@ -217,6 +218,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
  ('calendar panel', 'show_birthdays_in_calendar', '1', 'BoolConfigHandler', 0, 0, ''),
  ('calendar panel', 'show_multiple_color_events', '1', 'BoolConfigHandler', 0, 0, ''),
+ ('calendar panel', 'displayed events amount', '3', 'IntegerConfigHandler', 0, 0, ''),
  ('context help', 'show_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
@@ -349,7 +351,7 @@ INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`t
  ('comment', 'Comments', 'comments', 'comment', 'comment', 0), 
  ('billing', 'Billings', 'billings', '', '', 0),
  ('contact', 'Contacts', 'contacts', 'content_object', 'contact', 0),
- ('file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', 0),
+ ('file revision', 'ProjectFileRevisions', 'project_file_revisions', 'content_object', 'file', 0),
  ('timeslot', 'Timeslots', 'timeslots', 'located', 'time', 0),
  ('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', 0),
  ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', 0);

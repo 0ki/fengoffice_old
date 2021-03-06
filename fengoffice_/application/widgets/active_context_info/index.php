@@ -55,15 +55,15 @@ if (count($members) == 1) {
 				$cp_html_cp .= $cp_html_vals;
 				$cp_html_cp .= '</td></tr>';
 				if ($cp_html_vals != "") {
-					// title
-					if ($cp_html == "") {
-						$cp_html .= '<tr class="cp-info"><td colspan="2"><h2>'.lang('properties').'</h2></td></tr>';
-					}
 					// content
 					$cp_html .= $cp_html_cp;
 				}
 			}
 		}
+	}
+	// title
+	if (trim($prop_html . $cp_html) != "") {
+		$prop_html = '<tr class="cp-info"><td colspan="2"><h2>'.lang('properties').'</h2></td></tr>' . $prop_html;
 	}
 	
 	$assoc_mem_html = "";
@@ -101,7 +101,7 @@ if (count($members) == 1) {
 			}
 		}
 	}
-	
+
 	if (trim($prop_html . $cp_html . $assoc_mem_html) != "") {
 		include_once 'template.php';
 	}

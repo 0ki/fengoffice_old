@@ -217,3 +217,11 @@
 			update ".TABLE_PREFIX."config_options set category_name='mail module' where name in ('show images in document notifications','user_email_fetch_count','sent_mails_sync','check_spam_in_subject');
 		");
 	}
+
+	function mail_update_18_19() {
+		if (!check_column_exists(TABLE_PREFIX."mail_accounts", "get_read_state_from_server")) {
+			DB::execute("
+				ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `get_read_state_from_server` BOOLEAN NOT NULL default 1;
+			");
+		}
+	}

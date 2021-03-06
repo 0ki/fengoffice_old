@@ -689,6 +689,44 @@ function get_back_trace($return_array = false) {
 	return ($return_array ? $array : print_r($array, 1));
 }
 
+/**
+ * Log messages in cache/debug_log.php
+ * @param string $msg: message to log
+ * @param string $filename: name of the file where the log is saved in cache folder, if null then filename is 'debug_log.php'
+ */
+function debug_log($msg="", $filename=null) {
+	$do_debug = defined('USE_DEBUG_LOG') && USE_DEBUG_LOG;
+	if ($do_debug) {
+		$trace = get_back_trace(true);
+		$function = "";
+		$i=0;
+
+		$str = "\nDate: ".date('Y-m-d H:i:s')." - ";
+		foreach ($trace as $trace_str) {
+			$i++;
+			if (str_ends_with($trace_str, 'get_back_trace')) {
+				continue;
+			} else {
+				$str .= "File: ". substr($trace_str, 0, strrpos($trace_str, " - ")) ." - ";
+					
+				$current_fn_trace = array_var($trace, $i);
+				if ($current_fn_trace) {
+					$str .= "Function: ".substr($current_fn_trace, strrpos($current_fn_trace, " - ")+3) . "\n";
+				}
+					
+				break;
+			}
+		}
+
+		$str .= "Message: $msg\n--------------------\n";
+
+		$logfilename = CACHE_DIR."/". (is_null($filename) ? __FUNCTION__.".php" : $filename);
+		if (!file_exists($logfilename)) {
+			file_put_contents($logfilename, "<?php die(); ?>\n");
+		}
+		file_put_contents($logfilename, $str, FILE_APPEND);
+	}
+}
 
 // ---------------------------------------------------
 //  Encryption/Decryption
@@ -2204,41 +2242,46 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 			if ($opPos !== false) {
 				// Is parametric
 				$dateParam = substr($value, 1, strpos($value, '}') - 1);
+				
+				// get date from parameter, if parameter is defined by user => use that value, if it is the date of task creation => use DateTimeValueLib::now();
 				if ($dateParam == 'task_creation') {
-					$date = DateTimeValueLib::now();					
+					$date = DateTimeValueLib::now();
 				} else {
 					$date = getDateValue($parameterValues[$dateParam]);
-					if (!$date instanceof DateTimeValue) {				
-						$date = DateTimeValueLib::now();						
+					if (!$date instanceof DateTimeValue) {
+						$date = DateTimeValueLib::now();
 					}
-						
-					if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "due_date"){
-						$copy->setUseDueTime(1);
-						
-						$hour_min = getTimeValue(user_config_option('work_day_end_time'));
-						$hour_min['hours'];
-						$hour_min['mins'];
-						
-						$date->setHour($hour_min['hours']);
-						$date->setMinute($hour_min['mins']);
-						
-						$date = $date->add('s', -logged_user()->getTimezone()*3600);										
-					}
-					if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "start_date"){
-						$copy->setUseStartTime(1);
-						
-						$hour_min = getTimeValue(user_config_option('work_day_start_time'));
-						$hour_min['hours'];
-						$hour_min['mins'];
-						
-						$date->setHour($hour_min['hours']);
-						$date->setMinute($hour_min['mins']);
-						
-						$date = $date->add('s', -logged_user()->getTimezone()*3600);						
-					}
-					
 				}
-	
+				
+				// set due time of resulting date as end of the day
+				if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "due_date"){
+					$copy->setUseDueTime(1);
+					
+					$hour_min = getTimeValue(user_config_option('work_day_end_time'));
+					$hour_min['hours'];
+					$hour_min['mins'];
+					
+					$date->setHour($hour_min['hours']);
+					$date->setMinute($hour_min['mins']);
+					
+					$date = $date->add('s', -logged_user()->getTimezone()*3600);										
+				}
+				
+				// set start time of resulting date as beggining of the day
+				if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "start_date"){
+					$copy->setUseStartTime(1);
+					
+					$hour_min = getTimeValue(user_config_option('work_day_start_time'));
+					$hour_min['hours'];
+					$hour_min['mins'];
+					
+					$date->setHour($hour_min['hours']);
+					$date->setMinute($hour_min['mins']);
+					
+					$date = $date->add('s', -logged_user()->getTimezone()*3600);						
+				}
+				
+				
 				$dateUnit = substr($value, strlen($value) - 1); // i, d, w or m (for days, weeks or months, i for minutes)
 				if($dateUnit == 'm') {
 					$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
@@ -2248,7 +2291,9 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 				}
 				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
 				
-				Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'unit' => $dateUnit, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
+				Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'unit' => $dateUnit, 
+						'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
+				
 				$value = $date->add($dateUnit, $dateNum);
 				
 			}else{

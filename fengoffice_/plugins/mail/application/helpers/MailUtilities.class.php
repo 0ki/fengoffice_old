@@ -33,6 +33,9 @@ class MailUtilities {
 		$mailsReceived = 0;
 		if (isset($accounts)) {
 			foreach($accounts as $account) {
+				
+				debug_log("Start checking account ".$account->getId(), "checkmail_log.php");
+				
 				if (!$account->getServer()) continue;
 				try {
 					$lastChecked = $account->getLastChecked();
@@ -61,11 +64,13 @@ class MailUtilities {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
 					
+					debug_log("End checking account ".$account->getId(), "checkmail_log.php");
 					//$account->setLastChecked(EMPTY_DATETIME);
 					//$account->save();										
 //					self::cleanCheckingAccountError($account);
 					$succ++;
 				} catch(Exception $e) {
+					debug_log("Error checking account ".$account->getId()."\n".$e->getMessage()."\n".$e->getTraceAsString(), "checkmail_log.php");
 					//$account->setLastChecked(EMPTY_DATETIME);
 					//$account->save();
 					$errAccounts[$err]["accountName"] = $account->getEmail();
@@ -210,7 +215,7 @@ class MailUtilities {
 				}
 			}
 			// do not save duplicate emails
-			if (MailContents::mailRecordExists($account, $uid, $imap_folder_name == '' ? null : $imap_folder_name,$message_id)) {
+			if (MailContents::mailRecordExists($account, $uid, $imap_folder_name == '' ? null : $imap_folder_name,null,$message_id)) {
 				return;
 			}
 			
@@ -958,6 +963,7 @@ class MailUtilities {
 	}
 	private function getNewImapMails(MailAccount $account, $max = 0) {
 		$received = 0;
+		debug_log("  start getNewImapMails ".$account->getId(), "checkmail_log.php");
 
 		if ($account->getIncomingSsl()) {
 			$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
@@ -974,6 +980,7 @@ class MailUtilities {
 			foreach ($mailboxes as $box) {
 				if ($max > 0 && $received >= $max) break;
 				if ($box->getCheckFolder()) {
+					debug_log("  getting imap folder ".$box->getCheckFolder(), "checkmail_log.php");
 					//if the account is configured to mark as read emails on server call selectMailBox else call examineMailBox.
 					if ($account->getMarkReadOnServer() > 0 ? $imap->selectMailbox(utf8_decode($box->getFolderName())) : $imap->examineMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName(), 1);
@@ -994,12 +1001,15 @@ class MailUtilities {
 								throw new Exception($max_summary->getMessage());
 							}
 						}
+						debug_log("    max_uid = $max_uid", "checkmail_log.php");
+						
 						//check if our last mail is on mail server
 						if($max_summary){
 							$is_last_mail_on_mail_server = true;
 						}else{
 							$is_last_mail_on_mail_server = false;
 						}
+						debug_log("    is_last_mail_on_mail_server = $is_last_mail_on_mail_server", "checkmail_log.php");
 						
 						//Server Data
 						$server_max_summary = $imap->getSummary($numMessages);
@@ -1009,6 +1019,7 @@ class MailUtilities {
 						}else{					
 							$server_max_uid = $server_max_summary[0]['UID'];
 						}
+						debug_log("    server_max_uid = $server_max_uid", "checkmail_log.php");
 						
 						$server_min_summary = $imap->getSummary(1, false);
 						$server_min_uid = null;
@@ -1017,6 +1028,7 @@ class MailUtilities {
 						}else{
 							$server_min_uid = $server_min_summary[0]['UID'];
 						}
+						debug_log("    server_min_uid = $server_min_uid", "checkmail_log.php");
 						
 						
 						if($max_uid){
@@ -1049,6 +1061,7 @@ class MailUtilities {
 							//we don't have any mails on the system yet
 							$lastReceived = 0;
 						}
+						debug_log("    lastReceived = $lastReceived", "checkmail_log.php");
 						
 						if($lastReceived < 0){
 							$lastReceived = 0;
@@ -1058,16 +1071,20 @@ class MailUtilities {
 						// get mails since last received (last received is not included)
 						for ($i = $lastReceived; ($max == 0 || $received < $max) && $i < $numMessages; $i++) {
 							$index = $i+1;
+							debug_log("      get email summary $index", "checkmail_log.php");
+							
 							$summary = $imap->getSummary($index);
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
+								debug_log("      Error getting summary $index", "checkmail_log.php");
 							} else {
 								if ($summary[0]['UID']) {
+									debug_log("      reading email status $index", "checkmail_log.php");
 									if ($imap->isDraft($index)) $state = 2;
 									else $state = 0;
 									
 									//get the state (read/unread) from the server
-									if ($imap->isSeen($index)) $read = 1;
+									if ($account->getGetReadStateFromServer() > 0 && $imap->isSeen($index)) $read = 1;
 									else $read = 0;
 									
 									$messages = $imap->getMessages($index);
@@ -1078,10 +1095,12 @@ class MailUtilities {
 									
 									if ($content != '') {
 										try {
+											debug_log("      SaveMail $index", "checkmail_log.php");
 											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName(), $read, $received);
 											if ($stop_checking) break;
 											//$received++;
 										} catch (Exception $e) {
+											debug_log("      Error saving mail $index", "checkmail_log.php");
 											$mail_file = ROOT."/tmp/unsaved_mail_".$summary[0]['UID'].".eml";
 											$res = file_put_contents($mail_file, $content);
 											if ($res === false) {
@@ -1093,14 +1112,23 @@ class MailUtilities {
 											else Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
 										}
 									} // if content
+									else {
+										debug_log("      no content for $index", "checkmail_log.php");
+									}
+								} else {
+									debug_log("      no UID for $index", "checkmail_log.php");
 								}
 							}
 						}
 					}
 				}
 			}
+		} else {
+			debug_log("  no mailboxes", "checkmail_log.php");
 		}
 		$imap->disconnect();
+		
+		debug_log("  total mails received: $received", "checkmail_log.php");
 		return $received;
 	}
 

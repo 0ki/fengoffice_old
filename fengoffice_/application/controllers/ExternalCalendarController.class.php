@@ -243,7 +243,8 @@ class ExternalCalendarController extends ApplicationController {
 		        $instalation = explode("/", ROOT_URL);
 		        $instalation_name = end($instalation);
 		        $feng_calendar_name = lang('feng calendar',$instalation_name);
-		            		
+				$feng_calendar_name = $feng_calendar_name." ".logged_user()->getFirstName()." ".logged_user()->getSurname();
+
 		        while(true) {
 			    	foreach ($calendarList->getItems() as $calendarListEntry) {
 			    		//is feng calendar
@@ -348,7 +349,7 @@ class ExternalCalendarController extends ApplicationController {
 					$calendar_feng = ExternalCalendars::findFengCalendarByExtCalUserIdValue($user->getId());
 					if($calendar_feng instanceof ExternalCalendar){						
 						$calendar_feng->setSync(1);
-						$calendar->save();					
+						$calendar_feng->save();
 					}
 					$user->setSync(1);
 					$user->save();
@@ -370,7 +371,7 @@ class ExternalCalendarController extends ApplicationController {
 					$calendar_feng = ExternalCalendars::findFengCalendarByExtCalUserIdValue($user->getId());
 					if($calendar_feng instanceof ExternalCalendar){						
 						$calendar_feng->setSync(0);
-						$calendar->save();					
+						$calendar_feng->save();
 					}
 					$user->setSync(0);
 					$user->save();
@@ -698,7 +699,11 @@ class ExternalCalendarController extends ApplicationController {
 										if(count($member) > 0){
 											$object_controller = new ObjectController();
 											$object_controller->add_to_members($new_event, $member,$contact);
-										}	
+										}else{
+											$new_event->addToSharingTable();
+										}
+									}else{
+										$new_event->addToSharingTable();
 									}
 								}
 								DB::commit();
@@ -862,7 +867,7 @@ class ExternalCalendarController extends ApplicationController {
 		}
 	}
 		
-	function export_google_calendar_for_user($user) {		           
+	function export_google_calendar_for_user($user) {
         $service = $this->connect_with_google_calendar($user);     
         
         if($user->getSync() == 1){
@@ -889,7 +894,7 @@ class ExternalCalendarController extends ApplicationController {
 						$optParams['timeMin'] = $time_min;	                    	
                     	$events = $service->events->listEvents($calendar_feng->getOriginalCalendarId(),$optParams);
                     }catch(Exception $e){
-                    	Logger::log("Fail to get events from feng external calendar: ". $calendar->getId());
+                    	Logger::log("Fail to get events from feng external calendar: ". $calendar_feng->getId());
                     	Logger::log($e->getMessage());
                     }
                     
@@ -903,6 +908,7 @@ class ExternalCalendarController extends ApplicationController {
                    	$instalation = explode("/", ROOT_URL);
                     $instalation_name = end($instalation);
                     $calendar_name = lang('feng calendar',$instalation_name);
+					$calendar_name = $calendar_name." ".logged_user()->getFirstName()." ".logged_user()->getSurname();
                     $calendar_exists = false;
                     //check if calendar exists
                     try{                    	        	 

@@ -1915,11 +1915,17 @@ class ObjectController extends ApplicationController {
 		$params['filters']['types'] = false;
 		$params['filters']['name'] = false;
 		$params['filters']['object_ids'] = false;
+		$params['filters']['contact_type_filter'] = false;
 		
 		if (!is_null($types)) $params['filters']['types'] = $types;
 		if (!is_null($name_filter)) $params['filters']['name'] = $name_filter;
 		if ($object_ids_filter != '') $params['filters']['object_ids'] = $object_ids_filter;
-		
+
+		$contact_type_filter_json = array_var($_REQUEST, 'contact_type_filter',false);
+		if($contact_type_filter_json){
+			$params['filters']['contact_type_filter'] = json_decode($contact_type_filter_json, true);
+		}
+
 		$params['show_all_linked_objects'] = $show_all_linked_objects;
 		
 		return $params;
@@ -1991,39 +1997,34 @@ class ObjectController extends ApplicationController {
 			$type_condition .= " AND id=$type_filter";
 		}
 		
-		
 		$extra_conditions = array();
-		
-		if (in_array("contact", array_var($filters, 'types', array()))) {
-			
-			$joins[] = "
-				LEFT JOIN ".TABLE_PREFIX."contacts c on c.object_id=o.id";
-			
-			
-			$contact_type_filter_json = array_var($_REQUEST, 'contact_type_filter');
-			if ($contact_type_filter_json) {
-				$contact_type_filter = json_decode($contact_type_filter_json, true);
-				$show_contacts = array_var($contact_type_filter, 'contact');
-				$show_users = array_var($contact_type_filter, 'user');
-				$show_companies = array_var($contact_type_filter, 'company');
-			
-				if(!$show_companies){
-					$extra_conditions[] = ' c.`is_company` = 0 ';
-				}
-				if(!$show_contacts){
-					if($show_companies){
+
+		if (array_var($filters, 'contact_type_filter')) {
+			$joins[] = " LEFT JOIN ".TABLE_PREFIX."contacts c on c.object_id=o.id";
+
+			$contact_type_filter = $filters['contact_type_filter'];
+			$show_contacts = array_var($contact_type_filter, 'contact');
+			$show_users = array_var($contact_type_filter, 'user');
+			$show_companies = array_var($contact_type_filter, 'company');
+
+			if(!$show_companies){
+				$extra_conditions[] = ' c.`is_company` = 0 ';
+			}
+			if(!$show_contacts){
+				if($show_companies){
+					if($show_users){
+						$extra_conditions[] = ' (c.`is_company` = 1  OR c.`user_type` != 0) ';
+					} else {
 						$extra_conditions[] = ' c.`is_company` = 1 ';
-						if($show_users){
-							$extra_conditions[] = ' (c.`is_company` = 1  OR c.`user_type` != 0) ';
-						}
-					}else{
-						$extra_conditions[] = ' c.`user_type` != 0  ';
 					}
-				}
-				if(!$show_users){
-					$extra_conditions[] = ' c.`user_type` < 1 ';
+				}else{
+					$extra_conditions[] = ' c.`user_type` != 0  ';
 				}
 			}
+			if(!$show_users){
+				$extra_conditions[] = ' c.`user_type` < 1 ';
+			}
+
 		}
 		
 		// user filter

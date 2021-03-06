@@ -357,7 +357,11 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 				//search on server
 				this.innerCt.mask();
 				var tree_id = this.id;
-				og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.dimensionId,query:Ext.escapeRe(text.toLowerCase())}), {
+				og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {
+						dimension_id:this.dimensionId,
+						query:Ext.escapeRe(text.toLowerCase()),
+						ignore_context_filters: true
+					}), {
 	    			hideLoading:true, 
 	    			hideErrors:true,
 	    			callback: function(success, data){

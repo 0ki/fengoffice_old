@@ -764,7 +764,7 @@ class SearchController extends ApplicationController {
 		$position = strpos($content,$this->search_for);
 		$spacesBefore = min(10, $position); 
 		if (strlen($content) > $size ){
-			return substr($content , $position - $spacesBefore, $size)."...";
+			return substr_utf($content , $position - $spacesBefore, $size)."...";
 			
 		}else{
 			return $content ;

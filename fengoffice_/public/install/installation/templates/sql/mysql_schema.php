@@ -54,7 +54,8 @@ CREATE TABLE `<?php echo $table_prefix ?>members` (
   KEY `by_parent` USING HASH (`parent_member_id`),
   KEY `by_dimension` (`dimension_id`,`parent_member_id`,`name`),
   KEY `by_object_id` (`object_id`),
-  KEY `archived_on` (`archived_on`)
+  KEY `archived_on` (`archived_on`),
+  KEY `name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>member_restrictions` (

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1-beta
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.1-beta');
+		$this->setVersionTo('3.4.1-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -190,6 +190,22 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 			$upgrade_script .= "
 				ALTER TABLE `".$t_prefix."custom_property_values`
 				ADD INDEX `object_id_custom_property_id` (`object_id`, `custom_property_id`);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.1-rc') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('calendar panel', 'displayed events amount', '3', 'IntegerConfigHandler', 0, 0, '')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+			
+			$upgrade_script .= "
+				UPDATE `".$t_prefix."object_types` SET `table_name` = 'project_file_revisions' WHERE `name` = 'file revision';
+			";
+			
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."members` ADD INDEX `name` (`name`);
 			";
 		}
 		

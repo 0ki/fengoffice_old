@@ -684,7 +684,7 @@ class TemplateController extends ApplicationController {
 				}
 
 				//linked objects
-				if (is_array($linked_objects)) {
+				if (isset($linked_objects) && is_array($linked_objects)) {
 					foreach ($linked_objects as $linked_object) {
 						if ($linked_object instanceof ApplicationDataObject) {
 							$c->linkObject($linked_object);
@@ -705,7 +705,7 @@ class TemplateController extends ApplicationController {
 		}
 		
 		DB::commit();
-		
+
 		foreach ($copies as $c) {
 			if ($c instanceof ProjectTask) {
 				ApplicationLogs::createLog($c, ApplicationLogs::ACTION_ADD);

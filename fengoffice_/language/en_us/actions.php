@@ -98,6 +98,7 @@
     'back to calendar' => 'Back to calendar',
     'back to day' => 'Back to day',
     'pick a date' => 'Pick a date',
+    'year' => 'Year',
     'month' => 'Month',
     'day' => 'Day',
     'week' => 'Week',
