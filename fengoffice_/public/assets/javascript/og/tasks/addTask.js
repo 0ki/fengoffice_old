@@ -214,6 +214,17 @@ ogTasks.drawTaskForm = function(container_id, data){
        	emptyText: "",
        	applyTo: "ogTasksPanelTagsSelector"
    	});
+   	
+   	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
+		name: 'task[milestone_id]',
+		renderTo: 'ogTasksPanelMilestoneSelector',
+		id: 'ogTasksPanelATMilestoneCombo',
+		hidden: false,
+		width: 200,
+		value: data.milestoneId,
+		tabIndex:1220
+	});
+	ogTasks.selectedMilestone = data.milestoneId;
 	
 	og.drawWorkspaceSelector('ogTasksPanelWsSelector', data.workspace, 'task[project_id]');
 	var ws_sel = Ext.get('ogTasksPanelWsSelector');
@@ -269,16 +280,6 @@ ogTasks.drawTaskForm = function(container_id, data){
 		}
 	});
 
-	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
-		name: 'task[milestone_id]',
-		renderTo: 'ogTasksPanelMilestoneSelector',
-		id: 'ogTasksPanelATMilestoneCombo',
-		hidden: false,
-		width: 200,
-		value: data.milestoneId,
-		tabIndex:1220
-	});
-		
 	var priorityCombo = topToolbar.filterPriorityCombo.cloneConfig({
 		name: 'task[priority]',
 		renderTo: 'ogTasksPanelATPriorityCont',
@@ -354,14 +355,18 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	if (description)
 		parameters["text"] = description.value;
 	
+	var applyMI = document.getElementById('ogTasksPanelApplyMI');
+	parameters["apply_milestone_subtasks"] = applyMI && applyMI.checked ? "checked" : "";
+	
+	var applyWS = document.getElementById('ogTasksPanelApplyWS');
+	parameters["apply_ws_subtasks"] = applyWS && applyWS.checked ? "checked" : "";
+	
 	//Always visible
 	parameters["assigned_to"] = Ext.getCmp('ogTasksPanelATUserCompanyCombo').getValue();
 	parameters["milestone_id"] = Ext.getCmp('ogTasksPanelATMilestoneCombo').getValue();
-	parameters["apply_milestone_subtasks"] = document.getElementById('ogTasksPanelApplyMI').checked ? "checked" : "";
 	parameters["priority"] = Ext.getCmp('ogTasksPanelATPriorityCombo').getValue();
 	parameters["title"] = document.getElementById('ogTasksPanelATTitle').value;
 	parameters["project_id"] = document.getElementById('ogTasksPanelWsSelectorValue').value;
-	parameters["apply_ws_subtasks"] = document.getElementById('ogTasksPanelApplyWS').checked ? "checked" : "";
 	parameters["tags"] = document.getElementById('ogTasksPanelTagsSelector').value;
 	
 	if (wrapWithTask){
@@ -420,6 +425,7 @@ ogTasks.wsSelectorClicked = function() {
 	
 	if (wsVal != ogTasks.prevWsValue) {
 		og.openLink(og.getUrl('task', 'allowed_users_to_assign', {ws_id:wsVal}), {callback:ogTasks.drawAssignedToCombo});
+		og.openLink(og.getUrl('milestone', 'get_workspace_milestones', {ws_id:wsVal}), {callback:ogTasks.drawMilestonesCombo});
 		ogTasks.prevWsValue = wsVal;
 	}
 }
@@ -447,6 +453,15 @@ ogTasks.buildAssignedToComboStore = function(companies) {
 	}
 	usersStore = comp_array.concat(usersStore);
 	return usersStore;
+}
+
+ogTasks.buildMilestonesComboStore = function(ms) {
+	var milestonesData = [[0,"--" + lang('none') + "--"]];
+    for (i in ms){
+    	if (ms[i].id)
+    		milestonesData[milestonesData.length] = [ms[i].id, ms[i].name];
+    }
+	return milestonesData;
 }
 
 ogTasks.drawAssignedToCombo = function(success, data) {
@@ -488,4 +503,35 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 			}
 		}
 	});
+}
+
+ogTasks.drawMilestonesCombo = function(success, data) {
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	mStore = ogTasks.buildMilestonesComboStore(data.milestones);
+	prev_combo = Ext.get('ogTasksPanelATMilestoneCombo');
+	if (prev_combo) {
+		m_val = prev_combo.getValue();
+		var found = false;
+		for (i in mStore) {
+			if (mStore[i][1] == m_val) {
+				ogTasks.selectedMilestone = mStore[i][0];
+				found = true;
+				break;
+			}
+		}
+		if (!found) ogTasks.selectedMilestone = 0;
+		prev_combo.remove();
+	}
+	
+	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
+		name: 'task[milestone_id]',
+		renderTo: 'ogTasksPanelMilestoneSelector',
+		id: 'ogTasksPanelATMilestoneCombo',
+		store: mStore,
+		hidden: false,
+		width: 200,
+		value: ogTasks.selectedMilestone,
+		tabIndex:1220
+	});
+
 }

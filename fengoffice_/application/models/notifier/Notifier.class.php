@@ -493,7 +493,12 @@ class Notifier {
 				config_option("smtp_authenticate", false)) {
 			$pos = strrpos($from, "<");
 			if ($pos !== false) $from = trim(substr($from, 0, $pos));
-			$from = self::prepareEmailAddress(config_option("smtp_username", $from), $from);
+			$uname = config_option("smtp_username", $from);
+			if (strpos($uname, '@') < 0) {
+				$domain = config_option("smtp_server");
+				if ($domain) $uname = "$uname@$domain";
+			}
+			$from = self::prepareEmailAddress($uname, $from);
 		}
 		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding);
 		$mailer->close();

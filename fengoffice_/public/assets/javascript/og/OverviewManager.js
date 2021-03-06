@@ -428,15 +428,15 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	
 	moveObjects: function(ws) {
 		var selections = this.getSelectionModel().getSelections();
-		var allItemsAreTasksOrEvents = true;
+		var allItemsAreTasksOrMilestones = true;
 		for (i=0; i<selections.length; i++) {
-			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectEvents') {
-				allItemsAreTasksOrEvents = false;
+			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
+				allItemsAreTasksOrMilestones = false;
 				break;
 			}
 		}
 		// Tasks and events does not keep ws, only move
-		if (allItemsAreTasksOrEvents) {
+		if (allItemsAreTasksOrMilestones) {
 			this.moveObjectsToWsOrMantainWs(false, ws);
 		} else {
 			og.moveToWsOrMantainWs(this.id, ws);

@@ -1,3 +1,13 @@
+/** loading indicator **/
+.og-loading {
+	position: absolute;
+	left: 45%;
+	top: 27px;
+	zIndex: 1000000;
+	cursor: pointer;
+}
+/** /loading indicator **/
+
 
 /** autoCompleter **/
 .autoCompleter .selected {

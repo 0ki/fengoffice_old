@@ -610,7 +610,7 @@ class MilestoneController extends ApplicationController {
 		$ws_id = array_var($_GET, 'ws_id');
 		$workspace = Projects::findById($ws_id);
 		if ($workspace instanceof Project) {
-			$milestones = $workspace->getOpenMilestones();
+			$milestones = ProjectMilestones::getProjectMilestones($workspace, null, 'ASC', null, null, null, null, true);
 			$ms = array();
 			foreach ($milestones as $milestone) {
 				$ms[] = array(

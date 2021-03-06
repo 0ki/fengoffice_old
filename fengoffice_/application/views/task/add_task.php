@@ -161,31 +161,29 @@
     			parent.removeChild(div);
     			bef = document.getElementById('<?php echo $genid?>before');
     			label = document.getElementById('no-task-selected<?php echo $genid?>');
-    			bef.style.display = 'block';
-    			label.style.display = 'block';
-    			var inputs = parent.getElementsByTagName('input');
-    			for (var i=0; i < inputs.length; i++) {
-    				inputs[i].name = 'objects[' + i + ']';
-    			}
-    			var d = parent.firstChild;
-    			var i=0;
-    			while (d != null) {
-    				if (d.tagName == 'DIV') {
-    					Ext.fly(d).removeClass("odd");
-    					if (i % 2) {
-    						Ext.fly(d).addClass("odd");
-    					}
-    					i++;
-    				}
-    				d = d.nextSibling;
-    			}
+    			bef.style.display = 'inline';
+    			label.style.display = 'inline';
+    			
     		};
     		</script>
     		<?php echo label_tag(lang('parent task'), $genid . 'addTaskTaskList') ?>
-    			<p id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></p>
-    			<a id="<?php echo $genid ?>before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('add task') ?></a>
-    		
-    		<?php //echo select_task_list('task[parent_id]', $project, array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
+    		<?php if (isset($task_data['parent_id'])&& $task_data['parent_id'] == 0) {?>
+    			    			    			
+    			<span id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
+    			<a style="margin-left: 10px" id="<?php echo $genid ?>before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a>
+    			
+    		<?php }else{ //echo select_task_list('task[parent_id]', $project, array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
+ 				<?php $parentTask = ProjectTasks::findById($task_data['parent_id']);
+ 				if ($parentTask instanceof ProjectTask){?>
+ 				<span style="display: none;" id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
+    			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a> 
+				<div class="og-add-template-object ico-task">
+					<input type="hidden" name="task[parent_id]" value="<?php echo $parentTask->getId() ?>" />
+    				<span style="float:left" class="name"> <?php echo $parentTask->getTitle() ?> </span>
+    				<a style="float:left" href="#" onclick="og.removeParentTask(this.parentNode)" class="remove" style="display: block;"><?php echo lang('remove')?> </a> 
+    			</div>
+    		<?php }
+ 				}?>
     	</div>
     	
     	<div style="padding-top:4px">	

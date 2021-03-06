@@ -10,27 +10,34 @@
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
  */
-class SpreadsheetController {
+class SpreadsheetController extends FrontController  {
 	
 
 		
 	public function loadBook($bookId){
+		$this->security->checkRead($bookId);
 		$bookController = new BookController();
 		$book = $bookController->find($bookId);
 		
 		if ($book != -1)
 			$message = new Success(null,$book->toJson());
 		else 
-			throw new Error(301,"Book is not found.");
+			throw new GsError(301,"Book is not found.");
 	}
 	
 	
 	public function saveBook($book, $inputFormat, $outputFormat ) {
+		$this->security->checkLoggedIn();		
+		// The book Controller will check if has permission depending on the bookId
+		// Here we cannot see the book id.. its inside $book !
+		 
 		$bookController = new BookController();
+		// Do security checks and save the book
 		return  $bookController->saveBook($book,$inputFormat,$outputFormat);
 	}
 	
 	public function deleteBook($bookId) {
+		$this->security->checkDelete($bookId);
 		$bookController = new BookController();
 		return  $bookController->deleteBook($bookId);
 	}

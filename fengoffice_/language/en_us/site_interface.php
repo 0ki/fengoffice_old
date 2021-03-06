@@ -636,6 +636,7 @@
   'personal workspace description' => 'Personal workspace',
   
   'wiki help link' => 'http://wiki.opengoo.org',
+  'last language' => 'Last',
   
   ); // array
 

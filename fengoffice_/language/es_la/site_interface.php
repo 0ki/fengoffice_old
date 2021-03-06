@@ -649,6 +649,7 @@ return array(
     'personal workspace name' => '{0} Personal',
     'personal workspace description' => 'Espacio personal',
 	'wiki help link' => 'http://wiki.opengoo.org/doku.php/es:home',
+	'last language' => 'Anterior',
 ); // array
 
 ?>

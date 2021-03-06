@@ -57,7 +57,7 @@ class Model {
 		$sql = "INSERT INTO $tablename ".$sql_into." VALUES " .$sql_values ;
 		
 		if  ( !mysql_query($sql) ) {
-			$err = new Error(234,"Error guardando datos") ;
+			$err = new GsError(234,"Error guardando datos") ;
 			if ( $err->isDebugging() ) {
 				$err->addContentElement("Table" , $tablename ) ;
 				$err->addContentElement("SQL Error" , mysql_error() ) ;

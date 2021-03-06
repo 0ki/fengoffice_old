@@ -210,20 +210,11 @@
       $where = '';
       if(trim($conditions <> '')) $where = "WHERE $conditions";
       
-      $sql = "SELECT distinct `rel_object_manager`, `rel_object_id` FROM $table_name $where";
+      $sql = "SELECT count(distinct `rel_object_manager`, `rel_object_id`) AS `count` FROM $table_name $where";
       $result = DB::executeAll($sql);
-      if(!is_array($result) || !count($result)) return 0;
+      if (!is_array($result) || !count($result)) return 0;
       
-      $counted = array();
-      $counter = 0;
-      foreach($result as $row) {
-        if(!isset($counted[array_var($row, 'rel_object_manager') . array_var($row, 'rel_object_id')])) {
-          $counted[array_var($row, 'rel_object_manager') . array_var($row, 'rel_object_id')] = true;
-          $counter++;
-        } // if
-      } // foreach
-      
-      return $counter;
+      return $result[0]['count'];
     } // countUniqueObjects
     
     /**

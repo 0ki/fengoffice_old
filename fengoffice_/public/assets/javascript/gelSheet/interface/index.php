@@ -96,15 +96,22 @@
     	}
     	
         function load(){			
+        	window.ogID = '' ;
+			window.ogWID = '' ;
+	<?php if (isset($_GET['id'])) : ?>
+			window.ogID = <?php echo $_GET['id'] ?>;
+	<?php endif; ?>
+	<?php if (isset($_GET['wid'])) : ?>
+			window.ogWID = <?php echo $_GET['wid'] ?>;
+	<?php endif; ?>
+
         	var application = new Application(document.body);
-        	
-			<?php if (isset($_GET['book'])) {  ?>
-			        	application.loadBook(<?php echo $_GET['book'] ?>);
-			<?php } ?>
-			<?php if (isset($_GET['id'])) { ?>
-						window.ogID = <?php echo $_GET['id'] ?>;
-			<?php } ?>
-			
+	<?php if (isset($_GET['book'])) :  ?>
+			application.loadBook(<?php echo $_GET['book'] ?>);
+	<?php endif; ?>
+
+
+			// Display logo..
 			var logo_div = document.getElementById('logo');
 			if ( logo_div ) {
 				logo_div.style.display = "block"; 

@@ -148,4 +148,6 @@
 	'copy file' => 'Copiar este arquivo',
 	'open weblink' => 'Abrir link web',
 	'show all linked objects' => 'Exibir todos os objetos vinculados({0})',
+	'apply milestone to subtasks' => 'Aplicar Marco a Subtarefas',
+	'apply workspace to subtasks' => 'Aplicar Espaço de Trabalho a Subtarefas',
 ); ?>

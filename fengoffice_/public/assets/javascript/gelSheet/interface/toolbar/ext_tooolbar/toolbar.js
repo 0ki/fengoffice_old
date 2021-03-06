@@ -12,7 +12,7 @@ function createToolbars(){
 		//----------- SAVE ------------//
 
 	    tb.add('-', {
-	        icon: iconspath+'pencil-16x16.png', // icons can also be specified inline
+	        icon: iconspath+'saveas-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
 	        tooltip: '<b>'+lang('Save')+'</b><br/>'+lang('Save the current book'),
 	        handler: function(){
@@ -24,13 +24,24 @@ function createToolbars(){
 		//--------- SAVE AS -----------//
 		
 			tb.add( {
-	        icon: iconspath+'saveas-16x16.png', // icons can also be specified inline
+	        icon: iconspath+'pencil-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
 	        tooltip: '<b>'+lang('Save as')+'..</b><br/>'+lang('Save the spreadsheet with a new filename'),
 	        handler: function(){
 				saveBookConfirm() ;
 			}
-	    },'-');
+	    });
+			
+		//--------- NEW -----------//
+			
+			tb.add( {
+	        icon: iconspath+'new-16x16.png', // icons can also be specified inline
+	        cls: 'x-btn-icon',
+	        tooltip: '<b>'+lang('New')+'..</b><br/>'+lang('New spreadsheet'),
+	        handler: function(){
+				application.newBook() ;
+			}
+	    },'-');			
 			
 			
 			
@@ -121,8 +132,15 @@ function createToolbars(){
 	        cls: 'x-btn-icon',
 	        tooltip: '<u>'+lang('underline')+'</u>',
 	        handler: underline
-	    },'-');   
-		
+	    },"-"); 
+	     
+		tb.add({
+	        icon: iconspath+'delete-16x16.png', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<u>'+lang('Delete')+'</u>',
+	        handler: window.deleteSelection
+	    });  
+	     
 		tb.add({
 	        icon: iconspath+'unformat-16x16.gif', 
 	        cls: 'x-btn-icon',
@@ -143,15 +161,16 @@ function createToolbars(){
 	        tooltip: lang('Font color'),
 	        menu: fontColorMenu
 	       
-	    });
+	    },"-");
 
 		//----------- BACKGROUND COLOR ------------//
-
+/*
 		var bgColorMenu = new Ext.menu.ColorMenu({});
 		
 		bgColorMenu.on('select',function(cm, color){
 					cmdSetBgColor('#'+color);	
 				});
+
 		
 	     tb.add({
 	        icon: iconspath+'bgcolor-16x16.png', // icons can also be specified inline
@@ -160,7 +179,7 @@ function createToolbars(){
 	        menu: bgColorMenu 
 	       
 	    },'-');  
-	    
+*/	    
 	    	
 		//----------- FONT ------------//
 
@@ -239,7 +258,7 @@ function createToolbars(){
 
 		tb.addField(fontSize) ;
 		tb.add('-');
-		
+	/*	
 	    var borderMenu = new Ext.menu.Menu({
 	        id: 'borderMenu',
 	       
@@ -289,7 +308,7 @@ function createToolbars(){
 	    });  
 		
 		tb.add("-");
-		
+*/		
 		tb.add({
 			disabled: false ,
 	        icon: iconspath+'align_left-16x16.gif', 
@@ -350,6 +369,7 @@ function createToolbars(){
 				new Ext.menu.Menu({
 			        items: [
 			            {
+			            	//icon: iconspath+'sum.png',
 			            	hideLabel: true ,
 			            	text: 'Sum',
 			        		handler: function(){window.FormulaBar.setValue("=Sum("); window.FormulaBar.focus();} 

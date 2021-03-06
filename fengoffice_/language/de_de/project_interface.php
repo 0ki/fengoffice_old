@@ -219,4 +219,11 @@
 	'no reports found' => 'Keine Berichte gefunden für {0}',
 	'remove this widget' => 'Entferne dies Widget',
 	'add a new' => 'Hinzufügen neues',
+	'other settings' => 'Weitere Einstellungen',
+	'incoming settings' => 'Eingehende Einstellungen',
+	'default account' => 'Standard Account',
+	'default account description' => 'Der Standard Account wird beim Verfassen eine E-Mail als Standard verwendet.',
+	'signature' => 'Signatur',
+	'signature description' => 'Die Signatur wird an alle E-Mails angehängt, die über diesen Account versendet werden.',
+	'attach contents' => 'Inhalte anhängen',
 ); ?>

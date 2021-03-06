@@ -27,9 +27,12 @@ class Contacts extends BaseContacts {
 	 *
 	 * @return array
 	 */
-	function getAllowedContacts() {
+	function getAllowedContacts($extra_conds = null) {
 		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`');
 		$sql = "SELECT * FROM ". $this->getTableName(true) ." `co` WHERE $permissions";
+		if ($extra_conds) {
+			$sql .= " AND $extra_conds";
+		}
 		
 		$objects = array();
 		$rows = DB::executeAll($sql);

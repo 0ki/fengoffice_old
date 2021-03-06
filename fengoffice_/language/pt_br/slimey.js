@@ -43,5 +43,7 @@ addLangs({
 	'move the selected slide down one place': 'Mover o slide selecionado uma posição abaixo',
 	'move the selected slide up one place': 'Mover o slide selecionado uma posição acima',
 	'new slideshow': 'Novo show de slides',
-	'second slide': 'Segundo slide'
+	'second slide': 'Segundo slide',
+	'size': 'Tamanho',
+	'undo': 'Desfazer'
 });

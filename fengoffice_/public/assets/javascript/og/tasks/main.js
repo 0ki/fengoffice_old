@@ -18,6 +18,7 @@ ogTasks.redrawGroups = true;
 
 ogTasks.prevWsValue = -1; //Used to view if ws selector changed its value, to refresh the assingedto combo
 ogTasks.assignedTo = '-1:-1'; //Used to init the assignedto combo when it is refreshed
+ogTasks.selectedMilestone = 0;
 
 //************************************
 //*		Structure definitions

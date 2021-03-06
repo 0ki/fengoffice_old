@@ -13,8 +13,10 @@
 
 	global $cnf ;
 	global $debugging;
-
-	include_once "../../../../../config/config.php";
+	
+	define('OG_ROOT', dirname($_SERVER['SCRIPT_FILENAME'])."/../../../../../" );
+	
+	include_once OG_ROOT."/config/config.php";
 
 	$debugging = false; //Set true iif on debugging mode
 	
@@ -25,7 +27,7 @@
 	$cnf['db']['pass']	 = DB_PASS;
 	$cnf['db']['prefix'] = TABLE_PREFIX.'gs_';
 	$cnf['site']['path']	= '.';
-
+	
 	# # # # # INSTALLATION DEPENDENT VARIABLES # # # # # #
 
 	$cnf['application']['language'] = 'en';

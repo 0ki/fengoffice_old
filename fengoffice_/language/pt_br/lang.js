@@ -597,5 +597,10 @@ addLangs({
 	'move to workspace': 'Mover para Espaço de Trabalho',
 	'keep old workspaces': 'Manter Espaços',
 	'move to workspace or keep old ones': 'Mover para ou manter antigas e adicionar',
-	'do you want to move objects to this ws or keep old ones and add this ws': 'Você deseja mover o(s) objeto(s) selecionado(s) para esse Espaço ou manter antigas e adicionar este Espaço?'
+	'do you want to move objects to this ws or keep old ones and add this ws': 'Você deseja mover o(s) objeto(s) selecionado(s) para esse Espaço ou manter antigas e adicionar este Espaço?',
+	'this field is required': 'Este campo é necessário',
+	'tag selected events': 'Tag o evento selecionado',
+	'edit selected events': 'Editar o evento selecionado',
+	'apply milestone to subtasks': 'Aplicar Marco a Subtarefas',
+	'apply workspace to subtasks': 'Aplicar Espaço de Trabalho a Subtarefas'
 });

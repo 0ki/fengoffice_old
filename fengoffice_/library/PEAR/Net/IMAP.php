@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAP.php,v 1.1 2009/02/10 20:20:43 alvarotm01 Exp $
+ * @version   CVS: $Id: IMAP.php,v 1.1.6.1 2009/07/16 14:57:20 alvarotm01 Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 
@@ -41,7 +41,7 @@ class Net_IMAP extends Net_IMAPProtocol
      * @param int    $port           The port to connect to.
      * @param bool   $enableSTARTTLS Enable STARTTLS support
      */
-    function Net_IMAP($host = 'localhost', $port = 143, $enableSTARTTLS = true)
+    function Net_IMAP(&$ret = null, $host = 'localhost', $port = 143, $enableSTARTTLS = true)
     {
         $this->Net_IMAPProtocol();
         $ret = $this->connect($host, $port, $enableSTARTTLS);

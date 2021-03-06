@@ -40,8 +40,7 @@ function JsonHandler(){
 	    return json;
 	};
 
-	self.exportBook = function(book,sheet){
-		var id = book.getId();
+	self.exportBook = function(id,book,sheet){
 		if(id==undefined) id = "null";
 		var json = '{"bookId":'+ id + ',"bookName":"'+ book.getName()+'"';
 	    json +=	',"sheets":['; 				//Start of Sheets Array
@@ -72,9 +71,10 @@ function JsonHandler(){
 	
 	self.importBook = function(configs,data){  //TODO:configs must be setted on jsondata
 		var book = new Book(data.name);
-		application.activeBook.setId(data.id);
+		book.setId (data.id) ;
+/*		application.activeBook.setId(data.id);
 		application.setBookName(data.name);
-		self.importFontStyles(data.fontStyles);
+*/		self.importFontStyles(data.fontStyles);
 		var sheet = self.importSheet(configs,data.sheets[0]); //TODO:load all sheets when implemented
 		book.setSheet(sheet);
 		return book

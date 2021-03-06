@@ -187,4 +187,6 @@
 	'field Projects created_on_id' => 'aangemaakt door',
 	'field Projects updated_on_id' => 'bijgewerkt door',
 	'field Projects completed_by_id' => 'voltooid door',
+	'field Projects created_by_id' => 'gecreëerd door',
+	'field Projects updated_by_id' => 'bijgewerkt door',
 ); ?>

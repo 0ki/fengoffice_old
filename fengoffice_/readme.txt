@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.5 beta 3
-    ========================
+    About OpenGoo 1.5 RC
+    ====================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5 beta 3 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5 RC - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5 beta 3
+    	from your current version to 1.5 RC
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +86,27 @@
 
 	Changelog
 	=========
+
+	Since 1.5-beta3
+	---------------
+	
+	- bugfix: Filtering the ObjectPicker by web links was not working.
+	- bugfix: Opening a weblink through a linked object was not working.
+	- bugfix: Editing a message through the dashboard would return to the message's edit view.
+	- bugfix: Permissions weren't removed from client company users when the company was unchecked in the workspace's edit view.
+	- bugfix: IMAP email check skipped first email.
+	- bugfix: System email through SMTP uses the SMTP username as "from" address, but if it doesn't have a domain part some servers complain.
+	- bugfix: Contact export did not prompt to download the file in IE.
+	- bugfix: Event export was not filtering by WS and tags.
+	- bugfix: Export contacts had two problems: 1) Ignored workspace filter 2) Ignored user's permissions.
+	- bugfix: Ical event export did not work fine with events whose description had line breaks, only the first line was taken from the client.
+	- bugfix: ICal-Import incorect specialchars.
+	- bugfix: MySQL Error: Primary key too long.
+	- bugfix: Task quick-add did not work, button 'Add task' did nothing.
+	- bugfix: When quick editing a task, milestones combobox is now reloaded to show only valid milestones.
+	- bugfix: Time bar in calendar didn't respect timezone and was hidden by events.
+	- bugfix: When full-editing a task, the parent task wasn't displayed.
+	 
 
 	Since 1.5-beta2
 	---------------

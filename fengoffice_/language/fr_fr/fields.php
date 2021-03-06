@@ -171,7 +171,7 @@
 	'field Projects created_on_id' => 'Créé par',
 	'field Projects updated_on_id' => 'Mis-à-jour par',
 	'field Projects completed_by_id' => 'Achevé par',
-	'field ProjectFiles checked_out_on' => 'Vérifié à',
+	'field ProjectFiles checked_out_on' => 'Verrouillé le',
 	'field ProjectMessages anonymous_comments_enabled' => 'Les commentaires anonymes sont activés',
 	'field ProjectTasks assigned_to_company_id' => 'Affecté à la société',
 	'field ProjectTasks assigned_to_user_id' => 'Affecté à l\'utilisateur',

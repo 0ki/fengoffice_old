@@ -87,7 +87,7 @@ class TaskController extends ApplicationController {
 	}
 
 	function quick_add_task() {
-		ajx_current("empty");
+		ajx_current("empty");		
 		$task = new ProjectTask();
 		$task_data = array_var($_POST, 'task');
 		$parent_id = array_var($task_data, 'parent_id', 0);
@@ -997,7 +997,12 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				}
-
+				
+				
+				if (!isset($task_data['parent_id'])) {
+					$task_data['parent_id'] = 0;	
+				}
+				
 				$task->setFromAttributes($task_data);
 				// Set assigned to
 				$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));

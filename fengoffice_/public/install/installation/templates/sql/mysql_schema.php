@@ -1089,7 +1089,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_parameters` (
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_object_properties` (
 `template_id` INT( 10 ) NOT NULL ,
 `object_id` INT( 10 ) NOT NULL ,
-`object_manager` varchar(255) NOT NULL,
+`object_manager` varchar(50) NOT NULL,
 `property` VARCHAR( 255 ) NOT NULL ,
 `value` TEXT NOT NULL ,
 PRIMARY KEY ( `template_id` , `object_id` ,`object_manager`, `property` )

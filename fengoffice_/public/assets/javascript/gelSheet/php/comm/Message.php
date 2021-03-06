@@ -148,7 +148,7 @@ class Message extends Exception {
 	}
 }
 
-class Error extends Message {
+class GsError extends Message {
 	public function __construct($number = null, $description = null, $contentList = null) {
 		parent::__construct ( "ERROR", $number, $description, $contentList );
 	}

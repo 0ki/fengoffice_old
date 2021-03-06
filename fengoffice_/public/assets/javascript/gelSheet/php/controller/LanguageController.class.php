@@ -1,6 +1,6 @@
 <?php
 
-class LanguageController {
+class LanguageController extends FrontController  {
 	var $lang = "" ;//; 
 	
 	function __construct() {

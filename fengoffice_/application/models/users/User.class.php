@@ -393,10 +393,7 @@ class User extends BaseUser {
 	 * @return array
 	 */
 	function getProjects($order_by = '', $where = null) {
-		if(is_null($this->projects)) {
-			$this->projects = ProjectUsers::getProjectsByUser($this, $where, $order_by);
-		} // if
-		return $this->projects;
+		return ProjectUsers::getProjectsByUser($this, $where, $order_by);
 	} // getProjects
 
 	function getWorkspaces($active = false, $parent = null) {
@@ -410,6 +407,14 @@ class User extends BaseUser {
 		}
 		return ProjectUsers::getProjectsByUser($this, $conditions);
 	}
+	
+	function removeFromWorkspace($workspace) {
+		$pu = ProjectUsers::getByUserAndProject($workspace, $this);
+		if ($pu instanceof ProjectUser) {
+			$pu->delete();
+		}
+	}
+	
 	/**
 	 * Return array of active projects that this user have access
 	 *

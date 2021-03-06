@@ -226,4 +226,5 @@
     'signature' => 'Firmas',
     'signature description' => 'La firma se agregará al final de cada correo enviado desde esta cuenta.',
     'attach contents' => 'Adjuntar contenido',
+	'set parent task' => 'Elegir tarea padre',
 ); ?>

@@ -24,11 +24,12 @@ class Companies extends BaseCompanies {
         )); // findAll
 	} // getAll
 
-	static function getVisibleCompanies(User $user){
+	static function getVisibleCompanies(User $user, $additional_conditions = null){
 		if (can_manage_contacts($user)){
-			return self::getAll();
+			if ($additional_conditions) return self::findAll(array('conditions' => $additional_conditions));
+			else return self::getAll();
 		} else {
-			return self::getCompaniesByProjects($user->getWorkspacesQuery());
+			return self::getCompaniesByProjects($user->getWorkspacesQuery(), $additional_conditions);
 		}
 	}
 
@@ -117,6 +118,7 @@ class Companies extends BaseCompanies {
 			'company[fax_number]' => lang('fax'),
 			'company[email]' => lang('email address'),
 			'company[homepage]' => lang('homepage'),
+			'company[notes]' => lang('notes'),
 		);
 	}
 } // Companies

@@ -30,12 +30,12 @@ class AccessController extends ApplicationController {
 	function login() {
 		$this->addHelper('form');
 
-		if(function_exists('logged_user') && (logged_user() instanceof User)) {
+		if (function_exists('logged_user') && (logged_user() instanceof User)) {
 			$ref_controller = null;
 			$ref_action = null;
 			$ref_params = array();
-			foreach($_GET as $k => $v) {
-				if(str_starts_with($k, 'ref_')) {
+			foreach ($_GET as $k => $v) {
+				if (str_starts_with($k, 'ref_')) {
 					$ref_var_name = trim(substr($k, 4, strlen($k)));
 					switch ($ref_var_name) {
 						case 'c':
@@ -55,37 +55,37 @@ class AccessController extends ApplicationController {
 		$login_data = array_var($_POST, 'login');
 		$localization = array_var($_POST, 'configOptionSelect');
 		
-		if(!is_array($login_data)) {
+		if (!is_array($login_data)) {
 			$login_data = array();
-			foreach($_GET as $k => $v) {
-				if(str_starts_with($k, 'ref_')) $login_data[$k] = $v;
+			foreach ($_GET as $k => $v) {
+				if (str_starts_with($k, 'ref_')) $login_data[$k] = $v;
 			} // foreach
 		} // if
 
 		tpl_assign('login_data', $login_data);
 
-		if(is_array(array_var($_POST, 'login'))) {
+		if (is_array(array_var($_POST, 'login'))) {
 			$username = array_var($login_data, 'username');
 			$password = array_var($login_data, 'password');
 			$remember = array_var($login_data, 'remember') == 'checked';
 
-			if(trim($username == '')) {
+			if (trim($username == '')) {
 				tpl_assign('error', new Error(lang('username value missing')));
 				$this->render();
 			} // if
 
-			if(trim($password) == '') {
+			if (trim($password) == '') {
 				tpl_assign('error', new Error(lang('password value missing')));
 				$this->render();
 			} // if
 			
 			$user = Users::getByUsername($username, owner_company());
-			if(!($user instanceof User)) {
+			if (!($user instanceof User)) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
 
-			if(!$user->isValidPassword($password)) {
+			if (!$user->isValidPassword($password)) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
@@ -98,8 +98,8 @@ class AccessController extends ApplicationController {
 			$ref_action = null;
 			$ref_params = array();
 
-			foreach($login_data as $k => $v) {
-				if(str_starts_with($k, 'ref_')) {
+			foreach ($login_data as $k => $v) {
+				if (str_starts_with($k, 'ref_')) {
 					$ref_var_name = trim(substr($k, 4, strlen($k)));
 					switch ($ref_var_name) {
 						case 'c':
@@ -113,19 +113,19 @@ class AccessController extends ApplicationController {
 					} // switch
 				} // if
 			} // if
-			if(!count($ref_params)) $ref_params = null;
+			if (!count($ref_params)) $ref_params = null;
 						
-			if(UserPasswords::validatePassword($password)){
+			if (UserPasswords::validatePassword($password)) {
 				$newest_password = UserPasswords::getNewestUserPassword($user->getId());
-				if(!$newest_password instanceof UserPassword){
+				if (!$newest_password instanceof UserPassword) {
 					$user_password = new UserPassword();
 					$user_password->setUserId($user->getId());
 					$user_password->setPassword(sha1($password));
 					$user_password->password_temp = $password;
 					$user_password->setPasswordDate(DateTimeValueLib::now());
 					$user_password->save();
-				}else{
-					if(UserPasswords::isUserPasswordExpired($user->getId())){
+				} else {
+					if (UserPasswords::isUserPasswordExpired($user->getId())) {
 						$this->redirectTo('access', 'change_password', 
 						array('id' => $user->getId(),
 							'msg' => 'expired',
@@ -134,7 +134,7 @@ class AccessController extends ApplicationController {
 							$ref_params));
 					}
 				}
-			}else{
+			} else {
 				$this->redirectTo('access', 'change_password', 
 						array('id' => $user->getId(),
 							'msg' => 'invalid',
@@ -143,17 +143,16 @@ class AccessController extends ApplicationController {
 							$ref_params));
 			}
 			
-			
 			try {
 				CompanyWebsite::instance()->logUserIn($user, $remember);
 				$ip  = get_ip_address();
-				ApplicationLogs::createLog($user,null,ApplicationLogs::ACTION_LOGIN,false,false,true,$ip);
+				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_LOGIN, false, false, true, $ip);
 			} catch(Exception $e) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // try
 
-			if($ref_controller && $ref_action) {
+			if ($ref_controller && $ref_action) {
 				$this->redirectTo($ref_controller, $ref_action, $ref_params);
 			} else {
 				$this->redirectTo('access', 'index');

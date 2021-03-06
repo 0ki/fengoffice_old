@@ -280,6 +280,7 @@ return array(
 	'signature' => 'Signature',
 	'signature description' => 'The signature will be appended to every mail you send from this account.',
 	'attach contents' => 'Attach contents',
+	'set parent task' => 'Set parent task',
 ); // array
 
 ?>

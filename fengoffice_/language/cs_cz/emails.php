@@ -149,6 +149,8 @@ return array(
 	'modified notification webpage desc' => 'Web link \'{0}\' has been modified by {1}.',
 	'modified notification milestone' => 'Milestone \'{0}\' has been modified',
 	'modified notification milestone desc' => 'Milestone \'{0}\' has been modified by {1}.',
+	'modified notification email' => 'Email \'{0}\' has been modified',
+	'modified notification email desc' => 'Email \'{0}\' has been modified by {1}.',
 
 	'deleted notification task' => 'Task \'{0}\' has been sent to trash',
 	'deleted notification task desc' => 'Task \'{0}\' has been sent to trash by {1}.',

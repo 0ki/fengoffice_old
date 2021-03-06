@@ -557,5 +557,6 @@ addLangs({
 	'condition value not numeric': 'De waarde van veld {0} moet numeriek zijn.',
 	'milestones': 'mijlpalen',
 	'no subject': 'geen onderwerp',
-	'value is already in the list': 'Deze waarde staat reeds op de lijst.'
+	'value is already in the list': 'Deze waarde staat reeds op de lijst.',
+	'file revision comments required': 'bestandsrevisie commentaren zijn verplicht'
 });

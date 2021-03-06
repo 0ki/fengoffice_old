@@ -53,7 +53,7 @@
 	} // foreach ?>
 </table>
 <?php } // if
-	
+
 // Draw flexible custom properties
 if (is_array($properties) && count($properties) > 0){ ?>
 	<table class="og-custom-properties">

@@ -181,6 +181,7 @@ return array(
 	'new notification comment' => 'Nuevo comentario en \'{0}\'',
     'new notification comment desc' => 'Un nuevo comentario en \'{0}\' fue agregado por {1}.',
 	'mail format options' => 'Formato',
-
+	'modified notification email' => 'El correo \'{0}\' ha sido modificado',
+    'modified notification email desc' => 'El correo \'{0}\' ha sido modificado por {1}.',
 ); // array
 ?>

@@ -76,4 +76,9 @@
 	'private file' => 'Privé bestand',
 	'object reminders' => 'Herinneringen',
 	'add object reminder' => 'Voeg een herinnering toe',
+	'load file' => 'laad bestand',
+	'time' => 'tijd',
+	'reporting' => 'rapporten',
+	'create document' => 'creëer een document',
+	'create presentation' => 'creëer een presentatie',
 ); ?>

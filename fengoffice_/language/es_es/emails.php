@@ -165,4 +165,6 @@
 	'select attachment' => 'Seleccionar y subir el adjunto',
 	'attach from workspace' => 'Seleccionar adjunto del área de trabajo',
 	'mail format options' => 'Formato',
+	'modified notification email' => 'El correo \'{0}\' ha sido modificado',
+    'modified notification email desc' => 'El correo \'{0}\' ha sido modificado por {1}.',
 ); ?>

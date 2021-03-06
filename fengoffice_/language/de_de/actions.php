@@ -147,4 +147,5 @@
 	'delete permanently' => 'Dauerhaft löschen',
 	'copy file' => 'Datei kopieren',
 	'open weblink' => 'Öffne Weblink',
+	'show all linked objects' => 'Zeige alle verknüpften Objekte({0})',
 ); ?>

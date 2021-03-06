@@ -1,11 +1,15 @@
 function addApplicationAPI(self){
-	
+
     self.editActiveCell = function(value){
     	self.model.editActiveCell(value);
+    };
+    self.deleteSelection = function(){
+    	self.model.deleteSelection() ;
     };
     
     self.bookLoaded = function(responseData){
     	var book = self.JsonManager.importBook(self.configs.sheet,responseData);
+
     	self.activeBook = book;
     	self.activeSheet = book.getSheet();
     	self.setBookName(book.name); //doing this will refresh application title
@@ -26,22 +30,24 @@ function addApplicationAPI(self){
      * Save As..
      */
 	self.saveBook = function(bookName) {
-		var bookId = "null";
 		
-		//var bookId = self.activeBook.getId(); 
-		if(bookName == undefined) { //if not save as...
+		var bookId = "null";
+		 
+		if(bookName == undefined) { //SAVE.. 
 			if(window.ogID) {
 				bookName = self.activeBook.getName();
 			} else {
 				saveBookConfirm();
 				return;
 			}
+			var id = self.activeBook.getId();
+		}else {
+			// SAVE AS  posta.. deberia no pasar 'id' al request a opengoo
+			window.ogID = null ;
 		}
-		
 		if(bookName == undefined) bookName = self.activeBook.getName();
 		self.setBookName(bookName);
-		
-		var json = JsonManager.exportBook(self.activeBook,self.activeSheet); //on the future will not be needed to pass activeSheet
+		var json = JsonManager.exportBook(id,self.activeBook,self.activeSheet); //on the future will not be needed to pass activeSheet
 	    self.CommManager.sendBook(json, 'json');
 	};
 	

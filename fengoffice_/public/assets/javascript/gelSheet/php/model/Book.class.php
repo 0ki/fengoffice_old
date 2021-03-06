@@ -171,7 +171,7 @@
 			{
 				//throw new Success('Book deleted succesfully!',"{'BookId':$bookId}");
 			} else {
-				$error = new Error(302,"Error deleting book.");
+				$error = new GsError(302,"Error deleting book.");
 				if($error->isDebugging()){
 					$err = str_replace("'", '"', mysql_error());
 					$error->addContentElement("BookId",$bookId);
@@ -241,7 +241,7 @@
 			$sql = "select SheetId from ".table('sheets'). " where BookId=$BookId" ;
 			$result =  mysql_query($sql);
 			if (!$result) {
-				$error = new Error(302,"Error loading book.");
+				$error = new GsError(302,"Error loading book.");
 				if($error->isDebugging()){
 					$err = str_replace("'", '"', mysql_error());
 					$error->addContentElement("BookId",$BookId);
@@ -277,7 +277,7 @@
 				//Check if the the id is correct..
 				$res = mysql_query("SELECT BookId FROM ".table('books'). " where BookId=$this->bookId");
 				if(!$res){
-					$error = new Error(302,"Error loading book.");
+					$error = new GsError(302,"Error loading book.");
 					if($error->isDebugging()){
 						$error->addContentElement("BookId",$BookId);
 						$err = str_replace("'", '"', mysql_error());
@@ -291,7 +291,7 @@
 				if (!$row) {
 					//ERROR: trying to save a book that does exist. Must have null value the bookid
 					if(!mysql_query($sql)){
-						$error = new Error(302,"Error saving book. Book don't exists");
+						$error = new GsError(302,"Error saving book. Book don't exists");
 						if($error->isDebugging()){
 							$error->addContentElement("BookId",$BookId);
 							$err = str_replace("'", '"', mysql_error());
@@ -310,7 +310,7 @@
 
 
 					if(!mysql_query($sql)){
-						$error = new Error(302,"Error saving book. Book don't exists");
+						$error = new GsError(302,"Error saving book. Book don't exists");
 						if($error->isDebugging()){
 							$error->addContentElement("BookId",$BookId);
 							$err = str_replace("'", '"', mysql_error());
@@ -331,7 +331,7 @@
 					$this->bookId= mysql_insert_id();
 				else{
 					
-					$error = new Error(302,"Error saving book.");
+					$error = new GsError(302,"Error saving book.");
 					if($error->isDebugging()){
 						$error->addContentElement("BookId",$BookId);
 						$err = str_replace("'", '"', mysql_error());

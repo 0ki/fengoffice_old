@@ -366,8 +366,9 @@ class EventController extends ApplicationController {
 				
 				if (array_var($_POST, 'popup', false)) {
 					// create default reminder
+					$minutes = 15;
 		        	$reminder = new ObjectReminder();
-					$reminder->setMinutesBefore(15);
+					$reminder->setMinutesBefore($minutes);
 					$reminder->setType("reminder_popup");
 					$reminder->setContext("start");
 					$reminder->setObject($event);
@@ -884,7 +885,7 @@ class EventController extends ApplicationController {
 			$to = getDateValue(array_var($_POST, 'to_date'));
 			$tags = '';
 			
-			$events = ProjectEvents::getRangeProjectEvents($from, $to, $tags, active_project());
+			$events = ProjectEvents::getRangeProjectEvents($from, $to, active_tag(), active_project());
 			
 			$buffer = CalFormatUtilities::generateICalInfo($events, $calendar_name);
 			
@@ -1029,7 +1030,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94.2.3 2009/07/10 20:58:01 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.94.2.4 2009/07/13 22:05:40 alvarotm01 Exp $
  *
  ***************************************************************************/
 

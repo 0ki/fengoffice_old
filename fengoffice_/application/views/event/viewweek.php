@@ -507,7 +507,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											if ($event_start == $event_duration){
 												$hr_end++;
 											}
-											if ($hr_end == 0) $hr_end = 24;
+											if ($hr_end == 0 && $event_duration->getDay() != $dates[$day_of_week]->getDay()) $hr_end = 24;
 											$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
 											$bottom = PX_HEIGHT * $hr_end + (PX_HEIGHT*(($min_end*100)/(60*100)));
 											$height = $bottom - $top;
@@ -731,12 +731,12 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 		og.addDomEventHandler(window, 'resize', resizeGridContainer);
 	}
 	
-	
-	var now = new Date();
+	og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
+	og.currentTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
 	if (og.calendar_start_day == 1) {
-		var today_d = now.format('N') - 1;
+		var today_d = og.currentTime.format('N') - 1;
 	} else {
-		var today_d = now.format('w');
+		var today_d = og.currentTime.format('w');
 	}
 	og.drawCurrentHourLine(today_d, 'w_');
 	

@@ -143,51 +143,51 @@ og.FileManager = function() {
 	
 	function renderActions(value, p, r) {
 		var actions = '';
-		var actionStyle= ' style="font-size:105%;color:#FFFFFF;padding-top:2px;padding-bottom:3px;padding-left:18px;background-repeat:no-repeat;" '; 
+		var actionStyle= ' style="font-size:105%;padding-top:2px;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
 		
 		if(r.data.ftype == 0){
 			if(og.showCheckoutNotification == 0){
 				if (Ext.isIE) {
-					actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>.</a>',
+					actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 				} else {
-					actions += String.format('<a class="list-action ico-download" href="#" onclick="location.href = \'{0}\'" title="{1}" ' + actionStyle + '>.</a>',
+					actions += String.format('<a class="list-action ico-download" href="#" onclick="location.href = \'{0}\'" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 				}
 			}else{
-				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>.</a>',
+				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>&nbsp;</a>',
 				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
 			}			
 		}else{
-			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + ">.</a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
+			actions += String.format("<a href='{0}' class='list-action ico-open-link' target='_blank'" + actionStyle + ">&nbsp;</a>&nbsp;", r.data.url, 'public/assets/themes/default/images/16x16/openlink.png');
 		}
 		
 		if (r.data.isModifiable) {
 			actions += String.format(
-			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>.</a>',
+			'<a class="list-action ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.modifyUrl,lang('edit this document'));
 		}
 		
 		if (r.data.mimeType == "audio/mpeg") {
 			actions += String.format(
-			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '> </a>',
+			'<a class="list-action ico-play" href="#" onclick="og.playMP3({0})" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('play this file'));
 			actions += String.format(
-			'<a class="list-action ico-queue" href="#" onclick="og.queueMP3({0})" title="{1}" ' + actionStyle + '> </a>',
+			'<a class="list-action ico-queue" href="#" onclick="og.queueMP3({0})" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					r.data.songInfo.replace(/'/g, "\\'").replace(/"/g, "'"), lang('queue this file'));
 		} else if (r.data.mimeType == 'application/xspf+xml') {
 			actions += String.format(
-			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '> </a>',
+			'<a class="list-action ico-play" href="#" onclick="og.playXSPF({0})" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					r.id, lang('play this file'));
 		} else if (r.data.mimeType == 'prsn') {
 			actions += String.format(
-			'<a class="list-action ico-slideshow" href="#" onclick="og.slideshow({0})" title="{1}" ' + actionStyle + '></a>',
+			'<a class="list-action ico-slideshow" href="#" onclick="og.slideshow({0})" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					r.id, lang('view slideshow'));
 		}
 		
 		if (og.FileIsZip(r.data.mimeType, r.data.name)) {
 			actions += String.format(
-			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>.</a>',
+			'<a class="list-action ico-zip-extract" href="#" onclick="og.openLink(og.getUrl(\'files\', \'zip_extract\', {id:{0}}))" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.object_id,lang('extract files'));
 		}
 		

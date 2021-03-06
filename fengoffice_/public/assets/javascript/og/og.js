@@ -175,11 +175,7 @@ og.loading = function() {
 	if (!this.loadingCt) {
 		this.loadingCt = document.createElement('div');
 		this.loadingCt.innerHTML = lang('loading');
-		this.loadingCt.className = 'loading-indicator';
-		this.loadingCt.style.position = 'absolute';
-		this.loadingCt.style.left = '45%';
-		this.loadingCt.style.zIndex = 1000000;
-		this.loadingCt.style.cursor = 'pointer';
+		this.loadingCt.className = 'loading-indicator og-loading';
 		this.loadingCt.onclick = function() {
 			this.style.visibility = 'hidden';
 			this.instances = 0;

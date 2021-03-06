@@ -10,8 +10,7 @@
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
  */
-	class UserController {
-
+	class UserController extends FrontController {
 
 		private $currentUser;
 

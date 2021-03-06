@@ -114,8 +114,8 @@
 	'deleted notification message desc' => 'Notiz \'{0}\' wurde von {1} in den Papierkorb verschoben.',
 	'deleted notification file' => 'Datei \'{0}\' wurde in den Papierkorb verschoben.',
 	'deleted notification file desc' => 'Datei \'{0}\' wurde von {1} in den Papierkorb verschoben.',
-	'deleted notification webpage' => 'Notiz \'{0}\' wurde in den Papierkorb verschoben.',
-	'deleted notification webpage desc' => 'Notiz \'{0}\' wurde von {1} in den Papierkorb verschoben.',
+	'deleted notification webpage' => 'Internet-Link \'{0}\' wurde in den Papierkorb verschoben.',
+	'deleted notification webpage desc' => 'Internet-Link \'{0}\' wurde von {1} in den Papierkorb verschoben.',
 	'deleted notification milestone' => 'Meilenstein \'{0}\' wurde in den Papierkorb verschoben.',
 	'deleted notification milestone desc' => 'Meilenstein \'{0}\' wurde von {1} in den Papierkorb verschoben.',
 	'view file' => 'Datei anzeigen',
@@ -165,4 +165,5 @@
 	'new notification comment desc' => 'Neuer Kommentar bei \'{0}\' wurde durch {1} hinzugefügt.',
 	'deleted notification email' => 'Email \'{0}\' wurde in den Papierkorb verschoben.',
 	'deleted notification email desc' => 'Email \'{0}\' wurde von {1} in den Papierkorb verschoben.',
+	'mail format options' => 'Format',
 ); ?>

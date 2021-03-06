@@ -74,7 +74,15 @@ function CommHandler(configs){
 	}
 	
 	self.loadBook = function(bookId,callback){
-		self.sendRequest({c:'Spreadsheet',m:'loadBook',param1:bookId},callback);
+		self.sendRequest({
+			c:'Spreadsheet',
+			m:'loadBook',
+			param1:bookId,
+			ogId: window.ogID || 0,
+			ogWid: window.ogWID || 0
+			},
+		callback
+		);
 	}
 	
 	self.bookSaveServerResponse = function(data){		
@@ -86,7 +94,7 @@ function CommHandler(configs){
 				name: application.activeBook.getName()
 			}), {
 			onSuccess: function(data) {
-				window.ogID = data.sprdID
+				window.ogID = data.sprdID;
 			},
 			onError: function(data) {
 				deleteBook(bookId);
@@ -101,7 +109,9 @@ function CommHandler(configs){
 				m:'saveBook',
 				param1:escape(data),
 				param2:'json',
-				param3:'json'
+				param3:'json',
+				ogId: window.ogID || 0,
+				ogWid: window.ogWID || 0
 			};
 			
 		self.sendRequest(params,self.bookSaveServerResponse);

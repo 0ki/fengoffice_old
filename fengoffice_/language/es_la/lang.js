@@ -604,7 +604,9 @@ addLangs({
     'template parameters': 'Parámetros',
     'template property already selected': 'La propiedad seleccionada ya está siendo usada',
     'tag selected events': 'Etiquetar eventos seleccionados',
-    'edit selected events': 'Editar evento seleccionado',
+    'edit selected event': 'Editar evento seleccionado',
     'apply milestone to subtasks': 'Aplicar hito a las subtareas',
-    'apply workspace to subtasks': 'Applicar espacio a las subtareas'
+    'apply workspace to subtasks': 'Applicar espacio a las subtareas',
+    
+    'click here to download the csv file': 'Click aquí para descargar el archivo csv.'
 });

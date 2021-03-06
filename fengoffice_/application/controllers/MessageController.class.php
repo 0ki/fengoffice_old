@@ -450,7 +450,6 @@ class MessageController extends ApplicationController {
 	          	} else {
 	          		ajx_current("back");
 	          	}
-	          	ajx_add("overview-panel", "reload");          	
 
 			} catch(Exception $e) {
 				DB::rollback();

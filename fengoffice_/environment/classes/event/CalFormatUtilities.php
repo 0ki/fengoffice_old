@@ -21,7 +21,11 @@ class CalFormatUtilities {
 		foreach($ical_events_data as $ical_ev) {
 			$data = array();
 			$data['subject'] = substr_utf(array_var($ical_ev, 'summary', 'No Subject'), 0, 100);
-			$data['description'] =  array_var($ical_ev, 'description', '');
+			$data['description'] = array_var($ical_ev, 'description', '');
+			$data['subject'] = html_entity_decode($data['subject']);
+			$data['subject'] = str_replace('<br />', "\n", $data['subject']);
+			$data['description'] = html_entity_decode($data['description']);
+			$data['description'] = str_replace('<br />', "\n", $data['description']);
 			$data['type_id'] = array_var($ical_ev, 'all_day', 0) == 0 ? 1 : 2;
 			
 			$data['start'] = date('Y-m-d H:i:s', array_var($ical_ev, 'start_unix') - $tz_diff * 3600);
@@ -104,7 +108,7 @@ class CalFormatUtilities {
 			$url = str_replace('http://', '', ROOT_URL);
 			$uid .= str_replace('www.', '', $url);
 			
-			$description = str_replace(chr(13).chr(10),"  ", $event->getDescription());
+			$description = str_replace(array(chr(13).chr(10), chr(13), chr(10)),'\n', $event->getDescription());
 			$ical_info .= "DESCRIPTION:$description\r\n";
             $ical_info .= "SUMMARY:" . $event->getSubject() . "\r\n";
 		    $ical_info .= "UID:$uid\r\n";

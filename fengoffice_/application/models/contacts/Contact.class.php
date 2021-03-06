@@ -404,7 +404,9 @@ class Contact extends BaseContact {
     * @return string
     */
     function getHCountryName() {
-      return lang('country ' . $this->getHCountry());
+    	if ($this->getHCountry())
+    		return lang('country ' . $this->getHCountry());
+    	return '';
     } // getHCountryName
     
     /**
@@ -415,7 +417,9 @@ class Contact extends BaseContact {
     * @return string
     */
     function getWCountryName() {
-      return lang('country ' . $this->getWCountry());
+    	if ($this->getWCountry()) 
+    		return lang('country ' . $this->getWCountry());
+    	return '';
     } // getWCountryName
     
     /**
@@ -426,7 +430,9 @@ class Contact extends BaseContact {
     * @return string
     */
     function getOCountryName() {
-      return lang('country ' . $this->getOCountry());
+    	if ($this->getOCountry())
+    		return lang('country ' . $this->getOCountry());
+    	return '';
     } // getOCountryName
 
     // ---------------------------------------------------

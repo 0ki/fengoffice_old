@@ -147,7 +147,7 @@
   	        continue; // not acceptable
   	      } // if
   	      if($this->columnExists($k)) {
-  	        $this->setColumnValue($k, $attributes[$k]); // column exists, set
+  	      	$this->setColumnValue($k, $attributes[$k]); // column exists, set
   	      } // if
   	    } // foreach
   	  } // if

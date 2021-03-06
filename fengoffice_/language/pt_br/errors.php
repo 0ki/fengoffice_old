@@ -115,4 +115,6 @@
 	'task cannot be instantiated more times' => 'Tarefa não pode ser instanciada várias vezes, esta é a última repetição.',
 	'account already being checked' => 'A conta já está marcada.',
 	'no files to compress' => 'Nenhum arquivo para comprimir.',
+	'cant modify subscribers' => 'Não é possível modificar assinantes',
+	'this object must belong to a ws to modify its subscribers' => 'Este objeto deve pertencer a um espaço de trabalho para modificar seus assinantes.',
 ); ?>

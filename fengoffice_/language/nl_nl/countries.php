@@ -60,7 +60,7 @@
 	'country dj' => 'Djibouti',
 	'country dm' => 'Dominica',
 	'country do' => 'Dominicaanse Republiek',
-	'country tl' => 'Oost Timor',
+	'country tp' => 'Oost Timor',
 	'country ec' => 'Ecuador',
 	'country eg' => 'Egypte',
 	'country sv' => 'El Salvador',
@@ -235,7 +235,7 @@
 	'country wf' => 'Wallis en Futuna Eilanden',
 	'country eh' => 'West Sahara',
 	'country ye' => 'Jemen',
-	
+	'country zr' => 'Zaïre',
 	'country zm' => 'Zambia',
 	'country zw' => 'Zimbabwe',
 ); ?>

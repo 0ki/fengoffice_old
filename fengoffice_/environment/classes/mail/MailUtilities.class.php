@@ -395,9 +395,13 @@ class MailUtilities {
 		$received = 0;
 
 		if ($account->getIncomingSsl()) {
-			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
+			$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
 		} else {
-			$imap = new Net_IMAP("tcp://" . $account->getServer());
+			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
+		}
+		if (PEAR::isError($ret)) {
+			Logger::log($ret->getMessage());
+			throw new Exception($ret->getMessage());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
@@ -407,27 +411,43 @@ class MailUtilities {
 					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName());
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
-						if (!is_array($oldUids) || count($oldUids) == 0) {
+						if (!is_array($oldUids) || count($oldUids) == 0 || $numMessages == 0) {
 							$lastReceived = 0;
 						} else {
-							$lastReceived = $numMessages - 1;
+							$lastReceived = 0;
 							$maxUID = $account->getMaxUID($box->getFolderName());
-							for ($i = $numMessages - 1; $i >= 0; $i--) {
+							$imin = 1;
+							$imax = $numMessages;
+							$i = floor(($imax + $imin) / 2);
+							while (true) {
 								$summary = $imap->getSummary($i);
-								if (PEAR::isError($summary)) continue;
+								if (PEAR::isError($summary)) {
+									$i--;
+									if ($i == 0) break;
+									continue;
+								}
+								$iprev = $i;
 								$uid = $summary[0]['UID'];
-								if ($maxUID == $uid) break;
-								$lastReceived--;
-								if ($lastReceived == 0) break;
+								if ($maxUID > $uid) {
+									$imin = $i;
+									$lastReceived = $imin;
+								} else if ($maxUID < $uid) {
+									$imax = $i;
+								} else {
+									$lastReceived = $i;
+									break;
+								}
+								$i = floor(($imax + $imin) / 2);
+								if ($i == $iprev) {
+									break;
+								} 
 							}
 						}
-						$lastReceived++;
-
-						if ($max == 0) $toGet = $numMessages;
-						else $toGet = min($lastReceived + $max, $numMessages);
+						
+						if ($max == 0) $max = $numMessages;
 
 						// get mails since last received (last received is not included)
-						for ($i = $lastReceived; $i < $toGet || ($received < $max && $i < $numMessages); $i++) {
+						for ($i = $lastReceived; $received < $max && $i < $numMessages; $i++) {
 							$index = $i+1;
 							$summary = $imap->getSummary($index);
 							if (PEAR::isError($summary)) {
@@ -449,7 +469,6 @@ class MailUtilities {
 								}
 							}
 						}
-
 					}
 				}
 			}
@@ -460,12 +479,16 @@ class MailUtilities {
 
 	function getImapFolders(MailAccount $account) {
 		if ($account->getIncomingSsl()) {
-			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
+			$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
 		} else {
-			$imap = new Net_IMAP("tcp://" . $account->getServer());
+			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
+		}		
+		if (PEAR::isError($ret)) {
+			Logger::log($ret->getMessage());
+			throw new Exception($ret->getMessage());
 		}
 		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-		if (PEAR::isError($ret)) {
+		if ($ret !== true || PEAR::isError($ret)) {
 			Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
 		}
@@ -504,9 +527,13 @@ class MailUtilities {
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {
 				if ($account->getIncomingSsl()) {
-					$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
+					$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
 				} else {
-					$imap = new Net_IMAP("tcp://" . $account->getServer());
+					$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
+				}
+				if (PEAR::isError($ret)) {
+					Logger::log($ret->getMessage());
+					throw new Exception($ret->getMessage());
 				}
 				$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 

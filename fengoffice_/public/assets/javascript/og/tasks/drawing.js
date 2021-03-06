@@ -469,7 +469,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	//rx__TasksDrag.haveExtDD['ogTasksPanelGroupCont'+group.group_id] = group.group_id;
 	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
 	sb.append("<table width='100%'><tr>");
-	sb.append('<td style="width:20px"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onchange="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
+	sb.append('<td style="width:20px"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onclick="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
 	
 	sb.append("<td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
 	

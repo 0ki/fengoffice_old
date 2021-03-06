@@ -1,64 +1,86 @@
-<?php return array(
+<?php 
+	/*
+	* Első magyar fordítás 1.3 verzióig: Váczy Attila <vaczy.a.m@gmail.com>
+	* Magyar fordítás 1.4.2 verzióig (az 1.3 bázis részbeni újrafordításával, módosításával): Lukács Péter <programozo@lukacspeter.hu>
+	*/
+	
+return array(
 	'upcoming milestones in next 30 days' => 'A következő 30 nap mérföldkövei',
 	'show all upcoming milestones' => 'A következő mérföldkövek (összesen: {0})',
+
 	'recent activities' => 'Legutóbbi tevékenységek',
 	'search button caption' => 'Keresés',
 	'search result description' => '<strong>{1} ból {0}</strong> elem, ami egyezik ezzel: <strong>"{2}"</strong>',
 	'search result description short' => '{0}-tól {1}-ig {2}-ból',
+
+
 	'edit this file' => 'A fájl szerkesztése',
 	'file contents' => 'Fájl tartalma',
-	'important message desc' => 'Fontos üezenetek vannak a "Fontos Üzenetek" oldalsó mezőben a projekt feljegyzések oldalán',
+
+	'important message desc' => 'Fontos üzenetek vannak a "Fontos Üzenetek" oldalsó mezőben a projekt feljegyzések oldalán',
 	'important file desc' => 'Fontos fájlok vannak a "Fontos fájlok" blokk oldalsó mezőjében',
 	'enable comments' => 'Megjegyzés hozzáfűzhető',
-	'enable comments desc' => 'Azok a felhasználók, akik láthatják ezt az elemet, megjegyzéseket is hozzáfűzhetnek. Válaszd a "Nem"-et a tiltáshoz',
-	'enable anonymous comments' => 'Névtelen megjegyzés',
-	'enable anonymous comments desc' => 'Névtelen megjegyzések fűzhető ehhez az elemhez. A névtelen megjegyzés az API-n keresztül vagy más külső forrásból történhet (ha az megendetett). A névtelen megjegyzés szerzőjének meg kell adnia egy nevet és egy létező email címet. A feladó IP cím archiválásra kerül.',
+	'enable comments desc' => 'Azok a felhasználók, akik láthatják ezt az elemet, megjegyzéseket is hozzáfűzhetnek. Válassza a "Nem"-et a tiltáshoz',
+	'enable anonymous comments' => 'Névtelen megjegyzés megengedett',
+	'enable anonymous comments desc' => 'Ezzel megengedi, hogy névtelenül megjegyzéseket fűzhessenek ehhez az elemhez. A névtelen megjegyzés a rendszer programozási felületén keresztül, vagy akár külső forrásból is érkezhet (ha az megengedett). A névtelen megjegyzések szerzőjének meg kell adnia nevét és egy létező email címét. A feladó IP címe naplózva lesz.',
+
 	'completed task' => 'Befejezett feladat',
 	'completed tasks' => 'Befejezett feladatok',
-	'open task' => 'Nyitott feladat',
+	'open task' => 'Feladat megnyitása',
 	'open tasks' => 'Nyitott feladatok',
 	'view all completed tasks' => 'Összes befejezett feladat (összes feladat: {0})',
 	'recently completed tasks' => 'Legutóbb befejezett feladatok',
 	'task open of total tasks' => '{0} nyitott feladat van az összesen {1} feladatból',
 	'subtask of' => '<a class="internalLink" href="{0}">{1}</a> alfeladata',
-	'read more' => 'Többi »',
+
+	'read more' => 'Bővebben »',
 	'message separator' => '<p>* * *</p>',
 	'comments on message' => '{0} megjegyzés(ek)',
 	'comment on object' => '\'{0}\' megjegyzés a \'{1}\'-on',
 	'revisions on file' => '{0} verzió(k)',
-	'message posted on by linktitle' => '{0}-n küldve {1} által',
-	'comment posted on by linktitle' => '{0}-n beküldve {1} által',
-	'message posted on by' => '{0}-n küldve <a class="internalLink" href="{1}">{2}</a> által',
-	'comment posted on' => '{0}-n kommentálva',
-	'comment posted on by' => '{0}-n kommentálva <a class="internalLink" href="{1}">{2}</a> által',
-	'completed on by' => '<a class="internalLink" href="{1}">{2}</a> | {0}-n',
-	'started on by' => '<a class="internalLink" href="{1}">{2}</a> | {0}-n',
-	'posted on by' => '<a class="internalLink" href="{1}">{2}</a> | {0}-n',
-	'milestone assigned to' => 'Hozzárendelve {0}-hoz',
+
+	'message posted on by linktitle' => '{0}időpontban küldve {1} által',
+	'comment posted on by linktitle' => '{0} időpontban beküldve {1} által',
+	'message posted on by' => '{0} időpontban beküldve <a class="internalLink" href="{1}">{2}</a> által',
+	'comment posted on' => '{0} időpontban kommentálva',
+	'comment posted on by' => '{0} időpontban, küldte: <a class="internalLink" href="{1}">{2}</a>',
+	'completed on by' => '<a class="internalLink" href="{1}">{2}</a> | {0} időpontban',
+	'started on by' => '<a class="internalLink" href="{1}">{2}</a> | {0} időpontban',
+	'posted on by' => '<a class="internalLink" href="{1}">{2}</a> | {0} időpontban',
+	'milestone assigned to' => 'Hozzárendelve {0} felhasználóhoz',
 	'assigned to' => 'Hozzárendelve',
 	'project started on' => 'Elkezdve',
+
 	'email sent by linktitle' => 'Küldte {1}, {0}',
+
 	'send milestone assigned to notification' => 'Email értesítés küldése a felhasználónak',
 	'send task assigned to notification' => 'Email értesítés küldése a felhasználónak',
+
 	'edit company data' => 'Cég adatok <a class="internalLink" href="{0}">szerkesztése</a>',
 	'company users involved in project' => '{0} felhasználó érintett {1}-ban',
 	'companies involved in project' => 'Érintett cégek',
+
 	'tags used on projects' => 'A projekt címkéi',
 	'number of tagged objects' => '{0} címkézett elem',
 	'total objects tagged with' => '<b>{0}</b> elem van <b>{1}</b> címkével jelölve ebben a projektben',
 	'no objects tagged with' => 'Nincsen <b>{0}</b> címkével jelölt elem ebben a projektben',
 	'tags widget description' => 'Vesszővel tagolt címkék (pl: "kicsi, vásárlás, publikus, stb...")',
-	'project permissions form hint' => 'A <a class="internalLink" href="{0}">jogosultságok nyomtatvány</a> kitöltésével könnyen hozzáadhatsz/törölhetsz céget/felhasználót és beállíthatod a jogosultságokat.',
-	'expand additional text' => 'Kibont',
-	'collapse additional text' => 'Összecsuk',
+
+	'project permissions form hint' => 'A <a class="internalLink" href="{0}">jogosultságok nyomtatvány</a> kitöltésével könnyen hozzáadhat/törölhet céget/felhasználót és beállíthatja a jogosultságokat.',
+
+	'expand additional text' => 'Teljes képernyő',
+	'collapse additional text' => 'Visszatérés',
 	'email notification' => 'Email üzenet',
 	'email notification desc' => 'A kiválasztott emberek feliratkoztatása erre az üzenetre, és értesítő email küldése',
 	'assign milestone task list desc' => 'A feladat egy létező projekthez kapcsolható',
+
 	'link existing object' => 'Elem hozzákapcsolása (a fájlok közül)',
 	'upload and link' => 'Új fájl feltöltése és elemhez kapcssolása',
-	'file permissions description' => 'Válaszd ki a felhasználót a menüből vagy írd be a nevét. Aztán kattints a Felhasználó hozzáadására, hogy láthatóvá tedd a felhasználók között. <br>Amint láthatóvá válik, jelöld meg a kiosztandó jogosultságokat.<br>Megjezés: a listában csak azok a felhasználók látszanak, akikkel már megosztottad a fájlt.',
+	'file permissions description' => 'Válassza ki a felhasználót a menüből vagy adja meg a nevét. Aztán kattintson a Felhasználó hozzáadására, hogy láthatóvá tedd a felhasználók között. <br>Amint láthatóvá válik, jelölje meg a kiosztandó jogosultságokat.<br>Megjezés: a listában csak azok a felhasználók látszanak, akikkel már megosztotta a fájlt.',
+
 	'subscribers desc' => 'A feliratkozottak email értesítést kapnak valahányszor valaki (saját magát kivéve) megjegyzést írnak ehhez az elemhez',
-	'admins can post comments on locked objects desc' => '<strong>Megjegyzés hozzáfűzése tiltott</strong>, de mint adminisztrátor tehetsz hozzá megjegyzést. Ha választ vársz erre a megjegyzére nem adminisztrátor jogosultságú felhasználótl; <i>(állítsd "Megjegyzés engedélyezése" beállítást "Igen"-re)</i>.',
+	'admins can post comments on locked objects desc' => '<strong>Megjegyzés hozzáfűzése tiltott</strong>, de mint adminisztrátor tehet hozzá megjegyzést. Ha választ vár erre a megjegyzésre nem adminisztrátor jogosultságú felhasználóktól is, <i>(állítsa a "Megjegyzés engedélyezése" beállítást "Igen"-re)</i>.',
+
 	'all permissions' => 'Összes',
 	'can manage messages' => 'Üzenetek kezelése',
 	'can manage tasks' => 'Feladatok kezelése',
@@ -69,50 +91,62 @@
 	'can assign to other' => 'Feladat hozzárendelése más ügyfél cég tagjaihoz',
 	'can manage properties' => 'Tulajdonságok kezelése',
 	'can manage events' => 'Események kezelése',
+
 	'add by' => 'hozzáadta:',
-	'edit by' => 'ferissítette:',
+	'edit by' => 'frissítette:',
 	'delete by' => 'törölte:',
 	'close by' => 'lezárta:',
 	'open by' => 'megnyitotta:',
 	'upload by' => 'feltöltötte:',
 	'created by' => 'Készítette:',
+
 	'project description' => 'Leírás',
 	'project status' => 'Projekt állapot',
-	'show project desciption in overview' => 'Látszódjon a Leírás a projekt átnézeti lapon?',
+	'show project desciption in overview' => 'Jelenlen meg a leírás a projekt összefoglaló oldalán?',
+
 	'new file' => 'Következő fájl',
 	'existing file' => 'Létező fájl',
-	'replace file description' => 'Felülírhatsz egy létező fájlt egy új fájl meghatározásával. Ha nem akarod felülírni, hagy üresen ezt a mezőt.',
+	'replace file description' => 'Lecserélhet egy már létező fájlt egy új fájl kiválasztásával és feltöltésével. Ha nem akarja felülírni, ne pipálja be a jelölőnégyzetet.',
 	'download history' => 'Letöltés előzmények',
 	'download history for' => '<a class="internalLink" href="{0}">{1}</a> letöltési előzménye',
 	'downloaded by' => 'Letöltötte:',
 	'downloaded on' => 'Letöltés időpontja:',
-	'order by filename' => 'fájlénév (a-z)',
+
+	'order by filename' => 'fájlnév (a-z)',
 	'order by posttime' => 'nap és időpont',
 	'all files' => 'Összes fájl',
 	'upload file desc' => 'Bármilyen típusú fájl feltölthető. A feltölthető maximális fájl méret {0}',
 	'file revision info short' => '#{0} számú verzió <span>(létrehozva {1})</span>',
-	'file revision info long' => '#{0} számú verzió <span>(<a class="internalLink" href="{1}">{2}</a> által {3}-n)</span>',
+	'file revision info long' => '#{0} számú verzió <span>(<a class="internalLink" href="{1}">{2}</a> által ekkor: {3})</span>',
 	'file revision title short' => 'Létrehozva: {0}</span>',
 	'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b>, {2}-n',
-	'file checkout info short' => '<span>Ellenőrízve {0}-n</span>',
-	'file checkout info long' => '<span>Ellenőrízte: </span> <a class="internalLink" href="{0}">{1}</a> <span>, {2}-n</span>',
+	'file checkout info short' => '<span>Lefoglalva {0}-n</span>',
+	'file checkout info long' => '<span>Lefoglalta: </span> <a class="internalLink" href="{0}">{1}</a> <span>, ekkor: {2}</span>',
 	'update file' => 'Fájl frissítése',
 	'version file change' => 'Változás mentése (a régi fájl referenciaként mentésre kerül)',
 	'last revision' => 'Utolsó verzió',
 	'revision comment' => 'Verzió megjegyzés',
 	'edit revision comment' => 'Verzió megjegyzés szerkesztése',
 	'initial versions' => '-- Eredeti verzió --',
-	'file details' => 'Fájl részletek',
-	'view file details' => 'fájl részletek megtekintése',
+	'file details' => 'Fájl részletei',
+	'view file details' => 'fájl részleteinek megtekintése',
+
+
 	'add link object control' => 'Elem hozzáadása',
 	'remove link object control' => 'Törlés',
-	'link objects to object desc' => 'Ezzel a nyomtatvánnyal kapcsolhat <strong><a href="{0}">{1}</a></strong>-hoz elemet. Több elemet is hozzákapcsolhatsz. Hozzáadhatsz létező elemet, de újat is létrehozhatsz. <strong>Az új elem is a fájlok között lesz megtalálható, amikor majd feltöltöd</strong>.',
-	'select object' => 'Válassz elemet',
-	'admin notice comments disabled' => 'Nem fűzhető megjegyzés ehhez az elemhez, de mint adminisztrátor megteheted. Ha választ vársz más, nem adminisztrátori jogosultságú felhasználótól, állítsd a Megjegyzés hozzáfűzését "Igen"-re.',
+	'link objects to object desc' => 'Ezzel az űrlappal kapcsolhat <strong><a href="{0}">{1}</a></strong> objektumhoz egy vagy akár több elemet is. Hozzáadhat létező elemet, de újat is létrehozhat. <strong>Az új elem is a fájlok között lesz megtalálható, amikor majd feltölti</strong>.',
+	'select object' => 'Válasszon elemet',
+
+
+	'admin notice comments disabled' => 'Nem fűzhető megjegyzés ehhez az elemhez, de mint adminisztrátor megteheti. Ha választ vár más, nem adminisztrátori jogosultságú felhasználótól, állítsa a Megjegyzés hozzáfűzését "Igen"-re.',
+
+
 	'icalendar' => 'iNaptár',
 	'icalendar subscribe' => 'iNaptár',
-	'icalendar subscribe desc' => 'Ezzel a kapcsolódással hozhatod a mérföldkő adatait a kedvenc naptár alkalmazásodba.',
-	'icalendar password change notice' => '<strong>Megjegyzés:</strong> ha megváltoztatod a jelszót, kapcsolódás a naptár adathoz szintén megváltozik! Újra fel kell iratkoznod rá.',
+	'icalendar subscribe desc' => 'Ezzel a kapcsolódással áthozhatja a mérföldkő adatait a kedvenc naptár alkalmazásába.',
+	'icalendar password change notice' => '<strong>Megjegyzés:</strong> ha megváltoztatja a jelszót, a naptár adataihoz hivatkozás szintén módosul! Újra fel kell iratkoznia rá.',
+
+
 	'success message' => 'Üzenet küldés sikerült',
 	'project form action' => 'Tevékenység',
 	'project form action add comment' => 'Megjegyzés hozzáfűzése',
@@ -123,22 +157,27 @@
 	'add comment to message short' => 'mihez',
 	'add task to list' => 'Feladat hozzákapcsolása <a class="internalLink" href="{0}">{1}</a>-hoz',
 	'add task to list short' => 'mihez',
-	'private message desc' => 'A magán üzeneteket csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'private webpage desc' => 'A magán honlap címeket csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'private milestone desc' => 'A magán mérföldköveket csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'private task list desc' => 'A magán feladatokat csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'private comment desc' => 'A magán megjegyzéseket csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'private file desc' => 'A magán fájlokat csak a tulajdonos cég tagjai láthatják. Ügyfél cég tagjai nem láthatják azokat.',
-	'select a tag' => 'Válassz címkét...',
-	'select a user' => 'Válassz felhasználót...',
-	'select a project' => 'Válassz projektet...',
+
+
+	'private message desc' => 'A magán üzeneteket csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+	'private webpage desc' => 'A magán honlap címeket csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+	'private milestone desc' => 'A magán mérföldköveket csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+	'private task list desc' => 'A magán feladatokat csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+	'private comment desc' => 'A magán megjegyzéseket csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+	'private file desc' => 'A magán fájlokat csak a tulajdonos cég tagjai láthatják, ügyfél cég tagjai nem.',
+
+	'select a tag' => 'Válasszon címkét...',
+	'select a user' => 'Válasszon felhasználót...',
+	'select a project' => 'Válasszon projektet...',
 	'upload a file' => 'Fájl feltöltése',
 	'upload project desc' => 'A projekt, amelybe a fájlt feltöltésre kerül',
-	'upload tag desc' => 'Itt választhatsz egy címkét, vagy létrehozhatsz egyet. A címke kiválasztása után nyomj Enter-t, majd választhatsz egy következőt.',
-	'upload permissions desc' => 'Válaszd ki a felhasználókat, akik hozzáférhetnek a fájlhoz. A címkékhez hasonlóan; írd be vagy válaszd ki a felhasználót, nyomj Enter-t, majd hozzáadhatod a következőt.',
-	'upload description desc' => 'Ide írhatod a fájl leírását',
+	'upload tag desc' => 'Itt választhat egy címkét, vagy létrehozhat egyet. A címke kiválasztása után nyomjon Enter-t, majd választhat egy következőt.',
+	'upload permissions desc' => 'Válassza ki azokat a felhasználókat, akik hozzáférhetnek a fájlhoz. A címkékhez hasonlóan; adja meg vagy válassza ki a felhasználót, nyomjon Enter-t, majd hozzáadhatja a következőt.',
+	'upload description desc' => 'Itt adhatja meg a fájl leírását',
 	'uploading file' => 'Fájl feltöltése...',
+
 	'cannot delete personal project' => 'A személyes projekt nem törölhető!',
+
 	'workspace color' => 'Projekt színe',
 	'workspace template' => 'Projekt sablon',
 	'color1' => 'Piros',
@@ -149,19 +188,27 @@
 	'color6' => 'Vörös',
 	'color7' => 'Kék',
 	'color8' => 'Lila',
-	'choose a color' => 'Válassz színt',
-	'show more' => 'Többi',
-	'show more amount' => 'A többi ({0})',
+	'choose a color' => 'Válasszon színt',
+
+	'show more' => 'Továbbiak',
+	'show more amount' => 'További elemek ({0})',
+
+
+
 	'new contact' => 'Új ügyfél',
 	'work' => 'Munkahelyi',
 	'home' => 'Otthoni',
-	'other' => 'Más',
+	'other' => 'Egyéb',
+
+
+
+
 	'display' => 'Nézet',
 	'display options' => 'Nézet tulajdonságok',
-	'show in project' => 'Látszódjon a projektnél',
-	'show in project desc' => 'Látszódjon ez a táblázat a kiválasztott projekt átnézeti oldalán',
-	'show in parents' => 'Látszódjon a szülőknél',
-	'show in parents desc' => 'Látszódjon ez a táblázat a kiválasztott projekt minden szülő projektje átnézeti oldalán',
+	'show in project' => 'Jelenlen meg a projektnél',
+	'show in project desc' => 'Jelenlen meg ez a táblázat a kiválasztott projekt összefoglaló oldalán',
+	'show in parents' => 'Jelenlen meg a szülőknél',
+	'show in parents desc' => 'A kiválasztott projekt adatai jelenlenek meg az összes szülő projekt összefoglaló oldalán',
 	'reporting' => 'Jelentés készítése',
 	'chart' => 'Táblázat',
 	'new chart' => 'Új táblázat',
@@ -173,28 +220,33 @@
 	'BudgetExecution' => 'Költségvetés végrehajtás',
 	'BudgetExecutionTrack' => 'Költségvetés végrehajtás havonta',
 	'MonthlyBudgetExecution' => 'Költségvetés végrehajtás ebben a hónapban',
-	'bars chart' => 'Sávos',
-	'pie chart' => 'Szelet',
+	'bars chart' => 'Oszlop',
+	'pie chart' => 'Torta',
 	'lines chart' => 'Vonalas',
 	'draw chart' => 'Grafikon rajzolása',
-	'chart display' => 'Mutasd',
-	'bar sketch' => 'Kézi sávok',
-	'bar 3d' => '3d sávok',
-	'bar glass' => 'Üveg sávok',
-	'budgeted' => 'Költségvetés',
+	'chart display' => 'Jelmagyarázat mutatása',
+	'bar sketch' => 'Oszlop vázlat',
+	'bar 3d' => '3D oszlopok',
+	'bar glass' => 'Áttetsző oszlopok',
+	'budgeted' => 'Költségvetésben tervezett',
 	'current' => 'jelenlegi',
+
 	'executed' => 'Végrehajtva',
 	'not executed' => 'Nincs végrehajtva',
+
 	'success deleted chart' => '\'{0}\' grafikon sikeresen törölve',
 	'error deleted chart' => 'Hiba lépett fel a grafikon törlése során',
-	'task priority' => 'Elsőbbség',
+
+	'task priority' => 'Prioritás',
 	'high priority' => 'Magas',
 	'normal priority' => 'Átlagos',
 	'low priority' => 'Alacsony',
+
 	'time estimate' => 'Becsült idő',
 	'time estimate desc' => 'A feladat végrehajtásának becsült időszükséglete órában.',
 	'x hours' => '{0} óra.',
 	'pending' => 'Függő',
+
 	'new task template' => 'Új feladat sablon',
 	'edit task template' => 'Feladat sablon szerkesztése',
 	'new task from template' => 'Új feladat sablon alapján',
@@ -204,15 +256,25 @@
 	'new milestone template' => 'Új mérföldkő sablon',
 	'new milestone from template' => 'Új mérföldkő sablon alapján',
 	'loading' => 'Betöltés',
+
 	'show all' => 'Összes megmutatása',
+
 	'unassigned' => 'Hozzárendeletlen',
 	'latest comments' => 'legutóbbi megjegyzések',
 	'include unworked pending tasks' => 'Tartalmazza a feldolgozatlan függő feladatokat',
 	'unworked pending tasks' => 'Feldolgozatlan függő feladatok',
-	'assign contact to workspace desc' => 'Az ügyfél projekthez rendeléséhez válaszd ki a projektet és töltsd ki a szerep mezőt',
-	'cannot change parent workspace' => 'Nincs jogosultságod a szülő projekt megváltoztatására',
-	'cannot change parent workspace description' => 'Ez a projekt talán gyermeke (leszármazója) egy olyan projektnek, amihez nincs hozzáférésed',
+	'assign contact to workspace desc' => 'Az ügyfél projekthez rendeléséhez válassza ki a projektet és töltse ki a szerep mezőt',
+
+	'cannot change parent workspace' => 'Nincs jogosultsága a szülő projekt megváltoztatására',
+	'cannot change parent workspace description' => 'Ez a projekt talán gyermeke (leszármazója) egy olyan projektnek, amihez nincs hozzáférése',
+
 	'copy of file' => '{0} másolata',
-	'add subscribers desc' => 'Rendeld hozzá a kiválasztott személyeket ehhez az elemhez. A hozzárendeltek email értesítést kapnak minden változásról, ami ezt az elemet érinti.',
+	'add subscribers desc' => 'Rendelje hozzá a kiválasztott személyeket ehhez az elemhez. A hozzárendeltek email értesítést kapnak minden változásról, ami ezt az elemet érinti.',
 	'add custom property' => 'Egyedi tulajdonság hozzáadása',
+	'fetch imap folders' => 'IMAP mappák újratöltése',
+	'no reports found' => 'Nem találhatók jelentések {0} elemről',
+
+	'remove this widget' => 'A kezdeti lépések lap bezárása',
+	'add a new' => 'Új elem hozzáadása',
+
 ); ?>

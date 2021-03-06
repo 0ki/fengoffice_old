@@ -192,4 +192,5 @@
 	'start of task' => 'Início da Tarefa',
 	'new task repetition generated' => 'Nova repetição de tarefa gerada com sucesso',
 	'reminders will not apply to repeating events' => 'AVISO: lembretes não serão aplicáveis a eventos repetidos',
+	'pages' => 'páginas',
 ); ?>

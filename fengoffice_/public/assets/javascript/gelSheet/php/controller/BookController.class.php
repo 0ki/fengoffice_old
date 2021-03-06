@@ -12,9 +12,7 @@
  */
 
 
-	class BookController{
-
-		public function __construct(){}
+	class BookController extends FrontController {
 
 		public function __destruct(){}
 
@@ -27,7 +25,7 @@
 				default :
 					$json_obj = json_decode($book);
 					if(!isset($json_obj)){
-						$error =  new Error(401,"Ups!!! Sorry, Book has not received properly to server. Be aware you are running an alpha version.");
+						$error =  new GsError(401,"Ups!!! Sorry, Book has not received properly to server. Be aware you are running an alpha version.");
 						if($error->isDebugging()){
 							$error->addContentElement("Recieved data",$book);
 						}
@@ -37,8 +35,16 @@
 					break ;
 			}
 			
+			// Permission check
+			if ( is_numeric( $newBook->bookId ) ) {
+				$this->security->checkWrite($newBook->bookId) ;
+			}else {
+				$this->security->checkCreate(); 
+			}
+			
 			if ($outputFormat == 'db') {
 				$newBook->save();
+				
 			}else {
 				$controller= new ExportController();
 				switch($outputFormat) {
@@ -59,7 +65,7 @@
 						if(!$errors)
 							throw new Success('Book saved succesfully',"{'BookId':".$newBook->getId()."}");
 						else {
-							$error = new Error(302,"Error saving book.");
+							$error = new GsError(302,"Error saving book.");
 							throw $error;						
 						}
 						break;
@@ -105,7 +111,7 @@
 //				echo "{'Error':0,'Message':'Book $bookId deleted succesfully','Data':{'BookId':".$bookId."}}";
 				throw new Success('Book deleted succesfully',"{'BookId':$bookId}");
 			} else {
-				$error = new Error(302,"Error deleting book.");
+				$error = new GsError(302,"Error deleting book.");
 				if($error->isDebugging()){
 					$err = str_replace("'", '"', mysql_error());
 					$error->addContentElement("BookId",$bookId);

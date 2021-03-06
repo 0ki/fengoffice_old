@@ -1,5 +1,10 @@
 <?php
 
+	/*
+	* Első magyar fordítás 1.3 verzióig: Váczy Attila <vaczy.a.m@gmail.com>
+	* Magyar fordítás 1.4.2 verzióig (az 1.3 bázis részbeni újrafordításával, módosításával): Lukács Péter <programozo@lukacspeter.hu>
+	*/
+
   return array(
 	// ########## QUERY ERRORS ###########
 	"CAL_QUERY_GETEVENT_ERROR" => "Adatbázis Hiba: Nem tudta ID szerint megtalálni az esemény",
@@ -16,17 +21,17 @@
 	"CAL_MENU_BACK_CALENDAR" => "Vissza a Naptárhoz",
 	"CAL_MENU_NEWEVENT" => "Új esemény",
 	"CAL_MENU_BACK_EVENTS" => "Vissza az eseményekehez",
-	"CAL_MENU_GO" => "Menj",
+	"CAL_MENU_GO" => "Ugrás",
 	"CAL_MENU_TODAY" => "Ma",
 	// ########## USER PERMISSION ERRORS ##########
-	"CAL_NO_READ_PERMISSION" => "Nincs jogosultságod az esemény megtekintéséhez.",
-	"CAL_NO_WRITE_PERMISSION" => " Nincs jogosultságod esemény hozzáadására ill. szerkesztésére.",
-	"CAL_NO_EDITOTHERS_PERMISSION" => " Nincs jogosultságod mások eseményeinek szerkesztésére.",
-	"CAL_NO_EDITPAST_PERMISSION" => " Nincs jogosultságod múltbeli esemény hozzáadására.",
-	"CAL_NO_ACCOUNTS" => "Ez a naptár nem engedi a belépést; csak a root léphet be.",
+	"CAL_NO_READ_PERMISSION" => "Nincs jogosultsága az esemény megtekintéséhez.",
+	"CAL_NO_WRITE_PERMISSION" => " Nincs jogosultsága esemény hozzáadására ill. szerkesztésére.",
+	"CAL_NO_EDITOTHERS_PERMISSION" => " Nincs jogosultsága mások eseményeinek szerkesztésére.",
+	"CAL_NO_EDITPAST_PERMISSION" => " Nincs jogosultsága múltbeli esemény hozzáadására.",
+	"CAL_NO_ACCOUNTS" => "Ez a naptár nem engedi a belépést; csak az adminisztrátor léphet be.",
 	"CAL_NO_MODIFY" => "Nem változtatható",
-	"CAL_NO_ANYTHING" => " Nincs jogosultságod változtatni ezen a lapon",
-	"CAL_NO_WRITE" => " Nincs jogosultságod új esemény létrehozására",
+	"CAL_NO_ANYTHING" => " Nincs jogosultsága változtatni ezen a lapon",
+	"CAL_NO_WRITE", " Nincs jogosultsága új esemény létrehozására",
 	// ############ DAYS ############
 	"CAL_MONDAY" => "Hétfõ",
 	"CAL_TUESDAY" => "Kedd",
@@ -62,18 +67,18 @@
 	
 	
 	// SUBMITTING/EDITING EVENT SECTION TEXT (event.php)
-	"CAL_MORE_TIME_OPTIONS" => "Az idõ további beállítás",
+	"CAL_MORE_TIME_OPTIONS" => "Az idõ további beállítása",
 	"CAL_REPEAT" => "Ismétlõdõ",
 	"CAL_EVERY" => "Minden",
 	"CAL_REPEAT_FOREVER" => "Folyamatosan ismétlõdik",
 	"CAL_REPEAT_UNTIL" => "-ig ismétlõdik",
 	"CAL_TIMES" => "Idõ",
-	"CAL_HOLIDAY_EXPLAIN" => "Ezzel megismétled az eseményt minden",
+	"CAL_HOLIDAY_EXPLAIN" => "Ezzel megismétlődjön az eseményt minden",
 	"CAL_DURING" => "Idõtartam",
 	"CAL_EVERY_YEAR" => "Minden évben",
-	"CAL_HOLIDAY_EXTRAOPTION" => "Vagy, mivel a hónap utolsó hetére esik, Kattints ide, hogy a végére kerüljön",
+	"CAL_HOLIDAY_EXTRAOPTION" => "Vagy, mivel a hónap utolsó hetére esik, kattintson ide, hogy a végére kerüljön",
 	"CAL_IN" => "ban/ben",
-	"CAL_PRIVATE_EVENT_EXPLAIN" => "Ez magá esemény",
+	"CAL_PRIVATE_EVENT_EXPLAIN" => "Ez magánesemény",
 	"CAL_SUBMIT_ITEM" => "Elem bevitele",
 	"CAL_MINUTES" => "Perc", 
 	"CAL_MINUTES_SHORT" => "p",
@@ -86,7 +91,7 @@
 	"CAL_MONTHLY_EVENT" => "Havonta ismétlõdõ",
 	"CAL_YEARLY_EVENT" => "Évente ismétlõdõ",
 	"CAL_HOLIDAY_EVENT" => "Ismétlõdõ ünnep",
-	"CAL_UNKNOWN_TIME" => "Ismretelen kezdõ idõpont",
+	"CAL_UNKNOWN_TIME" => "Ismeretlen kezdõ idõpont",
 	"CAL_ADDING_TO" => "Hozzáadás",
 	"CAL_ANON_ALIAS" => "Álnév",
 	"CAL_EVENT_TYPE" => "Esemény típusa",
@@ -102,18 +107,18 @@
 	"CAL_MODIFY" => "Módosítás", // (view event, view date, admin)
 	"CAL_NOT_SPECIFIED" => "Nincs meghatározva", // (view event, view date, calendar)
 	"CAL_FULL_DAY" => "Egész nap", // (view event, view date, calendar, submit event)
-	"CAL_HACKING_ATTEMPT" => "Betörési Kísérlet - az IP cím tárolva", // (delete)
+	"CAL_HACKING_ATTEMPT" => "Betörési Kísérlet - az IP cím naplózva", // (delete)
 	"CAL_TIME" => "Idõ", // (view date, submit event)
 	"CAL_HOURS" => "Óra", // (view event, submit event)
 	"CAL_HOUR" => "Óra", // (view event, submit event)
 	"CAL_ANONYMOUS" => "Anonymous", // (view event, view date, submit event),
 	
 	
-	"CAL_SELECT_TIME" => "Válassz kezdõ idõpontot",
+	"CAL_SELECT_TIME" => "Válasszon kezdõ idõpontot",
 	
 	'event invitations' => 'Meghívók az eseményre',
-	'event invitations desc' => 'Hívj meg kiválasztott embereket az eseményre',
-	'send new event notification' => 'Küldj email emlékeztetõt',
+	'event invitations desc' => 'Hívjon meg kiválasztott embereket az eseményre',
+	'send new event notification' => 'Küldjön email emlékeztetõt',
 	'new event notification' => 'Az új esemény hozzáadva',
     'change event notification' => 'Az esemény megváltoztatva',
 	'deleted event notification' => 'Az esemény törölve',
@@ -128,11 +133,14 @@
 	'calendar of' => 'Naptár {0} részére',
 	'all users' => 'Minden felhasználónak',
   	'error delete event' => 'Hiba az esemény törlése során',  
+  	'event invitation response' => 'Meghívás eseményre válasz',
+  	'user will attend to event' => '{0} részt fog venni az eseményen.',
+  	'user will not attend to event' => '{0} nem fog részt venni az eseményen',  
   
-	"days" => "napok",
-	"weeks" => "hetek",
-	"months" => "hónapok",
-	"years" => "évek",
+	"days" => "nap",
+	"weeks" => "het",
+	"months" => "hónap",
+	"years" => "év",
 
 	'invitations' => 'Meghívók',
 	'pending response' => 'Függõ válaszok',
@@ -145,7 +153,7 @@
 	'success import events' => '{0} esemény importálva.',
 	'no events to import' => 'Nincs importálandó esemény',
 	'import events from file' => 'Esemény importálva a file-ból',
-	'file should be in icalendar format' => 'A file-nak naptár formátumúnak kell lennie',
+	'file should be in icalendar format' => 'A fájlnak naptár formátumúnak kell lennie',
 	'export calendar' => 'Naptár exportálás',
 	'range of events' => 'Esemény hatókör',
 	'from date' => 'Feladó',
@@ -153,7 +161,14 @@
 	'success export calendar' => '{0} esemény exportálva.',
 	'calendar name desc' => 'Az exportálandó naptár neve',
 	'calendar will be exported in icalendar format' => 'A naptár iCalendar formátumban lesz exportálva.',
-	'view date title' => 'l, d/m/Y',  
+	'view date title' => 'l, Y. m. d.',  
+	
+		'copy this url in your calendar client software' => 'Ha eseményeket akar átvinni naptárszoftverébe, másolja át kliensébe a következő hivatkozást',
+	'import events from third party software' => 'Események importálása külső szoftverből',
+	'subws' => 'Alproj.',
+	'check to include sub ws' => 'Jelölje be ha azt akarja, hogy az alprojekteket is tartalmazza a hivatkozás',
+  	'week short' => 'Hét',
+  	'week number x' => '{0}. hét',
   ); // array
 ?>
 

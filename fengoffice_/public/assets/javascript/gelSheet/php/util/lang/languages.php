@@ -16,7 +16,7 @@ include_once "lang_list.php" ;
 
 
 
-function lang($text) {
+function language($text) {
 	global $cnf;
 	global $lang;
 	

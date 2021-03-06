@@ -92,7 +92,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				echo select_box('mailAccount[is_imap]', $options, array("onchange" => $onchange, 'tabindex' => '60', 'id' => $genid . 'method'));
 
 				$onchange = "var div = document.getElementById('$genid' + 'sslportdiv');if(this.checked) div.style.display='block';else div.style.display='none';";
-				echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => $genid.'ssl', 'tabindex'=>'70', 'onchange' => $onchange)) ?>
+				echo checkbox_field('mailAccount[incoming_ssl]', array_var($mailAccount_data, 'incoming_ssl'), array('id' => $genid.'ssl', 'tabindex'=>'70', 'onclick' => $onchange)) ?>
 			<label for="<?php echo $genid ?>ssl" class="yes_no"><?php echo lang('incoming ssl') ?></label>
 		</div>
 
@@ -196,7 +196,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				<span class="desc"><?php echo lang('mail account delete mails from server description') ?></span>
 			</label>
 			<?php $del_from_server = array_var($mailAccount_data, 'del_from_server', 0) ?>
-			<?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server >= 0, lang('yes'), lang('no'), 146) ?>
+			<?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server > 0, lang('yes'), lang('no'), 146) ?>
 			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>
 			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 0 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'150', 'style'=>'width:25px')) ?>
 			<?php echo lang('days'); ?>

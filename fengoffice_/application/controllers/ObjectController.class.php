@@ -1159,7 +1159,7 @@ class ObjectController extends ApplicationController {
 						} else if ($type == 'MailContents') {
 							$count += MailController::addEmailToWorkspace($split[1], $destination, $ws_ids, $mantainWs);
 						} else {
-							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectEvents') {
+							if (!$mantainWs || $type == 'ProjectTasks' || $type == 'ProjectMilestones') {
 								$ws = $obj->getWorkspaces($ws_ids);
 								foreach ($ws as $w) {
 									if (can_add(logged_user(), $w, $type)) {

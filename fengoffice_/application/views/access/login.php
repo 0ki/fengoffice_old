@@ -60,7 +60,7 @@
 		<label><?php echo lang('language')?>:</label>
   		<?php
   			$handler = new LocalizationConfigHandler();
-  			echo $handler->render('configOptionSelect', array('text' => lang('default'), 'value' => 'Default'));
+  			echo $handler->render('configOptionSelect', array('text' => lang('last language'), 'value' => 'Default'));
   		?>
   	</tr>
 	</table>

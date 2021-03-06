@@ -47,7 +47,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	$alias = clean($event->getCreatedByDisplayName());
     $desc = escape_html_whitespace(convert_to_links(clean($event->getDescription())));
     $start_time = $event->getStart();
-	$mod_username = clean($event->getUpdatedBy()->getUsername());
+	$mod_username = clean($event->getUpdatedByDisplayName());
 	$mod_stamp = $event->getUpdatedOn();
 	
 	// check username to see if it's anonymous or not

@@ -1,4 +1,10 @@
-<?php return array(
+<?php 
+	/*
+	* Első magyar fordítás 1.3 verzióig: Váczy Attila <vaczy.a.m@gmail.com>
+	* Magyar fordítás 1.4.2 verzióig (az 1.3 bázis részbeni újrafordításával, módosításával): Lukács Péter <programozo@lukacspeter.hu>
+	*/
+	
+return array(
 	'user' => 'Felhasználó',
 	'group' => 'Csoport',
 	'groups' => 'Csoportok',
@@ -44,6 +50,11 @@
 	'handin' => 'Beadás',
 	'handins' => 'Beadások',
 	'emailunclassified' => 'Email',
+	
+	'load file'=> 'Fájl betöltése',
+  'time' => 'Időtartam',
+  'reporting' => 'Jelentések',
+ 
 	'owner company' => 'Tulajdonos cég',
 	'client companies' => 'Ügyfél cég',
 	'open milestone' => 'Nyitott mérföldkő',
@@ -74,6 +85,11 @@
 	'private task list' => 'Magán feladat',
 	'private comment' => 'Magán megjegyzés',
 	'private file' => 'Magán fájl',
+
 	'object reminders' => 'Emlékeztető',
 	'add object reminder' => 'Emlékeztető hozzáadása',
+	
+		'create document' => 'Dokumentum létrehozása',
+  	'create presentation' => 'Bemutató létrehozása',
+  
 ); ?>

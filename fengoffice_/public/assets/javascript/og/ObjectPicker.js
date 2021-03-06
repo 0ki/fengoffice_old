@@ -301,7 +301,7 @@ og.ObjectPicker = function(config) {
 				this.addFilter({
 					id: 'webpages',
 					name: lang('web pages'),
-					type: 'Web Pages',
+					type: 'WebPages',
 					filter: 'type'
 				}, {iconCls: 'ico-webpages'});
 			}

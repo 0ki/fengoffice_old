@@ -113,9 +113,16 @@
 						<div class="projectCompanyTitle">
 					<?php //if($company->isOwner()) { ?>
 						<!-- <label><?php //echo clean($compangetName()) ?></label>-->
-							<input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" />
-					<?php //} else { ?>
-							<?php echo checkbox_field('project_company_' . $company->getId(), $company->isProjectCompany(active_or_personal_project()), array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
+							<!-- input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" / -->
+					<?php //} else {
+						$has_checked_users = false;
+						foreach ($company->getUsers() as $user) {
+							if ($user->isProjectUser(active_or_personal_project())) {
+								$has_checked_users = true;
+								break;
+							}
+						}
+						echo checkbox_field('project_company_' . $company->getId(), $has_checked_users, array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
 					<?php //} // if ?>
 						</div>
 						<div class="projectCompanyUsers" id="<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>">

@@ -1391,6 +1391,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['country']) && $checked['country']) $contact_data['country'] = CountryCodes::getCountryCodeByName(array_var($fields, $position['country']));
 		if (isset($checked['phone_number']) && $checked['phone_number']) $contact_data['phone_number'] = array_var($fields, $position['phone_number']);
 		if (isset($checked['fax_number']) && $checked['fax_number']) $contact_data['fax_number'] = array_var($fields, $position['fax_number']);
+		if (isset($checked['notes']) && $checked['notes']) $contact_data['notes'] = array_var($fields, $position['notes']);
 		$contact_data['timezone'] = logged_user()->getTimezone();
 		
 		return $contact_data;
@@ -1487,13 +1488,33 @@ class ContactController extends ApplicationController {
 			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
 			fwrite($handle, $titles);
 			
+			$project = Projects::findById(array_var($_GET, 'active_project', 0));
+			if ($project instanceof Project) {
+				$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+			}
+			$wsConditions = null;
+			$tag_str = null;
+			$tag = array_var($_GET, 'active_tag');
+
 			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
-				$contacts = Contacts::instance()->getAllowedContacts();
+				if (isset($pids)) 
+					$wsConditions = Contacts::getWorkspaceString($pids);
+				if (isset($tag) && $tag && $tag!='')
+		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Contacts') ";
+
+		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
+				$contacts = Contacts::instance()->getAllowedContacts($conditions);
 				foreach ($contacts as $contact) {
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
 				}
 			} else {
-				$companies = Companies::getVisibleCompanies(logged_user());
+				if (isset($pids)) 
+					$wsConditions = Companies::getWorkspaceString($pids);
+				if (isset($tag) && $tag && $tag!='')
+		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `".TABLE_PREFIX . "companies`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Companies') ";
+					
+		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
+				$companies = Companies::getVisibleCompanies(logged_user(), $conditions);
 				foreach ($companies as $company) {
 					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
 				}
@@ -1503,7 +1524,6 @@ class ContactController extends ApplicationController {
 
 			$_SESSION['contact_export_filename'] = $filename;
 			flash_success(($imp_type == 'contact' ? lang('success export contacts') : lang('success export companies')));
-			ajx_current("start");
 		} else {
 			unset($_SESSION['contact_export_filename']);
 			return;
@@ -1573,6 +1593,8 @@ class ContactController extends ApplicationController {
 		if (isset($checked['middlename']) && $checked['middlename'] == 'checked') $str .= $contact->getMiddlename() . ',';
 		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= $contact->getNotes();
 		
+		$str = str_replace(array(chr(13).chr(10), chr(13), chr(10)), ' ', $str); //remove line breaks
+		
 		return $str;
 	}
 	
@@ -1589,7 +1611,10 @@ class ContactController extends ApplicationController {
 		if (isset($checked['phone_number']) && $checked['phone_number'] == 'checked') $str .= $company->getPhoneNumber() . ',';
 		if (isset($checked['fax_number']) && $checked['fax_number'] == 'checked') $str .= $company->getFaxNumber() . ',';
 		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= $company->getEmail() . ',';
-		if (isset($checked['homepage']) && $checked['homepage'] == 'checked') $str .= $company->getHomepage();
+		if (isset($checked['homepage']) && $checked['homepage'] == 'checked') $str .= $company->getHomepage() . ',';
+		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= $company->getNotes() . ',';
+		
+		$str = str_replace(array(chr(13).chr(10), chr(13), chr(10)), ' ', $str); //remove line breaks
 		
 		return $str;
 	}

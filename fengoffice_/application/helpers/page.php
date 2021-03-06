@@ -887,7 +887,7 @@
   		$prefix = "";
   	}
     
-    return get_public_url("assets/themes/$theme/stylesheets/$prefix$file_name");
+    return get_public_url("assets/{$prefix}themes/$theme/stylesheets/$file_name");
   } // get_stylesheet_url
   
   /**

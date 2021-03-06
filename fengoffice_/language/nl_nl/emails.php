@@ -154,4 +154,8 @@
 	'mail attachments' => 'bijlagen',
 	'select attachment' => 'selecteer en upload een bijlage',
 	'attach from workspace' => 'selecteer een bijlage van een werkomgeving',
+	'new notification comment' => 'nieuw commentaar op \'{0}\'',
+	'new notification comment desc' => 'commentaar op \'{0}\' is toegevoegd door \'{1}\'.',
+	'deleted notification email' => 'email \'{0}\' is in de prullenbak gegooid',
+	'deleted notification email desc' => 'email \'{0}\' is in de prullenbak gegooid door \'{1}\'',
 ); ?>

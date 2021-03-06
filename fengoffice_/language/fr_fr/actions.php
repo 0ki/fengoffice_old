@@ -4,7 +4,7 @@
 	'logout' => 'Déconnexion',
 	'hide welcome info' => '» Masquer cette information',
 	'add company' => 'Ajouter une société',
-	'edit company' => 'Éditer une société',
+	'edit company' => 'Éditer la société',
 	'delete company' => 'Supprimer une société',
 	'edit company logo' => 'Éditer le logo',
 	'delete company logo' => 'Supprimer le logo',
@@ -149,4 +149,6 @@
 	'copy file' => 'Copier ce fichier',
 	'open weblink' => 'Ouvrir un lien web',
 	'show all linked objects' => 'Afficher tous les objets liés({0})',
+	'apply milestone to subtasks' => 'Appliquer le jalon aux sous-tâches',
+	'apply workspace to subtasks' => 'Appliquer le contexte aux sous-tâches',
 ); ?>

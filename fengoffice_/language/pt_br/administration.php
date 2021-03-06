@@ -240,4 +240,5 @@
 	'edit default user preferences' => 'Editar preferências padrão do usuário',
 	'default user preferences' => 'Preferências padrão do usuário',
 	'default user preferences desc' => 'Escolher os valores padrão de preferências do usuário. Estes valores aplicam-se quando o usuário não tenha ainda escolhido um valor para uma opção.',
+	'can manage time' => 'Permitido gerenciar tempo',
 ); ?>

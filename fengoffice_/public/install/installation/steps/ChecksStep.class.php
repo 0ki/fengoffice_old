@@ -36,7 +36,6 @@ class ChecksStep extends ScriptInstallerStep {
 
 		$this->check_is_writable = array(
         '/config',
-        '/public/files',
         '/cache',
         '/upload',
 		'/tmp'

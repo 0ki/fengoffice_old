@@ -57,8 +57,8 @@ og.WebpageManager = function() {
 			og.clean(value), og.getUrl('webpage', 'view', {id: r.id}), lang('view weblink'));
 		
 		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
-		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:16px;background-repeat:no-repeat;" '; 
+		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
 			

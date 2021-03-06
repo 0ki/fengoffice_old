@@ -230,7 +230,7 @@ class ProjectEvents extends BaseProjectEvents {
 		}
 		$limitation = " AND " . self::getWorkspaceString($pids);
 		if (isset($tags) && $tags && $tags!='') {
-			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = `" . DB::escape($tags) . "` AND `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
+			$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tags) . " AND `" . TABLE_PREFIX . "project_events`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'ProjectEvents') ";
 		} else {
 			$tag_str= "";
 		}
@@ -244,7 +244,7 @@ class ProjectEvents extends BaseProjectEvents {
 		$start_date_str = $s_date->format("Y-m-d H:i:s");
 		$end_date_str = $e_date->format("Y-m-d H:i:s");
 
-		$conditions = "	(
+		$conditions = "	((
 				-- 
 				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
 				-- 
@@ -321,7 +321,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND 
 					DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) = DAYOFWEEK('$start_year-$start_month-$start_day')
 				)				
-			
+				)
 				$limitation
 				$permissions
 				$tag_str )";

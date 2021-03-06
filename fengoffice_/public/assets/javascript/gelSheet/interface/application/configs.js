@@ -4,6 +4,7 @@ function loadConfigs(){
 			titlePrefix: 'GelSheet',
 		},
 		communication:{
+			//url: '../php/index.php?ogId='+window.ogID+'&ogWid='+window.ogWID,
 			url: '../php/index.php',
 			method: 'POST'
 		},

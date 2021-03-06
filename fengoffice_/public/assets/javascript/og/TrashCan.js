@@ -295,7 +295,6 @@ og.TrashCan = function() {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		/*style: "padding:7px;",*/
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,

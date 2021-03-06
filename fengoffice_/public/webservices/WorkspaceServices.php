@@ -8,20 +8,43 @@ class WorkspacesServices extends WebServicesBase {
 		
 		$this->__dispatch_map['listWorkspaces'] = array(
             "in"  => array("username" => "string", "password" => "string"),
-			"out" => array("list" => "{string")
+			"out" => array("list" => "string")
 		);
 		
 		$this->WebServicesBase();
 	}
 	
+	function zip_and_encode64($content) {
+		$zip = new ZipArchive();
+		$tmp_xml_path = "".rand();
+		$tmp_zip_path = $tmp_xml_path . "xml";
+		
+		$xml_tmp = fopen($tmp_xml_path, "w");
+		fwrite($xml_tmp, $content);
+		fclose($xml_tmp);
+		
+		$zip->open($tmp_zip_path, ZipArchive::OVERWRITE);
+		$zip->addFile($tmp_xml_path, "workspaces.xml");
+		$zip->close();
+
+		$zipped_content = file_get_contents($tmp_zip_path);
+
+		unlink($tmp_zip_path);
+		unlink($tmp_xml_path);
+		
+		return base64_encode($zipped_content);
+	}
+
 	function listWorkspaces($username, $password) {
 		$result = '';
 		if ($this->loginUser($username, $password)) {
 			$wspaces = logged_user() != null ? logged_user()->getActiveProjects() : array('No Logged User');
 			if (isset($wspaces) && is_array($wspaces)) {
+				$activeProjects = array();
+				foreach($wspaces as $p) $activeProjects[] = $p->getId();
 				$this->initXml('workspaces');
 				foreach ($wspaces as $ws) {
-					$this->workspace_toxml($ws);
+					$this->workspace_toxml($ws, $activeProjects);
 				}
 				$result = $this->endXml();
 			}
@@ -29,17 +52,16 @@ class WorkspacesServices extends WebServicesBase {
 		return $result;
 	}
 	
-	private function workspace_toxml(Project $ws) {
-		$activeProjects = logged_user()->getWorkspaces(true);
-		$parentIds = '';
-		$i = 1;
-		$pid = $ws->getPID($i);
-		while ($pid != $ws->getId() && $pid != 0 && $i <= 10) {
-			$coma = $parentIds == '' ? '' : ',';
-			if (in_array($pid, $activeProjects)) $parentIds .= $coma . $pid;
-			$i++;
-			$pid = $ws->getPID($i);
-		}
+	private function workspace_toxml(Project $ws, $activeProjects) {
+        $parentIds = '';
+        $i = 1;
+        $pid = $ws->getPID($i);
+        while ($pid != $ws->getId() && $pid != 0 && $i <= 10) {
+        	$coma = $parentIds == '' ? '' : ',';
+            if (in_array($pid, $activeProjects)) $parentIds .= $coma . $pid;
+            $i++;
+            $pid = $ws->getPID($i);
+        }
 		
 		$this->instance->startElement('workspace');
 		

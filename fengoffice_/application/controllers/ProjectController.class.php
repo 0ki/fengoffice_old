@@ -621,7 +621,13 @@ class ProjectController extends ApplicationController {
 	
 								} // foreach
 							} // if
-						} // if
+						} else {
+							// remove company users from workspace
+							$users = $company->getUsers();
+							foreach ($users as $user) {
+								$user->removeFromWorkspace($project);
+							}
+						}
 					} // foreach
 				}
 				/* </permissions> */				

@@ -18,7 +18,7 @@
 	/***********************************************************************/
 	
 	
-	function validateCall($controller, $method, $parameters ) {
+	function validateCall($controller, $method, $parameters ) {		
 		if (trim($controller) ==  'SpreadsheetController') return TRUE ;
 		if (trim($controller) ==  'UserController') return TRUE ;
 		if (trim($controller) ==  'LanguageController') return TRUE ;
@@ -33,11 +33,10 @@
 	function __autoload($classname){
 		global $cnf ;
 		if(isset($cnf['path'][$classname])){
-//			echo $cnf['site']['path']."/". $cnf['path'][$classname]."<br>";
 			include_once ($cnf['site']['path']."/". $cnf['path'][$classname]);
 		}
 		else {
-			echo $classname. ": Class don't exist in the config file";
+			//echo $classname. ": Class don't exist in the config file";
 		}
 	}
 
@@ -59,7 +58,8 @@
 	/**
 	 * Takes param from REQUEST..
 	 * and makes an array..
-	 * Magic Prefix Params (Thanks pepe!)
+	 * Magic Prefix Params 
+	 * ( Thanks pepe great work! continue in that Way ! ! ! )
 	 *
 	 */
 	function splitParameters($param_prefix = "param") {
@@ -81,7 +81,7 @@
 	$connection  = new Connection();
 
 	if(!isset($_REQUEST['c'])){
-		$err = new Error(201,"Bad Command Request");
+		$err = new GsError(201,"Bad Command Request");
 		if($err->isDebugging())
 			$err->addContentElement("Param Required","Controller is needed, c=ControllerName should be passed");
 		throw $err;

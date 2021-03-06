@@ -185,7 +185,7 @@ class Comment extends BaseComment {
 	 */
 	function canEdit(User $user) {
 		$userId = $user->getId();
-		$creatorId = $this->getCreatedBy()->getId();
+		$creatorId = $this->getCreatedById();
 		return can_write($user,$this) && ( $user->isAdministrator() || $userId == $creatorId);
 	} // canEdit
 

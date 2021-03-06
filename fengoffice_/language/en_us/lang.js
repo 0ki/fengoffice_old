@@ -215,7 +215,7 @@ addLangs({
 	'confirm delete webpages': 'Are you sure you want to delete the selected web links?',
 	'tag selected webpages': 'Tag selected web links',
 	'edit': 'Edit',
-	'edit selected webpage': 'Edit',
+	'edit selected webpage': 'Edit selected webpage',
 	
 	/* message manager */
 	'text':'Text',
@@ -563,7 +563,7 @@ addLangs({
     'no start date': 'No start date',
     'untagged': 'Untagged',
     'download selected file': 'Download selected file',
-    'edit selected file properties': 'Edit selected file\' properties',
+    'edit selected file properties': 'Edit selected file\'s properties',
     'update file':'Update File',
     'you must enter a name': 'You must enter a name',
     'sort tags': 'Sort tags',
@@ -684,7 +684,9 @@ addLangs({
     'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?',
     
     'tag selected events': 'Tag selected events',
-    'edit selected events': 'Edit selected event',
+    'edit selected event': 'Edit selected event',
     'apply milestone to subtasks': 'Apply Milestone to Subtasks',
-  	'apply workspace to subtasks': 'Apply Workspace to Subtasks'
+  	'apply workspace to subtasks': 'Apply Workspace to Subtasks',
+  	
+  	'click here to download the csv file': 'Click here to download the csv file.'
 });

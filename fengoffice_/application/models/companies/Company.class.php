@@ -284,7 +284,9 @@ class Company extends BaseCompany {
     * @return string
     */
     function getCountryName() {
-      return lang('country ' . $this->getCountry());
+    	if ($this->getCountry())
+    		return lang('country ' . $this->getCountry());
+    	return '';
     } // getCountryName
     
     /**

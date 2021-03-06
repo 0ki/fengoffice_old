@@ -1,80 +1,146 @@
-<?php return array(
+<?php 
+
+	/*
+	* Első magyar fordítás 1.3 verzióig: Váczy Attila <vaczy.a.m@gmail.com>
+	* Magyar fordítás 1.4.2 verzióig (az 1.3 bázis részbeni újrafordításával, módosításával): Lukács Péter <programozo@lukacspeter.hu>
+	*/
+
+return array(
 	'new OpenGoo version available' => 'Az OpenGoo új verziója hozzáférhető. <a class="internalLink" href="{0}" onclick="{1}">Részletek</a>.',
+
 	'my tasks' => 'Feladataim',
-	'welcome back' => 'Üdv újra itt <strong>{0}</strong>',
+	'welcome back' => 'Üdvözöljük, <strong>{0}</strong>',
+
 	'online users' => 'Bejelentkezett felhasználók',
 	'online users desc' => 'Az utolsó 15 perc aktív felhasználói:',
+
 	'charts' => 'Grafikonok',
 	'contacts' => 'Ügyfelek',
-	'dashboard' => 'Műszerfal',
+	'dashboard' => 'Vezérlőpult',
 	'administration' => 'Adminisztráció',
 	'my account' => 'Saját',
 	'my documents' => 'Saját dokumentumaim',
 	'documents' => 'Dokumentumok',
 	'my projects' => 'Saját projektjeim',
-	'my projects archive desc' => 'Lezárt (archivált) projektek. Ezeken tiltott minden művelet, de lehet böngészni.',
+	'my projects archive desc' => 'Lezárt (archivált) projektek. Ezeken tiltott minden művelet, de tartalmukat lehet böngészni.',
+
 	'company online' => 'Belépett cégek',
-	'enable javascript' => 'Engedélyezd a JavaScriptet a böngésződben ehhez..',
+
+	'enable javascript' => 'Ehhez engedélyeznie kell a JavaScript futtatását a böngésződben.',
+	
 	'user password generate' => 'Véletlen jelszó generálása',
 	'user password specify' => 'Jelszó megadása',
 	'is administrator' => 'Adminisztrátor',
 	'is auto assign' => 'Automatikusan hozzárendelje az új projekthez?',
 	'auto assign' => 'Automatikus hozzárendelés',
 	'administrator update profile notice' => 'Adminisztrációs beállítások (csak adminisztrátoroknak hozzáférhető!)',
-	'project completed on by' => 'Befejezte: {0}, {1}-n',
+	
+	'project completed on by' => 'Befejezte: {0}, ekkor: {1}',
+	
 	'im service' => 'IM szolgáltatás',
 	'primary im service' => 'Elsődleges IM',
 	'primary im description' => 'Valamennyi itt felsorolt IM szolgáltatás fel lesz sorolva a névjegykártya oldaladon. Más oldalakon csak az elsődleges IM látható.',
 	'contact online' => 'Bejelentkezett ügyfelek',
 	'contact offline' => 'Kijelentkezett ügyfelek',
-	'avatar' => 'Avatar',
-	'current avatar' => 'Jelenlegi avatar',
+	
+	'avatar' => 'Fénykép',
+	'current avatar' => 'Jelenlegi fénykép',
 	'current logo' => 'Jelenlegi logó',
-	'new avatar' => 'új avatar',
+	'new avatar' => 'új fénykép',
 	'new logo' => 'Új logó',
-	'new avatar notice' => 'A jelenlegi avatar ki lesz cserélve az újjal, a régi törlésre kerül!',
-	'new logo notice' => 'A jelenlegi logóki lesz cserélve az újjal, a régi törlésre kerül!',
+	'new avatar notice' => 'A jelenlegi fénykép ki lesz cserélve az újjal, a régi törlésre kerül!',
+	'new logo notice' => 'A jelenlegi logó lesz cserélve az újjal, a régi törlésre kerül!',
+	
 	'days late' => '{0} nap késedelem',
 	'days left' => '{0} nap maradt',
+
 	'user card of' => '{0} névjegykártyája',
 	'company card of' => '{0} cég névjegykártyája',
+	
+	//upgrade
 	'upgrade is not available' => 'Nem tölthető le új OpenGoo verzió',
 	'check for upgrade now' => 'Ellenőrzés most!',
-	'forgot password' => 'Elfelejtettem a jelszavamat!',
+	    
+    // Forgot password
+  'forgot password' => 'Elfelejtettem a jelszavamat!',
 	'email me my password' => 'Jelszó küldése',
-	'complete installation' => 'A telepítés befejezése',
-	'complete installation desc' => 'Ez ez utolsó lépés a telepítés folyamatában, amikor meg kell add az adminisztrátor adatait és néhány adatot a cégedről',
-	'welcome to administration' => 'Üdvözölet!',
-	'welcome to administration info' => 'Üdvözlet az adminisztrációs panellban. Ezen eszköz segítségével kezelheted a cég adatait, tagjait, ügyfeleket és a projekteket.',
+   
+    // Complete installation
+ 	'complete installation' => 'A telepítés befejezése',
+	'complete installation desc' => 'Ez ez utolsó lépés a telepítés folyamatában, amikor meg kell adnia az adminisztrátori adatait és néhány adatot a cégéről',
+    
+    // Administration
+	'welcome to administration' => 'Üdvözöljük!',
+	'welcome to administration info' => 'Üdvözöljük az adminisztrációs felületen. Ezen eszköz segítségével kezelheti cége(i) adatait, tagjait, azok ügyfeleit és a projektjeit.',
+
 	'send new account notification' => 'Email értesítést küldése',
-	'send new account notification desc' => 'Ha az "Igen"-t választod, a felhasználó email értesítést kap üdvöző üzenteddel és a belépési paraméterekkel (ami a jelszót is tartalmazza).',
+	'send new account notification desc' => 'Ha az "Igen"-t választja, a felhasználó üdvöző email értesítést kap a belépés adataival (ami a jelszót is tartalmazza).',
+
+
 	'administration tools' => 'Eszközök',
+
 	'test mail recepient' => 'Teszt címzett',
 	'test mail message' => 'Teszt üzenet',
 	'test mail message subject' => 'Teszt tárgy',
+
 	'massmailer subject' => 'Tárgy',
 	'massmailer message' => 'Üzenet',
 	'massmailer recipients' => 'Címzettek',
+
+
+
 	'welcome to new account' => 'Üdvözlet új felhasználó!',
-	'welcome to new account info' => 'Üdvözlet {0}! Mostantól itt {1} érheted el ezt az oldat. (Tedd a könyvjelzők közé!). Kezd a következő lépésekkel:',
-	'new account step1' => '1. lépés: Frissítsd a cég infókat.',
-	'new account step1 info' => '<a class="internalLink" href="{0}">Add meg a cég adatokat</a> mint; telefonszám, fax, cím, email, honlap, stb..',
-	'new account step2' => '2. lépés: Add meg a csoport tagokat.',
-	'new account step2 info' => 'Léterhozhatsz <a class="internalLink" href="{0}">felhasználói fiókot</a> minden csoport tagnak (korlátlan számban). Minden felhasználónak lesz önálló azonosítója és jelszava, amivel elérhetik a rendszert.',
-	'new account step3' => '3. lépés: Adj hozzá ügyfél cégeket és azok tagjait.',
-	'new account step3 info' => 'Itt az ideje <a class="internalLink" href="{0}">ügyfél cégek létrehozásának</a> (korlátlanul).Amikor hozzáadsz egy céget, hozzáadhatsz tagokat is, de rá hagyhatod ezt az Ő csoportvezetőire is. Az ügyfél tagok hasonlóak a saját tagokhoz, azzal a különbséggel, hogy korlátozott hozzáférésük van a tartalmakhoz és eszközökhöz. (Megadhatod, hogy mit tehetnek és mit nem)',
-	'new account step4' => '4. lépés: Hozz létre egy új projektet',
-	'new account step4 info' => 'Egy <a class="internalLink" href="{0}">új projekt</a> létrehozása egyszerű: add meg a nevét és leírását (ami nem kötelező) és kattints a feltölt gombra. Ezután beállíthatod a hozzáféréseket a csoport tagoknak és az ügyfeleknek.',
+	'welcome to new account info' => 'Üdvözöljük a(z) {0} kezdőoldalán! Mostantól itt érheti el ezt az oldat. (Jótanács: mentse el a könyvjelzői közé!). Kezdje a következő lépésekkel:',
+
+	'new account step1' => '1. lépés: Add meg a céged adatait.',
+	'new account step1 info' => 'A cégével kapcsolatos, és az ott dolgozó felhasználók adatainak megadásához kattintson a jobb felső részen található Adminisztráció hivatkozásra.',
+
+	'new account step1 owner' => '1. lépés: Adja meg a cége adatait.',
+  'new account step1 owner info' => 'A cégével és az ott dolgozó felhasználókkal kapcsolatos adatok megadásához kattintson a jobb felső részen található Adminsiztráció hivatkozásra.',
+ 
+ 	'new account step update account' => '{0}. lépés: Frissítse személyes adatait',
+  'new account step update account info' => 'Frissítse személyes adataidat, és változtassa meg a jelszavát a lap jobb felső részén látható Saját hivatkozásra kattintva.',
+ 
+	'new account step add members' => '{0}. lépés: Adja meg a csoportja tagjait.',
+	'new account step add members info' => 'Létrehozhat <a class="internalLink" href="{0}">felhasználói fiókokat</a> a csoportja összes tagjának. Minden felhasználónak lesz önálló azonosítója és jelszava, amivel elérhetik a rendszert.',
+
+    'new account step start workspace' => '{0}. lépés: Az adatok rendszerezetté tétele: projekt felület létrehozása',
+    'new account step start workspace info' => 'A projekt felületen tudja tárolni és rendszerezni a cégével kapcsolatos információkat.<br/>
+    											A rendszer automatikusan létrehozott mindenki számára egy személyes projekt felületet (önnek {1} névvel). Ennek tartalma alapértelmezésként csak a tulajdonosa számára látható.',
+    
+  	'new account step configuration' => '{0}. lépés: A konfiguráció átvizsgálása',
+  	'new account step configuration info' => '<a class="internalLink" href="{0}">Módosítsa</a> a rendszer általános beállításait, a levelezési beállításokat, tiltsa le/engedélyezze modulokat igényeinek megfelelően.',
+	
+  	'new account step profile' => '{0}. lépés: Saját adataim módosítása',
+  	'new account step profile info' => 'Frissítse <a class="internalLink" href="{0}">Saját adatait</a>',
+  	
+  	'new account step preferences' => '{0}. lépés: felhasználói beállítások frissítése',
+  	'new account step preferences info' => 'Frissítse <a class="internalLink" href="{0}">felhasználói beállításait</a> például: általános, vagy a felület, feladatai megjelenésének beállíásait.',
+  	
+  	'new account step actions' => '{0}. lépés: Az online iroda teljes körű ügymenetének megszervezése',
+  	'new account step actions info' => 'Hozza létre azokat a feladatokat és dokumentumokat a cége projekt felületén, amiket meg kíván osztani kollégáival.<br>
+										Válassza ki azt a projekt felületet, amiben dolgozni akar, és kattintson a lenti lehetőségek egyikére <b>új elem létrehozásához:</b><br/>',
+  
+   	'getting started' => 'Kezdeti lépések',
+
+    // Application log
 	'application log details column name' => 'Részletek',
 	'application log project column name' => 'Projekt',
-	'application log taken on column name' => 'Felvette:',
+	'application log taken on column name' => 'Felvette',
+    
+    // RSS
 	'rss feeds' => 'RSS csatorna',
 	'recent activities feed' => 'Legutóbbi tevékenységek',
 	'recent project activities feed' => 'A \'{0}\' projekten végzett legutóbbi tevékenységek.',
-	'update company permissions hint' => 'Jelöld be azt a projektet amihez hozzáférést engedélyezel ennek a cégnek. Meg kell azt is határoznod mely tagoknak engedélyezel hozzáférést a projekthez (ezt a projekt Személyek oldalán is megteheted).',
-	'footer copy with homepage' => '© {0} by <a class="internalLink" href="{1}">{2}</a>. All rights reserved.',
-	'footer copy without homepage' => '© {0} by {1}. All rights reserved',
-	'footer powered' => 'Powered by <a target="_blank" href="{0}">{1}</a>',
+    
+    // Update company permissions
+	'update company permissions hint' => 'Jelölje be azt a projektet, amihez hozzáférést engedélyez ennek a cégnek. Meg kell azt is határoznia, hogy kiknek engedélyez hozzáférést a projekthez (ezt a projekt Személyek oldalán is megteheti).',
+
+	'footer copy with homepage' => '© {0} - <a class="internalLink" href="{1}">{2}</a>.  Minden jog fenntartva!',
+	'footer copy without homepage' => '© {0} - {1}. Minden jog fenntartva!',
+	'footer powered' => 'Támogatta az <a target="_blank" href="{0}">{1}</a>',
+	
+	
 	'all documents' => 'Összes dokumentum',
 	'created by me' => 'Én készítettem',
 	'by project' => 'Projektek szerint',
@@ -84,7 +150,10 @@
 	'current project' => 'Jelenlegi projekt',
 	'show hide menu' => 'Menü mutatása/elrejtése',
 	'help' => 'Segítség',
-	'confirm leave page' => 'Ha elhagyod vagy újra töltöd ezt az oldalt; elvesztesz minden nem feltöltött adatot.',
+
+	'confirm leave page' => 'Ha elhagyja, vagy újra tölti ezt az oldalt, minden nem elmentett adat elvész.',
+
+
 	'add contact' => 'Ügyfél hozzáadása',
 	'edit contact' => 'Ügyfél szerkesztése',
 	'update contact' => 'Ügyfél frissítése',
@@ -110,19 +179,21 @@
 	'fax number' => 'Fax',
 	'assistant number' => 'Asszisztens telefonszáma',
 	'callback number' => 'Visszahívási szám',
-	'pager number' => 'Pager szám',
+	'pager number' => 'Személyi hívó szám',
 	'mobile number' => 'Mobil',
 	'personal information' => 'Személyes információ',
 	'home information' => 'Otthoni információ',
 	'other information' => 'Más információ',
+
 	'email and instant messaging' => 'Email és azonnali üzenetküldés',
 	'no contacts in project' => 'Nincs ügyfél ebben a projektben',
-	'picture' => 'Avatar',
+	'picture' => 'Bélyegkép',
 	'current picture' => 'Jelenlegi kép',
 	'delete current picture' => 'Jelenlegi kép törlése',
-	'confirm delete current picture' => 'Biztosan törlöd a jelenlegi képet?',
+	'confirm delete current picture' => 'Biztosan törli a jelenlegi képet?',
 	'new picture' => 'Új kép',
 	'new picture notice' => 'A jelenlegi kép törlésre kerül és az új kép kerül a helyére!',
+
 	'assign to project' => 'Hozzárendelés projekthez',
 	'role' => 'Szerep',
 	'contact projects' => 'Ügyfél projekt',
@@ -131,7 +202,9 @@
 	'role in project' => 'Szerepe a \'{0}\' projektben',
 	'all contacts' => 'Összes ügyfél',
 	'project contacts' => 'Ügyfelek a {0}-ban',
-	'select' => 'Válassz!',
+	'select' => 'Válasszon!',
+
+
 	'import contacts from csv' => 'Ügyfelek importálása .csv fájlból',
 	'import' => 'Import',
 	'file not exists' => 'A fájl nem létezik',
@@ -146,34 +219,42 @@
 	'contacts import fail' => 'Az ügyfelek importja nem sikerült',
 	'contacts import fail help' => 'Az ügyfelek importja talán azért nem sikerült, mert már létezik ilyen adat (név vagy email cím, stb) az adatbázisban',
 	'import fail reason' => 'A hiba oka',
-	'select a file in order to load its data' => 'Válaszd ki az importálandó .csv fájlt',
+	'select a file in order to load its data' => 'Válassza ki az importálandó .csv fájlt',
+
+
 	'export contacts to csv' => 'Ügyfelek exportálása .csv fájlba',
 	'export' => 'Export',
 	'fields to export' => 'Az exportálandó információk',
 	'success export contacts' => 'Az ügyfelek sikeresen exportálva.',
+	
+	
 	'import companies from csv' => 'Ügyfél cégek importálása .csv fájlból',
-	'company fields' => 'Cég Mezők',
+	'company fields' => 'Cég mezők',
 	'companies succesfully imported' => 'A cégek sikeresen importálva',
 	'companies import fail' => 'A cégek importálása nem sikerült',
 	'export companies to csv' => 'Cégek exportálása .csv fájlba',
 	'success export companies' => 'A cégek exportálása sikerült',
+
+
 	'add webpage' => 'Honlap cím hozzáadása',
 	'delete webpage' => 'Honlap cím törlése',
 	'webpages' => 'Honlap címek',
 	'private webpage' => 'Magán honlap címek',
-	'url' => 'Url',
+	'url' => 'Url cím',
 	'no active webpages in project' => 'Nincs aktív honlap cím a projektben',
 	'webpage list description' => 'Leírás',
 	'edit webpage' => 'Honlap cím szerkesztése',
 	'webpage' => 'Honlap cím',
 	'webpage title required' => 'A honlap cím főcímének megadása kötelező',
 	'webpage url required' => 'A honlap cím URL megadása kötelező',
+
+
 	'emails' => 'Email-ek',
-	'add mail account' => 'Email fiók',
-	'new mail account' => 'új email fiók',
+	'add mail account' => 'Email fiók létrehozása',
+	'new mail account' => 'Új email fiók',
 	'no emails in this account' => 'Nincs email a postafiókban',
 	'server address' => 'Szerver címe',
-	'mail account id' => 'Postafiók ID',
+	'mail account id' => 'Postafiók felhasználónév',
 	'mail account name' => 'Postafiók név',
 	'is imap' => 'Ez egy IMAP postafiók',
 	'incoming ssl' => 'SSL használata a bejövő email kapcsolathoz',
@@ -190,9 +271,10 @@
 	'imap' => 'IMAP',
 	'pop3' => 'POP3',
 	'email connection method' => 'Kapcsolódási mód',
-	'classify' => 'Osztályozás',
-	'classify email' => 'Email osztályozása',
-	'classify email subject' => '\'{0}\' tárgyú email osztályozása',
+	'classify' => 'Kategorizálás',
+	'classify email' => 'Email kategorizálás',
+	'classify email subject' => '\'{0}\' tárgyú email kategorizálása',
+  'unclassify' => 'Kategorizálás visszavonása',
 	'add attachments to project' => 'A csatolmány hozzáadása projekthez',
 	'project emails' => '{0} email üzenet',
 	'edit email account' => '{0} szerkesztése',
@@ -203,20 +285,25 @@
 	'mail account password description' => 'A postafiók jelszava',
 	'mail account server description' => 'A levél szerver címe (pl. \'pop3.mailserver.com\')',
 	'folders to check' => 'Az ellenőrzendő mappák',
-	'after' => 'után',
+	'after' => 'Ennyi idő után:',
 	'delete mails from server' => 'A levelek törlése a szerverről',
 	'mail account delete mails from server description' => 'E lehetőség engedélyezésével a levelek meghatározott idő elteltével törlődnek a szerverről',
-	'checkout file' => 'Fájl kijelentése',
-	'checkin file' => 'Fájl bejelentése',
+
+
+	'checkout file' => 'Fájl lefoglalása',
+	'checkin file' => 'Fájl lefoglalása',
+
 	'new filename' => 'Új fájlnév',
+  'new weblink' => 'Új webhely',
 	'add as revision' => 'Verzió hozzáadása',
 	'duplicate filename' => 'Létező fájlnév',
-	'filename exists' => 'A fájlnév már létezik! Választhatsz másik nevet, vagy az alábbi lehetőségeket:',
-	'filename exists edit' => 'A fájlnév már létezik! Válassz másik nevet!',
+	'filename exists' => 'A fájlnév már létezik! Választhat másik nevet, vagy az alábbi lehetőségeket:',
+	'filename exists edit' => 'A fájlnév már létezik! Adjon meg másik nevet!',
 	'checking filename' => 'Fájlnév ellenőrzése...',
-	'check' => 'Elenőrzés',
+	'check' => 'Ellenőrzés',
 	'add file check in' => 'A fájl bejelentés új verzióként',
 	'filters' => 'Szűrők',
+
 	'permissions for user' => '{0} felhasználó engedélyei',
 	'can read messages' => 'Olvashatja az üzenetet',
 	'can write messages' => 'Írhat üzenetet',
@@ -235,7 +322,9 @@
 	'can read files' => 'Olvashatja a fájlokat',
 	'can write files' => 'Írhat fájlokat',
 	'can read events' => 'Olvashatja az eseményeket',
-	'can write events' => 'Írhat eeményt',
+	'can write events' => 'Írhat eseményt',
+
+  'new mail account' => 'Új email fiók',
 	'new company' => 'Új cég',
 	'add a new company' => 'Új cég hozzáadása',
 	'new workspace' => 'Új projekt',
@@ -249,27 +338,35 @@
 	'add tags' => 'Új címke',
 	'save changes' => 'Változások mentése',
 	'administrator options' => 'Adminisztrátori beállítások',
+
 	'system permissions' => 'Rendszer jogosultságok',
 	'project permissions' => 'Projekt jogosultságok',
+
+
+
+
 	'actions' => 'Tevékenységek',
 	'edit properties' => 'Tulajdonságok szerkesztése',
-	'you' => 'Te',
-	'created by' => 'Létrehozta:',
-	'modified by' => 'Módosította:',
-	'deleted by' => 'Törölte:',
-	'user date' => '<a class="internalLink" href="{0}" title="{3} adatainak megtekintése">{1}</a> a {2}-n',
-	'user date today at' => '<a class="internalLink" href="{0}" title="{3} adatainak megtekintése">{1}</a> ma {2}-kor',
-	'today at' => 'Ma {0}-kor',
-	'created by on' => 'Létrehozta: <a class="internalLink" href="{0}">{1}</a>, {2}-n',
-	'modified by on' => 'Módosította: <a class="internalLink" href="{0}">{1}</a>, {2}-n',
+	'you' => 'Ön',
+	'created by' => 'Létrehozta',
+	'modified by' => 'Módosította',
+	'deleted by' => 'Törölte',
+  'checked out by' => 'Bejelentette',
+	'user date' => '<a class="internalLink" href="{0}" title="{3} adatainak megtekintése">{1}</a> {2} napon',
+	'user date today at' => '<a class="internalLink" href="{0}" title="{3} adatainak megtekintése">{1}</a> ma {2} időpontban',
+	'today at' => 'Ma {0} időpontban',
+	'created by on' => 'Létrehozta: <a class="internalLink" href="{0}">{1}</a>, {2} napon',
+	'modified by on' => 'Módosította: <a class="internalLink" href="{0}">{1}</a>, {2} napon',
 	'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
 	'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
 	'time used in search' => 'A keresés végrehajtásának ideje: {0} másodperc',
-	'more results' => 'További {0} találat van...',
+	'more results' => 'További találatok ({0})...',
+
+
 	'parent workspace' => 'Szülő projekt',
 	'close' => 'Bezár',
 	'all projects' => 'Összes projekt',
-	'view as list' => 'Megtekintés listában',
+	'view as list' => 'Megtekintés listaként',
 	'pending tasks' => 'Függő feladatok',
 	'my pending tasks' => 'Saját függő feladataim',
 	'messages' => 'Feljegyzések',
@@ -281,6 +378,7 @@
 	'due in x days' => 'Vége {0} nap múlva',
 	'overdue by x days' => 'Határidő lejárt {0} napja',
 	'due today' => 'Mai határidő',
+
 	'x years' => '{0} év',
 	'x months' => '{0} hónap',
 	'x weeks' => '{0} hét',
@@ -295,11 +393,13 @@
 	'1 hour' => '1 óra',
 	'1 minute' => '1 perc',
 	'1 second' => '1 másodperc',
+
 	'x ago' => '{0} óta',
+
 	'object time slots' => 'Elem időtartam',
 	'start work' => 'Munka kezdése',
 	'end work' => 'Munka befejezése',
-	'confirm delete timeslot' => 'Biztosan végleg törölni akarod az időtartamot?',
+	'confirm delete timeslot' => 'Biztosan végleg törölni akarja az időtartamot?',
 	'success open timeslot' => 'Az időtartam sikeresen törölve',
 	'success create timeslot' => 'Az időtartam sikeresen létrehozva',
 	'success cancel timeslot' => 'Az időtartam sikeresen megszakítva',
@@ -318,13 +418,17 @@
 	'edit timeslot' => 'Időtartam szerkesztése',
 	'start date' => 'Kezdő nap',
 	'start time' => 'Kezdő időpont',
-	'end date' => 'Véghatáridő',
+	'end date' => 'Befejezés dátuma',
 	'end time' => 'Befejezés időpontja',
+
 	'tasks in progress' => 'Feldolgozás alatt lévő feladat',
 	'upcoming events milestones and tasks' => 'következő események, mérföldkövek és feladatok',
-	'undo checkout' => 'Fájl bejelentés visszavonása',
+
+	'undo checkout' => 'Fájl lefoglalás visszavonása',
+
 	'search for in project' => '\'<i>{0}</i>\' keresési eredmény a \'{1}\' projektben',
-	'search for' => '\'{0}\' keresési eredmény az összes projektben',
+	'search for' => 'Keresési eredmény \'{0}\' kifejezésre az összes projektben',
+
 	'workspace permamanent delete' => 'Projekt törlése esetén az alábbi <b>tartalmak végleg elvésznek</b>',
 	'workspace permamanent delete messages' => ' A projekthez kapcsolódó összes feljegyzés',
 	'workspace permamanent delete tasks' => ' Az összes feladat',
@@ -335,8 +439,10 @@
 	'sub-workspaces permament delete' => '<b>{0} alprojekt</b> {1}-ból szintnét törlésre kerülnek, teljes tartalmukkal együtt.',
 	'multiples workspace object permanent delete' => 'A több projektben is tárolt elemek nem kerülnek törlésre.',
 	'cancel permanent delete' => 'A törlés megszakításához nyomd meg a vissza gombot vagy zár be ezt a lapot.',
-	'confirm permanent delete workspace' => 'Erősítsd meg a <b>{0}</b> projekt törlésére irányuló szándékodat ',
+	'confirm permanent delete workspace' => 'Erősítse meg a <b>{0}</b> projekt törlésére irányuló szándékát ',
+
 	'latest user activity' => 'Legutóbbi felhasználói tevékenységek',
+
 	'hours' => 'Óra',
 	'minutes' => 'Perc',
 	'seconds' => 'Másodperc',
@@ -344,7 +450,9 @@
 	'time estimate' => 'Becsült időtartam',
 	'work in progress' => 'Folyamatban lévő munka',
 	'total time' => 'Összes idő',
+
 	'upload anyway' => 'Feltöltés erőltetése',
+
 	'print view' => 'nézet nyomtatása',
 	'activity' => 'Tevékenység',
 	'statistics' => 'Statisztika',
@@ -353,6 +461,7 @@
 	'new tasks by user' => 'Felhasználó által létrehozott új feladat',
 	'generate report' => 'Beszámoló generálása',
 	'task title' => 'Feladat megnevezése',
+  'total time' => 'Teljes időtartam',
 	'include subworkspaces' => 'Tartalmazza az alprojekteket',
 	'print' => 'Nyomtatás',
 	'this week' => 'Jelenlegi hét',
@@ -360,56 +469,80 @@
 	'this month' => 'Jelenlegi hónap',
 	'last month' => 'Múlt hónap',
 	'select dates...' => 'Dátum választása...',
+
 	'task time report description' => 'Ez a beszámoló bemutatja a felsorolt feladatokra fordított teljes időtartamokat dátum, felhasználó (nem kötelező) és projektek szerint',
 	'no data to display' => 'Nincs adat',
+
 	'new company name' => 'Új cég név',
 	'checking' => 'Ellenőrzés',
 	'country' => 'Ország',
+
 	'email addresses' => 'Email cím',
-	'instant messaging' => 'Azonnaliüzent küldő',
+	'instant messaging' => 'Azonnali üzenet küldő',
 	'phone' => 'Telefon',
 	'phone 2' => 'Telefon 2',
 	'fax' => 'Fax',
 	'assistant' => 'Asszisztens',
 	'callback' => 'Visszahívás',
 	'mobile' => 'Mobil',
-	'pager' => 'Pager',
+	'pager' => 'Személyi hívó',
+
 	'roles' => 'Szerepek',
-	'last updated by on' => '{0}, {1}-n',
+	'last updated by on' => '{0}, ekkor: {1}',
 	'updated' => 'Frissítve',
-	'group by' => 'Csoportosítás:',
+	'group by' => 'Csoportosítás',
+
 	'total' => 'Összesen',
-	'enter tags desc' => 'Adj meg címkéket vesszővel elválasztva...',
-	'user subscribed to object' => 'Fel vagy iratkozva erre az elemre.',
-	'user not subscribed to object' => 'Nem vagy feliratkozva erre az elemre.',
+	'enter tags desc' => 'Adja meg a címkéket vesszővel elválasztva...',
+
+	'user subscribed to object' => 'Fel van iratkozva erre az elemre.',
+	'user not subscribed to object' => 'Nincs feliratkozva erre az elemre.',
+
 	'tasks updated' => 'A feladat sikeresen frissítve',
-	'too many tasks to display' => 'Túl sok feladat van. Csak a legutóbbi 500 feladat lesz megjelenítve. A feladatok megtekintéséhez - és e figyelmeztetés törléséhez - szűrd a feladatokat projekt, címke, feladat szűrő vagy státusz szerint!',
-	'show image in new page' => 'A kép megmutatás új lapon',
-	'no tasks to display' => 'Nincs megmutatandó feladat',
+	'too many tasks to display' => 'Túl sok feladat van. Csak a legutóbbi 500 feladat lesz megjelenítve. A feladatok megtekintéséhez - és e figyelmeztetés törléséhez - szűrje a feladatokat projekt, címke, feladat szűrő vagy státusz szerint!',
+
+
+	'show image in new page' => 'A kép megtekintése új lapon',
+	'no tasks to display' => 'Nincs megtekinthető feladat',
 	'do complete' => 'Befejezés',
+
 	'task data' => 'Feladat adatai',
 	'search in all workspaces' => 'Keresés az összes projektben',
+
+
 	'total pause time' => 'Összes szünetelési idő',
 	'pause time cannot be negative' => 'A szünetelés ideje nem lehet negatív',
 	'pause time cannot exceed timeslot time' => 'A szünetelés ideje nem haladhatja meg a végrehajtás időtartamát',
 	'timeslots' => 'Időtartam',
+
 	'task timeslots' => 'Feladat időtartama',
 	'time timeslots' => 'Általános időtartam',
 	'all timeslots' => 'Feladat és általános időtartam',
+
 	'print report' => 'Beszámoló nyomtatása',
+
 	'all active tasks' => 'Összes aktív feladat',
+
 	'unique id' => 'Egyedi azonosító (Id)',
+
+  'my pending tasks' => 'Függő feladataim',
 	'pending tasks for' => '{0} függő feladatai',
 	'my late milestones and tasks' => 'Saját függő feladataim és mérföldköveim',
 	'late milestones and tasks for' => '{0} késésben lévő mérföldkövei és feladatai',
 	'my tasks in progress' => 'Saját folyamatban lévő feladataim',
 	'tasks in progress for' => '{0} folyamatban lévő feladatai',
-	'time has to be greater than 0' => 'Az időnek nagyobbnak kell lennie 0-nál',
+
+	'time has to be greater than 0' => 'Az időtartamnak nagyobbnak kell lennie 0-nál',
+
 	'release notes' => 'Kiadási feljegyzés',
-	'remember last' => 'Emlékezz az utóbbira',
+
+	'remember last' => 'Emlékezzen a legutolsóra',
 	'auto' => 'Automatikus',
 	'print all groups' => 'Összes csoport nyomtatása',
-	'shared with' => 'Megosztva vele:',
+	'shared with' => 'Megosztva vele',
+
+
+
 	'share object desc' => 'Minden személy kap egy email üzenetet, hogy nézze meg ezt az elemet',
 	'share with' => 'Megosztva vele:',
 	'allow people edit object' => 'Megengedem másnak ezen elem szerkesztését',
@@ -418,17 +551,19 @@
 	'share this' => 'Megosztás',
 	'success sharing object' => 'Az elem sikeresen megosztva',
 	'actually sharing with' => 'Jelenleg vele van megosztva:',
-	'share notification message desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a feljegyzést: {0}',
-	'share notification event desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt az eseményt: {0}',
-	'share notification task desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a feladatot: {0}',
-	'share notification document desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a dokumentumot: {0}',
-	'share notification contact desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt az ügyfelet: {0}',
-	'share notification company desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a céget: {0}',
-	'share notification emailunclassified desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt az email üzenetet: {0}',
-	'share notification email desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt az email üzenetet: {0}',
-	'share notification file desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a fájlt: {0}',
-	'share notification milestone desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a mérföldkövet: {0}',
-	'share notification weblink desc' => '{1} meghívott Téged, hogy megtekintsd/szerkeszd ezt a honlap címet: {0}',
+
+	'share notification message desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a feljegyzést: {0}',
+	'share notification event desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az eseményt: {0}',
+	'share notification task desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a feladatot: {0}',
+	'share notification document desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a dokumentumot: {0}',
+	'share notification contact desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az ügyfelet: {0}',
+	'share notification company desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a céget: {0}',
+	'share notification emailunclassified desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az email üzenetet: {0}',
+	'share notification email desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt az email üzenetet: {0}',
+	'share notification file desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a fájlt: {0}',
+	'share notification milestone desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a mérföldkövet: {0}',
+	'share notification weblink desc' => '{1} meghívta Önt, hogy megtekintse/szerkessze ezt a honlap címet: {0}',
+
 	'new share notification message' => '\'{0}\' feljegyzés megosztásra került',
 	'new share notification event' => '\'{0}\' esemény megosztásra került',
 	'new share notification task' => '\'{0}\' feladat megosztásra került',
@@ -440,6 +575,7 @@
 	'new share notification file' => '\'{0}\' fájl  megosztásra került',
 	'new share notification milestone' => '\'{0}\' márföldkő megosztásra került',
 	'new share notification weblink' => '\'{0}\' honlap cím megosztásra került',
+	
 	'billing' => 'Számlázás',
 	'category' => 'Kategória',
 	'hourly rates' => 'Óradíj',
@@ -451,18 +587,34 @@
 	'report name' => 'Beszámoló neve',
 	'billing categories' => 'Számlázási kategóriák',
 	'billing category' => 'Számlázási kategória',
-	'select billing category' => '-- Válassz számlázási kategóriát! --',
+	'select billing category' => '-- Válasszon számlázási kategóriát! --',
 	'billing amount' => 'Összeg',
 	'hourly billing' => 'Óránkénti számlázás',
 	'fixed billing' => 'Fix összegű számlázás',
 	'show billing information' => 'Számlázási információk megmutatása',
 	'no billing categories' => 'Nincs számlázási kategória',
-	'no billing categories desc' => 'Ha engedélyezni akarod az időtartam és idő szerinti számlázást, adj meg egy új számlázási kategóriát',
+	'no billing categories desc' => 'Ha engedélyezni akarja az időtartam és idő szerinti számlázást, adjon meg egy új számlázási kategóriát',
 	'billing support is enabled' => 'Számlázás lehetősége megengedve',
-	'BillingCategory default_value required' => 'Ehhez a számlázási kategóriához meg kell adni egy alap óradíjjat',
+	'BillingCategory default_value required' => 'Ehhez a számlázási kategóriához meg kell adnia egy alap óradíjat',
 	'defined in a parent workspace' => 'Meghatározva a szülő projektben',
 	'defined in the current workspace' => 'Meghatározva a jelen projektben',
 	'total billing by user' => 'Az összes számlázás felhasználók szerint',
 	'assign billing categories to users' => 'Számlázási kategória felhasználóhoz kapcsolása',
 	'new version notification title' => 'Új verzió',
-); ?>
+
+  'workspace contacts' => 'Ügyfelek',
+  'search contact' => 'Ügyfél keresése',
+  'add new contact' => 'Új ügyfél hozzáadása',
+  'no contacts to display' => 'Nincsenek megjeleníthető ügyfelek',
+  'workspace info' => 'Projekt információk',
+  'workspace description' => 'A(z) \'{0}\' projekt részletei',
+  'show all amount' => '({0}) egészének megjelenítése',
+  'searching' => 'Keresés',
+  
+  'weblink' => 'Webhely',
+  
+  'add value' => 'Érték hozzáadása',
+  'remove value' => 'Érték törlése'
+
+); 
+?>

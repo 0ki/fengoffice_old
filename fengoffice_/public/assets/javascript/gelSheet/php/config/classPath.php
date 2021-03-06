@@ -23,39 +23,35 @@
 	$cnf['path']['Model'] 		= "model/Model.class.php";
 
 	/*************** CONTROLLER PATHS *********************/
-	$cnf['path']['OpenGooController']		= "controller/OpenGooController.class.php" ;
-
+	$cnf['path']['FrontController']			= "controller/FrontController.class.php";
 	$cnf['path']['UserController']			= "controller/UserController.class.php";
 	$cnf['path']['SpreadsheetController']	= "controller/SpreadsheetController.class.php";
 	$cnf['path']['BookController']			= "controller/BookController.class.php";
 	$cnf['path']['ExportController']		= "controller/ExportController.class.php";
 	$cnf['path']['LanguageController']		= "controller/LanguageController.class.php";
 	$cnf['path']['Controller']		= "controller/Controller.class.php";
+	$cnf['path']['SecurityController']		= "controller/SecurityController.class.php" ;
+	$cnf['path']['OgSecurityController']	= "controller/OgSecurityController.class.php" ;
+	
+
 	/*************** COMUNICATION PATHS *****************/
 	$cnf['path']['MessageHandler']	= "comm/MessageHandler.php";
 	$cnf['path']['Message']	= "comm/Message.php";
-	$cnf['path']['Error']	= "comm/Message.php";
+	$cnf['path']['GsError']	= "comm/Message.php";
 	$cnf['path']['Warning']	= "comm/Message.php";
 	$cnf['path']['Success']	= "comm/Message.php";	
 	$cnf['path']['Notice']	= "comm/Message.php";	
 	$cnf['path']['ContentList']	= "comm/Message.php";
+
+	/*************** HELPER PATHS *********************/
+	$cnf['path']['OgHelper']	= 	"util/helpers/OgHelper.class.php";
+	
+	
 	
 	/*************** EXPORT LIBRARY PATHS *****************/
 	$cnf['path']['PHPOds']	= "export/PHPOds/PHPOds.php";
 	$cnf['path']['PHPExcel']= "export/PHPExcel/Classes/PHPExcel.php";
-	//$cnf['path']['Temp']	= $cnf['site']['path']. "/export/temp/";
 	$cnf['path']['Temp'] 		= '../../../../../tmp/';  
-	
-
-
-
-
-/****************************************************/
-
-/********************************************************/
-
-	/*EXPORT LIBRARY UTILITIES*/
-
 	$cnf['path']['PHPExcel_Worksheet_Drawing_Shadow']		= "export/PHPExcel/Classes/PHPExcel/Worksheet/Drawing/Shadow.php";
 	$cnf['path']['PHPExcel_Worksheet_Drawing']				= "export/PHPExcel/Classes/PHPExcel/Worksheet/Drawing.php";
 	$cnf['path']['PHPExcel_Worksheet_BaseDrawing']			= "export/PHPExcel/Classes/PHPExcel/Worksheet/BaseDrawing.php";
@@ -66,8 +62,6 @@
 	$cnf['path']['PHPExcel_Worksheet_PageSetup']			= "export/PHPExcel/Classes/PHPExcel/Worksheet/PageSetup.php";
 	$cnf['path']['PHPExcel_Worksheet_Protection']			= "export/PHPExcel/Classes/PHPExcel/Worksheet/Protection.php";
 	$cnf['path']['PHPExcel_Worksheet_HeaderFooterDrawing']	= "export/PHPExcel/Classes/PHPExcel/Worksheet/HeaderFooterDrawing.php";
-
-
 	$cnf['path']['PHPExcel_RichText_ITextElement']			= "export/PHPExcel/Classes/PHPExcel/RichText/ITextElement.php";
 	$cnf['path']['PHPExcel_RichText_Run']					= "export/PHPExcel/Classes/PHPExcel/RichText/Run.php";
 	$cnf['path']['PHPExcel_RichText_TextElement']			= "export/PHPExcel/Classes/PHPExcel/RichText/TextElement.php";

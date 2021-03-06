@@ -17,4 +17,7 @@
 	'field' => 'veld ',
 	'condition' => 'conditie ',
 	'ends with' => 'eindigd op ',
+	'select unselect all' => 'selecteer/de selecteer alle',
+	'ascending' => 'oplopend',
+	'descending' => 'aflopend',
 ); ?>
