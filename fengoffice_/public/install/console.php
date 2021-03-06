@@ -14,6 +14,7 @@
   $installation->setDatabaseName((string) trim(array_var($argv, 5)));
   $installation->setTablePrefix((string) trim(array_var($argv, 6)));
   $installation->setAbsoluteUrl((string) trim(array_var($argv, 7)));
+  $installation->setDefaultLocalization((string) trim(array_var($argv, 8,'en_us')));
   
   $installation->execute();
 

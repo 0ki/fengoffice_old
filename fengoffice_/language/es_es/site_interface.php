@@ -436,6 +436,8 @@
   'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
   'enter tags desc' => 'Ingrese etiquetas separadas por coma ...',
   'do complete' => 'Completar',
+  
+  'task data' => 'Datos de tarea',
   ); // array
 
 ?>

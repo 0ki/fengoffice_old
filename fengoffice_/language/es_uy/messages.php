@@ -420,6 +420,8 @@
   	'error subscribe to object' => 'Ha ocurrido un error al suscribirse al objeto seleccionado',
     'error unsubscribe to object' => 'Ha ocurrido un error al intentar dejar sin efecto la suscripción al objeto seleccionado',
   	'error cannot set workspace as parent' => 'No se puede establecer el espacio \'{0}\' como padre, demasiados niveles de espacios',
+  
+	'some tasks could not be updated due to permission restrictions' => 'Algunas tareas no pudieron ser actualizadas debido a restricciones de permisos'
   ); // array
 
 ?>

@@ -58,7 +58,7 @@
 	<div id="<?php echo $genid ?>add_message_options_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('options') ?></legend>
-	    <div class="objectOption">
+	    <?php /* <div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('private message') ?>:</label></div>
 			<div class="optionControl"><?php echo yes_no_widget('message[is_private]', $genid.'messageFormIsPrivate', array_var($message_data, 'is_private'), lang('yes'), lang('no')) ?></div>
 			<div class="optionDesc"><?php echo lang('private message desc') ?></div>
@@ -68,7 +68,7 @@
 			<div class="optionLabel"><label><?php echo lang('important message')?>:</label></div>
 			<div class="optionControl"><?php echo yes_no_widget('message[is_important]', $genid.'messageFormIsImportant', array_var($message_data, 'is_important'), lang('yes'), lang('no')) ?></div>
 			<div class="optionDesc"><?php echo lang('important message desc') ?></div>
-		</div>
+		</div> */ ?>
 
 		<div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>

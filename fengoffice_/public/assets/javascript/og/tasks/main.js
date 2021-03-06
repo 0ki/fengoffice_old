@@ -58,6 +58,14 @@ ogTasksTask = function(){
 	this.isCreatedClientSide = false;
 }
 
+ogTasksTask.prototype.flatten = function(){
+	var result = [this];
+	if (this.subtasks.length > 0)
+		for (var i = 0; i < this.subtasks.length; i++)
+			result = result.concat(this.subtasks[i].flatten());
+	return result;
+}
+
 ogTasksTask.prototype.setFromTdata = function(tdata){
 	this.id = tdata.id;
 	this.title = tdata.t;
@@ -137,7 +145,8 @@ ogTasks.loadData = function(data){
 		if (tdata.id){
 			var task = new ogTasksTask();
 			task.setFromTdata(tdata);
-			task.statusOnCreate = tdata.s;
+			if (tdata.s)
+				task.statusOnCreate = tdata.s;
 			this.Tasks[ogTasks.Tasks.length] = task;
 		}
 	}
@@ -217,10 +226,12 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 	var td = this.getTimeDistances();
 	for (var i = 0; i < groups.length; i++){
 		var groupId = groups[i];
-		var name = lang('unclassified');
+		var name = lang('ungrouped');
+		if (displayCriteria.group_by == 'assigned_to')
+			name = lang('unassigned');
 		var icon = '';
 		var id = i;
-		if (groupId != 'unclassified'){
+		if (groupId != 'ungrouped'){
 			switch(displayCriteria.group_by){
 				case 'milestone':
 					icon = 'ico-milestone';
@@ -258,6 +269,7 @@ ogTasks.getGroupData = function(displayCriteria, groups,tasks){
 				case 'due_date' : name = td[groupId]; break;
 				case 'start_date' : name = td[groupId]; break;
 				case 'created_on' : name = td[groupId]; break;
+				case 'completed_on' : name = td[groupId]; break;
 				case 'created_by' : 
 				case 'completed_by' : 
 					var user = this.getUser(groupId);
@@ -324,6 +336,7 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 				case 'due_date' : group = (task.dueDate?this.getTimeDistance(task.dueDate):null); break;
 				case 'start_date' : group = (task.startDate?this.getTimeDistance(task.startDate):null); break;
 				case 'created_on' : group = this.getTimeDistance(task.createdOn); break;
+				case 'completed_on' : group = (task.completedOn? this.getTimeDistance(task.completedOn):null); break;
 				case 'created_by' : group = task.createdBy; break;
 				case 'status' : group = task.status; break;
 				case 'completed_by' : group = (task.completedById?task.completedById:null); break;
@@ -416,6 +429,7 @@ ogTasks.orderGroups = function(displayCriteria,groups){
 					}
 			break;
 		case 'created_on' :
+		case 'completed_on' :
 		case 'priority' :
 			for (var i = 0; i < groups.length - 2; i++)
 				for (var j = i+1; j < groups.length - 1; j++)
@@ -450,30 +464,33 @@ ogTasks.orderTasks = function(displayCriteria, tasks){
 					}
 					break;
 				case 'workspace' : //TODO: Correct this sorting method
-						swap = tasks[i].workspaceIds > tasks[j].workspaceIds;
-						if (!swap && (tasks[i].workspaceIds == tasks[j].workspaceIds))
-							resolveByName = true;
+					swap = tasks[i].workspaceIds > tasks[j].workspaceIds;
+					if (!swap && (tasks[i].workspaceIds == tasks[j].workspaceIds))
+						resolveByName = true;
 					break;
 				case 'name' : 
-						swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
+					swap = tasks[i].title.toUpperCase() > tasks[j].title.toUpperCase();
 					break;
 				case 'due_date' : 
-						swap = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate > tasks[j].dueDate) || (tasks[j].dueDate && !tasks[i].dueDate) ;
-						if (!swap)
-							resolveByName = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate == tasks[j].dueDate) || (!tasks[j].dueDate && !tasks[i].dueDate) ;
-						break;
+					swap = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate > tasks[j].dueDate) || (tasks[j].dueDate && !tasks[i].dueDate) ;
+					if (!swap)
+						resolveByName = (tasks[i].dueDate && tasks[j].dueDate && tasks[i].dueDate == tasks[j].dueDate) || (!tasks[j].dueDate && !tasks[i].dueDate) ;
+					break;
 				case 'created_on' : 
-						swap = tasks[i].createdOn < tasks[j].createdOn;
+					swap = (tasks[i].createdOn && tasks[j].createdOn && tasks[i].createdOn > tasks[j].createdOn) || (tasks[j].createdOn && !tasks[i].createdOn) ;
+					break;
+				case 'completed_on' : 
+					swap = tasks[i].completedOn < tasks[j].completedOn;
 					break;
 				case 'assigned_to' : //TODO: Correct this sorting method
-						swap = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId < tasks[j].assignedToId) || (tasks[j].assignedToId && !tasks[i].assignedToId);
-						if (!swap)
-							resolveByName = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId == tasks[j].assignedToId) || (!tasks[j].assignedToId && !tasks[i].assignedToId);
+					swap = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId < tasks[j].assignedToId) || (tasks[j].assignedToId && !tasks[i].assignedToId);
+					if (!swap)
+						resolveByName = (tasks[i].assignedToId && tasks[j].assignedToId && tasks[i].assignedToId == tasks[j].assignedToId) || (!tasks[j].assignedToId && !tasks[i].assignedToId);
 					break;
 				case 'start_date' : 
-						swap = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate > tasks[j].startDate) || (tasks[j].startDate && !tasks[i].startDate) ;
-						if (!swap)
-							resolveByName = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate == tasks[j].startDate) || (!tasks[j].startDate && !tasks[i].startDate) ;
+					swap = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate > tasks[j].startDate) || (tasks[j].startDate && !tasks[i].startDate) ;
+					if (!swap)
+						resolveByName = (tasks[i].startDate && tasks[j].startDate && tasks[i].startDate == tasks[j].startDate) || (!tasks[j].startDate && !tasks[i].startDate) ;
 					break;
 				default:
 			}
@@ -529,7 +546,7 @@ ogTasks.executeAction = function(actionName, ids, options){
 				}
 				this.draw();
 			} else {
-				og.err(lang("error tagging tasks"));
+			
 			}
 		},
 		scope: this
@@ -744,14 +761,14 @@ ogTasks.mouseMovement = function(task_id, group_id, mouse_is_over){
 ogTasks.groupMouseOver = function(group_id){
 	var actions = document.getElementById('ogTasksPanelGroupActions' + group_id);
 	if (actions)
-		actions.style.display = 'block';
+		actions.style.visibility = 'visible';
 }
 
 ogTasks.groupMouseOut = function(group_id){
 	if (!ogTaskEvents.lastGroupId || ogTaskEvents.lastGroupId != group_id){
 		var actions = document.getElementById('ogTasksPanelGroupActions' + group_id);
 		if (actions)
-			actions.style.display = 'none';
+			actions.style.visibility = 'hidden';
 	}
 }
 
@@ -784,4 +801,11 @@ ogTasks.taskMouseOut = function(task_id, group_id){
 			actions.style.visibility='hidden';
 		this.groupMouseOut(group_id);
 	}
+}
+
+ogTasks.flattenTasks = function(tasks){
+	var result = [];
+	for (var i = 0; i < tasks.length; i++)
+		result = result.concat(tasks[i].flatten());
+	return result;
 }

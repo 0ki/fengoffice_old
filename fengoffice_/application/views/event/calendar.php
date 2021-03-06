@@ -1,3 +1,17 @@
+<script type="text/javascript">
+	var cant_tips = 0;
+	var tips_array = [];
+	
+	function addTip(div_id, title, bdy) {
+		tips_array[cant_tips++] = new Ext.ToolTip({
+			target: div_id,
+	        html: bdy,
+	        title: title,
+	        hideDelay: 1500,
+	        closable: true
+		});
+	}
+</script>
 <?php
 
 /*
@@ -204,8 +218,6 @@ function disable_overlib(){
 							}
 														
 					?>	
-							
-							
 								<div style='z-index:0; height:100%;cursor:pointer' onclick="showEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>');" >
 									<div class='<?php echo $daytitle?>' style='text-align:right'>
 							
@@ -281,16 +293,21 @@ function disable_overlib(){
 													$strStyle= "style='z-index:1000;border-left-color: #$color;'";
 												}		
 								?>
-												<div class="event_block" <?php echo $strStyle  ?> > 
-													<span class='event_hover_details' title="<?php echo $subject." - <i>Event</i>"?>|<?php echo $overlib_text?>" >													 	
+												<div id="ev_div_<?php echo $event->getId()?>" class="event_block" <?php echo $strStyle ?> > 
 														<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();return true;" >
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														<?php echo $subject ?>
 														</a>
-													</span>
 											 	</div>
+										 		<script type="text/javascript">
+													addTip('ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
+												</script>
+											 	
 								<?php
 											}
+								?>
+												
+								<?php
 										} elseif($event instanceof ProjectMilestone ){
 											$milestone=$event;
 											$due_date=$milestone->getDueDate();
@@ -309,16 +326,20 @@ function disable_overlib(){
 													$cal_text = $milestone->getName();
 													$overlibtext_color = "#000000";
 								?>
-													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<span class='milestone_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
+													<div id="ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" align='absmiddle' border='0'>
 															<?php echo $cal_text ?>
 															</a>
-														</span>
 													</div>
+													<script type="text/javascript">
+														addTip('ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo (trim($milestone->getDescription()) != '' ? $milestone->getDescription().'<br>' : '') . '<br>' . lang('assigned to') .': '. $milestone->getAssignedToName();?>');
+													</script>
 								<?php
 												}//if count
+								?>
+												
+								<?php
 											}
 											
 										}//endif milestone
@@ -342,16 +363,20 @@ function disable_overlib(){
 												    $overlibtext_color = "#000000";
 								?>
 								
-													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<span class='task_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
+													<div id="ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
 														 	</a>
-														</span>
 													</div>
+													<script type="text/javascript">
+														addTip('ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo (trim($task->getText()) != '' ? $task->getText().'<br>' : '') . '<br>' . lang('assigned to') .': '. $task->getAssignedToName();?>');
+													</script>
 								<?php
 												}//if count
+								?>
+													
+								<?php
 											}
 										}//endif task
 									} // end foreach event writing loop
@@ -390,6 +415,27 @@ function disable_overlib(){
 </div>
 </div>
 <script type="text/javascript">
+	Ext.QuickTips.init();
+
+	function showEventPopup(day, month, year) {
+		if (lang('date format') == 'm/d/Y') 
+			st_val = month + '/' + day + '/' + year;
+		else
+			st_val = day + '/' + month + '/' + year;
+
+		og.EventPopUp.show(null, {day: day,
+								month: month,
+								year: year,
+								hour: 9,
+								minute: 0,
+								durationhour: 1,
+								durationmin: 0,
+								start_value: st_val,
+								type_id:2, view:'month', title: lang('add event')
+								}, '');
+	}
+	
+	/*
 	jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
 
 	jQuery('span.task_hover_details').cluetip({		
@@ -459,33 +505,6 @@ function disable_overlib(){
 		  },
 	    showTitle: false 
   	});
+  	*/
   	
-  	function quickTip(id, title, bdy, link) {
-		tt = new Ext.ToolTip({
-			target: id,
-	        html: bdy,
-	        title: '<a href="' + link + '">'+title+'</a>',
-	        showDelay: 800,
-	        hideDelay: 1200,
-	        minWidth: 250
-	    });
-	}
-	
-	function showEventPopup(day, month, year) {
-		if (lang('date format') == 'm/d/Y') 
-			st_val = month + '/' + day + '/' + year;
-		else
-			st_val = day + '/' + month + '/' + year;
-
-		og.EventPopUp.show(null, {day: day,
-								month: month,
-								year: year,
-								hour: 9,
-								minute: 0,
-								durationhour: 1,
-								durationmin: 0,
-								start_value: st_val,
-								type_id:2, view:'month', title: lang('add event')
-								}, '');
-	}
 </script>

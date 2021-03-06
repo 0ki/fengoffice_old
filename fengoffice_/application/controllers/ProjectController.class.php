@@ -609,7 +609,6 @@ class ProjectController extends ApplicationController {
 
 		ajx_current("empty");
 		try {
-
 			$id = $project->getId();
 			$name = $project->getName();
 			DB::beginWork();
@@ -623,7 +622,7 @@ class ProjectController extends ApplicationController {
 				"id" => $id,
 				"name" => $name
 			));
-			ajx_current("back");
+			ajx_current("start");
 
 		} catch(Exception $e) {
 			DB::rollback();

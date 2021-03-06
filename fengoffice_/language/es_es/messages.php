@@ -415,7 +415,9 @@
     'log add projectevents' => '\'{0}\' añadido',
     'log edit projectevents' => '\'{0}\' editado',
     'log delete projectevents' => '\'{0}\' eliminado',
- 	'already logged in' => 'Usted ya había iniciado la cesión', 
+ 	'already logged in' => 'Usted ya había iniciado la sesión',
+  
+	'some tasks could not be updated due to permission restrictions' => 'Algunas tareas no pudieron ser actualizadas debido a restricciones de permisos'
   ); // array
 
 ?>

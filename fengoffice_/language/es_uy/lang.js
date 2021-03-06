@@ -83,7 +83,7 @@ addLangs({
 		
 	'song': 'Canción',
 	'artist': 'Artista',
-	'album': '�?lbum',
+	'album': 'Álbum',
 	'year': 'Año',
 	'playlist': 'Lista de reproducción',
 	'playlists': 'Listas de reproducción',
@@ -150,7 +150,7 @@ addLangs({
 	'all tag': 'Todas las etiquetas',
 	'view': 'Ver',
 	'details': 'Detalles',
-	'icons': '�?conos',
+	'icons': 'Íconos',
 	'displaying objects of': 'Desplegando objeto {0} al {1} de {2}',
 	'no objects to display': 'No hay objetos para mostrar',
 	'ok': 'OK',
@@ -372,7 +372,9 @@ addLangs({
 	'completed by': 'Completada por',
 	'assigned by': 'Asignada por',
 	'priority' : 'Prioridad',
-	'unclassified': 'No agrupadas',
+	'ungrouped': 'No agrupadas',
+	'unclassified': 'No clasificadas',
+	'unassigned': 'No asignadas',
 	'anyone': 'Todos',
 	'pending': 'Pendientes',
 	'group by': 'Agrupar por',
@@ -399,7 +401,7 @@ addLangs({
 	'last week' : 'Desde ayer a 1 semana',
 	'yesterday' : 'Ayer',
 	'today' : 'Hoy',
-	'tomorrow' : 'Ma�ana',
+	'tomorrow' : 'Mañana',
 	'one week' : 'Dentro de 1 semana',
 	'two weeks' : 'Dentro de 2 semanas',
 	'one month' : 'Dentro de 2 semanas a 1 mes',
@@ -423,7 +425,6 @@ addLangs({
 	'assigning to' : 'Asignando a',
 	'success add task' : 'Tarea agregada correctamente',
 	'invalid action' : 'Acción inválida',
-	'some tasks could not be updated due to permission restritions' : 'Algunas tareas no pudieron ser actualizadas debido a restricciones de permisos',
 	'hide others' : 'Ocultar otros',
 	'hide other groups' : 'Ocultar los otros grupos',
 	'show all' : 'Mostrar todos',
@@ -465,5 +466,13 @@ addLangs({
   
   	'date format' : 'd/m/Y',
   	'date format alternatives' : 'd/m/y|j/n/Y|j/n/y|j/m/y|d/n/y|j/m/Y|d/n/Y',
-  	'warning start date greater than due date': 'Aviso: la fecha de inicio es mayor que la fecha límite'
+  	'warning start date greater than due date': 'Aviso: la fecha de inicio es mayor que la fecha límite',
+  	
+  	'choose an image': 'Elija una imagen',
+  	'sort by': 'Ordenar por',
+  	'file size': 'Tamaño del archivo',
+  	'last modified': 'Última modificación',
+  	'image name': 'Nombre de imagen',
+  	'size': 'Tamaño',
+  	'completed on': 'Fecha de completado'
 });

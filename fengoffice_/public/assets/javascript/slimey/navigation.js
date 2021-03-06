@@ -1,61 +1,23 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Slides navigation
  */
 
 /**
  *  class SlimeyNavigation - implements functionality for navigating through slides
- *  	container: div where the navigation will reside
+ *  	slimey: the slimey object that references the editor, navigation and toolbar
  */
 var SlimeyNavigation = function(slimey) {
 	this.slimey = slimey;
 	this.slimey.editor.addEventListener('actionPerformed', this.saveCurrentSlide, this);
 	this.container = document.createElement('div');
 	this.container.className = 'slimeyNavigation';
-	this.container.style.position = 'absolute';
-	this.container.style.left = '0px';
-	this.container.style.top = '0px';
-	this.container.style.width = '195px';
-	this.container.style.float = 'left';
 	this.slides = new Array();
 	this.doms = new Array();
 	this.divSlides = new Array();
 	this.divSpacers = new Array();
-
-	// build toolbar	
-	var tb = document.createElement('div');
-	tb.className = "slimeyPreviewToolbar";
-	var b1 = document.createElement('div');
-	b1.className = "slimeyPreviewToolbarButton";
-	var a1 = document.createElement('a');
-	a1.title = "Add a new slide after the selected one";
-	a1.slimey = this.slimey;
-	setEventHandler(a1, "click", function() {
-		this.slimey.navigation.addNewSlide();
-	});
-	var im1 = document.createElement('img');
-	im1.src = Slimey.imagesDir + 'newslide.png'; 
-	a1.appendChild(im1);
-	a1.appendChild(document.createTextNode("Add New"));
-	b1.appendChild(a1);
-	tb.appendChild(b1);
-	var b2 = document.createElement('div');
-	b2.className = "slimeyPreviewToolbarButton";
-	var a2 = document.createElement('a');
-	a2.title = "Delete selected slide";
-	a2.slimey = this.slimey;
-	setEventHandler(a2, "click", function() {
-		this.slimey.navigation.deleteCurrentSlide();
-	});
-	var im2 = document.createElement('img');
-	im2.src = Slimey.imagesDir + 'delslide.png';
-	a2.appendChild(im2);
-	a2.appendChild(document.createTextNode("Delete"));
-	b2.appendChild(a2);
-	tb.appendChild(b2);
-	this.container.appendChild(tb);
 
 	// initialize slides content
     var file = unescapeSLIM(this.slimey.slimContent);
@@ -130,7 +92,7 @@ SlimeyNavigation.prototype.saveCurrentSlide = function() {
 
 SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
 	if (!html) {
-		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 40%; top: 0%;">Edit Me!</div>';
+		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 33%; top: 0%;">Edit Me!</div>';
 	}
 
     var thisSpacer = this.divSpacers[num];
@@ -215,6 +177,58 @@ SlimeyNavigation.prototype.deleteSlide = function(num) {
 	}
 }
 
+SlimeyNavigation.prototype.moveSlide = function(num, to) {
+    if (num < 1 || num > this.slides.length || num == to) {
+        alert("No slide to move!");
+        return;
+    }
+
+	var diff = (to > num ? 1 : -1);
+
+    // delete slide and spacer from DOM
+    var slide = this.divSlides[num];
+	var parent = slide.parentNode.parentNode;
+    parent.removeChild(slide.parentNode);
+    var spacer = this.divSpacers[num];
+    parent.removeChild(spacer);
+	if (num < to) {
+		parent.insertBefore(spacer, this.divSlides[to].parentNode.nextSibling);
+	} else {
+		parent.insertBefore(spacer, this.divSlides[to].parentNode.previousSibling);
+	}
+	parent.insertBefore(slide.parentNode, spacer.nextSibling);
+
+    // shift all slides
+	var aux = this.divSlides[num];
+    for (i=num; i != to; i+=diff) {
+        this.divSlides[i] = this.divSlides[i + diff];
+        this.divSlides[i].slideNumber = i;
+        this.divSlides[i].title = 'Slide' + i;
+    }
+	this.divSlides[to] = aux;
+	aux.slideNumber = to;
+	aux.title = 'Slide' + to;
+	// shift all spacers
+	var aux = this.divSpacers[num];
+    for (i=num; i != to; i+=diff) {
+        this.divSpacers[i] = this.divSpacers[i + diff];
+        this.divSpacers[i].spacerNumber = i;
+    }
+	this.divSpacers[to] = aux;
+	aux.spacerNumber = to;
+    // shift slide data
+	var auxS = this.slides[num];
+	var auxD = this.doms[num];
+    for (i=num; i != to; i+=diff) {
+        this.slides[i] = this.slides[i + diff];
+		this.doms[i] = this.doms[i + diff];
+    }
+    this.slides[to] = auxS;
+	this.doms[to] = auxD;
+	
+	this.currentSlide = to;
+}
+
 SlimeyNavigation.prototype.getSLIMContent = function() {
     // save current edited text
     var html = this.slimey.editor.getHTML();
@@ -285,6 +299,20 @@ SlimeyNavigation.prototype.addNewSlide = function() {
 SlimeyNavigation.prototype.deleteCurrentSlide = function() {
 	if (this.currentSlide > 0) {
 		var action = new SlimeyDeleteSlideAction(this.slimey, this.currentSlide);
+		this.slimey.editor.performAction(action);
+	}
+}
+
+SlimeyNavigation.prototype.moveSlideDown = function() {
+	if (this.currentSlide < this.slides.length - 1) {
+		var action = new SlimeyMoveSlideAction(this.slimey, this.currentSlide, this.currentSlide + 1);
+		this.slimey.editor.performAction(action);
+	}
+}
+
+SlimeyNavigation.prototype.moveSlideUp = function() {
+	if (this.currentSlide > 1) {
+		var action = new SlimeyMoveSlideAction(this.slimey, this.currentSlide, this.currentSlide - 1);
 		this.slimey.editor.performAction(action);
 	}
 }

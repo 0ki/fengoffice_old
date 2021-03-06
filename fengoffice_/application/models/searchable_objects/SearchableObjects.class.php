@@ -54,7 +54,8 @@
       		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
       		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());*/
         } else {
-		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type, $columns_csv, $user_id);
+        	$safe_search_for = str_replace("'", '"', $search_for);
+		    $conditions = SearchableObjects::getSearchConditions($safe_search_for, $project_csvs, true, $object_type, $columns_csv, $user_id);
 		    $count = SearchableObjects::countUniqueObjects($conditions);
 		    $pagination = new DataPagination($count, $items_per_page, $current_page);
 		    if ($count > 0)
@@ -100,15 +101,17 @@
     		
     	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles")
     		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
+    	else if ($object_type=="ProjectFileRevisions")
+    		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
     	else
     		$wsSearch .=  "`project_id` in ($project_csvs)";
     		
     	$wsSearch .= ')';
     
     	if($include_private) {
-    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE)' .$wsSearch . $otSearch . $columnsSearch, array($search_for));
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)' . $otSearch . $columnsSearch );
     	} else {
-    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ?' .$wsSearch . $otSearch . $columnsSearch, array($search_for,  false));
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = ?' .$wsSearch . $otSearch . $columnsSearch, array($search_for,  false));
     	} // if
     } // getSearchConditions
     

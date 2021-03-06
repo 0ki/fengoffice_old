@@ -288,7 +288,14 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 			} else {
 				$users = $company->getUsers();
 			}?>
-			<?php if(is_array($users) && count($users)) { ?>
+			<?php
+			foreach ($users as $k => $user) { // removing event creator from notification list
+				if ($user->getId() == logged_user()->getId()) {
+					unset($users[$k]);
+					break;
+				}
+			} 
+			if(is_array($users) && count($users)) { ?>
 			<div class="companyDetails">
 				<div class="companyName">
 					<?php echo checkbox_field('event[invite_company_' . $company->getId() . ']', 
@@ -300,20 +307,18 @@ $filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId
 				
 				<div class="companyMembers">
 				<ul>
-				<?php foreach($users as $user) { 
-					if ($user->getId() != $filter_user) { ?>
-						<li><?php echo checkbox_field('event[invite_user_' . $user->getId() . ']',
-							array_var($event_data, 'invite_user_' . $user->getId()), 
-							array('id' => $genid.'notifyUser' . $user->getId(),
-								'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
-							<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
-						<script type="text/javascript">
-							App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
-								id          : <?php echo $user->getId() ?>,
-								checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
-							});
-						</script>
-					<?php } // if ?>
+				<?php foreach($users as $user) { ?>
+					<li><?php echo checkbox_field('event[invite_user_' . $user->getId() . ']',
+						array_var($event_data, 'invite_user_' . $user->getId()), 
+						array('id' => $genid.'notifyUser' . $user->getId(),
+							'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
+						<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
+					<script type="text/javascript">
+						App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
+							id          : <?php echo $user->getId() ?>,
+							checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
+						});
+					</script>
 				<?php } // foreach ?>
 				</ul>
 				</div>

@@ -78,7 +78,7 @@ og.MailManager = function() {
 		
 		name = String.format(
 				'{4}<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				value, og.getUrl('mail', strAction, {id: r.data.object_id}), String.format(r.data.text),bold,strDraft);
+				htmlentities(value), og.getUrl('mail', strAction, {id: r.data.object_id}), String.format(r.data.text),bold,strDraft);
 				
 		if (r.data.isSent) {
 			name = String.format('<div class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</div>',name,lang("mail sent"));
@@ -101,7 +101,7 @@ og.MailManager = function() {
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
-			text += r.data.text + "</span></i>";
+			text += htmlentities(r.data.text) + "</span></i>";
 		}
 		
 		return projectstring + name + text;
@@ -113,7 +113,7 @@ og.MailManager = function() {
 		if (!r.data.isRead) bold = 'font-weight:600;';
 		name = String.format(
 				'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.from),bold);
+				htmlentities(value), og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.from),bold);
 		
 		return name;
 	}
@@ -123,8 +123,7 @@ og.MailManager = function() {
 		if (r.data.projectId > 0)
 			return String.format('<div class="db-ico ico-email"></div>');
 		else
-			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>'
-					, og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
+			return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>', og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
 	}
 
 	function renderAttachment(value, p, r){

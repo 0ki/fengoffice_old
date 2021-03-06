@@ -976,7 +976,7 @@ class User extends BaseUser {
 	 * @return string
 	 */
 	function getEditPreferencesUrl() {
-		return get_url('config', 'list_user_categories');
+		return get_url('user', 'list_user_categories');
 	} // getAccountUrl
 
 	/**

@@ -61,9 +61,9 @@
 			}
 		} else {
 			if ($email->getBodyPlain() != ''){
-				$content =  '<div>' . clean(convert_to_links(nl2br($email->getBodyPlain()))) . '</div>';
+				$content =  '<div>' . convert_to_links(nl2br(clean($email->getBodyPlain()))) . '</div>';
 			} else {
-				$content =  '<div>' . clean(convert_to_links(nl2br($email->getContent()))) . '</div>';
+				$content =  '<div>' . convert_to_links(nl2br(clean($email->getContent()))) . '</div>';
 			}
 		}
 		$strDraft = '';

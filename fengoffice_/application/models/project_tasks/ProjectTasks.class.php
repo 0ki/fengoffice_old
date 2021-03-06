@@ -187,8 +187,10 @@ class ProjectTasks extends BaseProjectTasks {
 	 * Returns all task templates
 	 *
 	 */
-	static function getAllTaskTemplates(){
+	static function getAllTaskTemplates($only_parent_task_templates = false){
 		$conditions = " `is_template` = true " ;
+		if($only_parent_task_templates)
+			$conditions .= "  and `parent_id` = 0  ";
 		$order_by = "`title` ASC";
 		$tasks = ProjectTasks::find(array(
 				'conditions' => $conditions,

@@ -372,6 +372,8 @@ addLangs({
 	'assigned by': 'Assigned by',
 	'priority' : 'Priority',
 	'unclassified': 'Unclassified',
+	'ungrouped': 'Unclassified',
+	'unassigned': 'Unassigned',
 	'anyone': 'Anyone',
 	'pending': 'Pending',
 	'group by': 'Group by',
@@ -423,7 +425,6 @@ addLangs({
 	'assigning to' : 'Assigning to',
 	'success add task' : 'Task added successfully',
 	'invalid action' : 'Invalid action',
-	'some tasks could not be updated due to permission restritions' : 'Some tasks could not be updated due to permission restritions',
 	'hide others' : 'Hide others',
 	'hide other groups' : 'Hide other groups',
 	'show all' : 'Show all',
@@ -464,5 +465,13 @@ addLangs({
   
   	'date format' : 'm/d/Y',
   	'date format alternatives' : 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
-  	'warning start date greater than due date': 'Warning: the start date is later than the due date'
+  	'warning start date greater than due date': 'Warning: the start date is later than the due date',
+  	
+  	'choose an image': 'Choose an image',
+  	'sort by': 'Sort by',
+  	'file size': 'File size',
+  	'last modified': 'Last modified',
+  	'image name': 'Image name',
+  	'size': 'Size',
+  	'completed on': 'Completed on'
 });

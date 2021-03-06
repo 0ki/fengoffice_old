@@ -1,3 +1,17 @@
+<script type="text/javascript">
+	var cant_tips = 0;
+	var tips_array = [];
+	
+	function addTip(div_id, title, bdy) {
+		tips_array[cant_tips++] = new Ext.ToolTip({
+			target: div_id,
+	        html: bdy,
+	        title: title,
+	        hideDelay: 1500,
+	        closable: true
+		});
+	}
+</script>
 <?php
 define('PX_HEIGHT',42);
 $year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SESSION['year'] : date('Y'));
@@ -91,17 +105,23 @@ $user = Users::findById(array('id' => $user_filter));
 						<?php	
 							$top=0;
 							foreach ($alldayevents as $event){	
-								
-							
-								if ($event instanceof ProjectMilestone ){									
+								$tipBody = '';
+								$divtype = '';
+								if ($event instanceof ProjectMilestone ){
 									$subject =$event->getName();
 									$img_url = image_url('/16x16/milestone.png');
+									$divtype = '<i>' . lang('milestone') . '</i> - ';
+									$tipBody = (trim($event->getDescription()) != '' ? $event->getDescription().'<br>' : '') . '<br>' . lang('assigned to') .': '. $event->getAssignedToName();
 								}elseif ($event instanceof ProjectTask){
 									$subject =$event->getTitle();
 									$img_url = image_url('/16x16/tasks.png');
+									$divtype = '<i>' . lang('task') . '</i> - ';
+									$tipBody = (trim($event->getText()) != '' ? $event->getText().'<br>' : '') . '<br>' . lang('assigned to') .': '. $event->getAssignedToName();
 								}elseif ($event instanceof ProjectEvent){
 									$subject =$event->getSubject();
 									$img_url = image_url('/16x16/calendar.png');
+									$divtype = '<i>' . lang('event') . '</i> - ';
+									$tipBody = (trim($event->getDescription()) != '' ? '<br>' . $event->getDescription() : '');									
 								}
 								$dws = $event->getWorkspaces();
 								$ws_color = 0;
@@ -111,8 +131,8 @@ $user = Users::findById(array('id' => $user_filter));
 								cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);	
 														
 						?>
-						<div class="adc" style="left: 3px; top: <?php echo $top ?>px; z-index: 5;width: 99%;margin:1px;">
-							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>"></div>
+						<div id="ev_div_<?php echo $event->getId() ?>" class="adc" style="left: 3px; top: <?php echo $top ?>px; z-index: 5;width: 99%;margin:1px;">
+							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								
@@ -120,8 +140,11 @@ $user = Users::findById(array('id' => $user_filter));
 								
 								</div>
 							</div>
-							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>"></div>
+							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
 						</div>
+						<script type="text/javascript">
+							addTip('ev_div_' + <?php echo $event->getId() ?>, '<?php echo $divtype . $subject ?>', '<?php echo $tipBody ?>');
+						</script>
 						<?php
 								$top += 20;	
 							}
@@ -199,9 +222,11 @@ $user = Users::findById(array('id' => $user_filter));
 													$cells[$i][1]++;
 												}
 												if ($event->getDuration()->getMinute() > 0) {
-													$cells[$i][0]++;
-													if ($event->getDuration()->getMinute() > 30) $cells[$i][1]++;
-												}															
+													if ($event->getDuration()->getHour() != $event->getStart()->getHour()) {
+														$cells[$event->getDuration()->getHour()][0]++;
+														if ($event->getDuration()->getMinute() > 30) $cells[$event->getDuration()->getHour()][1]++;
+													}
+												}
 											}
 											$occup = array(); //keys: hora - pos
 											foreach ($result as $event){
@@ -301,11 +326,12 @@ $user = Users::findById(array('id' => $user_filter));
 												
 												if ($posHoriz+1 == $evs_same_time) $width = $width - 0.75;
 												$procesados[$hr_start]++;
-												//if ($procesados[$hr_start] == $horas[$hr_start]) $width = $width- 1.5;
-										?>	
-												<div id="ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)" 
-												onmouseover="quickTip('ev_div_<?php echo $event->getId()?>', '<?php echo $event->getSubject()?>', '<?php echo $event->getStart()->format('h:i') .'-'. $event->getDuration()->format('h:i') . '<br><br>' . $event->getDescription();?>');stopPropagation(event);">
-												<!-- title="<?php echo "$start_time - $end_time : " . $event->getSubject()?>"> -->
+										?>
+												<script type="text/javascript">
+													addTip('ev_div_' + <?php echo $event->getId() ?>, '<?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
+												</script>
+												
+												<div id="ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:1px;"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px;"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
@@ -372,16 +398,7 @@ $user = Users::findById(array('id' => $user_filter));
 
 <script type="text/javascript">
 
-	function quickTip(id, title, bdy) {
-		tt = new Ext.ToolTip({
-			target: id,
-	        html: bdy,
-	        title: title,
-	        showDelay: 800,
-	        hideDelay: 1200,
-	        minWidth: 250
-	    });
-	}
+	Ext.QuickTips.init();
 	
 	var ev_start_day, ev_start_month, ev_start_year, ev_start_hour, ev_start_minute;
 	var ev_end_day, ev_end_month, ev_end_year, ev_end_hour, ev_end_minute;

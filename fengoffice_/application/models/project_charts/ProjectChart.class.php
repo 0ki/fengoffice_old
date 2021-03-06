@@ -134,7 +134,7 @@
 		$g->set_y_min($min);
 		$g->set_y_max($max);
 		//echo with_slash(ROOT_URL) . "public/assets/flash/open-flash-chart.swf"; die();
-		$g->set_swf_path(with_slash(ROOT_URL) . "public/assets/flash/open-flash-chart.swf");
+		$g->set_swf_path(with_slash(ROOT_URL) . "public/assets/flash/");
 		$g->set_js_path(with_slash(ROOT_URL) . "public/assets/javascript/og/swfobject.js");
 		$g->set_output_type('js');
 		$g->set_height(400);

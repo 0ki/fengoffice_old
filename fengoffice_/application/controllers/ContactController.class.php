@@ -83,7 +83,7 @@ class ContactController extends ApplicationController {
 			}
 		} 
 		
-		// Get all emails and messages to display
+		// Get all emails and companies to contacts
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
 		$contacts = $this->getContacts($tag, $attributes, $project);
@@ -121,13 +121,12 @@ class ContactController extends ApplicationController {
 			while (($e + $m) < $totCount){
 				if ($e < count($contacts))
 					if ($m < count($companies)){						
-						$contact_name = trim( ((array_var($contacts[$e],'lastname','') != '') ?  
-												array_var($contacts[$e],'lastname') .', ' : ''
-											  ) .
-											  array_var($contacts[$e],'firstname','') .' ' .
+						$contact_name = trim( array_var($contacts[$e],'lastname','') . ' ' .
+											  array_var($contacts[$e],'firstname','') . ' ' .
 											  array_var($contacts[$e],'middlename','')
 											);
-						if (strcmp($contact_name ,$companies[$m]['name'])  < 0 ){
+						$company_name = array_var($companies[$m], 'name', '');
+						if (strcasecmp($contact_name ,$company_name)  < 0 ){
 							$totContacts [] = $contacts[$e];
 							$e++;
 						} else {
@@ -180,7 +179,11 @@ class ContactController extends ApplicationController {
 									$resultMessage .= $e->getMessage();
 									$resultCode = $e->getCode();
 								}
-							};
+							}
+							else {
+								throw new Exception(lang('error delete contact'));
+								return ;
+							}
 							break;
 							
 						case "company":
@@ -404,16 +407,8 @@ class ContactController extends ApplicationController {
 			} else $permission_str = "";
 		}
 		
-//		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectContacts::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-/*		if($page && $objects_per_page){
-			$start=($page-1) * $objects_per_page ;
-			$query .=  " limit " . $start . "," . $objects_per_page. " ";
-		}		
-		elseif($objects_per_page)
-			$query .= " limit " . $objects_per_page;*/
-		
-		$res = DB::execute("SELECT id, `lastname`,`firstname`,`middlename`, 'Contacts' as manager from " . TABLE_PREFIX. "contacts where " . 
-			$tagstr . $permission_str . " ORDER BY lastname, firstname ");
+		$res = DB::execute("SELECT `id`, TRIM(CONCAT(' ', `lastname`, `firstname`, `middlename`)) AS `display_name`,`lastname`, `firstname`, `middlename`, 'Contacts' AS manager FROM " . TABLE_PREFIX. "contacts WHERE " . 
+			$tagstr . $permission_str . " ORDER BY `display_name` ");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -480,6 +475,9 @@ class ContactController extends ApplicationController {
 						$role->delete();
 					}
 					$contact->delete();
+				}
+				else {
+					throw new Exception(lang('error delete contact'));					
 				}
 			}
 			DB::commit();

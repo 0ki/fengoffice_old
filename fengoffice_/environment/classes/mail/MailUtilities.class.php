@@ -58,7 +58,7 @@ class MailUtilities
 			{
 				if (!empty($f))
 					$f = $f . ', ';
-				$address = trim($add["address"]);
+				$address = trim(array_var($add, "address", ''));
 				if (strpos($address, ' '))
 					$address = substr($address,0,strpos($address, ' '));
 				$f = $f . $address;

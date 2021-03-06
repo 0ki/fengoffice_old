@@ -39,7 +39,7 @@ class ObjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-		if(!($object->canEdit(logged_user()))){
+		if(!($object->canLinkObject(logged_user()))){
 			flash_error(lang('no access permissions'));
 			//$this->redirectToReferer(get_url('dashboard'));
 			ajx_current("empty");
@@ -55,7 +55,7 @@ class ObjectController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-		if(!($rel_object->canEdit(logged_user()))){
+		if(!($rel_object->canLinkObject(logged_user()))){
 			flash_error(lang('no access permissions'));
 			//$this->redirectToReferer(get_url('dashboard'));
 			ajx_current("empty");

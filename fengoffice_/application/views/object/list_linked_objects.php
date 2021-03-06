@@ -8,7 +8,14 @@ if ($linked_objects_object->isNew()){
 	<table style="width:100%;margin-left:2px;margin-right:3px">
 	<?php $counter = 0;
 	foreach ($linked_objects as $linked_object) {
-		if (!$linked_object instanceof ApplicationDataObject || !can_read(logged_user(), $linked_object)) continue; 
+		if( !$linked_object instanceof ApplicationDataObject ) continue ; //check that it is a valid object
+		if  ($linked_object instanceof Contact){ // if it is a contact
+			if(!can_manage_contacts(logged_user() ) ) continue; // check permissions on contacts 			
+		}
+		else{ // not a contact
+			if (!can_read(logged_user(), $linked_object ) )  //check permissions on other COs
+					continue; 
+		}
 		$counter++;?>
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 		<td rowspan=2 style="padding-left:1px;vertical-align:middle;width:22px">

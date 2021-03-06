@@ -25,6 +25,7 @@ og.TasksBottomToolbar = function(config) {
 	        	,['start_date', lang('start date')]
 	        	,['created_on', lang('created on')]
 	        	,['created_by', lang('created by')]
+	        	,['completed_on', lang('completed on')]
 	        	,['completed_by', lang('completed by')]
 	        	,['status', lang('status')]
 	        	,['tag', lang('tag')]]
@@ -56,6 +57,7 @@ og.TasksBottomToolbar = function(config) {
 	        	,['name', lang('task name')]
 	        	,['due_date', lang('due date')]
 	        	,['created_on', lang('created on')]
+	        	,['completed_on', lang('completed on')]
 	        	,['assigned_to', lang('assigned to')]
 	        	,['start_date', lang('start date')]]
 	    	}),

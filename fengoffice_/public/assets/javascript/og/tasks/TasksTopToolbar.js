@@ -4,8 +4,7 @@
  */
  
 og.TasksTopToolbar = function(config) {
-	Ext.applyIf(config,
-		{
+	Ext.applyIf(config,{
 			id: "tasksPanelTopToolbarObject",
 			renderTo: "tasksPanelTopToolbar",
 			height: 28,
@@ -14,50 +13,74 @@ og.TasksTopToolbar = function(config) {
 		
 	og.TasksTopToolbar.superclass.constructor.call(this, config);
 	var userPreferences = Ext.util.JSON.decode(document.getElementById(config.userPreferencesHfId).value);
-		
-	var templates = [];
-	var templatesArray = Ext.util.JSON.decode(document.getElementById(config.templatesHfId).value);
-	for (var i = 0; i < templatesArray.length; i++){
-		templates[templates.length] = {text: templatesArray[i].t,
-			iconCls: 'ico-template-task',
-			handler: function() {
-				var url = og.getUrl('task', 'copy_task', {id: templatesArray[i].id});
-				og.openLink(url);
-			}
-		};
+	
+	var allTemplates = [];
+	var allTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.allTemplatesHfId).value);
+	if (allTemplatesArray && allTemplatesArray.length > 0){
+		for (var i = 0; i < allTemplatesArray.length; i++){
+			allTemplates[allTemplates.length] = {text: allTemplatesArray[i].t,
+				iconCls: 'ico-template-task',
+				handler: function() {
+					var url = og.getUrl('task', 'copy_task', {id: this.id});
+					og.openLink(url);
+				},
+				scope: allTemplatesArray[i]
+			};
+		}
 	}
+	
+	var menuItems = [
+		{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
+			var url = og.getUrl('milestone', 'add');
+			og.openLink(url);
+		}},
+		{text: lang('new task'), iconCls: 'ico-task', handler: function() {
+			var additionalParams = {};
+			var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+			if (toolbar.filterNamesCompaniesCombo.isVisible()){
+				var value = toolbar.filterNamesCompaniesCombo.getValue();
+				var split = value.split(':');
+				if (split[0] > 0 || split[1] > 0){
+					additionalParams.assigned_to = value;
+				}
+			}
+			var url = og.getUrl('task', 'add_task');
+			og.openLink(url, {post:additionalParams});
+		}},
+		'-'];
+	
+	var projectTemplates = [];
+	var projectTemplatesArray = Ext.util.JSON.decode(document.getElementById(config.projectTemplatesHfId).value);
+	if (projectTemplatesArray && projectTemplatesArray.length > 0){
+		for (var i = 0; i < projectTemplatesArray.length; i++){
+			projectTemplates[projectTemplates.length] = {text: projectTemplatesArray[i].t,
+				iconCls: 'ico-template-task',
+				handler: function() {
+					var url = og.getUrl('task', 'copy_task', {id: this.id});
+					og.openLink(url);
+				},
+				scope: projectTemplatesArray[i]
+			};
+		}
+		projectTemplates[projectTemplates.length] = '-';
+		menuItems = menuItems.concat(projectTemplates);
+	}
+	
+	menuItems = menuItems.concat([{
+		text: lang('all'),
+		iconCls: 'ico-template-task',
+		cls: 'scrollable-menu',
+		menu: {
+			items: allTemplates
+		}}]);
 	
 	var butt = new Ext.Button({
 		iconCls: 'ico-new',
 		text: lang('new'),
 		menu: {
 			cls:'scrollable-menu',
-			items: [
-			{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
-				var url = og.getUrl('milestone', 'add');
-				og.openLink(url);
-			}},
-			{text: lang('new task'), iconCls: 'ico-task', handler: function() {
-				var additionalParams = {};
-				var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
-				if (toolbar.filterNamesCompaniesCombo.isVisible()){
-					var value = toolbar.filterNamesCompaniesCombo.getValue();
-					var split = value.split(':');
-					if (split[0] > 0 || split[1] > 0){
-						additionalParams.assigned_to = value;
-					}
-				}
-				var url = og.getUrl('task', 'add_task');
-				og.openLink(url, {post:additionalParams});
-			}},
-			'-', 
-			{text: lang('all'),
-				iconCls: 'ico-template-task',
-				cls: 'scrollable-menu',
-				menu: {
-					items: templates
-			}}
-		]}
+			items: menuItems
+		}
 	});
 	
 	var actions = {
@@ -90,7 +113,7 @@ og.TasksTopToolbar = function(config) {
 			scope: this
 		}),
 		complete: new Ext.Action({
-			text: lang('complete'),
+			text: lang('do complete'),
             tooltip: lang('complete selected tasks'),
             iconCls: 'ico-complete',
 			disabled: true,
@@ -166,22 +189,23 @@ og.TasksTopToolbar = function(config) {
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
-	var ucsData = [[currentUser, lang('me')],['0:0',lang('anyone')],['-1:-1', lang('unclassified')],['0:0','--']];
+	var ucsData = [[currentUser, lang('me')],['0:0',lang('anyone')],['-1:-1', lang('unassigned')],['0:0','--']];
 	for (i in companiesArray)
 		if (companiesArray[i].id) ucsData[ucsData.length] = [(companiesArray[i].id + ':0'), companiesArray[i].name];
 	ucsData[ucsData.length] = ['0:0','--'];
+	ucsOtherUsers = [];
 	for (i in usersArray){
 		var companyName = '';
 		var j;
 		for(j in companiesArray)
-			if (companiesArray[j].id == usersArray[i].cid)
+			if (companiesArray[j] && companiesArray[j].id == usersArray[i].cid)
 				companyName = companiesArray[j].name;
-		if (!usersArray[i].isCurrent && usersArray[i].cid) ucsData[ucsData.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
+		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].cid) 
+			ucsOtherUsers[ucsOtherUsers.length] = [(usersArray[i].cid + ':' + usersArray[i].id), usersArray[i].name + ' : ' + companyName];
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
-	
-	
+	ucsData = ucsData.concat(ogTasksOrderUsers(ucsOtherUsers));
     
     this.filterNamesCompaniesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCompaniesCombo',
@@ -218,10 +242,12 @@ og.TasksTopToolbar = function(config) {
 			currentUser = usersArray[i].id;
 	}
 	var uData = [[currentUser, lang('me')],['0',lang('anyone')],['0','--']];
+	uDOtherUsers = [];
 	for (i in usersArray){
-		if (!usersArray[i].isCurrent)
-			uData[uData.length] = [usersArray[i].id, usersArray[i].name];
+		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id)
+			uDOtherUsers[uDOtherUsers.length] = [usersArray[i].id, usersArray[i].name];
 	}
+	uData = uData.concat(ogTasksOrderUsers(uDOtherUsers));
     this.filterNamesCombo = new Ext.form.ComboBox({
     	id: 'ogTasksFilterNamesCombo',
         store: new Ext.data.SimpleStore({
@@ -349,6 +375,17 @@ og.TasksTopToolbar = function(config) {
 
 function ogTasksLoadFilterValuesCombo(newValue){
 	var combo = Ext.getCmp('ogTasksFilterValuesCombo');
+}
+
+function ogTasksOrderUsers(usersList){
+	for (var i = 0; i < usersList.length - 1; i++)
+		for (var j = i+1; j < usersList.length; j++)
+			if (usersList[i][1].toUpperCase() > usersList[j][1].toUpperCase()){
+				var aux = usersList[i];
+				usersList[i] = usersList[j];
+				usersList[j] = aux;
+			}
+	return usersList;
 }
 
 Ext.extend(og.TasksTopToolbar, Ext.Toolbar, {

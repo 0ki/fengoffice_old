@@ -80,7 +80,7 @@ Ext.onReady(function(){
 				refreshOnWorkspaceChange: false, //the handler is in listeners.php
 				defaultContent: {
 					type: "url",
-					data: og.getUrl('event', actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1})
+					data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: -1})
 				},
 				baseCls: '',
 				tbar: og.CalendarToolbarItems

@@ -1,6 +1,6 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  A simple stack
  */

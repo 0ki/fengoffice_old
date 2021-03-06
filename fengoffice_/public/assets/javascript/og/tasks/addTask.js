@@ -12,6 +12,7 @@
 ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 	this.hideAddNewTaskForm();
 	
+	
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
@@ -23,15 +24,22 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 		parent = document.getElementById('ogTasksPanelTask' + task_id + 'G' + group_id);
 	else
 		parent = document.getElementById('ogTasksPanelGroup' + group_id);
-		
+	if (task_id && task_id > 0)
+		var parentTask = ogTasks.getTask(task_id);
+	
 	var div = document.createElement('div');
 	div.className = 'ogTasksTaskRow';
 	div.id = 'ogTasksPanelAT';
 	var html = "<div style='margin-left:" + padding + "px' class='ogTasksAddTaskForm'>";
 	if (task_id)
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + task_id + "'>";
-	if (displayCriteria.group_by == 'milestone' && group_id != 'unclassified')
+	if (displayCriteria.group_by == 'milestone' && group_id != 'unclassified'){
 		html += "<input type='hidden' id='ogTasksPanelATMilestoneId' value='" + group_id + "'>";
+	} else if (parentTask && parentTask.milestoneId > 0){
+		html += "<input type='hidden' id='ogTasksPanelATMilestoneId' value='" + parentTask.milestoneId + "'>";
+	} else if (filters.filter == 'milestone') {
+		html += "<input type='hidden' id='ogTasksPanelATMilestoneId' value='" + Ext.getCmp('ogTasksFilterMilestonesCombo').getValue() + "'>";
+	}
 	html += "<b>" + lang('title') + ":</b><br/>";
 	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000/>";
 	
@@ -47,9 +55,10 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 	} else if (filters.filter == 'assigned_to') {
 		assignedToValue = filters.fval;
 	}
-	var displayDefault = displayCriteria.group_by != 'assigned_to';
-	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;visibility:" + (displayDefault? 'visible' : 'hidden') + "'><table><tr><td><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
-	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + ((displayDefault || assignedToValue == '-1:-1' || assignedToValue.split(':')[1] == '0')? 'none' : 'inline') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + ((assignedToValue != (ogTasks.currentUser.id + ':' + ogTasks.currentUser.companyId))? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td></tr></table>'; 
+	var chkIsChecked = (assignedToValue != (ogTasks.currentUser.id + ':' + ogTasks.currentUser.companyId)) && (assignedToValue && assignedToValue.split(':')[1] != '0');
+	var chkIsVisible = (assignedToValue && assignedToValue.split(':')[1] != '0');
+	html += "<table><tr><td><div id='ogTasksPanelATAssigned' style='padding-top:5px;'><table><tr><td><b>" + lang('assigned to') + ":&nbsp;</b></td><td><span id='ogTasksPanelATAssignedCont'></span></td></tr></table></div></td>";
+	html += '<td style="padding-top:7px;padding-left:15px"><div style="display:' + (chkIsVisible?'inline':'none') + '" id="ogTasksPanelATNotifyDiv"><label for="ogTasksPanelATNotify"><input style="width:14px;" type="checkbox" name="task[notify]" id="ogTasksPanelATNotify" ' + (chkIsChecked? 'checked':'') + '/>&nbsp;' + lang('send notification') + '</label></div></td></tr></table>'; 
 	
 	html += "<div id='ogTasksPanelATWorkspace' style='padding-top:5px;display:none'><table><tr><td><b>" + lang('workspace') + ":&nbsp;</b></td><td><div id='ogTasksPanelWsSelector'></div></td></tr></table></div>";
 	
@@ -95,7 +104,19 @@ ogTasks.drawAddNewTaskForm = function(group_id, task_id, level){
 	
 	//Create Ext components
 	
-	og.drawWorkspaceSelector('ogTasksPanelWsSelector',(displayCriteria.group_by == 'workspace')? group_id:null);
+	var defaultWorkspace = null;
+	if (displayCriteria.group_by == 'workspace')
+		defaultWorkspace = group_id;
+	else if (parentTask)
+		defaultWorkspace = parentTask.workspaceId;
+	else if (displayCriteria.group_by == 'milestone'){
+		var pm = this.getMilestone(group_id);
+		if (pm)
+			defaultWorkspace = pm.workspaceIds;
+	}
+	
+	og.drawWorkspaceSelector('ogTasksPanelWsSelector',defaultWorkspace, 'task[project_id]');
+	
 	document.getElementById('ogTasksPanelATTitle').focus();
 	if (drawOptions.show_dates){
 		var DtStart = new og.DateField({
@@ -199,24 +220,6 @@ ogTasks.hideAddNewTaskForm = function(){
 		oldForm.parentNode.removeChild(oldForm);
 }
 
-ogTasks.drawWorkspaceSelector = function(workspaceId){
-	var tree = Ext.getCmp('workspaces-tree');
-	var ws;
-	
-	if (workspaceId)
-		ws = tree.tree.getNodeById('ws' + workspaceId).ws;
-	else
-		ws = tree.tree.getActiveOrPersonalWorkspace();
-
-	var html = "<div id='ogTasksPanelWsSelector'>";
-	html += "<input type='hidden' id='ogTasksPanelWsSelValue' name='task[workspace_id]' value='" + ws.id + "'/>";
-	html +="<div id='ogTasksPanelWsSelHeader'>";
-	html += "<a class='coViewAction ico-color" + ws.color + "' href='#' onclick='ogTasks.ShowWorkspaceSelector(" + ws.id + ")' title='" + lang('change workspace') + "'>" + og.getFullWorkspacePath(ws.id,true) + "</a>";
-	html +="</div><div id='ogTasksPanelWsSelPanel'></div></div>";
-	
-	return html;
-}
-
 ogTasks.ShowWorkspaceSelector = function(workspaceId){
 	if (document.getElementById('ogTasksPanelWsSelPanel').innerHTML == ''){
 		var tree = Ext.getCmp('workspace-panel');
@@ -301,7 +304,8 @@ ogTasks.SubmitNewTask = function(){
 			if (success && ! data.errorCode) {
 				var task = new ogTasksTask();
 				task.setFromTdata(data.task);
-				task.statusOnLoad = data.task.s;
+				if (data.task.s)
+					task.statusOnCreate = data.task.s;
 				task.isCreatedClientSide = true;
 				this.Tasks[this.Tasks.length] = task;
 				var parent = this.getTask(task.parentId);

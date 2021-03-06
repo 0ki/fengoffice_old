@@ -92,7 +92,8 @@
     * @return null
     */
     function getUpdateUrl() {
-      return get_url('config', 'update_user_preferences', $this->getId());
+      //return get_url('config', 'update_user_preferences', $this->getId());
+      return get_url('user', 'update_user_preferences', $this->getId());
     } // getUpdateUrl
     
   } // ConfigCategory 

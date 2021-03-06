@@ -137,13 +137,13 @@
 	
 	
 	<?php if($object->isLinkableObject()) { ?>
-		<div class="prop-col-div"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
+		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
 	<?php if ($object instanceof ProjectDataObject && $object->isCommentable()) { ?>
-		<div class="prop-col-div"><?php echo render_object_subscribers($object)?></div>
+		<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?></div>
 	<?php } ?>
 
-	<div class="prop-col-div" style="border:0px">
+	<div class="prop-col-div" style="border:0px;width:200;">
     	<?php if($object->getCreatedBy() instanceof User) { ?>
     		<span style="color:#333333;font-weight:bolder;">
     			<?php echo lang('created by') ?>:

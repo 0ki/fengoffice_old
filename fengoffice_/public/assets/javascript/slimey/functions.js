@@ -1,6 +1,6 @@
-/**
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+/*
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Common utility functions
  */
@@ -159,7 +159,8 @@ function unescapeSLIM(encodedSLIM) {
  *  	func: function to call when the image is selected (func is passed the image's URL as the first argument)
  */
 function chooseImage(func, scope, button) {
-	og.ImageChooser.show(imagesUrl, func, scope, button);
+	var url = prompt("Enter the url of the image:", "images/sample.png");
+	func.call(scope, url);
 }
 
 /**
@@ -167,25 +168,16 @@ function chooseImage(func, scope, button) {
  *  	func: function to call when the color is selected (func is passed the color's code as the first argument)
  */
 function chooseColor(func, scope, button) {
-	var menu = new Ext.menu.ColorMenu({
-        handler : function(palette, code) {
-			if (typeof(code) == "string") {
-				func.call(scope, "#" + code);
-			}
-		}
-	});
-	menu.show(button);
+	var color = prompt("Enter a color:", "blue");
+	func.call(scope, color);
 }
 
 /**
  *  gets a string input.
  */
-function getInput(func, scope, button, defVal) {
-	Ext.Msg.prompt('Save', 'Choose a filename:',
-		function(btn, text) {
-			if (btn == 'ok') {
-				func.call(this, text);
-			}
-		}, scope, false, defVal
-	);
+function getInput(msg, func, scope, button) {
+	var text = prompt(msg);
+	if (text) {
+		func.call(scope, text);
+	}
 }

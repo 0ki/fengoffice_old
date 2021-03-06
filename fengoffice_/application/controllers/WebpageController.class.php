@@ -220,21 +220,44 @@ class WebpageController extends ApplicationController {
 
 		if (array_var($_GET,'action') == 'delete') {
 			$ids = explode(',', array_var($_GET, 'webpages'));
-			list($succ, $err) = ObjectController::do_delete_objects($ids, 'ProjectWebpages');
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			} else {
-				flash_success(lang('success delete objects', $succ));
+			foreach ($ids as $id) {
+				$web_page = ProjectWebpages::findById($id);
+				if (isset($web_page) && $web_page->canDelete(logged_user())) {
+					try{
+						DB::beginWork();
+						$web_page->delete();
+						ApplicationLogs::createLog($web_page, $web_page->getProject(), ApplicationLogs::ACTION_DELETE);
+						DB::commit();
+						flash_success(lang('success deleted webpage'));
+					} catch(Exception $e){
+						DB::rollback();
+						flash_error(lang('error delete objects', ''));
+					}
+				} else
+					flash_error(lang('no access permissions'));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'webpages'));
 			$tagTag = array_var($_GET, 'tagTag');
+			foreach ($ids as $id) {
+				$web_page = ProjectWebpages::findById($id);
+				if (isset($web_page) && $web_page->canEdit(logged_user())) {
+					$arr_tags = $web_page->getTags();
+					if (!array_search($tagTag, $arr_tags)) {
+						$arr_tags[] = $tagTag;
+						$web_page->setTagsFromCSV(implode(',', $arr_tags));
+					}
+					
+				} else flash_error(lang('no access permissions'));
+			}
+			/*
 			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids, 'ProjectWebpages');
 			if ($err > 0) {
 				flash_error(lang('error tag objects', $err));
 			} else {
 				flash_success(lang('success tag objects', $succ));
 			}
+			*/
 		}
 		
 		if ($isProjectView) {

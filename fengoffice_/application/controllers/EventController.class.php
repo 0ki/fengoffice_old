@@ -334,7 +334,9 @@ class EventController extends ApplicationController {
 				if (isset($data['send_notification']) && $data['send_notification']) {
 					$users_to_inv = array();
             		foreach ($data['users_to_invite'] as $us => $v) {
-            			$users_to_inv[] = Users::findById(array('id' => $us));
+            			if ($us != logged_user()->getId()) {
+            				$users_to_inv[] = Users::findById(array('id' => $us));
+            			}
             		}
             		Notifier::notifEvent($event, $users_to_inv, true);
 		        }
@@ -368,14 +370,24 @@ class EventController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 			return ;
-	    }	
+	    }
 		$this->setTemplate('viewdate');
 		$tag = active_tag();
 		tpl_assign('tags',$tag);
-		//tpl_assign('cal_action','calendar');
-		//tpl_assign('action','calendar');
 		try {
-			/* @event ProjectEvent */
+			
+			$notifications = array();
+			$invs = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
+			if (is_array($invs)) {
+				foreach ($invs as $inv) {
+					if ($inv->getUserId() != logged_user()->getId()) 
+						$notifications[] = Users::findById(array('id' => $inv->getUserId()));
+				}
+			} else {
+				if ($invs->getUserId() != logged_user()->getId()) 
+					$notifications[] = Users::findById(array('id' => $invs->getUserId()));
+			}
+			Notifier::notifEventDeletion($event->getSubject(), $event->getProject()->getName(), $event->getStart(), $notifications);
 			
 			DB::beginWork();
 			// delete invitations
@@ -395,6 +407,7 @@ class EventController extends ApplicationController {
           	ajx_add("overview-panel", "reload");          	
 		} catch(Exception $e) {
 			DB::rollback();
+			Logger::log($e->getTraceAsString());
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
@@ -578,7 +591,9 @@ class EventController extends ApplicationController {
 		            if (isset($data['send_notification']) && $data['send_notification']) {
 						$users_to_inv = array();
 	            		foreach ($data['users_to_invite'] as $us => $v) {
-	            			$users_to_inv[] = Users::findById(array('id' => $us));
+	            			if ($us != logged_user()->getId()) {
+	            				$users_to_inv[] = Users::findById(array('id' => $us));
+	            			}
 	            		}
 	            		Notifier::notifEvent($event, $users_to_inv, false);
 		            }
@@ -589,7 +604,7 @@ class EventController extends ApplicationController {
 		         	$event->save();
 		         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
 				 	$event->save_properties(array_var($event_data,'event'));
-		          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
+		          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_EDIT);
 		          	DB::commit();
 		          	
 		          	flash_success(lang('success edit event', $event->getObjectName()));
@@ -618,7 +633,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.55 2008/10/31 18:54:55 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.59 2008/11/04 12:30:47 alvarotm01 Exp $
  *
  ***************************************************************************/
 

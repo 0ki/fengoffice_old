@@ -1,6 +1,6 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Tool class definitions
  */
@@ -533,6 +533,8 @@ var SlimeyFontFamilyTool = function(slimey) {
 
 	SlimeyTool.call(this, 'fontfamily', select, slimey);
 
+	this.element.disabled = true;
+
 	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 }
@@ -955,7 +957,19 @@ SlimeySaveTool.prototype = new SlimeyTool();
  *  saves the current slideshow
  */
 SlimeySaveTool.prototype.execute = function() {
-	this.slimey.submitFile(confirm("Save as new revision?"));
+	var filename = this.slimey.filename;
+	if (filename) {
+		this.filenameChosen(filename);
+	} else {
+		getInput("Enter a filename:", this.filenameChosen, this, this.element);
+	}
+}
+
+SlimeySaveTool.prototype.filenameChosen = function(filename) {
+	this.slimey.filename = filename;
+	var slim = this.slimey.navigation.getSLIMContent();
+	this.slimey.slimContent = escapeSLIM(slim);
+	this.slimey.submitFile(); 
 }
 
 SlimeySaveTool.prototype.notifyActionPerformed = function() {
@@ -1000,4 +1014,96 @@ SlimeyPreviewTool.prototype.execute = function() {
 	window.open(Slimey.rootDir + 'slime.html', 'slimePreview', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }
 
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  class SlimeyAddSlideTool - adds a new slide after the selected slide
+ */
+var SlimeyAddSlideTool = function(slimey) {
+	/* create the DOM element that represents the tool (a clickable image) */
+	var img = createImageButton('addslide', 'Add a new slide after the selected one', this);
+
+	SlimeyTool.call(this, 'addslide', img, slimey);
+}
+
+/**
+ *  SlimeyAddSlideTool extends SlimeyTool
+ */
+SlimeyAddSlideTool.prototype = new SlimeyTool();
+
+/**
+ *  add a new slide
+ */
+SlimeyAddSlideTool.prototype.execute = function() {
+	this.slimey.navigation.addNewSlide();
+}
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  class SlimeyDeleteSlideTool - deletes the selected slide
+ */
+var SlimeyDeleteSlideTool = function(slimey) {
+	/* create the DOM element that represents the tool (a clickable image) */
+	var img = createImageButton('delslide', 'Delete the selected slide', this);
+
+	SlimeyTool.call(this, 'delslide', img, slimey);
+}
+
+/**
+ *  SlimeyDeleteSlideTool extends SlimeyTool
+ */
+SlimeyDeleteSlideTool.prototype = new SlimeyTool();
+
+/**
+ *  delete the slide
+ */
+SlimeyDeleteSlideTool.prototype.execute = function() {
+	this.slimey.navigation.deleteCurrentSlide();
+}
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  class SlimeyMoveSlideDownTool - moves the selected slide down one place
+ */
+var SlimeyMoveSlideDownTool = function(slimey) {
+	/* create the DOM element that represents the tool (a clickable image) */
+	var img = createImageButton('slidedown', 'Move the selected slide down one place', this);
+
+	SlimeyTool.call(this, 'slidedown', img, slimey);
+}
+
+/**
+ *  SlimeyMoveSlideDownTool extends SlimeyTool
+ */
+SlimeyMoveSlideDownTool.prototype = new SlimeyTool();
+
+/**
+ *  move slide down
+ */
+SlimeyMoveSlideDownTool.prototype.execute = function() {
+	this.slimey.navigation.moveSlideDown();
+}
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  class SlimeyMoveSlideUpTool - moves the selected slide up one place
+ */
+var SlimeyMoveSlideUpTool = function(slimey) {
+	/* create the DOM element that represents the tool (a clickable image) */
+	var img = createImageButton('slideup', 'Move the selected slide up one place', this);
+
+	SlimeyTool.call(this, 'slideup', img, slimey);
+}
+
+/**
+ *  SlimeyMoveSlideUpTool extends SlimeyTool
+ */
+SlimeyMoveSlideUpTool.prototype = new SlimeyTool();
+
+/**
+ *  move slide up
+ */
+SlimeyMoveSlideUpTool.prototype.execute = function() {
+	this.slimey.navigation.moveSlideUp();
+}
 /*---------------------------------------------------------------------------*/

@@ -65,7 +65,7 @@ og.MessageManager = function() {
 		var name = '';
 		name = String.format(
 				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
+				htmlentities(value), og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
 	
 		var ids = String(r.data.wsIds).split(',');
 		var wsString = "";
@@ -85,7 +85,7 @@ og.MessageManager = function() {
 	function renderFrom(value, p, r){
 		name = String.format(
 				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
+				htmlentities(value), og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
 		return name;
 	}
 	

@@ -67,7 +67,7 @@ og.FileManager = function() {
 		var result = '';
 		var name = String.format(
 			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			value, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
+			htmlentities(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
 		
 		var projectsString = '';
 	    if (r.data.wsIds != ''){

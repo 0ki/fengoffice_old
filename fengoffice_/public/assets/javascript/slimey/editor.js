@@ -1,12 +1,13 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Editor variables and functions
  */
 
 /**
  *  class SlimeyEditor - implements functionality for the editor
+ *  	slimey: the slimey object that references the editor, navigation and toolbar
  */
 var SlimeyEditor = function(slimey) {
 	/* initialize variables */
@@ -37,7 +38,7 @@ var SlimeyEditor = function(slimey) {
 	this.resizeHandle = document.createElement('div');
 	this.resizeHandle.slimey = this.slimey;
 	this.resizeHandle.className = 'resizeHandle';
-	this.resizeHandle.style.zIndex = 100000000;
+	this.resizeHandle.style.zIndex = 10000;
 	this.resizeHandle.style.position = 'absolute';
 	this.resizeHandle.style.visibility = 'hidden';
 	this.resizeHandle.systemElement = true;
@@ -46,23 +47,22 @@ var SlimeyEditor = function(slimey) {
 	/* define container's style */
 	this.container.className = 'slimeyEditor';
 	this.container.slimey = this.slimey;
-	this.container.style.width = '100%';
-	this.container.style.height = '100%';
 	this.container.style.position = 'relative';
 	this.container.style.padding = '0px';
+	this.container.style.margin = '0px';
 	this.container.style.border = '1px solid black';
 	this.container.style.overflow = 'hidden';
-	this.container.style.fontSize = '25px';
 	this.container.style.cursor = 'default';
+	// default sizes
+	this.container.style.width = '640px';
+	this.container.style.height = '480px';
+	this.container.style.fontSize = '20px';
 
 	/* add event handlers */
 	setEventHandler(this.container, "mousemove", slimeyMove);
 	setEventHandler(this.container, "mouseup", slimeyDrop);
 	setEventHandler(this.container, "click", slimeyDeselect);
 	setEventHandler(this.container, "resize", this.resized, this);
-	/*addEventHandler(window, "resize", this.resized, this);
-	addEventHandler(window, "load", this.resized, this);*/
-	this.loopResize();
 	setEventHandler(this.resizeHandle, "mousedown", slimeyDrag);
 	setEventHandler(this.contentEditor, "blur", function() {
 			var val = this.value;
@@ -88,11 +88,6 @@ var SlimeyEditor = function(slimey) {
 			stopPropagation(e);
 			return false;
 		});
-}
-
-SlimeyEditor.prototype.loopResize = function() {
-	this.resized();
-	this.loopResize.defer(1000, this);
 }
 
 
@@ -162,7 +157,7 @@ SlimeyEditor.prototype.setHTML = function(html) {
 			}
 			elem.className = 'slimeyElement';
 			if (!elem.style.zIndex) {
-				elem.style.zIndex = 10000;
+				elem.style.zIndex = 1000;
 			}
 			elem.style.cursor = 'move';
 		}
@@ -346,8 +341,8 @@ SlimeyEditor.prototype.dblclick = function(obj, e) {
 	this.contentEditor.style.height = obj.offsetHeight + 20 + 'px';
 	var val = obj.innerHTML;
 	if (obj.tagName == 'UL' || obj.tagName == 'OL') {
-		val = val.replace(/<\/li><li.*?>/gi, '\n');
-		val = val.replace(/<li.*?>|<\/li>/gi, '');
+		val = val.replace(/<\/li><li>/gi, '\n');
+		val = val.replace(/<li>|<\/li>/gi, '');
 	} else if (obj.tagName == 'DIV') {
 		val = val.replace(/<br>/gi, '\n');
 	}
@@ -430,11 +425,11 @@ SlimeyEditor.prototype.drop = function() {
 }
 
 /**
- *  called when the containing window is resized. Adjusts the editor's size to the window.
+ *  called when the editor is resized. Adjusts the editor's font size.
  */
-SlimeyEditor.prototype.resized = function(e) {
-	this.container.style.fontSize = this.container.offsetWidth / 32 + 'px';
-	this.container.style.height = (this.container.offsetWidth * 3/4) + 'px';
+SlimeyEditor.prototype.resized = function() {
+	var h = this.container.offsetHeight;
+	this.container.style.fontSize = (h / 24) + 'px';
 }
 
 SlimeyEditor.prototype.printDebug = function(text) {

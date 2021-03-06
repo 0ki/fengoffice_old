@@ -34,7 +34,7 @@
 	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('more') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
 		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('properties') ?></a>
@@ -63,7 +63,7 @@
 	
 	<div id="<?php echo $genid ?>add_task_more_div" style="display:none">
   	<fieldset>
-    <legend><?php echo lang('more') ?></legend>
+    <legend><?php echo lang('task data') ?></legend>
     
 	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
     	<?php echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone')) ?>
@@ -74,9 +74,16 @@
     	</div>
     	
     	<div style="padding-top:4px">	
-    	<?php echo label_tag(lang('dates')) ?>
+    	<?php /*echo label_tag(lang('dates'))*/ ?>
+    	<table><tbody><tr><td style="padding-right: 10px">
+    	<?php echo label_tag(lang('start date')) ?>
+    	</td><td>
 		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid) ?>
+		</td></tr><tr><td style="padding-right: 10px">
+		<?php echo label_tag(lang('due date')) ?>
+    	</td><td>
 		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid) ?>
+		</td></tr></tbody></table>
 		</div>
 		
 		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">

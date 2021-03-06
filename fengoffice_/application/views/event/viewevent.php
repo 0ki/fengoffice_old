@@ -94,13 +94,11 @@ if($event->canEdit(logged_user())) {
 
 <?php
 	
-	$dtv = $event->getStart();
-	$title = date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())). " - " . $event->getSubject();
-	
-	$description = lang('CAL_STARTING_TIME').": $time";
+	$title = Localization::instance()->formatDescriptiveDate($event->getStart());
+	$description = lang('CAL_TIME').": $time";
   	tpl_assign('description', $description);
 
-
+	$att_form = '';
   	if (!$event->isNew()) {
 		$event_inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
 		if ($event_inv != null) {

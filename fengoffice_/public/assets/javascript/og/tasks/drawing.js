@@ -61,10 +61,14 @@ ogTasks.drawMilestoneCompleteBar = function(group){
 	var complete = 0;
 	var completedTasks = milestone.completedTasks;
 	var totalTasks =  milestone.totalTasks;
-	for (var i = 0; i < group.group_tasks.length; i++){
-		var t = group.group_tasks[i];
-		completedTasks += (t.status == 1 && (t.statusOnCreate == 0))? 1:0;
-		totalTasks += (t.isCreatedClientSide)? 1:0;
+	var tasks = this.flattenTasks(group.group_tasks);
+	for (var i = 0; i < tasks.length; i++){
+		var t = tasks[i];
+		if (t.milestoneId == group.group_id){
+			completedTasks += (t.status == 1 && (t.statusOnCreate == 0))? 1:0;
+			completedTasks -= (t.status == 0 && (t.statusOnCreate == 1))? 1:0;
+			totalTasks += (t.isCreatedClientSide)? 1:0;
+		}
 	}
 	if (totalTasks > 0)
 		complete = ((100 * completedTasks) / totalTasks);
@@ -99,21 +103,12 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 				else
 					sb.append("<a href='#' class='internalLink' onclick='og.openLink(\"" + og.getUrl('milestone', 'view', {id: group.group_id}) + "\")'>" + group.group_name + '</a></div></td>');
 				
-				sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
-				
-				if (drawOptions.show_dates){
-					sb.append('<td><span style="padding-left:12px;color:#888;">');
-					var date = new Date(milestone.dueDate * 1000);
-					if (milestone.completedById > 0){
-						sb.append('<span style="text-decoration:line-through">' +  lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
-					} else {
-						var now = new Date();
-						if ((date < now))
-							sb.append('<span style="font-weight:bold;color:#F00">' + lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
-						else
-							sb.append(lang('due') + ':&nbsp;' + date.dateFormat('M j'));
-					}
-					sb.append('</span></td>');
+				if (drawOptions.show_workspaces){
+					var ids = String(milestone.workspaceIds).split(',');
+					var projectsString = "<td style='padding-left:10px'>";
+					for(var i = 0; i < ids.length; i++)
+						projectsString += '<span class="project-replace">' + ids[i] + '</span>&nbsp;';
+					sb.append(projectsString + "</td>");
 				}
 			} else {
 				sb.append("<table><tr><td><div class='ogTasksGroupHeaderName'>" + group.group_name + '</div></td>');
@@ -123,9 +118,29 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		default:
 			sb.append("<div class='ogTasksGroupHeaderName'>" + group.group_name + '</div>');
 	}
-	sb.append('</td>');
-	sb.append("<td align='right'><div class='ogTasksGroupHeaderActions' style='display:none' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div></td>');
-	sb.append('</tr></table></div>');
+	sb.append("</td><td align='right'>");
+	if (displayCriteria.group_by == 'milestone' && this.getMilestone(group.group_id)){
+		var milestone = this.getMilestone(group.group_id);
+		sb.append("<table><tr>");
+		if (drawOptions.show_dates){
+			sb.append('<td><span style="padding-left:12px;color:#888;">');
+			var date = new Date(milestone.dueDate * 1000);
+			if (milestone.completedById > 0){
+				sb.append('<span style="text-decoration:line-through">' +  lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
+			} else {
+				var now = new Date();
+				if ((date < now))
+					sb.append('<span style="font-weight:bold;color:#F00">' + lang('due') + ':&nbsp;' + date.dateFormat('M j') + '</span>');
+				else
+					sb.append(lang('due') + ':&nbsp;' + date.dateFormat('M j'));
+			}
+			sb.append('</span></td>');
+		}
+		sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
+		sb.append("<td><div class='ogTasksGroupHeaderActions' style='visibility:hidden;padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div></td></tr></table>');
+	}
+	sb.append("<div class='ogTasksGroupHeaderActions' style='display:none' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div>');
+	sb.append('</td></tr></table></div>');
 	
 	//draw the group's tasks
 	for (var i = 0; i < group.group_tasks.length; i++){
@@ -276,7 +291,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		taskName += '<b>' + this.getUserCompanyName(task.assignedToId) + '</b>:&nbsp;';
 	}
 	//Draw the task name
-	taskName += task.title;
+	taskName += htmlentities(task.title);
 	if (task.status > 0){
 		var user = this.getUser(task.completedById);
 		var tooltip = '';

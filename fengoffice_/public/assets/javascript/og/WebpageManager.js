@@ -62,7 +62,7 @@ og.WebpageManager = function() {
     function renderName(value, p, r) {
 		var result = '';
 		var name = String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' 
-			+ lang('open link in new window', value) + '">{0}</a>', value, r.data.url);
+			+ lang('open link in new window', value) + '">{0}</a>', htmlentities(value), r.data.url);
 		
 		var projectsString = '';
 	    if (r.data.wsIds != ''){
@@ -248,7 +248,7 @@ og.WebpageManager = function() {
 		} else {
     		this.needRefresh = true;
     	}
-	});
+	}, this);
 };
 
 Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {

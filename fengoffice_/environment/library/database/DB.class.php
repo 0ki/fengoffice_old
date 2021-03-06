@@ -136,12 +136,12 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (defined('DEBUG_DB') && DEBUG_DB)
+      if (defined('DEBUG') && DEBUG && defined('DEBUG_DB') && DEBUG_DB)
       	$start = microtime(true);
       
       $result = self::connection()->execute($sql, $arguments);
       
-      if (defined('DEBUG_DB') && DEBUG_DB){
+      if (defined('DEBUG') && DEBUG && defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }

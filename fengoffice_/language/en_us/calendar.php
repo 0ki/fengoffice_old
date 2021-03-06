@@ -90,7 +90,6 @@
 	"CAL_ADDING_TO" => "Adding To",
 	"CAL_ANON_ALIAS" => "Alias Name",
 	"CAL_EVENT_TYPE" => "Event Type",
-	"CAL_STARTING_TIME" => "Time",
 	
 	// MULTI-SECTION RELATED TEXT (used by more than one section, but not everwhere)
 	"CAL_DESCRIPTION" => "Description", // (search, view date, view event)
@@ -117,6 +116,7 @@
 	'send new event notification' => 'Send email notifications',
 	'new event notification' => 'New event has been added',
     'change event notification' => 'Event has changed',
+	'deleted event notification' => 'Event has been deleted',
 	'attendance' => 'Will you participate?',
     'confirm attendance' => 'Confirm Attendance',
     'maybe' => 'Maybe',
@@ -124,9 +124,11 @@
     'view event' => 'View event',
 	'new event created' => 'New Event created',
 	'event changed' => 'Event changed',
+ 	'event deleted' => 'Event deleted',
 	'calendar of' => '{0}\'s Calendar',
 	'all users' => 'All Users',
-    
+  	'error delete event' => 'Error deleting event',  
+  
 	"days" => "days",
 	"weeks" => "weeks",
 	"months" => "months",

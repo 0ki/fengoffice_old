@@ -2,9 +2,9 @@
 <?php
 $duration = $variables["duration"];
 $desc = $variables["desc"];
-$attendance = $variables["attendance"];
+$attendance = isset($variables["attendance"]) ? $variables["attendance"] : null;
 ?>
-<br><?php if (isset($attendance) && $attendance != null) {
+<br><?php if ($attendance != null) {
 	echo $attendance;
 }
 ?>

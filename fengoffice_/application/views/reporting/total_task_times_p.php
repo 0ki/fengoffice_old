@@ -81,8 +81,8 @@
 		<tr style='height:30px;'>
 			<td><b><?php echo lang("group by") ?>:&nbsp;</b></td>
 			<td align='left'>
-				<span style="display:inline" id="<?= $genid ?>gbspan1">
-					<select id="<?= $genid ?>group_by_1" name="report[group_by_1]" )">
+				<span style="display:inline" id="<?php echo $genid ?>gbspan1">
+					<select id="<?php echo  $genid ?>group_by_1" name="report[group_by_1]" )">
 						<option value="0"<?php if (array_var($report_data, "group_by_1") == null) echo ' selected="selected"' ?>>-- None --</option>
 						<option value="id"<?php if (array_var($report_data, "group_by_1") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
 						<option value="user_id"<?php if (array_var($report_data, "group_by_1") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
@@ -91,8 +91,8 @@
 						<option value="milestone_id"<?php if (array_var($report_data, "group_by_1") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
 					</select>
 				</span>
-				<span style="display:inline" id="<?= $genid ?>gbspan2">
-					<select id="<?= $genid ?>group_by_2" name="report[group_by_2]" )">
+				<span style="display:inline" id="<?php echo  $genid ?>gbspan2">
+					<select id="<?php echo  $genid ?>group_by_2" name="report[group_by_2]" )">
 						<option value="0"<?php if (array_var($report_data, "group_by_2") == null) echo ' selected="selected"' ?>>-- None --</option>
 						<option value="id"<?php if (array_var($report_data, "group_by_2") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
 						<option value="user_id"<?php if (array_var($report_data, "group_by_2") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>
@@ -101,8 +101,8 @@
 						<option value="milestone_id"<?php if (array_var($report_data, "group_by_2") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
 					</select>
 				</span>
-				<span style="display:inline" id="<?= $genid ?>gbspan3">
-					<select id="<?= $genid ?>group_by_3" name="report[group_by_3]" )">
+				<span style="display:inline" id="<?php echo  $genid ?>gbspan3">
+					<select id="<?php echo  $genid ?>group_by_3" name="report[group_by_3]" )">
 						<option value="0"<?php if (array_var($report_data, "group_by_3") == null) echo ' selected="selected"' ?>>-- None --</option>
 						<option value="id"<?php if (array_var($report_data, "group_by_3") == "id") echo ' selected="selected"' ?>><?php echo lang('task')?></option>
 						<option value="user_id"<?php if (array_var($report_data, "group_by_3") == "user_id") echo ' selected="selected"' ?>><?php echo lang('user')?></option>

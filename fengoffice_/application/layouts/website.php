@@ -13,6 +13,7 @@
 	$jss= array('extjs/adapter/ext/ext-base.js',
 			'extjs/ext-all.js',
 			'extfix.js',
+			'og/Helpers.js',
 			'og/og.js',
 			'og/tasks/main.js',
 			'og/tasks/addTask.js',
@@ -71,6 +72,7 @@
 			'slimey/actions.js',
 			'slimey/tools.js',
 			'slimey/toolbar.js',
+			'slimey/integration.js',
 			'modules/spreadsheet_engine.js',
 			'modules/spreadsheet_ui.js',
 			'modules/overlib.js',
@@ -170,6 +172,7 @@ og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 
 og.hideMailsTab = <?php echo (defined('HIDE_MAILS_TAB') ? HIDE_MAILS_TAB : 0)?>;
+Ext.Ajax.timeout = <?php echo get_max_execution_time()*1000 ?>;
 og.GooPlayer.sound = new Sound();
 
 var quickAdd = new og.QuickAdd();

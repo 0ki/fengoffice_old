@@ -428,6 +428,18 @@ function get_max_upload_size() {
 } // get_max_upload_size
 
 /**
+ * This function will return max execution time in seconds.
+ *
+ * @param void
+ * @return integer
+ */
+function get_max_execution_time() {
+	$max = ini_get("max_execution_time");
+	if (!$max) $max = 0;
+	return $max;
+}
+
+/**
  * Convert PHP config value (2M, 8M, 200K...) to bytes
  *
  * This function was taken from PHP documentation

@@ -1,6 +1,6 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Inclusion to a webpage.
  */
@@ -20,62 +20,126 @@ var Slimey = function(config) {
 	if (config.rootDir) Slimey.rootDir = config.rootDir;
 	if (config.imagesDir) Slimey.imagesDir = config.imagesDir;
 	if (config.filename) this.filename = config.filename;
-	if (config.fileId) this.fileId = config.fileId;
 	if (config.slimContent) this.slimContent = config.slimContent;
 	if (config.saveUrl) this.saveUrl = config.saveUrl;
 	this.config = config;
 	Slimey.preloadImages();
+
 	this.editor = new SlimeyEditor(this);
 	this.navigation = new SlimeyNavigation(this);
-	this.toolbar = new SlimeyToolbar(this);
+	this.edtoolbar = new SlimeyToolbar(this, [
+			/*new SlimeySaveTool(this),
+			'-',*/
+			new SlimeyInsertTextTool(this), new SlimeyInsertImageTool(this),
+			new SlimeyInsertOrderedListTool(this), new SlimeyInsertUnorderedListTool(this),
+			new SlimeyDeleteTool(this),
+			'-',
+			new SlimeyUndoTool(this), new SlimeyRedoTool(this),
+			'-',
+			new SlimeyFontColorTool(this), new SlimeyFontFamilyTool(this),
+			new SlimeyFontSizeTool(this),
+			'-',
+			new SlimeyStyleToggleTool(this, 'bold', 'Bold Text', 'fontWeight', 'bold', 'normal'),
+			new SlimeyStyleToggleTool(this, 'underline', 'Underline Text', 'textDecoration', 'underline', 'none'),
+			new SlimeyStyleToggleTool(this, 'italic', 'Italic Text', 'fontStyle', 'italic', 'normal'),
+			'-',
+			new SlimeySendToBackTool(this), new SlimeyBringToFrontTool(this),
+			'-',
+			new SlimeyViewSourceTool(this), new SlimeyPreviewTool(this)
+	]);
+	this.navtoolbar = new SlimeyToolbar(this, [
+		new SlimeyAddSlideTool(this), new SlimeyDeleteSlideTool(this),
+		'-',
+		new SlimeyMoveSlideDownTool(this), new SlimeyMoveSlideUpTool(this)
+			
+	]);
 	
-	var div = document.createElement('div');
-	div.style.position = 'relative';
-	div.style.marginLeft = '200px';
-	div.style.marginRight = '2px';
-	div.style.height = '100%';
-	div.appendChild(this.toolbar.container);
-	div.appendChild(this.editor.container);
-	this.container = $(config.container);
+	if (typeof config.container == 'string') {
+		this.container = document.getElementById(config.container);
+	} else if (typeof config.container == 'object') {
+		this.container = config.container;
+	} else {
+		this.container = document.body;
+	}
+	this.container.appendChild(this.navtoolbar.container);
+	this.container.appendChild(this.edtoolbar.container);
 	this.container.appendChild(this.navigation.container);
-	this.container.appendChild(div);
+	this.container.appendChild(this.editor.container);
 	this.isDirty = false;
 	this.editor.addEventListener('actionPerformed', function() {
 		if (this.editor.undoStack.peek().name != 'changeSlide') {
-			this.isDirty = true;
-			var p = og.getParentContentPanel(Ext.get(this.container));
-			Ext.getCmp(p.id).setPreventClose(true);
+			if (!this.isDirty) {
+				this.isDirty = true;
+				this.onDirty();
+			}
 		}
 	}, this);
+	this.onInit();
 }
 
-Slimey.prototype.submitFile = function(newRevision, rename) {
-	function doSubmit(filename) {
-		this.filename = filename;
-		og.openLink(this.saveUrl, {
-			post: {
-				'file[name]': this.filename,
-				'file[id]': this.fileId,
-				'slimContent': this.slimContent,
-				'new_revision_document': (newRevision?"checked":"")
-			},
-			callback: function(success) {
-				if (success) {
-					this.isDirty = false;
-					var p = og.getParentContentPanel(Ext.get(this.container));
-					Ext.getCmp(p.id).setPreventClose(false);
-				}
-			},
-			scope: this
-		});
-	}
-	var slim = this.navigation.getSLIMContent();
-	this.slimContent = escapeSLIM(slim);
-	if (this.filename && !rename) {
-		doSubmit.call(this, this.filename);
+Slimey.prototype.onInit = function() {
+	addEventHandler(window, 'resize', this.layout, this);
+	addEventHandler(window, 'load', this.layout, this);
+}
+
+Slimey.prototype.onDirty = function() {
+	if (this.isDirty) {
+		window.onbeforeunload = function() { return 'Unsaved changes will be lost.' };
 	} else {
-		getInput(doSubmit, this, this.filename || '');
+		window.onbeforeunload = null;
 	}
+}
+
+Slimey.prototype.layout = function() {
+	var a = this.aspect || 4/3;
+	var h = this.container.offsetHeight - 5;
+	var w = this.container.offsetWidth - 5;
+	this.navtoolbar.container.style.position = 'absolute';
+	this.navtoolbar.container.style.width = this.navigation.container.offsetWidth + 'px';
+	this.navigation.container.style.position = 'absolute';
+	this.navigation.container.style.top = this.navtoolbar.container.offsetHeight + 'px';
+	this.navigation.container.style.height = h - this.navtoolbar.container.offsetHeight + 'px';
+	this.edtoolbar.container.style.position = 'absolute';
+	this.edtoolbar.container.style.left = this.navigation.container.offsetWidth + 'px';
+	this.edtoolbar.container.style.width = (w - this.navigation.container.offsetWidth) + 'px';
+	this.editor.container.style.position = 'absolute';
+	var eh = h - this.edtoolbar.container.offsetHeight - 12;
+	var ew = w - this.navigation.container.offsetWidth - 12;
+	if (ew > eh * a) {
+		// there's extra width so base on height
+		this.editor.container.style.height = eh + 'px';
+		this.editor.container.style.width = eh * a + 'px';
+		this.editor.container.style.left = this.navigation.container.offsetWidth + (w - this.navigation.container.offsetWidth - eh * a) / 2 + 'px';
+		this.editor.container.style.top = this.edtoolbar.container.offsetHeight + 6 + 'px';
+	} else {
+		// there's extra height so base on width
+		this.editor.container.style.height = ew / a + 'px';
+		this.editor.container.style.width = ew + 'px';
+		this.editor.container.style.left = this.navigation.container.offsetWidth + 6 + 'px';
+		this.editor.container.style.top = this.edtoolbar.container.offsetHeight + 6 + 'px';
+	}
+	this.editor.resized();
+}
+
+Slimey.prototype.submitFile = function() {
+	var form = document.createElement('form');
+	form.method = 'POST';
+	form.action = this.saveUrl;
+	form.target = "_blank";
+	var fn = document.createElement('input');
+	fn.type = 'hidden';
+	fn.name = 'filename';
+	fn.value = this.filename;
+	var sc = document.createElement('input');
+	sc.type = 'hidden';
+	sc.name = 'slimContent';
+	sc.value = this.slimContent;
+	form.appendChild(fn);
+	form.appendChild(sc);
+	document.body.appendChild(form);
+	form.submit();
+	this.isDirty = false;
+	this.onDirty();
 }
 
 Slimey.imagesDir = 'images/';
@@ -85,13 +149,13 @@ Slimey.rootDir = '';
 Slimey.preloadedImages = new Array();
 
 Slimey.includeScripts = function() {
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'functions.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'stack.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'editor.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'navigation.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'actions.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'tools.js"></script>');
-	document.write('<script language="javascript" src="' + slimeyRootDir + 'toolbar.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'functions.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'stack.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'editor.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'navigation.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'actions.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'tools.js"></script>');
+	document.write('<script language="javascript" src="' + Slimey.rootDir + 'toolbar.js"></script>');
 }
 
 Slimey.preloadImage = function(filename) {
@@ -128,9 +192,10 @@ Slimey.preloadImages = function() {
 	Slimey.preloadToolbarImage('underline');
 	Slimey.preloadToolbarImage('undo');
 	Slimey.preloadToolbarImage('viewSource');
-	
-	Slimey.preloadImage('newslide.png');
-	Slimey.preloadImage('delslide.png');
+	Slimey.preloadToolbarImage('addslide');
+	Slimey.preloadToolbarImage('delslide');
+	Slimey.preloadToolbarImage('slidedown');
+	Slimey.preloadToolbarImage('slideup');
+
 	Slimey.preloadImage('sep.png');
 }
-

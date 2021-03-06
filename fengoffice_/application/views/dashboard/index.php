@@ -1,7 +1,7 @@
 <?php $genid = gen_id() ?>
 
 
-<div id="<?php echo $genid ?>-db" style="padding:7px">
+<div id="<?php echo $genid ?>-db" style="padding:7px;width:97%;">
 <div class="dashboard">
 
 <div class="dashWorkspace">
@@ -33,7 +33,7 @@ else
 </span>
 </div>
 
-<div class="dashActions">
+<div class="dashActions"">
 	<a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
 	<div class="viewAsList"><?php echo lang('view as list') ?></div></a>
 </div>
@@ -330,7 +330,7 @@ else
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 								$output .= "<span class='cluetip" . $event->getProject()->getColor() . "' title='".$subject."- <i>Event</i>|".str_replace("'","\\'",$overlib_text)."' >";			
 								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
-								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
+								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"stopPropagation(event);hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
 							}
@@ -401,9 +401,9 @@ else
 echo $output . '</table>';
   ?>
   		</td></tr>
-		<tr><td class="coViewBottomLeft" style="width:3%"></td>
-		<td class="coViewBottom" style="width:96%"></td>
-		<td class="coViewBottomRight" style="width:3%"></td></tr>
+		<tr><td class="coViewBottomLeft" style="width:1%"></td>
+		<td class="coViewBottom" style="width:98%"></td>
+		<td class="coViewBottomRight" style="width:1%"></td></tr>
 	</table>
 <?php } //if(user_config_option('show calendar')) ?>
 </div>
@@ -659,7 +659,7 @@ echo $output . '</table>';
 <?php if ($hasEmails && (!defined('HIDE_MAILS_TAB') || HIDE_MAILS_TAB != 1)) { ?>
 <div class="dashUnreadEmails">
 <table style="width:100%">
-	<col width=12/><col width=85%/><col width=12/><tr>
+	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo $unread_emails?lang('unread emails'):lang('workspace emails') ?></div></td>
 	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -701,7 +701,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" style="width:90%"></td>
+		<td class="coViewBottom" style="width:306px"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -748,7 +748,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" style="width:90%"></td>
+		<td class="coViewBottom" style="width:306px"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -790,7 +790,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" style="width:90%"></td>
+		<td class="coViewBottom" style="width:306px"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
@@ -834,7 +834,7 @@ echo $output . '</table>';
 
 <?php if ($hasDocuments) { ?>
 <div class="dashDocuments">
-<table style="width:330px">
+<table style="width:100%">
 	<col width=12/><col/><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('documents') ?></div></td>
 	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
@@ -877,7 +877,7 @@ echo $output . '</table>';
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" style="width:90%"></td>
+		<td class="coViewBottom" style="width:306px"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>

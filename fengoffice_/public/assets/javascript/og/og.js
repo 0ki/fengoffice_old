@@ -686,6 +686,10 @@ og.getParentContentPanel = function(dom) {
 	return Ext.fly(dom).findParentNode('.og-content-panel', 100);
 };
 
+og.getParentContentPanelBody = function(dom) {
+	return Ext.fly(dom).findParentNode('.x-panel-body', 100);
+};
+
 
 
 
@@ -801,20 +805,8 @@ og.playXSPF = function(id) {
 	gooplayer.loadPlaylistFromFile(id, true);
 }
 
-function StringBuffer() { 
-   this.buffer = []; 
- } 
-
- StringBuffer.prototype.append = function append(string) { 
-   this.buffer.push(string); 
-   return this; 
- }; 
-
- StringBuffer.prototype.toString = function toString() { 
-   return this.buffer.join(""); 
- }; 
  
- og.xmlFetchTag = function(xml, tag) {
+og.xmlFetchTag = function(xml, tag) {
 	var i1 = xml.indexOf("<" + tag + ">");
 	var i2 = xml.indexOf("</" + tag + ">");
 	if (i1 >= 0 && i2 > i1) {

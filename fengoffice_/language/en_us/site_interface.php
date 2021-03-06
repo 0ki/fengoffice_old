@@ -440,6 +440,8 @@
   'no tasks to display' => 'There are no tasks to display',
   'do complete' => 'Complete',
   
+  'task data' => 'Task data',
+  
   ); // array
 
 ?>

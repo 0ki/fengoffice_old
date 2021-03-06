@@ -6,17 +6,6 @@
 		array(lang('files'), get_url('files')),
 		array($file->isNew() ? lang('add presentation') : lang('edit presentation'))
 	));
-	/*add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
-	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
-	add_javascript_to_page(SLIMEY_PATH . 'functions.js');
-	add_javascript_to_page(SLIMEY_PATH . 'stack.js');
-	add_javascript_to_page(SLIMEY_PATH . 'editor.js');
-	add_javascript_to_page(SLIMEY_PATH . 'navigation.js');
-	add_javascript_to_page(SLIMEY_PATH . 'actions.js');
-	add_javascript_to_page(SLIMEY_PATH . 'tools.js');
-	add_javascript_to_page(SLIMEY_PATH . 'toolbar.js');
-	add_stylesheet_to_page('file/imageChooser.css');
-	add_javascript_to_page('modules/imageChooser.js');*/
 ?>
 
 <?php
@@ -28,7 +17,7 @@
 	} else {
 		$url = str_replace("&amp;", "&", get_url('files', 'save_presentation'));
 		$filename = '';
-		$slimContent = escapeSLIM('<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">New Slideshow</div></div>');
+		$slimContent = escapeSLIM('<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 24%; top: 0%;">New Slideshow</div></div>');
 	}
 	$id = gen_id();
 ?>
@@ -37,8 +26,10 @@
 </div>
 
 <script type="text/javascript">
+	var body = og.getParentContentPanelBody('<?php echo $id ?>');
+	var panel = Ext.getCmp(og.getParentContentPanel('<?php echo $id ?>').id);
 	var <?php echo $id ?> = new Slimey({
-		container: '<?php echo $id ?>',
+		container: body,
 		rootDir: '<?php echo SLIMEY_PATH ?>',
 		imagesDir: '<?php echo get_theme_url("slimey/images/") ?>',
 		filename: '<?php echo ($file->isNew()?'':$file->getFilename()) ?>',
@@ -46,6 +37,8 @@
 		slimContent: '<?php echo $slimContent ?>',
 		saveUrl: '<?php echo $url ?>'
 	});
+	<?php echo $id ?>.layout();
+	panel.on('resize', <?php echo $id ?>.layout, <?php echo $id ?>);
 	
 	// for the image chooser
 	imagesUrl = '<?php echo get_url('files', 'list_files', array('type' => 'image', 'ajax' => 'true')) ?>';
@@ -57,7 +50,6 @@
 </script>
 
 <?php
-//add_page_action(lang("save"), "javascript:(function(){ $id.submitFile(false); })()", "save");
 add_page_action(lang("save"), "javascript:(function(){ $id.submitFile(true); })()", "save");
 add_page_action(lang("save as"), "javascript:(function(){ $id.submitFile(true, true); })()", "save_as");
 ?>

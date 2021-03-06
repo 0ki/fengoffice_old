@@ -89,7 +89,9 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
  <?php } // foreach group?>
 
 <?php } else { ?>
-<p><?php echo lang('no search result for', $search_string) ?></p>
+<div id="noResultsFoundDiv" class="searchDescription" style="font-weight:normal;font-size:140%;padding-top:30px; padding-bottom:30px">
+<?php echo lang('no search result for', $search_string) ?>
+</div>
 <?php } // if ?>
 
 <div style="width:100%;text-align:center;color:#888;padding-bottom:20px">

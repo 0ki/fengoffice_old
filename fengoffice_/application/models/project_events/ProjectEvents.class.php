@@ -168,12 +168,22 @@ class ProjectEvents extends BaseProjectEvents {
 			ProjectEvents::addInvitations($result_events, $user);
 			if (!($user == null && $inv_state == null)) {
 				foreach ($result_events as $k => $event) {
-					$cond = array('event_id' => $event->getId());
-					if ($user != -1) $cond['user_id'] = $user;
-	
-					$inv = EventInvitations::findById($cond);
-					if ($inv == null || ($inv_state != -1 && $inv_state != $inv->getInvitationState())) 
-						unset($result_events[$k]);
+					$conditions = '`event_id` = ' . $event->getId();
+					if ($user != -1) $conditions .= ' AND `user_id` = ' . $user;
+					
+					$inv = EventInvitations::findAll(array ('conditions' => $conditions));
+					if (!is_array($inv)) {
+						if ($inv == null || ($inv_state != -1 && $inv_state != $inv->getInvitationState())) {
+							unset($result_events[$k]);
+						}
+					} else {
+						foreach ($inv as $key => $v) {
+							if ($v == null || ($inv_state != -1 && $inv_state != $v->getInvitationState())) {
+								unset($result_events[$k]);
+								break;
+							}	
+						}
+					}
 				}
 			}
 		}
@@ -328,7 +338,7 @@ class ProjectEvents extends BaseProjectEvents {
 	}
 	
 	static function addInvitations($result_events, $user_id = -1) {
-		if ($user_id == -1) $user_id = logged_user();
+		if ($user_id == -1) $user_id = logged_user()->getId();
 		if (isset($result_events) && is_array($result_events) && count($result_events)) {
 			foreach ($result_events as $event) {
 				$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));

@@ -67,7 +67,7 @@ og.renderWsPath = function(id,showPath){
 				node = node.parentNode;
 			}
 			
-			html = '<span class="og-wscont og-wsname"><span class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + originalNode.ws.name + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
+			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + originalNode.ws.name + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
 		}
 	}
 	return html;
@@ -83,23 +83,27 @@ og.wsPathMouseBehavior = function(object, isMouseOver){
 	if (isMouseOver) {
 		object.style.fontSize = "120%";
 		object.style.padding = "4px";
-		object.style.paddingLeft = object.style.paddingRight = '1px';
-	
 		var cn = object.childNodes;
 		for (var i = 0; i < cn.length; i++) {
-			cn[i].origHTML = cn[i].innerHTML;
 			if (cn[i].name != null && cn[i].name != ''){
+				var aux = cn[i].innerHTML;
 				cn[i].innerHTML = cn[i].name;
+				cn[i].name = aux;
 			}
 		}
 	} else {
 		object.style.fontSize = "100%";
 		object.style.padding = "0px";
-		object.style.paddingLeft = object.style.paddingRight = '1px';
+		object.style.paddingLeft = '1px';
+		object.style.paddingRight = '1px';
 		
 		var cn = object.childNodes;
 		for (var i = 0; i < cn.length; i++) {
-			cn[i].innerHTML = cn[i].origHTML;
+			if (cn[i].name != null && cn[i].name != ''){
+				var aux = cn[i].innerHTML;
+				cn[i].innerHTML = cn[i].name;
+				cn[i].name = aux;
+			}
 		}
 	}
 };
@@ -226,38 +230,44 @@ og.drawWorkspaceSelector = function(renderTo, workspaceId, name){
 			ws = tree.tree.getActiveOrPersonalWorkspace();
 	
 		var html = "<input type='hidden' id='" + renderTo + "Value' name='" + name + "' value='" + ws.id + "'/>";
-		html +="<div id='" + renderTo + "Header'>";
-		html += "<a class='coViewAction ico-color" + ws.color + "' href='#' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' title='" + lang('click to change workspace') + "'>" + og.getFullWorkspacePath(ws.id,true) + "</a>";
-		html +="</div><div id='" + renderTo + "Panel'></div>";
+		html +="<div class='x-form-field-wrap'><table><tr><td><div id='" + renderTo + "Header' class='og-ws-selector-header'>";
+		var path = og.getFullWorkspacePath(ws.id,true);
+		html += "<div class='coViewAction ico-color" + ws.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' title='" + path + "'>" + path + "</div>";
+		html +="</div></td><td><img class='x-form-trigger x-form-arrow-trigger og-ws-selector-arrow' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' src='s.gif'/></td></tr></table><div id='" + renderTo + "Panel'></div></div>";
 		
 		container.innerHTML = html;
 	}
 }
 
 og.ShowWorkspaceSelector = function(controlName, workspaceId){
-	if (document.getElementById(controlName + 'Panel').innerHTML == ''){
-		var tree = Ext.getCmp('workspace-panel');
-		var wsList = tree.getWsList();
-		var newTree = tree.cloneConfig({
-			id: (controlName + 'Tree'),
-			renderTo: controlName + 'Panel',
-			tbar:[],
-			root:[],
-			workspaces: wsList,
-			isInternalSelector: true,
-			width:200,
-			height:250,
-			selectedWorkspaceId: workspaceId,
-			controlName: controlName,
-			style: 'border:1px solid #99BBE8'
-		});	
+	if (document.getElementById(controlName + 'Panel').style.display == 'block')
+		document.getElementById(controlName + 'Panel').style.display = 'none';
+	else {
+		if (document.getElementById(controlName + 'Panel').innerHTML == ''){
+			var tree = Ext.getCmp('workspace-panel');
+			var wsList = tree.getWsList();
+			var newTree = tree.cloneConfig({
+				id: (controlName + 'Tree'),
+				renderTo: controlName + 'Panel',
+				tbar:[],
+				root:[],
+				workspaces: wsList,
+				isInternalSelector: true,
+				width:200,
+				height:250,
+				selectedWorkspaceId: workspaceId,
+				controlName: controlName,
+				style: 'border:1px solid #99BBE8'
+			});	
+		}
+		document.getElementById(controlName + 'Panel').style.display = 'block';
 	}
-	document.getElementById(controlName + 'Panel').style.display = 'block';
-	document.getElementById(controlName + 'Header').style.display = 'none';
+	//document.getElementById(controlName + 'Header').style.display = 'none';
 }
 
 og.WorkspaceSelected = function(controlName, workspace){
-	document.getElementById(controlName + 'Header').innerHTML = "<a class='coViewAction ico-color" + workspace.color + "' href='#' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")' title='" + lang('click to change workspace') + "'>" + og.getFullWorkspacePath(workspace.id,true) + "</a>";
+	var path =og.getFullWorkspacePath(workspace.id,true);
+	document.getElementById(controlName + 'Header').innerHTML = "<div class='coViewAction ico-color" + workspace.color + " og-ws-selector-input' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")' title='" + path + "'>" + path + "</div>";
 	document.getElementById(controlName + 'Panel').style.display = 'none';
 	document.getElementById(controlName + 'Header').style.display = 'block';
 	document.getElementById(controlName + 'Value').value = workspace.id;	

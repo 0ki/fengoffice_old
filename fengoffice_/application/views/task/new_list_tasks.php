@@ -9,8 +9,10 @@
 	$companies_array = array();
 	
 	
-	foreach($templates as $template)
-		$templates_array[] = $template->getArrayInfo();
+	foreach($all_templates as $template)
+		$all_templates_array[] = $template->getArrayInfo();
+	foreach($project_templates as $template)
+		$project_templates_array[] = $template->getArrayInfo();
 	if (isset($tasks))
 		foreach($tasks as $task)
 			$tasks_array[] = $task->getArrayInfo();
@@ -25,7 +27,8 @@
 ?>
 
 <div id="taskPanelHiddenFields">
-	<input type="hidden" id="hfTemplates" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($templates_array))) ?>"/>
+	<input type="hidden" id="hfProjectTemplates" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($project_templates_array))) ?>"/>
+	<input type="hidden" id="hfAllTemplates" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($all_templates_array))) ?>"/>
 	<input type="hidden" id="hfTasks" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($tasks_array))) ?>"/>
 	<input type="hidden" id="hfIMilestones" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($internal_milestones_array))) ?>"/>
 	<input type="hidden" id="hfEMilestones" value="<?php echo str_replace('"',"'", str_replace("'", "\'", json_encode($external_milestones_array))) ?>"/>
@@ -51,7 +54,8 @@
 
 <script type="text/javascript">
 	var ogTasksTT = new og.TasksTopToolbar({
-		templatesHfId:'hfTemplates',
+		projectTemplatesHfId:'hfProjectTemplates',
+		allTemplatesHfId:'hfAllTemplates',
 		usersHfId:'hfUsers',
 		companiesHfId:'hfCompanies',
 		userPreferencesHfId:'hfUserPreferences',

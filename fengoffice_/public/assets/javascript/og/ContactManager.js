@@ -66,17 +66,17 @@ og.ContactManager = function() {
 		if (r.data.type == 'company'){
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-					value, og.getUrl('company', 'view_client', {id: r.data.object_id}), String.format(r.data.name));
+					htmlentities(value), og.getUrl('company', 'view_client', {id: r.data.object_id}), String.format(r.data.name));
 		}
 		else{
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-					value, og.getUrl('contact', 'card', {id: r.data.object_id}), String.format(r.data.name));
+					htmlentities(value), og.getUrl('contact', 'card', {id: r.data.object_id}), String.format(r.data.name));
 			
 			if(r.data.companyId != null && r.data.companyId != 0 && r.data.companyName.trim()!=''){
 				name += String.format(
 					' (<a style="font-size:80%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>)',
-					r.data.companyName, og.getUrl('company', 'view_client', {id: r.data.companyId}), String.format(r.data.companyName));
+					htmlentities(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), String.format(r.data.companyName));
 			} //end else
 		}// end else
 		var ids = String(r.data.wsIds).split(',');
@@ -86,13 +86,13 @@ og.ContactManager = function() {
 		return wsString + name;
     }
     function renderCompany(value, p, r) {
-    	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', value, og.getUrl('company', 'card', {id: r.data.companyId}));
+    	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', htmlentities(value), og.getUrl('company', 'card', {id: r.data.companyId}));
     }
     function renderEmail(value, p, r) {
-    	return String.format('<a mailto="{0}">{0}</a>', value);
+    	return String.format('<a mailto="{0}">{0}</a>', htmlentities(value));
     }
     function renderWebsite(value, p, r) {
-    	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', value);
+    	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', htmlentities(value));
     }	
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;

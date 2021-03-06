@@ -9,10 +9,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 		array(lang('files'), get_url('files')),
 		array($file->isNew() ? lang('add document') : lang('edit document'))
 	));
-	
-	//add_stylesheet_to_page('project/documents.css');
-	//add_stylesheet_to_page('file/imageChooser.css');
-	//add_javascript_to_page('modules/imageChooser.js');
+
 ?>
 
 <?php
@@ -60,6 +57,7 @@ if($file->isNew()) {
 	$oFCKeditor->Value = $file->getFileContent();
 }
 $oFCKeditor->Create();
+
 //add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = ''; form.rename = false; form.onsubmit(); })()", "save");
 add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save");
 add_page_action(lang("save as"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as");

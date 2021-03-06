@@ -205,8 +205,39 @@ class Notifier {
 
 		return self::sendEmail(
 			$recepients,
-			self::prepareEmailAddress($event->getCreatedBy()->getEmail(), $event->getCreatedByDisplayName()),
+			self::prepareEmailAddress(($is_new ? $event->getCreatedBy()->getEmail() : $event->getUpdatedBy()->getEmail()),
+			($is_new ? $event->getCreatedByDisplayName() : $event->getUpdatedByDisplayName())),
 			$event->getProject()->getName() . ' - ' . ($is_new ? lang('new event notification') : lang('change event notification')) . ': ' . $event->getSubject(),
+			tpl_fetch(get_template_path('event_notif', 'notifier'))
+		); // send
+	} // notifEvent
+	
+	 /** Send event notification to the list of users ($people)
+	 *
+	 * @param ProjectEvent $event Event
+	 * @param array $people
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function notifEventDeletion($subject, $proj_name, $start_date, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('is_deleted', true);
+		tpl_assign('eventSubject', $subject);
+		tpl_assign('projectName', $proj_name);
+		tpl_assign('eventStart', $start_date);
+		
+		$recepients = array();
+		foreach($people as $user) {
+			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+		} // foreach
+
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress(logged_user()->getEmail(), logged_user()->getDisplayName()),
+			$proj_name . ' - ' . lang('deleted event notification') . ': ' . $subject,
 			tpl_fetch(get_template_path('event_notif', 'notifier'))
 		); // send
 	} // notifEvent

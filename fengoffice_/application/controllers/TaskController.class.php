@@ -86,19 +86,22 @@ class TaskController extends ApplicationController {
 		$task_data = array_var($_POST, 'task');
 		$parent_id = array_var($task_data, 'parent_id', 0);
 		$parent = ProjectTasks::findById($parent_id);
-		$project = null;
-		if ($parent instanceof ProjectTask) {
-			$project = $parent->getProject();
-		} else {
-			$milestone_id = array_var($task_data,'milestone_id',null);
-			if($milestone_id){
-				$milestone = ProjectMilestones::findById($milestone_id);
-				if($milestone)
-					$project =$milestone->getProject();
+		$project = Projects::findById(array_var($task_data, 'project_id', 0));
+		if (!$project instanceof Project) {
+			if ($parent instanceof ProjectTask){
+				$project = $parent->getProject();
+			} else {
+				$milestone_id = array_var($task_data,'milestone_id',null);
+				if($milestone_id){
+					$milestone = ProjectMilestones::findById($milestone_id);
+					if($milestone)
+						$project =$milestone->getProject();
+				}
+				if(!$project instanceof Project)
+					$project = active_or_personal_project();
 			}
-			if(!$project)
-				$project = active_or_personal_project();
 		}
+		
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
 			return;
@@ -223,7 +226,7 @@ class TaskController extends ApplicationController {
 			DB::commit();
 			
 			if (count($tasksToReturn) < count($tasks))
-				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restritions'));
+				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restrictions'));
 			else
 				flash_success(lang('tasks updated'));
 			
@@ -400,7 +403,12 @@ class TaskController extends ApplicationController {
 		$companies = Companies::getCompaniesWithUsers();
 		
 		if (!$isJson){
-			tpl_assign('templates', ProjectTasks::getAllTaskTemplates());
+			if(active_project() instanceof Project)
+				$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId());
+			else 
+				$task_templates = array();
+			tpl_assign('project_templates', $task_templates);
+			tpl_assign('all_templates', ProjectTasks::getAllTaskTemplates(true));
 			tpl_assign('tasks', $tasks);
 			if (count($tasks) > 500)
 				tpl_assign('displayTooManyTasks', true);
@@ -950,7 +958,7 @@ class TaskController extends ApplicationController {
 			DB::beginWork();
 			$task->completeTask();
 			
-			$completed_tasks = array();
+			/*$completed_tasks = array(); //Completes the parents if all subtasks are complete
 			$parent = $task->getParent();
 			while ($parent instanceof ProjectTask && $parent->countOpenSubTasks() <= 0) {
 				$parent->completeTask();
@@ -962,7 +970,7 @@ class TaskController extends ApplicationController {
 				}
 				$parent = $parent->getParent();
 			}
-			ajx_extra_data(array("completedTasks" => $completed_tasks));
+			ajx_extra_data(array("completedTasks" => $completed_tasks));*/
 			
 			//Already called in completeTask
 			//ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_CLOSE);
@@ -1007,7 +1015,7 @@ class TaskController extends ApplicationController {
 			DB::beginWork();
 			$task->openTask();
 			
-			$opened_tasks = array();
+			/*$opened_tasks = array();
 			$parent = $task->getParent();
 			while ($parent instanceof ProjectTask && $parent->isCompleted()) {
 				$parent->openTask();
@@ -1019,7 +1027,7 @@ class TaskController extends ApplicationController {
 				}
 				$parent = $parent->getParent();
 			}
-			ajx_extra_data(array("openedTasks" => $opened_tasks));
+			ajx_extra_data(array("openedTasks" => $opened_tasks));*/
 			
 			//Already called in openTask
 			//ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_OPEN);

@@ -950,21 +950,45 @@ class FilesController extends ApplicationController {
 		/* if there's an action to execute, do so */
 		if (array_var($_GET, 'action') == 'delete') {
 			$ids = explode(',', array_var($_GET, 'objects'));
-			list($succ, $err) =  ObjectController::do_delete_objects($ids,'ProjectFiles');
-			if ($err > 0) {
-				flash_error(lang('error delete objects', $err));
-			} else {
-				flash_success(lang('success delete objects', $succ));
+			foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+				if (isset($file) && $file->canDelete(logged_user())) {
+					try{
+						DB::beginWork();
+						$file->delete();
+						ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_DELETE);
+						DB::commit();
+						flash_success(lang('success delete file', $file->getFilename()));
+					} catch(Exception $e){
+						DB::rollback();
+						flash_error(lang('error delete file'));
+					}
+				} else
+					flash_error(lang('no access permissions'));
 			}
+
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$tagTag = array_var($_GET, 'tagTag');
+			
+			foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+				if (isset($file) && $file->canEdit(logged_user())) {
+					$arr_tags = $file->getTags();
+					if (!array_search($tagTag, $arr_tags)) {
+						$arr_tags[] = $tagTag;
+						$file->setTagsFromCSV(implode(',', $arr_tags));
+					}
+				} else flash_error(lang('no access permissions'));
+			}
+/*
 			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids,'ProjectFiles');
 			if ($err > 0) {
 				flash_error(lang('error tag objects', $err));
 			} else {
 				flash_success(lang('success tag objects', $succ));
 			}
+*/
 		}
 
 		$project = Projects::findById($project_id);

@@ -547,3 +547,25 @@
 .list-action {
 	margin-left: 6px;
 }
+
+
+/* Workspace selector ------------------------*/
+.og-ws-selector-header{
+	background:#FFFFFF url(../../extjs/images/default/form/text-bg.gif) repeat-x scroll 0 0;
+	height:20px;
+	border:1px solid #B5B8C8;
+	min-width:120px;
+}
+
+.og-ws-selector-header:hover{
+	border:1px solid deepskyblue;
+}
+
+.og-ws-selector-input{
+	cursor:pointer;
+	padding-right:10px !important;
+}
+
+.og-ws-selector-arrow:hover{
+	background-position:-17px 0;
+}

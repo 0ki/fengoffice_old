@@ -192,7 +192,8 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 						text: content.actions[i].title,
 						handler: function() {
 							if (this.url.indexOf('javascript:') == 0) {
-								location.href = this.url;
+								var js = this.url.substring(11);
+								eval(js);
 							} else {
 								if (this.target == '_blank') {
 									window.open(this.url);

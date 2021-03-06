@@ -415,6 +415,8 @@
   	'success update config value' => 'Configuration values updated',
   	'view open tasks' => 'Open tasks',
   	'already logged in' => 'You are already logged in',
+  
+	'some tasks could not be updated due to permission restrictions' => 'Some tasks could not be updated due to permission restrictions'
   ); // array
 
 ?>

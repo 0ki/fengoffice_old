@@ -683,6 +683,19 @@ class Contact extends BaseContact {
 		return can_manage_contacts($user, true);
     } // canDelete
     
+    function canLinkObject(User $user){
+		if (can_manage_contacts($user, true))
+			return true;
+		else {
+			$roles = $this->getRoles();
+			foreach ($roles as $role){
+				if ($role->canView($user))
+					return true;
+			}
+			return false;
+		}   	
+    }
+    
 	// ---------------------------------------------------
     //  Roles
     // ---------------------------------------------------

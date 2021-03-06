@@ -1,6 +1,6 @@
 /*
- *  Slimey - SLIdeshow Microformat Editor, part of the OpenGoo weboffice suite - http://www.opengoo.org
- *  Copyright (C) 2007 Ignacio de Soto
+ *  Slimey - SLIdeshow Microformat Editor - http://slimey.sourceforge.net
+ *  Copyright (C) 2007 - 2008 Ignacio de Soto
  *
  *  Base Action definitions.
  */
@@ -57,7 +57,7 @@ var SlimeyInsertAction = function(slimey, tagname) {
 	elem.style.margin = '0px';
 	elem.style.padding = '0px';
 	elem.style.border = '0px';
-	elem.style.zIndex = 10000;
+	elem.style.zIndex = 1000;
 	if (elem.tagName == 'DIV') {
 		//elem.style.width = '20%';
 		//elem.style.height = '20%';
@@ -346,7 +346,7 @@ SlimeySendToBackAction.prototype = new SlimeyAction();
  *  sends the selected element to the back
  */
 SlimeySendToBackAction.prototype.perform = function() {
-	var minZ = 100000000;
+	var minZ = 1000000;
 	for (var elem = this.slimey.editor.getContainer().firstChild; elem; elem = elem.nextSibling) {
 		if (elem.nodeType == 1) {
 			thisZ = parseInt(elem.style.zIndex);
@@ -446,7 +446,7 @@ SlimeyChangeSlideAction.prototype.undo = function() {
  *  	num: Position where to insert the new slide
  */
 var SlimeyInsertSlideAction = function(slimey, num) {
-	SlimeyAction.call(this, 'changeSlide', slimey);
+	SlimeyAction.call(this, 'insertSlide', slimey);
 
 	this.num = num;
 }
@@ -477,7 +477,7 @@ SlimeyInsertSlideAction.prototype.undo = function() {
  *  	num: Number of the slide to be deleted
  */
 var SlimeyDeleteSlideAction = function(slimey, num) {
-	SlimeyAction.call(this, 'changeSlide', slimey);
+	SlimeyAction.call(this, 'deleteSlide', slimey);
 
 	this.num = num;
 }
@@ -502,6 +502,39 @@ SlimeyDeleteSlideAction.prototype.perform = function() {
  */
 SlimeyDeleteSlideAction.prototype.undo = function() {
 	this.slimey.navigation.insertNewSlide(this.num, this.html, this.dom);
+}
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  class SlimeyMoveSlideAction - Moves the current slide to a new position
+ *  	from: Number of the slide to be moved
+ *  	to: The new position of the slide
+ */
+var SlimeyMoveSlideAction = function(slimey, from, to) {
+	SlimeyAction.call(this, 'moveSlide', slimey);
+
+	this.from = from;
+	this.to = to;
+}
+
+/**
+ *  SlimeyMoveSlideAction extends SlimeyAction
+ */
+SlimeyMoveSlideAction.prototype = new SlimeyAction();
+
+/**
+ *  move the slide to the new position
+ */
+SlimeyMoveSlideAction.prototype.perform = function() {
+	this.slimey.navigation.moveSlide(this.from, this.to);
+}
+
+/**
+ *  move the slide back to its original position
+ */
+SlimeyMoveSlideAction.prototype.undo = function() {
+	this.slimey.navigation.moveSlide(this.to, this.from);
 }
 
 /*---------------------------------------------------------------------------*/

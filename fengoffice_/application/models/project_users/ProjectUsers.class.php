@@ -46,7 +46,7 @@
       
       $sql = "SELECT $users_table.* FROM $users_table, $project_users_table WHERE ($users_table.`id` = $project_users_table.`user_id` AND $project_users_table.`project_id` = " . DB::escape($project->getId()) . ')';
       if(trim($additional_conditions) <> '') $sql .= " AND ($additional_conditions)";
-      $sql .= " order by `display_name` ";
+      
       $rows = DB::executeAll($sql);
       if(is_array($rows)) {
         foreach($rows as $row) {

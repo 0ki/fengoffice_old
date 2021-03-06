@@ -87,7 +87,6 @@
   	'user ws config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
   	'user ws config option name can notify from quick add' => 'Checkbox de notificación en vista de ingreso rápido',
   	'user ws config option desc can notify from quick add' => 'Se habilita un checkbox para poder notificar al usuario asignado cuando se usa el formulario de ingreso rápido de tareas',
-
     
   	'backup process desc' => 'Un respaldo almacena el estado de toda la aplicación en un archivo comprimido. Pretende ser una forma rápida de obtener un respaldo de una instalación de OpenGoo. <br> Generar un respaldo puede demorar más que unos segundos, por lo que el proceso de respaldo consiste en 3 pasos: <br>1.- Iniciar un proceso de respaldo, <br>2.- Desargar el respaldo. <br> 3.- Opcional. Eliminar el respaldo del servidor. <br> ',
   	'start backup' => 'Iniciar proceso de respaldo',
