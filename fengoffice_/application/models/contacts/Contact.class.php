@@ -569,8 +569,8 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function delete() {
-      if($this->getUserId() && $this->getUser()) {
-        throw new Exception('Cannot delete a contact that has a user assigned to it');
+      if($this->getUserId()) {
+        return false;
       } // if
       
       $roles = $this->getRoles();
@@ -830,9 +830,8 @@ class Contact extends BaseContact {
     }
     
     function getDashboardObject(){
-    	$projects = $this->getProjects();
-    	if ($projects == null)
-    		$projects = "";
+    	
+    	$wsIds =  $this->getProjectIdsCSV();
     	
     	if($this->getUpdatedBy()){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
@@ -859,21 +858,27 @@ class Contact extends BaseContact {
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $projects,
-				"projectId" => 0,
+				"wsIds" => $wsIds,
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 			);
     }
     
-    function getProjects() {
+    /**
+     * Returns CSVs of the workspaces the contact is assigned to 
+     *
+     * @return unknown
+     */
+    function getProjectIdsCSV() {
     	$projs=ProjectContacts::getProjectsByContact($this);
-    	$ret= null;//return value
-    	foreach ($projs as $proj){
-    		if($ret)
-    			$ret .= ', ' . $proj->getName();
-    		else
-    			$ret = $proj->getName();
+    	$ret= ''; // default return value
+    	if($projs){
+	    	foreach ($projs as $proj){
+	    		if($ret)
+	    			$ret .= ', ' . $proj->getId();
+	    		else
+	    			$ret = $proj->getId();
+	    	}
     	}
     	return $ret;
     }

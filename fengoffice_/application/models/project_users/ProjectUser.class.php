@@ -63,6 +63,29 @@ class ProjectUser extends BaseProjectUser {
 		$this->setCanAssignToOther($checkbox_array[1] == 1);
 	 }
 	 
+	 /**
+	  * Returns false is the user has no permissions in the workspace
+	  * Return true in the user has any permission, from the radio or checkbox array
+	  *
+	  * @param unknown_type $radio_array
+	  * @param unknown_type $checkbox_array
+	  * @return unknown
+	  */
+	 static function hasAnyPermissions($radio_array,$checkbox_array){
+	 	if(is_array($radio_array)){
+		 	foreach ($radio_array as $elem){
+		 		if($elem != 0)
+		 			return true;
+		 	}
+	 	}
+	 	if(is_array($checkbox_array)){
+		 	foreach ($checkbox_array as $elem){
+		 		if($elem != 0)
+		 			return true;
+		 	}
+	 	}
+	 	return false;
+	 }
 } // ProjectUser
 
 ?>

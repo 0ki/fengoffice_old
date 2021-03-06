@@ -32,10 +32,10 @@ class TaskController extends ApplicationController {
 		$mc = new MilestoneController();
 		$mc->view_milestones();
 		if(active_project() instanceof Project)
-			$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId(),true);
+			$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId());
 		else 
 			$task_templates = array();
-		$all_task_templates = ProjectTasks::getAllTaskTemplates(true);
+		$all_task_templates = ProjectTasks::getAllTaskTemplates();
 		$milestone_templates = ProjectMilestones::getProjectMilestones(null, null, 'ASC', null, null, null, null, null, true);
 		ajx_unset_current();
 		if(!array_var($_GET, "assigned_to") && user_config_option('my tasks is default view')) //if default view 
@@ -208,7 +208,14 @@ class TaskController extends ApplicationController {
 				}
 				ApplicationLogs::createLog($task, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
-
+				// notify asignee
+				if(array_var($task_data, 'send_notification')) {
+					try {
+						Notifier::taskAssigned($task);
+					} catch(Exception $e) {
+						evt_add("debug", $e->getMessage());
+					} // try
+				}
 				ajx_extra_data(array("task" => $this->task_item($task)));
 				flash_success(lang('success add task list', $task->getTitle()));
 			} catch(Exception $e) {
@@ -440,7 +447,7 @@ class TaskController extends ApplicationController {
 						$processedCompanies = array();
 						$processedUsers = array();
 						$validWS = array($task->getProject());
-						if(is_array($validWS) ){
+						if (is_array($validWS)) {
 							foreach ($validWS as $w) {
 								$workspace_companies = $w->getCompanies();
 								foreach ($workspace_companies as $c) {
@@ -462,8 +469,7 @@ class TaskController extends ApplicationController {
 								}
 							}
 						}
-		
-						Notifier::newTask($task, $notify_people); // send notification email...
+					Notifier::newTask($task, $notify_people); // send notification email...
 					} catch(Exception $e) {
 						evt_add("debug", $e->getMessage());
 					} // try
@@ -688,6 +694,17 @@ class TaskController extends ApplicationController {
 		  		$task->save_properties($task_data);
 				ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_EDIT);
    
+				try {
+					$subtasks = $task->getSubTasks();
+					foreach ($subtasks as $sub) {
+						if (!$task->getAssignedTo() instanceof ApplicationDataObject) {
+							$sub->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+							$sub->setAssignedToUserId(array_var($assigned_to, 1, 0));
+						}
+					}
+				} catch (Exception $e) {
+				}
+				
 				DB::commit();
 				
 				try {

@@ -11,6 +11,7 @@
   if(!defined('ENVIRONMENT_PATH')) define('ENVIRONMENT_PATH', dirname(__FILE__));
   
   // Configure PHP
+  ini_set('memory_limit', '64M');
   ini_set('short_open_tag', 'on');
   ini_set('date.timezone', 'GMT');
   if(function_exists('date_default_timezone_set')) {

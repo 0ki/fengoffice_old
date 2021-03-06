@@ -36,6 +36,9 @@ class DashboardController extends ApplicationController {
 			$wscsv = $logged_user->getActiveProjectIdsCSV();
 			$active_projects = $logged_user->getActiveProjects();
 		}
+		if(!$wscsv){
+			$wscsv = "-1";
+		}
 		$activity_log = null;
 		if(is_array($active_projects) && count($active_projects)) {
 			$include_private = $logged_user->isMemberOfOwnerCompany();
@@ -90,9 +93,10 @@ class DashboardController extends ApplicationController {
 			$tasks = ProjectTasks::getProjectTasks(active_project(),null,'ASC',null,null,$tag,$to_company,$to_user,null,true);
 			tpl_assign('dashtasks', $tasks);
 		}
-		
-		$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag);
-		tpl_assign('tasks_in_progress', $tasks_in_progress);
+		if(user_config_option('show tasks in progress widget')){
+			$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag);
+			tpl_assign('tasks_in_progress', $tasks_in_progress);
+		}
 		
 		if(user_config_option('show late tasks and milestones widget')){
 			tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project(), $tag));

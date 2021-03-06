@@ -48,7 +48,6 @@
     
     // Messages
     'add message' => 'Añadir mensaje',
-    'add new message' => 'Agregar nuevo mensaje',
     'edit message' => 'Editar mensaje',
     'delete message' => 'Eliminar mensaje',
     'view message' => 'Mostrar mensaje',
@@ -190,6 +189,7 @@
 	'view history for' => 'Ver historial',
 	'view history' => 'Ver historial',
 	'edit preferences' => 'Editar preferencias',
+  	'add new message' => 'Añadir nuevo mensaje',  
     
   ); // array
 

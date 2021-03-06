@@ -70,15 +70,15 @@ class Timeslots extends BaseTimeslots {
 	 * @param array $order_by
 	 * @return array
 	 */
-	static function getTaskTimeslots(User $user= null, $workspacesCSV=null, DateTimeValue $start_date, DateTimeValue $end_date, $object_id = 0, $group_by = null, $order_by = null){
+	static function getTaskTimeslots(Project $workspace = null, User $user= null, $workspacesCSV=null, DateTimeValue $start_date, DateTimeValue $end_date, $object_id = 0, $group_by = null, $order_by = null){
 		$wslevels = 0;
 		foreach ($group_by as $gb)
 			if ($gb == "project_id")
 				$wslevels++;
 		
 		$wsDepth = 0;
-		if (active_project() instanceof Project)
-			$wsDepth = active_project()->getDepth();
+		if ($workspace instanceof Project)
+			$wsDepth = $workspace->getDepth();
 		
 		$wslevels = min(array($wslevels, 10 - $wsDepth));
 		if ($wslevels < 0) $wslevels = 0;

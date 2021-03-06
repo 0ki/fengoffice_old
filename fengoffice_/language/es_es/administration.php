@@ -41,7 +41,7 @@
     'config option name site_name' => 'Nombre del sitio',
     'config option desc site_name' => 'Este valor va a ser desplegado como el nombre del sitio en la página Panel principal',
     'config option name file_storage_adapter' => 'Almacenamiento de archivos',
-    'config option desc file_storage_adapter' => 'Elija dónde guardar adjuntos, imágenes, logos y cualquier otro tipo de documento cargado en la página. <strong>El motor de almacenamiento en la base de datos es recomendable</strong>.',
+    'config option desc file_storage_adapter' => 'Elija dónde guardar documentos cargados en la página. <strong>El motor de almacenamiento en la base de datos es recomendable</strong>.',
     'config option name default_project_folders' => 'Carpetas creadas por defecto',
     'config option desc default_project_folders' => 'Carpetas que van a ser creadas cuando se cree el proyecto. El nombre de cada carpeta debera aparecer en una línea. Las líneas duplicadas o vacías no van a ser tenidas en cuenta',
     'config option name theme' => 'Tema',
@@ -83,6 +83,9 @@
   	
  	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
   	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del espacio y sus subespacios',
+  	'user ws config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
+  	'user ws config option name can notify from quick add' => 'Checkbox de notificación en vista de ingreso rápido',
+  	'user ws config option desc can notify from quick add' => 'Se habilita un checkbox para poder notificar al usuario asignado cuando se usa el formulario de ingreso rápido de tareas',
 
   ); // array
 

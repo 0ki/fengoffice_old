@@ -195,7 +195,7 @@
     'country sg' => 'Singapore',
     'country sk' => 'Slovakia',
     'country si' => 'Slovenia',
-    'country sp' => 'Solomon Islands',
+    'country sb' => 'Solomon Islands',
     'country so' => 'Somalia',
     'country za' => 'South Africa',
     'country es' => 'Spain',

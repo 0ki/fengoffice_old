@@ -238,7 +238,7 @@ class FilesController extends ApplicationController {
 			$enteredWS = Projects::findByCSVIds($ids);
 			$validWS = array();
 			foreach ($enteredWS as $ws) {
-				if (ProjectMessage::canAdd(logged_user(), $ws)) {
+				if (ProjectFile::canAdd(logged_user(), $ws)) {
 					$validWS[] = $ws;
 				}
 			}

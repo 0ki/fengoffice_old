@@ -389,6 +389,7 @@ og.OverviewManager = function() {
 			'-',
 			/*actions.refresh,
 			'-',*/
+			'->',
 			actions.showAsDashboard
 		],
 		listeners: {

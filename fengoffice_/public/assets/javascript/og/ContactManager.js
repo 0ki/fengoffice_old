@@ -20,7 +20,7 @@ og.ContactManager = function() {
 	            fields: [
 	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','projectName','projectId','workspaceColors'
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -38,7 +38,8 @@ og.ContactManager = function() {
 						}
 					} else {
 						this.fireEvent('messageToShow', "");
-					}
+					}					
+					og.showWsPaths();
 					og.hideLoading();
 				},
 				'beforeload': function() {
@@ -71,19 +72,18 @@ og.ContactManager = function() {
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('contact', 'card', {id: r.data.object_id}), String.format(r.data.name));
-		}
-		var projectstring = '';		
-	    if (r.data.projectId != null && r.data.projectId != ''){
-			var ids = String(r.data.projectId).split(',');
-			var names = r.data.projectName.split(',');
-			var colors = String(r.data.workspaceColors).split(',');
-			projectstring = '<span class="og-wsname">';
-			for(var i = 0; i < ids.length; i++){
-				projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
-			}
-			projectstring += '</span>';
-		}
-		return projectstring + name;
+			
+			if(r.data.companyId != null && r.data.companyId != 0 && r.data.companyName.trim()!=''){
+				name += String.format(
+					' (<a style="font-size:80%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>)',
+					r.data.companyName, og.getUrl('company', 'view_client', {id: r.data.companyId}), String.format(r.data.companyName));
+			} //end else
+		}// end else
+		var ids = String(r.data.wsIds).split(',');
+		var wsString = "";
+		for(var i = 0; i < ids.length; i++)
+			wsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
+		return wsString + name;
     }
     function renderCompany(value, p, r) {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', value, og.getUrl('company', 'card', {id: r.data.companyId}));
@@ -187,12 +187,6 @@ og.ContactManager = function() {
 			header: lang("role"),
 			dataIndex: 'role',
 			width: 60
-        },{
-			id: 'company',
-			header: lang("company"),
-			dataIndex: 'companyName',
-			width: 100,
-			renderer: renderCompany
         },{
 			id: 'email',
 			header: lang("email"),

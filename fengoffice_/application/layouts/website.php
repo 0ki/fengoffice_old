@@ -72,7 +72,6 @@
 
 		);
 	
-	echo add_javascript_to_page(with_slash(ROOT_URL).'/language/'.Localization::instance()->getLocale().'/ui.datepicker-'.Localization::instance()->getLocale().'.js');
 	echo add_javascript_to_page(get_url("access", "get_javascript_translation"));
 	
 	if(defined('USE_JS_CACHE') && USE_JS_CACHE){

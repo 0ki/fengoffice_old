@@ -413,7 +413,8 @@
   	'error assign workspace' => 'Failed to assign template to workspace',
   	'success assign workspaces' => 'Succeeded to assign template to workspace',
   	'success update config value' => 'Configuration values updated',
-  	'view open tasks' => 'Open tasks' ,
+  	'view open tasks' => 'Open tasks',
+  	'already logged in' => 'You are already logged in',
   ); // array
 
 ?>

@@ -1,5 +1,4 @@
-<?php //
-	$isAlt = false; //bug-fix
+<?php //Functions
 	function has_value($array, $value){
 		foreach ($array as $val)
 			if ($val == $value)
@@ -50,6 +49,8 @@
 		}
 		return '';
 	}
+	
+	$sectionDepth = 0;
 ?>
 <?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, 'd/m/Y') ?><?php } // if ?>
 <?php if ($end_time) { ?><span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, 'd/m/Y') ?><?php } // if ?>
@@ -76,6 +77,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	
 	//Initialize
 	$gbvals = array('','','');
+	$sumTime = 0;
 	$sumTimes = array(0,0,0);
 	$sectionDepth = is_array($group_by) ? count($group_by) : 0;
 	$c = 0;
@@ -150,11 +152,17 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 </td></tr>
 <?php } // foreach
 } // if 
-		if(!isset($sectionDepth))
-			$sectionDepth = 0;
+
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>
 	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
 </tr></table></div></td></tr><?php }?>
+<?php foreach ($timeslotsArray as $ts) {
+	$t = $ts['ts'];
+	$sumTime += $t->getMinutes();
+}?>
+<tr><td colspan="5">
+<div style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;"><?php echo strtoupper(lang("total")) . ": " . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTime * 60), "hm", 60) ?></div>
+</td></tr>
 </table>

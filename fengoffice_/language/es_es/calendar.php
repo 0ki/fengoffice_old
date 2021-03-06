@@ -64,14 +64,14 @@
 	// SUBMITTING/EDITING EVENT SECTION TEXT (event.php)
 	"CAL_MORE_TIME_OPTIONS" => "Mas opciones de tiempos",
 	"CAL_REPEAT" => "Repetir",
-	"CAL_EVERY" => "Todos",
+	"CAL_EVERY" => "Cada",
 	"CAL_REPEAT_FOREVER" => "Repetir para siempre",
 	"CAL_REPEAT_UNTIL" => "Repetir hasta",
 	"CAL_TIMES" => "Horas",
 	"CAL_HOLIDAY_EXPLAIN" => "Hará que el evento se repita en ",
 	"CAL_DURING" => "Durante",
 	"CAL_EVERY_YEAR" => "Todos los años",
-	"CAL_HOLIDAY_EXTRAOPTION" => "O, como cae en la Última semana del mes, Marque aquí para hacer que el evento sea en la Última",
+	"CAL_HOLIDAY_EXTRAOPTION" => "O, como cae en la Última semana del mes, Marque aquí para hacer que el evento sea en el Último",
 	"CAL_IN" => "en",
 	"CAL_PRIVATE_EVENT_EXPLAIN" => "Esto es un evento privado",
 	"CAL_SUBMIT_ITEM" => "Enviar item",
@@ -107,6 +107,10 @@
 	"CAL_HOURS" => "Horas", // (view event, submit event)
 	"CAL_HOUR" => "Hora", // (view event, submit event)
 	"CAL_ANONYMOUS" => "Anónimo", // (view event, view date, submit event)
-	"CAL_SELECT_TIME" => "Selecctione tiempo de inicio"
+	"CAL_SELECT_TIME" => "Selecctione tiempo de inicio",
+	"days" => "días",
+	"weeks" => "semanas",
+	"months" => "meses",
+	"years" => "años",
   ); // array
 ?>

@@ -1,8 +1,9 @@
 -- <?php echo $table_prefix ?> og_
 -- <?php echo $default_charset ?> DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
 -- <?php echo $default_collation ?> collate utf8_unicode_ci
--- varcahr cannot be larger than 256
+-- varchar cannot be larger than 256
 -- blob/text cannot have default values
+-- sql queries must finish with ;\n (line break inmediately after ;)
 
 CREATE TABLE `<?php echo $table_prefix ?>administration_tools` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,

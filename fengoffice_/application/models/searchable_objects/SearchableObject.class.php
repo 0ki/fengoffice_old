@@ -11,7 +11,7 @@
   	
   	public function save()
   	{
-  		if (!LUCENE_SEARCH)
+  		if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
   			return parent::save();
   		else {
   			LuceneDB::AddToIndex($this);

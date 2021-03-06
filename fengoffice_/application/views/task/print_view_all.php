@@ -80,8 +80,8 @@ else
 			<td><?php echo $task->getDueDate()?$task->getDueDate()->format("M d Y H:i:s"):lang('n/a')?></td>
 			<td><?php echo $task->getAssignedToName()?></td>
 			<td><?php echo $task->getTitle()?></td>
-			<td><?php echo lang('last updated by on',$task->getUpdatedBy()->getUsername(),$task->getUpdatedOn()->format("M d Y H:i:s"))?></td>
 			<td><?php echo $task->getProject()->getName()?></td>
+			<td><?php echo lang('last updated by on',$task->getUpdatedBy()->getUsername(),$task->getUpdatedOn()->format("M d Y H:i:s"))?></td>
 			</tr>
 <?php 	} ?>
 </table>

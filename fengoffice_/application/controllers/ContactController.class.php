@@ -288,8 +288,7 @@ class ContactController extends ApplicationController {
 							"id" => $i,
 							"object_id" => $c->getId(),
 							"type" => 'contact',
-							"projectId" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"projectName" => $c->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+							"wsIds" => $c->getProjectIdsCSV(),
     						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"name" => $c->getReverseDisplayName(),
 							"email" => $c->getEmail(),
@@ -332,8 +331,7 @@ class ContactController extends ApplicationController {
 							"id" => $i,
 							"object_id" => $c->getId(),
 							"type" => 'company',
-							"projectId" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"projectName" => $c->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+							"wsIds" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
     						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							'name' => $c->getName(),
 							'email' => $c->getEmail(),
@@ -592,7 +590,7 @@ class ContactController extends ApplicationController {
 				}
 				
 				$contact->setFromAttributes($contact_data);
-				$contact->setIsPrivate(false);
+
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
 				

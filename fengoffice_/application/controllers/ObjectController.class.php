@@ -446,6 +446,15 @@ class ObjectController extends ApplicationController {
     	}
     	$proj_cond = ' `project_id` IN (' . $proj_ids . ')';
     	$proj_cond2 = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = `object_manager_value` AND `workspace_id` IN ('.$proj_ids.'))';
+    	
+    	/**
+    	 * In queries for companies, messages and documents '$proj_cond2' was replaced by '$proj_cond_comp', '$proj_cond_msgs' and '$proj_cond_docs'
+    	 * to avoid the error that mysql 5.0.67 throws when it finds `object_manager_value` in where clause
+    	 */
+    	$proj_cond_comp = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
+    	$proj_cond_msgs = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND `workspace_id` IN ('.$proj_ids.'))';
+    	$proj_cond_docs = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectFiles\' AND `workspace_id` IN ('.$proj_ids.'))';
+    	
     	if(isset($tag) && $tag && $tag!='')
     		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`='".$tag."' AND `oid` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
@@ -457,31 +466,39 @@ class ObjectController extends ApplicationController {
     			$unclassifiedMails = " UNION SELECT 'MailContents' AS `object_manager_value`, `id` AS `oid`, `sent_date` AS `last_update` FROM `" . TABLE_PREFIX . "mail_contents` `co` WHERE `account_id` IN (" . $accountIds . ") " . $tag_str;
     	}
     	$res = array();
+    	
+    	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Messages']  = "SELECT  'ProjectMessages' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
-					TABLE_PREFIX . "project_messages` `co` WHERE " . $proj_cond2 . $tag_str . $permissions;
+					TABLE_PREFIX . "project_messages` `co` WHERE " . $proj_cond_msgs . $tag_str . $permissions;
+
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Calendar'] = "SELECT  'ProjectEvents' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_events` `co` WHERE  " . $proj_cond . $tag_str . $permissions;
+
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Documents'] = "SELECT  'ProjectFiles' AS `object_manager_value`, `id` as `oid`, `updated_on` AS `last_update` FROM `" . 
-					TABLE_PREFIX . "project_files` `co` WHERE " . $proj_cond2 . $tag_str . $permissions;
+					TABLE_PREFIX . "project_files` `co` WHERE " . $proj_cond_docs . $tag_str . $permissions;
+					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Tasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_tasks` `co` WHERE `is_template` = false AND `parent_id` = 0 AND " . $proj_cond . $tag_str . $permissions;
+
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Milestones'] = "SELECT  'ProjectMilestones' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_milestones` `co` WHERE " . $proj_cond . $tag_str . $permissions;
+					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Web Pages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, `created_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_webpages` `co` WHERE " . $proj_cond . $tag_str . $permissions;
+					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Emails'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, `sent_date` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "mail_contents` `co` WHERE " . $proj_cond . $tag_str . $permissions . $unclassifiedMails;
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Companies'] = "SELECT  'Companies' AS `object_manager_value`, `id` as `oid`, `updated_on` AS `last_update` FROM `" . 
-					TABLE_PREFIX . "companies` `co` WHERE " . $proj_cond2 . $tag_str . $permissions;
+					TABLE_PREFIX . "companies` `co` WHERE " . $proj_cond_comp . $tag_str . $permissions;
 					
 		if (!can_manage_contacts(logged_user())){
 			$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
@@ -589,6 +606,7 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		$ret = 0;
+    	//echo $query;die();
 		$res = DB::execute($query);	
     	if(!$res)  return $ret;
     	$rows=$res->fetchAll();
@@ -612,7 +630,6 @@ class ObjectController extends ApplicationController {
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		$project = array_var($_GET,'active_project');
 		$tag = array_var($_GET,'tag');
 		$type = array_var($_GET,'type');
 		$user = array_var($_GET,'user');

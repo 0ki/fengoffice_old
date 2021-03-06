@@ -76,7 +76,7 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 	loadTags: function() {
 		og.openLink(og.getUrl('tag', 'list_tags'),{
 			callback: function(success, data) {
-				if (success) {
+				if (success && data.errorCode == 0) {
 					try {
 						var tags = data.tags;
 						this.addTags(tags);

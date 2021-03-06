@@ -4,6 +4,7 @@
 </div>
 
 <script>
+var showNotificationCheck = <?php echo user_config_option('can notify from quick add')?'true':'false' ?>;
 function filterTasks() {
 	var to = Ext.getDom('og-task-filter-to').value;
 	var status = Ext.getDom('og-task-filter-status').value;

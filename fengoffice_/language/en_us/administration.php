@@ -41,7 +41,7 @@
     'config option name site_name' => 'Site name',
     'config option desc site_name' => 'This value will be displayed as the site name on the Dashboard page',
     'config option name file_storage_adapter' => 'File storage',
-    'config option desc file_storage_adapter' => 'Select where you want to store attachments, avatars, logos and any other uploaded documents. Database storage engine is recommended.<strong>Switching storage will make all previuosly uploaded files unavailable </strong>.',
+    'config option desc file_storage_adapter' => 'Select where you want to store uploaded documents. <strong>Switching storage will make all previuosly uploaded files unavailable </strong>.',
     'config option name default_project_folders' => 'Default folders',
     'config option desc default_project_folders' => 'Folders that will be created when workspace is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
     'config option name theme' => 'Theme',
@@ -83,6 +83,10 @@
   	
   	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
   	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
-  ); // array
+  	'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
+  	'user ws config option name can notify from quick add' => 'Notification checkbox in quick add',
+  	'user ws config option desc can notify from quick add' => 'A checkbox is enabled so assigned users can be notified after quick addition on a task',
+
+  	); // array
 
 ?>

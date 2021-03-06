@@ -31,7 +31,7 @@
     * @return array
     */
     static function searchPaginated($search_for, $project_csvs, $include_private = false, $items_per_page = 10, $current_page = 1) {
-        if (LUCENE_SEARCH) {
+        if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
       		$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
       		$hits = LuceneDB::findClean($conditions);
       		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
@@ -47,7 +47,7 @@
     
     static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1, $columns_csv = null, $user_id = 0) {
         $remaining = 0;
-    	if (LUCENE_SEARCH) {
+    	if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
         	throw new Exception("Not implemented");
       		/*$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
       		$hits = LuceneDB::findClean($conditions);
@@ -241,7 +241,7 @@
     * @return boolean
     */
     static function dropContentByObject(ApplicationDataObject $object) {
-    	if (!LUCENE_SEARCH)
+    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
     		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     	else {
     		return LuceneDB::DeleteFromIndex($object, false);
@@ -255,7 +255,7 @@
     * @return boolean
     */
     static function dropContentByObjectColumn(ApplicationDataObject $object, $column = '') {
-    	if (!LUCENE_SEARCH)
+    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
     		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` = '. "'". $column . "'" , get_class($object->manager()), $object->getObjectId(), $column));
     	else {
     		return LuceneDB::DeleteFromIndex($object, false);
@@ -271,7 +271,7 @@
     static function dropContentByObjectColumns(ApplicationDataObject $object, $columns = array()) {
     	$columns_csv = "'" . implode("','",$columns) . "'";
     	
-    	if (!LUCENE_SEARCH)
+    	if (!(defined('LUCENE_SEARCH') && LUCENE_SEARCH))
     		return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` in ('. $columns_csv . ')' , get_class($object->manager()), $object->getObjectId()));
     	else {
     		return LuceneDB::DeleteFromIndex($object, false);

@@ -48,6 +48,29 @@
     } // __construct
     
     /**
+     * Transform PHP notation like 8M, to bytes
+     *
+     * @param unknown_type $val
+     * @return unknown
+     */
+    function return_bytes($val) {
+	    $val = trim($val);
+	    $last = strtolower($val[strlen($val)-1]);
+	    switch($last) {
+	        // The 'G' modifier is available since PHP 5.1.0
+	        case 'g':
+	            $val *= 1024;
+	        case 'm':
+	            $val *= 1024;
+	        case 'k':
+	            $val *= 1024;
+	    }
+	
+	    return $val;
+	}
+	
+	
+    /**
     * Execute environment checks
     *
     * @access public
@@ -94,6 +117,12 @@
         } // foreach
       } // if
       
+      $memory_limit = $this->return_bytes(ini_get('memory_limit')); // Memory allocated to PHP scripts
+      $suggested_memory = 12582912;      
+      if ( $memory_limit < $suggested_memory ) {
+      	$this->addToChecklist("Variable 'memory_limit' is $memory_limit which might not be enough for OpenGoo. You should increase it to at least $suggested_memory in your php.ini.", false);
+      }
+
       $this->setContentFromTemplate('checks.php');
       
       if(ini_get('zend.ze1_compatibility_mode')) {

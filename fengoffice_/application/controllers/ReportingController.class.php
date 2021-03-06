@@ -248,17 +248,22 @@ class ReportingController extends ApplicationController {
 	function total_task_times($report_data = null, $task = null){
 		$this->setTemplate('report_wrapper');
 		
-		if (!$report_data)
+		if (!$report_data) {
 			$report_data = array_var($_POST, 'report');
+			// save selections into session
+			$_SESSION['total_task_times_report_data'] = $report_data;
+		}
 		
 		$user = Users::findById(array_var($report_data, 'user'));
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
 			if (array_var($report_data, 'include_subworkspaces'))
-				$workspacesCSV = $workspace->getAllSubWorkspacesCSV();
+				$workspacesCSV = $workspace->getAllSubWorkspacesCSV(false,logged_user());
 			else
 				$workspacesCSV = $workspace->getId();
-		} else $workspacesCSV = null;
+		} else {
+			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
+		}
 		
 		$st = DateTimeValueLib::now();
 		$et = DateTimeValueLib::now();
@@ -312,7 +317,7 @@ class ReportingController extends ApplicationController {
 		if (array_var($report_data, 'group_by_3') != '0')
 			$group_by[] = array_var($report_data, 'group_by_3');
 		
-		$timeslotsArray = Timeslots::getTaskTimeslots($user,$workspacesCSV,$st,$et, array_var($report_data, 'task_id',0),$group_by);
+		$timeslotsArray = Timeslots::getTaskTimeslots($workspace,$user,$workspacesCSV,$st,$et, array_var($report_data, 'task_id',0),$group_by);
 		
 		tpl_assign('group_by', $group_by);
 		tpl_assign('timeslotsArray', $timeslotsArray);
@@ -333,10 +338,12 @@ class ReportingController extends ApplicationController {
 		$st = DateTimeValueLib::make(0,0,0,1,1,1900);
 		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
 		
-		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null, $task->getProjectId(),$st,$et,'ProjectTasks', get_id());
+		//$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null, $task->getProjectId(),$st,$et,'ProjectTasks', get_id());
+		$timeslotsArray = Timeslots::getTaskTimeslots(null,null,null,$st,$et, get_id());
 		
 		tpl_assign('estimate', $task->getTimeEstimate());
-		tpl_assign('timeslots', $timeslots);
+		//tpl_assign('timeslots', $timeslots);
+		tpl_assign('timeslotsArray', $timeslotsArray);
 		tpl_assign('workspace', $task->getProject());
 		tpl_assign('template_name', 'total_task_times');
 		tpl_assign('title',lang('task time report'));
@@ -372,10 +379,13 @@ class ReportingController extends ApplicationController {
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
 			if (array_var($report_data, 'include_subworkspaces'))
-				$workspacesCSV = $workspace->getAllSubWorkspacesCSV();
+				$workspacesCSV = $workspace->getAllSubWorkspacesCSV(false,logged_user());
 			else
 				$workspacesCSV = $workspace->getId();
-		} else $workspacesCSV = null;
+		} 
+		else {
+			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
+		}
 		
 		$sday = array_var($report_data, 'start_day');
 		$smonth = array_var($report_data, 'start_month');

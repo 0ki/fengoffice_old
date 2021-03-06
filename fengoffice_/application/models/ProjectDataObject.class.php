@@ -1067,9 +1067,6 @@
     		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
     	}
     	
-    	
-    	
-    	
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),

@@ -13,7 +13,8 @@ og.showWsPaths = function(containerItemName){
 	for(var i = 0; i < list.length; i++)
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
-			list[i].innerHTML = og.renderWsPath(list[i].innerHTML);
+			var id = list[i].innerHTML.replace(/^\s*([\S\s]*?)\s*$/, '$1');
+			list[i].innerHTML = og.renderWsPath(id);
 		}
 };
 

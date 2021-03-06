@@ -13,6 +13,6 @@
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
 
-  return '0.9.1';
+  return '0.9.2';
   
 ?>

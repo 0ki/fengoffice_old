@@ -262,55 +262,29 @@ class AccountController extends ApplicationController {
 				if ($permissionsString && $permissionsString != ''){
 					$permissions = json_decode($permissionsString);
 				}
-			  	if(is_array($permissions)) {
+			  	if(is_array($permissions) && count($permissions) > 0) {
 			  		//Clear old modified permissions
 			  		$ids = array();
-			  		foreach($permissions as $perm){
+			  		foreach($permissions as $perm)
 			  			$ids[] = $perm->wsid;
-			  		}
+			  			
 			  		ProjectUsers::clearByUser($user,implode(',',$ids));
 			  		
 			  		//Add new permissions
 			  		//TODO - Make batch update of these permissions
 			  		foreach($permissions as $perm){
-			  			$relation = new ProjectUser();
-				  		$relation->setProjectId($perm->wsid);
-				  		$relation->setUserId($user->getId());
-			  			
-				  		$relation->setCheckboxPermissions($perm->pc);
-				  		$relation->setRadioPermissions($perm->pr);
-				  		$relation->save();
-			  		}
-				  } // if
-				
-				/*foreach($projects as $project) {
-					$relation = ProjectUsers::findById(array(
-	            		'project_id' => $project->getId(),
-	            		'user_id' => $user->getId(),
-					)); // findById
-					
-					if(array_var($_POST, 'project_permissions_'.$project->getId()) == 'on') {
-						if(!($relation instanceof ProjectUser)) {
-							$relation = new ProjectUser();
-							$relation->setProjectId($project->getId());
-							$relation->setUserId($user->getId());
-						} // if
-	
-						foreach($permissions as $permission => $permission_text) {
-							$post_id = 'project_permissions_'.$project->getId().'_'.$permission;
-							$post_value = array_var($_POST, $post_id);
-							$permission_value = $post_value == 'on';
-							$setter = 'set' . Inflector::camelize($permission);
-							$relation->$setter($permission_value);
-						} // foreach
-	
-						$relation->save();
-					} else {
-						if($relation instanceof ProjectUser) {
-							$relation->delete();
-						} // if
-					} // if
-				} // if*/
+			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($perm->wsid);
+					  		$relation->setUserId($user->getId());
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			} //endif
+			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
+			  		} //end foreach
+				} // if
 				
 				$user->setCanEditCompanyData(false);
 				$user->setCanManageSecurity(false);

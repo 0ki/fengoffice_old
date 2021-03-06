@@ -215,6 +215,7 @@ class AccessController extends ApplicationController {
 				
 				$project = new Project();
 				$project->setId(1);
+				$project->setP1(1);
 				$project->setName($administrator->getUsername().'_personal');
 				$project->setDescription(lang('files'));
 				$project->setCreatedById($administrator->getId());

@@ -90,3 +90,8 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_
  (7,'dashboard','show documents widget','1','BoolConfigHandler',0,500,''),
  (8,'dashboard','show charts widget','1','BoolConfigHandler',0,600,''),
  (9,'task panel','my tasks is default view','1','BoolConfigHandler',0,0,'');
+
+-- Milanga
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_name`,`name`,`default_value`,`config_handler_class`,`is_system`,`option_order`,`dev_comment`) VALUES 
+ (10,'dashboard','show tasks in progress widget','1','BoolConfigHandler',0,0,''),
+ (11,'task panel','can notify from quick add','0','BoolConfigHandler',0,0,'');

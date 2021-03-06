@@ -33,19 +33,19 @@ $year =  array_var($event_data, 'year');
 			cal_hide("cal_extra2");
 			cal_hide("cal_extra3");
 			if(document.getElementById("daily").selected){
-				document.getElementById("word").innerHTML = "Days";
+				document.getElementById("word").innerHTML = '<?php echo lang("days")?>';
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
 			} else if(document.getElementById("weekly").selected){
-				document.getElementById("word").innerHTML = "Weeks";
+				document.getElementById("word").innerHTML =  '<?php echo lang("weeks")?>';
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
 			} else if(document.getElementById("monthly").selected){
-				document.getElementById("word").innerHTML = "Months";
+				document.getElementById("word").innerHTML =  '<?php echo lang("months")?>';
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
 			} else if(document.getElementById("yearly").selected){
-				document.getElementById("word").innerHTML = "Years";
+				document.getElementById("word").innerHTML =  '<?php echo lang("years")?>';
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
 			} else if(document.getElementById("holiday").selected){
@@ -274,6 +274,7 @@ $year =  array_var($event_data, 'year');
 				// get days in month and day name
 				$daysinmonth = date("t",mktime(0,0,1,$month,$day,$year));
 				$dayname = date("l",mktime(0,0,1,$month,$day,$year));
+				$dayname = "CAL_" .strtoupper  ($dayname);
 				// use week number, and days in month to calculate if it's on the last week.
 				if($day > $daysinmonth - 7) $lastweek = true;
 				else $lastweek = false;
@@ -284,10 +285,10 @@ $year =  array_var($event_data, 'year');
 				else $weekname = $week."th";
 				// print out the data for holiday repeating
 		
-				echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ".$dayname ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+				echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ". lang($dayname) ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
 		
 				if($lastweek){// if it's the last week, add option to have event repeat on LAST week every month (holiday repeating only)
-					echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." $dayname ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+					echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." " . lang($dayname)." ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
 				}
 				?>
 			</div>

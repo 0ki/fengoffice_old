@@ -162,14 +162,16 @@ class UserController extends ApplicationController {
 					$permissions = json_decode($permissionsString);
 				}
 			  	if(is_array($permissions)) {
-			  		foreach($permissions as $perm){
-			  			$relation = new ProjectUser();
-				  		$relation->setProjectId($perm->wsid);
-				  		$relation->setUserId($user->getId());
-			  			
-				  		$relation->setCheckboxPermissions($perm->pc);
-				  		$relation->setRadioPermissions($perm->pr);
-				  		$relation->save();
+			  		foreach($permissions as $perm){			  			
+			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){	
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($perm->wsid);
+					  		$relation->setUserId($user->getId());
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			}
 			  		}
 				  } // if
 		

@@ -61,58 +61,58 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function edit() {
-		$this->setTemplate('add_company');
-
-		if(!logged_user()->isAdministrator(owner_company())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		// Owner company
-		$company = owner_company();
-
-		$company_data = array_var($_POST, 'company');
-		if(!is_array($company_data)) {
-			$company_data = array(
-          'name' => $company->getName(),
-          'timezone' => $company->getTimezone(),
-          'email' => $company->getEmail(),
-          'homepage' => $company->getHomepage(),
-          'address' => $company->getAddress(),
-          'address2' => $company->getAddress2(),
-          'city' => $company->getCity(),
-          'state' => $company->getState(),
-          'zipcode' => $company->getZipcode(),
-          'country' => $company->getCountry(),
-          'phone_number' => $company->getPhoneNumber(),
-          'fax_number' => $company->getFaxNumber()
-			); // array
-		} // if
-
-		tpl_assign('company', $company);
-		tpl_assign('company_data', $company_data);
-
-		if(is_array(array_var($_POST, 'company'))) {
-			$company->setFromAttributes($company_data);
-			$company->setClientOfId(0);
-			$company->setHomepage(array_var($company_data, 'homepage'));
-
-			try {
-				DB::beginWork();
-				$company->save();
-				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
-				DB::commit();
-
-				flash_success(lang('success edit company', $company->getName()));
-				ajx_current("back");
-
-			} catch(Exception $e) {
-				DB::rollback();
-				ajx_current("empty");
-				flash_error($e->getMessage());
-			} // try
-		} // if
+//		$this->setTemplate('add_company');
+//
+//		if(!logged_user()->isAdministrator(owner_company())) {
+//			flash_error(lang('no access permissions'));
+//			ajx_current("empty");
+//			return;
+//		} // if
+//
+//		// Owner company
+//		$company = owner_company();
+//
+//		$company_data = array_var($_POST, 'company');
+//		if(!is_array($company_data)) {
+//			$company_data = array(
+//          'name' => $company->getName(),
+//          'timezone' => $company->getTimezone(),
+//          'email' => $company->getEmail(),
+//          'homepage' => $company->getHomepage(),
+//          'address' => $company->getAddress(),
+//          'address2' => $company->getAddress2(),
+//          'city' => $company->getCity(),
+//          'state' => $company->getState(),
+//          'zipcode' => $company->getZipcode(),
+//          'country' => $company->getCountry(),
+//          'phone_number' => $company->getPhoneNumber(),
+//          'fax_number' => $company->getFaxNumber()
+//			); // array
+//		} // if
+//
+//		tpl_assign('company', $company);
+//		tpl_assign('company_data', $company_data);
+//
+//		if(is_array(array_var($_POST, 'company'))) {
+//			$company->setFromAttributes($company_data);
+//			$company->setClientOfId(0);
+//			$company->setHomepage(array_var($company_data, 'homepage'));
+//
+//			try {
+//				DB::beginWork();
+//				$company->save();
+//				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
+//				DB::commit();
+//
+//				flash_success(lang('success edit company', $company->getName()));
+//				ajx_current("back");
+//
+//			} catch(Exception $e) {
+//				DB::rollback();
+//				ajx_current("empty");
+//				flash_error($e->getMessage());
+//			} // try
+//		} // if
 
 	} // edit
 
@@ -229,7 +229,11 @@ class CompanyController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'company'))) {
 			$company->setFromAttributes($company_data);
-			$company->setClientOfId(owner_company()->getId());
+			if (owner_company()->getId() == $company->getId()) {
+				$company->setClientOfId(0);
+			} else {
+				$company->setClientOfId(owner_company()->getId());
+			}
 			$company->setHomepage(array_var($company_data, 'homepage'));
 
 			try {

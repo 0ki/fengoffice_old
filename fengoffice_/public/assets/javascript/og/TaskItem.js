@@ -191,6 +191,8 @@ og.TaskItem = function(config) {
 		this.doms.newTaskTitle = newTaskForm.doms.textarea;
 		this.doms.newTaskAssignTo = newTaskForm.doms.dropdown;
 		this.doms.newTaskCheckbox = newTaskForm.doms.checkbox;
+		if(showNotificationCheck)
+			this.doms.newTaskCheckboxNotify = newTaskForm.doms.checkboxNotify;
 		this.doms.newTaskHours = newTaskForm.doms.hours;
 		newTaskForm.doms.butOK.onclick = this.addTask.createDelegate(this);
 		newTaskForm.doms.butCancel.onclick = this.hideAddTask.createDelegate(this);
@@ -247,10 +249,25 @@ og.TaskItem.createAddTaskForm = function(config) {
 	tr.appendChild(td);
 	var td = document.createElement('td');
 	td.style.paddingRight="15px";
-	td.innerHTML = 'Completed';
+	td.innerHTML = lang('completed');
 	tr.appendChild(td);
+	if(showNotificationCheck){
+		var td = document.createElement('td');
+		td.width="18px";
+		var checkboxNotify = document.createElement('input');
+		checkboxNotify.type = 'checkbox';
+		checkboxNotify.style.width="16px"
+		checkboxNotify.style.height="16px"
+		checkboxNotify.style.height="16px"
+		td.appendChild(checkboxNotify);
+		tr.appendChild(td);
+		var td = document.createElement('td');
+		td.style.paddingRight="15px";
+		td.innerHTML = lang('notify');
+		tr.appendChild(td);
+	}
 	var td = document.createElement('td');
-	td.innerHTML = 'Hours worked:&nbsp;';
+	td.innerHTML = lang('hours worked') + ':&nbsp;';
 	tr.appendChild(td);
 	var td = document.createElement('td');
 	var hours = document.createElement('input');
@@ -305,6 +322,8 @@ og.TaskItem.createAddTaskForm = function(config) {
 	div.doms.dropdown = dropdown;
 	div.doms.more = amore;
 	div.doms.checkbox = checkbox;
+	if(showNotificationCheck)
+		div.doms.checkboxNotify = checkboxNotify;
 	div.doms.hours = hours;
 	div.doms.butOK = butOK;
 	div.doms.butCancel = butCancel;
@@ -546,6 +565,7 @@ og.TaskItem.prototype = {
 		var assignedTo = this.doms.newTaskAssignTo.value;
 		var title = this.doms.newTaskTitle.value;
 		var hours = this.doms.newTaskHours.value;
+		var checkedNotify = showNotificationCheck && this.doms.newTaskCheckboxNotify.checked;
 		var checked = this.doms.newTaskCheckbox.checked;
 		og.openLink(og.getUrl('task', 'quick_add_task'), {
 			method: 'POST',
@@ -555,7 +575,8 @@ og.TaskItem.prototype = {
 				"task[parent_id]": this.id,
 				"task[milestone_id]": 0,
 				"task[hours]": hours,
-				"task[is_completed]": checked
+				"task[is_completed]": checked,
+				"task[send_notification]": checkedNotify
 			},
 			callback: function(success, data) {
 				if (success && ! data.errorCode) {

@@ -14,7 +14,7 @@
     'search results' => 'Resultados de la búsqueda',
     'account' => 'Cuenta',
     'settings' => 'Configuración',
-    'index' => '�?ndice',
+    'index' => '�?ndice',
     'view' => 'Ver',
     'edit' => 'Editar',
     'delete' => 'Eliminar',
@@ -169,7 +169,9 @@
   	'none no bars' => 'Ninguno',
   	'apply to all subworkspaces' => 'Aplicar permisos a todos los subespacios',
   	'weblinks' => 'Páginas Web',
-  	'add work' => 'Agregar trabajo',
+  	'include subworkspaces' => 'Incluir subespacios',
+    'timeslot on object' => 'Tiempo de trabajo en {0}',
+    'add work' => 'Agregar trabajo',
   ); // array
 
 ?>

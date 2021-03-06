@@ -109,7 +109,11 @@
 	"CAL_ANONYMOUS" => "Anonymous", // (view event, view date, submit event),
 	
 	
-	"CAL_SELECT_TIME" => "Select Starting Time"
+	"CAL_SELECT_TIME" => "Select Starting Time",
+	"days" => "days",
+	"weeks" => "weeks",
+	"months" => "months",
+	"years" => "years",
 
   ); // array
 ?>

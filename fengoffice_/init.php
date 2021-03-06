@@ -16,10 +16,10 @@
   
   set_include_path('library/zend' . PATH_SEPARATOR . get_include_path());
   
-  if (LUCENE_SEARCH) {
+  if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
  	require_once('Zend/Search/Lucene.php');
   }
-  
+
   // ---------------------------------------------------
   //  Fix some $_SERVER vars (taken from wordpress code)
   // ---------------------------------------------------
@@ -61,7 +61,7 @@
   
   define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.9.1');
+    define('PRODUCT_VERSION', '0.9.2');
   } // if
   define('INSTALLED_VERSION', include 'version.php');
   
@@ -139,7 +139,7 @@
   // data collected by the matched route
   require_once APPLICATION_PATH . '/application.php';
   
-  
+
   // Set handle request timer...
   if(Env::isDebugging()) {
     benchmark_timer_set_marker('Handle request');
@@ -147,8 +147,10 @@
   
   // Get controller and action and execute...
   try {
-    Env::executeAction(request_controller(), request_action()) or
-    	DB::rollback();
+  	if (!defined( 'CONSOLE_MODE' )) {
+	    Env::executeAction(request_controller(), request_action()) or
+	    	DB::rollback();
+  	}
   } catch(Exception $e) {
     if(Env::isDebugging()) {
       Env::dumpError($e);
@@ -157,4 +159,5 @@
       redirect_to(get_url('error', 'execute_action'));
     } // if
   } // try
+  
 ?>

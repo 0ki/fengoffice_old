@@ -109,7 +109,7 @@ _lang = {
 	'webpage': 'Página web',
 	'message': 'Mensaje',
 	
-	'workspaces': '�?rea de trabajo',
+	'workspaces': 'Área de trabajo',
 	'all': 'Todo',
 	'create a workspace': 'Crear nueva área de trabajo',
 	'delete selected workspace': 'Eliminar el área de trabajo seleccionado',
@@ -192,6 +192,8 @@ _lang = {
 	'messages': 'Mensajes',
 	'view options': 'Ver opciones',
 	'check mails' : 'Verificar cuentas de correo',
+	'emails' : 'Emails',
+	'create an email' : 'Crea un Email',
 
 	'filter workspaces': 'Filtrar áreas de trabajo...',
 	'filter tags': 'Filtrar etiquetas...',
@@ -234,7 +236,7 @@ _lang = {
 	
 	'open link in new window' : "Abrir '{0}' en una nueva ventana",
 	
-	'wschooser desc from': '�?reas de trabajo disponibles',
+	'wschooser desc from': 'Áreas de trabajo disponibles',
 	'wschooser desc to': 'Objetos del área de trabajo',
 
 	'updated by': 'Modificado por',
@@ -297,7 +299,7 @@ _lang = {
 	'mail sent': 'Enviado',
 	'create contact or client company':'Crear contacto o compañía cliente',
 	
-	'mail sent': 'Mail sent',
+	'mail sent': 'Correo enviado',
 	
 	'click to remove': 'Haga clic para quitar',
 	
@@ -310,5 +312,12 @@ _lang = {
 	'sent':'Enviados',
 	'unread': 'No Leidos',
 	
-	'more options': 'Más opciones'
+	'more options': 'Más opciones',
+	'completed': 'Completado',
+	'notify': 'Notificar',
+	'hours worked': 'Horas trabajadas',
+	'login': 'Ingreso',
+	'username': 'Usuario',
+	'password': 'Contraseña',
+	'remember me': 'Recordarme'
 }

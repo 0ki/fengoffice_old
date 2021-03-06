@@ -122,7 +122,7 @@ _lang = {
 	'all tag': 'Todas las etiquetas',
 	'view': 'Ver',
 	'details': 'Detalles',
-	'icons': '�?conos',
+	'icons': '�?conos',
 	'displaying objects of': 'Desplegando objeto {0} al {1} de {2}',
 	'no objects to display': 'No hay objetos para mostrar',
 	'ok': 'OK',
@@ -191,6 +191,8 @@ _lang = {
 	'messages': 'Mensajes',
 	'view options': 'Ver opciones',
 	'check mails' : 'Verificar cuentas de correo',
+	'emails' : 'Emails',
+	'create an email' : 'Crea un Email',
 
 	'filter workspaces': 'Filtrar espacios...',
 	'filter tags': 'Filtrar etiquetas...',
@@ -309,5 +311,12 @@ _lang = {
 	'sent':'Enviados',
 	'unread': 'No Leidos',
 	
-	'more options': 'Más opciones'
+	'more options': 'Más opciones',
+	'completed': 'Completado',
+	'notify': 'Notificar',
+	'hours worked': 'Horas trabajadas',
+	'login': 'Ingreso',
+	'username': 'Usuario',
+	'password': 'Contraseña',
+	'remember me': 'Recordarme'
 }

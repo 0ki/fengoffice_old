@@ -426,7 +426,9 @@
   'updated' => 'Updated',
   'group by' => 'Group by',
   
-  'total' => 'Total'
+  'total' => 'Total',
+  
+  'enter tags desc' => 'Enter comma separated tag names...',
   
   ); // array
 

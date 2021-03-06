@@ -8,28 +8,30 @@
 	$workspacesToJson = array();
 
 	$wsset = array();
-	foreach ($activeProjects as $w) {
-		$wsset[$w->getId()] = true;
-	}
-	foreach ($activeProjects as $w){
-		$tempParent = $w->getParentId();
-		$x = $w;
-		while ($x instanceof Project && !isset($wsset[$tempParent])) {
-			$tempParent = $x->getParentId();
-			$x = $x->getParentWorkspace();
+	if($activeProjects){
+		foreach ($activeProjects as $w) {
+			$wsset[$w->getId()] = true;
 		}
-		if (!$x instanceof Project) {
-			$tempParent = 0;
+		foreach ($activeProjects as $w){
+			$tempParent = $w->getParentId();
+			$x = $w;
+			while ($x instanceof Project && !isset($wsset[$tempParent])) {
+				$tempParent = $x->getParentId();
+				$x = $x->getParentWorkspace();
+			}
+			if (!$x instanceof Project) {
+				$tempParent = 0;
+			}
+			
+			$workspacesToJson[] = array(
+				"id" => $w->getId(),
+				"n" => $w->getName(),
+				"p" => $tempParent,
+				"rp" => $w->getParentId(),
+				"d" => $w->getDepth(),
+				"c" => $w->getColor(),
+				);
 		}
-		
-		$workspacesToJson[] = array(
-			"id" => $w->getId(),
-			"n" => $w->getName(),
-			"p" => $tempParent,
-			"rp" => $w->getParentId(),
-			"d" => $w->getDepth(),
-			"c" => $w->getColor(),
-			);
 	}
 	
 ?>

@@ -491,6 +491,10 @@ function unescapeSLIM($encodedSLIM) {
 	return rawurldecode($encodedSLIM);
 }
 
+function escape_css($html, $id) {
+	/* TODO: preppend the id of the HTML element to each CSS selector */
+	return preg_replace('/<style[^<]*<\/style>/i', '', $html);
+}
 
 function make_ajax_url($url) {
 	$q = strpos($url, '?');
