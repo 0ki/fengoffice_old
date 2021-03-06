@@ -9,7 +9,7 @@
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/massmailerForm.js') ?>"></script>
 <div id="massMailer">
-  <form action="<?php echo $tool->getToolUrl() ?>" method="post">
+  <form class="internalForm" action="<?php echo $tool->getToolUrl() ?>" method="post">
 <?php tpl_display(get_template_path('form_errors')) ?>
   
     <div>

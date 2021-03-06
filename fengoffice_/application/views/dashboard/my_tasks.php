@@ -22,10 +22,10 @@
 <?php if((is_array($assigned_milestones) && count($assigned_milestones)) || (is_array($assigned_tasks) && count($assigned_tasks))) { ?>
 <?php $has_assigned_tasks = true ?>
   <div class="block">
-    <div class="header"><h2><a href="<?php echo $active_project->getOverviewUrl() ?>"><?php echo clean($active_project->getName()) ?></a></h2></div>
+    <div class="header"><h2><a class="internalLink" href="<?php echo $active_project->getOverviewUrl() ?>"><?php echo clean($active_project->getName()) ?></a></h2></div>
     <div class="content">
 <?php if(is_array($assigned_milestones) && count($assigned_milestones)) { ?>
-      <p><a href="<?php echo $active_project->getMilestonesUrl() ?>"><?php echo lang('milestones') ?></a>:</p>
+      <p><a class="internalLink" href="<?php echo $active_project->getMilestonesUrl() ?>"><?php echo lang('milestones') ?></a>:</p>
       <table class="blank">
 <?php foreach($assigned_milestones as $assigned_milestone) { ?>
         <tr>
@@ -39,7 +39,7 @@
 <?php } else { ?>
             <span class="assignedTo"><?php echo lang('anyone') ?>:</span> 
 <?php } // if ?>
-            <a href="<?php echo $assigned_milestone->getViewUrl() ?>"><?php echo clean($assigned_milestone->getName()) ?></a> - 
+            <a class="internalLink" href="<?php echo $assigned_milestone->getViewUrl() ?>"><?php echo clean($assigned_milestone->getName()) ?></a> - 
 <?php if($assigned_milestone->isUpcoming()) { ?>
             <span><?php echo lang('days left', $assigned_milestone->getLeftInDays()) ?></span>
 <?php } elseif($assigned_milestone->isLate()) { ?>
@@ -54,7 +54,7 @@
 <?php } // if ?>
 
 <?php if(is_array($assigned_tasks) && count($assigned_tasks)) { ?>
-      <p><a href="<?php echo $active_project->getTasksUrl() ?>"><?php echo lang('tasks') ?></a>:</p>
+      <p><a class="internalLink" href="<?php echo $active_project->getTasksUrl() ?>"><?php echo lang('tasks') ?></a>:</p>
       <table class="blank">
 <?php foreach($assigned_tasks as $assigned_task) { ?>
         <tr>
@@ -70,7 +70,7 @@
 <?php } // if ?>
             <?php echo clean($assigned_task->getText()) ?> 
 <?php if($assigned_task->getTaskList() instanceof ProjectTaskList) { ?>
-            (<?php echo lang('in') ?> <a href="<?php echo $assigned_task->getTaskList()->getViewUrl() ?>"><?php echo clean($assigned_task->getTaskList()->getName()) ?></a>)
+            (<?php echo lang('in') ?> <a class="internalLink" href="<?php echo $assigned_task->getTaskList()->getViewUrl() ?>"><?php echo clean($assigned_task->getTaskList()->getName()) ?></a>)
 <?php } // if ?>
           </td>
         </tr>

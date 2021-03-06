@@ -226,27 +226,28 @@
     if(is_dir($path)) return true;
     $real_path = str_replace('\\', '/', $path);
     $parts = explode('/', $real_path);
-    
+   
     $forced_path = '';
     foreach($parts as $part) {
-      
-      // Skip first on windows
-      if($forced_path == '') {
-        $start = substr(__FILE__, 0, 1) == '/' ? '/' : '';
-        $forced_path = $start . $part;
-      } else {
-        $forced_path .= '/' . $part;
-      } // if
-      
-      if(!is_dir($forced_path)) {
-        if(!is_null($chmod)) {
-          if(!mkdir($forced_path)) return false;
-        } else {
-          if(!mkdir($forced_path, $chmod)) return false;
+        if($part !='')
+        {
+              // Skip first on windows
+              if($forced_path == '') {
+                $start = substr(__FILE__, 0, 1) == '/' ? '/' : '';
+                $forced_path = $start . $part;
+              } else {
+                $forced_path .= '/' . $part;
+              } // if
+              if(!is_dir($forced_path)) {
+                if(!is_null($chmod)) {
+                  if(!mkdir($forced_path)) return false;
+                } else {
+                  if(!mkdir($forced_path, $chmod)) return false;
+                } // if
+              } // if
         } // if
-      } // if
     } // foreach
-    
+   
     return true;
   } // force_mkdir
   

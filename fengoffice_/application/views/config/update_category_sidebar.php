@@ -4,7 +4,7 @@
   <div class="blockContent">
     <ul class="listWithDetails">
 <?php foreach($config_categories as $current_config_category) { ?>
-      <li><a href="<?php echo $current_config_category->getUpdateUrl() ?>"><?php echo clean($current_config_category->getDisplayName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $current_config_category->getUpdateUrl() ?>"><?php echo clean($current_config_category->getDisplayName()) ?></a></li>
 <?php } // foreach ?>
     </ul>
   </div>

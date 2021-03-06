@@ -10,7 +10,7 @@
 
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/attachToObjectForm.js') ?>"></script>
-<form action="<?php echo $attach_to_object->getAttachFilesUrl() ?>" method="post" enctype="multipart/form-data">
+<form class="internalForm" action="<?php echo $attach_to_object->getAttachFilesUrl() ?>" method="post" enctype="multipart/form-data">
 <?php tpl_display(get_template_path('form_errors')) ?>
   <div class="hint"><?php echo lang('attach files to object desc', $attach_to_object->getObjectUrl(), clean($attach_to_object->getObjectName())) ?></div>
   <div>

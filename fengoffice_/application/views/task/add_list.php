@@ -10,9 +10,9 @@
 
 ?>
 <?php if($task_list->isNew()) { ?>
-<form action="<?php echo get_url('task', 'add_list') ?>" method="post">
+<form class="internalForm" action="<?php echo get_url('task', 'add_list') ?>" method="post">
 <?php } else { ?>
-<form action="<?php echo $task_list->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $task_list->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

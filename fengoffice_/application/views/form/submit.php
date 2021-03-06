@@ -5,7 +5,7 @@
   project_crumbs($project_form->getName());
 
 ?>
-<form action="<?php echo $project_form->getSubmitUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $project_form->getSubmitUrl() ?>" method="post">
   <?php tpl_display(get_template_path('form_errors')) ?>
   
 <?php if($project_form->getDescription()) { ?>

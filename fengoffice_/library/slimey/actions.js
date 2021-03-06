@@ -9,8 +9,9 @@
  *  abstract class SlimeyAction - Actions on the editor
  *  	name: name of the action
  */
-var SlimeyAction = function(name) {
+var SlimeyAction = function(name, slimey) {
 	this.name = name;
+	this.slimey = slimey;
 }
 
 /**
@@ -39,22 +40,18 @@ SlimeyAction.prototype.undo = function() {
  *  class SlimeyInsertAction - Handles insertion of new elements
  *  	tagname: HTML tagname of the element to be inserted
  */
-var SlimeyInsertAction = function(tagname) {
-	SlimeyAction.call(this, 'insert');
+var SlimeyInsertAction = function(slimey, tagname) {
+	SlimeyAction.call(this, 'insert', slimey);
 
-	var elem = SlimeyEditor.getInstance().getContainer().ownerDocument.createElement(tagname);
+	var elem = this.slimey.editor.getContainer().ownerDocument.createElement(tagname);
 	/* set element attributes */
+	elem.slimey = this.slimey;
 	elem.className = 'slimeyElement';
 	elem.style.position = 'absolute';
 	elem.style.left = '40%';
 	elem.style.top = '30%';
 	elem.style.lineHeight = '1.';
 	elem.style.cursor = 'move';
-	elem.onmousedown = slimeyDrag;
-	elem.onclick = slimeyClick;
-	elem.ondblclick = slimeyEdit;
-	elem.onmouseover = slimeyHighlight;
-	elem.onmouseout = slimeyLowshadow;
 	elem.style.fontFamily = 'sans-serif';
 	elem.style.fontSize = '160%';
 	elem.style.margin = '0px';
@@ -83,6 +80,13 @@ var SlimeyInsertAction = function(tagname) {
 		elem.editable = true;
 		elem.title = 'Double click to edit content';
 	}
+	
+	/* event handlers */
+	setEventHandler(elem, "mousedown", slimeyDrag);
+	setEventHandler(elem, "click", slimeyClick);
+	setEventHandler(elem, "dblclick", slimeyEdit);
+	setEventHandler(elem, "mouseover", slimeyHighlight);
+	setEventHandler(elem, "mouseout", slimeyLowshadow);
 
 	this.element = elem;
 }
@@ -103,17 +107,17 @@ SlimeyInsertAction.prototype.getElement = function() {
  *  adds the created element to the editor
  */
 SlimeyInsertAction.prototype.perform = function() {
-	SlimeyEditor.getInstance().getContainer().appendChild(this.element);
+	this.slimey.editor.getContainer().appendChild(this.element);
 }
 
 /**
  *  removes the created element from the editor
  */
 SlimeyInsertAction.prototype.undo = function() {
-	SlimeyEditor.getInstance().getContainer().removeChild(this.element);
-	var selected = SlimeyEditor.getInstance().getSelected();
+	this.slimey.editor.getContainer().removeChild(this.element);
+	var selected = this.slimey.editor.getSelected();
 	if (selected == this.element) {
-		SlimeyEditor.getInstance().deselect();
+		this.slimey.editor.deselect();
 	}
 }
 
@@ -123,10 +127,14 @@ SlimeyInsertAction.prototype.undo = function() {
  *  class SlimeyEditContentAction - edits the contents of the selected element in the editor
  *  	content: HTML content to set to the element
  */
-var SlimeyEditContentAction = function(content) {
-	SlimeyAction.call(this, 'editContent');
+var SlimeyEditContentAction = function(slimey, content, element) {
+	SlimeyAction.call(this, 'editContent', slimey);
 
-	this.element = SlimeyEditor.getInstance().getSelected();
+	if (element) {
+		this.element = element;
+	} else {
+		this.element = this.slimey.editor.getSelected();
+	}
 	this.content = content;
 }
 
@@ -158,10 +166,10 @@ SlimeyEditContentAction.prototype.undo = function() {
  *  	property: CSS property to be modified (i.e. fontFamily)
  *  	value: Value to set to the property (i.e. sans-serif)
  */
-var SlimeyEditStyleAction = function(property, value) {
-	SlimeyAction.call(this, 'editStyle');
+var SlimeyEditStyleAction = function(slimey, property, value) {
+	SlimeyAction.call(this, 'editStyle', slimey);
 
-	this.element = SlimeyEditor.getInstance().getSelected();
+	this.element = this.slimey.editor.getSelected();
 	this.property = property;
 	this.value = value;
 }
@@ -192,10 +200,10 @@ SlimeyEditStyleAction.prototype.undo = function() {
 /**
  *  class SlimeyDeleteAction - Deletes the selected element
  */
-var SlimeyDeleteAction = function() {
-	SlimeyAction.call(this, 'delete');
+var SlimeyDeleteAction = function(slimey) {
+	SlimeyAction.call(this, 'delete', slimey);
 
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	this.element = selected;
 }
 
@@ -208,15 +216,15 @@ SlimeyDeleteAction.prototype = new SlimeyAction();
  *  removes the selected element from the editor
  */
 SlimeyDeleteAction.prototype.perform = function() {
-	SlimeyEditor.getInstance().getContainer().removeChild(this.element);
-	SlimeyEditor.getInstance().deselect();
+	this.slimey.editor.getContainer().removeChild(this.element);
+	this.slimey.editor.deselect();
 }
 
 /**
  *  adds the previously deleted element to the editor
  */
 SlimeyDeleteAction.prototype.undo = function() {
-	SlimeyEditor.getInstance().getContainer().appendChild(this.element);
+	this.slimey.editor.getContainer().appendChild(this.element);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,10 +236,10 @@ SlimeyDeleteAction.prototype.undo = function() {
  *  	oldx: (optional) previous horizontal position if different than current
  *  	oldy: (optional) previous vertical position if different than current
  */
-var SlimeyMoveAction = function(newx, newy, oldx, oldy) {
-	SlimeyAction.call(this, 'move');
+var SlimeyMoveAction = function(slimey, newx, newy, oldx, oldy) {
+	SlimeyAction.call(this, 'move', slimey);
 
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	this.newx = newx;
 	this.newy = newy;
 	if (oldx) {
@@ -277,10 +285,10 @@ SlimeyMoveAction.prototype.undo = function() {
  *  	oldw: (optional) previous width if different than current
  *  	oldh: (optional) previous height if different than current
  */
-var SlimeyResizeAction = function(neww, newh, oldw, oldh) {
-	SlimeyAction.call(this, 'resize');
+var SlimeyResizeAction = function(slimey, neww, newh, oldw, oldh) {
+	SlimeyAction.call(this, 'resize', slimey);
 
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	this.neww = neww;
 	this.newh = newh;
 	if (oldw) {
@@ -322,10 +330,10 @@ SlimeyResizeAction.prototype.undo = function() {
 /**
  *  class SlimeySendToBackAction - Sends the selected element to the back
  */
-var SlimeySendToBackAction = function() {
-	SlimeyAction.call(this, 'sendToBack');
+var SlimeySendToBackAction = function(slimey) {
+	SlimeyAction.call(this, 'sendToBack', slimey);
 
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	this.element = selected;
 }
 
@@ -339,7 +347,7 @@ SlimeySendToBackAction.prototype = new SlimeyAction();
  */
 SlimeySendToBackAction.prototype.perform = function() {
 	var minZ = 100000000;
-	for (var elem = SlimeyEditor.getInstance().getContainer().firstChild; elem; elem = elem.nextSibling) {
+	for (var elem = this.slimey.editor.getContainer().firstChild; elem; elem = elem.nextSibling) {
 		if (elem.nodeType == 1) {
 			thisZ = parseInt(elem.style.zIndex);
 			if (thisZ < minZ) {
@@ -363,10 +371,10 @@ SlimeySendToBackAction.prototype.undo = function() {
 /**
  *  class SlimeyBringToFrontAction - Brings the selected element to the front
  */
-var SlimeyBringToFrontAction = function() {
-	SlimeyAction.call(this, 'bringToFront');
+var SlimeyBringToFrontAction = function(slimey) {
+	SlimeyAction.call(this, 'bringToFront', slimey);
 
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	this.element = selected;
 }
 
@@ -380,7 +388,7 @@ SlimeyBringToFrontAction.prototype = new SlimeyAction();
  */
 SlimeyBringToFrontAction.prototype.perform = function() {
 	var maxZ = 0;
-	for (var elem = SlimeyEditor.getInstance().getContainer().firstChild; elem; elem = elem.nextSibling) {
+	for (var elem = this.slimey.editor.getContainer().firstChild; elem; elem = elem.nextSibling) {
 		if (elem.nodeType == 1) {
 			thisZ = parseInt(elem.style.zIndex);
 			if (thisZ > maxZ) {
@@ -405,8 +413,8 @@ SlimeyBringToFrontAction.prototype.undo = function() {
  *  class SlimeyChangeSlideAction - Changes the current slide
  *  	num: Slide number to change to
  */
-var SlimeyChangeSlideAction = function(num) {
-	SlimeyAction.call(this, 'changeSlide');
+var SlimeyChangeSlideAction = function(slimey, num) {
+	SlimeyAction.call(this, 'changeSlide', slimey);
 
 	this.num = num;
 }
@@ -420,15 +428,15 @@ SlimeyChangeSlideAction.prototype = new SlimeyAction();
  *  changes the current slide
  */
 SlimeyChangeSlideAction.prototype.perform = function() {
-	this.previousSlide = SlimeyNavigation.getInstance().currentSlide;
-	SlimeyNavigation.getInstance().getSlide(this.num);
+	this.previousSlide = this.slimey.navigation.currentSlide;
+	this.slimey.navigation.getSlide(this.num);
 }
 
 /**
  *  returns to the previous slide
  */
 SlimeyChangeSlideAction.prototype.undo = function() {
-	SlimeyNavigation.getInstance().getSlide(this.previousSlide);
+	this.slimey.navigation.getSlide(this.previousSlide);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -437,8 +445,8 @@ SlimeyChangeSlideAction.prototype.undo = function() {
  *  class SlimeyInsertSlideAction - Inserts a new slide
  *  	num: Position where to insert the new slide
  */
-var SlimeyInsertSlideAction = function(num) {
-	SlimeyAction.call(this, 'changeSlide');
+var SlimeyInsertSlideAction = function(slimey, num) {
+	SlimeyAction.call(this, 'changeSlide', slimey);
 
 	this.num = num;
 }
@@ -452,14 +460,14 @@ SlimeyInsertSlideAction.prototype = new SlimeyAction();
  *  insert the new slide
  */
 SlimeyInsertSlideAction.prototype.perform = function() {
-	SlimeyNavigation.getInstance().insertNewSlide(this.num);
+	this.slimey.navigation.insertNewSlide(this.num);
 }
 
 /**
  *  remove the inserted slide
  */
 SlimeyInsertSlideAction.prototype.undo = function() {
-	SlimeyNavigation.getInstance().deleteSlide(this.num);
+	this.slimey.navigation.deleteSlide(this.num);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -468,8 +476,8 @@ SlimeyInsertSlideAction.prototype.undo = function() {
  *  class SlimeyDeleteSlideAction - Deletes the current slide
  *  	num: Number of the slide to be deleted
  */
-var SlimeyDeleteSlideAction = function(num) {
-	SlimeyAction.call(this, 'changeSlide');
+var SlimeyDeleteSlideAction = function(slimey, num) {
+	SlimeyAction.call(this, 'changeSlide', slimey);
 
 	this.num = num;
 }
@@ -483,17 +491,17 @@ SlimeyDeleteSlideAction.prototype = new SlimeyAction();
  *  delete the current slide
  */
 SlimeyDeleteSlideAction.prototype.perform = function() {
-	this.html = SlimeyEditor.getInstance().getHTML();
+	this.html = this.slimey.editor.getHTML();
 	this.dom = document.createElement('div');
-	SlimeyEditor.getInstance().getDOM(this.dom);
-	SlimeyNavigation.getInstance().deleteSlide(this.num);
+	this.slimey.editor.getDOM(this.dom);
+	this.slimey.navigation.deleteSlide(this.num);
 }
 
 /**
  *  reinsert the deleted slide
  */
 SlimeyDeleteSlideAction.prototype.undo = function() {
-	SlimeyNavigation.getInstance().insertNewSlide(this.num, this.html, this.dom);
+	this.slimey.navigation.insertNewSlide(this.num, this.html, this.dom);
 }
 
 /*---------------------------------------------------------------------------*/

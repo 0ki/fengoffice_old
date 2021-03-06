@@ -6,9 +6,9 @@
     <ul>
 <?php foreach($subscribers as $user) { ?>
 <?php if($user->getId() == logged_user()->getId()) { ?>
-      <li><a href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a> (<a href="<?php echo $message->getUnsubscribeUrl() ?>" onclick="return confirm('<?php echo lang('confirm unsubscribe') ?>')"><?php echo lang('unsubscribe from message') ?></a>)</li>
+      <li><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a> (<a class="internalLink" href="<?php echo $message->getUnsubscribeUrl() ?>" onclick="return confirm('<?php echo lang('confirm unsubscribe') ?>')"><?php echo lang('unsubscribe from message') ?></a>)</li>
 <?php } else { ?>
-      <li><a href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></li>
 <?php } // if ?>
 <?php } // foreach ?>
     </ul>
@@ -16,7 +16,7 @@
     <p><?php echo lang('no subscribers') ?></p>
 <?php } // if ?>
 <?php if(!$message->isSubscriber(logged_user())) { ?>
-    <p><a href="<?php echo $message->getSubscribeUrl() ?>" onclick="return confirm('<?php echo lang('confirm subscribe') ?>')"><?php echo lang('subscribe to message') ?></a></p>
+    <p><a class="internalLink" href="<?php echo $message->getSubscribeUrl() ?>" onclick="return confirm('<?php echo lang('confirm subscribe') ?>')"><?php echo lang('subscribe to message') ?></a></p>
 <?php } // if ?>
   </div>
 </div>
@@ -25,7 +25,7 @@
 <div class="sidebarBlock">
   <h2><?php echo lang('options') ?></h2>
   <div class="blockContent">
-    <form action="<?php echo $message->getUpdateOptionsUrl() ?>" method="post">
+    <form class="internalForm" action="<?php echo $message->getUpdateOptionsUrl() ?>" method="post">
       <div class="formBlock">
         <div>
           <label><?php echo lang('private message') ?>:</label>
@@ -46,7 +46,7 @@
         </div>
       </div>
       <?php echo submit_button(lang('update message options'), null) ?>
-      <p>&raquo; <a href="<?php echo $message->getEditUrl() ?>"><?php echo lang('edit message') ?></a></p>
+      <p>&raquo; <a class="internalLink" href="<?php echo $message->getEditUrl() ?>"><?php echo lang('edit message') ?></a></p>
     </form>
   </div>
 </div>

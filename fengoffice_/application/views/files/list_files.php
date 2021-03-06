@@ -2,7 +2,22 @@
 "project": "<?php echo $filters['project'] ?>",
 "user": "<?php echo $filters['user'] ?>",
 "tag": "<?php echo $filters['tag'] ?>",
-"type": "<?php echo $filters['type'] ?>", 
+"type": "<?php echo $filters['type'] ?>",
+"errorCode": "<?php echo ($errCode?$errCode:0) ?>",
+"errorMessage": "<?php echo ($errMsg?$errMsg:"") ?>",
+"tags": [
+	<?php
+	$coma = false;
+	foreach ($tags as $t) {
+		if ($coma) {
+			echo ",";
+		} else {
+			$coma = true;
+		}
+		echo '{"name": "' . $t . '"}';
+	}
+	?>
+], 
 "files": [
 	<?php
 	$coma = false;

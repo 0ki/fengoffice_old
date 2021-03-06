@@ -19,21 +19,21 @@
   </tr>
 <?php foreach($clients as $client) { ?>
   <tr>
-    <td><a href="<?php echo $client->getViewUrl() ?>"><?php echo clean($client->getName()) ?></a></td>
+    <td><a class="internalLink" href="<?php echo $client->getViewUrl() ?>"><?php echo clean($client->getName()) ?></a></td>
     <td style="text-align: center"><?php echo $client->countUsers() ?></td>
 <?php 
   $options = array(); 
   if($client->canAddUser(logged_user())) {
-    $options[] = '<a href="' . $client->getAddUserUrl() . '">' . lang('add user') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $client->getAddUserUrl() . '">' . lang('add user') . '</a>';
   } // if
   if($client->canUpdatePermissions(logged_user())) {
-    $options[] = '<a href="' . $client->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $client->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
   } // if
   if($client->canEdit(logged_user())) {
-    $options[] = '<a href="' . $client->getEditUrl() . '">' . lang('edit') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $client->getEditUrl() . '">' . lang('edit') . '</a>';
   } // if
   if($client->canDelete(logged_user())) {
-    $options[] = '<a href="' . $client->getDeleteClientUrl() . '" onclick="return confirm(\'' . lang('confirm delete client') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $client->getDeleteClientUrl() . '" onclick="return confirm(\'' . lang('confirm delete client') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
     <td><?php echo implode(' | ', $options) ?></td>

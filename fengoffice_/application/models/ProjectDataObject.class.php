@@ -299,9 +299,14 @@
     function setTagsFromCSV($input) {
       $tag_names = array();
       if(trim($input)) {
-        $tag_names = explode(',', $input);
-        foreach($tag_names as $k => $v) {
-          if(trim($v) <> '') $tag_names[$k] = trim($v);
+      	$tag_set = array();
+        $tags = explode(',', $input);
+        foreach($tags as $k => $v) {
+        	$tag = trim($v);
+          if($tag <> '' && array_var($tag_set, $tag) == null) {
+          		$tag_names[] = $tag;
+          		$tag_set[$tag] = true;
+          }
         } // foreach
       } // if
       return $this->setTags($tag_names);

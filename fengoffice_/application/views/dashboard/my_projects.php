@@ -12,7 +12,7 @@
 <?php if(isset($active_projects) && is_array($active_projects) && count($active_projects)) { ?>
 <?php foreach($active_projects as $project) { ?>
 <div class="block">
-  <div class="header"><h2><a href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a></h2></div>
+  <div class="header"><h2><a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a></h2></div>
   <div class="content">
 <?php if(trim($project->getDescription())) { ?>
     <div class="description"><?php echo do_textile($project->getDescription()) ?></div>
@@ -21,7 +21,7 @@
 <?php 
   $project_company_names = array();
   foreach($project_companies as $project_company) {
-    $project_company_names[] = '<a href="' . $project_company->getCardUrl() . '">' . clean($project_company->getName()) . '</a>';
+    $project_company_names[] = '<a class="internalLink" href="' . $project_company->getCardUrl() . '">' . clean($project_company->getName()) . '</a>';
   } // foreach
 ?>
     <div class="involvedCompanies"><em><?php echo lang('companies involved in project') ?>:</em> <?php echo implode(', ', $project_company_names) ?></div>

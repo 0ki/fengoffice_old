@@ -6,9 +6,9 @@
   $order_by_posttime_url = $current_folder instanceof ProjectFolder ? $current_folder->getBrowseUrl(ProjectFiles::ORDER_BY_POSTTIME) : ProjectFiles::getIndexUrl(ProjectFiles::ORDER_BY_POSTTIME);
 ?>
 <?php if($order == ProjectFiles::ORDER_BY_NAME) { ?>
-    <a href="<?php echo $order_by_name_url ?>" class="selected"><?php echo lang('order by filename') ?></a> | <a href="<?php echo $order_by_posttime_url ?>"><?php echo lang('order by posttime') ?></a>
+    <a href="<?php echo $order_by_name_url ?>" class="selected internalLink"><?php echo lang('order by filename') ?></a> | <a class="internalLink" href="<?php echo $order_by_posttime_url ?>"><?php echo lang('order by posttime') ?></a>
 <?php } else { ?>
-    <a href="<?php echo $order_by_name_url ?>"><?php echo lang('order by filename') ?></a> | <a href="<?php echo $order_by_posttime_url ?>" class="selected"><?php echo lang('order by posttime') ?></a>
+    <a class="internalLink" href="<?php echo $order_by_name_url ?>"><?php echo lang('order by filename') ?></a> | <a href="<?php echo $order_by_posttime_url ?>" class="selected internalLink"><?php echo lang('order by posttime') ?></a>
 <?php } // if ?>
   </div>
   <div class="filesPagination">

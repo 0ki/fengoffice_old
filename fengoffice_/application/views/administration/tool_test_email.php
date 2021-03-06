@@ -6,7 +6,7 @@
     array($tool->getDisplayName())
   ));
 ?>
-<form action="<?php echo $tool->getToolUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $tool->getToolUrl() ?>" method="post">
 <?php tpl_display(get_template_path('form_errors')) ?>
 
   <div>

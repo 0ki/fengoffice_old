@@ -9,10 +9,10 @@
   
   // Return langs
   return array(
-    'new OpenGoo version available' => 'New version of OpenGoo is available. <a href="%s">More details</a>.',
+    'new OpenGoo version available' => 'New version of OpenGoo is available. <a class="internalLink" href="{0}">More details</a>.',
     
     'my tasks' => 'My tasks',
-    'welcome back' => 'Welcome back <strong>%s</strong>',
+    'welcome back' => 'Welcome back <strong>{0}</strong>',
     
     'online users' => 'Online users',
     'online users desc' => 'Users who were active in last 15 minutes:',
@@ -36,7 +36,7 @@
     'auto assign' => 'Auto assign',
     'administrator update profile notice' => 'Administration options (available only to administrators!)',
     
-    'project completed on by' => 'Completed on %s by %s',
+    'project completed on by' => 'Completed on {0} by {1}',
     
     'im service' => 'Service',
     'primary im service' => 'Primary IM',
@@ -52,11 +52,11 @@
     'new avatar notice' => 'Note that the current avatar will be deleted and replaced with new one!',
     'new logo notice' => 'Current logo will be deleted and replaced with new one!',
     
-    'days late' => '%s days late',
-    'days left' => '%s days left',
+    'days late' => '{0} days late',
+    'days left' => '{0} days left',
     
-    'user card of' => 'User card of %s',
-    'company card of' => 'Company card of %s',
+    'user card of' => 'User card of {0}',
+    'company card of' => 'Company card of {0}',
     
     // Upgrade
     'upgrade is not available' => 'There are no new versions of OpenGoo available for download',
@@ -90,15 +90,15 @@
     
     // Dashboard
     'welcome to new account' => 'Welcome to your newly created account',
-    'welcome to new account info' => '%s, welcome to your new account. From now on it will always be available on %s (you can bookmark this link). You can get started in a minute following these easy steps:',
+    'welcome to new account info' => '{0}, welcome to your new account. From now on it will always be available on {1} (you can bookmark this link). You can get started in a minute following these easy steps:',
     'new account step1' => 'Step 1: Update your company info',
-    'new account step1 info' => '<a href="%s">Set your company details</a> such as phone and fax number, address, email, homepage etc',
+    'new account step1 info' => '<a class="internalLink" href="{0}">Set your company details</a> such as phone and fax number, address, email, homepage etc',
     'new account step2' => 'Step 2: Add team members',
-    'new account step2 info' => 'You can <a href="%s">create user accounts</a> for all members of your team (unlimited number). Every member will get their username and password which they can use to access the system',
+    'new account step2 info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team (unlimited number). Every member will get their username and password which they can use to access the system',
     'new account step3' => 'Step 3: Add client companies and their members',
-    'new account step3 info' => 'Now its time to <a href="%s">define client companies</a> (unlimited). When you\'re done you can add their members or leave that for their team leaders. Client members are similar to your company members except that they have limited access to content and functions (you can set what they can do per project and per member)',
+    'new account step3 info' => 'Now its time to <a class="internalLink" href="{0}">define client companies</a> (unlimited). When you\'re done you can add their members or leave that for their team leaders. Client members are similar to your company members except that they have limited access to content and functions (you can set what they can do per project and per member)',
     'new account step4' => 'Step 4: Start a project',
-    'new account step4 info' => 'Defining a <a href="%s">new project</a> is really easy: set a name and decription (optional) and click submit. After that you can set permissions for your team members and clients.',
+    'new account step4 info' => 'Defining a <a class="internalLink" href="{0}">new project</a> is really easy: set a name and decription (optional) and click submit. After that you can set permissions for your team members and clients.',
     
     // Application log
     'application log details column name' => 'Details',
@@ -108,14 +108,14 @@
     // RSS
     'rss feeds' => 'RSS feeds',
     'recent activities feed' => 'Recent activities',
-    'recent project activities feed' => 'Recent activities on %s project',
+    'recent project activities feed' => 'Recent activities on {0} project',
     
     // Update company permissions
     'update company permissions hint' => 'Check project to give access permissions for this company. Note that you\'ll also need to specify access permissions for company members that you want to be able to access and manage selected projects (you can do that through projects People page or through user profiles).',
     
-    'footer copy with homepage' => '&copy; %s by <a href="%s">%s</a>. All rights reserved.',
-    'footer copy without homepage' => '&copy; %s by %s. All rights reserved',
-    'footer powered' => 'Powered by <a href="%s">%s</a>',
+    'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. All rights reserved.',
+    'footer copy without homepage' => '&copy; {0} by {1}. All rights reserved',
+    'footer powered' => 'Powered by <a target="_blank" href="{0}">{1}</a>',
 	
 	// Menu
 	'all documents' => 'All documents',
@@ -124,9 +124,11 @@
 	'by tag' => 'By tag',
 	'by type' => 'By type',
 	'recent documents' => 'Recent documents',
-	'select project' => 'Select project',
+	'current project' => 'Current project',
 	'show hide menu' => 'Show/Hide Menu',
 	'help' => 'Help',
+  
+  	'confirm leave page' => 'If you leave or reload the page you will lose unsubmitted data.',
     
   ); // array
 

@@ -86,12 +86,31 @@ function getOffsetPosition(elem) {
 }
 
 /**
- *  adds an event handler to an element, keeping the current event handlers.
- *  	elem: element to which to add the event handler (e.g. document)
+ *  sets an event handler to an element, removing any previous handlers for the event
+ *  	elem: element to which to set the event handler (e.g. document)
  *  	ev: event to handle (e.g. mousedown)
  *  	func: function that will handle the event
  */
-function addEventHandler(elem, ev, func) {
+function setEventHandler(elem, ev, func) {
+	elem[ev + "Count"] = 0;
+	elem["on" + ev] = func;
+}
+
+/**
+ *  adds an event handler to an element, keeping the current event handlers.
+ *  	elem: element to which to add the event handler (e.g. document)
+ *  	ev: event to handle (e.g. mousedown)
+ *  	fun: function that will handle the event
+ *  	scope: (optional) on which object to run the function
+ */
+function addEventHandler(elem, ev, fun, scope) {
+	if (scope) {
+		var func = function(e) {
+			fun.call(scope, e);
+		};
+	} else {
+		var func = fun;
+	}
 	if (elem[ev + "Count"]) {
 		elem[ev + elem[ev + "Count"]++] = func;
 	} else {
@@ -111,12 +130,13 @@ function addEventHandler(elem, ev, func) {
 /**
  *  returns document.getElementById(id);
  *  	id: id of the element
- *  	frame: frame where the element is (default: window)
+ *		container: (optional) where to search (default: document.body)
+ *  	frame: (optional) frame where the element is (default: window)
  */
-function $(id, frame) {
-	if (!frame) {
-		frame = window;
-	}
+function $(id, container, frame) {
+	if (!frame) frame = window;
+	if (!container) container = document.body;
+	
 	return frame.document.getElementById(id);
 }
 
@@ -124,45 +144,33 @@ function $(id, frame) {
  *  escapes the &, <, >, " and ' characters from a SLIM string
  */
 function escapeSLIM(rawSLIM) {
-	var encodedSLIM = rawSLIM
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#39;');
-	return encodedSLIM;
+	return encodeURIComponent(rawSLIM);
 }
 
 /**
  *  unescapes the &, <, >, " and ' characters from an escaped SLIM string
  */
 function unescapeSLIM(encodedSLIM) {
-	var rawSLIM = encodedSLIM
-			.replace(/\&#39;/g, '\'')
-			.replace(/\&quot;/g, '"')
-			.replace(/\&gt;/g, '>')
-			.replace(/\&lt;/g, '<')
-			.replace(/\&amp;/g, '&');
-	return rawSLIM
+	return decodeURIComponent(encodedSLIM);
 }
 
 /**
  *  lets the user pick an image and then calls a function passing it the chosen image's URL
  *  	func: function to call when the image is selected (func is passed the image's URL as the first argument)
  */
-function chooseImage(func, button) {
-	showImageChooser(imagesUrl, func, button);
+function chooseImage(func, scope, button) {
+	og.ImageChooser.show(imagesUrl, func, scope, button);
 }
 
 /**
  *  lets the user pick a color and then calls a function passing it the chosen color's CSS code
  *  	func: function to call when the color is selected (func is passed the color's code as the first argument)
  */
-function chooseColor(func, button) {
+function chooseColor(func, scope, button) {
 	var menu = new Ext.menu.ColorMenu({
         handler : function(palette, code) {
 			if (typeof(code) == "string") {
-				func("#" + code);
+				func.call(scope, "#" + code);
 			}
 		}
 	});
@@ -172,11 +180,11 @@ function chooseColor(func, button) {
 /**
  *  gets a string input.
  */
-function getInput(func, button) {
+function getInput(func, scope, button) {
 	Ext.Msg.prompt('Save', 'Choose a filename:',
 		function(btn, text) {
 			if (btn == 'ok') {
-				func(text);
+				func.call(scope, text);
 			}
 		}
 	);

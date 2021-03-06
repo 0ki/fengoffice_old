@@ -1,13 +1,13 @@
 
-    About OpenGoo alpha 0.5
-    =======================
+    About OpenGoo beta 0.5.1
+    =========================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
     tool. For license details, see license.txt.
 
     OpenGoo is based on activecollab 0.71.
 
-    Note: OpenGoo is under heavy development and is currently on an alpha stage.
+    Note: OpenGoo is under heavy development and is currently on an beta stage.
     This means that it still lacks much of its desired functionality and it may
     contain lots of bugs. This release of OpenGoo is intended for testing and
     previewing and not for production use. If you find a bug and want to
@@ -67,3 +67,28 @@
     procedure
 
     You should be finished in a matter of minutes.
+    
+    Upgrade from 0.5
+    ================
+    
+    Extract the following files and folders of this zip file to the root of your installation:
+		* opengoo/application
+		* opengoo/environment
+		* opengoo/help
+		* opengoo/language
+		* opengoo/library
+		* opengoo/public (keep your previous opengoo/public/files)
+		* opengoo/index.php
+		* opengoo/init.php
+		* opengoo/version.php
+		* opengoo/readme.txt
+
+	Changelog
+	=========
+	
+	* More AJAX features
+		- Now each section of the site is opened on an internal tab, requiring less time
+		to load and making navigation more agile
+	* Several bugfixes
+		- a bug that prevented documents from being saved under certain server configurations
+		- a bug on the listing of files

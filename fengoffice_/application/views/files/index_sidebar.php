@@ -5,20 +5,20 @@
   <div class="blockContent" id="sidebarFolderList">
     <ul>
 <?php if($current_folder instanceof ProjectFolder) { ?>
-      <li><a href="<?php echo ProjectFiles::getIndexUrl($order, $page) ?>"><?php echo lang('all files') ?></a></li>
+      <li><a class="internalLink" href="<?php echo ProjectFiles::getIndexUrl($order, $page) ?>"><?php echo lang('all files') ?></a></li>
 <?php } else { ?>
-      <li><a href="<?php echo ProjectFiles::getIndexUrl($order, $page) ?>" class="selected"><?php echo lang('all files') ?></a></li>
+      <li><a href="<?php echo ProjectFiles::getIndexUrl($order, $page) ?>" class="selected internalLink"><?php echo lang('all files') ?></a></li>
 <?php } // if ?>
     
 <?php foreach($folders as $folder) { ?>
 <?php if(($current_folder instanceof ProjectFolder) && ($current_folder->getId() == $folder->getId())) { ?>
-      <li><a href="<?php echo $folder->getBrowseUrl($order) ?>" class="selected"><?php echo clean($folder->getName()) ?></a> <?php if($folder->canEdit(logged_user())) { ?><a href="<?php echo $folder->getEditUrl() ?>" class="blank" title="<?php echo lang('edit folder') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($folder->canDelete(logged_user())) { ?><a href="<?php echo $folder->getDeleteUrl() ?>" class="blank" onclick="return confirm('<?php echo lang('confirm delete folder') ?>')" title="<?php echo lang('delete folder') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?></li>
+      <li><a href="<?php echo $folder->getBrowseUrl($order) ?>" class="selected internalLink"><?php echo clean($folder->getName()) ?></a> <?php if($folder->canEdit(logged_user())) { ?><a href="<?php echo $folder->getEditUrl() ?>" class="blank internalLink" title="<?php echo lang('edit folder') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($folder->canDelete(logged_user())) { ?><a href="<?php echo $folder->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete folder') ?>')" title="<?php echo lang('delete folder') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?></li>
 <?php } else { ?>
-      <li><a href="<?php echo $folder->getBrowseUrl($order) ?>"><?php echo clean($folder->getName()) ?></a> <?php if($folder->canEdit(logged_user())) { ?><a href="<?php echo $folder->getEditUrl() ?>" class="blank" title="<?php echo lang('edit folder') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($folder->canDelete(logged_user())) { ?><a href="<?php echo $folder->getDeleteUrl() ?>" class="blank" onclick="return confirm('<?php echo lang('confirm delete folder') ?>')" title="<?php echo lang('delete folder') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?></li>
+      <li><a class="internalLink" href="<?php echo $folder->getBrowseUrl($order) ?>"><?php echo clean($folder->getName()) ?></a> <?php if($folder->canEdit(logged_user())) { ?><a href="<?php echo $folder->getEditUrl() ?>" class="blank internalLink" title="<?php echo lang('edit folder') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($folder->canDelete(logged_user())) { ?><a href="<?php echo $folder->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete folder') ?>')" title="<?php echo lang('delete folder') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?></li>
 <?php } // if ?>
 <?php } // foreach ?>
     </ul>
-    <p><a href="<?php echo get_url('files', 'add_folder') ?>"><?php echo lang('add folder') ?></a></p>
+    <p><a class="internalLink" href="<?php echo get_url('files', 'add_folder') ?>"><?php echo lang('add folder') ?></a></p>
   </div>
 </div>
 <?php } // if ?>
@@ -30,7 +30,7 @@
     <ul>
 <?php foreach($important_files as $important_file) { ?>
       <li>
-        <a href="<?php echo $important_file->getDetailsUrl() ?>"><?php echo clean($important_file->getFilename()) ?></a><br />
+        <a class="internalLink" href="<?php echo $important_file->getDetailsUrl() ?>"><?php echo clean($important_file->getFilename()) ?></a><br />
         <span class="desc"><?php echo lang('revisions on file', $important_file->countRevisions()) ?></span>
       </li>
 <?php } // foreach ?>

@@ -22,7 +22,7 @@
       if($i == $pagination->getCurrentPage()) {
         $page_urls[] = "($i)";
       } else {
-        $page_urls[] = '<a href="' . str_replace($page_placeholder, $i, $url_base) . '">' . $i . '</a>';
+        $page_urls[] = '<a class="InternalLink" href="' . str_replace($page_placeholder, $i, $url_base) . '">' . $i . '</a>';
       } // if
     } // for
     

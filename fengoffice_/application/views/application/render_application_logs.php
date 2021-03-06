@@ -21,10 +21,10 @@
   <tr class="logOlder">
 <?php } // if ?>
 
-    <td class="logTypeIcon"><?php echo $application_log_entry->getObjectTypeName(); ?>&nbsp;<?php echo $application_log_entry->getObjectTypeName(); ?></td>
+    <td class="logTypeIcon"><img src="<?php echo image_url('logtypes/' . strtolower($application_log_entry->getRelObjectManager()) . '.gif') ?>" alt="<?php echo $application_log_entry->getObjectTypeName() ?>" title="<?php echo $application_log_entry->getObjectTypeName() ?>" /></td>
     <td class="logDetails">
 <?php if($application_log_entry_url = $application_log_entry->getObjectUrl()) { ?>
-      <a href="<?php echo $application_log_entry_url ?>"><?php echo $application_log_entry->getText() ?></a>
+      <a class="internalLink" href="<?php echo $application_log_entry_url ?>"><?php echo $application_log_entry->getText() ?></a>
 <?php } else { ?>
       <?php echo $application_log_entry->getText() ?>
 <?php } // if ?>
@@ -36,7 +36,7 @@
 <?php if($application_logs_show_project_column) { ?>
     <td class="logProject">
 <?php if(($application_log_entry_project = $application_log_entry->getProject()) instanceof Project) { ?>
-      <a href="<?php echo $application_log_entry_project->getOverviewUrl() ?>"><?php echo clean($application_log_entry_project->getName()) ?></a>
+      <a class="internalLink" href="<?php echo $application_log_entry_project->getOverviewUrl() ?>"><?php echo clean($application_log_entry_project->getName()) ?></a>
 <?php } // if ?>
     </td>
 <?php } else { ?>

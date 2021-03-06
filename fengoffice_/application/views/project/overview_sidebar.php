@@ -4,7 +4,7 @@
   <div class="blockContent">
     <ul>
 <?php foreach($visible_forms as $visible_form) { ?>
-      <li><a href="<?php echo $visible_form->getSubmitUrl() ?>"><?php echo clean($visible_form->getName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $visible_form->getSubmitUrl() ?>"><?php echo clean($visible_form->getName()) ?></a></li>
 <?php } // foreach ?>
     </ul>
   </div>
@@ -17,7 +17,7 @@
   <div class="blockContent">
     <ul class="listWithDetails">
 <?php foreach($important_messages as $important_message) { ?>
-      <li><a href="<?php echo $important_message->getViewUrl() ?>"><?php echo clean($important_message->getTitle()) ?></a><br />
+      <li><a class="internalLink" href="<?php echo $important_message->getViewUrl() ?>"><?php echo clean($important_message->getTitle()) ?></a><br />
       <span class="desc"><?php echo lang('comments on message', $important_message->countComments()) ?></span></li>
 <?php } // foreach ?>
     </ul>
@@ -32,7 +32,7 @@
     <ul>
 <?php foreach($important_files as $important_file) { ?>
       <li>
-        <a href="<?php echo $important_file->getDetailsUrl() ?>"><?php echo clean($important_file->getFilename()) ?></a><br />
+        <a class="internalLink" href="<?php echo $important_file->getDetailsUrl() ?>"><?php echo clean($important_file->getFilename()) ?></a><br />
         <span class="desc"><?php echo lang('revisions on file', $important_file->countRevisions()) ?></span>
       </li>
 <?php } // foreach ?>
@@ -52,14 +52,14 @@
     <ul>
     
 <?php if(active_project()->canEdit(logged_user())) { ?>
-      <li><a href="<?php echo active_project()->getEditUrl() ?>"><?php echo lang('edit project') ?></a></li>
+      <li><a class="internalLink" href="<?php echo active_project()->getEditUrl() ?>"><?php echo lang('edit project') ?></a></li>
 <?php } // if ?>
     
 <?php if(active_project()->canChangeStatus(logged_user())) { ?>
 <?php if(active_project()->isActive()) { ?>
-      <li><a href="<?php echo active_project()->getCompleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm complete project') ?>')"><?php echo lang('mark project as finished') ?></a></li>
+      <li><a class="internalLink" href="<?php echo active_project()->getCompleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm complete project') ?>')"><?php echo lang('mark project as finished') ?></a></li>
 <?php } else { ?>
-      <li><a href="<?php echo active_project()->getOpenUrl() ?>" onclick="return confirm('<?php echo lang('confirm open project') ?>')"><?php echo lang('mark project as active') ?></a></li>
+      <li><a class="internalLink" href="<?php echo active_project()->getOpenUrl() ?>" onclick="return confirm('<?php echo lang('confirm open project') ?>')"><?php echo lang('mark project as active') ?></a></li>
 <?php } // if ?>
 <?php } // if ?>
 
@@ -74,7 +74,7 @@
   <div class="blockContent">
     <ul>
 <?php foreach($project_companies as $project_company) { ?>
-      <li><a href="<?php echo $project_company->getCardUrl() ?>"><?php echo clean($project_company->getName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $project_company->getCardUrl() ?>"><?php echo clean($project_company->getName()) ?></a></li>
 <?php } // foreach ?>
     </ul>
   </div>

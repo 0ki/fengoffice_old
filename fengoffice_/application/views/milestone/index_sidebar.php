@@ -13,7 +13,7 @@
   <div class="blockContent">
     <ul class="listWithDetails">
 <?php foreach($completed_milestones as $milestone) { ?>
-      <li><a href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
+      <li><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
 <?php if($milestone->getCompletedBy() instanceof User) { ?>
         <br /><span class="desc"><?php echo lang('completed on by', format_datetime($milestone->getCompletedOn()), $milestone->getCompletedBy()->getCardUrl(), $milestone->getCompletedBy()->getDisplayName()) ?></span>
 <?php } // if ?>

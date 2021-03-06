@@ -3,8 +3,8 @@
 
   $advanced_pagination_urls = array(lang('pagination page')); 
   if(!$advanced_pagination_object->isFirst()) {
-    $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, 1, $advanced_pagination_url_base) . '" title="' . lang('pagination first') . '">&laquo;&laquo;</a>';
-    $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getPrevious(), $advanced_pagination_url_base) . '" title="' . lang('pagination previous') . '">&laquo;</a>';
+    $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, 1, $advanced_pagination_url_base) . '\')" title="' . lang('pagination first') . '">&laquo;&laquo;</a>';
+    $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getPrevious(), $advanced_pagination_url_base) . '\')" title="' . lang('pagination previous') . '">&laquo;</a>';
   } // if
   
   if($advanced_pagination_object->getCurrentPage() - 3 > 0) {
@@ -35,7 +35,7 @@
           
         // Not current...
         } else {
-          $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, $i, $advanced_pagination_url_base) . '">' . $i . '</a>';
+          $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $i, $advanced_pagination_url_base) . '\')">' . $i . '</a>';
         } // if
       
       } // if
@@ -45,7 +45,7 @@
       if($i == $advanced_pagination_object->getCurrentPage()) {
         $advanced_pagination_urls[] = "($i)";
       } else {
-        $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, $i, $advanced_pagination_url_base) . '">' . $i . '</a>';
+        $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $i, $advanced_pagination_url_base) . '\')">' . $i . '</a>';
       } // if
     } // if
     
@@ -56,8 +56,8 @@
   }
   
   if(!$advanced_pagination_object->isLast()) {
-    $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getNext(), $advanced_pagination_url_base) . '" title="' . lang('pagination next') . '">&raquo;</a>';
-    $advanced_pagination_urls[] = '<a href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getTotalPages(), $advanced_pagination_url_base) . '" title="' . lang('pagination last') . '">&raquo;&raquo;</a>';
+    $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getNext(), $advanced_pagination_url_base) . '\')" title="' . lang('pagination next') . '">&raquo;</a>';
+    $advanced_pagination_urls[] = '<a class="internalLink" href="' . str_replace($advanced_pagination_page_placeholder, $advanced_pagination_object->getTotalPages(), $advanced_pagination_url_base) . '\') title="' . lang('pagination last') . '">&raquo;&raquo;</a>';
   } // if
   
 ?>

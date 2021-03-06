@@ -7,7 +7,7 @@
 
 function createSeparator() {
 	var sep = document.createElement('img');
-	sep.src = slimeyImagesDir + 'sep.png';
+	sep.src = Slimey.imagesDir + 'sep.png';
 	sep.style.marginLeft = '8px';
 	sep.style.marginRight = '4px';
 	sep.style.verticalAlign = 'middle';
@@ -19,55 +19,37 @@ function createSeparator() {
  *  class SlimeyToolbar - implements functionality for the toolbar
  *  	container: div where the toolbar will reside
  */
-var SlimeyToolbar = function(container) {
-	this.container = container;
+var SlimeyToolbar = function(slimey) {
+	this.slimey = slimey;
+	this.container = document.createElement('div');
+	this.container.className = 'slimeyToolbar';
 	this.tools = new Array();
-	this.addTool(new SlimeySaveTool());
+	this.addTool(new SlimeySaveTool(this.slimey));
 	this.addSeparator();
-	this.addTool(new SlimeyInsertTextTool());
-	this.addTool(new SlimeyInsertImageTool());
-	this.addTool(new SlimeyInsertOrderedListTool());
-	this.addTool(new SlimeyInsertUnorderedListTool());
-	this.addTool(new SlimeyDeleteTool());
+	this.addTool(new SlimeyInsertTextTool(this.slimey));
+	this.addTool(new SlimeyInsertImageTool(this.slimey));
+	this.addTool(new SlimeyInsertOrderedListTool(this.slimey));
+	this.addTool(new SlimeyInsertUnorderedListTool(this.slimey));
+	this.addTool(new SlimeyDeleteTool(this.slimey));
 	this.addSeparator();
-	this.addTool(new SlimeyUndoTool());
-	this.addTool(new SlimeyRedoTool());
+	this.addTool(new SlimeyUndoTool(this.slimey));
+	this.addTool(new SlimeyRedoTool(this.slimey));
 	this.addSeparator();
-	this.addTool(new SlimeyFontColorTool());
-	this.addTool(new SlimeyFontFamilyTool());
-	this.addTool(new SlimeyFontSizeTool());
+	this.addTool(new SlimeyFontColorTool(this.slimey));
+	this.addTool(new SlimeyFontFamilyTool(this.slimey));
+	this.addTool(new SlimeyFontSizeTool(this.slimey));
 	this.addSeparator();
-	this.addTool(new SlimeyStyleToggleTool('bold', 'Bold Text', 'fontWeight', 'bold', 'normal'));
-	this.addTool(new SlimeyStyleToggleTool('underline', 'Underline Text', 'textDecoration', 'underline', 'none'));
-	this.addTool(new SlimeyStyleToggleTool('italic', 'Italic Text', 'fontStyle', 'italic', 'normal'));
+	this.addTool(new SlimeyStyleToggleTool(this.slimey, 'bold', 'Bold Text', 'fontWeight', 'bold', 'normal'));
+	this.addTool(new SlimeyStyleToggleTool(this.slimey, 'underline', 'Underline Text', 'textDecoration', 'underline', 'none'));
+	this.addTool(new SlimeyStyleToggleTool(this.slimey, 'italic', 'Italic Text', 'fontStyle', 'italic', 'normal'));
 	this.addSeparator();
-	this.addTool(new SlimeySendToBackTool());
-	this.addTool(new SlimeyBringToFrontTool());
+	this.addTool(new SlimeySendToBackTool(this.slimey));
+	this.addTool(new SlimeyBringToFrontTool(this.slimey));
 	this.addSeparator();
-	this.addTool(new SlimeyViewSourceTool());
-	this.addTool(new SlimeyPreviewTool());
+	this.addTool(new SlimeyViewSourceTool(this.slimey));
+	this.addTool(new SlimeyPreviewTool(this.slimey));
 	this.addBreak();
 	//this.addTool(new SlimeyEditContentTool());
-}
-
-/** singleton */
-SlimeyToolbar.instance = null;
-
-/**
- *  initialize the toolbar's instance
- */
-SlimeyToolbar.initInstance = function(containerID) {
-	SlimeyToolbar.instance = new SlimeyToolbar($(containerID));
-}
-
-/**
- *  returns the single SlimeyToolbar instance
- */
-SlimeyToolbar.getInstance = function() {
-	if (SlimeyToolbar.instance == null) {
-		SlimeyToolbar.instance = new SlimeyToolbar($('slimeyToolbar'));
-	}
-	return SlimeyToolbar.instance;
 }
 
 /**

@@ -7,24 +7,24 @@
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
-      <div class="userName"><a href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
+      <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
 <?php if($company->isOwner()) { ?>
       <div class="userIsAdmin"><span><?php echo lang('administrator') ?>:</span> <?php echo $user->isAdministrator() ? lang('yes') : lang('no') ?></div>
       <div class="userAutoAssign"><span><?php echo lang('auto assign') ?>:</span> <?php echo $user->getAutoAssign() ? lang('yes') : lang('no') ?></div>
 <?php } // if  ?>
 <?php
   $options = array();
-  //if($user->canEdit(logged_user())) $options[] = '<a href="' . $user->getEditUrl() . '">' . lang('edit') . '</a>';
+  //if($user->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $user->getEditUrl() . '">' . lang('edit') . '</a>';
   if($user->canUpdateProfile(logged_user())) {
-    $options[] = '<a href="' . $user->getEditProfileUrl($company->getViewUrl()) . '">' . lang('update profile') . '</a>';
-    $options[] = '<a href="' . $user->getEditPasswordUrl($company->getViewUrl()) . '">' . lang('change password') . '</a>';
-    $options[] = '<a href="' . $user->getUpdateAvatarUrl($company->getViewUrl()) . '">' . lang('update avatar') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getEditProfileUrl($company->getViewUrl()) . '">' . lang('update profile') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getEditPasswordUrl($company->getViewUrl()) . '">' . lang('change password') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl($company->getViewUrl()) . '">' . lang('update avatar') . '</a>';
   } // if
   if($user->canUpdatePermissions(logged_user())) {
-    $options[] = '<a href="' . $user->getUpdatePermissionsUrl($company->getViewUrl()) . '">' . lang('permissions') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getUpdatePermissionsUrl($company->getViewUrl()) . '">' . lang('permissions') . '</a>';
   } // if
   if($user->canDelete(logged_user())) {
-    $options[] = '<a href="' . $user->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete user') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $user->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete user') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
       <div class="userOptions"><?php echo implode(' | ', $options) ?></div>

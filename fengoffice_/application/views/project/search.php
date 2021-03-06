@@ -7,7 +7,7 @@
 
 ?>
 <div id="searchForm">
-  <form action="<?php echo active_project()->getSearchUrl() ?>" method="get">
+  <form class="internalForm" action="<?php echo active_project()->getSearchUrl() ?>" method="get">
     <?php echo input_field('search_for', array_var($_GET, 'search_for')) ?>
     <input type="hidden" name="c" value="project" />
     <input type="hidden" name="a" value="search" />
@@ -20,7 +20,7 @@
 <p><?php echo lang('search result description', $pagination->countItemsOnPage($current_page), $pagination->getTotalItems(), clean($search_string)) ?>:</p>
 <ul>
 <?php foreach($search_results as $search_result) { ?>
-  <li><?php echo clean($search_result->getObjectTypeName()) ?>: <a href="<?php echo $search_result->getObjectUrl() ?>"><?php echo clean($search_result->getObjectName()) ?></a></li>
+  <li><?php echo clean($search_result->getObjectTypeName()) ?>: <a class="internalLink" href="<?php echo $search_result->getObjectUrl() ?>"><?php echo clean($search_result->getObjectName()) ?></a></li>
 <?php } // foreach ?>
 </ul>
 

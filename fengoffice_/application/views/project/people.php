@@ -18,7 +18,7 @@
     <div class="projectCompanyLogo"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?>" /></div>
     <div class="projectCompanyMeta">
       <div class="projectCompanyInfo">
-        <div class="projectCompanyName"><a href="<?php echo $company->getCardUrl() ?>" class="companyName"><?php echo clean($company->getName()) ?></a></div>
+        <div class="projectCompanyName"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>" class="companyName"><?php echo clean($company->getName()) ?></a></div>
 <?php if($company->hasAddress()) { ?>
         <div class="projectCompanyAddress">
           <?php echo clean($company->getAddress()) ?>
@@ -29,12 +29,12 @@
         </div>
 <?php } // if ?>
 <?php if($company->hasHomepage()) { ?>
-        <div class="projectCompanyHomepage"><a href="<?php echo $company->getHomepage() ?>"><?php echo $company->getHomepage() ?></a></div>
+        <div class="projectCompanyHomepage"><a class="internalLink" href="<?php echo $company->getHomepage() ?>"><?php echo $company->getHomepage() ?></a></div>
 <?php } // if ?>
 <?php
   $options = array();
   if($company->canEdit(logged_user())) $options[] = lang('edit company data', $company->getEditUrl());
-  if(active_project()->canRemoveCompanyFromProject(logged_user(), $company)) $options[] = '<a href="' . active_project()->getRemoveCompanyUrl($company) . '" onclick="return confirm(\'' . lang('confirm remove company from project') . '\')">' . lang('remove company from project') . '</a>';
+  if(active_project()->canRemoveCompanyFromProject(logged_user(), $company)) $options[] = '<a class="internalLink" href="' . active_project()->getRemoveCompanyUrl($company) . '" onclick="return confirm(\'' . lang('confirm remove company from project') . '\')">' . lang('remove company from project') . '</a>';
 ?>
 <?php if(count($options)) { ?>
         <div class="projectCompanyOptions"><?php echo implode(' | ', $options) ?></div>
@@ -50,14 +50,14 @@
 <?php foreach($users as $user) { ?>
           <tr>
             <td style="width: 200px">
-              <div class="projectUserDisplayName"><a href="<?php echo $user->getCardUrl() ?>"><?php echo $user->getDisplayName() ?></a></div>
+              <div class="projectUserDisplayName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo $user->getDisplayName() ?></a></div>
 <?php if($user->hasTitle()) { ?>
               <div class="projectUserTitle"><?php echo clean($user->getTitle()) ?></div>
 <?php } // if ?>
               <div class="projectUserEmail"><a href="mailto:<?php echo $user->getEmail() ?>"><?php echo $user->getEmail() ?></a></div>
             </td>
 <?php if(active_project()->canRemoveUserFromProject(logged_user(), $user)) { ?>
-            <td><a href="<?php echo active_project()->getRemoveUserUrl($user) ?>" onclick="return confirm('<?php echo lang('confirm remove user from project') ?>')"><?php echo lang('remove user from project') ?></a></td>
+            <td><a class="internalLink" href="<?php echo active_project()->getRemoveUserUrl($user) ?>" onclick="return confirm('<?php echo lang('confirm remove user from project') ?>')"><?php echo lang('remove user from project') ?></a></td>
 <?php } // if ?>
           </tr>
 <?php } // foreach ?>

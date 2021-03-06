@@ -38,7 +38,7 @@
   } // if
 
 ?>
-<form action="<?php echo $user->getEditPasswordUrl($redirect_to) ?>" method="post">
+<form class="internalForm" action="<?php echo $user->getEditPasswordUrl($redirect_to) ?>" method="post">
 
   <?php tpl_display(get_template_path('form_errors')) ?>
   

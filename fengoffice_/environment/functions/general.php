@@ -169,6 +169,14 @@
   } // get_id
   
   /**
+   * This function checks wether the current http request is ajax, so as to know
+   * wether we should send the whole page or only the content.
+   */
+  function is_ajax_request() {
+  	return array_var($_GET, 'ajax') == 'true';
+  } // is_ajax_request
+  
+  /**
   * Flattens the array. This function does not preserve keys, it just returns 
   * array indexed form 0 .. count - 1
   *
@@ -306,6 +314,9 @@
   	if(strpos($to, '&amp;') !== false) {
   	  $to = str_replace('&amp;', '&', $to);
   	} // if
+  	if (is_ajax_request()) {
+      	$to .= "&ajax=true";
+    }
     header('Location: ' . $to);
     if($die) die();
   } // end func redirect_to
@@ -319,10 +330,16 @@
   */
   function redirect_to_referer($alternative = nulls) {
     $referer = get_referer();
-    if(!is_valid_url($referer)) {
-      redirect_to($alternative);
+    if(true || !is_valid_url($referer)) {
+    	if (is_ajax_request()) {
+      		$alternative .= "&ajax=true";
+    	}
+      	redirect_to($alternative);
     } else {
-      redirect_to($referer);
+	    if (is_ajax_request()) {
+	      	$referer .= "&ajax=true";
+	    }
+      	redirect_to($referer);
     } // if
   } // redirect_to_referer
   
@@ -415,17 +432,13 @@
  * escapes this characters: & ' " < >
  */
 function escapeSLIM($rawSLIM) {
-    $search = array('&', '<', '>', '"', "'");
-	$replace = array('&amp;', '&lt;', '&gt;', '&quot;', '&#39;');
-    return str_replace($search, $replace, $rawSLIM);
+    return rawurlencode($rawSLIM);
 }
 
 /**
  * unescapes: &amp; &#39; &quot; &lt; &gt;
  */
 function unescapeSLIM($encodedSLIM) {
-	$search = array('&amp;', '&lt;', '&gt;', '&quot;', '&#39;');
-	$replace = array('&', '<', '>', '"', "'");
-    return str_replace($search, $replace, $encodedSLIM);
+    return rawurldecode($encodedSLIM);
 }
 ?>

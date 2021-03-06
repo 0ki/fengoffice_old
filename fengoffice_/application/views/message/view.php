@@ -32,7 +32,7 @@
 <?php echo render_object_files($message, $message->canEdit(logged_user())) ?>
   <div class="messageCommentCount">
 <?php if($message->countComments()) { ?>
-    <span><?php echo lang('comments') ?>:</span> <a href="<?php echo $message->getViewUrl() ?>#objectComments"><?php echo $message->countComments() ?></a>
+    <span><?php echo lang('comments') ?>:</span> <a class="internalLink" href="<?php echo $message->getViewUrl() ?>#objectComments"><?php echo $message->countComments() ?></a>
 <?php } else { ?>
     <span><?php echo lang('comments') ?>:</span> <?php echo $message->countComments() ?>
 <?php } // if ?>
@@ -44,10 +44,10 @@
 <?php
   $options = array();
   if($message->canEdit(logged_user())) {
-    $options[] = '<a href="' . $message->getEditUrl() . '">' . lang('edit') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $message->getEditUrl() . '">' . lang('edit') . '</a>';
   } // if
   if($message->canDelete(logged_user())) {
-    $options[] = '<a href="' . $message->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete message') . '\')">' . lang('delete') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $message->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete message') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
 <?php if(count($options)) { ?>

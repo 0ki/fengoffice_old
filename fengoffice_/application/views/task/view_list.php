@@ -9,10 +9,10 @@
   if(ProjectTaskList::canAdd(logged_user(), active_project())) {
     add_page_action(lang('add task list'), get_url('task', 'add_list'));
   } // if
-  
+add_javascript_to_page('modules/addTaskForm.js');  
 
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/addTaskForm.js') ?>"></script>
+
 <?php $this->assign('on_list_page', true); ?>
 <?php $this->includeTemplate(get_template_path('task/task_list')); ?>
 <script type="text/javascript">

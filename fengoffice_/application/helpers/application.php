@@ -21,11 +21,11 @@
   } // render_user_box 
    
   /**
-  * Render project users combo
+  * Render project users combo.
   *
   * @param String $name
   * @param array $attributes
-  * @return String
+  * @return String All users I am sharing something with.
   */
   function render_sharing_users($name, $attributes = null) {
   	$perms= FilePermissions::getAllPermissionsByUser(logged_user());  	
@@ -412,7 +412,7 @@
     
     $links = array();
     foreach($tag_names as $tag_name) {
-      $links[] = '<a href="' . $project->getTagUrl($tag_name) . '">' . clean($tag_name) . '</a>';
+      $links[] = '<a class="internalLink" href="' . $project->getTagUrl($tag_name) . '">' . clean($tag_name) . '</a>';
     } // foreach
     return implode(', ', $links);
   } // project_object_tags
@@ -521,7 +521,7 @@
     $result .= '</span>';
     
     $taken_by = $application_log_entry->getTakenBy();
-    return $taken_by instanceof User ? $result . ', <a href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a>' : $result;
+    return $taken_by instanceof User ? $result . ', <a class="internalLink" href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a>' : $result;
   } // render_action_taken_on
   
   /**
@@ -537,4 +537,28 @@
     return tpl_fetch(get_template_path('render_menu', 'menu'));
   } // render_menu
 
+	/**
+	* Comma separated values from a set of options.
+	*
+	* @param string $name Control name
+	* @param string $value Initial value
+	* @param string $jsArray name of a JS array to get options from
+	* @param array $attributes Other control attributes
+	* @return string
+	*/
+	function autocomplete_textfield($name, $value, $jsArray, $attributes) {
+		if (!$attributes) {
+			$attributes = array();
+		}
+		$class = 'textfield' . ($attributes['class']?" ".$attributes['class']:"");
+		unset($attributes['class']);
+		$keypress = 'return og.autoComplete.keypress.call(this, event)';
+		$keyup = 'og.autoComplete.keyup.call(this, event, ' . $jsArray . ')';
+		$blur = 'og.autoComplete.blur.call(this)';
+		$attrs = 'class="' . $class . '" name="' . $name . '" onkeypress="' . $keypress . '" onkeyup="' . $keyup . '" onblur="' . $blur . '"';
+		foreach ($attributes as $k => $v) {
+			$attrs .= ' ' . $k . '="' . $v . '"';
+		}
+		return '<textarea wrap="off" rows="1" ' . $attrs . '>' . $value . "</textarea>";
+	}
 ?>

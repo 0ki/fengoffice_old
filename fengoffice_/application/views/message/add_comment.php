@@ -10,9 +10,9 @@
   
 ?>
 <?php if($comment->isNew()) { ?>
-<form action="<?php echo $message->getAddCommentUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $message->getAddCommentUrl() ?>" method="post">
 <?php } else { ?>
-<form action="<?php echo $comment->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $comment->getEditUrl() ?>" method="post">
 <?php } // if?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

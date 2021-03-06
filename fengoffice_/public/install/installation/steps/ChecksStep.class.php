@@ -38,7 +38,8 @@
         '/config/config.php',
         '/public/files',
         '/cache',
-        '/upload'
+        '/upload',
+		'/tmp'
       ); // array
       
       $this->check_extensions = array(

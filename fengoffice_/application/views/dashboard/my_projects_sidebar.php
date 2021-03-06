@@ -4,7 +4,7 @@
   <div class="blockContent">
     <ul>
 <?php foreach($active_projects as $project) { ?>
-      <li><a href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a></li>
 <?php } // foreach ?>
     </ul>
   </div>
@@ -19,7 +19,7 @@
     <ul class="listWithDetails">
 <?php foreach($finished_projects as $project) { ?>
       <li>
-        <a href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a><br />
+        <a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a><br />
         <span class="desc">(<?php echo lang('completed on by', format_date($project->getCompletedOn()), $project->getCompletedBy()->getCardUrl(), clean($project->getCompletedBy()->getDisplayName())) ?>)</span>
       </li>
 <?php } // foreach ?>

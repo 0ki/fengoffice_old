@@ -7,7 +7,7 @@
 
 function createImageButton(name, title, slimeyTool) {
 	var img = document.createElement('img');
-	img.src = slimeyImagesDir + name + '.png';
+	img.src = Slimey.imagesDir + name + '.png';
 	img.className = 'slimeyTool';
 	img.title = title;
 	img.slimeyTool = slimeyTool;
@@ -17,26 +17,26 @@ function createImageButton(name, title, slimeyTool) {
 	img.style.cursor = 'pointer';
 	img.onmouseover = function() {
 		if (this.slimeyTool.enabled && !this.slimeyTool.toggled) {
-			this.src = slimeyImagesDir + name + 'h.png';
+			this.src = Slimey.imagesDir + name + 'h.png';
 		}
 	};
 	img.onmouseout = function() {
 		if (this.slimeyTool.enabled) {
 			if (this.slimeyTool.toggled) {
-				this.src = slimeyImagesDir + name + 'd.png';
+				this.src = Slimey.imagesDir + name + 'd.png';
 			} else {
-				this.src = slimeyImagesDir + name + '.png';
+				this.src = Slimey.imagesDir + name + '.png';
 			}
 		}
 	};
 	img.onmousedown = function() {
 		if (this.slimeyTool.enabled) {
-			this.src = slimeyImagesDir + name + 'd.png';
+			this.src = Slimey.imagesDir + name + 'd.png';
 		}
 	};
 	img.onmouseup = function() {
 		if (this.slimeyTool.enabled) {
-			this.src = slimeyImagesDir + name + 'h.png';
+			this.src = Slimey.imagesDir + name + 'h.png';
 		}
 	};
 	img.onclick = function() {
@@ -52,7 +52,8 @@ function createImageButton(name, title, slimeyTool) {
 /**
  *  class SlimeyTool - tools that affect the editor's content
  */
-var SlimeyTool = function(name, element) {
+var SlimeyTool = function(name, element, slimey) {
+	this.slimey = slimey;
 	this.name = name;
 	this.element = element;
 	this.enabled = true;
@@ -90,11 +91,11 @@ SlimeyTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyInsertTool - this tool inserts new elements into the editor
  */
-var SlimeyInsertTool = function() {
+var SlimeyInsertTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('insert', 'Insert an element', this);
 
-	SlimeyTool.call(this, 'insert', img);
+	SlimeyTool.call(this, 'insert', img, slimey);
 }
 
 /**
@@ -108,8 +109,8 @@ SlimeyInsertTool.prototype = new SlimeyTool();
 SlimeyInsertTool.prototype.execute = function() {
 	var tag = prompt('What element do you wish to insert?');
 	if (tag) {
-		var action = new SlimeyInsertAction(tag);
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeyInsertAction(this.slimey, tag);
+		this.slimey.editor.performAction(action);
 	}
 }
 
@@ -118,11 +119,11 @@ SlimeyInsertTool.prototype.execute = function() {
 /**
  *  class SlimeyInsertTextTool - this tool inserts new text into the editor
  */
-var SlimeyInsertTextTool = function() {
+var SlimeyInsertTextTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('insertText', 'Insert text', this);
 
-	SlimeyTool.call(this, 'insertText', img);
+	SlimeyTool.call(this, 'insertText', img, slimey);
 }
 
 /**
@@ -134,8 +135,8 @@ SlimeyInsertTextTool.prototype = new SlimeyTool();
  *  inserts a new text element into the editor
  */
 SlimeyInsertTextTool.prototype.execute = function() {
-	var action = new SlimeyInsertAction('div');
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyInsertAction(this.slimey, 'div');
+	this.slimey.editor.performAction(action);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,11 +144,11 @@ SlimeyInsertTextTool.prototype.execute = function() {
 /**
  *  class SlimeyInsertImageTool - this tool inserts new images into the editor
  */
-var SlimeyInsertImageTool = function() {
+var SlimeyInsertImageTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('insertImage', 'Insert image', this);
 
-	SlimeyTool.call(this, 'insertImage', img);
+	SlimeyTool.call(this, 'insertImage', img, slimey);
 }
 
 /**
@@ -159,14 +160,14 @@ SlimeyInsertImageTool.prototype = new SlimeyTool();
  *  inserts a new image into the editor
  */
 SlimeyInsertImageTool.prototype.execute = function() {
-	chooseImage(this.imageChosen, this.element);
+	chooseImage(this.imageChosen, this, this.element);
 }
 
 SlimeyInsertImageTool.prototype.imageChosen = function(url) {
 	if (url) {
-		var action = new SlimeyInsertAction('img');
+		var action = new SlimeyInsertAction(this.slimey, 'img');
 		action.getElement().src = url;
-		SlimeyEditor.getInstance().performAction(action);
+		this.slimey.editor.performAction(action);
 	}
 }
 
@@ -175,11 +176,11 @@ SlimeyInsertImageTool.prototype.imageChosen = function(url) {
 /**
  *  class SlimeyInsertOrderedListTool - this tool inserts new ordered list into the editor
  */
-var SlimeyInsertOrderedListTool = function() {
+var SlimeyInsertOrderedListTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('insertOList', 'Insert ordered list', this);
 
-	SlimeyTool.call(this, 'insertOList', img);
+	SlimeyTool.call(this, 'insertOList', img, slimey);
 }
 
 /**
@@ -191,8 +192,8 @@ SlimeyInsertOrderedListTool.prototype = new SlimeyTool();
  *  inserts a new orderd list into the editor
  */
 SlimeyInsertOrderedListTool.prototype.execute = function() {
-	var action = new SlimeyInsertAction('ol');
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyInsertAction(this.slimey, 'ol');
+	this.slimey.editor.performAction(action);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -200,11 +201,11 @@ SlimeyInsertOrderedListTool.prototype.execute = function() {
 /**
  *  class SlimeyInsertUnorderedListTool - this tool inserts new ordered list into the editor
  */
-var SlimeyInsertUnorderedListTool = function() {
+var SlimeyInsertUnorderedListTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('insertUList', 'Insert unordered list', this);
 
-	SlimeyTool.call(this, 'insertUList', img);
+	SlimeyTool.call(this, 'insertUList', img, slimey);
 }
 
 /**
@@ -216,8 +217,8 @@ SlimeyInsertUnorderedListTool.prototype = new SlimeyTool();
  *  inserts a new unordered list into the editor
  */
 SlimeyInsertUnorderedListTool.prototype.execute = function() {
-	var action = new SlimeyInsertAction('ul');
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyInsertAction(this.slimey, 'ul');
+	this.slimey.editor.performAction(action);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -225,7 +226,7 @@ SlimeyInsertUnorderedListTool.prototype.execute = function() {
 /**
  *  class SlimeyEditContentTool - this tool edits the content of an element in the editor
  */
-var SlimeyEditContentTool = function() {
+var SlimeyEditContentTool = function(slimey) {
 	var textarea = document.createElement('textarea');
 	textarea.slimeyTool = this;
 	textarea.style.height = '25px';
@@ -237,10 +238,9 @@ var SlimeyEditContentTool = function() {
 		this.slimeyTool.execute();
 	};
 
-	SlimeyTool.call(this, 'editContent', textarea);
+	SlimeyTool.call(this, 'editContent', textarea, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
-	//SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 
 	this.element.disabled = true;
 }
@@ -255,7 +255,7 @@ SlimeyEditContentTool.prototype = new SlimeyTool();
  */
 SlimeyEditContentTool.prototype.execute = function() {
 	var val = this.element.value;
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 
 	if (selected.tagName == 'UL' || selected.tagName == 'OL') {
 		val = '<li>' + val + '</li>';
@@ -263,12 +263,12 @@ SlimeyEditContentTool.prototype.execute = function() {
 	} else if (selected.tagName == 'DIV') {
 		val = val.replace(/\n/g, '<br>');
 	}
-	var action = new SlimeyEditContentAction(val);
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyEditContentAction(this.slimey, val);
+	this.slimey.editor.performAction(action);
 }
 
 SlimeyEditContentTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
 		var val = selected.innerHTML;
 	
@@ -298,16 +298,16 @@ SlimeyEditContentTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyFontColorTool - this tool lets you choose the font color of an element in the editor
  */
-var SlimeyFontColorTool = function() {
+var SlimeyFontColorTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('color', 'Change font color', this);
 
-	SlimeyTool.call(this, 'color', img);
+	SlimeyTool.call(this, 'color', img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -320,25 +320,25 @@ SlimeyFontColorTool.prototype = new SlimeyTool();
  *  changes the font color of the selected element in the editor
  */
 SlimeyFontColorTool.prototype.execute = function() {
-	chooseColor(this.colorChosen, this.element);
+	chooseColor(this.colorChosen, this, this.element);
 }
 
 SlimeyFontColorTool.prototype.colorChosen = function(color) {
 	if (color) {
-		var action = new SlimeyEditStyleAction('color', color);
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeyEditStyleAction(this.slimey, 'color', color);
+		this.slimey.editor.performAction(action);
 	}
 }
 
 SlimeyFontColorTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected && selected.editable) {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -348,7 +348,7 @@ SlimeyFontColorTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyFontSizeTool - this tool lets you choose the font size of an element in the editor
  */
-var SlimeyFontSizeTool = function() {
+var SlimeyFontSizeTool = function(slimey) {
 	var select = document.createElement('select');
 	select.style.height = '20px';
 	select.style.width = '80px';
@@ -405,10 +405,10 @@ var SlimeyFontSizeTool = function() {
 		this.slimeyTool.execute();
 	};
 
-	SlimeyTool.call(this, 'fontsize', select);
+	SlimeyTool.call(this, 'fontsize', select, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 
 	this.element.disabled = true;
 }
@@ -422,12 +422,12 @@ SlimeyFontSizeTool.prototype = new SlimeyTool();
  *  edits the font size of the selected element in the editor
  */
 SlimeyFontSizeTool.prototype.execute = function() {
-	var action = new SlimeyEditStyleAction('fontSize', this.element.value);
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyEditStyleAction(this.slimey, 'fontSize', this.element.value);
+	this.slimey.editor.performAction(action);
 }
 
 SlimeyFontSizeTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected && selected.style.fontSize && selected.editable) {
 		this.element.value = selected.style.fontSize;
 		this.element.disabled = false;
@@ -446,7 +446,7 @@ SlimeyFontSizeTool.prototype.notifyActionPerformed = SlimeyFontSizeTool.prototyp
 /**
  *  class SlimeyFontFamilyTool - this tool lets you choose the font family of an element in the editor
  */
-var SlimeyFontFamilyTool = function() {
+var SlimeyFontFamilyTool = function(slimey) {
 	var select = document.createElement('select');
 	select.style.height = '20px';
 	select.style.width = '140px';
@@ -531,10 +531,10 @@ var SlimeyFontFamilyTool = function() {
 		this.slimeyTool.execute();
 	};
 
-	SlimeyTool.call(this, 'fontfamily', select);
+	SlimeyTool.call(this, 'fontfamily', select, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 }
 
 /**
@@ -546,12 +546,12 @@ SlimeyFontFamilyTool.prototype = new SlimeyTool();
  *  edits the font family of the selected element in the editor
  */
 SlimeyFontFamilyTool.prototype.execute = function() {
-	var action = new SlimeyEditStyleAction('fontFamily', this.element.value);
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyEditStyleAction(this.slimey, 'fontFamily', this.element.value);
+	this.slimey.editor.performAction(action);
 }
 
 SlimeyFontFamilyTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected && selected.style.fontFamily && selected.editable) {
 		this.element.value = selected.style.fontFamily;
 		this.element.disabled = false;
@@ -570,16 +570,16 @@ SlimeyFontFamilyTool.prototype.notifyActionPerformed = SlimeyFontFamilyTool.prot
 /**
  *  class SlimeyDeleteTool - this tool deletes the selected element in the editor
  */
-var SlimeyDeleteTool = function() {
+var SlimeyDeleteTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('delete', 'Delete element', this);
 
-	SlimeyTool.call(this, 'delete', img);
+	SlimeyTool.call(this, 'delete', img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 
 	this.enabled = false;
-	img.src = slimeyImagesDir + this.name + 'x.png';
+	img.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -592,22 +592,22 @@ SlimeyDeleteTool.prototype = new SlimeyTool();
  *  deletes the selected element in the editor
  */
 SlimeyDeleteTool.prototype.execute = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
-		var action = new SlimeyDeleteAction();
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeyDeleteAction(this.slimey);
+		this.slimey.editor.performAction(action);
 	}
 }
 
 SlimeyDeleteTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -617,16 +617,16 @@ SlimeyDeleteTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyUndoTool - this tool undoes last action
  */
-var SlimeyUndoTool = function() {
+var SlimeyUndoTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('undo', 'Undo', this);
 
-	SlimeyTool.call(this, 'undo', img);
+	SlimeyTool.call(this, 'undo', img, slimey);
 
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -639,17 +639,17 @@ SlimeyUndoTool.prototype = new SlimeyTool();
  *  undoes the selected element in the editor
  */
 SlimeyUndoTool.prototype.execute = function() {
-	SlimeyEditor.getInstance().undo();
+	this.slimey.editor.undo();
 }
 
 SlimeyUndoTool.prototype.notifyActionPerformed = function() {
-	if (SlimeyEditor.getInstance().undoStack.isEmpty()) {
+	if (this.slimey.editor.undoStack.isEmpty()) {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	} else {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	}
 }
@@ -659,16 +659,16 @@ SlimeyUndoTool.prototype.notifyActionPerformed = function() {
 /**
  *  class SlimeyRedoTool - this tool redoes last undone action
  */
-var SlimeyRedoTool = function() {
+var SlimeyRedoTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('redo', 'Redo', this);
 
-	SlimeyTool.call(this, 'redo', img);
+	SlimeyTool.call(this, 'redo', img, slimey);
 
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -681,17 +681,17 @@ SlimeyRedoTool.prototype = new SlimeyTool();
  *  redoes the selected element in the editor
  */
 SlimeyRedoTool.prototype.execute = function() {
-	SlimeyEditor.getInstance().redo();
+	this.slimey.editor.redo();
 }
 
 SlimeyRedoTool.prototype.notifyActionPerformed = function() {
-	if (SlimeyEditor.getInstance().redoStack.isEmpty()) {
+	if (this.slimey.editor.redoStack.isEmpty()) {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	} else {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	}
 }
@@ -706,7 +706,7 @@ SlimeyRedoTool.prototype.notifyActionPerformed = function() {
  *  	value1: Value when button is down (e.g.: bold)
  *  	value2: Value when button is up (e.g.: normal)
  */
-var SlimeyStyleToggleTool = function(name, title, property, value1, value2) {
+var SlimeyStyleToggleTool = function(slimey, name, title, property, value1, value2) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton(name, title, this);
 
@@ -714,13 +714,13 @@ var SlimeyStyleToggleTool = function(name, title, property, value1, value2) {
 	this.value1 = value1;
 	this.value2 = value2;
 
-	SlimeyTool.call(this, name, img);
+	SlimeyTool.call(this, name, img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -733,37 +733,37 @@ SlimeyStyleToggleTool.prototype = new SlimeyTool();
  *  toggles the selected element's style property
  */
 SlimeyStyleToggleTool.prototype.execute = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
 		var action;
 		if (selected.style[this.property] == this.value1) {
-			action = new SlimeyEditStyleAction(this.property, this.value2);
+			action = new SlimeyEditStyleAction(this.slimey, this.property, this.value2);
 			this.toggled = false;
-			this.element.src = slimeyImagesDir + this.name + '.png';
+			this.element.src = Slimey.imagesDir + this.name + '.png';
 		} else {
-			action = new SlimeyEditStyleAction(this.property, this.value1);
+			action = new SlimeyEditStyleAction(this.slimey, this.property, this.value1);
 			this.toggled = true;
-			this.element.src = slimeyImagesDir + this.name + 'd.png';
+			this.element.src = Slimey.imagesDir + this.name + 'd.png';
 		}
-		SlimeyEditor.getInstance().performAction(action);
+		this.slimey.editor.performAction(action);
 	}
 }
 
 SlimeyStyleToggleTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected && selected.editable) {
 		this.enabled = true;
 		if (selected.style[this.property] == this.value1) {
 			this.toggled = true;
-			this.element.src = slimeyImagesDir + this.name + 'd.png';
+			this.element.src = Slimey.imagesDir + this.name + 'd.png';
 		} else {
 			this.toggled = false;
-			this.element.src = slimeyImagesDir + this.name + '.png';
+			this.element.src = Slimey.imagesDir + this.name + '.png';
 		}
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -775,16 +775,16 @@ SlimeyStyleToggleTool.prototype.notifyActionPerformed = SlimeyStyleToggleTool.pr
 /**
  *  class SlimeySendToBackTool - this tool sends the selected element to the back of the editor
  */
-var SlimeySendToBackTool = function() {
+var SlimeySendToBackTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('sendToBack', 'Send element to the back', this);
 
-	SlimeyTool.call(this, 'sendToBack', img);
+	SlimeyTool.call(this, 'sendToBack', img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -797,22 +797,22 @@ SlimeySendToBackTool.prototype = new SlimeyTool();
  *  sends the selected element to the back of the editor
  */
 SlimeySendToBackTool.prototype.execute = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
-		var action = new SlimeySendToBackAction();
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeySendToBackAction(this.slimey);
+		this.slimey.editor.performAction(action);
 	}
 }
 
 SlimeySendToBackTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -822,16 +822,16 @@ SlimeySendToBackTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyBringToFrontTool - this tool brings the selected element to the front of the editor
  */
-var SlimeyBringToFrontTool = function() {
+var SlimeyBringToFrontTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('bringToFront', 'Bring element to the front', this);
 
-	SlimeyTool.call(this, 'bringToFront', img);
+	SlimeyTool.call(this, 'bringToFront', img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 
 	this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + 'x.png';
+	this.element.src = Slimey.imagesDir + this.name + 'x.png';
 	this.element.style.cursor = 'default';
 }
 
@@ -844,22 +844,22 @@ SlimeyBringToFrontTool.prototype = new SlimeyTool();
  *  brings the selected element to the front of the editor
  */
 SlimeyBringToFrontTool.prototype.execute = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
-		var action = new SlimeyBringToFrontAction();
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeyBringToFrontAction(this.slimey);
+		this.slimey.editor.performAction(action);
 	}
 }
 
 SlimeyBringToFrontTool.prototype.notifySelectionChange = function() {
-	var selected = SlimeyEditor.getInstance().getSelected();
+	var selected = this.slimey.editor.getSelected();
 	if (selected) {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -869,13 +869,13 @@ SlimeyBringToFrontTool.prototype.notifySelectionChange = function() {
 /**
  *  class SlimeyViewSourceTool - view HTML source code
  */
-var SlimeyViewSourceTool = function() {
+var SlimeyViewSourceTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('viewSource', 'View source code', this);
 
-	SlimeyTool.call(this, 'viewSource', img);
+	SlimeyTool.call(this, 'viewSource', img, slimey);
 
-	SlimeyEditor.getInstance().addSelectionChangeListener(this);
+	this.slimey.editor.addEventListener('selectionChange', this.notifySelectionChange, this);
 }
 
 /**
@@ -887,17 +887,15 @@ SlimeyViewSourceTool.prototype = new SlimeyTool();
  *  view HTML source code
  */
 SlimeyViewSourceTool.prototype.execute = function() {
-	var html = SlimeyEditor.getInstance().getHTML();
-	var ta = $('slimeyViewSource');
-	if (!ta) {
-		ta = document.createElement('textarea');
-		ta.id = 'slimeyViewSource';
-		ta.style.border = '4px solid deepskyblue';
-		ta.style.position = 'absolute';
-		ta.style.zIndex = '100000';
-		ta.style.visibility = 'hidden';
-		ta.slimeyTool = this;
-		ta.onkeyup = function(e) {
+	var html = this.slimey.editor.getHTML();
+	if (!this.ta) {
+		this.ta = document.createElement('textarea');
+		this.ta.style.border = '4px solid deepskyblue';
+		this.ta.style.position = 'absolute';
+		this.ta.style.zIndex = '100000';
+		this.ta.style.visibility = 'hidden';
+		this.ta.slimeyTool = this;
+		this.ta.onkeyup = function(e) {
 			if (!e) {
 				e = event;
 				e.which = e.keyCode;
@@ -905,29 +903,29 @@ SlimeyViewSourceTool.prototype.execute = function() {
 			if (e.which == 27) {
 				this.style.visibility = 'hidden';
 				this.slimeyTool.toggled = false;
-				this.slimeyTool.element.src = slimeyImagesDir + this.slimeyTool.name + '.png';
+				this.slimeyTool.element.src = Slimey.imagesDir + this.slimeyTool.name + '.png';
 				this.blur();
 			}
 		}
-		document.body.appendChild(ta);
+		document.body.appendChild(this.ta);
 	}
 	if (!this.toggled) {
-		var obj = SlimeyEditor.getInstance().getContainer();
+		var obj = this.slimey.editor.getContainer();
 		var offset = getOffsetPosition(obj);
-		ta.style.left = offset.x + 'px';
-		ta.style.top = offset.y + 'px';
-		ta.style.width = obj.offsetWidth + 'px';
-		ta.style.height = obj.offsetHeight + 'px';
-		ta.value = html;
-		ta.style.visibility = 'visible';
+		this.ta.style.left = offset.x + 'px';
+		this.ta.style.top = offset.y + 'px';
+		this.ta.style.width = obj.offsetWidth + 'px';
+		this.ta.style.height = obj.offsetHeight + 'px';
+		this.ta.value = html;
+		this.ta.style.visibility = 'visible';
 		this.toggled = true;
-		this.element.src = slimeyImagesDir + this.name + 'd.png';
-		ta.focus();
+		this.element.src = Slimey.imagesDir + this.name + 'd.png';
+		this.ta.focus();
 	} else {
-		ta.style.visibility = 'hidden';
+		this.ta.style.visibility = 'hidden';
 		this.toggled = false;
-		this.element.src = slimeyImagesDir + this.name + '.png';
-		ta.blur();
+		this.element.src = Slimey.imagesDir + this.name + '.png';
+		this.ta.blur();
 	}
 }
 
@@ -936,16 +934,15 @@ SlimeyViewSourceTool.prototype.execute = function() {
 /**
  *  class SlimeySaveTool - saves the current slideshow
  */
-var SlimeySaveTool = function() {
+var SlimeySaveTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('save', 'Save slideshow', this);
 
-	SlimeyTool.call(this, 'save', img);
-
-	SlimeyEditor.getInstance().addActionPerformedListener(this);
+	SlimeyTool.call(this, 'save', img, slimey);
+	this.slimey.editor.addEventListener('actionPerformed', this.notifyActionPerformed, this);
 
 	//this.enabled = false;
-	this.element.src = slimeyImagesDir + this.name + '.png';
+	this.element.src = Slimey.imagesDir + this.name + '.png';
 	this.element.style.cursor = 'pointer';
 }
 
@@ -958,29 +955,29 @@ SlimeySaveTool.prototype = new SlimeyTool();
  *  saves the current slideshow
  */
 SlimeySaveTool.prototype.execute = function() {
-	var filename = $('filename').value;
+	var filename = this.slimey.filename;
 	if (filename) {
 		this.filenameChosen(filename);
 	} else {
-		getInput(this.filenameChosen, this.element);
+		getInput(this.filenameChosen, this, this.element);
 	}
 }
 
 SlimeySaveTool.prototype.filenameChosen = function(filename) {
-	$('filename').value = filename;
-	var slim = SlimeyNavigation.getInstance().getSLIMContent();
-	$('slimContent').value = escapeSLIM(slim);
-	$('slimeyForm').submit();
+	this.slimey.filename = filename;
+	var slim = this.slimey.navigation.getSLIMContent();
+	this.slimey.slimContent = escapeSLIM(slim);
+	this.slimey.submitFile(confirm("Save as new revision?")); 
 }
 
 SlimeySaveTool.prototype.notifyActionPerformed = function() {
-	if (!SlimeyEditor.getInstance().undoStack.isEmpty()) {
+	if (!this.slimey.editor.undoStack.isEmpty()) {
 		this.enabled = true;
-		this.element.src = slimeyImagesDir + this.name + '.png';
+		this.element.src = Slimey.imagesDir + this.name + '.png';
 		this.element.style.cursor = 'pointer';
 	} else {
 		this.enabled = false;
-		this.element.src = slimeyImagesDir + this.name + 'x.png';
+		this.element.src = Slimey.imagesDir + this.name + 'x.png';
 		this.element.style.cursor = 'default';
 	}
 }
@@ -990,11 +987,11 @@ SlimeySaveTool.prototype.notifyActionPerformed = function() {
 /**
  *  class SlimeyPreviewTool - previews the current slideshow
  */
-var SlimeyPreviewTool = function() {
+var SlimeyPreviewTool = function(slimey) {
 	/* create the DOM element that represents the tool (a clickable image) */
 	var img = createImageButton('preview', 'Preview slideshow', this);
 
-	SlimeyTool.call(this, 'preview', img);
+	SlimeyTool.call(this, 'preview', img, slimey);
 }
 
 /**
@@ -1011,7 +1008,8 @@ SlimeyPreviewTool.prototype.execute = function() {
 	var left = screen.width * 0.1;
 	var width = screen.width * 0.8;
 	var height = screen.height * 0.8;
-	window.open(slimeyRootDir + 'slime.html', 'slimePreview', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
+	window.slimContent = this.slimey.navigation.getSLIMContent();
+	window.open(Slimey.rootDir + 'slime.html', 'slimePreview', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }
 
 /*---------------------------------------------------------------------------*/

@@ -13,9 +13,9 @@
     <div class="private" title="<?php echo lang('private comment') ?>"><span><?php echo lang('private comment') ?></span></div>
 <?php } // if ?>
 <?php if($comment->getCreatedBy() instanceof User) { ?>
-    <div class="commentHead"><span><a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:</span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), $comment->getCreatedByDisplayName()) ?>:</div>
+    <div class="commentHead"><span><a class="internalLink" href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:</span> <?php echo lang('comment posted on by', format_datetime($comment->getUpdatedOn()), $comment->getCreatedByCardUrl(), $comment->getCreatedByDisplayName()) ?>:</div>
 <?php } else { ?>
-    <div class="commentHead"><span><a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:</span> <?php echo lang('comment posted on', format_datetime($comment->getUpdatedOn())) ?>:</div>
+    <div class="commentHead"><span><a class="internalLink" href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('permalink') ?>">#<?php echo $counter ?></a>:</span> <?php echo lang('comment posted on', format_datetime($comment->getUpdatedOn())) ?>:</div>
 <?php } // if ?>
     <div class="commentBody">
 <?php if(($comment->getCreatedBy() instanceof User) && ($comment->getCreatedBy()->hasAvatar())) { ?>
@@ -27,8 +27,8 @@
     </div>
 <?php
   $options = array();
-  if($comment->canEdit(logged_user())) $options[] = '<a href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($comment->canDelete(logged_user())) $options[] = '<a href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete comment') . '\')">' . lang('delete') . '</a>';
+  if($comment->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($comment->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete comment') . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($options)) { ?>
     <div class="options"><?php echo implode(' | ', $options) ?></div>

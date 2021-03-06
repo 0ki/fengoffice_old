@@ -31,7 +31,7 @@
 	<!-- header -->
 	<div id="headerWrapper">
 		<div id="header">
-			<!--h1><a href="<?php echo active_project()->getOverviewUrl() ?>"><?php echo clean(active_project()->getName()) ?></a></h1-->
+			<!--h1><a class="internalLink" href="<?php echo active_project()->getOverviewUrl() ?>"><?php echo clean(active_project()->getName()) ?></a></h1-->
 			<div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
 		</div>
 	</div>
@@ -42,7 +42,7 @@
 			<?php if(is_array(tabbed_navigation_items())) { ?>
 			<ul>
 				<?php foreach(tabbed_navigation_items() as $tabbed_navigation_item) { ?>
-				<li id="tabbed_navigation_item_<?php echo $tabbed_navigation_item->getID() ?>" <?php if($tabbed_navigation_item->getSelected()) { ?> class="active" <?php } ?>><a href="<?php echo $tabbed_navigation_item->getUrl() ?>"><?php echo clean($tabbed_navigation_item->getTitle()) ?></a></li>
+				<li id="tabbed_navigation_item_<?php echo $tabbed_navigation_item->getID() ?>" <?php if($tabbed_navigation_item->getSelected()) { ?> class="active" <?php } ?>><a class="internalLink" href="<?php echo $tabbed_navigation_item->getUrl() ?>"><?php echo clean($tabbed_navigation_item->getTitle()) ?></a></li>
 				<?php } // foreach ?>
 			</ul>
 			<?php } // if ?>
@@ -56,7 +56,7 @@
 				<ul>
 					<?php foreach(bread_crumbs() as $bread_crumb) { ?>
 						<?php if($bread_crumb->getUrl()) { ?>
-					<li>&raquo; <a href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a></li>
+					<li>&raquo; <a class="internalLink" href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a></li>
 						<?php } else {?>
 					<li>&raquo; <span><?php echo clean($bread_crumb->getTitle()) ?></span></li>
 						<?php } // if {?>
@@ -65,7 +65,7 @@
 				<?php } // if ?>
 			</div>
 			<div id="searchBox">
-				<form action="<?php echo active_project()->getSearchUrl() ?>" method="get">
+				<form class="internalForm" action="<?php echo active_project()->getSearchUrl() ?>" method="get">
 					<div>
 						<?php
 						$search_field_default_value = lang('search') . '...';
@@ -134,7 +134,7 @@
 						<div id="page_actions">
 							<ul>
 								<?php foreach(page_actions() as $page_action) { ?>
-								<li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
+								<li><a class="internalLink" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
 								<?php } // foreach ?>
 							</ul>
 						</div>

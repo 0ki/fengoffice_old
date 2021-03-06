@@ -84,7 +84,7 @@
     'pagination previous' => 'Previous page',
     'pagination next' => 'Next page',
     'pagination last' => 'Last page',
-    'pagination current page' => 'Page: %s',
+    'pagination current page' => 'Page: {0}',
     'download' => 'Download',
     'downloads' => 'Downloads',
     'replace' => 'Replace',
@@ -103,8 +103,8 @@
     'order' => 'Order',
     'read' => 'Read',
     
-    'project calendar' => '%s calendar',
-    'user calendar' => '%s\'s calendar',
+    'project calendar' => '{0} calendar',
+    'user calendar' => '{0}\'s calendar',
     
     'month 1' => 'January',
     'month 2' => 'February',

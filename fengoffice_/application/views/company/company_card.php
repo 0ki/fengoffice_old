@@ -10,7 +10,7 @@
       <div><span><?php echo lang('phone number') ?>:</span> <?php echo $company->getPhoneNumber() ? clean(clean($company->getPhoneNumber())) : lang('n/a') ?></div>
       <div><span><?php echo lang('fax number') ?>:</span> <?php echo $company->getFaxNumber() ? clean($company->getFaxNumber()) : lang('n/a') ?></div>
 <?php if($company->hasHomepage()) { ?>
-      <div><span><?php echo lang('homepage') ?>:</span> <a href="<?php echo $company->getHomepage() ?>"><?php echo $company->getHomepage() ?></a></div>
+      <div><span><?php echo lang('homepage') ?>:</span> <a class="internalLink" href="<?php echo $company->getHomepage() ?>"><?php echo $company->getHomepage() ?></a></div>
 <?php } else { ?>
       <div><span><?php echo lang('homepage') ?>:</span> <?php echo lang('n/a') ?></div>
 <?php } // if ?>

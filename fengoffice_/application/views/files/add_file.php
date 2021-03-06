@@ -2,11 +2,18 @@
   set_page_title($file->isNew() ? lang('upload file') : lang('edit file') . ": " . $file->getFilename());
   add_stylesheet_to_page('project/files.css');
 ?>
+
+<?php $iname = "upl" . time() % 1000000; ?>
+
+
+<iframe src="" id="<?php echo $iname ?>" name="<?php echo $iname ?>" style="width:300px;height:200px;display:none" onload="try {og.endSubmit(this)}catch(e){}">
+</iframe>
+
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <?php if($file->isNew()) { ?>
-<form action="<?php echo get_url('files', 'add_file') ?>" method="post" enctype="multipart/form-data">
+<form action="<?php echo get_url('files', 'add_file') ?>" method="post" enctype="multipart/form-data" target="<?php echo $iname ?>" onsubmit="og.beginSubmit(this)">
 <?php } else { ?>
-<form action="<?php echo $file->getEditUrl() ?>" method="post" enctype="multipart/form-data">
+<form action="<?php echo $file->getEditUrl() ?>" method="post" enctype="multipart/form-data" target="<?php echo $iname ?>" onsubmit="og.beginSubmit(this)">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>
@@ -70,8 +77,30 @@
   -->
 <?php } // if ?>
   <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file')) ?>
+  
+  <fieldset>
+    <legend><?php echo lang('project') ?></legend>
+	<select id="file[project_id]" name="file[project_id]">
+		<?php
+		$active_projects = logged_user()->getActiveProjects();
+		if ($file->isNew()) {
+			$projId = active_project()->getId();
+		} else {
+			$projId = $file->getProjectId();
+		}
+		if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
+			foreach($active_projects as $project) {
+		?>
+		<option value="<?php echo $project->getId() ?>"<?php if ($projId == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
+		<?php
+			}
+		}
+		?>
+	</select>
+  </fieldset>
+
 <!-- Permissions -->
-<script language="javascript">
+<!-- script language="javascript">
 function add_user(source)
 {
 	var table,row,cell;
@@ -103,30 +132,8 @@ function add_user(source)
 		document.getElementById('permission_groups').value = document.getElementById('permission_groups').value + ' , ' + username;
 	}	
 }
-</script>
-
-  <fieldset>
-    <legend><?php echo lang('project') ?></legend>
-	<select id="file[project_id]" name="file[project_id]">
-		<?php
-		$active_projects = logged_user()->getActiveProjects();
-		if ($file->isNew()) {
-			$projId = active_project()->getId();
-		} else {
-			$projId = $file->getProjectId();
-		}
-		if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
-			foreach($active_projects as $project) {
-		?>
-		<option value="<?php echo $project->getId() ?>"<?php if ($projId == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
-		<?php
-			}
-		}
-		?>
-	</select>
-  </fieldset> 
-
-<fieldset>
+</script --> 
+<!-- fieldset>
 
     <legend><?php echo lang('permission') ?></legend>
     <?php echo render_sharing_users('users_for_sharing',array('id'=>'users_for_sharing')) . ' '; 
@@ -154,14 +161,26 @@ function add_user(source)
 	?>
 	</table>
 	<br /><span class="desc"><?php echo lang('file permissions description') ?></span>
-</fieldset> 
+</fieldset --> 
 <!-- End Permissions -->
   
   <fieldset>
     <legend><?php echo lang('tags') ?></legend>
-    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo'));
-    	 echo show_addtag_button('allTagsCombo','fileFormTags',array('style'=> 'width:20px')); ?>
-	<?php echo project_object_tags_widget('file[tags]', active_project(), array_var($file_data, 'tags'), array('id' => 'fileFormTags', 'class' => 'long')) ?>
+    <script type="text/javascript">
+    	var allTags = [<?php
+    		$coma = false;
+    		$tags = Tags::getTagNames();
+    		foreach ($tags as $tag) {
+    			if ($coma) {
+    				echo ",";
+    			} else {
+    				$coma = true;
+    			}
+    			echo "'" . $tag . "'";
+    		}
+    	?>];
+    </script>
+	<?php echo autocomplete_textfield("file[tags]", array_var($file_data, 'tags'), 'allTags', array('class' => 'long')); ?>
 
   </fieldset> 
   
@@ -217,20 +236,3 @@ function add_user(source)
   <?php echo submit_button($file->isNew() ? lang('add file') : lang('edit file'),'s'	) ?>
   
 </form>
-
-<script language="javascript">
-function preProcessTags()
-{
-	col = document.getElementsByName('tags');
-	largo = col.length;
-	txt = "";
-	if(largo==0)
-		return txt;
-	for (i = 0; i < largo; i++) {
-		if (col[i].checked) {
-		txt = txt + col[i].value + ",";
-		}
-	}	
-	document.getElementById('file[tags]').value= txt.substring(0,txt.length-1);
-}
-</script>

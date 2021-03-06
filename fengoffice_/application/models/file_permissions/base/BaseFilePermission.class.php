@@ -6,7 +6,7 @@
   *
   * @author Marcos Saiz <marcos.saiz@opengoo.org>
   */
-  abstract class BaseFilePermission extends ProjectDataObject {
+  abstract class BaseFilePermission extends DataObject {
   
     // -------------------------------------------------------
     //  Access methods

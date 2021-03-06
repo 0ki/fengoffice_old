@@ -11,7 +11,7 @@
       <h1><?php echo clean($upgrader->getName()) ?></h1>
       <div id="installationDesc"><?php echo clean($upgrader->getDescription()) ?></div>
     </div>
-    <form action="index.php" id="upgraderForm" method="post">
+    <form class="internalForm" action="index.php" id="upgraderForm" method="post">
       <div id="upgraderControls">
         <table class="formBlock">
           <tr>

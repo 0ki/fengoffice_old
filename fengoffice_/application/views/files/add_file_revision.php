@@ -8,7 +8,7 @@
   
   add_stylesheet_to_page('project/files.css');
 ?>
-<form action="<?php echo $revision->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $revision->getEditUrl() ?>" method="post">
   <div id="fileRevisionComment">
     <?php echo label_tag(lang('revision comment'), 'fileRevisionComment') ?>
     <?php echo textarea_field('revision[comment]', array_var($revision_data, 'comment'), array('class' => 'short', 'id' => 'fileRevisionComment')) ?>

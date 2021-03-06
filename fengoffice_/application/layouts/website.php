@@ -14,16 +14,57 @@
 	
 	<?php echo add_javascript_to_page('extjs/adapter/ext/ext-base.js') ?>
 	<?php echo add_javascript_to_page('extjs/ext-all.js') ?>
+	<?php echo add_javascript_to_page('og/extfix.js') ?>
 	<?php echo add_javascript_to_page('yui/yahoo/yahoo-min.js') ?>
 	<?php echo add_javascript_to_page('yui/dom/dom-min.js') ?>
 	<?php echo add_javascript_to_page('yui/event/event-min.js') ?>
 	<?php echo add_javascript_to_page('yui/animation/animation-min.js') ?>
-	<?php echo add_javascript_to_page('layout.js') ?>
 	<?php echo add_javascript_to_page('app.js') ?>
-	<?php echo use_widget('UserBoxMenu') ?>
-	<?php echo render_page_head() ?>
+	<?php echo add_javascript_to_page('og/og.js') ?>
+	<?php echo add_javascript_to_page('og/layout.js') ?>
+	<?php echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
+
+	<?php add_javascript_to_page('modules/addTaskForm.js');
+	add_javascript_to_page('modules/addMessageForm.js');
+	add_javascript_to_page('modules/addFileForm.js');
+	add_javascript_to_page('modules/addProjectForm.js');
+	add_javascript_to_page('modules/addUserForm.js');
+	add_javascript_to_page('modules/attachFiles.js');
+	add_javascript_to_page('modules/attachToObjectForm.js');
+	add_javascript_to_page('modules/massmailerForm.js');
+	add_javascript_to_page('modules/updatePermissionsForm.js');
+	add_javascript_to_page('modules/updateUserPermissions.js');
+	define('SLIMEY_PATH', with_slash(ROOT_URL) . 'library/slimey/');
+	add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
+	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
+	add_javascript_to_page(SLIMEY_PATH . 'functions.js');
+	add_javascript_to_page(SLIMEY_PATH . 'stack.js');
+	add_javascript_to_page(SLIMEY_PATH . 'editor.js');
+	add_javascript_to_page(SLIMEY_PATH . 'navigation.js');
+	add_javascript_to_page(SLIMEY_PATH . 'actions.js');
+	add_javascript_to_page(SLIMEY_PATH . 'tools.js');
+	add_javascript_to_page(SLIMEY_PATH . 'toolbar.js');
+	add_stylesheet_to_page('og/imageChooser.css');
+	add_javascript_to_page('og/imageChooser.js');
+	add_javascript_to_page('og/tabCloseMenu.js');
+	add_javascript_to_page('og/fileManager.js');
+	add_javascript_to_page('og/uploadFile.js');
+	//add_javascript_to_page('og/uploadForm.js');
+	add_javascript_to_page('modules/spreadsheet_engine.js');
+	add_javascript_to_page('modules/spreadsheet_ui.js'); ?>
+	
+	<?php echo render_page_links() ?>
+	<?php echo render_page_meta() ?>
+	<?php echo render_page_inline_css() ?>
 </head>
-<body id="body" <?php echo render_body_events() ?>>
+<body id="body" <?php echo render_body_events() ?> onbeforeunload="return '<?php echo lang('confirm leave page') ?>'">
+
+<div id="loading">
+	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/>Loading...
+</div>
+
+<?php echo render_page_javascript() ?>
+<?php echo render_page_inline_js() ?>
 
 <!-- header -->
 <div id="header">
@@ -35,13 +76,23 @@
 		<div id="crumbsBlock">
 			<div id="crumbs">
 				<ul>
-					<li><a href="<?php echo active_project()->getOverviewUrl() ?>"><?php echo clean(active_project()->getName()) ?></a></li>
-					<li>&raquo;</li>
-					<li><span><?php echo get_page_title() ?></span></li>
+					<li><?php echo lang('current project') ?>:
+					<select id="active_project" onchange="location.href = '?active_project=' + this.value;this.value = <?php echo active_project()->getId() ?>">
+						<?php
+						if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
+							foreach($active_projects as $project) {
+						?>
+						<option value="<?php echo $project->getId() ?>"<?php if (active_project()->getId() == $project->getId()) { echo ' selected="selected"'; } ?>><?php echo clean($project->getName()) ?></option>
+						<?php
+							}
+						}
+						?>
+					</select>
+					</li>
 				</ul>
 			</div>
 			<div id="searchBox">
-				<form action="<?php echo active_project()->getSearchUrl() ?>" method="get">
+				<form class="internalForm" action="<?php echo active_project()->getSearchUrl() ?>" method="get">
 					<div>
 						<?php
 						$search_field_default_value = lang('search') . '...';
@@ -92,7 +143,7 @@
 			<div id="page_actions">
 				<ul>
 					<?php foreach(page_actions() as $page_action) { ?>
-					<li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
+					<li><a class="internalLink" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
 					<?php } // foreach ?>
 				</ul>
 			</div>
@@ -121,6 +172,14 @@
 	<div id="productSignature"><?php echo product_signature() ?></div>
 </div>
 <!-- /footer -->
+
+<script>
+
+// OG config options
+og.pageSize = <?php echo config_option('files_per_page')?config_option('files_per_page'):10 ?>;
+og.hostName = '<?php echo ROOT_URL ?>';
+og.maxUploadSize = <?php echo get_max_upload_size() ?>;
+</script>
 
 </body>
 </html>

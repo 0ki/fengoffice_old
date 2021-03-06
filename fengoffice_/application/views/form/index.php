@@ -35,9 +35,9 @@
       <div class="successMessage"><em><?php echo lang('project form visible') ?>:</em> <?php echo $form->getIsVisible() ? lang('yes') : lang('no') ?></div>    
 <?php
   $options = array();
-  if($form->canSubmit(logged_user())) $options[] = '<a href="' . $form->getSubmitUrl() . '">' . lang('submit project form') . '</a>';
-  if($form->canEdit(logged_user())) $options[] = '<a href="' . $form->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($form->canDelete(logged_user())) $options[] = '<a href="' . $form->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete project form') . '\')">' . lang('delete') . '</a>';
+  if($form->canSubmit(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getSubmitUrl() . '">' . lang('submit project form') . '</a>';
+  if($form->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($form->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $form->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete project form') . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($options)) { ?>
       <div class="options"><?php echo implode(' | ', $options) ?></div>

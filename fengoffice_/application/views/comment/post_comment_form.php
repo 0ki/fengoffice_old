@@ -1,7 +1,7 @@
 <fieldset>
   <legend><?php echo lang('add comment') ?></legend>
 
-<form action="<?php echo Comment::getAddUrl($comment_form_object) ?>" method="post" enctype="multipart/form-data">
+<form class="internalForm" action="<?php echo Comment::getAddUrl($comment_form_object) ?>" method="post" enctype="multipart/form-data">
 <?php tpl_display(get_template_path('form_errors')) ?>
 
 <?php if($comment_form_object->columnExists('comments_enabled') && !$comment_form_object->getCommentsEnabled() && logged_user()->isAdministrator()) { ?>

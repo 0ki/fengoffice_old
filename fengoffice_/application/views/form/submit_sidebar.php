@@ -7,7 +7,7 @@
 <?php if($visible_form->getId() == $project_form->getId()) { ?>
       <li><?php echo clean($visible_form->getName()) ?></li>
 <?php } else { ?>
-      <li><a href="<?php echo $visible_form->getSubmitUrl() ?>"><?php echo clean($visible_form->getName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $visible_form->getSubmitUrl() ?>"><?php echo clean($visible_form->getName()) ?></a></li>
 <?php } // if ?>
 <?php } // foreach ?>
     </ul>

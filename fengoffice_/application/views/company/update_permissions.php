@@ -15,7 +15,7 @@
     <div class="header"><?php echo lang('hint') ?></div>
     <div class="content"><?php echo lang('update company permissions hint') ?></div>
   </div>
-  <form action="<?php echo $company->getUpdatePermissionsUrl() ?>" method="post">
+  <form class="internalForm" action="<?php echo $company->getUpdatePermissionsUrl() ?>" method="post">
     <table class="blank">
 <?php foreach($projects as $project) { ?>
       <tr>

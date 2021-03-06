@@ -4,7 +4,7 @@
   <div class="blockContent">
     <ul>
 <?php foreach($active_projects as $active_project) { ?>
-      <li><a href="<?php echo $active_project->getOverviewUrl() ?>"><?php echo clean($active_project->getName()) ?></a></li>
+      <li><a class="internalLink" href="<?php echo $active_project->getOverviewUrl() ?>"><?php echo clean($active_project->getName()) ?></a></li>
 <?php } // foreach ?>
     </ul>
   </div>
@@ -18,7 +18,7 @@
     <ul class="listWithDetails">
 <?php foreach($finished_projects as $finished_project) { ?>
       <li>
-        <a href="<?php echo $finished_project->getOverviewUrl() ?>"><?php echo clean($finished_project->getName()) ?></a><br />
+        <a class="internalLink" href="<?php echo $finished_project->getOverviewUrl() ?>"><?php echo clean($finished_project->getName()) ?></a><br />
         <span class="desc">(<?php echo lang('project completed on by', format_date($finished_project->getCompletedOn()), $finished_project->getCompletedByDisplayName()) ?>)</span>
       </li>
 <?php } // foreach ?>

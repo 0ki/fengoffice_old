@@ -20,7 +20,7 @@
 
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>
-<form action="<?php echo $company->getAddUserUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

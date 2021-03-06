@@ -812,8 +812,6 @@
   * @return string
   */
   function render_page_head() {
-    $page = PageDescription::instance();
-    
     $head = render_page_links() . "\n" .
       render_page_meta() . "\n" .
       render_page_javascript() . "\n" .

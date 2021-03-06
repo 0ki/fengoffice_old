@@ -7,20 +7,22 @@
 
 /**
  *  class SlimeyEditor - implements functionality for the editor
- *  	container: div where the editor will reside
  */
-var SlimeyEditor = function(container) {
+var SlimeyEditor = function(slimey) {
 	/* initialize variables */
+	this.slimey = slimey;
 	this.current = null;
 	this.selected = null;
-	this.container = container;
+	this.container = document.createElement('div');
 	this.undoStack = new SlimeyStack();
 	this.redoStack = new SlimeyStack();
-	this.selectionChangeListeners = new Array();
-	this.actionPerformedListeners = new Array();
+	this.events = new Array();
+	this.events['selectionChange'] = new Array();
+	this.events['actionPerformed'] = new Array();
 
 	/* create content editor */
 	this.contentEditor = document.createElement('textarea');
+	this.contentEditor.slimey = this.slimey;
 	this.contentEditor.id = 'contentEditor';
 	this.contentEditor.style.position = 'absolute';
 	this.contentEditor.style.zIndex = '20000';
@@ -28,80 +30,65 @@ var SlimeyEditor = function(container) {
 	this.contentEditor.style.visibility = 'hidden';
 	this.contentEditor.style.top = -1000;
 	this.contentEditor.style.backgroundColor = '#FFFFEE';
-	this.contentEditor.onblur = function() {
-		var val = this.value;
-		if (this.editElement.tagName == 'UL' || this.editElement.tagName == 'OL') {
-			val = '<li>' + val + '</li>';
-			val = val.replace(/\n/g, '</li><li>');
-		} else if (this.editElement.tagName == 'DIV') {
-			val = val.replace(/\n/g, '<br>');
-		}
-		var action = new SlimeyEditContentAction(val);
-		SlimeyEditor.getInstance().performAction(action);
-		this.style.visibility = 'hidden';
-		this.style.top = -1000;
-	};
-	this.contentEditor.onkeyup = function(e) {
-		if (!e) var e = window.event;
-		if (e.keyCode == 27) {
-			this.onblur();
-		}
-	};
-	this.contentEditor.onclick = function(e) {
-		if (!e) e = window.event;
-		stopPropagation(e);
-		return false;
-	}
 	this.contentEditor.systemElement = true;
-	container.appendChild(this.contentEditor);
+	this.container.appendChild(this.contentEditor);
 
 	/* create resize handle */
 	this.resizeHandle = document.createElement('div');
-	this.resizeHandle.id = 'resizeHandle';
+	this.resizeHandle.slimey = this.slimey;
+	this.resizeHandle.className = 'resizeHandle';
 	this.resizeHandle.style.zIndex = 100000000;
 	this.resizeHandle.style.position = 'absolute';
 	this.resizeHandle.style.visibility = 'hidden';
-	this.resizeHandle.onmousedown = slimeyDrag;
 	this.resizeHandle.systemElement = true;
-	container.appendChild(this.resizeHandle);
+	this.container.appendChild(this.resizeHandle);
 
 	/* define container's style */
-	container.style.width = '100%';
-	container.style.height = '100%';
-	container.style.position = 'relative';
-	container.style.padding = '0px';
-	container.style.border = '1px solid black';
-	container.style.overflow = 'hidden';
-	container.style.fontSize = '25px';
-	container.style.cursor = 'default';
+	this.container.className = 'slimeyEditor';
+	this.container.slimey = this.slimey;
+	this.container.style.width = '100%';
+	this.container.style.height = '100%';
+	this.container.style.position = 'relative';
+	this.container.style.padding = '0px';
+	this.container.style.border = '1px solid black';
+	this.container.style.overflow = 'hidden';
+	this.container.style.fontSize = '25px';
+	this.container.style.cursor = 'default';
 
 	/* add event handlers */
-	addEventHandler(container, "mousemove", slimeyMove);
-	addEventHandler(container, "mouseup", slimeyDrop);
-	addEventHandler(container, "click", slimeyDeselect);
-	addEventHandler(window, "resize", slimeyResize);
-	addEventHandler(window, "load", slimeyResize);
+	setEventHandler(this.container, "mousemove", slimeyMove);
+	setEventHandler(this.container, "mouseup", slimeyDrop);
+	setEventHandler(this.container, "click", slimeyDeselect);
+	setEventHandler(this.container, "resize", this.resized, this);
+	addEventHandler(window, "resize", this.resized, this);
+	addEventHandler(window, "load", this.resized, this);
+	setEventHandler(this.resizeHandle, "mousedown", slimeyDrag);
+	setEventHandler(this.contentEditor, "blur", function() {
+			var val = this.value;
+			if (this.editElement.tagName == 'UL' || this.editElement.tagName == 'OL') {
+				val = '<li>' + val + '</li>';
+				val = val.replace(/\n/g, '</li><li>');
+			} else if (this.editElement.tagName == 'DIV') {
+				val = val.replace(/\n/g, '<br>');
+			}
+			var action = new SlimeyEditContentAction(this.slimey, val, this.editElement);
+			this.slimey.editor.performAction(action);
+			this.style.visibility = 'hidden';
+			this.style.top = -1000;
+		});
+	setEventHandler(this.contentEditor, "keyup", function(e) {
+			if (!e) var e = window.event;
+			if (e.keyCode == 27) {
+				this.onblur();
+			}
+		});
+	setEventHandler(this.contentEditor, "click", function(e) {
+			if (!e) e = window.event;
+			stopPropagation(e);
+			return false;
+		});
 }
 
-/** singleton */
-SlimeyEditor.instance = null;
-
-/**
- *  initialize the editor's instance
- */
-SlimeyEditor.initInstance = function(containerID) {
-	SlimeyEditor.instance = new SlimeyEditor($(containerID));
-}
-
-/**
- *  returns the single SlimeyEditor instance
- */
-SlimeyEditor.getInstance = function() {
-	if (SlimeyEditor.instance == null) {
-		SlimeyEditor.instance = new SlimeyEditor($('slimeyEditor'), window);
-	}
-	return SlimeyEditor.instance;
-}
 
 /**
  *  returns the editor's container
@@ -154,11 +141,12 @@ SlimeyEditor.prototype.setHTML = function(html) {
 	this.container.innerHTML = html;
 	for (var elem=this.container.firstChild; elem; elem = elem.nextSibling) {
 		if (elem.nodeType == 1) {
-			elem.onmousedown = slimeyDrag;
-			elem.onclick = slimeyClick;
-			elem.onmouseover = slimeyHighlight;
-			elem.onmouseout = slimeyLowshadow;
-			elem.ondblclick = slimeyEdit;
+			elem.slimey = this.slimey;
+			setEventHandler(elem, "mousedown", slimeyDrag);
+			setEventHandler(elem, "click", slimeyClick);
+			setEventHandler(elem, "mouseover", slimeyHighlight);
+			setEventHandler(elem, "mouseout", slimeyLowshadow);
+			setEventHandler(elem, "dblclick", slimeyEdit);
 			if (elem.tagName == 'IMG') {
 				elem.resizable = true;
 				elem.title = 'Drag the bottom right corner to resize';
@@ -230,7 +218,7 @@ SlimeyEditor.prototype.select = function(obj) {
 	}
 	this.selected = obj;
 	obj.className = 'slimeySelectedElement';
-	this.notifySelectionChange();
+	this.fireEvent('selectionChange');
 	if (obj.resizable) {
 		this.resizeHandle.style.visibility = 'visible';
 		this.resizeHandle.style.left = (getPercentValue(obj.style.left) + getPercentValue(obj.style.width)) + '%';
@@ -247,7 +235,7 @@ SlimeyEditor.prototype.deselect = function() {
 	}
 	this.selected = null;
 	this.resizeHandle.style.visibility = 'hidden';
-	this.notifySelectionChange();
+	this.fireEvent('selectionChange');
 }
 
 /**
@@ -257,10 +245,7 @@ SlimeyEditor.prototype.performAction = function(action) {
 	action.perform();
 	this.undoStack.push(action);
 	this.redoStack.clear();
-	this.notifyActionPerformed();
-
-	/* save the current slide's content after performing an action */
-	SlimeyNavigation.getInstance().saveCurrentSlide();
+	this.fireEvent('actionPerformed');
 }
 
 /**
@@ -272,10 +257,7 @@ SlimeyEditor.prototype.undo = function() {
 		action.undo();
 		this.redoStack.push(action);
 	}
-	this.notifyActionPerformed();
-
-	/* save the current slide's content after performing an action */
-	SlimeyNavigation.getInstance().saveCurrentSlide();
+	this.fireEvent('actionPerformed');
 }
 
 /**
@@ -287,46 +269,34 @@ SlimeyEditor.prototype.redo = function() {
 		action.perform();
 		this.undoStack.push(action);
 	}
-	this.notifyActionPerformed();
-
-	/* save the current slide's content after performing an action */
-	SlimeyNavigation.getInstance().saveCurrentSlide();
+	this.fireEvent('actionPerformed');
 }
 
-/*--- SlimeyEditor listener ---*/
-SlimeyEditor.prototype.addSelectionChangeListener = function(listener) {
-	this.selectionChangeListeners[this.selectionChangeListeners.length++] = listener;
+/*--- SlimeyEditor listeners ---*/
+SlimeyEditor.prototype.addEventListener = function(event, callback, scope) {
+	var listeners = this.events[event];
+	listeners[listeners.length] = {
+		callback: callback,
+		scope: scope
+	};
 }
 
-SlimeyEditor.prototype.removeSelectionChangeListener = function(listener) {
-	for (var i=0; i < this.selectionChangeListeners.length; i++) {
-		if (this.selectionChangeListeners[i] == listener) {
-			this.selectionChangeListeners[i] = this.selectionChangeListeners[--this.selectionChangeListeners.length];
+SlimeyEditor.prototype.removeEventListener = function(event, callback) {
+	var listeners = this.events[event];
+	for (i=0; i < listeners.length; i++) {
+		if (listeners[i] == callback) {
+			if (listeners.length > 1) {
+				listeners[i] = listeners[listeners.length];
+			}
+			listeners.length--;
 		}
 	}
 }
 
-SlimeyEditor.prototype.notifySelectionChange = function() {
-	for (var i=0; i < this.selectionChangeListeners.length; i++) {
-		this.selectionChangeListeners[i].notifySelectionChange();
-	}
-}
-
-SlimeyEditor.prototype.addActionPerformedListener = function(listener) {
-	this.actionPerformedListeners[this.actionPerformedListeners.length++] = listener;
-}
-
-SlimeyEditor.prototype.removeActionPerformedListener = function(listener) {
-	for (var i=0; i < this.actionPerformedListeners.length; i++) {
-		if (this.actionPerformedListeners[i] == listener) {
-			this.actionPerformedListeners[i] = this.actionPerformedListeners[--this.actionPerformedListeners.length];
-		}
-	}
-}
-
-SlimeyEditor.prototype.notifyActionPerformed = function() {
-	for (var i=0; i < this.actionPerformedListeners.length; i++) {
-		this.actionPerformedListeners[i].notifyActionPerformed();
+SlimeyEditor.prototype.fireEvent = function(event) {
+	var listeners = this.events[event];
+	for (i=0; i < listeners.length; i++) {
+		listeners[i].callback.call(listeners[i].scope);
 	}
 }
 
@@ -435,7 +405,7 @@ SlimeyEditor.prototype.drop = function() {
 		if (!this.current.systemElement) {
 			/* an item was moved */
 			if (this.current.style.position == 'absolute' && (this.dragx != this.movex || this.dragy != this.movey)) {
-				var action = new SlimeyMoveAction(this.movex + '%', this.movey + '%', this.dragx + '%', this.dragy + '%');
+				var action = new SlimeyMoveAction(this.slimey, this.movex + '%', this.movey + '%', this.dragx + '%', this.dragy + '%');
 				this.performAction(action);
 			}
 		} else {
@@ -445,7 +415,7 @@ SlimeyEditor.prototype.drop = function() {
 			var oldw = (this.dragx - getPercentValue(this.selected.style.left)) + '%';
 			var oldh = (this.dragy - getPercentValue(this.selected.style.top)) + '%';
 			if (neww != oldw || newh != oldh) {
-				var action = new SlimeyResizeAction(neww, newh, oldw, oldh);
+				var action = new SlimeyResizeAction(this.slimey, neww, newh, oldw, oldh);
 				this.performAction(action);
 			}
 		}
@@ -456,7 +426,7 @@ SlimeyEditor.prototype.drop = function() {
 /**
  *  called when the containing window is resized. Adjusts the editor's size to the window.
  */
-SlimeyEditor.prototype.resized = function() {
+SlimeyEditor.prototype.resized = function(e) {
 	this.container.style.fontSize = this.container.offsetWidth / 32 + 'px';
 	this.container.style.height = (this.container.offsetWidth * 3/4) + 'px';
 }
@@ -475,7 +445,7 @@ SlimeyEditor.prototype.printDebug = function(text) {
 /*--------------- GLOBAL EVENTS -------------------------------------------------------*/
 
 function slimeyClick(e) {
-	SlimeyEditor.getInstance().click(this);
+	this.slimey.editor.click(this);
 	
 	stopPropagation(e);
 	return false;
@@ -486,7 +456,7 @@ function slimeyHighlight() {
 }
 
 function slimeyLowshadow() {
-	if (this == SlimeyEditor.getInstance().getSelected()) {
+	if (this == this.slimey.editor.getSelected()) {
 		this.className = 'slimeySelectedElement';
 	} else {
 		this.className = 'slimeyElement';
@@ -495,7 +465,7 @@ function slimeyLowshadow() {
 
 function slimeyDrag(e) {
 	if (!e) var e = window.event;
-	SlimeyEditor.getInstance().drag(this, e);
+	this.slimey.editor.drag(this, e);
 	
 	stopPropagation(e);
 	return false;
@@ -504,7 +474,7 @@ function slimeyDrag(e) {
 function slimeyMove(e) {
 	if (!e) var e = window.event;
 	try {
-		SlimeyEditor.getInstance().move(e);
+		this.slimey.editor.move(e);
 		
 		stopPropagation(e);
 	} catch(e) {}
@@ -512,23 +482,17 @@ function slimeyMove(e) {
 }
 
 function slimeyDrop(e) {
-	SlimeyEditor.getInstance().drop();
+	this.slimey.editor.drop();
 }
 
 function slimeyDeselect(e) {
 	try {
-		SlimeyEditor.getInstance().deselect();
-	} catch (e) {}
-}
-
-function slimeyResize() {
-	try {
-		SlimeyEditor.getInstance().resized();
+		this.slimey.editor.deselect();
 	} catch (e) {}
 }
 
 function slimeyEdit(e) {
-	SlimeyEditor.getInstance().dblclick(this, e);
+	this.slimey.editor.dblclick(this, e);
 	
 	stopPropagation(e);
 	return false;

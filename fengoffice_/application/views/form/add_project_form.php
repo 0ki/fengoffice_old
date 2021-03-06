@@ -11,9 +11,9 @@
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addProjectForm.js') ?>"></script>
 <?php if($project_form->isNew()) { ?>
-<form action="<?php echo get_url('form', 'add') ?>" method="post">
+<form class="internalForm" action="<?php echo get_url('form', 'add') ?>" method="post">
 <?php } else { ?>
-<form action="<?php echo $project_form->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $project_form->getEditUrl() ?>" method="post">
 <?php } // if?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

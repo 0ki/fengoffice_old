@@ -1,5 +1,5 @@
 <?php set_page_title(lang('login')) ?>
-<form action="<?php echo get_url('access', 'login') ?>" method="post">
+<form class="internalForm" action="<?php echo get_url('access', 'login') ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 
@@ -25,6 +25,6 @@
 <?php } // foreach ?>
 <?php } // if ?>
   
-  <div id="loginSubmit"><?php echo submit_button(lang('login')) ?><span>(<a href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?>?</a>)</span></div>
-  <!-- <p><a href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></p> -->
+  <div id="loginSubmit"><?php echo submit_button(lang('login')) ?><span>(<a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?>?</a>)</span></div>
+  <!-- <p><a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></p> -->
 </form>

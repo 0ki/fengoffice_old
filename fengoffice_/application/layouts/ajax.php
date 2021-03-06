@@ -17,7 +17,7 @@
 			<div id="page_actions">
 				<ul>
 					<?php foreach(page_actions() as $page_action) { ?>
-					<li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
+					<li><a class="internalLink" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
 					<?php } // foreach ?>
 				</ul>
 			</div>

@@ -38,9 +38,9 @@
 <?php if(is_array($late_milestones) && count($late_milestones)) { ?>
 <?php foreach($late_milestones as $late_milestone) { ?>
 <?php if($late_milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($late_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
+    <li><?php echo clean($late_milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
 <?php } else { ?>
-    <li><a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
+    <li><a class="internalLink" href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
 <?php } // if ?>
 <?php } // foreach ?>
 <?php } // if ?>
@@ -48,9 +48,9 @@
 <?php if(is_array($today_milestones) && count($today_milestones)) { ?>
 <?php foreach($today_milestones as $today_milestone) { ?>
 <?php if($today_milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($today_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $today_milestone->getViewUrl() ?>"><?php echo clean($today_milestone->getName()) ?></a> (<?php echo lang('today') ?>)</li>
+    <li><?php echo clean($today_milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $today_milestone->getViewUrl() ?>"><?php echo clean($today_milestone->getName()) ?></a> (<?php echo lang('today') ?>)</li>
 <?php } else { ?>
-    <li><a href="<?php echo $today_milestone->getViewUrl() ?>"><?php echo clean($today_milestone->getName()) ?></a> (<?php echo lang('today') ?>)</li>
+    <li><a class="internalLink" href="<?php echo $today_milestone->getViewUrl() ?>"><?php echo clean($today_milestone->getName()) ?></a> (<?php echo lang('today') ?>)</li>
 <?php } // if ?>
 <?php } // foreach ?>
 <?php } // if ?>
@@ -70,14 +70,14 @@
 <?php if($upcoming_milestone->getLeftInDays() <= 30) { ?>
 
 <?php if($upcoming_milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($upcoming_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
+    <li><?php echo clean($upcoming_milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
 <?php } else { ?>
-    <li><a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
+    <li><a class="internalLink" href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
 <?php } // if ?>
 
 <?php } else { ?>
     </ul>
-    <p><a href="<?php echo active_project()->getMilestonesUrl() ?>#upcomingMilestones">&raquo; <?php echo lang('show all upcoming milestones', count($upcoming_milestones)) ?></a></p>
+    <p><a class="internalLink" href="<?php echo active_project()->getMilestonesUrl() ?>#upcomingMilestones">&raquo; <?php echo lang('show all upcoming milestones', count($upcoming_milestones)) ?></a></p>
 <?php break; ?>
 <?php } // foreach ?>
 

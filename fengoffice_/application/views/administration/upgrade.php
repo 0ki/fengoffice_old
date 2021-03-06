@@ -10,12 +10,12 @@
 <div id="availableVersions">
 <?php foreach($versions as $version) { ?>
   <div class="availableVerion">
-    <h2><a href="<?php echo $version->getDetailsUrl() ?>"><?php echo clean($version->getSignature()) ?></a></h2>
+    <h2><a class="internalLink" href="<?php echo $version->getDetailsUrl() ?>"><?php echo clean($version->getSignature()) ?></a></h2>
     <div class="releaseNotes"><?php echo do_textile($version->getReleaseNotes()) ?></div>
 <?php
   $download_links = array();
   foreach($version->getDownloadLinks() as $download_link) {
-    $download_links[] = '<a href="' . $download_link->getUrl() . '">' . clean($download_link->getFormat()) .' (' . format_filesize($download_link->getSize()) . ')</a>';
+    $download_links[] = '<a class="internalLink" href="' . $download_link->getUrl() . '">' . clean($download_link->getFormat()) .' (' . format_filesize($download_link->getSize()) . ')</a>';
   } // foreach
 ?>
     <div class="downloadLinks"><strong><?php echo lang('download') ?>:</strong> <?php echo implode(' | ', $download_links) ?></div>

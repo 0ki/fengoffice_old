@@ -1,5 +1,5 @@
 <?php set_page_title(lang('complete installation')) ?>
-<form action="<?php echo get_url('access', 'complete_installation') ?>" method="post">
+<form class="internalForm" action="<?php echo get_url('access', 'complete_installation') ?>" method="post">
 <?php tpl_display(get_template_path('form_errors')) ?>
 
   <p><?php echo lang('complete installation desc') ?></p>

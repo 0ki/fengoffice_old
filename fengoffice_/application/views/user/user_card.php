@@ -7,7 +7,7 @@
     
     <div class="cardBlock">
       <div><span><?php echo lang('title') ?>:</span> <?php echo $user->getTitle() ? clean($user->getTitle()) : lang('n/a') ?></div>
-      <div><span><?php echo lang('company') ?>:</span> <a href="<?php echo $user->getCompany()->getCardUrl() ?>"><?php echo clean($user->getCompany()->getName()) ?></a></div>
+      <div><span><?php echo lang('company') ?>:</span> <a class="internalLink" href="<?php echo $user->getCompany()->getCardUrl() ?>"><?php echo clean($user->getCompany()->getName()) ?></a></div>
     </div>
     
     <h2><?php echo lang('contact online') ?></h2>

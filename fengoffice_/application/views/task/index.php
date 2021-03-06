@@ -10,9 +10,9 @@
     add_page_action(lang('add task list'), get_url('task', 'add_list'));
   } // if
   //add_javascript_to_page('task_related.js');
+  add_javascript_to_page('modules/addTaskForm.js');
 
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/addTaskForm.js') ?>"></script>
 <?php if(isset($open_task_lists) && is_array($open_task_lists) && count($open_task_lists)) { ?>
 <div id="openTaskLists">
 <?php 

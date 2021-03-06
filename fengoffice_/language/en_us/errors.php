@@ -29,9 +29,9 @@
     'invalid old password' => 'Old password is not valid',
     
     // Avatar
-    'invalid upload type' => 'Invalid file type. Allowed types are %s',
-    'invalid upload dimensions' => 'Invalid image dimensions. Max size is %sx%s pixels',
-    'invalid upload size' => 'Invalid image size. Max size is %s',
+    'invalid upload type' => 'Invalid file type. Allowed types are {0}',
+    'invalid upload dimensions' => 'Invalid image dimensions. Max size is {0}x{1} pixels',
+    'invalid upload size' => 'Invalid image size. Max size is {0}',
     'invalid upload failed to move' => 'Failed to move uplaoded file',
     
     // Registration form

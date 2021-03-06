@@ -16,9 +16,9 @@
 
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <?php if($file->isNew()) { ?>
-<form action="<?php echo get_url('files', 'save_spreadsheet') ?>" method="post" enctype="multipart/form-data">
+<form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet') ?>" method="post" enctype="multipart/form-data">
 <?php } else { ?>
-<form action="<?php echo get_url('files', 'save_spreadsheet',array(
+<form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet',array(
 	        'id' => $file->getId(), 
 	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data">
 <?php } // if ?>
@@ -98,8 +98,6 @@ onclick="javascript:document.getElementById('TrimSpreadsheet').value =document.g
   <input type="hidden"  id="TrimSpreadsheet"  name="TrimSpreadsheet" /> 
 </form>
 
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/spreadsheet_engine.js') ?>"></script>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/spreadsheet_ui.js') ?>"></script>
 <script type="text/javascript">
 	TrimPath.spreadsheet.initDocument();
 </script>

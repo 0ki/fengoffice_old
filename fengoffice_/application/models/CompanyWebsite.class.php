@@ -43,8 +43,8 @@
     function init() {
       if(isset($this) && ($this instanceof CompanyWebsite)) {
         $this->initCompany();
-        $this->initActiveProject();
         $this->initLoggedUser();
+        $this->initActiveProject();
       } else {
         CompanyWebsite::instance()->init();
       } // if
@@ -81,7 +81,11 @@
     */
     private function initActiveProject() {
       $project_id = array_var($_GET, 'active_project');
+      if (empty($project_id)) {
+      	$project_id = array_var($_SESSION, 'active_project');
+      }
       if(!empty($project_id)) {
+      	$_SESSION['active_project'] = $project_id;
         $project = Projects::findById($project_id);
         if(!($project instanceof Project)) {
           throw new Error(lang('failed to load project'));
@@ -125,7 +129,7 @@
         $this->logUserIn($user, $remember);
       } // if
 	  
-	  $this->selected_project = $user->getPersonalProject();
+	  //$this->selected_project = $user->getPersonalProject();
     } // initLoggedUser
     
     // ---------------------------------------------------
@@ -242,15 +246,17 @@
     * @return Project
     */
     function getProject() {
-	  try {
-	    $this->initActiveProject();
-	  } catch (Exception $e) {
-	  }
-
-	  if (is_null($this->selected_project) && $this->logged_user) {
-		$this->selected_project = $this->logged_user->getPersonalProject();
-	  }
-      return $this->selected_project;
+    	if (is_null($this->selected_project)) {
+			try {
+				$this->initActiveProject();
+			} catch (Exception $e) {
+			}
+	
+			if (is_null($this->selected_project) && $this->logged_user) {
+				$this->selected_project = $this->logged_user->getPersonalProject();
+			}
+    	}
+		return $this->selected_project;
     } // getProject
     
     /**

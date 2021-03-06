@@ -9,13 +9,56 @@
  *  class SlimeyNavigation - implements functionality for navigating through slides
  *  	container: div where the navigation will reside
  */
-var SlimeyNavigation = function(container) {
-	this.container = container;
+var SlimeyNavigation = function(slimey) {
+	this.slimey = slimey;
+	this.slimey.editor.addEventListener('actionPerformed', this.saveCurrentSlide, this);
+	this.container = document.createElement('div');
+	this.container.className = 'slimeyNavigation';
+	this.container.style.position = 'absolute';
+	this.container.style.left = '0px';
+	this.container.style.top = '0px';
+	this.container.style.width = '195px';
+	this.container.style.float = 'left';
 	this.slides = new Array();
 	this.doms = new Array();
+	this.divSlides = new Array();
+	this.divSpacers = new Array();
+
+	// build toolbar	
+	var tb = document.createElement('div');
+	tb.className = "slimeyPreviewToolbar";
+	var b1 = document.createElement('div');
+	b1.className = "slimeyPreviewToolbarButton";
+	var a1 = document.createElement('a');
+	a1.title = "Add a new slide after the selected one";
+	a1.slimey = this.slimey;
+	setEventHandler(a1, "click", function() {
+		this.slimey.navigation.addNewSlide();
+	});
+	var im1 = document.createElement('img');
+	im1.src = Slimey.imagesDir + 'newslide.png'; 
+	a1.appendChild(im1);
+	a1.appendChild(document.createTextNode("Add New"));
+	b1.appendChild(a1);
+	tb.appendChild(b1);
+	var b2 = document.createElement('div');
+	b2.className = "slimeyPreviewToolbarButton";
+	var a2 = document.createElement('a');
+	a2.title = "Delete selected slide";
+	a2.slimey = this.slimey;
+	setEventHandler(a2, "click", function() {
+		this.slimey.navigation.deleteCurrentSlide();
+	});
+	var im2 = document.createElement('img');
+	im2.src = Slimey.imagesDir + 'delslide.png';
+	a2.appendChild(im2);
+	a2.appendChild(document.createTextNode("Delete"));
+	b2.appendChild(a2);
+	tb.appendChild(b2);
+	this.container.appendChild(tb);
 
 	// initialize slides content
-    var file = unescapeSLIM($("slimContent").value);
+    var file = unescapeSLIM(this.slimey.slimContent);
     var divslides = file.split('<div class="slide">');
     this.slides[0] = '';
     for (var i=1; i < divslides.length; i++) {
@@ -24,12 +67,12 @@ var SlimeyNavigation = function(container) {
 
     // initialize html
     var spacer = this.createSpacerDiv(1);
-    container.appendChild(spacer);
+    this.container.appendChild(spacer);
     for (i=1; i < this.slides.length; i++) {
         var slide = this.createSlideDiv(i);
-        container.appendChild(slide);
+        this.container.appendChild(slide);
         var spacer = this.createSpacerDiv(i + 1);
-        container.appendChild(spacer);
+        this.container.appendChild(spacer);
     }
 
 	this.currentSlide = 0;
@@ -37,26 +80,6 @@ var SlimeyNavigation = function(container) {
         // select first slide
         this.getSlide(1);
     }
-}
-
-/** singleton */
-SlimeyNavigation.instance = null;
-
-/**
- *  initialize the navigation's instance
- */
-SlimeyNavigation.initInstance = function(containerID) {
-	SlimeyNavigation.instance = new SlimeyNavigation($(containerID));
-}
-
-/**
- *  returns the single SlimeyNavigation instance
- */
-SlimeyNavigation.getInstance = function() {
-	if (SlimeyNavigation.instance == null) {
-		SlimeyNavigation.instance = new SlimeyNavigation($('slimeyNavigation'), window);
-	}
-	return SlimeyNavigation.instance;
 }
 
 /**
@@ -73,33 +96,33 @@ SlimeyNavigation.prototype.getSlide = function(num) {
 
     // save current slide and view clicked slide
     if (this.currentSlide != 0) {
-        var html = SlimeyEditor.getInstance().getHTML();
-        $('slide' + this.currentSlide).className = 'slidePreview';
-		$('slide' + this.currentSlide).parentNode.className = 'slideBorder';
+        var html = this.slimey.editor.getHTML();
+        this.divSlides[this.currentSlide].className = 'slidePreview';
+		this.divSlides[this.currentSlide].parentNode.className = 'slideBorder';
         this.slides[this.currentSlide] = html;
 
 		this.doms[this.currentSlide] = document.createElement('div');
-		SlimeyEditor.getInstance().getDOM(this.doms[this.currentSlide]);
+		this.slimey.editor.getDOM(this.doms[this.currentSlide]);
 		
-        $('slide' + this.currentSlide).innerHTML = html;
+        this.divSlides[this.currentSlide].innerHTML = html;
     }
 	if (this.doms[num]) {
-		SlimeyEditor.getInstance().setDOM(this.doms[num]);
+		this.slimey.editor.setDOM(this.doms[num]);
 	} else {
-		SlimeyEditor.getInstance().setHTML(this.slides[num]);
+		this.slimey.editor.setHTML(this.slides[num]);
 	}
 
     this.currentSlide = num;
-    $('slide' + this.currentSlide).className = 'slidePreviewSel';
-	$('slide' + this.currentSlide).parentNode.className = 'slideBorderSel';
+    this.divSlides[this.currentSlide].className = 'slidePreviewSel';
+	this.divSlides[this.currentSlide].parentNode.className = 'slideBorderSel';
 
     return false;
 }
 
 SlimeyNavigation.prototype.saveCurrentSlide = function() {
-	var html = SlimeyEditor.getInstance().getHTML();
+	var html = this.slimey.editor.getHTML();
 	this.slides[this.currentSlide] = html;
-	var previewDiv = $('slide' + this.currentSlide);
+	var previewDiv = this.divSlides[this.currentSlide];
 	if (previewDiv) {
 		previewDiv.innerHTML = html;
 	}
@@ -110,23 +133,19 @@ SlimeyNavigation.prototype.insertNewSlide = function(num, html, dom) {
 		html = '<div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 40%; top: 0%;">Edit Me!</div>';
 	}
 
-    var thisSpacer = $('spacer' + num);
+    var thisSpacer = this.divSpacers[num];
 
     // shift all slides
-    var slide = $('slide' + num);
-    for (i=num + 1; slide; i++) {
-        var slideAux = slide;
-        slide = $('slide' + i);
-        slideAux.id = 'slide' + i;
-        slideAux.title = 'Slide ' + i;
+    for (i=this.divSlides.length - 1; i >= num; i--) {
+        this.divSlides[i + 1] = this.divSlides[i];
+        this.divSlides[i + 1].title = 'Slide ' + (i + 1);
+        this.divSlides[i + 1].slideNumber = i + 1;
     }
 
     // shift all spacers including this one
-    var spacer = $('spacer' + num);
-    for (i=num + 1; spacer; i++) {
-        var spacerAux = spacer;
-        spacer = $('spacer' + i);
-        spacerAux.id = 'spacer' + i;
+    for (i=this.divSpacers.length - 1; i >= num; i--) {
+        this.divSpacers[i + 1] = this.divSpacers[i];
+        this.divSpacers[i + 1].spacerNumber = i + 1;
     }
 
     // shift slide data
@@ -156,27 +175,27 @@ SlimeyNavigation.prototype.deleteSlide = function(num) {
         alert("No slide to delete!");
         return;
     }
-    var thisSpacer = $('spacer' + num);
+    var thisSpacer = this.divSpacers[num];
 
     // delete slide and spacer from DOM
-    var slide = $('slide' + num);
+    var slide = this.divSlides[num];
     slide.parentNode.parentNode.removeChild(slide.parentNode);
-    var spacer = $('spacer' + num);
+    var spacer = this.divSpacers[num];
     spacer.parentNode.removeChild(spacer);
 
     // shift all slides
-    var slide = $('slide' + (num + 1));
-    for (i=num + 1; slide; i++) {
-        slide.id = 'slide' + (i - 1);
-        slide.title = 'Slide' + (i - 1);
-        slide = $('slide' + (i + 1));
+    for (i=num; i < this.divSlides.length - 1; i++) {
+        this.divSlides[i] = this.divSlides[i + 1];
+        this.divSlides[i].slideNumber = i;
+        this.divSlides[i].title = 'Slide' + i;
     }
+    this.divSlides.length--;
     // shift all spacers
-    var spacer = $('spacer' + (num + 1));
-    for (i=num + 1; spacer; i++) {
-        spacer.id = 'spacer' + (i - 1);
-        spacer = $('spacer' + (i + 1));
+    for (i=num; i < this.divSpacers.length - 1; i++) {
+        this.divSpacers[i] = this.divSpacers[i + 1];
+        this.divSpacers[i].spacerNumber = i;
     }
+    this.divSpacers.length--;
     // shift slide data
     for (i=num; i < this.slides.length - 1; i++) {
         this.slides[i] = this.slides[i + 1];
@@ -188,19 +207,17 @@ SlimeyNavigation.prototype.deleteSlide = function(num) {
     // select another slide
     this.currentSlide = 0;
     if (num < this.slides.length && num > 0) {
-        slide = $('slide' + num);
         this.getSlide(num);
     } else if (this.slides.length > 1) {
-        slide = $('slide' + (this.slides.length - 1));
         this.getSlide(this.slides.length - 1);
     } else {
-		SlimeyEditor.getInstance().setHTML('<h1 align="center" style="color: #999999"><i>Click "Add New" to add a slide.</i><h1>');
+		this.slimey.editor.setHTML('<h1 align="center" style="color: #999999"><i>Click "Add New" to add a slide.</i><h1>');
 	}
 }
 
 SlimeyNavigation.prototype.getSLIMContent = function() {
     // save current edited text
-    var html = SlimeyEditor.getInstance().getHTML();
+    var html = this.slimey.editor.getHTML();
     this.slides[this.currentSlide] = html;
 
     // generate SLIM content
@@ -214,56 +231,60 @@ SlimeyNavigation.prototype.getSLIMContent = function() {
 
 SlimeyNavigation.prototype.createSlideDiv = function(num) {
     var slide = document.createElement('div');
+    slide.slideNumber = num;
+    slide.slimey = this.slimey;
     slide.className = 'slidePreview';
-    slide.id = 'slide' + num;
     slide.title = "Slide " + num;
 	slide.style.position = 'relative';
     slide.innerHTML = this.slides[num];
-    slide.onclick = function() {
-		var num = parseInt(this.id.substring(5));
-		var action = new SlimeyChangeSlideAction(num);
-		SlimeyEditor.getInstance().performAction(action);
-	};
-	slide.onmouseover = function() {
+    setEventHandler(slide, "click", function() {
+		var num = this.slideNumber;
+		var action = new SlimeyChangeSlideAction(this.slimey, num);
+		this.slimey.editor.performAction(action);
+	});
+	setEventHandler(slide, "mouseover", function() {
 		this.className = 'slidePreviewH';
 		this.parentNode.className = 'slideBorderH';
-	};
-    slide.onmouseout = function() {
-		var num = parseInt(this.id.substring(5));
-		var sel = (num == SlimeyNavigation.getInstance().currentSlide?'Sel':'');
+	});
+    setEventHandler(slide, "mouseout", function() {
+		var num = this.slideNumber;
+		var sel = (num == this.slimey.navigation.currentSlide?'Sel':'');
 		this.className = 'slidePreview' + sel;
 		this.parentNode.className = 'slideBorder' + sel;
-	};
+	});
 
 	var border = document.createElement('div');
 	border.className = 'slideBorder';
 	border.appendChild(slide);
+	this.divSlides[num] = slide;
     return border;
 }
 
 SlimeyNavigation.prototype.createSpacerDiv = function(num) {
     var spacer = document.createElement('div');
+    spacer.spacerNumber = num;
+    spacer.slimey = this.slimey;
     spacer.className = 'previewSpacer';
-    spacer.id = 'spacer' + num;
     spacer.title = "Click to insert a new slide";
-    spacer.onclick = function() {
-		var action = new SlimeyInsertSlideAction(parseInt(this.id.substring(6)));
-		SlimeyEditor.getInstance().performAction(action);
+    setEventHandler(spacer, "click", function() {
+		var action = new SlimeyInsertSlideAction(this.slimey, this.spacerNumber);
+		this.slimey.editor.performAction(action);
 		this.className = 'previewSpacer';
-	};
-    spacer.onmouseover = function() { this.className = 'previewSpacerH'; };
-    spacer.onmouseout = function() { this.className = 'previewSpacer'; };
+	});
+    setEventHandler(spacer, "mouseover", function() { this.className = 'previewSpacerH'; });
+    setEventHandler(spacer, "mouseout", function() { this.className = 'previewSpacer'; });
+    this.divSpacers[num] = spacer;
     return spacer;
 }
 
 SlimeyNavigation.prototype.addNewSlide = function() {
-	var action = new SlimeyInsertSlideAction(this.currentSlide + 1);
-	SlimeyEditor.getInstance().performAction(action);
+	var action = new SlimeyInsertSlideAction(this.slimey, this.currentSlide + 1);
+	this.slimey.editor.performAction(action);
 }
 
 SlimeyNavigation.prototype.deleteCurrentSlide = function() {
 	if (this.currentSlide > 0) {
-		var action = new SlimeyDeleteSlideAction(this.currentSlide);
-		SlimeyEditor.getInstance().performAction(action);
+		var action = new SlimeyDeleteSlideAction(this.slimey, this.currentSlide);
+		this.slimey.editor.performAction(action);
 	}
 }

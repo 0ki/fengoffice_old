@@ -27,7 +27,7 @@
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
         <span class="assignedTo"><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>:</span>
 <?php } // if ?>
-      <a href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
+      <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
 <?php if($milestone->isUpcoming()) { ?>
  (<?php echo lang('days left', $milestone->getLeftInDays()) ?>)
 <?php } elseif($milestone->isLate()) { ?>
@@ -55,7 +55,7 @@
       <p><?php echo lang('messages') ?>:</p>
       <ul>
 <?php foreach($milestone->getMessages() as $message) { ?>
-        <li><a href="<?php echo $message->getViewUrl() ?>"><?php echo clean($message->getTitle()) ?></a>
+        <li><a class="internalLink" href="<?php echo $message->getViewUrl() ?>"><?php echo clean($message->getTitle()) ?></a>
 <?php if($message->getCreatedBy() instanceof User) { ?>
         <span class="desc">(<?php echo lang('posted on by', format_date($message->getUpdatedOn()), $message->getCreatedByCardUrl(), clean($message->getCreatedByDisplayName())) ?>)</span>
 <?php } // if ?>
@@ -69,9 +69,9 @@
       <ul>
 <?php foreach($milestone->getTaskLists() as $task_list) { ?>
 <?php if($task_list->isCompleted()) { ?>
-        <li><del datetime="<?php echo $task_list->getCompletedOn()->toISO8601() ?>"><a href="<?php echo $task_list->getViewUrl() ?>" title="<?php echo lang('completed task list') ?>"><?php echo clean($task_list->getName()) ?></a></del></li>
+        <li><del datetime="<?php echo $task_list->getCompletedOn()->toISO8601() ?>"><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>" title="<?php echo lang('completed task list') ?>"><?php echo clean($task_list->getName()) ?></a></del></li>
 <?php } else { ?>
-        <li><a href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a></li>
+        <li><a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a></li>
 <?php } // if ?>
 <?php } // foreach ?>
       </ul>
@@ -82,8 +82,8 @@
 
 <?php
   $options = array();
-  if($milestone->canEdit(logged_user())) $options[] = '<a href="' . $milestone->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($milestone->canDelete(logged_user())) $options[] = '<a href="' . $milestone->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete milestone') . '\')">' . lang('delete') . '</a>';
+  if($milestone->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $milestone->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($milestone->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $milestone->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete milestone') . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($options)) { ?>
       <div class="milestoneOptions"><?php echo implode(' | ', $options) ?></div>

@@ -18,9 +18,9 @@
 
 ?>
 <?php if($company->isNew()) { ?>
-<form action="<?php echo get_url('company', 'add_client') ?>" method="post">
+<form class="internalForm" action="<?php echo get_url('company', 'add_client') ?>" method="post">
 <?php } else { ?>
-<form action="<?php echo $company->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $company->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

@@ -48,7 +48,7 @@
 
 <?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
 <div id="userPermissions">
-  <form action="<?php echo $user->getUpdatePermissionsUrl($redirect_to) ?>" method="post">
+  <form class="internalForm" action="<?php echo $user->getUpdatePermissionsUrl($redirect_to) ?>" method="post">
     <div id="userProjects">
 <?php foreach($projects as $project) { ?>
       <table class="blank">

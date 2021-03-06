@@ -13,7 +13,7 @@ include("library/fckeditor/fckeditor.php");
 	
 	add_stylesheet_to_page('project/documents.css');
 	add_stylesheet_to_page('file/imageChooser.css');
-	add_javascript_to_page('modules/imageChooser.js');
+	//add_javascript_to_page('modules/imageChooser.js');
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <script type="text/javascript">
@@ -25,7 +25,12 @@ function checkFilename() {
 			function(btn, text) {
 				if (btn == 'ok') {
 					Ext.getDom('filename').value = text;
-					Ext.getDom('fckform').submit();
+					Ext.getDom('fckform').onsubmit();
+					try {
+						Ext.getDom('fckform').submit();
+					} catch (e) {
+						// apparently, form.submit() doesn't invoke the onsumbit event
+					}
 				}
 			}
 		);
@@ -33,12 +38,18 @@ function checkFilename() {
 	}
 }
 </script>
+
+<?php $iname = "upl" . time() % 1000000; ?>
+
+<iframe src="" id="<?php echo $iname ?>" name="<?php echo $iname ?>" style="width:300px;height:200px;position:absolute;display:none" onload="try {og.endSubmit(this)}catch(e){}">
+</iframe>
+
 <?php if($file->isNew()) { ?>
-<form id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return checkFilename()">
+<form target="<?php echo $iname ?>" id="fckform" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="if (!checkFilename()) { return false; } else { og.beginSubmit(this);return true; }">
 <?php } else { ?>
-<form id="fckform" action="<?php echo get_url('files', 'save_document',array(
+<form target="<?php echo $iname ?>" id="fckform" action="<?php echo get_url('files', 'save_document',array(
 	        'id' => $file->getId(), 
-	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data">
+	        'active_project' =>  $file->getProjectId())) ?>" method="post" enctype="multipart/form-data"  onsubmit="og.beginSubmit(this)">
 <?php } // if ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

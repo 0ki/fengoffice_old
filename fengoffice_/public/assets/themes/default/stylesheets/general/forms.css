@@ -61,6 +61,11 @@ input.medium { width: 150px; }
 input.long { width: 400px; }
 input.title { width: 530px; }
 
+textarea.textfield {
+	height: 15px !important;
+	overflow: hidden;
+}
+
 input.checkbox, input.yes_no {
   border: 0;
   width: auto;

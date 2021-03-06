@@ -66,8 +66,9 @@ class ProjectFiles extends BaseProjectFiles {
 			$tag = '1';
 			$tagstr = " AND '1' = ? "; // dummy condition
 		} else {
-			$tagstr = " AND (select count(*) from " . TABLE_PREFIX . "tags where " . TABLE_PREFIX .
-				"project_files.id = " . TABLE_PREFIX . "tags.rel_object_id and " . TABLE_PREFIX . "tags.tag = ?) > 0 ";
+			$tagstr = " AND (select count(*) from " . TABLE_PREFIX . "tags where " .
+				TABLE_PREFIX . "project_files.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
+				TABLE_PREFIX . "tags.tag = ? and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectFiles' ) > 0 ";
 		}
 		if ($type_string == '' || $type_string == null) {
 			$type_string = '1';

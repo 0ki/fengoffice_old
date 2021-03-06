@@ -591,7 +591,7 @@ class Textile
 
         $url = $this->relURL($url);
 
-        $out = $pre . '<a href="' . $url . $slash . '"' . $atts . $this->rel . '>' . $text . '</a>' . $post;
+        $out = $pre . '<a class="internalLink" href="' . $url . $slash . '"' . $atts . $this->rel . '>' . $text . '</a>' . $post;
 
 		// $this->dump($out);
 		return $out;
@@ -664,7 +664,7 @@ function refs($m)
         $url = $this->relURL($url);
 
         $out = array(
-            ($href) ? '<a href="' . $href . '">' : '',
+            ($href) ? '<a class="internalLink" href="' . $href . '">' : '',
             '<img src="' . $url . '"' . $atts . ' />',
             ($href) ? '</a>' : ''
         );

@@ -7,14 +7,14 @@
     array($message->isNew() ? lang('add message') : lang('edit message'))
   ));
   add_stylesheet_to_page('project/messages.css');
-  //add_javascript_to_page('modules/addMessageForm.js');
+  add_javascript_to_page('modules/addMessageForm.js');
   
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/addMessageForm.js') ?>"></script>
+
 <?php if($message->isNew()) { ?>
-<form action="<?php echo get_url('message', 'add') ?>" method="post" enctype="multipart/form-data">
+<form class="internalForm" action="<?php echo get_url('message', 'add') ?>" method="post" enctype="multipart/form-data">
 <?php } else { ?>
-<form action="<?php echo $message->getEditUrl() ?>" method="post">
+<form class="internalForm" action="<?php echo $message->getEditUrl() ?>" method="post">
 <?php } // if?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

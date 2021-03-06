@@ -33,7 +33,7 @@
 <?php } // if ?>
 <!--
 <?php if($folder instanceof ProjectFolder) { ?>
-      <div id="fileFolder"><span class="propertyName"><?php echo lang('folder') ?>:</span> <a href="<?php echo $folder->getBrowseUrl() ?>"><?php echo clean($folder->getName()) ?></a></div>
+      <div id="fileFolder"><span class="propertyName"><?php echo lang('folder') ?>:</span> <a class="internalLink" href="<?php echo $folder->getBrowseUrl() ?>"><?php echo clean($folder->getName()) ?></a></div>
 <?php } // if ?>
 -->
 <?php if($last_revision instanceof ProjectFileRevision) { ?>
@@ -49,11 +49,11 @@
       <div id="fileTags"><span class="propertyName"><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($file, $file->getProject()) ?></div>
 <?php
 $options = array();
-if($file->canDownload(logged_user())) $options[] = '<a href="' . $file->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($file->getFilesize()) . ')</span></a>';
-if($file->canEdit(logged_user())) $options[] = '<a href="' . $file->getEditUrl() . '">' . lang('file properties') . '</a>';
-if($file->canDelete(logged_user())) $options[] = '<a href="' . $file->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete file') . '\')">' . lang('delete') . '</a>';
+if($file->canDownload(logged_user())) $options[] = '<a href="' . $file->getDownloadUrl() . '" class="downloadLink ">' . lang('download') . ' <span>(' . format_filesize($file->getFilesize()) . ')</span></a>';
+if($file->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $file->getEditUrl() . '">' . lang('file properties') . '</a>';
+if($file->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $file->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete file') . '\')">' . lang('delete') . '</a>';
 if(strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 ) 
-$options[] = '<a href="' . 	$file->getModifyUrl()	. '">' . lang('edit') . '</a>';
+$options[] = '<a class="internalLink" href="' . 	$file->getModifyUrl()	. '">' . lang('edit') . '</a>';
 if(strcmp($file->getTypeString(),'prsn')==0 ) 
 $options[] = '<a href="javascript:slideshow(\'' . 	$file->getSlideshowUrl()	. '\')">' . lang('slideshow') . '</a>';
 ?>
@@ -85,8 +85,8 @@ $options[] = '<a href="javascript:slideshow(\'' . 	$file->getSlideshowUrl()	. '\
 <?php 
   $options = array();
   if($revision->canDownload(logged_user())) $options[] = '<a href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
-  if($revision->canEdit(logged_user())) $options[] = '<a href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($revision->canDelete(logged_user())) $options[] = '<a href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete revision') . '\')">' . lang('delete') . '</a>';
+  if($revision->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($revision->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete revision') . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($revisions)) { ?>
     <div class="revisionOptions"><?php echo implode(' | ', $options) ?></div>

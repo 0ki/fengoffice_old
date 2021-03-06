@@ -17,7 +17,7 @@ class FilesController extends ApplicationController {
 	*/
 	function __construct() {
 		parent::__construct();
-		if ($_GET['ajax']) {
+		if (is_ajax_request()) {
 			prepare_company_website_controller($this, 'ajax');
 		} else {
 			prepare_company_website_controller($this, 'website');
@@ -31,7 +31,7 @@ class FilesController extends ApplicationController {
 	* @return null
 	*/
 	function index() {
-		if ($_GET['ajax']) {
+		if (is_ajax_request()) {
 			$this->setLayout('ajaxfull');
 		} else {
 			$this->setLayout('full');
@@ -340,7 +340,8 @@ class FilesController extends ApplicationController {
 		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize());
 		die();
 	} // download_revision
-    
+
+	
 	/**
 	* Add file
 	*
@@ -349,6 +350,7 @@ class FilesController extends ApplicationController {
 	* @return null
 	*/
 	function add_file() {
+		
 		$file_data = array_var($_POST, 'file');
 		if (is_array($file_data) && array_var($file_data, 'project_id')) {
 			$projectId = array_var($file_data, 'project_id');
@@ -379,6 +381,9 @@ class FilesController extends ApplicationController {
 		tpl_assign('tags', Tags::getTagNames());
 	  
 		if(is_array(array_var($_POST, 'file'))) {
+			$this->setLayout("html");
+			$this->setTemplate("save_file");
+			tpl_assign('success', "false");
 			try {
 				DB::beginWork();
 				$uploaded_file = array_var($_FILES, 'file_file');
@@ -401,11 +406,13 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 		  
-				flash_success(lang('success add file', $file->getFilename()));
-				$this->redirectToUrl($file->getDetailsUrl());
+				//flash_success(lang('success add file', $file->getFilename()));
+				tpl_assign('forward', $file->getDetailsUrl());
+				tpl_assign('error', lang('success add file', $file->getFilename()));
+				tpl_assign('success', "true");
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				tpl_assign('error', $e->getMessage());
 				tpl_assign('file', new ProjectFile()); // reset file
 		  
 				// If we uploaded the file remove it from repository
@@ -418,6 +425,9 @@ class FilesController extends ApplicationController {
 
     
 	function save_document() {
+		$this->setLayout("html");
+		$this->setTemplate("save_file");
+		
 		if(get_id() > 0) {
 			//edit document
 	        try {
@@ -441,14 +451,17 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 				
-				flash_success(lang('success save file', $file->getFilename()));
-				$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
+				//flash_success(lang('success save file', $file->getFilename()));
+				//$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
+				tpl_assign('error', lang('success save file', $file->getFilename()));
+				tpl_assign('success', "true");
 	        } catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
-				tpl_assign('error', $e);
-				flash_error(lang('error while saving'));
-				$this->redirectToReferer(get_url('files'));
+				tpl_assign('error', $e->getMessage());
+				//flash_error(lang('error while saving'));
+				//$this->redirectToReferer(get_url('files'));
+				tpl_assign('success', "false");
 	        } // try
 		} else  {
 			// new document
@@ -500,26 +513,32 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true);
 				ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_ADD);
 				DB::commit();
-				flash_success(lang('success save file', $file->getFilename()));
+				//flash_success(lang('success save file', $file->getFilename()));
 				unlink($file_dt['tmp_name']);
-				$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
+				//$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
+				tpl_assign('forward', get_url('files', 'add_document', array('id' => $file->getId())));
+				tpl_assign('error', lang('success save file', $file->getFilename()));
+				tpl_assign('success', "true");
 			} catch(Exception $e) {
 				DB::rollback();
 
-				tpl_assign('error', $e);
+				tpl_assign('error', $e->getMessage());
 				tpl_assign('file', new ProjectFile()); // reset file
 				unlink($file_dt['tmp_name']);
 				// if we uploaded the file remove it from repository
 				if	(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 					FileRepository::deleteFile($revision->getRepositoryId());
 				} // if
-				flash_error(lang('error while saving'));
-				$this->redirectToUrl(get_url('files'));
+				//flash_error(lang('error while saving'));
+				//$this->redirectToUrl(get_url('files'));
+				tpl_assign('success', "false");
 	        } // try
 		}
 	}
 
 	function save_presentation() {
+		$this->setLayout("html");
+		$this->setTemplate("save_file");
 		if(get_id() > 0) {
 			//edit presentation
 	        try {
@@ -543,14 +562,18 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 				
-				flash_success(lang('success save file', $file->getFilename()));
-				$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
+				//flash_success(lang('success save file', $file->getFilename()));
+				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
+				tpl_assign('error', lang('success save file', $file->getFilename()));
+				tpl_assign('success', "true");
 	        } catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
-				tpl_assign('error', $e);
-				flash_error(lang('error while saving'));
-				$this->redirectToUrl(get_url('files'));
+				//tpl_assign('error', $e);
+				//flash_error(lang('error while saving'));
+				//$this->redirectToUrl(get_url('files'));
+				tpl_assign('success', "false");
+				tpl_assign('error', $e->getMessage());
 	        } // try
 		} else  {
 			// new presentation
@@ -602,21 +625,26 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true);
 				ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_ADD);
 				DB::commit();
-				flash_success(lang('success save file', $file->getFilename()));
+				//flash_success(lang('success save file', $file->getFilename()));
 				unlink($file_dt['tmp_name']);
-				$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
+				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
+				tpl_assign('error', lang('success save file', $file->getFilename()));
+				tpl_assign('success', "true");
+				tpl_assign('forward', get_url('files', 'add_presentation', array('id' => $file->getId())));
 			} catch(Exception $e) {
 				DB::rollback();
 
-				tpl_assign('error', $e);
+				//tpl_assign('error', $e);
 				tpl_assign('file', new ProjectFile()); // reset file
 				unlink($file_dt['tmp_name']);
 				// if we uploaded the file remove it from repository
 				if	(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 					FileRepository::deleteFile($revision->getRepositoryId());
 				} // if
-				flash_error(lang('error while saving'));
-				$this->redirectToUrl(get_url('files'));
+				//flash_error(lang('error while saving'));
+				//$this->redirectToUrl(get_url('files'));
+				tpl_assign('success', "false");
+				tpl_assign('error', $e->getMessage());
 	        } // try
 		}
 	}
@@ -724,7 +752,7 @@ class FilesController extends ApplicationController {
 
 
     function add_document() {
-		if ($_GET['ajax']) {
+		if (is_ajax_request()) {
 			$this->setLayout('ajaxfull');
 		} else {
 			$this->setLayout('full');
@@ -790,7 +818,7 @@ class FilesController extends ApplicationController {
 
     
     function add_spreadsheet() {
-		if ($_GET['ajax']) {
+		if (is_ajax_request()) {
 			$this->setLayout('ajaxfull');
 		} else {
 			$this->setLayout('full');
@@ -853,7 +881,7 @@ class FilesController extends ApplicationController {
     } // add_spreadsheet
 
     function add_presentation() {
-		if ($_GET['ajax']) {
+		if (is_ajax_request()) {
 			$this->setLayout('ajaxfull');
 		} else {
 			$this->setLayout('full');
@@ -934,6 +962,29 @@ class FilesController extends ApplicationController {
 		$type = $_GET['type'];
 		$user = $_GET['user'];
 		
+		if ($_GET['action'] == 'delete') {
+			$ids = explode(',', array_var($_GET, 'files'));
+			list($succ, $err) = $this->do_delete_files($ids);
+			if ($err > 0) {
+				tpl_assign('errCode', -1);
+				tpl_assign('errMsg', lang('error delete files', $err));
+			} else {
+				tpl_assign('errCode', 0);
+				tpl_assign('errMsg', lang('success delete files', $succ));
+			}
+		} else if ($_GET['action'] == 'tag') {
+			$ids = explode(',', array_var($_GET, 'files'));
+			$tagTag = $_GET['tagTag'];
+			list($succ, $err) = $this->do_tag_file($tagTag, $ids);
+			if ($err > 0) {
+				tpl_assign('errCode', -1);
+				tpl_assign('errMsg', lang('error tag files', $err));
+			} else {
+				tpl_assign('errCode', 0);
+				tpl_assign('errMsg', lang('success tag files', $succ));
+			}
+		}
+		
 		$filters = array();
 		if (isset($project)) {
 			$p = Projects::findById($project);
@@ -958,6 +1009,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('filters', $filters);
 		tpl_assign('files', $files);
 		tpl_assign('pagination', $pagination);
+		tpl_assign('tags', Tags::getTagNames());
 	}
 	
 	function open_file() {
@@ -971,7 +1023,7 @@ class FilesController extends ApplicationController {
 			} else if (strcmp('prsn', $file->getTypeString()) == 0) {
 				$this->redirectTo('files', 'add_presentation', array('id' => $fileId));
 			} else {
-				$this->redirectTo('files', 'download_file', array('id' => $fileId));
+				$this->redirectTo('files', 'file_details', array('id' => $fileId));
 			}
 		} else {
 			flash_error(lang('file dnx'));
@@ -990,17 +1042,30 @@ class FilesController extends ApplicationController {
     function tag_file() {
 		$tag = array_var($_GET, 'tag');
 		$ids = explode(',', array_var($_GET, 'files'));
-		if (count($ids)) {
-			foreach ($ids as $id) {
-				if (trim($id) != '') {
-					$file = ProjectFiles::findById($id);
-					Tags::addFileTag($tag, $id, $file->getProject());
-				}
-			}
-		} else {
-			flash_error(lang('no file selected'));
+		list($succ, $err) = $this->do_tag_file($tag, $ids);
+    	if($err) {
+			flash_error(lang('error tag files', $err));
+		}
+		if ($succ) {
+			flash_success(lang('success tag files'), $succ);
 		}
 	    $this->redirectToUrl(get_url('files'));
+    }
+    
+    function do_tag_file($tag, $ids) {
+    	$err = $succ = 0; 
+    	foreach ($ids as $id) {
+			if (trim($id) != '') {
+				try {
+					$file = ProjectFiles::findById($id);
+					Tags::addFileTag($tag, $id, $file->getProject());
+					$succ++;
+				} catch (Exception $e) {
+					$err ++;
+				}
+			}
+		}
+		return array($succ, $err);
     }
 
     
@@ -1014,7 +1079,7 @@ class FilesController extends ApplicationController {
 	*/
 	function edit_file() {
 		$this->setTemplate('add_file');
-	  
+		
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
@@ -1045,6 +1110,9 @@ class FilesController extends ApplicationController {
 		tpl_assign('file_data', $file_data);
 	  
 		if(is_array(array_var($_POST, 'file'))) {
+			$this->setLayout("html");
+			$this->setTemplate("save_file");
+			tpl_assign('success', "false");
 			try {
 				$old_is_private = $file->isPrivate();
 				$old_is_important = $file->getIsImportant();
@@ -1072,8 +1140,10 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 		  
-				flash_success(lang('success add file', $file->getFilename()));
-				$this->redirectToUrl($file->getDetailsUrl());
+				//flash_success(lang('success add file', $file->getFilename()));
+				tpl_assign('forward', $file->getDetailsUrl());
+				tpl_assign('error', lang('success add file', $file->getFilename()));
+				tpl_assign('success', "true");
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
@@ -1090,9 +1160,20 @@ class FilesController extends ApplicationController {
 	* @return null
 	*/
 	function delete_files(){
-		$ids=explode(',',array_var($_GET,'files'));
-		$err=0; // count errors
-		$succ=0; // count files deleted
+		$ids = explode(',', array_var($_GET, 'files'));
+		list($succ, $err) = $this->do_delete_files($ids);
+		if($err) {
+			flash_error(lang('error delete files', $err));
+		}
+		if ($succ) {
+			flash_success(lang('success delete files'), $succ);
+		}
+		$this->redirectTo('files');
+	}
+	
+	function do_delete_files($ids) {
+		$err = 0; // count errors
+		$succ = 0; // count files deleted
 		foreach ($ids as $id) {
 			try {
 				if(trim($id)!=''){
@@ -1103,13 +1184,7 @@ class FilesController extends ApplicationController {
 				$err ++;
 			} // try
 		}
-		if($err) {
-			flash_error(lang('error delete files', $err));
-		}
-		if ($succ) {
-			flash_success(lang('success delete files'),$succ);
-		}
-		$this->redirectTo('files');
+		return array($succ, $err);
 	}
     
 	/**

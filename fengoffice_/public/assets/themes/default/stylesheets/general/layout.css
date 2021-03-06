@@ -6,6 +6,13 @@ html, body {
 	width: 100%;
 }
 
+#loading {
+	font-size: 20px;
+	position: absolute;
+	left: 45%;
+	top: 45%;
+}
+
 #header {
 	border-bottom: 1px solid black;
 	background-color: white;
@@ -85,6 +92,16 @@ ul.x-menu-list {
     top:10px;
     width:250px;
     z-index:20000;
+}
+.toggle_collapsed {
+	background-repeat: no-repeat;
+	background-image: url(../../images/menu/plus.gif);
+	padding-left: 24px;
+}
+.toggle_expanded {
+	background-repeat: no-repeat;
+	background-image: url(../../images/menu/minus.gif);
+	padding-left: 24px;
 }
 
 /** /EXTJS **/

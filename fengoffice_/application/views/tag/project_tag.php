@@ -15,7 +15,7 @@
 <h2><?php echo lang('messages') ?></h2>
 <ul>
 <?php foreach($tagged_objects['messages'] as $message) { ?>
-  <li><a href="<?php echo $message->getViewUrl() ?>"><?php echo clean($message->getTitle()) ?></a>
+  <li><a class="internalLink" href="<?php echo $message->getViewUrl() ?>"><?php echo clean($message->getTitle()) ?></a>
 <?php if($message->getCreatedBy() instanceof User) { ?>
   <span class="desc">- <?php echo lang('posted on by', format_date($message->getUpdatedOn()), $message->getCreatedByCardUrl(), clean($message->getCreatedByDisplayName())) ?></span>
 <?php } // if ?>
@@ -29,7 +29,7 @@
 <ul>
 <?php foreach($tagged_objects['milestones'] as $milestone) { ?>
   <li>
-    <a href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
+    <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a>
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
     <span class="desc">- <?php echo lang('milestone assigned to', clean($milestone->getAssignedTo()->getObjectName())) ?></span>
 <?php } // if ?>
@@ -46,7 +46,7 @@
 <ul>
 <?php foreach($tagged_objects['task_lists'] as $task_list) { ?>
   <li>
-    <a href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a>
+    <a class="internalLink" href="<?php echo $task_list->getViewUrl() ?>"><?php echo clean($task_list->getName()) ?></a>
 <?php if($task_list->isCompleted()) { ?>
     <img src="<?php echo icon_url('ok.gif') ?>" alt="<?php echo lang('completed task list') ?>" title="<?php echo lang('completed task list') ?>" />
 <?php } ?>
@@ -59,7 +59,7 @@
 <h2><?php echo lang('files') ?></h2>
 <ul>
 <?php foreach($tagged_objects['files'] as $file) { ?>
-  <li><a href="<?php echo $file->getDetailsUrl() ?>"><?php echo clean($file->getFilename()) ?></a> <span class="desc">(<?php echo format_filesize($file->getFilesize()) ?>)</span></li>
+  <li><a class="internalLink" href="<?php echo $file->getDetailsUrl() ?>"><?php echo clean($file->getFilename()) ?></a> <span class="desc">(<?php echo format_filesize($file->getFilesize()) ?>)</span></li>
 <?php } // foreach?>
 </ul>
 <?php } // if ?>
