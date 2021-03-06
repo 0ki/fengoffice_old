@@ -1631,14 +1631,37 @@ class MailController extends ApplicationController {
 				$type_file_allow = FileTypes::getByExtension($extension);
 				if(!($type_file_allow instanceof FileType) || $type_file_allow->getIsAllow() == 1){
 					try {
-						$file = ProjectFiles::findOne(array('conditions' => "mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName).""));
-						/*
-						//$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND f.mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName)."";
-						$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o,".TABLE_PREFIX."project_files f WHERE o.id = f.object_id AND o.name = ".DB::escape($fName)."";
-						$db_res = DB::execute($sql);
-						$row = $db_res->fetchRow();
-						$file = ProjectFiles::findById($row['id']);
-						*/
+						$remove_previous_members = $remove_prev;
+						
+						// check for file name and size, if there are some then compare the contents, if content is equal do not classify the attachment.
+						$file_exists = 0;
+						$possible_equal_file_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."project_file_revisions r 
+								INNER JOIN ".TABLE_PREFIX."objects o ON o.id=r.file_id  
+								INNER JOIN ".TABLE_PREFIX."project_files f ON f.object_id=r.file_id
+								WHERE o.name=".DB::escape($fName)." AND r.filesize='".strlen($att["Data"])."' 
+								AND r.revision_number=(SELECT max(r2.revision_number) FROM ".TABLE_PREFIX."project_file_revisions r2 WHERE r2.file_id=r.file_id)");
+						
+						if (is_array($possible_equal_file_rows)) {
+							foreach ($possible_equal_file_rows as $row) {
+								$content = FileRepository::getFileContent($row['repository_id']);
+								if ($content == $att['Data']) {
+									// file already exists
+									$file_exists = $row['file_id'];
+									Logger::log($email->getId()." - ".$row['mail_id']." - $fName");
+									if ($remove_previous_members && $row['mail_id'] != $email->getId()) {
+										$remove_previous_members = false;
+									}
+									continue;
+								}
+							}
+						}
+						
+						if ($file_exists > 0) {
+							$file = ProjectFiles::findById($file_exists);
+						} else {
+							$file = ProjectFiles::findOne(array('conditions' => "mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName).""));
+						}
+						
 						DB::beginWork();
 						if ($file == null){
 							$fileIsNew = true;
@@ -1647,15 +1670,12 @@ class MailController extends ApplicationController {
 							$file->setIsVisible(true);
 							$file->setMailId($email->getId());
 							$file->setCreatedById($account_owner->getId());
-							$file->save();
-
-							$object_controller = new ObjectController();
-							$object_controller->add_to_members($file, array(), $account_owner);
+							$file->save();							
 						} else {
 							$fileIsNew = false;
 						}
 
-						if($remove_prev){
+						if($remove_previous_members){
 							$dim_ids = array(0);
 							foreach ($members as $m) $dim_ids[$m->getDimensionId()] = $m->getDimensionId();
 							ObjectMembers::delete('`object_id` = ' . $file->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` IN ('.implode(',',$dim_ids).'))');

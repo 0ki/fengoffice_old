@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1.5
+	About Feng Office 2.7.1.6
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,11 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7.1.5
+	----------------
+	bugfix: 'Unexpected token' error in tasks list.
+	bugfix: 'after_contact_view' hook was lost when contact view was changed.
 	
 	Since 2.7.1.4
 	----------------

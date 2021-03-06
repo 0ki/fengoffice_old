@@ -88,6 +88,7 @@ $(function(){
 					type:"url", 
 					data: og.initialURL 
 				};
+				og.queryString= "";
 			}
 	//	}
 	});

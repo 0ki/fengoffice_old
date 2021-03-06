@@ -235,5 +235,7 @@ foreach ($all_type_codes as $type_code) {
 <?php } ?>
 
 </div>
+<div class="clear"></div>
+<?php Hook::fire('after_contact_view', $contact, $null); ?>
 </div>
 <div class="clear"></div>
