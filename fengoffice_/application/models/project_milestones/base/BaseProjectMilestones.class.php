@@ -29,7 +29,9 @@ abstract class BaseProjectMilestones extends DataManager {
     	'created_by_id' => DATA_TYPE_INTEGER,
     	'updated_on' => DATA_TYPE_DATETIME,
     	'updated_by_id' => DATA_TYPE_INTEGER,
-		'is_template' => DATA_TYPE_BOOLEAN);
+		'is_template' => DATA_TYPE_BOOLEAN,
+		'from_template_id' => DATA_TYPE_INTEGER,
+	);
 
 	/**
 	 * Construct

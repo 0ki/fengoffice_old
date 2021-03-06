@@ -7,7 +7,7 @@
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
   class ConfigOptions extends BaseConfigOptions {
-    
+  	
     /**
     * Return all options in specific category
     *

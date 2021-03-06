@@ -2,10 +2,9 @@
 include("public/assets/javascript/fckeditor/fckeditor.php");
  
   set_page_title( lang('write mail'));
-  add_page_action(lang('send mail'), $mail->getSendMailUrl(), 'ico-send');
  
   $instanceName = "fck" . gen_id();
-  $type = array_var($mail_data, 'type');
+  $type = array_var($mail_data, 'type','html');
 ?>
 <script type="text/javascript">
 function setBody(iname) {
@@ -17,6 +16,18 @@ function setBody(iname) {
 		form['mail[body]'].value = Ext.getDom('mailBody').value;
 	}
 	return true;
+}
+
+function FCKeditor_OnComplete(fck) {
+	fck.ResetIsDirty();
+	fck.Events.AttachEvent('OnSelectionChange', function(fck) {
+		var p = og.getParentContentPanel(Ext.get(fck.Name));
+		if (fck.IsDirty()) {
+			Ext.getCmp(p.id).setPreventClose(true);
+		} else {
+			Ext.getCmp(p.id).setPreventClose(false);
+		}
+	});
 }
 
 function alertFormat(iname, opt) {
@@ -57,10 +68,24 @@ function alertFormat(iname, opt) {
 		oEditor.SetHTML(mailBody.value);	
 	}
 }
+
+
+function setDraft(val){
+	var isDraft = Ext.getDom('isDraft');
+	isDraft.value = val;
+}
+
+function setDiscard(val){
+	var the_id = Ext.getDom('id').value;
+	document.frmMail.action = og.getUrl('mail', 'delete', {id:the_id, ajax:'true'});
+}
+
 </script>
-<form style='height:100%;background-color:white'  id="<?php echo $instanceName ?>"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return setBody('<?php echo $instanceName ?>')">
+<form style='height:100%;background-color:white'  id="<?php echo $instanceName ?>" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return setBody('<?php echo $instanceName ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <input type="hidden" name="mail[body]" value="" />
+<input type="hidden" name="mail[isDraft]" id="isDraft" value="false" />
+<input type="hidden" name="mail[id]" id="id" value="<?php echo  array_var($mail_data, 'id') ?>" />
 <?php tpl_display(get_template_path('form_errors')) ?>
 
 
@@ -73,8 +98,19 @@ function alertFormat(iname, opt) {
   			<?php echo lang('send mail') ?>
   		</td><td style="text-align:right">
   			<?php echo submit_button(lang('send mail'), '', 
-  			array('style'=>'margin-top:0px;margin-left:10px')) ?>
-  		</td></tr></table>
+  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"setDraft(false)"))?>
+  		</td>
+  		<td style="text-align:right">
+  			<?php echo submit_button(lang('save')." ".lang('draft'), '', 
+  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"setDraft(true)")) ?>
+  		</td>
+  		<td style="text-align:right">
+  			<?php
+  			$strDisabled = array_var($mail_data, 'id') == ''?'disabled':'';
+  			echo submit_button(lang('discard'), '', 
+  			array('style'=>'margin-top:0px;margin-left:10px','onclick'=>"setDiscard(true)",$strDisabled=>'')) ?>
+  		</td>
+  		</tr></table>
   		</div>
   	</div>
   
@@ -140,16 +176,31 @@ function alertFormat(iname, opt) {
 		<?php
 			$oFCKeditor = new FCKeditor($instanceName);
 			$oFCKeditor->BasePath = 'public/assets/javascript/fckeditor/';
-			$oFCKeditor->Width = '100%';
+			$oFCKeditor->Width = '95%';
 			$oFCKeditor->Height = '100%';
 			$oFCKeditor->Config['SkinPath'] = get_theme_url('fckeditor/');
 			$oFCKeditor->Value = nl2br(array_var($mail_data, 'body'));
+			$oFCKeditor->ToolbarSet  = 'Basic' ;
 			$oFCKeditor->Create();
 		?>
 	</div>
   </div>
-  <?php echo submit_button( lang('send mail') , 's', array('tabindex'=>'5')) ?>
+  <?php echo submit_button( lang('send mail') , 's', array('tabindex'=>'5','onclick'=>"setDraft(false)")) ?>
 
 </div>
 </div>
 </form>
+
+<script>
+og.eventManager.addListener("email saved", function(obj) {
+	var form = Ext.getDom(obj.instance);
+	if (!form) return;
+	form['mail[id]'].value = obj.id;
+	var fck = FCKeditorAPI.GetInstance(obj.instance);
+	if (fck) {
+		fck.ResetIsDirty();
+		var p = og.getParentContentPanel(Ext.get(fck.Name));
+		Ext.getCmp(p.id).setPreventClose(false);
+	}
+}, null, {replace:true});
+</script>

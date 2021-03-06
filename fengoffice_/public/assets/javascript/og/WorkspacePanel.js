@@ -44,6 +44,7 @@ og.WorkspacePanel = function(config) {
 			tooltip: lang('refresh desc'),
 			handler: function() {
 				this.tree.loadWorkspaces(null,null,true);
+				og.updateWsCrumbs({id: 0, name: lang('all')});
 			},
 			scope: this
 		}/*,'-',{
@@ -82,30 +83,6 @@ og.WorkspaceTree = function(config) {
 	if (!config) config = {};
 	var workspaces = config.workspaces;
 	delete config.workspaces;
-	// tree filter
-	var tree = this;
-	function filterNode(n, re) {
-		var f = false;
-		var c = n.firstChild;
-		while (c) {
-			f = filterNode(c, re) || f;
-			c = c.nextSibling;
-		}
-		f = re.test(n.text.toLowerCase()) || f;
-		if (f) {
-			n.getUI().show();
-		} else {
-			n.getUI().hide();
-		}
-		return f;
-	}
-	function filterTree(e) {
-		var text = e.target.value;
-		tree.expandAll();
-		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
-		filterNode(tree.workspaces, re);
-		tree.workspaces.getUI().show();
-	}
 
 	Ext.applyIf(config, {
 		ddGroup: 'WorkspaceDD',
@@ -116,15 +93,23 @@ og.WorkspaceTree = function(config) {
 		lines: false,
 		root: new Ext.tree.TreeNode(lang('workspaces')),
 		collapseFirst: false,
-		tbar: [new Ext.form.TextField({
+		tbar: [{
+			xtype: 'textfield',
+			id: 'workspace-filter',
 			width: 200,
 			emptyText:lang('filter workspaces'),
 			listeners:{
-				render: function(f){
-					f.el.on('keyup', filterTree, f, {buffer: 350});
+				render: {
+					fn: function(f){
+						f.el.on('keyup', function(e) {
+							this.filterTree(e.target.value);
+						},
+						this, {buffer: 350});
+					},
+					scope: this
 				}
 			}
-		})]
+		}]
 	});
 	if (!config.listeners) config.listeners = {};
 	Ext.apply(config.listeners, {
@@ -139,6 +124,7 @@ og.WorkspaceTree = function(config) {
 
 	this.workspaces = this.root.appendChild(
 		new Ext.tree.TreeNode({
+			id: "ws0",
 			text: lang('all'),
 			expanded: true,
 			name: lang('all'),
@@ -166,7 +152,11 @@ og.WorkspaceTree = function(config) {
 		'selectionchange' : function(sm, node) {
 			if (node && !this.pauseEvents) {
 				this.fireEvent("workspaceselect", node.ws);
+				var tf = this.getTopToolbar().items.get('workspace-filter');
+				tf.setValue("");
+				this.clearFilter();
 				node.expand();
+				node.ensureVisible();
 			}
 		},
 		scope:this
@@ -174,7 +164,7 @@ og.WorkspaceTree = function(config) {
 	this.addEvents({workspaceselect: true});
 	
 	og.eventManager.addListener('workspace added', this.addWS, this);
-	og.eventManager.addListener('workspace edited', this.addWS, this);
+	og.eventManager.addListener('workspace edited', this.updateWS, this);
 	og.eventManager.addListener('workspace deleted', this.removeWS, this);
 		
 	this.loadWorkspaces(null,null,true);
@@ -197,11 +187,18 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	removeWS: function(ws) {
 		var node = this.getNodeById('ws' + ws.id);
 		if (node) {
-			node.unselect();
+			if (node.isSelected()) {
+				this.workspaces.select();
+			}
 			Ext.fly(node.ui.elNode).ghost('l', {
 				callback: node.remove, scope: node, duration: .4
 			});
 		}
+	},
+	
+	updateWS : function(ws) {
+		this.addWS(ws);
+		og.updateWsCrumbs(ws);
 	},
 
 	addWS : function(ws) {
@@ -211,11 +208,12 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			var ico = exists.getUI().getIconEl();
 			ico.className = ico.className.replace(/ico-color([0-9]*)/ig, 'ico-color' + (ws.color || 0));
 			if (ws.parent != exists.ws.parent) {
-				exists.remove();
-				var parent = this.getNodeById('ws' + ws.parent);
+				var selected = exists.isSelected();
+				var parent = this.getNode(ws.parent);
 				if (parent) {
 					parent.appendChild(exists);
 					exists.ws.parent = parent.ws.id;
+					if (selected) exists.select();
 				}
 			}
 			return;
@@ -255,8 +253,6 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		});*/
 		return node;
 	},
-	
-	
 	
 	getActiveWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
@@ -371,6 +367,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 				return node;
 			}
 		}
+		return null;
 	},
 	
 	removeAll: function() {
@@ -380,6 +377,53 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			node = node.nextSibling;
 			aux.remove();
 		}
+	},
+	
+	filterNode: function(n, re) {
+		var f = false;
+		var c = n.firstChild;
+		while (c) {
+			f = this.filterNode(c, re) || f;
+			c = c.nextSibling;
+		}
+		f = re.test(n.text.toLowerCase()) || f;
+		if (!n.previousState) {
+			// save the state before filtering
+			n.previousState = n.expanded?"expanded":"collapsed";
+		}
+		if (f) {
+			n.getUI().show();
+		} else {
+			n.getUI().hide();
+		}
+		return f;
+	},
+	
+	filterTree: function(text) {
+		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
+		this.filterNode(this.workspaces, re);
+		this.workspaces.getUI().show();
+		this.expandAll();
+	},
+	
+	clearFilter: function(n) {
+		if (!n) n = this.workspaces;
+		if (!n.previousState) return;
+		var c = n.firstChild;
+		while (c) {
+			this.clearFilter(c);
+			c = c.nextSibling;
+		}
+		n.getUI().show();
+		if (this.getSelectionModel().getSelectedNode().isAncestor(n)) {
+			n.previousState = "expanded";
+		}
+		if (n.previousState == "expanded") {
+			n.expand();
+		} else if (n.previousState == "collapsed") {
+			n.collapse();
+		}
+		n.previousState = null;
 	}
 });
 

@@ -1,0 +1,11 @@
+/BooleanExpressionRecognizer.php////
+/Query.php////
+/QueryEntry.php////
+/QueryHit.php////
+/QueryLexer.php////
+/QueryParser.php////
+/QueryParserContext.php////
+/QueryParserException.php////
+/QueryToken.php////
+/Similarity.php////
+/Weight.php////

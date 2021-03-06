@@ -207,7 +207,7 @@ og.ReportingManager = function() {
         closable: true,
 		stripeRows: true,
         style: "padding:7px",
-        bbar: new Ext.PagingToolbar({
+        bbar: new og.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
             displayInfo: true,

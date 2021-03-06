@@ -6,28 +6,25 @@ $container_id = gen_id();
 var milestones = [
 <?php $first = true;
 foreach ($milestones as $milestone) {
-if ($first) {
-	$first = false;
-} else {
-	echo ",";
-}
-?>
-{
-	id: <?php echo $milestone->getId() ?>,
-	title: '<?php echo str_replace("\n"," ",str_replace("'", "\\'", $milestone->getName())) ?>',
-	subtasks: [],
-	assignedTo: '<?php echo str_replace("'", "\\'", $milestone->getAssignedTo() == null ? '' : $milestone->getAssignedToName()) ?>',
-	workspaces: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getProject()->getName()) ?>',
-	workspaceids: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getProject()->getId()) ?>',
-	workspacecolors: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getWorkspaceColorsCSV()) ?>',
-	expanded: false,
-	completed: <?php echo $milestone->isCompleted()?"true":"false" ?>,
-	completedBy: '<?php echo str_replace("'", "\\'", $milestone->getCompletedByName()) ?>',
-	isLate: <?php echo $milestone->isLate()?"true":"false" ?>,
-	daysLate: <?php echo $milestone->getLateInDays() ?>,
-	duedate: <?php echo $milestone->getDueDate()->getTimestamp() ?>
-}
-<?php } // foreach ?>
+	if ($first) {
+		$first = false;
+	} else {
+		echo ",";
+	}
+	$milestoneInfo = "id:" . $milestone->getId() .",".
+		"title:'" . clean(str_replace("\n"," ",str_replace("'", "\\'", $milestone->getName()))) . "'," .
+		"subtasks:[]," .
+		"assignedTo:'" . clean(str_replace("'", "\\'", $milestone->getAssignedTo() == null ? '' : $milestone->getAssignedToName())) . "'," .
+		"workspaceids:'" . str_replace("'", "\\'", $milestone->getProject()->getId()) . "'," .
+		"expanded:false," .
+		"completed:" . ($milestone->isCompleted()?"true":"false") . "," .
+		"completedBy:'" . clean(str_replace("'", "\\'", $milestone->getCompletedByName())) . "'," .
+		"isLate:" . ($milestone->isLate()?"true":"false") . "," .
+		"daysLate:" . $milestone->getLateInDays() . "," .
+		"duedate:" . $milestone->getDueDate()->getTimestamp();
+	
+	echo '{' . $milestoneInfo . '}';
+} // foreach ?>
 ];
 
 var container = document.getElementById('<?php echo $container_id?>');

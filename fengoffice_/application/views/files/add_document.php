@@ -26,7 +26,7 @@ function checkFilename(iname) {
 	if (form['file[name]'].value && !form.rename) {
 		return true;
 	} else {
-		Ext.Msg.prompt('Save', 'Choose a filename:',
+		Ext.Msg.prompt(lang('save'), lang('choose a filename') + ':',
 			function(btn, text) {
 				if (btn == 'ok') {
 					this['file[name]'].value = text;

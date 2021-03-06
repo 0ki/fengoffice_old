@@ -5,10 +5,15 @@
 og.MessageManager = function() {
 	var actions, moreActions;
 	this.accountId = 0;
-	this.viewType = "all";
+	this.viewType = "emails";
+	this.readType = "unreaded";
+	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
+	
 
+	
+	
 	if (!og.MessageManager.store) {
 		og.MessageManager.store = new Ext.data.Store({
 			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
@@ -21,7 +26,7 @@ og.MessageManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead'
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','isDraft','isSent'
 				]
 			}),
 			remoteSort: true,
@@ -31,7 +36,7 @@ og.MessageManager = function() {
 					og.processResponse(d);
 					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
 					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-					if (d.totalCount == 0) {
+					if (d.totalCount === 0) {
 						if (tag) {
 							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
 						} else {
@@ -41,6 +46,7 @@ og.MessageManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.hideLoading();
+					og.showWsPaths();
 				},
 				'beforeload': function() {
 					og.loading();
@@ -59,21 +65,35 @@ og.MessageManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
-		var result = '';
 		var name = '';
-		if (r.data.type == 'message')
+		if (r.data.type == 'message'){			
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
-		else{
+		}else{
 			var bold = 'font-weight:normal;';
-			if (!r.data.isRead) bold = 'font-weight:600;';
+			if (!r.data.isRead) {bold = 'font-weight:600;';}
+			var strAction = 'view';
+			
+			if (r.data.isDraft) {
+				strDraft = "<span style='font-size:80%;color:red'>"+lang('draft')+"&nbsp;</style>";			
+				strAction = 'edit_mail';
+			}
+			else { strDraft = ''; }
+			
+			
 			name = String.format(
-					'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.text),bold);
+					'{4}<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('mail', strAction, {id: r.data.object_id}), String.format(r.data.text),bold,strDraft);
+					
+			 if (r.data.isSent) {
+			 	name = String.format('<div class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</div>',name,lang("mail sent"));
+			 }
+
+
 		}	
 		var projectstring = '';		
-	    if (r.data.projectId != ''){
+	    if (r.data.projectId !== ''){
 			var ids = String(r.data.projectId).split(',');
 			var names = r.data.projectName.split(',');
 			var colors = String(r.data.workspaceColors).split(',');
@@ -82,19 +102,35 @@ og.MessageManager = function() {
 				projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
 			}
 			projectstring += '</span>';
+
 		}
 		
 		var text = '';
 		if (r.data.text != ''){
 			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
 			text += r.data.text + "</span></i>";
-			
 		}
 		
 		return projectstring + name + text;
-		
 	}
 
+		
+	function renderFrom(value, p, r){
+		if (r.data.type == 'message'){
+			name = String.format(
+					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
+		} else{
+			var bold = 'font-weight:normal;';
+			if (!r.data.isRead) bold = 'font-weight:600;';
+			name = String.format(
+					'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.from),bold);
+		}	
+		return name;
+	}
+	
+	
 	function renderIcon(value, p, r) {
 		if (value == "email")
 			if (r.data.projectId > 0)
@@ -124,7 +160,6 @@ og.MessageManager = function() {
 		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.userName, og.getUrl('user', 'card', {id: r.data.userId}));
 	
 		var now = new Date();
-		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
 			return lang('last updated by on', userString, value.dateFormat('M j'));
 		} else {
@@ -155,7 +190,7 @@ og.MessageManager = function() {
 			for (var i=0; i < selections.length; i++) {
 				if (selections[i].data.isRead) read = true;
 				if (!selections[i].data.isRead) unread = true;
-				if (read && unread) return 'all'
+				if (read && unread) return 'all';
 			}	
 			if (read) return 'read';
 			else return 'unread';
@@ -232,6 +267,12 @@ og.MessageManager = function() {
         	hideable:false,
         	menuDisabled: true
 		},{
+			id: 'from',
+			header: lang("from"),
+			dataIndex: 'from',
+			width: 120,
+			renderer: renderFrom
+        },{
 			id: 'title',
 			header: lang("title"),
 			dataIndex: 'title',
@@ -247,7 +288,7 @@ og.MessageManager = function() {
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
-			width: 120
+			width: 60
         },{
 			id: 'date',
 			header: lang("last updated by"),
@@ -258,14 +299,24 @@ og.MessageManager = function() {
         }]);
 	cm.defaultSortable = false;
 
-	moreActions = {}
+	moreActions = {};
 	
 	viewActions = {
 			all: new Ext.Action({
 				text: lang('view all'),
 				handler: function() {
+					Ext.getCmp('inbox_btn').toggle(false);
 					this.viewType = "all";
-					this.accountId = 0;
+					this.readType = "all";
+					this.stateType = "all";
+					
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+					    };
 					this.load();
 				},
 				scope: this
@@ -285,7 +336,17 @@ og.MessageManager = function() {
 				handler: function() {
 					this.viewType = "emails";
 					this.readType = "all";
+					this.stateType = "all";
 					this.accountId = 0;
+					
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
 					this.load();
 				},
 				scope: this,
@@ -295,7 +356,17 @@ og.MessageManager = function() {
 							fn: function(account) {
 								this.viewType = "emails";
 								this.readType = "all";
+								this.stateType = "all";
 								this.accountId = account;
+								
+			        			this.store.baseParams = {
+								      read_type: this.readType,
+								      view_type: this.viewType,
+								      state_type : this.stateType,
+								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+									  account_id: this.accountId
+								    };
 								this.load();
 							},
 							scope: this
@@ -309,7 +380,17 @@ og.MessageManager = function() {
 				handler: function() {
 					this.readType = "unreaded";
 					this.viewType = "emails";
+					this.stateType = "all";
 					this.accountId = 0;
+					
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
 					this.load();
 				},
 				scope: this,
@@ -319,7 +400,61 @@ og.MessageManager = function() {
 							fn: function(account) {
 								this.viewType = "emails";
 								this.readType = "unreaded";
+								this.stateType = "all";
 								this.accountId = account;
+								
+			        			this.store.baseParams = {
+								      read_type: this.readType,
+								      view_type: this.viewType,
+								      state_type : this.stateType,
+								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+									  account_id: this.accountId
+								    };
+								this.load();
+							},
+							scope: this
+						}
+					}
+				},{},"view")
+			}),
+			drafts: new Ext.Action({
+				text: lang('draft'),
+				iconCls: "ico-email",
+				handler: function() {
+					this.readType = "all";
+					this.stateType = "draft";
+					this.viewType = "emails";
+					this.accountId = 0;
+					
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+				},
+				scope: this,
+				menu: new og.EmailAccountMenu({
+					listeners: {
+						'accountselect': {
+							fn: function(account) {
+								this.viewType = "emails";
+								this.stateType = "draft";
+								this.readType = "all";
+								this.accountId = account;
+								
+			        			this.store.baseParams = {
+								      read_type: this.readType,
+								      view_type: this.viewType,
+								      state_type : this.stateType,
+								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+									  account_id: this.accountId
+								    };
 								this.load();
 							},
 							scope: this
@@ -333,6 +468,15 @@ og.MessageManager = function() {
 				handler: function() {
 					this.viewType = "unclassified";
 					this.accountId = 0;
+					
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
 					this.load();
 				},
 				scope: this,
@@ -342,6 +486,15 @@ og.MessageManager = function() {
 							fn: function(account) {
 								this.viewType = "unclassified";
 								this.accountId = account;
+								
+			        			this.store.baseParams = {
+								      read_type: this.readType,
+								      view_type: this.viewType,
+								      state_type : this.stateType,
+								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+									  account_id: this.accountId
+								    };
 								this.load();
 							},
 							scope: this
@@ -349,7 +502,7 @@ og.MessageManager = function() {
 					}
 				},{},"view")
 			})
-		}
+		};
 	
 	emailActions = {
 			addAccount: new Ext.Action({
@@ -358,17 +511,7 @@ og.MessageManager = function() {
 					var url = og.getUrl('mail', 'add_account');
 					og.openLink(url);
 				}
-			}),
-			checkMails: new Ext.Action({
-				text: lang('check mails'),
-				handler: function() {
-					this.load({
-						action: "checkmail"
-					});
-					this.action = "";
-				},
-				scope: this
-			}),
+			}),			
 			markAsRead: new Ext.Action({
 				text: lang('mark read'),
 	            tooltip: lang('mark read'),
@@ -413,7 +556,7 @@ og.MessageManager = function() {
 					}
 				},{},"edit")
 			})
-		}
+		};
 	
 	actions = {
 		newCO: new Ext.Action({
@@ -441,6 +584,127 @@ og.MessageManager = function() {
 				}
 			]}
 		}),
+		inbox_email: new Ext.Action({
+	        text: lang('inbox'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: true,
+	        id: 'inbox_btn',
+	        toggleHandler: function(item, pressed) {
+	        			if(pressed){
+							this.stateType = "received";	
+							this.viewType = "emails";
+		        			this.accountId = 0;
+		        			this.store.baseParams = {
+							      read_type: this.readType,
+							      view_type: this.viewType,
+							      state_type : this.stateType,
+							      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+								  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+								  account_id: this.accountId
+							    };
+							this.load();						
+	        			} 
+					},			
+			scope: this
+    	}),
+		sent_email: new Ext.Action({
+	        text: lang('sent'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+	        toggleHandler: function(item, pressed) {
+        		if(pressed){
+					this.stateType = "sent";
+					this.viewType = "emails";
+        			this.accountId = 0;
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		} 
+			},
+			scope: this
+    	}),
+    	
+		draft_email: new Ext.Action({
+	        text: lang('draft'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+			toggleHandler: function(item, pressed) {
+				if(pressed){
+					this.stateType = "draft";
+					this.viewType = "emails";
+        			this.accountId = 0;
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		} 
+			},
+			scope: this
+    	}),
+    	btn_messages: new Ext.Action({
+				text: lang('messages'),
+				toggleGroup : 'filter_option',
+		        enableToggle: true,
+		        pressed: false,
+				toggleHandler: function(item, pressed) {
+					if(pressed){
+						this.viewType = "messages";
+	        			this.accountId = 0;
+	        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+						this.load();
+	        		}
+				},
+				scope: this
+		}),
+		
+		unread_email: new Ext.Action({
+	        text: 'Unread',
+	        enableToggle: true,
+	        pressed: true,
+	        toggleHandler: function(item, pressed) {
+	        			if(pressed){							
+							this.readType = "unreaded";						
+	        			} else {
+	        				this.readType = "all";
+	        			}
+	        			this.viewType = "emails";
+	        			this.accountId = 0;
+	        			
+	        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+						
+	        			this.load();
+					},
+	        pressed: true,
+			scope: this
+    	}),
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
@@ -462,22 +726,17 @@ og.MessageManager = function() {
 				}
 			})
 		}),
-		del: new Ext.Action({
-			text: lang('delete'),
-            tooltip: lang('delete selected objects'),
-            iconCls: 'ico-delete',
-			disabled: true,
-			handler: function() {
-				if (confirm(lang('confirm delete object'))) {
+		checkMails: new Ext.Action({
+				text: lang('check mails'),
+				iconCls: 'ico-check_mails',
+				handler: function() {
 					this.load({
-						action: 'delete',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
+						action: "checkmail"
 					});
-				}
-			},
-			scope: this
-		}),
+					this.action = "";
+				},
+				scope: this
+			}),
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
@@ -494,11 +753,28 @@ og.MessageManager = function() {
 			menu: {items: [
 				viewActions.all,
 				'-',
-				viewActions.messages,
+				//viewActions.messages,
 				viewActions.unreademails,
+				//viewActions.drafts,
 				viewActions.emails,
 				viewActions.unclassified
 			]}
+		}),
+		del: new Ext.Action({
+			text: lang('delete'),
+            tooltip: lang('delete selected objects'),
+            iconCls: 'ico-delete',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm delete object'))) {
+					this.load({
+						action: 'delete',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
+				}
+			},
+			scope: this
 		}),
 		email: new Ext.Action({
 			text: lang('email actions'),
@@ -506,8 +782,6 @@ og.MessageManager = function() {
             iconCls: 'ico-email_menu',
 			disabled: false,
 			menu: {items: [
-				emailActions.checkMails,
-				'-',
 				emailActions.markAsRead,
 				emailActions.markAsUnRead,
 				emailActions.addAccount,
@@ -525,13 +799,14 @@ og.MessageManager = function() {
 		stripeRows: true,
 		closable: true,
 		loadMask: false,
-		style: "padding:7px;",
-		bbar: new Ext.PagingToolbar({
+		/*style: "padding:7px;",*/
+		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
 			emptyMsg: lang("no objects to display")
+
 		}),
 		viewConfig: {
 			forceFit: true
@@ -540,13 +815,23 @@ og.MessageManager = function() {
 		tbar:[
 			actions.newCO,
 			'-',
+			actions.inbox_email,
+			actions.sent_email,
+			actions.draft_email,
+			actions.btn_messages,
+			actions.unread_email,
+			
+			'-',
+			/*actions.refresh,
+			'-',*/
+			actions.view,
+			actions.email,
+			'-',
 			actions.tag,
 			actions.del,
 			'-',
-			actions.refresh,
-			'-',
-			actions.view,
-			actions.email
+			actions.checkMails
+
 		],
 		listeners: {
 			'render': {
@@ -582,27 +867,33 @@ og.MessageManager = function() {
 Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
+		var start;
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
 		} else {
-			var start = 0;
+			start = 0;
 		}
+		this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.pageSize,
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-				account_id: this.accountId,
-				view_type: this.viewType,
-				read_type: this.readType
-				
+				limit: og.pageSize				
 			})
 		});
 	},
 	resetVars: function(){
 		this.viewUnclassified = false;
 		this.accountId = 0;
+		this.viewType = "emails";
+		this.readType = "unreaded";
+		this.stateType = "received";
 	},
 	
 	activate: function() {

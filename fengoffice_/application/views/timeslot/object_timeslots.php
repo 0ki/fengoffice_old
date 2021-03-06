@@ -8,7 +8,13 @@
 ?>
 
 <?php if ($countTimeslots > 0) { ?>
-    <div class="commentsTitle"><?php echo lang('object time slots')?> </div>
+    <div class="commentsTitle">
+    	<table style="width:100%"><tr><td><?php echo lang('object time slots')?></td>
+    		<?php if($__timeslots_object instanceof ProjectTask){ ?>
+    			<td align=right><a style="font-weight:normal;font-size:80%" class="coViewAction ico-print" href="<?php echo get_url('reporting','total_task_times_by_task_print',array("id" => $__timeslots_object->getId())) ?>" target="_blank"><?php echo lang('print') ?></a>  </td>
+    		<?php } // if ?>
+    	</tr></table> 
+    </div>
 		<table style="width:100%;max-width:700px" class="objectTimeslots" id="<?php echo $random ?>objectTimeslots" style="<?php echo $countTimeslots > 0? '':'display:none'?>">
 
 <?php $counter = 0;
@@ -28,7 +34,7 @@
 ?>
 			<tr class="timeslot <?php echo $counter % 2 ? 'even' : 'odd'; echo $timeslot->isOpen() ? ' openTimeslot' : '' ?>" id="timeslot<?php echo $timeslot->getId() ?>">
 			<td style="padding-right:10px"><b><?php echo $counter ?>.</b></td>
-			<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUrl()?>" title=" <?php echo lang('user card of', $timeslot->getUser()->getDisplayName()) ?>"><?php echo $timeslot->getUser()->getDisplayName() ?></a></b></td>
+			<td style="padding-right:10px"><b><a class="internalLink" href="<?php echo $timeslot->getUser()->getCardUrl()?>" title=" <?php echo lang('user card of', clean($timeslot->getUser()->getDisplayName())) ?>"><?php echo clean($timeslot->getUser()->getDisplayName()) ?></a></b></td>
 			<td style="padding-right:10px"><?php echo format_datetime($timeslot->getStartTime(), 'M d, H:i')?>
 				&nbsp;-&nbsp;<?php echo $timeslot->isOpen() ? ('<b>' . lang('work in progress') . '</b>') : 
 				( (format_date($timeslot->getEndTime()) != format_date($timeslot->getStartTime()))?  format_datetime($timeslot->getEndTime(), 'M d, H:i'): format_time($timeslot->getEndTime())) ?></td>
@@ -42,7 +48,7 @@
 			
 			<?php if ($timeslot->getDescription() != '') {?>
 				<tr class="timeslot <?php echo $counter % 2 ? 'even' : 'odd'; echo $timeslot->isOpen() ? ' openTimeslot' : '' ?>" ><td></td>
-				<td colspan=6 style="color:#666666"><?php echo $timeslot->getDescription() ?></td></tr>
+				<td colspan=6 style="color:#666666"><?php echo clean($timeslot->getDescription()) ?></td></tr>
 			<?php } //if ?>
 		<?php } //if 
 		} // foreach ?>

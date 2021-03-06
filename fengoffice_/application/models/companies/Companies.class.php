@@ -19,6 +19,21 @@
         'order' => '`client_of_id`'
       )); // findAll
     } // getAll
+    
+    /**
+    * Return all companies that have system users
+    *
+    * @param void
+    * @return array
+    */
+    static function getCompaniesWithUsers() {
+      $user_table =  Users::instance()->getTableName();
+      $companies_table =  Companies::instance()->getTableName();
+      return Companies::findAll(array(
+        'conditions' => array(" exists (select id from $user_table where $user_table.`company_id` = $companies_table.`id` )"),
+        'order' => '`client_of_id`'
+      )); // findAll
+    } // getCompaniesWithUsers
   
     /**
     * Return owner company

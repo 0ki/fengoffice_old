@@ -23,12 +23,12 @@ class SearchController extends ApplicationController {
 		$pageType = array_var($_GET, 'page_type');
 		$search_for = array_var($_GET, 'search_for');
 		
-		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", 
-			"ProjectFileRevisions", "ProjectMilestones", "ProjectTasks");
+		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
+			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('milestones'), lang('tasks'));
+			lang('files'), lang('files'), lang('milestones'), lang('tasks'));
 		$iconTypes = array('webpage', 'message', 'email', 
-			'file', 'milestone', 'task');
+			'file', 'file', 'milestone', 'task');                        
 		
 		$search_results = array();
 		
@@ -44,7 +44,8 @@ class SearchController extends ApplicationController {
 			
 			$c = 0;
 			foreach ($objectManagers as $om){
-				$results = SearchableObjects::searchByType($search_for, $projects, $om, true, 5);
+				$user_id = $om == "MailContents" ? logged_user()->getId() : 0;
+				$results = SearchableObjects::searchByType($search_for, $projects, $om, true, 5, 1, null, $user_id);
 				if (count($results[0]) > 0){
 					$sr = array();
 					$sr['result'] = $results[0];
@@ -56,8 +57,8 @@ class SearchController extends ApplicationController {
 				}
 				$c++;
 			}
-			if ( (logged_user()))
-				$search_results = $this->searchContacts($search_for,$search_results,5);
+			$search_results = $this->searchContacts($search_for,$search_results,5);
+			$search_results = $this->searchSystem($search_for,$search_results,5);
 		} // if
 		$timeEnd = microtime(true);
 		
@@ -80,6 +81,46 @@ class SearchController extends ApplicationController {
 			$sr['type'] = lang('contacts');
 			$sr['icontype'] = 'contact';
 			$sr['manager'] = 'Contacts';
+			$search_results[] = $sr;
+		}
+		
+		$results = SearchableObjects::searchByType($search_term, '0', 'Companies', true, $row_count);
+		if (count($results[0]) > 0){
+			$sr = array();
+			$sr['result'] = $results[0];
+			$sr['pagination'] = $results[1];
+			$sr['type'] = lang('companies');
+			$sr['icontype'] = 'company';
+			$sr['manager'] = 'Companies';
+			$search_results[] = $sr;
+		}
+		
+		return $search_results;
+	}
+	
+	function searchSystem($search_term, $search_results = null, $row_count = 5){
+		if (!is_array($search_results))
+			$search_results = array();
+		
+		$results = SearchableObjects::searchByType($search_term, '0', 'Projects', true, $row_count);
+		if (count($results[0]) > 0){
+			$sr = array();
+			$sr['result'] = $results[0];
+			$sr['pagination'] = $results[1];
+			$sr['type'] = lang('projects');
+			$sr['icontype'] = 'project';
+			$sr['manager'] = 'Projects';
+			$search_results[] = $sr;
+		}
+		
+		$results = SearchableObjects::searchByType($search_term, '0', 'Users', true, $row_count);
+		if (count($results[0]) > 0){
+			$sr = array();
+			$sr['result'] = $results[0];
+			$sr['pagination'] = $results[1];
+			$sr['type'] = lang('users');
+			$sr['icontype'] = 'user';
+			$sr['manager'] = 'Users';
 			$search_results[] = $sr;
 		}
 		
@@ -106,12 +147,12 @@ class SearchController extends ApplicationController {
 		$search_for = array_var($_GET, 'search_for');
 		$manager = array_var($_GET, 'manager');
 		
-		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents",
+		$objectManagers = array("ProjectWebpages", "ProjectMessages", "MailContents", "ProjectFiles",
 			 "ProjectFileRevisions", "ProjectMilestones", "ProjectTasks");
 		$objectTypes = array(lang('webpages'), lang('messages'), lang('emails'), 
-			lang('files'), lang('milestones'), lang('tasks'));
+			lang('files'), lang('files'), lang('milestones'), lang('tasks'));
 		$iconTypes = array('webpage', 'message', 'email', 
-			'file', 'milestone', 'task');
+			'file', 'file', 'milestone', 'task');
 		
 		$search_results = array();
 		
@@ -125,7 +166,7 @@ class SearchController extends ApplicationController {
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();
 			
-			$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 30,$page);
+			$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page);
 			if (count($results[0]) > 0){
 				$c = array_search($manager, $objectManagers);
 				$sr = array();

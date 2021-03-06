@@ -20,7 +20,214 @@ class Project extends BaseProject {
 	 */
 	private $all_webpages;
 
+	
+	/**
+	 * Projects are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_searchable = true;
 
+	/**
+	 * Array of searchable columns
+	 *
+	 * @var array
+	 */
+	protected $searchable_columns = array('name', 'description', 'email');
+	
+	// ---------------------------------------------------
+	//  Parent workspace management
+	// ---------------------------------------------------
+	
+	private $depth = 0;
+	
+	function getPID($i){
+		switch ($i){
+			case 1: return $this->getP1();
+			case 2: return $this->getP2();
+			case 3: return $this->getP3();
+			case 4: return $this->getP4();
+			case 5: return $this->getP5();
+			case 6: return $this->getP6();
+			case 7: return $this->getP7();
+			case 8: return $this->getP8();
+			case 9: return $this->getP9();
+			case 10: return $this->getP10();
+			default: return 0;
+		}
+	}
+	
+	function setPID($i, $workspace_id){
+		switch ($i){
+			case 1: $this->setP1($workspace_id); break;
+			case 2: $this->setP2($workspace_id); break;
+			case 3: $this->setP3($workspace_id); break;
+			case 4: $this->setP4($workspace_id); break;
+			case 5: $this->setP5($workspace_id); break;
+			case 6: $this->setP6($workspace_id); break;
+			case 7: $this->setP7($workspace_id); break;
+			case 8: $this->setP8($workspace_id); break;
+			case 9: $this->setP9($workspace_id); break;
+			case 10: $this->setP10($workspace_id); break;
+		}
+	}
+	
+	function getParentIds(){
+		$result = array();
+		for ($i = 1; $i <= 10; $i++){
+			if ($this->getPID($i) != $this->getId())
+				$result[$i] = $this->getPID($i);
+		}
+		return $result;
+	}
+	
+	function getDepth(){
+		if ($this->depth == 0){
+			$this->depth = 10;
+			for ($i = 1; $i <= 10; $i++){
+				if ($this->getPID($i) == $this->getId()){
+					$this->depth = $i;
+					break;
+				}
+			}
+		}
+		return $this->depth;
+	}
+	
+	function getMaxBranchDepth(){
+		$subs = $this->getSubWorkspaces();
+		$result = $this->getDepth();
+		foreach ($subs as $sub)
+			if ($sub->getDepth() > $result)
+				$result = $sub->getDepth();
+				
+		return $result;
+	}
+	
+	// ---------------------------------------------------
+	//  Workspace Hierarchy
+	// ---------------------------------------------------
+	
+	/**
+	 * Returns true if the workspace has a Parent workspace
+	 *
+	 * @return boolean
+	 */
+	function hasParentWorkspace() {
+		return $this->getDepth() > 1;
+	}
+	
+	/**
+	 * Returns the parent workspace or null if there isn't one
+	 * @return Project
+	 */
+	function getParentWorkspace() {
+		if ($this->getParentId() == 0) 
+			return null;
+		else
+			return Projects::findById($this->getParentId());
+	}
+	
+	function getParentId(){
+		if (!$this->hasParentWorkspace()) 
+			return 0;
+		else
+			return $this->getPID($this->getDepth() - 1);
+	}
+	
+	function canSetAsParentWorkspace(Project $workspace){
+		if ($workspace->getDepth() < $this->getDepth())
+			return true;
+		else
+			return (($workspace->getDepth() - $this->getDepth() + $this->getMaxBranchDepth()) <= 10);
+	}
+	
+	function setParentWorkspace(Project $workspace = null) {
+		$oldlevel = $this->getDepth();
+		$subs = $this->getSubWorkspaces();
+		
+		$this->initializeParents();
+		
+		if ($workspace instanceof Project){
+			for ($i = 1; $i < $workspace->getDepth(); $i++)
+				$this->setPID($i,$workspace->getPID($i));
+			
+			$this->setPID($workspace->getDepth(),$workspace->getId());
+			$this->setPID($workspace->getDepth() + 1, $this->getId());
+		}
+		else
+			$this->setPID(1, $this->getId());
+		$this->depth = 0; //Initialize depth
+		
+		if (is_array($subs) && count($subs) > 0){
+			foreach ($subs as $sub){
+				$sub->setNewParentIds($oldlevel,$this);
+				$sub->save();
+			}
+		}
+	}
+	
+	private function setNewParentIds($oldlevel, Project $newParent){
+		$oldparents = $this->getParentIds();
+		
+		$this->initializeParents();
+		$newparents = $newParent->getParentIds();
+		$c = $newParent->getDepth();
+		$newparents[$c] = $newParent->getId();
+		for ($i = $oldlevel+1; $i <= count($oldparents); $i++){
+			$c++;
+			$newparents[$c] = $oldparents[$i];
+		}
+		for ($i = 1; $i <= $c; $i++)
+			$this->setPID($i,$newparents[$i]);
+		$this->depth = 0; //Initialize depth
+	}
+	
+	private function initializeParents() {
+		for ($i = 1; $i <= 10; $i++)
+			$this->setPID($i,0);
+	}
+	
+	/**
+	 * Returns all workspaces that have this Workspace as their parent
+	 * @return array
+	 */
+	function getSubWorkspaces($active = false, $user = null, $allLevels = true) {
+		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0)."_".($allLevels?'all':'single');
+		if (!(array_var($this->subWScache, $key))) {
+			$depth = $this->getDepth();
+			$conditions = array("id != " . $this->getId() . " AND `p" . $depth . "` = ?", $this->getId());
+			if (!$allLevels && $depth < 9)
+				$conditions[0] .= ' AND `p' . ($depth + 2) .'` = 0 ';
+			if ($active) {
+				$conditions[0] .= ' AND `completed_on` = ? ';
+				$conditions[] = EMPTY_DATETIME;
+			}
+			if ($user instanceof User) {
+				$pu_tbl = ProjectUsers::instance()->getTableName(true);
+				$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
+				$conditions[] = $user->getId();
+			}
+			$this->subWScache[$key] = Projects::findAll(array('conditions' => $conditions));
+		}
+		return $this->subWScache[$key];
+	}
+	
+	function getAllSubWorkspacesCSV($active = false, $user = null) {
+		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
+		
+		if (!(array_var($this->sub_ws_ids, $key))){
+			$csv = "" . $this->getId();
+			$subs = $this->getSubWorkspaces($active, $user);
+			if (is_array($subs) && count($subs) > 0)
+				foreach ($subs as $sub)
+					$csv .= ', ' . $sub->getId();
+			$this->sub_ws_ids[$key] = $csv;
+		}
+		return $this->sub_ws_ids[$key];
+	}
+	
+	
 	// ---------------------------------------------------
 	//  Messages
 	// ---------------------------------------------------
@@ -267,68 +474,7 @@ class Project extends BaseProject {
 	
 	private $sub_ws_ids = array();
 	
-	// ---------------------------------------------------
-	//  Workspace Hierarchy
-	// ---------------------------------------------------
 	
-	
-	
-	/**
-	 * Returns true if the workspace has a Parent workspace
-	 *
-	 * @return boolean
-	 */
-	function hasParentWorkspace() {
-		return $this->getParentId() != 0;
-	}
-	
-	/**
-	 * Returns the parent workspace or null if there isn't one
-	 * @return Project
-	 */
-	function getParentWorkspace() {
-		if ($this->getParentId() == 0) return null;
-		return Projects::findById($this->getParentId());
-	}
-	
-	/**
-	 * Returns all workspaces that have this Workspace as their parent
-	 * @return array
-	 */
-	function getSubWorkspaces($active = false, $user = null) {
-		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
-		if (!(array_var($this->subWScache, $key))) {
-			$conditions = array("`parent_id` = ?", $this->getId());
-			if ($active) {
-				$conditions[0] .= ' AND `completed_on` = ? ';
-				$conditions[] = EMPTY_DATETIME;
-			}
-			if ($user instanceof User) {
-				$pu_tbl = ProjectUsers::instance()->getTableName(true);
-				$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
-				$conditions[] = $user->getId();
-			}
-			$this->subWScache[$key] = Projects::findAll(array('conditions' => $conditions));
-		}
-		return $this->subWScache[$key];
-	}
-	
-	function getAllSubWorkspacesCSV($active = false, $user = null) {
-		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
-		
-		if (!(array_var($this->sub_ws_ids, $key))){
-			$csv = "".$this->getId();
-			$subs = $this->getSubWorkspaces($active, $user);
-			if (isset($subs)) {
-				foreach ($subs as $ws) {
-					$subcsv = $ws->getAllSubWorkspacesCSV($active, $user);
-					$csv .= "," . $subcsv;
-				}
-			}
-			$this->sub_ws_ids[$key] = $csv;
-		}
-		return $this->sub_ws_ids[$key];
-	}
 	
 	// ---------------------------------------------------
 	//  Messages
@@ -1181,7 +1327,7 @@ class Project extends BaseProject {
 	 * @return stirng
 	 */
 	function getOverviewUrl() {
-		return get_url('project', 'people', array('active_project' => $this->getId()));
+		return get_url('dashboard', 'index', array('active_project' => $this->getId()));
 	} // getOverviewUrl
 
 	/**

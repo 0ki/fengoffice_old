@@ -8,7 +8,9 @@
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
-      <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
+      <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div> 
+      <div><a class="internalLink" href="<?php echo $user->getCompany()->getCardUrl() ?>"><?php echo clean($user->getCompany()->getName()) ?></a></div> 
+      
 <?php if(isset($company) && $company && $company->isOwner()) { ?>
 	<?php if ($user->isAdministrator()) { ?>
       	<div class="userIsAdmin"><span><?php echo lang('administrator') ?></span></div>
@@ -38,5 +40,9 @@
 </div>
 
 <?php } else { ?>
-<p><?php echo lang('no users in company') ?></p>
-<?php } // if ?>
+<p><?php echo lang('no users in company') ; ?></p>
+<?php } // if 
+ 	if(isset($company) && $company){
+		echo  "<a href='" . $company->getAddUserUrl() . "' class='internalLink'>" . lang('add user') . "</a>";
+    }
+	?>

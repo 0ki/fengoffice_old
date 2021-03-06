@@ -244,7 +244,6 @@
   background-color: #75BF60;
   text-decoration:none;
   color: #000000;
-  
 }
 .cluetip-event #cluetip-title a {
   color: #75BF60;
@@ -259,6 +258,131 @@
   color: #900;
 }
 
+.cluetip-color0 h3#cluetip-title {
+	background-color: #EEE;
+	border-bottom: #1px solid #CCC;
+	color: #777777;
+}
+
+.cluetip-color1 h3#cluetip-title {
+	color: #DEE5F2;
+	background-color: #5A6986;
+}
+
+.cluetip-color2 h3#cluetip-title {
+	color: #E0ECFF;
+	background-color: #206CE1;
+}
+
+.cluetip-color3 h3#cluetip-title {
+	color: #DFE2FF;
+	background-color: #0000CC;
+}
+
+.cluetip-color4 h3#cluetip-title {
+	color: #E0D5F9;
+	background-color: #5229A3;
+}
+
+.cluetip-color5 h3#cluetip-title {
+	color: #FDE9F4;
+	background-color: #854F61;
+}
+
+.cluetip-color6 h3#cluetip-title {
+	color: #FFE3E3;
+	background-color: #CC0000;
+}
+
+.cluetip-color7 h3#cluetip-title {
+	color: #FFF0E1;
+	background-color: #EC7000;
+}
+
+.cluetip-color8 h3#cluetip-title {
+	color: #FADCB3;
+	background-color: #B36D00;
+}
+
+.cluetip-color9 h3#cluetip-title {
+	color: #F3E7B3;
+	background-color: #AB8B00;
+}
+
+.cluetip-color10 h3#cluetip-title {
+	color: #FFFFD4;
+	background-color: #636330;
+}
+
+.cluetip-color11 h3#cluetip-title {
+	color: #F9FFEF;
+	background-color: #64992C;
+}
+
+.cluetip-color12 h3#cluetip-title {
+	color: #F1F5EC;
+	background-color: #006633;
+}
+
+.cluetip-color13 h3#cluetip-title {
+	color: #5A6986;
+	background-color: #DEE5F2;
+}
+
+.cluetip-color14 h3#cluetip-title {
+	color: #206CE1;
+	background-color: #E0ECFF;
+}
+
+.cluetip-color15 h3#cluetip-title {
+	color: #0000CC;
+	background-color: #DFE2FF;
+}
+
+.cluetip-color16 h3#cluetip-title {
+	color: #5229A3;
+	background-color: #E0D5F9;
+}
+
+.cluetip-color17 h3#cluetip-title {
+	color: #854F61;
+	background-color: #FDE9F4;
+}
+
+.cluetip-color18 h3#cluetip-title {
+	color: #CC0000;
+	background-color: #FFE3E3;
+}
+
+.cluetip-color19 h3#cluetip-title {
+	color: #EC7000;
+	background-color: #FFF0E1;
+}
+
+.cluetip-color20 h3#cluetip-title {
+	color: #B36D00;
+	background-color: #FADCB3;
+}
+
+.cluetip-color21 h3#cluetip-title {
+	color: #AB8B00;
+	background-color: #F3E7B3;
+}
+
+.cluetip-color22 h3#cluetip-title {
+	color: #636330;
+	background-color: #FFFFD4;
+}
+
+.cluetip-color23 h3#cluetip-title {
+	color: #64992C;
+	background-color: #F9FFEF;
+}
+
+.cluetip-color24 h3#cluetip-title {
+	color: #006633;
+	background-color: #F1F5EC;
+}
 
 
 

@@ -4,7 +4,7 @@
   * Class that implements method common to all application objects (users, companies, projects etc)
   *
   * @version 1.0
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@opengoo.org>
   */
   abstract class ApplicationDataObject extends DataObject {
     
@@ -223,6 +223,16 @@
       return $this->columnExists('updated_on') ? $this->getUpdatedOn() : $this->getObjectCreationTime();
     } // getOjectUpdateTime
     
+    /**
+    * Return time when this object was updated last time
+    *
+    * @param void
+    * @return DateTime
+    */
+    function getViewHistoryUrl() {
+      return get_url('object','view_history',array('id'=> $this->getId(), 'manager'=> get_class($this->manager)));
+    } // getViewHistoryUrl
+    
     // ---------------------------------------------------
     //  Created by
     // ---------------------------------------------------
@@ -325,7 +335,7 @@
     * @param ProjectDataObject $object
     * @return LinkedObject
     */
-    function linkObject(ProjectDataObject $object) {
+    function linkObject(ApplicationDataObject $object) {
       $manager_class = get_class($this->manager());
       $object_id = $this->getObjectId();
       
@@ -414,18 +424,10 @@
     * @return string
     */
     function getLinkObjectUrl() {
-      if ($this instanceof ProjectDataObject && $this->getProject() instanceof Project){
-      return get_url('object', 'link_to_object', array(
-        'manager' => get_class($this->manager()),
-        'object_id' => $this->getObjectId(),
-        'active_project' => $this->getProject()->getId()
-      )); // get_url
-      } else {
       return get_url('object', 'link_to_object', array(
         'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId()
       )); // get_url
-      }
     } // getLinkedObjectsUrl
     
     /**
@@ -448,24 +450,12 @@
     * @return string
     */
     function getUnlinkObjectUrl(ApplicationDataObject $object) {
-      if ($this instanceof ProjectDataObject && $this->getProject() instanceof Project){
       return get_url('object', 'unlink_from_object', array(
         'manager' => get_class($this->manager()),
         'object_id' => $this->getObjectId(),
         'rel_object_id' => $object->getId(),
         'rel_object_manager' => get_class($object->manager()),
-        'active_project' => $this->getProject()->getId()
       )); // get_url
-      }
-      else
-      {
-      return get_url('object', 'unlink_from_object', array(
-        'manager' => get_class($this->manager()),
-        'object_id' => $this->getObjectId(),
-        'rel_object_id' => $object->getId(),
-        'rel_object_manager' => get_class($object->manager())
-      )); // get_url
-      }
     } //  getUnlinkedObjectUrl
     
     
@@ -491,7 +481,14 @@
     function canUnlinkObject(User $user, ApplicationDataObject $object) {
       return $this->canEdit($user);
     } // canUnlinkObject
-    
+
+    function getProject() {
+    	if (Env::isDebugging()) {
+        	Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
+    	}
+        return null;
+    }
+        
     
   } // ApplicationDataObject
 

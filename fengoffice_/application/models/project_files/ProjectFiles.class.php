@@ -142,6 +142,39 @@ class ProjectFiles extends BaseProjectFiles {
 		)); // findAll
 	} // getAllFilesByProject
 	
+	/**
+	* Return all project files that were automatically checked out (on edit) by the user
+	*
+	* @param User $user 
+	* @return array
+	*/
+	static function closeAutoCheckedoutFilesByUser(User $user = null) {
+		if(!$user)
+			$user = logged_user();
+		try{
+			$condstr = 'checked_out_by_id = ' . $user->getId() . ' AND was_auto_checked_out = 1 AND checked_out_on <> \'' . EMPTY_DATETIME .'\'';
+			$files = self::findAll(array(
+				'conditions' => $condstr
+			)); // findAll
+			if($files){				
+				foreach ($files as $file) {				
+					$file->setWasAutoCheckedAuto($autoCheckOut);	
+					$file->setCheckedOutById(0);
+					$file->setCheckedOutOn(EMPTY_DATETIME);
+					$file->setMarkTimestamps(false);
+					$file->save();
+				}
+				return true;
+			}
+			return false;
+		}
+		catch (Exception $exc){
+			flash_error(lang('error checkin file'));
+			return false;
+		}
+			
+	} // getAllFilesByProject
+	
 	
 	/**
 	* Return file by name.

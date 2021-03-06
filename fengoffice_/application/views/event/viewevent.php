@@ -33,7 +33,7 @@ if($event->canEdit(logged_user())) {
 	$year = $_SESSION['cal_year'];
 	// Do this if we are MODIFYING a form.
 	$id = $_GET['id'];
-    if(!is_numeric($id)) $error = CAL_NO_EVENT_SELECTED;
+    if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
 	// get event info from database
 	// get user who submitted the event, subject, event description, etc.
     $username = Users::findById($event->getCreatedById())->getUsername();// $row['created_by_id'];
@@ -45,10 +45,10 @@ if($event->canEdit(logged_user())) {
 	$mod_username = Users::findById($event->getUpdatedById())->getUsername();//$row['updated_by_id'];
 	$mod_stamp = $event->getUpdatedOn();//$row['updated_on'];
 	// check username to see if it's anonymous or not
-	if($username=="") $username = CAL_ANONYMOUS;
-	if($mod_username=="") $mod_username = CAL_ANONYMOUS;
+	if($username=="") $username = lang('CAL_ANONYMOUS');
+	if($mod_username=="") $mod_username = lang('CAL_ANONYMOUS');
 	// if the event is private and the user is anonymous, return that the event does not exist.
-	if($private AND cal_anon() AND $error=="") $error = CAL_DOESNT_EXIST;
+	if($private AND cal_anon() AND $error=="") $error = lang('CAL_DOESNT_EXIST');
 	// begin organizing the event's time and date for display.
     $hour = date('G', $thetime->getTimestamp());
     $minute = date('i', $thetime->getTimestamp());
@@ -69,17 +69,17 @@ if($event->canEdit(logged_user())) {
 	$time = $hour.":".$minute.$extra;
 	// organize duration of event
 	$duration = $durhr." ";
-	if($durhr!="1") $duration .= CAL_HOURS;
-	else $duration .= CAL_HOUR;
-	if($durmin!="0") $duration .= ", ". $durmin. " ". CAL_MINUTES_SHORT;
+	if($durhr!="1") $duration .= lang('CAL_HOURS');
+	else $duration .= lang('CAL_HOUR');
+	if($durmin!="0") $duration .= ", ". $durmin. " ". lang('CAL_MINUTES_SHORT');
 	// organize other time options for the event
     $typeofevent = $event->getTypeId();
-	if($typeofevent=="2") $duration = CAL_FULL_DAY;
+	if($typeofevent=="2") $duration = lang('CAL_FULL_DAY');
 	elseif($typeofevent=="3"){
-		$time = CAL_NOT_SPECIFIED;
-		$duration = CAL_NOT_SPECIFIED;
+		$time = lang('CAL_NOT_SPECIFIED');
+		$duration = lang('CAL_NOT_SPECIFIED');
 	}
-	elseif($typeofevent=="4") $duration = CAL_NOT_SPECIFIED;
+	elseif($typeofevent=="4") $duration = lang('CAL_NOT_SPECIFIED');
 	
 	$permission = ProjectEvents::findById($id)->canEdit(logged_user());
 	//echo cal_navmenu(true,$day,$month,$year);
@@ -93,7 +93,7 @@ if($event->canEdit(logged_user())) {
 	$dtv = $event->getStart();
 	$title = date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())). " - ".$event->getSubject();
 	
-	$description = CAL_STARTING_TIME.": $time";
+	$description = lang('CAL_STARTING_TIME').": $time";
   	tpl_assign('description', $description);
 		
 	$variables = array();

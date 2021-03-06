@@ -1,5 +1,4 @@
-﻿<?php
-
+<?php 
 return array(
 
 // Titles
@@ -16,9 +15,9 @@ return array(
     'user password reseted' => 'Su contraseña ha sido cambiada. Su nueva contraseña es \'{0}\'.',
 
     'dont reply wraning' => 'ESTE ES UN MENSAJE DE NOTIFICACIÓN. NO RESPONDER A ESTA DIRECCIÓN DE CORREO!',
-    'new message posted' => 'Nuevo mensaje "{0}" ha sido publicado.',
+    'new message posted' => 'Nuevo mensaje "{0}" ha sido publicado',
     'new task' => 'Nueva tarea',
-    'new task created' => 'Nueva tarea "{0}" ha sido creada en el espacio "{1}".',
+    'new task created' => 'Nueva tarea "{0}" ha sido creada en el espacio "{1}"',
     'view new message' => 'Ver mensaje',
     'view new task' => 'Ver tarea',
 
@@ -66,8 +65,14 @@ return array(
     'mail options' => 'Opciones',
     'switch format warn' => 'Se perderá el formato actual. Desea continuar?',
     'success mark objects' => 'Mail actualizado',
-    'error mark email' => 'Error al actualizar estado de email'
+    'error mark email' => 'Error al actualizar estado de email',
+    'draft' => 'Borrador',
+    'success save mail' => 'Email salvado',
+    'discard' => 'Descartar',
+    'mail address' => 'Dirección de email',
+    'mail address description' => 'La dirección de correo electrónico es la dirección que otras personas utilizarán para enviarle mensajes',
+
+	'unread emails' => 'Emails no leidos'
 
     ); // array
-
-    ?>
+?>

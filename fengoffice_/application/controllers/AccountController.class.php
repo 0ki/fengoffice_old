@@ -95,6 +95,10 @@ class AccountController extends ApplicationController {
 		tpl_assign('user_data', $user_data);
 
 		if(is_array(array_var($_POST, 'user'))) {
+			if(!(Companies::findById(array_var($user_data,'company_id')) instanceof Company )){
+				ajx_current("empty");
+				flash_error(lang("company dnx"));
+			}
 			try {
 				DB::beginWork();
 
@@ -170,6 +174,10 @@ class AccountController extends ApplicationController {
 
 				$user->setPassword($new_password);
 				$user->save();
+				
+				if ($user->getId() == logged_user()->getId()) {
+					CompanyWebsite::instance()->logUserIn($user, Cookie::getValue("remember", 0));
+				}
 
 				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
 				flash_success(lang('success edit user', $user->getUsername()));
@@ -409,6 +417,7 @@ class AccountController extends ApplicationController {
 		} // try
 
 	} // delete_avatar
+	
 
 } // AccountController
 

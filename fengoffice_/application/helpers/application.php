@@ -84,13 +84,13 @@ function render_system_notices(User $user) {
  * @return string
  */
 function select_company($name, $selected = null, $attributes = null) {
-	$companies = Companies::getAll();
+	$companies = Companies::findAll(array('order' => 'client_of_id ASC, name ASC'));
 	$options = array(option_tag(lang('none'), 0));
 	if(is_array($companies)) {
 		foreach($companies as $company) {
 			$option_attributes = $company->getId() == $selected ? array('selected' => 'selected') : null;
 			$company_name = $company->getName();
-			if($company->isOwner()) $company_name .= ' (' . lang('owner company') . ')';
+			//if($company->isOwner()) $company_name .= ' (' . lang('owner company') . ')';
 			$options[] = option_tag($company_name, $company->getId(), $option_attributes);
 		} // foreach
 	} // if
@@ -152,7 +152,7 @@ function select_workspaces($name, $workspaces, $selected = null, $id = 'default_
 		} // foreach
 	} // if
 	$output .= "new og.WorkspaceChooser({el: 'ws_chooser_$id', name: '$name', ws: [$wslist], id: '$id'});\n";
-	return $output . "</script>\n";
+	return $output . "</script></div>\n";
 } // select_workspaces
 
 /**
@@ -208,7 +208,7 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 			if(is_array($users)) {
 				foreach($users as $user) {
 					$option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
-					$options[] = option_tag($company->getName() . ': ' . $user->getDisplayName(), $company_id . ':' . $user->getId(), $option_attributes);
+					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getName() , $company_id . ':' . $user->getId(), $option_attributes);
 				} // foreach
 			} // if
 
@@ -217,6 +217,7 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
 
 	return select_box($list_name, $options, $attributes);
 } // assign_to_select_box
+
 
 /**
  * Renders select milestone box
@@ -908,5 +909,52 @@ function select_task_priority($name, $selected = null, $attributes = null) {
 	);
 	return select_box($name, $options, $attributes);
 } // select_task_priority
+
+
+/**
+ * Render assign to SELECT
+ * ("assigned_to", null, $assignedTo, array("id" => "og-task-filter-to", "onchange" => "filterTasks()"));
+ * @param string $list_name Name of the select control
+ * @param Project $project Selected project, if NULL active project will be used
+ * @param integer $selected ID of selected user
+ * @param array $attributes Array of select box attributes, if needed
+ * @return null
+ */ 
+function filter_assigned_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
+	$logged_user = logged_user();
+	if($project){		
+		$project_ids = $project->getAllSubWorkspacesCSV(true,logged_user());
+	}
+	else{
+		$project_ids = logged_user()->getActiveProjectIdsCSV();
+	}
+	$grouped_users = Users::getGroupedByCompanyFromProjectIds($project_ids);
+
+	$options = array(option_tag(lang('anyone'), '0:0'),option_tag(lang('unassigned'), '-1:-1', '-1:-1' == $selected ? array('selected' => 'selected') : null));
+	
+	if(is_array($grouped_users) && count($grouped_users)) {
+		foreach($grouped_users as $company_id => $users) {
+			$company = Companies::findById($company_id);
+			if(!($company instanceof Company)) {
+				continue;
+			} // if
+
+			$options[] = option_tag('--', '0:0'); // separator
+
+			$option_attributes = $company->getId() . ':0' == $selected ? array('selected' => 'selected') : null;
+			$options[] = option_tag($company->getName(), $company_id . ':0', $option_attributes);
+
+			if(is_array($users)) {
+				foreach($users as $user) {
+					$option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
+					$options[] = option_tag($user->getDisplayName() . ' : ' . $company->getName() , $company_id . ':' . $user->getId(), $option_attributes);
+				} // foreach
+			} // if
+
+		} // foreach
+	} // if
+
+	return select_box($list_name, $options, $attributes);
+} // assign_to_select_box
 
 ?>

@@ -211,9 +211,19 @@ div.inset {
 	padding-left:3px;
 }
 </style>
+
 <?php
+	$currentday = date("j");
+	$currentmonth = date("n");
+	$currentyear = date("Y");
+	
+	$today_style = '';
+	if($currentyear == $year && $currentmonth == $month && $currentday == $day){
+	  $today_style = 'background-color:#FFFFCC;';
+	}
+	
 	$date = new DateTimeValue(mktime(0,0,0,$month,$day,$year)); 
-	$end_date = new DateTimeValue(mktime(0,0,0,$month,$day+1,$year));
+	$end_date = new DateTimeValue(mktime(0,0,0,$month,$day,$year));
 	$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project()); 
 	if(!$result) $result = array();	
 	
@@ -237,7 +247,7 @@ div.inset {
 	$alldaygridHeight = count($alldayevents)*PX_HEIGHT/2 + PX_HEIGHT/3;
 	$dtv = DateTimeValueLib::make(0,0,0,$month,$day,$year);
 ?>
-<div class="calendar" style="padding:7px;height:100%">
+<div class="calendar" style="padding:7px;height:100%" id="cal_main_div">
 <table style="width:100%;height:95%">
 <tr>
 <td>
@@ -246,7 +256,7 @@ div.inset {
 			<col/>
 			<col width=12/>
 		<tr>
-			<td class="coViewHeader" colspan=2  rowspan=2>
+			<td class="coViewHeader" id='cal_coViewHeader' colspan=2  rowspan=2>
 				<div class="coViewTitle">				
 					<span id="chead0"><?php echo  date('l j, F Y',mktime(0, 0, 0, $month, $day, $year)) ?></span>	
 				</div>		
@@ -266,7 +276,7 @@ div.inset {
 					
 			<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:95%">
 					
-				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;"  onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',view:'day',type_id:1,title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
+				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;"  onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',view:'day',type_id:2,title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
 					<div id="alldayeventowner" onclick="stopPropagation(event) ">
 						<?php	
@@ -289,13 +299,7 @@ div.inset {
 								if (count($dws) >= 1){
 									$ws_color = $dws[0]->getColor();
 								}
-								if ($ws_color>0){
-									$ws_style = "";
-									$ws_class = "og-wsname-color-$ws_color";
-								} else {
-									$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
-									$ws_class = "";	
-								}			
+								cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);	
 														
 						?>
 						<div class="adc" style="left: 3px; top: <?php echo $top ?>px; z-index: 5;width: 99%;margin:1px;">
@@ -303,7 +307,7 @@ div.inset {
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								
-									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' "><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:#fff!important"><?php echo $subject ?></span> </a></nobr>
+									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' "><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
 								
 								</div>
 							</div>
@@ -315,20 +319,24 @@ div.inset {
 						?>
 					</div>
 				</div>					
-				<div id="gridcontainer" style="background-color:#fff;height: 1024px;overflow:hidden; position:relative;" >	
+				<div id="gridcontainer" style="background-color:#fff;height: 1008px;overflow:hidden; position:relative;" >	
 					<!-- <div class='grid_bg' style="background-image: url(public/assets/themes/default/images/Calendar_BG.gif);background-repeat: repeat;background-color:#ffffff;height:1024px;"> -->
 						<div id='calowner' style="display:block; width:100%;">  
-							<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;">
+							<table cellspacing="0" cellpadding="0" border="0" style="table-layout: fixed; width: 100%;height: 1008px;">
 								<tr>
 									<td id="rowheadcell" style="width: 40px;">
-										<div id="rowheaders" style="height: 144ex; top: 0pt; left: 0pt;">										
+										<div id="rowheaders" style="height: 1008px; top: 0pt; left: 0pt;">										
 										<?php
 											$horas = array();
+											$curr_hour = date("H");
 											for ($hour=0; $hour<=23; $hour++){	
 												$horas[$hour]	= 0;
 												$procesados[$hour] = 0;
 										?>
-											<div style="height: 41px; top: 0ex;border-right:3px double #DDDDDD !important;" id="rhead0" class="rhead">
+											<div style="height: 41px; top: 0ex;border-right:3px double #DDDDDD !important;background: #E8EEF7 none repeat scroll 0%;border-top:1px solid #DDDDDD;left:0pt;width: 100%;" id="rhead<?php echo $hour?>" class="rhead">
+												<?php
+													$hour == $curr_hour? print("<span id='curr_hour' style='visibility:hidden;height:0px;width:0px'></span>"):print('');
+												?>
 												<div class="rheadtext"><?php echo date("ga",mktime($hour)) ?></div>
 											</div>												
 										<?php
@@ -337,18 +345,24 @@ div.inset {
 
 										</div>
 									</td>
-									<td id="gridcontainercell" style="width: auto;position:relative" >	
-										<div id="grid" style="height: 100%;background-color:#fff;" class="grid">										
+									<td id="gridcontainercell" style="width: auto;position:relative;<?php echo $today_style ?>" >	
+										<div id="grid" style="height: 100%;background-color:#fff;position:relative;" class="grid">										
 											<div id="decowner">
 												
 											</div>
 											
 											<?php
 												for ($hour=0; $hour<=47; $hour++){	
-													($hour % 2 ==0)? $parity = "hruleeven": $parity="hruleodd";
+													if ($hour % 2 ==0){
+														$parity = "hruleeven";
+														$style="border-top:1px solid #DDDDDD;";
+													} else {
+														$parity="hruleodd";
+														$style="border-top:1px dotted #DDDDDD;";
+													}
 													$top = (PX_HEIGHT/2) * $hour;
 											?>
-													<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; z-index: 1;"></div>
+													<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" style="top: <?php echo $top?>px; z-index: 0;position:absolute;left:0px;<?php echo $style?>;width:100%"></div>
 													<div id="h<?php echo $hour?>"" style="width:100%;top: <?php echo $top?>px; z-index: 100; height:20px;position:absolute;" onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',hour:'<?php echo date("G",mktime($hour/2))?>',minute:'<?php echo ($hour % 2 ==0)?0:30?>',type_id:1,view:'day',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())) ?>'},'');"></div>
 											<?php
 												}
@@ -366,17 +380,12 @@ div.inset {
 												$subject = $event->getSubject();
 												$dws = $event->getWorkspaces();
 												$ws_color = 0;
+												
 												if (count($dws) >= 1){
 													$ws_color = $dws[0]->getColor();
 												}	
 												
-												if ($ws_color>0){
-													$ws_style = "";
-													$ws_class = "og-wsname-color-$ws_color";
-												} else {
-													$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
-													$ws_class = "";	
-												}
+												cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);
 												
 												if(!cal_option("hours_24")) $timeformat = 'g:i A';
 												else $timeformat = 'G:i';
@@ -401,17 +410,17 @@ div.inset {
 												$procesados[$hr_start]++;
 												if ($procesados[$hr_start] == $horas[$hr_start]) $width = $width- 1.5;
 										?>	
-												<div class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;"  onclick="stopPropagation(event)">
+												<div class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
-														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>">
+														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>;">
 															<dt class="<?php echo  $ws_class?>" style="<?php echo  $ws_style?>">
-																<span class="eventheadlabel" style="color:#fff!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
+																<span class="eventheadlabel" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
 															</dt>
 															<dd>
 																<div>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day" ?>' class='internalLink' ><span style="color:#fff!important;padding-left:5px;"><?php echo $subject?></span></a>
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day" ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
 																</div>
 															</dd>
 														</dl>
@@ -496,7 +505,9 @@ div.inset {
 	</td>
 </tr></table>
 </div>
+
 <script type="text/javascript">
+
 	jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
 	
 	jQuery(document).ready(function() {
@@ -507,8 +518,9 @@ div.inset {
 		    	og.openLink(og.getUrl('event', 'viewdate', {day:s[1] , month:s[0], year: s[2]}), null);
 		    } 
 		});		
+		
+		document.getElementById('curr_hour').scrollIntoView(true);
 	})
 	
-	//jQuery("#grid").click(function(e){ var x = e.pageX - this.offsetLeft; var y = e.pageY - this.offsetTop; alert(x +', '+ y); }); 
 
 </script>

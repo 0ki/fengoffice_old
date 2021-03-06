@@ -27,7 +27,12 @@
     ini_set('display_errors', 0);
   } // if
   
-  if(!ini_get('session.auto_start') || (strtolower(ini_get('session.auto_start')) == 'off')) session_start(); // Start the session
+//  include_once ENVIRONMENT_PATH . '/classes/Session.class.php'; // required to use manual session handling
+  
+  if(!ini_get('session.auto_start') || (strtolower(ini_get('session.auto_start')) == 'off')) {
+//  		new Session(); // required to use manual session handling
+  		session_start(); // Start the session
+  }
   
   include_once ENVIRONMENT_PATH . '/classes/Env.class.php';
   include_once ENVIRONMENT_PATH . '/constants.php';

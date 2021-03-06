@@ -104,20 +104,11 @@ og.MilestoneItem = function(config) {
 		
 		if (this.workspaceids != ''){
 			var ids = String(this.workspaceids).split(',');
-			var names = this.workspaces.split(',');
-			var colors = String(this.workspacecolors).split(',');
 			for (var idi = 0; idi < ids.length; idi++){
-			
-				var tda2 = document.createElement('a');
-				tda2.href = "#";
-				tda2.innerHTML = names[idi];
-				tda2.miid = ids[idi];
-				tda2.onclick = function(){
-					Ext.getCmp('workspace-panel').select(this.miid);
-				};
-				tda2.className="og-wsname og-wsname-color-" + colors[idi];
-				tda2.title = names[idi];
-				td.appendChild(tda2);
+				var tdspan = document.createElement('span');
+				tdspan.className='project-replace';
+				tdspan.innerHTML = ids[idi];
+				td.appendChild(tdspan);
 				td.appendChild(document.createTextNode(' '));
 			}
 		}
@@ -331,7 +322,7 @@ og.MilestoneItem.addMilestone = function(config) {
 				item.reposition();
 				Ext.fly(dom).slideIn("t", {useDisplay: true, duration: 0.5});
 			} else {
-				og.msg(lang("error"), lang("error adding milestone"));
+				og.err(lang("error adding milestone"));
 			}
 			if (typeof config.callback == 'function') {
 				config.callback.call(success, data);
@@ -397,7 +388,7 @@ og.MilestoneItem.prototype = {
 						// delete previous subtasks
 						this.loadSubTasks(data.tasks);
 					} else {
-						og.msg(lang("error"), lang("error fetching tasks"));
+						og.err(lang("error fetching tasks"));
 					}
 				}, scope: this
 			});
@@ -406,6 +397,7 @@ og.MilestoneItem.prototype = {
 	
 	loadSubTasks: function(tasks) {
 		og.TaskItem.prototype.loadSubTasks.call(this, tasks);
+		og.showWsPaths();
 	},
 	
 	checkMilestone: function() {
@@ -508,7 +500,7 @@ og.MilestoneItem.prototype = {
 					this.orderSubtasks();
 					Ext.fly(dom).slideIn("t", {useDisplay: true, duration: 0.5});
 				} else {
-					og.msg(lang("error"), lang("error adding task"));
+					og.err(lang("error adding task"));
 				}
 				this.hideAddTask();
 			},

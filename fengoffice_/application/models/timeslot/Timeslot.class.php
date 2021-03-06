@@ -110,6 +110,18 @@ class Timeslot extends BaseTimeslot {
     	
     	return $timeDiff['days'] * 1440 + $timeDiff['hours'] * 60 + $timeDiff['minutes'];
     }
+
+    function getSeconds(){
+    	if (!$this->getStartTime())
+    		return 0;
+    		
+    	$endTime = $this->getEndTime();
+    	if (!$endTime)
+    		$endTime = DateTimeValueLib::now();
+    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp());
+    	
+    	return $timeDiff['days'] * 86400 + $timeDiff['hours'] * 3600  + $timeDiff['minutes']* 60 + $timeDiff['seconds'];
+    }
     
     // ---------------------------------------------------
 	//  URLs
@@ -134,6 +146,13 @@ class Timeslot extends BaseTimeslot {
 	 */
 	static function getOpenUrl(ProjectDataObject $object) {
 		return get_url('timeslot', 'open', array(
+        'object_id' => $object->getObjectId(),
+        'object_manager' => get_class($object->manager())
+		)); // get_url
+	} // getAddUrl
+	
+	static function getAddTimespanUrl(ProjectDataObject $object) {
+		return get_url('timeslot', 'add_timespan', array(
         'object_id' => $object->getObjectId(),
         'object_manager' => get_class($object->manager())
 		)); // get_url

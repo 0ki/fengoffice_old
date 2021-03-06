@@ -354,7 +354,28 @@
 	function setIsTemplate($value) {
 		return $this->setColumnValue('is_template', $value);
 	} // setIsTemplate()
-    
+
+		/**
+	 * Return value of 'from_template_id' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getFromTemplateId() {
+		return $this->getColumnValue('from_template_id');
+	} // getFromTemplateId()
+
+	/**
+	 * Set value of 'from_template_id' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setFromTemplateId($value) {
+		return $this->setColumnValue('from_template_id', $value);
+	} // setFromTemplateId()
     
   } // BaseProjectMilestone 
 

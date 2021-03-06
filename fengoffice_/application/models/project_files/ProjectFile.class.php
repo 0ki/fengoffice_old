@@ -161,9 +161,25 @@ class ProjectFile extends BaseProjectFile {
 	} // getTypeIconUrl
 
 	// ---------------------------------------------------
-	//  Created by
+	//  Check out
 	// ---------------------------------------------------
 
+	/**
+	 * Checck out file
+	 *
+	 * @param bool $autoCheckOut Is true when the file was automatically checked out on edit
+	 * @param User $user If null, loged user is used
+	 */
+	function checkOut($autoCheckOut = false, User $user = null){
+		if(!$user)
+			$user = logged_user();
+		$this->setWasAutoCheckedAuto($autoCheckOut);	
+		$this->setCheckedOutById($user->getId());
+		$this->setCheckedOutOn(DateTimeValueLib::now());
+		$this->setMarkTimestamps(false);
+		$this->save();
+	}// checkOutByLoggedUser
+	
 	function isCheckedOut()
 	{
 		return $this->getCheckedOutById() > 0;
@@ -338,6 +354,9 @@ class ProjectFile extends BaseProjectFile {
 	} // getNextRevisionNumber
 
 	function isModifiable(){
+		$co_by = $this->getCheckedOutById();
+		if($co_by && $co_by != logged_user()->getId() )
+			return false;
 		return strcmp($this->getTypeString(),'txt')==0 
 			|| strcmp($this->getTypeString(),'sprd')==0 
 			|| strcmp($this->getTypeString(),'prsn')==0 
@@ -593,7 +612,7 @@ class ProjectFile extends BaseProjectFile {
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		return can_write($user,$this);
+		return can_write($user,$this) && (!$this->isCheckedOut() || ($this->canCheckin($user)));
 	} // canEdit
 
 	/**

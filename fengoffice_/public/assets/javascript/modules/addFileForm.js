@@ -32,12 +32,17 @@ App.modules.addFileForm = {
   }
 };
 
-function submitMe(form) {
+function submitMe(formid) {
+	form = document.forms[formid];
 	og.submit(form, {
-		callback: {
-			type: 'back'
-		}
-	});
+			callback: {
+				type: 'back'
+			}
+		});
+}
+
+og.onBlurFileName = function() {
+	var submitIntent = false;
 }
 
 og.updateFileName = function() {
@@ -48,8 +53,8 @@ og.updateFileName = function() {
 	fff.value = name;
 }
 
-
 og.checkFileName = function(name) {
+	allowSubmit = false;
 	var fff = document.getElementById('fileFormFilename');
 	name = fff.value;
 	//Disable Add file buttons and show corresponding divs
@@ -69,6 +74,7 @@ og.checkFileName = function(name) {
     	caller:this,
     	callback: function(success, data) {
     		if (success) {
+    			
     			Ext.get("addFileFilenameCheck").setDisplayed(false);
 				Ext.get("addFileFilename").setDisplayed('inline');
     			Ext.get('add_file_submit1').dom.disabled = false;

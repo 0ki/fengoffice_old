@@ -2,5 +2,6 @@
 
 <?php echo lang('user password reseted', $new_password) ?>
 
+
 --
 <?php echo ROOT_URL ?>

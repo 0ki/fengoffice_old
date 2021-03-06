@@ -59,7 +59,7 @@ class AdministrationController extends ApplicationController {
 	 */
 	function members() {
 		tpl_assign('company', owner_company());
-		tpl_assign('users', owner_company()->getUsers());
+		tpl_assign('users', Users::findAll(array('order'=>'display_name')));
 	} // members
 
 	/**
@@ -119,6 +119,59 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('tools', AdministrationTools::getAll());
 	} // tools
 
+	/**
+	 * List all templates
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function task_templates() {
+		tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
+	} // tools
+	
+	/**
+	 * Lists all workspaces, so the user can select in which ones to use the task template
+	 *
+	 */
+	function assign_task_template_to_ws(){
+		$task_template_id=get_id(); 
+		$all = WorkspaceTemplates::getWorkspacesByTemplate('ProjectTasks',$task_template_id);
+		$workspace_templates_data = null;
+		if($all){
+			foreach ($all as $one){
+				$workspace_templates_data[$one->getId()] = 'true';
+			}
+		}
+		tpl_assign('workspace_templates_data',$workspace_templates_data );		
+		tpl_assign('projectsArray', Projects::getProjectsByParent(logged_user()));			
+		tpl_assign('task', ProjectTasks::findById($task_template_id));
+		$task_template = array_var($_POST,'task_template');
+		if(array_var($_POST,'commit')=='commit'){
+			try{
+				DB::beginWork();
+				WorkspaceTemplates::deleteByTemplate($task_template_id,'ProjectTasks');
+				foreach ($task_template as $id => $val){
+					if( $val == 'checked'){
+						$obj = new WorkspaceTemplate();
+						$obj->setWorkspaceId($id);
+						$obj->setTemplateId($task_template_id);
+						$obj->setObjectManager('ProjectTasks');
+						$obj->setInludeSubWs(false);
+						$obj->save();
+					}
+				}
+				DB::commit();
+				flash_success(lang('success assign workspaces'));
+				ajx_current("back");
+			}
+			catch (Exception $exc){
+				flash_error(lang('error assign workspace') . $exc->getMessage());
+				ajx_current("empty");									
+			}
+			tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
+			$this->setTemplate('task_templates');
+		}
+	}
 	/**
 	 * Show upgrade page
 	 *

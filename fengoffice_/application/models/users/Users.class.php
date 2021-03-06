@@ -107,6 +107,47 @@
       
       return count($result) ? $result : null;
     } // getGroupedByCompany
+    
+    /**
+    * Return users grouped by company, from the project IDs
+    *
+    * @param void
+    * @return array
+    */
+    static function getGroupedByCompanyFromProjectIds($project_ids) {
+      // Get user ids for project and subprojects
+      $project_users_table = ProjectUsers::instance()->getTableName(true);
+      $sql = "SELECT DISTINCT user_id FROM $project_users_table WHERE (`project_id` in ( $project_ids ) )";
+      $rows = DB::executeAll($sql);
+      $user_csvs = '';
+      if(is_array($rows)) {
+        foreach($rows as $row) {
+          $user_csvs .=',' . $row['user_id'];
+        } // foreach
+      } // if
+      else 
+      	return null;
+	  if($user_csvs ) //remove first comma 
+	  	 $user_csvs = substr($user_csvs,1);
+	  $users = Users::findAll(array(
+			 'conditions' => array('`id` in (' . $user_csvs  . ')'),
+			 'order' => 'display_name'
+		  )); // findAll
+      $result = array();
+      if($users){
+	      foreach($users as $user) {
+	      	$comp_id = $user->getCompanyId();
+	      	if(array_var($result, $comp_id, null)){	      		
+	      		$result[$comp_id][] = $user;
+	      	}
+	      	else {
+	      		// the first one
+	      		$result[$comp_id] = array($user);
+	      	}
+	      } // foreach
+      }
+      return count($result) ? $result : null;
+    } // getGroupedByCompany
         
   } // Users 
 

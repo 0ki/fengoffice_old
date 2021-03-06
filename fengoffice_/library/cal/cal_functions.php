@@ -25,6 +25,21 @@ function cal_error($s){
 }
 
 
+function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color){
+	$txt_color = '#fff';
+	if ($ws_color>0 && $ws_color<=12){
+		$ws_style = "";
+		$ws_class = "og-wsname-color-$ws_color";
+	} else if ($ws_color>12) {
+		$ws_style = "";
+		$txt_color = '#333333';
+		$ws_class = "og-wsname-color-$ws_color";	
+	}else {
+		$ws_style = "color: #fff;background-color: #C5C7C1;border-color: #C5C7C1;";
+		$ws_class = "";	
+	}
+}
+
 
 /* ##################################################################
   cal_getlink()
@@ -73,18 +88,18 @@ function cal_add_to_links($add){
 function cal_month_name($month){
 	$month = ($month - 1) % 12 + 1;
 	switch($month) {
-		case 1:  return CAL_JANUARY;
-		case 2:  return CAL_FEBRUARY;
-		case 3:  return CAL_MARCH;
-		case 4:  return CAL_APRIL;
-		case 5:  return CAL_MAY;
-		case 6:  return CAL_JUNE;
-		case 7:  return CAL_JULY;
-		case 8:  return CAL_AUGUST;
-		case 9:  return CAL_SEPTEMBER;
-		case 10: return CAL_OCTOBER;
-		case 11: return CAL_NOVEMBER;
-		case 12: return CAL_DECEMBER;
+		case 1:  return lang('CAL_JANUARY');
+		case 2:  return lang('CAL_FEBRUARY');
+		case 3:  return lang('CAL_MARCH');
+		case 4:  return lang('CAL_APRIL');
+		case 5:  return lang('CAL_MAY');
+		case 6:  return lang('CAL_JUNE');
+		case 7:  return lang('CAL_JULY');
+		case 8:  return lang('CAL_AUGUST');
+		case 9:  return lang('CAL_SEPTEMBER');
+		case 10: return lang('CAL_OCTOBER');
+		case 11: return lang('CAL_NOVEMBER');
+		case 12: return lang('CAL_DECEMBER');
 	}
 }
 
@@ -97,18 +112,18 @@ function cal_month_name($month){
 function cal_month_short($month){
 	$month = ($month - 1) % 12 + 1;
 	switch($month) {
-		case 1:  return substr(CAL_JANUARY,0,3);
-		case 2:  return substr(CAL_FEBRUARY,0,3);
-		case 3:  return substr(CAL_MARCH,0,3);
-		case 4:  return substr(CAL_APRIL,0,3);
-		case 5:  return substr(CAL_MAY,0,3);
-		case 6:  return substr(CAL_JUNE,0,3);
-		case 7:  return substr(CAL_JULY,0,3);
-		case 8:  return substr(CAL_AUGUST,0,3);
-		case 9:  return substr(CAL_SEPTEMBER,0,3);
-		case 10: return substr(CAL_OCTOBER,0,3);
-		case 11: return substr(CAL_NOVEMBER,0,3);
-		case 12: return substr(CAL_DECEMBER,0,3);
+		case 1:  return substr(lang('CAL_JANUARY'),0,3);
+		case 2:  return substr(lang('CAL_FEBRUARY'),0,3);
+		case 3:  return substr(lang('CAL_MARCH'),0,3);
+		case 4:  return substr(lang('CAL_APRIL'),0,3);
+		case 5:  return substr(lang('CAL_MAY'),0,3);
+		case 6:  return substr(lang('CAL_JUNE'),0,3);
+		case 7:  return substr(lang('CAL_JULY'),0,3);
+		case 8:  return substr(lang('CAL_AUGUST'),0,3);
+		case 9:  return substr(lang('CAL_SEPTEMBER'),0,3);
+		case 10: return substr(lang('CAL_OCTOBER'),0,3);
+		case 11: return substr(lang('CAL_NOVEMBER'),0,3);
+		case 12: return substr(lang('CAL_DECEMBER'),0,3);
 	}
 }
 

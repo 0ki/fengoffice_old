@@ -15,22 +15,24 @@
     * @static
     */
     static private $columns = array(
-    'id' => DATA_TYPE_INTEGER, 
-    'filename' => DATA_TYPE_STRING, 
-    'description' => DATA_TYPE_STRING, 
-    'is_private' => DATA_TYPE_BOOLEAN, 
-    'is_important' => DATA_TYPE_BOOLEAN, 
-    'is_locked' => DATA_TYPE_BOOLEAN, 
-    'is_visible' => DATA_TYPE_BOOLEAN, 
-    'expiration_time' => DATA_TYPE_DATETIME, 
-    'comments_enabled' => DATA_TYPE_BOOLEAN, 
-    'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 
-    'created_on' => DATA_TYPE_DATETIME, 
-    'created_by_id' => DATA_TYPE_INTEGER, 
-    'updated_on' => DATA_TYPE_DATETIME, 
-    'updated_by_id' => DATA_TYPE_INTEGER,
-    'checked_out_on' => DATA_TYPE_DATETIME,
-    'checked_out_by_id' => DATA_TYPE_INTEGER);
+	    'id' => DATA_TYPE_INTEGER, 
+	    'filename' => DATA_TYPE_STRING, 
+	    'description' => DATA_TYPE_STRING, 
+	    'is_private' => DATA_TYPE_BOOLEAN, 
+	    'is_important' => DATA_TYPE_BOOLEAN, 
+	    'is_locked' => DATA_TYPE_BOOLEAN, 
+	    'is_visible' => DATA_TYPE_BOOLEAN, 
+	    'expiration_time' => DATA_TYPE_DATETIME, 
+	    'comments_enabled' => DATA_TYPE_BOOLEAN, 
+	    'anonymous_comments_enabled' => DATA_TYPE_BOOLEAN, 
+	    'created_on' => DATA_TYPE_DATETIME, 
+	    'created_by_id' => DATA_TYPE_INTEGER, 
+	    'updated_on' => DATA_TYPE_DATETIME, 
+	    'updated_by_id' => DATA_TYPE_INTEGER,
+	    'checked_out_on' => DATA_TYPE_DATETIME,
+	    'checked_out_by_id' => DATA_TYPE_INTEGER,
+	    'was_auto_checked_out' => DATA_TYPE_BOOLEAN
+	 );
   
     /**
     * Construct

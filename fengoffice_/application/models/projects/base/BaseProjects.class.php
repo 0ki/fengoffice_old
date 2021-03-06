@@ -14,7 +14,28 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'description' => DATA_TYPE_STRING, 'show_description_in_overview' => DATA_TYPE_BOOLEAN, 'completed_on' => DATA_TYPE_DATETIME, 'completed_by_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER, 'color' => DATA_TYPE_INTEGER, 'parent_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'name' => DATA_TYPE_STRING, 
+    	'description' => DATA_TYPE_STRING, 
+    	'show_description_in_overview' => DATA_TYPE_BOOLEAN, 
+    	'completed_on' => DATA_TYPE_DATETIME, 
+    	'completed_by_id' => DATA_TYPE_INTEGER, 
+    	'created_on' => DATA_TYPE_DATETIME, 
+    	'created_by_id' => DATA_TYPE_INTEGER, 
+    	'updated_on' => DATA_TYPE_DATETIME, 
+    	'updated_by_id' => DATA_TYPE_INTEGER, 
+    	'color' => DATA_TYPE_INTEGER,
+    	'p1' => DATA_TYPE_INTEGER, 
+    	'p2' => DATA_TYPE_INTEGER, 
+    	'p3' => DATA_TYPE_INTEGER, 
+    	'p4' => DATA_TYPE_INTEGER, 
+    	'p5' => DATA_TYPE_INTEGER, 
+    	'p6' => DATA_TYPE_INTEGER, 
+    	'p7' => DATA_TYPE_INTEGER, 
+    	'p8' => DATA_TYPE_INTEGER, 
+    	'p9' => DATA_TYPE_INTEGER, 
+    	'p10' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

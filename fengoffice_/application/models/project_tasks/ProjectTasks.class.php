@@ -23,22 +23,22 @@ class ProjectTasks extends BaseProjectTasks {
 	 */
 	static function getPendingTasks(User $user, $project, $tag = null) {
 		if ($project instanceof Project)
-		$project_ids = $project->getAllSubWorkspacesCSV();
+			$project_ids = $project->getAllSubWorkspacesCSV();
 		else
-		$project_ids = $user->getActiveProjectIdsCSV();
+			$project_ids = $user->getActiveProjectIdsCSV();
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectTasks')"):'';
 
 		$objects = self::findAll(array(
 				'conditions' => array('((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ? ) ' .
-					' OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) '.
+					' OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) ' .
 					' OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) '.
-					' AND `completed_on` = ? AND parent_id = ? AND (due_date > DATE(CURRENT_TIMESTAMP) OR due_date = \'00:00:00 00-00-0000\')'.
+					' AND `completed_on` = ? AND parent_id = ? AND (due_date > DATE(CURRENT_TIMESTAMP) OR due_date = \'00:00:00 00-00-0000\')' .
 					' AND `is_template` = false ' .
 					' AND project_id in (' . $project_ids . ')' . $permissions . $tagStr, $user->getId(), $user->getCompanyId(),
 		0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME,0, EMPTY_DATETIME),
-        			'order' => 'due_date ASC, `created_on` DESC'
+        			'order' => 'priority DESC, `created_on` DESC'
         			));
         			return $objects;
 	} // getAllFilesByProject
@@ -146,7 +146,40 @@ class ProjectTasks extends BaseProjectTasks {
        )); // findAll
        return $result;
 	} // getDayTasksByUser
-
+	
+	/**
+	 * Returns all task templates
+	 *
+	 */
+	static function getAllTaskTemplates(){
+		$conditions = " `is_template` = true " ;
+		$order_by = "`title` ASC";
+		$tasks = ProjectTasks::find(array(
+				'conditions' => $conditions,
+				'order' => $order_by
+		));
+		if (!is_array($tasks)) $tasks = array();
+		return $tasks;
+	}
+	
+	/**
+	 * Returns workspace task templates
+	 *
+	 */
+	static function getWorkspaceTaskTemplates($workspace_id){		
+		$table_name = new WorkspaceTemplate();
+		$table_name = $table_name->getTableName(true);
+		$conditions = " `is_template` = true AND `id` in (select `template_id` from " .  $table_name  . " where `workspace_id` = $workspace_id)";
+		$order_by = "`title` ASC";
+		$tasks = ProjectTasks::find(array(
+				'conditions' => $conditions,
+				'order' => $order_by
+		));
+		if (!is_array($tasks)) $tasks = array();
+		return $tasks;
+//		return ProjectTasks::getProjectTasks($workspace_id, null, 'ASC', 0, 0, null, null, null, null, null, null,true);
+	}
+	
 	static function getProjectTasks($project = null, $order = null, $orderdir = 'ASC', $parent_id = null, $milestone_id = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $priority = "all", $is_template = false) {
 		if ($order == self::ORDER_BY_STARTDATE) {
 			$order_by = '`start_date` ' . $orderdir;
@@ -186,9 +219,13 @@ class ProjectTasks extends BaseProjectTasks {
 
 		$assignedToStr = "";
 		if ($assigned_to_company) {
+			if ($assigned_to_company == -1)
+				$assigned_to_company = 0;
 			$assignedToStr .= " AND `assigned_to_company_id` = " . DB::escape($assigned_to_company) . " ";
 		}
 		if ($assigned_to_user) {
+			if ($assigned_to_user == -1)
+				$assigned_to_user = 0;
 			$assignedToStr .= " AND `assigned_to_user_id` = " . DB::escape($assigned_to_user) . " ";
 		}
 
@@ -387,7 +424,11 @@ class ProjectTasks extends BaseProjectTasks {
 			$new = ProjectTasks::createTaskCopy($sub);
 			$new->setIsTemplate($as_template);
 			$new->setParentId($taskTo->getId());
+			$new->setProjectId($taskTo->getProjectId());
 			$new->setOrder(ProjectTasks::maxOrder($new->getParentId(), $new->getMilestoneId()));
+			if ($sub->getIsTemplate()) {
+				$new->setFromTemplateId($sub->getId());
+			}
 			$new->save();
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);

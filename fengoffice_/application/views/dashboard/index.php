@@ -3,7 +3,10 @@
 <div class="dashboard">
 
 <div class="dashWorkspace">
+<span class="name">
 <?php 
+	$genid = gen_id();
+
 if(active_project() instanceof Project) 
 	echo active_project()->getName();
 else 
@@ -16,12 +19,16 @@ else
 	$hasMessages = isset($messages) && is_array($messages) && count($messages) > 0;
 	$hasDocuments = isset($documents) && is_array($documents) && count($documents) > 0;
 	$hasCharts = isset($charts) && is_array($charts) && count($charts) > 0;
+	$hasUnreadEmails = isset($unread_emails) && is_array($unread_emails) && count($unread_emails) > 0;
 	
 	$hasToday = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
 			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks));
 	$hasLate = (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
 		|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
 ?>
+</span><span class="description">
+<?php if (active_project() instanceof Project && active_project()->getShowDescriptionInOverview()) echo '-&nbsp;' . active_project()->getDescription(); ?>
+</span>
 </div>
 
 <div class="dashActions">
@@ -77,7 +84,9 @@ else
 <?php } // if ?>
 
 <table style="width:100%">
-<tr><td colspan=2><div class="dashCalendar">
+<tr><td colspan=2>
+<?php if(user_config_option('show calendar widget')) {?>
+<div class="dashCalendar">
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle">Upcoming events, milestones and tasks</div></td>
@@ -98,7 +107,7 @@ else
 			}
 			
 			var ob=true;
-			
+
 			function hide_tooltip(elem){
 				jQuery(elem).parent().trigger('mouseout');
 			}
@@ -108,73 +117,29 @@ else
 				ob = false;
 			}
 			jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
-			jQuery('span.task_hover_details').cluetip({		
-			    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...
-			                     // ...and split the contents into separate divs where there is a "|"
-			    cluetipClass: 'task',
-			    width: 'auto',
-			    // effect and speed for opening clueTips
-			    fx: {             
-		              open:       'fadeIn', // can be 'show' or 'slideDown' or 'fadeIn'
-		              openSpeed:  ''
-			    },
-			                  
-			    // settings for when hoverIntent plugin is used
-			    hoverIntent: {    
-		              sensitivity:  3,
-		              interval:     50,
-		              timeout:      0
-			    }, 
-			    topOffset:        8,       // Number of px to offset clueTip from top of invoking element. more info below [3]
-		    	leftOffset:       8,
-		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-				    return ob;
-				  },
-			    showTitle: false // hide the clueTip's heading
-		  	});
-		  	
-		  	jQuery('span.milestone_hover_details').cluetip({		
-			    splitTitle: '|', 
-			    cluetipClass: 'milestone',
-			    width: 'auto',
-			    fx: {             
-		              open:       'fadeIn', 
-		              openSpeed:  ''
-			    },
-			    hoverIntent: {    
-		              sensitivity:  3,
-		              interval:     50,
-		              timeout:      0
-			    }, 
-			    topOffset:        8,       
-		    	leftOffset:       8,
-		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-				    return ob;
-				  },
-			    showTitle: false 
-		  	});
-		  	
-		  	jQuery('span.event_hover_details').cluetip({		
-			    splitTitle: '|', 
-			    cluetipClass: 'event',
-			    width: 'auto',
-			    fx: {             
-		              open:       'fadeIn', 
-		              openSpeed:  ''
-			    },
-			                  
-			    hoverIntent: {    
-		              sensitivity:  3,
-		              interval:     50,
-		              timeout:      0
-			    }, 
-			    topOffset:        8,      
-		    	leftOffset:       8,
-		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
-				    return ob;
-				  },
-			    showTitle: false 
-		  	});
+			
+		  	for (var i = 0; i <= 24; i++){
+			  	jQuery('span.cluetip' + i).cluetip({		
+				    splitTitle: '|', 
+				    cluetipClass: 'color' + i + ' cluetip-event',
+				    width: 'auto',
+				    fx: {             
+			              open:       'fadeIn', 
+			              openSpeed:  ''
+				    },
+				    hoverIntent: {    
+			              sensitivity:  3,
+			              interval:     50,
+			              timeout:      0
+				    }, 
+				    topOffset:        8,       
+			    	leftOffset:       8,
+			    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
+					    return ob;
+					  },
+				    showTitle: false 
+			  	});
+		  	}
 		</script>
   <?php
   
@@ -191,13 +156,11 @@ else
 	
  
 	// load the day we are currently viewing in the calendar
-	$cday = $_SESSION['cal_day'];
-	$cmonth = $_SESSION['cal_month'];
-	$cyear = $_SESSION['cal_year'];
+
 	$output ='';
-	if(cal_option("start_monday")) $firstday = (date("w", mktime(0,0,0,$cmonth,1,$cyear))-1) % 7;
-	else $firstday = (date("w", mktime(0,0,0,$cmonth,1,$cyear))) % 7; // Numeric representation of day of week.
-	$lastday = date("t", mktime(0,0,0,$cmonth,1,$cyear)); // # of days in the month
+	if(cal_option("start_monday")) $firstday = (date("w", mktime(0,0,0,$currentmonth,1,$currentyear))-1) % 7;
+	else $firstday = (date("w", mktime(0,0,0,$currentmonth,1,$currentyear))) % 7; // Numeric representation of day of week.
+	$lastday = date("t", mktime(0,0,0,$currentmonth,1,$currentyear)); // # of days in the month
 	
 	
 	$output .= "<table id=\"calendar\" border='0' style='width:100%;margin-right:5px;border-collapse:collapse' cellspacing='1' cellpadding='0'>\n";
@@ -210,15 +173,15 @@ else
 					$output .= "<tr>";
 					
 					if(!cal_option("start_monday")) {
-						$output .= "    <th width='15%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
+						$output .= "    <th width='12.5%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
 					}
 					$output .= '
-					<th width="14%">' . lang('monday short') . '</th>
-					<th width="14%">' . lang('tuesday short') . '</th>
-					<th width="14%">' . lang('wednesday short') . '</th>
-					<th width="14%">' . lang('thursday short') . '</th>
-					<th width="14%">' . lang('friday short') . '</th>
-					<th width="15%">' . lang('saturday short') . '</th>';
+					<th width="15%">' . lang('monday short') . '</th>
+					<th width="15%">' . lang('tuesday short') . '</th>
+					<th width="15%">' . lang('wednesday short') . '</th>
+					<th width="15%">' . lang('thursday short') . '</th>
+					<th width="15%">' . lang('friday short') . '</th>
+					<th width="12.5%">' . lang('saturday short') . '</th>';
 					
 					if(cal_option("start_monday")) {
 						$output .= '<th width="15%">' . lang('sunday short') . '</th>';
@@ -230,7 +193,7 @@ else
 			$i = $week_index * 7 + $day_of_week;
 			$day_of_month = $i + $startday;
 			// see what type of day it is
-			$today_text = "";			
+			$today_text = "";	
 			if($currentyear == $year && $currentmonth == $month && $currentday == $day_of_month){
 				$daytitle = 'todaylink';
 				$today_text = "Today ";
@@ -270,10 +233,12 @@ else
 				$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month&year=$year");
 				$w = $day_of_month;
+				$dtv = DateTimeValueLib::make(0,0,0,$month,$day_of_month,$year);
 			}elseif($day_of_month < 1){
 				$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month&year=$year");
 				$w = "&nbsp;";
+				$dtv = DateTimeValueLib::make(0,0,0,$month,$day_of_month,$year);  
 			}else{
 				if($day_of_month==$lastday+1){
 					$month++;
@@ -285,11 +250,12 @@ else
 				$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month&year=$year");
 				$t = cal_getlink("index.php?action=add&day=".($day_of_month-$lastday)."&month=$month&year=$year");
 				$w = $day_of_month - $lastday;
+				$dtv = DateTimeValueLib::make(0,0,0,$month,$w,$year);
 			}
-			$output .= "><div style='z-index:0; height:100%;' onclick=\"og.openLink('". $t."');disable_overlib();\") >
+			$output .= "><div style='z-index:0; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {day:'{$dtv->getDay()}',	month:'{$dtv->getMonth()}',year:'{$dtv->getYear()}',type_id:1,hour:'0',minute:'0',title:'".date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))."'},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
 			if($day_of_month >= 1){
-				$output .= "<a class='internalLink' href=\"$p\" onclick=\"cancel(event);\"  style='color:#5B5B5B' >$w</a>";				
+				$output .= "<a class='internalLink' href=\"$p\" onclick=\"cancel(event);return true;\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
 				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
 					// if single digit, add a zero
@@ -319,6 +285,7 @@ else
 				else{
 					$count=0;
 					foreach($result as $event){
+						$color = "000000"; // default color
 						if($event instanceof ProjectEvent ){
 							$count++;
 							$subject =   $event->getSubject();
@@ -328,7 +295,7 @@ else
 						
 							$color = $event->getEventTypeObject()?$event->getEventTypeObject()->getTypeColor():''; 
 							// organize the time and duraton data
-							$overlib_time = CAL_UNKNOWN_TIME;
+							$overlib_time = lang('CAL_UNKNOWN_TIME');
 							switch($typeofevent) {
 								case 1:
 									if(!cal_option("hours_24")) $timeformat = 'g:i A';
@@ -337,12 +304,12 @@ else
 									$overlib_time = "@ $event_time";
 									break;
 								case 2:
-									$event_time = CAL_FULL_DAY;
-									$overlib_time = CAL_FULL_DAY;
+									$event_time = lang('CAL_FULL_DAY') ;
+									$overlib_time = lang('CAL_FULL_DAY');
 									break;
 								case 3:
 									$event_time = '??:??';
-									$overlib_time = CAL_UNKNOWN_TIME;
+									$overlib_time = lang('CAL_UNKNOWN_TIME');
 									break;
 								default: ;
 							} 
@@ -353,10 +320,10 @@ else
 							if(!$private && $count <= 3){
 								if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
 								else $output .= "<div class='event_block'   style='z-index:1000;border-left-color: #$color;'>";
-								if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
-								$output .= "<span class='event_hover_details' title='".$subject."- <i>Event</i>|".str_replace("'","\\'",$overlib_text)."' >";			
+								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
+								$output .= "<span class='cluetip" . $event->getProject()->getColor() . "' title='".$subject."- <i>Event</i>|".str_replace("'","\\'",$overlib_text)."' >";			
 								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
-								$output .= "<a href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
+								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
 							}
@@ -375,9 +342,9 @@ else
 									$subject = "&nbsp;". $milestone->getName()." - <i>Milestone</i>";
 									$cal_text = $milestone->getName();
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= "<span class='milestone_hover_details' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
+									$output .= "<span class='cluetip" . $milestone->getProject()->getColor() . "' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
 									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
-									$output .= "<a href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();\" >".$cal_text."</a>";
+									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();return true;\" >".$cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 								}//if count
@@ -401,9 +368,9 @@ else
 									$cal_text = $task->getTitle();
 									
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= "<span class='task_hover_details' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
+									$output .= "<span class='cluetip" . $task->getProject()->getColor() . "' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
 									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
-									$output .= "<a href='".$task->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();\" >".$cal_text."</a>";
+									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();return true;\" >".$cal_text."</a>";
 									$output .= '</span>';
 									$output .= "";
 								}//if count
@@ -411,7 +378,7 @@ else
 						}//endif task
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="cancel(event);nd();disable_overlib();">+'.($count-3).' more</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="cancel(event);nd();disable_overlib();return true;">+'.($count-3).' more</a></div>';
 					}
 				}
 				
@@ -431,6 +398,7 @@ echo $output . '</table>';
 		<td class="coViewBottom"></td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
+<?php } //if(user_config_option('show calendar')) ?>
 </div>
  
  </td></tr>
@@ -438,7 +406,7 @@ echo $output . '</table>';
 
 
 
-<?php if ($tasks_in_progress) { ?>
+<?php if (isset($tasks_in_progress) && $tasks_in_progress) { ?>
 <div class="dashTasksInProgress">
 <table style="width:100%"><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('tasks in progress') ?></div></td>
@@ -459,21 +427,21 @@ echo $output . '</table>';
 				$text = substr($text,0,100) . " ...";
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
-			<?php 
-			$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-			if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-				
-				$projectLinks = array();
-				foreach ($dws as $ws) {
-					$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-				}
-				echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-			}?>
-			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo $task->getTitle()?><?php echo $text ?></a></td>
+			<?php $dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+			}
+			echo implode('&nbsp;',$projectLinks);?>
+			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo clean($task->getTitle())?><?php echo clean($text) ?></a></td>
 			<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObjectAndUser($task,logged_user());
-				if ($timeslot) {
-					echo lang('x ago', DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), null, 'hm',60))?>
-				<?php } ?></td>
+				if ($timeslot) { ?>
+					<div id="<?php echo $genid . $task->getId() ?>timespan"></div>
+					<script language="JavaScript">
+					og.startClock('<?php echo $genid . $task->getId() ?>', <?php echo $timeslot->getSeconds() ?>);
+					</script>
+				<?php } ?>
+				</td>
 			</tr>
 		<?php } // foreach ?>
 		</table>
@@ -511,16 +479,12 @@ echo $output . '</table>';
 	?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
     <td style="padding-left:5px;padding-bottom:2px">
-    <?php 
-		$dws = $milestone->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-			
-			$projectLinks = array();
-			foreach ($dws as $ws) {
-				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-			}
-			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-		}?>
+    <?php $dws = $milestone->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+		$projectLinks = array();
+		foreach ($dws as $ws) {
+			$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+		}
+		echo implode('&nbsp;',$projectLinks);?>
     <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>">
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
     <span style="font-weight:bold"> <?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($milestone->getName()) ?>
@@ -540,14 +504,11 @@ echo $output . '</table>';
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
 		$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-			
-			$projectLinks = array();
-			foreach ($dws as $ws) {
-				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-			}
-			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-		}?>
+		$projectLinks = array();
+		foreach ($dws as $ws) {
+			$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+		}
+		echo implode('&nbsp;',$projectLinks);?>
 	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
     <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
@@ -574,14 +535,11 @@ echo $output . '</table>';
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
 		$dws = $milestone->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-			
-			$projectLinks = array();
-			foreach ($dws as $ws) {
-				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-			}
-			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-		}?>
+		$projectLinks = array();
+		foreach ($dws as $ws) {
+			$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+		}
+		echo implode(' ',$projectLinks);?>
     <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>">
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
     <span style="font-weight:bold"> <?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($milestone->getName()) ?>
@@ -598,14 +556,11 @@ echo $output . '</table>';
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
 		$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-			
-			$projectLinks = array();
-			foreach ($dws as $ws) {
-				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-			}
-			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-		}?>
+		$projectLinks = array();
+		foreach ($dws as $ws) {
+			$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+		}
+		echo implode('&nbsp;',$projectLinks);?>
 	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
     <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
@@ -646,18 +601,22 @@ echo $output . '</table>';
 			if(strlen($text)>100)
 				$text = substr($text,0,100) . " ...";
 			?>
-				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
+				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+				<td class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></td><td style="padding-left:5px;padding-bottom:2px">
 			<?php 
 			$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-			if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-				
-				$projectLinks = array();
-				foreach ($dws as $ws) {
-					$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-				}
-				echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-			}?>
-			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo $task->getTitle()?><?php echo $text ?></a></td>
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+			}
+			echo implode('&nbsp;',$projectLinks);?>
+			<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
+			<?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
+			    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
+			<?php } else { ?>
+			    <?php echo clean($task->getTitle()) ?>
+			<?php } // if ?>
+			</a></td>
 			<td><?php if ($stCount > 0) echo "(" . lang('subtask count all open', $stCount, $task->countOpenSubTasks()) . ')'?></td>
 			<td><?php if (!is_null($task->getDueDate())){
 				if ($task->getRemainingDays() >= 0)
@@ -668,7 +627,7 @@ echo $output . '</table>';
 				else
 					echo lang('overdue by x days', -$task->getRemainingDays());
 				}?></td>
-			<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('complete')?></a></td>
+			<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('complete task')?></a></td>
 			</tr>
 		<?php } // foreach ?>
 		</table>
@@ -687,8 +646,55 @@ echo $output . '</table>';
 <?php } ?>
 
 </td>
-<?php if ($hasMessages || $hasDocuments || $hasCharts){ ?>
+<?php if ($hasMessages || $hasDocuments || $hasCharts || $hasUnreadEmails){ ?>
 <td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday)? '330px' : '100%' ?>">
+
+<?php if ($hasUnreadEmails) { ?>
+<div class="dashUnreadEmails">
+<table style="width:100%">
+	<col width=12/><col/><col width=12/><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('unread emails') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td class="coViewBody" colspan=2>
+		<table id="dashTableEmails" style="width:100%">
+		<?php $c = 0;
+			foreach ($unread_emails as $email){ $c++;?>
+			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMUC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+			<td class="db-ico ico-email"></td>
+			<td style="padding-left:5px">
+			<?php 
+				/*$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+				$projectLinks = array();
+				foreach ($mws as $ws) {
+					$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+				}
+				echo implode('&nbsp;',$projectLinks);  //Commented as unread emails are not yet assignable to workspaces*/?>
+			<a class="internalLink" style="font-weight:bold" href="<?php echo get_url('mail','view', array('id' => $email->getId()))?>"
+				title="">
+			<?php echo clean($email->getSubject()) ?>
+			</a><br/><table width="100%" style="color:#888"><tr><td><?php echo clean($email->getFrom())?></td><td align=right><?php echo $email->getSentDate()->isToday() ? format_time($email->getSentDate()) : format_date($email->getSentDate())?></td></tr></table></td></tr>
+		<?php } // foreach?>
+			<?php if ($c >= 10) {?>
+				<tr class="dashSMUC" style="display:none"><td></td>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');"><?php echo lang('show all') ?>...</a>
+				</td></tr>
+			<?php } ?>
+		</table>
+		<?php if ($c > 5) { ?>
+		<div id="dashSMUT" style="width:100%;text-align:right">
+			<a href="#" onclick="og.hideAndShowByClass('dashSMUT', 'dashSMUC', 'dashTableEmails'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+		</div>
+		<?php } // if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } ?>
 
 <?php if ($hasMessages) { ?>
 <div class="dashMessages">
@@ -707,23 +713,19 @@ echo $output . '</table>';
 			<td style="padding-left:5px">
 			<?php 
 				$mws = $message->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				if (!(active_project() instanceof Project && count($mws) == 1 && $mws[0]->getId() == active_project()->getId())){
-					
-					$projectLinks = array();
-					foreach ($mws as $ws) {
-						$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-					}
-					echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-				}?>
-			
+				$projectLinks = array();
+				foreach ($mws as $ws) {
+					$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+				}
+				echo implode('&nbsp;',$projectLinks);?>
 			<a class="internalLink" href="<?php echo get_url('message','view', array('id' => $message->getId()))?>"
 				title="<?php echo lang('message posted on by linktitle', format_datetime($message->getCreatedOn()), $message->getCreatedByDisplayName()) ?>">
-			<?php echo $message->getTitle() ?>
+			<?php echo clean($message->getTitle()) ?>
 			</a></td></tr>
 		<?php } // foreach?>
 			<?php if ($c >= 10) {?>
 				<tr class="dashSMMC" style="display:none"><td></td>
-				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');">Show all...</a>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');"><?php echo lang('show all') ?>...</a>
 				</td></tr>
 			<?php } ?>
 		</table>
@@ -760,7 +762,7 @@ echo $output . '</table>';
 	foreach ($charts as $chart) {
 ?>
 		<div style="padding-bottom:10px; margin-bottom:10px;<?php echo $c != count($charts)? 'border-bottom:1px solid #DDDDDD':'' ?>">
-		<div style="font-size:120%;font-weight:bold"><?php echo $chart->getTitle() ?></div>
+		<div style="font-size:120%;font-weight:bold"><?php echo clean($chart->getTitle()) ?></div>
 		<?php 
 		$chart2 = $pcf->loadChart($chart->getId());
 		$chart2->ExecuteQuery();
@@ -796,17 +798,14 @@ echo $output . '</table>';
 			<td style="padding-left:5px">
 			<?php 
 				$dws = $document->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
-					
-					$projectLinks = array();
-					foreach ($dws as $ws) {
-						$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
-					}
-					echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
-				}?>
+				$projectLinks = array();
+				foreach ($dws as $ws) {
+					$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+				}
+				echo '<div style="padding-right:10px;display:inline">' . implode('&nbsp;',$projectLinks) . '</div>';?>
 			<a class="internalLink" href="<?php echo get_url('files','file_details', array('id' => $document->getId()))?>"
 				title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), $document->getCreatedByDisplayName()) ?>">
-			<?php echo $document->getFilename()?>
+			<?php echo clean($document->getFilename())?>
 			</a></td>
 			<td style="text-align:right">
 			<?php if ($document->isModifiable() && $document->canEdit(logged_user())){ ?>
@@ -815,7 +814,7 @@ echo $output . '</table>';
 		<?php } // foreach ?>
 			<?php if ($c >= 10) {?>
 				<tr class="dashSMDC" style="display:none"><td></td>
-				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('documents-panel');">Show all...</a>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('documents-panel');"><?php echo lang('show all') ?>...</a>
 				</td></tr>
 			<?php } ?>
 		</table>
@@ -838,3 +837,6 @@ echo $output . '</table>';
 <?php } ?></tr></table>
 </div>
 </div>
+<script type="text/javascript">
+og.showWsPaths();
+</script>

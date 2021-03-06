@@ -1,3 +1,7 @@
 .textile-rewrite li{
 	list-style-type:circle;
 }
+
+.textile-rewrite {
+	white-space: pre;
+}

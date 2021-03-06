@@ -98,6 +98,30 @@
     function setEmail($value) {
     	return $this->setColumnValue('email', $value);
     } // setEmail()
+    
+    
+    /**
+     * Return value of 'email_addr' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getEmailAddress() {
+    	return $this->getColumnValue('email_addr');
+    } // getEmailAddress()
+
+    /**
+     * Set value of 'email' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setEmailAddress($value) {
+    	return $this->setColumnValue('email_addr', $value);
+    } // setEmailAddress()
+
 
     /**
      * Return value of 'password' field

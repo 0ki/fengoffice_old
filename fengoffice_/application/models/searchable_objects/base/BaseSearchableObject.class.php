@@ -143,6 +143,28 @@
       return $this->setColumnValue('is_private', $value);
     } // setIsPrivate() 
     
+    /**
+    * Return value of 'user_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getUserId() {
+      return $this->getColumnValue('user_id');
+    } // getUserId()
+    
+    /**
+    * Set value of 'user_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setUserId($value) {
+      return $this->setColumnValue('user_id', $value);
+    } // setUserId() 
+    
     
     /**
     * Return manager instance

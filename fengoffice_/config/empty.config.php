@@ -16,8 +16,8 @@
   define('DB_PASS', ''); 
   define('DB_NAME', 'opengoo'); 
   define('DB_PERSIST', true); 
-  define('TABLE_PREFIX', 'ac_'); 
-  define('ROOT_URL', 'http://opengoo.dev'); 
+  define('TABLE_PREFIX', 'og_'); 
+  define('ROOT_URL', 'http://opengoo.org'); 
   define('DEFAULT_LOCALIZATION', 'en_us'); 
   define('DEBUG', true); 
   define('DB_CHARSET', 'utf8'); 

@@ -124,20 +124,11 @@ og.TaskItem = function(config) {
 		
 		if (this.workspaceids != ''){
 			var ids = String(this.workspaceids).split(',');
-			var names = this.workspaces.split(',');
-			var colors = String(this.workspacecolors).split(',');
 			for (var idi = 0; idi < ids.length; idi++){
-			
-				var tda2 = document.createElement('a');
-				tda2.href = "#";
-				tda2.innerHTML = names[idi];
-				tda2.miid = ids[idi];
-				tda2.onclick = function(){
-					Ext.getCmp('workspace-panel').select(this.miid);
-				};
-				tda2.className="og-wsname og-wsname-color-" + colors[idi];
-				tda2.title = names[idi];
-				td.appendChild(tda2);
+				var tdspan = document.createElement('span');
+				tdspan.className='project-replace';
+				tdspan.innerHTML = ids[idi];
+				td.appendChild(tdspan);
 				td.appendChild(document.createTextNode(' '));
 			}
 		}
@@ -199,6 +190,8 @@ og.TaskItem = function(config) {
 		this.doms.newTaskToggle.onclick = this.showAddTask.createDelegate(this);
 		this.doms.newTaskTitle = newTaskForm.doms.textarea;
 		this.doms.newTaskAssignTo = newTaskForm.doms.dropdown;
+		this.doms.newTaskCheckbox = newTaskForm.doms.checkbox;
+		this.doms.newTaskHours = newTaskForm.doms.hours;
 		newTaskForm.doms.butOK.onclick = this.addTask.createDelegate(this);
 		newTaskForm.doms.butCancel.onclick = this.hideAddTask.createDelegate(this);
 		newTaskForm.doms.more.onclick = this.moreAddTask.createDelegate(this);
@@ -230,13 +223,53 @@ og.TaskItem.createAddTaskForm = function(config) {
 	var body = document.createElement('div');
 	body.className = 'og-task-new';
 	body.style.display = 'none';
-	body.appendChild(document.createTextNode(lang('title')+":"));
-	body.appendChild(document.createElement('br'));
-	var textarea = document.createElement('textarea');
+	body.appendChild(document.createTextNode(lang('title')+": "));
+	//body.appendChild(document.createElement('br'));
+	var textarea = document.createElement('input');
+	textarea.style.width='400px';
 	body.appendChild(textarea);
 	body.appendChild(document.createElement('br'));
-	body.appendChild(document.createTextNode(lang('assign to')+":"));
-	body.appendChild(document.createElement('br'));
+	
+	var table = document.createElement('table');
+	table.style.marginTop="4px";
+	var tbody = document.createElement('tbody');
+	table.appendChild(tbody);
+	var tr = document.createElement('tr');
+	tbody.appendChild(tr);
+	var td = document.createElement('td');
+	td.width="18px";
+	var checkbox = document.createElement('input');
+	checkbox.type = 'checkbox';
+	checkbox.style.width="16px"
+	checkbox.style.height="16px"
+	checkbox.style.height="16px"
+	td.appendChild(checkbox);
+	tr.appendChild(td);
+	var td = document.createElement('td');
+	td.style.paddingRight="15px";
+	td.innerHTML = 'Completed';
+	tr.appendChild(td);
+	var td = document.createElement('td');
+	td.innerHTML = 'Hours worked:&nbsp;';
+	tr.appendChild(td);
+	var td = document.createElement('td');
+	var hours = document.createElement('input');
+	hours.style.width="25px";
+	td.appendChild(hours);
+	tr.appendChild(td);
+	body.appendChild(table);
+	
+	var table = document.createElement('table');
+	table.style.marginTop="4px";
+	table.style.marginBottom="4px";
+	var tbody = document.createElement('tbody');
+	table.appendChild(tbody);
+	var tr = document.createElement('tr');
+	tbody.appendChild(tr);
+	var td = document.createElement('td');
+	td.appendChild(document.createTextNode(lang('assign to')+":"));
+	tr.appendChild(td);
+	var td = document.createElement('td');
 	var dropdown = Ext.getDom('og-task-new-assigned-to');
 	if (dropdown) {
 		dropdown = dropdown.cloneNode(true);
@@ -245,13 +278,17 @@ og.TaskItem.createAddTaskForm = function(config) {
 		dropdown.type = 'hidden';
 		dropdown.value = "0:0";
 	}
-	body.appendChild(dropdown);
-	body.appendChild(document.createElement('br'));
+	td.appendChild(dropdown);
+	tr.appendChild(td);
+	var td = document.createElement('td');
 	var amore = document.createElement('a');
-	amore.innerHTML = lang('more');
+	amore.style.paddingLeft='15px';
+	amore.innerHTML = lang('more options');
 	amore.href = "#";
-	body.appendChild(amore);
-	body.appendChild(document.createElement('br'));
+	td.appendChild(amore);
+	tr.appendChild(td);
+	body.appendChild(table);
+	
 	var butOK = document.createElement('button');
 	butOK.innerHTML = lang('add task');
 	body.appendChild(butOK);
@@ -267,6 +304,8 @@ og.TaskItem.createAddTaskForm = function(config) {
 	div.doms.textarea = textarea;
 	div.doms.dropdown = dropdown;
 	div.doms.more = amore;
+	div.doms.checkbox = checkbox;
+	div.doms.hours = hours;
 	div.doms.butOK = butOK;
 	div.doms.butCancel = butCancel;
 	return div;
@@ -315,7 +354,7 @@ og.TaskItem.prototype = {
 	moveTaskDown: function() {
 		var taskDiv = this.doms.div;
 		var next = taskDiv.nextSibling;
-		if (next && next.className != 'og-add-task') {
+		if (next && next.className != 'og-add-task' && next.className != 'og-add-milestone') {
 			var parent = next.parentNode;
 			parent.removeChild(next);
 			parent.insertBefore(next, taskDiv);
@@ -381,7 +420,7 @@ og.TaskItem.prototype = {
 						// delete previous subtasks
 						this.loadSubTasks(data.tasks);
 					} else {
-						og.msg(lang("error"), lang("error fetching tasks"));
+						og.err(lang("error fetching tasks"));
 					}
 				}, scope: this
 			});
@@ -403,6 +442,7 @@ og.TaskItem.prototype = {
 			this.subtasks["id_" + tasks[i].id] = task;
 		}
 		this.doms.subtasks.appendChild(this.doms.newTaskDiv);
+		og.showWsPaths();
 	},
 	
 	checkTask: function() {
@@ -504,13 +544,17 @@ og.TaskItem.prototype = {
 	addTask: function() {
 		var assignedTo = this.doms.newTaskAssignTo.value;
 		var title = this.doms.newTaskTitle.value;
+		var hours = this.doms.newTaskHours.value;
+		var checked = this.doms.newTaskCheckbox.checked;
 		og.openLink(og.getUrl('task', 'quick_add_task'), {
 			method: 'POST',
 			post: {
 				"task[title]": title,
 				"task[assigned_to]": assignedTo,
 				"task[parent_id]": this.id,
-				"task[milestone_id]": 0
+				"task[milestone_id]": 0,
+				"task[hours]": hours,
+				"task[is_completed]": checked
 			},
 			callback: function(success, data) {
 				if (success && ! data.errorCode) {
@@ -522,8 +566,9 @@ og.TaskItem.prototype = {
 					this.doms.subtasks.insertBefore(dom, this.doms.newTaskDiv);
 					this.orderSubtasks();
 					Ext.fly(dom).slideIn("t", {useDisplay: true, duration: 0.5});
+					og.showWsPaths();
 				} else {
-					og.msg(lang("error"), lang("error adding task"));
+					og.err(lang("error adding task"));
 				}
 				this.hideAddTask();
 			},

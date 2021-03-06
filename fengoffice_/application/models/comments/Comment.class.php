@@ -120,7 +120,7 @@ class Comment extends BaseComment {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('comment', 'edit', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('comment', 'edit', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -130,7 +130,7 @@ class Comment extends BaseComment {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('comment', 'delete', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('comment', 'delete', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	// ---------------------------------------------------

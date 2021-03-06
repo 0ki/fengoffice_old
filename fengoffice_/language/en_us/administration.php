@@ -41,13 +41,12 @@
     'config option name site_name' => 'Site name',
     'config option desc site_name' => 'This value will be displayed as the site name on the Dashboard page',
     'config option name file_storage_adapter' => 'File storage',
-    'config option desc file_storage_adapter' => 'Select where you want to store attachments, avatars, logos and any other uploaded documents. <strong>Database storage engine is recommended</strong>.',
+    'config option desc file_storage_adapter' => 'Select where you want to store attachments, avatars, logos and any other uploaded documents. Database storage engine is recommended.<strong>Switching storage will make all previuosly uploaded files unavailable </strong>.',
     'config option name default_project_folders' => 'Default folders',
     'config option desc default_project_folders' => 'Folders that will be created when workspace is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
     'config option name theme' => 'Theme',
     'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo',
     
-    // OpenGoo.org
     'config option name upgrade_check_enabled' => 'Enable upgrade check',
     'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of OpenGoo available for download',
     
@@ -70,6 +69,20 @@
   	'can manage contacts' => 'Can manage contacts',
   	'group users' => 'Group users',
     
+  	
+  	'user ws config category name dashboard' => 'Dashboard options',
+  	'user ws config category name task panel' => 'Task options',
+  	'user ws config option name show pending tasks widget' => 'Show pending tasks widget',
+  	'user ws config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
+  	'user ws config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
+  	'user ws config option name show messages widget' => 'Show messages widget',
+  	'user ws config option name show documents widget' => 'Show documents widget',
+  	'user ws config option name show calendar widget' => 'Show mini calendar widget',
+  	'user ws config option name show charts widget' => 'Show charts widget',
+  	'user ws config option name show emails widget' => 'Show emails widget',
+  	
+  	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
+  	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
   ); // array
 
 ?>

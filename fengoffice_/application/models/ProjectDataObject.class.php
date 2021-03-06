@@ -188,8 +188,11 @@
     			return '';
     	
     		$ids = array();
-    		foreach ($this->getWorkspaces($wsIds) as $w) {
-    			$ids[] = $w->getName();
+    		$wss = $this->getWorkspaces($wsIds);
+    		if($wsIds){
+	    		foreach ($wss as $w) {
+	    			$ids[] = $w->getName();
+	    		}
     		}
     		return join(", ", $ids);
     	}
@@ -203,8 +206,11 @@
     			return '';
     		
     		$ids = array();
-    		foreach ($this->getWorkspaces($wsIds) as $w) {
-    			$ids[] = $w->getId();
+    		$wss = $this->getWorkspaces($wsIds);
+    		if($wss){
+	    		foreach ($wss as $w) {
+	    			$ids[] = $w->getId();
+	    		}
     		}
     		return join(", ", $ids);
     	}
@@ -218,8 +224,11 @@
     			return '';
     		
     		$ids = array();
-    		foreach ($this->getWorkspaces($wsIds) as $w) {
-    			$ids[] = $w->getColor();
+    		$wss = $this->getWorkspaces($wsIds);
+    		if($wss){
+	    		foreach ($wss as $w) {
+	    			$ids[] = $w->getColor();
+	    		}
     		}
     		return join(", ", $ids);
     	}
@@ -477,7 +486,7 @@
       if(!$this->isTaggable()) 
       	throw new Error('Object not taggable');
       $args = array_flat(func_get_args());
-      Tags::setObjectTags($args, $this, get_class($this->manager()), $this->getProject());
+      Tags::setObjectTags($args, $this, get_class($this->manager()));
       if ($this->isSearchable())
 	  	$this->addTagsToSearchableObject();
 	  return true;
@@ -840,6 +849,12 @@
     	return true;
     } // onDeleteTimeslot
     
+    /**
+     * This function returns the total amount of minutes worked in this task
+     *
+     * @return integer
+     */
+    //
     function getTotalMinutes(){
     	$timeslots = $this->getTimeslots();
     	$totalMinutes = 0;
@@ -847,6 +862,24 @@
 	    	foreach ($timeslots as $ts){
 	    		if (!$ts->isOpen())
 	    			$totalMinutes += $ts->getMinutes();
+	    	}
+    	}
+    	return $totalMinutes;
+    }
+    
+    /**
+     * This function returns the total amount of seconds worked in this task
+     *
+     * @return integer
+     */
+    
+  	function getTotalSeconds(){
+    	$timeslots = $this->getTimeslots();
+    	$totalMinutes = 0;
+    	if (is_array($timeslots)){
+	    	foreach ($timeslots as $ts){
+	    		if (!$ts->isOpen())
+	    			$totalMinutes += $ts->getSeconds();
 	    	}
     	}
     	return $totalMinutes;
@@ -911,7 +944,7 @@
     // ---------------------------------------------------
     
     /**
-    * Save object. If object is searchable this function will add conetent of searchable fields 
+    * Save object. If object is searchable this function will add content of searchable fields 
     * to search index
     *
     * @param void
@@ -1049,9 +1082,7 @@
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $this->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
-				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 			);

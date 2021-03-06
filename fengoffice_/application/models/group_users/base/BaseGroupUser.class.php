@@ -108,7 +108,7 @@
     * @return GroupUser 
     */
     function manager() {
-      if(!($this->manager instanceof GroupUser)) $this->manager = GroupUsers::instance();
+      if(!($this->manager instanceof GroupUsers)) $this->manager = GroupUsers::instance();
       return $this->manager;
     } // manager
   

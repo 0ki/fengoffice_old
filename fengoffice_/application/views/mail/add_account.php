@@ -28,40 +28,47 @@
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
+  
+   <div>
+    <label for="mailAccountFormEmail"><?php echo lang('mail address')?> <span class="label_required">*</span>
+    <span class="desc"><?php echo lang('mail address description') ?></span></label>
+    <?php echo text_field('mailAccount[email_addr]', array_var($mailAccount_data, 'email_addr'), 
+    array('id' => 'mailAccountFormEmail', 'tabindex'=>'2')) ?>
+  </div>
 
   <div>
     <label for="mailAccountFormEmail"><?php echo lang('mail account id')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account id description') ?></span></label>
     <?php echo text_field('mailAccount[email]', array_var($mailAccount_data, 'email'), 
-    array('id' => 'mailAccountFormEmail', 'tabindex'=>'2')) ?>
+    array('id' => 'mailAccountFormEmail', 'tabindex'=>'3')) ?>
   </div>
 
   <div>
     <label for="mailAccountFormPassword"><?php echo lang('password')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account password description') ?></span></label>
     <?php echo password_field('mailAccount[password]', array_var($mailAccount_data, 'password'), 
-    array('id' => 'mailAccountFormPassword', 'tabindex'=>'3')) ?>
+    array('id' => 'mailAccountFormPassword', 'tabindex'=>'4')) ?>
   </div>
 
   <div>
     <label for="mailAccountFormServer"><?php echo lang('server address')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account server description') ?></span></label>
     <?php echo text_field('mailAccount[server]', array_var($mailAccount_data, 'server'), 
-    array('id' => 'mailAccountFormServer', 'tabindex'=>'4')) ?>
+    array('id' => 'mailAccountFormServer', 'tabindex'=>'5')) ?>
   </div>
 
   <div>
     <label for="mailSmtpServer"><?php echo lang('smtp server')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account smtp server description') ?></span></label>
     <?php echo text_field('mailAccount[smtp_server]', array_var($mailAccount_data, 'smtp_server'), 
-    array('id' => 'mailSmtpServer', 'tabindex'=>'5')) ?>
+    array('id' => 'mailSmtpServer', 'tabindex'=>'6')) ?>
   </div>
 
   <div>
     <label for="mailSmtpPort"><?php echo lang('smtp port')?> <span class="label_required">*</span>
     <span class="desc"><?php echo lang('mail account smtp port description') ?></span></label>
     <?php echo text_field('mailAccount[smtp_port]', array_var($mailAccount_data, 'smtp_port',25), 
-    array('id' => 'mailSmtpPort', 'tabindex'=>'5')) ?>
+    array('id' => 'mailSmtpPort', 'tabindex'=>'7')) ?>
   </div>
 
   <div>
@@ -75,7 +82,7 @@
 			option_tag(lang('smtp specific'), 2, ($use_auth==2)?array('selected' => 'selected'):null)
 		);
 	echo select_box('mailAccount[smtp_use_auth]', $options, 
-		array('id' => 'mailSmtpUseAuth', 'tabindex'=>'6',
+		array('id' => 'mailSmtpUseAuth', 'tabindex'=>'8',
 		'onchange' => "if(document.getElementById('mailSmtpUseAuth').selectedIndex ==2) document.getElementById('smtp_specific_auth').style.display = 'block'; else document.getElementById('smtp_specific_auth').style.display = 'none';"));
     ?>
   </div>
@@ -86,14 +93,14 @@
     <label for="mailSmtpUsername"><?php echo lang('smtp username')?> <span class="label_required"></span>
     <span class="desc"><?php echo lang('mail account smtp username description') ?></span></label>
     <?php echo text_field('mailAccount[smtp_username]', array_var($mailAccount_data, 'smtp_username'), 
-    array('id' => 'mailSmtpUsername', 'tabindex'=>'5')) ?>
+    array('id' => 'mailSmtpUsername', 'tabindex'=>'9')) ?>
   </div>
 
   <div>
     <label for="mailSmtpPassword"><?php echo lang('smtp password')?> <span class="label_required"></span>
     <span class="desc"><?php echo lang('mail account smtp password description') ?></span></label>
     <?php echo password_field('mailAccount[smtp_password]', array_var($mailAccount_data, 'smtp_password'), 
-    array('id' => 'mailSmtpPassword', 'tabindex'=>'5')) ?>
+    array('id' => 'mailSmtpPassword', 'tabindex'=>'10')) ?>
   </div>
   </div>
   <br>
@@ -112,7 +119,7 @@
     <?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port'), array('id' => 'mailAccountFormIncomingSslPort')) ?>
   </div>
 </fieldset>
-  <?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'5')) ?>
+  <?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'11')) ?>
 
 </div>
 </div>

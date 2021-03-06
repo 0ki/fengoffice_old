@@ -73,7 +73,7 @@ $year =  array_var($event_data, 'year');
 	// get dates
 	//cal_navmenu(false,$day,$month,$year);
 	$setlastweek='';
-
+	$pm = 0;
 	if($event->isNew()) { 
 			
 		
@@ -84,11 +84,12 @@ $year =  array_var($event_data, 'year');
 		if( "$year-$month-$day" == date("Y-m-d") ) $hour = date('G') + 1;
 		else $hour = 18;
 		// organize time by 24-hour or 12-hour clock.
+		$pm = 0;
 		if(!cal_option("hours_24")) {
 			if($hour >= 12) {
 				$hour = $hour - 12;
 				$pm = 1;
-			} else $pm = 0;
+			}
 		}
 		// set default minute and duration times.
 		$minute = 0;
@@ -133,40 +134,14 @@ $year =  array_var($event_data, 'year');
 			<?php echo lang('workspace')?></a> - 
 		<?php } ?>
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('add_list_description_div', this)"><?php echo lang('description')?></a> - 
+		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_description_div', this)"><?php echo lang('description')?></a> - 
+		<a href='#' class='option' onclick="og.toggleAndBolden('event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_properties_div', this)"><?php echo lang('properties')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('event_repeat_options_div', this)"><?php echo CAL_REPEATING_EVENT?></a> -
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a>
 		</div></div>
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
-			<div id="add_event_tags_div" style="display:none">
-				<fieldset>
-				<legend><?php echo lang('tags')?></legend>
-					<?php echo autocomplete_textfield('event[tags]', array_var($event_data, 'tags'), 'allTags', array( 'class' => 'long'))	?>
-				</fieldset>
-			</div>
-			
-			<div id="add_list_description_div" style="display:none">
-				<fieldset>
-				<legend><?php echo lang('description')?></legend>
-				
-					<?php 
-					echo editor_widget('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '2'));
-					?>
-				</fieldset>
-			</div>
-			
-			<div id="add_event_properties_div" style="display:none">
-				<fieldset>
-				<legend><?php echo lang('properties')?></legend>
-				
-					<?php 
-					echo render_object_properties('event',isset($event)?$event:null);
-					?>
-				</fieldset>
-			</div>
 			
 			<div id="add_event_select_workspace_div" style="display:none">
 				<fieldset>
@@ -192,181 +167,89 @@ $year =  array_var($event_data, 'year');
 				  	</select> 
 				</fieldset>
 			</div>
-					
-			<div >
-					<fieldset>
-					<legend><?php echo CAL_TIME_AND_DURATION ?></legend>
-					
-						<table>
-			<tr>
-				<td align="right"><?php echo CAL_DATE ?></td>
-				<td align='left'>
-				<?php 
-				echo pick_date_widget('event[start]',$event->getStart() , date("Y") - 10 , date("Y") + 10);
-				?>
-				</td>
-			</tr>
-	 
-		
-			<tr>
-				<td align="right">
-					<?php echo CAL_TIME ?>
-				</td>
-				<td align='left'>
-					<select name="event[hour]" size="1">
-					<?php	
-						if(!cal_option("hours_24")) {
-							for($i = 1; $i <= 12; $i++) {
-						
-								echo '<option value="' . $i % 12 . '"';
-								if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
-								echo ">$i</option>\n";
-							}
-						}else{
-							for($i = 0; $i < 24; $i++) {
-								echo "<option value=\"$i\"";
-								if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
-								echo ">$i</option>\n";
-							}
-						}
-					?>
-					</select>
-					 <b>:</b> 
-					 	<select name="event[minute]" size="1">
-					<?php
-						$minute = array_var($event_data, 'minute');
-						for($i = 0; $i < 60; $i = $i + 15) {
-							echo "<option value='$i'";
-							if($minute >= $i && $i > $minute - 15) echo ' selected="selected"';
-							echo sprintf(">%02d</option>\n", $i);
-						}
-						?>
-						</select>
-						<?php
-						// print out the PM/AM option (only if using 12-hour clock)
-						if(!cal_option("hours_24")) {
-							echo '<select name="event[pm]" size="1"><option value="0"';
-							if(array_var($event_data, 'pm'))echo ' selected="selected"';
-							echo '>AM</option><option value="1"';
-							if(array_var($event_data, 'pm')) echo ' selected="selected"';
-							echo ">PM</option></select>\n";
-						}
-					?>
-				</td>
-			</tr>
-					
-		<!--   begin printing the duration options-->
-			<tr>
-				<td align="right"><?php echo CAL_DURATION ?></td>
-				<td align="left">
-					<select name="event[durationhour]" size="1">
-					<?php
-					for($i = 0; $i < 15; $i++) {
-						echo "<option value='$i'";
-						if(array_var($event_data, 'durhr')== $i) echo ' selected="selected"';
-						echo ">$i</option>\n";
-					}
-					?>
-					</select> 
-					<?php echo CAL_HOURS ?>
-					<select name="event[durationmin]" size="1">
-					<?php
-						// print out the duration minutes drop down
-					$durmin = array_var($event_data, 'durmin');
-					for($i = 0; $i <= 59; $i = $i + 15) {
-						echo "<option value='$i'";
-						if($durmin >= $i && $i > $durmin - 15) echo ' selected="selected"';
-						echo sprintf(">%02d</option>\n", $i);
-					}
-					?>
-					</select> 
-					<?php echo CAL_MINUTES ?>
-				</td>
-			</tr>
-					
-						<!--   print extra time options-->
-			<tr>
-				<td align="right"><?php echo CAL_MORE_TIME_OPTIONS?></td>
-				<td align="left">
-					<select name="event[type_id]" size="1">
-						<option value="1" <?php if(array_var($event_data, 'typeofevent') == 1) echo ' selected="selected"'?>></option>
-						<option value="2" <?php if(array_var($event_data, 'typeofevent') == 2) echo ' selected="selected"'?>><?php echo CAL_FULL_DAY?></option>
-						<option value="3" <?php if(array_var($event_data, 'typeofevent') == 3) echo ' selected="selected"'?>><?php echo CAL_UNKNOWN_TIME?></option>
-					</select>
-				</td>
-			</tr>
-		</table>
-			</fieldset>
-		</div>
 			
-		
-		<?php
-		 $occ = array_var($event_data, 'occ');
-		?>
+			<div id="add_event_tags_div" style="display:none">
+				<fieldset>
+				<legend><?php echo lang('tags')?></legend>
+					<?php echo autocomplete_textfield('event[tags]', array_var($event_data, 'tags'), 'allTags', array( 'class' => 'long'))	?>
+				</fieldset>
+			</div>
+			
+			<div id="add_event_description_div" style="display:none">
+				<fieldset>
+				<legend><?php echo lang('description')?></legend>
+					<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '2'));?>
+				</fieldset>
+			</div>
+
+<?php $occ = array_var($event_data, 'occ'); 
+	$rsel1 = array_var($event_data, 'rsel1'); 
+	$rsel2 = array_var($event_data, 'rsel2'); 
+	$rsel3 = array_var($event_data, 'rsel3'); 
+	$rnum = array_var($event_data, 'rnum'); 
+	$rend = array_var($event_data, 'rend');?>
 		
 		<div id="event_repeat_options_div" style="display:none">
 		<fieldset>
-			<legend><?php echo CAL_REPEATING_EVENT?></legend>
-			<table border="0" cellpadding="0" cellspacing="0">
-				<tr>
-					<td align="left" valign="top">
-						<?php echo CAL_REPEAT?>
-						<select name="event[occurance]" onChange="change()">
-							<option value="1" id="today" <?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>>
-								<?php echo CAL_ONLY_TODAY?>
-							</option>
-							<option value="2" id="daily" <?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>>
-								<?php echo CAL_DAILY_EVENT?>
-							</option>
-							<option value="3" id="weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>>
-								<?php echo CAL_WEEKLY_EVENT?>
-							</option>
-							<option value="4" id="monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>>
-								<?php echo CAL_MONTHLY_EVENT ?>
-							</option>
-							<option value="5" id="yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>>
-								<?php echo CAL_YEARLY_EVENT ?>
-							</option>
-							<option value="6" id="holiday"<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>>
-								<?php echo CAL_HOLIDAY_EVENT ?>
-							</option>';
-						</select>
-					</td>
-					<?php	
-			// calculate what is visible given the repeating options
-			$hide = '';
-			$hide2 = '';
-			if(( !isset($occ)) OR $occ == 1 OR $occ=="6" OR $occ=="") $hide = "display: none;";
-			if(isset($occ) && $occ != 6) $hide2 = "display: none;";
-			// print out repeating options for daily/weekly/monthly/yearly repeating.
-			if(!isset($rsel1)) $rsel1="";
-			if(!isset($rsel2)) $rsel2="";
-			if(!isset($rsel3)) $rsel3="";
-			if(!isset($rnum) || $rsel2=='') $rnum="";
-			if(!isset($rend) || $rsel3=='') $rend="";
-			if(!isset($hide2) ) $hide2="";
-			?>
-					<td>
-					<div id="cal_extra1" style="<?php echo $hide ?>">
-						&nbsp;<?php echo CAL_EVERY . 
-						text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100')) ?>
-	    				 <span id="word">Days/Weeks/Months/Years</span>
-					</div>
-					</td>
-				</tr>
-			</table><br>
+			<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
+		<?php
+		// calculate what is visible given the repeating options
+		$hide = '';
+		$hide2 = (isset($occ) && $occ == 6)? '' : "display: none;";
+		if((!isset($occ)) OR $occ == 1 OR $occ=="6" OR $occ=="") $hide = "display: none;";
+		// print out repeating options for daily/weekly/monthly/yearly repeating.
+		if(!isset($rsel1)) $rsel1=true;
+		if(!isset($rsel2)) $rsel2="";
+		if(!isset($rsel3)) $rsel3="";
+		if(!isset($rnum) || $rsel2=='') $rnum="";
+		if(!isset($rend) || $rsel3=='') $rend="";
+		if(!isset($hide2) ) $hide2="";?>
+<table border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="left" valign="top" style="padding-bottom:6px">
+		
+			<table><tr><td><?php echo lang('CAL_REPEAT')?> 
+			<select name="event[occurance]" onChange="change()">
+				<option value="1" id="today"
+				<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?>
+				</option>
+				<option value="2" id="daily"
+				<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?>
+				</option>
+				<option value="3" id="weekly"
+				<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?>
+				</option>
+				<option value="4" id="monthly"
+				<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?>
+				</option>
+				<option value="5" id="yearly"
+				<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?>
+				</option>
+				<option value="6" id="holiday"
+				<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>><?php echo lang('CAL_HOLIDAY_EVENT') ?>
+				</option>
+				';
+			</select></td><td>
+			<div id="cal_extra1" style="<?php echo $hide ?>">
+				&nbsp;<?php echo lang('CAL_EVERY') . text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+				<span id="word">Days/Weeks/Months/Years</span>
+			</div>
+			</td></tr></table>
+		</td>
+		</tr><tr>
+		<td>
 			<div id="cal_extra2" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
-				<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1')) .CAL_REPEAT_FOREVER?>
-				<br><br>
-				<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2')) .CAL_REPEAT;
-				echo text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3')) .CAL_TIMES ?> 
-				
-				<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3')) .CAL_REPEAT_UNTIL;
-				echo text_field('event[repeat_end]', $rend, array('size' => '12', 'id' => 'repeat_end', 'maxlength' => '10')) .'(YYYY-MM-DD)' ?> 
-				<br><br>
+				<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1')) . lang('CAL_REPEAT_FOREVER')?>
+				<br/>
+				<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2')) .lang('CAL_REPEAT');
+				echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px')) ."&nbsp;" . lang('CAL_TIMES') ?>
+				<br/>
+				<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3')) .lang('CAL_REPEAT_UNTIL');
+				echo "&nbsp;" . text_field('event[repeat_end]', $rend, array('size' => '12', 'id' => 'repeat_end', 'maxlength' => '10', 'style'=>'width:100px')) .'&nbsp;(YYYY-MM-DD)' ?>
+				<br>
 			</div>
 			<div id="cal_extra3" style="width: 300px; align: center; text-align: left; <?php echo $hide2 ?>'">
-			<?php 
+				<?php
 				// get the week number
 				$tmp = 1;
 				$week = 0;
@@ -386,19 +269,31 @@ $year =  array_var($event_data, 'year');
 				elseif($week==3) $weekname = "3rd";
 				else $weekname = $week."th";
 				// print out the data for holiday repeating
-				
-				
-				echo CAL_HOLIDAY_EXPLAIN. $weekname." ".$dayname ." ".CAL_DURING." ".cal_month_name($month)." ".CAL_EVERY_YEAR;
-				
+		
+				echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ".$dayname ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+		
 				if($lastweek){// if it's the last week, add option to have event repeat on LAST week every month (holiday repeating only)
-					echo checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .CAL_HOLIDAY_EXTRAOPTION ." $dayname ".CAL_IN." ".cal_month_name($month)." ".CAL_EVERY_YEAR;
-				} 
+					echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." $dayname ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+				}
 				?>
 			</div>
+		</td>
+	</tr>
+</table>
 		</fieldset>
 		</div>
 		
 		
+			
+	<div id="add_event_properties_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('properties')?></legend>
+		
+			<?php 
+			echo render_object_properties('event',isset($event)?$event:null);
+			?>
+		</fieldset>
+	</div>
 		
 	<div style="display:none" id="add_event_linked_objects_div">
 		<fieldset>
@@ -413,10 +308,96 @@ $year =  array_var($event_data, 'year');
 			</div>
 		</fieldset>
 	</div>
-		
-   	   	
-   	
-   		
+	
+	<div>
+<fieldset><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
+<table>
+	<tr style="padding-bottom:4px">
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
+		<td align='left'>
+			<?php echo pick_date_widget('event[start]',$event->getStart() , date("Y") - 10 , date("Y") + 10);?>
+		</td>
+	</tr>
+	<tr>
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_TIME') ?></td>
+		<td align='left'>
+			<select name="event[hour]" size="1">
+		<?php
+		if(!cal_option("hours_24")) {
+			for($i = 1; $i <= 12; $i++) {
+
+				echo '<option value="' . $i % 12 . '"';
+				if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
+				echo ">$i</option>\n";
+			}
+		}else{
+			for($i = 0; $i < 24; $i++) {
+				echo "<option value=\"$i\"";
+				if(array_var($event_data, 'hour') == $i) echo ' selected="selected"';
+				echo ">$i</option>\n";
+			}
+		}
+		?>
+			</select> <b>:</b> <select name="event[minute]" size="1">
+		<?php
+		$minute = array_var($event_data, 'minute');
+		for($i = 0; $i < 60; $i = $i + 15) {
+			echo "<option value='$i'";
+			if($minute >= $i && $i > $minute - 15) echo ' selected="selected"';
+			echo sprintf(">%02d</option>\n", $i);
+		}
+		?>
+			</select> <?php
+		// print out the PM/AM option (only if using 12-hour clock)
+		if(!cal_option("hours_24")) {
+			echo '<select name="event[pm]" size="1"><option value="0"';
+			if(array_var($event_data, 'pm'))echo ' selected="selected"';
+			echo '>AM</option><option value="1"';
+			if(array_var($event_data, 'pm')) echo ' selected="selected"';
+			echo ">PM</option></select>\n";
+		}
+		?></td>
+	</tr>
+	<!--   begin printing the duration options-->
+	<tr>
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DURATION') ?></td>
+		<td align="left"><select name="event[durationhour]" size="1">
+		<?php
+		for($i = 0; $i < 15; $i++) {
+			echo "<option value='$i'";
+			if(array_var($event_data, 'durhr')== $i) echo ' selected="selected"';
+			echo ">$i</option>\n";
+		}
+		?>
+		</select> <?php echo lang('CAL_HOURS') ?> <select
+			name="event[durationmin]" size="1">
+			<?php
+			// print out the duration minutes drop down
+			$durmin = array_var($event_data, 'durmin');
+			for($i = 0; $i <= 59; $i = $i + 15) {
+				echo "<option value='$i'";
+				if($durmin >= $i && $i > $durmin - 15) echo ' selected="selected"';
+				echo sprintf(">%02d</option>\n", $i);
+			}
+			?>
+		</select> <?php echo lang('CAL_MINUTES') ?></td>
+	</tr>
+
+	<!--   print extra time options-->
+	<tr>
+		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_MORE_TIME_OPTIONS')?></td>
+		<td align="left"><select name="event[type_id]" size="1">
+			<option value="1"
+			<?php if(array_var($event_data, 'typeofevent') == 1) echo ' selected="selected"'?>></option>
+			<option value="2"
+			<?php if(array_var($event_data, 'typeofevent') == 2) echo ' selected="selected"'?>><?php echo lang('CAL_FULL_DAY')?></option>
+			<option value="3"
+			<?php if(array_var($event_data, 'typeofevent') == 3) echo ' selected="selected"'?>><?php echo lang('CAL_UNKNOWN_TIME')?></option>
+		</select></td>
+	</tr>
+</table>
+</fieldset>
+</div>
 	
 	<input type="hidden" name="cal_origday" value="<?php echo $day?>">
 	<input type="hidden" name="cal_origmonth" value="<?php echo $month?>">
@@ -424,8 +405,6 @@ $year =  array_var($event_data, 'year');
 	<?php 
 	// THIS IS HERE SO THAT THE DURATION CAN BE SET CORRECTLY ACCORDING TO THE EVENT'S ACTUAL START DATE.
 	// otherwise, if you modify a repeating event, it can save the duration as a totally different date!
-	
-	
 	echo  submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px'));?>
 	</div></div>
 </form>

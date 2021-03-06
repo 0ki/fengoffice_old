@@ -202,7 +202,7 @@
   'add mail account' => 'Agregar cuenta de correo',
   'new mail account' => 'Nueva cuenta de correo',
   'no emails in this account' => 'No hay correos en esta cuenta',
-  'server address' => 'Dirección del servidor',
+  'server address' => 'Dirección del servidor POP3',
   'mail account id' => 'Identificación de cuenta',
   'mail account name' => 'Nombre de la cuenta',
   'is imap' => 'Ésta es una cuenta IMAP',
@@ -235,7 +235,7 @@
   
   //Checkout
   'checkout file' => 'Bloquear archivo',
-  'checkin file' => 'Liberar archivo',
+  'checkin file' => 'Actualizar archivo',
   
   'new filename' => 'Nuevo nombre de archivo',
   'add as revision' => 'Agregar como revision',
@@ -244,7 +244,7 @@
   'filename exists edit' => 'Ya existe un archivo con ese nombre. Por favor, eliga un nuevo nombre.',
   'checking filename' => 'Verificando disponibilidad...',
   'check' => 'Verificar',
-  'add file check in' => 'Liberar como una nueva versión del archivo',
+  'add file check in' => 'Actualizar como una nueva versión del archivo',
   'filters' => 'Filtros',
   
   'permissions for user' => 'Permisos para el usuario {0}',
@@ -269,6 +269,7 @@
   
   'new mail account' => 'Nueva cuenta de correo',
   'new company' => 'Nueva empresa',
+  'add a new company' => 'Agregar una nueva empresa',
   'new workspace' => 'Nuevo espacio',
   'new task list' => 'Nueva tarea',
   'new event' => 'Nuevo evento',
@@ -305,8 +306,9 @@
   'parent workspace' => 'Espacio padre',
   'close' => 'Cerrar',
   'all projects' => 'Todos los espacios',
-  'view as list' => 'Listar',
+  'view as list' => 'Ver como lista',
   'pending tasks' => 'Tareas pendientes',
+  'my pending tasks' => 'Mis tareas pendientes',
   'messages' => 'Mensajes',
   'complete' => 'Completo',
   'incomplete' => 'Incompleto',
@@ -334,17 +336,19 @@
   
   'x ago' => 'pasados {0}',
   
-  'object time slots' => 'Objeto de tiempo de trabajo',
+  'object time slots' => 'Registro de tiempo de trabajo',
   'start work' => 'Comenzar trabajo',
   'end work' => 'Finalizar trabajo',
-  'confirm delete timeslot' => '¿Está seguro que desea eliminar este tiempo de trabajo?',
+  'confirm delete timeslot' => '¿Está seguro de que desea eliminar este tiempo de trabajo?',
+  'confirm cancel timeslot' => '¿Está seguro de que desea cancelar el actual tiempo de trabajo?',
   'success open timeslot' => 'Tiempo de trabajo abierto de forma satisfactoria',
   'success close timeslot' => 'Tiempo de trabajo cerrado de forma satisfactoria',
+  'success cancel timeslot' => 'Tiempo de trabajo cancelado de forma satisfactoria',
   'success delete timeslot' => 'Tiempo de trabajo eliminado de forma satisfactoria',
   'success edit timeslot' => 'Tiempo de trabajo editado de forma satisfactoria',
-  'open timeslot message' => 'Su trabajo en este objeto comenzo hace {0}',
+  'open timeslot message' => 'Su trabajo en este objeto comenzó hace:',
   'end work description' => 'Finalizar con la descripción del trabajo',
-  'add timeslot' => 'Agregar tiempo de trabajo',
+  'add timeslot' => 'Añadir tiempo de trabajo',
   'edit timeslot' => 'Editar tiempo de trabajo',
   'start date' => 'Fecha de comienzo',
   'start time' => 'Hora de comienzo',
@@ -379,7 +383,49 @@
   'work in progress' => 'Trabajo en progreso',
   'total time' => 'Tiempo total',
   
-  'upload anyway' => 'Subir de todas formas'
+  'upload anyway' => 'Subir de todas formas',
+  
+  'print view' => 'Vista de impresión',
+  'activity' => 'Actividad',
+  'statistics' => 'Estadísticas',
+  'time' => 'Tiempo',
+  'task time report' => 'Tiempo total de ejecución',
+  'new tasks by user' => 'Nuevas tareas por usuario',
+  'generate report' => 'Generar reporte',
+  'task title' => 'Título de la tarea',
+  'total time' => 'Tiempo total',
+  'include subworkspaces' => 'Incluir sub-espacios',
+  'print' => 'Imprimir',
+  'this week' => 'Esta semana',
+  'last week' => 'Semana pasada',
+  'this month' => 'Este mes',
+  'last month' => 'Mes pasado',
+  'select dates...' => 'Elegir fechas...',
+  
+  'task time report description' => 'Este reporte realiza un resumen del tiempo trabajado por tareas. Se especifica un rango de fechas, usuario (opcional) y espacio de trabajo.',
+  'no data to display' => 'No hay datos para desplegar',
+  
+  'new company name' => 'Nombre de la nueva empresa',
+  'checking' => 'Verificando',
+  'country' => 'Pais',
+  
+  'email addresses' => 'Correo electrónico',
+  'instant messaging' => 'Mensajería instantánea',
+  'phone' => 'Tel.',
+  'phone 2' => 'Tel. 2',
+  'fax' => 'Fax',
+  'assistant' => 'Asistente',
+  'callback' => 'Callback',
+  'mobile' => 'Celular',
+  'pager' => 'Pager',
+  
+  'roles' => 'Roles',  
+  'last updated by on' => '{0}, en {1}',
+  'updated' => 'Actualizado',
+  'group by' => 'Agrupar por',
+  
+  'total' => 'Total'
+  
   ); // array
 
 ?>

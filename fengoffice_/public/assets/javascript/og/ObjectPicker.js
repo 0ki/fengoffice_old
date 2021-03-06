@@ -129,7 +129,7 @@ og.ObjectPicker = function(config) {
 	        cm: cm,
 	        stripeRows: true,
 	        loadMask: true,
-	        bbar: new Ext.PagingToolbar({
+	        bbar: new og.PagingToolbar({
 	            pageSize: og.pageSize,
 	            store: this.store,
 	            displayInfo: true,

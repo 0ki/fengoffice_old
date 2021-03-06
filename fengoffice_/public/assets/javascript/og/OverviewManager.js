@@ -24,7 +24,7 @@ og.OverviewManager = function() {
 					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
 					'updatedBy', 'updatedById',
 					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'icon', 'project', 'projectId', 'manager', 'mimeType', 'url'
+					'icon', 'wsIds', 'manager', 'mimeType', 'url'
 				]
 			}),
 			remoteSort: true,
@@ -44,6 +44,7 @@ og.OverviewManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.hideLoading();
+					og.showWsPaths();
 				},
 				'beforeload': function() {
 					og.loading();
@@ -62,27 +63,15 @@ og.OverviewManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
-		var tabpanel = '';
-		switch (r.data.type){
-			case 'message':
-			case 'email':
-				tabpanel = 'messages-panel'; break;
-			case 'task':
-			case 'milestone':
-				tabpanel = 'tasks-panel'; break;
-			case 'contact':
-				tabpanel = 'contacts-panel'; break;
-			case 'file':
-				tabpanel = 'documents-panel'; break;
-			case 'weblink':
-				return String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
-			case 'event':
-				tabpanel = 'calendar-panel'; break;
-		}
-		
-		return String.format(
-			'<a href="#" onclick="og.openLink(\'{2}\', {caller:\'{1}\'})">{0}</a>',
-			value, tabpanel, r.data.url);
+		var ids = String(r.data.wsIds).split(',');
+		var projectsString = "";
+		for(var i = 0; i < ids.length; i++)
+			projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
+	
+		if (r.data.type == 'weblink')
+			return projectsString + String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
+		else
+			return projectsString + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, r.data.url);
 	}
 
 	function renderType(value, p, r){
@@ -109,18 +98,6 @@ og.OverviewManager = function() {
 
 	function renderAuthor(value, p, r) {
 		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.createdById}));
-	}
-
-	function renderProject(value, p, r) {
-		var ids = String(r.data.projectId).split(',');
-		var names = value.split(',');
-		var result = "";
-		for(var i = 0; i < ids.length; i++){
-			result += String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i], ids[i]);
-			if (i < ids.length - 1)
-				result += ",&nbsp";
-		}
-		return result;
 	}
 
 	function renderDate(value, p, r) {
@@ -203,14 +180,8 @@ og.OverviewManager = function() {
 			id: 'name',
 			header: lang("name"),
 			dataIndex: 'name',
-			//width: 300,
+			width: 300,
 			renderer: renderName
-        },{
-			id: 'project',
-			header: lang("project"),
-			dataIndex: 'project',
-			width: 120,
-			renderer: renderProject
         },{
         	id: 'user',
         	header: lang('user'),
@@ -289,7 +260,7 @@ og.OverviewManager = function() {
 					og.openLink(url/*, {caller: 'calendar-panel'}*/);
 				}},
 				{text: lang('task'), iconCls: 'ico-task', handler: function() {
-					var url = og.getUrl('task', 'add_list');
+					var url = og.getUrl('task', 'add_task');
 					og.openLink(url/*, {caller: 'tasks-panel'}*/);
 				}},
 				{text: lang('milestone'), iconCls: 'ico-milestone', handler: function() {
@@ -397,8 +368,8 @@ og.OverviewManager = function() {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		style: "padding:7px;",
-		bbar: new Ext.PagingToolbar({
+		/*style: "padding:7px;",*/
+		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
 			displayInfo: true,
@@ -416,8 +387,8 @@ og.OverviewManager = function() {
 			actions.del,
 			actions.more,
 			'-',
-			actions.refresh,
-			'-',
+			/*actions.refresh,
+			'-',*/
 			actions.showAsDashboard
 		],
 		listeners: {

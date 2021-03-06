@@ -4,7 +4,7 @@
  * Config controller is responsible for handling all config related operations
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class ConfigController extends ApplicationController {
 
@@ -70,6 +70,58 @@ class ConfigController extends ApplicationController {
 
 	} // update_category
 
+	/**
+	 * List user preferences
+	 *
+	 */
+	function list_user_categories(){		
+		tpl_assign('config_categories', UserWsConfigCategories::getAll());
+	} //list_preferences
+
+	/**
+	 * List user preferences
+	 *
+	 */
+	function update_user_preferences(){
+		$category = UserWsConfigCategories::findById(get_id());
+		if(!($category instanceof UserWsConfigCategory)) {
+			flash_error(lang('config category dnx'));
+			$this->redirectToReferer(get_url('user','card'));
+		} // if
+
+		if($category->isEmpty()) {
+			flash_error(lang('config category is empty'));
+			$this->redirectToReferer(get_url('user','card'));
+		} // if
+
+		$options = $category->getUserWsOptions(false);
+		$categories = UserWsConfigCategories::getAll(false);
+
+		tpl_assign('category', $category);
+		tpl_assign('options', $options);
+		tpl_assign('config_categories', $categories);
+
+		$submited_values = array_var($_POST, 'options');
+		if(is_array($submited_values)) {
+			try{
+				DB::beginWork();
+				foreach($options as $option) {
+					$new_value = array_var($submited_values, $option->getName());
+					if(is_null($new_value) || ($new_value == $option->getUserValue(logged_user()->getId()))) continue;
+	
+					$option->setUserValue($new_value, logged_user()->getId());
+					$option->save();
+				} // foreach
+				DB::commit();
+				flash_success(lang('success update config value', $category->getDisplayName()));
+				ajx_current("back");
+			}
+			catch (Exception $ex){
+				DB::rollback();
+				flash_success(lang('error update config value', $category->getDisplayName()));
+			}
+		} // if
+	} //list_preferences
 } // ConfigController
 
 ?>

@@ -6,7 +6,7 @@
 og.eventManager.addListener('tag changed', 
  	function (tag){ 
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink('<?php echo get_url('event')?>',
+ 			og.openLink('<?php echo get_url('event','viewweek')?>',
  				{caller:'calendar-panel',
  				get:{tag:tag.name}}
  			);

@@ -26,14 +26,14 @@ App.modules.addMessageForm = {
    *
    * @param integer company_id Company ID
    */
-  emailNotifyClickCompany: function(company_id) {
+  emailNotifyClickCompany: function(company_id, genid) {
     var company_details = App.modules.addMessageForm.notify_companies['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
-    var company_checkbox = $(company_details.checkbox_id);
+    var company_checkbox = $(genid + company_details.checkbox_id);
     
     for(var i = 0; i < company_details.users.length; i++) {
-      $(company_details.users[i].checkbox_id).checked = company_checkbox.checked;
+      $(genid + company_details.users[i].checkbox_id).checked = company_checkbox.checked;
     } // if
   }, // emailNotifyClickCompany
   
@@ -44,17 +44,17 @@ App.modules.addMessageForm = {
    * @param integer company_id
    * @param integer user_id
    */
-  emailNotifyClickUser: function(company_id, user_id) {
+  emailNotifyClickUser: function(company_id, user_id, genid) {
     var company_details = App.modules.addMessageForm.notify_companies['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
     // If we have all users checked check company box, else uncheck it... Simple :)
     var all_users_checked = true;
     for(var i = 0; i < company_details.users.length; i++) {
-      if(!$(company_details.users[i].checkbox_id).checked) all_users_checked = false;
+      if(!$(genid + company_details.users[i].checkbox_id).checked) all_users_checked = false;
     } // if
     
-    $(company_details.checkbox_id).checked = all_users_checked;
+    $(genid + company_details.checkbox_id).checked = all_users_checked;
   } // emailNotifyClickUser
   
 };

@@ -23,18 +23,6 @@
     <?php echo label_tag(lang('text'), 'addCommentText', true) ?>
     <?php echo textarea_field("comment[text]", array_var($comment_data, 'text'), array('class' => 'comment', 'id' => 'addCommentText')) ?>
   </div>
-    
-<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-  <fieldset>
-    <legend><?php echo lang('options') ?></legend>
-    
-    <div class="objectOption">
-      <div class="optionLabel"><label><?php echo lang('private comment') ?>:</label></div>
-      <div class="optionControl"><?php echo yes_no_widget('comment[is_private]', 'addCommentIsPrivate', array_var($comment_data, 'is_private'), lang('yes'), lang('no')) ?></div>
-      <div class="optionDesc"><?php echo lang('private comment desc') ?></div>
-    </div>
-  </fieldset>
-<?php } // if ?>
 
 <?php if($comment->columnExists('comments_enabled') && !$comment->getCommentsEnabled() && logged_user()->isAdministrator()) { ?>
 <p class="error"><?php echo lang('admins can post comments on locked objects desc') ?></p>

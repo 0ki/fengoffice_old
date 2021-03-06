@@ -39,9 +39,26 @@
      		$cc = "";
      		if(array_var($_GET,'all','') != ''){
      			MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
-				foreach ($parsedEmail["Cc"] as $cc_value) {
-					if ($cc != '') $cc .= ", ";
-					$cc .= $cc_value[address];
+     			if($parsedEmail["Cc"]){
+					foreach ($parsedEmail["Cc"] as $cc_value) {
+						if ($cc != '') $cc .= ", ";
+						$cc .= $cc_value[address];
+					}
+     			}
+				$accounts = MailAccounts::findAll(array(
+		    		"conditions" => "`user_id` = " . logged_user()->getId()
+		    	));
+		    	
+		    	$account_emails = array();
+		    	foreach ($accounts as $account){
+		    		$account_emails[] =  $account->getEmailAddress();
+		    	}
+		    	
+				foreach ($parsedEmail["To"] as $to_value) {
+					if(!in_array($to_value[address], $account_emails)){
+						if ($cc != '') $cc .= ", ";
+						$cc .= $to_value[address];	
+					}					
 				}
 				
 				$arr_body=preg_split("/<body.*>/i",$re_body);
@@ -83,9 +100,19 @@
 			ajx_current("empty");
 			return;
 		}
-		
-		$mail = new MailContent();
+		$this->setTemplate('add_mail');
 		$mail_data = array_var($_POST, 'mail');
+		$isDraft = array_var($mail_data,'isDraft','')=='true'?true:false;
+		
+		$id = array_var($mail_data,'id');
+		$mail = MailContents::findById($id);    	
+		$isNew = false;
+	    if(! $mail){
+	    	$isNew = true;
+			$mail = new MailContent();   		
+	    }  
+		
+		
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
@@ -93,13 +120,18 @@
 		// Form is submited
 		if(is_array($mail_data)) {
 			$account = 	MailAccounts::findById(array_var($mail_data,'account_id'));
-			$to = array_var($mail_data,'to');
+			$to = str_replace(" ","",array_var($mail_data,'to'));
 			$subject = array_var($mail_data,'subject');
 			$body = array_var($mail_data,'body');
-			$cc = array_var($mail_data,'CC');
-			$bcc = array_var($mail_data,'bcc');
+			$cc = str_replace(" ","",array_var($mail_data,'CC'));
+			$bcc = str_replace(" ","",array_var($mail_data,'BCC'));
 			$type = 'text/'.array_var($mail_data,'format');
 			$mail->setFromAttributes($mail_data);
+			
+			$utils = new MailUtilities();
+			
+			$to = explode(",",$to);
+			$to = $utils->parse_to($to);
 			
 //			$assigned_to = explode(':', array_var($mail_data, 'assigned_to', ''));
 //			$mail->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
@@ -107,26 +139,44 @@
 //			$mail->setProjectId(active_or_personal_project()->getId());
 //			$mail->setIsPrivate($mail_list->getIsPrivate());
 			try {
-				$utils = new MailUtilities();
-				$from = logged_user()->getDisplayName() . " <" . $account->getEmail() . ">";
-				if ($utils->sendMail($account->getSmtpServer(),$to,$from,$subject,$body,$cc,$bcc,$account->getSmtpPort(),$account->smtpUsername(),$account->smtpPassword(),$type)){
+				
+				$from = logged_user()->getDisplayName() . " <" . $account->getEmailAddress() . ">";
+				$sentOK = false;
+				if (!$isDraft) {
+					$sentOK = $utils->sendMail($account->getSmtpServer(),$to,$from,$subject,$body,$cc,$bcc,$account->getSmtpPort(),$account->smtpUsername(),$account->smtpPassword(),$type); 
+				}
+				if ((!$isDraft && $sentOK)|| $isDraft){
+					
 					$mail->setSentDate( DateTimeValueLib::now());
 					DB::beginWork();
 						$mail->setUid('UID');
+						$mail->setState($isDraft?2:1);
 						$mail->setIsPrivate(true);						
-						$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
+						
 						if (array_var($mail_data,'format')=='html')
 							$mail->setBodyHtml($body);
 						else
 							$mail->setBodyPlain($body);
-							
-						$mail->save(); //21/8: cambie el orden con el setFromCvs...
+						$mail->setFrom($from);
+						$mail->save(); 
+						$mail->setTagsFromCSV(array_var($mail_data, 'tags'));
 	//					$mail_list->attachmail($mail);
 	//			  		$mail->save_properties($mail_data);
 				 	 	ApplicationLogs::createLog($mail, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
 			  		DB::commit();
-			  		flash_success(lang('success add mail'));
-					ajx_current("back");
+			  		
+			  		if ($isDraft){
+			  			flash_success(lang('success save mail'));
+			  			/*if ($isNew){
+			  				$mail_data["id"] = $mail->getId();
+			  				tpl_assign('mail_data', $mail_data);
+							ajx_replace();
+			  			}*/
+			  		} else {
+			  			flash_success(lang('success add mail'));
+						ajx_current("back");
+			  		}
+			  		evt_add("email saved", array("id" => $mail->getId(), "instance" => array_var($_POST, 'instanceName')));
 				}
 				else {
 					flash_error('Error while sending mail. Possibly wrong SMTP settings.');
@@ -139,6 +189,11 @@
 			} // try
 		} // if
 	} // add_mail
+	
+	
+	
+		
+	
 	
     /**
      * View specific email
@@ -170,11 +225,10 @@
 		ajx_extra_data(array("title" => $email->getSubject(), 'icon'=>'ico-email'));
 		ajx_set_no_toolbar(true);
 										
-		if (!$email->getIsRead()){
-			try{	
-				$email->setIsRead(1);
+		if (!$email->getIsRead(logged_user()->getId())){
+			try{			
 				DB::beginWork();
-				$email->save();
+				$email->setIsRead(1,logged_user()->getId());
 				DB::commit();
 			} catch(Exception $e){
 				DB::rollback();
@@ -196,7 +250,7 @@
     */
     function delete() {
     	$email = MailContents::findById(get_id());
-    	if (!$email instanceof MailContents || $email->getIsDeleted()){
+    	if (!$email instanceof MailContent || $email->getIsDeleted()){
     		flash_error(lang('email dnx'));
 			ajx_current("empty");
 			return;
@@ -206,13 +260,11 @@
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
-    	}
-    	
-    	$account = $email->getAccount();
-    	$email->deleteContents();
+    	} 	
     	try
     	{
     		DB::beginWork();
+    		$email->deleteContents();
     		$email->save();
     		DB::commit();
     		
@@ -284,7 +336,6 @@
           'tag' => is_array($tag_names) ? implode(', ', $tag_names) : '',
 			); // array
 		} // if
-		
       if(is_array(array_var($_POST, 'classification'))){
       	try{
       		$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
@@ -295,10 +346,8 @@
 	      		DB::beginWork();
 	      		$email->save();
 	      		DB::commit();
-	      		
 	      		$csv = array_var($classification_data, 'tag');
 	      		$email->setTagsFromCSV($csv);
-	      		
 	      		//Classify attachments
 	      		$c = 0;
 	      		while(isset($classification_data["att_".$c])){
@@ -344,7 +393,6 @@
 	      					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
 	      					$email->linkObject($file);
 	      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
-	      					
 	      					// Error...
 	      				} catch(Exception $e) {
 	      					DB::rollback();
@@ -531,6 +579,7 @@
           'user_id' => logged_user()->getId(),
           'name' => $mailAccount->getName(),
           'email' => $mailAccount->getEmail(),
+          'email_addr' => $mailAccount->getEmailAddress(),
           'password' => MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()),
           'server' => $mailAccount->getServer(),
           'is_imap' => $mailAccount->getIsImap(),
@@ -673,7 +722,9 @@
     	}
 		$mail_data = array_var($_POST, 'mail', null);		
 		
-     	if(!is_array($mail_data)) {     		     		
+     	if(!is_array($mail_data)) {     
+     		$fwd_subject = str_starts_with($original_mail->getSubject(),'Fwd:')?$original_mail->getSubject():'Fwd: '.$original_mail->getSubject();
+	       		     		
      		$fwd_body = "----- Origianal Message -----\nFrom: ".$original_mail->getFrom()."\nTo: ".$original_mail->getTo()."\nSent:".$original_mail->getDate()."\nSubject:".$original_mail->getSubject()."\n\n";
      		$body = $original_mail->getBodyHtml()==''?$original_mail->getBodyPlain():$original_mail->getBodyHtml();
      		$arr_body=preg_split("/<body.*>/i",$body);
@@ -689,6 +740,45 @@
 	          'body' => $fwd_body,
 	          'type' => $original_mail->getBodyHtml()!=''?'html':'plain',
 	          'account_id' => $original_mail->getAccountId()
+	        ); // array
+      	} // if
+		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		tpl_assign('mail', $mail);
+		tpl_assign('mail_data', $mail_data);
+		tpl_assign('mail_accounts', $mail_accounts);
+    }//forward_mail
+    
+    
+    /**
+	* Forward email
+	*
+	* @param void
+	* @return null
+	*/
+	function edit_mail(){
+    	$this->setTemplate('add_mail');
+    	$mail = new MailContent();
+    	if(array_var($_GET,'id','') == ''){
+			flash_error('Invalid parameter.');
+			ajx_current("empty");    		
+    	}
+    	$original_mail = MailContents::findById(get_id('id',$_GET));    	
+    	if(! $original_mail){
+			flash_error('Invalid parameter.');
+			ajx_current("empty");    		
+    	}
+		$mail_data = array_var($_POST, 'mail', null);		
+		
+     	if(!is_array($mail_data)) {     
+     		$body = $original_mail->getBodyHtml()==''?$original_mail->getBodyPlain():$original_mail->getBodyHtml();
+     		    		
+	        $mail_data = array(
+	          'to' => $original_mail->getTo(),
+	          'subject' => $original_mail->getSubject(),
+	          'body' => $body,
+	          'type' => $original_mail->getBodyHtml()!=''?'html':'plain',
+	          'account_id' => $original_mail->getAccountId(),
+	          'id' => $original_mail->getId()
 	        ); // array
       	} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());

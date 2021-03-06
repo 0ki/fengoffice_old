@@ -31,13 +31,22 @@ class TaskController extends ApplicationController {
 		$this->view_tasks();
 		$mc = new MilestoneController();
 		$mc->view_milestones();
-		$task_templates = ProjectTasks::getProjectTasks(null, null, 'ASC', 0, 0, null, null, null, null, null, null,true);
+		if(active_project() instanceof Project)
+			$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId());
+		else 
+			$task_templates = array();
+		$all_task_templates = ProjectTasks::getAllTaskTemplates();
 		$milestone_templates = ProjectMilestones::getProjectMilestones(null, null, 'ASC', null, null, null, null, null, true);
 		ajx_unset_current();
-		tpl_assign('assignedTo', array_var($_GET, "assigned_to", null));
+		if(!array_var($_GET, "assigned_to") && user_config_option('my tasks is default view')) //if default view 
+			$assigned_to_default = logged_user()->getCompany()->getId() . ':' . logged_user()->getId();
+		else 
+			$assigned_to_default = '0:0';
+		tpl_assign('assignedTo', array_var($_GET, "assigned_to", $assigned_to_default));
 		tpl_assign('status', array_var($_GET, "status", "pending"));
 		tpl_assign('priority', array_var($_GET, "priority", "all"));
 		tpl_assign('task_templates', $task_templates);
+		tpl_assign('all_task_templates', $all_task_templates);
 		tpl_assign('milestone_templates', $milestone_templates);
 		ajx_extra_data(array("tasks" => null));
 		ajx_extra_data(array("milestones" => null));
@@ -52,15 +61,16 @@ class TaskController extends ApplicationController {
 		$project = Projects::findById($project_id);
 		$tag = active_tag();
 		$parent_id = array_var($_GET, 'parent_id');
-		$milestone_id = array_var($_GET, 'milestone_id', 0);
+		$milestone_id = array_var($_GET, 'milestone_id', null);
 		$assigned_by = array_var($_GET, 'assigned_by', '');
 		$assigned_to = array_var($_GET, 'assigned_to', '');
 		$status = array_var($_GET, 'status', "pending");
 		$priority = array_var($_GET, 'priority', "all");
 		
 		$assigned_to = explode(':', $assigned_to);
-		$to_company = array_var($assigned_to, 0, null);
-		$to_user = array_var($assigned_to, 1, null);
+		$show_assigned_to_me_as_default = user_config_option('my tasks is default view');
+		$to_company = array_var($assigned_to, 0, $show_assigned_to_me_as_default?logged_user()->getCompany()->getId():0);
+		$to_user = array_var($assigned_to, 1, $show_assigned_to_me_as_default?logged_user()->getId():0);
 		$assigned_by = explode(':', $assigned_by);
 		$by_company = array_var($assigned_by, 0, null);
 		$by_user = array_var($assigned_by, 1, null);
@@ -77,7 +87,7 @@ class TaskController extends ApplicationController {
 			foreach ($tasks as $t) {
 				if ($t->getParentId() == 0) {
 					$rootTasks[] = $t;
-				} else if ($taskset[$t->getParentId()] !== true) {
+				} else if (array_key_exists($t->getParentId(), $taskset) && $taskset[$t->getParentId()] !== true) {
 					$rootTasks[] = $t;
 				}
 			}
@@ -104,7 +114,8 @@ class TaskController extends ApplicationController {
 		$ts = array();
 		foreach ($tasks_bottom_complete as $task) {
 			$taskItem = $this->task_item($task);
-			if ($milestone_id || $taskItem["milestone"] == 0)
+			//$taskItem["milestone"] = 0;
+			//if ($milestone_id || $taskItem["milestone"] == 0)
 				$ts[] = $taskItem;
 		}
 		ajx_extra_data(array("tasks" => $ts));
@@ -132,7 +143,7 @@ class TaskController extends ApplicationController {
 			"isLate" => $task->isLate(),
 			"daysLate" => $task->getLateInDays(),
 			"priority" => $task->getPriority(),
-			"duedate" => $task->getDueDate(),
+			"duedate" => ($task->getDueDate() ? $task->getDueDate()->getTimestamp() : '0'),
 			"order" => $task->getOrder()
 		);
 	}
@@ -143,10 +154,18 @@ class TaskController extends ApplicationController {
 		$task_data = array_var($_POST, 'task');
 		$parent_id = array_var($task_data, 'parent_id', 0);
 		$parent = ProjectTasks::findById($parent_id);
+		$project = null;
 		if ($parent instanceof ProjectTask) {
 			$project = $parent->getProject();
 		} else {
-			$project = active_or_personal_project();
+			$milestone_id = array_var($task_data,'milestone_id',null);
+			if($milestone_id){
+				$milestone = ProjectMilestones::findById($milestone_id);
+				if($milestone)
+					$project =$milestone->getProject();
+			}
+			if(!$project)
+				$project = active_or_personal_project();
 		}
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
@@ -163,10 +182,30 @@ class TaskController extends ApplicationController {
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));			
 			$task->setIsPrivate(false); // Not used, but defined as not null.
+			
+			if (array_var($task_data,'is_completed',false) == 'true'){
+				$task->setCompletedOn(DateTimeValueLib::now());
+				$task->setCompletedById(logged_user()->getId());
+			}
+			
 			try {
 				DB::beginWork();
 				$task->save();
-
+				if (array_var($task_data,'hours') != '' && array_var($task_data,'hours') > 0){
+					$hours = array_var($task_data, 'hours');
+					$hours = - $hours;
+					
+					$timeslot = new Timeslot();
+					$dt = DateTimeValueLib::now();
+					$dt2 = DateTimeValueLib::now();
+					$timeslot->setEndTime($dt);
+					$dt2 = $dt2->add('h', $hours);
+					$timeslot->setStartTime($dt2);
+					$timeslot->setUserId(logged_user()->getId());
+					$timeslot->setObjectManager("ProjectTasks");
+					$timeslot->setObjectId($task->getId());
+					$timeslot->save();
+				}
 				ApplicationLogs::createLog($task, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
@@ -335,7 +374,7 @@ class TaskController extends ApplicationController {
 			$task->setTimeEstimate($totalMinutes);
 			
 			$task->setIsPrivate(false); // Not used, but defined as not null.
-			$task->setProjectId(array_var($task_data, 'project_id'));
+			$task->setProjectId($project->getId());
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
@@ -401,22 +440,24 @@ class TaskController extends ApplicationController {
 						$processedCompanies = array();
 						$processedUsers = array();
 						$validWS = array($task->getProject());
-						foreach ($validWS as $w) {
-							$workspace_companies = $w->getCompanies();
-							foreach ($workspace_companies as $c) {
-								if (!isset($processedCompanies[$c->getId()])) {
-									$processedCompanies[$c->getId()] = true;
-									$company_users = $c->getUsersOnProject($w);
-									if (is_array($company_users)) {
-										foreach ($company_users as $company_user) {
-											if (!isset($processedUsers[$company_user->getId()])) {
-												$processedUsers[$company_user->getId()] = true;
-												if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
-													//$task->subscribeUser($company_user); // subscribe
-													$notify_people[] = $company_user;
-												} // if
-											}
-										} // if
+						if(is_array($validWS) ){
+							foreach ($validWS as $w) {
+								$workspace_companies = $w->getCompanies();
+								foreach ($workspace_companies as $c) {
+									if (!isset($processedCompanies[$c->getId()])) {
+										$processedCompanies[$c->getId()] = true;
+										$company_users = $c->getUsersOnProject($w);
+										if (is_array($company_users)) {
+											foreach ($company_users as $company_user) {
+												if (!isset($processedUsers[$company_user->getId()])) {
+													$processedUsers[$company_user->getId()] = true;
+													if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
+														//$task->subscribeUser($company_user); // subscribe
+														$notify_people[] = $company_user;
+													} // if
+												}
+											} // if
+										}
 									}
 								}
 							}
@@ -442,7 +483,7 @@ class TaskController extends ApplicationController {
 				} else {
 					flash_success(lang('success add task list', $task->getTitle()));
 				}
-				ajx_current("back");
+				ajx_current("reload");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -1006,6 +1047,15 @@ class TaskController extends ApplicationController {
 		$this->setTemplate("add_task");
 	} // new_template
 
+	
+	/**
+	 * View a message in a printer-friendly format.
+	 *
+	 */
+	function print_view_all() {
+		$this->setLayout("html");
+		$this->view_tasks();
+	} // print_view
 } // TaskController
 
 ?>

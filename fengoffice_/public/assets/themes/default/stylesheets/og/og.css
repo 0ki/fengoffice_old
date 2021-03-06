@@ -21,6 +21,10 @@
 	border: 1px solid #8888FF;
 	background-color: white;
 }
+
+.project-replace {
+	display: none;	
+}
 /** /autoCompleter **/
 
 .ico-reporting {
@@ -41,6 +45,9 @@
 }
 .ico-attachment {
 	background-image: url(../../images/16x16/attach.png) !important;
+}
+.ico-sent {
+	background-image: url(../../images/16x16/mail_send.png) !important;
 }
 .ico-back {
 	background-image: url(../../images/16x16/back.png) !important;
@@ -81,6 +88,9 @@
 .ico-email {
 	background-image: url(../../images/16x16/email.png) !important;
 }
+.ico-check_mails {
+	background-image: url(../../images/16x16/mail_receive.png) !important;
+}
 .ico-reply-all {
 	background-image: url(../../images/16x16/mail_replayall.png) !important;
 }
@@ -111,6 +121,18 @@
 }
 .ico-hide_messages {
 	background-image: url(../../images/16x16/hide_messages.png) !important;
+}
+.ico-large-configuration {
+	background-image: url('../../images/48x48/configuration.png');
+}
+.ico-large-group {
+	background-image: url('../../images/48x48/groups.png');
+}
+.ico-large-tools {
+	background-image: url('../../images/48x48/tools.png');
+}
+.ico-large-upgrade {
+	background-image: url('../../images/48x48/upgrade.png');
 }
 .ico-locked {
 	background-image: url(../../images/16x16/locked.png) !important;
@@ -148,6 +170,9 @@
 .ico-refresh {
 	background-image: url(../../images/16x16/refresh.png) !important;
 }
+.ico-rename {
+	background-image: url(../../images/16x16/rename.png) !important;
+}
 .ico-revisions {
 	background-image: url(../../images/16x16/revisions.png) !important;
 }
@@ -166,6 +191,12 @@
 .ico-task {
 	background-image: url(../../images/16x16/tasks.png) !important;
 }
+.ico-task-high-priority {
+	background-image: url(../../images/16x16/task-high.png) !important;
+}
+.ico-task-low-priority {
+	background-image: url(../../images/16x16/task-low.png) !important;
+}
 .ico-undo {
 	background-image: url(../../images/16x16/undo.png) !important;
 }
@@ -177,6 +208,9 @@
 }
 .ico-view_options {
 	background-image: url(../../images/16x16/view.png) !important;
+}
+.ico-view-as-dashboard {
+	background-image: url('../../images/16x16/view_as_db.png') !important; 
 }
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
@@ -202,6 +236,9 @@
 .ico-template-milestone {
 	background-image: url(../../images/16x16/milestone.png) !important;
 }
+.ico-print {
+	background-image: url(../../images/16x16/print.png) !important;
+}
 
 
 .link-ico {
@@ -215,6 +252,14 @@
 	width: 16px;
 	background-repeat: no-repeat;
 }
+
+.board-ico {
+	height: 18px;
+	width: 18px;
+	background-repeat: no-repeat;
+	background-position: 2px 2px;
+}
+
 .x-grid3-col-icon {
 	padding: 1px 3px;
 }
@@ -249,6 +294,10 @@
 	padding-bottom:2px;
 }
 
+.og-wscont {
+	/*border:1px solid;	*/
+}
+
 .og-wsname {
 	color: #777777;
 	font-size: 9px;
@@ -256,9 +305,15 @@
 	padding-right:1px;
 }
 
+.og-wsname-color-0 {
+	border-color: #BBB;
+	color: #777777;
+}
+
 .og-wsname-color-1 {
 	color: #DEE5F2;
 	background-color: #5A6986;
+	border-color: #5A6986;
 }
 
 .og-wsname-color-2 {
@@ -274,6 +329,7 @@
 .og-wsname-color-4 {
 	color: #E0D5F9;
 	background-color: #5229A3;
+	border-color: #5229A3;
 }
 
 .og-wsname-color-5 {
@@ -431,6 +487,10 @@
 	background-image: url(../../images/22x22/chronometer.png) !important;
 	background-repeat:no-repeat;
 	font-weight:bold;
+}
+.scrollable-menu {
+	max-height: 300px;
+	overflow: auto;
 }
 /** /tasks **/
 

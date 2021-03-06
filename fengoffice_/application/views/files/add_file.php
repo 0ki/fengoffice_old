@@ -18,7 +18,7 @@
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 
 
-<form style='height:100%;background-color:white' name="addFileForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="return false;">
+<form style='height:100%;background-color:white' id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="setTimeout('submitMe()',50);return false;">
   <?php tpl_display(get_template_path('form_errors'));?>
   <input id="hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
   <input id="hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
@@ -30,7 +30,7 @@
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('file properties')) ?>
-	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)', 'style'=>'margin-top:0px;margin-left:10px','id' => 'add_file_submit1')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(\'' . $genid .'addfile\')', 'style'=>'margin-top:0px;margin-left:10px','id' => 'add_file_submit1')) ?></td></tr></table>
 	</div>
 	</div>
 	<?php if ($enableUpload) { 
@@ -47,7 +47,7 @@
     
     <div id="addFileFilename" style="<?php echo $file->isNew()? 'display:none' : '' ?>">
       	<?php echo label_tag(lang('new filename'), 'fileFormFilename') ?>
-        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename', 'onchange' => ($file->isNew()? 'javascript:og.checkFileName(this.value)':''))) ?>
+        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename',  'onblur' => 'javascript:og.onBlurFileName()', 'onchange' => ('javascript:og.checkFileName(this.value)'))) ?>
 		<br/>
     </div>
       
@@ -191,7 +191,7 @@
   <div id="add_file_options_div" style="display:none">
   <fieldset>
     <legend><?php echo lang('options') ?></legend>
-  		<div class="objectOption">
+  		<?php /* <div class="objectOption">
 	      <div class="optionLabel"><label><?php echo lang('private file') ?>:</label></div>
 	      <div class="optionControl"><?php echo yes_no_widget('file[is_private]', 'fileFormIsPrivate', array_var($file_data, 'is_private'), lang('yes'), lang('no')) ?></div>
 	      <div class="optionDesc"><?php echo lang('private file desc') ?></div>
@@ -202,7 +202,7 @@
 	      <div class="optionControl"><?php echo yes_no_widget('file[is_important]', 'fileFormIsImportant', array_var($file_data, 'is_important'), lang('yes'), lang('no')) ?></div>
 	      <div class="optionDesc"><?php echo lang('important file desc') ?></div>
 	    </div>
-	    
+	    */ ?>
 	    <div class="objectOption">
 	      <div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
 	      <div class="optionControl"><?php echo yes_no_widget('file[comments_enabled]', 'fileFormEnableComments', array_var($file_data, 'comments_enabled', true), lang('yes'), lang('no')) ?></div>
@@ -242,11 +242,11 @@
   <?php 
   if (!$file->isNew())  //Edit file
   	if (isset($checkin) && $checkin)
-	  echo submit_button(lang('checkin file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
+	  echo submit_button(lang('checkin file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'addfile\')'));
 	else
-	  echo submit_button(lang('save changes'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
+	  echo submit_button(lang('save changes'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'addfile\')'));
   else //New file
-    echo submit_button(lang('add file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
+    echo submit_button(lang('add file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(\'' . $genid .'addfile\')'));
   ?>
   </div>
   

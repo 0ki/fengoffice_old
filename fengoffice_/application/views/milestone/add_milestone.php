@@ -15,7 +15,7 @@
 
 <?php 
   $genid = gen_id();
-  if ($base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) {
+  if (isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) {
   	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("milestone", "delete", array("id" => $base_milestone->getId())) ."');", "ico-delete");
   }
   $project = $milestone->getProject();
@@ -70,6 +70,10 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
+	
+	<?php if ($milestone->isNew() && isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) { ?>
+		<input type="hidden" name="milestone[from_template_id]" value="<?php echo $base_milestone->getId() ?>" />
+	<?php } ?>
 	
 	<?php if (isset ($projects) && count($projects) > 0) { ?>
 	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">

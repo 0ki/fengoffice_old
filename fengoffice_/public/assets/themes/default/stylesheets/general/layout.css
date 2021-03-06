@@ -63,6 +63,12 @@
 .msg .x-box-mc {
 	font-size: 14px;
 }
+.err .x-box-mc {
+	font-size: 14px;
+}
+.err .x-box-mc h3 {
+	color: #AA0000;
+}
 #msg-div {
 	position:absolute;
 	left:35%;

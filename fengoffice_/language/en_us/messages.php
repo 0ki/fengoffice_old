@@ -75,7 +75,7 @@
     'cant delete only revision' => 'You can\'t delete this reivion. Every file need to have at least one revision posted',
     'config category dnx' => 'Configuration category you requested does not exists',
     'config category is empty' => 'Selected configuration category is empty',
-    'email address not in use' => '%s is not in use',
+    'email address not in use' => '{0} is not in use',
     'no linked objects' => 'There are no objects linked to this object',
     'object not linked to object' => 'No link exists between the selected object',
     'no objects to link' => 'Please select objects that need to be linked',
@@ -174,7 +174,7 @@
     'success edit file revision' => 'Revision has been updated',
     'success delete file revision' => 'File revision has been deleted',
     
-    'success link objects' => '%s object(s) has been successfully linked',
+    'success link objects' => '{0} object(s) has been successfully linked',
     'success unlink object' => 'Object has been successfully unlinked',
     
     'success update config category' => '{0} configuration values have been updated',
@@ -279,7 +279,7 @@
     'error check for upgrade' => 'Failed to check for a new version',
     'error link object' => 'Failed to link object(s)',
     'error unlink object' => 'Failed to unlink object(s)',
-    'error link objects max controls' => 'You can not add more object links. Limit is %s',
+    'error link objects max controls' => 'You can not add more object links. Limit is {0}',
     'error test mail settings' => 'Failed to send test message',
     'error massmail' => 'Failed to send email',
     'error owner company has all permissions' => 'Owner company has all permissions',
@@ -289,6 +289,8 @@
     'error delete mail account' => 'An error ocurred while deleting this email account',
     'error delete contacts' => 'An error has ocurred while deleting these contacts',
   	'error check mail' => 'Error checking account \'{0}\': {1}',
+  	'error check out file' => 'Error while checking out file for exclusive use',
+    'error checkin file' => 'Error while checking in file',
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
   	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to project \'{1}\' due to access permissions',
   
@@ -298,6 +300,7 @@
     'invalid request' => 'Invalid request!',
     
     // Confirmation
+    'confirm cancel work timeslot' => "Are you sure you want to cancel the current timeslot?",
     'confirm delete mail account' => 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
     'confirm delete message' => 'Are you sure that you want to delete this message?',
     'confirm delete milestone' => 'Are you sure that you want to delete this milestone?',
@@ -402,6 +405,14 @@
   	'log add mailcontents' => '\'{0}\' added',
   	'log edit mailcontents' => '\'{0}\' updated',
   	'log delete mailcontents' => '\'{0}\' deleted',
+  
+  	'log open timeslots' => '\'{0}\' opened',
+    'log close timeslots' => '\'{0}\' closed',
+    'log delete timeslots' => '\'{0}\' deleted',
+  	'error assign workspace' => 'Failed to assign template to workspace',
+  	'success assign workspaces' => 'Succeeded to assign template to workspace',
+  	'success update config value' => 'Configuration values updated',
+  	'view open tasks' => 'Open tasks' ,
   ); // array
 
 ?>

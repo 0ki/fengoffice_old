@@ -11,7 +11,7 @@
     
     // Companies
     'add company' => 'Agregar compañía',
-    'edit company' => 'Guardar nuevos datos de la compañía',
+    'edit company' => 'Editar datos de la compañía',
     'delete company' => 'Eliminar compañía',
     'edit company logo' => 'Guardar logo',
     'delete company logo' => 'Eliminar logo',
@@ -48,6 +48,7 @@
     
     // Messages
     'add message' => 'Agregar mensaje',
+    'add new message' => 'Agregar nuevo mensaje',
     'edit message' => 'Editar mensaje',
     'delete message' => 'Eliminar mensaje',
     'view message' => 'Mostrar mensaje',
@@ -112,7 +113,7 @@
     'remove company from project' => 'Eliminar compañía del proyecto',
     
     // Password
-    'update profile' => 'Guardar nuevo perfil',
+    'update profile' => 'Editar datos de mi cuenta',
     'change password' => 'Modificar contraseña',
     'update avatar' => 'Guardar nuevo avatar',
     'delete current avatar' => 'Eliminar el avatar actual',
@@ -170,7 +171,7 @@
     
     'link object' => 'Vincular este objecto',
     'link objects' => 'Vincular estos objectos',
-    'link more objects' => 'Vincluar a más objectos',
+    'link more objects' => 'Vincular a más objectos',
     'unlink' => 'Eliminar vínculo',
     'unlink object' => 'Eliminar vínculo con este objecto',
     'unlink objects' => 'Eliminar vínculo con estos objectos',
@@ -184,7 +185,11 @@
     'edit permissions explanation'  => 'Seleccione los usuarios habilitados para acceder al espacio creado.',
   
   	'save as new revision' => 'Guardar como nueva revisión',
-	'save as' => 'Cambiar nombre'
+	'save as' => 'Cambiar nombre',
+	'details' => 'Detalles',
+	'view history for' => 'Ver historial',
+	'view history' => 'Ver historial',
+	'edit preferences' => 'Editar preferencias',
     
   ); // array
 

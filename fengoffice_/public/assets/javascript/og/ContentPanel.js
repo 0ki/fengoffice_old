@@ -151,6 +151,8 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.doLayout();
 		}
 		this.setPreventClose(content.preventClose);
+		
+		
 		if (content.type == 'html') {
 			if (this.history.length > 0) {
 				var tbar = [{
@@ -205,6 +207,21 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			});
 			this.add(p);
 			this.doLayout();
+			/** TODO: HISTORY MGMT
+			var url = this.content.url;
+			if (url) {
+				var start = url.indexOf("?") + 1;
+				var end = url.indexOf("#");
+				if (end < 0) {
+					var url = url.substring(start);
+				} else {
+					var url = url.substring(start, end);
+				}
+				if (url) {
+					Ext.History.add(url, true);
+				}
+			}
+			**/
 		} else if (content.type == 'url') {
 			if (this.active) {
 				og.openLink(content.data, {caller: this});

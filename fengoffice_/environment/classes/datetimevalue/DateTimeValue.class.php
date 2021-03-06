@@ -403,11 +403,51 @@ class DateTimeValue {
 		$this->setTimestampFromAttributes();
 	} // setSecond
 
+	/**
+	 * Returns the date for the datetimevalue's week's monday
+	 *
+	 * @return DateTimeValue
+	 */
+	function getMondayOfWeek(){
+		$dow = (integer)$this->format('N');
+		$dt = new DateTimeValue($this->getTimestamp());
+		$dt->add('d', -($dow - 1));
+		return $dt;
+	}
+	
+	/**
+	 * Adds a certain value to the date. Type is one of yMwdhms
+	 * 
+	 * @return DateTimeValue
+	 */
+	function add($type, $amount){
+		$a = array('d'=>86400, 'h'=>3600, 'm'=>60, 's'=>1);
+		switch ($type){
+			case 'y':
+				$this->setYear($this->getYear() + $amount ); break;
+			case 'M':
+				$this->setMonth($this->getMonth() + ($amount % 12));
+				$this->setYear($this->getYear() + (($amount - ($amount % 12)) / 12)); break;
+			case 'w':
+				$this->setTimestamp($this->getTimestamp() + $a['d'] * $amount * 7); break;
+			case 'd':
+				$this->setTimestamp($this->getTimestamp() + $a['d'] * $amount); break;
+			case 'h':
+				$this->setTimestamp($this->getTimestamp() + $a['h'] * $amount); break;
+			case 'm':
+				$this->setTimestamp($this->getTimestamp() + $a['m'] * $amount); break;
+			case 's':
+				$this->setTimestamp($this->getTimestamp() + $a['s'] * $amount); break;
+		}
+		return $this;
+	}
+	
 	static function FormatTimeDiff(DateTimeValue $dt1, DateTimeValue $dt2=null, $format='yfwdhms', $modulus = 1){
 		$t1 = $dt1->getTimestamp();
 		if ($dt2)
 			$t2 = $dt2->getTimestamp();
-		$t2 = $t2 === null ? time() : $t2;
+		else
+			$t2 = time();
 		$s = abs($t2 - $t1);
 		$s = $s - ($s % $modulus);
 		$sign = $t2 > $t1 ? 1 : -1;

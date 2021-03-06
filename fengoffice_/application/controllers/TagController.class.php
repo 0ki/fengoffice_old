@@ -28,14 +28,15 @@ class TagController extends ApplicationController {
 	 * @return null
 	 */
 	function delete_tag() {
-		$tag_name=array_var($_GET,'tag_name');
-		$project_id=array_var($_GET,'project_id');
-		$object_id=array_var($_GET,'object_id');
-		$manager_class=array_var($_GET,'manager_class');
-		if($project_id)
-		Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class,Projects::findById($project_id));
-		else
-		Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class);
+		$tag_name = array_var($_GET,'tag_name');
+		$project_id = array_var($_GET,'project_id');
+		$object_id = array_var($_GET,'object_id');
+		$manager_class = array_var($_GET,'manager_class');
+		if($project_id) {
+			Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class,Projects::findById($project_id));
+		} else {
+			Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class);
+		}
 		$this->redirectToReferer('');
 	}
 	/**
@@ -86,6 +87,27 @@ class TagController extends ApplicationController {
 		$extra = array();
 		$extra['tags'] = $ts;
 		ajx_extra_data($extra);
+	}
+	
+	/**
+	 * Change the name of a tag. If another tag with the same name
+	 * exists it will be merged with it.
+	 *
+	 */
+	function rename_tag() {
+		ajx_current("empty");
+		$tag = array_var($_GET, 'tag');
+		$new_tag = array_var($_GET, 'new_tag');
+		if (is_null($tag)) {
+			flash_error(lang("error must enter tag"));
+			return;
+		}
+		if (is_null($new_tag)) {
+			flash_error(lang("error must enter new tag"));
+			return;
+		}
+		Tags::renameTag($tag, $new_tag);
+		$this->redirectTo("tag", "list_tags");
 	}
 } // TagController
 

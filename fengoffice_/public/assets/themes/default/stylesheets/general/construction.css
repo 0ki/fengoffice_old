@@ -48,7 +48,7 @@
 	height: 45px;
 	padding-top:14px;
 	font-family: Helvetica,Verdana,Arial,sans-serif;
-	font-size: 150%;
+	font-size: 130%;
 	font-weight:bolder;
 	color: #555555;
 }
@@ -479,3 +479,7 @@ div.private span {
 
 
 /** /private **/
+
+td.td-pr {
+	padding-right:8px;
+}

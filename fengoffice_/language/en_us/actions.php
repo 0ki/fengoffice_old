@@ -48,6 +48,7 @@
     
     // Messages
     'add message' => 'Add message',
+    'add new message' => 'Add new message',
     'edit message' => 'Edit message',
     'delete message' => 'Delete message',
     'view message' => 'View message',
@@ -184,8 +185,12 @@
     'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
   
   	'save as new revision' => 'Save as new revision',
-	'save as' => 'Rename'
-    
+	'save as' => 'Rename',
+	'details' => 'Details',
+	'view history for' => 'View history for',
+	'view history' => 'View History',    
+	'edit preferences' => 'Edit preferences',
+	
   ); // array
 
 ?>

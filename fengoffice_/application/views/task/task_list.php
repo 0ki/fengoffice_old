@@ -1,8 +1,4 @@
-<?php  $task_list = $object;
-		//$on_list_page = $variables["on_list_page"];
-	
-?>
-
+<?php $task_list = $object; ?>
 <script type="text/javascript">
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
@@ -18,13 +14,11 @@
 </script>
   
 <?php if($task_list->getText()) { ?>
-  <div style="padding-bottom:15px;color:#666666"><?php echo do_textile($task_list->getText()) ?></div>
+  <div style="padding-bottom:15px;color:#666666"><?php echo nl2br(clean($task_list->getText()))?></div>
 <?php } // if ?>
 
 
-
-
-  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("open tasks") ?></th></tr><tr><td style="padding-left:10px;">
+  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("view open tasks") ?></th></tr><tr><td style="padding-left:10px;">
   <div class="openTasks">
 <?php if(is_array($task_list->getOpenSubTasks())) { ?>
     <table class="blank">
@@ -43,7 +37,15 @@
 <?php if($task->getAssignedTo()) { ?>
           <span class="assignedTo"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>:</span> 
 <?php } // if{ ?>
-          <a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo ($task->getTitle() && $task->getTitle()!='' )?clean($task->getTitle()):clean($task->getText()) ?></a> <?php if($task->canEdit(logged_user())) { ?><a class="internalLink blank" href="<?php echo $task->getEditListUrl() ?>" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?>
+          <a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo ($task->getTitle() && $task->getTitle()!='' )?clean($task->getTitle()):clean($task->getText()) ?></a> 
+          <?php if($task->canEdit(logged_user())) { ?>
+          	<a class="internalLink blank" href="<?php echo $task->getEditListUrl() ?>" title="<?php echo lang('edit task') ?>">
+          	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
+          <?php } // if ?>
+          <?php if($task->canDelete(logged_user())) { ?>
+          	<a class="internalLink blank" href="<?php echo $task->getDeleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
+          	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
+          <?php } // if ?>
         </td>
       </tr>
 <?php } // foreach ?>
@@ -104,7 +106,15 @@
 <?php } // if ?>
         <td class="taskText">
         	<a class="internalLink" href="<?php echo $task->getObjectUrl() ?>"><?php echo clean($task->getTitle()) ?></a> 
-          <?php if($task->canEdit(logged_user())) { ?><a class="internalLink" href="<?php echo $task->getEditListUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>"><img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a><?php } // if ?> <?php if($task->canDelete(logged_user())) { ?><a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>"><img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a><?php } // if ?><br />
+          <?php if($task->canEdit(logged_user())) { ?>
+          	<a class="internalLink" href="<?php echo $task->getEditListUrl() ?>" class="blank" title="<?php echo lang('edit task') ?>">
+          	<img src="<?php echo icon_url('edit.gif') ?>" alt="" /></a>
+          <?php } // if ?> 
+          <?php if($task->canDelete(logged_user())) { ?>
+          	<a href="<?php echo $task->getDeleteUrl() ?>" class="blank internalLink" onclick="return confirm('<?php echo lang('confirm delete task') ?>')" title="<?php echo lang('delete task') ?>">
+          	<img src="<?php echo icon_url('cancel_gray.gif') ?>" alt="" /></a>
+          <?php } // if ?>
+          <br />
           <span class="taskCompletedOnBy">(<?php echo lang('completed on by', format_date($task->getCompletedOn()), $task->getCompletedBy()->getCardUrl(), clean($task->getCompletedBy()->getDisplayName())) ?>)</span>
         </td>
         <td></td>

@@ -1,8 +1,9 @@
 var og = {};
 var vtindex = 0;
-var vtlist = new Array();
+var vtlist = [];
 
-og.globalVars = new Array();
+og.eventTimeouts = [];
+og.otherData = [];
 
 // default config (to be overridden by server)
 og.pageSize = 10;
@@ -10,10 +11,19 @@ og.hostname = '';
 og.maxFileSize = 1024 * 1024;
 
 // functions
-og.msg =  function(title, format) {
-	var box = ['<div class="msg">',
+og.msg =  function(title, format, timeout, classname) {
+	if (typeof timeout == 'undefined') timeout = 4;
+	if (!classname) classname = "msg";
+
+	var click_to_remove_msg = ''; // only show this message if error
+	if (classname == "err")
+		click_to_remove_msg = '<div style="text-align:center; font-size:small; font-style:italic"><a>' + lang('click to remove') + '</a></div>';
+			
+	var box = ['<div class="' + classname + '" title="' + lang('click to remove') + '">',
 			'<div class="x-box-tl"><div class="x-box-tr"><div class="x-box-tc"></div></div></div>',
-			'<div class="x-box-ml"><div class="x-box-mr"><div class="x-box-mc"><h3>{0}</h3>{1}</div></div></div>',
+			'<div class="x-box-ml"><div class="x-box-mr"><div class="x-box-mc"><h3>{0}</h3>{1}',
+			click_to_remove_msg,
+			'</div></div></div>',
 			'<div class="x-box-bl"><div class="x-box-br"><div class="x-box-bc"></div></div></div>',
 			'</div>'].join('');
 	if( !this.msgCt){
@@ -23,15 +33,57 @@ og.msg =  function(title, format) {
 	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
 	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, s)}, true);
 	Ext.get(m).on('click', function() {
-		Ext.getDom(this).style.display = 'none';
-	}, m);
-	m.slideIn('t').pause(4).ghost("t", {remove:true});
-}
+		this.remove();
+	});
+	if (timeout > 0) {
+		m.slideIn('t').pause(timeout).ghost("t", {remove:true});
+	} else {
+		m.slideIn('t');
+	}
+};
+
+og.updateClock = function(clockId){
+	var clock = og.eventTimeouts[clockId + "clock"];
+	if(clock) {
+		clearTimeout(clock);
+	}
+
+	var startTime = og.otherData[clockId + "starttime"];
+	var startSeconds = og.otherData[clockId + "startseconds"];
+	var nowTime = new Date();
+	var elapsed = ((nowTime.getElapsed(startTime) / 1000) + startSeconds).toFixed(0);
+	var seconds = (elapsed % 60) / 1;
+	var totalMinutes = (elapsed - seconds) / 60;
+	var minutes = totalMinutes % 60;
+	var totalHours = (totalMinutes - minutes) / 60;  
+	minutes = ( minutes < 10 ? "0" : "" ) + minutes;
+  	seconds = ( seconds < 10 ? "0" : "" ) + seconds.toFixed(0);
+	
+
+	var ts = document.getElementById(clockId + "timespan");
+	if (ts){
+		ts.innerHTML = totalHours + ":" + minutes + ":" + seconds;
+
+		og.eventTimeouts[clockId + "clock"] = setTimeout("og.updateClock('" + clockId + "')", 1002);
+	} else {
+		og.eventTimeouts[clockId + "clock"] = 0;
+	}
+};
+
+og.startClock = function(clockId, startSeconds){
+	og.otherData[clockId + "starttime"] = new Date();
+	og.otherData[clockId + "startseconds"] = startSeconds;
+	og.updateClock(clockId);
+};
+
+og.err = function(text) {
+	og.msg(lang("error"), text, 0, "err");
+};
 
 og.hideAndShow = function(itemToHide, itemToDisplay){
 	Ext.get(itemToHide).setDisplayed('none');
 	Ext.get(itemToDisplay).setDisplayed('block');
-}
+};
 
 og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
 	Ext.get(itemToHide).setDisplayed('none');
@@ -49,19 +101,46 @@ og.hideAndShowByClass = function(itemToHide, classToDisplay, containerItemName){
 		if (obj.className != '' && obj.className.indexOf(classToDisplay) >= 0)
 			obj.style.display = '';
 	}
+};
+
+
+og.selectReportingMenuItem = function(link, divName){
+	var table = document.getElementById('reportingMenu');
+	
+	var list = table.getElementsByTagName('td');
+	for(var i = 0; i < list.length; i++)
+		if (list[i].className == 'report_selected_menu')
+			list[i].className = 'report_unselected_menu';
+		
+	link.parentNode.className = 'report_selected_menu';
+	link.blur();
+	
+	list = table.getElementsByTagName('div');
+	for(var i = 0; i < list.length; i++)
+		if (list[i].className == 'inner_report_menu_div')
+			list[i].style.display = 'none';
+			
+	document.getElementById(divName).style.display='block';
+}
+
+og.dateselectchange = function(select) {
+	var list = select.offsetParent.offsetParent.getElementsByTagName('tr');
+	for(var i = 0; i < list.length; i++)
+		if (list[i].className == 'dateTr')
+			list[i].style.display = select.value == '6'? 'table-row':'none';
 }
 
 og.switchToOverview = function(){
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: 'panel', data: 'overview'};
 	opanel.load(opanel.defaultContent);
-}
+};
 
 og.switchToDashboard = function(){
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','index')};
 	opanel.load(opanel.defaultContent);
-}
+};
 
 og.loading = function() {
 	if (!this.loadingCt) {
@@ -80,14 +159,14 @@ og.loading = function() {
 	}
 	this.loadingCt.instances++;
 	this.loadingCt.style.visibility = 'visible';
-}
+};
 
 og.hideLoading = function() {
 	this.loadingCt.instances--;
 	if (this.loadingCt.instances <= 0) {
 		this.loadingCt.style.visibility = 'hidden';
 	}
-}
+};
 
 og.toggle = function(id, btn) {
 	var obj = Ext.get(id);
@@ -98,7 +177,7 @@ og.toggle = function(id, btn) {
 		obj.slideIn("t", {duration: 0.5, useDisplay: true});
 		if (btn) Ext.fly(btn).replaceClass('toggle_collapsed', 'toggle_expanded');
 	}
-}
+};
 
 og.toggleAndBolden = function(id, btn) {
 	var obj = Ext.get(id);
@@ -111,7 +190,7 @@ og.toggleAndBolden = function(id, btn) {
 		if (btn) 
 			btn.style.fontWeight = 'bold';
 	}
-}
+};
 
 og.toggleAndHide = function(id, btn) {
 	var obj = Ext.getDom(id);
@@ -124,7 +203,7 @@ og.toggleAndHide = function(id, btn) {
 		if (btn) 
 			btn.style.display = 'none';
 	}
-}
+};
 
 
 og.getUrl = function(controller, action, args) {
@@ -135,7 +214,7 @@ og.getUrl = function(controller, action, args) {
 		url += "&" + key + "=" + args[key];
 	}
 	return url;
-}
+};
 
 og.filesizeFormat = function(fs) {
 	if (fs > 1024 * 1024) {
@@ -145,7 +224,7 @@ og.filesizeFormat = function(fs) {
 		var total = Math.round(fs / 1024 * 10);
 		return total / 10 + "." + total % 10 + " KB";
 	}
-}
+};
 
 og.autoComplete = {
 	keypress: function(e) {
@@ -239,41 +318,44 @@ og.autoComplete = {
 			this.autoCompleter = null;
 		}
 	}
-}
+};
 
 og.makeAjaxUrl = function(url, params) {
 	var q = url.indexOf('?');
 	var n = url.indexOf('#');
 	if (Ext.getCmp('workspace-panel')) {
-		var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
+		var ap = "&active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
 	} else {
-		var ap = "active_project=0";
+		var ap = "&active_project=0";
 	}	
-	if (Ext.getCmp('tag-panel')) {
-		var at = "active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
+	if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag().name != '') {
+		var at = "&active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
 	} else {
 		var at = "";
 	}
 	var p = "";
 	if (params) {
 		if (typeof params == 'string') {
-			p = "&" + params;
+			if (params != ''){
+				p = "&" + params;
+			}
 		} else {
 			for (var k in params) {
 				p += "&" + k + "=" + params[k];
 			}
 		}
 	}
+	
 	if (q < 0) {
 		if (n < 0) {
-			return url + "?ajax=true&" + ap + "&" + at + p;
+			return url + "?ajax=true" + ap + at + p;
 		} else {
-			return url.substring(0, n) + "?ajax=true&" + ap + "&" + at + "&" + url.substring(n) + p;
+			return url.substring(0, n) + "?ajax=true" + ap + at + (url.substring(n) != ''? "&":"") + url.substring(n) + p;
 		}
 	} else {
-		return url.substring(0, q + 1) + "ajax=true&" + ap + "&" + at + "&" + url.substring(q + 1) + p;
+		return url.substring(0, q + 1) + "ajax=true" + ap + at + (url.substring(q + 1) != ''? "&":"") + url.substring(q + 1) + p;
 	}
-}
+};
 
 og.createHTMLElement = function(config) {
 	var tag = config.tag || 'p';
@@ -291,7 +373,7 @@ og.createHTMLElement = function(config) {
 		}
 	}
 	return elem;
-}
+};
 
 og.debug = function(obj, level) {
 	if (!level) level = 0;
@@ -317,7 +399,7 @@ og.debug = function(obj, level) {
 		str = obj;
 	}
 	return str;
-}
+};
 
 og.captureLinks = function(id, caller) {
 	var links = Ext.select((id?"#" + id + " ":"") + "a.internalLink");
@@ -333,7 +415,10 @@ og.captureLinks = function(id, caller) {
 			if (typeof this.onvalidate != 'function') {
 				var p = true;
 			} else {
-				var p = this.onvalidate(e);
+				try {
+					var p = this.onvalidate(e);
+				} catch (e) {
+				}
 			}
 			if (p || typeof p == 'undefined') {
 				og.openLink(this.href, {caller: this.target})
@@ -356,7 +441,7 @@ og.captureLinks = function(id, caller) {
 			return false;
 		}
 	});
-}
+};
 
 og.openLink = function(url, options) {
 	if (!options) options = {};
@@ -375,7 +460,8 @@ og.openLink = function(url, options) {
 	if (typeof params == 'string') {
 		params += "&current=" + options.caller;
 	} else {
-		params.current = options.caller;
+		if (options.caller)
+			params.current = options.caller;
 	}
 	url = og.makeAjaxUrl(url, params);
 	if (!options.post) options.post = " ";
@@ -403,7 +489,7 @@ og.openLink = function(url, options) {
 				}
 				if (options.postProcess) options.postProcess.call(this, true, data || response.responseText, options.options);
 			} else {
-				og.msg(lang("error"), lang("http error", response.status, response.statusText));
+				og.err(lang("http error", response.status, response.statusText));
 				if (options.postProcess) options.postProcess.call(this, false);
 			}
 		},
@@ -413,7 +499,7 @@ og.openLink = function(url, options) {
 		preventPanelLoad: options.preventPanelLoad,
 		options: options
 	});
-}
+};
 
 /**
  *  This function allows to submit a form containing a file upload without
@@ -466,7 +552,7 @@ og.submit = function(form, options) {
 	form.setAttribute('action', url);
 	form.submit();
 	return false;
-}
+};
 
 og.processResponse = function(data, options) {
 	if (!data) return;
@@ -518,11 +604,11 @@ og.processResponse = function(data, options) {
 	
 	//Show messages if any
 	if (data.errorCode != 0) {
-		og.msg(lang("error"), data.errorMessage);
+		og.err(data.errorMessage);
 	} else if (data.errorMessage) {
 		og.msg(lang("success"), data.errorMessage);
 	}
-}
+};
 
 og.newTab = function(content, id, data) {
 	var title = id?lang(id):lang('new tab');
@@ -539,7 +625,7 @@ og.newTab = function(content, id, data) {
 	});
 	tp.add(t);
 	tp.setActiveTab(t);
-}
+};
 
 og.eventManager = {
 	events: new Array(),
@@ -577,18 +663,18 @@ og.eventManager = {
 			try {
 				list[i].callback.call(list[i].scope, arguments, list[i].id);
 			} catch (e) {
-				og.msg(lang("error"), e.message);
+				og.err(e.message);
 			}
 			if (list[i].options.single) {
 				list.splice(i, 1);;
 			}
 		}
 	}
-}
+};
 
 og.showHelp = function() {
 	Ext.getCmp('help-panel').toggleCollapse();
-}
+};
 
 og.extractScripts = function(html) {
 	var id = Ext.id();
@@ -606,7 +692,7 @@ og.extractScripts = function(html) {
 						window.eval(match[2]);
 					}
 				} catch (e) {
-					og.msg(lang("error"), e.message);
+					og.err(e.message);
 				}
 			}
 		}
@@ -616,7 +702,7 @@ og.extractScripts = function(html) {
 	});
 	
 	return html.replace(/(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/ig, "");
-}
+};
 
 og.clone = function(o) {
 	if('object' !== typeof o) {
@@ -634,12 +720,12 @@ og.clone = function(o) {
 		}
 	}
 	return c;
-}
+};
 
 og.closeView = function(obj){
 	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
 	currentPanel.back();
-}
+};
 
 og.slideshow = function(id) {
 	var url = og.getUrl('files', 'slideshow', {fileId: id});
@@ -648,100 +734,12 @@ og.slideshow = function(id) {
 	var width = screen.width * 0.8;
 	var height = screen.height * 0.8;
 	window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
-}
-
-og.expandSubWsCrumbs = function(wsid){
-	var tree = Ext.getCmp('workspaces-tree');
-	var node = tree.tree.getNode(wsid);
-	
-	if (node && node.childNodes.length > 0){
-		og.showSubWsTooltip(node);
-	}
-}
-
-og.showSubWsTooltip = function(node){
-	var html = "";
-	for (var i = 0; i < node.childNodes.length; i++){
-		var cn = node.childNodes[i];
-		html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs()\">" + cn.ws.name + "</a></div>";
-	}
-		
-	var expander = document.getElementById('subWsExpander');
-	expander.innerHTML = html;
-	var wsCrumbs = document.getElementById('wsCrumbsDiv');
-	expander.style.left = (wsCrumbs.offsetWidth + 70) + "px";
-	expander.style.display = 'block';
-	
-	clearTimeout(og.globalVars['swst']);
-	var obj = Ext.get('subWsExpander');
-	obj.slideIn("l", {duration: 0.5, useDisplay: true});
-	og.setSubWsTooltipTimeout(3000);
-}
-
-og.setSubWsTooltipTimeout = function(value){
-	og.globalVars['swst'] = setTimeout("og.HideSubWsTooltip()", value);
-}
-
-og.HideSubWsTooltip = function(){
-	var obj = Ext.get('subWsExpander');
-	obj.slideOut("l", {duration: 0.5, useDisplay: true});
-}
-
-og.clearSubWsCrumbs = function(){
-	var expander = document.getElementById('subWsExpander');
-   	expander.innerHTML = '';
-   	expander.style.display = 'none';
-	clearTimeout(og.globalVars['swst']);
-}
-
-og.updateWsCrumbs = function(newWs) {
-	var html = '';
-	var first = true;
-	var tree = Ext.getCmp('workspaces-tree');
-	while (newWs.id != 0){
-		if (first){
-			first = false;
-			html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
-		} else
-			html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + newWs.id + ')">' + newWs.name + '</a>' + html;
-		
-		html = ' / ' + html;
-		var node = tree.tree.getNode(newWs.parent)
-		if (node)
-			newWs = node.ws;
-		else
-			break;
-	}
-	
-	if (first){
-		html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
-	} else html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(0)">' + lang('all') + '</a>' + html;
-	var crumbsdiv = Ext.get('wsCrumbsDiv');
-	crumbsdiv.dom.innerHTML = html;
 };
 
-og.updateWsCrumbsTag = function(newTag) {
-	var html = '';
-	if (newTag.name != "") {
-		//html = '<div class="wsTagCrumbsElement" onmouseover="document.getElementById(\'wsTagCloseDiv\').style.display=\'block\'" onmouseout="document.getElementById(\'wsTagCloseDiv\').style.display=\'none\'"><table><tr><td>' + newTag.name + '</td><td style="padding-left:3px"><a href="#" onclick="return false" title="' + lang('close this tag') + '"><div id="wsTagCloseDiv" class="wsTagCloseDiv" onclick="Ext.getCmp(\'tag-panel\').select(0)"></div></a></td></tr></table></div>';
-		html = '<div class="wsTagCrumbsElement" onmouseover="document.getElementById(\'wsTagCloseDiv\').style.display=\'block\'" onmouseout="document.getElementById(\'wsTagCloseDiv\').style.display=\'none\'">' + newTag.name + '<div id="wsTagCloseDiv" class="wsTagCloseDiv" title="' + lang('close this tag') + '" onclick="Ext.getCmp(\'tag-panel\').select(0)"></div></div>';
-	}
-	
-	var crumbsdiv = Ext.get('wsTagCrumbs');
-	crumbsdiv.dom.innerHTML = html;
-};
 
 og.getParentContentPanel = function(dom) {
 	return Ext.fly(dom).findParentNode('.og-content-panel', 100);
 };
-
-
-
-
-
-
-
-
 
 
 
@@ -753,7 +751,7 @@ og.removeLinkedObjectRow = function (r, tblId, confirm_msg){
 		tbl.deleteRow(i);
 		tbl.deleteRow(i-1);
 	}
-}
+};
 
 og.addLinkedObjectRow = function (tblId,obj_type,obj_id,obj_name, obj_manager, confirm_msg, unlink_msg){
 	var tbl = document.getElementById(tblId);
@@ -779,4 +777,39 @@ og.addLinkedObjectRow = function (tblId,obj_type,obj_id,obj_name, obj_manager, c
 	row2.className = row1.className;
 	var td2 = row2.insertCell(0);
 	td2.innerHTML = '<a class="internalLink" href="#" onclick="og.removeLinkedObjectRow(this,\''+tblId+'\',\''+confirm_msg+'\')" title="' +unlink_msg+ ' object">' +unlink_msg+ '</a>';
-}
+};
+
+
+
+/***********************************************************************/
+/*********** Extending Ext.PagingToolbar  ******************************/
+/***********************************************************************/
+
+og.PagingToolbar	=	function (config) {
+	og.PagingToolbar.superclass.constructor.call (this, config);
+};
+
+Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
+	// override the private function 'getPageData' so that Ext.PagingToolbar 
+        // will read the 'start' parameter returned from server, 
+	// and set the specified page number, while presume the default behavior 
+        // when the server doesn't return the 'start' parameter.
+	// (JSON example).
+	getPageData : function(){
+ 		var total = this.store.getTotalCount();
+		var	ap	=	Math.ceil((this.cursor+this.pageSize)/this.pageSize);
+		if (this.store.reader.jsonData) {
+			// go to the specified page
+			ap	=	Math.ceil((this.store.reader.jsonData.start + this.pageSize)/this.pageSize);
+			// also set the cursor so that 'prev' and 'next' buttons behave correctly
+			this.cursor	=	this.store.reader.jsonData.start;
+		}
+
+		return {
+			total : total,
+			activePage : ap,
+			pages :  total < this.pageSize ? 1 : Math.ceil(total/this.pageSize)
+		};
+	}
+});
+/***********************************************************************/

@@ -347,6 +347,38 @@ function set_config_option($option_name, $value) {
 } // set_config_option
 
 /**
+ * Return user config option value
+ *
+ * @access public
+ * @param string $name Option name
+ * @param mixed $default Default value that is returned in case of any error
+ * @param int $user_id User Id, if null logged user is taken
+ * @return mixed
+ */
+function user_config_option($option, $default = null, $user_id = null) {
+	if(!$user_id )
+		$user_id = logged_user()->getId();
+	return UserWsConfigOptions::getOptionValue($option,$user_id, $default);
+} // config_option
+
+/**
+ * Set value of specific user configuration option
+ *
+ * @param string $option_name
+ * @param mixed $value
+ * @param int $user_id User Id, if null logged user is taken
+ * @return boolean
+ */
+function set_user_config_option($option_name, $value, $user_id = null ) {
+	$config_option = UserWsConfigOptions::getByName($option_name);
+	if(!($config_option instanceof UserWsConfigOption)) {
+		return false;
+	} // if
+	$config_option->setUserValue($value, $user_id);
+	return $config_option->save();
+} // set_config_option
+
+/**
  * This function will return object by the manager class and object ID
  *
  * @param integer $object_id

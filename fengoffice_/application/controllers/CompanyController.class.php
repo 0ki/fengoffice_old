@@ -4,7 +4,7 @@
  * Company controller
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com> , Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class CompanyController extends ApplicationController {
 
@@ -125,7 +125,7 @@ class CompanyController extends ApplicationController {
 	function add_client() {
 		$this->setTemplate('add_company');
 
-		if(!logged_user()->isAdministrator(owner_company())) {
+		if(!Company::canAdd(logged_user(),active_or_personal_project())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -133,10 +133,15 @@ class CompanyController extends ApplicationController {
 
 		$company = new Company();
 		$company_data = array_var($_POST, 'company');
+		if(!is_array($company_data)) {
+			$company_data = array(
+				'timezone' => logged_user()->getTimezone(),
+			); // array
+		} // if
 		tpl_assign('company', $company);
 		tpl_assign('company_data', $company_data);
 
-		if(is_array($company_data)) {
+		if (is_array(array_var($_POST, 'company'))) {
 			$ids = array_var($_POST, "ws_ids", "");
 			$enteredWS = Projects::findByCSVIds($ids);
 			$validWS = array();
@@ -185,13 +190,14 @@ class CompanyController extends ApplicationController {
 	function edit_client() {
 		$this->setTemplate('add_company');
 
-		if(!logged_user()->isAdministrator(owner_company())) {
+		$company = Companies::findById(get_id());
+		
+		if(!$company->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} // if
 
-		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('client dnx'));
 			ajx_current("empty");
@@ -505,6 +511,49 @@ class CompanyController extends ApplicationController {
 
 	} // hide_welcome_info
 
+	function check_company_name(){
+		ajx_current("empty");
+		$name = array_var($_GET, 'name');
+		$company = Companies::findOne(array('conditions' => 'UPPER(name) = ' . strtoupper($name)));
+		
+		if ($company){
+			ajx_extra_data(array(
+				"id" => $company->getId(),
+				"name" => $company->getName()
+			));
+		} else {
+			ajx_extra_data(array(
+				"id" => 0,
+				"name" => $name
+			));
+		}
+	}
+
+	function get_company_data(){
+		ajx_current("empty");
+		$id = array_var($_GET, 'id');
+		$company = Companies::findById($id);
+		
+		if ($company){
+			ajx_extra_data(array(
+				"id" => $company->getId(),
+				"address" => $company->getAddress(),
+				"state" => $company->getState(),
+				"city" => $company->getCity(),
+				"country" => $company->getCountry(),
+				"zipcode" => $company->getZipcode(),
+				"webpage" => $company->getHomepage(),
+				"phoneNumber" => $company->getPhoneNumber(),
+				"faxNumber" => $company->getFaxNumber()
+			));
+		} else {
+			ajx_extra_data(array(
+				"id" => 0
+			));
+		}
+	}
+	
+	
 } // CompanyController
 
 ?>

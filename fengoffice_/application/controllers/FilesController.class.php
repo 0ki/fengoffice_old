@@ -4,7 +4,7 @@
  * Controller that is responsible for handling project files related requests
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class FilesController extends ApplicationController {
 
@@ -139,14 +139,10 @@ class FilesController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			return;
 		} // if
-
-		$file->setCheckedOutById(logged_user()->getId());
-		$file->setCheckedOutOn(DateTimeValueLib::now());
-		$file->setMarkTimestamps(false);
 		
 		try{
 			DB::beginWork();
-			$file->save();
+			$file->checkOut();
 			DB::commit();
 
 			flash_success(lang('success checkout file'));
@@ -278,9 +274,9 @@ class FilesController extends ApplicationController {
 				} else {
 					$file->setFilename(array_var($file_data, 'name'));
 					$file->setFromAttributes($file_data);
+					$file->setIsPrivate(false);
 	
 					if(!logged_user()->isMemberOfOwnerCompany()) {
-						$file->setIsPrivate(false);
 						$file->setIsImportant(false);
 						$file->setCommentsEnabled(true);
 						$file->setAnonymousCommentsEnabled(false);
@@ -356,7 +352,7 @@ class FilesController extends ApplicationController {
 					$name .= ".html";
 				}//eyedoc MOD
 				$file->setFilename($name);
-				$file->save();
+				$file->save();	
 				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
 				
@@ -406,7 +402,7 @@ class FilesController extends ApplicationController {
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
 				DB::beginWork();
-				$file_dt['tmp_name'] = './tmp/' . array_var($postFile,'name');
+				$file_dt['tmp_name'] = './tmp/' . rand ();
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, array_var($_POST, 'fileContent'));
 				fclose($handler);
@@ -523,7 +519,7 @@ class FilesController extends ApplicationController {
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
 				DB::beginWork();
-				$file_dt['tmp_name'] = './tmp/' . array_var($postFile,'name');
+				$file_dt['tmp_name'] = './tmp/' . rand ();
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler, unescapeSLIM(array_var($_POST, 'slimContent')));
 				fclose($handler);
@@ -638,7 +634,7 @@ class FilesController extends ApplicationController {
 			$file->setCreatedOn(new DateTimeValue(time()) );
 			try {
 				DB::beginWork();
-				$file_dt['tmp_name'] = './tmp/' . array_var($postFile,'name');
+				$file_dt['tmp_name'] = './tmp/' . rand ();
 				$handler=fopen($file_dt['tmp_name'], 'w');
 				fputs($handler,array_var($_POST,"TrimSpreadsheet"));
 				fclose($handler);
@@ -751,7 +747,7 @@ class FilesController extends ApplicationController {
 				return;
 			} // if
 
-			if(!$file->canEdit(logged_user())) {
+			if(!$file->canEdit(logged_user()) || !$file->isModifiable()) {
 				flash_error(lang('no access permissions'));
 				ajx_current("empty");
 				return;
@@ -783,19 +779,7 @@ class FilesController extends ApplicationController {
 
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
-
-			/*deprecated $folder = null;
-			 $folder_id = get_id('folder_id');
-			 if ($folder_id) {
-				$folder = ProjectFolders::findById($folder_id);
-				} // if
-
-				if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
-				$file_data = array(
-				'folder_id' => $folder->getId()
-				); // array
-				} // if
-				//deprecated*/
+			
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		}//end new document
@@ -845,18 +829,6 @@ class FilesController extends ApplicationController {
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
 
-			/*deprecated $folder = null;
-			 $folder_id = get_id('folder_id');
-			 if ($folder_id) {
-				$folder = ProjectFolders::findById($folder_id);
-				} // if
-
-				if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
-				$file_data = array(
-				'folder_id' => $folder->getId()
-				); // array
-				} // if
-				//deprecated */
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		}
@@ -906,18 +878,6 @@ class FilesController extends ApplicationController {
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
 
-			/*deprecated$folder = null;
-			 $folder_id = get_id('folder_id');
-			 if($folder_id) {
-				$folder = ProjectFolders::findById($folder_id);
-				} // if
-
-				if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
-				$file_data = array(
-				'folder_id' => $folder->getId()
-				); // array
-				} // if
-	   //deprecated*/
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		}
@@ -927,8 +887,8 @@ class FilesController extends ApplicationController {
 		ajx_current("empty");
 		 
 		/* get query parameters */
-		$start = array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
+		$start = (integer)array_var($_GET,'start');
+		$limit = (integer)array_var($_GET,'limit');
 		if (! $start) {
 			$start = 0;
 		}
@@ -937,7 +897,7 @@ class FilesController extends ApplicationController {
 		}
 		$order = array_var($_GET,'sort');
 		$orderdir = array_var($_GET,'dir');
-		$page = (integer) ($start / $limit) + 1;
+		$page = (integer) ($start / $limit)+1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 		$project_id = array_var($_GET, 'active_project', 0);
 		$tag = array_var($_GET,'tag');
@@ -967,9 +927,21 @@ class FilesController extends ApplicationController {
 		$project = Projects::findById($project_id);
 		/* perform query */
 		$result = ProjectFiles::getProjectFiles($project, null,
-				$hide_private, $order, $orderdir, $page, config_option('files_per_page'), false, $tag, $type, $user);
+				$hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
 		if (is_array($result)) {
 			list($objects, $pagination) = $result;
+			if ($pagination->getTotalItems() < (($page - 1) * $limit)){
+				$start = 0;
+				$page = 1;
+				$result = ProjectFiles::getProjectFiles($project, null,
+					$hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
+				if (is_array($result)) {
+					list($objects, $pagination) = $result;
+				}else {
+					$objects = null;
+					$pagination = 0 ;
+				} // if
+			}
 		} else {
 			$objects = null;
 			$pagination = 0 ;
@@ -977,7 +949,8 @@ class FilesController extends ApplicationController {
 
 		/* prepare response object */
 		$listing = array(
-			"totalCount" => $pagination->getTotalItems(),
+			"totalCount" => ($pagination != 0? $pagination->getTotalItems() : 0),
+			"start" => $start,
 			"files" => array()
 		);
 		if($objects){
@@ -1010,9 +983,7 @@ class FilesController extends ApplicationController {
 					"dateUpdated" => $o->getUpdatedOn()->getTimestamp(),
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
-					"project" => $o->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
-					"projectId" => $o->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-					"workspaceColors" => $o->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+					"wsIds" => $o->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 					"url" => $o->getOpenUrl(),
 					"manager" => get_class($o->manager()),
 					"checkedOutByName" => $coName,
@@ -1189,6 +1160,13 @@ class FilesController extends ApplicationController {
 		} // if
 	} // edit_file
 
+	function auto_checkin(){		
+		ProjectFiles::closeAutoCheckedoutFilesByUser();
+	}
+
+	function auto_checkout(){		
+		$this->checkout_file();
+	}
 	function checkin_file() {
 		$this->setTemplate('add_file');
 

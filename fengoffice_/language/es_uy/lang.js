@@ -50,6 +50,7 @@ _lang = {
 	"delete selected objects": "Eliminar objetos seleccionados",
 	"confirm delete object": "¿Está seguro que desea eliminar los objetos seleccionados?",
 	"confirm delete contact": "¿Está seguro que desea eliminar contacto(s)?",
+	"confirm delete company": "¿Está seguro que desea eliminar la companía?",
 	"confirm delete event": "¿Está seguro que desea eliminar este evento?",
 	"confirm delete file": "¿Está seguro que desea eliminar este archivo?",
 	"confirm delete mail content": "¿Está seguro que desea eliminar este correo?",
@@ -61,6 +62,7 @@ _lang = {
 	"confirm delete webpage": "¿Está seguro que desea eliminar esta página web?",
 	"confirm delete workspace": "¿Está seguro que desea eliminar el espacio '{0}'?",
 	"confirm delete project": "¿Está seguro que desea eliminar este espacio y todos los datos relacionados con él (mensajes, tareas, hitos, archivos...)?",
+	"confirm cancel work timeslot": "Está seguro que desea cancelar el tiempo de trabajo?",
 	"more": "Más",
 	"more actions": "Más acciones",
 	"more actions on first selected object": "Más acciones en el primer objeto seleccionado",
@@ -73,7 +75,7 @@ _lang = {
 	"company": "Compañía",
 	"companies": "Compañías",
 	"email": "Correo",
-	"checkin": "Liberar",
+	"checkin": "Actualizar",
 	"checkout": "Bloquear",
 	"checked out by": "Bloqueado por {0}",
 	"add file checked out by": "{0} fue bloqueado por {1}",
@@ -94,7 +96,7 @@ _lang = {
 	'author': 'Autor',
 	
 	/* tabs */
-	'overview': 'Visión',
+	'overview': 'Resumen',
 	'messages': 'Mensajes',
 	'contacts': 'Contactos',
 	'calendar': 'Calendario',
@@ -120,7 +122,7 @@ _lang = {
 	'all tag': 'Todas las etiquetas',
 	'view': 'Ver',
 	'details': 'Detalles',
-	'icons': 'Íconos',
+	'icons': '�?conos',
 	'displaying objects of': 'Desplegando objeto {0} al {1} de {2}',
 	'no objects to display': 'No hay objetos para mostrar',
 	'ok': 'OK',
@@ -149,6 +151,7 @@ _lang = {
 	'homePhone2': 'Teléfono particular 2',
 	'mobilePhone': 'Teléfono celular',
 	'edit selected contact': 'Editar contacto',
+	'edit selected object': 'Editar object',
 	'assign to project': 'Asignar a espacio',
 	'assign contact to project': 'Editar tareas del contacto',
 	
@@ -205,7 +208,7 @@ _lang = {
 	
 	'checkout description': 'Bloquear archivo para edición',
 	'undo checkout description': 'Habilitar archivo',
-	'checkin description': 'Liberar nueva versión del archivo',
+	'checkin description': 'Actualizar nueva versión del archivo',
 	
 	'created by on': 'Creado por {0} el {1}',
 	
@@ -236,7 +239,7 @@ _lang = {
 
 	'updated by': 'Modificado por',
 	'created by': 'Creado por',
-	'view as dashboard': 'Ver como dashboard',
+	'view as dashboard': 'Ver como panel',
 	/* Events*/
 	'subject':'Asunto',
 	'add event':'Agregar evento',
@@ -288,5 +291,22 @@ _lang = {
 	'confirm leave panel': 'Tiene información sin guardar. Si continúa perderá toda información no guardada.\n¿Desea proceder?',
 	'unread emails': 'Emails no leídos',
 	'mark read': 'Marcar como leído',
-	'mark unread': 'Marcar como no leído'
+	'mark unread': 'Marcar como no leído',
+	'from': 'De',
+	'draft': 'Borrador',
+	'mail sent': 'Enviado',
+	'create contact or client company':'Crear contacto o compañía cliente',
+	
+	'mail sent': 'Mail sent',
+	
+	'click to remove': 'Haga clic para quitar',
+	
+	'confirm merge tags': '¿Seguro que desea mezclar la etiqueta \'{0}\' con la etiqueta \'{1}\'?\n(Una vez mzcladas no podrán separarse)',
+	'save': 'Guardar',
+	'choose a filename': 'Elija un nombre de archivo',
+	'rename tag': 'Renombrar etiqueta',
+	'enter a new name for the tag': 'Ingrese un nuevo nombre para la etiqueta',
+	'inbox':'Recibidos',
+	'sent':'Enviados',
+	'unread': 'No Leidos'
 }

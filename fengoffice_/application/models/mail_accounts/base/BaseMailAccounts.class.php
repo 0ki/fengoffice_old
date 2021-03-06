@@ -19,6 +19,7 @@
     'user_id' => DATA_TYPE_INTEGER,  
     'name' => DATA_TYPE_STRING, 
     'email' => DATA_TYPE_STRING, 
+    'email_addr' => DATA_TYPE_STRING, 
     'password' => DATA_TYPE_STRING, 
     'server' => DATA_TYPE_STRING, 
     'smtp_server' => DATA_TYPE_STRING, 

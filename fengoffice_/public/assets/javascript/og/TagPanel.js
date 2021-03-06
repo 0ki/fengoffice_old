@@ -14,39 +14,43 @@ og.TagPanel = function(config) {
 		tbar: [{
 			iconCls: 'ico-workspace-refresh',
 			tooltip: lang('refresh desc'),
-			handler: this.tree.loadTags,
+			handler: function() {
+				this.loadTags();
+			},
+			scope: this.tree
+		},{
+			iconCls: 'ico-rename',
+			tooltip: lang('rename tag'),
+			id: 'rename',
+			handler: function() {
+				Ext.Msg.prompt(lang('rename tag'), lang('enter a new name for the tag') + ':',
+					function(btn, text) {
+						if (btn == 'ok') {
+							this.renameTag(this.getSelectedTag().name, text);
+						}
+					},
+					this);
+			},
 			scope: this.tree
 		}]
 	});
 	og.TagPanel.superclass.constructor.call(this, config);
+	
+	this.tree = this.findById('tag-panel');
+	
+	this.tree.getSelectionModel().on({
+		'selectionchange' : function(sm, node) {
+			// TODO: disable/enable tb butt
+			this.getTopToolbar().items.get('rename').setDisabled(!node || node == this.tree.tags);
+		},
+		scope:this
+	});
 };
 
 Ext.extend(og.TagPanel, Ext.Panel, {});
 
 og.TagTree = function(config) {
 	if (!config) config = {};
-	var tags = config.tags;
-	delete config.tags;
-
-	// tree filter
-	var tree = this;
-	var filter = new Ext.tree.TreeFilter(this, {
-		clearBlank: true,
-		autoClear: true
-	});
-	function filterTree(e) {
-		var text = e.target.value;
-		if(!text){
-			filter.clear();
-			return;
-		}
-		tree.expandAll();
-		
-		var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
-		filter.filterBy(function(n){
-			return n == tree.tags || re.test(n.text.toLowerCase());
-		});
-	}
 
 	Ext.applyIf(config, {
 		id: 'tag-panel',
@@ -55,15 +59,23 @@ og.TagTree = function(config) {
 		lines: false,
 		root: new Ext.tree.TreeNode(lang('tags')),
 		collapseFirst: false,
-		tbar: [new Ext.form.TextField({
+		tbar: [{
+			xtype: 'textfield',
+			id: 'tag-filter',
 			width: 200,
 			emptyText:lang('filter tags'),
 			listeners:{
-				render: function(f){
-					f.el.on('keyup', filterTree, f, {buffer: 350});
+				render: {
+					fn: function(f){
+						f.el.on('keyup', function(e) {
+							this.filterTree(e.target.value);
+						},
+						this, {buffer: 350});
+					},
+					scope: this
 				}
 			}
-		})]
+		}]
 	});
 	og.TagTree.superclass.constructor.call(this, config);
 
@@ -74,15 +86,18 @@ og.TagTree = function(config) {
 		})
 	);
 	this.tags.tag = {name: ""};
-	
-	if (tags) {
-		this.addTags(tags);
-	}
 
 	this.getSelectionModel().on({
 		'selectionchange' : function(sm, node) {
 			if (node && !this.pauseEvents) {
 				this.fireEvent('tagselect', node.tag);
+			}
+			var tf = this.getTopToolbar().items.get('tag-filter');
+			tf.setValue("");
+			this.filterTree("");
+			if (node) {
+				node.expand();
+				node.ensureVisible();
 			}
 		},
 		scope:this
@@ -155,17 +170,74 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 		}
 	},
 	
-	loadTags: function() {
-		og.openLink(og.getUrl('tag', 'list_tags'), {
+	hasTag: function(tagname) {
+		return this.getNodeById(tagname);
+	},
+	
+	loadTags: function(url) {
+		if (!url) {
+			url = og.getUrl('tag', 'list_tags');
+		}
+		og.openLink(url, {
 			callback: function(success, data) {
-				this.addTags(data.tags);
-				
-				this.pauseEvents = true;
-				this.tags.select();
-				this.pauseEvents = false;
+				if (success && data.tags) {
+					var selected = this.getSelectedTag();
+					this.removeAll();
+					this.addTags(data.tags);
+					
+					this.tags.expand();
+					
+					if (this.hasTag(selected.name)) {
+						this.pauseEvents = true;
+						this.select(selected.name);
+						this.pauseEvents = false;
+					} else {
+						this.pauseEvents = true;
+						this.tags.select();
+						this.pauseEvents = false;
+					}
+				}
 			},
 			scope: this
 		});
+	},
+	
+	removeAll: function() {
+		var node = this.tags.firstChild;
+		while (node) {
+			var aux = node;
+			node = node.nextSibling;
+			aux.remove();
+		}
+	},
+	
+	filterNode: function(n, re) {
+		var f = false;
+		var c = n.firstChild;
+		while (c) {
+			f = this.filterNode(c, re) || f;
+			c = c.nextSibling;
+		}
+		f = re.test(n.text.toLowerCase()) || f;
+		if (f) {
+			n.getUI().show();
+		} else {
+			n.getUI().hide();
+		}
+		return f;
+	},
+	
+	filterTree: function(text) {
+		this.expandAll();
+		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
+		this.filterNode(this.tags, re);
+		this.tags.getUI().show();
+	},
+	
+	renameTag: function(tagname, newTagname) {
+		if (!this.hasTag(newTagname) || confirm(lang('confirm merge tags', tagname, newTagname))) {
+			this.loadTags(og.getUrl('tag', 'rename_tag', {tag: tagname, new_tag: newTagname}));
+		}
 	}
 });
 

@@ -204,6 +204,22 @@ function is_download_request() {
 } // is_upload_request
 
 /**
+ * This function returns true if the specified value is found in the csv formatted string
+ *
+ * @param string $csv
+ * @param $value
+ * @return unknown
+ */
+function in_csv(string $csv, $value){
+	$arr = explode(',',$csv);
+	for($i = 0; $i < count($arr); $i++)
+		if ($value == trim($arr[$i]))
+			return true;
+		
+	return false;
+}
+
+/**
  * Flattens the array. This function does not preserve keys, it just returns
  * array indexed form 0 .. count - 1
  *
@@ -328,7 +344,7 @@ function is_valid_email($user_email) {
  * @return boolean
  */
 function is_valid_url($url) {
-	if(str_starts_with(strtolower($url), 'http://localhost')) return true;
+	if(str_starts_with($url, '/')) return true;
 	return preg_match(URL_FORMAT, $url);
 } // end func is_valid_url
 

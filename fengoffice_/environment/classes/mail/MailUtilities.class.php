@@ -50,14 +50,16 @@ class MailUtilities
 	private function getAddresses($field)
 	{
 		$f = '';
-		foreach($field as $add)
-		{
-			if (!empty($f))
-				$f = $f . ', ';
-			$address = trim($add["address"]);
-			if (strpos($address, ' '))
-				$address = substr($address,0,strpos($address, ' '));
-			$f = $f . $address;
+		if($field){
+			foreach($field as $add)
+			{
+				if (!empty($f))
+					$f = $f . ', ';
+				$address = trim($add["address"]);
+				if (strpos($address, ' '))
+					$address = substr($address,0,strpos($address, ' '));
+				$f = $f . $address;
+			}
 		}
 		return $f;
 	}
@@ -69,8 +71,11 @@ class MailUtilities
 		$mail = new MailContent();
 		$mail->setAccountId($account->getId());
 		$mail->setContent($content);
-		$mail->setFrom(self::getAddresses($parsedMail["From"]));
-		$mail->setTo(self::getAddresses($parsedMail["To"]));
+		$mail->setFrom(self::getAddresses(array_var($parsedMail,"From")));
+
+		$mail->setFromName(iconv($parsedMail['Encoding'],'UTF-8',array_var(array_var(array_var($parsedMail,'From'),0),'name')));
+		$mail->setTo(self::getAddresses(array_var($parsedMail,"To")));
+
 		$mail->setSubject(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Subject']));
 		$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
 		$mail->setSize(strlen($content));
@@ -85,18 +90,18 @@ class MailUtilities
 		
 		switch($parsedMail['Type'])
 		{
-			case 'html': $mail->setBodyHtml(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Data'])); break;
-			case 'text': $mail->setBodyPlain(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Data'])); break;
-			case 'delivery-status': $mail->setBodyPlain(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Response'])); break;
+			case 'html': $mail->setBodyHtml(iconv(array_var($parsedMail,'Encoding','UTF-8'),'UTF-8',$parsedMail['Data'])); break;
+			case 'text': $mail->setBodyPlain(iconv(array_var($parsedMail,'Encoding','UTF-8'),'UTF-8',$parsedMail['Data'])); break;
+			case 'delivery-status': $mail->setBodyPlain(iconv(array_var($parsedMail,'Encoding','UTF-8'),'UTF-8',$parsedMail['Response'])); break;
 		}
 		
 			
 		if (isset($parsedMail['Alternative']))
 		{
 			if ($parsedMail['Alternative'][0]['Type'] == 'html')
-				$mail->setBodyHtml(iconv($parsedMail['Alternative'][0]['Encoding'],'UTF-8',$parsedMail['Alternative'][0]['Data']));
+				$mail->setBodyHtml(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8',$parsedMail['Alternative'][0]['Data']));
 			else
-				$mail->setBodyPlain(iconv($parsedMail['Alternative'][0]['Encoding'],'UTF-8',$parsedMail['Alternative'][0]['Data']));
+				$mail->setBodyPlain(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8',$parsedMail['Alternative'][0]['Data']));
 		}
 		
 		try
@@ -147,7 +152,20 @@ class MailUtilities
 
 		// Connect to mail server
 		$pop3->connect ($account->getServer());
-		$pop3->login ($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+		for ($i=0; $i<2 && $pop3->getCurState() != POP3::STATE_TRANSACTION; $i++){
+			try{
+				if ($i == 1){
+					$pop3 = new POP3(null,false);
+					$pop3->connect ($account->getServer());
+				} 
+					$pop3->login ($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+				
+			} catch (POP3_Exception $ex){
+				if ($i==1) throw $ex;
+			} catch (Exception $ex){
+				throw $ex;
+			}
+		}
 		$pop3->getOfficeStatus();
 		
 		$messagesToGet = self::getPOP3MessageList($pop3, $account);
@@ -219,7 +237,7 @@ class MailUtilities
         //this function can be tailored by the programmer modifyng the formula 
         //to calculate the key to use for every character in the string. 
         $Key_To_Use = (($Len_Str_Message+$Position)+1); // (+5 or *3 or ^2) 
-        //after that we need a module division because can«t be greater than 255 
+        //after that we need a module division because can't be greater than 255 
         $Key_To_Use = (255+$Key_To_Use) % 255; 
         $Byte_To_Be_Encrypted = SUBSTR($Str_Message, $Position, 1); 
         $Ascii_Num_Byte_To_Encrypt = ORD($Byte_To_Be_Encrypted); 
@@ -281,6 +299,17 @@ class MailUtilities
 		$mailer->addCc(explode(",",$cc));
 		$mailer->addBcc(explode(",",$bcc));
 		return $mailer->send($to, $from, $subject,$body,$type);
+	}
+	
+	function parse_to($to){
+		if (!is_array($to)) return $to;
+		$return = array();
+		foreach ($to as $elem){
+			$mail= preg_replace("/.*\<(.*)\>.*/", "$1", $elem, 1);
+			$nam = explode('<', $elem);
+			$return[]= array(trim($nam[0]),trim($mail));
+		}
+		return $return;
 	}
 }
 ?>

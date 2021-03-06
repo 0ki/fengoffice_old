@@ -252,25 +252,205 @@
     function setColor($value) {
     	$this->setColumnValue('color', $value);
     }
-    
-  /* Return value of 'parent_id' field
+  
+  	/* Return value of 'p1' field
     *
     * @access public
     * @param void
     * @return integer 
     */
-    function getParentId() {
-    	return $this->getColumnValue('parent_id');
+    function getP1() {
+    	return $this->getColumnValue('p1');
     }
     
     /**
-    * Set value of 'parent_id' field
+    * Set value of 'p1' field
     *
     * @access public   
     * @param integer $value
     */
-    function setParentId($value) {
-    	$this->setColumnValue('parent_id', $value);
+    function setP1($value) {
+    	$this->setColumnValue('p1', $value);
+    }
+  
+  	/* Return value of 'p2' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP2() {
+    	return $this->getColumnValue('p2');
+    }
+    
+    /**
+    * Set value of 'p2' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP2($value) {
+    	$this->setColumnValue('p2', $value);
+    }
+  
+  	/* Return value of 'p3' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP3() {
+    	return $this->getColumnValue('p3');
+    }
+    
+    /**
+    * Set value of 'p3' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP3($value) {
+    	$this->setColumnValue('p3', $value);
+    }
+  
+  	/* Return value of 'p4' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP4() {
+    	return $this->getColumnValue('p4');
+    }
+    
+    /**
+    * Set value of 'p4' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP4($value) {
+    	$this->setColumnValue('p4', $value);
+    }
+  
+  	/* Return value of 'p5' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP5() {
+    	return $this->getColumnValue('p5');
+    }
+    
+    /**
+    * Set value of 'p5' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP5($value) {
+    	$this->setColumnValue('p5', $value);
+    }
+  
+  	/* Return value of 'p6' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP6() {
+    	return $this->getColumnValue('p6');
+    }
+    
+    /**
+    * Set value of 'p6' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP6($value) {
+    	$this->setColumnValue('p6', $value);
+    }
+  
+  	/* Return value of 'p7' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP7() {
+    	return $this->getColumnValue('p7');
+    }
+    
+    /**
+    * Set value of 'p7' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP7($value) {
+    	$this->setColumnValue('p7', $value);
+    }
+  
+  	/* Return value of 'p8' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP8() {
+    	return $this->getColumnValue('p8');
+    }
+    
+    /**
+    * Set value of 'p8' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP8($value) {
+    	$this->setColumnValue('p8', $value);
+    }
+  
+  	/* Return value of 'p9' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP9() {
+    	return $this->getColumnValue('p9');
+    }
+    
+    /**
+    * Set value of 'p9' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP9($value) {
+    	$this->setColumnValue('p9', $value);
+    }
+  
+  	/* Return value of 'p10' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getP10() {
+    	return $this->getColumnValue('p10');
+    }
+    
+    /**
+    * Set value of 'p10' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setP10($value) {
+    	$this->setColumnValue('p10', $value);
     }
     
     /**

@@ -45,7 +45,7 @@
     'no active projects in db' => 'No hay espacios activos',
     'no new objects in project since last visit' => 'No hay nuevos objetos en su espacio desde su última visita',
     'no clients in company' => 'Su empresa aun no ha registrado clientes',
-    'no users in company' => 'No existen usuarios de esta empresa',
+    'no users in company' => 'No existen usuarios de esta empresa.',
     'client dnx' => 'El cliente seleccionado no existe',
     'company dnx' => 'La empresa seleccionada no existe',
     'user dnx' => 'El usuario requerido no existe en la base de datos',
@@ -139,7 +139,7 @@
     'success remove user from project' => 'Usuario eliminado del espacio',
     'success remove company from project' => 'Empresa eliminada del espacio',
     
-    'success update profile' => 'Nuevo perfil guardado',
+    'success update profile' => 'Perfil actualizado correctamente',
     'success edit avatar' => 'Nueva imagen guardada',
     'success delete avatar' => 'Imagen eliminada',
     
@@ -174,7 +174,7 @@
     'success edit file revision' => 'Revisiones editadas',
     'success delete file revision' => 'Revision de archivo eliminados',
     
-    'success link objects' => '%s objecto(s) vinculados',
+    'success link objects' => '{0} objecto(s) vinculados',
     'success unlink object' => 'Este objeto dejó de estar vinculado',
     
     'success update config category' => '{0} valores de configuración modificados y guardados',
@@ -227,6 +227,7 @@
   	'success undo checkout file' => 'Bloqueo para edición del archivo cancelado en forma exitosa',
     
     // Failures
+    'error checkin file' => 'Ha ocurrido un error al devolver el archivo',
     'error edit timeslot' => 'Ha ocurrido un error al guardar el tiempo de trabajo',
   	'error delete timeslot' => 'Ha ocurrido un error al eliminar el tiempo de trabajo',
   	'error add timeslot' => 'Ha ocurrido un error al agregar el tiempo de trabajo',
@@ -288,6 +289,7 @@
     'error delete mail' => 'Ha ocurrido un error al eliminar este correo',
     'error delete mail account' => 'Ha ocurrido un error al eliminar esta cuenta de correo',
     'error delete contacts' => 'Ha ocurrido un error al eliminar estos contactos',
+  	'error check out file' => 'Error al bloquear el archivo para uso exclusivo',
   	'error check mail' => 'En la cuenta \'{0}\' se encontraron : {1} errores',
     'error classifying attachment cant open file' => 'Error al clasificar el attachment. No se pudo abrir el archivo',
   	'error contact added but not assigned' => 'El contacto \'{0}\' fue agregado, pero pero no se le asignó correctamente el espacio de trabajo \'{1}\' ya que hubo problemas con los permisos',
@@ -298,6 +300,7 @@
     'invalid request' => 'Petición inválida!',
     
     // Confirmation
+    'confirm cancel work timeslot' => "Está seguro que desea cancelar el tiempo de trabajo?",
     'confirm delete mail account' => 'Advertencia: Todos los correos pertenecientes a esta cuenta serán eliminados también, ¿está seguro de querer eliminar esta cuenta de correo?',
     'confirm delete message' => '¿Realmente quiere eliminar este mensaje?',
     'confirm delete milestone' => '¿Realmente quiere eliminar este hito?',
@@ -398,6 +401,15 @@
   	'log add mailcontents' => '\'{0}\' agregado',
   	'log edit mailcontents' => '\'{0}\' modificado',
   	'log delete mailcontents' => '\'{0}\' eliminado',
+  	
+  	'log open timeslots' => '\'{0}\' abierto',
+    'log close timeslots' => '\'{0}\' cerrado',
+    'log delete timeslots' => '\'{0}\' eliminado',
+  
+  	'error assign workspace' => 'Error al asignar plantilla a un espacio',
+  	'success assign workspaces' => 'Plantilla asignada a espacio correctamente',
+  	'success update config value' => 'Valores de configuración actualizados',
+  	'view open tasks' => 'Tareas no completadas' ,
   ); // array
 
 ?>

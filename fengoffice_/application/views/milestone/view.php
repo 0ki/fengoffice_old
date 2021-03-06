@@ -32,7 +32,7 @@
 		$content = '<div class="dueDate"><span>' . lang('due date') . ':</span> ' . format_descriptive_date($milestone->getDueDate(), 0) . '</div>';
 	} // if 
 	if ($milestone->getDescription()){
-		$content .= '<pre class="description">' . $milestone->getDescription() . '</pre>';
+		$content .= '<div class="description">' . nl2br(clean($milestone->getDescription())) . '</div>';
 	}
 	$openSubtasks = $milestone->getOpenSubTasks();
 	if (is_array($openSubtasks)) { 
@@ -41,7 +41,7 @@
 		
 		
 //show open sub task list
-		$content .= '<br/><table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;">' . lang("open tasks") . '</th></tr><tr><td style="padding-left:10px;">
+		$content .= '<br/><table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;">' . lang("view open tasks") . '</th></tr><tr><td style="padding-left:10px;">
 			  <div class="openTasks">
 			  <table class="blank">';
  		foreach($openSubtasks as $task) { 

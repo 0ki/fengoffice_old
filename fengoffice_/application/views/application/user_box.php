@@ -1,5 +1,5 @@
 <div id="userbox">
-	<?php echo lang('welcome back', $_userbox_user->getDisplayName()) ?> (<a href="<?php echo get_url('access', 'logout') ?>"><?php echo lang('logout') ?></a>) : 
+	<?php echo lang('welcome back', clean($_userbox_user->getDisplayName())) ?> (<a href="<?php echo get_url('access', 'logout') ?>"><?php echo lang('logout') ?></a>) : 
 	<?php if (logged_user()->isAdministrator()) { ?>
 	<a class="internalLink" target="administration" href="<?php echo get_url('administration', 'index') ?>"><?php echo lang('administration') ?></a> |
 	<?php } ?>

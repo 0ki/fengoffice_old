@@ -37,7 +37,7 @@
       $this->setErrors($errors);
       
       if(is_null($message)) {
-        $message = 'Failed to save object because some of its properties are not valid:';
+        $message = lang('error form validation');
       } // if
       
       foreach ($errors as $error)

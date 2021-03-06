@@ -1,13 +1,16 @@
 .adminHeader {
     padding: 10px 15px;
-	border-bottom: 1px solid #99BBE8;
+	border-bottom: 1px solid #CCCCCC;
+	/*border-bottom: 1px solid #99BBE8;*/
 	padding-bottom:5px;
-	background: #D0DEF0;
+	/*background: #D0DEF0;*/
+	background: #F0F0F0;
 }
 
 .adminHeaderUpperRow {
 	margin: 3px;
-	border-bottom: 2px solid #99BBE8;
+	/*border-bottom: 2px solid #99BBE8;*/
+	border-bottom: 2px solid #CCCCCC;
     position: relative;
     padding-bottom: 2px;
 }

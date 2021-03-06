@@ -5,7 +5,7 @@
   *
   * @author Carlos Palma <chonwil@gmail.com>
   */
-  abstract class BaseContact extends ApplicationDataObject {
+  abstract class BaseContact extends ProjectDataObject {
   
     // -------------------------------------------------------
     //  Access methods
@@ -1028,28 +1028,6 @@
     } // setUserId() 
 
     /**
-    * Return value of 'created_by_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getCreatedById() {
-      return $this->getColumnValue('created_by_id');
-    } // getCreatedById()
-    
-    /**
-    * Set value of 'created_by_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setCreatedById($value) {
-      return $this->setColumnValue('created_by_id', $value);
-    } // setCreatedById() 
-
-    /**
     * Return value of 'is_private' field
     *
     * @access public
@@ -1094,6 +1072,28 @@
     } // setCreatedOn() 
 
     /**
+    * Return value of 'created_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getCreatedById() {
+      return $this->getColumnValue('created_by_id');
+    } // getCreatedById()
+    
+    /**
+    * Set value of 'created_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setCreatedById($value) {
+      return $this->setColumnValue('created_by_id', $value);
+    } // setCreatedById() 
+    
+    /**
     * Return value of 'updated_on' field
     *
     * @access public
@@ -1114,6 +1114,28 @@
     function setUpdatedOn($value) {
       return $this->setColumnValue('updated_on', $value);
     } // setUpdatedOn() 
+
+    /**
+    * Return value of 'updated_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getUpdatedById() {
+      return $this->getColumnValue('updated_by_id');
+    } // getUpdatedById()
+    
+    /**
+    * Set value of 'updated_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setUpdatedById($value) {
+      return $this->setColumnValue('updated_by_id', $value);
+    } // setUpdatedById() 
     
     
     /**

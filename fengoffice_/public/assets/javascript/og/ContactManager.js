@@ -20,7 +20,7 @@ og.ContactManager = function() {
 	            fields: [
 	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone'
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','projectName','projectId','workspaceColors'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -62,15 +62,28 @@ og.ContactManager = function() {
     //--------------------------------------------
 
     function renderContactName(value, p, r) {
-		if (r.data.type == 'company')
+		if (r.data.type == 'company'){
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('company', 'view_client', {id: r.data.object_id}), String.format(r.data.name));
-		else
+		}
+		else{
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('contact', 'card', {id: r.data.object_id}), String.format(r.data.name));
-		return name;
+		}
+		var projectstring = '';		
+	    if (r.data.projectId != null && r.data.projectId != ''){
+			var ids = String(r.data.projectId).split(',');
+			var names = r.data.projectName.split(',');
+			var colors = String(r.data.workspaceColors).split(',');
+			projectstring = '<span class="og-wsname">';
+			for(var i = 0; i < ids.length; i++){
+				projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
+			}
+			projectstring += '</span>';
+		}
+		return projectstring + name;
     }
     function renderCompany(value, p, r) {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', value, og.getUrl('company', 'card', {id: r.data.companyId}));
@@ -80,8 +93,20 @@ og.ContactManager = function() {
     }
     function renderWebsite(value, p, r) {
     	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', value);
-    }
-    
+    }	
+	function renderIcon(value, p, r) {
+		var classes = "db-ico ico-unknown ico-" + r.data.type;
+		if (r.data.mimeType) {
+			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+			var acc = "";
+			for (var i=0; i < path.length; i++) {
+				acc += path[i];
+				classes += " ico-" + acc;
+				acc += "-";
+			}
+		}
+		return String.format('<div class="{0}" title="{1}"/>', classes, lang(r.data.type));
+	}
 	function getSelectedIds() {
 		var selections = sm.getSelections();
 		if (selections.length <= 0) {
@@ -141,22 +166,32 @@ og.ContactManager = function() {
     var cm = new Ext.grid.ColumnModel([
 		sm,
 		{
+        	id: 'icon',
+        	header: '&nbsp;',
+        	dataIndex: 'icon',
+        	width: 28,
+        	renderer: renderIcon,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+        },{
 			id: 'name',
 			header: lang("name"),
 			dataIndex: 'name',
-			width: 120,
+			width: 200,
 			renderer: renderContactName
         },
 		{
 			id: 'role',
 			header: lang("role"),
 			dataIndex: 'role',
-			width: 120
+			width: 60
         },{
 			id: 'company',
 			header: lang("company"),
 			dataIndex: 'companyName',
-			width: 120,
+			width: 100,
 			renderer: renderCompany
         },{
 			id: 'email',
@@ -168,6 +203,7 @@ og.ContactManager = function() {
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
+			hidden: true,
 			width: 120
         },{
 			id: 'department',
@@ -294,11 +330,11 @@ og.ContactManager = function() {
 		}),
 		delContact: new Ext.Action({
 			text: lang('delete'),
-            tooltip: lang('delete selected contacts'),
+            tooltip: lang('delete selected objects'),
             iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
-				if (confirm(lang('confirm delete contacts'))) {
+				if (confirm(lang('confirm delete object'))) {
 					this.load({
 						action: 'delete',
 						ids: getSelectedIds(),
@@ -310,7 +346,7 @@ og.ContactManager = function() {
 		}),
 		editContact: new Ext.Action({
 			text: lang('edit'),
-            tooltip: lang('edit selected contact'),
+            tooltip: lang('edit selected object'),
             iconCls: 'ico-new',
 			disabled: true,
 			handler: function() {
@@ -356,7 +392,7 @@ og.ContactManager = function() {
 		}),
 		tag: new Ext.Action({
 			text: lang('tag'),
-	        tooltip: lang('tag selected contacts'),
+	        tooltip: lang('tag selected objects'),
 	        iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
@@ -383,13 +419,13 @@ og.ContactManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-		style: "padding:7px;",
-        bbar: new Ext.PagingToolbar({
+		/*style: "padding:7px;",*/
+        bbar: new og.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
             displayInfo: true,
-            displayMsg: lang('displaying contacts of'),
-            emptyMsg: lang("no contacts to display")
+            displayMsg: lang('displaying objects of'),
+            emptyMsg: lang("no objects to display")
         }),
 		viewConfig: {
             forceFit: true
@@ -402,9 +438,9 @@ og.ContactManager = function() {
 			actions.delContact,
 			actions.editContact,
 			actions.assignContact,
-			actions.view,
+			actions.view/*,
 			'-',
-			actions.refresh
+			actions.refresh*/
         ],
 		listeners: {
 			'render': {

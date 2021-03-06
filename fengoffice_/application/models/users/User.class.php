@@ -9,6 +9,20 @@
 class User extends BaseUser {
 
 	/**
+	 * Users are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_searchable = true;
+
+	/**
+	 * Array of searchable columns
+	 *
+	 * @var array
+	 */
+	protected $searchable_columns = array('username', 'display_name', 'email');
+	
+	/**
 	 * Cached project permission values. Two level array. First level are projects (project ID) and
 	 * second are permissions associated with permission name
 	 *
@@ -283,6 +297,17 @@ class User extends BaseUser {
 	//  Retrive
 	// ---------------------------------------------------
 
+	/**
+	 * Returns the contact associated with the user, or null otherwise
+	 *
+	 */
+	function getContact(){		
+		$cont = Contacts::findOne(array('conditions'=>array('user_id = ' . $this->getId())));
+		if($cont instanceof Contact )
+			return $cont;
+		else 
+			return null;
+	}
 	/**
 	 * Return owner company
 	 *
@@ -834,9 +859,9 @@ class User extends BaseUser {
 	 * @return boolean
 	 */
 	function canUpdatePermissions(User $user) {
-		if($this->isAccountOwner()) {
-			return false; // noone will touch this
-		} // if
+//		if($this->isAccountOwner()) {
+//			return false; // noone will touch this
+//		} // if
 		return can_manage_security(logged_user());
 	} // canUpdatePermissions
 
@@ -900,6 +925,17 @@ class User extends BaseUser {
 	function getAccountUrl() {
 		return get_url('account', 'index');
 	} // getAccountUrl
+	
+	/**
+	 * Return edit preferences URL of this user
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getEditPreferencesUrl() {
+		return get_url('config', 'list_user_categories');
+	} // getAccountUrl
 
 	/**
 	 * Show company card page
@@ -922,6 +958,17 @@ class User extends BaseUser {
 	function getEditUrl() {
 		return get_url('user', 'edit', $this->getId());
 	} // getEditUrl
+
+	/**
+	 * Return URL to create contact from User
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getCreateContactFromUserUrl() {
+		return get_url('user', 'create_contact_from_user', $this->getId());
+	} // getCreateContactFromUserUrl
 
 	/**
 	 * Return delete user URL

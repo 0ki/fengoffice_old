@@ -60,7 +60,7 @@ class POP3
     // }}}
     // {{{ private attributes
     const DEFAULT_BUFFER_SIZE = 4096;
-	private $bLogOpened = TRUE;
+	private $bLogOpened = FALSE;
 	private $resLogFp = FALSE;
 	private $strLogFile = NULL;
     private $bHideUsernameAtLog = TRUE;
@@ -383,6 +383,22 @@ class POP3
         $this->sendCmd("TOP ". $intMsgNum ." ". $intLines);
         return $this->recvToPoint();
     }
+    
+    
+    public function getCurState(){
+    	return $this->intCurState;
+    }
+    
+     
+    public function getAPOPAutoDetect(){
+    	return  $this->bAPOPAutoDetect;
+    }
+    
+    public function setAPOPAutoDetect($val){
+    	return  $this->bAPOPAutoDetect = $val;
+    }
+   
+    
     // }}}
     // {{{ deleteMsg
     /*
@@ -762,13 +778,15 @@ class POP3
 	// }}}
     // {{{ log()
 	private function log( $str )
-	{Logger::log(">>".date("Y-m-d H:i:s") .": ". trim($str) . PHP_EOL, Logger::FATAL);
-		if( $this->bLogOpened )
-		{
-		    $str = date("Y-m-d H:i:s") .": ". trim($str) . PHP_EOL;
-			if( !@fwrite( $this->resLogFp, $str, strlen($str) ) )
+	{
+    	if (defined('DEBUG_EMAIL') && DEBUG_EMAIL){
+			if( $this->bLogOpened )
 			{
-				return new POP3_Exception("Failed to write to log file. (" . trim($str) . ")", self::ERR_LOG);
+			    $str = date("Y-m-d H:i:s") .": ". trim($str) . PHP_EOL;
+				if( !@fwrite( $this->resLogFp, $str, strlen($str) ) )
+				{
+					return new POP3_Exception("Failed to write to log file. (" . trim($str) . ")", self::ERR_LOG);
+				}
 			}
 		}
 	}

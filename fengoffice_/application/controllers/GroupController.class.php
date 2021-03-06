@@ -147,7 +147,7 @@ class GroupController extends ApplicationController {
 				}
 				if(count($gus)){
 					//there are still users in the group
-					GroupUsers::removeUsersByGroup($group->getId(),implode(',',$gus)); //remove all deleted
+					GroupUsers::removeUsersByGroup($group->getId()); //remove all deleted
 					foreach ($gus as $gu){
 						$gu->save();
 					}

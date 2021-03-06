@@ -68,7 +68,7 @@ Ext.extend(og.EmailAccountMenu, Ext.menu.Menu, {
 						var accounts = data.accounts;
 						this.addAccounts(accounts);
 					} catch (e) {
-						og.msg(lang("error"), e.message);
+						og.err(e.message);
 						throw e;
 					}
 				}

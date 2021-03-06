@@ -41,6 +41,7 @@ class EventController extends ApplicationController {
 		if( (!(logged_user()->isAdministrator())) && ((active_project() && !(logged_user()->isProjectUser(active_project()))))){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('dashboard');
+			return ;
 	    }		
 		ajx_set_no_toolbar(true);
 		ajx_replace(true);
@@ -56,9 +57,9 @@ class EventController extends ApplicationController {
 				 }
 
 				 
-		  $month = isset($_GET['month'])?$_GET['month']:date('n');
-		  $year = isset($_GET['year'])?$_GET['year']:date('Y');
-		  $day = isset($_GET['day'])?$_GET['day']:date('j');
+		$year = isset($_GET['year'])?$_GET['year']:$_SESSION['cal_year'];
+		$month = isset($_GET['month'])?$_GET['month']:$_SESSION['cal_month'];
+		$day = isset($_GET['day'])?$_GET['day']:$_SESSION['cal_day'];
 		  
 		  $pm = $month - 1;
 		  $py = $year;
@@ -218,6 +219,7 @@ class EventController extends ApplicationController {
 		if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 	    }
 	    $this->setTemplate('event');
 		$event = new ProjectEvent();		
@@ -307,6 +309,7 @@ class EventController extends ApplicationController {
 	    if(!$event->canDelete(logged_user())){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
+			return ;
 	    }	
 		$this->setTemplate('viewdate');
 		$tag = active_tag();
@@ -329,6 +332,7 @@ class EventController extends ApplicationController {
 			ajx_current("empty");
 		} // try
 	}
+	
 	function viewdate(){
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
@@ -410,6 +414,7 @@ class EventController extends ApplicationController {
 	}
 	
 	
+	
 	function viewevent(){
 		//check auth
 		$this->addHelper('textile');
@@ -418,6 +423,7 @@ class EventController extends ApplicationController {
 	    if(!$event->canView(logged_user())){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
+			return ;
 	    }
 		$this->setTemplate('viewevent');
 		$tag = active_tag();
@@ -445,6 +451,7 @@ class EventController extends ApplicationController {
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return ;
 	    }
 	    
 		tpl_assign('active_projects',logged_user()->getActiveProjects());
@@ -565,7 +572,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.40 2008/08/26 17:42:05 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.43 2008/09/29 19:29:54 msaiz Exp $
  *
  ***************************************************************************/
 

@@ -7,7 +7,7 @@ label {
 
 label.checkbox, label.yes_no {
   display: inline;
-  position: relative;
+  position: static;
   top: -2px;
   margin-left: 5px;
   cursor: pointer;
@@ -88,7 +88,7 @@ textarea, textarea.long {
 }
 
 textarea.short {
-  width: 400px;
+  width: 360px;
   height: 70px;
 }
 

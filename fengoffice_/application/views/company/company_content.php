@@ -4,11 +4,11 @@
   <div class="cardData">
     
     <div class="cardBlock">
-      <div class="link-ico ico-email" style="padding-bottom:3px;"><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo $company->getEmail() ?>"><?php echo $company->getEmail() ?></a></div>
-      <div class="link-ico ico-phone" style="padding-bottom:3px;"><span><?php echo lang('phone number') ?>:</span> <?php echo $company->getPhoneNumber() ? clean(clean($company->getPhoneNumber())) : lang('n/a') ?></div>
+      <div class="link-ico ico-email" style="padding-bottom:3px;"><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo $company->getEmail() ?>"><?php echo clean($company->getEmail()) ?></a></div>
+      <div class="link-ico ico-phone" style="padding-bottom:3px;"><span><?php echo lang('phone number') ?>:</span> <?php echo $company->getPhoneNumber() ? clean($company->getPhoneNumber()) : lang('n/a') ?></div>
       <div class="link-ico ico-fax" style="padding-bottom:3px;"><span><?php echo lang('fax number') ?>:</span> <?php echo $company->getFaxNumber() ? clean($company->getFaxNumber()) : lang('n/a') ?></div>
 <?php if($company->hasHomepage()) { ?>
-      <div style="padding-bottom:3px;"><span><?php echo lang('homepage') ?>:</span> <a target="_blank" href="<?php echo $company->getHomepage() ?>"><?php echo $company->getHomepage() ?></a></div>
+      <div style="padding-bottom:3px;"><span><?php echo lang('homepage') ?>:</span> <a target="_blank" href="<?php echo $company->getHomepage() ?>"><?php echo clean($company->getHomepage()) ?></a></div>
 <?php } else { ?>
       <div style="padding-bottom:3px;"><span><?php echo lang('homepage') ?>:</span> <?php echo lang('n/a') ?></div>
 <?php } // if ?>
@@ -23,7 +23,10 @@
 <?php if(trim($company->getAddress2())) { ?>
       <br /><?php echo clean($company->getAddress2()) ?>
 <?php } // if ?>
-      <br /><?php echo clean($company->getCity()) ?>, <?php echo clean($company->getState()) ?> <?php echo clean($company->getZipcode()) ?>
+      <br /><?php $city = clean($company->getCity());
+      echo $city;
+      if( trim($city)!='')
+      	echo ',';?> <?php echo clean($company->getState()) ?> <?php echo clean($company->getZipcode()) ?>
 <?php if(trim($company->getCountry())) { ?>
       <br /><?php echo clean($company->getCountryName()) ?>
 <?php } // if ?>

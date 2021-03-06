@@ -95,7 +95,7 @@
     * @param ConfigOption $value
     * @return null
     */
-    function setConfigOption(ConfigOption $value) {
+    function setConfigOption($value) {
       $this->config_option = $value;
     } // setConfigOption
     

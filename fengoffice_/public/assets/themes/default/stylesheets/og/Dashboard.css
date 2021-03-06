@@ -1,12 +1,18 @@
 .dashWorkspace {
-  	font-size: 200%;
-  	font-weight: bolder;
   	padding-bottom: 4px;
   	border-bottom: 1px solid #AAA;
 	width: 100%;
 	color: #666;
 	margin-bottom: 10px;
 	padding-top:10px;
+}
+
+.dashWorkspace .name{
+  	font-size: 200%;
+  	font-weight: bolder;
+}
+
+.dashWorkspace .description{
 }
 
 .dashActions {
@@ -24,10 +30,6 @@
 	cursor: pointer;		
 }
 
-.ico-view-as-dashboard {
-	background-image: url('../../images/16x16/view_as_db.png') !important; 
-}
-
 .dashHeader {
 	padding:8px;	
 	padding-bottom:4px;
@@ -40,18 +42,6 @@
   	border-bottom: 0px solid;
 }
 
-.dashAltRow {
-	background-color:#ECEFF7;	
-}
-
-.dashMessages .dashAltRow {
-	background-color:#FFE099;	
-}
-
-.dashLate .dashAltRow {
-	background-color:#FBEFEF;	
-}
-
 .dashSubtitle {
   	font-weight: bolder;
   	padding-top: 10px;
@@ -59,51 +49,14 @@
   	border-bottom: 1px solid #AAA;
 }
 
-
-
-.dashCalendar .dashHeader{
-	color: white;
-	background: #717FA1;
-	border-color: #596480;
+.dashAltRow {
+	background-color:#ECEFF7;	
 }
 
-.dashDocuments .dashHeader{
-	color: white;
-	background: #717FA1;
-	border-color: #596480;
-}
 
-.dashTasksInProgress .dashHeader{
-	color: white;
-	background: #F68D4D;
-	border-color: #DB7D45;
-	padding-left:34px;
-	background-image: url(../../images/22x22/chronometer.png) !important;
-	background-repeat:no-repeat;
-	background-position: 8px 4px;
-}
-
-.dashLate {
-	background-color: #FBF0F0;
-}
-
-.dashLate .dashHeader{
-	color: white;
-	background: #DD4444;
-	border-color: #CC1111;
-}
-
-.dashPendingTasks .dashHeader{
-	color: white;
-	background: #717FA1;
-	border-color: #596480;
-}
-
-.dashChart .dashHeader{
-	color: white;
-	background: #717FA1;
-	border-color: #596480;
-}
+/*----------------------------------------
+		Messages
+----------------------------------------*/
 
 .dashMessages .dashHeader{
 	color: rgb(101,82,5);
@@ -116,9 +69,102 @@
 	color: rgb(101,82,5);
 }
 
+.dashMessages .dashAltRow {
+	background-color:#FFE099;	
+}
+
 .dashMessages .internalLink {	
 	color: rgb(101,82,5);
 }
+
+
+/*----------------------------------------
+		Late tasks and milestones
+----------------------------------------*/
+
+.dashLate .dashHeader{
+	color: white;
+	background: #DD4444;
+	border-color: #CC1111;
+}
+
+.dashLate .dashAltRow {
+	background-color:#FBEFEF;	
+}
+
+
+/*----------------------------------------
+		Pending tasks
+----------------------------------------*/
+
+.dashPendingTasks .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+
+/*----------------------------------------
+		Calendar
+----------------------------------------*/
+
+.dashCalendar .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+
+/*----------------------------------------
+		Documents
+----------------------------------------*/
+
+.dashDocuments .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
+
+/*----------------------------------------
+		Tasks in progress
+----------------------------------------*/
+
+.dashTasksInProgress .dashHeader{
+	color: white;
+	background: #F68D4D;
+	border-color: #DB7D45;
+	padding-left:34px;
+	background-image: url(../../images/22x22/chronometer.png) !important;
+	background-repeat:no-repeat;
+	background-position: 8px 4px;
+}
+
+/*----------------------------------------
+		Unread emails
+----------------------------------------*/
+
+.dashUnreadEmails .dashAltRow {
+	background-color:#F0F2FF;	
+}
+
+.dashUnreadEmails .dashHeader{
+	color: white;
+	background: #B4BFFF;
+	border-color: #98A8FF;
+}
+
+
+/*----------------------------------------
+		Charts
+----------------------------------------*/
+
+.dashChart .dashHeader{
+	color: white;
+	background: #717FA1;
+	border-color: #596480;
+}
+
 
 
 

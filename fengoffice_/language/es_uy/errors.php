@@ -66,7 +66,8 @@
     // Add task list
     'task list name required' => 'Nombre de tarea no ingresado, intente nuevamente',
     'task list name unique' => 'El nombre de tarea seleccionado ya existe, intente nuevamente ingresando uno distinto',
-    
+    'task title required' => 'Título de tarea no ingresado, intente nuevamente',
+  
     // Add task
     'task text required' => 'Texto de tarea no ingresado, intente nuevamente',
     
@@ -126,6 +127,11 @@
   	'chart title required' => 'Se requiere el título del gráfico.',
   	'chart title unique' => 'El título del gráfico debe ser único.',
     'must choose at least one workspace error' => 'Debe elegir al menos un espacio donde colocar el objeto.',
+    
+    'user has contact' => 'Ya hay un contacto asigando a este usuario',
+  
+  	'maximum number of users reached error' => 'El número máximo de usuarios ha sido alcanzado',
+	'maximum number of users exceeded error' => 'El número máximo de usuarios ha sido sobrepasado. El sistema no volverá a funcionar hasta que este problema haya sido resuelto.',
   ); // array
 
 ?>

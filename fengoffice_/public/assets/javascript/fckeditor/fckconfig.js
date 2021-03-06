@@ -130,6 +130,11 @@ FCKConfig.ToolbarSets["Full"] = [
 ] ;
 
 FCKConfig.ToolbarSets["Basic"] = [
+	['Bold','Italic','Underline','FontName','FontSize','TextColor','BGColor','-','OrderedList','UnorderedList','-','JustifyLeft','JustifyCenter','JustifyRight','-','Link','Unlink']
+] ;
+
+FCKConfig.ToolbarSets["Email"] = [
+	
 	['Bold','Italic','-','OrderedList','UnorderedList','-','Link','Unlink','-','About']
 ] ;
 

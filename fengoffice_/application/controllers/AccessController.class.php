@@ -252,7 +252,7 @@ class AccessController extends ApplicationController {
 	function get_javascript_translation() {
 		$content = file_get_contents("./language/" . Localization::instance()->getLocale() . "/lang.js");
 		$this->setLayout("json");
-		$this->renderText($content, false);
+		$this->renderText($content, true);
 	}
 	
 } // AccessController

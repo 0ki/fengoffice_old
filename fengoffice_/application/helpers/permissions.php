@@ -217,9 +217,9 @@
   	 * @param int $user_id user whose permissions are being checked
   	 * @return unknown
   	 */
-	function permissions_sql_for_listings (DataManager $manager, $access_level, User $user, $project_id='project_id', $table_alias = null){
+	function permissions_sql_for_listings (DataManager $manager, $access_level, User $user, $project_id = '`project_id`', $table_alias = null){
 		if(! ($manager instanceof DataManager )){
-			throw new Exception("Invalid manager '$manager' in permissions helper",-1);
+			throw new Exception("Invalid manager '$manager' in permissions helper", -1);
 			return '';
 		}
 		$user_id = $user->getId();
@@ -227,11 +227,11 @@
 		$wo_tablename = WorkspaceObjects::instance()->getTableName(true);
 		$users_table_name =  Users::instance()->getTableName(true);
 		$pu_table_name = ProjectUsers::instance()->getTableName(true);
-		if ( isset($table_alias) && $table_alias && $table_alias!='')
+		if (isset($table_alias) && $table_alias && $table_alias!='')
 			$object_table_name = $table_alias;
 		else
 			$object_table_name = $manager->getTableName();
-		if(!is_numeric($project_id))
+		if (!is_numeric($project_id))
 			$project_id = "$object_table_name.$project_id";
 		$object_id_field = $manager->getPkColumns();
 		$object_id = $object_table_name . '.' . $object_id_field;
@@ -241,39 +241,39 @@
 		$item_class = $manager->getItemClass();
 		$is_project_data_object = (new $item_class) instanceof ProjectDataObject  ;
 		// user is creator
-		$str = " ( created_by_id = $user_id) ";
+		$str = " ( `created_by_id` = $user_id) ";
 		// element belongs to personal project
 		if($is_project_data_object) // TODO: type of element belongs to a project
 			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles || $manager instanceof Companies  ) {
-				$str .= "\n OR ( exists(SELECT * FROM $users_table_name xx_u, $wo_tablename xx_wo
-				WHERE xx_u.id = $user_id
-					AND xx_u.personal_project_id = xx_wo.workspace_id
-					AND xx_wo.object_id = $object_id 
-					AND xx_wo.object_manager = '$object_manager' )) ";
+				$str .= "\n OR ( EXISTS(SELECT * FROM $users_table_name `xx_u`, $wo_tablename `xx_wo`
+				WHERE `xx_u`.`id` = $user_id
+					AND `xx_u`.`personal_project_id` = `xx_wo`.`workspace_id`
+					AND `xx_wo`.`object_id` = $object_id 
+					AND `xx_wo`.`object_manager` = '$object_manager' )) ";
 			} else {
-				$str .= "\n OR ( $project_id = (SELECT personal_project_id FROM $users_table_name xx_u WHERE xx_u.id = $user_id)) ";
+				$str .= "\n OR ( $project_id = (SELECT `personal_project_id` FROM $users_table_name `xx_u` WHERE `xx_u`.`id` = $user_id)) ";
 			}
 		// user or group has specific permissions over object
 		$group_ids = $user->getGroupsCSV();
-		$all_ids = '(' . $user_id . (($group_ids!='')?','.$group_ids:'' ) . ')';
-		$str .= "\n OR ( exists ( SELECT * FROM $oup_tablename xx_oup 
-				WHERE xx_oup.rel_object_id = $object_id 
-					and xx_oup.rel_object_manager = '$object_manager' 
-					and xx_oup.user_id in $all_ids 
-					and xx_oup.$access_level_text = true) )" ; 
+		$all_ids = '(' . $user_id . ($group_ids != '' ? ',' . $group_ids : '' ) . ')';
+		$str .= "\n OR ( EXISTS ( SELECT * FROM $oup_tablename `xx_oup` 
+				WHERE `xx_oup`.`rel_object_id` = $object_id 
+					AND `xx_oup`.`rel_object_manager` = '$object_manager' 
+					AND `xx_oup`.`user_id` IN $all_ids 
+					AND `xx_oup`.$access_level_text = true) )" ; 
 		if($is_project_data_object){ // TODO: type of element belongs to a project
 			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles|| $manager instanceof Companies ) {
-				$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu, $wo_tablename xx_wo 
-				WHERE xx_pu.user_id in $all_ids 
-					AND xx_pu.project_id = xx_wo.workspace_id
-					AND xx_wo.object_id = $object_id 
-					AND xx_wo.object_manager = '$object_manager'
-					AND xx_pu.$can_manage_object = true ) ) ";
+				$str .= "\n OR ( EXISTS ( SELECT * FROM $pu_table_name `xx_pu`, $wo_tablename `xx_wo` 
+				WHERE `xx_pu`.`user_id` IN $all_ids 
+					AND `xx_pu`.`project_id` = `xx_wo`.`workspace_id`
+					AND `xx_wo`.`object_id` = $object_id 
+					AND `xx_wo`.`object_manager` = '$object_manager'
+					AND `xx_pu`.$can_manage_object = true ) ) ";
 			} else {
-				$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu 
-				WHERE xx_pu.user_id in $all_ids 
-					AND xx_pu.project_id = $project_id 
-					AND xx_pu.$can_manage_object = true ) ) ";
+				$str .= "\n OR ( EXISTS ( SELECT * FROM $pu_table_name `xx_pu` 
+				WHERE `xx_pu`.`user_id` IN $all_ids 
+					AND `xx_pu`.`project_id` = $project_id 
+					AND `xx_pu`.$can_manage_object = true ) ) ";
 			}
 		}
 		//return ' (1=1) ';

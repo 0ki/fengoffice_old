@@ -16,9 +16,9 @@ return array(
     'user password reseted' => 'Your password has been reset. New password is \'{0}\'.',
 
     'dont reply wraning' => 'THIS IS SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
-    'new message posted' => 'New message "{0}" has been posted.',
+    'new message posted' => 'New message "{0}" has been posted',
     'new task' => 'New task',
-    'new task created' => 'New task "{0}" has been created in "{1}" workspace.',
+    'new task created' => 'New task "{0}" has been created in "{1}" workspace',
     'view new message' => 'View that message',
     'view new task' => 'View that task',
 
@@ -66,7 +66,14 @@ return array(
     'reply to all mail' => 'Reply to All',
     'switch format warn' => 'Switching to text will discard all HTML formatting. Continue?',
     'success mark objects' => 'Mail updated',
-    'error mark email' => 'Error updating email state'
+    'error mark email' => 'Error updating email state',
+    'draft' => 'Draft',
+    'success save mail' => 'Draft saved',
+    'discard' => 'Discard',
+    'mail address' => 'Email Address',
+    'mail address description' => 'Email address is the address that other people use to send you emails',
+
+	'unread emails' => 'Unread emails'
     ); // array
 
     ?>

@@ -14,7 +14,7 @@
   } // if
   
   if(active_project() && ProjectTask::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add task list'), get_url('task', 'add_list'), 'ico-task');
+    add_page_action(lang('add task'), get_url('task', 'add_task'), 'ico-task');
   } // if
 //add_javascript_to_page('modules/addTaskForm.js');  
   if($task_list->canEdit(logged_user())) {
@@ -43,8 +43,7 @@
 	
 	if ($task_list->getParent() instanceof ProjectTask) {
   		$parent = $task_list->getParent();
-  		$description = lang('subtask of', $parent->getViewUrl(), $parent->getTitle() != ''? $parent->getTitle() : $parent->getText());
-  		tpl_assign('description', $description);
+  		$description = lang('subtask of', $parent->getViewUrl(), $parent->getTitle() != ''? clean($parent->getTitle()) : clean($parent->getText()));
 	}
 	
 	$status = '<div class="taskStatus">';
@@ -66,12 +65,12 @@
 	
 	if ($task_list->getAssignedTo()){
 		$description .= '<span style="font-weight:bold">' . lang("assigned to") . ': </span><a class=\'internalLink\' style="color:white" href=\'' 
-		. $task_list->getAssignedTo()->getCardUrl() . '\' title=\'' . lang('user card of', $task_list->getAssignedToName()). '\'>' 
-		. $task_list->getAssignedToName() . '</a>';
+		. $task_list->getAssignedTo()->getCardUrl() . '\' title=\'' . lang('user card of', clean($task_list->getAssignedToName())). '\'>' 
+		. clean($task_list->getAssignedToName()) . '</a>';
 		if ($task_list->getAssignedBy() instanceof User) {
 			$description .= ' <span style="font-weight:bold">' . lang("by") . ': </span> <a class=\'internalLink\' style="color:white" href=\''
-			. $task_list->getAssignedBy()->getCardUrl() . '\' title=\'' . lang('user card of', $task_list->getAssignedBy()->getDisplayName()). '\'>'
-			. $task_list->getAssignedBy()->getDisplayName() . '</a>';
+			. $task_list->getAssignedBy()->getCardUrl() . '\' title=\'' . lang('user card of', clean($task_list->getAssignedBy()->getDisplayName())). '\'>'
+			. clean($task_list->getAssignedBy()->getDisplayName()) . '</a>';
 			if ($task_list->getAssignedOn() instanceof DateTimeValue) {
 				$description .= ' <span style="font-weight:bold">' . lang("on") . ': </span>'
 				. format_date($task_list->getAssignedOn());	
@@ -83,9 +82,10 @@
 	if ($task_list->getMilestone() instanceof ProjectMilestone){
 		$m = $task_list->getMilestone();
 		$milestone .= '<div><div class="og-ico ico-milestone"><a class=\'internalLink\' style="color:white" href=\'' 
-		. $m->getViewUrl() . '\' title=\'' . lang('view milestone') . '\'>' . $m->getName() . '</a></div>';
+		. $m->getViewUrl() . '\' title=\'' . lang('view milestone') . '\'>' . clean($m->getName()) . '</a></div>';
 	}
 	
+	$priority = '';
 	if ($task_list->getPriority() >= ProjectTasks::PRIORITY_HIGH) {
 		$priority = '<div class="og-task-priority-high"><span style="font-weight:bold">'.lang('task priority').": </span>".lang('high priority').'</div>';
 	} else if ($task_list->getPriority() <= ProjectTasks::PRIORITY_LOW) {
@@ -99,7 +99,7 @@
 	tpl_assign("variables", $variables);
 	tpl_assign("content_template", array('task_list', 'task'));
 	tpl_assign('object', $task_list);
-	tpl_assign('title', $title);
+	tpl_assign('title', clean($title));
 	tpl_assign('iconclass', 'ico-large-tasks');
 	
 

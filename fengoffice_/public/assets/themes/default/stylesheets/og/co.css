@@ -417,6 +417,32 @@
 	background-image: url('../../images/32x32/view_calendar_month.png');
 }
 
+/* ----- Report ----- */
+
+.report .coViewHeader {
+  	background: #717FA1;
+  	border-color: #455678;
+  	color: #FFFFFF;
+}
+
+.report .coViewIcon {
+  	background: #E8EDF7;
+  	border-color: #455678;
+}
+
+.report .coViewHeader .coViewTitle {
+  	border-color: #455678;
+}
+
+.report .coViewClose {
+  	background: #717FA1;
+  	color: #FFFFFF;
+}
+
+.ico-large-report {
+	background-image: url('../../images/48x48/report.png');
+}
+
 
 
 

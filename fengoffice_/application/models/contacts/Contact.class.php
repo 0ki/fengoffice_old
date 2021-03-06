@@ -5,8 +5,7 @@
  *
  * @author Carlos Palma <chonwil@gmail.com>
  */
-class Contact extends BaseContact
-{
+class Contact extends BaseContact {
 	
 	/**
 	 * Contacts are searchable
@@ -395,6 +394,38 @@ class Contact extends BaseContact
       return StringTwister::untwistHash($twisted_token, $this->getTwister()) == $this->getToken();
     } // isValidToken
     
+    /**
+    * Return name of home country
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getHCountryName() {
+      return lang('country ' . $this->getHCountry());
+    } // getHCountryName
+    
+    /**
+    * Return name of work country
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getWCountryName() {
+      return lang('country ' . $this->getWCountry());
+    } // getWCountryName
+    
+    /**
+    * Return name of other country
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getOCountryName() {
+      return lang('country ' . $this->getOCountry());
+    } // getOCountryName
 
     // ---------------------------------------------------
     //  URLs
@@ -620,7 +651,7 @@ class Contact extends BaseContact
      * @param Project $project
      * @return booelean
      */
-    function canAdd(User $user) {
+    function canAdd(User $user, Project $project) {
 		return can_manage_contacts($user, true);
     } // canAdd
     
@@ -682,37 +713,38 @@ class Contact extends BaseContact
     // ---------------------------------------------------
 
     
+    
     function getFullHomeAddress()
     {
-    	$result = $this->getHAddress();
-    	
-    	if ($this->getHZipcode() != '')
-    	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getHZipcode();
-    	}
+    	$line1 = $this->getHAddress();
+    	$line2 = '';
+    	$line3 = '';
     	
     	if ($this->getHCity() != '')
-    	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getHCity();
-    	}
+    		$line2 = $this->getHCity();
     	
     	if ($this->getHState() != '')
     	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getHState();
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getHState();
+    	}
+    	
+    	if ($this->getHZipcode() != '')
+    	{
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getHZipcode();
     	}
     	
     	if ($this->getHCountry() != '')
-    	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getHCountry();
-    	}
+	    	$line3 = $this->getHCountryName();
+	    	
+	    $result = $line1;
+	    if ($line2 != '')
+	    	$result .= "\n" . $line2;
+	    if ($line3 != '')
+	    	$result .= "\n" . $line3;
     	
     	return $result;
     }
@@ -724,38 +756,79 @@ class Contact extends BaseContact
      */
     function getFullWorkAddress()
     {
-    	$result = $this->getWAddress();
+    	$line1 = $this->getWAddress();
     	
-    	if ($this->getWZipcode() != '')
-    	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getWZipcode();
-    	}
-    	
+    	$line2 = '';
     	if ($this->getWCity() != '')
-    	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getWCity();
-    	}
+    		$line2 = $this->getWCity();
     	
     	if ($this->getWState() != '')
     	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getWState();
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getWState();
     	}
     	
-    	if ($this->getWCountry() != '')
+    	if ($this->getWZipcode() != '')
     	{
-    		if ($result != '')
-    			$result .= ', ';
-    		$result .= $this->getWCountry();
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getWZipcode();
     	}
+    	
+    	$line3 = '';
+    	if ($this->getWCountry() != '')
+	    	$line3 = $this->getWCountryName();
+	    	
+	    $result = $line1;
+	    if ($line2 != '')
+	    	$result .= "\n" . $line2;
+	    if ($line3 != '')
+	    	$result .= "\n" . $line3;
     	
     	return $result;
     }
+    
+/**
+     * Returns the full work address
+     *
+     * @return string
+     */
+    function getFullOtherAddress()
+    {
+    	$line1 = $this->getOAddress();
+    	$line2 = '';
+    	$line3 = '';
+    	
+    	if ($this->getOCity() != '')
+    		$line2 = $this->getOCity();
+    	
+    	if ($this->getOState() != '')
+    	{
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getOState();
+    	}
+    	
+    	if ($this->getOZipcode() != '')
+    	{
+    		if ($line2 != '')
+    			$line2 .= ', ';
+    		$line2 .= $this->getOZipcode();
+    	}
+    	
+    	if ($this->getOCountry() != '')
+	    	$line3 = $this->getOCountryName();
+	    	
+	    $result = $line1;
+	    if ($line2 != '')
+	    	$result .= "\n" . $line2;
+	    if ($line3 != '')
+	    	$result .= "\n" . $line3;
+    	
+    	return $result;
+    }
+    
     function getDashboardObject(){
     	$projects = $this->getProjects();
     	if ($projects == null)
@@ -792,6 +865,7 @@ class Contact extends BaseContact
 				"manager" => get_class($this->manager())
 			);
     }
+    
     function getProjects() {
     	$projs=ProjectContacts::getProjectsByContact($this);
     	$ret= null;//return value
@@ -803,9 +877,11 @@ class Contact extends BaseContact
     	}
     	return $ret;
     }
+    
     function getTagNames() {
       if(!$this->isTaggable()) throw new Error('Object not taggable');
       return Tags::getTagNamesByObject($this, get_class($this->manager()));
     } // getTagNames
+    
 }
 ?>

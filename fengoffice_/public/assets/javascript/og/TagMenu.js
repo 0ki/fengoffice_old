@@ -4,6 +4,7 @@ og.TagMenu = function(config, tags) {
 	if (!config) config = {};
 	
 	og.TagMenu.superclass.constructor.call(this, Ext.apply(config, {
+		cls: 'scrollable-menu',
 		items: [ 
 			'-', {
 			text: lang('add tag'),

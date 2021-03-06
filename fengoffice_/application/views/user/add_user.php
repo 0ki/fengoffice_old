@@ -101,6 +101,11 @@
     <?php echo yes_no_widget('user[send_email_notification]', 'userFormEmailNotification', array($user_data, 'send_email_notification'), lang('yes'), lang('no')) ?>
     <br /><span class="desc"><?php echo lang('send new account notification desc') ?></span>
   </div>
+  <div class="formBlock">
+    <?php echo label_tag(lang('create contact from user'), null, true) ?>
+    <?php echo yes_no_widget('user[create_contact]', 'createContact', array($user_data, 'create_contact'), lang('yes'), lang('no')) ?>
+    <br /><span class="desc"><?php echo lang('create contact from user desc') ?></span>
+  </div>
   
 <?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
   <fieldset>

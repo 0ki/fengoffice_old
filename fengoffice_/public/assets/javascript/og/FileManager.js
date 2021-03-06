@@ -23,8 +23,8 @@ og.FileManager = function() {
 					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
 					'updatedBy', 'updatedById',
 					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'icon', 'project', 'projectId', 'manager', 'checkedOutById',
-					'checkedOutByName', 'mimeType', 'workspaceColors', 'isModifiable',
+					'icon', 'wsIds', 'manager', 'checkedOutById',
+					'checkedOutByName', 'mimeType', 'isModifiable',
 					'modifyUrl'
 				]
 			}),
@@ -45,6 +45,7 @@ og.FileManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.hideLoading();
+					og.showWsPaths();
 				},
 				'beforeload': function() {
 					og.loading();
@@ -67,15 +68,13 @@ og.FileManager = function() {
 		var name = String.format(
 			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
 			value, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
-					
-		var ids = String(r.data.projectId).split(',');
-		var names = r.data.project.split(',');
-		var colors = String(r.data.workspaceColors).split(',');
-		var projectstring = '<span class="og-wsname">';
-		for(var i = 0; i < ids.length; i++){
-			projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
+		
+		var projectsString = '';
+	    if (r.data.wsIds != ''){
+			var ids = String(r.data.wsIds).split(',');
+			for(var i = 0; i < ids.length; i++)
+				projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
 		}
-		projectstring += '</span>';
 		
 		var actions = '';
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
@@ -89,7 +88,7 @@ og.FileManager = function() {
 		if (actions != '')
 			actions = '<span style="padding-left:15px">-&nbsp;' + actions + '</span>';
 		
-		return projectstring + name + actions;
+		return projectsString + name + actions;
 	}
 
 	function renderIcon(value, p, r) {
@@ -360,8 +359,8 @@ og.FileManager = function() {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		style: "padding:7px;",
-		bbar: new Ext.PagingToolbar({
+		/*style: "padding:7px;",*/
+		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
 			displayInfo: true,
@@ -377,9 +376,9 @@ og.FileManager = function() {
 			'-',
 			actions.tag,
 			actions.del,
-			actions.more,
+			actions.more/*,
 			'-',
-			actions.refresh
+			actions.refresh*/
 		],
 		listeners: {
 			'render': {
@@ -427,7 +426,8 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 			params: Ext.applyIf(params, {
 				start: start,
 				limit: og.pageSize
-			})
+			}),
+			
 		});
 		this.needRefresh = false;
 	},
@@ -446,3 +446,5 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 });
 
 Ext.reg("files", og.FileManager);
+
+

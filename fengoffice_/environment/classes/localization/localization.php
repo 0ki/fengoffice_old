@@ -17,7 +17,7 @@ function lang($name) {
 	$value = Localization::instance()->lang($name);
 	if(is_null($value)) return $value;
 
-	// We have args? Replace all %s with arguments
+	// We have args? Replace all {x} with arguments
 	if(is_array($args) && count($args)) {
 		$i = 0;
 		foreach($args as $arg) {

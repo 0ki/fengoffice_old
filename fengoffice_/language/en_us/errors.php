@@ -67,7 +67,8 @@
     // Add task list
     'task list name required' => 'Task name value is required',
     'task list name unique' => 'Task name must be unique in workspace',
-    
+    'task title required' => 'Task title is required',
+  
     // Add task
     'task text required' => 'Task text is required',
     
@@ -127,6 +128,9 @@
   	'chart title required' => 'Chart title is required.',
   	'chart title unique' => 'Chart title must be unique.',
     'must choose at least one workspace error' => 'You must choose at least one workspace where to put the object.',
+    
+    
+    'user has contact' => 'There is a contact already assigned to this user',
   ); // array
 
 ?>

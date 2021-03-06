@@ -8,7 +8,7 @@ return array(
     'recent activities' => 'Recent activities',
     'search button caption' => 'Go',
     'search result description' => 'Displaying <strong>{0} of {1}</strong> objects that match <strong>"{2}"</strong>',
-    'search result description short' => '<strong>{0} to {1} of {2}</strong>',
+    'search result description short' => '{0} to {1} of {2}',
 
 // Options and descriptions
 	'edit this file' => 'Edit this file',
@@ -46,6 +46,8 @@ return array(
     'milestone assigned to' => 'Assigned to {0}',
     'assigned to' => 'Assigned to',
     'project started on' => 'Started on',
+
+    'email sent by linktitle' => 'Sent by {1}, {0}',
 
     'send milestone assigned to notification' => 'Send email notification to user',
 	'send task assigned to notification' => 'Send email notification to user',
@@ -128,7 +130,7 @@ return array(
 
     'add link object control' => 'Add object',
     'remove link object control' => 'Remove',
-    'link objects to object desc' => 'Use this form to link objects to <strong><a href="%s">%s</a></strong>. You can link one or many objects. You can select any existing object or upload new ones. <strong>New objects will also be available through files section when you upload them</strong>.',
+    'link objects to object desc' => 'Use this form to link objects to <strong><a href="{0}">{1}</a></strong>. You can link one or many objects. You can select any existing object or upload new ones. <strong>New objects will also be available through files section when you upload them</strong>.',
     'select object' => 'Select an object',
 
 
@@ -249,6 +251,10 @@ return array(
 	'new milestone template' => 'New milestone template',
 	'new milestone from template' => 'New milestone from template',
 	'loading' => 'Loading',
+
+	'show all' => 'Show all',
+
+	'unassigned' => 'Unassigned'
 ); // array
 
 ?>

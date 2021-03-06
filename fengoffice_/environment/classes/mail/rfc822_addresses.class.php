@@ -2,7 +2,7 @@
 /*
  * rfc822_addresses.php
  *
- * @(#) $Id: rfc822_addresses.class.php,v 1.1 2008/04/24 13:43:30 chonwil Exp $
+ * @(#) $Id: rfc822_addresses.class.php,v 1.2 2008/09/09 20:10:42 idesoto Exp $
  *
  */
 
@@ -12,8 +12,8 @@
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: rfc822_addresses.class.php,v 1.1 2008/04/24 13:43:30 chonwil Exp $</version>
-	<copyright>Copyright © (C) Manuel Lemos 2006 - 2008</copyright>
+	<version>@(#) $Id: rfc822_addresses.class.php,v 1.2 2008/09/09 20:10:42 idesoto Exp $</version>
+	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>RFC 822 e-mail addresses parser</title>
 	<author>Manuel Lemos</author>
 	<authoraddress>mlemos-at-acm.org</authoraddress>

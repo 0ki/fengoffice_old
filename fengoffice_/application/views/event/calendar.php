@@ -35,20 +35,22 @@ $lastday = date("t", mktime(0,0,0,$month,1,$year));
 <script type="text/javascript">
 	
 
+
 function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
-    var e=(evt)?evt:window.event;
+  	var e=(evt)?evt:window.event;
     if (window.event) {
         e.cancelBubble=true;
     } else {
         e.stopPropagation();
     }
+    return true;
 }
-
 var ob=true;
 
 function hide_tooltip(elem){
 	jQuery(elem).parent().trigger('mouseout');
 }
+
 
 //disable showing the tooltip. 
 function disable_overlib(){
@@ -186,10 +188,10 @@ function disable_overlib(){
 														
 					?>	
 							
-								<div style='z-index:0; height:100%;' onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',type_id:1,hour:'0',minute:'0',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
+								<div style='z-index:0; height:100%;cursor:pointer' onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',type_id:2,hour:'0',minute:'0',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
 									<div class='<?php echo $daytitle ?>' style='text-align:right'>
 							
-							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);"  style='color:#5B5B5B' ><?php echo $w?></a>				
+							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
 							// only display this link if the user has permission to add an event
 							if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
@@ -232,7 +234,7 @@ function disable_overlib(){
 											$color = $event->getEventTypeObject()?$event->getEventTypeObject()->getTypeColor():''; 
 											if($color=="") $color = "C2FFBF";
 											// organize the time and duraton data
-											$overlib_time = CAL_UNKNOWN_TIME;
+											$overlib_time = lang('CAL_UNKNOWN_TIME');
 											switch($typeofevent) {
 												case 1:
 													if(!cal_option("hours_24")) $timeformat = 'g:i A';
@@ -241,12 +243,12 @@ function disable_overlib(){
 													$overlib_time = "@ $event_time";
 													break;
 												case 2:
-													$event_time = CAL_FULL_DAY;
-													$overlib_time = CAL_FULL_DAY;
+													$event_time = lang('CAL_FULL_DAY');
+													$overlib_time = lang('CAL_FULL_DAY');
 													break;
 												case 3:
 													$event_time = '??:??';
-													$overlib_time = CAL_UNKNOWN_TIME;
+													$overlib_time = lang('CAL_UNKNOWN_TIME');
 													break;
 												default: ;
 											} 
@@ -256,7 +258,7 @@ function disable_overlib(){
 											$overlibtext_color = "#000000";
 											// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 											if(!$private && $count <= 3){
-												if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
+												if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
 												$strStyle = '';
 												if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") { 
 													$strStyle= "style='z-index:1000;border-left-color: #$color;'";
@@ -264,7 +266,7 @@ function disable_overlib(){
 								?>
 												<div class="event_block" <?php echo $strStyle  ?> > 
 													 <span class='event_hover_details' title="<?php echo $subject." - <i>Event</i>"?>|<?php echo $overlib_text?>" >													 	
-														 <a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();" >
+														 <a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();return true;" >
 																	<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														 <?php echo $subject ?>
 														 </a>
@@ -292,7 +294,7 @@ function disable_overlib(){
 								?>
 													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
 														<span class='milestone_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
-															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();" >
+															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" align='absmiddle' border='0'>
 															<?php echo $cal_text ?>
 															</a>
@@ -325,7 +327,7 @@ function disable_overlib(){
 								
 													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
 														<span class='task_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
-															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();"  border='0'>
+															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
 														 	</a>
@@ -339,7 +341,7 @@ function disable_overlib(){
 									if ($count > 3) {
 								?>
 									
-										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="cancel(event);disable_overlib();">+<?php echo ($count-3) ?> more</a></div>
+										<div style="witdh:100%;text-align:center;font-size:9px" ><a href="<?php echo $p?>" class="internalLink"  onclick="cancel(event);disable_overlib();return true;">+<?php echo ($count-3) ?> more</a></div>
 								<?php
 									}
 								}

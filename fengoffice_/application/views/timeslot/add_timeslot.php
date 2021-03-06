@@ -17,7 +17,7 @@
   </div>
 	<table>
 		<tr>
-			<td align="right"><b><?php echo lang("start date") ?>:&nbsp;</b></td>
+			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
 				$start_time = new DateTimeValue($timeslot->getStartTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
 				echo pick_date_widget('timeslot[start]',$start_time, date("Y") - 10 , date("Y") + 10);
@@ -25,7 +25,7 @@
 		</tr>
 		
 		<tr>
-			<td align="right"><b><?php echo lang("start time") ?>:&nbsp;</b></td>
+			<td><b><?php echo lang("start time") ?>:&nbsp;</b></td>
 			<td align='left'><select name="timeslot[start_hour]" size="1">
 			<?php
 			for($i = 0; $i < 24; $i++) {
@@ -46,7 +46,7 @@
 			</select></td>
 		</tr><tr><td>&nbsp;</td></tr>
 		<tr>
-			<td align="right"><b><?php echo lang("end date") ?>:&nbsp;</b></td>
+			<td ><b><?php echo lang("end date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
 				if ($timeslot->getEndTime() == null){
 					$dt = DateTimeValueLib::now();
@@ -58,7 +58,7 @@
 		</tr>
 		
 		<tr>
-			<td align="right"><b><?php echo lang("end time") ?>:&nbsp;</b></td>
+			<td><b><?php echo lang("end time") ?>:&nbsp;</b></td>
 			<td align='left'><select name="timeslot[end_hour]" size="1">
 			<?php
 			for($i = 0; $i < 24; $i++) {

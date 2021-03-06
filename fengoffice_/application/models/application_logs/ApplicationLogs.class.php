@@ -206,6 +206,32 @@
       return in_array($action, $valid_actions);
     } // isValidAction
     
+    /**
+    * Return entries related to specific object
+    * 
+    * If $include_private is set to true private entries will be included in result. If $include_silent is set to true 
+    * logs marked as silent will also be included. $limit and $offset are there to control the range of the result, 
+    * usually we don't want to pull the entire log but just the few most recent entries. If NULL they will be ignored
+    *
+    * @param ApplicationDataObject $object
+    * @param boolean $include_private
+    * @param boolean $include_silent
+    * @param integer $limit
+    * @param integer $offset
+    * @return array
+    */
+    static function getObjectLogs(Project $object, $include_private = false, $include_silent = false, $limit = null, $offset = null) {
+      $private_filter = $include_private ? 1 : 0;
+      $silent_filter = $include_silent ? 1 : 0;
+      
+      return self::findAll(array(
+        'conditions' => array('`is_private` <= ? AND `is_silent` <= ? AND `rel_object_id` = (?) AND `rel_object_manager` = (?)', $private_filter, $silent_filter, $object->getId(),get_class($object->manager())),
+        'order' => '`created_on` DESC',
+        'limit' => $limit,
+        'offset' => $offset,
+      )); // findAll
+    } // getObjectLogs
+    
   } // ApplicationLogs 
 
 ?>

@@ -124,8 +124,7 @@ class ReportingController extends ApplicationController {
 	*/
 	function index() 
 	{
-		$this->setTemplate('add_chart');
-		$this->add_chart();
+		ajx_set_no_toolbar(true);
 	}
 	
 	function list_all() 
@@ -232,5 +231,175 @@ class ReportingController extends ApplicationController {
 		tpl_assign("listing", $object);
 	}
 	
+	
+	
+	// ---------------------------------------------------
+	//  Tasks Reports
+	// ---------------------------------------------------
+	
+	function total_task_times_p(){
+		$users = owner_company()->getUsers();
+		$workspaces = logged_user()->getActiveProjects();
+		
+		tpl_assign('workspaces', $workspaces);
+		tpl_assign('users', $users);
+	}
+	
+	function total_task_times($report_data = null, $task = null){
+		$this->setTemplate('report_wrapper');
+		
+		if (!$report_data)
+			$report_data = array_var($_POST, 'report');
+		
+		$user = Users::findById(array_var($report_data, 'user'));
+		$workspace = Projects::findById(array_var($report_data, 'project_id'));
+		if ($workspace instanceof Project){
+			if (array_var($report_data, 'include_subworkspaces'))
+				$workspacesCSV = $workspace->getAllSubWorkspacesCSV();
+			else
+				$workspacesCSV = $workspace->getId();
+		} else $workspacesCSV = null;
+		
+		$st = DateTimeValueLib::now();
+		$et = DateTimeValueLib::now();
+		switch (array_var($report_data, 'date_type')){
+			case 1:
+				$now = DateTimeValueLib::now();
+				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),$now->getDay(),$now->getYear());
+				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),$now->getDay(),$now->getYear());break;
+			case 2:
+				$now = DateTimeValueLib::now();
+				$monday = $now->getMondayOfWeek();
+				$nextMonday = $now->getMondayOfWeek()->add('w',1)->add('d',-1);
+				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
+				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
+			case 3:
+				$now = DateTimeValueLib::now();
+				$monday = $now->getMondayOfWeek()->add('w',-1);
+				$nextMonday = $now->getMondayOfWeek()->add('d',-1);
+				$st = DateTimeValueLib::make(0,0,0,$monday->getMonth(),$monday->getDay(),$monday->getYear());
+				$et = DateTimeValueLib::make(23,59,59,$nextMonday->getMonth(),$nextMonday->getDay(),$nextMonday->getYear());break;
+			case 4:
+				$now = DateTimeValueLib::now();
+				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
+				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
+			case 5:
+				$now = DateTimeValueLib::now();
+				$now->add('M',-1);
+				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
+				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
+			case 6:
+				$sday = array_var($report_data, 'start_day');
+				$smonth = array_var($report_data, 'start_month');
+				$syear = array_var($report_data, 'start_year');
+				$eday = array_var($report_data, 'end_day');
+				$emonth = array_var($report_data, 'end_month');
+				$eyear = array_var($report_data, 'end_year');
+		
+				$st = DateTimeValueLib::make(0,0,0,$smonth,$sday,$syear);
+				$et = DateTimeValueLib::make(23,59,59,$emonth,$eday,$eyear);
+				break;
+		}
+		
+		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
+		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
+		
+		$group_by = array();
+		if (array_var($report_data, 'group_by_1') != '0')
+			$group_by[] = array_var($report_data, 'group_by_1');
+		if (array_var($report_data, 'group_by_2') != '0')
+			$group_by[] = array_var($report_data, 'group_by_2');
+		if (array_var($report_data, 'group_by_3') != '0')
+			$group_by[] = array_var($report_data, 'group_by_3');
+		
+		$timeslotsArray = Timeslots::getTaskTimeslots($user,$workspacesCSV,$st,$et, array_var($report_data, 'task_id',0),$group_by);
+		
+		tpl_assign('group_by', $group_by);
+		tpl_assign('timeslotsArray', $timeslotsArray);
+		tpl_assign('workspace', $workspace);
+		tpl_assign('start_time', $st);
+		tpl_assign('end_time', $et);
+		tpl_assign('user', $user);
+		tpl_assign('post', $report_data);
+		tpl_assign('template_name', 'total_task_times');
+		tpl_assign('title',lang('task time report'));
+	}
+	
+	function total_task_times_by_task_print(){
+		$this->setLayout("html");
+		
+		$task = ProjectTasks::findById(get_id());
+		
+		$st = DateTimeValueLib::make(0,0,0,1,1,1900);
+		$et = DateTimeValueLib::make(23,59,59,12,31,2036);
+		
+		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null, $task->getProjectId(),$st,$et,'ProjectTasks', get_id());
+		
+		tpl_assign('estimate', $task->getTimeEstimate());
+		tpl_assign('timeslots', $timeslots);
+		tpl_assign('workspace', $task->getProject());
+		tpl_assign('template_name', 'total_task_times');
+		tpl_assign('title',lang('task time report'));
+		tpl_assign('task_title', $task->getTitle());
+		$this->setTemplate('report_printer');
+	}
+	
+	function total_task_times_print(){
+		$this->setLayout("html");
+		
+		$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
+		
+		$this->total_task_times($report_data);
+		$this->setTemplate('report_printer');
+	}
+
+
+	
+	function total_task_times_vs_estimate_comparison_p(){
+		$users = owner_company()->getUsers();
+		$workspaces = logged_user()->getActiveProjects();
+		
+		tpl_assign('workspaces', $workspaces);
+		tpl_assign('users', $users);
+	}
+	
+	function total_task_times_vs_estimate_comparison($report_data = null, $task = null){
+		$this->setTemplate('report_wrapper');
+		
+		if (!$report_data)
+			$report_data = array_var($_POST, 'report');
+		
+		$workspace = Projects::findById(array_var($report_data, 'project_id'));
+		if ($workspace instanceof Project){
+			if (array_var($report_data, 'include_subworkspaces'))
+				$workspacesCSV = $workspace->getAllSubWorkspacesCSV();
+			else
+				$workspacesCSV = $workspace->getId();
+		} else $workspacesCSV = null;
+		
+		$sday = array_var($report_data, 'start_day');
+		$smonth = array_var($report_data, 'start_month');
+		$syear = array_var($report_data, 'start_year');
+		$eday = array_var($report_data, 'end_day');
+		$emonth = array_var($report_data, 'end_month');
+		$eyear = array_var($report_data, 'end_year');
+
+		$st = DateTimeValueLib::make(0,0,0,$smonth,$sday,$syear);
+		$et = DateTimeValueLib::make(23,59,59,$emonth,$eday,$eyear);
+		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
+		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
+		
+		$timeslots = Timeslots::getTimeslotsByUserWorkspacesAndDate(null,$workspacesCSV,$st,$et,'ProjectTasks', array_var($report_data, 'task_id',0));
+		
+		tpl_assign('timeslots', $timeslots);
+		tpl_assign('workspace', $workspace);
+		tpl_assign('start_time', $st);
+		tpl_assign('end_time', $et);
+		tpl_assign('user', $user);
+		tpl_assign('post', $report_data);
+		tpl_assign('template_name', 'total_task_times');
+		tpl_assign('title',lang('task time report'));
+	}
+
 }
 ?>

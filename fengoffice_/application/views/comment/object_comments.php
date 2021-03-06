@@ -53,10 +53,11 @@
 					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getDisplayName()) ?>" /></div></td>
 		<?php } // if ?>
 					<td style="text-align:left">
-						<?php echo do_textile($comment->getText()) ?>
-					</td><td style="width:173px">
-						<?php echo render_object_links($comment, $comment->canEdit(logged_user()), true, false) ?>
-					</td></tr></table>
+						<?php echo nl2br(clean($comment->getText())) ?>
+					</td><? $object_links_render = render_object_links($comment, $comment->canEdit(logged_user()), true, false);
+						if ($object_links_render != '') { ?><td style="width:173px">
+						<?php echo $object_links_render  ?>
+					</td><?php } ?></tr></table>
 				</div>
 			</div>
 		<?php } // foreach ?>

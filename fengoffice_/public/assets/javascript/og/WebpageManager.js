@@ -17,7 +17,7 @@ og.WebpageManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'name', 'description', 'url', 'tags', 'project', 'projectId'
+	                'name', 'description', 'url', 'tags', 'wsIds'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -37,6 +37,7 @@ og.WebpageManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					og.hideLoading();
+					og.showWsPaths();
 				},
 				'beforeload': function() {
 					og.loading();
@@ -57,20 +58,20 @@ og.WebpageManager = function() {
     // Renderers
     //--------------------------------------------
 
+    
     function renderName(value, p, r) {
-    	return String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' + lang('open link in new window', value) + '">{0}</a>', value, r.data.url);
-    }
-
-	function renderProject(value, p, r) {
-		var ids = String(r.data.projectId).split(',');
-		var names = value.split(',');
-		var result = "";
-		for(var i = 0; i < ids.length; i++){
-			result += String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i], ids[i]);
-			if (i < ids.length - 1)
-				result += ",&nbsp";
+		var result = '';
+		var name = String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' 
+			+ lang('open link in new window', value) + '">{0}</a>', value, r.data.url);
+		
+		var projectsString = '';
+	    if (r.data.wsIds != ''){
+			var ids = String(r.data.wsIds).split(',');
+			for(var i = 0; i < ids.length; i++)
+				projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
 		}
-		return result;
+		
+		return projectsString + name;
 	}
     
 	function getSelectedIds() {
@@ -108,12 +109,6 @@ og.WebpageManager = function() {
 		});
     var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'project',
-			header: lang("project"),
-			dataIndex: 'project',
-			width: 120,
-			renderer: renderProject
-        },{
 			id: 'name',
 			header: lang("title"),
 			dataIndex: 'name',
@@ -205,8 +200,8 @@ og.WebpageManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-		style: "padding:7px;",
-        bbar: new Ext.PagingToolbar({
+		/*style: "padding:7px;",*/
+        bbar: new og.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
             displayInfo: true,
@@ -222,9 +217,9 @@ og.WebpageManager = function() {
 			'-',
 			actions.tag,
 			actions.delWebpage,
-			actions.editWebpage,
+			actions.editWebpage/*,
 			'-',
-			actions.refresh
+			actions.refresh*/
         ],
 		listeners: {
 			'render': {

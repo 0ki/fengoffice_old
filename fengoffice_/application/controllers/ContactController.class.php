@@ -4,7 +4,7 @@
  * Contact controller
  *
  * @version 1.0
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com>,  Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class ContactController extends ApplicationController {
 
@@ -89,10 +89,10 @@ class ContactController extends ApplicationController {
 		$contacts = $this->getContacts($tag, $attributes, $project);
 		$companies = array();
 		$companies = $this->getCompanies($tag, $attributes, $project);
-		$totMsg = $this->addContactsAndCompanies($contacts, $companies);
+		$union = $this->addContactsAndCompanies($contacts, $companies);
 		
 		// Prepare response object
-		$object = $this->prepareObject($totMsg, $start, $limit);
+		$object = $this->prepareObject($union, $start, $limit);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 	}
@@ -109,7 +109,7 @@ class ContactController extends ApplicationController {
 		if (isset($contacts)) $totCount = count($contacts);
 		if (isset($companies)) $totCount += count($companies);
 		$totContacts = array();
-		//Order messages and emails by date
+		//Order messages and emails by name
 		if (!isset($contacts)){
 			$totContacts = $companies ;
 		}
@@ -120,14 +120,21 @@ class ContactController extends ApplicationController {
 			$m = 0;
 			while (($e + $m) < $totCount){
 				if ($e < count($contacts))
-					if ($m < count($companies))
-						if ($contacts[$e]['comp_date'] > $companies[$m]['comp_date']){
+					if ($m < count($companies)){						
+						$contact_name = trim( ((array_var($contacts[$e],'lastname','') != '') ?  
+												array_var($contacts[$e],'lastname') .', ' : ''
+											  ) .
+											  array_var($contacts[$e],'firstname','') .' ' .
+											  array_var($contacts[$e],'middlename','')
+											);
+						if (strcmp($contact_name ,$companies[$m]['name'])  < 0 ){
 							$totContacts [] = $contacts[$e];
 							$e++;
 						} else {
 							$totContacts [] = $companies[$m];
 							$m++;
 						}
+					}
 					else {
 						$totContacts [] = $contacts[$e];
 						$e++;
@@ -252,6 +259,7 @@ class ContactController extends ApplicationController {
 	{
 		$object = array(
 			"totalCount" => count($totMsg),
+			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
 			"contacts" => array()
 		);
 		for ($i = $start; $i < $start + $limit; $i++){
@@ -280,6 +288,9 @@ class ContactController extends ApplicationController {
 							"id" => $i,
 							"object_id" => $c->getId(),
 							"type" => 'contact',
+							"projectId" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"projectName" => $c->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+    						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"name" => $c->getReverseDisplayName(),
 							"email" => $c->getEmail(),
 							"companyId" => $c->getCompanyId(),
@@ -321,6 +332,9 @@ class ContactController extends ApplicationController {
 							"id" => $i,
 							"object_id" => $c->getId(),
 							"type" => 'company',
+							"projectId" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"projectName" => $c->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+    						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							'name' => $c->getName(),
 							'email' => $c->getEmail(),
 							'website' => $c->getHomepage(),
@@ -400,8 +414,8 @@ class ContactController extends ApplicationController {
 		elseif($objects_per_page)
 			$query .= " limit " . $objects_per_page;*/
 		
-		$res = DB::execute("SELECT id, 'Contacts' as manager, `updated_on` as comp_date from " . TABLE_PREFIX. "contacts where " . 
-			$tagstr . $permission_str . " ORDER BY updated_on DESC");
+		$res = DB::execute("SELECT id, `lastname`,`firstname`,`middlename`, 'Contacts' as manager from " . TABLE_PREFIX. "contacts where " . 
+			$tagstr . $permission_str . " ORDER BY lastname, firstname ");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -439,11 +453,14 @@ class ContactController extends ApplicationController {
 				TABLE_PREFIX . "companies.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Companies' ) > 0 ";
 		}
-		
-		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-		
-		$res = DB::execute("SELECT id, 'Companies' as manager, `updated_on` as comp_date FROM " . TABLE_PREFIX. "companies WHERE " . 
-			$contactConditions . $tagstr . $permissions . " ORDER BY updated_on DESC");
+		if (!can_manage_contacts(logged_user())) {
+			$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+		}
+		else {
+			$permissions =' ';
+		}
+		$res = DB::execute("SELECT id, name, 'Companies' as manager, `updated_on` as comp_date FROM " . TABLE_PREFIX. "companies WHERE " . 
+			$contactConditions . $tagstr . $permissions . " ORDER BY name");
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -499,7 +516,7 @@ class ContactController extends ApplicationController {
 	 */
 	function card() {
 		$contact = Contacts::findById(get_id());
-		if(!$contact->canView(logged_user())) {
+		if(!$contact || !$contact->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -536,15 +553,22 @@ class ContactController extends ApplicationController {
 		tpl_assign('isAddProject',true);
 		$this->setTemplate('edit_contact');
 
-		if(!Contact::canAdd(logged_user())) {
+		if(!Contact::canAdd(logged_user(),active_or_personal_project())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} // if
 
-		$contact = new Contact();
+		$contact = new Contact();		
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
 		$contact_data = array_var($_POST, 'contact');
+		if(!array_var($contact_data,'company_id')){
+//			$company_id = get_id('company_id');
+//			if($company_id && ( Companies::findById($company_id) instanceof Company) ) {
+				$contact_data['company_id'] = get_id('company_id');
+				$contact_data['timezone'] = logged_user()->getTimezone();
+//			}	
+		}
 		$redirect_to = get_url('contact');
 
 		tpl_assign('contact', $contact);
@@ -554,9 +578,23 @@ class ContactController extends ApplicationController {
 		if(is_array(array_var($_POST, 'contact'))) {
 			ajx_current("empty");
 			try {
+				DB::beginWork();
+				
+				$newCompany = false;
+				if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+					$company_data = array_var($_POST, 'company');
+					$company = new Company();
+					$company->setFromAttributes($company_data);
+					$company->setClientOfId(1);
+					
+					$company->save();
+					$newCompany = true;
+				}
+				
 				$contact->setFromAttributes($contact_data);
 
-				DB::beginWork();
+				if($newCompany)
+					$contact->setCompanyId($company->getId());
 				
 				if ($contact_data["o_birthday_year"] != 0) {
 					$bday = new DateTimeValue(0);
@@ -715,7 +753,28 @@ class ContactController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'contact'))) {
 			try {
+				DB::beginWork();
+				
+				$newCompany = false;
+				if (array_var($contact_data, 'isNewCompany') == 'true' && trim(array_var($contact_data, 'new_company_name')) != ''){
+					$company = new Company();
+					$company->setAddress(array_var($contact_data, 'w_address'));
+					$company->setCity(array_var($contact_data, 'w_city'));
+					$company->setState(array_var($contact_data, 'w_state'));
+					$company->setPhoneNumber(array_var($contact_data, 'w_phone_number'));
+					$company->setZipcode(array_var($contact_data, 'w_zipcode'));
+					$company->setCountry(array_var($contact_data, 'w_country'));
+					$company->setHomepage(array_var($contact_data, 'w_webpage'));
+					$company->setFaxNumber(array_var($contact_data, 'w_fax_number'));
+					$company->setName(array_var($contact_data, 'new_company_name'));
+					$company->setClientOfId(1);
+					
+					$company->save();
+					$newCompany = true;
+				}
+				
 				$contact->setFromAttributes($contact_data);
+				
 				if (!is_null($contact->getOBirthday()) && $contact_data["o_birthday_year"] == 0){
 					$contact->setOBirthday(null);
 				} else if ($contact_data["o_birthday_year"] != 0) {
@@ -725,8 +784,9 @@ class ContactController extends ApplicationController {
 					$bday->setDay($contact_data["o_birthday_day"]);
 					$contact->setOBirthday($bday);
 				}
-				 
-				DB::beginWork();
+
+				if($newCompany)
+					$contact->setCompanyId($company->getId());
 
 				$contact->save();
 				$contact->clearImValues();

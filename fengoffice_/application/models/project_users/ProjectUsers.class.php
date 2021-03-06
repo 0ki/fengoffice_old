@@ -98,7 +98,7 @@
       } // if
       
       return count($projects) ? $projects : null;
-    } // getProjectsByUser
+    } // getProjectsByUser 
     
     /**
     * Return all users associated with specific project

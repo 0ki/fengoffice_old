@@ -9,6 +9,20 @@
 class Company extends BaseCompany {
 
 	/**
+	 * Companies are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_searchable = true;
+
+	/**
+	 * Array of searchable columns
+	 *
+	 * @var array
+	 */
+	protected $searchable_columns = array('name', 'email', 'homepage');
+	
+	/**
 	 * Cached array of active company projects
 	 *
 	 * @var array
@@ -48,7 +62,8 @@ class Company extends BaseCompany {
 	 */
 	function getUsers() {
 		return Users::findAll(array(
-        'conditions' => '`company_id` = ' . DB::escape($this->getId())
+        'conditions' => '`company_id` = ' . DB::escape($this->getId()),        
+        'order' => '`display_name`'
 		)); // findAll
 	} // getUsers
 
@@ -240,9 +255,9 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function hasAddress() {
-      return trim($this->getAddress()) <> '' &&
-             trim($this->getCity()) <> '' &&
-             //trim($this->getZipcode()) <> '' &&
+      return trim($this->getAddress()) <> '' ||
+             trim($this->getCity()) <> '' ||
+             trim($this->getZipcode()) <> '' ||
              trim($this->getCountry()) <> '';
     } // hasAddress
     
@@ -366,7 +381,7 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function canAdd(User $user, Project $project){
-      return  $project instanceof Project && ($user->isMemberOf($this)) || can_manage_contacts(logged_user());
+      return  can_manage_contacts(logged_user());
       	
       //return $user->isAccountOwner() || $user->isAdministrator($this);
     } // canAddClient
@@ -444,7 +459,7 @@ class Company extends BaseCompany {
     * @return null
     */
     function getEditUrl() {
-      return $this->isOwner() ? get_url('company', 'edit') : get_url('company', 'edit_client', $this->getId());
+      return get_url('company', 'edit_client', $this->getId());
     } // getEditUrl
     
     /**
@@ -477,7 +492,18 @@ class Company extends BaseCompany {
     */
     function getAddUserUrl() {
       return get_url('user', 'add', array('company_id' => $this->getId()));
-    } // getAddUserUrl  
+    } // getAddUserUrl
+    
+    /**
+    * Return add contact URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getAddContactUrl() {
+      return get_url('contact', 'add', array('company_id' => $this->getId()));
+    } //  getAddContactUrl  
       
     /**
     * Return add group URL
@@ -629,6 +655,10 @@ class Company extends BaseCompany {
       } // if
       
       if($this->validatePresenceOf('homepage')) {
+      	$page = trim($this->getHomepage());
+      	if (substr($page, 0,7) != "http://" && substr($page, 0,8) != "https://") {
+      		$this->setHomepage("http://" . $page);
+      	}
         if(!is_valid_url($this->getHomepage())) {
           $errors[] = lang('company homepage invalid');
         } // if
@@ -651,6 +681,14 @@ class Company extends BaseCompany {
       $users = $this->getUsers();
       if(is_array($users) && count($users)) {
         foreach($users as $user) $user->delete();
+      } // if
+      
+      $contacts = $this->getContacts();
+      if(is_array($contacts) && count($contacts)) {
+        foreach($contacts as $contact) {
+        	$contact->setCompanyId(0);
+        	$contact->save();
+        }
       } // if
       
       ProjectCompanies::clearByCompany($this);

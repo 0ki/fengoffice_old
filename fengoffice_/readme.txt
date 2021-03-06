@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.8
+    About OpenGoo beta 0.9 RC2
     ======================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -13,21 +13,21 @@
     previewing and not for production use. If you find a bug and want to
     collaborate with the project please report it here:
 
-        https://sourceforge.net/tracker/?func=add&group_id=191520&atid=937707
+        http://forum.opengoo.org/
 
     visit:
         * http://www.opengoo.org/
         * http://forum.opengoo.org/
-        * http://sourceforge.net/opengoo
+        * http://sourceforge.net/projects/opengoo
 
     other links:
-        * http://www.activecollab.com/
         * http://www.activecollab.com/forums
         * http://www.fckeditor.net/
+        * http://sourceforge.net/projects/reececalendar
 
 
     contact:
-        * info@opengoo.org
+        * contact@opengoo.org
 
 
     System requirements
@@ -69,27 +69,22 @@
     You should be finished in a matter of minutes.
     
     
-    Upgrade from 0.7.1
-    ==================
+    Upgrade from 0.8
+    ================
     
-    1. Download OpenGoo 0.8 - http://www.opengoo.org/
-    2. Unpack and remove the following folders:
+    1. Backup you current installation (important !)
+    2. Download OpenGoo 0.9 - http://www.opengoo.org/
+    3. Unpack and remove the following folders:
     	- cache
     	- config
     	- public/files
     	- tmp
     	- upload
-    3. Move remaining files and folders to your OpenGoo installation, replacing all files.
-    4. Direct your browser to the public/upgrade directory and follow the instructions.
+    4. Move remaining files and folders to your OpenGoo installation, replacing all files.
+    5. Direct your browser to the public/upgrade directory and follow the instructions.
     
     
 	Changelog
 	=========
 
-	* Task time tracking
-	* Task priority
-	* First approach on task and milestone templates
-	* Better flow of screens (i.e. closing a CO view will actually close it).
-	* Better support for Safari (though it still has some bugs).
-	* Spanish translation (get it by setting DEFAULT_LOCALIZATION to es_uy in config/config.php)
-	* Tons of bugs fixed (assuming that one bug weighs a ton).
+	.

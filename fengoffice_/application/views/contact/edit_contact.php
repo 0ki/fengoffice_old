@@ -11,12 +11,14 @@ if (!$contact->isNew())
 
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
 
+<input id="<?php echo $genid ?>hfIsNewCompany" type="hidden" name="contact[isNewCompany]" value=""/>
+
 <div class="contact">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px">
 	<tr><td><?php echo $contact->isNew() ? lang('new contact') : lang('edit contact') ?>
-	</td><td style="text-align:right"><?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'id' => $genid . 'submit1')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -38,7 +40,7 @@ if (!$contact->isNew())
 		<?php if (isset($isAddProject) && $isAddProject) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_role_div', this)"><?php echo lang('role') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
+		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_work', this)"><?php echo lang('work') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_email_and_im', this)"><?php echo lang('email and instant messaging') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_other', this)"><?php echo lang('other') ?></a> - 
@@ -51,58 +53,124 @@ if (!$contact->isNew())
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
 
-	<div style="display:none" id="<?php echo $genid ?>add_contact_work">
+	<div style="display:block" id="<?php echo $genid ?>add_contact_work">
 	<fieldset><legend><?php echo lang('work') ?></legend>
-		<div style="padding-left:20px">
+		<div style="margin-left:12px;margin-right:12px;">
 			<div>
 				<?php echo label_tag(lang('company'), $genid.'profileFormCompany') ?> 
-				<?php echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class", "og-edit-contact-select-company")); 
-				if(owner_company()->canAddClient(logged_user())) {?>
-					<a class="internalLink" target="administration" href="<?php echo get_url('company', 'add_client')?>" onclick=""><?php echo lang('add client')?></a> 
-	        	<?php } // if?>
-			</div>
-			
-			<div>
-				<?php echo label_tag(lang('department'), $genid.'profileFormDepartment') ?>
-				<?php echo text_field('contact[department]', array_var($contact_data, 'department'), array('id' => $genid.'profileFormDepartment')) ?>
+				<div id="<?php echo $genid ?>existing_company"><?php echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')')); 
+				?><a href="#" class="coViewAction ico-add" title="<?php echo lang('add a new company')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('add company') . '...' ?></a></div>
+				<div id="<?php echo $genid?>new_company" style="display:none; padding:6px; margin-top:6px;margin-bottom:6px; background-color:#EEE">
+					<?php echo label_tag(lang('new company name'), $genid.'profileFormNewCompanyName') ?>
+					<table width=100%><tr><td><?php echo text_field('company[name]', '', array('id' => $genid.'profileFormNewCompanyName', 'onchange' => 'og.checkNewCompanyName("'.$genid .'")')) ?></td>
+					<td style="text-align:right;vertical-align:bottom"><a href="#" title="<?php echo lang('cancel')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('cancel') ?></a></td></tr></table>
+					<div id="<?php echo $genid ?>duplicateCompanyName" style="display:none"></div>
+					<div id="<?php echo $genid ?>companyInfo" style="display:block">
+						<table style="margin-top:12px">
+						<tr>
+						<td style="padding-right:30px">
+							<table style="width:100%">
+							<tr>
+								<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
+								<td><?php echo text_field('company[address]', '', array('id' => $genid.'clientFormAddress')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('address2'), $genid.'clientFormAddress') ?></td>
+								<td><?php echo text_field('company[address2]', '', array('id' => $genid.'clientFormAddress')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'clientFormCity') ?></td>
+								<td><?php echo text_field('company[city]', '', array('id' => $genid.'clientFormCity')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'clientFormState') ?></td>
+								<td><?php echo text_field('company[state]', '', array('id' => $genid.'clientFormState')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'clientFormZipcode') ?></td>
+								<td><?php echo text_field('company[zipcode]', '', array('id' => $genid.'clientFormZipcode')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'clientFormCountry') ?></td>
+								<td><?php echo select_country_widget('company[country]', '', array('id' => $genid.'clientFormCountry')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('website'), $genid.'clientFormWebPage') ?></td>
+								<td><?php echo text_field('company[w_web_page]', '', array('id' => $genid.'clientFormWebPage')) ?></td>
+							</tr>
+							</table>
+						</td><td>
+							<table style="width:100%">
+							<tr>
+								<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'clientFormPhoneNumber') ?> </td>
+								<td><?php echo text_field('company[phone_number]', '', array('id' => $genid.'clientFormPhoneNumber')) ?></td>
+							</tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'clientFormFaxNumber') ?> </td>
+								<td><?php echo text_field('company[fax_number]', '', array('id' => $genid.'clientFormFaxNumber')) ?></td>
+							</tr><tr height=20><td></td><td></td></tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?> </td>
+								<td><?php echo text_field('company[email]', '', array('id' => $genid.'clientFormAssistantNumber')) ?></td>
+							</tr><tr height=20><td></td><td></td></tr><tr>
+								<td class="td-pr"><?php echo label_tag(lang('homepage'), $genid.'clientFormHomepage') ?></td>
+								<td><?php echo text_field('company[homepage]', '', array('id' => $genid.'clientFormCallbackNumber')) ?></td>
+							</tr>
+							</table>
+							</td>
+						</tr>
+						</table>
+					</div>
+				</div>
 			</div>
 	
-			<div>
-				<?php echo label_tag(lang('job title'), $genid.'profileFormJobTitle') ?>
-				<?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle')) ?>
-			</div>
+		<table style=" margin-top:12px">
+			<tr>
+				<td style="padding-right:30px">
+				<table style="width:100%">
+				<tr>
+					<td class="td-pr"><?php echo label_tag(lang('department'), $genid.'profileFormDepartment') ?></td>
+					<td><?php echo text_field('contact[department]', array_var($contact_data, 'department'), array('id' => $genid.'profileFormDepartment')) ?></td>
+				</tr><tr height=20><td></td><td></td></tr>
+				<tr>
+					<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
+					<td><?php echo text_field('contact[w_address]', array_var($contact_data, 'w_address'), array('id' => $genid.'profileFormWAddress')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormWCity') ?></td>
+					<td><?php echo text_field('contact[w_city]', array_var($contact_data, 'w_city'), array('id' => $genid.'profileFormWCity')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'profileFormWState') ?></td>
+					<td><?php echo text_field('contact[w_state]', array_var($contact_data, 'w_state'), array('id' => $genid.'profileFormWState')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'profileFormWZipcode') ?></td>
+					<td><?php echo text_field('contact[w_zipcode]', array_var($contact_data, 'w_zipcode'), array('id' => $genid.'profileFormWZipcode')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'profileFormWCountry') ?></td>
+					<td><?php echo select_country_widget('contact[w_country]', array_var($contact_data, 'w_country'), array('id' => $genid.'profileFormWCountry')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('website'), $genid.'profileFormWWebPage') ?></td>
+					<td><?php echo text_field('contact[w_web_page]', array_var($contact_data, 'w_web_page'), array('id' => $genid.'profileFormWWebPage')) ?></td>
+				</tr>
+				</table>
+				</td><td>
+				<table style="width:100%">
+				<tr>
+					<td class="td-pr"><?php echo label_tag(lang('job title'), $genid.'profileFormJobTitle') ?></td>
+					<td><?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle')) ?></td>
+				</tr><tr height=20><td></td><td></td></tr>
+				<tr>
+					<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'profileFormWPhoneNumber') ?> </td>
+					<td><?php echo text_field('contact[w_phone_number]', array_var($contact_data, 'w_phone_number'), array('id' => $genid.'profileFormWPhoneNumber')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('phone 2'), $genid.'profileFormWPhoneNumber2') ?> </td>
+					<td><?php echo text_field('contact[w_phone_number2]', array_var($contact_data, 'w_phone_number2'), array('id' => $genid.'profileFormWPhoneNumber2')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'profileFormWFaxNumber') ?> </td>
+					<td><?php echo text_field('contact[w_fax_number]', array_var($contact_data, 'w_fax_number'), array('id' => $genid.'profileFormWFaxNumber')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('assistant'), $genid.'profileFormWAssistantNumber') ?> </td>
+					<td><?php echo text_field('contact[w_assistant_number]', array_var($contact_data, 'w_assistant_number'), array('id' => $genid.'profileFormWAssistantNumber')) ?></td>
+				</tr><tr>
+					<td class="td-pr"><?php echo label_tag(lang('callback'), $genid.'profileFormWCallbackNumber') ?></td>
+					<td><?php echo text_field('contact[w_callback_number]', array_var($contact_data, 'w_callback_number'), array('id' => $genid.'profileFormWCallbackNumber')) ?></td>
+				</tr>
+				</table>
+				</td>
+			</tr>
+		</table>
 		</div>
-		<br/>
-			<table  style="margin-left:20px;margin-right:20px">
-		<tr>
-			<td  style="padding-right:60px">
-			<div><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?> <?php echo text_field('contact[w_address]', array_var($contact_data, 'w_address'), array('id' => $genid.'profileFormWAddress')) ?>
-			</div>
-			<div><?php echo label_tag(lang('city'), $genid.'profileFormWCity') ?> <?php echo text_field('contact[w_city]', array_var($contact_data, 'w_city'), array('id' => $genid.'profileFormWCity')) ?>
-			</div>
-			<div><?php echo label_tag(lang('state'), $genid.'profileFormWState') ?> <?php echo text_field('contact[w_state]', array_var($contact_data, 'w_state'), array('id' => $genid.'profileFormWState')) ?>
-			</div>
-			<div><?php echo label_tag(lang('zipcode'), $genid.'profileFormWZipcode') ?> <?php echo text_field('contact[w_zipcode]', array_var($contact_data, 'w_zipcode'), array('id' => $genid.'profileFormWZipcode')) ?>
-			</div>
-			<div><?php echo label_tag(lang('country'), $genid.'profileFormWCountry') ?> <?php echo text_field('contact[w_country]', array_var($contact_data, 'w_country'), array('id' => $genid.'profileFormWCountry')) ?>
-			</div>
-			<div><?php echo label_tag(lang('website'), $genid.'profileFormWWebPage') ?> <?php echo text_field('contact[w_web_page]', array_var($contact_data, 'w_web_page'), array('id' => $genid.'profileFormWWebPage')) ?>
-			</div>
-			</td>
-			<td>
-			<div><?php echo label_tag(lang('phone number'), $genid.'profileFormWPhoneNumber') ?> <?php echo text_field('contact[w_phone_number]', array_var($contact_data, 'w_phone_number'), array('id' => $genid.'profileFormWPhoneNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('phone number 2'), $genid.'profileFormWPhoneNumber2') ?> <?php echo text_field('contact[w_phone_number2]', array_var($contact_data, 'w_phone_number2'), array('id' => $genid.'profileFormWPhoneNumber2')) ?>
-			</div>
-			<div><?php echo label_tag(lang('fax number'), $genid.'profileFormWFaxNumber') ?> <?php echo text_field('contact[w_fax_number]', array_var($contact_data, 'w_fax_number'), array('id' => $genid.'profileFormWFaxNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('assistant number'), $genid.'profileFormWAssistantNumber') ?> <?php echo text_field('contact[w_assistant_number]', array_var($contact_data, 'w_assistant_number'), array('id' => $genid.'profileFormWAssistantNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('callback number'), $genid.'profileFormWCallbackNumber') ?> <?php echo text_field('contact[w_callback_number]', array_var($contact_data, 'w_callback_number'), array('id' => $genid.'profileFormWCallbackNumber')) ?>
-			</div>
-			</td>
-		</tr>
-	</table>
 		</fieldset>
 	</div>
 	
@@ -151,31 +219,46 @@ if (!$contact->isNew())
 	<fieldset><legend><?php echo lang('home') ?></legend>
 	<table style="margin-left:20px;margin-right:20px">
 		<tr>
-			<td  style="padding-right:60px">
-			<div><?php echo label_tag(lang('address'), $genid.'profileFormHAddress') ?> <?php echo text_field('contact[h_address]', array_var($contact_data, 'h_address'), array('id' => $genid.'profileFormHAddress')) ?>
-			</div>
-			<div><?php echo label_tag(lang('city'), $genid.'profileFormHCity') ?> <?php echo text_field('contact[h_city]', array_var($contact_data, 'h_city'), array('id' => $genid.'profileFormHCity')) ?>
-			</div>
-			<div><?php echo label_tag(lang('state'), $genid.'profileFormHState') ?> <?php echo text_field('contact[h_state]', array_var($contact_data, 'h_state'), array('id' => $genid.'profileFormHState')) ?>
-			</div>
-			<div><?php echo label_tag(lang('zipcode'), $genid.'profileFormHZipcode') ?> <?php echo text_field('contact[h_zipcode]', array_var($contact_data, 'h_zipcode'), array('id' => $genid.'profileFormHZipcode')) ?>
-			</div>
-			<div><?php echo label_tag(lang('country'), $genid.'profileFormHCountry') ?> <?php echo text_field('contact[h_country]', array_var($contact_data, 'h_country'), array('id' => $genid.'profileFormHCountry')) ?>
-			</div>
-			<div><?php echo label_tag(lang('website'), $genid.'profileFormHWebPage') ?> <?php echo text_field('contact[h_web_page]', array_var($contact_data, 'h_web_page'), array('id' => $genid.'profileFormHWebPage')) ?>
-			</div>
+			<td  style="padding-right:30px">
+			<table><tr>
+				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormHAddress') ?></td>
+				<td><?php echo text_field('contact[h_address]', array_var($contact_data, 'h_address'), array('id' => $genid.'profileFormHAddress')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormHCity') ?> </td>
+				<td><?php echo text_field('contact[h_city]', array_var($contact_data, 'h_city'), array('id' => $genid.'profileFormHCity')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'profileFormHState') ?></td>
+				<td><?php echo text_field('contact[h_state]', array_var($contact_data, 'h_state'), array('id' => $genid.'profileFormHState')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'profileFormHZipcode') ?></td>
+				<td><?php echo text_field('contact[h_zipcode]', array_var($contact_data, 'h_zipcode'), array('id' => $genid.'profileFormHZipcode')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'profileFormHCountry') ?></td>
+				<td><?php echo select_country_widget('contact[h_country]', array_var($contact_data, 'h_country'), array('id' => $genid.'profileFormHCountry')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('website'), $genid.'profileFormHWebPage') ?></td>
+				<td><?php echo text_field('contact[h_web_page]', array_var($contact_data, 'h_web_page'), array('id' => $genid.'profileFormHWebPage')) ?></td>
+			</tr>
+			</table>
 			</td>
 			<td>
-			<div><?php echo label_tag(lang('phone number'), $genid.'profileFormHPhoneNumber') ?> <?php echo text_field('contact[h_phone_number]', array_var($contact_data, 'h_phone_number'), array('id' => $genid.'profileFormHPhoneNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('phone number 2'), $genid.'profileFormHPhoneNumber2') ?> <?php echo text_field('contact[h_phone_number2]', array_var($contact_data, 'h_phone_number2'), array('id' => $genid.'profileFormHPhoneNumber2')) ?>
-			</div>
-			<div><?php echo label_tag(lang('fax number'), $genid.'profileFormHFaxNumber') ?> <?php echo text_field('contact[h_fax_number]', array_var($contact_data, 'h_fax_number'), array('id' => $genid.'profileFormHFaxNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('mobile number'), $genid.'profileFormHMobileNumber') ?> <?php echo text_field('contact[h_mobile_number]', array_var($contact_data, 'h_mobile_number'), array('id' => $genid.'profileFormHMobileNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('pager number'), $genid.'profileFormHPagerNumber') ?> <?php echo text_field('contact[h_pager_number]', array_var($contact_data, 'h_pager_number'), array('id' => $genid.'profileFormHPagerNumber')) ?>
-			</div>
+			<table><tr>
+				<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'profileFormHPhoneNumber') ?></td>
+				<td><?php echo text_field('contact[h_phone_number]', array_var($contact_data, 'h_phone_number'), array('id' => $genid.'profileFormHPhoneNumber')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('phone 2'), $genid.'profileFormHPhoneNumber2') ?></td>
+				<td><?php echo text_field('contact[h_phone_number2]', array_var($contact_data, 'h_phone_number2'), array('id' => $genid.'profileFormHPhoneNumber2')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'profileFormHFaxNumber') ?></td>
+				<td><?php echo text_field('contact[h_fax_number]', array_var($contact_data, 'h_fax_number'), array('id' => $genid.'profileFormHFaxNumber')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('mobile'), $genid.'profileFormHMobileNumber') ?></td>
+				<td><?php echo text_field('contact[h_mobile_number]', array_var($contact_data, 'h_mobile_number'), array('id' => $genid.'profileFormHMobileNumber')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('pager'), $genid.'profileFormHPagerNumber') ?></td>
+				<td><?php echo text_field('contact[h_pager_number]', array_var($contact_data, 'h_pager_number'), array('id' => $genid.'profileFormHPagerNumber')) ?></td>
+			</tr>
+			</table>
 			</td>
 		</tr>
 	</table>
@@ -186,37 +269,43 @@ if (!$contact->isNew())
 	<fieldset><legend><?php echo lang('other') ?></legend>
 	<table style="margin-left:20px;margin-right:20px">
 		<tr>
-			<td >
-			<div><?php echo label_tag(lang('middle name'), $genid.'profileFormMiddleName') ?>
-			<?php echo text_field('contact[middlename]', array_var($contact_data, 'middlename'), array('id' => $genid.'profileFormMiddleName')) ?>
-			</div>
-			<div><?php echo label_tag(lang('address'), $genid.'profileFormOAddress') ?>
-			<?php echo text_field('contact[o_address]', array_var($contact_data, 'o_address'), array('id' => $genid.'profileFormOAddress')) ?>
-			</div>
-			<div><?php echo label_tag(lang('city'), $genid.'profileFormOCity') ?> <?php echo text_field('contact[o_city]', array_var($contact_data, 'o_city'), array('id' => $genid.'profileFormOCity')) ?>
-			</div>
-			<div><?php echo label_tag(lang('state'), $genid.'profileFormOState') ?> <?php echo text_field('contact[o_state]', array_var($contact_data, 'o_state'), array('id' => $genid.'profileFormOState')) ?>
-			</div>
-			<div><?php echo label_tag(lang('zipcode'), $genid.'profileFormOZipcode') ?>
-			<?php echo text_field('contact[o_zipcode]', array_var($contact_data, 'o_zipcode'), array('id' => $genid.'profileFormOZipcode')) ?>
-			</div>
-			<div><?php echo label_tag(lang('country'), $genid.'profileFormOCountry') ?>
-			<?php echo text_field('contact[o_country]', array_var($contact_data, 'o_country'), array('id' => $genid.'profileFormOCountry')) ?>
-			</div>
-			<div><?php echo label_tag(lang('website'), $genid.'profileFormOWebPage') ?>
-			<?php echo text_field('contact[o_web_page]', array_var($contact_data, 'o_web_page'), array('id' => $genid.'profileFormOWebPage')) ?>
-			</div>
+			<td style="padding-right:30px">
+			<table><tr>
+				<td><?php echo label_tag(lang('middle name'), $genid.'profileFormMiddleName') ?></td>
+				<td><?php echo text_field('contact[middlename]', array_var($contact_data, 'middlename'), array('id' => $genid.'profileFormMiddleName')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormOAddress') ?></td>
+				<td><?php echo text_field('contact[o_address]', array_var($contact_data, 'o_address'), array('id' => $genid.'profileFormOAddress')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'profileFormOCity') ?> </td>
+				<td><?php echo text_field('contact[o_city]', array_var($contact_data, 'o_city'), array('id' => $genid.'profileFormOCity')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'profileFormOState') ?></td>
+				<td><?php echo text_field('contact[o_state]', array_var($contact_data, 'o_state'), array('id' => $genid.'profileFormOState')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'profileFormOZipcode') ?></td>
+				<td><?php echo text_field('contact[o_zipcode]', array_var($contact_data, 'o_zipcode'), array('id' => $genid.'profileFormOZipcode')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'profileFormOCountry') ?></td>
+				<td><?php echo select_country_widget('contact[o_country]', array_var($contact_data, 'o_country'), array('id' => $genid.'profileFormOCountry')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('website'), $genid.'profileFormOWebPage') ?></td>
+				<td><?php echo text_field('contact[o_web_page]', array_var($contact_data, 'o_web_page'), array('id' => $genid.'profileFormOWebPage')) ?></td>
+			</tr>
+			</table>
 			</td>
 			<td>
-			<div><?php echo label_tag(lang('phone number'), $genid.'profileFormOPhoneNumber') ?>
-			<?php echo text_field('contact[o_phone_number]', array_var($contact_data, 'o_phone_number'), array('id' => $genid.'profileFormOPhoneNumber')) ?>
-			</div>
-			<div><?php echo label_tag(lang('phone number 2'), $genid.'profileFormOPhoneNumber2') ?>
-			<?php echo text_field('contact[o_phone_number2]', array_var($contact_data, 'o_phone_number2'), array('id' => $genid.'profileFormOPhoneNumber2')) ?>
-			</div>
-			<div><?php echo label_tag(lang('fax number'), $genid.'profileFormOFaxNumber') ?>
-			<?php echo text_field('contact[o_fax_number]', array_var($contact_data, 'o_fax_number'), array('id' => $genid.'profileFormOFaxNumber')) ?>
-			</div>
+			<table><tr>
+				<td><?php echo label_tag(lang('phone number'), $genid.'profileFormOPhoneNumber') ?></td>
+				<td><?php echo text_field('contact[o_phone_number]', array_var($contact_data, 'o_phone_number'), array('id' => $genid.'profileFormOPhoneNumber')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('phone number 2'), $genid.'profileFormOPhoneNumber2') ?></td>
+				<td><?php echo text_field('contact[o_phone_number2]', array_var($contact_data, 'o_phone_number2'), array('id' => $genid.'profileFormOPhoneNumber2')) ?></td>
+			</tr><tr>
+				<td class="td-pr"><?php echo label_tag(lang('fax number'), $genid.'profileFormOFaxNumber') ?></td>
+				<td><?php echo text_field('contact[o_fax_number]', array_var($contact_data, 'o_fax_number'), array('id' => $genid.'profileFormOFaxNumber')) ?></td>
+			</tr>
+			</table>
 			</td>
 		</tr>
 		<tr>
@@ -270,7 +359,7 @@ if (!$contact->isNew())
 			array('id' => $genid.'profileFormEmail', 'tabindex' => '3')) ?>
 	</div>
 
-  	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '4')) ?>
+  	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '4', 'id' => $genid . 'submit2')) ?>
 
 <script type="text/javascript">
 	Ext.get('<?php echo $genid ?>profileFormFirstName').focus();

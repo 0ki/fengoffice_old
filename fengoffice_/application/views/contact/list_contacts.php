@@ -28,4 +28,5 @@
 
 <?php } else { ?>
 <p><?php echo lang('no contacts in company') ?></p>
-<?php } // if ?>
+<?php } // if 
+	echo  "<a href='" . $company->getAddContactUrl() . "' class='internalLink'>" . lang('add contact') . "</a>";?>

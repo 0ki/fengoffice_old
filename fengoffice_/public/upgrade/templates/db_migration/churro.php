@@ -29,7 +29,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>timeslots` (
   `start_time` datetime NOT NULL default '0000-00-00 00:00:00',
   `end_time` datetime NOT NULL default '0000-00-00 00:00:00',
   `user_id` int(10) unsigned NOT NULL,
-  `description` varchar(300) <?php echo $default_collation ?> NOT NULL default '',
+  `description` text <?php echo $default_collation ?> NOT NULL,
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned NOT NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',

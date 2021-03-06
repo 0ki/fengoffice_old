@@ -92,6 +92,26 @@
 		}
 		return $ws;
 	}
+    
+    /**
+    * Return all projects as tree view
+    *
+    * @access public
+    * @param User $user
+    * @param 
+    * @return array
+    */
+    function getProjectsByParent(User $user, $additional_conditions = null) {
+      	$projects_table = Projects::instance()->getTableName(true);
+    	$all = self::getActiveProjects("$projects_table.`parent_id`, $projects_table.`name`");
+	    if(is_array($all)) {
+	        foreach($all as $proj) {
+	          	$projects[$proj->getParentId()] []= $proj;
+	        } // foreach
+	    } // if
+      
+      return count($projects) ? $projects : null;
+    } // getProjectsByUser
   } // Projects 
 
 ?>

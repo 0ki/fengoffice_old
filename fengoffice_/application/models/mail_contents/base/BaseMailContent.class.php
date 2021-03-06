@@ -122,6 +122,28 @@ abstract class BaseMailContent extends ProjectDataObject {
 	} // setFrom()
 
 	/**
+	 * Return value of 'from_name' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getFromName() {
+		return $this->getColumnValue('from_name');
+	} // getFromName()
+
+	/**
+	 * Set value of 'from_name' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setFromName($value) {
+		return $this->setColumnValue('from_name', $value);
+	} // setFromName()
+	
+	/**
 	 * Return value of 'to' field
 	 *
 	 * @access public
@@ -362,6 +384,29 @@ abstract class BaseMailContent extends ProjectDataObject {
 	function setSize($value) {
 		return $this->setColumnValue('size', $value);
 	} // setSize()
+	
+	
+	/**
+	 * Return value of 'state' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getState() {
+		return $this->getColumnValue('state');
+	} // getState()
+
+	/**
+	 * Set value of 'state' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setState($value) {
+		return $this->setColumnValue('state', $value);
+	} // setState()
 
 	
     /**
@@ -387,30 +432,7 @@ abstract class BaseMailContent extends ProjectDataObject {
     } // setIsPrivate() 
     
     
-    /**
-	 * Return value of 'is_read' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function getIsRead() {
-		return $this->getColumnValue('is_read');
-	} // getIsRead()
-
-	/**
-	 * Set value of 'is_read' field
-	 *
-	 * @access public
-	 * @param boolean $value
-	 * @return boolean
-	 */
-	function setIsRead($value) {
-		return $this->setColumnValue('is_read', $value);
-	} // setIsRead()
-	
-	
-	
+  
     /**
     * Return value of 'created_on' field
     *

@@ -14,7 +14,14 @@
     * @var array
     * @static
     */
-    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'column_name' => DATA_TYPE_STRING, 'content' => DATA_TYPE_STRING, 'project_id' => DATA_TYPE_INTEGER, 'is_private' => DATA_TYPE_BOOLEAN);
+    static private $columns = array(
+    	'rel_object_manager' => DATA_TYPE_STRING, 
+    	'rel_object_id' => DATA_TYPE_INTEGER, 
+    	'column_name' => DATA_TYPE_STRING, 
+    	'content' => DATA_TYPE_STRING, 
+    	'project_id' => DATA_TYPE_INTEGER, 
+    	'is_private' => DATA_TYPE_BOOLEAN, 
+    	'user_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

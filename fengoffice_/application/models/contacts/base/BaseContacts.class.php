@@ -62,10 +62,11 @@
      'timezone' => DATA_TYPE_FLOAT, 
      'notes' => DATA_TYPE_STRING,
      'user_id' => DATA_TYPE_INTEGER,
-     'created_by_id' => DATA_TYPE_INTEGER,
      'is_private' => DATA_TYPE_BOOLEAN,
      'created_on' => DATA_TYPE_DATETIME,
-     'updated_on' => DATA_TYPE_DATETIME
+     'created_by_id' => DATA_TYPE_INTEGER,
+     'updated_on' => DATA_TYPE_DATETIME,
+     'updated_by_id' => DATA_TYPE_INTEGER,
     );
   
     /**

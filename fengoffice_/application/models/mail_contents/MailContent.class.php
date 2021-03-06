@@ -36,7 +36,7 @@ class MailContent extends BaseMailContent {
 	 *
 	 * @var array
 	 */
-	protected $searchable_columns = array('from', 'to', 'subject', 'body_plain', );
+	protected $searchable_columns = array('from', 'from_name', 'to', 'subject', 'body_plain', );
 	 
 	/**
 	 * Return Project
@@ -98,6 +98,10 @@ class MailContent extends BaseMailContent {
 		$this->clearTags();
 		$this->clearSearchIndex();
 		$this->clearLinkedObjects();
+		$readobj = ReadObjects::findOne(array(
+						        'conditions' => array('`rel_object_id` = ? AND `rel_object_manager` = ?', $this->getId(), get_class($this->manager()))
+						      )); // findOne
+		if ($readobj!=null) $readobj->delete();
 		return true;
 	}
 
@@ -113,6 +117,77 @@ class MailContent extends BaseMailContent {
 	function getIsClassified() {
 		return ($this->getColumnValue('project_id') != 0);
 	} // getIsClassified()
+	
+	
+	
+	/**
+	 * Returns if the mail is a draft
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getIsDraft() {
+		return ($this->getColumnValue('state') == 2);
+	} // getIsDraft()
+	
+	
+	/**
+	 * Returns if the mail was sent
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getIsSent() {
+		return ($this->getColumnValue('state') == 1);
+	} // getIsSent()
+	
+	
+	
+	/**
+	 * Returns if the mail is read by the user
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getIsRead($user_id) {
+		return ReadObjects::userHasRead($user_id,$this);
+	} // getIsClassified()
+	
+	/**
+	 * Mark the mail as read/unread
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function setIsRead($is_read, $user_id) {
+		try{
+			$readobj = ReadObjects::findOne(array(
+						        'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $this->getId(), get_class($this->manager()))
+						      )); // findOne
+			if ($is_read){
+				if ($readobj!=null){
+					$readobj->setIsRead(1);
+					$readobj->save();
+				} else {
+					$readobj = new ReadObject();
+					$readobj->setIsRead(1);
+					$readobj->setUserId($user_id);
+					$readobj->setRelObjectId($this->getId());
+					$readobj->setRelObjectManager(get_class($this->manager()));
+					$readobj->save();
+				}
+			} else {				
+				if ($readobj!=null) $readobj->delete();
+			}
+		} catch(Exception $e){
+			throw $e;
+		}	
+	} // getIsClassified()
+
 
 	// ---------------------------------------------------
 	//  URLs
@@ -183,6 +258,8 @@ class MailContent extends BaseMailContent {
 		return get_url('mail', 'forward_mail', array( 'id' => $this->getId(), 'type' => 'email'));
 	} // getReplyMailUrl
 	
+	
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
@@ -237,6 +314,39 @@ class MailContent extends BaseMailContent {
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
+    function addToSearchableObjects(){
+    	$columns_to_drop = array();
+    	if ($this->isNew())
+    		$columns_to_drop = $this->getSearchableColumns();
+    	else {
+	    	foreach ($this->getSearchableColumns() as $column_name){
+	    		if ($this->isColumnModified($column_name))
+	    			$columns_to_drop[] = $column_name;
+	    	}
+    	}
+    	
+    	if (count($columns_to_drop) > 0){
+    		SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
+    		
+	        foreach($columns_to_drop as $column_name) {
+	          $content = $this->getSearchableColumnContent($column_name);
+	          if(trim($content) <> '') {
+	            $searchable_object = new SearchableObject();
+	            
+	            $searchable_object->setRelObjectManager(get_class($this->manager()));
+	            $searchable_object->setRelObjectId($this->getObjectId());
+	            $searchable_object->setColumnName($column_name);
+	            $searchable_object->setContent($content);
+	            $searchable_object->setProjectId(0);
+	            $searchable_object->setIsPrivate(false);
+	            $searchable_object->setUserId($this->getAccount()->getUserId());
+	            
+	            $searchable_object->save();
+	          } // if
+	        } // foreach
+    	} // if
+    }
+	
 	/**
 	 * Return object name
 	 *
@@ -315,5 +425,7 @@ class MailContent extends BaseMailContent {
 				"manager" => get_class($this->manager())
 		);
 	}
+	
+	
 }
 ?>

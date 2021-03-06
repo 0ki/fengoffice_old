@@ -1,8 +1,11 @@
 .coInputHeader {
     padding: 10px 15px;
-	border-bottom: 1px solid #99BBE8;
+	/*border-bottom: 1px solid #99BBE8;*/
+	border-bottom: 1px solid #CCCCCC;
 	padding-bottom:5px;
-	background: #D0DEF0;
+	/*background: #D0DEF0;*/
+	background: #F0F0F0;
+	color:#666;
 }
 
 .coInputSeparator {
@@ -14,7 +17,8 @@
 
 .coInputHeaderUpperRow {
 	margin: 3px;
-	border-bottom: 2px solid #99BBE8;
+	/*border-bottom: 2px solid #99BBE8;*/
+	border-bottom: 2px solid #CCCCCC;
     position: relative;
     padding-bottom: 2px;
 }
@@ -51,12 +55,10 @@
 /* Messages */
 
 .message .coInputHeader {
-    background: #D0DEF0;
   	/*color: #99BBE8;*/
 }
 
 .event .coInputHeader {
-    background: #D0DEF0;
     text-align: left;
   	/*color: #99BBE8;*/
 }

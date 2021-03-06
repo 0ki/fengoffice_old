@@ -364,6 +364,28 @@
     } // setCheckedOutById()
     
     /**
+    * Set value of 'was_auto_checked_out' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setWasAutoCheckedAuto($value) {
+      return $this->setColumnValue('was_auto_checked_out', $value);
+    } //  setWasAutoCheckedAuto() 
+    
+    /**
+    * Return value of 'was_auto_checked_out' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function  getWasAutoCheckedAuto() {
+      return $this->getColumnValue('was_auto_checked_out');
+    } //  getWasAutoCheckedAuto()
+    
+    /**
     * Return manager instance
     *
     * @access protected

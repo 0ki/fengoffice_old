@@ -1,10 +1,15 @@
 <?php 
+	if($object instanceof ProjectDataObject && $object->canView(logged_user())) 	{
+		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'view_as_list');
+	}
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))
 		$iconclass = "ico-large-" . $object->getObjectTypeName();
+		
+	$genid = gen_id();
 ?>
 
-<table style="width:100%"><tr>
+<table style="width:100%" id="<?php echo $genid ?>-co"><tr>
 <td>
 	<table style="width:100%">
 		<col width="12px"/><col width="60px"/>
@@ -18,7 +23,7 @@
 		<td class="coViewHeader" rowspan=2>
 			<div class="coViewTitle">
 				<table><tr><td>
-				<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . $object->getObjectName() ?>
+				<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
 				</td>
 				
 				</tr></table>
@@ -110,12 +115,11 @@
 			<?php
 				$wsl = $object->getWorkspaces();
 				if (is_array($wsl) && count($wsl) > 0){
-					$linkList = array();
+					$projectLinks = array();
 					foreach ($wsl as $ws) {
-						$linkList[] = '<a href="#" onclick="Ext.getCmp(\'tabs-panel\').activate(\'overview-panel\');Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() .
-						');">' . $ws->getName() . '</a>';
+						$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
 					}
-					echo implode(', ', $linkList);
+					echo '<br/>' . implode('<br/>',$projectLinks);
 				}
 				?>
 				
@@ -150,7 +154,7 @@
 					
 				if ($object->getObjectCreationTime() && $object->getCreatedOn()->isToday()){
 					$datetime = format_time($object->getCreatedOn());
-					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
+					echo lang('user date today at', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
 				} else {
 					$datetime = format_date($object->getCreatedOn());
 					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
@@ -189,3 +193,6 @@
 	</table>
 </td>
 </tr></table>
+<script type="text/javascript">
+og.showWsPaths('<?php echo $genid ?>-co');
+</script>

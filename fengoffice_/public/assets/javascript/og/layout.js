@@ -1,6 +1,25 @@
 Ext.onReady(function(){
 	Ext.get("loading").hide();
 	
+	/** TODO: HISTORY MGMT
+	var hframe = document.createElement("iframe");
+	hframe.className = "x-hidden";
+	hframe.id = "x-history-frame";
+	document.body.appendChild(hframe);
+	var hinput = document.createElement("input");
+	hinput.type = "hidden";
+	hinput.id = "x-history-field";
+	document.body.appendChild(hinput);
+	Ext.History.init(hinput);
+	Ext.History.on('change', function(token){
+		if (token) {
+			//og.openLink("?" + token);
+		} else {
+			// initial state
+		}
+    });
+    **/
+	
 	// fix cursor not showing on message boxs
 	Ext.MessageBox.getDialog().on("show", function(d) {
 		var div = Ext.get(d.el);
@@ -40,7 +59,7 @@ Ext.onReady(function(){
 				},
 				initialContent: {
 					type: "url",
-					data: og.initialURL
+					data: ""//og.initialURL
 				}
 			}),
 			new og.ContentPanel({
@@ -70,7 +89,7 @@ Ext.onReady(function(){
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "url",
-					data: og.getUrl('event','index')
+					data: og.getUrl('event','viewweek')
 				}
 			}),
 			new og.ContentPanel({
@@ -102,17 +121,20 @@ Ext.onReady(function(){
 					type: "panel",
 					data: "webpages"
 				}
-			})/*,
+			}),
 			new og.ContentPanel({
 				title: lang('reporting'),
 				id: 'reporting-panel',
 				iconCls: 'ico-reporting',
-				refreshOnWorkspaceChange: true,
+				/*refreshOnWorkspaceChange: true,*/
+				refreshOnWorkspaceChange: false,
 				defaultContent: {
-					type: "panel",
-					data: "reporting"
+					/*type: "panel",
+					data: "reporting"*/
+					type: "url",
+					data: og.getUrl('reporting','index')
 				}
-			})*/
+			})
 		]
 	});
 	

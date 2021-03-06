@@ -18,7 +18,7 @@
     'configuration' => 'Configuración',
     
     'mail transport mail()' => 'Configuración de PHP',
-    'mail transport smtp' => 'Seridor SMTP',
+    'mail transport smtp' => 'Servidor SMTP',
     
     'secure smtp connection no'  => 'No',
     'secure smtp connection ssl' => 'Si, use SSL',
@@ -41,13 +41,12 @@
     'config option name site_name' => 'Nombre del sitio',
     'config option desc site_name' => 'Este valor va a ser desplegado como el nombre del sitio en la página Dashboard',
     'config option name file_storage_adapter' => 'Almacenamiento de archivos',
-    'config option desc file_storage_adapter' => 'Elija donde guardar adjuntos, imágenes, logos y cualquier otro tipo de documentos subidos a la página. <strong>Database storage engine is recommended</strong>.',
+    'config option desc file_storage_adapter' => 'Elija donde guardar adjuntos, imágenes, logos y cualquier otro tipo de documentos subidos a la página. Se recomiendo el almacenamiento en la base de datos. <strong>Cambiar el tipo de almacenamiento causará que los archivos ingresados previamente dejen de estar disponibles</strong>.',
     'config option name default_project_folders' => 'Carpetas creadas por defecto',
     'config option desc default_project_folders' => 'Carpetas que van a ser creadas cuando se cree el espacio. El nombre de cada carpeta debera aparecer en una línea. Las líneas duplicadas o vacías no van a ser tenidas en cuenta',
     'config option name theme' => 'Tema',
     'config option desc theme' => 'Usando temas puede cambiar el aspecto de OpenGoo',
     
-    // OpenGoo.org
     'config option name upgrade_check_enabled' => 'Habilitar chequeo de actualizaciones',
     'config option desc upgrade_check_enabled' => 'Si escoge esta opción el sistema corroborara una vez al día si hay nuevas versiones disponibles de OpenGoo',
     
@@ -70,6 +69,20 @@
   	'can manage contacts' => 'Puede modificar y editar contactos',
   	'group users' => 'Agrupar usuarios',
     
+  	'user ws config category name dashboard' => 'Opciones del panel de visión',
+  	'user ws config category name task panel' => 'Opciones del panel de tareas',
+  	'user ws config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
+  	'user ws config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',
+  	'user ws config option name show late tasks and milestones widget' => 'Mostrar widget de hitos y tareas atrasadas',
+  	'user ws config option name show messages widget' => 'Mostrar widget mensajes',
+  	'user ws config option name show documents widget' => 'Mostrar widget de documentos',
+  	'user ws config option name show calendar widget' => 'Mostrar widget de calendario',
+  	'user ws config option name show charts widget' => 'Mostrar widget de graficas',
+  	'user ws config option name show emails widget' => 'Mostrar widget de emails',
+  	
+ 	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
+  	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del espacio y sus subespacios',
+
   ); // array
 
 ?>

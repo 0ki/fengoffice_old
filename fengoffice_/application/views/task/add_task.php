@@ -14,9 +14,9 @@
 	</script>
 <?php
   $genid = gen_id();
-  if ($base_task instanceof ProjectTask && $base_task->getIsTemplate()) {
-  	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("task", "delete_task", array("id" => $base_task->getId())) ."');", "ico-delete");
-  }
+//  if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) {
+//  	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("task", "delete_task", array("id" => $base_task->getId())) ."');", "ico-delete");
+//  }
   $project = $task->getProject();
   $projects =  active_projects();
 ?>
@@ -34,7 +34,7 @@
 		if ($task->isNew()) {
 			if (array_var($task_data, 'is_template', false)) {
 				echo lang('new task template');
-			} else if ($base_task instanceof ProjectTask) {
+			} else if (isset($base_task) && $base_task instanceof ProjectTask) {
 				echo lang('new task from template');
 			} else {
 				echo lang('new task list');
@@ -55,15 +55,15 @@
 	
 	<div style="padding-top:5px">
 		<?php if (isset ($projects) && count($projects) > 0) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_more_div', this)"><?php echo lang('more') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('more') ?></a> - 
 		<?php if($task->isNew()) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_mail_notif_div', this)"><?php echo lang('email notification') ?></a> - 
 		<?php } ?>
-		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_properties_div', this)"><?php echo lang('properties') ?></a>
+		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_properties_div', this)"><?php echo lang('properties') ?></a>
 		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>  
 			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
@@ -73,7 +73,7 @@
 <div class="coInputMainBlock">
 
 	<?php if (isset ($projects) && count($projects) > 0) { ?>
-	<div id="<?php echo $genid ?>add_list_select_workspace_div" style="display:none">
+	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
 		<?php echo select_project('task[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
@@ -81,7 +81,7 @@
 	</div>
 	<?php } ?>
 
-	<div id="<?php echo $genid ?>add_list_tags_div" style="display:none">
+	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
 		<?php echo autocomplete_textfield("task[tags]", array_var($task_data, 'tags'), 'allTags', array('class' => 'long')); ?>
@@ -89,7 +89,7 @@
 	</div>
 
 	
-	<div id="<?php echo $genid ?>add_list_more_div" style="display:none">
+	<div id="<?php echo $genid ?>add_task_more_div" style="display:none">
   	<fieldset>
     <legend><?php echo lang('more') ?></legend>
     
@@ -132,7 +132,7 @@
 			</div>	
 		</div>
 		
-		<div id='<?php echo $genid ?>add_list_time_div' style="padding-top:6px">
+		<div id='<?php echo $genid ?>add_task_time_div' style="padding-top:6px">
 		<?php echo label_tag(lang('time estimate')) ?>
       	<?php $totalTime = array_var($task_data, 'time_estimate', 0); 
       		$minutes = $totalTime % 60;
@@ -165,6 +165,9 @@
   	</div>
 
 <?php if($task->isNew()) { ?>
+	<?php if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) { ?>
+		<input type="hidden" name="task[from_template_id]" value="<?php echo $base_task->getId() ?>" />
+	<?php } ?>
 	<div id="<?php echo $genid ?>add_task_mail_notif_div" style="display:none">
 	<fieldset id="emailNotification">
 	<legend><?php echo lang('email notification') ?></legend>
@@ -193,7 +196,7 @@
 				<?php echo checkbox_field('task[notify_company_' . $company->getId() . ']', 
 					array_var($task_data, 'notify_company_' . $company->getId()), 
 					array('id' => $genid.'notifyCompany' . $company->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ')')) ?> 
+						'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ',"' . $genid. '")')) ?> 
 				<label for="<?php echo $genid ?>notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
 			</div>
 			
@@ -203,7 +206,7 @@
 				<li><?php echo checkbox_field('task[notify_user_' . $user->getId() . ']', 
 					array_var($task_data, 'notify_user_' . $user->getId()), 
 					array('id' => $genid.'notifyUser' . $user->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ')')) ?> 
+						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
 				<script type="text/javascript">
 					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
@@ -222,7 +225,7 @@
 <?php } // if ?>
 
   
-	<?php /*<div style="display:none" id="<?php echo $genid ?>add_list_handins_div">
+	<?php /*<div style="display:none" id="<?php echo $genid ?>add_task_handins_div">
 	<fieldset>
     <legend><?php echo lang('handins') ?></legend>
 	  <table class="blank">
@@ -250,7 +253,7 @@
   	</div> */ ?>
   
 	
-	<div id='<?php echo $genid ?>add_list_properties_div' style="display:none">
+	<div id='<?php echo $genid ?>add_task_properties_div' style="display:none">
 	<fieldset>
     <legend><?php echo lang('properties') ?></legend>
       <?php echo render_object_properties('task',$task); ?>
@@ -268,10 +271,7 @@
 	</fieldset>
 	</div>
 	<?php } // if ?>
-	
-	
-	
-	
+		
    	
 	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
 	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription')) ?>

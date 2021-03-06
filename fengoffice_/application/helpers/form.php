@@ -278,6 +278,32 @@
   } // submit_button
   
   /**
+  * Render button
+  *
+  * @access public
+  * @param string $this Button title
+  * @param string $accesskey Accesskey. If NULL accesskey will be skipped
+  * @param array $attributes Array of additinal attributes
+  * @return string
+  */
+  function button($title, $accesskey = 's', $attributes = null) {
+    if(!is_array($attributes)) {
+      $attributes = array();
+    } // if
+    $attributes['class'] = 'submit';
+    $attributes['type'] = 'button';
+    $attributes['accesskey'] = $accesskey;
+    
+    if($accesskey) {
+      if(strpos($title, $accesskey) !== false) {
+        $title = str_replace_first($accesskey, "<u>$accesskey</u>", $title);
+      } // if
+    } // if
+    
+    return open_html_tag('button', $attributes) . $title . close_html_tag('button');
+  } // submit_button
+  
+  /**
   * Return textarea tag
   *
   * @access public

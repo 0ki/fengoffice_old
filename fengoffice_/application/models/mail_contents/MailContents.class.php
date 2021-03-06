@@ -7,7 +7,7 @@
   */
   class MailContents extends BaseMailContents {
   	
-  	    /**
+  	/**
     * Return mails that belong to specific project
     *
     * @param Project $project
@@ -20,6 +20,8 @@
       )); // findAll
     } // getProjectMails
   	
+   
+    
   } // MailContents 
 
 ?>

@@ -61,7 +61,7 @@
   
   define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.6.6');
+    define('PRODUCT_VERSION', '0.9');
   } // if
   define('INSTALLED_VERSION', include 'version.php');
   

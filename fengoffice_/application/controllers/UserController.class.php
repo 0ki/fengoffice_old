@@ -120,6 +120,19 @@ class UserController extends ApplicationController {
 					$user->setAsAdministrator();
 				}
 				
+				/* create contact for this user*/
+				
+				
+				if (array_var($user_data, 'create_contact')) {
+					$contact = new Contact();
+					$contact->setFirstname($user->getDisplayName());
+					$contact->setUserId($user->getId());
+					$contact->setEmail($user->getEmail());
+					$contact->setTimezone($user->getTimezone());
+					$contact->setCompanyId($user->getCompanyId());
+					$contact->save();
+				}
+				
 				/* create personal project */
 				$project = new Project();
 				$project->setName($user->getUsername().'_personal');
@@ -251,6 +264,48 @@ class UserController extends ApplicationController {
 		} // try
 	} // delete
 
+	/**
+	 * Create a contact with the data of a user
+	 *
+	 */
+	function create_contact_from_user(){
+
+		$user = Users::findById(get_id());
+		if(!($user instanceof User)) {
+			flash_error(lang('user dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		if(!logged_user()->canSeeUser($user)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		if($user->getContact()){
+			flash_error(lang('user has contact'));
+			ajx_current("empty");
+			return;			
+		}
+		
+		try{
+			DB::beginWork();
+			$contact = new Contact();
+			$contact->setFirstname($user->getDisplayName());
+			$contact->setUserId($user->getId());
+			$contact->setEmail($user->getEmail());
+			$contact->setTimezone($user->getTimezone());
+			$contact->setCompanyId($user->getCompanyId());
+			$contact->save();
+			DB::commit();
+			$this->redirectTo('contact','card',array('id'=>$contact->getId()));
+		}
+		catch (Exception  $exx){
+			flash_error(lang('error add contact from user') . $exx->getMessage());
+		}
+	}
+	
 	/**
 	 * Show user card
 	 *

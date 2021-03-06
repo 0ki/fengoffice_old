@@ -47,7 +47,6 @@ class TimeslotController extends ApplicationController {
 
 		$timeslot = new Timeslot();
 		$dt = DateTimeValueLib::now();
-		$dt->setSecond(0);
 		$timeslot->setStartTime($dt);
 		$timeslot->setUserId(logged_user()->getId());
 		$timeslot->setObjectManager($object_manager);
@@ -60,6 +59,54 @@ class TimeslotController extends ApplicationController {
 			DB::commit();
 				
 			flash_success(lang('success open timeslot'));
+			ajx_current("reload");
+		} catch (Exception $e) {
+			DB::rollback();
+			ajx_current("empty");
+			flash_error($e->getMessage());
+		} // try
+	} 
+	
+	function add_timespan() {
+
+		$object_id = get_id('object_id');
+		$object_manager = array_var($_GET, 'object_manager');
+
+		if(!is_valid_function_name($object_manager)) {
+			flash_error(lang('invalid request'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		$object = get_object_by_manager_and_id($object_id, $object_manager);
+		if(!($object instanceof ProjectDataObject) || !($object->canEdit(logged_user()))) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		$timeslot_data = array_var($_POST, 'timeslot');
+		$hours = array_var($timeslot_data, 'time');
+		$hours = - $hours;
+		
+		$timeslot = new Timeslot();
+		$dt = DateTimeValueLib::now();
+		$dt2 = DateTimeValueLib::now();
+		$timeslot->setEndTime($dt);
+		$dt2 = $dt2->add('h', $hours);
+		$timeslot->setStartTime($dt2);
+		$timeslot->setDescription(array_var($timeslot_data, 'description'));
+		$timeslot->setUserId(logged_user()->getId());
+		$timeslot->setObjectManager($object_manager);
+		$timeslot->setObjectId($object_id);
+		
+		try{
+			DB::beginWork();
+			$timeslot->save();
+			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_OPEN);
+			DB::commit();
+				
+			flash_success(lang('success create timeslot'));
 			ajx_current("reload");
 		} catch (Exception $e) {
 			DB::rollback();
@@ -105,11 +152,18 @@ class TimeslotController extends ApplicationController {
 		
 		try{
 			DB::beginWork();
-			$timeslot->save();
+			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
+				$timeslot->delete();
+			else
+				$timeslot->save();
 			ApplicationLogs::createLog($timeslot, active_or_personal_project(), ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 				
-			flash_success(lang('success close timeslot'));
+			if (array_var($_GET, 'cancel') && array_var($_GET, 'cancel') == 'true')
+				flash_success(lang('success cancel timeslot'));
+			else
+				flash_success(lang('success close timeslot'));
+				
 			ajx_current("reload");
 		} catch (Exception $e) {
 			DB::rollback();

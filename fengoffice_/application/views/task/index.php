@@ -28,7 +28,9 @@ function filterTasks() {
 		<div id="<?php echo $butt_id ?>" class="og-tasks-buttons">
 		</div>
 	</td>
-	<td class="td-assigned-to">Show assigned to: <?php echo assign_to_select_box("assigned_to", null, $assignedTo, array("id" => "og-task-filter-to", "onchange" => "filterTasks()")); ?></td>
+	<td class="td-assigned-to"><?php
+	 echo lang('show assigned to'). ':&nbsp;';
+	 echo filter_assigned_to_select_box("assigned_to",active_project(), $assignedTo, array("id" => "og-task-filter-to", "onchange" => "filterTasks()")); ?></td>
 	<?php
 		$option = array();
 		$attrs1 = array();
@@ -42,7 +44,9 @@ function filterTasks() {
 		$option[] = option_tag(lang("pending"), "pending", $attrs2);
 		
 	?>
-	<td class="td-status">Show by status: <?php echo select_box("status", $option, array("id" => "og-task-filter-status", "onchange" => "filterTasks()")) ?></td>
+	<td class="td-status"><?php 
+	echo lang('show by status') . ':&nbsp;';
+	echo select_box("status", $option, array("id" => "og-task-filter-status", "onchange" => "filterTasks()")) ?></td>
 	<?php
 		$option = array();
 		$attrs0 = array();
@@ -64,9 +68,12 @@ function filterTasks() {
 		$option[] = option_tag(lang("high priority"), 300, $attrs3);
 		
 	?>
-	<td class="td-priority">Show by priority: <?php echo select_box("status", $option, array("id" => "og-task-filter-priority", "onchange" => "filterTasks()")) ?></td>
-	</tr></table>
-	</div></td>
+	<td class="td-priority"><?php 
+	echo lang('show by priority') . ':&nbsp;';
+	echo select_box("status", $option, array("id" => "og-task-filter-priority", "onchange" => "filterTasks()")) ?></td>
+	</tr>
+	</table>
+	</div></div></td>
 	<td class="coViewTopRight"></td></tr>
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -75,79 +82,90 @@ function filterTasks() {
 		<div style="og-tasks-container">
 		
 		</div>
-		
-		<script>
-		var butt = new Ext.Button({
-			renderTo: '<?php echo $butt_id ?>',
-			iconCls: 'ico-new',
-			text: lang('new'),
-			menu: {items: [
-				{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
-					var url = og.getUrl('milestone', 'add');
+<script>
+var butt = new Ext.Button({
+	renderTo: '<?php echo $butt_id ?>',
+	iconCls: 'ico-new',
+	text: lang('new'),
+	menu: {
+		cls:'scrollable-menu',
+		items: [
+		{text: lang('new milestone'), iconCls: 'ico-milestone', handler: function() {
+			var url = og.getUrl('milestone', 'add');
+			og.openLink(url);
+		}},
+		{text: lang('new task'), iconCls: 'ico-task', handler: function() {
+			var url = og.getUrl('task', 'add_task');
+			og.openLink(url);
+		}}
+		<?php
+			if (count($milestone_templates) > 0 || count($task_templates) > 0) echo ",'-'";
+			foreach ($milestone_templates as $t) {
+		?>
+				,{text: '<?php echo str_replace("'", "\\'", $t->getName()) ?>',
+				iconCls: 'ico-template-milestone',
+				handler: function() {
+					var url = og.getUrl('milestone', 'copy_milestone', {id: <?php echo $t->getId() ?>});
 					og.openLink(url);
-				}},
-				{text: lang('new task'), iconCls: 'ico-task', handler: function() {
-					var url = og.getUrl('task', 'add_task');
+				}} 
+		<?php
+			}
+			foreach ($task_templates as $t) {
+		?>
+				,{text: '<?php echo str_replace("'", "\\'", $t->getTitle()) ?>',
+				iconCls: 'ico-template-task',
+				handler: function() {
+					var url = og.getUrl('task', 'copy_task', {id: <?php echo $t->getId() ?>});
 					og.openLink(url);
-				}}
-				<?php
-					if (count($milestone_templates) > 0 || count($task_templates) > 0) echo ",'-'";
-					foreach ($milestone_templates as $t) {
-				?>
-						,{text: '<?php echo str_replace("'", "\\'", $t->getName()) ?>',
-						iconCls: 'ico-template-milestone',
-						handler: function() {
-							var url = og.getUrl('milestone', 'copy_milestone', {id: <?php echo $t->getId() ?>});
-							og.openLink(url);
-						}} 
-				<?php
-					}
-					foreach ($task_templates as $t) {
-				?>
-						,{text: '<?php echo str_replace("'", "\\'", $t->getTitle()) ?>',
+				}} 
+		<?php
+			}
+		?>
+		,'-',{
+			disabled: false,
+			text: '<?php echo lang('all') ?>',
+			iconCls: 'ico-template-task',
+			cls: 'scrollable-menu',
+			menu:{items: [
+				<?php 
+					$initial = true;
+					foreach ($all_task_templates as $t) {	
+						if($initial) $initial = false;
+						else echo ',';
+						?>
+						{text: '<?php echo str_replace("'", "\\'", $t->getTitle()) ?>',
 						iconCls: 'ico-template-task',
 						handler: function() {
 							var url = og.getUrl('task', 'copy_task', {id: <?php echo $t->getId() ?>});
 							og.openLink(url);
 						}} 
-				<?php
-					}
-				?>
-				,'-',{
-					text: '<?php echo lang('new milestone template') ?>',
-					iconCls: 'ico-milestone',
-					handler: function() {
-						var url = og.getUrl('milestone', 'add', {'is_template': true});
-						og.openLink(url);
-					}
-				},{
-					text: '<?php echo lang('new task template') ?>',
-					iconCls: 'ico-task',
-					handler: function() {
-						var url = og.getUrl('task', 'add_task', {'is_template': true});
-						og.openLink(url);
-					}
-				}
-
+				<?php 
+					}?>
 			]}
-		});
-		</script>
+		}
+	]}
+});
+</script>
 		
 		<div style="padding:7px;">
 		<div class="tpMilestoneHeader"><?php echo lang('milestones') ?></div>
 		
 		<div id="og-milestones" class="og-milestones">
-		<?php
-		include "view_milestones.php";
-		?>
+		<?php include "view_milestones.php"; ?>
 		</div>
 		
-		<div class="tpTaskHeader"><?php echo lang('tasks') ?></div>
+		<div class="tpTaskHeader"><?php echo lang('tasks') ?> &nbsp;	<a class="coViewAction ico-print" title="<? echo lang('print')?>" target="_blank"	
+			href="<?php echo get_url('task','print_view_all', array(
+					'active_project'=>active_project()?active_project()->getId():'',					
+					'assigned_to' => array_var($_GET, 'assigned_to', ''),
+					'status' => array_var($_GET, 'status', "pending"),
+					'priority' => array_var($_GET, 'priority', "all")
+				  )) ?>">
+	  <?php //echo lang('print')?> </a>
+	  </div>
 		
 		<div id="og-sub-tasks-0" class="og-tasks">
-		<?php
-		include "view_tasks.php";
-		?>
+		<?php include "view_tasks.php"; ?>
 		</div>
 		</div>
 	</td></tr>

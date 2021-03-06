@@ -34,7 +34,7 @@ class Tags extends BaseTags {
 	function getTagNamesByObject(ApplicationDataObject $object) {
 		$rows = DB::executeAll('SELECT `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` = ? ORDER BY `tag`', $object->getId(), get_class($object->manager()));
 
-		if(!is_array($rows)) return null;
+		if(!is_array($rows)) return array();
 
 		$tags = array();
 		foreach($rows as $row) $tags[] = $row['tag'];
@@ -176,7 +176,7 @@ class Tags extends BaseTags {
 					$tag->setRelObjectId($object->getId());
 					$tag->setRelObjectManager($manager_class);
 					$tag->setIsPrivate($object->isPrivate());
-
+	
 					$tag->save();
 					evt_add("tag added", array("name"=>$tag_name));
 				} // if
@@ -275,7 +275,22 @@ class Tags extends BaseTags {
 		return array_var($row, 'row_count', 0);
 	} // countObjectsByTag
 
-	
+	/**
+	 * Changes all tags named $tag to $new_tag.
+	 *
+	 * @param string $tag
+	 * @param string $new_tag
+	 */
+	function renameTag($tag, $new_tag) {
+		$sql = "UPDATE " . self::instance()->getTableName(true) .
+			" SET `tag` = " . DB::escape($new_tag) .
+			" WHERE `tag` = " . DB::escape($tag);
+			// TODO: only move tags for objects the user can write.
+			// There's no easy way to check that now, because you can't know
+			// the project of an object from the data in the tags table, but
+			// it'll be possible when all objects can have multiple workspaces.
+		DB::execute($sql);
+	}
 	
 } // Tags
 

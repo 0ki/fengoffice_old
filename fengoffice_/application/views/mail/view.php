@@ -18,8 +18,8 @@
 
 	<?php $description = '<div class="coInfo">
 	<table>
-	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . MailUtilities::displayMultipleAddresses($email->getFrom()) . '</td></tr>
-	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses($email->getTo()) . '</td></tr>
+	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean(MailUtilities::displayMultipleAddresses($email->getFrom())) . '</td></tr>
+	<tr><td>' . lang('to') . ':</td><td>' . clean(MailUtilities::displayMultipleAddresses($email->getTo())) . '</td></tr>
 	<tr><td>' . lang('date') . ':</td><td>' . $email->getSentDate()->format('D, d M Y H:i:s') . '</td></tr>';
 	
 	if ($email->getHasAttachments()) {
@@ -61,13 +61,16 @@
 			}
 		} else {
 			if ($email->getBodyPlain() != ''){
-				$content =  convert_to_links(clean($email->getBodyPlain()));
+				$content =  '<div>' . convert_to_links(clean($email->getBodyPlain())) . '</div>';
 			} else {
-				$content =  nl2br(convert_to_links($email->getContent()));
+				$content =  '<div>' .convert_to_links($email->getContent()) . '</div>';
 			}
 		}
-		
-		tpl_assign("title", lang('email') . ': ' . $email->getSubject());
+		$strDraft = '';
+		if ($email->getIsDraft()) {
+			$strDraft = "<span style='font-size:80%;color:red'>&nbsp;".lang('draft')."</style>";
+		}
+		tpl_assign("title", lang('email') . ': ' . clean($email->getSubject()).$strDraft);
 		tpl_assign("iconclass", 'ico-large-email');
 		tpl_assign("content", $content);
 		tpl_assign("object", $email);

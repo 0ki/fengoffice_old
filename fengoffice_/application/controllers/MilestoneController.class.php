@@ -31,7 +31,7 @@ class MilestoneController extends ApplicationController {
 		$assigned_to = array_var($_GET, 'assigned_to', '');
 		$status = array_var($_GET, 'status', "pending");
 		
-		$assigned_to = explode(':', $assigned_to);
+//		$assigned_to = explode(':', $assigned_to);
 		$to_company = array_var($assigned_to, 0, null);
 		$to_user = array_var($assigned_to, 1, null);
 		$assigned_by = explode(':', $assigned_by);

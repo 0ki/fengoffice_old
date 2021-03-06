@@ -12,7 +12,7 @@
 
 ?>
 <?php // $this->includeTemplate(get_template_path('group_card', 'group')) ?>
-<?php echo label_tag($group->getName()) ?>
+<?php echo label_tag(clean($group->getName())) ?>
 <fieldset><legend class="toggle_collapsed" onclick="og.toggle('groupUsers',this)"><?php echo lang('users') ?></legend>
 <div id='groupUsers' style="display:none">
 <?php

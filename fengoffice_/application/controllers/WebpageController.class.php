@@ -48,8 +48,8 @@ class WebpageController extends ApplicationController {
 		if(is_array(array_var($_POST, 'webpage'))) {
 
 			try {
-				if(substr($webpage_data['url'],0,7) != 'http://')
-				$webpage_data['url'] = 'http://' . $webpage_data['url'];
+				if(substr($webpage_data['url'],0,7) != 'http://' && substr($webpage_data['url'],0,7) != 'file://' && substr($webpage_data['url'],0,8) != 'https://' && substr($webpage_data['url'],0,6) != 'about:' && substr($webpage_data['url'],0,6) != 'ftp://')
+					$webpage_data['url'] = 'http://' . $webpage_data['url'];
 				$webpage->setFromAttributes($webpage_data);
 	
 				$project_id = $webpage_data["project_id"];
@@ -124,8 +124,8 @@ class WebpageController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
-				if(substr($webpage_data['url'],0,7) != 'http://')
-				$webpage_data['url'] = 'http://' . $webpage_data['url'];
+//				if(substr($webpage_data['url'],0,7) != 'http://')
+//				$webpage_data['url'] = 'http://' . $webpage_data['url'];
 				$old_is_private = $webpage->isPrivate();
 				$webpage->setFromAttributes($webpage_data);
 
@@ -204,7 +204,7 @@ class WebpageController extends ApplicationController {
 		$project = Projects::findById($pid);
 		$isProjectView = ($project instanceof Project);
 		 
-		$start = array_var($_GET,'start');
+		$start = (integer)array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
 		if (! $start) {
 			$start = 0;
@@ -236,42 +236,39 @@ class WebpageController extends ApplicationController {
 				flash_success(lang('success tag objects', $succ));
 			}
 		}
-
-		if($page < 0) $page = 1;
-
-		//$conditions = logged_user()->isMemberOfOwnerCompany() ? '' : ' `is_private` = 0';
-		if ($tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-			TABLE_PREFIX . "project_webpages.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-			TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectWebpages' ) > 0 ";
-		}
-		$permission_str = ' AND (' . permissions_sql_for_listings(ProjectWebpages::instance(),
-							ACCESS_LEVEL_READ, 
-							logged_user()) . ')';
-
+		
 		if ($isProjectView) {
 			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
 		} else {
 			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
-		$project_str = " AND `project_id` IN ($pids) ";
-		
-		list($webpages, $pagination) = ProjectWebpages::paginate(
-			array("conditions" => $tagstr . $permission_str . $project_str ,
-	        		'order' => '`title` ASC'),
-			config_option('files_per_page', 10),
-			$page
-		); // paginate
 
-		tpl_assign('totalCount', $pagination->getTotalItems());
+		$result = ProjectWebpages::getWebpages($pids,$tag,$page,$limit);
+		if (is_array($result)) {
+			list($webpages, $pagination) = $result;
+			if ($pagination->getTotalItems() < (($page - 1) * $limit)){
+				$start = 0;
+				$page = 1;
+				$result = ProjectWebpages::getWebpages($pids,$tag,$page,$limit);
+				if (is_array($result)) {
+					list($webpages, $pagination) = $result;
+				}else {
+					$webpages = null;
+					$pagination = 0 ;
+				} // if
+			}
+		} else {
+			$webpages = null;
+			$pagination = 0 ;
+		} // if
+		/*tpl_assign('totalCount', $pagination->getTotalItems());
 		tpl_assign('webpages', $webpages);
 		tpl_assign('pagination', $pagination);
-		tpl_assign('tags', Tags::getTagNames());
+		tpl_assign('tags', Tags::getTagNames());*/
 
 		$object = array(
 			"totalCount" => $pagination->getTotalItems(),
+			"start" => $start,
 			"webpages" => array()
 		);
 		if (isset($webpages))
@@ -288,13 +285,12 @@ class WebpageController extends ApplicationController {
 				"description" => $w->getDescription(),
 				"url" => $w->getUrl(),
 				"tags" => $tags,
-				"project" => $w->getProject()?$w->getProject()->getName():'',
-				"projectId" => $w->getProjectId()
+				"wsIds" => $w->getProjectId(),
 				);
 			}
 		}
 		ajx_extra_data($object);
-		tpl_assign("listing", $object);
+		/*tpl_assign("listing", $object);*/
 	}
 } // WebpageController
 

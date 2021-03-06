@@ -202,7 +202,7 @@
   'add mail account' => 'Add Email account',
   'new mail account' => 'New Email account',
   'no emails in this account' => 'No emails in this account',
-  'server address' => 'Server address',
+  'server address' => 'POP3 Server address',
   'mail account id' => 'Account ID',
   'mail account name' => 'Account name',
   'is imap' => 'This is an IMAP account',
@@ -269,6 +269,7 @@
   
   'new mail account' => 'New mail account',
   'new company' => 'New company',
+  'add a new company' => 'Add a new company',
   'new workspace' => 'New workspace',
   'new task list' => 'New task',
   'new event' => 'New event',
@@ -298,6 +299,7 @@
   'created by on' => 'Created by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'modified by on' => 'Modified by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
+  'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'time used in search' => 'Search performed in {0} seconds',
   'more results' => 'There are {0} more results...',
   
@@ -307,6 +309,7 @@
   'all projects' => 'All workspaces',
   'view as list' => 'View as list',
   'pending tasks' => 'Pending tasks',
+  'my pending tasks' => 'My pending tasks',
   'messages' => 'Messages',
   'complete' => 'Complete',
   'incomplete' => 'Incomplete',
@@ -339,10 +342,12 @@
   'end work' => 'End work',
   'confirm delete timeslot' => 'Are you sure you want to delete this timeslot?',
   'success open timeslot' => 'Time slot opened successfully',
+  'success create timeslot' => 'Time slot created successfully',
+  'success cancel timeslot' => 'Time slot canceled successfully',
   'success close timeslot' => 'Time slot closed successfully',
   'success delete timeslot' => 'Time slot deleted successfully',
   'success edit timeslot' => 'Time slot edited successfully',
-  'open timeslot message' => 'You have started working on this object {0} ago',
+  'open timeslot message' => 'Total work time elapsed: ',
   'end work description' => 'End work description',
   'add timeslot' => 'Add timeslot',
   'edit timeslot' => 'Edit timeslot',
@@ -379,7 +384,49 @@
   'work in progress' => 'Work in progress',
   'total time' => 'Total time',
   
-  'upload anyway' => 'Upload anyway'
+  'upload anyway' => 'Upload anyway',
+  
+  'print view' => 'Print view',
+  'activity' => 'Activity',
+  'statistics' => 'Statistics',
+  'time' => 'Time',
+  'task time report' => 'Total task execution time',
+  'new tasks by user' => 'New tasks by user',
+  'generate report' => 'Generate report',
+  'task title' => 'Task title',
+  'total time' => 'Total time',
+  'include subworkspaces' => 'Include subworkspaces',
+  'print' => 'Print',
+  'this week' => 'This week',
+  'last week' => 'Last week',
+  'this month' => 'This month',
+  'last month' => 'Last month',
+  'select dates...' => 'Select dates...',
+  
+  'task time report description' => 'This report displays the total executed time for a list of tasks, specified by date, user (optional) and workspace (optional).',
+  'no data to display' => 'No data to display',
+  
+  'new company name' => 'New company name',
+  'checking' => 'Checking',
+  'country' => 'Country',
+  
+  'email addresses' => 'Email addresses',
+  'instant messaging' => 'Instant messaging',
+  'phone' => 'Phone',
+  'phone 2' => 'Phone 2',
+  'fax' => 'Fax',
+  'assistant' => 'Assistant',
+  'callback' => 'Callback',
+  'mobile' => 'Mobile',
+  'pager' => 'Pager',
+  
+  'roles' => 'Roles',  
+  'last updated by on' => '{0}, on {1}',
+  'updated' => 'Updated',
+  'group by' => 'Group by',
+  
+  'total' => 'Total'
+  
   ); // array
 
 ?>

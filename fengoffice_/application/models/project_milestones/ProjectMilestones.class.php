@@ -307,6 +307,9 @@
 			$new = ProjectTasks::createTaskCopy($sub);
 			$new->setIsTemplate($as_template);
 			$new->setMilestoneId($milestoneTo->getId());
+			if ($sub->getIsTemplate()) {
+				$new->setFromTemplateId($sub->getId());
+			}
 			$new->save();
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);

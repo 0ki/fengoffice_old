@@ -133,7 +133,7 @@ var allTags = [<?php
 				<?php echo checkbox_field('message[notify_company_' . $company->getId() . ']', 
 					array_var($message_data, 'notify_company_' . $company->getId()), 
 					array('id' => $genid.'notifyCompany' . $company->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ')')) ?> 
+						'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ',"' . $genid. '")')) ?> 
 				<label for="<?php echo $genid ?>notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
 			</div>
 			
@@ -143,7 +143,7 @@ var allTags = [<?php
 				<li><?php echo checkbox_field('message[notify_user_' . $user->getId() . ']', 
 					array_var($message_data, 'notify_user_' . $user->getId()), 
 					array('id' => $genid.'notifyUser' . $user->getId(), 
-						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ')')) ?> 
+						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
 					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
 				<script type="text/javascript">
 					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({

@@ -47,8 +47,8 @@ return array(
     'assigned to' => 'Asignado a',
     'project started on' => 'Comenzado el',
 
-    'send milestone assigned to notification' => 'Eniviar notificación al usuario vía mail',
-	'send task assigned to notification' => 'Eniviar notificación al usuario vía mail',
+    'send milestone assigned to notification' => 'Enviar notificación al usuario vía mail',
+	'send task assigned to notification' => 'Enviar notificación al usuario vía mail',
 
     'edit company data' => '<a class="internalLink" href="{0}">Edit</a> Datos de la compañía',
     'company users involved in project' => '{0} usuarios relacionados en {1}',
@@ -250,6 +250,10 @@ return array(
 	'new milestone template' => 'Nueva plantilla de hito',
 	'new milestone from template' => 'Nuevo hito desde plantilla',
 	'loading' => 'Cargando',
+
+	'show all' => 'Mostrar todos',
+
+	'unassigned' => 'No asignadas'
 ); // array
 
 ?>

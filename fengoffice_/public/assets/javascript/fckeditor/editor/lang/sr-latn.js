@@ -72,7 +72,7 @@ BlockJustify		: "Obostrano ravnanje",
 DecreaseIndent		: "Smanji levu marginu",
 IncreaseIndent		: "Uvećaj levu marginu",
 Blockquote			: "Blockquote",	//MISSING
-Undo				: "Poni�ti akciju",
+Undo				: "Poni'ti akciju",
 Redo				: "Ponovi akciju",
 NumberedListLbl		: "Nabrojiva lista",
 NumberedList		: "Unesi/ukloni nabrojivu listu",

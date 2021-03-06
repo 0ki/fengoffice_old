@@ -564,6 +564,7 @@ class ProjectTask extends BaseProjectTask {
           'conditions' => '`parent_id` = ' . DB::escape($this->getId()),
           'order' => '`order`, `created_on`'
           )); // findAll
+          if (is_null($this->all_tasks)) $this->all_tasks = array();
 		} // if
 
 		return $this->all_tasks;
@@ -1051,9 +1052,7 @@ class ProjectTask extends BaseProjectTask {
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $this->getProject()->getName(),
-				"projectId" => $this->getProjectId(),
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
+				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 				"url" => $this->getObjectUrl(),
 				"parentId" => $parent_id,
 				"status" => "Pending",
@@ -1075,7 +1074,18 @@ class ProjectTask extends BaseProjectTask {
 		}
 		return false;
 	}
-    
+	
+	
+	/**
+	 * Begin task templates
+	 */
+	function getAssignTemplateToWSUrl(){
+		return get_url('administration','assign_task_template_to_ws',array('id'=> $this->getId()));
+	}
+	/**
+	 * End task templates
+	 */
+	
 } // ProjectTask
 
 ?>

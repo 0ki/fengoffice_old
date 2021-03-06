@@ -1,7 +1,7 @@
 <?php
 $options = array();
 
-	if (strcmp($file->getTypeString(), 'prsn')==0) {
+	if ($file && strcmp($file->getTypeString(), 'prsn')==0) {
 		add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
 	}
 	
@@ -43,14 +43,14 @@ $options = array();
   	if($last_revision instanceof ProjectFileRevision) { 
   		$description .= '<div id="fileLastRevision"><span class="propertyName">' . lang('last revision') . ':</span>'; 
 		if($last_revision->getCreatedBy() instanceof User) {
-      		$description .= lang('file revision info long', $last_revision->getRevisionNumber(), $last_revision->getCreatedBy()->getCardUrl(), $last_revision->getCreatedBy()->getDisplayName(), format_descriptive_date($last_revision->getCreatedOn()));
+      		$description .= lang('file revision info long', $last_revision->getRevisionNumber(), $last_revision->getCreatedBy()->getCardUrl(), clean($last_revision->getCreatedBy()->getDisplayName()), format_descriptive_date($last_revision->getCreatedOn()));
 		} else {
 			$description .= lang('file revision info short', $last_revision->getRevisionNumber(), format_descriptive_date($last_revision->getCreatedOn()));
 		}
 	} // if
 	
 	tpl_assign('image', '<div><img src="' .
-		$file->getTypeIconUrl() .'" alt="' . $file->getFilename() . '" /></div>');
+		$file->getTypeIconUrl() .'" alt="' . clean($file->getFilename()) . '" /></div>');
 	tpl_assign('iconclass', 'ico-large-files');
 	tpl_assign('description', $description);
 	tpl_assign('title', clean($file->getFilename()));

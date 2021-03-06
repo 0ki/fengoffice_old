@@ -14,12 +14,14 @@
 			'app.js',
 			'og/og.js',
 			'og/WorkspaceChooser.js',
+			'og/WorkspaceUtils.js',
 			'og/MessageManager.js',
 			'og/WebpageManager.js',
 			'og/ContactManager.js',
 			'og/OverviewManager.js',
 			'og/FileManager.js',
 			'og/ReportingManager.js',
+			'og/ReportingFunctions.js',
 			'og/swfobject.js',
 			'og/ImageChooser.js',
 			'og/ObjectPicker.js',
@@ -36,6 +38,7 @@
 			'og/EventPopUp.js',
 			'modules/addTaskForm.js',
 			'modules/addMessageForm.js',
+			'modules/addContactForm.js',
 			'modules/addFileForm.js',
 			'modules/addProjectForm.js',
 			'modules/addUserForm.js',
@@ -68,7 +71,7 @@
 	
 	echo add_javascript_to_page(get_url("access", "get_javascript_translation"));
 	
-	if(USE_JS_CACHE){
+	if(defined('USE_JS_CACHE') && USE_JS_CACHE){
 		echo add_javascript_to_page(implode(',',$jss));
 	}
 	else{
@@ -92,7 +95,7 @@
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
 </div>
 
-<div id="subWsExpander" onmouseover="clearTimeout(og.globalVars['swst']);" onmouseout="og.setSubWsTooltipTimeout(100)" style="display:none;"></div>
+<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.setSubWsTooltipTimeout(100)" style="display:none;"></div>
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>

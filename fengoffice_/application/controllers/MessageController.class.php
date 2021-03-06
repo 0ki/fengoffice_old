@@ -42,7 +42,8 @@ class MessageController extends ApplicationController {
 			"tag" => array_var($_GET,'tagTag'),
 			"accountId" => array_var($_GET,'account_id'),
 			"viewType" => array_var($_GET,'view_type'),
-			"readType" => array_var($_GET,'read_type')
+			"readType" => array_var($_GET,'read_type'),
+			"stateType" => array_var($_GET,'state_type')
 		);
 		
 		//Resolve actions to perform
@@ -170,10 +171,9 @@ class MessageController extends ApplicationController {
 						case "email":
 							$email = MailContents::findById($id);
 							if (isset($email) && $email->canEdit(logged_user())){
-								try{									
-									$email->setIsRead($action=='markAsRead'?1:0);
+								try{
 									DB::beginWork();
-									$email->save();
+									$email->setIsRead($action=='markAsRead'?1:0,logged_user()->getId());
 									DB::commit();
 									$resultMessage = lang("success mark objects", '');
 								} catch(Exception $e){
@@ -287,9 +287,22 @@ class MessageController extends ApplicationController {
 			$classified = "'1' = '1'";
 			
 			
+		// Check for drafts emails
+		if (isset($attributes["stateType"]) && $attributes["stateType"] == "draft")
+			$state = "state = '2'";
+		else if (isset($attributes["stateType"]) && $attributes["stateType"] == "sent")
+			$state = "state = '1'";
+		else if (isset($attributes["stateType"]) && $attributes["stateType"] == "received")
+			$state = "state = '0'";
+		else
+			$state = "'1' = '1'";				
+	
+			
+			
 		// Check read emails
 		if (isset($attributes["readType"]) && $attributes["readType"] == "unreaded")
-			$readed = "is_read = 0";
+			$readed = " NOT id in (SELECT rel_object_id from " . TABLE_PREFIX . "read_objects t WHERE user_id="
+		. logged_user()->getId() . " AND t.rel_object_manager='MailContents' AND t.is_read='1')";
 		else
 			$readed = "'1' = '1'";
 			
@@ -327,9 +340,13 @@ class MessageController extends ApplicationController {
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 	
+		
+		
 		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND is_deleted = 0 " . $permissions 
+			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND is_deleted = 0 " . $permissions 
 			. " ORDER BY sent_date DESC");
+			
+			
 			
 		if(!$res) return null;
 		return $res->fetchAll();
@@ -387,6 +404,7 @@ class MessageController extends ApplicationController {
 	{
 		$object = array(
 			"totalCount" => count($totMsg),
+			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
 			"messages" => array()
 		);
 		for ($i = $start; $i < $start + $limit; $i++){
@@ -410,13 +428,15 @@ class MessageController extends ApplicationController {
 							"title" => $msg->getSubject(),
 							"text" => $text,
 							"date" => $msg->getSentDate()->getTimestamp(),
-							"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
-    						"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getAccount()->getOwner()->getId(),
 							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
 							"tags" => project_object_tags($msg),
-							"isRead" => $msg->getIsRead()
+							"isRead" => $msg->getIsRead(logged_user()->getId()),
+							"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),							
+							"isDraft" => $msg->getIsDraft(),							
+							"isSent" => $msg->getIsSent()							
+							
 						);
 					} else if ($msg instanceof ProjectMessage){
 						$text = $msg->getText();
@@ -432,12 +452,13 @@ class MessageController extends ApplicationController {
 							"title" => $msg->getTitle(),
 							"text" => $text,
 							"date" => $msg->getUpdatedOn()->getTimestamp(),
-							"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
-    						"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getCreatedById(),
 							"userName" => $msg->getCreatedBy()->getDisplayName(),
-							"tags" => project_object_tags($msg)
+							"tags" => project_object_tags($msg),
+							"from" => $msg->getCreatedBy()->getDisplayName(),							
+							"isDraft" => 0,
+							"isSent"=> 0
 						);
 					}
     			}
@@ -482,6 +503,30 @@ class MessageController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 
 	} // view
+	
+	/**
+	 * View a message in a printer-friendly format.
+	 *
+	 */
+	function print_view() {
+		$this->setLayout("html");
+		$this->addHelper('textile');
+		
+		$message = ProjectMessages::findById(get_id());
+		if(!($message instanceof ProjectMessage)) {
+			flash_error(lang('message dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		if(!$message->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		tpl_assign('message', $message);
+	} // print_view
 
 	/**
 	 * Add message

@@ -144,7 +144,28 @@
   	'sunday short' => 'Sun',
   
   	'copy of' => 'Copy of {0}',
-  
+  	'task templates' => 'Task Templates',
+  	'add task template' => 'Add Task Template',
+  	'template' => 'Template',
+  	'workspaces' => 'Workspaces',
+  	'assign to workspace' => 'Assign to Workspace',
+  	'assign'=>'Assign',
+  	'include subworkspaces'=>'Include Subworkspaces',
+  	'assign task template to workspace' => 'Assign task template \'{0}\' to workspaces',
+  	'confirm delete task template' => 'Are you sure you want to delete this task template permanently? It will not longer be available throughout the system.',
+  	'no task templates' => 'No task templates',
+  	'create contact from user' => 'Create contact with user data',
+  	'confirm create contact from user' => 'Are you sure you want to create a contact with user data?',
+  	'create contact from user desc' => 'If yes is selected, the user will be stored in the system as a contact',
+  	'go to contact' => 'Go to contact data',
+  	'show assigned to' => 'Show assigned to',
+  	'timeslot on object' => 'Timeslot on {0}',
+  	'show by status' => 'Show by status',
+  	'show by priority' => 'Show by priority',
+  	'task report' => 'Task Report',
+  	'priority' => 'Priority',
+  	'anybody' => 'Anybody',
+
   ); // array
 
 ?>

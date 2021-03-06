@@ -50,6 +50,7 @@ _lang = {
 	"delete selected objects": "Delete selected objects",
 	"confirm delete object": "Are you sure you want to delete the selected object(s)?",
 	"confirm delete contact": "Are you sure you want to delete this contact?",
+	"confirm delete company": "Are you sure you want to delete this company?",
 	"confirm delete event": "Are you sure you want to delete this event?",
 	"confirm delete file": "Are you sure you want to delete this file?",
 	"confirm delete mail content": "Are you sure you want to delete this email?",
@@ -61,6 +62,7 @@ _lang = {
 	"confirm delete webpage": "Are you sure you want to delete this weblink?",
 	"confirm delete workspace": "Are you sure you want to delete workspace '{0}'?",
 	"confirm delete project": "Are you sure that you want to delete this workspace and all related data (messages, tasks, milestones, files...)?",
+	"confirm cancel work timeslot": "Are you sure you want to cancel the current timeslot?",
 	"more": "More",
 	"more actions": "More actions",
 	"more actions on first selected object": "More actions on first selected object",
@@ -148,7 +150,8 @@ _lang = {
 	'homePhone1': 'Home phone 1',
 	'homePhone2': 'Home phone 2',
 	'mobilePhone': 'Mobile phone',
-	'edit selected contact': 'Edit contact',
+	'edit selected contact': 'Edit selected contact',
+	'edit selected object': 'Edit selected object',
 	'assign to project': 'Assign to workspace',
 	'assign contact to project': 'Edit contact assignnments',
 	
@@ -288,5 +291,25 @@ _lang = {
 	'confirm leave panel': 'You have unsaved data. If you proceed you will lose any unsaved data.\nProceed?',
 	'unread emails': 'Unread emails',
 	'mark read': 'Mark as read',
-	'mark unread': 'Mark as unread'
+	'mark unread': 'Mark as unread',
+	'from': 'From',
+	'draft': 'Draft',
+	'create contact or client company':'Create contact or client company',
+	'mail sent': 'Mail sent',
+	
+	'click to remove': 'Click to remove',
+	
+	'confirm merge tags': 'Are you sure you want to merge tag \'{0}\' with tag \'{1}\'?\n(Once the tags are merged they can\'t be unmerged)',
+	'save': 'Save',
+	'choose a filename': 'Choose a filename',
+	'rename tag': 'Rename tag',
+	'enter a new name for the tag': 'Enter a new name for the tag',
+	'duplicate company name':'<span style="color:#F00">A company with the name \'{0}\' already exists.&nbsp;</span><a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})>Select this company</a>, or choose a different name',
+	'inbox':'Inbox',
+	'sent':'Sent',
+	'unread': 'Unread',
+	
+	'more options': 'More options'
+	
+	
 }

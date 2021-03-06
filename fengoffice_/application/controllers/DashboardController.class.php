@@ -3,7 +3,7 @@
 /**
  * Dashboard controller
  *
- * @author Ilija Studen <ilija.studen@gmail.com>
+ * @author Ilija Studen <ilija.studen@gmail.com>, Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class DashboardController extends ApplicationController {
 
@@ -48,33 +48,58 @@ class DashboardController extends ApplicationController {
 
 			$activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, $project_ids, config_option('dashboard_logs_count', 15));
 		} // if
+		if(user_config_option('show charts widget')){
+			$charts = ProjectCharts::findAll(array(
+				'conditions' => '(project_id in ('. $wscsv . ') AND show_in_parents = 1)' 
+					. (active_project() instanceof Project? ' OR (project_id = '. active_project()->getId() . ' AND show_in_project = 1)' : '')
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectCharts')"):'')
+					, 'order' => 'updated_on DESC', 'limit' => 5));
+			tpl_assign('charts', $charts);
+		}
+		if(user_config_option('show messages widget')){
+			$messages = ProjectMessages::findAll(array(
+				'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMessages')"):'')
+					 . ' AND ' .permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ,logged_user())
+					, 'order' => 'updated_on DESC', 'limit' => 10));
+			tpl_assign('messages', $messages);
+		}
+		if(user_config_option('show documents widget')){
+			$documents = ProjectFiles::findAll(array(
+				'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
+					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectFiles')"):'')
+					. ' AND ' .permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ,logged_user())
+					, 'order' => 'updated_on DESC', 'limit' => 10));
+					
+			tpl_assign('documents', $documents);
+		}
 		
-		$charts = ProjectCharts::findAll(array(
-			'conditions' => '(project_id in ('. $wscsv . ') AND show_in_parents = 1)' 
-				. (active_project() instanceof Project? ' OR (project_id = '. active_project()->getId() . ' AND show_in_project = 1)' : '')
-				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectCharts')"):'')
-				, 'order' => 'updated_on DESC', 'limit' => 5));
-		$messages = ProjectMessages::findAll(array(
-			'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
-				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMessages')"):'')
-				, 'order' => 'updated_on DESC', 'limit' => 10));
-		$documents = ProjectFiles::findAll(array(
-			'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
-				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectFiles')"):'')
-				, 'order' => 'updated_on DESC', 'limit' => 10));
-		$tasks = ProjectTasks::getPendingTasks(logged_user(), active_project(), $tag);
+		if(user_config_option('show emails widget')){
+			$mail_accounts = logged_user()->getMailAccountIdsCSV();
+			if ($mail_accounts != ''){
+				$unread_emails = MailContents::findAllUnread(array('conditions' => 'account_id in (' . $mail_accounts . ')', 'order' => 'sent_date DESC', 'limit' => 10));
+				tpl_assign('unread_emails', $unread_emails);
+			}
+		}
+		
+		if(user_config_option('show pending tasks widget')){
+			$assigned_to = explode(':', user_config_option('pending tasks widget assigned to filter'));
+			$to_company = array_var($assigned_to, 0,0);
+			$to_user = array_var($assigned_to, 1, 0);
+			
+			$tasks = ProjectTasks::getProjectTasks(active_project(),null,'ASC',null,null,$tag,$to_company,$to_user,null,true);
+			tpl_assign('dashtasks', $tasks);
+		}
 		
 		$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag);
-
-		tpl_assign('dashtasks', $tasks);
-		tpl_assign('charts', $charts);
-		tpl_assign('messages', $messages);
-		tpl_assign('documents', $documents);
 		tpl_assign('tasks_in_progress', $tasks_in_progress);
-		tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project(), $tag));
-		tpl_assign('late_milestones', $logged_user->getLateMilestones(active_project(), $tag));
-		tpl_assign('today_tasks', $logged_user->getTodayTasks(active_project(), $tag));
-		tpl_assign('late_tasks', $logged_user->getLateTasks(active_project(), $tag));
+		
+		if(user_config_option('show late tasks and milestones widget')){
+			tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project(), $tag));
+			tpl_assign('late_milestones', $logged_user->getLateMilestones(active_project(), $tag));
+			tpl_assign('today_tasks', $logged_user->getTodayTasks(active_project(), $tag));
+			tpl_assign('late_tasks', $logged_user->getLateTasks(active_project(), $tag));
+		}
 		tpl_assign('active_projects', $active_projects);
 		tpl_assign('activity_log', $activity_log);
 

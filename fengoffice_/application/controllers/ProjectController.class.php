@@ -38,7 +38,7 @@ class ProjectController extends ApplicationController {
 				return;
 			} // if
 			
-			tpl_assign('projects', active_project()->getSubWorkspaces());
+			tpl_assign('projects', active_project()->getSubWorkspaces(false, null, false));
 		} else {
 			
 			tpl_assign('projects', logged_user()->getWorkspaces(false,0));
@@ -287,6 +287,18 @@ class ProjectController extends ApplicationController {
 
 			try {
 				DB::beginWork();
+				$project->save(); //Save to get the id, then update the project path info
+				if (array_var($project_data, 'parent_id') != $project->getParentId()){
+					$parent = Projects::findById(array_var($project_data, 'parent_id'));
+					if ($parent){
+						if(!$project->canSetAsParentWorkspace($parent)) {
+							flash_error(lang('cannot set workspace as parent', $parent->getName()));
+							ajx_current("empty");
+							return;
+						}
+					}
+					$project->setParentWorkspace($parent);
+				}
 				$project->save();
 
 				$permission_columns = ProjectUsers::getPermissionColumns();
@@ -459,10 +471,22 @@ class ProjectController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
+			
 			$project->setFromAttributes($project_data);
 
 			try {
 				DB::beginWork();
+				if (array_var($project_data, 'parent_id') != $project->getParentId()){
+					$parent = Projects::findById(array_var($project_data, 'parent_id'));
+					if ($parent){
+						if(!$project->canSetAsParentWorkspace($parent)) {
+							flash_error(lang('cannot set workspace as parent', $parent->getName()));
+							ajx_current("empty");
+							return;
+						}
+					}
+					$project->setParentWorkspace($parent);
+				}
 				$project->save();
 				
 				/* <permissions> */
@@ -597,7 +621,7 @@ class ProjectController extends ApplicationController {
 				"id" => $id,
 				"name" => $name
 			));
-			ajx_current("back");
+			ajx_current("start");
 
 		} catch(Exception $e) {
 			DB::rollback();
@@ -869,7 +893,8 @@ class ProjectController extends ApplicationController {
 				"name" => $w->getName(),
 				"color" => $w->getColor(),
 				"parent" => $tempParent,
-				"realParent" => $w->getParentId()
+				"realParent" => $w->getParentId(),
+					"depth" => $w->getDepth()
 			);
 				
 		}

@@ -71,3 +71,22 @@ INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `ty
 INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Boring', 'Boring Everyday Stuff', '999999');
 INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES ('Holiday', 'A Holiday', 'A4CAE6');
 
+-- 
+-- Dumping data for table `user_ws_config_categories`
+-- 
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`id`,`name`,`is_system`,`type`,`category_order`) VALUES  (1,'dashboard',0,0,0);
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`id`,`name`,`is_system`,`type`,`category_order`) VALUES  (2,'task panel',0,0,1);
+
+-- 
+-- Dumping data for table `user_ws_config_options`
+-- 
+INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`id`,`category_name`,`name`,`default_value`,`config_handler_class`,`is_system`,`option_order`,`dev_comment`) VALUES 
+(1,'dashboard','show calendar widget','1','BoolConfigHandler',0,0,''),
+ (2,'dashboard','show late tasks and milestones widget','1','BoolConfigHandler',0,100,''),
+ (3,'dashboard','show pending tasks widget','1','BoolConfigHandler',0,200,''),
+ (4,'dashboard','pending tasks widget assigned to filter','0:0','UserCompanyConfigHandler',0,210,''),
+ (5,'dashboard','show emails widget','1','BoolConfigHandler',0,300,''),
+ (6,'dashboard','show messages widget','1','BoolConfigHandler',0,400,''),
+ (7,'dashboard','show documents widget','1','BoolConfigHandler',0,500,''),
+ (8,'dashboard','show charts widget','1','BoolConfigHandler',0,600,''),
+ (9,'task panel','my tasks is default view','1','BoolConfigHandler',0,0,'');

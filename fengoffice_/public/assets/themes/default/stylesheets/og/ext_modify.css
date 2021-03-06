@@ -8,7 +8,7 @@
     border-top:0px;
 }
 .x-panel-body{
-	background-color: #EEEEEE;	
+	background-color: #F0F0F0;	
 }
 
 /*--- tabs.css ---*/
@@ -24,3 +24,22 @@
 }
 
 strong{font-weight:bold;}
+
+
+.og-content-panel .x-panel-tbar .x-toolbar {
+	background: transparent;
+	border-top: 0px none;
+	padding-top:5px;
+}
+
+.og-content-panel .x-panel-bbar .x-toolbar {
+	background: transparent;
+	border-top: 0px none;
+}
+
+.x-tbar-page-number{
+	padding-left:3px;
+	padding-top:1px;
+	padding-bottom:1px;
+	height:15px;
+}

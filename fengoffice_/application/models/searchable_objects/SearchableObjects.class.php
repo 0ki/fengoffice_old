@@ -45,7 +45,7 @@
         return array($items, $pagination);
     } // searchPaginated
     
-    static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1, $columns_csv = null) {
+    static function searchByType($search_for, $project_csvs, $object_type = '', $include_private = false, $items_per_page = 10, $current_page = 1, $columns_csv = null, $user_id = 0) {
         $remaining = 0;
     	if (LUCENE_SEARCH) {
         	throw new Exception("Not implemented");
@@ -54,7 +54,7 @@
       		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
       		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());*/
         } else {
-		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type, $columns_csv);
+		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type, $columns_csv, $user_id);
 		    $count = SearchableObjects::countUniqueObjects($conditions);
 		    $pagination = new DataPagination($count, $items_per_page, $current_page);
 		    if ($count > 0)
@@ -83,7 +83,7 @@
     * @param string $project_csvs Search in this project
     * @return array
     */
-    function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '', $columns_csv = null) {
+    function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '', $columns_csv = null, $user_id = 0) {
     	$otSearch = '';
     	$columnsSearch = '';
     	$wsSearch = '';
@@ -92,11 +92,18 @@
     		
     	if ($object_type != '')
     		$otSearch = " AND `rel_object_manager` = '$object_type'";
+    
+    	if ($user_id > 0)
+    		$wsSearch .= " AND (`user_id` = " . $user_id . " OR ";
+    	else
+    		$wsSearch .= " AND (";
     		
     	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles")
-    		$wsSearch = " AND `rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
+    		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
     	else
-    		$wsSearch =  "AND `project_id` in ($project_csvs)";
+    		$wsSearch .=  "`project_id` in ($project_csvs)";
+    		
+    	$wsSearch .= ')';
     
     	if($include_private) {
     		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE)' .$wsSearch . $otSearch . $columnsSearch, array($search_for));

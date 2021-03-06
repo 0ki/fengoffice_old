@@ -328,6 +328,15 @@ class ProjectMessage extends BaseProjectMessage {
 		return get_url('message', 'unsubscribe', array('id' => $this->getId()));
 	} // getUnsubscribeUrl
 
+	/**
+	 * Return print view URL
+	 *
+	 * @return string
+	 */
+	function getPrintViewUrl() {
+		return get_url('message', 'print_view', array('id' => $this->getId()));
+	}
+	
 	// ---------------------------------------------------
 	//  System
 	// ---------------------------------------------------

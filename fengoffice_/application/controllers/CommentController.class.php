@@ -65,9 +65,9 @@ class CommentController extends ApplicationController {
 				$comment->setFromAttributes($comment_data);
 				$comment->setRelObjectId($object_id);
 				$comment->setRelObjectManager($object_manager);
-				if(!logged_user()->isMemberOfOwnerCompany()) {
+//				if(!logged_user()->isMemberOfOwnerCompany()) {
 					$comment->setIsPrivate(false);
-				} // if
+//				} // if
 
 				DB::beginWork();
 				$comment->save();
