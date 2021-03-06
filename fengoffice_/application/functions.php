@@ -614,52 +614,23 @@ function get_locale() {
 }
 
 function get_ext_language_file($loc) {
-	switch ($loc) {
-		case 'cs_cz': return 'ext-lang-cs-min.js';
-		case 'de_de': return 'ext-lang-de-min.js';
-		case 'en_us': return 'ext-lang-en-min.js';
-		case 'es_es': return 'ext-lang-es-min.js';
-		case 'es_la': return 'ext-lang-es-min.js';
-		case 'fr_fr': return 'ext-lang-fr_FR.js';
-		case 'hu_hu': return 'ext-lang-en-min.js';
-		case 'it_it': return 'ext-lang-it-min.js';
-		case 'ja_jp': return 'ext-lang-ja-min.js';
-		case 'ko_kr': return 'ext-lang-ko-min.js';
-		case 'nl_nl': return 'ext-lang-nl-min.js';
-		case 'pl_pl': return 'ext-lang-pl-min.js';
-		case 'pt_br': return 'ext-lang-pt-min.js';
-		case 'ru_ru': return 'ext-lang-ru.js';
-		case 'zh_cn': return 'ext-lang-zh_CN-min.js';
-		case 'zh_tw': return 'ext-lang-zh_CN-min.js';
-		default: return '';
+	if (is_file(ROOT . "/language/$loc/_config.php")) {
+		$config = include ROOT . "/language/$loc/_config.php";
+		if (is_array($config)) {
+			return array_var($config, '_ext_language_file', 'ext-lang-en-min.js');
+		}
 	}
-	return '';	
+	return 'ext-lang-en-min.js';
 }
 
 function get_language_name($loc) {
-	static $names = array(
-		'ca_es' => 'Català',
-		'cs_cz' => 'Čeština',
-		'da_dk' => 'Dansk',
-		'de_de' => 'Deutsch',
-		'en_us' => 'English (U.S.)',
-		'es_es' => 'Español (España)',
-		'es_la' => 'Español (Latinoamérica)',
-		'fr_fr' => 'Français',
-		'hu_hu' => 'Magyar',
-		'it_it' => 'Italiano',
-		'ja_jp' => '日本語',
-		'ko_kr' => '한국어',
-		'jp_ja' => '日本語',
-		'kr_ko' => '한국어',
-		'nl_nl' => 'Nederlands',
-		'pl_pl' => 'Polski',
-		'pt_br' => 'Português',
-		'ru_ru' => 'Pусский',
-		'zh_cn' => '中文 (中国)',
-		'zh_tw' => '中文 (臺灣)',
-	);
-	return array_var($names, $loc, $loc);
+	if (is_file(ROOT . "/language/$loc/_config.php")) {
+		$config = include ROOT . "/language/$loc/_config.php";
+		if (is_array($config)) {
+			return array_var($config, '_language_name', $loc);
+		}
+	}
+	return $loc;
 }
 
 function get_workspace_css_properties($num) {
@@ -806,15 +777,17 @@ function create_user($user_data, $permissionsString) {
 	if ($contact instanceof Contact) {
 		// update contact data with data entered for this user
 		$contact->setCompanyId($user->getCompanyId());
-		// make user's email the contact's main email address
-		if ($contact->getEmail2() == $user->getEmail()) {
-			$contact->setEmail2($contact->getEmail());
-		} else if ($contact->getEmail3() == $user->getEmail()) {
-			$contact->setEmail3($contact->getEmail());
-		} else if ($contact->getEmail2() == "") {
-			$contact->setEmail2($contact->getEmail());
-		} else {
-			$contact->setEmail3($contact->getEmail());
+		if ($contact->getEmail() != $user->getEmail()) {
+			// make user's email the contact's main email address
+			if ($contact->getEmail2() == $user->getEmail()) {
+				$contact->setEmail2($contact->getEmail());
+			} else if ($contact->getEmail3() == $user->getEmail()) {
+				$contact->setEmail3($contact->getEmail());
+			} else if ($contact->getEmail2() == "") {
+				$contact->setEmail2($contact->getEmail());
+			} else {
+				$contact->setEmail3($contact->getEmail());
+			}
 		}
 		$contact->setEmail($user->getEmail());
 		$contact->save();

@@ -560,4 +560,10 @@
 	'subscribe invited users' => 'Subskrybuj zaproszonych użytkowników',
 	'personal project' => 'Przestrzeń własna',
 	'personal project desc' => 'Przestrzeń własna to projekt w którym domyślnie przechowywane są obiekty (gdy zaznaczono "wszystko" w panelu Projekty). Jeśli zmienisz ten projekt, użytkownikw uzyska do niego pełny dostęp. Możesz to później zmienić edytując użytkownika lub zezwolenia dla projektów.',
+	'export csv' => 'Eksport do CSV',
+	'export pdf' => 'Eksport do PDF',
+	'normal user' => 'Normalny',
+	'guest user' => 'Gość',
+	'admin user' => 'Administrator',
+	'user type' => 'Typ użytkownika',
 ); ?>

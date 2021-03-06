@@ -62,6 +62,7 @@ class MailController extends ApplicationController {
 		if (!is_array($mail_data)) {
 			$re_subject = str_starts_with(strtolower($original_mail->getSubject()), 're:') ? $original_mail->getSubject() : 'Re: ' . $original_mail->getSubject();
 			
+			$type = null;
 			if ($original_mail->getBodyHtml() != '') $type = 'html';
 			else $type = user_config_option('last_mail_format');
 			if (!$type) $type = 'plain';
@@ -94,7 +95,6 @@ class MailController extends ApplicationController {
 			} else {
 				$re_body = $re_info . $pre_quote . $re_body . $post_quote;
 			}
-			$re_body = $re_body;
 			
 			// Put original mail images in the reply
 			if ($original_mail->getBodyHtml() != '') {
@@ -2192,7 +2192,7 @@ class MailController extends ApplicationController {
 								foreach ($emails_in_conversation as $email){
 									if ($email->canEdit(logged_user())){
 										if ($tag != ''){
-											Tags::deleteObjectTag($tag, $email->getId(),get_class($email->manager()));
+											$email->deleteTag($tag);
 										}else{
 											$email->clearTags();
 										}

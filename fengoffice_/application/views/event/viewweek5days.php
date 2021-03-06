@@ -761,14 +761,9 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 	}
 	
 <?php if ($drawHourLine) { ?>
-	og.preferences['start_monday'] = -1;
 	og.startLocaleTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
 	og.startLineTime = null;
-	if (og.preferences['start_monday'] == 1) {
-		var today_d = og.startLocaleTime.format('N') - 1;
-	} else {
-		var today_d = og.startLocaleTime.format('w');
-	}
+	var today_d = og.startLocaleTime.format('N') - 1;
 	og.drawCurrentHourLine(today_d, 'w5_');
 <?php } ?>
 	// init tooltips

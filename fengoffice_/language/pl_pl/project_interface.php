@@ -276,4 +276,6 @@ Temat:       {0}
 	'linked milestone tab' => 'Etapy',
 	'linked task tab' => 'Zadania',
 	'linked event tab' => 'Wydarzenia',
+	'urgent priority' => 'Pilne',
+	'apply assignee to subtasks' => 'Zastosuj przypisanego do zadań podrzędnych',
 ); ?>

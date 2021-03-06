@@ -1922,7 +1922,7 @@ class Project extends BaseProject {
 	    		$radioArray[7] = ($perm->getCanWriteFiles() ? 2 : ($perm->getCanReadFiles()? 1 : 0));
 	    		$radioArray[8] = ($perm->getCanWriteEvents() ? 2 : ($perm->getCanReadEvents()? 1 : 0));
 	    		
-	    		$result[] = array("wsid" => $perm->getUserId(), "pc" => $chkArray, "pr" => $radioArray, 'maxPerm' => $perm->getUser()->isGuest() ? 1 : 2);
+	    		$result[] = array("wsid" => $perm->getUserId(), "pc" => $chkArray, "pr" => $radioArray, 'maxPerm' => $perm->getUserOrGroup()->isGuest() ? 1 : 2);
 	    	}
     	}
     	

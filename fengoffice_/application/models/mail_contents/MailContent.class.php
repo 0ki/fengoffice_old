@@ -182,7 +182,7 @@ class MailContent extends BaseMailContent {
 	function clearEverything() {
 		$this->clearContentFile();
 		$this->clearMailData();
-		parent::delete();
+		parent::clearEverything();
 	}
 	
 	function clearMailData() {

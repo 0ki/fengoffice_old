@@ -185,7 +185,7 @@ og.WorkspaceTree = function(config) {
 						var tf = this.getTopToolbar().items.get(this.id + 'filter');
 						tf.setValue("");
 						this.clearFilter();
-						node.expand();
+						node.expand(false, false);
 						node.ensureVisible();
 						this.previousNode = node;
 					}
@@ -520,7 +520,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		f = re.test(n.text.toLowerCase()) || f;
 		if (!n.previousState) {
 			// save the state before filtering
-			n.previousState = n.expanded?"expanded":"collapsed";
+			n.previousState = n.expanded ? "e" :"c";
 		}
 		if (f) {
 			n.getUI().show();
@@ -540,15 +540,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
 			this.filterNode(this.workspaces, re);
 			this.workspaces.getUI().show();
-			function expandAll(node) {
-				node.expand();
-				var c = node.firstChild;
-				while (c) {
-					expandAll(c);
-					c = c.nextSibling;
-				}
-			}
-			expandAll(this.workspaces);
+			this.workspaces.expand(true, false);
 			//this.expandAll();
 		}
 	},
@@ -562,13 +554,10 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			c = c.nextSibling;
 		}
 		n.getUI().show();
-		if (this.getSelectionModel().getSelectedNode().isAncestor(n)) {
-			n.previousState = "expanded";
-		}
-		if (n.previousState == "expanded") {
-			n.expand();
-		} else if (n.previousState == "collapsed") {
-			n.collapse();
+		if (n.previousState == "e") {
+			n.expand(false, false);
+		} else if (n.previousState == "c") {
+			n.collapse(false, false);
 		}
 		n.previousState = null;
 	},

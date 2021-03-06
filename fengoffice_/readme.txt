@@ -1,5 +1,5 @@
 
-    About Feng Office 1.7-beta
+    About Feng Office 1.7-beta2
     ==========================
 
     Feng Office is a free and open source Web Office, project management
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download Feng Office 1.7-beta - http://fengoffice.com/web/community/
+    2. Download Feng Office 1.7-beta2 - http://fengoffice.com/web/community/
     3. Unpack into your Feng Office installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_feng>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.7-beta
+    	from your current version to 1.7-beta2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -90,6 +90,19 @@
 
 	Changelog
 	=========
+	
+	Since 1.7-beta
+	--------------
+	- bugfix: Error when deleting an email from the trash.
+	- bugfix: Improved the workspace filter's performance
+	- bugfix: Missing lang: log comment projectfiles data
+	- bugfix: Tags of objects without workspaces were not being shown.
+	- bugfix: Permissions are now better considered when listing tags. (type permissions are taken into account)	
+	- bugfix: Error whgen editting workspace permissions assigned to a group.
+	- bugfix: Error when adding a subtask from the task's view
+	- bugfix: Current time marker in 5 day view is one day ahead.	
+	- bugfix: Task list view shows date one day ahead on some timezones
+	- usability: Don't ask whether to keep workspaces when dragging an email to a workspace if the email has no workspaces.
 	
 	Since 1.6.2
 	-----------

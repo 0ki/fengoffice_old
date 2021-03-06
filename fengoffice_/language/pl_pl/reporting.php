@@ -25,4 +25,9 @@
 	'columns to print desc' => 'Przenieś kolumny które chcesz wydrukować do pola po prawej.',
 	'reporting workspace' => 'Projekt',
 	'reporting user' => 'Użytkownik',
+	'report pdf options' => 'Opcje PDF',
+	'report pdf page layout' => 'Rozplanowanie strony',
+	'report pdf vertical' => 'Pionowo',
+	'report pdf landscape' => 'Poziomo',
+	'report font size' => 'Rozmiar czcionki',
 ); ?>

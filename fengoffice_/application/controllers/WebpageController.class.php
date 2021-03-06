@@ -326,7 +326,7 @@ class WebpageController extends ApplicationController {
 				$web_page = ProjectWebpages::findById($id);
 				if (isset($web_page) && $web_page->canEdit(logged_user())) {
 					if ($tagTag != ''){
-						Tags::deleteObjectTag($tagTag, $web_page->getId(),get_class($web_page->manager()));								
+						$web_page->deleteTag($tagTag);								
 					}else{
 						$web_page->clearTags();
 					}

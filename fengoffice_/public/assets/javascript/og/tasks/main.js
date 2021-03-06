@@ -87,8 +87,8 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.pr) this.priority = tdata.pr; else this.priority = 200;
 	if (tdata.mid) this.milestoneId = tdata.mid; else this.milestoneId = null;
 	if (tdata.atid) this.assignedToId = tdata.atid; else this.assignedToId = null;
-	if (tdata.dd) this.dueDate = tdata.dd - tdata.tz; else this.dueDate = null;
-	if (tdata.sd) this.startDate = tdata.sd - tdata.tz; else this.startDate = null;
+	if (tdata.dd) this.dueDate = tdata.dd; else this.dueDate = null;
+	if (tdata.sd) this.startDate = tdata.sd; else this.startDate = null;
 	if (tdata.wid) this.workingOnIds = tdata.wid; else this.workingOnIds = null;
 	if (tdata.wt) this.workingOnTimes = tdata.wt; else this.workingOnTimes = null;
 	if (tdata.wp) this.workingOnPauses = tdata.wp; else this.workingOnPauses = null;

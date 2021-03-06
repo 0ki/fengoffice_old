@@ -241,7 +241,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser = null, $tags = '', $project = null, $archived = false){
+	function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser = null, $tag = '', $project = null, $archived = false){
 
 		$from_date = new DateTimeValue($date_start->getTimestamp());
 		$from_date = $from_date->beginningOfDay();
@@ -256,8 +256,8 @@ class ProjectMilestones extends BaseProjectMilestones {
 		} else {
 			$wsstring = "";
 		}
-		if (isset($tags) && $tags && $tags!='') {
-			$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tags)." AND  ".TABLE_PREFIX."project_milestones.id = t.rel_object_id AND t.rel_object_manager = 'ProjectMilestones') ";
+		if (isset($tag) && $tag && $tag!='') {
+			$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND  ".TABLE_PREFIX."project_milestones.id = t.rel_object_id AND t.rel_object_manager = 'ProjectMilestones') ";
 		} else {
 			$tag_str= "";
 		}

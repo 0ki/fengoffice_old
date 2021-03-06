@@ -8,6 +8,9 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 	('html', 'html.png', 1, 0),
 	('webfile', 'webfile.png', 0, 0);
 
+INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+	('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used');
+
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones`
  ADD COLUMN `is_urgent` BOOLEAN NOT NULL default '0';
  

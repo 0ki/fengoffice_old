@@ -12,14 +12,14 @@ abstract class ProjectDataObjects extends DataManager {
 	private function check_include_trashed(& $arguments = null) {
 		if (!array_var($arguments, 'include_trashed', false)) {
 			$columns = $this->getColumns();
-			if (array_search("trashed_by_id", $columns) != false) {
+			if (array_search("trashed_on", $columns) != false) {
 				$conditions = array_var($arguments, 'conditions', '');
 				if (is_array($conditions)) {
-					$conditions[0] = "`trashed_by_id` = 0 AND (".$conditions[0].")";
+					$conditions[0] = "`trashed_on` = " . DB::escape(EMPTY_DATETIME). " AND (".$conditions[0].")";
 				} else if ($conditions != '') {
-					$conditions = "`trashed_by_id` = 0 AND ($conditions)";
+					$conditions = "`trashed_on` = " . DB::escape(EMPTY_DATETIME). " AND ($conditions)";
 				} else {
-					$conditions = "`trashed_by_id` = 0";
+					$conditions = "`trashed_on` = " . DB::escape(EMPTY_DATETIME);
 				}
 				$arguments['conditions'] = $conditions;
 			}
@@ -36,20 +36,6 @@ abstract class ProjectDataObjects extends DataManager {
 		return parent::paginate($arguments, $items_per_page, $current_page, $count);
 	}
 	
-	function getUserTags() {
-		$oc = new ObjectController();
-		$queries = $oc->getDashboardObjectQueries();
-		$objects = "";
-		foreach ($queries as $type => $query) {
-			if (!str_ends_with($type, "Comments")) {
-				if ($objects != "") $objects .= " \n UNION \n ";
-				$objects .= $query;
-			}
-		}
-		$sql = "SELECT DISTINCT `t`.`tag` AS `name`, count(`t`.`tag`) AS `count` FROM `" . TABLE_PREFIX . "tags` `t`, ($objects) `o` WHERE `t`.`rel_object_manager` = `o`.`object_manager_value` AND `t`.`rel_object_id` = `o`.`oid` GROUP BY `t`.`tag` ORDER BY `count` DESC, `t`.`tag`";
-	}
-	
-
 	/**
 	 * Populates common data for a set of objects such as tags, timeslots, etc.
 	 * 

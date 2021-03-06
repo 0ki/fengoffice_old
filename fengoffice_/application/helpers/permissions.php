@@ -586,7 +586,9 @@
 				
 				if ($object instanceof MailContent) {
 					$acc = MailAccounts::findById($object->getAccountId());
-					if (($access_level == ACCESS_LEVEL_READ && $acc->canView($user)) || ($access_level == ACCESS_LEVEL_WRITE && $acc->canDelete($user))){
+					if (!$acc instanceof MailAccount) {
+						return false; // it's an email with no account and not created by the user
+					} else if (($access_level == ACCESS_LEVEL_READ && $acc->canView($user)) || ($access_level == ACCESS_LEVEL_WRITE && $acc->canDelete($user))){
 						return true;
 					}
 				}

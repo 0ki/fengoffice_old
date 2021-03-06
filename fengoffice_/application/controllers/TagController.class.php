@@ -34,14 +34,10 @@ class TagController extends ApplicationController {
 			return;
 		}
 		$tag_name = array_var($_GET,'tag_name');
-		$project_id = array_var($_GET,'project_id');
 		$object_id = array_var($_GET,'object_id');
 		$manager_class = array_var($_GET,'manager_class');
-		if($project_id) {
-			Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class,Projects::findById($project_id));
-		} else {
-			Tags::deleteObjectTag($tag_name,  $object_id,  $manager_class);
-		}
+		$obj = get_object_by_manager_and_id($object_id, $manager_class);
+		$obj->deleteTag($tag_name);
 		$this->redirectToReferer('');
 	}
 	/**
@@ -125,6 +121,7 @@ class TagController extends ApplicationController {
 			return;
 		}
 		Tags::deleteTagByName($tag);
+		evt_add('tag delete', $tag);
 		$this->redirectTo("tag", "list_tags");
 	}
 } // TagController

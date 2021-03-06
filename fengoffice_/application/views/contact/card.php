@@ -22,10 +22,11 @@
 			}
 		}
 		if ($contact->canEdit(logged_user())) {
-			if (!$contact->isArchived())
+			if (!$contact->isArchived()) {
 				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $contact->getArchiveUrl() ."');", 'ico-archive-obj');
-			else
+			} else {
 				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $contact->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
+			}
 		}
 	}
 ?>

@@ -8,7 +8,7 @@
  */
 class ProjectUser extends BaseProjectUser {
 
-	private $user = null;
+	private $user_or_group = null;
 	
 	/**
 	 * Sets all permissions to a value.
@@ -89,9 +89,20 @@ class ProjectUser extends BaseProjectUser {
 	 	return false;
 	 }
 	 
-	function getUser() {
-		if (!$this->user instanceof User) $this->user = Users::findById($this->getUserId());
-		return $this->user; 
+	function getUserOrGroup() {
+		if ($this->getUserId() < Group::CONST_MINIMUM_GROUP_ID) {
+			// it's a user
+			if (!$this->user_or_group instanceof User) $this->user_or_group = Users::findById($this->getUserId()); 
+		} else {
+			// it's a group
+			if (!$this->user_or_group instanceof Group) $this->user_or_group = Groups::findById($this->getUserId());
+		}
+		return $this->user_or_group; 
+	}
+	
+	function setUserId($value) {
+		$this->user_or_group = null;
+		parent::setUserId($value);
 	}
 	 
 	/*function getCanWriteMessages() {

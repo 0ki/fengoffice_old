@@ -193,11 +193,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if(is_null($this->project)) {
 			if($this->columnExists('project_id')) {
 				$this->project = Projects::findById($this->getProjectId());
-			} else if ($this instanceof Contact) {
-				$pc = ProjectContacts::findOne(array('conditions' => "`contact_id` = ".$this->getId()));
-				if ($pc instanceof ProjectContact) {
-					$this->project = $pc->getProject();
-				}
 			} else {
 				//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
 				$wo = WorkspaceObjects::findOne(array('conditions' => "`object_manager` = '".get_class($this->manager())."' AND `object_id` = ".$this->getId()));
@@ -586,9 +581,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @param void
 	 * @return array
 	 */
-	function deleteTag( $tag) {
-		if(!$this->isTaggable()) throw new Error('Object not taggable');
-		$result = Tags::deleteObjectTag($tag, $this->getId(), get_class($this->manager()));
+	function deleteTag($tag) {
+		if (!$this->isTaggable()) return true;
+		$result = Tags::deleteByTagNameAndObject($tag, $this);
 		if ($result)
 			$this->tags = null; //Initializes tags cache
 		return $result;
@@ -605,7 +600,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if(trim($input)) {
 			$tag_set = array();
 			$tags = explode(',', $input);
-			foreach($tags as $k => $v) {
+			foreach($tags as $v) {
 				$tag = trim($v);
 				if($tag <> '' && array_var($tag_set, $tag) == null) {
 					$tag_names[] = $tag;

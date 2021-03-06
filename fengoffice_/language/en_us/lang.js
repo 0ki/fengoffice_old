@@ -599,7 +599,7 @@ addLangs({
     'actions' : 'Actions',
 	'show more' : 'Show more',
     'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)',
-    'confirm delete tag': 'Are you sure you want to completely delete the tag \'\'?',
+    'confirm delete tag': 'Are you sure you want to completely delete the tag \'{0}\'?',
     'delete tag': 'Delete tag',
     
     'reminder_popup': 'Pop-up message',

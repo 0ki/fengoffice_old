@@ -342,8 +342,8 @@ class ProjectController extends ApplicationController {
 					  		$relation->setProjectId($project->getId());
 					  		$relation->setUserId($perm->wsid);
 				  			
-					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUser()->isGuest() ? false : true);
-					  		$relation->setRadioPermissions($perm->pr, $relation->getUser()->isGuest() ? false : true);
+					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUserOrGroup()->isGuest() ? false : true);
+					  		$relation->setRadioPermissions($perm->pr, $relation->getUserOrGroup()->isGuest() ? false : true);
 					  		$relation->save();
 			  			} //endif
 			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
@@ -513,8 +513,8 @@ class ProjectController extends ApplicationController {
 					  		$relation->setProjectId($project->getId());
 					  		$relation->setUserId($perm->wsid);
 				  			
-					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUser()->isGuest() ? false : true);
-					  		$relation->setRadioPermissions($perm->pr, $relation->getUser()->isGuest() ? false : true);
+					  		$relation->setCheckboxPermissions($perm->pc, $relation->getUserOrGroup()->isGuest() ? false : true);
+					  		$relation->setRadioPermissions($perm->pr, $relation->getUserOrGroup()->isGuest() ? false : true);
 					  		$relation->save();
 			  			} //endif
 			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created

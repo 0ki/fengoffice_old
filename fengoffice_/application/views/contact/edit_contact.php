@@ -53,7 +53,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
-		<?php if(active_project() instanceof Project && $object->isNew() || $object->canLinkObject(logged_user(), active_project())) { ?> - 
+		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 		<?php foreach ($categories as $category) { ?>
@@ -379,15 +379,29 @@
 		</div>
 		</fieldset>
 	</div>
+	<script>
+	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+	wsch.on("wschecked", function(arguments) {
+		if (!this.getValue().trim()) return;
+		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				workspaces: this.getValue(),
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				object_type: '<?php echo get_class($object->manager()) ?>'
+			}),
+			scripts: true
+		});
+	}, wsch);
+	</script>
 	
-	<?php if(active_project() instanceof Project && $object->isNew() || $object->canLinkObject(logged_user(), active_project())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div">
 	<fieldset>
 		<legend><?php echo lang('linked objects') ?></legend>
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
-	<?php } // if ?>
 	
 	<div id="<?php echo $genid ?>add_contact_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>

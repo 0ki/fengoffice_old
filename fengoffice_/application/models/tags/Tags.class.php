@@ -103,29 +103,29 @@ class Tags extends BaseTags {
 	 * @return array
 	 */
 	function getTagNames($order_by = 'count') {
-		$pids = logged_user()->getWorkspacesQuery();
-		$tagConditions = " (`rel_object_manager` <> 'Contacts' AND `rel_object_id` IN
-			(SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects`
-			 WHERE `object_manager` = `rel_object_manager` AND `workspace_id` IN ($pids)))
-			OR (`rel_object_manager` = 'Contacts' AND `rel_object_id` IN
-			(SELECT `contact_id` FROM `" . TABLE_PREFIX . "project_contacts` obj
-			 WHERE `project_id` IN ($pids)))";
-	
+		$oc = new ObjectController();
+		$dqs = $oc->getDashboardObjectQueries();
+		$conditions = "";
+		foreach ($dqs as $type => $q) {
+			if (substr($type, -8) == 'Comments') continue;
+			$q = substr($q, strpos($q, "FROM"));
+			$q = "`rel_object_id` IN (SELECT `id` $q) AND `rel_object_manager` = '$type'";
+			if ($conditions) $conditions .= " \n\nOR\n\n ";
+			$conditions .= $q;
+		}
 		$query = '';
 		switch ($order_by){
 			case 'name':
 				$query = 'SELECT DISTINCT `tag` as `name`  FROM '
 					. self::instance()->getTableName(true)
-					. ' WHERE' . $tagConditions . ' GROUP BY `tag` ORDER BY  `tag` ';
+					. ' WHERE' . $conditions . ' GROUP BY `tag` ORDER BY  `tag` ';
 				break ;
 			case 'count':
+			default:
 				$query = 'SELECT DISTINCT `tag` as `name`, count(`tag`) `count` FROM '
 					. self::instance()->getTableName(true)
-					. ' WHERE' . $tagConditions
+					. ' WHERE' . $conditions
 					. ' GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
-				break ;
-			default:
-				throw new Exception('Invalid tag sort criteria');
 		}
 		$rows = DB::executeAll($query);
 		if(!is_array($rows)) return array();
@@ -175,20 +175,9 @@ class Tags extends BaseTags {
 	 */
 
 	function deleteObjectTag($tag_name, $object_id, $manager_class) {
-		if (!(isset($object_id) && $object_id))
-		return true;
 		$obj = get_object_by_manager_and_id($object_id,$manager_class);
-		//$file=ProjectFiles::findById($object_id);
-		$prevTags=Tags::getTagsByObject($obj,$manager_class);
-		foreach($prevTags as $tag_iter) {
-			if(strcmp($tag_name,$tag_iter->getTag())==0)
-			{
-				$tag_iter->delete();
-				return true;
-			}
-		}
-		 
-		return true;
+		if (!$obj instanceof ApplicationDataObject) return true;
+		return self::deleteByTagNameAndObject($tag_name, $obj);
 	} //  deleteObjectTag
 
 
@@ -331,6 +320,10 @@ class Tags extends BaseTags {
 	
 	function deleteTagByName($tag) {
 		self::delete(array('`tag` = ?', $tag));
+	}
+	
+	function deleteByTagNameAndObject($tagname, $object) {
+		return self::delete("`tag` = " . DB::escape($tagname) . " AND `rel_object_id` = " . DB::escape($object->getId()) . " AND `rel_object_manager` = " . DB::escape(get_class($object->manager())));
 	}
 } // Tags
 

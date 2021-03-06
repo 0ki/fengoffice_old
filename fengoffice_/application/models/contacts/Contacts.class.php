@@ -28,21 +28,13 @@ class Contacts extends BaseContacts {
 	 * @return array
 	 */
 	function getAllowedContacts($extra_conds = null) {
-		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`');
-		$sql = "SELECT * FROM ". $this->getTableName(true) ." `co` WHERE $permissions";
+		$conditions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', self::instance()->getTableName(true, true));
 		if ($extra_conds) {
-			$sql .= " AND $extra_conds";
+			$conditions .= " AND $extra_conds";
 		}
-		
-		$objects = array();
-		$rows = DB::executeAll($sql);
-		if (isset($rows)) {
-			foreach($rows as $row) {
-				$object = $this->loadFromRow($row);
-				if(instance_of($object, $this->getItemClass())) $objects[] = $object;
-			} // foreach
-		}
-		return $objects;
+		return self::findAll(array(
+			'conditions' => $conditions
+		));
 	}
 	
 	/**

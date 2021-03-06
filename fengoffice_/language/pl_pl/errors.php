@@ -120,4 +120,5 @@
 	'mailAccount dnx' => 'Konto e-mail nie istnieje',
 	'error add contact from user' => 'Nie udało się dodać kontaktu opartego o użytkownika',
 	'zip not supported' => 'Format ZIP nie jest obsługiwany przez serwer',
+	'no tag specified' => 'Nie podano taga',
 ); ?>

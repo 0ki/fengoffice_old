@@ -4,8 +4,8 @@ require_javascript('og/modules/addMessageForm.js');
 
 <div class="og-add-subscribers">
 <?php
-	if (!is_array($users)) $users = Users::getAll();
-	if (!is_array($groupUserIds)) $groupUserIds = array(logged_user()->getId());
+	if (!isset($users) || !is_array($users)) $users = Users::getAll();
+	if (!isset($groupUserIds) || !is_array($groupUserIds)) $groupUserIds = array(logged_user()->getId());
 	if (!isset($genid)) $genid = gen_id();
 ?>
 <?php

@@ -1034,7 +1034,6 @@ class ObjectController extends ApplicationController {
 		
 		$tag_str .= $link_str;
 
-		
 		$res = array();
 		/** If the name of the query ends with Comments it is assumed to be a list of Comments **/
 			$cfn = '';
@@ -1050,10 +1049,10 @@ class ObjectController extends ApplicationController {
 			}
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectMessages")
-			$res['Messages']  = "SELECT  'ProjectMessages' AS `object_manager_value`, `id` AS `oid`, $order_crit_messages AS `order_value` FROM `" .
+			$res['ProjectMessages']  = "SELECT  'ProjectMessages' AS `object_manager_value`, `id` AS `oid`, $order_crit_messages AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_messages` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_messages . str_replace('= `object_manager_value`', "= 'ProjectMessages'", $tag_str) . $permissions . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['MessagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectMessagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectMessages' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_messages` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_messages . str_replace('= `object_manager_value`', "= 'ProjectMessages'", $tag_str) . $permissions . $cfn . ")";
 			
@@ -1068,10 +1067,10 @@ class ObjectController extends ApplicationController {
 			
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectEvents")
-			$res['Calendar'] = "SELECT  'ProjectEvents' AS `object_manager_value`, `id` AS `oid`, $order_crit_calendar AS `order_value` FROM `" .
+			$res['ProjectEvents'] = "SELECT  'ProjectEvents' AS `object_manager_value`, `id` AS `oid`, $order_crit_calendar AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_events` `co` WHERE  " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_events . str_replace('= `object_manager_value`', "= 'ProjectEvents'", $tag_str) . $permissions . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['CalendarComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectEventsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectEvents' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_events` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_events . str_replace('= `object_manager_value`', "= 'ProjectEvents'", $tag_str) . $permissions . $cfn .")";
 		}
@@ -1092,10 +1091,10 @@ class ObjectController extends ApplicationController {
 				$typecond = "";
 			}
 			if ($filterManager == '' || $filterManager == "ProjectFiles")
-			$res['Documents'] = "SELECT  'ProjectFiles' AS `object_manager_value`, `id` as `oid`, $order_crit_files AS `order_value` FROM `" .
+			$res['ProjectFiles'] = "SELECT  'ProjectFiles' AS `object_manager_value`, `id` as `oid`, $order_crit_files AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_files` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_documents . str_replace('= `object_manager_value`', "= 'ProjectFiles'", $tag_str) . $permissions . $typecond . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['DocumentsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectFilesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectFiles' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_files` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'ProjectFiles'", $tag_str) . $permissions . $cfn .")";
 
@@ -1115,10 +1114,10 @@ class ObjectController extends ApplicationController {
 			$completed = ($trashed || $archived) ? '': 'AND `completed_on` = ' . DB::escape(EMPTY_DATETIME);
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectTasks")
-			$res['Tasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, $order_crit_tasks AS `order_value` FROM `" .
+			$res['ProjectTasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, $order_crit_tasks AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_tasks` `co` WHERE `is_template` = false $completed AND " . $trashed_cond ." AND $archived_cond AND `is_template` = false AND ".$proj_cond_tasks . str_replace('= `object_manager_value`', "= 'ProjectTasks'", $tag_str) . $permissions . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['TasksComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectTasksComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectTasks' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_tasks` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND `is_template` = false AND " . $proj_cond_tasks . str_replace('= `object_manager_value`', "= 'ProjectTasks'", $tag_str) . $permissions . $cfn .")";
 
@@ -1128,10 +1127,10 @@ class ObjectController extends ApplicationController {
 			}
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectMilestones")
-			$res['Milestones'] = "SELECT  'ProjectMilestones' AS `object_manager_value`, `id` AS `oid`, $order_crit_milestones AS `order_value` FROM `" .
+			$res['ProjectMilestones'] = "SELECT  'ProjectMilestones' AS `object_manager_value`, `id` AS `oid`, $order_crit_milestones AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_milestones` `co` WHERE " . $trashed_cond ." AND $archived_cond AND `is_template` = false AND ".$proj_cond_milestones . str_replace('= `object_manager_value`', "= 'ProjectMilestones'", $tag_str) . $permissions . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['MilestonesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectMilestonesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectMilestones' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_milestones` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND `is_template` = false AND " . $proj_cond_milestones . str_replace('= `object_manager_value`', "= 'ProjectMilestones'", $tag_str) . $permissions . $cfn .")";
 		}
@@ -1145,10 +1144,10 @@ class ObjectController extends ApplicationController {
 			
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 			if ($filterManager == '' || $filterManager == "ProjectWebpages")
-			$res['WebPages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, $order_crit_webpages AS `order_value` FROM `" .
+			$res['ProjectWebPages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, $order_crit_webpages AS `order_value` FROM `" .
 			TABLE_PREFIX . "project_webpages` `co` WHERE " . $trashed_cond ." AND $archived_cond AND ".$proj_cond_weblinks . str_replace('= `object_manager_value`', "= 'ProjectWebpages'", $tag_str) . $permissions . $fn;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['WebPagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['ProjectWebPagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectWebpages' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "project_webpages` `co` WHERE " . $trashed_cond ." AND $comments_arch_cond AND ".$proj_cond_weblinks . str_replace('= `object_manager_value`', "= 'ProjectWebpages'", $tag_str) . $permissions . $cfn . ")";
 		}
@@ -1161,10 +1160,10 @@ class ObjectController extends ApplicationController {
 			}
 			$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), $project instanceof Project ? $project->getId() : 0, '`co`') .')';
 			if ($filterManager == '' || $filterManager == "MailContents")
-			$res['Emails'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" .
+			$res['MailContents'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" .
 			TABLE_PREFIX . "mail_contents` `co` WHERE (" . $trashed_cond ." AND $archived_cond AND `is_deleted` = 0 AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions .") $fn" ;
 			if ($filterManager == '' || $filterManager == "Comments")
-			$res['EmailsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
+			$res['MailContentsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" .
 			TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" .
 			TABLE_PREFIX . "mail_contents` `co` WHERE `trashed_by_id` = 0 AND $comments_arch_cond AND " . $proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $cfn . ")";
 		}
@@ -1620,7 +1619,7 @@ class ObjectController extends ApplicationController {
 					if($manager){
 						$obj = get_object_by_manager_and_id($id, $manager);
 						if ($tag) {
-							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
+							$obj->deleteTag($tag);
 						} else {
 							$obj->clearTags();
 						}
@@ -1629,7 +1628,7 @@ class ObjectController extends ApplicationController {
 						$split = explode(":", $id);
 						$obj = get_object_by_manager_and_id($split[1], $split[0]);
 						if ($tag) {
-							Tags::deleteObjectTag($tag, $obj->getId(),get_class($obj->manager()));
+							$obj->deleteTag($tag);
 						} else {
 							$obj->clearTags();
 						}
@@ -2158,8 +2157,10 @@ class ObjectController extends ApplicationController {
 		ajx_current("empty");
 		$csvids = array_var($_GET, 'ids');
 		$tag = trim(array_var($_GET, 'tag', ''));
-		if (!$tag) {
+		$all = array_var($_GET, 'all');
+		if (!$tag && !$all) {
 			flash_error(lang("no tag specified"));
+			return;
 		}
 		$ids = explode(",", $csvids);
 		$count = 0;
@@ -2172,11 +2173,19 @@ class ObjectController extends ApplicationController {
 					if ($object instanceof MailContent && user_config_option('show_emails_as_conversations', true, logged_user()->getId())) {
 						$emails = MailContents::getMailsFromConversation($object);
 						foreach ($emails as $email) {
-							$email->deleteTag($tag);
+							if ($all) {
+								$email->clearTags();
+							} else {
+								$email->deleteTag($tag);
+							}
 							ApplicationLogs::createLog($email, $email->getWorkspaces(), ApplicationLogs::ACTION_UNTAG);
 						}
 					} else {
-						$object->deleteTag($tag);
+						if ($all) {
+							$object->clearTags();
+						} else {
+							$object->deleteTag($tag);
+						}
 						ApplicationLogs::createLog($object, $object->getWorkspaces(), ApplicationLogs::ACTION_UNTAG);
 					}
 					$count++;

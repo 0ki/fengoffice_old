@@ -656,15 +656,18 @@ og.MailManager = function() {
 						scope: this
 					},
 					'tagdelete': {
-						fn: function(tag) {
+						fn: function(tag, all) {
 							var sm = this.getSelectionModel();
 							var sel = sm.getSelections();
 							var ids = "";
 							for (var i=0; i < sel.length; i++) {
 								if (ids) ids += ",";
 								ids += "MailContents:" + sel[i].id;
-								if (Ext.getCmp('tag-panel').isSelected(tag)) {
+								if (!all && Ext.getCmp('tag-panel').isSelected(tag) || all && Ext.getCmp('tag-panel').getSelectedTag()) {
 									this.store.remove(sel[i]);
+								} else if (all) {
+									sel[i].set('tags', '');
+									sel[i].commit();
 								} else {
 									var oldtags = ", " + sel[i].get('tags') + ", ";
 									if (oldtags.indexOf(", " + tag + ", ") >= 0) {
@@ -675,7 +678,13 @@ og.MailManager = function() {
 									}
 								}
 							}
-							if (ids) og.openLink(og.getUrl('object', 'untag', {ids:ids, tag:tag}));
+							if (ids) {
+								if (all) {
+									og.openLink(og.getUrl('object', 'untag', {ids:ids, all:1}));
+								} else {
+									og.openLink(og.getUrl('object', 'untag', {ids:ids, tag:tag}));
+								}
+							}
 						},
 						scope: this
 					}
@@ -1193,7 +1202,21 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjects: function(ws) {
-		og.moveToWsOrMantainWs(this.id, ws);
+		var selections = this.getSelectionModel().getSelections();
+		var unclassified = true;
+		for (var i=0; i < selections.length; i++) {
+			if (selections[i].data.projectId.length > 0) {
+				unclassified = false;
+				break;
+			}
+		}
+		if (unclassified) {
+			// if all emails are unclassified don't prompt for keeping workspaces
+			this.moveObjectsToWsOrMantainWs(1, ws);
+		} else {
+			// prompt
+			og.moveToWsOrMantainWs(this.id, ws);
+		}
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {

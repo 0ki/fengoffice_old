@@ -368,7 +368,7 @@ class ContactController extends ApplicationController {
 							if (isset($contact) && $contact->canEdit(logged_user())){
 								$tag = $attributes['tagTag'];
 								if ($tag != ''){
-									Tags::deleteObjectTag($tag, $contact->getId(),get_class($contact->manager()));
+									$contact->deleteTag($tag);
 								}else{
 									$contact->clearTags();
 								}								
@@ -737,7 +737,7 @@ class ContactController extends ApplicationController {
 		}
 		$this->setTemplate('edit_contact');
 
-		if(!(active_project() instanceof Project ? Contact::canAdd(logged_user(),active_project()) : can_manage_contacts(logged_user()))) {
+		if(active_project() instanceof Project && !Contact::canAdd(logged_user(),active_project())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

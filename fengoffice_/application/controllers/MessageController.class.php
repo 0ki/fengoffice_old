@@ -35,13 +35,10 @@ class MessageController extends ApplicationController {
 		ajx_current("empty");
 		
 		// Get all variables from request
-		$start = array_var($_GET,'start');
-		$limit = config_option('files_per_page');
+		$start = array_var($_GET,'start', 0);
+		$limit = array_var($_GET,'limit', config_option('files_per_page'));
 		$order = array_var($_GET,'sort');
 		$order_dir = array_var($_GET,'dir');
-		if (! $start) {
-			$start = 0;
-		}
 		$tag = array_var($_GET,'tag');
 		$action = array_var($_GET,'action');
 		$attributes = array(
@@ -213,8 +210,7 @@ class MessageController extends ApplicationController {
 							$message = ProjectMessages::findById($id);
 							if (isset($message) && $message->canEdit(logged_user())){
 								if ($tag != ''){
-								Tags::deleteObjectTag($tag, $message->getId(),get_class($message->manager()));
-								//ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
+									$message->deleteTag($tag);
 								}else{
 									$message->clearTags();
 								}

@@ -519,7 +519,6 @@ class MailUtilities {
 			throw new Exception($mailer->lastError);
 		}
 		// Send Swift mail
-		
 		foreach ($to as $k => $v) {
 			if (is_array($v)) {
 				if (isset($v[1]) && trim($v[1]) == '') unset($to[$k]);
@@ -549,7 +548,7 @@ class MailUtilities {
  				$body = str_replace($image_url, $cid, $body);
  			}
  		}
-		
+
  		self::adjustBody($mailer, $type, $body);
  		$mailer->addPart($body, $type); // real body
  		$body = false; // multipart

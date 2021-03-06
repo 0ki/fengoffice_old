@@ -210,7 +210,7 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'tsId').value = timeslotId;
 		og.drawWorkspaceSelector(this.genid + "wsSel", ts.workspaceId, 'timeslot[project_id]', false);
 		var userSel = document.getElementById(this.genid + 'tsUser');
-		if (userSel){
+		if (userSel && userSel.options){
 			for (var i = 0; i < userSel.options.length; i++){
 				if (userSel.options[i].value == ts.userId){
 					userSel.selectedIndex = i;

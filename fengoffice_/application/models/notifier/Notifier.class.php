@@ -515,6 +515,9 @@ class Notifier {
 	 */
 	static function sendEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
 		$ret = false;
+		if (config_option('notification_from_address')) {
+			$from = config_option('notification_from_address');
+		}
 		Hook::fire('notifier_send_email', array(
 			'to' => $to,
 			'from' => $from,
@@ -598,7 +601,7 @@ class Notifier {
 		$date = DateTimeValueLib::now();
 		$date->add("d", -2);
 		$emails = QueuedEmails::getQueuedEmails($date);
-		if (count($emails) <= 0) return;
+		if (count($emails) <= 0) return 0;
 		
 		Env::useLibrary('swift');
 		$mailer = self::getMailer();
@@ -615,13 +618,10 @@ class Notifier {
 				$mailer->addPart($body, 'text/html');
 		
 				// add text/plain alternative part
-				if ($type == 'text/html') {
-//		 			$onlytext = preg_replace("/(<br[^>]*>)/i", "\n", $body);
-//		 			$onlytext = trim(preg_replace("/(<[\/]?[a-z][a-z0-9\s]*[^>]*>)/i", "", $onlytext));
-//		 			$mailer->addPart($onlytext, 'text/plain');
+//				if ($type == 'text/html') {
 					$onlytext = html_to_text($body);
 		 			$mailer->addPart($onlytext, 'text/plain');
-				}
+//				}
 		 		
 		 		$body = false;
 		 		

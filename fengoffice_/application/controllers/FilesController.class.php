@@ -1265,7 +1265,7 @@ class FilesController extends ApplicationController {
 				$file = ProjectFiles::findById($id);
 				if (isset($file) && $file->canEdit(logged_user())) {
 					if ($tagTag != ''){
-						Tags::deleteObjectTag($tagTag, $file->getId(),get_class($file->manager()));
+						$file->deleteTag($tagTag);
 					}else{
 						$file->clearTags();
 					}

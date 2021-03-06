@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade OpenGoo 1.6 to OpenGoo 1.7-beta
+ * Pastafrola upgrade script will upgrade OpenGoo 1.6 to OpenGoo 1.7-beta2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6');
-		$this->setVersionTo('1.7-beta');
+		$this->setVersionTo('1.7-beta2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -92,7 +92,13 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 			$upgrade_script = tpl_fetch(get_template_path('db_migration/1_7_pastafrola'));
 		} else {
 			// upgrading from a pre-release of this version (beta, rc, etc)
-			$upgrade_script = tpl_fetch(get_template_path('db_migration/1_7_pastafrola'));
+			$upgrade_script = "";
+			if (version_compare($installed_version, '1.7-beta') <= 0) {
+				$upgrade_script .= "
+					INSERT INTO `" . TABLE_PREFIX . "config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used');
+				";
+			}
 		}
 		
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

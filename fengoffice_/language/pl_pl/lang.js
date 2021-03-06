@@ -679,5 +679,14 @@ addLangs({
 	'warning': 'Ostrzeżenie',
 	'new email in conversation text': 'W konwersacji na którą odpowiadasz znajduje się nowa wiadomość. Czy mimo wszystko wysłać odpowiedź czy też chcesz przeczytać wiadomość w nowej zakładce?',
 	'send anyway': 'Wyślij mimo wszystko',
-	'view new email': 'Zobacz nową wiadomość'
+	'view new email': 'Zobacz nową wiadomość',
+	'urgent': 'Pilne',
+	'assign contact role on workspace': 'Przypisz kontaktom rolę w projekcie',
+	'assign roles': 'Pprzypisz role',
+	'apply assignee to subtasks': 'Zastosuj przypisanego do zadań podrzędnych',
+	'work week': '5 dni',
+	'work week view': 'Tydzień pracujący',
+	'mark spam': 'Oznacz jako SPAM',
+	'mark ham': 'Oznacz jako Nie-SPAM',
+	'select all tasks': 'Zaznacz wszystkie zadania'
 });

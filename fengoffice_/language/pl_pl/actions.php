@@ -155,4 +155,8 @@
 	'confirm archive selected objects' => 'Czy na pewno chcesz archiwizować wybrane obiekty?',
 	'confirm archive object' => 'Czy na pewno chcesz archiwizaować ten obiekt',
 	'confirm unarchive object' => 'Czy na pewno odwrócić archiwizację tego obiektu',
+	'show' => 'Pokaż',
+	'report as spam' => 'Oznacz jako spam',
+	'not spam' => 'To nie jest spam',
+	'mark as unread' => 'Oznacz jako nieprzeczytane',
 ); ?>

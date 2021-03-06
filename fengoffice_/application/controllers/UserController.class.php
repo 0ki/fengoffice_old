@@ -81,6 +81,7 @@ class UserController extends ApplicationController {
 					'company_id' => $company->getId(),
 					'timezone' => $contact->getTimezone(),
 					'create_contact' => false,
+					'type' => 'normal'
 				); // array
 				
 			} else {
@@ -91,6 +92,7 @@ class UserController extends ApplicationController {
 		          'timezone' => $company->getTimezone(),
 					'create_contact' => true ,
 					'send_email_notification' => true ,
+					'type' => 'normal',
 				); // array
 			}
 		} // if

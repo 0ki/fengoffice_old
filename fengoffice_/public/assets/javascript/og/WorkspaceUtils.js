@@ -192,7 +192,7 @@ og.trimMax = function(str, size, append){
 
 og.expandSubWsCrumbs = function(id){
 	var tree = Ext.getCmp('workspaces-tree');
-	var node = tree.tree.getNode(id?id:og.triggerSubWsCrumbsID);
+	var node = tree.tree.getNode(typeof id != 'undefined' ? id : og.triggerSubWsCrumbsID);
 	
 	if (node && node.childNodes.length > 0){
 		og.showSubWsMenu(node);
@@ -203,7 +203,7 @@ og.showSubWsMenu = function(node){
 	var html = "";
 	for (var i = 0; i < node.childNodes.length; i++){
 		var cn = node.childNodes[i];
-		if (cn.id != 'trash') {
+		if (cn.id != 'trash' && cn.id != 'archived') {
 			html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs();return false;\">" + cn.ws.name + "</a></div>";
 		}
 	}

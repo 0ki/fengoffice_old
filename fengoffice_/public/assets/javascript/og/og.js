@@ -542,6 +542,10 @@ og.openLink = function(url, options) {
 							var p = Ext.getCmp(options.caller);
 							if (p) {
 								p.load(response.responseText);
+								var tp = p.ownerCt;
+								if (tp.setActiveTab) {
+									tp.setActiveTab(p);
+								}
 							} else {
 								og.newTab(response.responseText);
 							}
@@ -695,11 +699,11 @@ og.processResponse = function(data, options, url) {
 						var p = Ext.getCmp(panelName);
 						if (p) {
 							var tp = p.ownerCt;
-							if (tp.setActiveTab) {
-								if(!(p.initialConfig.refreshOnWorkspaceChange) && !(p.initialConfig.refreshOnTagChange))
-									tp.setActiveTab(p);
-							}
 							p.load(data.current);
+							if (tp.setActiveTab && Ext.getCmp(panelName)) {
+								tp.setActiveTab(p);
+							}
+							
 						} else {
 							og.newTab(data.current, panelName, data); //Creates the panel if it doesn't exist
 						}

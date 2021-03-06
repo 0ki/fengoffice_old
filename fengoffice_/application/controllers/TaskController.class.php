@@ -393,7 +393,7 @@ class TaskController extends ApplicationController {
 						if ($task->canEdit(logged_user())){
 							$tag = $options;
 							if ($tag != ''){
-								Tags::deleteObjectTag($tag, $task->getId(),get_class($task->manager()));
+								$task->deleteTag($tag);
 							}else{
 								$task->clearTags();
 							}
@@ -597,7 +597,7 @@ class TaskController extends ApplicationController {
 				throw new Exception('Task status "' . $status . '" not recognised');
 		}
 
-		if ($tag == '') {
+		if (!$tag) {
 			$tagstr = "";
 		} else {
 			$tagstr = " AND (select count(*) from " . TABLE_PREFIX . "tags where " .
@@ -635,7 +635,7 @@ class TaskController extends ApplicationController {
 			$pendingstr = "";
 		}
 		
-		if ($tag == '') {
+		if (!$tag) {
 			$tagstr = "";
 		} else {
 			$tagstr = " AND (select count(*) from " . TABLE_PREFIX . "tags where " .
@@ -929,7 +929,12 @@ class TaskController extends ApplicationController {
 				
 				//Link objects
 				$object_controller = new ObjectController();
-				$object_controller->add_to_workspaces($task);
+				if ($parent instanceof ProjectTask) {
+					// task is being added as subtask of another, so place in same workspace
+					$task->addToWorkspace($parent->getProject());
+				} else {
+					$object_controller->add_to_workspaces($task);
+				}
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_subscribers($task);
 				$object_controller->add_custom_properties($task);
@@ -1564,11 +1569,11 @@ class TaskController extends ApplicationController {
 		$parent_string = " AND parent_id = $parent_task_id ";
 		$queries = ObjectController::getDashboardObjectQueries($project, $tag);
 		if ($tasksAndOrMilestones == 'both') {
-			$query = $queries['Tasks'] . $parent_string . " UNION " . $queries['Milestones'];
+			$query = $queries['ProjectTasks'] . $parent_string . " UNION " . $queries['ProjectMilestones'];
 		} else if ($tasksAndOrMilestones == 'tasks') {
-			$query = $queries['Tasks'] . $parent_string;
+			$query = $queries['ProjectTasks'] . $parent_string;
 		} else {
-			$query = $queries['Milestones'];
+			$query = $queries['ProjectMilestones'];
 		}
 		if ($order) {
 			$query .= " order by " . $order . " ";
@@ -1613,7 +1618,7 @@ class TaskController extends ApplicationController {
 	 */
 	private function countTasksAndMilestones($tag=null, $project=null) {
 		$queries = ObjectController::getDashboardObjectQueries($project,$tag,true);
-		$query = $queries['Tasks'] . " UNION " . $queries['Milestones'];
+		$query = $queries['ProjectTasks'] . " UNION " . $queries['ProjectMilestones'];
 		$ret = 0;
 		$res1 = DB::execute($query);
 		if ($res1) {

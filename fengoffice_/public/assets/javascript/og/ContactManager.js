@@ -59,6 +59,7 @@ og.ContactManager = function() {
 	}
 	
     function renderContactName(value, p, r) {
+    	var name = lang('n/a');
 		if (r.data.type == 'company'){
 			name = String.format(
 					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
@@ -74,7 +75,7 @@ og.ContactManager = function() {
 					' (<a style="font-size:80%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>)',
 					og.clean(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
-		}// end else
+		}
 		return name;
     }
     
@@ -104,15 +105,6 @@ og.ContactManager = function() {
     	
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
-		if (r.data.mimeType) {
-			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
-			var acc = "";
-			for (var i=0; i < path.length; i++) {
-				acc += path[i];
-				classes += " ico-" + acc;
-				acc += "-";
-			}
-		}
 		return String.format('<div class="{0}" title="{1}"/>', classes, lang(r.data.type));
 	}
 	

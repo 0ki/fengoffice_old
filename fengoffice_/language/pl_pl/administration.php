@@ -273,4 +273,9 @@
 	'user ws config option desc hide_quoted_text_in_emails' => 'Jeśli ta opcja jest włączona, wiadomości e-mail będą wyświetlanie bez cytowanej treści. Dostępna będzie opcja włączenia wyświetlania cytowanej treści. ',
 	'search engine mysql like' => 'Pełny',
 	'search engine mysql match' => 'Szybki',
+	'user ws config option name show activity widget' => 'Pokaż fiszkę aktywności',
+	'user ws config option name activity widget elements' => 'Rozmiar fiszki aktywności',
+	'user ws config option desc activity widget elements' => 'Liczba pozycji wyświetlanych w fiszce aktywności.',
+	'user ws config option name task_display_limit' => 'Maksymalna liczba zadań do wyświetlenia',
+	'user ws config option desc task_display_limit' => 'Ze względu na wydajność, ta liczba nie powinna być zbyt duża (0 - bez limitu).',
 ); ?>

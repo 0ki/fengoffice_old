@@ -1,60 +1,29 @@
-
-
 og.TagMenu = function(config, tags) {
 	if (!config) config = {};
 	
-	var tagsItems = this.listTagsItems(tags);
-	
 	og.TagMenu.superclass.constructor.call(this, Ext.apply(config, {
 		cls: 'scrollable-menu',
-		items: [
-		    {
-			text: lang('add tag'),
-			iconCls: 'ico-addtag',
-			handler: function() {
-				Ext.Msg.prompt(lang('add tag'),
-					lang('enter the desired tag'),
-					function (btn, text) {
-						if (btn == 'ok' && text) {
-							this.fireEvent('tagselect', text.replace(/^\s*|\s*$/g, ''));
-						}
-					},
-					this	
-				);
-			},
-			scope: this,
-			id: lang('add tag')
-		},
-		'-',
-	    {
-	    	text: lang('delete tag'),
-	    	menu: {
-				items:  tagsItems
-			},
-			iconCls: 'ico-delete',
-			scope: this,
-			id: lang('delete tag')
-		 }
-		]
+		items: []
 	}));
+
+	this.addEvents({tagselect: true, tagdelete: true});
+	this.tagnames = {};
+
+	this.loadTags();
+	if (tags) {
+		this.addTags(tags);
+	}
 	
 	if (Ext.isIE) { // Add scrollbar in IE
 		this.getEl().child('ul.x-menu-list').addClass('iemenulist');
 		this.getEl().child('ul.x-menu-list').setWidth(this.getEl().child('ul.x-menu-list').getWidth()+20);
 	}
-	
-	this.addEvents({tagselect: true,tagdelete :true});
-	this.tagnames = {};
-	if (tags) {
-		this.addTags(tags);
-	}
 
+	Ext.getCmp('tag-panel').on('loadtags', this.loadTags, this);
+	
 	og.eventManager.addListener('tag added', this.addTag, this);
 	og.eventManager.addListener('tag deleted', this.removeTag, this);
-	
-	this.loadTags();
 };
-
 
 Ext.extend(og.TagMenu, Ext.menu.Menu, {
 
@@ -93,17 +62,17 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 			this.addTag(tags[i]);
 		}
 	},
-	listTagsItems : function() {
-		var items = new Array();
-		items[0] = {
-				text: lang('delete all tag'),
-				handler: function() {
-					this.fireEvent('tagdelete', '');							
-				},
-				scope: this,
-				id: lang('delete all tags')
-			};
-		items [1] = {
+	loadDeleteTags: function() {
+		var dm = this.items.get('delete').menu;
+		dm.addItem(new Ext.menu.Item({
+			text: lang('delete all tag'),
+			handler: function() {
+				this.fireEvent('tagdelete', '', true);							
+			},
+			scope: this,
+			id: lang('delete all tags')
+		}));
+		dm.addItem(new Ext.menu.Item({
 			text: lang('delete tag'),
 			handler: function() {
 				Ext.Msg.prompt(lang('delete tag'),
@@ -118,22 +87,51 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 			},
 			scope: this,
 			id: lang('delete tag by name')
-		};
-		items [2] = '-';
+		}));
+		dm.addSeparator();
 		var tags = Ext.getCmp('tag-panel').getTags();
 		for (var i=0; i < tags.length; i++){
-			items.push({
+			dm.addItem(new Ext.menu.Item({
 				text : tags[i].name,
 				handler : function (btn) {
 					this.fireEvent('tagdelete', btn.text);
 				},
 				scope: this
-			});
+			}));
 		}
-		return items;
 	},
 	loadTags: function() {
 		var tags = Ext.getCmp('tag-panel').getTags();
+		this.removeAll();
+		this.tagnames = {};
+		this.addItem(new Ext.menu.Item({
+			text: lang('add tag'),
+			iconCls: 'ico-addtag',
+			handler: function() {
+				Ext.Msg.prompt(lang('add tag'),
+					lang('enter the desired tag'),
+					function (btn, text) {
+						if (btn == 'ok' && text) {
+							this.fireEvent('tagselect', text.replace(/^\s*|\s*$/g, ''));
+						}
+					},
+					this	
+				);
+			},
+			scope: this
+		}));
+		this.addSeparator();
+		this.addItem(new Ext.menu.Item({
+			id: 'delete',
+	    	text: lang('delete tag'),
+	    	menu: {
+				cls: 'scrollable-menu',
+				items: []
+			},
+			iconCls: 'ico-delete',
+			scope: this
+		}));
 		this.addTags(tags);
+		this.loadDeleteTags();
 	}
 });

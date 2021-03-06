@@ -60,7 +60,7 @@ og.TagPanel = function(config) {
 			tooltip: lang('delete tag'),
 			id: 'delete',
 			handler: function() {
-				if (confirm(lang('confirm delete tag'))) {
+				if (confirm(lang('confirm delete tag', this.getSelectedTag()))) {
 					this.deleteTag(this.getSelectedTag());
 				}
 			},
@@ -186,12 +186,12 @@ og.TagTree = function(config) {
 };
 
 Ext.extend(og.TagTree, Ext.tree.TreePanel, {
-
+	
 	getNode: function(tagname) {
 		if (!tagname) return this.tags;
 		return this.getNodeById(this.nameToId(tagname));
 	},
-	
+
 	removeTag: function(tag) {
 		var node = this.getNode(tag.name);
 		if (node) {
@@ -288,6 +288,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 			var tags = Ext.getCmp(this.loadTagsFrom).getTags();
 			this.addTags(tags);
 			this.tags.expand();
+			this.fireEvent('loadtags', tags);
 		} else {
 			if (!url) {
 				url = og.getUrl('tag', 'list_tags');
@@ -313,6 +314,7 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 						if (config.callback) {
 							config.callback.call(config.scope);
 						}
+						this.fireEvent('loadtags', data.tags);
 					}
 				},
 				scope: this
