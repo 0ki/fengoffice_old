@@ -136,7 +136,7 @@
         	$this->project = Projects::findById($this->getProjectId());
         } else {
         	if (Env::isDebugging()) {
-        		Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
+        		//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
         	}
         	return null;
         }

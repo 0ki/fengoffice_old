@@ -310,5 +310,5 @@ _lang = {
 	'sent':'Enviados',
 	'unread': 'No Leidos',
 	
-	'more options': 'More options'
+	'more options': 'Más opciones'
 }

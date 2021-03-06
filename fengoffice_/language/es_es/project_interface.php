@@ -253,7 +253,8 @@ return array(
 
 	'show all' => 'Mostrar todos',
 
-	'unassigned' => 'No asignadas'
+	'unassigned' => 'No asignadas',
+ 	'email sent by linktitle' => 'Enviado por {1}, {0}'
 ); // array
 
 ?>

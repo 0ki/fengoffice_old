@@ -253,6 +253,8 @@ class AccountController extends ApplicationController {
 		tpl_assign('redirect_to', $redirect_to);
 
 		if(array_var($_POST, 'submitted') == 'submitted') {
+			$user_data = array_var($_POST, 'user');
+			if (!is_array($user_data)) $user_data = array();
 			try{
 				DB::beginWork();
 				

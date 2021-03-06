@@ -50,7 +50,7 @@ return array(
     'send milestone assigned to notification' => 'Enviar notificación al usuario vía mail',
 	'send task assigned to notification' => 'Enviar notificación al usuario vía mail',
 
-    'edit company data' => '<a class="internalLink" href="{0}">Edit</a> Datos de la compañía',
+    'edit company data' => '<a class="internalLink" href="{0}">Edit</a> Datos de la empresa',
     'company users involved in project' => '{0} usuarios relacionados en {1}',
     'companies involved in project' => 'Empresas relacionadas',
 

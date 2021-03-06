@@ -1,4 +1,5 @@
-<?php //Functions
+<?php //
+	$isAlt = false; //bug-fix
 	function has_value($array, $value){
 		foreach ($array as $val)
 			if ($val == $value)
@@ -149,7 +150,8 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 </td></tr>
 <?php } // foreach
 } // if 
-
+		if(!isset($sectionDepth))
+			$sectionDepth = 0;
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>

@@ -1168,6 +1168,18 @@ class User extends BaseUser {
 	} // validate
 
 	/**
+	 * Unlinks all contacts that are linked to $this user
+	 *
+	 */
+	function unlink_contacts(){
+		$cs = Contacts::findAll(array('conditions' => array('user_id' => $this->getId())));
+		foreach ($cs as $c){
+			$c->setUserId(0);
+			$c->save();
+		}
+	}
+	
+	/**
 	 * Delete this object
 	 *
 	 * @param void
@@ -1177,7 +1189,7 @@ class User extends BaseUser {
 		if($this->isAccountOwner()) {
 			return false;
 		} // if
-
+		$this->unlink_contacts();;
 		$this->deleteAvatar();
 		$this->deletePersonalProject();
 		ProjectUsers::clearByUser($this);

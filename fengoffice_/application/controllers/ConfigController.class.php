@@ -18,11 +18,6 @@ class ConfigController extends ApplicationController {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 
-		// Access permissios
-		if(!can_manage_configuration(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-		} // if
 	} // __construct
 
 	/**
@@ -80,7 +75,7 @@ class ConfigController extends ApplicationController {
 	} //list_preferences
 
 	/**
-	 * List user preferences
+	 * Update user preferences for logged user
 	 *
 	 */
 	function update_user_preferences(){
@@ -88,11 +83,13 @@ class ConfigController extends ApplicationController {
 		if(!($category instanceof UserWsConfigCategory)) {
 			flash_error(lang('config category dnx'));
 			$this->redirectToReferer(get_url('user','card'));
+			return ;
 		} // if
 
 		if($category->isEmpty()) {
 			flash_error(lang('config category is empty'));
 			$this->redirectToReferer(get_url('user','card'));
+			return ;
 		} // if
 
 		$options = $category->getUserWsOptions(false);
@@ -110,7 +107,7 @@ class ConfigController extends ApplicationController {
 					$new_value = array_var($submited_values, $option->getName());
 					if(is_null($new_value) || ($new_value == $option->getUserValue(logged_user()->getId()))) continue;
 	
-					$option->setUserValue($new_value, logged_user()->getId());
+					$option->setUserValue($new_value, logged_user()->getId()); //if logged_user was not used here, permission checks have to be set elsewhere
 					$option->save();
 				} // foreach
 				DB::commit();

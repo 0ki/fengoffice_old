@@ -592,7 +592,7 @@ class ContactController extends ApplicationController {
 				}
 				
 				$contact->setFromAttributes($contact_data);
-
+				$contact->setIsPrivate(false);
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
 				
@@ -1014,7 +1014,7 @@ class ContactController extends ApplicationController {
 			try {
 				DB::beginWork();
 				foreach($projects as $project){	
-					if(!$contact->canAdd(logged_user(),$project)) {
+					if(!ProjectContact::canAdd(logged_user(),$project)) {
 						DB::rollback();
 						flash_error(lang('no access permissions'));
 						ajx_current("empty");

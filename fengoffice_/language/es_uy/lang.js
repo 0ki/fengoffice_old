@@ -50,7 +50,7 @@ _lang = {
 	"delete selected objects": "Eliminar objetos seleccionados",
 	"confirm delete object": "¿Está seguro que desea eliminar los objetos seleccionados?",
 	"confirm delete contact": "¿Está seguro que desea eliminar contacto(s)?",
-	"confirm delete company": "¿Está seguro que desea eliminar la companía?",
+	"confirm delete company": "¿Está seguro que desea eliminar la empresa?",
 	"confirm delete event": "¿Está seguro que desea eliminar este evento?",
 	"confirm delete file": "¿Está seguro que desea eliminar este archivo?",
 	"confirm delete mail content": "¿Está seguro que desea eliminar este correo?",
@@ -72,8 +72,8 @@ _lang = {
 	"templates desc": "Administrar plantillas",
 	"templates": "Plantillas",
 	"edit workspace": "Editar el espacio seleccionado",
-	"company": "Compañía",
-	"companies": "Compañías",
+	"company": "Empresa",
+	"companies": "Empresas",
 	"email": "Correo",
 	"checkin": "Actualizar",
 	"checkout": "Bloquear",
@@ -129,7 +129,6 @@ _lang = {
 	'cancel': 'Cancelar',
 	
 	/* contact manager*/
-	'company': 'Compañía',
 	'email': 'Correo',
 	'add new contact': 'Agregar nuevo contacto',
 	'displaying contacts of': 'Mostrando contacto {0} al {1} de {2}',
@@ -295,7 +294,7 @@ _lang = {
 	'from': 'De',
 	'draft': 'Borrador',
 	'mail sent': 'Enviado',
-	'create contact or client company':'Crear contacto o compañía cliente',
+	'create contact or client company':'Crear contacto o empresa cliente',
 	
 	'mail sent': 'Mail sent',
 	
@@ -310,5 +309,5 @@ _lang = {
 	'sent':'Enviados',
 	'unread': 'No Leidos',
 	
-	'more options': 'More options'
+	'more options': 'Más opciones'
 }

@@ -924,9 +924,9 @@ class ProjectTask extends BaseProjectTask {
 		if (!$this->isNew()) {
 			$old_me = ProjectTasks::findById($this->getId(), true);
 		}
-		if ($this->isNew() ||
+		if ($this->isNew() || (($old_me) && (
 				$this->getAssignedToCompanyId() != $old_me->getAssignedToCompanyId() ||
-				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()) {
+				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()))) {
 			$this->setAssignedBy(logged_user());
 			$this->setAssignedOn(DateTimeValueLib::now());
 		}

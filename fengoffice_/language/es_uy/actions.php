@@ -10,9 +10,9 @@
     'hide welcome info' => '&raquo; Ocultar información de forma permanente',
     
     // Companies
-    'add company' => 'Agregar compañía',
-    'edit company' => 'Editar datos de la compañía',
-    'delete company' => 'Eliminar compañía',
+    'add company' => 'Agregar empresa',
+    'edit company' => 'Editar datos de la empresa',
+    'delete company' => 'Eliminar empresa',
     'edit company logo' => 'Guardar logo',
     'delete company logo' => 'Eliminar logo',
     
@@ -58,7 +58,7 @@
     
     // Comments
     'add comment' => 'Agregar comentario',
-    'edit comment' => 'Editar comentario',
+    'edit comment' => 'Grabar comentario',
     
     // Task list
     'add task list' => 'Agregar tarea',
@@ -99,7 +99,7 @@
     'week' => 'Semana',
     
     //Groups
-    'can edit company data' => 'Permitirle editar datos de la compañía',
+    'can edit company data' => 'Permitirle editar datos de la empresa',
     'can manage security' => 'Permitirle modificar configuraciones de seguridad',
     'can manage workspaces' => 'Permitirle modificar configuraciones de espacios',
     'can manage configuration' => 'Permitirle modificar las configuraciones',
@@ -110,7 +110,7 @@
     // People
     'update people' => 'Poner al día',
     'remove user from project' => 'Eliminar usuario de este espacio',
-    'remove company from project' => 'Eliminar compañía del proyecto',
+    'remove company from project' => 'Eliminar empresa del proyecto',
     
     // Password
     'update profile' => 'Editar datos de mi cuenta',

@@ -192,7 +192,8 @@ _lang = {
 	'messages': 'Messages',
 	'view options': 'View options',
 	'check mails' : 'Check mail accounts',
-
+	'emails' : 'Emails',
+	'create an email' : 'Create an Email',
 	'filter workspaces': 'Filter workspaces...',
 	'filter tags': 'Filter tags...',
 	'alphabetical': 'Alphabetical',

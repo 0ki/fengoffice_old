@@ -208,7 +208,7 @@
       'sg' => 'Singapore',
       'sk' => 'Slovakia',
       'si' => 'Slovenia',
-      'sp' => 'Solomon Islands',
+      'sb' => 'Solomon Islands',
       'so' => 'Somalia',
       'za' => 'South Africa',
       'es' => 'Spain',

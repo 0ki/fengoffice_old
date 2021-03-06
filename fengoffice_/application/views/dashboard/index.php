@@ -3,7 +3,7 @@
 
 <div id="<?php echo $genid ?>-db" style="padding:7px">
 <div class="dashboard">
-
+<table border=0><tr><td> <!-- submitted by xtender http://forums.opengoo.org/index.php?topic=221.0 -->
 <div class="dashWorkspace">
 <span class="name">
 <?php 
@@ -31,11 +31,15 @@ else
 </span>
 </div>
 
+</td>
+<td width="50%">
 <div class="dashActions">
 	<a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
 	<div class="viewAsList"><?php echo lang('view as list') ?></div></a>
 </div>
-
+</td>
+</tr>
+</table>
 
 
 

@@ -5,7 +5,7 @@
 </form>
 </td><td>
 <form class="internalForm" action="<?php echo Timeslot::getAddTimespanUrl($timeslot_form_object) ?>" method="post" enctype="multipart/form-data">
-<button id="buttonAddWork" type="button" class="submit" onclick="document.getElementById('addwork').style.display='inline';document.getElementById('buttonAddWork').style.display='none';document.getElementById('tdstartwork').style.display='none';document.getElementById('closeTimeslotDescription').focus();return false;">Add work</button>
+<button id="buttonAddWork" type="button" class="submit" onclick="document.getElementById('addwork').style.display='inline';document.getElementById('buttonAddWork').style.display='none';document.getElementById('tdstartwork').style.display='none';document.getElementById('closeTimeslotDescription').focus();return false;"><?php echo lang('add work');?></button>
 
 <div id="addwork" style="display:none">
 <table><tr><td>
@@ -16,7 +16,7 @@
     <?php echo input_field("timeslot[time]", '', array('class' => 'short', 'id' => 'closeTimeslotTotalTime', 'tabstop' => '200')) ?>&nbsp;hours
 </td></tr></table>
 
-<?php echo submit_button('Add work' /*lang('add work')*/) ?>
+<?php echo submit_button(lang('add work')) ?>
 <button class="submit" style="margin-left:15px" id="buttonAddWorkCancel" type="button" onclick="document.getElementById('addwork').style.display='none';document.getElementById('buttonAddWork').style.display='inline';document.getElementById('tdstartwork').style.display='';return false;"><?php echo lang('cancel') ?></button>
 </div>
 

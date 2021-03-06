@@ -32,10 +32,10 @@ class TaskController extends ApplicationController {
 		$mc = new MilestoneController();
 		$mc->view_milestones();
 		if(active_project() instanceof Project)
-			$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId());
+			$task_templates = ProjectTasks::getWorkspaceTaskTemplates(active_project()->getId(),true);
 		else 
 			$task_templates = array();
-		$all_task_templates = ProjectTasks::getAllTaskTemplates();
+		$all_task_templates = ProjectTasks::getAllTaskTemplates(true);
 		$milestone_templates = ProjectMilestones::getProjectMilestones(null, null, 'ASC', null, null, null, null, null, true);
 		ajx_unset_current();
 		if(!array_var($_GET, "assigned_to") && user_config_option('my tasks is default view')) //if default view 

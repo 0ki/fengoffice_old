@@ -40,7 +40,7 @@
     'terms of services not accepted' => 'Para poder crear una cuenta debe leer y aceptar los términos y condiciones de nuestros servicios',
     
     // Init company website
-    'failed to load company website' => 'No se pudo cargar el sitio web. La compañía no fue encontrada',
+    'failed to load company website' => 'No se pudo cargar el sitio web. La empresa no fue encontrada',
     'failed to load project' => 'El sistema falló al cargar el espacio',
     
     // Login form

@@ -219,7 +219,7 @@ class Notifier {
 
 		return self::sendEmail(
 		self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName()),
-		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
+		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getUpdatedByDisplayName()),
 		lang('task assigned to you'),
 		tpl_fetch(get_template_path('task_assigned', 'notifier'))
 		); // send

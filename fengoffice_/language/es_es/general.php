@@ -168,7 +168,8 @@
   	'read only' => 'Sólo lectura',
   	'none no bars' => 'Ninguno',
   	'apply to all subworkspaces' => 'Aplicar permisos a todos los subespacios',
-  	'weblinks' => 'Páginas Web'
+  	'weblinks' => 'Páginas Web',
+  	'add work' => 'Agregar trabajo',
   ); // array
 
 ?>

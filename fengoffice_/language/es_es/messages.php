@@ -410,6 +410,10 @@
   	'success assign workspaces' => 'Plantilla asignada a espacio correctamente',
   	'success update config value' => 'Valores de configuración actualizados',
   	'view open tasks' => 'Tareas no completadas' ,
+  	'error cannot set workspace as parent' => 'No se puede establecer el espacio \'{0}\' como padre, demasiados niveles de espacios',
+  	'log add projectevents' => '\'{0}\' añadido',
+  	'log edit projectevents' => '\'{0}\' editado',
+  	'log delete projectevents' => '\'{0}\' eliminado',
   ); // array
 
 ?>

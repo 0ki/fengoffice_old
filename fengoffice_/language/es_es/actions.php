@@ -48,6 +48,7 @@
     
     // Messages
     'add message' => 'Añadir mensaje',
+    'add new message' => 'Agregar nuevo mensaje',
     'edit message' => 'Editar mensaje',
     'delete message' => 'Eliminar mensaje',
     'view message' => 'Mostrar mensaje',

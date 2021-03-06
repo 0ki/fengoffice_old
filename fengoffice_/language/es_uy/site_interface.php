@@ -27,7 +27,7 @@
     'my projects' => 'Mis espacios',
     'my projects archive desc' => 'Listado de espacios cerrados. Todas las acciones de estos espacios han sido bloqueadas, de todas formas podra verlas.',
     
-    'company online' => 'Compañía en línea',
+    'company online' => 'Empresa en línea',
     
     'enable javascript' => 'Habilite JavaScript en su navegador para poder usar esta caracteristica',
     
@@ -113,7 +113,7 @@
     'recent project activities feed' => 'Actividades recientes en el espacio {0}',
     
     // Update company permissions
-    'update company permissions hint' => 'Verficiar espacio para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la compañía que desea tengan acceso al manejo de algunos espacios (esto puede ser realizado a través de la página de usuarios en el espacio, o a través de los perfiles).',
+    'update company permissions hint' => 'Verficiar espacio para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la empresa que desea tengan acceso al manejo de algunos espacios (esto puede ser realizado a través de la página de usuarios en el espacio, o a través de los perfiles).',
     
     'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. Todos los derechos reservados.',
     'footer copy without homepage' => '&copy; {0} by {1}. Todos los derechos reservados',

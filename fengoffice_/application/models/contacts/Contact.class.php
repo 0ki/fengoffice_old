@@ -569,8 +569,8 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function delete() {
-      if($this->getUserId()) {
-        return false;
+      if($this->getUserId() && $this->getUser()) {
+        throw new Exception('Cannot delete a contact that has a user assigned to it');
       } // if
       
       $roles = $this->getRoles();

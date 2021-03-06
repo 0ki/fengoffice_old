@@ -62,7 +62,7 @@
     'config option name smtp_password' => 'Contraseña SMTP',
     'config option name smtp_secure_connection' => 'Use la conexión segura SMTP',
   
- 	'can edit company data' => 'Puede modificar los datos de la compañía',
+ 	'can edit company data' => 'Puede modificar los datos de la empresa',
   	'can manage security' => 'Puede modificar configuraciones de seguridad',
   	'can manage workspaces' => 'Puede modificar configuraciones de espacios',
   	'can manage configuration' => 'Puede modificar las configuraciones',

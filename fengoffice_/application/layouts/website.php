@@ -68,12 +68,11 @@
 			'jquery/jquery.dimensions.js',
 			'jquery/jquery.hoverIntent.js',
 			'jquery/jquery.cluetip.js',
-			'jquery/jquery-ui.min.js',
-			with_slash(ROOT_URL).'/language/'.Localization::instance()->getLocale().'/ui.datepicker-'.Localization::instance()->getLocale().'.js'
-			 
+			'jquery/jquery-ui.min.js'
+
 		);
 	
-	
+	echo add_javascript_to_page(with_slash(ROOT_URL).'/language/'.Localization::instance()->getLocale().'/ui.datepicker-'.Localization::instance()->getLocale().'.js');
 	echo add_javascript_to_page(get_url("access", "get_javascript_translation"));
 	
 	if(defined('USE_JS_CACHE') && USE_JS_CACHE){

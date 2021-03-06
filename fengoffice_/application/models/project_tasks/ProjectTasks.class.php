@@ -151,8 +151,11 @@ class ProjectTasks extends BaseProjectTasks {
 	 * Returns all task templates
 	 *
 	 */
-	static function getAllTaskTemplates(){
+	static function getAllTaskTemplates($only_parent_tasks = false){
 		$conditions = " `is_template` = true " ;
+		if ($only_parent_tasks){
+			$conditions .= ' AND parent_id = 0 ';
+		}
 		$order_by = "`title` ASC";
 		$tasks = ProjectTasks::find(array(
 				'conditions' => $conditions,
@@ -166,10 +169,13 @@ class ProjectTasks extends BaseProjectTasks {
 	 * Returns workspace task templates
 	 *
 	 */
-	static function getWorkspaceTaskTemplates($workspace_id){		
+	static function getWorkspaceTaskTemplates($workspace_id, $only_parent_tasks = false){		
 		$table_name = new WorkspaceTemplate();
 		$table_name = $table_name->getTableName(true);
 		$conditions = " `is_template` = true AND `id` in (select `template_id` from " .  $table_name  . " where `workspace_id` = $workspace_id)";
+		if ($only_parent_tasks){
+			$conditions .= ' AND parent_id = 0 ';
+		}
 		$order_by = "`title` ASC";
 		$tasks = ProjectTasks::find(array(
 				'conditions' => $conditions,
