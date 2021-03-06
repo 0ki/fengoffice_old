@@ -81,7 +81,11 @@ if (array_var($_REQUEST, 'modal')) {
 		</tbody></table>
 		<?php if (isset($member_id) && $member_id > 0) {
 			?><input type="hidden" name="additional_member_ids" value="<?php echo $member_id?>"><?php 
-		} ?>
+		} 
+		if ($from_email instanceof MailContent) {
+			?><input type="hidden" name="from_email_id" value="<?php echo array_var($_REQUEST, 'from_email')?>"><?php 
+		}
+		?>
 	</div>
 	<br/>
 	<div>

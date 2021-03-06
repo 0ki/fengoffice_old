@@ -270,6 +270,7 @@
 		<?php if ($has_custom_properties) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab"><?php 
 			if($member->getObjectTypeId() > 0){
+				tpl_assign('genid', $genid); 
 				echo render_member_custom_properties($member, false, 'others', $parent_sel, $member->isNew());
 			}			
 		?></div>

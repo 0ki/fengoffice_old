@@ -3420,7 +3420,9 @@ class TaskController extends ApplicationController {
 						}
 					}
 				} catch(Exception $e) {
-
+					Logger::log('Error sending notifications for task: '.$task->getId());
+					Logger::log($e->getMessage());
+					Logger::log($e->getTraceAsString());
 				} // try
 				
 				//notify subscribers

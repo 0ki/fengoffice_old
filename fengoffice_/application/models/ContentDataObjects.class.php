@@ -521,15 +521,22 @@ abstract class ContentDataObjects extends DataManager {
 		}
 		
 		$SQL_COLUMNS = implode(',', $select_columns);
+
+		//column to check permissions
+		if (isset($args['check_permissions_col'])){
+			$check_permissions_col = $args['check_permissions_col'];
+		}else{
+			$check_permissions_col = "o.id";
+		}
 		
 		if (logged_user() instanceof Contact) {
 			$uid = logged_user()->getId();
 			// Build Main SQL
 			$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
 			
-			$permissions_condition = "o.id IN (
+			$permissions_condition = $check_permissions_col." IN (
 					SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
-					WHERE o.id = sh.object_id
+					WHERE ".$check_permissions_col." = sh.object_id
 					AND sh.group_id  IN ($logged_user_pgs)
 			)";
 			
@@ -609,15 +616,14 @@ abstract class ContentDataObjects extends DataManager {
 			}
 			
 			$sql_total = "
-				SELECT count(o.id) as total FROM ".TABLE_PREFIX."objects o
+				SELECT count(DISTINCT(o.id)) as total FROM ".TABLE_PREFIX."objects o
 				$SQL_BASE_JOIN
 				$SQL_EXTRA_JOINS
 				WHERE
 					$permissions_condition
 					AND	$SQL_CONTEXT_CONDITION
 					AND $SQL_TYPE_CONDITION
-					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
-				$SQL_GROUP_BY			
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS							
 			";
 
 			

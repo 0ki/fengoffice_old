@@ -593,6 +593,12 @@ class Contact extends BaseContact {
 		$number = is_null($telephone)? '' : $telephone->getNumber();
 		return $number;
 	} // getPhoneNumber
+	
+	function getPhoneName($type, $is_main = false, $check_is_main = true) {
+		$telephone = $this->getPhone($type, $is_main, $check_is_main);
+		$name = is_null($telephone)? '' : $telephone->getName();
+		return $name;
+	} // getPhoneNumber
 
 	function getAllImValues() {
 		$rows = DB::executeAll("SELECT i.value, t.name FROM ".TABLE_PREFIX."contact_im_values i INNER JOIN ".TABLE_PREFIX."im_types t ON i.im_type_id=t.id WHERE i.contact_id=".$this->getId());
@@ -998,12 +1004,15 @@ class Contact extends BaseContact {
 					}
 					
 					$conditions = "email_address=".DB::escape($main_email);
-					if (!$this->isNew()) {
-						if (!config_option('check_unique_mail_contact_comp')) {
-							$type_condition = " AND (SELECT c.is_company FROM ".TABLE_PREFIX."contacts c WHERE c.object_id=contact_id)=0";
-						}
-						$conditions .= " AND contact_id <> ".$this->getId() . $type_condition;
+					$type_condition = "";
+					if (!config_option('check_unique_mail_contact_comp')) {
+						$type_condition = " AND (SELECT c.is_company FROM ".TABLE_PREFIX."contacts c WHERE c.object_id=contact_id)=0";
 					}
+					if (!$this->isNew()) {
+						$conditions .= " AND contact_id <> ".$this->getId();
+					}
+					$conditions .= $type_condition;
+					
 					$em = ContactEmails::instance()->findOne(array('conditions' => $conditions));
 					if($em instanceof ContactEmail) {
 						$errors[] = lang('email address must be unique');
@@ -1095,6 +1104,9 @@ class Contact extends BaseContact {
 		if ( $this->getId() == logged_user()->getId() ) return true ;
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
+			if($this->getCompanyId() ==  $user->getCompanyId()){
+				return true;
+			}
 			return ($this->getUserType() > $user->getUserType() || $user->isAdministrator());
 		}
 		 

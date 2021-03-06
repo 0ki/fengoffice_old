@@ -362,7 +362,7 @@ CREATE TABLE `<?php echo $table_prefix ?>contact_emails` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `contact_id` int(10) unsigned NOT NULL, 
   `email_type_id` int(10) unsigned NOT NULL, 
-  `email_address` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `email_address` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `is_main` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `by_contact` (`contact_id`,`is_main`)

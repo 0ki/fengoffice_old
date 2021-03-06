@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.0.7
+	About Feng Office 3.4.0.17
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,52 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.0.16
+	----------------
+	bugfix: check mail error when emails uid change on the mail server.
+	bugfix: some user properties are set when adding contact
+	
+	Since 3.4.0.15
+	----------------
+	bugfix: cannot enable email module if it has been disabled.
+	bugfix: email address length is too short.
+	
+	Since 3.4.0.14
+	----------------
+	bugfix: users cannot see other users contact cards if they have a higher role.
+	
+	Since 3.4.0.13
+	----------------
+	bugfix: mail list is not reloading if viewing an email and changing context.
+	bugfix: export contacts to csv;
+	bugfix: create contact from email when sending email was setting user fields.
+    bugfix: additional member permissions - sometimes the checkboxes are checked and the permissions is not set.
+   	
+	Since 3.4.0.12
+	----------------
+	bugfix: get_member_childs function for member tree.
+	bugfix: javascript errors when moving to trash tasks on tasks list.
+	performance: multi tasks action remove member aditional data calculation.
+	
+	Since 3.4.0.10
+	----------------
+	bugfix: instantiate template from email is not working properly.
+	bugfix: javascript error when completing subtask on the tasks list.
+	
+	Since 3.4.0.9
+	----------------
+	performance: remove member aditional data from member lists (project and clients lists)
+	
+	Since 3.4.0.8
+	----------------
+	bugfix: add member custom properties tab render error.
+	
+	Since 3.4.0.7
+	----------------
+	bugfix: error on object list when sorting by custom properties or dimensions.
+	bugfix: comments widget not working.
+	bugfix: prevent json errors on members list. 
 	
 	Since 3.4.0.6
 	----------------

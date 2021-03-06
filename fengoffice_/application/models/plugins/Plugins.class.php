@@ -50,6 +50,18 @@
   		
   		return false;
   	}
+  	
+  	function isInstalledPlugin($name) {
+  		if (!isset($this) || !$this instanceof Plugins) {
+  			return self::instance()->isInstalledPlugin($name);
+  		}
+		$this->getAll();
+  		foreach ($this->all as $installed_plugin) {
+  			if ($installed_plugin->getName() == $name) return true;
+  		}
+  		
+  		return false;
+  	}
 
   	/**
   	 * 

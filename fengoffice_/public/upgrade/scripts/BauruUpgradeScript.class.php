@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.0.7
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.0.17
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.0.7');
+		$this->setVersionTo('3.4.0.17');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -114,6 +114,31 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('general', 'timeReportTaskStatus', 'all', 'StringConfigHandler', 1, 0, '')
 				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.0.16') < 0) {
+			// fix contacts that were created from emails and have some user fields
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."contact_emails`
+				CHANGE `email_address` `email_address` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '';
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.1-beta') < 0) {
+			// fix contacts that were created from emails and have some user fields
+			$upgrade_script .= "
+				delete from ".$t_prefix."permission_groups
+				where id in (select permission_group_id from ".$t_prefix."contacts where user_type=0 and permission_group_id>0);
+				
+				delete from ".$t_prefix."system_permissions
+				where permission_group_id in (select permission_group_id from ".$t_prefix."contacts where user_type=0 and permission_group_id>0);
+				
+				update ".$t_prefix."contacts set
+				  permission_group_id=0,
+				  token='', salt='', twister='',
+				  display_name='', username='', company_id=0
+				where user_type=0 and permission_group_id>0;
 			";
 		}
 		

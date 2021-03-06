@@ -535,7 +535,6 @@ class MailController extends ApplicationController {
 			if ($body == '') $body.=' ';
 
 			try {
-				$linked_users = array();
 				
 				//create contacts from recipients of email
 				if (user_config_option('create_contacts_from_email_recipients') || can_manage_contacts(logged_user())) {
@@ -544,14 +543,13 @@ class MailController extends ApplicationController {
 						if (!$linked_user instanceof Contact) {
 							try {
 								DB::beginWork();
-								$linked_user = create_user_from_email($to_user[1], $to_user[0], null, false);
+								create_contact_from_email($to_user[1], $to_user[0]);
 								DB::commit();
 							} catch (Exception $e) {
 								Logger::log($e->getMessage());
 								DB::rollback();
 							}
 						}
-						if ($linked_user instanceof Contact) $linked_users[] = $linked_user;
 					}
 				}
 				
@@ -559,13 +557,6 @@ class MailController extends ApplicationController {
 					$linked_atts = $type == 'text/html' ? '<div style="font-family:arial;"><br><br><br><span style="font-size:12pt;font-weight:bold;color:#777">'.lang('linked attachments').'</span><ul>' : "\n\n\n-----------------------------------------\n".lang('linked attachments')."\n\n";
 					foreach ($linked_attachments as $att) {
 						$linked_atts .= $type == 'text/html' ? '<li><a href="'.$att['data'].'">' . $att['name'] . ' (' . $att['type'] . ')</a></li>' : $att['name'] . ' (' . $att['type'] . '): ' . $att['data'] . "\n";
-						foreach ($linked_users as $linked_user) {
-							try {
-								$linked_user->giveAccessToObject(Objects::findObject($att['id']));
-							} catch (Exception $e) {
-								//Logger::log($e->getMessage());
-							}
-						}
 					}
 					$linked_atts .= $type == 'text/html' ? '</ul></div>' : '';
 				} else $linked_atts = '';
@@ -3404,7 +3395,7 @@ class MailController extends ApplicationController {
 			// Prepare response object
 			$object = $this->prepareObject($emails, $start, $limit, $total,$attributes);
 			
-			ajx_extra_data(array('mails' => $object['messages']));
+			ajx_extra_data(array('mails' => $object['messages'], 'context_sent' => array_var($_REQUEST, 'context')));
 			
 		} catch (Exception $e) {
 			

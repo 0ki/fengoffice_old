@@ -885,7 +885,7 @@ ogTasks.removeTaskFromView = function(task) {
 	//parent
 	if(task.parentId > 0){
 		var parent = ogTasksCache.getTask(task.parentId);
-		if(parent.subtasksIds.length == 0){
+		if(typeof parent != "undefined" && parent.subtasksIds.length == 0){
 			ogTasks.reDrawTask(parent);
 		}
 	}
@@ -902,7 +902,7 @@ ogTasks.reDrawTask = function(task) {
 	if(drawOptions.show_subtasks_structure){
 		if(task.parentId > 0){
 			var parent = ogTasksCache.getTask(task.parentId);
-			
+			if (typeof parent != 'undefined') {
 				//if is not rendered and is subtask?			
 				$("[id^='ogTasksPanelSubtasksT" + parent.id + "']").each(function( index ) {
 					var group_id = $(this).attr('id');
@@ -929,7 +929,7 @@ ogTasks.reDrawTask = function(task) {
 					var btns = $("#ogTasksPanelTask" + parent.id + "G"+group_id +" .tasksActionsBtn").toArray();
 					og.initPopoverBtns(btns);
 				});	
-						
+			}						
 		}else{
 			//if is not rendered redraw all groups from server
 			if($("[id^='ogTasksPanelTask" + task.id + "']").length == 0){

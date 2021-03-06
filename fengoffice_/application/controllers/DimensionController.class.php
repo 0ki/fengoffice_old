@@ -647,7 +647,7 @@ class DimensionController extends ApplicationController {
 				// check for other dimensions filtering this dimension
 				$selected_members = array();
 				foreach (active_context() as $selection) {
-					if ($selection instanceof Member && $selection->getDimensionId() != $mem->getId()) {
+					if ($selection instanceof Member && $selection->getDimensionId() != $mem->getDimensionId()) {
 						$selected_members[] = $selection;
 					}
 				}
@@ -878,9 +878,15 @@ class DimensionController extends ApplicationController {
 			$key = strtolower(htmlentities(array_var($m, 'name')));
 			$tmp_members[str_pad(array_var($m, 'depth'), 20, "0", STR_PAD_LEFT) . $key . array_var($m, 'id')] = $m;
 		}
-		
 		ksort($tmp_members, SORT_STRING);
-		$members = $tmp_members;		
+
+		//remove array keys to prevent json problems
+		$tmp_members2 = array();
+		foreach ($tmp_members as $m2) {
+			$tmp_members2[] = $m2;
+		}
+
+		$members = $tmp_members2;		
 		return $members ;
 	}
 	

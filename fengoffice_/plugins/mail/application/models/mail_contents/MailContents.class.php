@@ -135,11 +135,18 @@ class MailContents extends BaseMailContents {
 		return " NOT EXISTS(SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'MailContents' AND `object_id` = `id`) ";
 	}
 	
-	static function mailRecordExists($account_id, $uid, $folder = null, $is_deleted = null) {
+	static function mailRecordExists(MailAccount $account, $uid, $folder = null, $is_deleted = null, $message_id = null) {
+		$account_id = $account->getId();
 		if (!$uid) return false;
 		$folder_cond = is_null($folder) ? '' : " AND `imap_folder_name` = " . DB::escape($folder);
 		$del_cond = is_null($is_deleted) ? "" : " AND `is_deleted` = " . DB::escape($is_deleted ? true : false);
-		$conditions = "`account_id` = " . DB::escape($account_id) . " AND `uid` = " . DB::escape($uid) . $folder_cond . $del_cond;
+		
+		if(!is_null($message_id) && $account->getIsImap()){
+			$id_cond = " AND `message_id` = " . DB::escape($message_id);
+		}else{			
+			$id_cond = " AND `uid` = " . DB::escape($uid);
+		}		
+		$conditions = "`account_id` = " . DB::escape($account_id) . $id_cond . $folder_cond . $del_cond;
 		
 		$rows = DB::executeAll("SELECT object_id FROM `".TABLE_PREFIX."mail_contents` WHERE $conditions limit 1");
 		return count($rows) > 0;

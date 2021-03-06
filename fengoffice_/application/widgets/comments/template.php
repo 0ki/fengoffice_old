@@ -23,8 +23,11 @@
 			?>
 				<li id="<?php echo "comment-".$comment->getId()?>" class="comment-row ico-comment <?php echo $row_cls ?>" style="<?php echo $style;?>">
 					<a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">
-						<span class="comment-title"><?php echo clean($comment->getObjectName());?></span>
 						<span class="previewText"><?php echo clean($comment->getText());?></span>
+					</a>
+					<br/>
+					<a href="<?php echo $comment->getViewUrl() ?>" title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), clean($comment->getCreatedByDisplayName())) ?>">
+						<span class="comment-title"><?php echo clean($comment->getObjectName());?></span>
 					</a>
 					<br/>
 					<span class="breadcrumb"></span>

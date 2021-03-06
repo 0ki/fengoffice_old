@@ -544,6 +544,21 @@ class TemplateController extends ApplicationController {
 				}
 			}
 		}
+
+		//Linked objects
+		if (array_var($_POST, 'linked_objects')) {
+			$linked_objects_ids = json_decode(array_var($_POST, 'linked_objects'));
+			$linked_objects = array();
+			if (is_array($linked_objects_ids)) {
+				foreach ($linked_objects_ids as $linked_object_id) {
+					$linked_object = Objects::findObject($linked_object_id);
+					if ($linked_object instanceof ApplicationDataObject) {
+						$linked_objects[] = $linked_object;
+					}
+				}
+			}
+		}
+
 		
 		$objects = $template->getObjects() ;
 		$controller  = new ObjectController();
@@ -676,6 +691,15 @@ class TemplateController extends ApplicationController {
 						}
 						
 					}					
+				}
+
+				//linked objects
+				if (is_array($linked_objects)) {
+					foreach ($linked_objects as $linked_object) {
+						if ($linked_object instanceof ApplicationDataObject) {
+							$c->linkObject($linked_object);
+						}
+					}
 				}
 			}			
 		}

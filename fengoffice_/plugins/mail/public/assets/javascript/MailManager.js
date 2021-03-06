@@ -15,6 +15,7 @@ og.MailManager = function() {
 	this.needRefresh = false;
 	this.maxrowidx = 0;
 	this.last_email_date = '0000-00-00 00:00:00';
+	this.last_context_sent = '';
 
 	this.fields = [
 		'object_id', 'type', 'ot_id', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date', 'rawdate',
@@ -130,7 +131,7 @@ og.MailManager = function() {
 			mem_path += "</div>";
 		}
 		
-		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();return false;';
+		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();og.eventManager.fireEvent(\'replace all empty breadcrumb\', null);return false;';
 		name = String.format(
 				'{4}<a style="font-size:120%;" class="{3}" href="#" onclick="' + js + '" title="{2}">{0}</a>',
 				subject + conv_str, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),classes,strDraft);
@@ -162,7 +163,7 @@ og.MailManager = function() {
 		var sender = (draw_to ? to_cut : og.clean(value.trim())) || '<span class="italic">' + lang("no sender") + '</span>';
 		var title = draw_to ? og.clean(r.data.to) : og.clean(r.data.from_email);
 		
-		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();return false;';
+		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = true;og.openLink(\'{1}\');r.commit();og.eventManager.fireEvent(\'replace all empty breadcrumb\', null);return false;';
 		name = String.format(
 				'<a style="font-size:120%;" class="{3}" href="#" onclick="' + js + '" title="{2}">{0}</a>',
 				sender, og.getUrl('mail', strAction, {id: r.data.object_id}), title, classes);
@@ -1268,7 +1269,10 @@ og.MailManager = function() {
 
 Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	load: function(params) {
-		if (og.viewing_mail) {
+		var current_context = og.contextManager.plainContext();
+		
+		// dont reload the list if user was viewing an email and the context has not changed
+		if (og.viewing_mail && this.last_context_sent == current_context) {
 			og.viewing_mail = false;
 			return;
 		}
@@ -1289,6 +1293,9 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	      context: og.contextManager.plainContext(),
 		  account_id: this.accountId
 	    };
+		
+		// save last context sent to reload the list always if it has changed
+		this.last_context_sent = og.contextManager.plainContext();
 		
 		this.actionRep.checkMails.disable();
 		
@@ -1389,6 +1396,10 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		og.openLink(og.getUrl('mail', 'check_if_new_mails', params), {
 			hideLoading: true,
 			callback: function(success, data) {
+				
+				// if context has changed => dont load the response
+				var current_context = og.contextManager.plainContext();
+				if (current_context != data.context_sent) return;
 				
 				if (!data.mails || data.mails.length == 0) return;
 				

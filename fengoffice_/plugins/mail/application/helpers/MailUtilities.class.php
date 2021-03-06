@@ -210,7 +210,7 @@ class MailUtilities {
 				}
 			}
 			// do not save duplicate emails
-			if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
+			if (MailContents::mailRecordExists($account, $uid, $imap_folder_name == '' ? null : $imap_folder_name,$message_id)) {
 				return;
 			}
 			
@@ -1027,7 +1027,7 @@ class MailUtilities {
 									$lastReceived = 1;
 								}else{
 									// $max_uid is betwen $server_min_uid and $server_max_uid
-									if ($server_max_uid) {
+									if ($server_max_uid && $max_uid < $server_max_uid) {
 										
 										$diff_uids = $server_max_uid - $max_uid;
 										$lastReceived = $numMessages - $diff_uids;	
@@ -1205,7 +1205,7 @@ class MailUtilities {
 									if (is_array($summary)) {
 										$m_date = DateTimeValueLib::makeFromString($summary[0]['INTERNALDATE']);
 										if ($m_date instanceof DateTimeValue && $max_date->getTimestamp() > $m_date->getTimestamp()) {																														
-											if (MailContents::mailRecordExists($account->getId(), $summary[0]['UID'], $box->getFolderName(), null)) {
+											if (MailContents::mailRecordExists($account, $summary[0]['UID'], $box->getFolderName(), null)) {
 												$imap->deleteMessages($i);
 												$count++;
 											}
@@ -1234,7 +1234,7 @@ class MailUtilities {
 				}
 				$emails = $pop3->getListing();
 				foreach ($emails as $email) {
-					if (MailContents::mailRecordExists($account->getId(), $email['uidl'], null, null)) {
+					if (MailContents::mailRecordExists($account, $email['uidl'], null, null)) {
 						$headers = $pop3->getParsedHeaders($email['msg_id']);
 						$date = DateTimeValueLib::makeFromString(array_var($headers, 'Date'));
 						if ($date instanceof DateTimeValue && $max_date->getTimestamp() > $date->getTimestamp()) {

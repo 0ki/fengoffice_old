@@ -838,15 +838,20 @@ function module_enabled($module, $default = null) {
 }
 
 
-function create_user_from_email($email, $name, $type = 'guest', $send_notification = true) {
-	return create_user(array(
-		'username' => substr($email, 0, strpos($email, '@')),
-		'display_name' => trim($name),
-		'email' => $email,
-		'type' => $type,
-		'company_id' => owner_company()->getId(),
-		'send_email_notification' => $send_notification,
-	), '');
+function create_contact_from_email($email, $name) {
+	$c = Contacts::getByEmail($email);
+	if (!$c instanceof Contact) {
+		$pos = strpos($name, '@');
+		if ($pos !== false) {
+			$name = substr($name, 0, $pos);
+		}
+		
+		$c = new Contact();
+		$c->setFirstName($name);
+		$c->save();
+		$c->addEmail($email, 'personal');
+		$c->addToSharingTable();
+	}
 }
 
 
