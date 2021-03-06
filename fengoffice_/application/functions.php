@@ -1750,3 +1750,65 @@ function is_exec_available() {
 	}
 	return true;
 }
+
+function pdf_convert_and_download($html_filename, $download_filename=null, $orientation="Portrait") {
+	
+	$html_to_convert = file_get_contents($html_filename);
+	
+	if (!$download_filename) $download_filename = gen_id() . '.pdf';
+	
+	//generate the pdf
+	$pdf_filename = convert_to_pdf($html_to_convert, $orientation, gen_id());
+	
+	if($pdf_filename) {
+		include_once ROOT . "/library/browser/Browser.php";
+		if (Browser::instance()->getBrowser() == Browser::BROWSER_IE) {
+			evt_add('download_tmp_file', array('file_name' => $pdf_filename, 'file_type' => 'application/pdf'));
+		} else {
+			download_file(ROOT."/tmp/".$pdf_filename, 'application/pdf', $download_filename, true);
+		}
+	}
+}
+
+function convert_to_pdf($html_to_convert, $orientation='Protrait', $genid) {
+	$pdf_filename = null;
+	
+	if(is_exec_available()){
+		//controlar q sea linux
+		$pdf_filename = $genid . "_pdf.pdf";
+		$pdf_path = "tmp/".$pdf_filename;
+		
+		$tmp_html_path = "tmp/tmp_html_".$genid.".html";
+		file_put_contents($tmp_html_path, $html_to_convert);
+		
+		if (!in_array($orientation, array('Portrait', 'Landscape'))) $orientation = 'Portrait';
+		
+		//convert png to pdf in background
+		exec("wkhtmltopdf -s A4 --encoding utf8 -O $orientation ".$tmp_html_path." ".$pdf_path." > /dev/null &", $result, $return_var);
+		
+		if ($return_var > 0){
+			Logger::log("command not found convert",Logger::WARNING);
+			return false;
+		}
+			
+		//wait for the file
+		$seconds = 8;
+		while (!file_exists(ROOT."/tmp/".$pdf_filename) && $seconds > 0){
+			sleep(1);
+			$seconds = $seconds - 1;
+		}
+		//give time to finish
+		sleep(2);
+			
+		//delete the png file
+		unlink($tmp_html_path);
+			
+		//check if pdf exist
+		if (!file_exists(ROOT."/tmp/".$pdf_filename)) {
+			return false;
+		}
+		return $pdf_filename;
+	}
+	
+}
+

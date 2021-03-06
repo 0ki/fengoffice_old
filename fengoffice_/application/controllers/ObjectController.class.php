@@ -302,8 +302,10 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
-		foreach ($obj_custom_properties as $id => &$val) {
-			$val = remove_scripts($val);
+		if (is_array($obj_custom_properties)){
+			foreach ($obj_custom_properties as $id => &$val) {
+				$val = remove_scripts($val);
+			}
 		}
 		
 		$date_format = user_config_option('date_format');

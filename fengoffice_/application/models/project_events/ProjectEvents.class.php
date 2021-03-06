@@ -281,13 +281,9 @@ class ProjectEvents extends BaseProjectEvents {
 				(
 					original_event_id = 0
 					AND
-					DATE(`start`) <= '$start_date_str'
+					DATE(`start`) <= '$end_date_str'
 					AND
-					`repeat_h` = 1 
-					AND
-					`repeat_dow` = DAYOFWEEK('$start_date_str') 
-					AND
-					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
+					`repeat_h` = 1 					
 					AND
 					MOD( ABS(PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m'))), `repeat_mjump`) = 0					
 				)

@@ -51,7 +51,7 @@
     * @return InvalidUploadError
     */
     function __construct($file, $message = null) {
-      if(is_null($message)) $message = lang('error upload file');
+      if(is_null($message)) $message = self::generateErrorMessage(array_var($file, 'error'));
       parent::__construct($message);
       
       $this->setName(array_var($file, 'name'));
@@ -77,6 +77,44 @@
         'upload error code' => $this->getUploadErrorCode()
       ); // array
     } // getAdditionalParams
+    
+    
+    // UPLOAD_ERR_OK         Value: 0
+    // There is no error, the file uploaded with success.
+     
+    // UPLOAD_ERR_INI_SIZE   Value: 1
+    // The uploaded file exceeds the upload_max_filesize directive in php.ini.
+     
+    // UPLOAD_ERR_FORM_SIZE  Value: 2
+    // The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.
+     
+    // UPLOAD_ERR_PARTIAL    Value: 3
+    // The uploaded file was only partially uploaded.
+     
+    // UPLOAD_ERR_NO_FILE    Value: 4
+    // No file was uploaded.
+     
+    // UPLOAD_ERR_NO_TMP_DIR Value: 6
+    // Missing a temporary folder. Introduced in PHP 4.3.10 and PHP 5.0.3.
+     
+    // UPLOAD_ERR_CANT_WRITE Value: 7
+    // Failed to write file to disk. Introduced in PHP 5.1.0.
+     
+    // UPLOAD_ERR_EXTENSION  Value: 8
+    // A PHP extension stopped the file upload. Introduced in PHP 5.2.0.
+    private static function generateErrorMessage($error_code) {
+    	Env::useHelper('format');
+    	switch ($error_code) {
+    		case UPLOAD_ERR_INI_SIZE: return lang('upload error msg UPLOAD_ERR_INI_SIZE', format_filesize(get_max_upload_size()));
+    		case UPLOAD_ERR_FORM_SIZE: return lang('upload error msg UPLOAD_ERR_FORM_SIZE', format_filesize(get_max_upload_size()));
+    		case UPLOAD_ERR_PARTIAL: return lang('upload error msg UPLOAD_ERR_PARTIAL');
+    		case UPLOAD_ERR_NO_FILE: return lang('upload error msg UPLOAD_ERR_NO_FILE');
+    		case UPLOAD_ERR_NO_TMP_DIR: return lang('upload error msg UPLOAD_ERR_NO_TMP_DIR');
+    		case UPLOAD_ERR_CANT_WRITE: return lang('upload error msg UPLOAD_ERR_CANT_WRITE');
+    		case UPLOAD_ERR_EXTENSION: return lang('upload error msg UPLOAD_ERR_EXTENSION');
+    		default: return lang('error upload file');
+    	}
+    }
     
     // ---------------------------------------------------
     //  Getters and setters

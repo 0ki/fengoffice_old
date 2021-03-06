@@ -257,6 +257,15 @@ og.TasksBottomToolbar = function(config) {
         emptyText: (lang('select user or group') + '...'),
         valueNotFoundText: '',
         listeners: {
+        	'blur' : function(combo) {
+        		if (combo.el.dom.value == "") {
+        			combo.setValue(0);
+        			var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+            		if (toolbar.filterNamesCompaniesCombo == this) {
+            			toolbar.load();
+            		}
+        		}
+        	},
         	'select' : function(combo, record) {
 				var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
         		if (toolbar.filterNamesCompaniesCombo == this)

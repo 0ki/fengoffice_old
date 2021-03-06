@@ -200,6 +200,14 @@
   
   	'uploaded file bigger than max upload size' => 'You are trying to upload a document that is over your current upload size limit of {0}.',
   	'date format error' => 'You have an error when typing due date or start date, the correct date format is "{0}", please use this format or change it in your account preferences.',
+  	
+  	'upload error msg UPLOAD_ERR_INI_SIZE' => 'The uploaded file size exceeds the maximum upload size ({0}).',
+  	'upload error msg UPLOAD_ERR_FORM_SIZE' => 'The uploaded file size exceeds the maximum upload size ({0}).',
+  	'upload error msg UPLOAD_ERR_PARTIAL' => 'The uploaded file was partially uploaded.',
+  	'upload error msg UPLOAD_ERR_NO_FILE' => 'No file could be uploaded.',
+  	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'No file could be uploaded, missing temporary folder.',
+  	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'Could not write file to disk.',
+  	'upload error msg UPLOAD_ERR_EXTENSION' => 'A PHP extension stopped the file upload.',
   ); // array
 
 ?>

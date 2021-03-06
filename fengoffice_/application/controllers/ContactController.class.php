@@ -473,7 +473,7 @@ class ContactController extends ApplicationController {
 		if(!user_config_option("viewUsersChecked")){
 			$extra_conditions.= ' AND `user_type` < 1 ';
 		}
-		$extra_conditions.= " AND disabled = 0 " ;
+		//$extra_conditions.= " AND disabled = 0 " ;
 		
 		if (strpos($order, 'p_') == 1 ){
 			$cpId = substr($order, 3);
@@ -1051,9 +1051,24 @@ class ContactController extends ApplicationController {
 					set_user_config_option("sendEmailNotification", 0,logged_user()->getId());
 				}
 				
+				if ($user) {
+					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
+						
+					if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
+						ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
+					}
+					ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
+																
+					if (isset($contact_data['new_contact_from_mail_div_id'])) {
+						$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
+						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
+					}
+				}
+				
 				DB::commit();
 				
-
+				flash_success(lang('success add contact', $contact->getObjectName()));
+				ajx_current("back");
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -1064,27 +1079,11 @@ class ContactController extends ApplicationController {
 			
 			try {
 				if ($user) {
-					$user_data = $this->createUserFromContactForm($user, $contact->getId(), $contact_data['email'],isset($_POST['notify-user']));
-					
-					if (array_var($contact_data, 'isNewCompany') == 'true' && is_array(array_var($_POST, 'company'))){
-						ApplicationLogs::createLog($company, ApplicationLogs::ACTION_ADD);
-					}
-					ApplicationLogs::createLog($contact, ApplicationLogs::ACTION_ADD);
-					
 					// Send notification
-					send_notification($user_data, $contact->getId());
-					
-					if (isset($contact_data['new_contact_from_mail_div_id'])) {
-						$combo_val = trim($contact->getFirstName() . ' ' . $contact->getSurname() . ' <' . $contact->getEmailAddress('personal') . '>');
-						evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
-					}
-				}
-				flash_success(lang('success add contact', $contact->getObjectName()));
-				ajx_current("back");
-				
+					send_notification($user_data, $contact->getId());					
+				}				
 			} catch(Exception $e) {
-				flash_error($e->getMessage());
-				ajx_current("empty");
+				flash_error($e->getMessage());				
 			}
 
 		} // if

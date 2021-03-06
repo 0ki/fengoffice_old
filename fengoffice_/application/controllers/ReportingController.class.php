@@ -852,7 +852,7 @@ class ReportingController extends ApplicationController {
 			$filename = $this->generateCSVReport($report, $results);
 			ajx_current("empty");
 			ajx_extra_data(array('filename' => $filename));
-		}else if(array_var($_POST, 'exportPDF')){
+		}else if(array_var($_POST, 'exportPDF') && !is_exec_available()){
 			$this->generatePDFReport($report, $results);
 		}else{
 			tpl_assign('types', self::get_report_column_types($report_id));
@@ -866,6 +866,16 @@ class ReportingController extends ApplicationController {
 			tpl_assign('parameters', $params);
 			tpl_assign('id', $report_id);
 			tpl_assign('to_print', true);
+			
+			if (array_var($_POST, 'exportPDF')) {
+				tpl_assign('pdf_export', true);
+				$html_filename = ROOT.'/tmp/'.gen_id().'pdf.html';
+				$pdf_filename = $report->getObjectName() . '.pdf';
+				tpl_assign('html_filename', $html_filename);
+				tpl_assign('pdf_filename', $pdf_filename);
+				tpl_assign('orientation', array_var($_POST, 'pdfPageLayout') == 'L' ? 'Landscape' : 'Portrait');
+				ob_start();
+			}
 			$this->setTemplate('report_printer');
 		}
 	}
@@ -918,6 +928,7 @@ class ReportingController extends ApplicationController {
 				if ($k == 'object_type_id') continue;
 				$db_col = isset($results['columns'][$i]) && isset($results['db_columns'][$results['columns'][$i]]) ? $results['db_columns'][$results['columns'][$i]] : '';
 
+				$value = str_replace("\n", " ", $value);
 				$cell = format_value_to_print($db_col, html_to_text($value), ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($results['db_columns'], $k)) ? "Y-m-d" : user_config_option('date_format'));
 				if (function_exists('mb_internal_encoding')) {
 					$cell = iconv(mb_internal_encoding(),"UTF-8",html_entity_decode($cell ,ENT_COMPAT));
@@ -978,7 +989,17 @@ class ReportingController extends ApplicationController {
     	}
     	$k=0;
     	foreach ($maxValue as $str) {
-    		$col_title_len = $pdf->GetStringWidth(array_var($results['columns'], $k));
+    		$idx = 0;
+    		$col_title = "";
+    		foreach ($results['columns'] as $c) {
+    			if ($k == $idx) {
+    				$col_title = $c;
+    				break;
+    			} else {
+    				$idx++; 
+    			}
+    		}
+    		$col_title_len = $pdf->GetStringWidth($col_title);
     		$colMaxTextSize = max($pdf->GetStringWidth($str), $col_title_len);
     		$db_col = array_var($results['columns'], $k);
     		$colType = array_var($types, array_var($results['db_columns'], $db_col, ''), '');

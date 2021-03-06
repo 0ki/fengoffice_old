@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1.1
+	About Feng Office 2.7.1.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,7 +101,21 @@
 	
 	Changelog
 	=========
-			
+	
+	Since 2.7.1.3
+	----------------
+	bugfix: repeating events not displayed correctly
+	bugfix: checkmail function from cron fail if the mail have attachments
+	
+	Since 2.7.1.2
+	----------------
+	feature: Use "wkhtmltopdf" to convert custom reports to pdf
+	
+	Since 2.7.1.1
+	----------------
+	bugfix: When uploading a file greater than max size, the file is created but without content.
+	bugfix: If error occurs when uploading file always shows the same message 'Error uploading file'.
+	
 	Since 2.7.1
 	----------------
 	bugfix: removed "fo_" prefix from queries.
@@ -133,6 +147,12 @@
 
 	language: translation tool upgrade: Link to checklang tool to list missing langs foreach language file.
 	language: translation tool upgrade: Added search functionality (searchs in keys and values)
+	
+	Since 2.7.0.3
+	----------------
+	bugfix: Performance upgrade in initial loading.
+	bugfix: Workspaces, tags, etc. selectors upgraded.
+	bugfix: When editing permissions don't load information for hidden components, load data when expanding them.
 	
 	Since 2.7.0.2
 	----------------

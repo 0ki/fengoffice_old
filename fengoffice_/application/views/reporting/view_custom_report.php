@@ -1,4 +1,5 @@
 <?php
+	if (!isset($genid)) $genid = gen_id();
 	
 	if ($description != '') echo clean($description) . '<br/>';
 	$conditionHtml = '';
@@ -124,14 +125,26 @@
 		$i = 0; 
 ?>
 	<tr<?php echo ($isAlt ? ' style="background-color:#F4F8F9"' : "");?>>
-		<?php foreach($row as $k => $value) {
-				if ($k == 'object_type_id') continue;
-				$db_col = array_var($db_columns, array_var($columns, $k), '');
-			?>
-			<td style="padding-right:10px;"><?php echo (($k == 'link'?'':array_var($types, $k)) == 'DATETIME')? $value:format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format')) ?></td>
 		<?php
-				$i++; 
-			} ?>
+		foreach ($columns as $k => $col) {
+			if ($k == "0") $k = 'link';
+			if ($k == 'object_type_id') continue;
+			
+			$value = (is_numeric($k) ? array_var($row, $col) : array_var($row, $k));
+			
+			$db_col = (is_numeric($k) ? array_var($db_columns, $col) : $k);
+			?>
+			<td style="padding-right:10px;">
+			<?php 
+			$val_type = ($k == 'link' ? '' : array_var($types, $k));
+			$date_format = is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format');
+			
+			echo ($val_type == 'DATETIME') ? $value : format_value_to_print($db_col, $value, $val_type, array_var($row, 'object_type_id'), '', $date_format);
+			?>
+			</td>
+		<?php
+			$i++;
+		} ?>
 	</tr>
 <?php } ?>
 </table>
@@ -139,3 +152,9 @@
 <div style="margin-top: 10px;">
 <?php if (isset($pagination)) echo $pagination ?>
 </div>
+<?php
+	if (isset($pdf_export) && $pdf_export) {
+		$html = ob_get_clean();
+		file_put_contents($html_filename, $html);
+	}
+?>

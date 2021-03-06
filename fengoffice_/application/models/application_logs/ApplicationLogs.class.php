@@ -265,10 +265,19 @@ class ApplicationLogs extends BaseApplicationLogs {
 			
 			$is_member_child = "AND mem.parent_member_id IN (" . implode ( ',', $members ) . ")";
 		}
+		
+		//permissions
+		$logged_user_pgs = implode(',', logged_user()->getPermissionGroupIds());
+			
+		$permissions_condition = "al.rel_object_id IN (
+		SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
+		WHERE al.rel_object_id = sh.object_id
+		AND sh.group_id  IN ($logged_user_pgs)
+		)";
 
 		
-		$sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al INNER JOIN ".TABLE_PREFIX."sharing_table st ON st.object_id=al.rel_object_id
-				WHERE EXISTS (SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE st.group_id=permission_group_id and contact_id = ".logged_user()->getId().") AND $extra_conditions";
+		$sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al 
+				WHERE $permissions_condition AND $extra_conditions";
 		if ($members_sql != "") {
 			$sql .= " AND $members_sql";
 		}

@@ -262,7 +262,7 @@ class MailUtilities {
 				}
 			} else {
 				if ($state == 0) {
-					if ($from == $account->getEmailAddress()) {
+					if (strtolower($from) == strtolower($account->getEmailAddress())) {
 						if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
 						else $state = 1; //Show only in sent folder
 					}

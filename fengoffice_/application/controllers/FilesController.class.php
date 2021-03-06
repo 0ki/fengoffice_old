@@ -581,9 +581,10 @@ class FilesController extends ApplicationController {
 			$object_controller = new ObjectController();
 			//$member_ids = json_decode(array_var($_POST, 'members'));
 		
-			//Add properties
-			$object_controller->add_to_members($file, $member_ids);
-				
+			if (count($member_ids) > 0 || !array_var($file_data, 'composing_mail')) {
+				$object_controller->add_to_members($file, $member_ids);
+			}
+			
 			//If New file 
 			if($upload_option == -1){
 				//Add links
@@ -591,16 +592,17 @@ class FilesController extends ApplicationController {
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);								
 			}
-				
+			
 			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);
 			return $file->getId();
 		}catch(Exception $e) {
 			Logger::log("Error when uploading file: ".$e->getMessage()."\n".$e->getTraceAsString());
 				// If we uploaded the file remove it from repository
-				if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
-					FileRepository::deleteFile($revision->getRepositoryId());
-				} // if
-			} // try
+			if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+				FileRepository::deleteFile($revision->getRepositoryId());
+			} // if
+			throw $e;
+		} // try
 		
 	} // add_file
 	
@@ -710,6 +712,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('genid', array_var($_GET, 'genid'));
 		tpl_assign('object_id', array_var($_GET, 'object_id'));
 		tpl_assign('new_rev_file_id', array_var($_GET, 'new_rev_file_id'));
+		tpl_assign('composing_mail', array_var($_GET, 'composing_mail'));
 			
 		if (is_array(array_var($_POST, 'file'))) {
 			//$this->setLayout("html");
@@ -839,7 +842,8 @@ class FilesController extends ApplicationController {
 		tpl_assign('file_data', $file_data);
 		tpl_assign('genid', array_var($_GET, 'genid'));
 		tpl_assign('object_id', array_var($_GET, 'object_id'));
-			
+		tpl_assign('composing_mail', array_var($_GET, 'composing_mail'));
+		
 		if (is_array(array_var($_POST, 'file'))) {
 			//$this->setLayout("html");
 			$upload_option = array_var($file_data, 'upload_option',-1);
@@ -874,6 +878,9 @@ class FilesController extends ApplicationController {
 				$file_ids = array();
 				if (isset($uploaded_file['name']) && is_array($uploaded_file['name'])) {
 					foreach ($uploaded_file['name'] as $key => $file_name) {
+						if (count($uploaded_file['name']) == 1 && array_var($file_data, 'name') != "" && array_var($file_data, 'name') != $file_name) {
+							$file_name = array_var($file_data, 'name');
+						}
 						$file_data_mult = $file_data;
 						$file_data_mult['name'] = $file_name;
 						$uploaded_file_mult['name'] = $file_name;

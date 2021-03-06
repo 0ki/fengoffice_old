@@ -39,7 +39,11 @@ table {
 </div>
 </div>
 
+<?php 	if (!isset($pdf_export) || !$pdf_export) : ?>
 <script>
 window.print();
 </script>
+<?php 	else : ?>
+<?php  		pdf_convert_and_download($html_filename, $pdf_filename, $orientation); ?>
+<?php 	endif; ?>
 <?php endif; ?>

@@ -27,6 +27,7 @@ $object = $file;
 	<input id="<?php echo $genid ?>member_ids" name="file[member_ids]" value="" type="hidden" />
 	
 	<input id="<?php echo $genid ?>subscribers" name="subscribers[user_<?php echo logged_user()->getId()?>]" value="checked" type="hidden" />
+	<input id="<?php echo $genid ?>composing_mail" name="file[composing_mail]" value="<?php echo (isset($composing_mail) && $composing_mail ? '1':'0')?>" type="hidden" />
 	
 
 <?php if ($file->isNew()) {?>

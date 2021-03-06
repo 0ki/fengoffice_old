@@ -522,6 +522,11 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 	},
 	
 	init: function ( callback  ) {
+		new Ext.tree.TreeSorter(this, {
+		    dir: "asc",
+		    property: "text"		   
+		});
+		
 		switch (this.expandMode) {
 			case "all":
 				this.expandAll(callback);
@@ -679,14 +684,14 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 						}
 					}	    				
 					dimension_tree.innerCt.unmask();
-					dimension_tree.suspendEvents();
+					//dimension_tree.suspendEvents();
 					var n = dimension_tree.getNodeById(data.member_id);
 					if(n){
 						if (n.parentNode) dimension_tree.expandPath(n.parentNode.getPath(), false);
 						n.select();
 						og.eventManager.fireEvent('member tree node click', n);
 					}
-					dimension_tree.resumeEvents();
+					//dimension_tree.resumeEvents();
 				}
 			});
 		}

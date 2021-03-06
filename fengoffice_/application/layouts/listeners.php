@@ -336,4 +336,16 @@ og.eventManager.addListener('new document add save as button',
 		if (button2) button2.setText(lang('save as', '<b>'+data.name+'</b>'));
 	}
 );
+
+og.eventManager.addListener('download_tmp_file',
+	function (data){
+		var $form = $("<form></form>");
+		$form.attr("action", og.getUrl('reporting', 'download_file'));
+		$form.attr("method", "post");
+		$form.append('<input type="text" name="file_name" value="'+data.file_name+'" />');
+		$form.append('<input type="text" name="file_type" value="'+data.file_type+'" />');
+		
+		$form.appendTo('body').submit().remove();
+	}
+);
 </script>

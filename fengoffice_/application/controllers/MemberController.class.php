@@ -498,7 +498,7 @@ class MemberController extends ApplicationController {
 			}
 			
 			// add custom properties
-			if (Plugins::instance()->isActivePlugin('crpm')) {
+			if (Plugins::instance()->isActivePlugin('member_custom_properties')) {
 				$mcp_controller = new MemberCustomPropertiesController();
 				$mcp_controller->add_custom_properties($member);
 			}

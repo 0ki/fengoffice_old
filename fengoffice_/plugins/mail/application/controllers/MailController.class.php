@@ -1664,7 +1664,7 @@ class MailController extends ApplicationController {
 						$file->addToMembers($members);
 						
 						// fill sharing table in background
-						add_object_to_sharing_table($file, logged_user());
+						add_object_to_sharing_table($file, $account_owner);
 						//$file->addToSharingTable();
 
 						$enc = array_var($parsedMail,'Encoding','UTF-8');
@@ -2151,7 +2151,7 @@ class MailController extends ApplicationController {
 					  	foreach ($checks as $name => $checked) {
 					  		$name = str_replace(array('¡','!'), array('[',']'), $name);//to avoid a mistaken array if name contains [
 					  		$names[] = $name;
-					  		$imap_folder = MailAccountImapFolders::instance()->findOne(array('conditions' => array('folder_name = ?', $name)));
+					  		$imap_folder = MailAccountImapFolders::instance()->findOne(array('conditions' => array('folder_name = ? AND account_id = ?', $name,$mailAccount->getId())));
 					  		if (!$imap_folder instanceof MailAccountImapFolder) {
 					  			$imap_folder = new MailAccountImapFolder();
 					  			$imap_folder->setAccountId($mailAccount->getId());

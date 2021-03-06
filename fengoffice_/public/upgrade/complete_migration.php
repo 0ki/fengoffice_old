@@ -124,6 +124,8 @@ foreach ($objects as $obj) {
 		}
 		$cant++;
 		
+	} else {
+		$processed_objects[] = $cobj->getId();
 	}
 	$cobj = null;
 }

@@ -240,7 +240,7 @@ og.removeMailAttachment = function(attachment) {
 
 og.attachFromFileSystem = function(genid, account_member_id) {
  	var quickId = Ext.id();
- 	og.openLink(og.getUrl('files', 'quick_add_files', { genid: quickId}), {
+ 	og.openLink(og.getUrl('files', 'quick_add_files', { genid: quickId, composing_mail:1}), {
 		preventPanelLoad: true,
 		onSuccess: function(data) {
 			og.ExtendedDialog.show({

@@ -640,10 +640,10 @@ class Reports extends BaseReports {
 	static function getReportPagination($report_id, $params, $order_by='', $order_by_asc=true, $offset, $limit, $total){
 		if($total == 0) return '';
 		$a_nav = array(
-			'<span class="x-tbar-page-first" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-prev" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-next" style="padding-left:16px"/>', 
-			'<span class="x-tbar-page-last" style="padding-left:16px"/>'
+			'<span class="x-tbar-page-first" style="padding-left:12px">&nbsp;</span>', 
+			'<span class="x-tbar-page-prev" style="padding-left:12px">&nbsp;</span>', 
+			'<span class="x-tbar-page-next" style="padding-left:12px">&nbsp;</span>', 
+			'<span class="x-tbar-page-last" style="padding-left:12px">&nbsp;</span>'
 		);
 		$page = intval($offset / $limit);
 		$totalPages = ceil($total / $limit);

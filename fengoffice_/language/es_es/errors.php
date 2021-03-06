@@ -136,4 +136,13 @@
   
   	'uploaded file bigger than max upload size' => 'Está intentando subir un documento que es mayor a su límite de tamaño que es {0}.',
   	'date format error' => 'La fecha de inicio o fin ingresada es incorrecta, el formato correcto es "{0}", por favor use este formato o cambie el mismo en sus preferencias de usuario.',
+	
+
+	'upload error msg UPLOAD_ERR_INI_SIZE' => 'El tamaño del archivo excede el máximo permitido ({0}).',
+	'upload error msg UPLOAD_ERR_FORM_SIZE' => 'El tamaño del archivo excede el máximo permitido ({0}).',
+	'upload error msg UPLOAD_ERR_PARTIAL' => 'El archivo fue parcialmente cargado.',
+	'upload error msg UPLOAD_ERR_NO_FILE' => 'No se pudo cargar el archivo.',
+	'upload error msg UPLOAD_ERR_NO_TMP_DIR' => 'No se pudo cargar el archivo, no se encuentra directorio temporal.',
+	'upload error msg UPLOAD_ERR_CANT_WRITE' => 'No se pudo guardar el archivo en el disco.',
+	'upload error msg UPLOAD_ERR_EXTENSION' => 'Una extensión de PHP no permitió cargar el archivo.',
 );

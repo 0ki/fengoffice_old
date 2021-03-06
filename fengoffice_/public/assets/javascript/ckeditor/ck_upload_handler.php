@@ -3,7 +3,7 @@
 	$iname = $exp[1];
 	
 	define('CONSOLE_MODE', true);
-	define('APP_ROOT', realpath(dirname(__FILE__) . "/../../../../../$iname"));
+	define('APP_ROOT', realpath(dirname(__FILE__) . "/../../../.."));
 	define('TEMP_PATH', realpath(APP_ROOT . '/tmp/'));
 	
 	// Include library

@@ -9,14 +9,6 @@
 	
 	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($object->getObjectTypeId());
 	
-	$address = $object->getAddress('work');
-	if($address){
-	$data = array('phone' => $object->getPhoneNumber('work',true), 'fax' => $object->getPhoneNumber('fax',true), 'adress' => $address->getStreet(),
-				  'state' =>$address->getState(),'zipCode' =>$address->getZipCode(),'web' => $object->getWebpageURL('work'),'city' => $address->getCity());
-	}else{
-		$data = array('phone' => $object->getPhoneNumber('work',true), 'fax' => $object->getPhoneNumber('fax',true),'web' => $object->getWebpageURL('work'));
-	}
-	$data_js = json_encode($data);
 ?>
 
 <form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
@@ -116,7 +108,7 @@
 			<div>
 				<div id="<?php echo $genid ?>existing_company">
 					<?php echo label_tag(lang('company'), $genid.'profileFormCompany') ?> 
-					<?php echo select_box('contact[company_id]', array(), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\', '.$data_js.')'))?>
+					<?php echo select_box('contact[company_id]', array(), array('id' => $genid.'profileFormCompany', "class" => "og-edit-contact-select-company", 'onchange' => 'og.companySelectedIndexChanged(\''.$genid . '\')'))?>
 					<span class="widget-body loading" id="<?php echo $genid?>profileFormCompany-loading" style="heigth:20px;background-color:transparent;border:0px none;display:none;"></span>
 					<a href="#" class="coViewAction ico-add" title="<?php echo lang('add a new company')?>" onclick="og.addNewCompany('<?php echo $genid ?>')"><?php echo lang('add company') . '...' ?></a>
 				</div>
@@ -410,7 +402,7 @@
 
 			<?php foreach (array_var($contact_data, 'all_addresses') as $address) { ?>
 				og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'contact', '<?php echo $address->getAddressTypeId()?>', {
-					street: '<?php echo $address->getStreet()?>',
+					street: '<?php echo str_replace("\n", " ", $address->getStreet())?>',
 					city: '<?php echo $address->getCity()?>',
 					state: '<?php echo $address->getState()?>',
 					zip_code: '<?php echo $address->getZipCode()?>',

@@ -174,17 +174,17 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 					$member_parents[$member->getId()] = $member->getAllParentMembersInHierarchy(false, false);
 				}
 
-				$object_members = ObjectMembers::findAll(array('conditions' => 'is_optimization=0 and not exists (SELECT x.object_id FROM '.$t_prefix.'object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)'));
+				$object_members = DB::executeAll('SELECT * FROM '.$t_prefix.'object_members WHERE is_optimization=0 and not exists (SELECT x.object_id FROM '.$t_prefix.'object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)');
 				foreach ($object_members as $om) {
-					$parents = isset($member_parents[$om->getMemberId()]) ? $member_parents[$om->getMemberId()] : array();
+					$parents = isset($member_parents[$om['member_id']]) ? $member_parents[$om['member_id']] : array();
 					if (count($parents) > 0) {
 						$sql_values = "";
 						foreach ($parents as $p) {
-							$sql_values .= ($sql_values == "" ? "" : ",") . "(".$om->getObjectId().",".$p->getId().",1)";
+							$sql_values .= ($sql_values == "" ? "" : ",") . "(".$om['object_id'].",".$p->getId().",1)";
 						}
 						$sql = "INSERT INTO ".$t_prefix."object_members (object_id, member_id, is_optimization) VALUES $sql_values ON DUPLICATE KEY UPDATE is_optimization=1;";
                 		DB::execute($sql);
-        			}
+					}
 				}
 				$this->printMessage("Finished generating Object Members");
 				

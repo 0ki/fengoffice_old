@@ -131,14 +131,14 @@ og.config.quick_add_task_combos = <?php
 			$dim = Dimensions::instance()->getDimensionById($dimension_id);
 			if($dim instanceof Dimension){
 				if($key!=0) $object .=",";
-				$object .= "{name : '". $dim->getName()."', desc : '".lang('add new relation ' . $dim->getCode())."'}";
+				$object .= "{name : '". $dim->getName()."', desc : '".str_replace("'", "\'", lang('add new relation ' . $dim->getCode()))."'}";
 			}
-		}		
+		}
 		echo "[".$object."]";
 ?>;
-var task_ids = <?php echo json_encode($ids)?>;
+var ogTasks.task_ids = <?php echo json_encode($ids)?>;
 ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
-if (!task_ids) task_ids = [];
+if (!ogTasks.task_ids) ogTasks.task_ids = [];
 </script>
 
 <div id="taskPanelHiddenFields">
@@ -229,7 +229,7 @@ if (!task_ids) task_ids = [];
 
 		ogTasks.draw();
 
-		ogTasks.loadAllDescriptions(task_ids);
+		ogTasks.loadAllDescriptions(ogTasks.task_ids);
 
 	}, mili);
 

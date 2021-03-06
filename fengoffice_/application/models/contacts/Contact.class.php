@@ -748,7 +748,7 @@ class Contact extends BaseContact {
 	 */
 	function getContactsByCompany() {
 		return Contacts::findAll(array(
-			'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` = 0 AND `disabled` = 0', 
+			'conditions' => '`company_id` = ' . $this->getId(). ' AND `user_type` = 0 AND `disabled` = 0 AND trashed_by_id=0', 
 			'order' => '`first_name` ASC, `surname` ASC'
 		)); // findAll
 	} // getContactsByCompany

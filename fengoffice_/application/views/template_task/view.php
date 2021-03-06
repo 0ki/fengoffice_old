@@ -113,5 +113,5 @@ $this->includeTemplate(get_template_path('view', 'co'));
 <?php } //if isset ?>
 
 <script>
-  App.modules.addTaskForm.hideAllAddTaskForms();
+if (typeof(App.modules.addTaskForm.hideAllAddTaskForms) == 'function') App.modules.addTaskForm.hideAllAddTaskForms();
 </script>

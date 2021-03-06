@@ -361,6 +361,8 @@ class ProjectEvent extends BaseProjectEvent {
 					$date = $date->add('M', $this->getRepeatM());
 				} else if ($this->getRepeatY() > 0) { 
 					$date = $date->add('y', $this->getRepeatY());
+				} else if ($this->getRepeatH() > 0) { 
+					$date = $date->add('M', $this->getRepeatMjump());
 				}
 				$count++;
 			}
@@ -395,8 +397,11 @@ class ProjectEvent extends BaseProjectEvent {
 			$event->setNew(false);
 			$event->setInvitations($this->getInvitations());
 			
-			$instances[] = $event;
+			if (!$event->getRepeatH() > 0){
+				$instances[] = $event;
+			}
 			$num_repetitions = 0;
+
 			while ($ref_date->getTimestamp() < $to_date->getTimestamp()) {
 				if (!($event->getStart() instanceof DateTimeValue)) return $instances;
 				
@@ -445,6 +450,55 @@ class ProjectEvent extends BaseProjectEvent {
 					if ($new_due_date instanceof DateTimeValue)
 						$new_due_date = $new_due_date->add('y', $event->getRepeatY());
 					$ref_date->add('y', $event->getRepeatY());
+				}
+				else if ($event->getRepeatH() > 0) {
+					$ordinal = 'first ';
+					switch ($event->getRepeatWnum()) {
+						case 1:
+							$ordinal = "first ";
+							break;
+						case 2:
+							$ordinal = "second ";
+							break;
+						case 3:
+							$ordinal = "third ";
+							break;
+						case 4:
+							$ordinal = "fourth ";
+							break;
+					}
+					
+					$days = array("0" => 'sunday ',"1" => 'monday ' , "2" => 'tuesday ',
+							"3" => 'wednesday ',"4" => 'thursday ',"5" => 'friday ',
+							"6" => 'saturday ');
+					$day_name = $days[$event->getRepeatDow()-1];
+					
+					if ($new_st_date instanceof DateTimeValue){		
+						//set first day of the month
+						$new_st_date->setDay(1);
+						
+						//date string
+						$new_st_date_string = date("c", $new_st_date->getTimestamp());
+						
+						//go to the fixed day
+						$new_st_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name . $new_st_date_string)));
+						
+						$new_st_date = new DateTimeValue($new_st_date_fixed->getTimestamp());						
+					}
+					if ($new_due_date instanceof DateTimeValue){
+						//set first day of the month
+						$new_due_date->setDay(1);
+						
+						//date string
+						$new_due_date_string = date("c", $new_due_date->getTimestamp());
+						
+						//go to the fixed day
+						$new_due_date_fixed = new DateTime(date("c", strtotime($ordinal . $day_name . $new_due_date_string)));
+						
+						$new_due_date = new DateTimeValue($new_due_date_fixed->getTimestamp());
+					}
+					
+					$ref_date->add('M', $event->getRepeatMjump());									
 				}
 				
 				if ($new_st_date instanceof DateTimeValue) $new_event->setStart($new_st_date);

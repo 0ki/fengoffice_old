@@ -82,14 +82,14 @@ $(function(){
 	}, this);
 	
 	og.eventManager.addListener('before tab panel construct',function(tabConfig){
-		if (tabConfig.id == "overview-panel" ){
+	//	if (tabConfig.id == "overview-panel" ){
 			if (og.queryString != "" && og.queryString != "c=access&a=index"  ){
 				tabConfig.initialContent = {
 					type:"url", 
 					data: og.initialURL 
 				};
 			}
-		}
+	//	}
 	});
 	
 });

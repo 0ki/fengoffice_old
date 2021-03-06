@@ -103,7 +103,11 @@ function mail_do_mark_as_read_unread_objects($ids_to_mark, $read) {
 			$folder_name = $key;
 			$uids = $folder;
 			if(!empty($folder_name)){
-				MailUtilities::setReadUnreadImapMails($account, $folder_name, $uids, $read);
+				try {
+					MailUtilities::setReadUnreadImapMails($account, $folder_name, $uids, $read);
+				} catch (Exception $e) {
+					Logger::log("Could not set mail as read on mail server, exception:\n".$e->getMessage());
+				}
 			}
 		}
 		

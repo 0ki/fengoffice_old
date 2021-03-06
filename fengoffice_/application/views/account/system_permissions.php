@@ -17,7 +17,7 @@
 						$attributes['onclick'] = 'return false;';
 						$attributes['class'] = 'disabled';
 					}
-					echo checkbox_field('sys_perm['.$column_name.']', $system_permissions->getColumnValue($column_name), $attributes) ?> 
+					echo checkbox_field('sys_perm['.$column_name.']', $system_permissions instanceof SystemPermission ? $system_permissions->getColumnValue($column_name) : false, $attributes) ?>
 			      <label for="<?php echo $genid . 'sys_perm['.$column_name.']' ?>" class="checkbox"><?php echo lang($column_name) ?></label>
 			      <a class="help-sign" href="javascript:og.toggle('<?php echo $genid . $column_name ?>_help')">?</a>
 			      <div id="<?php echo $genid . $column_name ?>_help" class="permissions-help" style="display:none"><?php echo lang($column_name . ' description') ?></div>

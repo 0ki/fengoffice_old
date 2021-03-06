@@ -466,7 +466,8 @@ abstract class ContentDataObjects extends DataManager {
 					AND sh.group_id  IN ($logged_user_pgs)
 			)";
 			
-			if (!$this instanceof MailContents && logged_user()->isAdministrator() || ($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
+			if (!$this instanceof MailContents && !$this instanceof ProjectFiles && logged_user()->isAdministrator() || 
+					($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
 				$permissions_condition = "true";
 			}
 			

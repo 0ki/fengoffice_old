@@ -131,7 +131,7 @@ class Contacts extends BaseContacts {
 	 * @return array
 	 */
 	static function getGroupedByCompany($include_disabled = true) {
-		$companies = self::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)"));
+		$companies = self::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 ".($include_disabled ? "" :"AND disabled=0").")"));
 		if(!is_array($companies) || !count($companies)) {
 			//return null;
 		}
