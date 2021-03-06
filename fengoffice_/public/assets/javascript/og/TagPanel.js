@@ -8,6 +8,9 @@ og.TagPanel = function(config) {
 		iconCls: 'ico-tags',
 		title: lang('tags'),
 		region: 'south',
+		border: false,
+		style: 'border-top-width: 1px',
+		bodyBorder: false,
 		collapsible: true,
 		layout: 'fit',
 		items: [this.tree],
@@ -57,6 +60,8 @@ og.TagTree = function(config) {
 		autoScroll: true,
 		rootVisible: false,
 		lines: false,
+		border: false,
+		bodyBorder: false,
 		root: new Ext.tree.TreeNode(lang('tags')),
 		collapseFirst: false,
 		tbar: [{

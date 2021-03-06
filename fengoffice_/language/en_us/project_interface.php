@@ -6,7 +6,7 @@ return array(
     'show all upcoming milestones' => 'Show all upcoming milestones (total {0})',
 
     'recent activities' => 'Recent activities',
-    'search button caption' => 'Go',
+    'search button caption' => 'Search',
     'search result description' => 'Displaying <strong>{0} of {1}</strong> objects that match <strong>"{2}"</strong>',
     'search result description short' => '{0} to {1} of {2}',
 
@@ -14,7 +14,7 @@ return array(
 	'edit this file' => 'Edit this file',
 	'file contents' => 'File contents',
 
-    'important message desc' => 'Important messages are listed in the "Important messages" sidebar on the workspace messages page',
+    'important message desc' => 'Important notes are listed in the "Important notes" sidebar on the workspace notes page',
     'important file desc' => 'Important files are listed in the sidebar of files section in "Important files" block',
     'enable comments' => 'Enable comments',
     'enable comments desc' => 'Users that can view this object can post comments on it. Select "No" to lock comments',
@@ -37,6 +37,7 @@ return array(
     'revisions on file' => '{0} revision(s)',
     
     'message posted on by linktitle' => 'Posted on {0} by {1}',
+	'comment posted on by linktitle' => 'Posted on {0} by {1}',
     'message posted on by' => 'Posted on {0} by <a class="internalLink" href="{1}">{2}</a>',
     'comment posted on' => 'Posted on {0}',
     'comment posted on by' => 'Posted on {0} by <a class="internalLink" href="{1}">{2}</a>',
@@ -64,22 +65,22 @@ return array(
 
     'project permissions form hint' => 'Using <a class="internalLink" href="{0}">permissions form</a> you can easily add or remove companies and users and control their access permissions.',
 
-    'additional message text desc' => 'Additional message text is visible only on comments page',
+    'additional message text desc' => 'Additional note text is visible only on comments page',
     'expand additional text' => 'Expand',
     'collapse additional text' => 'Collapse',
     'email notification' => 'Email notification',
-    'email notification desc' => 'Notify selected people about this message via email',
+    'email notification desc' => 'Notify and subscribe selected people to this note via email',
 	'assign milestone task list desc' => 'The task can be assigned to an existing milestone',
 	
     'link existing object' => 'Link existing object (from Files section)',
     'upload and link' => 'Upload new file and attach it to object',
     'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the approriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
 
-    'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this message',
+    'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this object',
     'admins can post comments on locked objects desc' => '<strong>Comments are locked</strong>, but you as administrator still have the permissions to post comments. Note that if you expect replies from your clients and non-admin users you need to unlock comments for this object <i>(set "Enable comments" option to "Yes")</i>.',
 
     'all permissions' => 'All',
-    'can manage messages' => 'Manage messages',
+    'can manage messages' => 'Manage notes',
     'can manage tasks' => 'Manage tasks',
     'can manage milestones' => 'Manage milestones',
     'can upload files' => 'Upload files',
@@ -143,7 +144,7 @@ return array(
     'icalendar password change notice' => '<strong>Note:</strong> if you change your password the link to the calendar data will also change! You\'ll need to resubscribe.',
 
 // Add project form
-    'success message' => 'Success message',
+    'success message' => 'Success note',
     'project form action' => 'Action',
     'project form action add comment' => 'Add comment',
     'project form action add task' => 'Add task',
@@ -155,7 +156,7 @@ return array(
     'add task to list short' => 'to',
 
 // Private
-    'private message desc' => 'Private messages are visible only to owner company members. Members of client companies will not be able to see them.',
+    'private message desc' => 'Private notes are visible only to owner company members. Members of client companies will not be able to see them.',
     'private webpage desc' => 'Private web links are visible only to owner company members. Members of client companies will not be able to see them.',
     'private milestone desc' => 'Private milestones are visible only to owner company members. Members of client companies will not be able to see them.',
     'private task list desc' => 'Private tasks are visible only to owner company members. Members of client companies will not be able to see them.',
@@ -254,7 +255,10 @@ return array(
 
 	'show all' => 'Show all',
 
-	'unassigned' => 'Unassigned'
+	'unassigned' => 'Unassigned',
+	'latest comments' => 'Latest comments',
+	'include unworked pending tasks' => 'Include unworked pending tasks',
+	'unworked pending tasks' => 'Unworked pending tasks',
 ); // array
 
 ?>

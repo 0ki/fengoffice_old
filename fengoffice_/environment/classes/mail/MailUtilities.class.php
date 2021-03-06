@@ -6,7 +6,7 @@ class MailUtilities
 		if ($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]);
 		if (is_null($accounts))
 			$accounts = MailAccounts::findAll();
-			
+		
 		$err = 0;
 		$succ = 0;
 		$errAccounts = array();
@@ -15,23 +15,26 @@ class MailUtilities
 		if (isset($accounts)){
 			foreach($accounts as $account){
 				try{
-					$accId = $account->getId();
-					$emails = array();
-					if (!$account->getIsImap())
-					{
-						if (!$account->getIncomingSsl())
-							$emails[$accId] = self::getNewPOP3Mails($account);
-					}
-					
-					if (isset($emails[$accId]) && isset($emails[$accId]['downloads']))
-						for ($i = 0; $i < count($emails[$accId]['downloads']); $i++)
+					do {
+						sleep(1);
+						$accId = $account->getId();
+						$emails = array();
+						if (!$account->getIsImap())
 						{
-							$email = $emails[$accId];
-							self::SaveMail($email['downloads'][$email['messages'][$i]],
-						 					$account, $email['uidls'][$i]);
-						 	$mailsReceived ++;
+							if (!$account->getIncomingSsl())
+								$emails[$accId] = self::getNewPOP3Mails($account);
 						}
-					$succ++;
+						
+						if (isset($emails[$accId]) && isset($emails[$accId]['downloads'])) 
+							for ($i = 0; $i < count($emails[$accId]['downloads']); $i++)
+							{
+								$email = $emails[$accId];
+								self::SaveMail($email['downloads'][$email['messages'][$i]],
+							 					$account, $email['uidls'][$i]);
+							 	$mailsReceived ++;
+							}
+						$succ++;
+					} while ($mailsReceived > 0);
 				}
 				catch(Exception $e)
 				{
@@ -68,16 +71,27 @@ class MailUtilities
 	{
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 		
+		if (isset($parsedMail['Subject'])) {
+		//if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
+		//if (!isset($parsedMail['HeaderPositions'])) $parsedMail['HeaderPositions'] = array();
+		
 		$mail = new MailContent();
 		$mail->setAccountId($account->getId());
 		$mail->setContent($content);
 		$mail->setFrom(self::getAddresses(array_var($parsedMail,"From")));
 
-		$mail->setFromName(iconv($parsedMail['Encoding'],'UTF-8',array_var(array_var(array_var($parsedMail,'From'),0),'name')));
+		if(array_key_exists('Encoding',$parsedMail)){
+			$mail->setFromName(iconv($parsedMail['Encoding'],'UTF-8',array_var(array_var(array_var($parsedMail,'From'),0),'name')));
+			$mail->setSubject(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Subject']));
+		}
+		else{
+			$mail->setFromName(array_var(array_var(array_var($parsedMail,'From'),0),'name'));
+			$mail->setSubject($parsedMail['Subject']);
+		}
 		$mail->setTo(self::getAddresses(array_var($parsedMail,"To")));
-
-		$mail->setSubject(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Subject']));
-		$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
+		if(array_key_exists("Date",$parsedMail)){
+			$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
+		}
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
 		$mail->setCreatedOn(new DateTimeValue(time()));
@@ -113,6 +127,7 @@ class MailUtilities
 		catch(Exception $e)
 		{
 			DB::rollback();
+		}
 		}
 	}
 
@@ -171,8 +186,9 @@ class MailUtilities
 		$messagesToGet = self::getPOP3MessageList($pop3, $account);
 		if(!empty($messagesToGet["messages"]))
 			$messagesToGet['downloads'] = $pop3->getMails($messagesToGet["messages"]);
-
+		
 		$pop3->quit();
+
 		return $messagesToGet;
 	}
 	

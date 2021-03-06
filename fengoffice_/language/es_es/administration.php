@@ -70,12 +70,13 @@
   	'can manage contacts' => 'Puede modificar y editar contactos',
   	'group users' => 'Agrupar usuarios',
     
-  	'user ws config category name dashboard' => 'Opciones del panel de visión',
+  	'user ws config category name dashboard' => 'Opciones del panel de resumen',
   	'user ws config category name task panel' => 'Opciones del panel de tareas',
   	'user ws config option name show pending tasks widget' => 'Mostrar widget de tareas pendientes',
   	'user ws config option name pending tasks widget assigned to filter' => 'Mostrar tareas asignadas a',
   	'user ws config option name show late tasks and milestones widget' => 'Mostrar widget de hitos y tareas atrasadas',
-  	'user ws config option name show messages widget' => 'Mostrar widget mensajes',
+  	'user ws config option name show messages widget' => 'Mostrar widget notas',
+  	'user ws config option name show comments widget' => 'Mostrar widget comentarios',
   	'user ws config option name show documents widget' => 'Mostrar widget de documentos',
   	'user ws config option name show calendar widget' => 'Mostrar widget de calendario',
   	'user ws config option name show charts widget' => 'Mostrar widget de graficas',
@@ -87,6 +88,21 @@
   	'user ws config option name can notify from quick add' => 'Checkbox de notificación en vista de ingreso rápido',
   	'user ws config option desc can notify from quick add' => 'Se habilita un checkbox para poder notificar al usuario asignado cuando se usa el formulario de ingreso rápido de tareas',
 
+    
+  	'backup process desc' => 'Un respaldo almacena el estado de toda la aplicación en un archivo comprimido. Pretende ser una forma rápida de obtener un respaldo de una instalación de OpenGoo. <br> Generar un respaldo puede demorar más que unos segundos, por lo que el proceso de respaldo consiste en 3 pasos: <br>1.- Iniciar un proceso de respaldo, <br>2.- Desargar el respaldo. <br> 3.- Opcional. Eliminar el respaldo del servidor. <br> ',
+  	'start backup' => 'Iniciar proceso de respaldo',
+    'start backup desc' => 'Iniciar un proceso de respaldo implica eliminar respaldos anteriores y generar uno nuevo.',
+  	'download backup' => 'Descargar respaldo',
+    'download backup desc' => 'Para poder descargar un respaldo es necesario iniciar el proceso primero.',
+  	'delete backup' => 'Borrar respaldo',
+    'delete backup desc' => 'Elimina el ultimo respaldo, para que no este disponible para descarga. Se recomienda borrar los respaldos luego de descargarlos.',
+    'backup' => 'Respaldo',
+    'backup menu' => 'Menú de respaldos',
+   	'last backup' => 'El ultimo respaldo fue creado en',
+   	'no backups' => 'No hay respaldos para descargar',
+   	'user ws config option name always show unread mail in dashboard' => 'Siempre mostrar correo no leído en la vista de resumen',
+   	'user ws config option desc always show unread mail in dashboard' => 'Al seleccionar NO sólo se mostraran los correos del espacio de trabajo activo',
+  	'workspace emails' => 'Correos del espacio de trabajo',
   ); // array
 
 ?>

@@ -22,7 +22,7 @@
 	<fieldset><legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>file_contents',this)"><?php echo lang('file contents') ?></legend>
 	<div id="<?php echo $genid ?>file_contents" style="display:none">
 		<?php if ($file->getTypeString() == "text/html"){
-			echo $file->getFileContent();
+			echo escape_css($file->getFileContent(), "$genidfile_contents");
 		} else if ($file->getTypeString() == "text/xml"){
 			echo nl2br(htmlEntities($file->getFileContent() ));
 		} else {
@@ -31,8 +31,15 @@
 }?></div>
 	</fieldset><br/>
 <?php } // if ?> 
-	
-    
+
+<?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
+	<div>
+		<a href="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true)); ?>" target="_blank" title="<?php echo lang('show image in new page') ?>">
+			<img id="<?php echo $genid ?>Image" src="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true)); ?>" style="max-width:450px;max-height:500px"/>
+		</a>
+	</div>
+<?php }?>
+
     <fieldset>
   <legend class="toggle_expanded" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
 <div id="revisions">
@@ -63,3 +70,29 @@
 <?php } // foreach ?>
 </div>
 </fieldset>
+<script type="text/javascript">
+function resizeImage(genid){
+	var image = document.getElementById(genid + 'Image');
+	if (image){
+		var width = (navigator.appName == "Microsoft Internet Explorer")? image.parentNode.parentNode.offsetWidth : image.parentNode.parentNode.clientWidth;
+		
+		image.style.maxWidth = (width - 20) + "px";
+		image.style.maxHeight = (width - 20) + "px";
+	}
+}
+resizeImage('<?php echo $genid ?>');
+function resizeSmallImage(genid){
+	var image = document.getElementById(genid + 'Image');
+	if (image){
+		image.style.maxWidth = "1px";
+		image.style.maxHeight = "1px";
+	}
+}
+function resizeImage<?php echo $genid ?>(){
+	resizeSmallImage('<?php echo $genid ?>');
+	setTimeout('resizeImage("<?php echo $genid ?>")',50);
+}
+
+window.onresize = resizeImage<?php echo $genid ?>;
+
+</script>

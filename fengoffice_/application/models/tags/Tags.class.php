@@ -43,12 +43,27 @@ class Tags extends BaseTags {
 
 	/**
 	 * Return tag names as array ordered by occurrence
+	 * $order_by sort order, possible values are 'name' and 'count'
 	 *
 	 * @access public
 	 * @return array
 	 */
-	function getTagNames() {
-		$rows = DB::executeAll('SELECT DISTINCT `tag`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY `count` DESC');
+	function getTagNames($order_by = 'count') {
+		$query = '';
+		switch ($order_by){
+			case 'name':
+				$query = 'SELECT DISTINCT `tag`  FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY  `tag` ';
+				break ;
+			case 'count':
+				$query = 'SELECT DISTINCT `tag`, count(`tag`) `count` FROM ' .  self::instance()->getTableName(true) . 'GROUP BY `tag` ORDER BY `count` DESC , `tag`' ;
+				break ;
+			default:
+				throw new Exception('Invalid tag sort criteria');
+		}
+		
+		
+		$rows = DB::executeAll($query);
+		
 
 		if(!is_array($rows)) return null;
 

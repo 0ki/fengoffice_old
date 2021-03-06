@@ -58,7 +58,7 @@ function setSave(){
 	
 	<div id="add_chart_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_textfield("chart[tags]", array_var($chart_data, 'tags'), 'allTags', array("class" => "short")); ?>
+		<?php echo autocomplete_textfield("chart[tags]", array_var($chart_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 	

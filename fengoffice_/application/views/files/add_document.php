@@ -29,6 +29,9 @@ function checkFilename(iname) {
 		Ext.Msg.prompt(lang('save'), lang('choose a filename') + ':',
 			function(btn, text) {
 				if (btn == 'ok') {
+					if (text.substring(text.length - 5) != ".html" && text.substring(text.length - 7) != ".eyedoc") {
+						text += ".html";
+					}
 					this['file[name]'].value = text;
 					this.rename = false;
 					this.onsubmit();

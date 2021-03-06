@@ -147,7 +147,19 @@ class User extends BaseUser {
 	
 	private $groups_csv;
 	
-	
+	/**
+	 * Save
+	 *
+	 */
+   	function save() {
+   		if($this->isNew()){
+	   		$max_users = config_option('max_users');
+	        if ($max_users && Users::count() >= $max_users) {
+	            throw new Exception(lang("maximum number of users reached error"));
+	        }
+   		}
+        parent::save();
+    }
 
 
 	/**
@@ -386,9 +398,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getActiveProjectIdsCSV() {
+	function getActiveProjectIdsCSV( ) {
 		if(is_null($this->active_projects_ids)){
-			$active_proj = $this->getActiveProjects();
+			$active_proj = $this->getWorkspaces();
 			if (!is_null($active_proj)){
 				$list = array();
 				foreach ($active_proj as $p)
@@ -1168,18 +1180,6 @@ class User extends BaseUser {
 	} // validate
 
 	/**
-	 * Unlinks all contacts that are linked to $this user
-	 *
-	 */
-	function unlink_contacts(){
-		$cs = Contacts::findAll(array('conditions' => array('user_id' => $this->getId())));
-		foreach ($cs as $c){
-			$c->setUserId(0);
-			$c->save();
-		}
-	}
-	
-	/**
 	 * Delete this object
 	 *
 	 * @param void
@@ -1189,11 +1189,12 @@ class User extends BaseUser {
 		if($this->isAccountOwner()) {
 			return false;
 		} // if
-		$this->unlink_contacts();;
+
 		$this->deleteAvatar();
 		$this->deletePersonalProject();
 		ProjectUsers::clearByUser($this);
-		MessageSubscriptions::clearByUser($this);
+		ObjectSubscriptions::clearByUser($this);
+		ObjectReminders::clearByUser($this);
 		return parent::delete();
 	} // delete
 
@@ -1233,6 +1234,17 @@ class User extends BaseUser {
 		return $this->getCardUrl();
 	} // getObjectUrl
 
+	function getArrayInfo(){
+		$result = array(
+			'id' => $this->getId(),
+			'name' => $this->getDisplayName(),
+			'cid' => $this->getCompanyId());
+		
+		if ($this->getId() == logged_user()->getId())
+			$result['isCurrent'] = true;
+		
+		return $result;
+	}
 } // User
 
 ?>

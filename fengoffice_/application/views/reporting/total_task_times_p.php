@@ -7,6 +7,8 @@
 	} else if (active_project() instanceof Project) {
 		$project_id = active_project()->getId();
 	}
+	if (!$report_data['date_type'])
+		$report_data['date_type'] = 1;
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'total_task_times') ?>" method="post" enctype="multipart/form-data">
 
@@ -37,31 +39,28 @@
 		</tr>
 		<?php
 			if (array_var($report_data, "date_type") == 6) {
+				//echo var_dump($_SESSION); die();
 				$style = "";
-				$sday = array_var($report_data, 'start_day');
-				$smonth = array_var($report_data, 'start_month');
-				$syear = array_var($report_data, 'start_year');
-				$eday = array_var($report_data, 'end_day');
-				$emonth = array_var($report_data, 'end_month');
-				$eyear = array_var($report_data, 'end_year');
-				$st = DateTimeValueLib::make(0,0,0,$smonth,$sday,$syear);
-				$et = DateTimeValueLib::make(23,59,59,$emonth,$eday,$eyear);
+				$startval = explode('/', array_var($report_data, 'start_value'));
+		       	$st = DateTimeValueLib::make(0, 0, 0, $startval[0], $startval[1], $startval[2]);
+		       	$end = explode('/', array_var($report_data, 'end_value'));
+		       	$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
 			} else {
-				$style = ' style="display:none"';
+				$style = 'display:none';
 				$st = DateTimeValueLib::now();
 				$et = $st;
 			} 
 		?>
-		<tr class="dateTr"<?php echo $style ?>>
+		<tr class="dateTr"  style="<?php echo $style ?>">
 			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
-			<td align='left'><?php 
-				echo pick_date_widget('report[start]', $st, date("Y") - 10 , date("Y") + 10);
+			<td align='left'><?php
+				echo pick_date_widget2('report[start_value]', $st, $genid);
 			?></td>
 		</tr>
-		<tr class="dateTr"<?php echo $style ?>>
-			<td ><b><?php echo lang("end date") ?>:&nbsp;</b></td>
-			<td align='left'><?php 
-				echo pick_date_widget('report[end]', $et, date("Y") - 10 , date("Y") + 10);
+		<tr class="dateTr"  style="<?php echo $style ?>">
+			<td style="padding-bottom:18px"><b><?php echo lang("end date") ?>:&nbsp;</b></td>
+			<td align='left'><?php
+				echo pick_date_widget2('report[end_value]', $et, $genid);
 			?></td>
 		</tr>
 		<tr style='height:30px;'>
@@ -116,6 +115,13 @@
 						<option value="milestone_id"<?php if (array_var($report_data, "group_by_3") == "milestone_id") echo ' selected="selected"' ?>><?php echo lang('milestone')?></option>
 					</select>
 				</span>
+			</td>
+		</tr>
+		<tr style='height:30px;'>
+			<td>&nbsp;</td>
+			<td align='left'>
+				<?php echo checkbox_field('report[include_unworked]', array_var($report_data, 'include_unworked', false), array("id" => "report[include_unworked]")); ?> 
+	      		<label for="<?php echo 'report[include_unworked]' ?>" class="checkbox"><?php echo lang('include unworked pending tasks') ?></label>
 			</td>
 		</tr>
 	</table>

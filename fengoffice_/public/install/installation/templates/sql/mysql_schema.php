@@ -176,10 +176,21 @@ CREATE TABLE `<?php echo $table_prefix ?>im_types` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>message_subscriptions` (
-  `message_id` int(10) unsigned NOT NULL default '0',
+CREATE TABLE `<?php echo $table_prefix ?>object_subscriptions` (
+  `object_id` int(10) unsigned NOT NULL default '0',
+  `object_manager` varchar(50) NOT NULL,
   `user_id` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`message_id`,`user_id`)
+  PRIMARY KEY  (`object_id`,`object_manager`,`user_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>object_reminders` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `object_id` int(10) unsigned NOT NULL default '0',
+  `object_manager` varchar(50) NOT NULL,
+  `user_id` int(10) unsigned NOT NULL default '0',
+  `type` varchar(40) NOT NULL default '',
+  `minutes_before` int(10) default NULL,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>object_handins` (
@@ -747,4 +758,11 @@ CREATE TABLE `<?php echo $table_prefix ?>user_ws_config_option_values` (
   `value` text <?php echo $default_collation ?>,
   PRIMARY KEY  (`option_id`,`user_id`,`workspace_id`),
   KEY `option_id` (`option_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>event_invitations` (
+  `event_id` int(10) unsigned NOT NULL default '0',
+  `user_id` int(10) unsigned NOT NULL default '0',
+  `invitation_state` int(10) unsigned NOT NULL default '0',
+  PRIMARY KEY (`event_id`, `user_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;

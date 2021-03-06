@@ -123,21 +123,78 @@ class Notifier {
 		tpl_fetch(get_template_path('new_task', 'notifier'))
 		); // send
 	} // newTask
-
+	
 	/**
-	 * Send new comment notification to message subscriber
+	 * Send task due notification to the list of users ($people)
 	 *
-	 * @param MessageComment $comment
+	 * @param ProjectTask $task Due task
+	 * @param array $people
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function newMessageComment(Comment $comment) {
-		$message = $comment->getObject();
-		if(!($message instanceof ProjectMessage)) {
+	static function taskDue(ProjectTask $task, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('due_task', $task);
+
+		$recepients = array();
+		foreach($people as $user) {
+			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+		} // foreach
+
+		return self::sendEmail(
+		$recepients,
+		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
+		$task->getProject()->getName() . ' - ' . lang('due task'),
+		tpl_fetch(get_template_path('due_task', 'notifier'))
+		); // send
+	} // taskDue
+
+	/**
+	 * Send event notification to the list of users ($people)
+	 *
+	 * @param ProjectEvent $event Event
+	 * @param array $people
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function notifEvent(ProjectEvent $event, $people, $is_new = false) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('event', $event);
+		tpl_assign('is_new', $is_new);
+
+		$recepients = array();
+		foreach($people as $user) {
+			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+		} // foreach
+
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($event->getCreatedBy()->getEmail(), $event->getCreatedByDisplayName()),
+			$event->getProject()->getName() . ' - ' . ($is_new ? lang('new event notification') : lang('change event notification')) . ': ' . $event->getSubject(),
+			tpl_fetch(get_template_path('event_notif', 'notifier'))
+		); // send
+	} // notifEvent
+	
+	/**
+	 * Send new comment notification to message subscriber
+	 *
+	 * @param Comment $comment
+	 * @return boolean
+	 * @throws NotifierConnectionError
+	 */
+	static function newObjectComment(Comment $comment) {
+		$object = $comment->getObject();
+		if(!($object instanceof ApplicationDataObject)) {
 			throw new Error('Invalid comment object');
 		} // if
 
-		$all_subscribers = $message->getSubscribers();
+		$all_subscribers = $object->getSubscribers();
 		if(!is_array($all_subscribers)) {
 			return true; // no subscribers
 		} // if
@@ -166,10 +223,10 @@ class Notifier {
 		return self::sendEmail(
 		$recepients,
 		self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
-		/*$comment->getProject()->getName() .*/ ' - ' . lang('new comment') . ' - ' . $comment->getObject()->getTitle(),
+		lang('new comment') . ' - ' . $comment->getObject()->getTitle(),
 		tpl_fetch(get_template_path('new_comment', 'notifier'))
 		); // send
-	} // newMessageComment
+	} // newObjectComment
 
 	// ---------------------------------------------------
 	//  Milestone

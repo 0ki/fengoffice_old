@@ -346,34 +346,17 @@ class CompanyController extends ApplicationController {
 			$counter = 0;
 			$logged_user = logged_user(); // reuse...
 
-			foreach($projects as $project) {
-				if(!$logged_user->isProjectUser($project)) {
-					continue;
-				} // if
-
-				$new_value = array_var($_POST, 'project_' . $project->getId()) == 'checked';
-				$relation = ProjectCompanies::findById(array(
-            'project_id' => $project->getId(), 
-            'company_id' => $company->getId()
-				)); // findById
-				$current_value = $relation instanceof ProjectCompany;
-
-				try {
-					if($current_value <> $new_value) {
-						if($new_value) {
-							$relation = new ProjectCompany();
-							$relation->setProjectId($project->getId());
-							$relation->setCompanyId($company->getId());
-							$relation->save();
-						} else {
-							$relation->delete();
-						} // if
-						$counter++;
-					} // if
-				} catch(Exception $e) {
-					die($e->__toString());
-				} // if
-			} // foreach
+			ProjectCompanies::delete('company_id = ' . $company->getId());
+			$wsids = array_var($_POST, 'ws_ids', '');
+			$selected = Projects::findByCSVIds($wsids);
+			$counter = 0;
+			foreach ($selected as $ws) {
+				$pc = new ProjectCompany();
+				$pc->setCompanyId($company->getId());
+				$pc->setProjectId($ws->getId());
+				$pc->save();
+				$counter++;
+			}
 
 			flash_success(lang('success update company permissions', $counter));
 			ajx_current("back");

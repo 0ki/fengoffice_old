@@ -107,6 +107,58 @@ class AccessController extends ApplicationController {
 	} // login
 
 	/**
+	 * Log user back in
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	*/
+	function relogin() {
+		ajx_current("empty");
+		if (function_exists('logged_user') && (logged_user() instanceof User)) {
+			flash_success(lang("already logged in"));
+			return;
+		} // if
+
+		$login_data = array_var($_POST, 'login');
+		if (!is_array($login_data)) {
+			$login_data = array();
+		} // if
+		$username = array_var($login_data, 'username');
+		$password = array_var($login_data, 'password');
+		$remember = array_var($login_data, 'remember', '') != '';
+
+		if (trim($username == '')) {
+			flash_error(lang("username value missing"));
+			return;
+		} // if
+
+		if (trim($password) == '') {
+			flash_error(lang("password value missing"));
+			return;
+		} // if
+
+		$user = Users::getByUsername($username, owner_company());
+		if (!($user instanceof User)) {
+			flash_error(lang('invalid login data'));
+			return;
+		} // if
+
+		if (!$user->isValidPassword($password)) {
+			flash_error(lang('invalid login data'));
+			return;
+		} // if
+
+		try {
+			CompanyWebsite::instance()->logUserIn($user, $remember);
+		} catch(Exception $e) {
+			flash_error(lang('invalid login data'));
+			return;
+		} // try
+		
+	} // relogin
+	
+	/**
 	 * Log user out
 	 *
 	 * @access public
@@ -251,7 +303,13 @@ class AccessController extends ApplicationController {
 
 	
 	function get_javascript_translation() {
-		$content = file_get_contents("./language/" . Localization::instance()->getLocale() . "/lang.js");
+		$filenames = get_files("./language/" . Localization::instance()->getLocale(), "js");
+		$content = "/* inicio */\n";
+		foreach ($filenames as $f) {
+			$content .= "\n/* $f */\n";				
+			$content .= file_get_contents($f);
+		}
+		$content .= "\n/* fin */\n";
 		$this->setLayout("json");
 		$this->renderText($content, true);
 	}

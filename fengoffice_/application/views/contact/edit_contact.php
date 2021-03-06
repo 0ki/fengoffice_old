@@ -148,7 +148,7 @@ if (!$contact->isNew())
 				<table style="width:100%">
 				<tr>
 					<td class="td-pr"><?php echo label_tag(lang('job title'), $genid.'profileFormJobTitle') ?></td>
-					<td><?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle')) ?></td>
+					<td><?php echo text_field('contact[job_title]', array_var($contact_data, 'job_title'), array('id' => $genid.'profileFormJobTitle', 'maxlength' => '40')) ?></td>
 				</tr><tr height=20><td></td><td></td></tr>
 				<tr>
 					<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'profileFormWPhoneNumber') ?> </td>
@@ -310,7 +310,9 @@ if (!$contact->isNew())
 		</tr>
 		<tr>
 			<td><br />
-			<div><?php echo label_tag(lang('birthday'), $genid.'profileFormBirthday')?> <?php echo pick_date_widget('contact[o_birthday]', array_var($contact_data, 'o_birthday'), 1902, date("Y")) ?>
+			<div><?php echo label_tag(lang('birthday'), $genid.'profileFormBirthday')?> 
+			<?php //echo pick_date_widget('contact[o_birthday]', array_var($contact_data, 'o_birthday'), 1902, date("Y")) ?>
+			<?php echo pick_date_widget2('contact[o_birthday_value]', array_var($contact_data, 'o_birthday'), $genid) ?>
 			</div>
 			<div><?php echo label_tag(lang('timezone'), $genid.'profileFormTimezone')?> <?php echo select_timezone_widget('contact[timezone]', array_var($contact_data, 'timezone'), array('id' => $genid.'profileFormTimezone', 'class' => 'long')) ?>
 			</div>

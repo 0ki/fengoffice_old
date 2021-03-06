@@ -555,7 +555,7 @@ og.TaskItem.prototype = {
 	moreAddTask: function() {
 		og.openLink(og.getUrl('task', 'add_task', {
 			assigned_to: this.doms.newTaskAssignTo.value,
-			title: this.doms.newTaskTitle.value,
+			title: encodeURIComponent(this.doms.newTaskTitle.value),
 			parent_id: this.id,
 			milestone_id: 0
 		}));

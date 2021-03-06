@@ -76,7 +76,7 @@ class TagController extends ApplicationController {
 		$this->setTemplate(get_template_path("json"));
 		ajx_current("empty");
 		$ts = array();
-		$tags = Tags::getTagNames();
+		$tags = Tags::getTagNames('count');
 		if ($tags) {
 			foreach ($tags as $t) {
 				$ts[] = array(

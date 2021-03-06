@@ -32,7 +32,7 @@
 				<?php if (isset($description)) echo $description ;?>
 			</div>
 			
-			<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
+			<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose" style="cursor:pointer"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
 		</td>
 		
 		<td class="coViewTopRight"></td></tr>
@@ -138,6 +138,9 @@
 	
 	<?php if($object->isLinkableObject()) { ?>
 		<div class="prop-col-div"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
+	<?php } ?>
+	<?php if ($object instanceof ProjectDataObject && $object->isCommentable()) { ?>
+		<div class="prop-col-div"><?php echo render_object_subscribers($object)?></div>
 	<?php } ?>
 
 	<div class="prop-col-div" style="border:0px">

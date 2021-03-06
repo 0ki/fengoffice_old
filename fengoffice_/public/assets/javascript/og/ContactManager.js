@@ -334,6 +334,7 @@ og.ContactManager = function() {
 						ids: getSelectedIds(),
 						types: getSelectedTypes()
 					});
+					this.getSelectionModel().clearSelections();
 				}
 			},
 			scope: this

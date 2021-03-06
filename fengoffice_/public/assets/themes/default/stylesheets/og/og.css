@@ -125,6 +125,9 @@
 .ico-hide_messages {
 	background-image: url(../../images/16x16/hide_messages.png) !important;
 }
+.ico-large-backup {
+	background-image: url('../../images/48x48/backup.png');
+}
 .ico-large-configuration {
 	background-image: url('../../images/48x48/configuration.png');
 }
@@ -137,11 +140,17 @@
 .ico-large-upgrade {
 	background-image: url('../../images/48x48/upgrade.png');
 }
+.ico-large-workspace {
+	background-image: url('../../images/48x48/workspace.png');
+}
 .ico-locked {
 	background-image: url(../../images/16x16/locked.png) !important;
 }
 .ico-message {
 	background-image: url(../../images/16x16/message.png) !important;
+}
+.ico-comment {
+	background-image: url(../../images/16x16/comment.png) !important;
 }
 .ico-milestone {
 	background-image: url(../../images/16x16/milestone.png) !important;
@@ -200,6 +209,9 @@
 .ico-task-low-priority {
 	background-image: url(../../images/16x16/task-low.png) !important;
 }
+.ico-time {
+	background-image: url(../../images/16x16/time.png) !important;
+}
 .ico-undo {
 	background-image: url(../../images/16x16/undo.png) !important;
 }
@@ -214,6 +226,9 @@
 }
 .ico-view-as-dashboard {
 	background-image: url('../../images/16x16/view_as_db.png') !important; 
+}
+.ico-warning32 {
+	background-image: url('../../images/32x32/warning.png') !important; 
 }
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
@@ -502,4 +517,23 @@
 .og-ico {
 	background-repeat: no-repeat;
 	padding-left: 20px;
+}
+
+#x-form-el-remember {
+	width: 130px !important;
+}
+
+
+.adminMainBlock th {
+	padding:2px 5px;
+	font-size:100%;
+	font-weight:bolder;
+	background-color:#D7E5F5;
+}
+.adminMainBlock .altRow {
+	background-color:#F4F8F9;
+}
+
+.adminMainBlock td {
+	padding:2px 5px;
 }

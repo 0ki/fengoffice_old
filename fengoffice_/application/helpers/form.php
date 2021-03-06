@@ -405,6 +405,18 @@
     	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );
   } // pick_date_widget
   
+  function pick_date_widget2($name, $value = null, $genid = null) {
+  	$html = "<table><tr><td width=130><span id='" . $genid . $name . "'></span></td><td style='padding-top:4px;font-size:80%'><span class='desc'>(mm/dd/yyyy)</span></td></tr></table>";
+	$html .= "<script type='text/javascript'>
+			var DtStart" . gen_id() . " = new Ext.form.DateField({
+				renderTo:'" . $genid . $name . "',
+				width:120,
+				name: '" . $name . "',
+				value: " . (($value instanceOf DateTimeValue) ? ("'" . $value->getMonth() . '/' . $value->getDay() . '/' . $value->getYear() ) . "'":"''") . "});
+			</script>";
+	return $html;
+  } // pick_date_widget
+  
   /**
   * Return pick time widget
   *
@@ -442,9 +454,16 @@
   * @param string $no_lang
   * @return null
   */
-  function yes_no_widget($name, $id_base, $value, $yes_lang, $no_lang) {
-    $yes_input = radio_field($name, $value, array('id' => $id_base . 'Yes', 'class' => 'yes_no', 'value' => 1));
-    $no_input = radio_field($name, !$value, array('id' => $id_base . 'No', 'class' => 'yes_no', 'value' => 0));
+  function yes_no_widget($name, $id_base, $value, $yes_lang, $no_lang, $tabindex = null) {
+  	$yes_attributes = array('id' => $id_base . 'Yes', 'class' => 'yes_no', 'value' => 1);
+  	$no_attributes = array('id' => $id_base . 'No', 'class' => 'yes_no', 'value' => 0);
+  	if ($tabindex != null) {
+  		$yes_attributes['tabindex'] = $tabindex;
+  		$no_attributes['tabindex'] = $tabindex;
+  	}
+  	
+    $yes_input = radio_field($name, $value, $yes_attributes);
+    $no_input = radio_field($name, !$value, $no_attributes);
     $yes_label = label_tag($yes_lang, $id_base . 'Yes', false, array('class' => 'yes_no'), '');
     $no_label = label_tag($no_lang, $id_base . 'No', false, array('class' => 'yes_no'), '');
     

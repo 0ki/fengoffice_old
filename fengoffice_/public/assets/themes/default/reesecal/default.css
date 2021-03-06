@@ -288,6 +288,12 @@ between the cells of the main calendar.  */
 	padding-right: 3px;
 }
 
+#calendar div.selecteddaylink{
+	width: 100%;
+	background-color: #E1FFFF;/*#6485af;*/
+	padding-right: 3px;
+}
+
 #calendar div.daylink a, #calendar div.daylink a:active, #calendar div.daylink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
@@ -338,7 +344,15 @@ between the cells of the main calendar.  */
   background-color: #FFFFCC;
   border: 1px solid  #999999;
   height: 90px; 
-  }
+}
+
+#calendar td.selectedday{
+  text-align: left;
+  color: black;
+  background-color: #F5FFFF;
+  border: 1px solid  #999999;
+  height: 90px; 
+}
 
 #calendar div.extralink{
 	width: 100%;

@@ -327,6 +327,7 @@ og.FileManager = function() {
 						action: 'delete',
 						objects: getSelectedIds()
 					});
+					this.getSelectionModel().clearSelections();
 				}
 			},
 			scope: this

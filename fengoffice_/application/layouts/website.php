@@ -5,20 +5,29 @@
 	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) ?> - OpenGoo</title>
 	<?php echo stylesheet_tag('website.css') ?>
 	<?php echo add_favicon_to_page('favicon.ico') ?>
+	<?php echo add_javascript_to_page("app.js") // loaded first because it's needed for translating?>
+	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
 
 <?php 
 	$jss= array('extjs/adapter/ext/ext-base.js',
 			'extjs/ext-all.js',
 			'extfix.js',
-			'app.js',
 			'og/og.js',
+			'og/tasks/main.js',
+			'og/tasks/addTask.js',
+			'og/tasks/drawing.js',
+			'og/tasks/TasksTopToolbar.js',
+			'og/tasks/TasksBottomToolbar.js',
 			'og/WorkspaceChooser.js',
-			'og/WorkspaceChooserv2.js',
 			'og/Permissions.js',
 			'og/WorkspaceUtils.js',
+			'og/CalendarDatePicker.js',
 			'og/MessageManager.js',
+			'og/MailManager.js',
 			'og/WebpageManager.js',
+			'og/UserMenu.js',
+			'og/CalendarToolbar.js',
 			'og/ContactManager.js',
 			'og/OverviewManager.js',
 			'og/FileManager.js',
@@ -27,6 +36,8 @@
 			'og/swfobject.js',
 			'og/ImageChooser.js',
 			'og/ObjectPicker.js',
+			'og/CSVCombo.js',
+			'og/LoginDialog.js',
 			'og/HtmlPanel.js',
 			'og/WorkspacePanel.js',
 			'og/TagPanel.js',
@@ -38,7 +49,6 @@
 			'og/HelpPanel.js',
 			'og/layout.js',
 			'og/EventPopUp.js',
-			//'og/CalendarToolbar.js',
 			'modules/addTaskForm.js',
 			'modules/addMessageForm.js',
 			'modules/addContactForm.js',
@@ -68,11 +78,9 @@
 			'jquery/jquery.dimensions.js',
 			'jquery/jquery.hoverIntent.js',
 			'jquery/jquery.cluetip.js',
-			'jquery/jquery-ui.min.js'
-
+			'jquery/jquery-ui.min.js',
+			 
 		);
-	
-	echo add_javascript_to_page(get_url("access", "get_javascript_translation"));
 	
 	if(defined('USE_JS_CACHE') && USE_JS_CACHE){
 		echo add_javascript_to_page(implode(',',$jss));
@@ -160,8 +168,9 @@ og.maxUploadSize = <?php echo get_max_upload_size() ?>;
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 og.initialURL = '<?php echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 
+og.hideMailsTab = <?php echo (defined('HIDE_MAILS_TAB') ? HIDE_MAILS_TAB : 0)?>;
+
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>
-
 </body>
 </html>

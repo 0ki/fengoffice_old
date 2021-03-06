@@ -4,7 +4,41 @@
 // Workspace PATH
 //----------------------------------------
 
-og.showWsPaths = function(containerItemName){
+og.getWorkspaceColor = function(id){
+	var tree = Ext.getCmp('workspaces-tree');
+	var node = tree.tree.getNodeById('ws' + id);
+	if (node)
+		return node.ws.color;
+}
+
+og.getFullWorkspacePath = function(id, includeCurrent){
+	var tree = Ext.getCmp('workspaces-tree');
+	var node = tree.tree.getNodeById('ws' + id);
+	var result = '';
+	
+	if (node != null && node.ws.id != 0){
+		var activews = tree.tree.getActiveWorkspace();
+		if (node.ws.id != activews.id){
+			var originalNode = node;
+			node = node.parentNode;
+			while (node != null && node.ws.id != 0 && node.ws.id != activews.id){
+				result = node.ws.name + "/" + result;
+				node = node.parentNode;
+			}
+			result += originalNode.ws.name;
+		}
+		if (includeCurrent){
+			if (node != null && node.ws.id != 0)
+				if (result == '')
+					result = node.ws.name;
+				else
+					result = node.ws.name + "/" + result;
+		}
+	}
+	return result;
+}
+
+og.showWsPaths = function(containerItemName, showPath){
 	var container = containerItemName != '' ? document.getElementById(containerItemName): null;
 	if (container == null)		//Container name null or container not found
 		container = document;
@@ -14,26 +48,26 @@ og.showWsPaths = function(containerItemName){
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
 			var id = list[i].innerHTML.replace(/^\s*([\S\s]*?)\s*$/, '$1');
-			list[i].innerHTML = og.renderWsPath(id);
+			list[i].innerHTML = og.renderWsPath(id,showPath);
 		}
 };
 
-og.renderWsPath = function(id){
+og.renderWsPath = function(id,showPath){
 	var tree = Ext.getCmp('workspaces-tree');
 	var node = tree.tree.getNodeById('ws' + id);
 	var html = '';
 	
 	if (node != null && node.ws.id != 0){
 		var activews = tree.tree.getActiveWorkspace();
-		if (node.ws.id != activews.id){
+		if (node.ws.id != activews.id || showPath){
 			var originalNode = node;
 			node = node.parentNode;
-			while (node != null && node.ws.id != 0 && node.ws.id != activews.id){
+			while (node != null && node.ws.id != 0 && (node.ws.id != activews.id || showPath)){
 				html = '<a class="og-wsname-color-' + originalNode.ws.color + '" href="#"  onclick="Ext.getCmp(\'workspace-panel\').select(' + node.ws.id + ')" name="' + node.ws.name + '">' + og.trimMax(node.ws.name, 4) + "</a>/" + html;
 				node = node.parentNode;
 			}
 			
-			html = '<span class="og-wscont og-wsname"><span class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + originalNode.ws.name + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
+			html = '<span class="og-wscont og-wsname"><span class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.wsPathMouseBehavior(this,true)" onmouseout="og.wsPathMouseBehavior(this,false)">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + originalNode.ws.name + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
 		}
 	}
 	return html;
@@ -46,17 +80,28 @@ og.swapNames = function(object){
 };
 
 og.wsPathMouseBehavior = function(object, isMouseOver){
-	object.style.fontSize = isMouseOver? "120%" : "100%";
-	object.style.padding = isMouseOver? "4px" : "0px";
-	object.style.paddingLeft = '1px';
-	object.style.paddingRight = '1px';
+	if (isMouseOver) {
+		object.style.fontSize = "120%";
+		object.style.padding = "4px";
+		object.style.paddingLeft = object.style.paddingRight = '1px';
 	
-	var cn = object.childNodes;
-	for (var i = 0; i < cn.length; i++)
-		if (cn[i].name != null && cn[i].name != ''){
+		var cn = object.childNodes;
+		for (var i = 0; i < cn.length; i++) {
+			cn[i].origHTML = cn[i].innerHTML;
+			if (cn[i].name != null && cn[i].name != ''){
 				cn[i].innerHTML = cn[i].name;
-				cn[i].name = '';
 			}
+		}
+	} else {
+		object.style.fontSize = "100%";
+		object.style.padding = "0px";
+		object.style.paddingLeft = object.style.paddingRight = '1px';
+		
+		var cn = object.childNodes;
+		for (var i = 0; i < cn.length; i++) {
+			cn[i].innerHTML = cn[i].origHTML;
+		}
+	}
 };
 
 og.trimMax = function(str, size, append){
@@ -160,3 +205,61 @@ og.updateWsCrumbsTag = function(newTag) {
 	var crumbsdiv = Ext.get('wsTagCrumbs');
 	crumbsdiv.dom.innerHTML = html;
 };
+
+
+
+
+
+//----------------------------------------
+// Workspace SELECTOR
+//----------------------------------------
+
+
+og.drawWorkspaceSelector = function(renderTo, workspaceId, name){
+	var container = document.getElementById(renderTo);
+	if (container){
+		var tree = Ext.getCmp('workspaces-tree');
+		var ws;
+		if (workspaceId)
+			ws = tree.tree.getNodeById('ws' + workspaceId).ws;
+		else
+			ws = tree.tree.getActiveOrPersonalWorkspace();
+	
+		var html = "<input type='hidden' id='" + renderTo + "Value' name='" + name + "' value='" + ws.id + "'/>";
+		html +="<div id='" + renderTo + "Header'>";
+		html += "<a class='coViewAction ico-color" + ws.color + "' href='#' onclick='og.ShowWorkspaceSelector(\"" + renderTo + "\"," + ws.id + ")' title='" + lang('click to change workspace') + "'>" + og.getFullWorkspacePath(ws.id,true) + "</a>";
+		html +="</div><div id='" + renderTo + "Panel'></div>";
+		
+		container.innerHTML = html;
+	}
+}
+
+og.ShowWorkspaceSelector = function(controlName, workspaceId){
+	if (document.getElementById(controlName + 'Panel').innerHTML == ''){
+		var tree = Ext.getCmp('workspace-panel');
+		var wsList = tree.getWsList();
+		var newTree = tree.cloneConfig({
+			id: (controlName + 'Tree'),
+			renderTo: controlName + 'Panel',
+			tbar:[],
+			root:[],
+			workspaces: wsList,
+			isInternalSelector: true,
+			width:200,
+			height:250,
+			selectedWorkspaceId: workspaceId,
+			controlName: controlName,
+			style: 'border:1px solid #99BBE8'
+		});	
+	}
+	document.getElementById(controlName + 'Panel').style.display = 'block';
+	document.getElementById(controlName + 'Header').style.display = 'none';
+}
+
+og.WorkspaceSelected = function(controlName, workspace){
+	document.getElementById(controlName + 'Header').innerHTML = "<a class='coViewAction ico-color" + workspace.color + "' href='#' onclick='og.ShowWorkspaceSelector(\"" + controlName + "\"," + workspace.id + ")' title='" + lang('click to change workspace') + "'>" + og.getFullWorkspacePath(workspace.id,true) + "</a>";
+	document.getElementById(controlName + 'Panel').style.display = 'none';
+	document.getElementById(controlName + 'Header').style.display = 'block';
+	document.getElementById(controlName + 'Value').value = workspace.id;	
+}
+

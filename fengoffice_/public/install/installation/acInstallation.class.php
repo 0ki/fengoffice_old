@@ -64,6 +64,13 @@
     * @var string
     */
     private $absolute_url;
+    
+    /**
+    * Default Localization
+    *
+    * @var string
+    */
+    private $default_localization;
   
     /**
     * Constructor
@@ -90,6 +97,7 @@
       $database_name   = $this->getDatabaseName();
       $database_prefix = $this->getTablePrefix();
       $absolute_url    = $this->getAbsoluteUrl();
+      $default_localization = $this->getDefaultLocalization();
       
       $connected = false;
       if($this->database_connection = @mysql_connect($database_host, $database_user, $database_pass)) {
@@ -121,7 +129,7 @@
         'DB_PERSIST'           => true,
         'TABLE_PREFIX'         => $database_prefix,
         'ROOT_URL'             => $absolute_url,
-        'DEFAULT_LOCALIZATION' => 'en_us',
+        'DEFAULT_LOCALIZATION' => $default_localization,
         'DEBUG'                => false,
         'PRODUCT_VERSION'      => require INSTALLATION_PATH . '/version.php',
       ); // array
@@ -441,6 +449,26 @@
     function setAbsoluteUrl($value) {
       $this->absolute_url = $value;
     } // setAbsoluteUrl
+    
+    /**
+    * Get default_localization
+    *
+    * @param null
+    * @return string
+    */
+    function getDefaultLocalization() {
+      return ($this->default_localization)?($this->default_localization):'en_us';
+    } // getDefaultLocalization
+    
+    /**
+    * Set default_localization value
+    *
+    * @param string $value
+    * @return null
+    */
+    function setDefaultLocalization($value) {
+      $this->default_localization = $value;
+    } // setDefaultLocalization
   
   } // acInstallation
 

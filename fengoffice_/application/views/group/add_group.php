@@ -1,14 +1,9 @@
 <?php
-
     set_page_title($group->isNew() ? lang('add group') : lang('edit group'));
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
 ?>
-<?php if($group->isNew()) { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('group', 'add_group') ?>" method="post">
-<?php } else { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->getEditUrl() ?>" method="post">
-<?php } // if ?>
 
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add_group') : $group->getEditUrl() ?>" method="post">
 
 <div class="adminAddGroup">
   <div class="adminHeader">

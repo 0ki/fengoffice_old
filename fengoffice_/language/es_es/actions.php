@@ -47,13 +47,13 @@
     'mark workspace as active' => 'Marcar área de trabajo como activa',
     
     // Messages
-    'add message' => 'Añadir mensaje',
-    'edit message' => 'Editar mensaje',
-    'delete message' => 'Eliminar mensaje',
-    'view message' => 'Mostrar mensaje',
-    'update message options' => 'Actializar opciones de mensaje',
-    'subscribe to message' => 'Suscribirse al mensaje',
-    'unsubscribe from message' => 'Borrar suscripción al mensaje',
+    'add message' => 'Añadir nota',
+    'edit message' => 'Editar nota',
+    'delete message' => 'Eliminar nota',
+    'view message' => 'Mostrar nota',
+    'update message options' => 'Actializar opciones de nota',
+    'subscribe to object' => 'Suscribirse al objeto',
+    'unsubscribe from object' => 'Borrar suscripción al objeto',
     
     // Comments
     'add comment' => 'Añadir comentario',
@@ -189,7 +189,7 @@
 	'view history for' => 'Ver historial',
 	'view history' => 'Ver historial',
 	'edit preferences' => 'Editar preferencias',
-  	'add new message' => 'Añadir nuevo mensaje',  
+  	'add new message' => 'Añadir nueva nota',  
     
   ); // array
 

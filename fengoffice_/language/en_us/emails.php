@@ -73,7 +73,10 @@ return array(
     'mail address' => 'Email Address',
     'mail address description' => 'Email address is the address that other people use to send you emails',
 
-	'unread emails' => 'Unread emails'
+	'unread emails' => 'Unread emails',
+	'view due task' => 'View due task',
+	'due task email' => 'Task "{0}" is due on "{1}" and is still pending',
+	'due task' => 'Due task soon',
     ); // array
 
     ?>

@@ -8,9 +8,11 @@
 
 ?>
 
-<form action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
-
-<?php tpl_display(get_template_path('form_errors')) ?>
+<form style='height:100%;background-color:white' action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+  
+<div class="avatar">
+<div class="coInputSeparator"></div>
+<div class="coInputMainBlock">
   
   <fieldset>
     <legend><?php echo lang('current picture') ?></legend>
@@ -31,5 +33,7 @@
   </div>
   
   <?php echo submit_button(lang('update picture')) ?>
-  
+ 
+ </div>
+ </div>
 </form>

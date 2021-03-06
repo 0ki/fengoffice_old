@@ -19,7 +19,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null){
+	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null, $user = -1, $inv_state = -1){
 		$day = $date->getDay();
 		$month = $date->getMonth();
 		$year = $date->getYear();
@@ -158,10 +158,27 @@ class ProjectEvents extends BaseProjectEvents {
 			$tag_str ";
 		
 		
-		return self::findAll(array(
+		$result_events = self::findAll(array(
 			'conditions' => $conditions,
 			'order' => '`start`',
 		));
+		
+		// Find invitations for events and logged user
+		if (is_array($result_events) && count($result_events)) {
+			ProjectEvents::addInvitations($result_events, $user);
+			if (!($user == null && $inv_state == null)) {
+				foreach ($result_events as $k => $event) {
+					$cond = array('event_id' => $event->getId());
+					if ($user != -1) $cond['user_id'] = $user;
+	
+					$inv = EventInvitations::findById($cond);
+					if ($inv == null || ($inv_state != -1 && $inv_state != $inv->getInvitationState())) 
+						unset($result_events[$k]);
+				}
+			}
+		}
+		
+		return $result_events;
 //			$result = DB::execute($q); // $cal_db->sql_query($q);
 //		if(!$result AND DEBUG){
 //			echo "Error executing event-retrieval query.";
@@ -299,10 +316,31 @@ class ProjectEvents extends BaseProjectEvents {
 			$tag_str ";
 		
 		
-		return self::findAll(array(
+		$result_events = self::findAll(array(
 			'conditions' => $conditions,
 			'order' => '`start`',
 		));
+		
+		// Find invitations for events and logged user
+		ProjectEvents::addInvitations($result_events);	
+		
+		return $result_events;		
+	}
+	
+	static function addInvitations($result_events, $user_id = -1) {
+		if ($user_id == -1) $user_id = logged_user();
+		if (isset($result_events) && is_array($result_events) && count($result_events)) {
+			foreach ($result_events as $event) {
+				$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
+				/*if (is_array($inv)) {
+					foreach ($inv as $i) {
+						$event->addInvitation($i);
+					}
+				} else */if ($inv != null) {
+					$event->addInvitation($inv);
+				}
+			}
+		}
 	}
 	
 	
@@ -435,9 +473,14 @@ class ProjectEvents extends BaseProjectEvents {
 			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
 		$cond_str = "`project_id` IN ($pids)";
-		return self::findAll(array(
+		$result_events = self::findAll(array(
 			'conditions' => array($cond_str)
 		)); // findAll
+		
+		// Find invitations for events and logged user
+		ProjectEvents::addInvitations($result_events);
+		
+		return $result_events;
 	} // getAllEventsByProject
 	
 	  

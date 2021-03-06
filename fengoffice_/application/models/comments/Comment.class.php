@@ -34,6 +34,21 @@ class Comment extends BaseComment {
 	} // getObject
 
 	/**
+	 * Return the first $len - 3 characters of the comment's text followed by "..."
+	 *
+	 * @param unknown_type $len
+	 */
+	function getPreviewText($len = 30) {
+		if ($len <= 3) return "...";
+		$text = $this->getText();
+		if (strlen_utf($text) > $len) {
+			return substr($text, 0, $len - 3) . "...";
+		} else {
+			return $text;
+		}
+	}
+	
+	/**
 	 * Return project object
 	 *
 	 * @param void
@@ -260,7 +275,7 @@ class Comment extends BaseComment {
 	 * @return string
 	 */
 	function getObjectTypeName() {
-		return lang('comment');
+		return 'comment';
 	} // getObjectTypeName
 
 	/**

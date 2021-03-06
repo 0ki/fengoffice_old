@@ -13,14 +13,10 @@
   //add_javascript_to_page('modules/spreadsheet_ui.js');
 	
 ?>
-
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
-<?php if($file->isNew()) { ?>
-<form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet') ?>" method="post" enctype="multipart/form-data">
-<?php } else { ?>
-<form class="internalForm" action="<?php echo get_url('files', 'save_spreadsheet',array(
-	        'id' => $file->getId())) ?>" method="post" enctype="multipart/form-data">
-<?php } // if ?>
+
+<form class="internalForm" action="<?php echo $file->isNew()? get_url('files', 'save_spreadsheet') : get_url('files', 'save_spreadsheet',array('id' => $file->getId())) ?>" method="post" enctype="multipart/form-data">
+
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

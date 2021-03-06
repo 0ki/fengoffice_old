@@ -155,7 +155,7 @@ var butt = new Ext.Button({
 		<?php include "view_milestones.php"; ?>
 		</div>
 		
-		<div class="tpTaskHeader"><?php echo lang('tasks') ?> &nbsp;	<a class="coViewAction ico-print" title="<? echo lang('print')?>" target="_blank"	
+		<div class="tpTaskHeader"><?php echo lang('tasks') ?> &nbsp;	<a class="coViewAction ico-print" title="<?php echo lang('print')?>" target="_blank"	
 			href="<?php echo get_url('task','print_view_all', array(
 					'active_project'=>active_project()?active_project()->getId():'',					
 					'assigned_to' => array_var($_GET, 'assigned_to', ''),

@@ -40,7 +40,7 @@
     'terms of services not accepted' => 'Para poder crear una cuenta debe leer y aceptar los términos y condiciones de nuestros servicios',
     
     // Init company website
-    'failed to load company website' => 'No se pudo cargar el sitio web. La empresa no fue encontrada',
+    'failed to load company website' => 'No se pudo cargar el sitio web. La compañía no fue encontrada',
     'failed to load project' => 'El sistema falló al cargar el espacio',
     
     // Login form
@@ -54,7 +54,7 @@
     // Add message form
     'message title required' => 'Título no ingresado, intente nuevamente',
     'message title unique' => 'El título ingresado ya existe, intente ingresar uno distinto',
-    'message text required' => 'Mensaje no ingresado, intente nuevamente',
+    'message text required' => 'Nota no ingresada, intente nuevamente',
     
     // Add comment form
     'comment text required' => 'Texto no ingresado, intente nuevamente',
@@ -132,6 +132,12 @@
   
   	'maximum number of users reached error' => 'El número máximo de usuarios ha sido alcanzado',
 	'maximum number of users exceeded error' => 'El número máximo de usuarios ha sido sobrepasado. El sistema no volverá a funcionar hasta que este problema haya sido resuelto.',
-  ); // array
+	'maximum disk space reached' => 'Ha utilizado la totalidad del espacio en disco asignado. Borre objetos antes de ingresar nuevos, o contacte a soporte para que autorice más usuarios.'  ,
+ 	'error db backup' => 'Error al crear respaldo de la base de datos. Verificar constante MYSQLDUMP_COMMAND.',
+	'error create backup folder' => 'Error al crear carpeta de respaldo. No se puede completar el respaldo',
+	'error delete backup' => 'Error al borrar el ultimo respaldo',
+	'success delete backup' => 'Respaldo borrado',
+	
+ ); // array
 
 ?>

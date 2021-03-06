@@ -59,12 +59,15 @@
      * Returns user value for the config option, or else default is returned
      *
      */
-    function getUserValue($user_id = 0, $workspace_id = 0){
+    function getUserValue($user_id = 0, $workspace_id = 0, $default = null){
     	$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => $workspace_id));
     	if (!$val){
     		if ($user_id == 0 || $workspace_id == 0){
     			//Return default settings
-    			return $this->getDefaultValue();
+    			if (!is_null($default))
+    				return $default;
+    			else
+    				return $this->getDefaultValue();
     		} else {
     			//Search user global preferences
     			$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => 0));
@@ -73,7 +76,10 @@
     				$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>0,'workspace_id' => $workspace_id));
     				if (!$val){
     					//Return default settings
-    					return $this->getDefaultValue();
+    					if (!is_null($default))
+    						return $default;
+    					else
+    						return $this->getDefaultValue();
     				} // if
     			} // if
     		} // if

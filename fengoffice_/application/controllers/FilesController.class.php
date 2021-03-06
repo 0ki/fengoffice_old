@@ -125,6 +125,26 @@ class FilesController extends ApplicationController {
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
+	
+	function download_image() {
+		$inline = (boolean) array_var($_GET, 'inline', false);
+			
+		$file = ProjectFiles::findById(get_id());
+		if(!($file instanceof ProjectFile)) {
+			flash_error(lang('file dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+			
+		if(!$file->canDownload(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
+		die();
+	} // download_file
 
 	function checkout_file()
 	{
@@ -304,6 +324,10 @@ class FilesController extends ApplicationController {
 			    $object_controller->link_to_new_object($file);
 				DB::commit();
 				//flash_success(array_var($file_data, 'add_type'));
+				
+				$uploads = array_var($_SESSION, "uploads_success", array());
+				$uploads[array_var($_POST, "upload_id")] = true;
+				$_SESSION["uploads_success"] = $uploads;
 
 				flash_success(lang('success add file', $file->getFilename()));
 				ajx_current("back");
@@ -320,6 +344,19 @@ class FilesController extends ApplicationController {
 		} // if
 	} // add_file
 
+	function check_upload() {
+		$id = array_var($_GET, 'upload_id', 0);
+		$uploads = array_var($_SESSION, "uploads_success", array());
+		$success = array_var($uploads, $id, false);
+		if ($success) {
+			ajx_current("back");
+			unset($uploads[$id]);
+			$_SESSION["uploads_success"] = $uploads;
+		} else {
+			ajx_current("empty");
+		}
+	}
+	
 	function save_document() {
 		ajx_current("empty");
 		$postFile = array_var($_POST, 'file');
@@ -1150,6 +1187,10 @@ class FilesController extends ApplicationController {
 					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_EDIT);
 				}
 				DB::commit();
+
+				$uploads = array_var($_SESSION, "uploads_success", array());
+				$uploads[array_var($_POST, "upload_id")] = true;
+				$_SESSION["uploads_success"] = $uploads;
 				
 				
 				flash_success(lang('success edit file', $file->getFilename()));

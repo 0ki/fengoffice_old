@@ -58,7 +58,7 @@
 	}
 	
 	$userLink = '';
-	if ($contact->getUserId() > 0 && $contact->getUser()){
+	if ($contact->getUserId() > 0){
 		if($description != '')
 			$description .= '<br/>';
 		$description .= '<a class="internalLink coViewAction ico-user" href="' . $contact->getUser()->getCardUrl() . '" title="' . lang('contact linked to user', clean($contact->getUser()->getUsername())) . '">' . clean($contact->getUser()->getUsername()) . '</a>';

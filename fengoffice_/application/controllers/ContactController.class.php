@@ -589,18 +589,15 @@ class ContactController extends ApplicationController {
 					$newCompany = true;
 				}
 				
+				if ($contact_data["o_birthday_value"] != '') {
+					$birthday = explode('/', array_var($contact_data, 'o_birthday_value'));
+					$contact_data['o_birthday'] = DateTimeValueLib::make(0, 0, 0, $birthday[0], $birthday[1], $birthday[2]);
+				}
+				
 				$contact->setFromAttributes($contact_data);
 
 				if($newCompany)
 					$contact->setCompanyId($company->getId());
-				
-				if ($contact_data["o_birthday_year"] != 0) {
-					$bday = new DateTimeValue(0);
-					$bday->setYear($contact_data["o_birthday_year"]);
-					$bday->setMonth($contact_data["o_birthday_month"]);
-					$bday->setDay($contact_data["o_birthday_day"]);
-					$contact->setOBirthday($bday);
-				}
 				
 				$contact->save();
 				
@@ -771,9 +768,14 @@ class ContactController extends ApplicationController {
 					$newCompany = true;
 				}
 				
+				if ($contact_data["o_birthday_value"] != '') {
+					$birthday = explode('/', array_var($contact_data, 'o_birthday_value'));
+					$contact_data['o_birthday'] = DateTimeValueLib::make(0, 0, 0, $birthday[0], $birthday[1], $birthday[2]);
+				} else $contact_data['o_birthday'] = null;
+				
 				$contact->setFromAttributes($contact_data);
 				
-				if (!is_null($contact->getOBirthday()) && $contact_data["o_birthday_year"] == 0){
+				/*if (!is_null($contact->getOBirthday()) && $contact_data["o_birthday_year"] == 0){
 					$contact->setOBirthday(null);
 				} else if ($contact_data["o_birthday_year"] != 0) {
 					$bday = new DateTimeValue(0);
@@ -781,7 +783,7 @@ class ContactController extends ApplicationController {
 					$bday->setMonth($contact_data["o_birthday_month"]);
 					$bday->setDay($contact_data["o_birthday_day"]);
 					$contact->setOBirthday($bday);
-				}
+				}*/
 
 				if($newCompany)
 					$contact->setCompanyId($company->getId());

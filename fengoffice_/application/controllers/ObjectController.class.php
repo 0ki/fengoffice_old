@@ -471,22 +471,37 @@ class ObjectController extends ApplicationController {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Messages']  = "SELECT  'ProjectMessages' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_messages` `co` WHERE " . $proj_cond_msgs . $tag_str . $permissions;
+		$res['MessagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
+					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectMessages' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+					TABLE_PREFIX . "project_messages` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond_msgs . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectMessages' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Calendar'] = "SELECT  'ProjectEvents' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_events` `co` WHERE  " . $proj_cond . $tag_str . $permissions;
+		$res['CalendarComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
+					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectEvents' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+					TABLE_PREFIX . "project_events` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectEvents' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Documents'] = "SELECT  'ProjectFiles' AS `object_manager_value`, `id` as `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_files` `co` WHERE " . $proj_cond_docs . $tag_str . $permissions;
+		$res['DocumentsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
+					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectFiles' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+					TABLE_PREFIX . "project_files` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond_docs . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectFiles' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Tasks'] = "SELECT  'ProjectTasks' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
-					TABLE_PREFIX . "project_tasks` `co` WHERE `is_template` = false AND `parent_id` = 0 AND " . $proj_cond . $tag_str . $permissions;
+					TABLE_PREFIX . "project_tasks` `co` WHERE `is_template` = false AND `completed_by_id` = 0 AND " . $proj_cond . $tag_str . $permissions;
+		$res['TasksComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
+					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectTasks' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+					TABLE_PREFIX . "project_tasks` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectTasks' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Milestones'] = "SELECT  'ProjectMilestones' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
 					TABLE_PREFIX . "project_milestones` `co` WHERE " . $proj_cond . $tag_str . $permissions;
+		$res['MilestonesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, `updated_on` AS `last_update` FROM `" . 
+					TABLE_PREFIX . "comments` WHERE `rel_object_manager` = 'ProjectMilestones' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+					TABLE_PREFIX . "project_milestones` `co`, `" . TABLE_PREFIX . "object_subscriptions` `os` WHERE " . $proj_cond . $tag_str . $permissions . " AND `co`.`id` = `os`.`object_id` AND `os`.`object_manager` = 'ProjectMilestones' AND `os`.`user_id` = " . logged_user()->getId() . ")";
 					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Web Pages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, `created_on` AS `last_update` FROM `" . 
@@ -805,6 +820,97 @@ class ObjectController extends ApplicationController {
 		$logs = ApplicationLogs::getObjectLogs($obj);
 		tpl_assign('object',$obj);
 		tpl_assign('logs',$logs);
+	}
+	
+	// ---------------------------------------------------
+	//  Subscriptions
+	// ---------------------------------------------------
+
+	/**
+	 * Subscribe to object
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function subscribe() {
+		ajx_current("reload");
+		
+		$id = array_var($_GET,'id');
+		$manager = array_var($_GET,'manager');
+		$object = get_object_by_manager_and_id($id, $manager);
+		if(!($object instanceof ApplicationDataObject)) {
+			flash_error(lang('message dnx'));
+			return;
+		} // if
+
+		if(!$object->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			return ;
+		} // if
+
+		try {
+			$object->subscribeUser(logged_user());
+			flash_success(lang('success subscribe to object'));
+		} catch (Exception $e) {
+			flash_error(lang('error subscribe to object'));
+		}
+	} // subscribe
+
+	/**
+	 * Unsubscribe from object
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function unsubscribe() {
+		ajx_current("reload");
+		
+		$id = array_var($_GET,'id');
+		$manager = array_var($_GET,'manager');
+		$object = get_object_by_manager_and_id($id, $manager);
+		if(!($object instanceof ApplicationDataObject)) {
+			flash_error(lang('message dnx'));
+			return;
+		} // if
+
+		if(!$object->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			return;
+		} // if
+
+		try {
+			$object->unsubscribeUser(logged_user());
+			flash_success(lang('success unsubscribe to object'));
+		} catch (Exception $e) {
+			flash_error(lang('error unsubscribe to object'));
+		}
+	} // unsubscribe
+	
+	function send_reminders() {
+		$sent = 0;
+		$ors = ObjectReminders::findAll();
+		foreach ($ors as $or) {
+			if ($or->getType() == "due_date") {
+				$task = $or->getObject();
+				if (!$task instanceof ProjectTask || $task->isCompleted()) {
+					$or->delete();
+					continue;
+				}
+				$duedate = $task->getDueDate();
+				if (!$duedate instanceof DateTimeValue) continue;
+				$duedate->add("m", -$or->getMinutesBefore());
+				if (DateTimeValueLib::now()->getTimestamp() >= $duedate->getTimestamp()) {
+					try {
+						Notifier::taskDue($task, array($or->getUser()));
+						$or->delete();
+						$sent++;
+					} catch (Exception $e) {
+						
+					}
+				}
+			}
+		}
+		tpl_assign("sent", $sent);
 	}
 }
 ?>

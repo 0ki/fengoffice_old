@@ -2,11 +2,11 @@
 
   
   /**
-  * MessageSubscriptions class
+  * BaseEventInvitations class
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Alvaro Torterola <alvarotm01@gmail.com>
   */
-  abstract class BaseMessageSubscriptions extends DataManager {
+  abstract class BaseEventInvitations extends DataManager {
   
     /**
     * Column name => Column type map
@@ -14,15 +14,15 @@
     * @var array
     * @static
     */
-    static private $columns = array('message_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER);
+    static private $columns = array('event_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'invitation_state' => DATA_TYPE_INTEGER);
   
     /**
     * Construct
     *
-    * @return BaseMessageSubscriptions 
+    * @return BaseEventInvitations 
     */
     function __construct() {
-      parent::__construct('MessageSubscription', 'message_subscriptions', true);
+      parent::__construct('EventInvitation', 'event_invitations', true);
     } // __construct
     
     // -------------------------------------------------------
@@ -63,10 +63,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array (
-  0 => 'message_id',
-  1 => 'user_id',
-);
+    	return array('event_id', 'user_id');
     } // getPkColumns
     
     /**
@@ -77,7 +74,7 @@
     * @return string
     */
     function getAutoIncrementColumn() {
-      return NULL;
+      return null;
     } // getAutoIncrementColumn
     
     // -------------------------------------------------------
@@ -96,15 +93,15 @@
     *  - offset - limit offset, valid only if limit is present
     *  - limit
     * 
-    * @return one or MessageSubscriptions objects
+    * @return one or EventInvitations objects
     * @throws DBQueryError
     */
     function find($arguments = null) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::find($arguments);
       } else {
-        return MessageSubscriptions::instance()->find($arguments);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->find($arguments);
+        //$instance =& EventInvitations::instance();
         //return $instance->find($arguments);
       } // if
     } // find
@@ -114,14 +111,14 @@
     *
     * @access public
     * @param array $arguments
-    * @return one or MessageSubscriptions objects
+    * @return one or EventInvitations objects
     */
     function findAll($arguments = null) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::findAll($arguments);
       } else {
-        return MessageSubscriptions::instance()->findAll($arguments);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->findAll($arguments);
+        //$instance =& EventInvitations::instance();
         //return $instance->findAll($arguments);
       } // if
     } // findAll
@@ -131,14 +128,14 @@
     *
     * @access public
     * @param array $arguments
-    * @return MessageSubscription 
+    * @return EventInvitation 
     */
     function findOne($arguments = null) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::findOne($arguments);
       } else {
-        return MessageSubscriptions::instance()->findOne($arguments);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->findOne($arguments);
+        //$instance =& EventInvitations::instance();
         //return $instance->findOne($arguments);
       } // if
     } // findOne
@@ -149,14 +146,14 @@
     * @access public
     * @param mixed $id
     * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-    * @return MessageSubscription 
+    * @return EventInvitation 
     */
     function findById($id, $force_reload = false) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::findById($id, $force_reload);
       } else {
-        return MessageSubscriptions::instance()->findById($id, $force_reload);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->findById($id, $force_reload);
+        //$instance =& EventInvitations::instance();
         //return $instance->findById($id, $force_reload);
       } // if
     } // findById
@@ -169,11 +166,11 @@
     * @return integer
     */
     function count($condition = null) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::count($condition);
       } else {
-        return MessageSubscriptions::instance()->count($condition);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->count($condition);
+        //$instance =& EventInvitations::instance();
         //return $instance->count($condition);
       } // if
     } // count
@@ -186,11 +183,11 @@
     * @return boolean
     */
     function delete($condition = null) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::delete($condition);
       } else {
-        return MessageSubscriptions::instance()->delete($condition);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->delete($condition);
+        //$instance =& EventInvitations::instance();
         //return $instance->delete($condition);
       } // if
     } // delete
@@ -210,11 +207,11 @@
     * @return array
     */
     function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
-      if(isset($this) && instance_of($this, 'MessageSubscriptions')) {
+      if(isset($this) && instance_of($this, 'EventInvitations')) {
         return parent::paginate($arguments, $items_per_page, $current_page);
       } else {
-        return MessageSubscriptions::instance()->paginate($arguments, $items_per_page, $current_page);
-        //$instance =& MessageSubscriptions::instance();
+        return EventInvitations::instance()->paginate($arguments, $items_per_page, $current_page);
+        //$instance =& EventInvitations::instance();
         //return $instance->paginate($arguments, $items_per_page, $current_page);
       } // if
     } // paginate
@@ -222,16 +219,16 @@
     /**
     * Return manager instance
     *
-    * @return MessageSubscriptions 
+    * @return EventInvitations 
     */
     function instance() {
       static $instance;
-      if(!instance_of($instance, 'MessageSubscriptions')) {
-        $instance = new MessageSubscriptions();
+      if(!instance_of($instance, 'EventInvitations')) {
+        $instance = new EventInvitations();
       } // if
       return $instance;
     } // instance
   
-  } // MessageSubscriptions 
+  } // EventInvitations 
 
 ?>

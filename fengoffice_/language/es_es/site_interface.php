@@ -87,7 +87,7 @@
     'test mail message subject' => 'Asunto de prueba',
     
     'massmailer subject' => 'Asunto',
-    'massmailer message' => 'Mensaje',
+    'massmailer message' => 'Nota',
     'massmailer recipients' => 'Destinatarios',
     
     // Dashboard
@@ -248,8 +248,8 @@
   'filters' => 'Filtros',
   
   'permissions for user' => 'Permisos para el usuario {0}',
-  'can read messages' => 'Puede leer mensajes',
-  'can write messages' => 'Puede escribir mensajes',
+  'can read messages' => 'Puede leer notas',
+  'can write messages' => 'Puede escribir notas',
   'can read tasks' => 'Puede leer tareas',
   'can write tasks' => 'Puede escribir tareas',
   'can read milestones' => 'Puede leer hitos',
@@ -274,7 +274,7 @@
   'new event' => 'Nuevo evento',
   'new webpage' => 'Nueva pagina web',
   'new milestone' => 'Nuevo hito',
-  'new message' => 'Mensaje nuevo',
+  'new message' => 'Nueva nota',
   'new group' => 'Grupo nuevo',
   'new user' => 'Usuario nuevo',
   'add tags' => 'añadir etiquetas',
@@ -308,7 +308,7 @@
   'all projects' => 'Todos los espacios',
   'view as list' => 'Listar',
   'pending tasks' => 'Tareas pendientes',
-  'messages' => 'Mensajes',
+  'messages' => 'Notas',
   'complete' => 'Completo',
   'incomplete' => 'Incompleto',
   'complete task' => 'Completar tarea',
@@ -363,7 +363,7 @@
   'search for' => 'Buscar resultados para \'{0}\' en todos los proyectos',
   
   'workspace permamanent delete' =>  'Cuando un área de trabajo es eliminada, la siguiente información se perderá permanentemente</b>',
-  'workspace permamanent delete messages'  => ' Todos los mensajes en el área de trabajo',
+  'workspace permamanent delete messages'  => ' Todos las notas en el área de trabajo',
   'workspace permamanent delete tasks' => ' Todas las tareas en el área de trabajo',
   'workspace permamanent delete milestones' => ' Todos los hitos en el área de trabajo',
   'workspace permamanent delete files' => ' Todos los archivos en el área de trabajo',
@@ -426,6 +426,15 @@
     'group by' => 'Agrupar por',
     'total' => 'Total',
   
+  'user subscribed to object' => 'Está suscripto a este objeto.',
+  'user not subscribed to object' => 'No está suscripto a este objeto.',
+  
+  'tasks updated' => 'Tareas(s) actualizadas exitosamente',
+  'show image in new page' => 'Mostrar imagen en nueva página',
+  'no tasks to display' => 'No hay tareas para mostrar',
+  'total' => 'Total',
+  'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
+  'enter tags desc' => 'Ingrese etiquetas separadas por coma ...',
   ); // array
 
 ?>

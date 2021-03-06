@@ -622,7 +622,7 @@ class ProjectController extends ApplicationController {
 				"id" => $id,
 				"name" => $name
 			));
-			ajx_current("start");
+			ajx_current("back");
 
 		} catch(Exception $e) {
 			DB::rollback();
@@ -853,13 +853,16 @@ class ProjectController extends ApplicationController {
 				}
 			}
 			if ($toBeAdded) {
-				$ws[] = array(
+				$workspace = array(
 					"id" => $w->getId(),
 					"name" => $w->getName(),
 					"color" => $w->getColor(),
 					"parent" => $parent,
 					"realParent" => $w->getParentId()
 				);
+				if (logged_user()->getPersonalProjectId() == $w->getId())
+					$workspace["isPersonal"] = true;
+				$ws[] = $workspace;
 			}
 		}
 		
@@ -888,15 +891,17 @@ class ProjectController extends ApplicationController {
 			if (!$x instanceof Project) {
 				$tempParent = 0;
 			}
-				
-			$ws[] = array(
+			$workspace = array(
 				"id" => $w->getId(),
 				"name" => $w->getName(),
 				"color" => $w->getColor(),
 				"parent" => $tempParent,
 				"realParent" => $w->getParentId(),
-					"depth" => $w->getDepth()
+				"depth" => $w->getDepth()
 			);
+			if (logged_user()->getPersonalProjectId() == $w->getId())
+				$workspace["isPersonal"] = true;
+			$ws[] = $workspace;
 				
 		}
 		

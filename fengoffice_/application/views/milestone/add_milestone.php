@@ -1,18 +1,3 @@
-<script type="text/javascript">
-		var allTags = [<?php
-			$coma = false;
-			$tags = Tags::getTagNames();
-			foreach ($tags as $tag) {
-				if ($coma) {
-					echo ",";
-				} else {
-					$coma = true;
-				}
-				echo "'" . $tag . "'";
-			}
-		?>];
-	</script>
-
 <?php 
   $genid = gen_id();
   if (isset($base_milestone) && $base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) {
@@ -21,12 +6,7 @@
   $project = $milestone->getProject();
   $projects =  active_projects();
 ?>
-
-<?php if($milestone->isNew()) { ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) ?>" method="post">
-<?php } else { ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->getEditUrl() ?>" method="post">
-<?php } // if ?>
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 
 <div class="milestone">
 <div class="coInputHeader">
@@ -87,7 +67,7 @@
 	<div id="<?php echo $genid ?>add_milestone_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_textfield("milestone[tags]", array_var($milestone_data, 'tags'), 'allTags', array('class' => 'long')); ?>
+		<?php echo autocomplete_textfield("milestone[tags]", array_var($milestone_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 	
@@ -137,7 +117,8 @@
 	
 	<div>
 	<?php echo label_tag(lang('due date'), null, true) ?>
-	<?php echo pick_date_widget('milestone_due_date', array_var($milestone_data, 'due_date')) ?>
+	<?php //echo pick_date_widget('milestone_due_date', array_var($milestone_data, 'due_date')) ?>
+	<?php echo pick_date_widget2('milestone[due_date_value]', array_var($milestone_data, 'due_date'),$genid) ?>
 	</div>
 
 	<?php echo input_field("milestone[is_template]", array_var($milestone_data, 'is_template', false), array("type" => "hidden")); ?>

@@ -54,6 +54,46 @@
       return Comments::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
     } // dropCommentsByObject
     
+    static function getSubscriberComments(Project $workspace = null, $orderBy = '`created_on` DESC', $start = 0, $limit = 20) {
+    	$tp = TABLE_PREFIX;
+    	$user = logged_user();
+    	$id = $user->getId();
+    	$sql = "
+    		SELECT `a`.`id` FROM `".$tp."comments` `a`, `".$tp."object_subscriptions` `b`
+    		WHERE `object_id` = `rel_object_id` AND `object_manager` = `rel_object_manager`
+    			AND `user_id` = $id
+			ORDER BY $orderBy
+		";
+		$rows = DB::executeAll($sql);
+		$comments = array();
+		$s = 0; $count = 0;
+		foreach ($rows as $row) {
+			$comment = Comments::findById($row['id']);
+			$add = false;
+			if ($comment->getObject()->canView($user)) {
+				if ($workspace instanceof Project) {
+					$workspaces = $comment->getWorkspaces();
+					foreach ($workspaces as $w) {
+						if ($w->getId() == $workspace->getId() || $workspace->isParentOf($w)) {
+							$add = true;
+							break;
+						}
+					}
+				} else {
+					$add = true;
+				}
+			}
+			if ($add) {
+				$s++;
+				if ($s >= $start) {
+					$comments[] = $comment;
+					$count++;
+					if ($count >= $limit - $start) break;
+				}
+			}
+		}
+    	return $comments;
+    }
   } // Comments 
 
 ?>

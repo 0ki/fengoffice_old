@@ -58,7 +58,8 @@ class SearchController extends ApplicationController {
 				$c++;
 			}
 			$search_results = $this->searchContacts($search_for,$search_results,5);
-			$search_results = $this->searchSystem($search_for,$search_results,5);
+			$search_results = $this->searchWorkspaces($search_for,$search_results,5);
+			$search_results = $this->searchUsers($search_for,$search_results,5);
 		} // if
 		$timeEnd = microtime(true);
 		
@@ -98,7 +99,7 @@ class SearchController extends ApplicationController {
 		return $search_results;
 	}
 	
-	function searchSystem($search_term, $search_results = null, $row_count = 5){
+	function searchWorkspaces($search_term, $search_results = null, $row_count = 5){
 		if (!is_array($search_results))
 			$search_results = array();
 		
@@ -112,6 +113,13 @@ class SearchController extends ApplicationController {
 			$sr['manager'] = 'Projects';
 			$search_results[] = $sr;
 		}
+		
+		return $search_results;
+	}
+	
+	function searchUsers($search_term, $search_results = null, $row_count = 5){
+		if (!is_array($search_results))
+			$search_results = array();
 		
 		$results = SearchableObjects::searchByType($search_term, '0', 'Users', true, $row_count);
 		if (count($results[0]) > 0){
@@ -165,18 +173,31 @@ class SearchController extends ApplicationController {
 				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();
-			
-			$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page);
-			if (count($results[0]) > 0){
-				$c = array_search($manager, $objectManagers);
-				$sr = array();
-				$pagination = $results[1];
-				$sr['result'] = $results[0];
-				$sr['pagination'] = $pagination;
-				$sr['type'] =  $objectTypes[$c];
-				$sr['icontype'] = $iconTypes[$c];
-				$sr['manager'] = $manager;
-				$search_results[] = $sr;
+				
+			switch($manager){
+				case 'Contacts':
+					$search_results = $this->searchContacts($search_for, array(), 20);
+					break;
+				case 'Projects':
+					$search_results = $this->searchWorkspaces($search_for, array(), 20);
+					break;
+				case 'Users':
+					$search_results = $this->searchUsers($search_for, array(), 20);
+					break;
+				default:
+					$results = SearchableObjects::searchByType($search_for, $projects, $manager, true, 20,$page);
+					if (count($results[0]) > 0){
+						$c = array_search($manager, $objectManagers);
+						$sr = array();
+						$pagination = $results[1];
+						$sr['result'] = $results[0];
+						$sr['pagination'] = $pagination;
+						$sr['type'] =  $objectTypes[$c];
+						$sr['icontype'] = $iconTypes[$c];
+						$sr['manager'] = $manager;
+						$search_results[] = $sr;
+					}
+					break;
 			}
 		} // if
 		$timeEnd = microtime(true);

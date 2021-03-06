@@ -72,6 +72,20 @@ class Project extends BaseProject {
 		}
 	}
 	
+	function isParentOf($workspace) {
+		if (!$workspace instanceof Project) {
+			return false;
+		}
+		$depth = $this->getDepth();
+		for ($i = $depth + 1; $i <= 10; $i++) {
+			if ($this->getPID($i) == $workspace->getId()) {
+				return true;
+			}
+		}
+		return false;
+		
+	}
+	
 	function getParentIds(){
 		$result = array();
 		for ($i = 1; $i <= 10; $i++){

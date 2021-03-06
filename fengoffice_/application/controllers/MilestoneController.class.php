@@ -190,8 +190,13 @@ class MilestoneController extends ApplicationController {
 		tpl_assign('milestone', $milestone);
 
 		if (is_array(array_var($_POST, 'milestone'))) {
-			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', $now->getMonth()), array_var($_POST, 'milestone_due_date_day', $now->getDay()), array_var($_POST, 'milestone_due_date_year', $now->getYear()));
-
+			if (array_var($milestone_data, 'due_date_value') != ''){
+				$dueDate = explode('/', array_var($milestone_data, 'due_date_value'));
+	       		$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
+			} else {
+				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
+			}
+			
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
 			$milestone->setIsPrivate(false); //Mandatory to set
 			$milestone->setFromAttributes($milestone_data);
@@ -286,9 +291,14 @@ class MilestoneController extends ApplicationController {
 		tpl_assign('milestone', $milestone);
 
 		if(is_array(array_var($_POST, 'milestone'))) {
+			if (array_var($milestone_data, 'due_date_value') != ''){
+				$dueDate = explode('/', array_var($milestone_data, 'due_date_value'));
+	       		$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $dueDate[0], $dueDate[1], $dueDate[2]);
+			} else {
+				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
+			}
+			
 			$old_owner = $milestone->getAssignedTo(); // remember the old owner
-			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', 1), array_var($_POST, 'milestone_due_date_day', 1), array_var($_POST, 'milestone_due_date_year', 1970));
-
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
 
 			$old_is_private  = $milestone->isPrivate();

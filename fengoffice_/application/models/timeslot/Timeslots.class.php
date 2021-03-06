@@ -24,11 +24,22 @@ class Timeslots extends BaseTimeslots {
           )); // array
 	} // getTimeslotsByObject
 	
-	static function getOpenTimeslotByObjectAndUser(ProjectDataObject $object, User $user) {
-		$userCondition = ' and `user_id` = '. $user->getId();
+	
+	static function getOpenTimeslotByObject(ProjectDataObject $object, User $user = null) {
+		$userCondition = '';
+		if ($user)
+			$userCondition = ' and `user_id` = '. $user->getId();
 
 		return self::findOne(array(
           'conditions' => array('`object_id` = ? AND `object_manager` = ? AND `end_time`= ? ' . $userCondition, $object->getObjectId(), get_class($object->manager()), EMPTY_DATETIME), 
+          'order' => '`start_time`'
+          )); // array
+	} // getTimeslotsByObject
+	
+	
+	static function getOpenTimeslotsByObject(ProjectDataObject $object) {
+		return self::findAll(array(
+          'conditions' => array('`object_id` = ? AND `object_manager` = ? AND `end_time`= ? ', $object->getObjectId(), get_class($object->manager()), EMPTY_DATETIME), 
           'order' => '`start_time`'
           )); // array
 	} // getTimeslotsByObject

@@ -84,6 +84,24 @@ og.EventPopUp = function(data,config) {
 								            },
 								            {
 								            	xtype: 'hidden',
+								                name: 'event[durationhour]',
+								                id: 'durationhour',
+								                value: data.durationhour
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'event[durationmin]',
+								                id: 'durationmin',
+								                value: data.durationmin
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'event[start_value]',
+								                id: 'start_value',
+								                value: data.start_value
+								            },
+								            {
+								            	xtype: 'hidden',
 								                name: 'view',
 								                id: 'view',
 								                value: data.view
@@ -105,7 +123,8 @@ og.EventPopUp = function(data,config) {
 Ext.extend(og.EventPopUp, Ext.Window, {
 	accept: function() {		
 		this.hide();
-		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]=1&view='+Ext.getCmp('view').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});	
+		//var start_value = Ext.getCmp('month').getValue() + '/' + Ext.getCmp('day').getValue() + '/' + Ext.getCmp('year').getValue();
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]='+Ext.getCmp('durationhour').getValue()+'&event[durationmin]='+Ext.getCmp('durationmin').getValue()+'&view='+Ext.getCmp('view').getValue()+'&event[start_value]='+Ext.getCmp('start_value').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});	
 	},
 	
 	cancel: function() {
@@ -117,7 +136,7 @@ og.EventPopUp.show = function(callback, data, scope) {
 	if (!this.dialog) {
 		this.dialog = new og.EventPopUp(data);
 	}
-	this.the_data= data;
+	this.the_data = data;
 	this.dialog.setTitle(data.title);
 	Ext.getCmp('year').setValue(data.year);	
 	Ext.getCmp('month').setValue(data.month);	
@@ -125,7 +144,10 @@ og.EventPopUp.show = function(callback, data, scope) {
 	Ext.getCmp('hour').setValue(data.hour);	
 	Ext.getCmp('min').setValue(data.minute);	
 	Ext.getCmp('type_id').setValue(data.type_id);	
-	Ext.getCmp('subject').setValue('');	
+	Ext.getCmp('subject').setValue('');
+	Ext.getCmp('durationhour').setValue(data.durationhour);
+	Ext.getCmp('durationmin').setValue(data.durationmin);
+	Ext.getCmp('start_value').setValue(data.start_value);	
 	Ext.getCmp('view').setValue(data.view);	
 	this.dialog.purgeListeners();
 	this.dialog.show();
@@ -139,7 +161,7 @@ og.EventPopUp.show = function(callback, data, scope) {
 
 og.EventPopUp.goToEdit = function (){
 	var sub = Ext.getCmp('subject').getValue();	
-	var data=this.the_data;
-	og.openLink(og.getUrl('event', 'add', {subject: sub,day:data.day , month: data.month, year: data.year,hour: data.hour,minute: data.minute,type_id:data.type_id,view:data.view}), null);
+	var data = this.the_data;
+	og.openLink(og.getUrl('event', 'add', {subject: sub, day:data.day , month: data.month, year: data.year, hour: data.hour, minute: data.minute, durationhour:data.durationhour, durationmin:data.durationmin, start_value:data.start_value, type_id:data.type_id, view:data.view}), null);
 	this.dialog.hide();	
 }

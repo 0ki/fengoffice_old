@@ -121,7 +121,7 @@ function setDiscard(val){
     	array('class' => 'title', 'tabindex'=>'1', 'id' => 'mailTo')) ?>
   </div>
   
- 	<div id="add_mail_CC" <?php  array_var($mail_data, 'cc')==''? print('style="display:none;"'):print('')?> >
+ 	<div id="add_mail_CC" style="<?php  array_var($mail_data, 'cc')==''? print('display:none;'):print('')?>">
     	<label for="mailCC"><?php echo lang('mail CC')?> </label>
     	<?php echo text_field('mail[CC]', array_var($mail_data, 'cc'), 
     	array('class' => 'title', 'id' => 'mailCC', 'tabindex'=>'2')) ?>

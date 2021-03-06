@@ -1,18 +1,3 @@
-<script type="text/javascript">
-		var allTags = [<?php
-			$coma = false;
-			$tags = Tags::getTagNames();
-			foreach ($tags as $tag) {
-				if ($coma) {
-					echo ",";
-				} else {
-					$coma = true;
-				}
-				echo "'" . $tag . "'";
-			}
-		?>];
-	</script>
-
 <?php 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
   $project = active_or_personal_project();
@@ -64,7 +49,7 @@
     <fieldset>
     <legend>
     	<?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_textfield("webpage[tags]", array_var($webpage_data, 'tags'), 'allTags', array('class' => 'long')); ?>
+    	<?php echo autocomplete_textfield("webpage[tags]", array_var($webpage_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 

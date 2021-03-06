@@ -20,7 +20,7 @@ INSERT INTO  `<?php echo $table_prefix ?>read_objects`
 
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents` DROP `is_read`;
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD `from_name` VARCHAR( 250 ) NULL AFTER `from` ;
-ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD `state` INT( 1 ) NOT NULL DEFAULT '0' COMMENT '0:nothing, 1:sent; 2:draft' AFTER `size`;
+ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD `state` INT( 1 ) NOT NULL DEFAULT '0' COMMENT '0:nothing, 1:sent; 2:draft' AFTER `size` ;
 
 ALTER TABLE `<?php echo $table_prefix ?>project_tasks` ADD COLUMN `from_template_id` INTEGER UNSIGNED NOT NULL DEFAULT 0;
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones` ADD COLUMN `from_template_id` INTEGER UNSIGNED NOT NULL DEFAULT 0;

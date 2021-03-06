@@ -60,12 +60,12 @@ class MessageController extends ApplicationController {
 		// Get all emails and messages to display
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
-		$emails = $this->getEmails($action, $tag, $attributes, $project);
+//		$emails = $this->getEmails($action, $tag, $attributes, $project);
 		$messages = $this->getMessages($action, $tag, $attributes, $project);
-		$totMsg = $this->addMessagesAndEmails($messages, $emails);
+//		$totMsg = $this->addMessagesAndEmails($messages, $emails);
 		
 		// Prepare response object
-		$object = $this->prepareObject($totMsg, $start, $limit);
+		$object = $this->prepareObject($messages, $start, $limit);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 	}
@@ -87,23 +87,6 @@ class MessageController extends ApplicationController {
 					$type = $attributes["types"][$i];
 					
 					switch ($type){
-						case "email":
-							$email = MailContents::findById($id);
-							if (isset($email) && $email->canDelete(logged_user())){
-								try{
-									$email->deleteContents();
-									DB::beginWork();
-									$email->save();
-									DB::commit();
-									$resultMessage = lang("success delete objects", '');
-								} catch(Exception $e){
-									DB::rollback();
-									$resultMessage .= $e->getMessage();
-									$resultCode = $e->getCode();
-								}
-							};
-							break;
-							
 						case "message":
 							$message = ProjectMessages::findById($id);
 							if (isset($message) && $message->canDelete(logged_user())){
@@ -134,53 +117,11 @@ class MessageController extends ApplicationController {
 					$id = $attributes["ids"][$i];
 					$type = $attributes["types"][$i];
 					switch ($type){
-						case "email":
-							$email = MailContents::findById($id);
-							if (isset($email) && $email->canEdit(logged_user())){
-								Tags::addObjectTag($tag, $email);
-								$resultMessage = lang("success tag objects", '');
-							};
-							break;
-
 						case "message":
 							$message = ProjectMessages::findById($id);
 							if (isset($message) && $message->canEdit(logged_user())){
 								Tags::addObjectTag($tag, $message);
 								$resultMessage = lang("success tag objects", '');
-							};
-							break;
-
-						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-							$resultCode = 2;
-							break;
-					}; // switch
-				}; // for
-				break;
-			case "checkmail":
-				$resultCheck = MailController::checkmail();
-				$resultMessage = $resultCheck[1];// if 
-				$resultCode = $resultCheck[0];
-				break;
-				
-			case "markAsRead":case "markAsUnRead":
-				for($i = 0; $i < count($attributes["ids"]); $i++){
-					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					switch ($type){
-						case "email":
-							$email = MailContents::findById($id);
-							if (isset($email) && $email->canEdit(logged_user())){
-								try{
-									DB::beginWork();
-									$email->setIsRead($action=='markAsRead'?1:0,logged_user()->getId());
-									DB::commit();
-									$resultMessage = lang("success mark objects", '');
-								} catch(Exception $e){
-									DB::rollback();
-									$resultMessage .= $e->getMessage();
-									$resultCode = $e->getCode();
-								}
 							};
 							break;
 
@@ -242,124 +183,14 @@ class MessageController extends ApplicationController {
 		return $totMsg;
 	}
 	
-	/**
-	 * Returns a list of emails according to the requested parameters
-	 *
-	 * @param string $action
-	 * @param integer $accountId
-	 * @return array
-	 */
-	private function getEmails($action, $tag, $attributes, $project = null)
-	{
-		// Return if no emails should be displayed
-		if (isset($attributes["viewType"]) && 
-			($attributes["viewType"] != "all" && $attributes["viewType"] != "emails" && $attributes["viewType"] != "unclassified"))
-			return null;
-			
-		// Check for accounts
-		$accountConditions ="";
-		$singleAccount = false;
-		if (isset($attributes["accountId"]) && $attributes["accountId"] > 0){ //Single account
-			$singleAccount = true;
-			$accounts = array();
-			$acc = MailAccounts::findById($attributes["accountId"]);
-			if ($acc->canView(logged_user()))
-				$accounts[] = $acc;
-		}
-		else																// All user accounts
-			$accounts = MailAccounts::findAll(array(
-      			'conditions' => '`user_id` = ' . logged_user()->getId()));
-		
-		if (isset($accounts) && count($accounts) > 0){
-			$list = "";
-			foreach ($accounts as $acc)
-				$list .= "," . $acc->getId();
-			$accountConditions = "account_id in (" . substr($list,1) . ")";
-		}
-		if ($accountConditions == "")
-			$accountConditions = "account_id = 0";  //Dummy condition, cannot view any valid accounts but can see project emails
-			
-			
-		// Check for unclassified emails
-		if (isset($attributes["viewType"]) && $attributes["viewType"] == "unclassified")
-			$classified = "project_id = 0";
-		else
-			$classified = "'1' = '1'";
-			
-			
-		// Check for drafts emails
-		if (isset($attributes["stateType"]) && $attributes["stateType"] == "draft")
-			$state = "state = '2'";
-		else if (isset($attributes["stateType"]) && $attributes["stateType"] == "sent")
-			$state = "state = '1'";
-		else if (isset($attributes["stateType"]) && $attributes["stateType"] == "received")
-			$state = "state = '0'";
-		else
-			$state = "'1' = '1'";				
-	
-			
-			
-		// Check read emails
-		if (isset($attributes["readType"]) && $attributes["readType"] == "unreaded")
-			$readed = " NOT id in (SELECT rel_object_id from " . TABLE_PREFIX . "read_objects t WHERE user_id="
-		. logged_user()->getId() . " AND t.rel_object_manager='MailContents' AND t.is_read='1')";
-		else
-			$readed = "'1' = '1'";
-			
-		
-		//Check for tags
-		if (!isset($tag) || $tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-				TABLE_PREFIX . "mail_contents.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='MailContents' ) > 0 ";
-		}
-		
-		
-		//Check for projects (uses accountConditions
-		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-			
-			if ($singleAccount)
-				$projectConditions = "($accountConditions AND `project_id` IN ($pids))";
-			else
-				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
-					"`project_id` IN ($pids)":
-					"(($accountConditions AND `project_id` IN ($pids)) OR (`project_id` IN ($pids) AND is_private = 0))";
-		} else {
-    		$pids = logged_user()->getActiveProjectIdsCSV();
-    		
-    		if ($singleAccount)
-    			$projectConditions = $accountConditions;
-    		else
-				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
-					"($accountConditions OR `project_id` in ($pids))":
-					"($accountConditions OR (`project_id` in ($pids) AND is_private = 0))";
-		}
-		
-		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-	
-		
-		
-		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND is_deleted = 0 " . $permissions 
-			. " ORDER BY sent_date DESC");
-			
-			
-			
-		if(!$res) return null;
-		return $res->fetchAll();
-		
-		/*return MailContents::findAll(array(
-				'conditions' => $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0 " . $permissions, 
-				'order' => 'sent_date DESC'));*/
-	}
 	
 	/**
 	 * Returns a list of messages according to the requested parameters
 	 *
 	 * @param string $action
+	 * @param string $tag
+	 * @param array $attributes
+	 * @param Project $project
 	 * @return array
 	 */
 	private function getMessages($action, $tag, $attributes, $project = null) {
@@ -412,34 +243,9 @@ class MessageController extends ApplicationController {
 				$manager= $totMsg[$i]['manager'];
     			$id = $totMsg[$i]['id'];
     			if($id && $manager){
-    				$msg=get_object_by_manager_and_id($id,$manager);  
+    				$msg=get_object_by_manager_and_id($id, $manager);  
 					
-					if ($msg instanceof MailContent){/* @var $msg MailContent */
-						$text = $msg->getBodyPlain();
-						if (strlen($text) > 300)
-							$text = substr($text,0,300) . "...";
-						$object["messages"][] = array(
-						    "id" => $i,
-							"object_id" => $msg->getId(),
-							"type" => 'email',
-							"hasAttachment" => $msg->getHasAttachments(),
-							"accountId" => $msg->getAccountId(),
-							"accountName" => $msg->getAccount()->getName(),
-							"projectId" => $msg->getProjectId(),							
-							"title" => $msg->getSubject(),
-							"text" => $text,
-							"date" => $msg->getSentDate()->getTimestamp(),
-							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"userId" => $msg->getAccount()->getOwner()->getId(),
-							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
-							"tags" => project_object_tags($msg),
-							"isRead" => $msg->getIsRead(logged_user()->getId()),
-							"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),							
-							"isDraft" => $msg->getIsDraft(),							
-							"isSent" => $msg->getIsSent()							
-							
-						);
-					} else if ($msg instanceof ProjectMessage){
+					if ($msg instanceof ProjectMessage){
 						$text = $msg->getText();
 						if (strlen($text) > 300)
 							$text = substr($text,0,300) . "...";
@@ -575,7 +381,6 @@ class MessageController extends ApplicationController {
 
 				DB::beginWork();
 				$message->save();
-				$message->subscribeUser(logged_user());
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
 				$message->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				foreach ($validWS as $w) {
@@ -608,7 +413,7 @@ class MessageController extends ApplicationController {
 										if (!isset($processedUsers[$company_user->getId()])) {
 											$processedUsers[$company_user->getId()] = true;
 											if ((array_var($message_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($message_data, 'notify_user_' . $company_user->getId()))) {
-												$message->subscribeUser($company_user); // subscribe
+												$message->subscribeUser($company_user);
 												$notify_people[] = $company_user;
 											} // if
 										}
@@ -780,62 +585,7 @@ class MessageController extends ApplicationController {
 		} // try
 	} // delete
 
-	// ---------------------------------------------------
-	//  Subscriptions
-	// ---------------------------------------------------
 
-	/**
-	 * Subscribe to message
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function subscribe() {
-		$message = ProjectMessages::findById(get_id());
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
-		} // if
-
-		if(!$message->canView(logged_user())) {
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('message');
-			return ;
-		} // if
-
-		if($message->subscribeUser(logged_user())) {
-			flash_success('success subscribe to message');
-		} else {
-			flash_error('error subscribe to message');
-		} // if
-		$this->redirectToUrl($message->getViewUrl());
-	} // subscribe
-
-	/**
-	 * Unsubscribe from message
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function unsubscribe() {
-		$message = ProjectMessages::findById(get_id());
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
-		} // if
-
-		if(!$message->canView(logged_user())) {
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('message');
-		} // if
-
-		if($message->unsubscribeUser(logged_user())) {
-			flash_success('success unsubscribe to message');
-		} else {
-			flash_error('error unsubscribe to message');
-		} // if
-		$this->redirectToUrl($message->getViewUrl());
-	} // unsubscribe
 
 } // MessageController
 

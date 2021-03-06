@@ -75,7 +75,8 @@
   	'user ws config option name show pending tasks widget' => 'Show pending tasks widget',
   	'user ws config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
   	'user ws config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
-  	'user ws config option name show messages widget' => 'Show messages widget',
+  	'user ws config option name show messages widget' => 'Show notes widget',
+  	'user ws config option name show comments widget' => 'Show comments widget',
   	'user ws config option name show documents widget' => 'Show documents widget',
   	'user ws config option name show calendar widget' => 'Show mini calendar widget',
   	'user ws config option name show charts widget' => 'Show charts widget',
@@ -86,7 +87,22 @@
   	'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
   	'user ws config option name can notify from quick add' => 'Notification checkbox in quick add',
   	'user ws config option desc can notify from quick add' => 'A checkbox is enabled so assigned users can be notified after quick addition on a task',
-
+ 	
+  	'backup process desc' => 'A backup saves the current state of the whole application into a compressed folder. It can de used to easily backup an OpenGoo installation. <br> Generating a backup of the database and filesystem can last more than a couple of seconds, so making a backup is a process consisting on three steps: <br>1.- Launch a backup process, <br>2.- Download the backup. <br> 3.- Optionally, a backup can be manually deleted so that it is not available in the future. <br> ',
+  	'start backup' => 'Launch backup process',
+    'start backup desc' => 'Launching a backup process implies deleting previous backups, and generating a new one.',
+  	'download backup' => 'Download backup',
+    'download backup desc' => 'To be able to download a backup you must first generate a backup.',
+  	'delete backup' => 'Delete backup',
+    'delete backup desc' => 'Deletes the last backup so that it is not available for download. Deleting backups after download is highly recommended.',
+    'backup' => 'Backup',
+    'backup menu' => 'Backup Menu',
+   	'last backup' => 'Last backup was created on',
+   	'no backups' => 'There are no backups to download',
+   	
+   	'user ws config option name always show unread mail in dashboard' => 'Always show unread email in dashboard',
+   	'user ws config option desc always show unread mail in dashboard' => 'When NO is chosen emails from the active workspace will be shown',
+   	'workspace emails' => 'Workspace Mails',
   	); // array
 
 ?>

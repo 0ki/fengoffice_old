@@ -16,6 +16,8 @@
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
 */
+$genid = '';
+
 $active_projects = logged_user()->getActiveProjects();
 //$project = active_or_personal_project();
 
@@ -23,7 +25,9 @@ $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
 $year =  array_var($event_data, 'year');
 
-	echo  cal_top();
+$filter_user = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
+
+echo  cal_top();
 	
 ?>
 
@@ -122,6 +126,7 @@ $year =  array_var($event_data, 'year');
 	<?php } else { ?>
 	<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $event->getEditUrl()."&view=". array_var($_GET, 'view','month'); ?>" method="post">
 	<?php } // if ?>
+
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
 	<div class="event">	
 	<div class="coInputHeader">
@@ -151,7 +156,8 @@ $year =  array_var($event_data, 'year');
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_properties_div', this)"><?php echo lang('properties')?></a> - 
-		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a>
+		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_event_invitation_div', this)"><?php echo lang('event invitations') ?></a>
 		</div></div>
 	
 		<div class="coInputSeparator"></div>
@@ -185,7 +191,7 @@ $year =  array_var($event_data, 'year');
 			<div id="add_event_tags_div" style="display:none">
 				<fieldset>
 				<legend><?php echo lang('tags')?></legend>
-					<?php echo autocomplete_textfield('event[tags]', array_var($event_data, 'tags'), 'allTags', array( 'class' => 'long'))	?>
+					<?php echo autocomplete_textfield("event[tags]", array_var($event_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 				</fieldset>
 			</div>
 			
@@ -324,13 +330,106 @@ $year =  array_var($event_data, 'year');
 		</fieldset>
 	</div>
 	
+	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none">
+		<fieldset id="emailNotification">
+			<legend><?php echo lang('event invitations') ?></legend>
+			<p><?php echo lang('event invitations desc') ?></p>
+
+			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification')) ?> 
+			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
+
+			<?php
+			$project = active_or_personal_project(); 
+			if ($project instanceof Project) {
+				$companies = $project->getCompanies();
+			} else {
+				$companies = Companies::findAll();
+			}?>
+			<?php foreach($companies as $company) { ?>
+				<script type="text/javascript">
+					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
+						id          : <?php echo $company->getId() ?>,
+						checkbox_id : 'notifyCompany<?php echo $company->getId() ?>',
+						users       : []
+					};
+				</script>
+				<?php if ($project instanceof Project) {
+					$users = $company->getUsersOnProject($project);
+				} else {
+					$users = $company->getUsers();
+				}?>
+				<?php if(is_array($users) && count($users)) { ?>
+				<div class="companyDetails">
+					<div class="companyName">
+						<?php echo checkbox_field('event[invite_company_' . $company->getId() . ']', 
+							array_var($event_data, 'invite_company_' . $company->getId()), 
+							array('id' => $genid.'notifyCompany' . $company->getId(), 
+								'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ',"' . $genid. '")')) ?> 
+						<label for="<?php echo $genid ?>notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
+					</div>
+					
+					<div class="companyMembers">
+					<ul>
+					<?php foreach($users as $user) { 
+						if ($user->getId() != $filter_user) { ?>
+							<li><?php echo checkbox_field('event[invite_user_' . $user->getId() . ']',
+								array_var($event_data, 'invite_user_' . $user->getId()), 
+								array('id' => $genid.'notifyUser' . $user->getId(),
+									'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
+								<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
+							<script type="text/javascript">
+								App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
+									id          : <?php echo $user->getId() ?>,
+									checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
+								});
+							</script>
+						<?php } // if ?>
+					<?php } // foreach ?>
+					</ul>
+					</div>
+					</div>
+				<?php } // if ?>
+			<?php } // foreach ?>
+			<?php // ComboBox for Assistance confirmation 
+				if (!$event->isNew()) {
+					$event_invs = $event->getInvitations();
+					if (isset($event_invs[$filter_user])) {
+						$event_inv_state = $event_invs[$filter_user]->getInvitationState();
+					} else {
+						$event_inv_state = -1;
+					}
+					
+					if ($event_inv_state != -1) {
+						$options = array(
+							option_tag(lang('yes'), 1, ($event_inv_state == 1)?array('selected' => 'selected'):null),
+							option_tag(lang('no'), 2, ($event_inv_state == 2)?array('selected' => 'selected'):null),
+							option_tag(lang('maybe'), 3, ($event_inv_state == 3)?array('selected' => 'selected'):null)
+						);
+						if ($event_inv_state == 0) {
+							$options[] = option_tag(lang('decide later'), 0, ($event_inv_state == 0) ? array('selected' => 'selected'):null);
+						}
+						?>
+						<table><tr><td style="padding-right: 6px;"><label for="eventFormComboAttendance" class="combobox"><?php echo lang('confirm attendance') ?></label></td><td>
+						<?php echo select_box('event[confirmAttendance]', $options, array('id' => 'eventFormComboAttendance'));?>
+						</td></tr></table>	
+				<?php	} //if			
+				} // if ?>
+		</fieldset>
+	</div>	
 	<div>
-<fieldset><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
+<fieldset"><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
 <table>
 	<tr style="padding-bottom:4px">
 		<td align="right" style="padding-right:6px;padding-bottom:4px;padding-top:2px"><?php echo lang('CAL_DATE') ?></td>
 		<td align='left'>
-			<?php echo pick_date_widget('event[start]',$event->getStart() , date("Y") - 10 , date("Y") + 10);?>
+			<?php
+				$dv_start = new DateTimeValue(time());
+				$dv_start->setDay($day);
+				$dv_start->setMonth($month);
+				$dv_start->setYear($year);
+				$event->setStart($dv_start); 
+				?>
+			<?php echo pick_date_widget2('event[start_value]', $event->getStart(), $genid) ?>
 		</td>
 	</tr>
 	<tr style="padding-bottom:4px">
@@ -338,10 +437,7 @@ $year =  array_var($event_data, 'year');
 			<?php echo lang('CAL_TIME') ?>
 		</td>
 		<td align='left'>
-			
-			
-			<span id='row_time'>
-			
+			<span id='row_time'>			
 			<select name="event[hour]" size="1">
 				<?php
 				if(!cal_option("hours_24")) {
@@ -367,7 +463,7 @@ $year =  array_var($event_data, 'year');
 					echo sprintf(">%02d</option>\n", $i);
 				}
 				?>
-					</select> <?php
+			</select> <?php
 				// print out the PM/AM option (only if using 12-hour clock)
 				if(!cal_option("hours_24")) {
 					echo '<select name="event[pm]" size="1"><option value="0"';
@@ -397,7 +493,7 @@ $year =  array_var($event_data, 'year');
 		<?php
 		for($i = 0; $i < 15; $i++) {
 			echo "<option value='$i'";
-			if(array_var($event_data, 'durhr')== $i) echo ' selected="selected"';
+			if(array_var($event_data, 'durationhour')== $i) echo ' selected="selected"';
 			echo ">$i</option>\n";
 		}
 		?>
@@ -405,7 +501,7 @@ $year =  array_var($event_data, 'year');
 			name="event[durationmin]" size="1">
 			<?php
 			// print out the duration minutes drop down
-			$durmin = array_var($event_data, 'durmin');
+			$durmin = array_var($event_data, 'durationmin');
 			for($i = 0; $i <= 59; $i = $i + 15) {
 				echo "<option value='$i'";
 				if($durmin >= $i && $i > $durmin - 15) echo ' selected="selected"';
@@ -436,4 +532,32 @@ $year =  array_var($event_data, 'year');
 	Ext.get('eventSubject').focus();
 	
 	<?php if (array_var($event_data, 'typeofevent') == 2) echo "toggleDiv('row_time')";?>
+	/*
+	// DatePicker Menu
+	var dateMenu = new Ext.menu.DateMenu({
+	    handler : function(dp, date){
+			document.getElementById("displayDate").value = date.format('d') + '/' + date.format('m') + '/' + date.format('Y');
+			document.getElementById("event[start_day]").value = date.format('d');
+			document.getElementById("event[start_month]").value = date.format('m');
+			document.getElementById("event[start_year]").value = date.format('Y');
+	    }
+	});
+	dateMenu.picker.setValue(new Date(<?php echo $year?>, <?php echo $month - 1?>, <?php echo $day?>));
+	
+	Ext.apply(dateMenu.picker, { 
+		okText: lang('ok'),
+		cancelText: lang('cancel'),
+		monthNames: [lang('month 1'), lang('month 2'), lang('month 3'), lang('month 4'), lang('month 5'), lang('month 6'), lang('month 7'), lang('month 8'), lang('month 9'), lang('month 10'), lang('month 11'), lang('month 12')],
+		dayNames:[lang('sunday'), lang('monday'), lang('tuesday'), lang('wednesday'), lang('thursday'), lang('friday'), lang('saturday')],
+		monthYearText: '',
+		nextText: lang('next month'),
+		prevText: lang('prev month'),
+		todayText: lang('today'),
+		todayTip: lang('today')
+	});
+	
+	function showDateMenu() {
+		dateMenu.show(Ext.get('displayDate'));
+	}*/
+	
 </script>

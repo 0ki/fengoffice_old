@@ -76,7 +76,7 @@
     'welcome to administration' => 'Welcome',
     'welcome to administration info' => 'Welcome to the administration panel. Using this tool you can manage your company data, members, clients and workspaces you are involved in.',
     
-    'send new account notification' => 'Send email notification?',
+    'send new account notification' => 'Send email notification',
     'send new account notification desc' => 'If you select "Yes" the user will receive an email with a welcome message and login parameters',
     
     // Tools
@@ -275,7 +275,7 @@
   'new event' => 'New event',
   'new webpage' => 'New weblink',
   'new milestone' => 'New milestone',
-  'new message' => 'New message',
+  'new message' => 'New note',
   'new group' => 'New group',
   'new user' => 'New user',
   'add tags' => 'Add tags',
@@ -310,7 +310,7 @@
   'view as list' => 'View as list',
   'pending tasks' => 'Pending tasks',
   'my pending tasks' => 'My pending tasks',
-  'messages' => 'Messages',
+  'messages' => 'Notes',
   'complete' => 'Complete',
   'incomplete' => 'Incomplete',
   'complete task' => 'Complete this task',
@@ -365,7 +365,7 @@
   'search for' => 'Search results for \'{0}\' in all workspaces',
   
   'workspace permamanent delete' =>  'When a Workspace is deleted the following <b>content is lost permanently</b>',
-	'workspace permamanent delete messages'  => ' All messages in the workspace',
+	'workspace permamanent delete messages'  => ' All notes in the workspace',
  'workspace permamanent delete tasks' => ' All tasks in the workspace',
  'workspace permamanent delete milestones' => ' All milestones in the workspace',
  'workspace permamanent delete files' => ' All files in the workspace',
@@ -427,8 +427,17 @@
   'group by' => 'Group by',
   
   'total' => 'Total',
-  
   'enter tags desc' => 'Enter comma separated tag names...',
+  
+  'user subscribed to object' => 'You are subscribed to this object.',
+  'user not subscribed to object' => 'You are not subscribed to this object.',
+  
+  'tasks updated' => 'Task(s) updated successfully',
+  'too many tasks to display' => 'There are too many tasks to display, only the most recent 500 tasks are being displayed. To show tasks correctly and remove this warning, please filter tasks by workspace, tags, task filters or status.',
+  
+  
+  'show image in new page' => 'Show image in new page',
+  'no tasks to display' => 'There are no tasks to display',
   
   ); // array
 

@@ -47,14 +47,14 @@
     'mark workspace as active' => 'Mark Workspace as active',
     
     // Messages
-    'add message' => 'Add message',
-    'add new message' => 'Add new message',
-    'edit message' => 'Edit message',
-    'delete message' => 'Delete message',
-    'view message' => 'View message',
+    'add message' => 'Add note',
+    'add new message' => 'Add new note',
+    'edit message' => 'Edit note',
+    'delete message' => 'Delete note',
+    'view message' => 'View note',
     'update message options' => 'Update options',
-    'subscribe to message' => 'Subscribe',
-    'unsubscribe from message' => 'Unsubscribe',
+    'subscribe to object' => 'Subscribe',
+    'unsubscribe from object' => 'Unsubscribe',
     
     // Comments
     'add comment' => 'Post comment',

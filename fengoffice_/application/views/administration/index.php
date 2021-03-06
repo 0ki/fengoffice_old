@@ -62,7 +62,7 @@
 <td align="center">
     <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
     <table width="100%" align="center"><tr><td align="center">
-    	<a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><div class="coViewIconImage"></div></a>
+    	<a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><div class="coViewIconImage ico-large-workspace"></div></a>
     </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a></b>
     	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('project', 'add') ?>"><?php echo lang('add project') ?></a>
     </td></tr></table>
@@ -107,7 +107,17 @@
     </td></tr></table>
     </div>
 </td>
-<?php } ?>
+
+<?php if(logged_user()->isAccountOwner()){ ?>
+<td align="center">
+    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
+    <table width="100%" align="center"><tr><td align="center">
+    	<a class="internalLink" href="<?php echo get_url('backup') ?>"><div class="coViewIconImage ico-large-backup"></div></a>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('backup') ?>"><?php echo lang('backup') ?></a></b>
+    </td></tr></table>
+    </div>
+</td>
+<?php } } ?>
 </tr></table>
 </div>
     

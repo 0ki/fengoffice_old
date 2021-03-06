@@ -12,7 +12,7 @@ og.eventManager.addListener('tag changed',
  			);
  		}
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'tasks-panel') {
- 			og.openLink('<?php echo get_url('task')?>',
+ 			og.openLink('<?php echo get_url('task','new_list_tasks')?>',
  				{caller:'tasks-panel',
  				get:{tag:tag.name}}
  			);

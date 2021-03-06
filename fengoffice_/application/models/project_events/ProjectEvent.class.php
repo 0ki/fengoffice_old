@@ -43,6 +43,12 @@ class ProjectEvent extends BaseProjectEvent {
 	 */
 	private $event_type_object;
 
+	/**
+	 * Array of invitated Users
+	 *
+	 * @var array
+	 */
+	private $event_invitations;
 
 	/**
 	 * Contruct the object
@@ -308,7 +314,15 @@ class ProjectEvent extends BaseProjectEvent {
 		if(!$this->validateMaxValueOf('subject', 100)) $errors[] = lang('event subject maxlength');
 	} // validate
 	
+	function getInvitations() {
+		return $this->event_invitations;
+	}
 	
+	function addInvitation($inv) {
+		if (isset($inv)) {
+			$this->event_invitations[$inv->getUserId()] = $inv;
+		}
+	}
 
 	// ---------------------------------------------------
 	//  Revision interface

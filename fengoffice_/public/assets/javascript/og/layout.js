@@ -38,10 +38,9 @@ Ext.onReady(function(){
 	}));
 	Ext.state.Manager.getProvider().initState(og.initialGUIState);*/
 	
-
 	Ext.QuickTips.init();
 
-	new Ext.TabPanel({
+	var tab_panel = new Ext.TabPanel({
 		id: 'tabs-panel',
 		region:'center',
 		activeTab: 0,
@@ -73,6 +72,16 @@ Ext.onReady(function(){
 				}
 			}),
 			new og.ContentPanel({
+				title: lang('email') + ' (BETA)',
+				id: 'mails-panel',
+				iconCls: 'ico-email',
+				refreshOnWorkspaceChange: true,
+				defaultContent: {
+					type: "panel",
+					data: "mails"
+				}
+			}),
+			new og.ContentPanel({
 				title: lang('contacts'),
 				id: 'contacts-panel',
 				iconCls: 'ico-contacts',
@@ -90,7 +99,9 @@ Ext.onReady(function(){
 				defaultContent: {
 					type: "url",
 					data: og.getUrl('event','viewweek')
-				}
+				},
+				baseCls: '',
+				tbar: og.CalendarToolbarItems
 			}),
 			new og.ContentPanel({
 				title: lang('documents'),
@@ -109,7 +120,7 @@ Ext.onReady(function(){
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "url",
-					data: og.getUrl('task','index')
+					data: og.getUrl('task','new_list_tasks')
 				}
 			}),
 			new og.ContentPanel({
@@ -121,22 +132,21 @@ Ext.onReady(function(){
 					type: "panel",
 					data: "webpages"
 				}
-			}),
+			})/*,
 			new og.ContentPanel({
 				title: lang('reporting'),
 				id: 'reporting-panel',
 				iconCls: 'ico-reporting',
-				/*refreshOnWorkspaceChange: true,*/
 				refreshOnWorkspaceChange: false,
 				defaultContent: {
-					/*type: "panel",
-					data: "reporting"*/
 					type: "url",
 					data: og.getUrl('reporting','index')
 				}
-			})
+			})*/
 		]
 	});
+	
+	if (og.hideMailsTab == 1) tab_panel.remove('mails-panel');
 	
 	var viewport = new Ext.Viewport({
 		layout: 'border',
@@ -171,6 +181,7 @@ Ext.onReady(function(){
 				iconCls: 'ico-workspaces',
 				split: true,
 				width: 200,
+				bodyBorder: false,
 				minSize: 175,
 				maxSize: 400,
 				collapsible: true,

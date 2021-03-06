@@ -10,9 +10,9 @@
     'hide welcome info' => '&raquo; Ocultar información de forma permanente',
     
     // Companies
-    'add company' => 'Agregar empresa',
-    'edit company' => 'Editar datos de la empresa',
-    'delete company' => 'Eliminar empresa',
+    'add company' => 'Agregar compañía',
+    'edit company' => 'Editar datos de la compañía',
+    'delete company' => 'Eliminar compañía',
     'edit company logo' => 'Guardar logo',
     'delete company logo' => 'Eliminar logo',
     
@@ -47,18 +47,18 @@
     'mark workspace as active' => 'Marcar espacio como activo',
     
     // Messages
-    'add message' => 'Agregar mensaje',
-    'add new message' => 'Agregar nuevo mensaje',
-    'edit message' => 'Editar mensaje',
-    'delete message' => 'Eliminar mensaje',
-    'view message' => 'Mostrar mensaje',
+    'add message' => 'Agregar nota',
+    'add new message' => 'Agregar nuevo nota',
+    'edit message' => 'Editar nota',
+    'delete message' => 'Eliminar nota',
+    'view message' => 'Mostrar nota',
     'update message options' => 'Guardar nuevas opciones',
-    'subscribe to message' => 'Suscribir',
-    'unsubscribe from message' => 'Borrar suscripcion',
+    'subscribe to object' => 'Suscribir',
+    'unsubscribe from object' => 'Borrar suscripcion',
     
     // Comments
     'add comment' => 'Agregar comentario',
-    'edit comment' => 'Grabar comentario',
+    'edit comment' => 'Editar comentario',
     
     // Task list
     'add task list' => 'Agregar tarea',
@@ -99,7 +99,7 @@
     'week' => 'Semana',
     
     //Groups
-    'can edit company data' => 'Permitirle editar datos de la empresa',
+    'can edit company data' => 'Permitirle editar datos de la compañía',
     'can manage security' => 'Permitirle modificar configuraciones de seguridad',
     'can manage workspaces' => 'Permitirle modificar configuraciones de espacios',
     'can manage configuration' => 'Permitirle modificar las configuraciones',
@@ -110,7 +110,7 @@
     // People
     'update people' => 'Poner al día',
     'remove user from project' => 'Eliminar usuario de este espacio',
-    'remove company from project' => 'Eliminar empresa del proyecto',
+    'remove company from project' => 'Eliminar compañía del proyecto',
     
     // Password
     'update profile' => 'Editar datos de mi cuenta',

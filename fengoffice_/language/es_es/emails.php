@@ -3,7 +3,7 @@
 return array(
 
 // Titles
-    'new message' => 'Mensaje nuevo',
+    'new message' => 'Nueva nota',
     'new comment' => 'Añadir comentario',
     'your account created' => 'Su cuenta ha sido creada',
     'your password' => 'Contraseña',
@@ -16,10 +16,10 @@ return array(
     'user password reseted' => 'Su contraseña ha sido cambiada. Su nueva contraseña es \'{0}\'.',
 
     'dont reply wraning' => 'ESTE ES UN MENSAJE DE NOTIFICACIÓN. NO RESPONDER A ESTA DIRECCIÓN DE CORREO!',
-    'new message posted' => 'Nuevo mensaje "{0}" ha sido publicado',
+    'new message posted' => 'Nueva nota "{0}" ha sido publicado',
     'new task' => 'Nueva tarea',
     'new task created' => 'Nueva tarea "{0}" ha sido creada en el proyecto "{1}"',
-    'view new message' => 'Ver mensaje',
+    'view new message' => 'Ver nota',
     'view new task' => 'Ver tarea',
 
     'new comment posted' => 'Un nuevo comentario ha sido publicado en "{0}"',
@@ -73,8 +73,10 @@ return array(
     'mail address' => 'Direcci&oacute;n de email',
     'mail address description' => 'La dirección de correo electrónico es la dirección que otras personas utilizarán para enviarle mensajes',
 
-	'unread emails' => 'Emails no leidos'
-
+	'unread emails' => 'Emails no leidos',
+	'view due task' => 'Ver tarea a vencer',
+	'due task email' => 'La tarea "{0}" vencerá el "{1}" y aún está pendiente',
+	'due task' => 'Tarea a vencer',
     ); // array
 
     ?>

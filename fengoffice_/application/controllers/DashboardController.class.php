@@ -67,6 +67,10 @@ class DashboardController extends ApplicationController {
 					, 'order' => 'updated_on DESC', 'limit' => 10));
 			tpl_assign('messages', $messages);
 		}
+		if(user_config_option('show comments widget')){
+			$comments = Comments::getSubscriberComments(active_project());
+			tpl_assign('comments', $comments);
+		}
 		if(user_config_option('show documents widget')){
 			$documents = ProjectFiles::findAll(array(
 				'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
@@ -80,30 +84,43 @@ class DashboardController extends ApplicationController {
 		if(user_config_option('show emails widget')){
 			$mail_accounts = logged_user()->getMailAccountIdsCSV();
 			if ($mail_accounts != ''){
-				$unread_emails = MailContents::findAllUnread(array('conditions' => 'account_id in (' . $mail_accounts . ')', 'order' => 'sent_date DESC', 'limit' => 10));
+				$unread_emails = '';
+				$ws_emails = '';
+				if( !active_project() || user_config_option('always show unread mail in dashboard')){
+					$unread_emails = MailContents::findAllUnread(array('conditions' => 'account_id in (' . $mail_accounts . ') and `is_deleted` = false ', 'order' => 'sent_date DESC', 'limit' => 10));
+				}
+				else{
+					$ws_emails = MailContents::getProjectMails(active_project());
+				}
 				tpl_assign('unread_emails', $unread_emails);
+				tpl_assign('ws_emails', $ws_emails);
 			}
 		}
 		
-		if(user_config_option('show pending tasks widget')){
+		//Tasks widgets
+		$show_pending = user_config_option('show pending tasks widget');
+		$show_in_progress = user_config_option('show tasks in progress widget');
+		$show_late = user_config_option('show late tasks and milestones widget');
+		if ($show_pending || $show_in_progress || $show_late){
 			$assigned_to = explode(':', user_config_option('pending tasks widget assigned to filter'));
 			$to_company = array_var($assigned_to, 0,0);
 			$to_user = array_var($assigned_to, 1, 0);
-			
+		}
+		if($show_pending){
 			$tasks = ProjectTasks::getProjectTasks(active_project(),null,'ASC',null,null,$tag,$to_company,$to_user,null,true);
 			tpl_assign('dashtasks', $tasks);
 		}
-		if(user_config_option('show tasks in progress widget')){
-			$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag);
+		if($show_in_progress){
+			$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag,$to_company,$to_user);
 			tpl_assign('tasks_in_progress', $tasks_in_progress);
 		}
-		
-		if(user_config_option('show late tasks and milestones widget')){
+		if($show_late){
 			tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project(), $tag));
 			tpl_assign('late_milestones', $logged_user->getLateMilestones(active_project(), $tag));
-			tpl_assign('today_tasks', $logged_user->getTodayTasks(active_project(), $tag));
-			tpl_assign('late_tasks', $logged_user->getLateTasks(active_project(), $tag));
+			tpl_assign('today_tasks', ProjectTasks::getDayTasksByUser(DateTimeValueLib::now(), $logged_user, active_project(), $tag, $to_company, $to_user));
+			tpl_assign('late_tasks', ProjectTasks::getLateTasksByUser($logged_user, active_project(), $tag, $to_company, $to_user));
 		}
+		
 		tpl_assign('active_projects', $active_projects);
 		tpl_assign('activity_log', $activity_log);
 

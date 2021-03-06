@@ -6,7 +6,7 @@ return array(
     'show all upcoming milestones' => 'Mostrar todos los hitos (total {0})',
 
     'recent activities' => 'Actividades recientes',
-    'search button caption' => 'Ir',
+    'search button caption' => 'Buscar',
     'search result description' => 'Mostrando <strong>{0} de {1}</strong> objetos que coinciden con <strong>"{2}"</strong>',
     'search result description short' => '<strong>{0} a {1} de {2}</strong>',
 
@@ -14,7 +14,7 @@ return array(
 	'edit this file' => 'Editar archivo',
 	'file contents' => 'Contenidos del archivo',
 
-    'important message desc' => 'Los mensajes importantes se encuentran en la barra lateral de la página de mensaje del proyecto, listados bajo el nombre "Mensajes importantes"',
+    'important message desc' => 'Las notas importantes se encuentran en la barra lateral de la página de notas del proyecto, listados bajo el nombre "Notas importantes"',
     'important file desc' => 'Los archivos importantes son listados en la barra lateral, bajo el nombre de "Archivos importantes"',
     'enable comments' => 'Habilitar uso de comentarios',
     'enable comments desc' => 'Los usuarios que puedan ver este comentario, también podrán publicar comentarios. Elija "No" para bloquear los comentarios.',
@@ -37,6 +37,7 @@ return array(
     'revisions on file' => '{0} revisión(es)',
     
     'message posted on by linktitle' => 'Publicado el {0} por {1}',
+	'comment posted on by linktitle' => 'Publicado el {0} por {1}',
     'message posted on by' => 'Publicado el {0} por <a class="internalLink" href="{1}">{2}</a>',
     'comment posted on' => 'Publicado el {0}',
     'comment posted on by' => 'Publicado el {0} por <a class="internalLink" href="{1}">{2}</a>',
@@ -66,18 +67,18 @@ return array(
     'expand additional text' => 'Expandir',
     'collapse additional text' => 'Contraer',
     'email notification' => 'Notificación de correo electrónico',
-    'email notification desc' => 'Notificar este mensaje a las personas seleccionadas vía correo electrónico',
+    'email notification desc' => 'Notificar y subscribir a esta nota a las personas seleccionadas vía correo electrónico',
 	'assign milestone task list desc' => 'La tarea puede ser asignada a un hito existente',
 	
     'link existing object' => 'Vincular objeto existente (de la selección de archivos)',
     'upload and link' => 'Cargar archivo nuevo y ajuntarlo al objeto',
     'file permissions description' => 'Seleccione un usuario. Luego presione Añadir usuario para visualizarlo en la tabla. <br> Cuando lo vea, seleccione los permisos apropiados en la tabla.<br>Nota: Se mostrarán únicamente los usuarios con quienes se comparten archivos.',
 
-    'subscribers desc' => 'Los suscritos recibirán una notificación vía correo electrónico siempre que alguien (sin ser ellos mismos) publique un comentario en este mensaje',
+    'subscribers desc' => 'Los suscritos recibirán una notificación vía correo electrónico siempre que alguien (sin ser ellos mismos) publique un comentario en este objeto',
     'admins can post comments on locked objects desc' => '<strong>Los comentarios han sido bloqueados</strong>, pero siendo usted el administrador aún tiene permisos para realizar comentarios. Tenga en cuenta que para recibir respuestas en su publicación deberá desbloquear los comentarios de este objeto <i>(Modifique el campo "Habilitar comentarios" a "Sí")</i>.',
 
     'all permissions' => 'Todos',
-    'can manage messages' => 'Administrar mensajes',
+    'can manage messages' => 'Administrar notas',
     'can manage tasks' => 'Administrar tareas',
     'can manage milestones' => 'Administrar hitos',
     'can upload files' => 'Cargar archivos',
@@ -153,7 +154,7 @@ return array(
     'add task to list short' => 'para',
 
 // Private
-    'private message desc' => 'Los mensajes privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
+    'private message desc' => 'Las notas privadas son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private webpage desc' => 'Los vínculos web privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private milestone desc' => 'Los hitos privados son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
     'private task list desc' => 'Las tareas privadas son únicamente visibles por los miembros de la empresa dueña. Miembros de empresas clientes no podrán verlos.',
@@ -254,7 +255,11 @@ return array(
 	'show all' => 'Mostrar todos',
 
 	'unassigned' => 'No asignadas',
-	'email sent by linktitle' => 'Enviado por {1}, {0}'
+	'email sent by linktitle' => 'Enviado por {1}, {0}',
+
+	'latest comments' => 'Últimos comentarios',
+	'include unworked pending tasks' => 'Incluir tareas pendientes no trabajadas',
+	'unworked pending tasks' => 'Tareas pendientes no trabajadas',
 
 ); // array
 

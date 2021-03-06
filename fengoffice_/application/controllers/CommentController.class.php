@@ -80,11 +80,9 @@ class CommentController extends ApplicationController {
 
 				ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
 
-				// Subscribe user to message (if $object is message)
-				if($object instanceof ProjectMessage) {
-					if(!$object->isSubscriber(logged_user())) {
-						$object->subscribeUser(logged_user());
-					} // if
+				// Subscribe user to object
+				if(!$object->isSubscriber(logged_user())) {
+					$object->subscribeUser(logged_user());
 				} // if
 
 				DB::commit();

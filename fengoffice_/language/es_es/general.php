@@ -37,7 +37,7 @@
     'yesterday' => 'Ayer',
     'tomorrow' => 'Mañana',
     'n/a' => 'n/a',
-    'anyone' => 'Cualquiera',
+    'anyone' => 'Todos',
     'nobody' => 'Nadie',
     'none' => '-- Ninguno --',
     'please select' => '-- Por favor seleccione --',
@@ -171,7 +171,7 @@
   	'weblinks' => 'Páginas Web',
   	'include subworkspaces' => 'Incluir subespacios',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
-    'add work' => 'Agregar trabajo',
+	'add work' => 'Agregar trabajo',
   ); // array
 
 ?>

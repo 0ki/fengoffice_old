@@ -9,11 +9,7 @@
 //  } // if
   
 ?>
-<?php if($folder->isNew()) { ?>
-<form class="internalForm" action="<?php echo get_url('files', 'add_folder') ?>" method="post">
-<?php } else { ?>
-<form class="internalForm" action="<?php echo $folder->getEditUrl() ?>" method="post">
-<?php } // if ?>
+<form class="internalForm" action="<?php echo ($folder->isNew())? get_url('files', 'add_folder') : $folder->getEditUrl()?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

@@ -16,15 +16,19 @@
   <div class="adminMainBlock">
   
 <?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
-<table id="projects">
+<table id="projects" style="min-width:400px;margin-top:10px;">
   <tr>
-    <th></th>
+    <?php if (false) { ?><th></th><?php } ?>
     <th><?php echo lang('name') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>
 
-<?php foreach($projects as $project) { ?>
-  <tr>
+<?php 
+	$isAlt = true;
+foreach($projects as $project) {  
+	$isAlt = !$isAlt;?>
+  <tr class="<?php echo $isAlt? 'altRow' : ''?>">
+    <?php if (false) { //Remove to enable closing workspaces?>
     <td class="middle">
 <?php if($project->canChangeStatus(logged_user())) { ?>
 <?php echo checkbox_link($project->isActive() ? $project->getCompleteUrl() : $project->getOpenUrl(), !$project->isActive(), $project->isActive() ? lang('mark project as finished') : lang('mark project as active')) ?>
@@ -32,6 +36,7 @@
 <img src="<?php echo $project->isActive() ? icon_url('not-checked.jpg') : icon_url('checked.jpg') ?>" alt="" title="<?php echo $project->isActive() ? lang('active project') : lang('finished project') ?>" />
 <?php } // if ?>
     </td>
+    <?php } // if ?>
     <td class="long middle"><!-- a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"-->
     	<?php echo clean($project->getName()) ?>
     <!-- /a --></td>
@@ -40,7 +45,7 @@
   if($project->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getEditUrl() .'">' . lang('edit') . '</a>';
   if($project->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete project') . '\')">' . lang('delete') . '</a>';
 ?>
-    <td class="middle"><?php echo implode(' | ', $options) ?></td>
+    <td class="middle" style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
   </tr>
 <?php } // foreach ?>
 </table>

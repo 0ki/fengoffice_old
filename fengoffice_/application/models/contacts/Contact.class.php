@@ -209,6 +209,7 @@ class Contact extends BaseContact {
     function hasTitle() {
       return trim($this->getTitle()) <> '';
     } // hasTitle
+    
 
     /**
     * Returns true if contact has an assigned user

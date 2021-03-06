@@ -1,5 +1,5 @@
 <?php
-	
+	$genid = gen_id();
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'total_task_times_vs_estimate_comparison') ?>" method="post" enctype="multipart/form-data">
 
@@ -16,13 +16,13 @@
 		<tr>
 			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
-				echo pick_date_widget('report[start]',DateTimeValueLib::now(), date("Y") - 10 , date("Y") + 10);
+				echo pick_date_widget2('report[start]',DateTimeValueLib::now(), $genid);
 			?></td>
 		</tr>
 		<tr style='height:30px;'>
 			<td ><b><?php echo lang("end date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
-				echo pick_date_widget('report[end]',DateTimeValueLib::now(), date("Y") - 10 , date("Y") + 10);
+				echo pick_date_widget2('report[end]',DateTimeValueLib::now(), $genid);
 			?></td>
 		</tr>
 		<tr style='height:30px;'>

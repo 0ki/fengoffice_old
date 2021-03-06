@@ -924,9 +924,9 @@ class ProjectTask extends BaseProjectTask {
 		if (!$this->isNew()) {
 			$old_me = ProjectTasks::findById($this->getId(), true);
 		}
-		if ($this->isNew() || (($old_me) && (
+		if ($this->isNew() ||
 				$this->getAssignedToCompanyId() != $old_me->getAssignedToCompanyId() ||
-				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()))) {
+				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()) {
 			$this->setAssignedBy(logged_user());
 			$this->setAssignedOn(DateTimeValueLib::now());
 		}
@@ -940,7 +940,7 @@ class ProjectTask extends BaseProjectTask {
 				$task_ids[] = $task->getId();
 			} // if
 
-			if(count($task_ids)) {
+			if(count($task_ids) > 0) {
 				ApplicationLogs::setIsPrivateForType($this->isPrivate(), 'ProjectTasks', $task_ids);
 			} // if
 		} // if
@@ -1085,6 +1085,98 @@ class ProjectTask extends BaseProjectTask {
 	/**
 	 * End task templates
 	 */
+	
+	function getArrayInfo(){
+		$result = array(
+			'id' => $this->getId(),
+			't' => $this->getTitle(),
+			'wsid' => $this->getWorkspacesIdsCSV(),
+			'c' => $this->getCreatedOn()->getTimestamp(),
+			'cid' => $this->getCreatedById());
+		
+		if ($this->isCompleted())
+			$result['s'] = 1;
+			
+		if ($this->getParentId() > 0)
+			$result['pid'] = $this->getParentId();
+		
+		if ($this->getPriority() != 200)
+			$result['pr'] = $this->getPriority();
+		
+		if ($this->getMilestoneId() > 0)
+			$result['mid'] = $this->getMilestoneId();
+			
+		if ($this->getAssignedToUserId() > 0 || $this->getAssignedToCompanyId() > 0)
+			$result['atid'] = $this->getAssignedToUserId() . ':' . $this->getAssignedToCompanyId();
+			
+		if ($this->getCompletedById() > 0){
+			$result['cbid'] = $this->getCompletedById();
+			$result['con'] = $this->getCompletedOn()->getTimestamp();
+		}
+			
+		if ($this->getDueDate())
+			$result['dd'] = $this->getDueDate()->getTimestamp();
+			
+		if ($this->getStartDate())
+			$result['sd'] = $this->getStartDate()->getTimestamp();
+		
+		$ot = $this->getOpenTimeslots();
+		
+		if ($ot){
+			$users = array();
+			$time = array();
+			foreach ($ot as $t){
+				$time[] = $t->getSeconds();
+				$users[] = $t->getUserId();
+			}
+			$result['wt'] = $time;
+			$result['wid'] = $users;
+		}
+		
+		$tags = $this->getTagNames();
+		if ($tags)
+			$result['tags'] = $tags;
+		
+		return $result;
+	}
+	
+	
+	function getOpenTimeslots(){
+		if (is_null($this->timeslots)){
+			return Timeslots::getOpenTimeslotsByObject($this);
+		} else {
+			$result = array();
+			for ($i = 0; $i < count($this->timeslots); $i++)
+				if ($this->timeslots[$i]->isOpen())
+					$result[] = $this->timeslots[$i];
+			return $result;
+		}
+	}
+	
+	/**
+	 * Notifies the user of comments and due date of this task
+	 *
+	 * @param User $user
+	 */
+	function subscribeUser($user) {
+		parent::subscribeUser($user);
+		$or = new ObjectReminder();
+		$or->setObject($this);
+		$or->setType("due_date");
+		$or->setUser($user);
+		$or->setMinutesBefore(1440); // notify one day before
+		$or->save();
+	}
+	
+	/**
+	 * Stops notifying user of comments and due date
+	 *
+	 * @param unknown_type $user
+	 */
+	function unsubscribeUser($user) {
+		parent::unsubscribeUser($user);
+		ObjectReminders::clearByObject($this);
+	}
 	
 } // ProjectTask
 

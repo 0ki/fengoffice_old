@@ -39,6 +39,12 @@ class UserController extends ApplicationController {
 	 * @return null
 	 */
 	function add() {
+   		$max_users = config_option('max_users');
+		if($max_users && (Users::count() >= $max_users) ){
+			flash_error(lang('maximum number of users reached error'));
+			ajx_current("empty");
+			return;
+		}
 		$this->setTemplate('add_user');
 
 		$company = Companies::findById(get_id('company_id'));
@@ -336,6 +342,24 @@ class UserController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 	} // card
 
+	
+	function list_users() {
+		$this->setTemplate(get_template_path("json"));
+		ajx_current("empty");
+		$usr_data = array();
+		$users = Users::getAll();
+		if ($users) {
+			foreach ($users as $usr) {
+				$usr_data[] = array(
+					"id" => $usr->getId(),
+					"name" => $usr->getDisplayName()
+				);
+			}
+		}
+		$extra = array();
+		$extra['users'] = $usr_data;
+		ajx_extra_data($extra);
+	}
 } // UserController
 
 ?>

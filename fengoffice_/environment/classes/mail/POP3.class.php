@@ -333,7 +333,7 @@ class POP3
 		$this->checkState(self::STATE_TRANSACTION);
         $this->checkMsgNum($intMsgNum);
 		$this->sendCmd("RETR ". $intMsgNum );
-		return $this->recvToPoint(); 
+		return $this->recvToPoint();
     }
     // }}}
     // {{{ getList()
@@ -428,9 +428,11 @@ class POP3
     public function getMails( $arrMsgNums )
     {
         $arrMsgs = array();
+        $count = 1;
         foreach( $arrMsgNums as $intMsgNum )
         {
-            $arrMsgs[$intMsgNum] = $this->getMsg($intMsgNum);
+        	$arrMsgs[$intMsgNum] = utf8_encode(trim($this->getMsg($intMsgNum)));
+            if ($count++ >= 75) break;
         }
         return $arrMsgs;
     }

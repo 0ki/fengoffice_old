@@ -726,7 +726,14 @@ class Company extends BaseCompany {
       if(!$this->isTaggable()) throw new Error('Object not taggable');
       return Tags::getTagNamesByObject($this, get_class($this->manager()));
     } // getTagNames
-    
+
+	function getArrayInfo(){
+		$result = array(
+			'id' => $this->getId(),
+			'name' => $this->getName());
+		
+		return $result;
+	}
   } // Company 
 
 

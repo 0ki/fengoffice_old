@@ -1,7 +1,7 @@
 <?php $contact = $object; ?>
     <table width=100%><col width=250px/><col/>
     <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()
-    || is_array($im_values = $contact->getImValues()) && count($contact)) {?>
+    || is_array($im_values = $contact->getImValues()) && count($contact) || $contact->getOBirthday()) {?>
     <tr><td>
 	  <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()){ $hasEmailAddrs = true?>
 	  <span style="font-weight:bold"><?php echo lang('email addresses') ?>:</span>

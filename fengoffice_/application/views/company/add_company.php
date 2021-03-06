@@ -1,17 +1,3 @@
-<script type="text/javascript">
-var allTags = [<?php
-	$coma = false;
-	$tags = Tags::getTagNames();
-	foreach ($tags as $tag) {
-		if ($coma) {
-			echo ",";
-		} else {
-			$coma = true;
-		}
-		echo "'" . $tag . "'";
-	}
-?>];
-</script>
 <?php 
 	$project = active_or_personal_project();
 	$projects =  active_projects();
@@ -72,9 +58,6 @@ var allTags = [<?php
 			</tr><tr>
 				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'clientFormCountry') ?></td>
 				<td><?php echo select_country_widget('company[country]', array_var($company_data, 'country'), array('id' => $genid.'clientFormCountry')) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('website'), $genid.'clientFormWebPage') ?></td>
-				<td><?php echo text_field('company[w_web_page]', array_var($company_data, 'w_web_page'), array('id' => $genid.'clientFormWebPage')) ?></td>
 			</tr>
 			</table>
 			</td><td>
@@ -112,7 +95,7 @@ var allTags = [<?php
 		
 	<div id="<?php echo $genid ?>add_company_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_textfield("company[tags]", array_var($company_data, 'tags'), 'allTags', array("class" => "short")); ?>
+		<?php echo autocomplete_textfield("company[tags]", array_var($company_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 	

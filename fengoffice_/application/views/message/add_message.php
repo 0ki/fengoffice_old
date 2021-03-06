@@ -1,29 +1,10 @@
-<script type="text/javascript">
-var allTags = [<?php
-	$coma = false;
-	$tags = Tags::getTagNames();
-	foreach ($tags as $tag) {
-		if ($coma) {
-			echo ",";
-		} else {
-			$coma = true;
-		}
-		echo "'" . $tag . "'";
-	}
-?>];
-</script>
-
 <?php 
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
-	
-	if ($message->isNew()) { ?>
-	<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('message', 'add') ?>" method="post" enctype="multipart/form-data">
-	<?php } else { ?>
-	<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $message->getEditUrl() ?>" method="post">
-	<?php } // if?>
-	
+?>
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
+
 <div class="message">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
@@ -69,7 +50,7 @@ var allTags = [<?php
 	
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_textfield("message[tags]", array_var($message_data, 'tags'), 'allTags', array("class" => "short")); ?>
+		<?php echo autocomplete_textfield("message[tags]", array_var($message_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 
@@ -144,13 +125,13 @@ var allTags = [<?php
 					array_var($message_data, 'notify_user_' . $user->getId()), 
 					array('id' => $genid.'notifyUser' . $user->getId(), 
 						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
-					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
+					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
 				<script type="text/javascript">
 					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
 						id          : <?php echo $user->getId() ?>,
 						checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
 					});
-				</script>
+				</script></li>
 			<?php } // foreach ?>
 			</ul>
 			</div>

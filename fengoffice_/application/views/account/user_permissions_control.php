@@ -3,7 +3,7 @@
 
 <table><tr><td>
   <?php	
-  $this->includeTemplate(get_template_path('workspace_selector', 'project')); ?>
+  echo select_workspaces("", null, null, "workspace-chooser$genid") ?>
   </td><td style="padding-left:20px">
   <div id="<?php echo $genid ?>project_permissions" style="display:none">
   <div id="<?php echo $genid ?>project_name" style="font-weight:bold;font-size:120%;padding-bottom:15px"></div>
@@ -80,10 +80,11 @@
    </td></tr></table>
 <script type="text/javascript">
 	ogLoadPermissions('<?php echo $genid ?>');
-	og.eventManager.addListener("workspacechoosercc<?php echo $genid ?>", function(arguments) {
+	var wsch = Ext.getCmp('workspace-chooser<?php echo $genid ?>');
+	wsch.on("wschecked", function(arguments) {
 		ogPermAllChecked('<?php echo $genid ?>', arguments['checked'], arguments['wsid']);
 	}, document);
-	og.eventManager.addListener("workspacechooserselect<?php echo $genid ?>", function() {
+	wsch.on("wsselected", function() {
 		ogPermSelectedWsChanged('<?php echo $genid ?>');
 	}, document);
 </script>

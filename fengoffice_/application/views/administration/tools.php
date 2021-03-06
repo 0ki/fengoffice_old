@@ -1,8 +1,14 @@
 <?php
   set_page_title(lang('administration tools'));
-  administration_tabbed_navigation(ADMINISTRATION_TAB_TOOLS);
-  administration_crumbs(lang('administration tools'));
 ?>
+
+<div class="adminConfiguration" style="height:100%;background-color:white">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('administration tools') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <?php if(isset($tools) && is_array($tools) && count($tools)) { ?>
 <div id="administrationTools">
 <?php foreach($tools as $tool) { ?>
@@ -17,3 +23,6 @@
 <?php } else { ?>
 <p><?php echo lang('no administration tools') ?></p>
 <?php } // if ?>
+
+	</div>
+</div>

@@ -216,25 +216,28 @@ class TimeslotController extends ApplicationController {
 		
 		if(is_array(array_var($_POST, 'timeslot'))) {
 			try {
-				$sday = array_var($timeslot_data, 'start_day');
-       			$smonth = array_var($timeslot_data, 'start_month');
-       			$syear = array_var($timeslot_data, 'start_year');
+				$timeslot->setDescription(array_var($timeslot_data, 'description'));
+				
 				$shour = array_var($timeslot_data, 'start_hour');
 				$sminute = array_var($timeslot_data, 'start_minute');
-       			
-				$eday = array_var($timeslot_data, 'end_day');
-       			$emonth = array_var($timeslot_data, 'end_month');
-       			$eyear = array_var($timeslot_data, 'end_year');
 				$ehour = array_var($timeslot_data, 'end_hour');
 				$eminute = array_var($timeslot_data, 'end_minute');
        			
-				$timeslot->setDescription(array_var($timeslot_data, 'description'));
-				$st = DateTimeValueLib::make($shour,$sminute,0,$smonth,$sday,$syear);
-				$et = DateTimeValueLib::make($ehour,$eminute,0,$emonth,$eday,$eyear);
+				if (array_var($timeslot_data, 'start_value') != ''){
+       				$start = explode('/', array_var($timeslot_data, 'start_value'));
+					$st = DateTimeValueLib::make($shour, $sminute, 0, $start[0], $start[1], $start[2]);
+				} else
+					$st = DateTimeValueLib::now();
+					
+				if (array_var($timeslot_data, 'end_value') != ''){
+       				$end = explode('/', array_var($timeslot_data, 'end_value'));
+					$et = DateTimeValueLib::make($ehour,$eminute,0, $end[0], $end[1], $end[2]);
+				} else
+					$et = DateTimeValueLib::now();
+					
 				$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 				$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
-				
-				$timeslot->setStartTime($st);
+       			$timeslot->setStartTime($st);
 				$timeslot->setEndTime($et);
 				
 				if ($timeslot->getStartTime() > $timeslot->getEndTime()){

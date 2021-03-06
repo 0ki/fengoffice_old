@@ -1,12 +1,12 @@
 <?php
 
   /**
-  * MessageSubscription class
+  * ObjectSubscription class
   * Generated on Mon, 29 May 2006 03:51:15 +0200 by DataObject generation tool
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  class MessageSubscription extends BaseMessageSubscription {
+  class ObjectSubscription extends BaseObjectSubscription {
   
     /**
     * User who is subscribed to this message
@@ -16,11 +16,11 @@
     private $user;
     
     /**
-    * Message
+    * Object
     *
-    * @var ProjectMessage
+    * @var ApplicationDataObject
     */
-    private $message;
+    private $object;
     
     /**
     * Return user object
@@ -34,16 +34,16 @@
     } // getUser
     
     /**
-    * Return message object
+    * Return object
     *
     * @param void
-    * @return ProjectMessage
+    * @return ApplicationDataObject
     */
-    function getMessage() {
-      if(is_null($this->message)) $this->message = ProjectMessages::findById($this->getMessageId());
-      return $this->message;
-    } // getMessage
+    function getObject() {
+      if(is_null($this->object)) $this->object = get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager()); 
+      return $this->object;
+    } // getObject
     
-  } // MessageSubscription 
+  } // ObjectSubscription 
 
 ?>

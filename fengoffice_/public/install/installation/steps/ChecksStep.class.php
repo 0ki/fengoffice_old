@@ -55,17 +55,18 @@
      */
     function return_bytes($val) {
 	    $val = trim($val);
-	    $last = strtolower($val[strlen($val)-1]);
-	    switch($last) {
-	        // The 'G' modifier is available since PHP 5.1.0
-	        case 'g':
-	            $val *= 1024;
-	        case 'm':
-	            $val *= 1024;
-	        case 'k':
-	            $val *= 1024;
+	    if($val && strlen($val)){
+		    $last = strtolower($val[strlen($val)-1]);
+		    switch($last) {
+		        // The 'G' modifier is available since PHP 5.1.0
+		        case 'g':
+		            $val *= 1024;
+		        case 'm':
+		            $val *= 1024;
+		        case 'k':
+		            $val *= 1024;
+		    }
 	    }
-	
 	    return $val;
 	}
 	
@@ -116,11 +117,15 @@
           } // if
         } // foreach
       } // if
-      
-      $memory_limit = $this->return_bytes(ini_get('memory_limit')); // Memory allocated to PHP scripts
-      $suggested_memory = 12582912;      
-      if ( $memory_limit < $suggested_memory ) {
-      	$this->addToChecklist("Variable 'memory_limit' is $memory_limit which might not be enough for OpenGoo. You should increase it to at least $suggested_memory in your php.ini.", false);
+      $memory_config_value = ini_get('memory_limit');
+      if($memory_config_value && $memory_config_value!==0 && trim($memory_config_value) != ''){
+	      $memory_limit = $this->return_bytes($memory_config_value); // Memory allocated to PHP scripts
+	      if ($memory_limit > 0){
+		      $suggested_memory = 12582912;      
+		      if ( $memory_limit < $suggested_memory ) {
+		      	$this->addToChecklist("PHP Variable 'memory_limit' is $memory_limit which might not be enough for OpenGoo. You should increase it to at least $suggested_memory in your php.ini.", false);
+		      }
+	      }
       }
 
       $this->setContentFromTemplate('checks.php');

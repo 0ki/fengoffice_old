@@ -54,7 +54,7 @@
     // Add message form
     'message title required' => 'Título no introducido, inténtelo de nuevo',
     'message title unique' => 'El título introducido ya existe, inténtelo introduciendo uno distinto',
-    'message text required' => 'Mensaje no introducido, inténtelo de nuevo',
+    'message text required' => 'Nota no introducida, inténtelo de nuevo',
     
     // Add comment form
     'comment text required' => 'Texto no introducido, inténtelo de nuevo',
@@ -81,7 +81,7 @@
     'form name unique' => 'El nombre de formulario debe ser único, inténtelo de nuevo',
     'form success message required' => 'Mensaje de aprobación es obligatorio',
     'form action required' => 'Debe seleccionar una acción para el formulario',
-    'project form select message' => 'Debe elegir un mensaje',
+    'project form select message' => 'Debe elegir una nota',
     'project form select task lists' => 'Debe elegir una tarea',
     
     // Submit project form
@@ -132,7 +132,11 @@
   
   	'maximum number of users reached error' => 'El número máximo de usuarios ha sido alcanzado',
 	'maximum number of users exceeded error' => 'El número máximo de usuarios ha sido sobrepasado. El sistema no volverá a funcionar hasta que este problema haya sido resuelto.',
-  
+	'maximum disk space reached' => 'Ha utilizado la totalidad del espacio en disco asignado. Borre objetos antes de ingresar nuevos, o contacte a soporte para que autorice más usuarios.'  ,
+	'error db backup' => 'Error al crear respaldo de la base de datos. Verificar constante MYSQLDUMP_COMMAND.',
+	'error create backup folder' => 'Error al crear carpeta de respaldo. No se puede completar el respaldo',
+	'error delete backup' => 'Error al borrar el ultimo respaldo',
+	'success delete backup' => 'Respaldo borrado',
   ); // array
 
 ?>

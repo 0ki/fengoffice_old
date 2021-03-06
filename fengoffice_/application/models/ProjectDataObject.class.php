@@ -37,6 +37,8 @@
     */
     protected $is_taggable = false;
     
+    public $tags;
+    
     // ---------------------------------------------------
     //  Comments
     // ---------------------------------------------------
@@ -93,14 +95,14 @@
     *
     * @var array
     */
-    protected $timeslots;
+    public $timeslots;
     
     /**
     * Number of timeslots.
     *
     * @var integer
     */
-    protected $timeslots_count;
+    public $timeslots_count;
     
     // ---------------------------------------------------
     //  General Methods
@@ -425,7 +427,9 @@
     */
     function getTags() {
       if(!$this->isTaggable()) throw new Error('Object not taggable');
-      return Tags::getTagsByObject($this, get_class($this->manager()));
+      if (is_null($this->tags))
+      	$this->tags = Tags::getTagsByObject($this, get_class($this->manager()));
+      return $this->tags;
     } // getTags
     
     /**
@@ -437,7 +441,15 @@
     */
     function getTagNames() {
       if(!$this->isTaggable()) 
-      	throw new Error('Object not taggable');
+      	return array();
+      if (!is_null($this->tags))
+      {
+      	$result = array();
+      	for($i = 0; $i < count($this->tags); $i++){
+      		$result[] = $this->tags[$i]->getTag();
+      	}
+      	return $result;
+      }
       return Tags::getTagNamesByObject($this, get_class($this->manager()));
     } // getTagNames
     
@@ -655,6 +667,11 @@
 			     $searchable_object->setIsPrivate($this->isPrivate());
 			            
 			$searchable_object->save();
+			//try {
+				Notifier::newObjectComment($comment);
+			//} catch(Exception $e) {
+				// nothing here, just suppress error...
+			//} // try
     	}
 		return true;
     } // onAddComment
@@ -720,7 +737,39 @@
     // ---------------------------------------------------
     //  Timeslots
     // ---------------------------------------------------
-    
+      
+	function addTimeslot(User $user){
+		$manager_class = get_class($this->manager());
+		$object_id = $this->getObjectId();
+		
+		$timeslot = new Timeslot();
+		
+		$dt = DateTimeValueLib::now();
+		$timeslot->setStartTime($dt);
+		$timeslot->setUserId($user->getId());
+		$timeslot->setObjectManager($manager_class);
+		$timeslot->setObjectId($object_id);
+		
+		$timeslot->save();
+	}
+	
+	function closeTimeslots(User $user, $description){
+		$manager_class = get_class($this->manager());
+		$object_id = $this->getObjectId();
+		
+		$timeslots = Timeslots::findAll(array('conditions' => 'user_id = ' . $user->getId() . ' AND object_manager = "' . $manager_class . '" AND object_id = ' . $object_id));
+		
+		foreach($timeslots as $timeslot){
+			$dt = DateTimeValueLib::now();
+			$dt->setSecond(0);
+			$timeslot->setEndTime($dt);
+			if ($description)
+				$timeslot->setDescription($description);
+				
+			$timeslot->save();
+		}
+	}
+	
     /**
     * Returns true if users can assign timeslots on this object
     *
@@ -951,7 +1000,20 @@
     * @return boolean
     */
     function save() {
-    	return parent::save();
+    	$disk_space_used = config_option('disk_space_used');
+    	if ($disk_space_used && $disk_space_used > config_option('disk_space_max')){
+    		throw new Exception(lang('maximum disk space reached'));
+    	}
+    	if (parent::save()) {
+    		try {
+    			$user = logged_user();
+    			if ($user instanceof User && $this->isCommentable()) {
+			    	$this->subscribeUser($user);
+    			}
+    		} catch (Exception $e) {}
+	    	return true;
+    	}
+    	return false;
     } // save
     
   	function addToSearchableObjects(){
@@ -1047,6 +1109,8 @@
       if($this->isPropertyContainer()){
       	$this->clearObjectProperties();
       }
+      $this->clearSubscriptions();
+      $this->clearReminders();
       if ($this->allowsTimeslots())
       	$this->clearTimeslots();
       WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
@@ -1084,6 +1148,125 @@
 				"manager" => get_class($this->manager())
 			);
     }
+    
+	// ---------------------------------------------------
+	//  Subscriptions
+	// ---------------------------------------------------
+
+    /**
+	 * Cached array of subscribers
+	 *
+	 * @var array
+	 */
+	private $subscribers;
+    
+	/**
+	 * Return array of subscribers
+	 *
+	 * @param void
+	 * @return array
+	 */
+	function getSubscribers() {
+		if(is_null($this->subscribers)) $this->subscribers = ObjectSubscriptions::getUsersByObject($this);
+		return $this->subscribers;
+	} // getSubscribers
+
+	/**
+	 * Check if specific user is subscriber
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function isSubscriber(User $user) {
+		$subscription = ObjectSubscriptions::findById(array(
+        	'object_id' => $this->getId(),
+			'object_manager' => get_class($this->manager()),
+        	'user_id' => $user->getId()
+		)); // findById
+		return $subscription instanceof ObjectSubscription;
+	} // isSubscriber
+
+	/**
+	 * Subscribe specific user to this message
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function subscribeUser(User $user) {
+		if($this->isNew()) {
+			throw new Error('Can\'t subscribe user to object that is not saved');
+		} // if
+		if($this->isSubscriber($user)) {
+			return true;
+		} // if
+
+		// New subscription
+		$subscription = new ObjectSubscription();
+		$subscription->setObjectId($this->getId());
+		$subscription->setObjectManager(get_class($this->manager()));
+		$subscription->setUserId($user->getId());
+		return $subscription->save();
+	} // subscribeUser
+
+	/**
+	 * Unsubscribe user
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function unsubscribeUser(User $user) {
+		$subscription = ObjectSubscriptions::findById(array(
+        'object_id' => $this->getId(),
+		'object_manager' => get_class($this->manager()),
+        'user_id' => $user->getId()
+		)); // findById
+		if($subscription instanceof ObjectSubscription) {
+			return $subscription->delete();
+		} else {
+			return true;
+		} // if
+	} // unsubscribeUser
+
+	/**
+	 * Clear all object subscriptions
+	 *
+	 * @param void
+	 * @return boolean
+	 */
+	function clearSubscriptions() {
+		return ObjectSubscriptions::clearByObject($this);
+	} // clearSubscriptions
+	
+  	function clearReminders() {
+		return ObjectReminders::clearByObject($this);
+	}
+	
+		/**
+	 * Return subscribe URL
+	 *
+	 * @param void
+	 * @return boolean
+	 */
+	function getSubscribeUrl() {
+		return get_url('object', 'subscribe', array(
+			'id' => $this->getId(),
+			'manager' => get_class($this->manager())
+		));
+	} // getSubscribeUrl
+	
+	/**
+	 * Return unsubscribe URL
+	 *
+	 * @param void
+	 * @return boolean
+	 */
+	function getUnsubscribeUrl() {
+		return get_url('object', 'unsubscribe', array(
+			'id' => $this->getId(),
+			'manager' => get_class($this->manager())
+		));
+	} // getUnsubscribeUrl
+    
     
   } // ProjectDataObject
 

@@ -168,6 +168,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		@unlink($temp_file);
 		return $result;
 	} // createThumb
+	
 
 	// ---------------------------------------------------
 	//  URLs
@@ -239,10 +240,10 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @param void
 	 * @return string
 	 */
-	function getTypeIconUrl() {
+	function getTypeIconUrl($showImage = true) {
 		$file_type = $this->getFileType();
 		if($file_type instanceof FileType) {
-			if($file_type->getIsImage()) {
+			if($file_type->getIsImage() && $showImage) {
 				$thumb_url = $this->getThumbUrl();
 
 				if(trim($thumb_url)) {

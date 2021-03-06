@@ -94,6 +94,11 @@ class Env {
 	 * @return null
 	 */
 	static function executeAction($controller_name, $action) {
+   		$max_users = config_option('max_users');
+		if ($max_users && Users::count() > $max_users) {
+	        echo lang("error").": ".lang("maximum number of users exceeded error");
+	        return;
+    	}
 		ajx_check_login();
 		
 		Env::useController($controller_name);

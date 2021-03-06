@@ -1,3 +1,5 @@
+<?php $genid = gen_id(); ?>
+
 <script type="text/javascript">
 function showProjectTagsDiv()
 {
@@ -9,22 +11,6 @@ function showProjectTagsDiv()
 	} 
 }
 </script>
-<script type="text/javascript">
-    	var allTags = [<?php
-    		$coma = false;
-    		$tags = Tags::getTagNames();
-    		if($tags){
-	    		foreach ($tags as $tag) {
-	    			if ($coma) {
-	    				echo ",";
-	    			} else {
-	    				$coma = true;
-	    			}
-	    			echo "'" . $tag . "'";
-	    		}//foreach
-    		} //if
-    	?>];
-    </script>
     <form id='formClassify' name='formClassify' style='height:100%;background-color:white'  class="internalForm" action="<?php echo get_url('mail','classify', array('id'=>$email->getId())) ?>" method="post">
     
 <div class="emailClassify">
@@ -40,9 +26,9 @@ function showProjectTagsDiv()
 
   <fieldset>
 <legend><?php echo lang('project') ?></legend>
-<?php echo select_project('classification[project_id]', $projects, array_var($classification_data, 'project_id'), array('id' => 'classifyFormProject')); ?>
+	<div id="<?php echo $genid ?>wsSel"></div><?php // echo select_project('classification[project_id]', $projects, array_var($classification_data, 'project_id'), array('id' => 'classifyFormProject')); ?>
 <?php echo label_tag(lang('tags')) ?>
-	<?php echo autocomplete_textfield("classification[tag]", array_var($classification_data, 'tag'), 'allTags', array('id'=>'ProjectTagsFS', 'class' => 'long')); ?>
+	<?php echo autocomplete_textfield("classification[tag]", array_var($classification_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("id" => "ProjectTagsFS", "class" => "long")); ?>
 </fieldset>
    
    <?php if ($email->getHasAttachments()) {?>
@@ -63,3 +49,6 @@ function showProjectTagsDiv()
   </div>
 </div>
 </form>
+<script type="text/javascript">
+	og.drawWorkspaceSelector('<?php echo $genid ?>wsSel',<?php echo (array_var($classification_data, 'project_id'))? array_var($classification_data, 'project_id'):active_or_personal_project()->getId() ?>,'classification[project_id]');
+</script>

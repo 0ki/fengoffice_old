@@ -77,6 +77,33 @@
 	color: rgb(101,82,5);
 }
 
+/*----------------------------------------
+		Comments
+----------------------------------------*/
+
+.dashComments .dashHeader{
+	color: rgb(90,82,101);
+	background: rgb(222,214,246);
+	border-color: rgb(180,163,201);
+}
+
+.dashComments .coViewBody {
+	background: #FFFFFFF;	
+	color: rgb(90,82,101);
+}
+
+.dashComments .dashAltRow {
+	background-color:#EFE0FF;	
+}
+
+.dashComments .internalLink {	
+	color: rgb(90,82,101);
+}
+
+.dashComments .previewText {
+	color: rgb(136, 136, 136);
+}
+
 
 /*----------------------------------------
 		Late tasks and milestones

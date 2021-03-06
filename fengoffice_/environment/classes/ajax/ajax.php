@@ -1,5 +1,7 @@
 <?php
 
+define('SESSION_EXPIRED_ERROR_CODE', 2009);
+
 /**
  * Set the current panel's content. Expects the panel'd id, the type of content
  * (html, url), the data (html code, url), and the page actions.
@@ -65,11 +67,11 @@ function ajx_get_panel($controller = null, $action = null) {
  *
  */
 function ajx_check_login() {
-	if (is_ajax_request() && !logged_user() instanceof User) {
+	if (is_ajax_request() && !logged_user() instanceof User && (array_var($_GET, 'c') != 'access' || array_var($_GET, 'a') != 'relogin')) {
 		// error, user not logged in => return error message
 		$response = AjaxResponse::instance();
 		$response->setCurrentContent("empty");
-		$response->setError(1, lang("session expired error"));
+		$response->setError(SESSION_EXPIRED_ERROR_CODE, lang("session expired error"));
 			
 		// display the object as json
 		tpl_assign("object", $response);

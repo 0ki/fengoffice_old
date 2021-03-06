@@ -10,6 +10,9 @@ og.WorkspacePanel = function(config) {
 		region: 'center',
 		minSize: 200,
 		layout: 'fit',
+		border: false,
+		style: 'border-bottom-width: 1px',
+		bodyBorder: false,
 		items: [config.wstree],
 		tbar: [{
 			iconCls: 'ico-workspace-add',
@@ -88,6 +91,8 @@ og.WorkspaceTree = function(config) {
 		ddGroup: 'WorkspaceDD',
 		enableDD: false,
 		autoScroll: true,
+		border: false,
+		bodyBorder: false,
 		id: 'workspace-panel',
 		rootVisible: false,
 		lines: false,
@@ -147,27 +152,47 @@ og.WorkspaceTree = function(config) {
 	if (workspaces) {
 		this.addWorkspaces(workspaces);
 	}
-
-	this.getSelectionModel().on({
-		'selectionchange' : function(sm, node) {
-			if (node && !this.pauseEvents) {
-				this.fireEvent("workspaceselect", node.ws);
-				var tf = this.getTopToolbar().items.get('workspace-filter');
-				tf.setValue("");
-				this.clearFilter();
-				node.expand();
-				node.ensureVisible();
-			}
-		},
-		scope:this
-	});
-	this.addEvents({workspaceselect: true});
 	
-	og.eventManager.addListener('workspace added', this.addWS, this);
-	og.eventManager.addListener('workspace edited', this.updateWS, this);
-	og.eventManager.addListener('workspace deleted', this.removeWS, this);
+	if (!config.isInternalSelector)
+	{
+		this.getSelectionModel().on({
+			'selectionchange' : function(sm, node) {
+				if (node && !this.pauseEvents) {
+					this.fireEvent("workspaceselect", node.ws);
+					var tf = this.getTopToolbar().items.get('workspace-filter');
+					tf.setValue("");
+					this.clearFilter();
+					node.expand();
+					node.ensureVisible();
+				}
+			},
+			scope:this
+		});
+		this.addEvents({workspaceselect: true});
+	
+		og.eventManager.addListener('workspace added', this.addWS, this);
+		og.eventManager.addListener('workspace edited', this.updateWS, this);
+		og.eventManager.addListener('workspace deleted', this.removeWS, this);
+	} else {
+		this.getSelectionModel().on({
+			'selectionchange' : function(sm, node) {
+				if (node && node.ws.id != 0 && !this.pauseEvents) {
+					og.WorkspaceSelected(this.initialConfig.controlName, node.ws);
+				}
+			},
+			scope:this
+		});
+		this.addEvents({workspaceselect: true});
+	}
 		
-	this.loadWorkspaces(null,null,true);
+	if (!workspaces)
+		this.loadWorkspaces(null,null,true);
+		
+	if (config.selectedWorkspaceId){
+		this.pauseEvents = true;
+		this.select(config.selectedWorkspaceId);
+		this.pauseEvents = false;
+	}
 };
 
 Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
@@ -240,6 +265,9 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		};
 		var node = new Ext.tree.TreeNode(config);
 		node.ws = ws;
+		if (ws.isPersonal)
+			this.personalNode = node;
+		this.wslist += ws;
 		var parent = this.getNodeById('ws' + ws.parent);
 		if (!parent) parent = this.workspaces;
 		var iter = parent.firstChild;
@@ -260,6 +288,18 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			return this.getSelectionModel().getSelectedNode().ws;
 		} else {
 			return {id: 0, name: 'all'};
+		}
+	},
+	
+	getActiveOrPersonalWorkspace: function() {
+		var s = this.getSelectionModel().getSelectedNode();
+		if (s && s.ws.id != 0) {
+			return s.ws;
+		} else {
+			if (this.personalNode)
+				return this.personalNode.ws;
+			else
+				return {id: 0, name: 'all'};
 		}
 	},
 	
@@ -400,10 +440,14 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	},
 	
 	filterTree: function(text) {
-		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
-		this.filterNode(this.workspaces, re);
-		this.workspaces.getUI().show();
-		this.expandAll();
+		if (text.trim() == '') {
+			this.clearFilter();
+		} else {
+			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
+			this.filterNode(this.workspaces, re);
+			this.workspaces.getUI().show();
+			this.expandAll();
+		}
 	},
 	
 	clearFilter: function(n) {
@@ -424,6 +468,18 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 			n.collapse();
 		}
 		n.previousState = null;
+	},
+	
+	getWsList: function(wsId){
+		var start = this.workspaces;
+		if (wsId){
+			start = this.getNode("ws" + wsId);
+		}
+		var list = [start.ws];
+		start.cascade(function (list){
+			list[list.length] = this.ws;
+		}, null, [list]);
+		return list;
 	}
 });
 

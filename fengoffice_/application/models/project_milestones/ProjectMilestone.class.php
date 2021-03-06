@@ -539,6 +539,33 @@ class ProjectMilestone extends BaseProjectMilestone {
 	function getTitle() {
 		return $this->getName();
 	}
+	
+	function getArrayInfo(){
+		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId());
+		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_by_id > 0');
+		
+		$result = array(
+			'id' => $this->getId(),
+			't' => $this->getTitle(),
+			'wsid' => $this->getWorkspacesIdsCSV(),
+			'tnum' => $tnum,
+			'tc' => $tc,
+			'dd' => $this->getDueDate()->getTimestamp());
+		
+		$tags = $this->getTagNames();
+		if ($tags)
+			$result['tags'] = $tags;
+			
+		if ($this->getCompletedById() > 0){
+			$result['compId'] = $this->getCompletedById();
+			$result['compOn'] = $this->getCompletedOn()->getTimestamp();
+		}
+		
+		return $result;
+	}
+	
+	
+	
 } // ProjectMilestone
 
 ?>

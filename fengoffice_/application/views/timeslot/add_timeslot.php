@@ -1,3 +1,5 @@
+<?php $genid = gen_id(); ?>
+
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $timeslot->getEditUrl() ?>" method="post">
 
 <div class="timeslot">
@@ -20,7 +22,7 @@
 			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
 				$start_time = new DateTimeValue($timeslot->getStartTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
-				echo pick_date_widget('timeslot[start]',$start_time, date("Y") - 10 , date("Y") + 10);
+				echo pick_date_widget2('timeslot[start_value]',$start_time, $genid);
 			?></td>
 		</tr>
 		
@@ -53,7 +55,7 @@
 					$end_time = new DateTimeValue($dt->getTimestamp() + logged_user()->getTimezone() * 3600);
 				} else
 					$end_time = new DateTimeValue($timeslot->getEndTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
-			echo pick_date_widget('timeslot[end]',$end_time, date("Y") - 10 , date("Y") + 10);
+			echo pick_date_widget2('timeslot[end_value]',$end_time, $genid);
 			?></td>
 		</tr>
 		

@@ -43,12 +43,6 @@ class ProjectMessage extends BaseProjectMessage {
 	 */
 	protected $is_file_container = true;
 
-	/**
-	 * Cached array of subscribers
-	 *
-	 * @var array
-	 */
-	private $subscribers;
 
 	/**
 	 * Cached array of related forms
@@ -77,98 +71,8 @@ class ProjectMessage extends BaseProjectMessage {
 		return $this->attachComment($comment);
 	} // addComment
 
-	/**
-	 * Handle on add comment event
-	 *
-	 * @param Comment $comment
-	 * @return null
-	 */
-	function onAddComment(Comment $comment) {
-		parent::onAddComment($comment);
-		try {
-			Notifier::newMessageComment($comment);
-		} catch(Exception $e) {
-			// nothing here, just suppress error...
-		} // try
-	} // onAddComment
+	
 
-	// ---------------------------------------------------
-	//  Subscriptions
-	// ---------------------------------------------------
-
-	/**
-	 * Return array of subscribers
-	 *
-	 * @param void
-	 * @return array
-	 */
-	function getSubscribers() {
-		if(is_null($this->subscribers)) $this->subscribers = MessageSubscriptions::getUsersByMessage($this);
-		return $this->subscribers;
-	} // getSubscribers
-
-	/**
-	 * Check if specific user is subscriber
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function isSubscriber(User $user) {
-		$subscription = MessageSubscriptions::findById(array(
-        'message_id' => $this->getId(),
-        'user_id' => $user->getId()
-		)); // findById
-		return $subscription instanceof MessageSubscription;
-	} // isSubscriber
-
-	/**
-	 * Subscribe specific user to this message
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function subscribeUser(User $user) {
-		if($this->isNew()) {
-			throw new Error('Can\'t subscribe user to message that is not saved');
-		} // if
-		if($this->isSubscriber($user)) {
-			return true;
-		} // if
-
-		// New subscription
-		$subscription = new MessageSubscription();
-		$subscription->setMessageId($this->getId());
-		$subscription->setUserId($user->getId());
-		return $subscription->save();
-	} // subscribeUser
-
-	/**
-	 * Unsubscribe user
-	 *
-	 * @param User $user
-	 * @return boolean
-	 */
-	function unsubscribeUser(User $user) {
-		$subscription = MessageSubscriptions::findById(array(
-        'message_id' => $this->getId(),
-        'user_id' => $user->getId()
-		)); // findById
-		if($subscription instanceof MessageSubscription) {
-			return $subscription->delete();
-		} else {
-			return true;
-		} // if
-	} // unsubscribeUser
-
-	/**
-	 * Clear all message subscriptions
-	 *
-	 * @param void
-	 * @return boolean
-	 */
-	function clearSubscriptions() {
-		return MessageSubscriptions::clearByMessage($this);
-	} // clearSubscriptions
 
 	// ---------------------------------------------------
 	//  Related forms
@@ -308,25 +212,7 @@ class ProjectMessage extends BaseProjectMessage {
 		return get_url('message', 'delete', array('id' => $this->getId()));
 	} // getDeleteUrl
 
-	/**
-	 * Return subscribe URL
-	 *
-	 * @param void
-	 * @return boolean
-	 */
-	function getSubscribeUrl() {
-		return get_url('message', 'subscribe', array('id' => $this->getId()));
-	} // getSubscribeUrl
 
-	/**
-	 * Return unsubscribe URL
-	 *
-	 * @param void
-	 * @return boolean
-	 */
-	function getUnsubscribeUrl() {
-		return get_url('message', 'unsubscribe', array('id' => $this->getId()));
-	} // getUnsubscribeUrl
 
 	/**
 	 * Return print view URL

@@ -13,9 +13,11 @@
 ?>
 
 
-<form action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+<form style='height:100%;background-color:white' action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
 
-<?php tpl_display(get_template_path('form_errors')) ?>
+<div class="avatar">
+<div class="coInputSeparator"></div>
+<div class="coInputMainBlock">
   
   <fieldset>
     <legend><?php echo lang('current avatar') ?></legend>
@@ -37,4 +39,6 @@
   
   <?php echo submit_button(lang('update avatar')) ?>
   
+</div>
+</div>
 </form>

@@ -15,14 +15,18 @@
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
 <?php if(isset($groups) && is_array($groups) && count($groups)) { ?>
-<table>
+<table style="min-width:400px;margin-top:10px;">
   <tr>
     <th><?php echo lang('name') ?></th>
     <th><?php echo lang('users') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>
-<?php foreach($groups as $group) { ?>
-  <tr>
+<?php
+	$isAlt = true;
+foreach($groups as $group) { 
+	$isAlt = !$isAlt;
+	?>
+  <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td><a class="internalLink" href="<?php echo $group->getViewUrl() ?>"><?php echo clean($group->getName()) ?></a></td>
     <td style="text-align: center"><?php echo $group->countUsers() ?></td>
 <?php 
@@ -40,7 +44,7 @@
     $options[] = '<a class="internalLink" href="' . $group->getDeleteGroupUrl() . '" onclick="return confirm(\'' . lang('confirm delete group') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
-    <td><?php echo implode(' | ', $options) ?></td>
+    <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
   </tr>
 <?php } // foreach ?>
 </table>

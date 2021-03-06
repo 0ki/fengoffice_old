@@ -147,7 +147,9 @@
     *
     * @var array
     */
-    protected $linked_objects;   
+    protected $linked_objects;
+
+    
     
     /**
     * Cached author object reference
@@ -482,6 +484,8 @@
       return $this->canEdit($user);
     } // canUnlinkObject
 
+   
+    
     function getProject() {
     	if (Env::isDebugging()) {
         	//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");

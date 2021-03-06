@@ -14,7 +14,20 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'file_id' => DATA_TYPE_INTEGER, 'file_type_id' => DATA_TYPE_INTEGER, 'repository_id' => DATA_TYPE_STRING, 'thumb_filename' => DATA_TYPE_STRING, 'revision_number' => DATA_TYPE_INTEGER, 'comment' => DATA_TYPE_STRING, 'type_string' => DATA_TYPE_STRING, 'filesize' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'file_id' => DATA_TYPE_INTEGER, 
+    	'file_type_id' => DATA_TYPE_INTEGER, 
+    	'repository_id' => DATA_TYPE_STRING, 
+    	'thumb_filename' => DATA_TYPE_STRING,
+    	'revision_number' => DATA_TYPE_INTEGER, 
+    	'comment' => DATA_TYPE_STRING, 
+    	'type_string' => DATA_TYPE_STRING, 
+    	'filesize' => DATA_TYPE_INTEGER, 
+    	'created_on' => DATA_TYPE_DATETIME, 
+    	'created_by_id' => DATA_TYPE_INTEGER, 
+    	'updated_on' => DATA_TYPE_DATETIME, 
+    	'updated_by_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

@@ -80,9 +80,9 @@
     // Add project form
     'form name required' => 'Form name is required',
     'form name unique' => 'Form name must be unique',
-    'form success message required' => 'Success message is required',
+    'form success message required' => 'Success note is required',
     'form action required' => 'Form action is required',
-    'project form select message' => 'Please select message',
+    'project form select message' => 'Please select note',
     'project form select task lists' => 'Please select task',
     
     // Submit project form
@@ -131,6 +131,14 @@
     
     
     'user has contact' => 'There is a contact already assigned to this user',
-  ); // array
+    
+    'maximum number of users reached error' => 'The maximum number of users has been reached',
+	'maximum number of users exceeded error' => 'The maximum number of users has been exceeded. The application will not work anymore until this issue is resolved.',
+	'maximum disk space reached' => 'Your disk quota is full. Please delete some object before trying to add new ones, or contact support to enable more users.',
+	'error db backup' => 'Error while creating database backup. Check MYSQLDUMP_COMMAND constant.',
+	'error create backup folder' => 'Error while creating backup folder. Cannot complete backup',
+	'error delete backup' => 'Error while deleting database backup,',
+	'success delete backup' => 'Backup was deleted',
+   ); // array
 
 ?>

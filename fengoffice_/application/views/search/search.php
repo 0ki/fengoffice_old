@@ -1,8 +1,9 @@
 <?php
   set_page_title(lang('search results'));
   $showContext = false; //TODO Implement context support before setting this to true
+  $genid = gen_id();
 ?>
-<div style='height:100%;background-color:white'>
+<div id="<?php echo $genid; ?>Search" style='height:100%;background-color:white'>
 <div style='background-color:white'>
 <div id="searchForm">
   <form class="internalForm" action="<?php echo get_url('search','search') ?>" method="get">
@@ -56,7 +57,7 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 		$alt = !$alt;
 		$result = $srrow['object'];?>
 		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">
-			<td style="padding:6px" <?php echo $showContext ? 'rowspan=2' : '' ?> width=36>
+			<td style="padding:6px" rowspan=<?php echo $showContext ? 2 : 1 ?> width=36>
 		<?php if ($search_result["manager"] == 'ProjectFiles') {?>
 			<img style="width:36px" src="<?php echo $result->getTypeIconUrl() ?>"/>
 		<?php } ?>
@@ -72,8 +73,14 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 			foreach ($dws as $ws) {
 				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
 			echo '<span style="padding-right:5px">' . implode('&nbsp;',$projectLinks) . '</span>';
-		}}?><a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a></td>
-		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $result->getUpdatedByCardUrl(), clean($result->getUpdatedByDisplayName()), format_descriptive_date($result->getObjectUpdateTime())) ?></td></tr>
+		}}?><?php if ($search_result["manager"] == 'Projects') {?>
+			<span class="project-replace" onclick="Ext.getCmp('tabs-panel').setActiveTab('overview-panel')"><?php echo $result->getId() ?></span>
+		<?php } else { ?>
+			<a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a>
+		<?php } // if ?>
+		</td>
+		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $result->getUpdatedByCardUrl(), ($result->getUpdatedBy() instanceof User ? $result->getUpdatedByDisplayName() : $result->getCreatedByDisplayName()), format_descriptive_date($result->getObjectUpdateTime())) ?></td>
+		</tr>
 	<?php } // foreach row ?>
 	</table>
 	</div>
@@ -93,5 +100,5 @@ if(isset($search_results) && is_array($search_results) && count($search_results)
 </div>
 </div>
 <script type="text/javascript">
-og.showWsPaths();
+og.showWsPaths('<?php echo $genid; ?>Search',true);
 </script>

@@ -171,7 +171,7 @@
       $limit      = (integer) array_var($arguments, 'limit', 0);
       
       // Prepare query parts
-      $where_string = trim($conditions) == '' ? '' : "WHERE $conditions";
+      $where_string = trim($conditions) == '' ? '' : "WHERE " . preg_replace("/\s+in\s*\(\s*\)/i", " = -1", $conditions);
       $order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
       $limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
       

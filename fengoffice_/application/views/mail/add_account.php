@@ -88,7 +88,7 @@
   </div>
 
   
-  <div id = 'smtp_specific_auth' <?php if(array_var($mailAccount_data, 'smtp_use_auth',1)!=2) echo 'style="display:none"';?>>
+  <div id = 'smtp_specific_auth' style='<?php if(array_var($mailAccount_data, 'smtp_use_auth',1)!=2) echo 'display:none';?>'>
   <div>
     <label for="mailSmtpUsername"><?php echo lang('smtp username')?> <span class="label_required"></span>
     <span class="desc"><?php echo lang('mail account smtp username description') ?></span></label>

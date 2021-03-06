@@ -20,19 +20,22 @@ if($event->canDelete(logged_user())) {
 		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
 } // if
 
+$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
+
 if($event->canEdit(logged_user())) {
-		add_page_action(lang('edit'), $event->getEditUrl()."&view=$view", 'ico-edit');
+		add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
 }
 	
 	
 	$modified="";
 	$error = "";
 	// get the date requested.
-	$day = $_SESSION['cal_day'];
-	$month = $_SESSION['cal_month'];
-	$year = $_SESSION['cal_year'];
+	$day = $_SESSION['day'];//$_SESSION['cal_day'];
+	$month = $_SESSION['month'];//$_SESSION['cal_month'];
+	$year = $_SESSION['year'];//$_SESSION['cal_year'];
 	// Do this if we are MODIFYING a form.
 	$id = $_GET['id'];
+	
     if(!is_numeric($id)) $error = lang('CAL_NO_EVENT_SELECTED');
 	// get event info from database
 	// get user who submitted the event, subject, event description, etc.
@@ -95,13 +98,40 @@ if($event->canEdit(logged_user())) {
 	
 	$description = lang('CAL_STARTING_TIME').": $time";
   	tpl_assign('description', $description);
-		
+
+
+  	if (!$event->isNew()) {
+		$event_inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
+		if ($event_inv != null) {
+			$event->addInvitation($event_inv);
+			$event_inv_state = $event_inv->getInvitationState();
+			$options = array(
+				option_tag(lang('yes'), 1, ($event_inv_state == 1)?array('selected' => 'selected'):null),
+				option_tag(lang('no'), 2, ($event_inv_state == 2)?array('selected' => 'selected'):null),
+				option_tag(lang('maybe'), 3, ($event_inv_state == 3)?array('selected' => 'selected'):null)
+			);
+			if ($event_inv_state == 0) {
+				$options[] = option_tag(lang('decide later'), 0, ($event_inv_state == 0) ? array('selected' => 'selected'):null);
+			}
+			
+			$att_form = '<form style="height:100%;background-color:white" class="internalForm" action="' . get_url('event', 'change_invitation_state') . '" method="post">';
+			$att_form .= '<table><tr><td style="padding-right:6px;"><b>' . lang('attendance') . '<b></td><td>';
+			$att_form .= select_box('event_attendance', $options, array('id' => 'viewEventFormComboAttendance')) . '</td><td>';
+			$att_form .= input_field('event_id', $event->getId(), array('type' => 'hidden'));
+			$att_form .= input_field('user_id', $user_id, array('type' => 'hidden'));
+			$att_form .= submit_button(lang('Save'), null, array('style'=>'margin-top:0px;margin-left:10px')) . '</td></tr></table></form>';
+		} //if
+	} // if
+
 	$variables = array();
 	$variables['username'] = $username;
 	if (isset($modtimeformat))
 		$variables['modtimeformat'] = $modtimeformat;
 	$variables['mod_username'] = $mod_username;
 	$variables['time'] = $time;
+	if (!$event->isNew()) {
+		$variables['attendance'] = $att_form;
+	}
 	$variables['duration'] = $duration;
 	$variables['desc'] = $desc;
 	

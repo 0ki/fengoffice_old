@@ -18,14 +18,17 @@
   <div class="adminMainBlock">
 
 <?php if(isset($clients) && is_array($clients) && count($clients)) { ?>
-<table>
+<table style="min-width:400px;margin-top:10px;">
   <tr>
     <th><?php echo lang('name') ?></th>
     <th><?php echo lang('users') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>
-<?php foreach($clients as $client) { ?>
-  <tr>
+<?php 
+	$isAlt = true;
+foreach($clients as $client) { 
+	$isAlt = !$isAlt;?>
+  <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td><a class="internalLink" href="<?php echo $client->getViewUrl() ?>"><?php echo clean($client->getName()) ?></a></td>
     <td style="text-align: center"><?php echo $client->countUsers() ?></td>
 <?php 
@@ -43,7 +46,7 @@
     $options[] = '<a class="internalLink" href="' . $client->getDeleteClientUrl() . '" onclick="return confirm(\'' . lang('confirm delete client') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>
-    <td><?php echo implode(' | ', $options) ?></td>
+    <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
   </tr>
 <?php } // foreach ?>
 </table>

@@ -10,6 +10,8 @@ og.pageSize = 10;
 og.hostname = '';
 og.maxFileSize = 1024 * 1024;
 
+og.hideMailsTab = 0;
+
 // functions
 og.msg =  function(title, format, timeout, classname) {
 	if (typeof timeout == 'undefined') timeout = 4;
@@ -182,11 +184,13 @@ og.toggle = function(id, btn) {
 og.toggleAndBolden = function(id, btn) {
 	var obj = Ext.get(id);
 	if (obj.isDisplayed()) {
-		obj.slideOut("t", {duration: 0.5, useDisplay: true});
+		obj.dom.style.display = 'none';
+		//obj.slideOut("t", {duration: 0.5, useDisplay: true});
 		if (btn) 
 			btn.style.fontWeight = 'normal';
 	} else {
-		obj.slideIn("t", {duration: 0.5, useDisplay: true});
+		obj.dom.style.display = 'block';
+		//obj.slideIn("t", {duration: 0.5, useDisplay: true});
 		if (btn) 
 			btn.style.fontWeight = 'bold';
 	}
@@ -226,112 +230,28 @@ og.filesizeFormat = function(fs) {
 	}
 };
 
-og.autoComplete = {
-	keypress: function(e) {
-		if (e.keyCode == 13) {
-			if (this.autoCompleter) {
-				var val = this.value;
-				var l = val.lastIndexOf(",");
-				if (l > 0) {
-					val = val.substring(0, l + 1) + " ";
-				} else {
-					val = "";
-				}
-				this.value = val + this.autoCompleter.matches[this.autoCompleter.selected].text;
-				this.parentNode.removeChild(this.autoCompleter.element);
-				this.autoCompleter = null;
-			}
-			return false;
-		}
-		return true;
-	},
-	keyup: function(e, data) {
-		var ret = false;
-		var borr = false;
-		if (e.keyCode == 27) {
-			borr = true;
-			ret = true;
-		} else if (e.keyCode == 38 || e.keyCode == 40) {
-			if (this.autoCompleter) {
-				this.autoCompleter.matches[this.autoCompleter.selected].element.className = '';
-				this.autoCompleter.selected = (this.autoCompleter.selected + e.keyCode - 39 + this.autoCompleter.matches.length) % this.autoCompleter.matches.length;
-				this.autoCompleter.matches[this.autoCompleter.selected].element.className = 'selected';
-			}
-			ret = true;
-		}
-		if (this.previousValue == this.value) {
-			ret = true;
-		} else {
-			borr = true;
-		}
-		if (borr && this.autoCompleter) {
-			this.parentNode.removeChild(this.autoCompleter.element);
-			this.autoCompleter = null;
-		}
-		if (ret) {
-			return;
-		}
-		this.previousValue = this.value;
-		var val = this.value;
-		var l = val.lastIndexOf(",");
-		if (l > 0) {
-			val = val.substring(l + 1);
-		}
-		val = val.replace(/^\s+/, "");
-		var matches = new Array();
-		//if (val) { // this check determines whether a letter has to be typed to show the autoCompleter
-			var regexp = eval("/^" + val + ".*/i");
-			for (var i=0; i < data.length; i++) {
-				if (regexp.test(data[i])) {
-					matches[matches.length] = {
-						text: data[i]
-					};
-				}
-			}
-			if (matches.length <= 0) {
-				return;
-			}
-	
-			var div = document.createElement('div');
-			for (var i=0; i < matches.length; i++) {
-				var elem = document.createElement('div');
-				elem.innerHTML = matches[i].text;
-				matches[i].element = elem;
-				div.appendChild(elem);
-			}
-			div.className = 'autoCompleter';
-			//div.style.position = 'absolute';
-			div.style.left = this.offsetLeft + 'px';
-			div.style.top = this.offsetTop + this.offsetHeight + 'px';
-			this.parentNode.appendChild(div);
-			this.autoCompleter = {
-				element: div,
-				selected: 0,
-				matches: matches
-			};
-			matches[0].element.className = 'selected';
-		//}
-	},
-	blur: function() {
-		if (this.autoCompleter) {
-			this.parentNode.removeChild(this.autoCompleter.element);
-			this.autoCompleter = null;
-		}
-	}
-};
 
 og.makeAjaxUrl = function(url, params) {
 	var q = url.indexOf('?');
 	var n = url.indexOf('#');
-	if (Ext.getCmp('workspace-panel')) {
-		var ap = "&active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
+	if (url.indexOf("active_project=") < 0) {
+		if (Ext.getCmp('workspace-panel')) {
+			var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
+		} else {
+			var ap = "active_project=0";
+		}
+	}
+	if (url.indexOf("active_tag=") < 0) {
+		if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag().name != '') {
+			var at = "&active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
+		} else {
+			var at = "";
+		}
+	}
+	if (url.indexOf("ajax=true") < 0) {
+		var aj = "&ajax=true";
 	} else {
-		var ap = "&active_project=0";
-	}	
-	if (Ext.getCmp('tag-panel') && Ext.getCmp('tag-panel').getSelectedTag().name != '') {
-		var at = "&active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
-	} else {
-		var at = "";
+		var aj = "";
 	}
 	var p = "";
 	if (params) {
@@ -348,12 +268,12 @@ og.makeAjaxUrl = function(url, params) {
 	
 	if (q < 0) {
 		if (n < 0) {
-			return url + "?ajax=true" + ap + at + p;
+			return url + "?" + ap + aj + at + p;
 		} else {
-			return url.substring(0, n) + "?ajax=true" + ap + at + (url.substring(n) != ''? "&":"") + url.substring(n) + p;
+			return url.substring(0, n) + "?" + ap + aj + at + (url.substring(n) != ''? "&":"") + url.substring(n) + p;
 		}
 	} else {
-		return url.substring(0, q + 1) + "ajax=true" + ap + at + (url.substring(q + 1) != ''? "&":"") + url.substring(q + 1) + p;
+		return url.substring(0, q + 1) + ap + aj + at + (url.substring(q + 1) != ''? "&":"") + url.substring(q + 1) + p;
 	}
 };
 
@@ -455,7 +375,8 @@ og.openLink = function(url, options) {
 			if (active) options.caller = active.id;
 		}
 	}
-	og.loading();
+	if (!options.doNotShowLoading)
+		og.loading();
 	var params = options.get || {};
 	if (typeof params == 'string') {
 		params += "&current=" + options.caller;
@@ -488,14 +409,18 @@ og.openLink = function(url, options) {
 						og.newTab(response.responseText);
 					}
 				}
-				if (options.postProcess) options.postProcess.call(this, true, data || response.responseText, options.options);
+				if (options.postProcess) options.postProcess.call(options.scope || this, true, data || response.responseText, options.options);
+				if (options.onSuccess) options.onSuccess.call(options.scope || this, data || response.responseText, options.options);
 			} else {
 				og.err(lang("http error", response.status, response.statusText));
-				if (options.postProcess) options.postProcess.call(this, false);
+				if (options.postProcess) options.postProcess.call(options.scope || this, false);
+				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}
 		},
 		caller: options.caller,
 		postProcess: options.callback || options.postProcess,
+		onSuccess: options.onSuccess,
+		onError: options.onError,
 		scope: options.scope,
 		preventPanelLoad: options.preventPanelLoad,
 		options: options
@@ -519,7 +444,6 @@ og.openLink = function(url, options) {
  */
 og.submit = function(form, options) {
 	if (!options) options = {};
-	og.loading();
 	// create an iframe
 	var id = Ext.id();
 	var frame = document.createElement('iframe');
@@ -546,18 +470,34 @@ og.submit = function(form, options) {
 		}
 		setTimeout(function(){Ext.removeNode(frame);}, 100);
 	}
-	Ext.EventManager.on(frame, 'load', endSubmit, frame);;
+	Ext.EventManager.on(frame, 'load', function() {
+			if (frame.submitted) {
+				endSubmit();
+			}
+		}, frame
+	);
 	
 	form.target = frame.name;
 	var url = og.makeAjaxUrl(form.getAttribute('action')).replace(/ajax\=true/g, "upload=true");
 	form.setAttribute('action', url);
+	og.loading();
+	frame.submitted = true;
 	form.submit();
 	return false;
 };
 
-og.processResponse = function(data, options) {
+og.processResponse = function(data, options, url) {
 	if (!data) return;
 	if (options) var caller = options.caller;
+	
+	if (data.errorCode == 2009) {
+		if (options) {
+			og.LoginDialog.show(options.url, options.options);
+		} else {
+			og.LoginDialog.show();
+		}
+		return;
+	}
 	
 	//Fire events
 	if (data.events) {
@@ -814,4 +754,6 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 		};
 	}
 });
+
+
 /***********************************************************************/

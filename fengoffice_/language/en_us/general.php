@@ -170,8 +170,7 @@
   	'read only' => 'Read only',
   	'none no bars' => 'None',
   	'apply to all subworkspaces' => 'Apply these permissions to all subworkspaces',
-  	'weblinks' => 'Web links',
-  	'add work' => 'Add work',
+  	'weblinks' => 'Web links'
 
   ); // array
 

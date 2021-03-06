@@ -50,7 +50,7 @@ $options = array();
 	} // if
 	
 	tpl_assign('image', '<div><img src="' .
-		$file->getTypeIconUrl() .'" alt="' . clean($file->getFilename()) . '" /></div>');
+		$file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
 	tpl_assign('iconclass', 'ico-large-files');
 	tpl_assign('description', $description);
 	tpl_assign('title', clean($file->getFilename()));

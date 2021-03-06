@@ -3,7 +3,7 @@
 
 <div id="<?php echo $genid ?>-db" style="padding:7px">
 <div class="dashboard">
-<table border=0><tr><td> <!-- submitted by xtender http://forums.opengoo.org/index.php?topic=221.0 -->
+
 <div class="dashWorkspace">
 <span class="name">
 <?php 
@@ -19,27 +19,25 @@ else
 	$hasMessages = isset($messages) && is_array($messages) && count($messages) > 0;
 	$hasDocuments = isset($documents) && is_array($documents) && count($documents) > 0;
 	$hasCharts = isset($charts) && is_array($charts) && count($charts) > 0;
-	$hasUnreadEmails = isset($unread_emails) && is_array($unread_emails) && count($unread_emails) > 0;
+	$hasEmails = (isset($unread_emails) && is_array($unread_emails) && count($unread_emails) > 0)
+			|| (isset($ws_emails) && is_array($ws_emails) && count($ws_emails) > 0);
 	
 	$hasToday = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
 			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks));
 	$hasLate = (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
 		|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
+	$hasComments = isset($comments) && is_array($comments) && count($comments) > 0;
 ?>
 </span><span class="description">
 <?php if (active_project() instanceof Project && active_project()->getShowDescriptionInOverview()) echo '-&nbsp;' . active_project()->getDescription(); ?>
 </span>
 </div>
 
-</td>
-<td width="50%">
 <div class="dashActions">
 	<a class="internalLink" href="#" onclick="og.switchToOverview(); return false;">
 	<div class="viewAsList"><?php echo lang('view as list') ?></div></a>
 </div>
-</td>
-</tr>
-</table>
+
 
 
 
@@ -437,7 +435,7 @@ echo $output . '</table>';
 			}
 			echo implode('&nbsp;',$projectLinks);?>
 			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo clean($task->getTitle())?><?php echo clean($text) ?></a></td>
-			<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObjectAndUser($task,logged_user());
+			<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObject($task,logged_user());
 				if ($timeslot) { ?>
 					<div id="<?php echo $genid . $task->getId() ?>timespan"></div>
 					<script language="JavaScript">
@@ -649,21 +647,22 @@ echo $output . '</table>';
 <?php } ?>
 
 </td>
-<?php if ($hasMessages || $hasDocuments || $hasCharts || $hasUnreadEmails){ ?>
+<?php if ($hasMessages || $hasDocuments || $hasCharts || $hasEmails || $hasComments){ ?>
 <td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday)? '330px' : '100%' ?>">
 
-<?php if ($hasUnreadEmails) { ?>
+<?php if ($hasEmails && (!defined('HIDE_MAILS_TAB') || HIDE_MAILS_TAB != 1)) { ?>
 <div class="dashUnreadEmails">
 <table style="width:100%">
 	<col width=12/><col width=85%/><col width=12/><tr>
-	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('unread emails') ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo $unread_emails?lang('unread emails'):lang('workspace emails') ?></div></td>
+	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 		<tr><td class="coViewBody" colspan=2>
 		<table id="dashTableEmails" style="width:100%">
 		<?php $c = 0;
-			foreach ($unread_emails as $email){ 
+			$emails = $unread_emails?$unread_emails:$ws_emails;
+			foreach ($emails as $email){ 
 				if (!$email->getIsDeleted()) {
 					$c++;?>
 					<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMUC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
@@ -707,7 +706,7 @@ echo $output . '</table>';
 <table style="width:100%">
 	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('messages') ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 		<tr><td class="coViewBody" colspan=2>
@@ -749,6 +748,48 @@ echo $output . '</table>';
 </div>
 <?php } ?>
 
+<?php if ($hasComments) { ?>
+<div class="dashComments">
+<table style="width:100%">
+	<col width=12/><col /><col width=12/><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('latest comments') ?></div></td>
+	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td class="coViewBody" colspan=2>
+		<table id="dashTableComments" style="width:100%">
+		<?php $c = 0;
+			foreach ($comments as $comment){ $c++;?>
+			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMCoC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
+			<td class="db-ico ico-comment"></td>
+			<td style="padding-left:5px">
+			<a class="internalLink" href="<?php echo $comment->getViewUrl()?>"
+				title="<?php echo lang('comment posted on by linktitle', format_datetime($comment->getCreatedOn()), $comment->getCreatedByDisplayName()) ?>">
+			<?php echo clean($comment->getObject()->getObjectName()) ?>
+			</a>
+			<span class="previewText"><?php echo $comment->getPreviewText(100) ?></span>
+			</td></tr>
+		<?php } // foreach?>
+			<?php /*if ($c >= 10) {?>
+				<tr class="dashSMCoC" style="display:none"><td></td>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');"><?php echo lang('show all') ?>...</a>
+				</td></tr>
+			<?php } */ ?>
+		</table>
+		<?php if ($c > 5) { ?>
+		<div id="dashSMCoT" style="width:100%;text-align:right">
+			<a href="#" onclick="og.hideAndShowByClass('dashSMCoT', 'dashSMCoC', 'dashTableComments'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
+		</div>
+		<?php } // if ?>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom" style="width:90%"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } ?>
+
 
 <?php if ($hasCharts) {
 	$pcf = new ProjectChartFactory();?>
@@ -759,9 +800,8 @@ echo $output . '</table>';
 	<tr><td style="height:1px;width:12px;"></td><td style="height:1px;width:216px;"></td><td></td></tr>
 	<tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('charts') ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
-	
 		<tr><td class="coViewBody" colspan=2>
 <?php
 	$c = 1;
@@ -779,7 +819,6 @@ echo $output . '</table>';
 		 </div>
 <?php } // foreach ?>
 		</td></tr>
-
 		<tr><td class="coViewBottomLeft"></td>
 		<td class="coViewBottom"></td>
 		<td class="coViewBottomRight"></td></tr>
@@ -789,10 +828,10 @@ echo $output . '</table>';
 
 <?php if ($hasDocuments) { ?>
 <div class="dashDocuments">
-<table style="width:100%">
+<table style="width:330px">
 	<col width=12/><col/><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('documents') ?></div></td>
-	<td class="coViewTopRight"></td></tr>
+	<td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 		<tr><td class="coViewBody" colspan=2>

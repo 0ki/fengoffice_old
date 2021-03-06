@@ -72,7 +72,10 @@ return array(
     'mail address' => 'Dirección de email',
     'mail address description' => 'La dirección de correo electrónico es la dirección que otras personas utilizarán para enviarle mensajes',
 
-	'unread emails' => 'Emails no leidos'
+	'unread emails' => 'Emails no leidos',
+	'view due task' => 'Ver tarea a vencer',
+	'due task email' => 'La tarea "{0}" vencerá el "{1}" y aún está pendiente',
+	'due task' => 'Tarea a vencer',
 
     ); // array
 ?>

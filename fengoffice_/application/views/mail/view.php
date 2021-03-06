@@ -19,7 +19,7 @@
 	<?php $description = '<div class="coInfo">
 	<table>
 	<tr><td style="width:100px">' . lang('from') . ':</td><td>' . clean($email->getFromName()) . '</td></tr>
-	<tr><td>' . lang('to') . ':</td><td>' . clean(MailUtilities::displayMultipleAddresses($email->getTo())) . '</td></tr>
+	<tr><td>' . lang('to') . ':</td><td>' . MailUtilities::displayMultipleAddresses($email->getTo()) . '</td></tr>
 	<tr><td>' . lang('date') . ':</td><td>' . $email->getSentDate()->format('D, d M Y H:i:s') . '</td></tr>';
 	
 	if ($email->getHasAttachments()) {
@@ -61,9 +61,9 @@
 			}
 		} else {
 			if ($email->getBodyPlain() != ''){
-				$content =  '<div>' . convert_to_links(clean($email->getBodyPlain())) . '</div>';
+				$content =  '<div>' . convert_to_links(nl2br(clean($email->getBodyPlain()))) . '</div>';
 			} else {
-				$content =  '<div>' .convert_to_links($email->getContent()) . '</div>';
+				$content =  '<div>' .convert_to_links(nl2br(clean($email->getContent()))) . '</div>';
 			}
 		}
 		$strDraft = '';

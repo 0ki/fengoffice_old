@@ -422,6 +422,23 @@ class AccountController extends ApplicationController {
 
 	} // delete_avatar
 	
+	function update_user_preference(){
+		ajx_current("empty");
+		$option_name = array_var($_GET,'name');
+		$option_value = array_var($_GET,'value');
+		if($option_name != ''){
+			try{
+				DB::beginWork();
+				set_user_config_option($option_name,$option_value,logged_user()->getId());
+				DB::commit();
+			} catch(Exception $e){
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
+		}
+		
+	}
 
 } // AccountController
 

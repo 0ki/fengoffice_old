@@ -119,7 +119,7 @@
     */
     function setThumbFilename($value) {
       return $this->setColumnValue('thumb_filename', $value);
-    } // setThumbFilename() 
+    } // setThumbFilename()
     
     /**
     * Return value of 'revision_number' field

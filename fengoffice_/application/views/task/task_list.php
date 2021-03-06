@@ -14,7 +14,8 @@
 </script>
   
 <?php if($task_list->getText()) { ?>
-  <div style="padding-bottom:15px;color:#666666"><?php echo nl2br(clean($task_list->getText()))?></div>
+  <div style="padding-bottom:20px;color:#333"><table><tr><td style="padding-right:5px;"><b>
+  <?php echo lang('description') ?>:</b></td><td style="padding-left:5px;border-left:0px solid #CCC"><?php echo nl2br(clean($task_list->getText()))?></td></tr></table></div>
 <?php } // if ?>
 
 

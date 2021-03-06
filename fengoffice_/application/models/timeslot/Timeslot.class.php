@@ -123,6 +123,11 @@ class Timeslot extends BaseTimeslot {
     	return $timeDiff['days'] * 86400 + $timeDiff['hours'] * 3600  + $timeDiff['minutes']* 60 + $timeDiff['seconds'];
     }
     
+    function closeTimeslot(){
+    		
+    
+    }
+    
     // ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------

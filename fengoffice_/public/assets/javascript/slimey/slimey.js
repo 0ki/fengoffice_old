@@ -39,6 +39,14 @@ var Slimey = function(config) {
 	this.container = $(config.container);
 	this.container.appendChild(this.navigation.container);
 	this.container.appendChild(div);
+	this.isDirty = false;
+	this.editor.addEventListener('actionPerformed', function() {
+		if (this.editor.undoStack.peek().name != 'changeSlide') {
+			this.isDirty = true;
+			var p = og.getParentContentPanel(Ext.get(this.container));
+			Ext.getCmp(p.id).setPreventClose(true);
+		}
+	}, this);
 }
 
 Slimey.prototype.submitFile = function(newRevision, rename) {
@@ -50,7 +58,15 @@ Slimey.prototype.submitFile = function(newRevision, rename) {
 				'file[id]': this.fileId,
 				'slimContent': this.slimContent,
 				'new_revision_document': (newRevision?"checked":"")
-			}
+			},
+			callback: function(success) {
+				if (success) {
+					this.isDirty = false;
+					var p = og.getParentContentPanel(Ext.get(this.container));
+					Ext.getCmp(p.id).setPreventClose(false);
+				}
+			},
+			scope: this
 		});
 	}
 	var slim = this.navigation.getSLIMContent();

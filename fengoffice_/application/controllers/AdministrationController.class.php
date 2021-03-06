@@ -135,30 +135,23 @@ class AdministrationController extends ApplicationController {
 	 */
 	function assign_task_template_to_ws(){
 		$task_template_id=get_id(); 
-		$all = WorkspaceTemplates::getWorkspacesByTemplate('ProjectTasks',$task_template_id);
-		$workspace_templates_data = null;
-		if($all){
-			foreach ($all as $one){
-				$workspace_templates_data[$one->getId()] = 'true';
-			}
-		}
-		tpl_assign('workspace_templates_data',$workspace_templates_data );		
-		tpl_assign('projectsArray', Projects::getProjectsByParent(logged_user()));			
+		$selected = WorkspaceTemplates::getWorkspacesByTemplate('ProjectTasks', $task_template_id);
+		tpl_assign('workspaces', logged_user()->getWorkspaces());		
+		tpl_assign('selected', $selected);			
 		tpl_assign('task', ProjectTasks::findById($task_template_id));
-		$task_template = array_var($_POST,'task_template');
-		if(array_var($_POST,'commit')=='commit'){
-			try{
+		$checked = array_var($_POST, 'ws_ids');
+		if ($checked != null) {
+			try {
 				DB::beginWork();
-				WorkspaceTemplates::deleteByTemplate($task_template_id,'ProjectTasks');
-				foreach ($task_template as $id => $val){
-					if( $val == 'checked'){
-						$obj = new WorkspaceTemplate();
-						$obj->setWorkspaceId($id);
-						$obj->setTemplateId($task_template_id);
-						$obj->setObjectManager('ProjectTasks');
-						$obj->setInludeSubWs(false);
-						$obj->save();
-					}
+				WorkspaceTemplates::deleteByTemplate($task_template_id, 'ProjectTasks');
+				$wss = Projects::findByCSVIds($checked);
+				foreach ($wss as $ws){
+					$obj = new WorkspaceTemplate();
+					$obj->setWorkspaceId($ws->getId());
+					$obj->setTemplateId($task_template_id);
+					$obj->setObjectManager('ProjectTasks');
+					$obj->setInludeSubWs(false);
+					$obj->save();
 				}
 				DB::commit();
 				flash_success(lang('success assign workspaces'));

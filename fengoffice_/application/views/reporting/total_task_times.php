@@ -105,7 +105,8 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 				$has_difference = $has_difference || has_difference($previousTSRow,$tsRow, $group_by[$j]);
 				
 			if ($has_difference){
-				if ($previousTSRow != null) {?>
+				if ($previousTSRow != null) {
+			?>		
 <tr style="padding-top:2px;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>
 	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
@@ -157,8 +158,36 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo getGroupTitle($group_by[$i], $previousTSRow) ?></td>
 	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
-</tr></table></div></td></tr><?php }?>
-<?php foreach ($timeslotsArray as $ts) {
+</tr></table></div></td></tr>
+		<?php }?>
+
+
+
+<?php
+// UNWORKED TASKS
+if (isset($unworkedTasks) && count($unworkedTasks) > 0) { ?>
+	<tr><td colspan=<?php echo $totCols ?>><div style="width=100%;padding-top:10px;padding-bottom:5px;"><table style="width:100%">
+<tr><td colspan="1" style="border-bottom:2px solid #888;font-size:135%;font-weight:bold;">
+	<?php echo lang("unworked pending tasks") ?></td></tr>
+	
+<?php
+	$isAlt = true;
+	foreach ($unworkedTasks as $t) {
+?>
+	<tr><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo $t->getTitle() ?>
+	</td></tr>
+<?php $isAlt = !$isAlt;
+	} ?>
+
+<tr style="padding-top:2px;font-weight:bold;">
+	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo lang("unworked pending tasks") ?></td>
+</tr></table></div></td></tr>
+<?php } ?>
+
+
+<?php
+// TOTAL TIME
+foreach ($timeslotsArray as $ts) {
 	$t = $ts['ts'];
 	$sumTime += $t->getMinutes();
 }?>

@@ -76,6 +76,7 @@
 	"CAL_PRIVATE_EVENT_EXPLAIN" => "This is a private event",
 	"CAL_SUBMIT_ITEM" => "Submit Item",
 	"CAL_MINUTES" => "Minutes", 
+	"CAL_MINUTES_SHORT" => "min",
 	"CAL_TIME_AND_DURATION" => "Date, Time and Duration",
 	"CAL_REPEATING_EVENT" => "Repeating Event",
 	"CAL_EXTRA_OPTIONS" => "Extra Options",
@@ -110,6 +111,22 @@
 	
 	
 	"CAL_SELECT_TIME" => "Select Starting Time",
+	
+	'event invitations' => 'Event Invitations',
+	'event invitations desc' => 'Invite selected people to this event',
+	'send new event notification' => 'Send email notifications',
+	'new event notification' => 'New event has been added',
+    'change event notification' => 'Event has changed',
+	'attendance' => 'Will you participate?',
+    'confirm attendance' => 'Confirm Attendance',
+    'maybe' => 'Maybe',
+    'decide later' => 'Decide later',
+    'view event' => 'View event',
+	'new event created' => 'New Event created',
+	'event changed' => 'Event changed',
+	'calendar of' => '{0}\'s Calendar',
+	'all users' => 'All Users',
+    
 	"days" => "days",
 	"weeks" => "weeks",
 	"months" => "months",

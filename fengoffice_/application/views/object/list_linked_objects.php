@@ -33,7 +33,7 @@ if ($linked_objects_object->isNew()){
 	<?php } // if ?>
 	</div>
 <?php } else {
-	echo $shortDisplay ? '' : lang('no linked objects').'.';
+	//echo $shortDisplay ? '' : lang('no linked objects').'.';
 	if ((!($linked_objects_object->isNew())) && $linked_objects_object->canLinkObject(logged_user()) && $enableAdding) {
 		echo render_link_to_object($linked_objects_object,lang('link objects'));
 	} // if

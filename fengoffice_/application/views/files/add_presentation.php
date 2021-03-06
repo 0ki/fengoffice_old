@@ -30,15 +30,15 @@
 		$filename = '';
 		$slimContent = escapeSLIM('<div class="slide"><div style="font-size: 200%; font-weight: bold; font-family: sans-serif; position: absolute; left: 30%; top: 0%;">New Slideshow</div></div>');
 	}
-	$id = time() % 1000000;
+	$id = gen_id();
 ?>
 
-<div id="slimey<?php echo $id ?>">
+<div id="<?php echo $id ?>">
 </div>
 
 <script type="text/javascript">
-	var slimey<?php echo $id ?> = new Slimey({
-		container: 'slimey<?php echo $id ?>',
+	var <?php echo $id ?> = new Slimey({
+		container: '<?php echo $id ?>',
 		rootDir: '<?php echo SLIMEY_PATH ?>',
 		imagesDir: '<?php echo get_theme_url("slimey/images/") ?>',
 		filename: '<?php echo ($file->isNew()?'':$file->getFilename()) ?>',
@@ -46,18 +46,20 @@
 		slimContent: '<?php echo $slimContent ?>',
 		saveUrl: '<?php echo $url ?>'
 	});
+	
 	// for the image chooser
 	imagesUrl = '<?php echo get_url('files', 'list_files', array('type' => 'image', 'ajax' => 'true')) ?>';
 	
 	og.eventManager.addListener("presentation saved", function(obj) {
 		this.fileId = obj.id;
-	}, slimey<?php echo $id ?>, {single:true});
+	}, <?php echo $id ?>, {replace:true});
+
 </script>
 
 <?php
-//add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(false); })()", "save");
-add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(true); })()", "save");
-add_page_action(lang("save as"), "javascript:(function(){ slimey$id.submitFile(true, true); })()", "save_as");
+//add_page_action(lang("save"), "javascript:(function(){ $id.submitFile(false); })()", "save");
+add_page_action(lang("save"), "javascript:(function(){ $id.submitFile(true); })()", "save");
+add_page_action(lang("save as"), "javascript:(function(){ $id.submitFile(true, true); })()", "save_as");
 ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

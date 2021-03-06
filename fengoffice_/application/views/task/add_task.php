@@ -1,17 +1,3 @@
-<script type="text/javascript">
-		var allTags = [<?php
-			$coma = false;
-			$tags = Tags::getTagNames();
-			foreach ($tags as $tag) {
-				if ($coma) {
-					echo ",";
-				} else {
-					$coma = true;
-				}
-				echo "'" . $tag . "'";
-			}
-		?>];
-	</script>
 <?php
   $genid = gen_id();
 //  if (isset($base_task) && $base_task instanceof ProjectTask && $base_task->getIsTemplate()) {
@@ -20,11 +6,8 @@
   $project = $task->getProject();
   $projects =  active_projects();
 ?>
-<?php if($task->isNew()) { ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) ?>" method="post">
-<?php } else { ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->getEditListUrl() ?>" method="post">
-<?php } // if ?>
+
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
 
 <div class="task">
 <div class="coInputHeader">
@@ -76,7 +59,7 @@
 	<div id="<?php echo $genid ?>add_task_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project('task[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
+		<div id="<?php echo $genid ?>wsSel"></div><?php //echo select_project('task[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
 	</fieldset>
 	</div>
 	<?php } ?>
@@ -84,7 +67,7 @@
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_textfield("task[tags]", array_var($task_data, 'tags'), 'allTags', array('class' => 'long')); ?>
+		<?php echo autocomplete_textfield("task[tags]", array_var($task_data, 'tags'), Tags::getTagNames(), lang("enter tags desc"), array("class" => "long")); ?>
 	</fieldset>
 	</div>
 
@@ -113,8 +96,8 @@
 		</script>
 		<?php echo checkbox_field('use_start_date',(array_var($task_data, 'start_date')!='')?true:false,array('onclick'=>"javascript:toggle_start_date();") ) ?>
 		<?php echo lang('use start date') ?> <br> 
-			<div id="start_date_div" <?php  if (array_var($task_data, 'start_date')=='') echo " style ='display:none;' "?> >
-			<?php echo pick_date_widget('task_start_date', array_var($task_data, 'start_date',mktime()),null,null,array('id'=>'task_start_date')) ?>
+			<div id="start_date_div" style="<?php if (array_var($task_data, 'start_date')=='') echo "display:none;"?>">
+			<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid) ?>
 			</div>	
 				
 		<script language="javascript">
@@ -127,8 +110,8 @@
 		</script>
 		<?php echo checkbox_field('use_due_date',(array_var($task_data, 'due_date')!='')?true:false,array('onclick'=>"javascript:toggle_due_date();") ) ?>
 		<?php echo lang('use due date')  ?> <br> 
-			<div id="due_date_div" <?php  if (array_var($task_data, 'due_date')=='') echo " style = 'display:none;' "?> >
-			<?php echo pick_date_widget('task_due_date', array_var($task_data, 'due_date',mktime()),null,null,array('id'=>'task_due_date')) ?>
+			<div id="due_date_div" style = "<?php  if (array_var($task_data, 'due_date')=='') echo "display:none;"?>">
+			<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid) ?>
 			</div>	
 		</div>
 		
@@ -207,13 +190,13 @@
 					array_var($task_data, 'notify_user_' . $user->getId()), 
 					array('id' => $genid.'notifyUser' . $user->getId(), 
 						'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
-					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
+					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
 				<script type="text/javascript">
 					App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
 						id          : <?php echo $user->getId() ?>,
 						checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
 					});
-				</script>
+				</script></li>
 			<?php } // foreach ?>
 			</ul>
 			</div>
@@ -293,4 +276,5 @@
 
 <script type="text/javascript">
 	Ext.get('<?php echo $genid ?>taskListFormName').focus();
+	og.drawWorkspaceSelector('<?php echo $genid ?>wsSel',<?php echo ($project instanceof Project)? $project->getId():active_or_personal_project()->getId() ?>,'task[project_id]');
 </script>

@@ -294,15 +294,10 @@ class ReportingController extends ApplicationController {
 				$st = DateTimeValueLib::make(0,0,0,$now->getMonth(),1,$now->getYear());
 				$et = DateTimeValueLib::make(23,59,59,$now->getMonth(),1,$now->getYear())->add('M',1)->add('d',-1);break;
 			case 6:
-				$sday = array_var($report_data, 'start_day');
-				$smonth = array_var($report_data, 'start_month');
-				$syear = array_var($report_data, 'start_year');
-				$eday = array_var($report_data, 'end_day');
-				$emonth = array_var($report_data, 'end_month');
-				$eyear = array_var($report_data, 'end_year');
-		
-				$st = DateTimeValueLib::make(0,0,0,$smonth,$sday,$syear);
-				$et = DateTimeValueLib::make(23,59,59,$emonth,$eday,$eyear);
+				$start = explode('/', array_var($report_data, 'start_value'));
+		       	$st = DateTimeValueLib::make(0, 0, 0, $start[0], $start[1], $start[2]);
+		       	$end = explode('/', array_var($report_data, 'end_value'));
+		       	$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
 				break;
 		}
 		
@@ -317,10 +312,15 @@ class ReportingController extends ApplicationController {
 		if (array_var($report_data, 'group_by_3') != '0')
 			$group_by[] = array_var($report_data, 'group_by_3');
 		
-		$timeslotsArray = Timeslots::getTaskTimeslots($workspace,$user,$workspacesCSV,$st,$et, array_var($report_data, 'task_id',0),$group_by);
+		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by);
+		if (array_var($report_data, 'include_unworked') == 'checked') {
+			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
+		}
+		
 		
 		tpl_assign('group_by', $group_by);
 		tpl_assign('timeslotsArray', $timeslotsArray);
+		tpl_assign('unworkedTasks', $unworkedTasks);
 		tpl_assign('workspace', $workspace);
 		tpl_assign('start_time', $st);
 		tpl_assign('end_time', $et);
@@ -387,15 +387,10 @@ class ReportingController extends ApplicationController {
 			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
 		}
 		
-		$sday = array_var($report_data, 'start_day');
-		$smonth = array_var($report_data, 'start_month');
-		$syear = array_var($report_data, 'start_year');
-		$eday = array_var($report_data, 'end_day');
-		$emonth = array_var($report_data, 'end_month');
-		$eyear = array_var($report_data, 'end_year');
-
-		$st = DateTimeValueLib::make(0,0,0,$smonth,$sday,$syear);
-		$et = DateTimeValueLib::make(23,59,59,$emonth,$eday,$eyear);
+		$start = explode('/', array_var($report_data, 'start_value'));
+		$end = explode('/', array_var($report_data, 'end_value'));
+		$st = DateTimeValueLib::make(0, 0, 0, $start[0], $start[1], $start[2]);
+		$et = DateTimeValueLib::make(23,59,59, $end[0], $end[1], $end[2]);
 		$st = new DateTimeValue($st->getTimestamp() - logged_user()->getTimezone() * 3600);
 		$et = new DateTimeValue($et->getTimestamp() - logged_user()->getTimezone() * 3600);
 		
@@ -410,6 +405,5 @@ class ReportingController extends ApplicationController {
 		tpl_assign('template_name', 'total_task_times');
 		tpl_assign('title',lang('task time report'));
 	}
-
 }
 ?>

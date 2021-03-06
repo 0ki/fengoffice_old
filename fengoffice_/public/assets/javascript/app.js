@@ -20,7 +20,7 @@ App.engine = {
 // ---------------------------------------------------
 // Language
 // ---------------------------------------------------
-
+if (typeof _lang != 'object') _lang = {};
 function lang(name) {
 	var value = _lang[name];
 	if (!value) {
@@ -30,6 +30,12 @@ function lang(name) {
 		value = value.replace("{" + (i-1) + "}", arguments[i]);
 	}
 	return value;
+}
+
+function addLangs(langs) {
+	for (var k in langs) {
+		_lang[k] = langs[k];
+	}
 }
 
 // -----------------------------

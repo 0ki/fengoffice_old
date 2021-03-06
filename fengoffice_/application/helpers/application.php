@@ -131,28 +131,61 @@ function select_project($name, $projects, $selected = null, $attributes = null, 
  * @return string
  * 		HTML for the control
  */
-function select_workspaces($name, $workspaces, $selected = null, $id = 'default_id') {
-	$set = array();
+function select_workspaces($name = "", $workspaces = null, $selected = null, $id = null) {
+	if (!isset($id)) $id = gen_id();
+	if (!isset($workspaces)) $workspaces = logged_user()->getActiveProjects();
+		
+	$selectedCSV = "";
 	if (is_array($selected)) {
 		foreach ($selected as $s) {
 			if ($s instanceof Project) {
-				$set[$s->getId()] = true;
+				if ($selectedCSV != "") $selectedCSV .= ",";
+				$selectedCSV .= $s->getId();
 			}
 		}
 	}
-	$output = "<div id=\"ws_chooser_$id\" />";
-	$output .= "<script type=\"text/javascript\">\n";
-	$wslist = '';
-	if (is_array($workspaces)) {
-		foreach($workspaces as $w) {
-			if ($w instanceof Project) {
-				if ($wslist != '') $wslist .= ",";
-				$wslist .= '{id:'.$w->getId().',name:"'.$w->getName().'",selected:'.(isset($set[$w->getId()])?'true':'false').'}';
+		
+	$workspacesToJson = array();
+
+	$wsset = array();
+	if($workspaces){
+		foreach ($workspaces as $w) {
+			$wsset[$w->getId()] = true;
+		}
+		foreach ($workspaces as $w){
+			$tempParent = $w->getParentId();
+			$x = $w;
+			while ($x instanceof Project && !isset($wsset[$tempParent])) {
+				$tempParent = $x->getParentId();
+				$x = $x->getParentWorkspace();
 			}
-		} // foreach
-	} // if
-	$output .= "new og.WorkspaceChooser({el: 'ws_chooser_$id', name: '$name', ws: [$wslist], id: '$id'});\n";
-	return $output . "</script></div>\n";
+			if (!$x instanceof Project) {
+				$tempParent = 0;
+			}
+			
+			$workspacesToJson[] = array(
+				"id" => $w->getId(),
+				"n" => $w->getName(),
+				"p" => $tempParent,
+				"rp" => $w->getParentId(),
+				"d" => $w->getDepth(),
+				"c" => $w->getColor(),
+				);
+		}
+	}
+	$output = "<div id=\"$id-wsTree\"></div>
+			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\">
+			<script type=\"text/javascript\">
+				var wsTree = new og.WorkspaceChooserTree({
+					renderTo: '$id-wsTree',
+					field: '$id-field',
+					id: '$id',
+					workspaces: " . json_encode($workspacesToJson) . ",
+					height: 320,
+					width: 210
+				});
+			</script>";
+	return $output;
 } // select_workspaces
 
 /**
@@ -243,6 +276,17 @@ function select_milestone($name, $project = null, $selected = null, $attributes 
 	 $milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user()); 
 	 
 	if(is_array($milestones)) {
+		if ($selected){		//Fixes bug: If task is in a subworkspace of it's milestone's workspace, and user is standing on it, the assigned milestone is set to none when task is edited.
+			$is_in_array = false;	
+				foreach($milestones as $milestone)
+				if ($milestone->getId() == $selected) $is_in_array = true;
+				
+			if (!$is_in_array){
+				$milestone = ProjectMilestones::findById($selected);
+				if ($milestone)
+					$milestones[] = $milestone;
+			}
+		}
 		foreach($milestones as $milestone) {
 			$option_attributes = $milestone->getId() == $selected ? array('selected' => 'selected') : null;
 			$options[] = option_tag($milestone->getName(), $milestone->getId(), $option_attributes);
@@ -697,6 +741,10 @@ function render_object_links(ApplicationDataObject $object, $can_remove = false,
 	return tpl_fetch(get_template_path('list_linked_objects', 'object'));
 } // render_object_links
 
+function render_object_subscribers(ProjectDataObject $object) {
+	tpl_assign('object', $object);
+	return tpl_fetch(get_template_path('list_subscribers', 'object'));
+}
 /**
  * Creates a button that shows an object picker to link the object given by $object with the one selected in
  * the it.
@@ -805,24 +853,44 @@ function render_menu($tags, $active_projects, $recent_files) {
  *
  * @param string $name Control name
  * @param string $value Initial value
- * @param string $jsArray name of a JS array to get options from
+ * @param string $options
+ * 		An array of arrays with the values that will be shown when autocompleting.
+ * 		The first value of each array will be assumed as the value and the second as the display name.
  * @param array $attributes Other control attributes
  * @return string
  */
-function autocomplete_textfield($name, $value, $jsArray, $attributes) {
-	if (!$attributes) {
-		$attributes = array();
+function autocomplete_textfield($name, $value, $options, $emptyText, $attributes) {
+	$jsArray = "";
+	foreach ($options as $o) {
+		if ($jsArray != "") $jsArray .= ",";
+		if (count($o) < 2) {
+			$jsArray .= "['$o','$o']";
+		} else {
+			$jsArray .= "['$o[0]','$o[1]']";
+		}
 	}
-	$class = 'textfield' . ($attributes['class']?" ".$attributes['class']:"");
-	unset($attributes['class']);
-	$keypress = 'return og.autoComplete.keypress.call(this, event)';
-	$keyup = 'og.autoComplete.keyup.call(this, event, ' . $jsArray . ')';
-	$blur = 'og.autoComplete.blur.call(this)';
-	$attrs = 'class="' . $class . '" name="' . $name . '" onkeypress="' . $keypress . '" onkeyup="' . $keyup . '" onblur="' . $blur . '"';
-	foreach ($attributes as $k => $v) {
-		$attrs .= ' ' . $k . '="' . $v . '"';
-	}
-	return '<textarea wrap="off" rows="1" ' . $attrs . '>' . $value . "</textarea>";
+	$jsArray = "[$jsArray]";
+
+	$id = array_var($attributes, "id", gen_id());
+	$attributes["id"] = $id;
+
+	$html = text_field($name, $value, $attributes) . '
+		<script type="text/javascript">
+		new og.CSVCombo({
+			store: new Ext.data.SimpleStore({
+        		fields: ["name"],
+        		data: '.$jsArray.'
+			}),
+        	displayField: "name",
+        	mode: "local",
+        	forceSelection: true,
+        	triggerAction: "all",
+        	emptyText: "",
+        	applyTo: "'.$id.'"
+    	});
+		</script>
+	';
+	return $html;
 }
 
 /**

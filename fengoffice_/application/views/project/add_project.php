@@ -6,13 +6,8 @@
   	} // if
   	
   	$genid = gen_id();
-  	
-if($project->isNew()) { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
-<?php } else { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $project->getEditUrl() ?>" method="post">
-<?php } // if ?>
-
+?>
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $project->isNew() ? get_url('project', 'add') : $project->getEditUrl()?>" method="post">
 
 <?php
   $quoted_permissions = array();
@@ -69,7 +64,7 @@ if($project->isNew()) { ?>
 		<fieldset>
 		<legend><?php echo lang('edit permissions') ?></legend>
 		
-		<label><k><?php echo lang('edit permissions explanation') ?></k></label>
+		<label><?php echo lang('edit permissions explanation') ?></label>
 		<?php if (isset($companies) && is_array($companies) && count($companies)) { ?>
 			<div id="projectCompanies">
 			<?php foreach ($companies as $company) { ?>
@@ -111,16 +106,14 @@ if($project->isNew()) { ?>
 										<div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_or_personal_project(), $permission_id), array('id' => $genid . 'project_user_' . $user->getId() . "_$permission_id", 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
 								<?php } // foreach ?>
 										</div>
-							<?php } // if ?>
-									</td>
-								</tr>
-							<?php if(!$company->isOwner()) { ?>
 									<script type="text/javascript">
 										if (!document.getElementById( '<?php echo $genid ?>project_user_<?php echo $user->getId() ?>').checked) {
 											document.getElementById( '<?php echo $genid ?>user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
 										} // if
 									</script>
 							<?php } // if ?>
+									</td>
+								</tr>
 						<?php } // foreach ?>
 					<?php } else { ?>
 								<tr>

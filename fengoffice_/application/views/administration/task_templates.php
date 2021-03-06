@@ -18,14 +18,17 @@
   <div class="adminMainBlock">
 
 <?php if(isset($task_templates) && is_array($task_templates) && count($task_templates)) { ?>
-<table>
+<table style="min-width:400px;margin-top:10px;">
   <tr>
     <th><?php echo lang('template') ?></th>
     <th><?php echo lang('workspaces') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>
-<?php foreach($task_templates as $task_template) { ?>
-  <tr>
+<?php 
+	$isAlt = true;
+foreach($task_templates as $task_template) { 
+	$isAlt = !$isAlt; ?>
+  <tr class="<?php echo $isAlt? 'altRow' : ''?>">
     <td><a class="internalLink" href="<?php echo $task_template->getViewUrl() ?>"><?php echo clean($task_template->getTitle()) ?></a></td>
     <td style="text-align: center"><?php echo 'XXX' ?></td>
 <?php 
@@ -37,7 +40,7 @@
   	$options[] = '<a class="internalLink" href="' . $task_template->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete task template') . '\')">' . lang('delete template') . '</a>';
   }
 ?>
-    <td><?php echo implode(' | ', $options) ?></td>
+    <td style="font-size:80%;"><?php echo implode(' | ', $options) ?></td>
   </tr>
 <?php } // foreach ?>
 </table>
