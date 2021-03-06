@@ -4,7 +4,7 @@ listurl=https://sourceforge.net/projects/opengoo/files/fengoffice/
 file=fengoffice_
 ext=.zip
 
-[ ! -d ".git" ] && git init
+[ ! -d ".git" ] && git init && echo "* text=auto" > .gitattributes
 
 mkdir -p $file
 
@@ -43,12 +43,12 @@ while IFS= read -r line; do
  mkdir -p versionfiles
  curl -L -C- "$path" -o versionfiles/$version$ext
  unzip -o versionfiles/$version$ext -d versions/$version/
- od="$(ls -1 versions/$version/)"
+ od="$(ls -1d versions/$version/*/)"
  f=$(echo "$od" | wc -l )
  if [ "$f" == "1" ]; then
   echo moving files up a step: $od
-  mv -f versions/$version/$od/{.,}[^.]* versions/$version/
-  rmdir versions/$version/$od
+  mv -f $od/{.,}[^.]* versions/$version/
+  rmdir $od
  fi
  rm -rf $file/
  mkdir -p $file
