@@ -834,7 +834,7 @@
 							$allowed_members_ids[$perm->m]['d'] = $is_guest ? false : $perm->d;
 						}
 						if ($save_cmps) {
-							$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "(".$pg_id.",".$perm->m.",".$perm->o.",".$perm->d.",".$perm->w.")";
+							$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$pg_id."','".$perm->m."','".$perm->o."','".$perm->d."','".$perm->w."')";
 						}
 						
 						$all_perm_deleted[$perm->m] = false;
@@ -1159,7 +1159,7 @@
 					}
 
 					if ($save_cmps) {
-						$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "(".$perm->pg.",".$member->getId().",".$perm->o.",".$perm->d.",".$perm->w.")";
+						$sql_insert_values .= ($sql_insert_values == "" ? "" : ",") . "('".$perm->pg."','".$member->getId()."','".$perm->o."','".$perm->d."','".$perm->w."')";
 					}
 				}
 				

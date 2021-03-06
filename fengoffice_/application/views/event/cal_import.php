@@ -4,10 +4,11 @@
 ?>
 
 <script>
-og.submitFile = function(genid) {
+og.submitIcalFile = function(genid) {
 	fname = document.getElementById(genid + 'filenamefield');
 	if (fname.value != '') {
 		form = document.getElementById(genid + 'calimport');
+		form.action += "&context=" + og.contextManager.plainContext();
 		og.submit(form);
 	}
 }
@@ -27,7 +28,7 @@ og.submitFile = function(genid) {
 
 <div id="<?php echo $genid ?>selectFileControlDiv">
     <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
-    <?php echo file_field('cal_file', null, array('id' => $genid . 'filenamefield', 'tabindex' => '1', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitFile(\'' . $genid .'\')')) ?>
+    <?php echo file_field('cal_file', null, array('id' => $genid . 'filenamefield', 'tabindex' => '1', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitIcalFile(\'' . $genid .'\')')) ?>
     <input type="hidden" name="atimportform" value="1"></input>
     <input type="hidden" name="subscribers[user_<?php echo logged_user()->getId() ?>]" value="checked"></input>
 </div>

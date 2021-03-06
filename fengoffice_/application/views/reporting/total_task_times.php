@@ -105,7 +105,7 @@
 					$sub_total_estimated += $task->getTimeEstimate();
 				}
 				$tasks[] = $task->getId();
-			}elseif(array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2 && array_var($options, 'show_estimated_time')){
+			} elseif ((array_var($options, 'timeslot_type') == 0 || array_var($options, 'timeslot_type') == 2) && array_var($options, 'show_estimated_time')){
 				echo "<td class='time nobr right'> 0 </td>";
 			}
 			echo "</tr>";
@@ -212,19 +212,20 @@
             }
             if(count($groups) >0){
             ?>
-                    <div class="report-group-footer" style="margin-top:20px;">
-                            <span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
-                    <?php if ((array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 0 || array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 2 ) && array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_estimated_time')) { ?>
-                            <div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) ?></div>
-                    <?php } ?>
-                            <div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
-                    <?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
-                            <div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
-                    <?php }?>                    
-                    </div>
+            <div class="clear"></div>
+            <div class="report-group-footer" style="margin-top:10px;padding-top:10px;border-top:1px solid #bbb;">
+            	<span class="bold" style="font-size:150%;"><?php echo lang('total').": "; ?></span>
+            	<?php if ((array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 0 || array_var(array_var($_SESSION, 'total_task_times_report_data'), 'timeslot_type') == 2 ) && array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_estimated_time')) { ?>
+            	<div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($estimated_total * 60), "hm", 60) ?></div>
+            	<?php } ?>
+            	<div style="float:right;width:140px;" class="bold right"><?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total * 60), "hm", 60) ?></div>
+            	<?php if (array_var(array_var($_SESSION, 'total_task_times_report_data'), 'show_billing') == 'checked') { ?>
+            	<div style="float:right;" class="bold"><?php echo config_option('currency_code', '$') . " " . number_format($billing_total, 2) ?></div>
+            	<?php }?>
             </div>
             <?php }?>
         <?php }?>
+	</div>
     <?php 
 	$sumTime = 0;
 	$sumBilling = 0;

@@ -100,7 +100,7 @@ og.reports.createPrintWindow = function(title) {
 	printWindow.document.write('<html><head><title>' + title + '</title>');
 	printWindow.document.write('<link href="' + og.hostName + '/public/assets/themes/default/stylesheets/website.css" rel="stylesheet" type="text/css">');
 	printWindow.document.write('<link href="' + og.hostName + '/public/assets/themes/default/stylesheets/general/rewrites.css" rel="stylesheet" type="text/css">');
-	printWindow.document.write('</head><body onLoad="self.print()" id="body"><h1>' + title + '</h1>');             
+	printWindow.document.write('</head><body onLoad="self.print()" id="body" style="padding:10px;"><h1>' + title + '</h1>');             
 	return printWindow;
 }
 

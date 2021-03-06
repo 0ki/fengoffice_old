@@ -84,7 +84,7 @@ class TaskController extends ApplicationController {
 
 			if(config_option("wysiwyg_tasks")){
 				$task_data['type_content'] = "html";
-				$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+				$task_data['text'] = str_replace(array("\r","\n","\r\n"), array('','',''), array_var($task_data, 'text'));
 			}else{
 				$task_data['type_content'] = "text";
 			}
@@ -347,7 +347,7 @@ class TaskController extends ApplicationController {
 			if(config_option("wysiwyg_tasks")){
 				$task_data['type_content'] = "html";
 				if (array_var($task_data, 'text') !== null) {
-					$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+					$task_data['text'] = str_replace(array("\r","\n","\r\n"), array('','',''), array_var($task_data, 'text'));
 				}
 			}else{
 				$task_data['type_content'] = "text";
@@ -1298,7 +1298,7 @@ class TaskController extends ApplicationController {
 
 				if(config_option("wysiwyg_tasks")){
 					$task_data['type_content'] = "html";
-					$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+					$task_data['text'] = str_replace(array("\r","\n","\r\n"), array('','',''), array_var($task_data, 'text'));
 				}else{
 					$task_data['type_content'] = "text";
 				}
@@ -1789,7 +1789,7 @@ class TaskController extends ApplicationController {
 
 				if(config_option("wysiwyg_tasks")){
 					$task_data['type_content'] = "html";
-					$task_data['text'] = preg_replace("/[\n|\r|\n\r]/", '', array_var($task_data, 'text'));
+					$task_data['text'] = str_replace(array("\r","\n","\r\n"), array('','',''), array_var($task_data, 'text'));
 				}else{
 					$task_data['type_content'] = "text";
 				}

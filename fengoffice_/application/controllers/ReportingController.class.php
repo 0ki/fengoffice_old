@@ -218,7 +218,11 @@ class ReportingController extends ApplicationController {
 			$this->setTemplate('report_printer');
 		}
 
-		$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
+		if (isset($_POST['post'])) {
+			$report_data = json_decode(str_replace("'",'"', array_var($_POST, 'post')),true);
+		} else {
+			$report_data = $_POST;
+		}
 
 		$this->total_task_times($report_data, null, true);
 	}
@@ -257,7 +261,10 @@ class ReportingController extends ApplicationController {
 		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)){
 			$context = build_context_array(array_var($_REQUEST, 'context'));
 			CompanyWebsite::instance()->setContext($context);
-			$report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
+			if (!$report_data) {
+				if (isset($_REQUEST['parameters'])) $report_data = json_decode(str_replace("'",'"', $_REQUEST['parameters']), true);
+				else $report_data = $_REQUEST;
+			}
 			tpl_assign('context', $context);
 			$this->setTemplate('total_task_times_csv');
 		} else {
@@ -404,8 +411,11 @@ class ReportingController extends ApplicationController {
 		tpl_assign('title', lang('task time report'));
 		tpl_assign('allow_export', false);
 		if (array_var($_GET, 'export') == 'csv' || (isset($csv) && $csv == true)) {
-			tpl_assign('template_name', 'total_task_times_csv');
-			tpl_assign('is_csv', true);
+			
+			$filename = $this->total_task_times_csv_export($grouped_timeslots);
+			ajx_extra_data(array('filename' => "$filename.csv"));
+			ajx_current("empty");
+			
 		}else{
 			tpl_assign('template_name', 'total_task_times');
 			$this->setTemplate('report_wrapper');
@@ -1414,5 +1424,135 @@ class ReportingController extends ApplicationController {
 
 		return $col_types;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private function cvs_total_task_times_group($group_obj, $grouped_objects, $options, $skip_groups = array(), $level = 0, $prev = "", &$total = 0) {
+		$text = "";
+	
+		$pad_str = "";
+		for ($k = 0; $k < $level; $k++) $pad_str .= "   ";
+	
+		$cls_suffix = $level > 2 ? "all" : $level;
+		$next_level = $level + 1;
+			
+		$group_name = $group_obj['group']['name'];
+	
+		$text .= '"'. $pad_str . $group_name . '"'. "\n";
+	
+		$mem_index = $prev . $group_obj['group']['id'];
+	
+		$group_total = 0;
+	
+		$table_total = 0;
+		// draw the table for the values
+		if (isset($grouped_objects[$mem_index]) && count($grouped_objects[$mem_index]) > 0) {
+			$text .= $this->cvs_total_task_times_table($grouped_objects[$mem_index], $pad_str, $options, $group_name, $table_total);
+			$group_total += $table_total;
+		}
+	
+		if (!is_array($group_obj['subgroups'])) return;
+	
+		$subgroups = order_groups_by_name($group_obj['subgroups']);
+	
+		foreach ($subgroups as $subgroup) {
+			$sub_total = 0;
+			$text .= $this->cvs_total_task_times_group($subgroup, $grouped_objects, $options, $skip_groups, $next_level, $prev . $group_obj['group']['id'] . "_", $sub_total);
+			$group_total += $sub_total;
+		}
+	
+		$total += $group_total;
+	
+		$text .= "$group_name;;;".lang('subtotal'). ': '.";" . $group_total.";\n\n";
+	
+		return $text;
+	}
+	
+	private function cvs_total_task_times_table($objects, $pad_str, $options, $group_name, &$sub_total = 0) {
+		$text = "";
+	
+		$column_titles = array(
+				lang('date'),
+				lang('title'),
+				lang('description'),
+				lang('person'),
+				lang('time') .' ('.lang('hours').')'
+		);
+		Hook::fire('total_tasks_times_csv_columns', $column_titles, $column_titles);
+	
+		foreach ($column_titles as $ct) {
+			$text .= $ct . ';';
+		}
+		$text .= "\n";
+	
+		$sub_total = 0;
+	
+		foreach ($objects as $ts) {
+			$text .= $pad_str . format_date($ts->getStartTime()) . ';';
+				
+			$name = ($ts->getRelObjectId() == 0 ? $ts->getObjectName() : $ts->getRelObject()->getObjectName());
+			$name = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $name)));
+			$text .= $name . ';';
+				
+			$desc = $ts->getDescription();
+			$desc = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $desc)));
+			$desc = '"'.$desc.'"';
+			$text .= $desc .';';
+				
+			$text .= ($ts->getUser() instanceof Contact ? $ts->getUser()->getObjectName() : '') .';';
+			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
+			$mystring = DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "m", 60, $ts->getSubtract());
+			$resultado = preg_replace("[^0-9]", "", $mystring);
+			$resultado = round(($resultado/60),5);
+			$text .= $resultado;
+			$sub_total += $resultado;
+				
+			$new_values = null;
+			Hook::fire('total_tasks_times_csv_column_values', $ts, $new_values);
+			if (is_array($new_values) && count($new_values) > 0) {
+				foreach ($new_values as $nv) {
+					$nv = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $nv)));
+					$text .= ';' . $nv;
+				}
+			}
+				
+			$text .= "\n";
+		}
+	
+		return $text;
+	}
+	
+	private function total_task_times_csv_export($grouped_timeslots) {
+		$text = "";
+	
+		$skip_groups = array();
+		if (!isset($context)) $context = active_context();
+		foreach ($context as $selection) {
+			if ($selection instanceof Member) {
+				$sel_parents = $selection->getAllParentMembersInHierarchy();
+				foreach ($sel_parents as $sp) $skip_groups[] = $sp->getId();
+			}
+		}
+	
+		$groups = order_groups_by_name($grouped_timeslots['groups']);
+		$total = 0;
+		foreach ($groups as $gid => $group_obj) {
+			$text .= $this->cvs_total_task_times_group($group_obj, $grouped_timeslots['grouped_objects'], array_var($_SESSION, 'total_task_times_parameters'), $skip_groups, 0, "", $total);
+		}
+	
+		$text .= ";;;".lang('total'). ': '.";" .$total.";\n";
+	
+	
+		$filename = lang('task time report');
+		file_put_contents(ROOT."/tmp/$filename.csv", $text);
+				
+		return $filename;
+	}
 }
-?>

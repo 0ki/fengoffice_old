@@ -355,13 +355,14 @@
 	
 	og.overCell = function(cell_id) {
 		var ele = Ext.get(cell_id);
+		if (!ele) return;
 		if (!og.selectingCells) og.old_style = ele.getStyles('background-color', 'opacity', 'filter');
 		ele.applyStyles({'background-color':'#D3E9FF', 'opacity':'1', 'filter':'alpha(opacity = 100)'});
 	}
 	
 	og.resetCell = function(cell_id) {
 		var ele = Ext.get(cell_id);
-		ele.applyStyles(og.old_style);
+		if (ele) ele.applyStyles(og.old_style);
 	}
 	
 	og.minSelectedCell = function() {

@@ -651,7 +651,7 @@ $(document).ready(function() {
 <?php include_once(Env::getLayoutPath("listeners"));?>
 
 	<div id="quick-form" > 
-            <div style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();">close</a></div>
+            <div style="float: right; cursor: pointer;height: 12px;position: absolute;right: 19px;top: 2px;"><a href="#" onclick="$('.close').click();"><?php echo lang('close')?></a></div>
             <div class="close" style="float: right;"></div>
             <div class="form-container"></div>
 	</div>

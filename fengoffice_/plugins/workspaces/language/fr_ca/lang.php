@@ -1,8 +1,8 @@
 <?php return array(
-	'add new workspace' => 'Ajouter un nouvel espace de travail',
-	'add your first workspace' => 'Ajouter un nouvel espace de travail',
+	'add new workspace' => 'Ajouter un espace de travail',
+	'add your first workspace' => 'Ajouter un espace de travail',
 	'field workspace description' => 'Description',
-	'workspace description' => 'Description de l\'espace de travai',
+	'workspace description' => 'Description de la dimension',
 	'field workspace show_description_in_overview' => 'Afficher la description sur la page de présentation de l\'espace de travail?',
 	'add new relation workspaces' => 'Tapez pour filtrer l\'espace de travail',
 	'add new relation tags' => 'Tapez pour filtrer l\'étiquette',

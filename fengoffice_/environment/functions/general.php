@@ -572,6 +572,10 @@ function remove_css($html) {
  * @deprecated Use HTMLPurifier
  */
 function remove_scripts($html) {
+	if (is_array($html)) {
+		foreach ($html as $k => &$v) $v = remove_scripts($v);
+		return $html;
+	}
 	return preg_replace('/<script[^>]*>.*(<\/script[^>]*>|$)/i', '', $html);
 }
 

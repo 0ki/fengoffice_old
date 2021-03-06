@@ -114,6 +114,7 @@
     'the task activity' => 'the task{0}',
     'the milestone activity' => 'the milestone{0}',
     'the webpage activity' => 'the weblink{0}',
+  	'the weblink activity' => 'the weblink{0}',
     'the comment activity' => 'the comment{0}',
     'the user activity' => 'the user{0}',
     'the project activity' => 'the workspace{0}',

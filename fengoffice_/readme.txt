@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7-rc
+	About Feng Office 2.7
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,21 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7-rc
+	----------------
+	bugfix: Previous XSS fixes broke some post parameters (e.g. contact form).
+	bugfix: If using a custom favicon, it is not used when printing an email.
+	bugfix: Don't show "expiration_time" attribute in files reports (deprecated column).
+	bugfix: Task descriptions cannot save character "|".
+	bugfix: When composing an email and changing "from" sometimes the signature does  not refresh correctly.
+	bugfix: Filtering tasks list by date, inputing the date manually does not filter the list.
+	bugfix: Task descriptions overflow fixed.
+	bugfix: Cannot import ical in a workspace if user doesn't have permissions in root.
+	bugfix: Cannot print calendar month view.
+	bugfix: Cannot export total tasks times report to csv.
+	
+	language: fr_ca updated.
 	
 	Since 2.7-beta
 	----------------

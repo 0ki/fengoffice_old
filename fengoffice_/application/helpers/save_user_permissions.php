@@ -1,14 +1,14 @@
 <?php
-chdir($argv[1]);
-define("CONSOLE_MODE", true);
-define('PUBLIC_FOLDER', 'public');
-include "init.php";
+	chdir($argv[1]);
+	define("CONSOLE_MODE", true);
+	define('PUBLIC_FOLDER', 'public');
+	include "init.php";
+	
+	session_commit(); // we don't need sessions
+	@set_time_limit(0); // don't limit execution of cron, if possible
+	ini_set('memory_limit', '2048M');
 
-session_commit(); // we don't need sessions
-@set_time_limit(0); // don't limit execution of cron, if possible
-ini_set('memory_limit', '2048M');
 
-try {
 	Env::useHelper('permissions');
 	
 	$user_id = array_var($argv, 2);
@@ -53,7 +53,7 @@ try {
 		DB::commit();
 	} catch (Exception $e) {
 		DB::rollback();
-		throw $e;
+		Logger::log("Error saving permissions (1): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	
 	// update sharing table
@@ -96,7 +96,7 @@ try {
 		
 	} catch (Exception $e) {
 		DB::rollback();
-		throw $e;
+		Logger::log("Error saving permissions (2): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	
 	// save tree
@@ -131,7 +131,7 @@ try {
 		DB::commit();
 	} catch (Exception $e) {
 		DB::rollback();
-		throw $e;
+		Logger::log("Error saving permissions (3): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	
 	// fire hooks
@@ -141,14 +141,10 @@ try {
 		DB::commit();
 	} catch (Exception $e) {
 		DB::rollback();
-		throw $e;
+		Logger::log("Error saving permissions (4): ".$e->getMessage()."\n".$e->getTraceAsString());
 	}
 	
 	@unlink($permissions_filename);
 	@unlink($sys_permissions_filename);
 	@unlink($mod_permissions_filename);
 	@unlink($root_permissions_filename);
-	
-} catch (Exception $e) {
-	Logger::log("Error saving permissions: ".$e->getMessage()."\n".$e->getTraceAsString());
-}

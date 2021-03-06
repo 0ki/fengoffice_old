@@ -162,7 +162,7 @@ og.changeSignature = function(genid, acc_id) {
 		var editor = og.getCkEditorInstance(iname);
 		html = editor.getData();
 		html = html.replace(/\n/g, '');
-		html = html.replace(/<div class="fengoffice_signature">.*?<\/div>/i, new_htmlsig);
+		html = html.replace(/<div class="fengoffice_signature">.*<\/div>/i, new_htmlsig);
 		editor.setData(html);
 	} else {
 		if (Ext.getDom('mailBody').value.indexOf('--\n' + sig.actualTextSignature) != -1) {

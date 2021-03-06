@@ -962,7 +962,7 @@ og.clone = function(o) {
 
 og.closeView = function(obj){
 	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
-	currentPanel.back();
+	if (currentPanel) currentPanel.back();
 	var mails_cmp = Ext.getCmp('mails-manager');
 	if (mails_cmp !== undefined) {
 		var sm = mails_cmp.getSelectionModel();

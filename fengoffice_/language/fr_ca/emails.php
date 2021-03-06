@@ -221,4 +221,6 @@
 	'view timeslots' => 'Voir intervalles de temps',
 	'mails_in_outbox reminder' => 'Courriel sans envoi',
 	'mails_in_outbox reminder desc' => 'Il y a {0} courriels qui n\'ont pas encore été envoyés. S\'il vous plaît jeter un oeil à votre dossier Boîte d\'envoi pour plus d\'informations',
+	'upload notification file' => 'Une nouvelle version du fichier \'{0}\' a été téléchargée',
+	'upload notification file desc' => '{1} a téléchargé une nouvelle version du fichier:',
 ); ?>
