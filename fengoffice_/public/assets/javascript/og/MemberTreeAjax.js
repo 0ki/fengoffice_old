@@ -143,7 +143,8 @@ og.MemberTreeAjax = function(config) {
 						$("#" + tree.id + '-textfilter').show();
 						$("#" + tree.id + '-current-selected').hide();
 						tree.body.show();
-						
+						var top = $("#"+tree.tbar.id).offset().top + $("#"+tree.tbar.id).height();
+						$("#"+tree.body.id).css({top: top+'px'});
 						if(!tree.initialized){
 							tree.init();
 						}
@@ -183,7 +184,8 @@ og.MemberTreeAjax = function(config) {
 				$("#"+this.tbar.id).focusin(function() {
 					setTimeout(function(){
 						tree.body.show();
-						
+						var top = $("#"+tree.tbar.id).offset().top + $("#"+tree.tbar.id).height();
+						$("#"+tree.body.id).css({top: top+'px'});
 						if(!tree.initialized){
 							tree.init();
 						}

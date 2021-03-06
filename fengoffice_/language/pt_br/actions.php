@@ -176,4 +176,7 @@
 	'views and downloads' => 'Ver visualizações e downloads',
 	'confirm delete permanently sync' => 'Tem certeza de que quer apagar os dados de sincronização?',
 	'save with a new name' => 'Salvar com um novo nome',
+	'write comment' => 'Escreve o teu comentário aqui',
+	'upload new revision' => 'Adicionar uma nova versão',
+	'restore user' => 'Restaurar usuário',
 ); ?>

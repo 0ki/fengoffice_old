@@ -13,4 +13,6 @@
 	'add new workspace' => 'Adicionar novo espaço de trabalho',
 	'add your first workspace' => 'Adicionar seu primeiro espaço de trabalho',
 	'you have no workspaces yet' => 'Você ainda não tem um espaço de trabalho',
+	'add a new member in workspaces' => 'Adicionar nova área de trabalho',
+	'add a new member in tags' => 'Adicionar nova etiqueta',
 ); ?>

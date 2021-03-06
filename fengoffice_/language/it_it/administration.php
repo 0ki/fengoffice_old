@@ -274,4 +274,12 @@ Code explanations: d = Day number (2 digits with leading zeros), D = Day name (t
 	'user ws config option desc hide_quoted_text_in_emails' => 'Se abilitato i messaggi email saranno mostrati senza il testo quotato. Ci sarà un\\\'opzione per mostrare tutto durante la lettura',
 	'search engine mysql like' => 'Completo',
 	'search engine mysql match' => 'Veloce',
+	'config category name documents' => 'Files',
+	'config category desc documents' => 'Gestione configurazione',
+	'config category name brand_colors' => 'Marchio',
+	'config category desc brand_colors' => 'Configura colori di sistema',
+	'user config option name sendEmailNotification' => 'Invia email di notifica',
+	'user config option desc sendEmailNotification' => 'Se selezionato, invia email di notifica all\'Utente creato',
+	'config option name use_owner_company_logo_at_header' => 'Utilizza il logo aziendale come logo dell\'applicazione',
+	'config option desc use_owner_company_logo_at_header' => 'Inserire il logo aziendale in alto a destra dello schermo. E\' necessario aggiornare (F5) per applicare le modifiche. Dimensione consigliata: 50x50 px.',
 ); ?>

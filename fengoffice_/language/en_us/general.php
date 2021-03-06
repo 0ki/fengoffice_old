@@ -396,6 +396,7 @@ return array(
 	'file details' => 'File details',
 	'event details' => 'Event details',
 	'person data' => 'Basic data',
+	'contact data' => 'Contact data',
 	'company data' => 'Company data',
 	
 	'menu home' => 'Home',

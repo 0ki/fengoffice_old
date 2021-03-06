@@ -219,4 +219,7 @@
 	'subscribed notification weblink desc' => '{1} subscreveu você ao link da web:',
 	'mails_in_outbox reminder' => 'E-Mails não enviados',
 	'mails_in_outbox reminder desc' => 'Existem {0} e-mails que não foram enviados ainda. Por favor, acesse sua caixa de saída para mais informações',
+	'due_date task reminder' => 'Lembrete de fim de tarea: {0}',
+	'upload notification file' => 'Uma nova versão do arquivo \'{0}\' tem sido adicionada',
+	'upload notification file desc' => '{1} tem adiconado uma nova versão do arquivo:',
 ); ?>

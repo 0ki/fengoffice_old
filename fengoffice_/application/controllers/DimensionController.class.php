@@ -837,8 +837,7 @@ class DimensionController extends ApplicationController {
 			$pg_ids = logged_user()->getPermissionGroupIds();
 			$perm_sql = " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=m.id AND cmp.permission_group_id IN (".implode(',', $pg_ids)."))";
 		}
-		
-		$main_sql = "SELECT * FROM ".TABLE_PREFIX."members m INNER JOIN ".TABLE_PREFIX."application_logs l ON l.member_id=m.id WHERE m.dimension_id='$dim_id' AND l.action='add' $perm_sql";
+		$main_sql = "SELECT m.id, l.created_on, l.created_by_id, l.member_id FROM ".TABLE_PREFIX."members m LEFT JOIN ".TABLE_PREFIX."application_logs l ON l.member_id=m.id AND l.action='add' WHERE m.dimension_id='$dim_id' $perm_sql";
 		
 		$sql = "$main_sql
 				ORDER BY $order_by $order_by_dir 
@@ -846,15 +845,16 @@ class DimensionController extends ApplicationController {
 		
 		$rows = DB::executeAll($sql);
 		
-		$count_sql = str_replace("SELECT * FROM", "SELECT count(*) as total FROM", $main_sql);
+		$count_sql = str_replace("SELECT m.id, l.created_on, l.created_by_id, l.member_id FROM", "SELECT count(*) as total FROM", $main_sql);
 		$count_row = DB::executeAll($count_sql);
 		
 		$members = array();
 		$ids = array();
 		$log_data = array();
 		foreach ($rows as $row) {
-			$members[] = Members::findById($row['member_id']);
-			$log_data[$row['member_id']] = array('created_on' => $row['created_on'], 'created_by_id' => $row['created_by_id']);
+			$members[] = Members::findById($row['id']);
+			$log_data[$row['id']] = array('created_on' => $row['created_on'], 'created_by_id' => $row['created_by_id']);
+			
 		}
 		
 		$member_type_ids = array_flat(DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."dimension_object_types WHERE dimension_id=$dim_id AND is_root=1"));

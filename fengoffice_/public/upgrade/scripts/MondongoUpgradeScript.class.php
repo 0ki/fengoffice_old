@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.2
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.0.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.0.2');
+		$this->setVersionTo('3.0.3');
 	} // __construct
 
 	function getCheckIsWritable() {

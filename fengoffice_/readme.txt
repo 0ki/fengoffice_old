@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.2
+	About Feng Office 3.0.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,19 @@
 	Changelog
 	=========
 	
+	Since 3.0.2
+	----------------
+	feature: Choose if you want to exclude a client or project from automatic status changes.‏
+	feature: Added custom properties to choose a default status when creating a new project or client. 
+	feature: When creating a new client, you can now choose if its a company, a contact, or nothing. 
+	
+	bugfix: Pending factor removed from automated status formulas. 
+	bugfix: Dimension Members with no creation application log were not displayed on the Dimension member list in the Administration panel. 
+	bugfix: Contact emails are not being displayed on the suggested emails. 
+	bugfix: Dimension member selectors were not functioning on the contacts module. 
+	bugfix: Object members were not being displayed correctly, and when more than possible to display were added, "and 1 more" was not displayed.
+	bugfix: cannot set permissions for users with the same user type to a project.
+		
 	
 	Since 3.0.1
 	----------------

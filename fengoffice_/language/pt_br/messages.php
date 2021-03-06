@@ -661,4 +661,9 @@
 	'success delete member' => '{0} foi excluído',
 	'disable' => 'Desabilitado',
 	'log read contact' => 'Visualizada \'{0}\'',
+	'confirm restore user' => 'O Usuário vai ser ativado. Continuar?',
+	'objects removed from' => 'Você tem removido {0} exitosamente dos objetos selecionados',
+	'object removed from' => 'Você tem removido {0} exitosamente do objeto selecionado',
+	'and xx more' => 'e {0} mais.',
+	'permissions successfully saved' => 'Permissões salvadas exitosamente',
 ); ?>

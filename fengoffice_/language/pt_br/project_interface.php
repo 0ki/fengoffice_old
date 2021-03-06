@@ -286,4 +286,10 @@ Assunto:   {0}
 	'assigned by' => 'Designada por',
 	'to start' => 'Iniciar',
 	'work performed' => 'Performance do trabalho',
+	'send email notification' => 'Enviar notficação por correio eletrônico',
+	'variables' => 'Variáveis',
+	'add a variable to this template' => 'Adicionar variável neste modelo',
+	'add a new task to this template' => 'Adicionar nova tarefa neste modelo',
+	'add a new milestone to this template' => 'Adicionar novo marco neste modelo',
+	'undo remove subtasks' => 'Restaurar subtarefas removidas',
 ); ?>

@@ -86,8 +86,8 @@
 					$first = false;
 				}
 			}
-			if ($breadcrumb_count < count($dinfo['members'])) {
-				echo '<span class="desc">&nbsp;' . lang('and xx more', count($dinfo['members']) - $breadcrumb_count) . '</span>';
+			if ($breadcrumb_member_count < count($dinfo['members'])) {				
+				echo '<span class="desc">&nbsp;' . lang('and xx more', count($dinfo['members']) - $breadcrumb_member_count) . '</span>';
 			}
 		?></div><?php
 		}

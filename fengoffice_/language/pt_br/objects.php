@@ -163,4 +163,11 @@
 	'the folder' => 'a pasta',
 	'the tag' => 'a etiqueta',
 	'the object' => 'o objeto',
+	'the weblink activity' => 'o enlace{0} ',
+	'the timeslot activity' => 'o tempo de trabalho{0}',
+	'the customer_folder' => 'a pasta',
+	'the project_folder' => 'a pasta',
+	'the report' => 'o relatório',
+	'activity upload' => '{1} adicionou uma nova versão de {0} {2} ',
+	'log download file' => 'O usuário baixou o documento',
 ); ?>

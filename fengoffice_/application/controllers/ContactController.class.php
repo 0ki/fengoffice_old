@@ -20,6 +20,7 @@ class ContactController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
+		$this->addHelper('contact_render_tab_functions');
 	} // __construct
 
 	
@@ -1462,7 +1463,7 @@ class ContactController extends ApplicationController {
 	}
 	
 
-	private function save_phones_addresses_webpages($contact_data, $contact) {
+	function save_phones_addresses_webpages($contact_data, $contact) {
 		//telephones
 		$phones_data = array_var($contact_data, 'phone');
 		if (is_array($phones_data)) {
@@ -1539,6 +1540,8 @@ class ContactController extends ApplicationController {
 				$obj->save();
 			}
 		}
+		
+		return true;
 	}
 	
 	

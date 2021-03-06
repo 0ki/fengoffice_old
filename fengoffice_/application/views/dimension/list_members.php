@@ -117,9 +117,11 @@
 <?php
 		$is_alt = false;
 		foreach ($members as $member) {/* @var $member Member */
-			$created_by = Contacts::findById($log_data[$member->getId()]['created_by_id']);
-			$created_by_name = $created_by instanceof Contact ? clean($created_by->getObjectName()) : lang('n/a');
-			$created_on = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $log_data[$member->getId()]['created_on']);
+			if(!is_null($log_data[$member->getId()]['created_by_id'])){
+				$created_by = Contacts::findById($log_data[$member->getId()]['created_by_id']);
+				$created_by_name = $created_by instanceof Contact ? clean($created_by->getObjectName()) : lang('n/a');
+				$created_on = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $log_data[$member->getId()]['created_on']);
+			}
 		?>
 			<div class="member-row <?php echo ($is_alt ? "alt" : "")?>">
 				<div class="member-name db-ico <?php echo $member->getIconClass()?>" id="member-<?php echo $member->getId()?>"><?php 
@@ -148,7 +150,9 @@
 				}
 			?>
 				<div class="member-actions"><a class="db-ico ico-edit" href="<?php echo $edit_url?>"><?php echo lang('edit')?></a></div>
+		  <?php if(!is_null($log_data[$member->getId()]['created_by_id'])){ ?>
 				<div class="desc member-log"><?php echo lang('created by on', $created_by->getCardUrl(), $created_by_name, format_date($created_on))?></div>
+				<?php } ?>
 				<div class="clear"></div>
 			</div>
 		<?php 

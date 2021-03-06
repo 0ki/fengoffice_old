@@ -176,4 +176,7 @@
 	'recent activities to show lines' => 'linee',
 	'views and downloads' => 'Guarda visualizzazioni e dei download',
 	'confirm delete permanently sync' => 'Sei sicuro di voler eliminare i dati di sincronizzazione?',
+	'write comment' => 'Scrivi qui il tuo commento',
+	'upload new revision' => 'Carica una nuova Versione',
+	'restore user' => 'Ripristina Utente',
 ); ?>

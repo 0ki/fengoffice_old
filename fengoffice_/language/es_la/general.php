@@ -372,6 +372,7 @@
 	'file details' => 'Detalles del documento',
 	'event details' => 'Detalles del evento',
 	'person data' => 'Datos de la persona',
+	'contact data' => 'Datos del contato',
 	'company data' => 'Datos de la empresa',
 	
 	'menu home' => 'Inicio',
