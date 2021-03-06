@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3
+ * Anis upgrade script will upgrade FengOffice 3.2.3 to FengOffice 3.3.0.4
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class AnisUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.2.3');
-		$this->setVersionTo('3.3');
+		$this->setVersionTo('3.3.0.4');
 	} // __construct
 
 	function getCheckIsWritable() {

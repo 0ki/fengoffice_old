@@ -512,6 +512,14 @@ class Member extends BaseMember {
 				}
 			}
 			
+			// if member has an associated object then archive it
+			if ($this->getObjectId() > 0) {
+				$rel_obj = Objects::findObject($this->getObjectId());
+				if ($rel_obj instanceof ContentDataObject && !$rel_obj->isArchived()) {
+					$rel_obj->archive();
+				}
+			}
+			
 			DB::commit();
 			
 			return $count;
@@ -562,6 +570,14 @@ class Member extends BaseMember {
 			foreach ($sub_members as $sub_member) {
 				if ($sub_member->getArchivedById() > 0) {
 					$count += $sub_member->unarchive($user);
+				}
+			}
+			
+			// if member has an associated object then unarchive it
+			if ($this->getObjectId() > 0) {
+				$rel_obj = Objects::findObject($this->getObjectId());
+				if ($rel_obj instanceof ContentDataObject && $rel_obj->isArchived()) {
+					$rel_obj->unarchive();
 				}
 			}
 

@@ -3014,7 +3014,10 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 	}
 	var all_selects = $('#'+form_id+' select');
 	for (var i=0; i<all_selects.length; i++) {
-		params[all_selects[i].name] = all_selects[i].options[all_selects[i].selectedIndex].value;
+		var selopt = all_selects[i].options[all_selects[i].selectedIndex];
+		if (selopt) {
+			params[all_selects[i].name] = selopt.value;
+		}
 	}
 	var all_textareas = $('#'+form_id+' textarea');
 	for (var i=0; i<all_textareas.length; i++) {

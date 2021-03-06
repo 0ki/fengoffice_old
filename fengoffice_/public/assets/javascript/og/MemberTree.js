@@ -11,7 +11,47 @@ og.MemberTree = function(config) {
 			render: {
 				fn: function(f){
 					f.el.on('keyup', function(e) {
-						this.filterTree(e.target.value);
+						var from_server = true;
+						
+						//check history date
+						if(this.tbar.history != undefined){
+							var now = new Date();
+
+							// Calculate the difference in milliseconds
+							var timeDiff = now.getTime() - this.tbar.history.date.getTime();
+							//convert to hours
+							timeDiff = timeDiff/(1000*60*60);
+							
+							//refresh history after 24 hours
+							if(timeDiff > 24){
+								this.tbar.history = undefined;
+							}						
+						}
+
+						//create history search for the searchs that we get from the server
+						if(this.tbar.history == undefined){
+							this.tbar.history = {prevTextFilters: [], date: new Date()};
+						}
+
+						//search on the server only if the current text is not on the history
+						//or if we already search a text with the same start
+						if(this.tbar.history.prevTextFilters.length > 0){
+							for (var i = 0 ; i < this.tbar.history.prevTextFilters.length ; i++) {
+								var prevTextFilter = this.tbar.history.prevTextFilters[i] ;
+
+								//the text is on the history?
+								if(e.target.value.indexOf(prevTextFilter) == 0){
+									from_server = false;
+								}
+							}							
+						}
+
+						//save the text on the histroy only if we search on the server
+						if(from_server && e.target.value.trim() != ''){
+							this.tbar.history.prevTextFilters.push(e.target.value);
+						}
+
+						this.filterTree(e.target.value, from_server);
 					},
 					this, {buffer: 350});
 				},
@@ -249,8 +289,8 @@ og.MemberTree = function(config) {
 			}
 			
 			//clear search filter
-			this.clearFilter();
-			$("#" + this.id + '-textfilter').val("");
+			//this.clearFilter();
+			//$("#" + this.id + '-textfilter').val("");
 						
 			og.contextManager.currentDimension = self.dimensionId ;
 			og.eventManager.fireEvent("member tree node click", node);
@@ -482,7 +522,10 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 	
 	filterOnChange: true,
 	
-	filterTree: function(text) {
+	filterTree: function(text, from_server) {
+		if(from_server == undefined){
+			var from_server = true;
+		}
 
 		if (text == this.getTopToolbar().items.get(this.id + '-textfilter').emptyText) {
 			text = "";
@@ -491,27 +534,41 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			this.clearFilter();
 		} else {
 			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
-			//search on server
-			this.innerCt.mask();
-			og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.id.replace("dimension-panel-", ""),query:Ext.escapeRe(text.toLowerCase())}), {
-    			hideLoading:true, 
-    			hideErrors:true,
-    			callback: function(success, data){
-    				
-    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
-    				    	
-    				//add nodes to tree
-    				dimension_tree.addMembersToTree(data.members, data.dimension_id);
-    								
-    				dimension_tree.innerCt.unmask();
-    				
-    				//filter the tree
-    				dimension_tree.filterNode(dimension_tree.getRootNode(), re);
-    				dimension_tree.suspendEvents();
-    				dimension_tree.expandAll();
-    				dimension_tree.resumeEvents();
-    			}
-    		});			
+
+			if(from_server){
+				//search on server
+				this.innerCt.mask();
+				og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.id.replace("dimension-panel-", ""),query:Ext.escapeRe(text.toLowerCase())}), {
+	    			hideLoading:true, 
+	    			hideErrors:true,
+	    			callback: function(success, data){
+	    				if(success){
+		    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
+		    				    	
+		    				//add nodes to tree
+		    				dimension_tree.addMembersToTree(data.members, data.dimension_id);
+		    								
+		    				dimension_tree.innerCt.unmask();
+		    				
+		    				//get the text from the filter
+		    				var search_text = dimension_tree.getTopToolbar().items.get(dimension_tree.id + '-textfilter').el.getValue();
+		    				re_search_text = new RegExp(Ext.escapeRe(search_text.toLowerCase()), 'i');
+
+		    				//filter the tree
+		    				dimension_tree.filterNode(dimension_tree.getRootNode(), re_search_text);
+		    				dimension_tree.suspendEvents();
+		    				dimension_tree.expandAll();
+		    				dimension_tree.resumeEvents();
+	    				}				
+	    			}
+	    		});
+	    	}else{
+	    		//filter the tree
+	    		this.filterNode(this.getRootNode(), re);
+	    		this.suspendEvents();
+	    		this.expandAll();
+	    		this.resumeEvents();
+	    	}			
 		}
 	},
 	
@@ -523,7 +580,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			f = this.filterNode(c, re) || f;
 			c = c.nextSibling;
 		}
-		f = re.test(n.text.toLowerCase()) || f;
+		f = re.test(Ext.util.Format.htmlDecode(n.text.toLowerCase())) || f;
 		if (!n.previousState) {
 			// save the state before filtering
 			n.previousState = n.expanded ? "e" :"c";
@@ -766,7 +823,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			var node_exist = dimension_tree.getNodeById(mem.id);			
 			
 			if(!node_exist){
+				dimension_tree.suspendEvents();
 				if (node_parent) node_parent.appendChild(new_node);
+				dimension_tree.resumeEvents();
 			}else{				
 				if (node_parent){
 					//node_exist.setText(new_node.text);

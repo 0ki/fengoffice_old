@@ -1047,6 +1047,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$this->getObject()->setColumnValue('archived_by_id', logged_user()->getId());
 		}
 		$this->save();
+		
+		// archive associated member if exists
+		$mem = Members::findOneByObjectId($this->getId());
+		if ($mem instanceof Member) {
+			$mem->archive(logged_user());
+		}
 	}
 	
 	
@@ -1058,6 +1064,12 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			$this->getObject()->setColumnValue('archived_by_id', 0);
 		}
 		$this->save();
+		
+		// unarchive associated member if exists
+		$mem = Members::findOneByObjectId($this->getId());
+		if ($mem instanceof Member) {
+			$mem->unarchive(logged_user());
+		}
 	}
 	
 	

@@ -8,7 +8,10 @@ og.eventManager.addListener('replace all empty breadcrumb',function(){
 	}
 	
 	var copy = og.emptyBreadcrumbsToRefresh.slice(0);
-	var members = og.getMembersFromServer(og.emptyBreadcrumbsToRefresh,callback,copy);
+	
+	if(copy.length > 0){
+		var members = og.getMembersFromServer(og.emptyBreadcrumbsToRefresh,callback,copy);
+	}	
 
 	//empty the array after refresh
 	og.emptyBreadcrumbsToRefresh.length = 0;

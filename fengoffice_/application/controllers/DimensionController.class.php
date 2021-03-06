@@ -158,6 +158,24 @@ class DimensionController extends ApplicationController {
 			if (count($allowed_member_types) > 0) {
 				$extra_conditions = " AND object_type_id IN (".implode(",",$allowed_member_types).")" . $extra_conditions;
 			}
+			
+			if (count($filter_by_members) > 0) {
+				$filters = array();
+				foreach ($filter_by_members as $fm) {
+					$dma = DimensionMemberAssociations::findOne(array(
+						'conditions' => "dimension_id=".$fm->getDimensionId()." AND object_type_id=".$fm->getObjectTypeId()." AND associated_dimension_id=$dimension_id".
+							" OR associated_dimension_id=".$fm->getDimensionId()." AND associated_object_type_id=".$fm->getObjectTypeId()." AND dimension_id=$dimension_id"
+					));
+					if ($dma instanceof DimensionMemberAssociation) {
+						$filters[] = $fm;
+					}
+				}
+				if (count($filters) > 0) {
+					$filter_by_members_sql = $this->get_association_filter_conditions($dimension, $filters);
+					$extra_conditions .= $filter_by_members_sql;
+				}
+			}
+			
 			$parent = 0;
 			if (is_null($order)) $order = "parent_member_id, name";
 			if (!$dimension->getDefinesPermissions() || $dimension->hasAllowAllForContact($contact_pg_ids) || $return_all_members){
@@ -199,8 +217,6 @@ class DimensionController extends ApplicationController {
 			}
 			$filter_by_members = $tmp_array;
 			
-			$all_members = $this->apply_association_filters($dimension, $all_members, $filter_by_members);
-			
 			if ($return_member_objects) {
 				return $all_members;
 			} else {
@@ -210,6 +226,37 @@ class DimensionController extends ApplicationController {
 		return null;
 	}
 	
+	function get_association_filter_conditions($dimension, $selected_members) {
+		$sql_str = "";
+		$mem_ids = array(-1);
+		
+		foreach ($selected_members as $member) {
+			if (!$member instanceof Member) continue;
+			$association_ids = DimensionMemberAssociations::getAllAssociationIds($member->getDimensionId(), $dimension->getId());
+			if (count($association_ids) == 0) continue;
+				
+			$associations = DimensionMemberAssociations::findAll(array('conditions' => 'id IN ('.implode(',', $association_ids).')'));
+	
+			if (count($associations) > 0) {
+				$associated_members_ids = array();
+	
+				foreach ($associations as $assoc){ /* @var $assoc DimensionMemberAssociation */
+					if ($assoc->getDimensionId() == $dimension->getId()) {
+						$tmp_ids_csv = MemberPropertyMembers::getAllMemberIds($assoc->getId(), $member->getId());
+					} else {
+						$tmp_ids_csv = MemberPropertyMembers::getAllPropertyMemberIds($assoc->getId(), $member->getId());
+					}
+					$mem_ids = array_merge($mem_ids, explode(',', $tmp_ids_csv));
+				}
+			}
+		}
+		$mem_ids = array_filter(array_unique($mem_ids));
+		if (count($mem_ids) > 0) {
+			$sql_str = " AND id IN (". implode(',', $mem_ids) .")";
+		}
+	
+		return $sql_str;
+	}
 	
 	function apply_association_filters($dimension, $dimension_members, $selected_members) {
 		

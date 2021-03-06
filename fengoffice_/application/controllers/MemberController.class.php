@@ -102,6 +102,11 @@ class MemberController extends ApplicationController {
 			case 'description':
 				$order = "mem.".$order;
 				break;
+
+			case 'mem_path':
+				$join_sql = "LEFT JOIN ".TABLE_PREFIX."members mem_parent ON mem.parent_member_id = mem_parent.id";
+				$order = "mem_parent.`name`";
+				break;
 			default:
 				if (str_starts_with($order, "cp_")) {
 					$cp_id = str_replace("cp_", "", $order);
@@ -200,7 +205,7 @@ class MemberController extends ApplicationController {
 	
 		if (count($ids) == 0) $ids[] = 0;
 
-		$sql = "SELECT *, mem.id as member_id FROM ".TABLE_PREFIX."members mem
+		$sql = "SELECT mem.*, mem.id as member_id FROM ".TABLE_PREFIX."members mem
 		--	LEFT JOIN ".TABLE_PREFIX."member_additional_data d ON c.object_id=d.customer_id
 			$join_sql
 			WHERE mem.id IN (".implode(',', $ids).") AND mem.dimension_id=".$dimension->getId()."
@@ -524,11 +529,9 @@ class MemberController extends ApplicationController {
 				if (array_var($_GET, 'current') == 'overview-panel' && array_var($_GET, 'quick') ) {
 					//ajx_current("reload");
 				}
-				if (array_var($_GET, 'current') == 'more-panel') {
-					ajx_current("back");
-				} else {
-					ajx_current("empty");
-				}
+				
+				ajx_current("back");
+				
 			}
 		} catch (Exception $e) {
 			DB::rollback();
@@ -632,7 +635,6 @@ class MemberController extends ApplicationController {
 					evt_add("update dimension tree node", array('dim_id' => $member->getDimensionId(), 'member_id' => $member->getId()));
 				}
 			} catch (Exception $e) {
-				DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
 			}

@@ -6,17 +6,18 @@ if ($ot->getName()=='project_folder' || $ot->getName()=='customer_folder') {
 	$ot = ObjectTypes::findByName('folder');
 }
 
+if (!isset($genid)) $genid = gen_id();
+
 $cps = MemberCustomProperties::getAllMemberCustomPropertiesByObjectType($ot->getId(), $visibility);
 if ($visibility == 'others' && count($cps) == 0 && Plugins::instance()->isActivePlugin('member_custom_properties')) {
-	echo lang('there are no custom properties defined message', strtolower(lang($ot->getName())), escape_character($member->getName()));
-	echo '<br />'. lang('there are no custom properties defined link');
+	echo "<div id='".$genid."_no_cp_msg'>" . lang('there are no custom properties defined message', strtolower(lang($ot->getName())), escape_character($member->getName()));
+	echo '<br />'. lang('there are no custom properties defined link') . '</div>';
 }
 
 if (!$parent_member) $parent_member = 0;
 
 $ti = 0;
 
-if (!isset($genid)) $genid = gen_id();
 if (!isset($startTi)) $startTi = 10000;
 
 if(count($cps) > 0){
@@ -236,6 +237,7 @@ if(count($cps) > 0){
 					if (is_array($values) && count($values) > 0) {
 						foreach ($values as $val) {
 							$values = str_replace("\|", "%%_PIPE_%%", $val->getValue());
+							$values = str_replace(array("\r","\n"), " ", $values);
 							$exploded = explode("|", $values);
 							foreach ($exploded as &$v) {
 								$v = str_replace("%%_PIPE_%%", "|", $v);
@@ -326,5 +328,8 @@ if(count($cps) > 0){
 		}
 	}
 }
+
+$null = null;
+Hook::fire('render_additional_member_custom_properties', array('member' => $member, 'genid' => $genid, 'ot' => $ot), $null);
 
 ?></div>

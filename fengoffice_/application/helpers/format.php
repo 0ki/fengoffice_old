@@ -333,6 +333,11 @@ function date_format_tip($format) {
 				}
 			}
 			
+			if ($cp->getType() == 'boolean' && $cp_val instanceof CustomPropertyValue) {
+				$formatted = $cp_val->getValue() > 0 ? lang('yes') : lang('no');
+				$cp_val->setValue($formatted);
+			}
+			
 			if ($cp->getType() == 'date' && $cp_val instanceof CustomPropertyValue) {
 				
 				$format = user_config_option('date_format');

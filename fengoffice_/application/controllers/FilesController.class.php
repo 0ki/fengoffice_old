@@ -1745,7 +1745,6 @@ class FilesController extends ApplicationController {
 		$order = array_var($_GET,'sort');
 		$order_dir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit)+1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
 		$type = array_var($_GET,'type');
 		$user = array_var($_GET,'user');
 
@@ -1875,8 +1874,6 @@ class FilesController extends ApplicationController {
 		} else {
 			$order = '`name`';
 		} // if
-		
-		$extra_conditions .= $hide_private ? 'AND `is_visible` = 1' : '';
 		
 		// filter attachments of other people if not filtering
 		$tmp_mids = array();

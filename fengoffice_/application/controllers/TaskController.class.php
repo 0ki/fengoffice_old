@@ -1695,7 +1695,7 @@ class TaskController extends ApplicationController {
 			$unknown_group['total'] = $unknown_group_totals[0]['total'];
 			$unknown_group['group_time_estimate'] = $unknown_group_totals[0]['group_time_estimate'];
 			$unknown_group['estimatedTime'] = str_replace(',',',<br>',DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($unknown_group['group_time_estimate'] * 60), 'hm', 60));
-			if (count($unknown_group['tasks']) > 0) {
+			if (count($unknown_group['group_tasks']) > 0) {
 				$groups[] = $unknown_group;
 			}
 		}
@@ -2561,7 +2561,7 @@ class TaskController extends ApplicationController {
 				
 				$object_controller->add_reminders($task);
 								
-				if(config_option('repeating_task') == 1){
+				if(config_option('repeating_task') == 1 && $task instanceof ProjectTask){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;
 					if(array_var($task_data, 'repeat_saturdays',false)){
@@ -3270,8 +3270,7 @@ class TaskController extends ApplicationController {
 					$task->save();
 				}
 				
-
-				if(config_option('repeating_task') == 1){
+				if(config_option('repeating_task') == 1 && $task instanceof ProjectTask){
 					$opt_rep_day['saturday'] = false;
 					$opt_rep_day['sunday'] = false;
 					if(array_var($task_data, 'repeat_saturdays',false)){

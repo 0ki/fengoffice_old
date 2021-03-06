@@ -1,5 +1,5 @@
 
-	About Feng Office 3.3
+	About Feng Office 3.3.0.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,46 @@
 	Changelog
 	=========
 	
+	Since 3.3.0.3
+	----------------
+	bugfix: member list order by parent name.
+	bugfix: search on member trees is not working if the node name have html entities.
+	
+	Since 3.3.0.2
+	----------------
+	bugfix: web documents only working for super admins.
+	bugfix: workspaces and tags list not working.
+	bugfix: add new contact/user/company picture error
+
+	Since 3.3.0.1
+	----------------
+	bugfix: when adding/editing suppliers the associated contact custom properties are not rendered and if there is any required cp the supplier cannot be added.
+	bugfix: clear filter after select on member selectors.
+	bugfix: single member selector
+	bugfix: breadcrumbs js error
+	bugfix: ensure to archive-unarchive associated object or associated member
+	bugfix: filter dimensions by other dimensions does not get the filtered members always.
+	bugfix: ensure that deprecated gantt overview widget is not rendered.
+	bugfix: custom properties address fields renderization crashes when it has enters.
+
+	performance: member tree search.
+	performance: member trees.
+	
+	
+	Since 3.3
+	----------------
+	
+	bugfix: js error and new tab opens when trying to add new invoice and module is not configured.
+	bugfix: tasks list group by dimension not showing tasks without member.
+	bugfix: when no formula status is matched then the last one is assigned.
+	bugfix: super admin can not see other users attachments if the mail is not classified.
+	bugfix: repeating template tasks not working with config option repeating_task.
+	bugfix: purchase orders "ordered by" field must be only users.
+	bugfix: expenses payments numeration
+	
+	lang: Turkish translation
+
+
 	Since 3.3-rc
 	----------------
 	bugfix: contact list image width.

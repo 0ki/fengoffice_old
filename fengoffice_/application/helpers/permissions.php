@@ -1483,7 +1483,7 @@
 			//pclose(popen("start /B ". $command, "r"));
 			save_member_permissions($member, $permissions);
 			
-			if ($old_parent_id != $member->getParentMemberId()) {
+			if ($old_parent_id != -1 && $old_parent_id != $member->getParentMemberId()) {
 				member_parent_changed_refresh_object_permisssions($member, $old_parent_id, $user);
 			}
 		} else {

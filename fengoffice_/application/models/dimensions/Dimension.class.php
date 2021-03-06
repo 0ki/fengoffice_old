@@ -9,7 +9,7 @@ class Dimension extends BaseDimension {
 	
 	private $options_cache = array();
 	
-	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false, $extra_conditions = "", $limit = null) {
+	function getAllMembers($only_ids = false, $order = null, $filter_deleted_objects = false, $extra_conditions = "", $limit = null, $order_dir = null) {
 		$contactsType = ObjectTypes::instance()->findByName('person');
 		if ($contactsType) {
 			$contactsTypeId = $contactsType->getId();
@@ -21,6 +21,10 @@ class Dimension extends BaseDimension {
 		if (!is_null($order)) { 
 			$parameters['order'] = $order;
 		}
+		if (!is_null($order_dir)) { 
+			$parameters['order_dir'] = $order_dir;
+		}
+		
 		if (!is_null($limit)) {
 			if (is_array($limit)) {
 				if (isset($limit['offset'])) {

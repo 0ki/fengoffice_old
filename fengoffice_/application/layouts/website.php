@@ -311,7 +311,8 @@ og.config = {
 		brand_colors_tabs_font: '<?php echo config_option('brand_colors_tabs_font')?>'
 	},
 	'with_perm_user_types': Ext.util.JSON.decode('<?php echo json_encode(config_option('give_member_permissions_to_new_users'))?>'),
-	'member_selector_page_size': 100
+	'member_selector_page_size': 100,
+	'currency_code': '<?php echo config_option('currency_code', '$') ?>'
 };
 og.preferences = {
 	'viewContactsChecked': <?php echo json_encode(user_config_option('viewContactsChecked')) ?>,
@@ -652,10 +653,10 @@ $(document).ready(function() {
 		}
 	}
 
-	og.custom_properties_by_type = [];
+	og.custom_properties_by_type = {};
 	og.openLink(og.getUrl('object', 'get_cusotm_property_columns'), {
 		callback: function(success, data){
-			if (typeof data.properties != 'undefined') {
+			if (typeof data.properties != 'undefined' && !(data.properties instanceof Array )) {
 				og.custom_properties_by_type = data.properties;
 			}
 		}
