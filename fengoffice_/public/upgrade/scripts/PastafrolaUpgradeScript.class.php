@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7.4
+ * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7.5-rc
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6.2');
-		$this->setVersionTo('1.7.4');
+		$this->setVersionTo('1.7.5-rc');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -155,7 +155,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 				";
 			}
 			
-			if (version_compare($installed_version, '1.7.4') <= 0) {
+			if (version_compare($installed_version, '1.7.4') < 0) {
 				$upgrade_script .= "
 					ALTER TABLE `" . TABLE_PREFIX . "workspace_objects` DROP INDEX `object_manager`,
 					 ADD INDEX `object_manager` USING BTREE(`object_manager`, `object_id`);
@@ -180,6 +180,14 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 					ALTER TABLE `" . TABLE_PREFIX . "mail_contents` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
 					ALTER TABLE `" . TABLE_PREFIX . "companies` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
 					ALTER TABLE `" . TABLE_PREFIX . "contacts` ADD INDEX `trashed_on` USING BTREE(`trashed_on`);
+				";
+			}
+			
+		    if (version_compare($installed_version, '1.7.4.1') < 0) {
+				$upgrade_script .= "
+						INSERT INTO `" . TABLE_PREFIX . "config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+							('general', 'external_users_see_other_users', '0', 'BoolConfigHandler', 0, 0, NULL)
+						ON DUPLICATE KEY UPDATE id=id;
 				";
 			}
 			

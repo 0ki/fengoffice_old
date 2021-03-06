@@ -51,6 +51,7 @@
 	'options' => 'Opciones',
 	'active' => 'Activo',
 	'completed' => 'Completado',
+	'open task status' => 'Abierta',
 	'administrator' => 'Administrador',
 	'error' => 'Error',
 	'yes' => 'Sí',
@@ -151,7 +152,7 @@
 	'assign' => 'Asignar',
 	'assign task template to workspace' => 'Asignar plantilla de tareas \'{0}\' a espacios',
 	'confirm delete task template' => 'Esta seguro que desea eliminar esta plantilla de tarea permanentemente? De hacerlo dejara de estar disponible en todo el sistema.',
-	'create contact from user' => 'Crear contacto con datos del usuario',
+	'create contact from user' => 'Crear contacto del usuario',
 	'confirm create contact from user' => 'Está seguro de que desea crear un contacto con los datos de este usuario?',
 	'create contact from user desc' => 'Al seleccionar sí, se creará un contacto del sistema asociado a este usuario',
 	'use previous personal workspace' => 'Usar un Espacio de trabajo ya existente como espacio de trabajo personal para este usuario',
@@ -177,7 +178,7 @@
 	'add work' => 'Agregar trabajo',
 	'date format' => 'd/m/Y',
 	'date format description' => '(día/mes/año)',
-	'confirm move to trash' => '¿Está seguro de que desea mover el objeto seleccionado a la papelera? ',
+	'confirm move to trash' => 'Â¿Está seguro de que desea mover el objeto seleccionado a la papelera? ',
 	'add' => 'Agregar',
 	'remove' => 'Quitar',
 	'mime type' => 'Tipo MIME',
@@ -206,7 +207,7 @@
 	'move all to left' => 'Mover todos hacia la izquierda',
 	'move up' => 'Subir',
 	'move down' => 'Bajar',
-	'this file is included in document' => 'Este documento está incluido en: {0}',
+	'this file is included in document' => 'Este documento está incluído en: {0}',
 	'shared with' => 'Compartido con',
 	'minutes ago' => 'Hace {0} minutos',
 	'about hours ago' => 'Aprox. hace {0} horas',
@@ -224,4 +225,31 @@
 	'workspace and tags' => 'Espacio y etiquetas',
 	'direct url' => 'URL Directa',
 	'the' => 'el',
+
+
+	'wizard title' => 'Comenzando',	
+	'wizard intro' => 'Este asistente te permitirá crear un espacio de trabajo para centralizar y organizar la información de un Cliente, un Proyecto, crear tareas y compartir con otras personas.',
+  	'wizard intro project' => 'Este asistente te permitirá registrar las personas y sus permisos para el uso del sistema y crear tareas para el proyecto.',
+  	'wizard intro customer' => 'Este asistente te permitirá crear un espacio de trabajo para un proyecto del cliente, invitar a otras personas, definir sus permisos y crear tareas.',
+
+	'wizard new customer title' => 'Agregar un espacio de trabajo para un Cliente.',
+	'wizard new customer' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Cliente.<br />Se puede crear, buscar o compartir un espacio o sub-espacio de trabajo desde el panel de la izquierda.',
+	
+	'wizard new project title' => 'Agregar un espacio de trabajo para un Proyecto',
+   	'wizard new project' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Proyecto.<br />Se puede crear, buscar o compartir un espacio o sub-espacio de trabajo de un proyecto desde el panel de la izquierda.',
+  	
+	'wizard new customer project title' => 'Agregar un espacio de trabajo para un Proyecto del Cliente',
+   	'wizard new customer project' => 'La selección del Cliente en la opción “Espacio Padre” indica que se agrega un Proyecto correspondiente a ese Cliente.<br />La opción “Resumen” del menú principal despliega un resumen de la información del área de trabajo seleccionada en el panel de la izquierda “Espacios de Trabajo”',
+  	
+	'wizard new customer task title' => 'Agregar una tarea para este Cliente',
+	'wizard new customer task' => 'Asigne tareas – registre antes a la persona y sus permisos- , fechas y prioridades. Agregue sub-tareas, hitos, recordatorios, suscriptores, emails, documentos, notas, horas trabajadas, tareas repetitivas y más. Para ver las tareas de un Cliente, selecciona el Cliente en el panel de la izquierda y luego haz click en la opción “Tareas”.',
+
+   	'wizard new project task title' => 'Agregar tareas para este proyecto',	
+  	'wizard new project task' => 'Asigne tareas – registre antes a la persona y sus permisos-, fechas y prioridades. Agregue sub-tareas, hitos, recordatorios, suscriptores, emails, documentos, notas, horas trabajadas, tareas repetitivas y más. Para ver las tareas de un Proyecto, selecciona el Proyecto en el panel de la izquierda y luego haz click en la opción “Tareas”. Selecciona el Cliente y luego Tareas para ver todas sus tareas.',
+
+	'wizard new user title' => 'Invita a otras Personas',
+  	'wizard new user' => 'Debes registrar a una persona y darle permisos en el espacio de trabajo del Cliente o Proyecto para asignarle una tarea y permitirle que trabaje en el sistema. También puedes invitar a otras personas y darle permisos a través de la opción <strong>Administración/Nuevos usuarios</strong> ubicada en la parte superior derecha de la pantalla.',
+	
+  	'wizard close action' => 'Puedes volver a esta Ayuda haciendo doble click en la opción “Resumen” del Menú Principal',
+  	'wizard close button' => 'closeActionEs'	
 ); ?>

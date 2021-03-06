@@ -293,8 +293,8 @@ class ProjectController extends ApplicationController {
 					$project->setParentWorkspace($parent);
 				}
 				$project->save();
-				
-				/* Billing */
+                
+                /* Billing */
 				$billings = array_var($project_data,'billing', null);
 				if ($billings){
 					foreach ($billings as $billing_id => $billing){
@@ -369,6 +369,14 @@ class ProjectController extends ApplicationController {
 
 				flash_success(lang('success add project', $project->getName()));
 				ajx_current("back");
+                
+                //Overview Wizard
+				if(isset($_REQUEST['wizard']))
+				{
+					$_SESSION['wizard'] = $_REQUEST['wizard'];
+					evt_add('select workspace', $project->getId());
+				}
+
 				return;
 
 			} catch(Exception $e) {

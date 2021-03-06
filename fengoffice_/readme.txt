@@ -1,5 +1,5 @@
 
-    About Feng Office 1.7.4
+    About Feng Office 1.7.4.1
     =========================
 
     Feng Office is a free and open source Web Office, project management
@@ -90,6 +90,29 @@
 
 	Changelog
 	=========
+	
+	Since 1.7.4
+	------------
+	bugfix: Bug when creating contact from user.
+	bugfix: Fixed security issues.
+	bugfix: Issue with js config option in task module.
+	bugfix: Send button dissapears when sending email.
+	bugfix: Improved <show all> query for linked objects.
+	bugfix: Incompatibility with IE9.
+	bugfix: Language improvements.
+	bugfix: Warnings of combine.php.
+	bugfix: Issue when adding/edditing company.
+	bugfix: Issue with reports.
+	bugfix: Issue in Date Format Config Handler.
+	bugfix: Solved issue when viewing different emails in different browser tabs.
+	bugfix: Email forward is not included in conversation.
+	
+	usability: Disable edit workspace button if user does not have permissions, "add workspace" text added.
+	usability: New wizard to get started using Feng Office.
+	
+	system: Check for mb_string library when installing.
+	system: Images spriting.
+	system: HTTPS support.
 	
 	Since 1.7.3.3
 	------------
