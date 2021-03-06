@@ -1599,7 +1599,7 @@ class ObjectController extends ApplicationController {
 		if (!$show_all_linked_objects){
 			$result = $this->getDashboardObjects($page, $filesPerPage, $tag, $order, $orderdir, $types, $project, $trashed, $linkedObject, $filterName, $archived, $filterManager);
 		}else{
-			$result = LinkedObjects::getLinkedObjectsWithPaging($page, $order, $orderdir, $objid,$mangr);
+			$result = LinkedObjects::getLinkedObjectsWithPaging($page, $order, $orderdir, $objid,$mangr, $filesPerPage);
 		}
 		if(!$result) $result = array();
 				

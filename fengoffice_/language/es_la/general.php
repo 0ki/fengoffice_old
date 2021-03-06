@@ -227,29 +227,28 @@
 	'direct url' => 'URL Directa',
 	'the' => 'el',
 
-
 	'wizard title' => 'Comenzando',	
-	'wizard intro' => 'Este asistente te permitirá crear un espacio de trabajo para centralizar y organizar la información de un Cliente, un Proyecto, crear tareas y compartir con otras personas.',
+	'wizard intro' => 'Cree un espacio de trabajo para centralizar y organizar la información de un cliente o proyecto, agregue tareas y comparta información con otras personas.',
   	'wizard intro project' => 'Este asistente te permitirá registrar las personas y sus permisos para el uso del sistema y crear tareas para el proyecto.',
-  	'wizard intro customer' => 'Este asistente te permitirá crear un espacio de trabajo para un proyecto del cliente, invitar a otras personas, definir sus permisos y crear tareas.',
+  	'wizard intro customer' => 'Cree un sub-espacio de trabajo para centralizar y organizar la información de un proyecto, agregue tareas y comparta información con otras personas.',
 
 	'wizard new customer title' => 'Agregar un espacio de trabajo para un Cliente.',
-	'wizard new customer' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Cliente.<br />Se puede crear, buscar o compartir un espacio o sub-espacio de trabajo desde el panel de la izquierda.',
+	'wizard new customer' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Cliente. Para crear o buscar un espacio de trabajo debe utilizar el panel de la izquierda.',
 	
 	'wizard new project title' => 'Agregar un espacio de trabajo para un Proyecto',
-   	'wizard new project' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Proyecto.<br />Se puede crear, buscar o compartir un espacio o sub-espacio de trabajo de un proyecto desde el panel de la izquierda.',
+   	'wizard new project' => 'En un espacio de trabajo podrás compartir y centralizar toda la información de un Proyecto. Para crear o buscar un espacio de trabajo debe utilizar el panel de la izquierda.',
   	
 	'wizard new customer project title' => 'Agregar un espacio de trabajo para un Proyecto del Cliente',
-   	'wizard new customer project' => 'La selección del Cliente en la opción “Espacio Padre” indica que se agrega un Proyecto correspondiente a ese Cliente.<br />La opción “Resumen” del menú principal despliega un resumen de la información del área de trabajo seleccionada en el panel de la izquierda “Espacios de Trabajo”',
+   	'wizard new customer project' => 'Al estar posicionado sobre el espacio de trabajo de un Cliente, éste actúa como “Espacio Padre” y usted puede crear sub-espacios. Un ejemplo de sub-espacio es un Proyecto del Cliente.<br/> En la opción "Resumen" del menú principal usted podrá ver un resumen de la información más relevante del área de trabajo que ha seleccionado en el panel de la izquierda.',
   	
 	'wizard new customer task title' => 'Agregar una tarea para este Cliente',
-	'wizard new customer task' => 'Asigne tareas – registre antes a la persona y sus permisos- , fechas y prioridades. Agregue sub-tareas, hitos, recordatorios, suscriptores, emails, documentos, notas, horas trabajadas, tareas repetitivas y más. Para ver las tareas de un Cliente, selecciona el Cliente en el panel de la izquierda y luego haz click en la opción “Tareas”.',
+	'wizard new customer task' => 'Agregue tareas para el área de trabajo Cliente o para cualquiera de sus sub-áreas, por ejemplo un Proyecto.',
 
    	'wizard new project task title' => 'Agregar tareas para este proyecto',	
   	'wizard new project task' => 'Asigne tareas – registre antes a la persona y sus permisos-, fechas y prioridades. Agregue sub-tareas, hitos, recordatorios, suscriptores, emails, documentos, notas, horas trabajadas, tareas repetitivas y más. Para ver las tareas de un Proyecto, selecciona el Proyecto en el panel de la izquierda y luego haz click en la opción “Tareas”. Selecciona el Cliente y luego Tareas para ver todas sus tareas.',
 
 	'wizard new user title' => 'Invita a otras Personas',
-  	'wizard new user' => 'Debes registrar a una persona y darle permisos en el espacio de trabajo del Cliente o Proyecto para asignarle una tarea y permitirle que trabaje en el sistema. También puedes invitar a otras personas y darle permisos a través de la opción <strong>Administración/Nuevos usuarios</strong> ubicada en la parte superior derecha de la pantalla.',
+  	'wizard new user' => 'Debes invitar a una persona para asignarle tareas, permitirle que registre un comentario o que pueda ver los avances de un Cliente o Proyecto. Recuerda otorgarle los permisos en el Proyecto, Cliente o espacio de trabajo que corresponda. También puedes invitar otras personas a través de la opción Administración/Nuevos Usuarios ubicada en la parte superior derecha de la pantalla.',
 	
   	'wizard close action' => 'Puedes volver a esta Ayuda haciendo doble click en la opción “Resumen” del Menú Principal',	
 ); ?>

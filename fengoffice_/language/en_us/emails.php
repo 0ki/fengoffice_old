@@ -181,6 +181,7 @@ return array(
 	'deleted notification email' => 'Email \'{0}\' has been sent to trash',
 	'deleted notification email desc' => 'Email \'{0}\' has been sent to trash by {1}.',
 	'deleted notification email unclassified desc' => 'Email \'{0}\' has been sent to trash by {1}.',
+	'deleted notification emailunclassified desc' => 'Email \'{0}\' has been sent to trash by {1}.',
 
 	'closed notification task' => 'Task \'{0}\' has been completed',
 	'closed notification task desc' => 'Task \'{0}\' has been completed by {1}.',

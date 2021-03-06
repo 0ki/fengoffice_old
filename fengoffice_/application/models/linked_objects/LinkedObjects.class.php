@@ -39,7 +39,7 @@
 	 *  Returns all linked objects to an object, to be listed
 	 * 
      */
-	public static function getLinkedObjectsWithPaging($page, $order, $orderdir, $objid, $mangr){		
+	public static function getLinkedObjectsWithPaging($page, $order=null, $orderdir=null, $objid, $mangr, $objects_per_page){		
 		$query = "SELECT `object_manager` AS `object_manager_value`, `object_id` AS `oid`, `created_on` AS `order_value`
 				  FROM `".TABLE_PREFIX."linked_objects` 
 				  WHERE (`rel_object_manager` LIKE '".mysql_real_escape_string($mangr)."' AND `rel_object_id` = ".mysql_real_escape_string($objid).")

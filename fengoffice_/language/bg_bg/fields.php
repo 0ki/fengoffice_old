@@ -185,6 +185,7 @@
 	'field ProjectTasks repeat_y' => 'Година на повтаряне',
 	'field ProjectTasks object_subtype' => 'Под-тип на обект',
 	'field ProjectTasks state' => 'Статус',
+	'field ProjectTasks status' => 'Статус',
 	'field Users username' => 'Потребителско име',
 	'field Users email' => 'Имейл',
 	'field Users type' => 'Тип',

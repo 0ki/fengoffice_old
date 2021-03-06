@@ -126,6 +126,7 @@
 	'deleted notification email' => 'Correo \'{0}\' ha sido enviado a la papelera',
 	'deleted notification email desc' => 'Correo \'{0}\' ha sido enviado a la papelera por {1}.',
 	'deleted notification email unclassified desc' => 'Correo \'{0}\' ha sido enviado a la papelera por {1}.',
+	'deleted notification emailunclassified desc' => 'Correo \'{0}\' ha sido enviado a la papelera por {1}.',
 	'view file' => 'Ver archivo',
 	'view message' => 'Ver nota',
 	'view comment' => 'Ver comentario',

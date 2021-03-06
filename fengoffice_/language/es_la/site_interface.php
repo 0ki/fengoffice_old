@@ -447,7 +447,7 @@
 	'late milestones and tasks for' => 'Hitos y tareas atrasadas de {0}',
 	'my tasks in progress' => 'Mis tareas activas',
 	'tasks in progress for' => 'Tareas activas de {0}',
-	'edit picture' => 'Editar imágen',
+	'edit picture' => 'Editar imagen',
 	'deleted by' => 'Eliminado por',
 	'time has to be greater than 0' => 'El tiempo tiene que ser mayor que 0',
 	'release notes' => 'Notas de la versión',

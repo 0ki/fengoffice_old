@@ -24,8 +24,7 @@
 	'config option name site_name' => 'Име на сайта',
 	'config option desc site_name' => 'Тази стойност ще бъде използвана като име на сайта на началната страница.',
 	'config option name file_storage_adapter' => 'Съхранение на файлове',
-	'config option desc file_storage_adapter' => 'Избери къде искаш да съхраняваш качените документи.
-Внимание: превключване на хранилищата ще направи всички вече качени файлове невалидни.',
+	'config option desc file_storage_adapter' => 'Избери къде искаш да съхраняваш качените документи. Внимание: превключване на хранилищата ще направи всички вече качени файлове невалидни.',
 	'config option name default_project_folders' => 'Папки по подразбиране',
 	'config option desc default_project_folders' => 'Папки, които ще бъдат създадени при създаване на ново работно пространство. Всяко име на папка трябва да е на нов ред. Дублирани или празни редове ще бъдат игнорирани',
 	'config option name theme' => 'Тема',
@@ -42,6 +41,10 @@
 	'config option desc show_feed_links' => 'Това позволява показването и абонирането в цялата система на RSS или iCal линкове на потребители, така че те имат възможност да се абонират за тях.',
 	'config option name ask_administration_autentification' => 'Изискване на парола в администрация',
 	'config option desc ask_administration_autentification' => 'Ако е избрано "Да" ще бъде извеждан прозорец за повторно въвеждане на паролата при достъп до административния панел',
+
+	'config option name external_users_see_other_users' => 'Позволи външни потребители да виждат други потребители',
+  	'config option desc external_users_see_other_users' => "Ако е избрано 'Да', потребители принадлежащи към други компании могат да виждат кои потребители имат права в Работното пространство, в което се намират, точно както се вижда от редовните потребители",
+
 	'config option name enable_notes_module' => 'Активирай Модул Бележки',
 	'config option name enable_email_module' => 'Активирай Модул Имейли',
 	'config option name enable_contacts_module' => 'Активирай Модул Контакти',
@@ -281,5 +284,7 @@
 	'mails on imap acc already sync' => 'Не са намерени имейли за синхронизация в този профил',
 	'cant sync account' => 'Този профил не може да бъде синхронизиран. Проверете IMAP настройките.',
 	'config option name sent_mails_sync' => 'Активирай IMAP синхронизиране при изпращане на имейли от Фенг Офис',
+    'config option desc sent_mails_sync' => 'Тази опция активира синхронизацията с имейл сървъра през IMAP при изпращане на имейли от Feng Office',
+
 	'succes save object subtypes' => 'Под-типовете на обекта са записани успешно',
 ); ?>
