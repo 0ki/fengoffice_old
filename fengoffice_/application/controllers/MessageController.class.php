@@ -10,11 +10,14 @@ class MessageController extends ApplicationController {
 
 	function list_all()
 	{
+		ajx_current("empty");
+		
 		// Get all variables from request
-		$this->setLayout('json');
-    	$this->setTemplate(get_template_path('json'));
 		$start = array_var($_GET,'start');
-		$limit = array_var($_GET,'limit');
+		$limit = config_option('files_per_page');
+		if (! $start) {
+			$start = 0;
+		}
 		$tag = array_var($_GET,'tag');
 		$action = array_var($_GET,'action');
 		$attributes = array(
@@ -27,8 +30,14 @@ class MessageController extends ApplicationController {
 		
 		//Resolve actions to perform
 		$actionMessage = array();
-		if (isset($action))
-			$actionMessage = $this->resolveAction($action, $attributes); 
+		if (isset($action)) {
+			$actionMessage = $this->resolveAction($action, $attributes);
+			if ($actionMessage["errorCode"] == 0) {
+				flash_success($actionMessage["errorMessage"]);
+			} else {
+				flash_error($actionMessage["errorMessage"]);
+			}
+		} 
 		
 		// Get all emails and messages to display
 		$emails = $this->getEmails($action, $tag, $attributes);
@@ -36,8 +45,9 @@ class MessageController extends ApplicationController {
 		$totMsg = $this->addMessagesAndEmails($messages, $emails);
 		
 		// Prepare response object
-		$object = $this->prepareObject($totMsg, $start, $limit, $actionMessage);
-		tpl_assign('object', $object);
+		$object = $this->prepareObject($totMsg, $start, $limit);
+		ajx_extra_data($object);
+    	tpl_assign("listing", $object);
 	}
 	
 	/**
@@ -65,6 +75,7 @@ class MessageController extends ApplicationController {
 									DB::beginWork();
 									$email->save();
 									DB::commit();
+									$resultMessage = lang("success delete objects", '');
 								} catch(Exception $e){
 									DB::rollback();
 									$resultMessage .= $e->getMessage();
@@ -80,6 +91,7 @@ class MessageController extends ApplicationController {
 									DB::beginWork();
 									$message->delete();
 									DB::commit();
+									$resultMessage = lang("success delete objects", '');
 								} catch(Exception $e){
 									DB::rollback();
 									$resultMessage .= $e->getMessage();
@@ -104,15 +116,17 @@ class MessageController extends ApplicationController {
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->getProject() instanceof Project && $email->canEdit(logged_user())){
-								Tags::addObjectTag($tag, $email, $email->getProject());
+							if (isset($email) && $email->canEdit(logged_user())){
+								Tags::addObjectTag($tag, $email);
+								$resultMessage = lang("success tag objects", '');
 							};
 							break;
 
 						case "message":
 							$message = ProjectMessages::findById($id);
 							if (isset($message) && $message->canEdit(logged_user())){
-								Tags::addObjectTag($tag, $message, $message->getProject());
+								Tags::addObjectTag($tag, $message);
+								$resultMessage = lang("success tag objects", '');
 							};
 							break;
 
@@ -254,9 +268,11 @@ class MessageController extends ApplicationController {
 					"($accountConditions OR `project_id` in ($proj_ids))":
 					"($accountConditions OR (`project_id` in ($proj_ids) AND is_private = 0))";
 		}
-			
+		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
+	
 		return MailContents::findAll(array(
-				'conditions' => $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0", 
+				'conditions' => $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0 " . $permissions, 
 				'order' => 'sent_date DESC'));
 	}
 	
@@ -274,14 +290,11 @@ class MessageController extends ApplicationController {
 		
 		if (active_project() instanceof Project){
 			$pid = active_project()->getId();
-			$messageConditions = logged_user()->isMemberOfOwnerCompany() ?
-				"`project_id` = $pid":
-				"`project_id` = $pid AND `is_private` = 0";
+			$messageConditions = "`project_id` = $pid";
 		} else {
-			$proj_ids = logged_user()->getActiveProjectIdsCSV();
-			$messageConditions = logged_user()->isMemberOfOwnerCompany() ?
-				"`project_id` in ($proj_ids)" :
-				"`project_id` in ($proj_ids) AND `is_private` = 0";
+			$messageConditions = " '1'='1' ";
+//			$proj_ids = logged_user()->getActiveProjectIdsCSV();
+//			$messageConditions = "`project_id` in ($proj_ids)" ;
 		}
 
 		if (!isset($tag) || $tag == '' || $tag == null) {
@@ -291,9 +304,11 @@ class MessageController extends ApplicationController {
 				TABLE_PREFIX . "project_messages.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMessages' ) > 0 ";
 		}
-			
+		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
+
 		return ProjectMessages::findAll(array(
-			'conditions' => $messageConditions . " AND " . $tagstr,
+			'conditions' => $messageConditions . " AND " . $tagstr . $permissions,
 			'order' => 'updated_on DESC'));
 	}
 	
@@ -309,9 +324,6 @@ class MessageController extends ApplicationController {
 	{
 		$object = array(
 			"totalCount" => count($totMsg),
-			"events" => evt_list(),
-			"errorCode" => isset($attributes["errorCode"])?$attributes["errorCode"]:0,
-			"errorMessage" => isset($attributes["errorMessage"])?$attributes["errorMessage"]:"",
 			"messages" => array()
 		);
 		for ($i = $start; $i < $start + $limit; $i++)
@@ -320,41 +332,47 @@ class MessageController extends ApplicationController {
 				$msg = $totMsg[$i];
 				if ($msg instanceof MailContent){
 					$projectName = "";
-					$tags= "--";
 					if ($msg->getProject() instanceof Project){
 						$projectName = $msg->getProject()->getName();
-						$tags = project_object_tags($msg, $msg->getProject(), true);
 					}
+					$text = $msg->getBodyPlain();
+					if (strlen($text) > 300)
+						$text = substr($text,0,300) . "...";
 					$object["messages"][] = array(
 					    "id" => $i,
 						"object_id" => $msg->getId(),
 						"type" => 'email',
+						"hasAttachment" => $msg->getHasAttachments(),
 						"accountId" => $msg->getAccountId(),
 						"accountName" => $msg->getAccount()->getName(),
 						"title" => $msg->getSubject(),
-						"text" => $msg->getBodyPlain(),
+						"text" => $text,
 						"date" => $msg->getSentDate()->getTimestamp(),
 						"projectId" => $msg->getProjectId(),
 						"projectName" => $projectName,
 						"userId" => $msg->getAccount()->getOwner()->getId(),
 						"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
-						"tags" => $tags
+						"tags" => project_object_tags($msg)
 					);
 				} else if ($msg instanceof ProjectMessage){
+					$text = $msg->getText();
+					if (strlen($text) > 300)
+						$text = substr($text,0,300) . "...";
 					$object["messages"][] = array(
 					    "id" => $i,
 						"object_id" => $msg->getId(),
 						"type" => 'message',
+						"hasAttachment" => false,
 						"accountId" => 0,
 						"accountName" => '',
 						"title" => $msg->getTitle(),
-						"text" => $msg->getText(),
+						"text" => $text,
 						"date" => $msg->getUpdatedOn()->getTimestamp(),
 						"projectId" => $msg->getProjectId(),
 						"projectName" => $msg->getProject()->getName(),
 						"userId" => $msg->getCreatedById(),
 						"userName" => $msg->getCreatedBy()->getDisplayName(),
-						"tags" => project_object_tags($msg, $msg->getProject(), true)
+						"tags" => project_object_tags($msg)
 					);
 				}
 			}
@@ -376,59 +394,59 @@ class MessageController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 
-	/**
-	 * Return project messages
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function index() {
-		$this->addHelper('textile');
-
-		$page = (integer) array_var($_GET, 'page', 1);
-		if($page < 0) $page = 1;
-		if(active_project()){
-			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-			array('`project_id` = ?', active_project()->getId()) :
-			array('`project_id` = ? AND `is_private` = ?', active_project()->getId(), 0);
-		}
-		else{ // all projects selected
-			$ids=logged_user()->getActiveProjectIdsCSV();
-			$ids='('.$ids.')';
-			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-			array('`project_id` in ' . $ids) :
-			array('`project_id` in ' . $ids . ' AND `is_private` = ?', 0);
-		}
-
-		list($messages, $pagination) = ProjectMessages::paginate(
-		array(
-          'conditions' => $conditions,
-          'order' => '`created_on` DESC'
-          ),
-          config_option('messages_per_page', 10),
-          $page
-          ); // paginate
-
-		if(active_project()){
-			$important=active_project()->getImportantMessages();
-		}
-		else{
-			$empty = true;
-			$projs = logged_user()->getActiveProjects();
-			foreach ($projs as $proj){
-				if($empty)				
-					$important = $proj->getImportantMessages();
-				else
-					$important [] = $proj->getImportantMessages();
-			}
-		}
-		tpl_assign('messages', $messages);
-		tpl_assign('messages_pagination', $pagination);
-		tpl_assign('important_messages', $important);
-
-          $this->setSidebar(get_template_path('index_sidebar', 'message'));
-	} // index
+//	/**
+//	 * Return project messages
+//	 *
+//	 * @access public
+//	 * @param void
+//	 * @return array
+//	 */
+//	function index() {
+//		$this->addHelper('textile');
+//
+//		$page = (integer) array_var($_GET, 'page', 1);
+//		if($page < 0) $page = 1;
+//		if(active_project()){
+//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
+//			array('`project_id` = ?', active_project()->getId()) :
+//			array('`project_id` = ? AND `is_private` = ?', active_project()->getId(), 0);
+//		}
+//		else{ // all projects selected
+//			$ids=logged_user()->getActiveProjectIdsCSV();
+//			$ids='('.$ids.')';
+//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
+//			array('`project_id` in ' . $ids) :
+//			array('`project_id` in ' . $ids . ' AND `is_private` = ?', 0);
+//		}
+//
+//		list($messages, $pagination) = ProjectMessages::paginate(
+//		array(
+//          'conditions' => $conditions,
+//          'order' => '`created_on` DESC'
+//          ),
+//          config_option('messages_per_page', 10),
+//          $page
+//          ); // paginate
+//
+//		if(active_project()){
+//			$important=active_project()->getImportantMessages();
+//		}
+//		else{
+//			$empty = true;
+//			$projs = logged_user()->getActiveProjects();
+//			foreach ($projs as $proj){
+//				if($empty)				
+//					$important = $proj->getImportantMessages();
+//				else
+//					$important [] = $proj->getImportantMessages();
+//			}
+//		}
+//		tpl_assign('messages', $messages);
+//		tpl_assign('messages_pagination', $pagination);
+//		tpl_assign('important_messages', $important);
+//
+//          $this->setSidebar(get_template_path('index_sidebar', 'message'));
+//	} // index
 
 	/**
 	 * View single message
@@ -443,18 +461,20 @@ class MessageController extends ApplicationController {
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$message->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('message'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
 
-		$this->setSidebar(get_template_path('view_sidebar', 'message'));
+//		$this->setSidebar(get_template_path('view_sidebar', 'message'));
 	} // view
 
 	/**
@@ -566,7 +586,7 @@ class MessageController extends ApplicationController {
 				} // if
 
 				$message->setNew(true);
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 				
 			} // try
@@ -588,11 +608,13 @@ class MessageController extends ApplicationController {
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$message->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$message_data = array_var($_POST, 'message');
@@ -644,7 +666,7 @@ class MessageController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -661,12 +683,14 @@ class MessageController extends ApplicationController {
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$message->canUpdateOptions(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('message');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$message_data = array_var($_POST, 'message');
@@ -704,11 +728,13 @@ class MessageController extends ApplicationController {
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$message->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -798,12 +824,14 @@ class MessageController extends ApplicationController {
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			ajx_current("start");
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$message->canAddComment(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$comment = new MessageComment();
@@ -838,7 +866,7 @@ class MessageController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 
@@ -860,17 +888,20 @@ class MessageController extends ApplicationController {
 		if(!($comment instanceof MessageComment)) {
 			flash_error(lang('comment dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$message = $comment->getMessage();
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			ajx_current("start");
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$comment->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$comment_data = array_var($_POST, 'comment');
@@ -903,7 +934,7 @@ class MessageController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -922,17 +953,20 @@ class MessageController extends ApplicationController {
 		if(!($comment instanceof MessageComment)) {
 			flash_error(lang('comment dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$message = $comment->getMessage();
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			ajx_current("start");
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$comment->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -947,7 +981,7 @@ class MessageController extends ApplicationController {
 
 		} catch(Exception $e) {
 			DB::rollback();
-			flash_error($e);
+			flash_error($e->getMessage());
 			ajx_current("empty");
 		} // try
 

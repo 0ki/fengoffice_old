@@ -126,8 +126,26 @@
 		}
 		return array($succ, $err);
 	}
-  
-  
+	
+	function tagContacts($tag, $ids){
+		$err = $succ = 0;
+		$idsCSV = "";
+		foreach ($ids as $id)
+			$idsCSV .= ','.$id;
+		if ($idsCSV != ""){
+			$idsCSV = substr($idsCSV, 1);
+			$contacts = Contacts::findAll(array('conditions' => 'id in (' . $idsCSV .')'));
+			foreach ($contacts as $contact){
+				try {	
+					Tags::addObjectTag($tag,$contact);	
+					$succ++;
+				} catch (Exception $e) {
+					$err ++;
+				}
+			}
+		}
+		return array($succ, $err);
+	}
   } // Contacts 
   
 ?>

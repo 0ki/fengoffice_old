@@ -32,10 +32,25 @@
     	$this->addHelper('textile');
     	
     	$email = MailContents::findById(get_id());
+    	if (!$email instanceof MailContent){
+    		flash_error(lang('email dnx'));
+			ajx_current("empty");
+			return;
+    	}
+    	if ($email->getIsDeleted()){
+    		flash_error(lang('email dnx deleted'));
+			ajx_current("empty");
+			return;
+    	}
+    	if (!$email->canView(logged_user())){
+    		flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+    	}
+    	
         MailUtilities::parseMail($email->getContent(),$decoded,$parsedEmail,$warnings);
     	tpl_assign('email', $email);
         tpl_assign('parsedEmail', $parsedEmail);
-        
         if ($email->getIsClassified()){
     		tpl_assign('project', $email->getProject());
         }
@@ -50,6 +65,18 @@
     */
     function delete() {
     	$email = MailContents::findById(get_id());
+    	if (!$email instanceof MailContents || $email->getIsDeleted()){
+    		flash_error(lang('email dnx'));
+			ajx_current("empty");
+			return;
+    	}
+    	
+    	if (!$email->canDelete(logged_user())){
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+    	}
+    	
     	$account = $email->getAccount();
     	$email->deleteContents();
     	try
@@ -98,21 +125,35 @@
     function classify()
     {
       $email = MailContents::findById(get_id());
-      MailUtilities::parseMail($email->getContent(),$decoded,$parsedEmail,$warnings);
-      
+    	if (!$email instanceof MailContent){
+    		flash_error(lang('email dnx'));
+			ajx_current("empty");
+			return;
+    	}
+    	if ($email->getIsDeleted()){
+    		flash_error(lang('email dnx deleted'));
+			ajx_current("empty");
+			return;
+    	}
       if(!$email->canEdit(logged_user())) {
         flash_error(lang('no access permissions'));
         ajx_current("empty");
+        return;
       } // if
-    
+      
+      MailUtilities::parseMail($email->getContent(),$decoded,$parsedEmail,$warnings);
+      
       $projects = logged_user()->getActiveProjects();
       tpl_assign('projects', $projects);
       
       $classification_data = array_var($_POST, 'classification');
-      tpl_assign('classification_data', $classification_data);
-      tpl_assign('email', $email);
-      tpl_assign('parsedEmail', $parsedEmail);
-      
+      if(!is_array($classification_data)) {
+			$tag_names = $email->getTagNames();
+			$classification_data = array(
+          'tag' => is_array($tag_names) ? implode(', ', $tag_names) : '',
+			); // array
+		} // if
+		
       if(is_array(array_var($_POST, 'classification'))){
       	try{
       		$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
@@ -124,7 +165,7 @@
 	      		$email->save();
 	      		DB::commit();
 	      		
-	      		$csv = array_var($classification_data, 'tag_'.$project_id);
+	      		$csv = array_var($classification_data, 'tag');
 	      		$email->setTagsFromCSV($csv);
 	      		
 	      		//Classify attachments
@@ -142,20 +183,16 @@
 	      				$file->setFilename($att["FileName"]);
 						$file->setIsVisible(true);
 	      				$file->setProjectId($project->getId());
-	
-	      				if(!logged_user()->isMemberOfOwnerCompany()) {
-	      					$file->setIsPrivate(false);
-	      					$file->setIsImportant(false);
-	      					$file->setCommentsEnabled(true);
-	      					$file->setAnonymousCommentsEnabled(false);
-	      				} // if
+	      				$file->setIsPrivate(false);
+      					$file->setIsImportant(false);
+      					$file->setCommentsEnabled(true);
+      					$file->setAnonymousCommentsEnabled(false);
 	
 	      				try
 	      				{
 	      					DB::beginWork();
 	      					$file->save();
 	      					DB::commit();
-	      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
 	
 	      					$file->setTagsFromCSV($csv);
 	      					$ext = substr($att["FileName"],strrpos($att["FileName"],'.')+1);
@@ -167,11 +204,13 @@
 	      					"size" => filesize($tempFileName));
 	      					
 	      					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
+	      					$email->linkObject($file);
+	      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
 	      					
 	      					// Error...
 	      				} catch(Exception $e) {
 	      					DB::rollback();
-	      					flash_error($e);
+	      					flash_error($e->getMessage());
 							ajx_current("empty");
 	      				}
 	      				unlink($tempFileName);
@@ -188,10 +227,18 @@
           // Error...
       	} catch(Exception $e) {
           DB::rollback();
-          flash_error($e);
+          flash_error($e->getMessage());
 		  ajx_current("empty");
         } // try
+      } else {
+      	if ($email->getProjectId() > 0)
+      		$classification_data["project_id"] = $email->getProjectId();
+      	else
+      		$classification_data["project_id"] = active_or_personal_project()->getId();
       }
+      tpl_assign('classification_data', $classification_data);
+      tpl_assign('email', $email);
+      tpl_assign('parsedEmail', $parsedEmail);
     }
     
     function checkFileWritability($classification_data, $parsedEmail){
@@ -297,12 +344,14 @@
       $mailAccount = MailAccounts::findById(get_id());
       if(!($mailAccount instanceof MailAccount)) {
         flash_error(lang('mailAccount dnx'));
-        $this->redirectTo('mail');
+        ajx_current("empty");
+        return;
       } // if
       
       if(!$mailAccount->canEdit(logged_user())) {
         flash_error(lang('no access permissions'));
-        $this->redirectTo('mailAccount');
+        ajx_current("empty");
+        return;
       } // if
       
       $mailAccount_data = array_var($_POST, 'mailAccount');
@@ -337,7 +386,8 @@
         // Error...
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          ajx_current("empty");
+          flash_error($e->getMessage());
         } // try
       } // if
     } // edit

@@ -83,7 +83,7 @@
   <div class="formBlock">
     <div>
       <?php echo label_tag(lang('is administrator'), null, true) ?>
-      <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no')) ?>
+      <?php echo yes_no_widget('is_admin', 'userFormIsAdmin', $user->isAdministrator(), lang('yes'), lang('no')) ?>
     </div>
     
     <div>
@@ -92,7 +92,6 @@
     </div>
   </div>
 <?php } else { ?>
-  <input type="hidden" name="user[is_admin]" value="0" />
   <input type="hidden" name="user[auto_assign]" value="0" />
 <?php } // if ?>
   

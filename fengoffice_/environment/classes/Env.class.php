@@ -119,7 +119,7 @@ class Env {
 			$response = AjaxResponse::instance();
 			if (!$response->hasCurrent()) {
 				// set the current content
-				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel());
+				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel($controller_class, $action));
 			}
 			$response->setEvents(evt_pop());
 			$error = flash_pop('error');

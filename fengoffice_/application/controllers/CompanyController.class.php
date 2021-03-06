@@ -33,12 +33,14 @@ class CompanyController extends ApplicationController {
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(ROOT_URL);
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!logged_user()->canSeeCompany($company)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(ROOT_URL);
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('company', $company);
@@ -55,13 +57,15 @@ class CompanyController extends ApplicationController {
 
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectTo('administration');
+			ajx_current("empty");
+			return;
 		} // if
 		$contacts = $company->getContacts();
 
@@ -83,7 +87,8 @@ class CompanyController extends ApplicationController {
 
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		// Owner company
@@ -126,7 +131,8 @@ class CompanyController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 
@@ -143,7 +149,8 @@ class CompanyController extends ApplicationController {
 
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = new Company();
@@ -163,11 +170,12 @@ class CompanyController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success add client', $company->getName()));
-				$this->redirectTo('administration', 'clients');
-
+				ajx_current("start");
+				evt_add("company added", array("id" => $company->getId(), "name" => $company->getName()));
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // add_client
@@ -183,13 +191,15 @@ class CompanyController extends ApplicationController {
 
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('client dnx'));
-			$this->redirectTo('administration', 'clients');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company_data = array_var($_POST, 'company');
@@ -229,7 +239,8 @@ class CompanyController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_client
@@ -243,13 +254,15 @@ class CompanyController extends ApplicationController {
 	function delete_client() {
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('client dnx'));
-			$this->redirectTo('administration', 'clients');
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -259,12 +272,12 @@ class CompanyController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete client', $company->getName()));
+			$this->redirectTo('administration', 'clients');
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete client'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectTo('administration', 'clients');
 	} // delete_client
 
 	/**
@@ -276,24 +289,28 @@ class CompanyController extends ApplicationController {
 	function update_permissions() {
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(get_url('administration'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		if($company->isOwner()) {
 			flash_error(lang('error owner company has all permissions'));
-			$this->redirectToReferer(get_url('administration'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$projects = Projects::getAll(Projects::ORDER_BY_NAME);
 		if(!is_array($projects) || !count($projects)) {
 			flash_error(lang('no projects in db'));
-			$this->redirectToUrl($company->getViewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('projects', $projects);
@@ -346,13 +363,15 @@ class CompanyController extends ApplicationController {
 	function edit_logo() {
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(get_url('administration', 'clients'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('company', $company);
@@ -400,12 +419,9 @@ class CompanyController extends ApplicationController {
 				);
 				tpl_assign("object", $object);
 			} catch(Exception $e) {
-				$object = array(
-					"errorCode" => $e->getCode() || 1,
-					"errorMessage" => $e->getMessage()
-				);
-				tpl_assign("object", $object);
+				ajx_current("empty");
 				DB::rollback();
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_logo
@@ -419,13 +435,15 @@ class CompanyController extends ApplicationController {
 	function delete_logo() {
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(get_url('administration', 'clients'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -436,12 +454,12 @@ class CompanyController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete company logo'));
+			$this->redirectToUrl($company->getEditLogoUrl());
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete company logo'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectToUrl($company->getEditLogoUrl());
 	} // delete_logo
 
 	/**
@@ -453,7 +471,8 @@ class CompanyController extends ApplicationController {
 	function hide_welcome_info() {
 		if(!logged_user()->isAdministrator(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -461,11 +480,12 @@ class CompanyController extends ApplicationController {
 			owner_company()->save();
 
 			flash_success(lang('success hide welcome info'));
+			$this->redirectTo('dashboard');
 		} catch(Exception $e) {
 			flash_error(lang('error hide welcome info'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectTo('dashboard');
 	} // hide_welcome_info
 
 } // CompanyController

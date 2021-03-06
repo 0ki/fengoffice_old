@@ -472,28 +472,116 @@
     function setLastActivity($value) {
       return $this->setColumnValue('last_activity', $value);
     } // setLastActivity() 
-    
+     
     /**
-    * Return value of 'is_admin' field
+    * Return value of 'can_edit_company_data' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getIsAdmin() {
-      return $this->getColumnValue('is_admin');
-    } // getIsAdmin()
+    function  getCanEditCompanyData() {
+      return $this->getColumnValue('can_edit_company_data');
+    } //  getCanEditCompanyData()   
     
     /**
-    * Set value of 'is_admin' field
+    * Set value of 'can_edit_company_data' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setCanEditCompanyData($value) {
+      return $this->setColumnValue('can_edit_company_data', $value);
+    } //  setCanEditCompanyData() 
+     
+    /**
+    * Return value of 'can_manage_Security' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageSecurity() {
+      return $this->getColumnValue('can_manage_security');
+    } // getCanManageSecurity()
+    
+    /**
+    * Set value of 'can_manage_Security' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageSecurity($value) {
+      return $this->setColumnValue('can_manage_security', $value);
+    } // getCanManageSecurity()
+    
+    /**
+    * Return value of 'can_manage_contacts' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageContacts() {
+      return $this->getColumnValue('can_manage_contacts');
+    } // getCanManageContacts()
+    
+    /**
+    * Set value of 'can_manage_contacts' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageContacts($value) {
+      return $this->setColumnValue('can_manage_contacts', $value);
+    } // setCanManageContacts()
+    
+    /**
+    * Return value of 'can_manage_Workspaces' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageWorkspaces() {
+      return $this->getColumnValue('can_manage_workspaces');
+    } // getCanManageWorkspaces()
+    
+    /**
+    * Set value of 'can_manage_Workspaces' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setIsAdmin($value) {
-      return $this->setColumnValue('is_admin', $value);
-    } // setIsAdmin() 
+    function setCanManageWorkspaces($value) {
+      return $this->setColumnValue('can_manage_workspaces', $value);
+    } // setCanManageWorkspaces() 
+    
+    /**
+    * Return value of 'can_manage_Configuration' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageConfiguration() {
+      return $this->getColumnValue('can_manage_configuration');
+    } // getCanManageConfiguration()
+    
+    /**
+    * Set value of 'can_manage_Configuration' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanManageConfiguration($value) {
+      return $this->setColumnValue('can_manage_configuration', $value);
+    } // setCanManageConfiguration() 
     
     /**
     * Return value of 'auto_assign' field

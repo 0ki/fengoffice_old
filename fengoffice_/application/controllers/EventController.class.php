@@ -5,7 +5,8 @@
 *
 * @version 1.0
 * @author Marcos Saiz <marcos.saiz@gmail.com>
-* @adaptd from Reece calendar <http://reececalendar.sourceforge.net/>
+* @adapted from Reece calendar <http://reececalendar.sourceforge.net/>.
+* Acknowledgements at the bottom.
 */
 
 class EventController extends ApplicationController {
@@ -131,7 +132,7 @@ class EventController extends ApplicationController {
 	 * 	   Add's an event to the database if required fields are
 	 * 	   all provided, else it produces an error.
 	 * */
-	function cal_submit_event($day = NULL, $month = NULL, $year = NULL){
+	private function cal_submit_event($day = NULL, $month = NULL, $year = NULL){
 		global $cal_db;
 		if(array_var($_POST,'modify')){
 			if(!is_numeric($_POST['id'])) return CAL_MISSING_INFO;
@@ -140,16 +141,16 @@ class EventController extends ApplicationController {
 		} else $modify = 0;
 		// get the day
 		if( $day==NULL AND is_numeric($_SESSION['cal_day'])) $day   = $_SESSION['cal_day'];
-		elseif(is_numeric($_POST['day'])) $day = $_POST['day'];
-		else return "You did not enter the Day: $day";
+		elseif($day==NULL AND is_numeric($_POST['day'])) $day = $_POST['day'];
+		elseif($day==NULL) return "You did not enter the Day: $day";
 		// get month
 		if($month==NULL AND is_numeric($_SESSION['cal_month'])) $month = $_SESSION['cal_month'];
-		elseif($_POST['month']!="" AND is_numeric($_POST['month'])) $month = $_POST['month'];
-		else return "You did not enter the month";
+		elseif($month==NULL AND $_POST['month']!="" AND is_numeric($_POST['month'])) $month = $_POST['month'];
+		elseif($month==NULL ) return "You did not enter the month";
 		// get year
 		if($year==NULL AND is_numeric($_SESSION['cal_year'])) $year  = $_SESSION['cal_year'];
-		elseif($_POST['year']!="" AND is_numeric($_POST['year'])) $year = $_POST['year'];
-		else return "You did not enter the year";
+		elseif($year==NULL AND $_POST['year']!="" AND is_numeric($_POST['year'])) $year = $_POST['year'];
+		elseif($year==NULL  ) return "You did not enter the year";
 		// get the posted times
 		if(isset($_POST['hour']) AND $_POST['hour']!="" AND is_numeric($_POST['hour'])) $hour = $_POST['hour'];
 		//else return "You did not enter the Hour";
@@ -178,7 +179,6 @@ class EventController extends ApplicationController {
 		$repeat_m = 0;
 		$repeat_y = 0;
 		$repeat_h = 0;
-//		$rend = null;
 		$rend = "0000-00-00";		
 		// get the options
 		$forever = 0;
@@ -260,8 +260,8 @@ class EventController extends ApplicationController {
 		if(array_var($_POST,'alias')) $alias = $_POST['alias'];
 		else $alias = "";
 		// get event type:  2=full day, 3=time/duratin not specified, 4=time not specified
-		$typeofevent = array_var($_POST,'eventtype');
-		if(!is_numeric($typeofevent) OR $typeofevent!=2 OR $typeofevent!=4) $typeofevent = 0;
+		$typeofevent = array_var($_POST,'type_id');
+		if(!is_numeric($typeofevent) OR ($typeofevent!=1 AND $typeofevent!=2 AND $typeofevent!=3)) $typeofevent = 1;
 		if(!array_var($_POST,'usetimeandduration')){
 			$typeofevent = 3; 
 			$hour = 0;
@@ -270,27 +270,22 @@ class EventController extends ApplicationController {
 		// calculate timestamp and durationstamp
 		// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
 		$timestamp = date('Y-m-d H:i:s', mktime($hour,$minute,0,$month,$day,$year));
-		$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour,$minute + $durationmin, 0, array_var($_POST,'cal_origmonth'), array_var($_POST,'cal_origday'), array_var($_POST,'cal_origyear')));
+		$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour,$minute + $durationmin, 0,$month,$day,$year)); 
 		// organize the data expected by the query function
 		$data = array();
 		$data['repeat_num'] = $rnum;
-		$data['type_id'] = $type;
+		$data['eventtype'] = $type;
 		$data['repeat_h'] = $repeat_h;
 		$data['repeat_d'] = $repeat_d;
 		$data['repeat_m'] = $repeat_m;
 		$data['repeat_y'] = $repeat_y;
 		$data['repeat_forever'] = $forever;
-//		if(isset($oend) && $oend!="") {
-			$data['repeat_end'] =  $oend;
-//		}
-//		else{
-//			$data['repeat_end'] =  null;
-//		}
+		$data['repeat_end'] =  $oend;
 		$data['start'] = $timestamp;
 		$data['subject'] = $subject;
 		$data['private'] = $private;
 		$data['description'] = $description;
-		$data['eventtype'] = $typeofevent;
+		$data['type_id'] = $typeofevent;
 		$data['duration'] = $durationstamp;
 		// run the query to set the event data 
 		$projId = array_var(array_var($_POST,'event'),'project_id');                    
@@ -340,7 +335,7 @@ class EventController extends ApplicationController {
 		if(!$result) return CAL_EVENT_UPDATE_FAILED;*/
 		// returning NULL means it was a success (no error message)
 		return NULL;
-	}
+	} //cal_submit_event
 
 	function submitevent(){
 		//check auth
@@ -348,24 +343,16 @@ class EventController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 	    }
-		$sub_error = $this->cal_submit_event();
+	    $_SESSION['cal_day'] = $day = array_var($_POST,'start_day');
+	    $_SESSION['cal_month'] = $month = array_var($_POST,'start_month');
+	    $_SESSION['cal_year'] = $year = array_var($_POST,'start_year');
+		$sub_error = $this->cal_submit_event($day,$month,$year);		
 		if(isset($sub_error) && $sub_error!=null && $sub_error!="") 
 		{
 			echo $this->cal_error($sub_error) ;			
 		}
 		$this->viewdate();
-		/*$_SESSION['cal_action'] = "viewdate";
-		$this->setTemplate('viewdate');*/
-	}
-	function admin(){
-		//check auth
-	    if(!logged_user()->isAdministrator()){	    	
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
-	    }
-		$this->setTemplate('admin');		
-	}
-	
+	}	
 	
 	/**
 	 * add event type
@@ -476,7 +463,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.13 2008/05/16 14:25:19 msaiz Exp $
+ *   $Id: EventController.class.php,v 1.16 2008/05/27 19:18:08 msaiz Exp $
  *
  ***************************************************************************/
 

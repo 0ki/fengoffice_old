@@ -21,31 +21,151 @@
 }
 /** /autoCompleter **/
 
-.ico-help {
-	background-image: url(../../images/16x16/help.png);
-}
-
 .ico-account {
 	background-image: url(../../images/16x16/account.png);
 }
-
-.ico-search {
-	background-image: url(../../images/16x16/search.png);
+.ico-addtag {
+	background-image: url(../../images/16x16/tags.png) !important;
 }
-
 .ico-administration {
 	background-image: url(../../images/16x16/administration.png);
 }
-
-.ico-edit {
-	background-image: url(../../images/16x16/new.png) !important;
+.ico-attachment {
+	background-image: url(../../images/16x16/attach.png) !important;
+}
+.ico-back {
+	background-image: url(../../images/16x16/back.png) !important;
+}
+.ico-checkin {
+	background-image: url(../../images/16x16/checkin.png) !important;
+}
+.ico-checkout {
+	background-image: url(../../images/16x16/checkout.png) !important;
+}
+.ico-classify {
+	background-image: url(../../images/16x16/classify.png) !important;
+}
+.ico-contact {
+	background-image: url(../../images/16x16/contacts.png) !important;
 }
 .ico-delete {
 	background-image: url(../../images/16x16/del.png) !important;
 }
+.ico-doc {
+	background-image: url(../../images/16x16/doc.png) !important;
+}
+.ico-download {
+	background-image: url(../../images/16x16/download.png) !important;
+}
+.ico-edit {
+	background-image: url(../../images/16x16/new.png) !important;
+}
+.ico-email {
+	background-image: url(../../images/16x16/email.png) !important;
+}
+.ico-email_menu {
+	background-image: url(../../images/16x16/messages.png) !important;
+}
+.ico-event {
+	background-image: url(../../images/16x16/calendar.png) !important;
+}
+.ico-help {
+	background-image: url(../../images/16x16/help.png);
+}
+.ico-hide_messages {
+	background-image: url(../../images/16x16/hide_messages.png) !important;
+}
+.ico-message {
+	background-image: url(../../images/16x16/message.png) !important;
+}
+.ico-milestone {
+	background-image: url(../../images/16x16/milestone.png) !important;
+}
+.ico-more {
+	background-image: url(../../images/16x16/more.png) !important;
+}
+.ico-new {
+	background-image: url(../../images/16x16/new.png) !important;
+}
+.ico-properties {
+	background-image: url(../../images/16x16/properties.png) !important;
+}
+.ico-prsn {
+	background-image: url(../../images/16x16/prsn.png) !important;
+}
+.ico-refresh {
+	background-image: url(../../images/16x16/refresh.png) !important;
+}
+.ico-revisions {
+	background-image: url(../../images/16x16/revisions.png) !important;
+}
+.ico-search {
+	background-image: url(../../images/16x16/search.png);
+}
+.ico-slideshow {
+	background-image: url(../../images/16x16/slideshow.png) !important;
+}
+.ico-sprd {
+	background-image: url(../../images/16x16/sprd.png) !important;
+}
+.ico-tag {
+	background-image: url(../../images/16x16/tags.png) !important;
+}
+.ico-task {
+	background-image: url(../../images/16x16/tasks.png) !important;
+}
 .ico-upload {
 	background-image: url(../../images/16x16/upload.png) !important;
 }
+.ico-view_options {
+	background-image: url(../../images/16x16/view.png) !important;
+}
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
+}
+.ico-picture {
+	background-image: url(../../images/16x16/picture.png) !important;
+}
+.ico-add {
+	background-image: url(../../images/16x16/add.png) !important;
+}
+.ico-today {
+	background-image: url(../../images/16x16/today.png) !important;
+}
+.ico-prevmonth {
+	background-image: url(../../images/16x16/prevmonth.png) !important;
+}
+.ico-nextmonth {
+	background-image: url(../../images/16x16/nextmonth.png) !important;
+}
+
+
+.db-ico {
+	height: 16px;
+	width: 16px;
+}
+.x-grid3-col-icon {
+	padding: 1px 3px;
+}
+
+.x-tab-strip-active {
+	cursor: pointer !important;
+}
+.x-tab-strip-active * {
+	cursor: pointer !important;
+}
+.ws-color-chooser, .ws-color-chooser-selected {
+	cursor: pointer;
+	margin-left: 5px;
+}
+.ws-color-chooser-selected {
+	border: 2px solid deepskyblue;
+}
+.x-grid3-scroller .inner-message {
+	position: absolute;
+	width: 100%;
+	padding-top: 10px;
+	color: #777777;
+	font-size: 14px;
+	text-align: center;
 }

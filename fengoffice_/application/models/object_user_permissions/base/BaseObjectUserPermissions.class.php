@@ -15,7 +15,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'permission' => DATA_TYPE_INTEGER);
+    static private $columns = array('rel_object_manager' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'can_read' => DATA_TYPE_BOOLEAN, 'can_write' => DATA_TYPE_BOOLEAN);
   
     /**
     * Construct

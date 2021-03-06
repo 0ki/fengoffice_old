@@ -85,6 +85,7 @@
 				<button type="submit"><?php echo lang('search button caption') ?></button>
 				<input type="hidden" name="c" value="project" />
 				<input type="hidden" name="a" value="search" />
+				<input type="hidden" name="current" value="search" />
 			</form>
 		</div>
 		<?php echo render_system_notices(logged_user()) ?>
@@ -115,22 +116,10 @@ og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 //og.initialURL = '<?php //echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 //og.initialURL = 'prueba.php';
 
-// some event handlers
-og.eventManager.addListener('tag changed', 
- 	function (tag){ 
- 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel')
- 			og.openLink('<?php echo get_url('event')?>',
- 				{caller:'calendar-panel',
- 				get:{tag:tag.name}}
- 			);
- 	}
-);
-og.eventManager.addListener('debug',
-	function (text){
-		og.msg(lang('debug'), text);
-	}
-);
 </script>
+
+<?php include_once(Env::getLayoutPath("listeners"));?>
+
 
 </body>
 </html>

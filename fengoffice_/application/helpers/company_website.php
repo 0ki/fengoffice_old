@@ -79,6 +79,7 @@
   define('ADMINISTRATION_TAB_MEMBERS', 'members');
   define('ADMINISTRATION_TAB_PROJECTS', 'projects');
   define('ADMINISTRATION_TAB_CLIENTS', 'clients');
+  define('ADMINISTRATION_TAB_GROUPS', 'groups');
   define('ADMINISTRATION_TAB_CONFIGURATION', 'config');
   define('ADMINISTRATION_TAB_TOOLS', 'tools');
   define('ADMINISTRATION_TAB_UPGRADE', 'upgrade');

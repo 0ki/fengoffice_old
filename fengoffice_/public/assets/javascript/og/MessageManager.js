@@ -13,14 +13,14 @@ og.MessageManager = function() {
 	this.store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-			url: og.getUrl('message', 'list_all')
+			url: og.getUrl('message', 'list_all', {ajax:true})
 		})),
 		reader: new Ext.data.JsonReader({
 			root: 'messages',
 			totalProperty: 'totalCount',
 			id: 'id',
 			fields: [
-				'object_id', 'type', 'accountId', 'accountName', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
+				'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
 				'projectId', 'projectName', 'userId', 'userName', 'tags'
 			]
 		}),
@@ -34,37 +34,64 @@ og.MessageManager = function() {
 				}
 				var d = this.reader.jsonData;
 				og.processResponse(d);
+				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+				if (d.totalCount == 0) {
+					if (tag) {
+						this.manager.showMessage(lang("no objects with tag message", lang("messages"), ws, tag));
+					} else {
+						this.manager.showMessage(lang("no objects message", lang("messages"), ws));
+					}
+				} else {
+					this.manager.showMessage("");
+				}
+				og.hideLoading();
+			},
+			'beforeload': function() {
+				og.loading();
+				return true;
+			},
+			'loadexception': function() {
+				og.hideLoading();
 			}
 		}
 	});
 	this.store.setDefaultSort('date', 'desc');
+	this.store.manager = this;
 
 	function renderName(value, p, r) {
 		if (r.data.type == 'message')
 			return String.format(
-					'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>',
-					value, og.getUrl('message', 'view', {id: r.data.object_id}));
+					'<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
 		else
 			return String.format(
-					'<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>',
-					value, og.getUrl('mail', 'view', {id: r.data.object_id}));
+					'<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.text));
 	}
 
 	function renderIcon(value, p, r) {
-		return String.format('<div class="mm-ico {0}" />', value);
-	}
-	
-	function renderType(value, p, r) {
 		if (value == "email")
 			if (r.data.projectId > 0)
-				return String.format('<div class="mm-ico mm-ico-email"></div>');
+				return String.format('<div class="db-ico ico-email"></div>');
 			else
-				return String.format('<a href="#" onclick="og.openLink(\'{0}\')"><div class="mm-ico mm-ico-classify"></div></a>'
-						, og.getUrl('mail', 'classify', {id: r.data.object_id}));
+				return String.format('<a href="#" onclick="og.openLink(\'{0}\')" title={1}><div class="db-ico ico-classify"></div></a>'
+						, og.getUrl('mail', 'classify', {id: r.data.object_id}), lang('classify'));
 		else
-			return String.format('<div class="mm-ico mm-ico-message"></div>');
+			return String.format('<div class="db-ico ico-message"></div>');
+	}
+	
+	function renderType(value, p, r){
+		return String.format('<i>' + lang(value) + '</i>')
 	}
 
+	function renderAttachment(value, p, r){
+		if (value)
+			return String.format('<div class="db-ico ico-attachment"></div>');
+		else
+			return '';
+	}
+	
 	function renderUser(value, p, r) {
 		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.userId}));
 	}
@@ -82,6 +109,9 @@ og.MessageManager = function() {
 	}
 	
 	function renderDate(value, p, r) {
+		if (!value) {
+			return "";
+		}
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
 			return value.dateFormat('M j');
@@ -137,21 +167,43 @@ og.MessageManager = function() {
 	
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
-			id: 'type',
+			id: 'icon',
 			header: '&nbsp;',
 			dataIndex: 'type',
 			width: 28,
-        	renderer: renderType,
+        	renderer: renderIcon,
         	sortable: false,
         	fixed:true,
         	resizable: false,
         	hideable:false,
         	menuDisabled: true
 		},{
+			id: 'hasAttachment',
+			header: '&nbsp;',
+			dataIndex: 'hasAttachment',
+			width: 24,
+        	renderer: renderAttachment,
+        	sortable: false,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
+			id: 'type',
+			header: lang('type'),
+			dataIndex: 'type',
+			width: 80,
+        	renderer: renderType,
+        	sortable: false,
+        	fixed:false,
+        	resizable: true,
+        	hideable:true,
+        	menuDisabled: true
+		},{
 			id: 'title',
 			header: lang("title"),
 			dataIndex: 'title',
-			width: 120,
+			width: 250,
 			sortable: false,
 			renderer: renderName
         },{
@@ -160,6 +212,7 @@ og.MessageManager = function() {
 			dataIndex: 'text',
 			renderer: renderText,
 			sortable: false,
+			hidden: true,
 			width: 250
         },{
 			id: 'account',
@@ -211,7 +264,7 @@ og.MessageManager = function() {
 			}),
 			messages: new Ext.Action({
 				text: lang('messages'),
-				iconCls: "mm-ico-message",
+				iconCls: "ico-message",
 				handler: function() {
 					og.MessageManager.instance.viewType = "messages";
 					og.MessageManager.instance.load();
@@ -219,7 +272,7 @@ og.MessageManager = function() {
 			}),
 			emails: new Ext.Action({
 				text: lang('all emails'),
-				iconCls: "mm-ico-email",
+				iconCls: "ico-email",
 				handler: function() {
 					og.MessageManager.instance.viewType = "emails";
 					og.MessageManager.instance.accountId = 0;
@@ -240,7 +293,7 @@ og.MessageManager = function() {
 			}),
 			unclassified: new Ext.Action({
 				text: lang('unclassified emails'),
-				iconCls: "mm-ico-classify",
+				iconCls: "ico-classify",
 				handler: function() {
 					og.MessageManager.instance.viewType = "unclassified";
 					og.MessageManager.instance.accountId = 0;
@@ -300,7 +353,7 @@ og.MessageManager = function() {
 			newMessage: new Ext.Action({
 				text: lang('new'),
 	            tooltip: lang('add new message'),
-	            iconCls: 'mm-ico-message',
+	            iconCls: 'ico-message',
 	            handler: function() {
 					var url = og.getUrl('message', 'add');
 					og.openLink(url, null);
@@ -309,7 +362,7 @@ og.MessageManager = function() {
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
-            iconCls: 'db-ico-tag',
+            iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
 				listeners: {
@@ -330,7 +383,7 @@ og.MessageManager = function() {
 		del: new Ext.Action({
 			text: lang('delete'),
             tooltip: lang('delete selected objects'),
-            iconCls: 'db-ico-delete',
+            iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
 				if (confirm(lang('confirm delete object'))) {
@@ -346,7 +399,7 @@ og.MessageManager = function() {
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
-            iconCls: 'db-ico-refresh',
+            iconCls: 'ico-refresh',
 			handler: function() {
 				this.store.reload();
 			},
@@ -354,7 +407,7 @@ og.MessageManager = function() {
 		}),
 		view: new Ext.Action({
 			text: lang('view'),
-            iconCls: 'mm-ico-view_options',
+            iconCls: 'ico-view_options',
 			disabled: false,
 			menu: {items: [
 				viewActions.all,
@@ -367,7 +420,7 @@ og.MessageManager = function() {
 		email: new Ext.Action({
 			text: lang('email actions'),
             tooltip: lang('more email actions'),
-            iconCls: 'mm-ico-email_menu',
+            iconCls: 'ico-email_menu',
 			disabled: false,
 			menu: {items: [
 				emailActions.checkMails,
@@ -408,7 +461,22 @@ og.MessageManager = function() {
 			'-',
 			actions.view,
 			actions.email
-		]
+		],
+		listeners: {
+			'render': {
+				fn: function() {
+					this.innerMessage = document.createElement('div');
+					this.innerMessage.className = 'inner-message';
+					var msg = this.innerMessage;
+					var elem = Ext.get(this.getEl());
+					var scroller = elem.select('.x-grid3-scroller');
+					scroller.each(function() {
+						this.dom.appendChild(msg);
+					});
+				},
+				scope: this
+			}
+		}
 	});
 	
 	og.eventManager.addListener("tag changed", function(tag) {
@@ -420,7 +488,9 @@ og.MessageManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		if (this.store.lastOptions) {
+			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		}
 	}, this);
 };
 
@@ -453,6 +523,10 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	
 	deactivate: function() {
 		this.active = false;
+	},
+	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
 	}
 });
 

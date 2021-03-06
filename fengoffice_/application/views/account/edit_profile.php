@@ -1,40 +1,13 @@
 <?php
-  
-  if($user->getId() == logged_user()->getId()) {
     set_page_title(lang('update profile'));
-    account_tabbed_navigation();
-    account_crumbs(lang('update profile'));
-  } else {
-    set_page_title(lang('update profile'));
-    if($company->isOwner()) {
-      administration_tabbed_navigation(ADMINISTRATION_TAB_COMPANY);
-      administration_crumbs(array(
-        array(lang('company'), $company->getViewUrl()),
-        array(lang('update profile'))
-      ));
-    } else {
-      administration_tabbed_navigation(ADMINISTRATION_TAB_CLIENTS);
-      administration_crumbs(array(
-        array(lang('clients'), get_url('administration', 'clients')),
-        array($company->getName(), $company->getViewUrl()),
-        array($user->getDisplayName(), $user->getCardUrl()),
-        array(lang('update profile'))
-      ));
-    } // if
-  } // if
   
   if($user->canUpdateProfile(logged_user())) {
-    add_page_action(array(
-      lang('update profile')  => $user->getEditProfileUrl(),
-      lang('change password') => $user->getEditPasswordUrl(),
-      lang('update avatar')   => $user->getUpdateAvatarUrl()
-    ));
+	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-properties');
+	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
   } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-    add_page_action(array(
-      lang('permissions')  => $user->getUpdatePermissionsUrl()
-    ));
+  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
   } // if
 
 ?>

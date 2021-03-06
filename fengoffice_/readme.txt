@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.6.2
+    About OpenGoo beta 0.6.4
     =========================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -68,4 +68,3 @@
 
     You should be finished in a matter of minutes.
     
-

@@ -18,6 +18,9 @@ og.msg =  function(title, format) {
 	this.msgCt.alignTo(document, 't-t');
 	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
 	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, s)}, true);
+	Ext.get(m).on('click', function() {
+		Ext.getDom(this).style.display = 'none';
+	}, m);
 	m.slideIn('t').pause(4).ghost("t", {remove:true});
 }
 
@@ -325,7 +328,7 @@ og.openLink = function(url, options) {
 					if (p) {
 						p.load(response.responseText);
 					} else {
-						Ext.getCmp('tabs-panel').load(response.responseText);
+						og.newTab(response.responseText);
 					}
 					if (options.postProcess) options.postProcess(true, options.responseText, e);
 				}
@@ -373,11 +376,12 @@ og.submit = function(form, callback) {
 	if(Ext.isIE){
 	   document.frames[id].name = id;
 	}
+	var currentPanel = Ext.getCmp('tabs-panel').getActiveTab();
 	function endSubmit() {
 		og.hideLoading();
 		
 		if (typeof callback == 'function') {
-			callback();
+			callback(currentPanel);
 		} else if (typeof callback == 'string') {
 			og.openLink(callback);
 		}
@@ -423,7 +427,13 @@ og.processResponse = function(data, caller) {
 				og.newTab(data.current, data.current.panel);
 			}
 		} else if (caller) {
-			Ext.getCmp(caller).load(data.current);
+			var p = Ext.getCmp(caller);
+			if (p) {
+				p.load(data.current);
+				p = Ext.getCmp('tabs-panel');
+			} else {
+				og.newTab(data.current, caller);
+			}
 		} else {
 			og.newTab(data.current);
 		}
@@ -439,12 +449,11 @@ og.newTab = function(content, id) {
 	var tp = Ext.getCmp('tabs-panel');
 	var t = new og.ContentPanel({
 		closable: true,
-		title: lang(id) || lang('new tab'),
+		title: (id?lang(id):lang('new tab')),
 		id: id || Ext.id(),
 		iconCls: (id?'ico-' + id:'ico-tab'),
 		defaultContent: content
 	});
-	//t.closable = true;
 	tp.add(t);
 	tp.setActiveTab(t);
 }
@@ -547,3 +556,4 @@ og.slideshow = function(id) {
 	var height = screen.height * 0.8;
 	window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }
+

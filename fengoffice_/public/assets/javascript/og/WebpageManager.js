@@ -9,7 +9,7 @@ og.WebpageManager = function() {
 	this.store = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-            url: og.getUrl('webpage', 'list_all')
+            url: og.getUrl('webpage', 'list_all', {ajax:true})
         })),
         reader: new Ext.data.JsonReader({
             root: 'webpages',
@@ -29,11 +29,30 @@ og.WebpageManager = function() {
 				}
 				var d = this.reader.jsonData;
 				og.processResponse(d);
+				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+				if (d.totalCount == 0) {
+					if (tag) {
+						this.manager.showMessage(lang("no objects with tag message", lang("web pages"), ws, tag));
+					} else {
+						this.manager.showMessage(lang("no objects message", lang("web pages"), ws));
+					}
+				} else {
+					this.manager.showMessage("");
+				}
+				og.hideLoading();
+			},
+			'beforeload': function() {
+				og.loading();
+				return true;
+			},
+			'loadexception': function() {
+				og.hideLoading();
 			}
 		}
     });
     this.store.setDefaultSort('name', 'asc');
-    this.store.webpageManager = this;
+    this.store.manager = this;
     
     //--------------------------------------------
     // Renderers
@@ -123,7 +142,7 @@ og.WebpageManager = function() {
 		delWebpage: new Ext.Action({
 			text: lang('delete'),
             tooltip: lang('delete selected webpages'),
-            iconCls: 'db-ico-delete',
+            iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
 				if (confirm(lang('confirm delete webpages'))) {
@@ -138,7 +157,7 @@ og.WebpageManager = function() {
 		editWebpage: new Ext.Action({
 			text: lang('edit'),
             tooltip: lang('edit selected webpage'),
-            iconCls: 'db-ico-new',
+            iconCls: 'ico-new',
 			disabled: true,
 			handler: function() {
 				var url = og.getUrl('webpage', 'edit', {id:getFirstSelectedId()});
@@ -149,7 +168,7 @@ og.WebpageManager = function() {
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
-            iconCls: 'db-ico-refresh',
+            iconCls: 'ico-refresh',
 			handler: function() {
 				this.store.reload();
 			},
@@ -158,7 +177,7 @@ og.WebpageManager = function() {
 		tag: new Ext.Action({
 			text: lang('tag'),
 	        tooltip: lang('tag selected webpages'),
-	        iconCls: 'db-ico-tag',
+	        iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
 				listeners: {
@@ -203,7 +222,22 @@ og.WebpageManager = function() {
 			actions.editWebpage,
 			'-',
 			actions.refresh
-        ]
+        ],
+		listeners: {
+			'render': {
+				fn: function() {
+					this.innerMessage = document.createElement('div');
+					this.innerMessage.className = 'inner-message';
+					var msg = this.innerMessage;
+					var elem = Ext.get(this.getEl());
+					var scroller = elem.select('.x-grid3-scroller');
+					scroller.each(function() {
+						this.dom.appendChild(msg);
+					});
+				},
+				scope: this
+			}
+		}
     });
 
 	og.eventManager.addListener("tag changed", function(tag) {
@@ -214,7 +248,9 @@ og.WebpageManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		if (this.store.lastOptions) {
+			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		}
 		
 	}, this);
 };
@@ -242,6 +278,10 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	
 	deactivate: function() {
 		this.active = false;
+	},
+	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
 	}
 });
 

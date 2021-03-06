@@ -66,7 +66,6 @@ og.TagTree = function(tags) {
 	this.tags = this.root.appendChild(
 		new Ext.tree.TreeNode({
 			text: lang('all'),
-			cls: 'tag-all',
 			expanded: true
 		})
 	);

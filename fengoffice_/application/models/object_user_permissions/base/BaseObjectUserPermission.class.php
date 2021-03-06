@@ -79,35 +79,13 @@
     } // setProjectId() 
     
     /**
-    * Return value of 'permission' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getPermission() {
-      return $this->getColumnValue('permission');
-    } // getFolderId()
-    
-    /**
-    * Set value of 'permission' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setPermission($value) {
-      return $this->setColumnValue('permission', $value);
-    } // setFolderId() 
-    
-    /**
     * Set value of 'permission' field to read and write
     *
     * @access public   
     * @return boolean
     */
     function setWritePermission() {
-      return $this->setColumnValue('permission', 2);
+      return $this->setColumnValue('can_write');
     } // setFolderId() 
     
     /**
@@ -117,8 +95,28 @@
     * @return boolean
     */
     function setReadPermission() {
-      return $this->setColumnValue('permission', 1);
+      return $this->setColumnValue('can_read');
     } // setFolderId() 
+    
+    /**
+    * get value of 'can_write' 
+    *
+    * @access public   
+    * @return boolean
+    */
+    function getWritePermission() {
+      return $this->getColumnValue('can_write');
+    } // getFolderId() 
+    
+    /**
+    * get value of 'can_read' 
+    *
+    * @access public   
+    * @return boolean
+    */
+    function getReadPermission() {
+      return $this->getColumnValue('can_read');
+    } // getFolderId()  
     
     
     /**

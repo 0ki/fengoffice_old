@@ -21,25 +21,25 @@ class MilestoneController extends ApplicationController {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
 	} // __construct
-
-	/**
-	 * List all milestones in specific (this) project
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function index() {
-		$this->addHelper('textile');
-		$project = active_or_personal_project();
-
-		tpl_assign('late_milestones', $project->getLateMilestones());
-		tpl_assign('today_milestones', $project->getTodayMilestones());
-		tpl_assign('upcoming_milestones', $project->getUpcomingMilestones());
-		tpl_assign('completed_milestones', $project->getCompletedMilestones());
-
-		$this->setSidebar(get_template_path('index_sidebar', 'milestone'));
-	} // index
+//
+//	/**
+//	 * List all milestones in specific (this) project
+//	 *
+//	 * @access public
+//	 * @param void
+//	 * @return null
+//	 */
+//	function index() {
+//		$this->addHelper('textile');
+//		$project = active_or_personal_project();
+//
+//		tpl_assign('late_milestones', $project->getLateMilestones());
+//		tpl_assign('today_milestones', $project->getTodayMilestones());
+//		tpl_assign('upcoming_milestones', $project->getUpcomingMilestones());
+//		tpl_assign('completed_milestones', $project->getCompletedMilestones());
+//
+//		$this->setSidebar(get_template_path('index_sidebar', 'milestone'));
+//	} // index
 
 	/**
 	 * Show view milestone page
@@ -54,12 +54,14 @@ class MilestoneController extends ApplicationController {
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			$this->redirectTo('milestone', 'index');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$milestone->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('milestone', $milestone);
@@ -126,7 +128,7 @@ class MilestoneController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -145,12 +147,14 @@ class MilestoneController extends ApplicationController {
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			$this->redirectTo('milestone', 'index');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$milestone->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
+			return;
 		}
 
 		$milestone_data = array_var($_POST, 'milestone');
@@ -212,7 +216,7 @@ class MilestoneController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -230,11 +234,13 @@ class MilestoneController extends ApplicationController {
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$milestone->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -264,12 +270,14 @@ class MilestoneController extends ApplicationController {
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			$this->redirectTo('milestone');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$milestone->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -283,13 +291,13 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success complete milestone', $milestone->getName()));
-
+			$this->redirectToReferer($milestone->getViewUrl());
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error complete milestone'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToReferer($milestone->getViewUrl());
 	} // complete
 
 	/**
@@ -304,11 +312,13 @@ class MilestoneController extends ApplicationController {
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$milestone->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {

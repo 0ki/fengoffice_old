@@ -13,7 +13,19 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER,'can_edit_company_data'=>DATA_TYPE_BOOLEAN,'can_manage_workspaces'=>DATA_TYPE_BOOLEAN,'can_manage_security'=>DATA_TYPE_BOOLEAN,'can_manage_configuration'=>DATA_TYPE_BOOLEAN);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'name' => DATA_TYPE_STRING, 
+    	'created_on' => DATA_TYPE_DATETIME, 
+    	'created_by_id' => DATA_TYPE_INTEGER, 
+    	'updated_on' => DATA_TYPE_DATETIME, 
+    	'updated_by_id' => DATA_TYPE_INTEGER,
+    	'can_edit_company_data'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_workspaces'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_security'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_configuration'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_contacts'=>DATA_TYPE_BOOLEAN,
+    );
   
     /**
     * Construct

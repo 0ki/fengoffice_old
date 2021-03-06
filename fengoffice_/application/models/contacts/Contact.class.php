@@ -543,7 +543,7 @@ class Contact extends BaseContact
     * @return string
     */
     function getObjectTypeName() {
-      return lang('contact');
+      return 'contact';
     } // getObjectTypeName
     
     /**
@@ -569,14 +569,11 @@ class Contact extends BaseContact
     * @return boolean
     */
     function canView(User $user) {
-      if(!$user->isMemberOfOwnerCompany()) {
-        return false; // user that is not member of owner company can't access contacts
-      } // if
-      return true;
+		return can_manage_contacts($user, true);
     } // canView
     
     /**
-     * Check if specific user can add contacts to specific project
+     * Check if specific user can add contacts
      *
      * @access public
      * @param User $user
@@ -584,10 +581,7 @@ class Contact extends BaseContact
      * @return booelean
      */
     function canAdd(User $user) {
-    	if(!$user->isMemberOfOwnerCompany()) {
-    		return false; // user that is not member of owner company can't access contacts
-    	} // if
-    	return true;
+		return can_manage_contacts($user, true);
     } // canAdd
     
     /**
@@ -598,10 +592,7 @@ class Contact extends BaseContact
     * @return boolean
     */
     function canEdit(User $user) {
-    	if(!$user->isMemberOfOwnerCompany()) {
-    		return false; // user that is not member of owner company can't access contacts
-    	} // if
-    	return true;
+		return can_manage_contacts($user, true);
     } // canEdit
     
     /**
@@ -612,10 +603,7 @@ class Contact extends BaseContact
     * @return boolean
     */
     function canDelete(User $user) {
-       if ($user->getId() == $this->getCreatedById() || $user->isAdministrator()) {
-    	return true; //
-       }
-       return false;
+		return can_manage_contacts($user, true);
     } // canDelete
     
 	// ---------------------------------------------------
@@ -724,6 +712,10 @@ class Contact extends BaseContact
     	return $result;
     }
     function getDashboardObject(){
+    	$projects = $this->getProjects();
+    	if ($projects == null)
+    		$projects = "";
+    	
     	if($this->getUpdatedBy()){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
     		$updated_by_name = $this->getUpdatedByDisplayName();
@@ -742,14 +734,14 @@ class Contact extends BaseContact
 				"object_id" => $this->getId(),
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
-				"tags" => project_object_tags($this, active_or_personal_project(), true),
+				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
 				"createdById" => $this->getCreatedBy()->getId(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $this->getProjects(),
+				"project" => $projects,
 				"projectId" => 0,
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())

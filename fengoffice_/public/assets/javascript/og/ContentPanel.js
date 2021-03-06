@@ -24,10 +24,28 @@ og.ContentPanel = function(config) {
 	
 	this.history = [];
 	
-	og.eventManager.addListener('workspace changed', this.workspaceChanged, this);
+	if (config.refreshOnWorkspaceChange) {
+		og.eventManager.addListener('workspace changed', this.reset, this);
+	}
 	if (this.active) {
 		this.load(this.defaultContent);
 	}
+	// dirty stuff to allow refreshing a content panel when clicking on its tab
+	this.on('render', function() {
+		var tabs = this.ownerCt.getEl().select('.x-tab-with-icon');
+		var p = this;
+		og._activeTab = p.id;
+		tabs.each(function() {
+			if (this.dom.id == 'tabs-panel__' + p.id) {
+				this.on('click', function() { 
+					if (p.id == og._activeTab) {
+						p.reset();
+					}
+					og._activeTab = p.id;
+				});
+			}
+		});
+	}, this);
 };
 
 Ext.extend(og.ContentPanel, Ext.Panel, {
@@ -84,6 +102,15 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					text: lang('back'),
 					handler: function() {
 						this.back();
+					},
+					scope: this,
+					iconCls: 'ico-back'
+				},'-'];
+			} else if (this.closable) {
+				var tbar = [{
+					text: lang('cancel'),
+					handler: function() {
+						this.ownerCt.remove(this);
 					},
 					scope: this,
 					iconCls: 'ico-back'
@@ -184,11 +211,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 	reload: function() {
 		this.load(this.content);
 	},
-	
-	workspaceChanged: function() {
-		this.reset();
-	},
-	
+		
 	reset: function() {
 		this.loaded = false;
 		this.history = [];

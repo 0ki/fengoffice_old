@@ -1,7 +1,7 @@
 <?php 
   set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
   if (!$webpage->isNew()) 
-  	add_page_action(array(lang('delete webpage') => $webpage->getDeleteUrl()));
+  	add_page_action(lang('delete webpage'), $webpage->getDeleteUrl(), 'ico-delete');
 ?>
 
 <form class="internalForm" action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
@@ -24,7 +24,7 @@
   
 	<fieldset>
 	<legend class="toggle_collapsed" onclick="og.toggle('add_webpage_project_div',this)"><?php echo lang('workspace') ?></legend>
-	<?php echo select_project('webpage[project_id]', active_projects(), active_or_personal_project()->getId(), array('id'=>'add_webpage_project_div', 'style' => 'display:none')) ?>
+	<?php echo select_project('webpage[project_id]', active_projects(), array_var($webpage_data, 'project_id'), array('id'=>'add_webpage_project_div', 'style' => 'display:none')) ?>
 	</fieldset>
 <?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
    <fieldset>
@@ -63,7 +63,7 @@
 	<?php echo autocomplete_textfield("webpage[tags]", array_var($webpage_data, 'tags'), 'allTags', array('id'=>'add_webpage_tags_div', 'style'=>'display:none', 'class' => 'long')); ?>
 </fieldset>
 
- <?php if($webpage->canLinkObject(logged_user(), active_or_personal_project())) { ?>
+ <?php if(!$webpage->isNew() && $webpage->canLinkObject(logged_user(), active_or_personal_project())) { ?>
 <fieldset>
     <legend class="toggle_collapsed" onclick="og.toggle('add_webpage_linked_objects_div',this)"><?php echo lang('linked objects') ?></legend>
     <div style="display:none" id="add_webpage_linked_objects_div">

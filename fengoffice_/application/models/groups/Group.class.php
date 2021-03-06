@@ -5,8 +5,12 @@
   *
   * @author Marcos Saiz <marcos.saiz@gmail.com>
   */
-  class Group extends Basegroup {
-       
+
+
+  class Group extends BaseGroup {
+
+    const CONST_MINIMUM_GROUP_ID = 10000000;  
+    const CONST_ADMIN_GROUP_ID = 10000000;       
     /**
     * Return array of all group members
     *
@@ -14,10 +18,11 @@
     * @param void
     * @return array
     */
-    function getUsers() {
-      return Users::findAll(array(
-        'conditions' => '`group_id` = ' . DB::escape($this->getId())
-      )); // findAll
+    function getUsers($group_id) {
+      return GroupUsers::getUsersByGroup($group_id); 
+//      findAll(array(
+//        'conditions' => '`group_id` = ' . DB::escape($this->getId())
+//      )); // findAll
     } // getUsers
     
     /**
@@ -28,9 +33,16 @@
     * @return integer
     */
     function countUsers() {
-      return Users::count('`group_id` = ' . DB::escape($this->getId()));
+      return GroupUsers::count('`group_id` = ' . DB::escape($this->getId()));
     } // countUsers
     
+    function setAllPermissions($value) {
+    	$this->setCanEditCompanyData($value);
+    	$this->setCanManageConfiguration($value);
+    	$this->setCanManageSecurity($value);
+    	$this->setCanManageWorkspaces($value);
+    	$this->setCanManageContacts($value);
+    }
 //    /**
 //    * Return array of group users on specific project
 //    *
@@ -262,51 +274,51 @@
 //    //  Permissions
 //    // ---------------------------------------------------
 //    
-//    /**
-//    * Check if specific user can update this group
-//    *
-//    * @access public
-//    * @param User $user
-//    * @return boolean
-//    */
-//    function canEdit(User $user) {
-//      return $user->isAccountOwner() || $user->isAdministrator() || $user->isMemberOf(owner_group());
-//    } // canEdit
-//    
-//    /**
-//    * Check if specific user can delete this group
-//    *
-//    * @access public
-//    * @param User $user
-//    * @return boolean
-//    */
-//    function canDelete(User $user) {
-//      return $user->isAccountOwner() || $user->isAdministrator();
-//    } // canDelete
-//    
-//    /**
-//    * Returns true if specific user can add clent group
-//    *
-//    * @access public
-//    * @param User $user
-//    * @return boolean
-//    */
-//    function canAddClient(User $user) {
-//      return ($user->isMemberOf($this));
-//      	
-//      //return $user->isAccountOwner() || $user->isAdministrator($this);
-//    } // canAddClient
-//    
-//    /**
-//    * Check if this user can add new account to this group
-//    *
-//    * @access public
-//    * @param User $user
-//    * @return boolean
-//    */
-//    function canAddUser(User $user) {
-//      return User::canAdd($user, $this);
-//    } // canAddUser
+    /**
+    * Check if specific user can update this group
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canEdit(User $user) {
+      return $user->isAccountOwner() || $user->isAdministrator() || $user->isMemberOf(owner_company());
+    } // canEdit
+    
+    /**
+    * Check if specific user can delete this group
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canDelete(User $user) {
+      return $user->isAccountOwner() || $user->isAdministrator();
+    } // canDelete
+    
+    /**
+    * Returns true if specific user can add group
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canAdd(User $user, Company $company) {
+      return ($user->isAdministrator() || $user->isMemberOf($company));
+      	
+      //return $user->isAccountOwner() || $user->isAdministrator($this);
+    } // canAddClient
+    
+    /**
+    * Check if this user can add new account to this group
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canAddUser(User $user) {
+      return User::canEdit($user);
+    } // canAddUser
 //    
 //    /**
 //    * Check if user can update permissions of this group
@@ -336,42 +348,38 @@
 //      return get_url('group', 'card', $this->getId());
 //    } // getCardUrl
 //    
-//    /**
-//    * Return view group URL
-//    *
-//    * @access public
-//    * @param void
-//    * @return string
-//    */
-//    function getViewUrl() {
-//      if($this->getId() == owner_group()->getId()) {
-//        return get_url('administration', 'group');
-//      } else {
-//        return get_url('group', 'view_client', $this->getId());
-//      } // if
-//    } // getViewUrl
-//    
-//    /**
-//    * Edit owner group
-//    *
-//    * @access public
-//    * @param void
-//    * @return null
-//    */
-//    function getEditUrl() {
-//      return $this->isOwner() ? get_url('group', 'edit') : get_url('group', 'edit_client', $this->getId());
-//    } // getEditUrl
-//    
-//    /**
-//    * Return delete group URL
-//    *
-//    * @access public
-//    * @param void
-//    * @return string
-//    */
-//    function getDeleteClientUrl() {
-//      return get_url('group', 'delete_client', $this->getId());
-//    } // getDeleteClientUrl
+    /**
+    * Return view group URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getViewUrl() {
+        return get_url('group', 'view_group', array( 'id' => $this->getId()));
+    } // getViewUrl
+    
+    /**
+    * Edit group url
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function getEditUrl() {
+      return get_url('group', 'edit_group', array('id' => $this->getId()));
+    } // getEditUrl
+    
+    /**
+    * Return delete group URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getDeleteGroupUrl() {
+      return get_url('group', 'delete', array('id' => $this->getId()));
+    } // getDeleteClientUrl
 //    
 //    /**
 //    * Return update permissions URL
@@ -383,16 +391,16 @@
 //      return get_url('group', 'update_permissions', $this->getId());
 //    } // getUpdatePermissionsUrl
 //    
-//    /**
-//    * Return add user URL
-//    *
-//    * @access public
-//    * @param void
-//    * @return string
-//    */
-//    function getAddUserUrl() {
-//      return get_url('user', 'add', array('group_id' => $this->getId()));
-//    } // getAddUserUrl
+    /**
+    * Return add user URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getAddUserUrl() {
+      return get_url('group', 'add_user', array('id' => $this->getId()));
+    } // getAddUserUrl
 //    
 //    /**
 //    * Return update avatar URL
@@ -585,7 +593,7 @@
 //    * @return string
 //    */
 //    function getObjectTypeName() {
-//      return lang('group');
+//      return 'group';
 //    } // getObjectTypeName
     
   } // group 

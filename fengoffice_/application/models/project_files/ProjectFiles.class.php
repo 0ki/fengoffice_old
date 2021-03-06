@@ -53,8 +53,7 @@ class ProjectFiles extends BaseProjectFiles {
 		} // if
 		if ((integer) $files_per_page < 1) {
 			$files_per_page = 10;
-		} // if
-		
+		} // if		
 		
 		if ($projectId == null || $projectId == 0) {
 			$projectId = '1';
@@ -85,24 +84,14 @@ class ProjectFiles extends BaseProjectFiles {
 		} else {
 			$userstr = " AND `created_by_id` = ? ";
 		}
-		if ($folderId == null || $folderId == 0) {
-			$folderId = '1';
-			$folderstr = " AND '1' = ? "; // dummy condition
-		} else {
-			$folderstr = " AND `folder_id` = ? ";
-		}
-		if ($hide_private) {
-			$permissionstr = " AND NOT `is_private` ";
-		} else {
-			$permissionstr = "";
-		}
+		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) . ') ';
 		
-		$otherConditions = $folderstr . $projectstr . $tagstr . $typestr . $userstr . $permissionstr;
+		$otherConditions = $projectstr . $tagstr . $typestr . $userstr . $permissionstr;
 		
 		if ($hide_private) {
-			$conditions = array('`is_private` = ? AND `is_visible` = ?' . $otherConditions, false, true, $folderId, $projectId, $tag, $type_string, $userId);
+			$conditions = array('`is_visible` = ?' . $otherConditions,  true, $projectId, $tag, $type_string, $userId);
 		} else {
-			$conditions = array('`is_visible` = ?' . $otherConditions, true, $folderId, $projectId, $tag, $type_string, $userId);
+			$conditions = array(' true ' . $otherConditions,  $projectId, $tag, $type_string, $userId);
 		}
 		
 		list($files, $pagination) = ProjectFiles::paginate(array(
@@ -148,9 +137,9 @@ class ProjectFiles extends BaseProjectFiles {
 	*/
 	static function getOrphanedFilesByProject(Project $project, $show_private = false) {
 		if ($show_private) {
-			$conditions = array('`project_id` =? AND `folder_id` = ?', $project->getId(), 0);
+			$conditions = array('`project_id` =?', $project->getId());
 		} else {
-			$conditions = array('`project_id` =? AND `folder_id` = ? AND `is_private` = ?', $project->getId(), 0, false);
+			$conditions = array('`project_id` =? AND `is_private` = ?', $project->getId(), false);
 		} // if
 		
 		return self::findAll(array(
@@ -171,30 +160,30 @@ class ProjectFiles extends BaseProjectFiles {
 		)); // findAll
 	} // getAllFilesByProject
 	
-	/**
-	* Return files by URL. Files will be ordered by filename
-	*
-	* @param ProjectFolder $folder
-	* @param boolean $show_private
-	* @return array
-	*/
-	static function getByFolder(ProjectFolder $folder, $show_private = false) {
-		$project = $folder->getProject();
-		if (!($project instanceof Project)) {
-			return null;
-		} // if
-		
-		if ($show_private) {
-			$conditions = array('`project_id` =? AND `folder_id` = ?', $project->getId(), $folder->getId());
-		} else {
-			$conditions = array('`project_id` =? AND `folder_id` = ? AND `is_private` = ?', $project->getId(), $this->getId(), false);
-		} // if
-		
-		return self::findAll(array(
-			'conditions' => $conditions,
-			'order' => '`filename`',
-		));
-	} // getByFolder
+//	/**
+//	* Return files by URL. Files will be ordered by filename
+//	*
+//	* @param ProjectFolder $folder
+//	* @param boolean $show_private
+//	* @return array
+//	*/
+//	static function getByFolder(ProjectFolder $folder, $show_private = false) {
+//		$project = $folder->getProject();
+//		if (!($project instanceof Project)) {
+//			return null;
+//		} // if
+//		
+//		if ($show_private) {
+//			$conditions = array('`project_id` =? AND `folder_id` = ?', $project->getId(), $folder->getId());
+//		} else {
+//			$conditions = array('`project_id` =? AND `folder_id` = ? AND `is_private` = ?', $project->getId(), $this->getId(), false);
+//		} // if
+//		
+//		return self::findAll(array(
+//			'conditions' => $conditions,
+//			'order' => '`filename`',
+//		));
+//	} // getByFolder
 	
 	/**
 	* Return file by name.

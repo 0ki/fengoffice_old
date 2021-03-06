@@ -7,7 +7,7 @@
     array($task_list->getTitle())
   ));
   if(active_project() && ProjectTask::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add task list'), get_url('task', 'add_list'));
+    add_page_action(lang('add task list'), get_url('task', 'add_list'), 'ico-task');
   } // if
 //add_javascript_to_page('modules/addTaskForm.js');  
 

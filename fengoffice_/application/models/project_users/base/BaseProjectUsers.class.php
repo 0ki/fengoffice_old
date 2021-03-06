@@ -14,7 +14,27 @@
     * @var array
     * @static
     */
-    static private $columns = array('project_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'can_manage_messages' => DATA_TYPE_BOOLEAN, 'can_manage_tasks' => DATA_TYPE_BOOLEAN, 'can_manage_events' => DATA_TYPE_BOOLEAN, 'can_manage_milestones' => DATA_TYPE_BOOLEAN, 'can_upload_files' => DATA_TYPE_BOOLEAN, 'can_manage_files' => DATA_TYPE_BOOLEAN, 'can_assign_to_owners' => DATA_TYPE_BOOLEAN, 'can_assign_to_other' => DATA_TYPE_BOOLEAN);
+    static private $columns = array('project_id' => DATA_TYPE_INTEGER, 'user_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 
+    'can_read_messages' => DATA_TYPE_BOOLEAN, 
+    'can_read_mails' => DATA_TYPE_BOOLEAN, 
+    'can_read_tasks' => DATA_TYPE_BOOLEAN, 
+    'can_read_comments' => DATA_TYPE_BOOLEAN, 
+    'can_read_contacts' => DATA_TYPE_BOOLEAN, 
+    'can_read_events' => DATA_TYPE_BOOLEAN, 
+    'can_read_milestones' => DATA_TYPE_BOOLEAN, 
+    'can_read_files' => DATA_TYPE_BOOLEAN, 
+    'can_read_weblinks' => DATA_TYPE_BOOLEAN, 
+    'can_write_messages' => DATA_TYPE_BOOLEAN, 
+    'can_write_mails' => DATA_TYPE_BOOLEAN, 
+    'can_write_tasks' => DATA_TYPE_BOOLEAN, 
+    'can_write_comments' => DATA_TYPE_BOOLEAN, 
+    'can_write_contacts' => DATA_TYPE_BOOLEAN, 
+    'can_write_events' => DATA_TYPE_BOOLEAN, 
+    'can_write_milestones' => DATA_TYPE_BOOLEAN, 
+    'can_write_files' => DATA_TYPE_BOOLEAN, 
+    'can_write_weblinks' => DATA_TYPE_BOOLEAN, 
+    'can_assign_to_owners' => DATA_TYPE_BOOLEAN, 
+    'can_assign_to_other' => DATA_TYPE_BOOLEAN);
   
     /**
     * Construct

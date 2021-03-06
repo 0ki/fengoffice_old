@@ -9,14 +9,26 @@
   class ProjectUsers extends BaseProjectUsers {
     
     /** All available user permissions **/
-    const CAN_MANAGE_MESSAGES   = 'can_manage_messages';
-    const CAN_MANAGE_TASKS      = 'can_manage_tasks';
-    const CAN_MANAGE_MILESTONES = 'can_manage_milestones';
-    const CAN_UPLOAD_FILES      = 'can_upload_files';
-    const CAN_MANAGE_FILES      = 'can_manage_files';
+    const CAN_READ_MESSAGES   = 'can_read_messages';
+    const CAN_READ_TASKS      = 'can_read_tasks';
+    const CAN_READ_MILESTONES = 'can_read_milestones';
+    const CAN_READ_MAILS      = 'can_read_mails';
+    const CAN_READ_COMMENTS      = 'can_read_comments';
+    const CAN_READ_CONTACTS    = 'can_read_contacts';
+    const CAN_READ_WEBLINKS    = 'can_read_weblinks';
+    const CAN_READ_FILES      = 'can_read_files';
+    const CAN_READ_EVENTS     = 'can_read_events';
+    const CAN_WRITE_MESSAGES   = 'can_write_messages';
+    const CAN_WRITE_TASKS      = 'can_write_tasks';
+    const CAN_WRITE_MILESTONES = 'can_write_milestones';
+    const CAN_WRITE_MAILS      = 'can_write_mails';
+    const CAN_WRITE_COMMENTS      = 'can_write_comments';
+    const CAN_WRITE_CONTACTS    = 'can_write_contacts';
+    const CAN_WRITE_WEBLINKS    = 'can_write_weblinks';
+    const CAN_WRITE_FILES      = 'can_write_files';
+    const CAN_WRITE_EVENTS     = 'can_write_events';
     const CAN_ASSIGN_TO_OWNERS  = 'can_assign_to_owners';
     const CAN_ASSIGN_TO_OTHER   = 'can_assign_to_other';
-    const CAN_MANAGE_EVENTS   = 'can_manage_events';
   
     /**
     * Return all users that are involved in specific project
@@ -118,15 +130,27 @@
     * @return array
     */
     function getPermissionColumns() {
-      return array(
-        self::CAN_MANAGE_MESSAGES,
-        self::CAN_MANAGE_TASKS,
-        self::CAN_MANAGE_MILESTONES,
-        self::CAN_UPLOAD_FILES,
-        self::CAN_MANAGE_FILES,
-        self::CAN_ASSIGN_TO_OWNERS,
-        self::CAN_ASSIGN_TO_OTHER,
-        self::CAN_MANAGE_EVENTS  ,
+      return array(			  
+			self::CAN_READ_MESSAGES,
+			self::CAN_READ_TASKS    ,
+			self::CAN_READ_MILESTONES,
+			self::CAN_READ_MAILS     ,
+			self::CAN_READ_COMMENTS  ,
+			self::CAN_READ_CONTACTS  ,
+			self::CAN_READ_WEBLINKS  ,
+			self::CAN_READ_FILES     ,
+			self::CAN_READ_EVENTS    ,
+			self::CAN_WRITE_MESSAGES ,
+			self::CAN_WRITE_TASKS    ,
+			self::CAN_WRITE_MILESTONES,
+			self::CAN_WRITE_MAILS      ,
+			self::CAN_WRITE_COMMENTS   ,
+			self::CAN_WRITE_CONTACTS   ,
+			self::CAN_WRITE_WEBLINKS   ,
+			self::CAN_WRITE_FILES      ,
+			self::CAN_WRITE_EVENTS     ,
+			self::CAN_ASSIGN_TO_OWNERS ,
+			self::CAN_ASSIGN_TO_OTHER  ,
       ); // array
     } // getPermissionColumns
     
@@ -137,15 +161,27 @@
     * @return array
     */
     static function getNameTextArray() {
-      return array(
-        ProjectUsers::CAN_MANAGE_MESSAGES   => lang('can manage messages'),
-        ProjectUsers::CAN_MANAGE_TASKS      => lang('can manage tasks'),
-        ProjectUsers::CAN_MANAGE_MILESTONES => lang('can manage milestones'),
-        ProjectUsers::CAN_UPLOAD_FILES      => lang('can upload files'),
-        ProjectUsers::CAN_MANAGE_FILES      => lang('can manage files'),
-        ProjectUsers::CAN_ASSIGN_TO_OWNERS  => lang('can assign to owners'),
-        ProjectUsers::CAN_ASSIGN_TO_OTHER   => lang('can assign to other'),
-        ProjectUsers::CAN_MANAGE_EVENTS       => lang('can manage events'),
+      return array(			  
+			self::CAN_READ_MESSAGES=> lang('can read messages'),
+			self::CAN_WRITE_MESSAGES => lang('can write messages'),
+			self::CAN_READ_TASKS    => lang('can read tasks'),
+			self::CAN_WRITE_TASKS    => lang('can write tasks'),
+			self::CAN_READ_MILESTONES=> lang('can read milestones'),
+			self::CAN_WRITE_MILESTONES=> lang('can write milestones'),
+			self::CAN_READ_MAILS     => lang('can read mails'),
+			self::CAN_WRITE_MAILS      => lang('can write mails'),
+			self::CAN_READ_COMMENTS  => lang('can read comments'),
+			self::CAN_WRITE_COMMENTS   => lang('can write comments'),
+			self::CAN_READ_CONTACTS  => lang('can read contacts'),
+			self::CAN_WRITE_CONTACTS   => lang('can write contacts'),
+			self::CAN_READ_WEBLINKS  => lang('can read weblinks'),
+			self::CAN_WRITE_WEBLINKS   => lang('can write weblinks'),
+			self::CAN_READ_FILES     => lang('can read files'),
+			self::CAN_WRITE_FILES      => lang('can write files'),
+			self::CAN_READ_EVENTS    => lang('can read events'),
+			self::CAN_WRITE_EVENTS     => lang('can write events'),
+			self::CAN_ASSIGN_TO_OWNERS => lang('can assign to owners'),
+			self::CAN_ASSIGN_TO_OTHER  => lang('can assign to other'),
       ); // array
     } // getNameTextArray
     

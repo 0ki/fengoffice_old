@@ -88,31 +88,7 @@
     */
     protected $comments_count;
     
-    // ---------------------------------------------------
-    //  Linked Objects (Replacement for attached files)
-    // ---------------------------------------------------
-    
-    /**
-    * Mark this object as linkable to another object (in this case other project data objects can be linked to 
-    * this object)
-    *
-    * @var boolean
-    */
-    protected $is_linkable_object= true;
-    
-    /**
-    * Array of all linked objects
-    *
-    * @var array
-    */
-    protected $all_linked_objects;
-    
-    /**
-    * Cached array of linked objects (filtered by users access permissions)
-    *
-    * @var array
-    */
-    protected $linked_objects;    
+     
     
     /**
      * Whether the object can have properties
@@ -205,33 +181,6 @@
       } // if
       return true;
     } // canComment
-    
-    /**
-    * Returns true if user can link an object to this object
-    *
-    * @param User $user
-    * @param Project $project
-    * @return boolean
-    */
-    function canLinkObject(User $user, Project $project) {
-      if(!$this->isLinkableObject()) return false;
-      if($this->isNew()) {
-        return $user->getProjectPermission($project, ProjectUsers::CAN_UPLOAD_FILES);
-      } else {
-        return $this->canEdit($user);
-      } // if
-    } // canLinkObject
-    
-    /**
-    * Check if $user can un-link $object from this object
-    *
-    * @param User $user
-    * @param ProjectDataObject $object
-    * @return booealn
-    */
-    function canUnlinkObject(User $user, ProjectDataObject $object) {
-      return $this->canEdit($user);
-    } // canUnlinkObject
     
     // ---------------------------------------------------
     //  Private
@@ -626,150 +575,6 @@
 
     }
     
-    // ---------------------------------------------------
-    //  Linked Objects
-    // ---------------------------------------------------
-    
-    /**
-    * This function will return true if this object can have objects linked to it
-    *
-    * @param void
-    * @return boolean
-    */
-    function isLinkableObject() {
-      return $this->is_linkable_object;
-    } // isLinkableObject
-    
-    /**
-    * Link object to this object
-    *
-    * @param ProjectDataObject $object
-    * @return LinkedObject
-    */
-    function linkObject(ProjectDataObject $object) {
-      $manager_class = get_class($this->manager());
-      $object_id = $this->getObjectId();
-      
-      $linked_object = LinkedObjects::findById(array(
-        'rel_object_manager' => $manager_class,
-        'rel_object_id' => $object_id,
-        'object_id' => $object->getId(),
-        'object_manager' => get_class($object->manager()),
-      )); // findById
-      
-      if($linked_object instanceof LinkedObject) {
-        return $linked_object; // Already linked
-      }
-      else
-      {//check inverse link
-	      	$linked_object = LinkedObjects::findById(array(
-	        'rel_object_manager' => get_class($object->manager()),
-	        'rel_object_id' => $object->getId(),
-	        'object_id' => $object_id,
-	        'object_manager' => $manager_class,
-     		 )); // findById
-     	     if($linked_object instanceof LinkedObject) {
-        		return $linked_object; // Already linked
-      		}
-      } // if
-      
-      $linked_object = new LinkedObject();
-      $linked_object->setRelObjectManager($manager_class);
-      $linked_object->setRelObjectId($object_id);
-      $linked_object->setObjectId($object->getId());
-      $linked_object->setObjectManager(get_class($object->manager()));
-      
-      $linked_object->save();
-   	/*  if(!$object->getIsVisible()) {
-		$object->setIsVisible(true);
-		$object->setExpirationTime(EMPTY_DATETIME);
-		$object->save();
-	  } // if*/
-	  return $linked_object;
-    } // linkObject
-    
-    /**
-    * Return all linked objects 
-    *
-    * @param void
-    * @return array
-    */
-    function getAllLinkedObjects() {
-      if(is_null($this->all_linked_objects)) {
-        $this->all_linked_objects = LinkedObjects::getLinkedObjectsByObject($this);
-      } // if
-      return $this->all_linked_objects;
-    } //  getAllLinkedObjects
-    
-    /**
-    * Return linked objects but filter the private ones if user is not a member 
-    * of the owner company
-    *
-    * @param void
-    * @return array
-    */
-    function getLinkedObjects() {
-      if(logged_user()->isMemberOfOwnerCompany()) {
-        return $this->getAllLinkedObjects();
-      } // if
-      if(is_null($this->linked_objects)) {
-        $this->linked_objects = LinkedObjects::getLinkedObjectsByObject($this, true);
-      } // if
-      return $this->linked_objects;
-    } // getLinkedObjects
-    
-    /**
-    * Drop all relations with linked objects for this object
-    *
-    * @param void
-    * @return null
-    */
-    function clearLinkedObjects() {
-      return LinkedObjects::clearRelationsByObject($this);
-    } // clearLinkedObjects
-    
-    /**
-    * Return link objects url
-    *
-    * @param void
-    * @return string
-    */
-    function getLinkObjectUrl() {
-      return get_url('object', 'link_to_object', array(
-        'manager' => get_class($this->manager()),
-        'object_id' => $this->getObjectId(),
-        'active_project' => $this->getProject()->getId()
-      )); // get_url
-    } // getLinkedObjectsUrl
-    
-    /**
-    * Return object properties url
-    *
-    * @param void
-    * @return string
-    */
-    function getObjectPropertiesUrl() {
-      return get_url('object', 'view_properties', array(
-        'manager' => get_class($this->manager()),
-        'object_id' => $this->getObjectId()
-      )); // get_url
-    } // getLinkedObjectsUrl
-    
-    /**
-    * Return unlink object URL
-    *
-    * @param ProjectDataObject $object
-    * @return string
-    */
-    function getUnlinkObjectUrl(ProjectDataObject $object) {
-      return get_url('object', 'unlink_from_object', array(
-        'manager' => get_class($this->manager()),
-        'object_id' => $this->getObjectId(),
-        'rel_object_id' => $object->getId(),
-        'rel_object_manager' => get_class($object->manager()),
-        'active_project' => $this->getProject()->getId()
-      )); // get_url
-    } //  getUnlinkedObjectUrl
     
     // ---------------------------------------------------
     //  System
@@ -858,7 +663,7 @@
 				"object_id" => $this->getId(),
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
-				"tags" => project_object_tags($this, $this->getProject(), true),
+				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
 				"createdById" => $this->getCreatedBy()->getId(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),

@@ -6,13 +6,22 @@
   <div class="coHeader">
   <div class="coHeaderUpperRow">
     <div class="coTitle"><?php echo clean($contact->getDisplayName()) ?></div>
+	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($contact) ?></div>
   </div>
   </div>
   <div class="coMainBlock">
+  <div class="coLinkedObjects">
+  <?php echo render_object_links($contact, $contact->canEdit(logged_user())) ?>
+  </div>
   <div class="coContent">
   <table>
 	 <tr><td style="padding-right:10px">
-         <div class="cardIcon"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" /></div>
+	 <?php if($contact->canEdit(logged_user())) { ?>
+         <div class="cardIcon"><a class="internalLink" href="<?php echo $contact->getUpdatePictureUrl() ?>" title="<?php echo lang('update picture') ?>">
+         <img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" /></a></div>
+     <?php } else { ?>
+        <div class="cardIcon"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" /></div>
+     <?php } ?>   
          </td><td>
   		<div class="cardData">
     
@@ -157,8 +166,6 @@
 			<tr><td style="text-align:right">
 			<div><span><?php echo $role->getProject()->getName() ?> - </span> </div>
       </td><td><div><?php echo $role->getRole()? clean($role->getRole()) : lang('n/a') ?></div></td></tr>
-      <tr><td style="text-align:right"><div class="taskListTags"><span><?php echo lang('tags') ?>:</span></div></td><td>
-      		 <div><?php echo project_object_tags($role, $role->getProject()) ?></div></td></tr>
 		<?php 	} //if
 			} //foreach ?>
       		</table>

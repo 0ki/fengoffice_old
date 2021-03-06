@@ -185,17 +185,17 @@
   
   
   //Webpages
-  'add webpage' => 'Add weblink',
-  'delete webpage' => 'Delete weblink',
-  'webpages' => 'Weblinks',
-  'private webpage' => 'Private weblink',
+  'add webpage' => 'Add web link',
+  'delete webpage' => 'Delete web link',
+  'webpages' => 'Web links',
+  'private webpage' => 'Private web link',
   'url' => 'Url',
-  'no active webpages in project' => 'No active weblinks found in this workspace',
+  'no active webpages in project' => 'No active web links found in this workspace',
   'webpage list description' => 'Description',
-  'edit webpage' => 'Edit weblink',
-  'webpage' => 'Weblink',
-  'webpage title required' => 'A weblink title is required',
-  'webpage url required' => 'A weblink URL is required',
+  'edit webpage' => 'Edit web link',
+  'webpage' => 'Web link',
+  'webpage title required' => 'A web link title is required',
+  'webpage url required' => 'A web link URL is required',
     
   //Email
   'emails' => 'Emails',
@@ -226,10 +226,45 @@
   'project emails' => '{0} emails',
   'edit email account' => 'Edit {0}',
   'no emails in this project' => 'There are no emails in this workspace',
+  'mail content' => 'Email',
+  'mail account name description' => 'The name used to identify this account (e.g. \'Home email account\')',
+  'mail account id description' => 'The account username or ID used to connect to the server (e.g. \'john@mailserver.com\')',
+  'mail account password description' => 'The password required for connecting to the account',
+  'mail account server description' => 'The mail server\'s address (e.g. \'pop3.mailserver.com\')',
   
   //Checkout
   'checkout file' => 'Checkout file',
   'checkin file' => 'Checkin file',
+  
+  'new filename' => 'New filename',
+  'add as revision' => 'Add as revision',
+  'duplicate filename' => 'Duplicate filename',
+  'filename exists' => 'A file with the specified filename already exists. You can select a different filename or add the file as a revision to the original file',
+  'filename exists edit' => 'A file with the specified filename already exists in this workspace.',
+  'checking filename' => 'Checking filename...',
+  'check' => 'Check',
+  'add file check in' => 'Check in as new version of this file',
+  'filters' => 'Filters',
+  
+  'permissions for user' => 'Permissions for user {0}',
+  'can read messages' => 'Can read messages',
+  'can write messages' => 'Can write messages',
+  'can read tasks' => 'Can read tasks',
+  'can write tasks' => 'Can write tasks',
+  'can read milestones' => 'Can read milestones',
+  'can write milestones' => 'Can write milestones',
+  'can read mails' => 'Can read mails',
+  'can write mails' => 'Can write mails',
+  'can read comments' => 'Can read comments',
+  'can write comments' => 'Can write comments',
+  'can read contacts' => 'Can read contacts',
+  'can write contacts' => 'Can write contacts',
+  'can read weblinks' => 'Can read weblinks',
+  'can write weblinks' => 'Can write weblinks',
+  'can read files' => 'Can read files',
+  'can write files' => 'Can write files',
+  'can read events' => 'Can read events',
+  'can write events' => 'Can write events',
   ); // array
 
 ?>

@@ -2,11 +2,9 @@
 
   // Set page title and set crumbs to index
   set_page_title(lang('projects'));
-  administration_tabbed_navigation(ADMINISTRATION_TAB_PROJECTS);
-  administration_crumbs(lang('projects'));
   
   if(Project::canAdd(logged_user())) {
-    add_page_action(lang('add project'), get_url('project', 'add'));
+    add_page_action(lang('add project'), get_url('project', 'add'), 'ico-add');
   } // if
 
 ?>

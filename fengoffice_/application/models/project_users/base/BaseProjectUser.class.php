@@ -100,160 +100,404 @@
     } // setCreatedById() 
     
     /**
-    * Return value of 'can_manage_messages' field
+    * Return value of 'can_read_messages' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanManageMessages() {
-      return $this->getColumnValue('can_manage_messages');
-    } // getCanManageMessages()   
+    function getCanReadMessages() {
+      return $this->getColumnValue('can_read_messages');
+    } // getCanReadMessages()   
     
     /**
-    * Set value of 'can_manage_messages' field
+    * Set value of 'can_read_messages' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanManageMessages($value) {
-      return $this->setColumnValue('can_manage_messages', $value);
-    } // setCanManageMessages() 
+    function setCanReadMessages($value) {
+      return $this->setColumnValue('can_read_messages', $value);
+    } // setCanReadMessages() 
     
-     
+   
     /**
-    * Return value of 'can_manage_handins' field
+    * Return value of 'can_read_tasks' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanManageHandins() {
-      return $this->getColumnValue('can_manage_handins');
-    } // getCanManageHandins()
+    function getCanReadTasks() {
+      return $this->getColumnValue('can_read_tasks');
+    } // getCanReadTasks()
     
     /**
-    * Set value of 'can_manage_handins' field
+    * Set value of 'can_read_tasks' field
+    *
+    * @access public   	
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanReadTasks($value) {
+      return $this->setColumnValue('can_read_tasks', $value);
+    } // setCanReadTasks() 
+    
+    /**
+    * Return value of 'can_read_weblinks' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function setCanManageHandins($value) {
-      return $this->setColumnValue('can_manage_handins', $value);
-    } // getCanManageHandins()
+    function getCanReadWeblinks() {
+      return $this->getColumnValue('can_read_weblinks');
+    } // getCanReadWeblinks()
     
     /**
-    * Return value of 'can_manage_tasks' field
-    *
-    * @access public
-    * @param void
-    * @return boolean 
-    */
-    function getCanManageTasks() {
-      return $this->getColumnValue('can_manage_tasks');
-    } // getCanManageTasks()
-    
-    /**
-    * Set value of 'can_manage_tasks' field
+    * Set value of 'can_read_weblinks' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanManageTasks($value) {
-      return $this->setColumnValue('can_manage_tasks', $value);
-    } // setCanManageTasks() 
+    function setCanReadWeblinks($value) {
+      return $this->setColumnValue('can_read_weblinks', $value);
+    } // setCanReadWeblinks() 
     
     /**
-    * Return value of 'can_manage_milestones' field
+    * Return value of 'can_read_milestones' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanManageMilestones() {
-      return $this->getColumnValue('can_manage_milestones');
-    } // getCanManageMilestones()
+    function getCanReadMilestones() {
+      return $this->getColumnValue('can_read_milestones');
+    } // getCanReadMilestones()
     
     /**
-    * Set value of 'can_manage_milestones' field
+    * Set value of 'can_read_milestones' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanManageMilestones($value) {
-      return $this->setColumnValue('can_manage_milestones', $value);
-    } // setCanManageMilestones() 
+    function setCanReadMilestones($value) {
+      return $this->setColumnValue('can_read_milestones', $value);
+    } // setCanReadMilestones() 
     
     /**
-    * Return value of 'can_upload_files' field
+    * Return value of 'can_read_mails' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanUploadFiles() {
-      return $this->getColumnValue('can_upload_files');
-    } // getCanUploadFiles()
+    function getCanReadMails() {
+      return $this->getColumnValue('can_read_mails');
+    } // getCanReadMails()
     
     /**
-    * Set value of 'can_upload_files' field
+    * Set value of 'can_read_mails' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanUploadFiles($value) {
-      return $this->setColumnValue('can_upload_files', $value);
-    } // setCanUploadFiles() 
-    
+    function setCanReadMails($value) {
+      return $this->setColumnValue('can_read_mails', $value);
+    } // setCanReadMails() 
+        
     /**
-    * Return value of 'can_manage_files' field
+    * Return value of 'can_read_files' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanManageFiles() {
-      return $this->getColumnValue('can_manage_files');
-    } // getCanManageFiles()
+    function getCanReadContacts() {
+      return $this->getColumnValue('can_read_contacts');
+    } // getCanReadContacts()
     
     /**
-    * Set value of 'can_manage_files' field
+    * Set value of 'can_read_files' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanManageFiles($value) {
-      return $this->setColumnValue('can_manage_files', $value);
-    } // setCanManageFiles() 
-    
-    
+    function setCanReadContacts($value) {
+      return $this->setColumnValue('can_read_contacts', $value);
+    } // setCanReadContacts()  
+       
     /**
-    * Return value of 'can_manage_events' field
+    * Return value of 'can_read_comments' field
     *
     * @access public
     * @param void
     * @return boolean 
     */
-    function getCanManageEvents() {
-      return $this->getColumnValue('can_manage_events');
-    } // getCanManageEvents()
+    function getCanReadComments() {
+      return $this->getColumnValue('can_read_comments');
+    } // getCanReadComments()
     
     /**
-    * Set value of 'can_manage_events' field
+    * Set value of 'can_read_comments' field
     *
     * @access public   
     * @param boolean $value
     * @return boolean
     */
-    function setCanManageEvents($value) {
-      return $this->setColumnValue('can_manage_events', $value);
-    } // getCanManageEvents() 
+    function setCanReadComments($value) {
+      return $this->setColumnValue('can_read_comments', $value);
+    } // setCanReadComments()     
+    /**
+    * Return value of 'can_read_files' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanReadFiles() {
+      return $this->getColumnValue('can_read_files');
+    } // getCanReadFiles()
+    
+    /**
+    * Set value of 'can_read_files' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanReadFiles($value) {
+      return $this->setColumnValue('can_read_files', $value);
+    } // setCanReadFiles() 
+    
+    
+    /**
+    * Return value of 'can_read_events' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanReadEvents() {
+      return $this->getColumnValue('can_read_events');
+    } // getCanReadEvents()
+    
+    /**
+    * Set value of 'can_read_events' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanReadEvents($value) {
+      return $this->setColumnValue('can_read_events', $value);
+    } // getCanReadEvents() 
+    
+    
+    
+    /**
+    * Return value of 'can_write_messages' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteMessages() {
+      return $this->getColumnValue('can_write_messages');
+    } // getCanWriteMessages()   
+    
+    /**
+    * Set value of 'can_write_messages' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteMessages($value) {
+      return $this->setColumnValue('can_write_messages', $value);
+    } // setCanWriteMessages() 
+    
+   
+    /**
+    * Return value of 'can_write_tasks' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteTasks() {
+      return $this->getColumnValue('can_write_tasks');
+    } // getCanWriteTasks()
+    
+    /**
+    * Set value of 'can_write_tasks' field
+    *
+    * @access public   	
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteTasks($value) {
+      return $this->setColumnValue('can_write_tasks', $value);
+    } // setCanWriteTasks() 
+    
+    /**
+    * Return value of 'can_write_weblinks' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteWeblinks() {
+      return $this->getColumnValue('can_write_weblinks');
+    } // getCanWriteWeblinks()
+    
+    /**
+    * Set value of 'can_write_weblinks' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteWeblinks($value) {
+      return $this->setColumnValue('can_write_weblinks', $value);
+    } // setCanWriteWeblinks() 
+    
+    /**
+    * Return value of 'can_write_milestones' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteMilestones() {
+      return $this->getColumnValue('can_write_milestones');
+    } // getCanWriteMilestones()
+    
+    /**
+    * Set value of 'can_write_milestones' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteMilestones($value) {
+      return $this->setColumnValue('can_write_milestones', $value);
+    } // setCanWriteMilestones() 
+    
+    /**
+    * Return value of 'can_write_mails' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteMails() {
+      return $this->getColumnValue('can_write_mails');
+    } // getCanWriteMails()
+    
+    /**
+    * Set value of 'can_write_mails' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteMails($value) {
+      return $this->setColumnValue('can_write_mails', $value);
+    } // setCanWriteMails() 
+        
+    /**
+    * Return value of 'can_write_files' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteContacts() {
+      return $this->getColumnValue('can_write_contacts');
+    } // getCanWriteContacts()
+    
+    /**
+    * Set value of 'can_write_files' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteContacts($value) {
+      return $this->setColumnValue('can_write_contacts', $value);
+    } // setCanWriteContacts()  
+       
+    /**
+    * Return value of 'can_write_comments' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteComments() {
+      return $this->getColumnValue('can_write_comments');
+    } // getCanWriteComments()
+    
+    /**
+    * Set value of 'can_write_comments' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteComments($value) {
+      return $this->setColumnValue('can_write_comments', $value);
+    } // setCanWriteComments()     
+    /**
+    * Return value of 'can_write_files' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteFiles() {
+      return $this->getColumnValue('can_write_files');
+    } // getCanWriteFiles()
+    
+    /**
+    * Set value of 'can_write_files' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteFiles($value) {
+      return $this->setColumnValue('can_write_files', $value);
+    } // setCanWriteFiles() 
+    
+    
+    /**
+    * Return value of 'can_write_events' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanWriteEvents() {
+      return $this->getColumnValue('can_write_events');
+    } // getCanWriteEvents()
+    
+    /**
+    * Set value of 'can_write_events' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setCanWriteEvents($value) {
+      return $this->setColumnValue('can_write_events', $value);
+    } // getCanWriteEvents() 
     
     /**
     * Return value of 'can_assign_to_owners' field

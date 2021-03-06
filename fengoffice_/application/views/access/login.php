@@ -1,5 +1,5 @@
 <?php set_page_title(lang('login')) ?>
-<form class="internalForm" action="<?php echo get_url('access', 'login') ?>" method="post">
+<form action="<?php echo get_url('access', 'login') ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

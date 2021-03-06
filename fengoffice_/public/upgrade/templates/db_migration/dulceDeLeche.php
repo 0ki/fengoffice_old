@@ -275,9 +275,69 @@ ALTER TABLE `<?php echo $table_prefix ?>_users` ADD COLUMN `personal_project_id`
 
 ALTER TABLE `<?php echo $table_prefix ?>tags` DROP COLUMN `project_id` , ROW_FORMAT = DYNAMIC;
 
+--- Groups
+ALTER TABLE `opengoo`.`og_users`
+ ADD COLUMN               	`can_edit_company_data` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ADD COLUMN 	`can_manage_security` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ADD COLUMN 	`can_manage_workspaces` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,
+ADD COLUMN 	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ADD COLUMN 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+drop column is_admin;
+
+CREATE TABLE `<?php echo $table_prefix ?>groups` (
+  	`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  	`name` TEXT <?php echo $default_collation ?> NOT NULL,
+  	`created_on` DATETIME NOT NULL,
+  	`created_by_id` INTEGER UNSIGNED NOT NULL,
+  	`updated_on` DATETIME NOT NULL,
+  	`updated_by_id` INTEGER UNSIGNED NOT NULL,
+  	`can_edit_company_data` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  	`can_manage_security` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_workspaces` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,
+	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,   
+  PRIMARY KEY(`id`)
+) ENGINE = InnoDB <?php echo $default_charset ?>
+AUTO_INCREMENT = 10000000;
+
+CREATE TABLE `<?php echo $table_prefix ?>group_users` (
+  `group_id` INTEGER UNSIGNED NOT NULL,
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `created_on` DATETIME NOT NULL,
+  `created_by_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY(`group_id`, `user_id`),
+  INDEX `USER`(`user_id`)
+) ENGINE = InnoDB;
+
+ALTER TABLE `<?php echo $table_prefix ?>object_user_permissions` DROP COLUMN `permission`,
+ ADD COLUMN `can_read` TINYINT(1) UNSIGNED NOT NULL ,
+ ADD COLUMN `can_write` TINYINT(1) UNSIGNED NOT NULL;
+
 -- save gui state
 CREATE TABLE  `opengoo`.`<?php echo $table_prefix ?>guistate` (
   `user_id` int(10) unsigned NOT NULL default '1',
   `name` varchar(100) NOT NULL,
   `value` text NOT NULL
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+
+-- alter permission structure
+ALTER TABLE `<?php echo $table_prefix ?>project_users` MODIFY COLUMN `created_on` DATETIME NOT NULL DEFAULT NULL,
+ CHANGE COLUMN `can_manage_messages` `can_read_messages` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_tasks` `can_read_tasks` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_milestones` `can_read_milestones` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_upload_files` `can_read_files` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_files` `can_write_files` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_events` `can_read_events` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_weblinks` `can_read_webpages` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_contacts` `can_read_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ CHANGE COLUMN `can_manage_mails` `can_read_mails` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+ ADD COLUMN `can_write_messages` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_read_mails`,
+ ADD COLUMN `can_write_tasks` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_messages`,
+ ADD COLUMN `can_write_milestones` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_tasks`,
+ ADD COLUMN `can_write_events` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_milestones`,
+ ADD COLUMN `can_write_webpages` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_events`,
+ ADD COLUMN `can_write_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_webpages`,
+ ADD COLUMN `can_write_mails` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_contacts`,
+ ADD COLUMN `can_read_comments` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_write_mails`,
+ ADD COLUMN `can_write_comments` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_read_comments`;

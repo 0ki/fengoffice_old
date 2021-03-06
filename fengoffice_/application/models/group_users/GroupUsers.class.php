@@ -6,7 +6,74 @@
   * @author Marcos Saiz <marcos.saiz@gmail.com>
   */
   class  GroupUsers extends BaseGroupUsers {
-  
+  	/**
+  	 * Returns all User objects that belong to a group
+  	 *
+  	 * @param integer $group_id
+  	 * @return User list
+  	 */
+  	static function getUsersByGroup($group_id){
+  		 $all = self::findAll(array('conditions' => array('`group_id` = ?', $group_id) ));
+  		 $cond= '0';  		 
+  		 if(!$all)
+  		 	return array(); //empty result, avoid query
+  		 foreach ($all as $usr)  		 	
+  		 	$cond .= ',' . $usr->getUserId(); 
+  		 $cond = '(' . $cond . ') ';
+  		 return  Users::findAll(array('conditions' => array('`id` in ' . $cond) ));
+  	}
+  	/**
+	 * Returns all groups a user belongs to
+  	 *
+  	 * @param $user_id
+  	 * @return unknown
+  	 */
+  	static function getGroupsByUser($user_id){
+  		 $cond = self::getGroupsCSVsByUser($user_id);
+  		 if($cond=='')  		 
+  			 return array();
+  		 else
+  			 return Groups::findAll(array('conditions' => array('`id` in ' . $cond) ));
+  	}
+  	/**
+	 * Returns true is a user belongs to a group
+  	 *
+  	 * @param $user_id
+  	 * @return unknown
+  	 */
+  	static function isUserInGroup($user_id, $group_id){
+		try{
+ 			return (count(self::find(array('conditions' => array("`user_id`  =  $user_id  AND `group_id` =  $group_id") ))) > 0);
+		}
+		catch (Exception $e){
+			return false;
+		}
+  	}// isUserInGroup
+  	
+  	/**
+  	 * Returns all group ids (separated by commas) which a user belongs to
+  	 *
+  	 * @param $user_id
+  	 * @return unknown
+  	 */
+  	static function getGroupsCSVsByUser($user_id){
+  		 $all = self::findAll(array('conditions' => array('`user_id` = ?', $user_id) ));
+  		 $res= '';
+  		 if(!$all)
+  		 	return ''; //empty result, avoid query
+  		 foreach ($all as $gr)  		 	
+  		 	$res .= ($res=='')? $gr->getGroupId() : ',' . $gr->getGroupId(); 
+		return $res;
+  	}
+  	
+  	/**
+  	 * Removes all users of a given grouop
+  	 *
+  	 * @param unknown_type $group_id
+  	 */
+  	static function removeUsersByGroup($group_id){
+  		self::delete(array('`group_id` = ?', $group_id));
+  	}
 //    /**
 //    * Return all relation objects ( GroupUsers) for specific object
 //    *

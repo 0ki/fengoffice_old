@@ -36,10 +36,30 @@ og.FileManager = function() {
 				}
 				var d = this.reader.jsonData;
 				og.processResponse(d);
+				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+				if (d.totalCount == 0) {
+					if (tag) {
+						this.manager.showMessage(lang("no objects with tag message", lang("documents"), ws, tag));
+					} else {
+						this.manager.showMessage(lang("no objects message", lang("documents"), ws));
+					}
+				} else {
+					this.manager.showMessage("");
+				}
+				og.hideLoading();
+			},
+			'beforeload': function() {
+				og.loading();
+				return true;
+			},
+			'loadexception': function() {
+				og.hideLoading();
 			}
 		}
 	});
 	this.store.setDefaultSort('dateUpdated', 'desc');
+	this.store.manager = this;
 
 	function renderName(value, p, r) {
 		return String.format(
@@ -48,13 +68,13 @@ og.FileManager = function() {
 	}
 
 	function renderIcon(value, p, r) {
-		var classes = "db-ico unknown " + r.data.type;
-		if (r.data.mimeType) { 
+		var classes = "db-ico ico-unknown ico-" + r.data.type;
+		if (r.data.mimeType) {
 			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
 			var acc = "";
 			for (var i=0; i < path.length; i++) {
 				acc += path[i];
-				classes += " " + acc;
+				classes += " ico-" + acc;
 				acc += "-";
 			}
 		}
@@ -74,6 +94,9 @@ og.FileManager = function() {
 	}
 
 	function renderDate(value, p, r) {
+		if (!value) {
+			return "";
+		}
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
 			return value.dateFormat('M j');
@@ -84,9 +107,9 @@ og.FileManager = function() {
 
 	function renderCheckout(value, p, r) {
 		if (value =='')
-			return String.format('<a href="{1}")">{0}</a>', lang('checkout'), og.getUrl('files', 'checkout_file', {id: r.id}));
+			return String.format('<a href="#" onclick="og.openLink(\'{1}\')")" title="{2}">{0}</a>', lang('checkout'), og.getUrl('files', 'checkout_file', {id: r.id}), lang('checkout description'));
 		else if (value == 'self' && r.data.checkedOutById == "0")
-			return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}));
+			return String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>', lang('checkin'), og.getUrl('files', 'checkin_file', {id: r.id}), lang('checkin description'));
 		else
 			return lang('checked out by', String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.checkedOutByName, og.getUrl('user', 'card', {id: r.data.checkedOutById})));
 	}
@@ -209,7 +232,7 @@ og.FileManager = function() {
 	moreActions = {
 		download: new Ext.Action({
 			text: lang('download'),
-			iconCls: 'db-ico-download',
+			iconCls: 'ico-download',
 			handler: function(e) {
 				var url = og.getUrl('files', 'download_file', {id: getFirstSelectedId()});
 				window.open(url);
@@ -217,7 +240,7 @@ og.FileManager = function() {
 		}),
 		properties: new Ext.Action({
 			text: lang('properties'),
-			iconCls: 'db-ico-properties',
+			iconCls: 'ico-properties',
 			handler: function(e) {
 				var o = sm.getSelected();
 				var url = og.getUrl('object', 'view', {id: o.data.object_id, manager: o.data.manager});
@@ -226,7 +249,7 @@ og.FileManager = function() {
 		}),
 		slideshow: new Ext.Action({
 			text: lang('slideshow'),
-			iconCls: 'db-ico-slideshow',
+			iconCls: 'ico-slideshow',
 			handler: function(e) {
 				og.slideshow(getFirstSelectedId());
 			},
@@ -238,21 +261,21 @@ og.FileManager = function() {
 		newCO: new Ext.Action({
 			text: lang('new'),
             tooltip: lang('create an object'),
-            iconCls: 'db-ico-new',
+            iconCls: 'ico-new',
 			menu: {items: [
-				{text: lang('document'), iconCls: 'db-ico-doc', handler: function() {
+				{text: lang('document'), iconCls: 'ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');
 					og.openLink(url);
 				}},
-				/*{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
+				/*{text: lang('spreadsheet'), iconCls: 'ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
 				}},*/
-				{text: lang('presentation'), iconCls: 'db-ico-prsn', handler: function() {
+				{text: lang('presentation'), iconCls: 'ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
 				}},
-				{text: lang('upload file'), iconCls: 'db-ico-upload', handler: function() {
+				{text: lang('upload file'), iconCls: 'ico-upload', handler: function() {
 					var url = og.getUrl('files', 'add_file');
 					og.openLink(url);
 				}}
@@ -261,7 +284,7 @@ og.FileManager = function() {
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
-            iconCls: 'db-ico-tag',
+            iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
 				listeners: {
@@ -281,7 +304,7 @@ og.FileManager = function() {
 		del: new Ext.Action({
 			text: lang('delete'),
             tooltip: lang('delete selected objects'),
-            iconCls: 'db-ico-delete',
+            iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
 				if (confirm(lang('confirm delete object'))) {
@@ -296,7 +319,7 @@ og.FileManager = function() {
 		more: new Ext.Action({
 			text: lang('more'),
             tooltip: lang('more actions'),
-            iconCls: 'db-ico-more',
+            iconCls: 'ico-more',
 			disabled: true,
 			menu: {items: [
 				moreActions.download,
@@ -307,7 +330,7 @@ og.FileManager = function() {
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
-            iconCls: 'db-ico-refresh',
+            iconCls: 'ico-refresh',
 			handler: function() {
 				this.store.reload();
 			},
@@ -342,7 +365,22 @@ og.FileManager = function() {
 			actions.more,
 			'-',
 			actions.refresh
-		]
+		],
+		listeners: {
+			'render': {
+				fn: function() {
+					this.innerMessage = document.createElement('div');
+					this.innerMessage.className = 'inner-message';
+					var msg = this.innerMessage;
+					var elem = Ext.get(this.getEl());
+					var scroller = elem.select('.x-grid3-scroller');
+					scroller.each(function() {
+						this.dom.appendChild(msg);
+					});
+				},
+				scope: this
+			}
+		}
 	});
 
 	og.eventManager.addListener("tag changed", function(tag) {
@@ -353,7 +391,9 @@ og.FileManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		if (this.store.lastOptions) {
+			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		}
 	}, this);
 };
 
@@ -383,6 +423,10 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	
 	deactivate: function() {
 		this.active = false;
+	},
+	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
 	}
 });
 
@@ -392,3 +436,4 @@ og.FileManager.getInstance = function() {
 	}
 	return og.FileManager.instance;
 }
+

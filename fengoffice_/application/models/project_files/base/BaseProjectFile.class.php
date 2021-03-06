@@ -55,27 +55,6 @@
       return $this->setColumnValue('project_id', $value);
     } // setProjectId() 
     
-    /**
-    * Return value of 'folder_id' field
-    *
-    * @access public
-    * @param void
-    * @return integer 
-    */
-    function getFolderId() {
-      return $this->getColumnValue('folder_id');
-    } // getFolderId()
-    
-    /**
-    * Set value of 'folder_id' field
-    *
-    * @access public   
-    * @param integer $value
-    * @return boolean
-    */
-    function setFolderId($value) {
-      return $this->setColumnValue('folder_id', $value);
-    } // setFolderId() 
     
     /**
     * Return value of 'filename' field

@@ -26,6 +26,11 @@
     'edit user' => 'Edit user',
     'delete user' => 'Delete user',
     
+    // Group
+    'add group' => 'Add group',
+    'edit group' => 'Edit group',
+    'delete group' => 'Delete group',
+    
     // Project
     'add project' => 'Add workspace',
     'edit project' => 'Edit workspace details',
@@ -54,13 +59,15 @@
     'edit comment' => 'Edit comment',
     
     // Task list
-    'add task list' => 'Add task list',
-    'edit task list' => 'Edit task list',
-    'delete task list' => 'Delete task list',
+    'add task list' => 'Add task',
+    'edit task list' => 'Edit task',
+    'delete task list' => 'Delete task',
     'reorder tasks' => 'Reorder tasks',
+	'reorder sub tasks' => 'Reorder sub tasks',
     
     // Task
     'add task' => 'Add task',
+	'add sub task' => 'Add sub task',
     'edit task' => 'Edit task',
     'delete task' => 'Delete task',
     'mark task as completed' => 'Mark task as completed',
@@ -121,7 +128,7 @@
     'new spreadsheet' => 'New spreadsheet',
     'new presentation' => 'New presentation',
 
-    'slideshow' => 'slideshow',
+    'slideshow' => 'Slideshow',
     'revisions and comments' =>'Revisions & Comments',
         
     'Save' => 'Save',
@@ -148,6 +155,7 @@
     'link object' => 'Link Object',
     'link objects' => 'Link Objects',
     'link more objects' => 'Link more objects',
+    'unlink' => 'Unlink',
     'unlink object' => 'Unlink Object',
     'unlink objects' => 'Unlink Objects',
   	
@@ -160,6 +168,7 @@
     'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
   
   	'save as new revision' => 'Save as new revision',
+	'save as' => 'Save as...'
     
   ); // array
 

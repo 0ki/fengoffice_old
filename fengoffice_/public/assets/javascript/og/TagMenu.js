@@ -7,7 +7,7 @@ og.TagMenu = function(config, tags) {
 		items: [ 
 			'-', {
 			text: lang('add tag'),
-			iconCls: 'db-ico-addtag',
+			iconCls: 'ico-addtag',
 			handler: function() {
 				Ext.Msg.prompt(lang('add tag'),
 					lang('enter the desired tag'),

@@ -3,29 +3,33 @@ $options = array();
 
 	if ($file->isCheckedOut()){
 		if ($file->canCheckin(logged_user()))
-			add_page_action(lang('checkin file'), $file->getCheckinUrl()); 
+			add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin'); 
 	} else {
 		if ($file->canCheckout(logged_user())) 
-			add_page_action(lang('checkout file'), $file->getCheckoutUrl());
+			add_page_action(lang('checkout file'), $file->getCheckoutUrl(), 'ico-checkout');
 	}
 	
 	if($file->canDownload(logged_user())) 
-		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), null, "_blank");
+		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), 'ico-download', "_blank");
 	
 	if($file->canEdit(logged_user()))
-		add_page_action(lang('file properties'), $file->getEditUrl());
+		add_page_action(lang('file properties'), $file->getEditUrl(), 'ico-properties');
 	
 	if($file->canDelete(logged_user())) 
-		add_page_action(lang('delete'), $file->getDeleteUrl());
+		add_page_action(lang('delete'), $file->getDeleteUrl(), 'ico-delete');
 	
-	if(strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 ) 
-		add_page_action(lang('edit'), $file->getModifyUrl());
+	if (strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 || substr($file->getTypeString(), 0, 4) == "text") 
+		add_page_action(lang('edit'), $file->getModifyUrl(), 'ico-edit');
+		
+	if (strcmp($file->getTypeString(), 'prsn')==0) {
+		add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
+	}
 
 // Arreglar el slideshow!!!!
 //	if(strcmp($file->getTypeString(),'prsn')==0 ) 
 //		add_page_action($options[] = '<a href="javascript:og.slideshow(' . 	$file->getId()	. ')">' . lang('slideshow') . '</a>';
 
-  add_javascript_to_page('file/slideshow.js');
+  //add_javascript_to_page('file/slideshow.js');
 ?>
 <div style="padding:7px">
 <div class="file">
@@ -36,7 +40,7 @@ $options = array();
   	<div class="private" title="<?php echo lang('private file') ?>"><span><?php echo lang('private file') ?></span></div>
 	<?php } // if ?>
   <div class="coTitle"><?php echo clean($file->getFilename()) ?></div>
-  <div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($file, $file->getProject()) ?></div>
+  <div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($file) ?></div>
   </div>
   
   <div class="coInfo">

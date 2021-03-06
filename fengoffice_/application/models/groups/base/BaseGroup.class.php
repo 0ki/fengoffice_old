@@ -164,7 +164,6 @@
     function setCanEditCompanyData($value) {
       return $this->setColumnValue('can_edit_company_data', $value);
     } //  setCanEditCompanyData() 
-       
      
     /**
     * Return value of 'can_manage_Security' field
@@ -231,6 +230,28 @@
     function setCanManageConfiguration($value) {
       return $this->setColumnValue('can_manage_configuration', $value);
     } // setCanManageConfiguration() 
+    
+    /**
+    * Return value of 'can_manage_contacts' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getCanManageContacts() {
+      return $this->getColumnValue('can_manage_contacts');
+    } // getCanManageContacts()
+    
+    /**
+    * Set value of 'can_manage_contacts' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function setCanManageContacts($value) {
+      return $this->setColumnValue('can_manage_contacts', $value);
+    } // setCanManageContacts()
     
     /**
     * Return manager instance

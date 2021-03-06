@@ -74,6 +74,8 @@ class MailUtilities
 		$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
+		$mail->setCreatedOn(new DateTimeValue(time()));
+		$mail->setCreatedById($account->getUserId());
 		
 		$uid = trim($uidl);
 		if ($uid[0]== '<')

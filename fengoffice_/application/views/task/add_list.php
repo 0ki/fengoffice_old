@@ -6,7 +6,6 @@
     array(lang('tasks'), get_url('task')),
     array($task_list->isNew() ? lang('add task list') : lang('edit task list'))
   ));
-  add_page_action(lang('add task list'), get_url('task', 'add_list'));
 
 ?>
 <?php if($task_list->isNew()) { ?>
@@ -24,7 +23,7 @@
   
   <div>
     <?php echo label_tag(lang('description'), 'taskListFormDescription',true) ?>
-    <?php echo textarea_field('task_list[text]', array_var($task_list_data, 'text'), array('class' => 'short', 'id' => 'taskListFormDescription')) ?>
+    <?php echo textarea_field('task_list[text]', array_var($task_list_data, 'text'), array('class' => 'long', 'id' => 'taskListFormDescription')) ?>
   </div>
   </fieldset>
 	<fieldset>

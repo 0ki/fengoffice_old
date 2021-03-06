@@ -48,7 +48,7 @@ abstract class PageController extends Controller {
 		parent::__construct();
 		$this->setSystemControllerClass('PageController');;
 
-		$this->addHelper('common', 'page', 'format', 'pagination');
+		$this->addHelper('common', 'page', 'format', 'pagination', 'permissions');
 		if(Env::helperExists($this->getControllerName())) $this->addHelper($this->getControllerName()); // controller name helper
 	} // __construct
 

@@ -69,6 +69,7 @@
 	top:10px;
 	width:250px;
 	z-index:20000;
+	cursor: pointer;
 }
 .toggle_collapsed {
 	background-repeat: no-repeat;

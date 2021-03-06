@@ -2,13 +2,13 @@
   //add_stylesheet_to_page('project/task_list.css');
   
   if($task_list->canEdit(logged_user())) {
-    add_page_action(lang('edit'), $task_list->getEditListUrl());
+    add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit');
   } // if
   if($task_list->canDelete(logged_user())) {
-    add_page_action(lang('delete'), $task_list->getDeleteListUrl());
+    add_page_action(lang('delete'), $task_list->getDeleteListUrl(), 'ico-delete');
   } // if
   if($task_list->canReorderTasks(logged_user())) {
-    add_page_action(lang('reorder tasks'), $task_list->getReorderTasksUrl($on_list_page));
+    add_page_action(lang('reorder sub tasks'), $task_list->getReorderTasksUrl($on_list_page), 'ico-properties');
   } // if
 ?>
 <script type="text/javascript">
@@ -35,7 +35,7 @@
     <div class="private" title="<?php echo lang('private task list') ?>"><span><?php echo lang('private task list') ?></span></div>
 <?php } // if ?>
 	<div class="coTitle"><?php echo $task_list->getTitle() != '' ? $task_list->getTitle() : $task_list->getText() ?></div>
-	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($task_list, $task_list->getProject()) ?></div>
+	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($task_list) ?></div>
   </div>
   <div class="coInfo">
   	<?php if ($task_list->getParent() instanceof ProjectTask) {
@@ -84,7 +84,7 @@
   
   <div class="addTask">
 <?php if($task_list->canAddSubTask(logged_user())) { ?>
-    <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add task') ?></a></div>
+    <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add sub task') ?></a></div>
   
     <div id="addTaskForm<?php echo $task_list->getId() ?>" style="display:none">
       <form class="internalForm" action="<?php echo $task_list->getAddTaskUrl($on_list_page) ?>" method="post">
@@ -97,7 +97,7 @@
           <?php echo assign_to_select_box("task[assigned_to]", $task_list->getProject(), null, array('id' => 'addTaskAssignTo' . $task_list->getId())) ?>
         </div>
         
-        <?php echo submit_button(lang('add task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId())) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
+        <?php echo submit_button(lang('add sub task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId())) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
         
       </form>
     </div>

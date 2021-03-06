@@ -38,7 +38,8 @@ class ProjectController extends ApplicationController {
 	function overview() {
 		if(!logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$this->addHelper('textile');
@@ -70,7 +71,8 @@ class ProjectController extends ApplicationController {
 	function search() {
 		if(active_project() && !logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$search_for = array_var($_GET, 'search_for');
@@ -106,7 +108,8 @@ class ProjectController extends ApplicationController {
 	function tags() {
 		if(!logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('tag_names', active_project()->getTagNames());
@@ -122,7 +125,8 @@ class ProjectController extends ApplicationController {
 		$project=active_or_personal_project();
 		if(!logged_user()->isProjectUser($project)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('project_companies', $project->getCompanies());
@@ -138,7 +142,8 @@ class ProjectController extends ApplicationController {
 		$project = active_or_personal_project();
 		if(!$project->canChangePermissions(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($project->getOverviewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('project_users', $project->getUsers(false));
@@ -267,13 +272,6 @@ class ProjectController extends ApplicationController {
 		if(is_array($project_data)) {
 			$project->setFromAttributes($project_data);
 
-			$default_folders_config = str_replace(array("\r\n", "\r"), array("\n", "\n"), config_option('default_project_folders', ''));
-			if(trim($default_folders_config) == '') {
-				$default_folders = array();
-			} else {
-				$default_folders = explode("\n", $default_folders_config);
-			} // if
-
 			try {
 				DB::beginWork();
 				$project->save();
@@ -293,19 +291,19 @@ class ProjectController extends ApplicationController {
 					$auto_assign_users[] = logged_user();
 				} // if
 
+				$project->clearUsers();
 				foreach($auto_assign_users as $user) {
 					$project_user = new ProjectUser();
 					$project_user->setProjectId($project->getId());
 					$project_user->setUserId($user->getId());
 					if(is_array($permission_columns)) {
-						foreach($permission_columns as $permission) $project_user->setColumnValue($permission_columns, true);
+						foreach($permission_columns as $permission) $project_user->setColumnValue($permission, true);
 					} // if
 					$project_user->save();
 				} // foreach
 
 				/* <permissions> */
 				$project->clearCompanies();
-				$project->clearUsers();
 
 				$companies = array(owner_company());
 				$client_companies = owner_company()->getClientCompanies();
@@ -330,28 +328,33 @@ class ProjectController extends ApplicationController {
 						if(is_array($users)) {
 							$counter = 0;
 							foreach($users as $user) {
-								$user_id = $user->getId();
-								$counter++;
-								if(array_var($_POST, "project_user_$user_id") == 'checked') {
-
-									$project_user = new ProjectUser();
-									$project_user->setProjectId($project->getId());
-									$project_user->setUserId($user_id);
-
-									foreach($permissions as $permission => $permission_text) {
-
-										// Owner company members have all permissions
-										$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
-
-										$setter = 'set' . Inflector::camelize($permission);
-										$project_user->$setter($permission_value);
-
+								$continue = true;
+								foreach ($auto_assign_users as $already_added_user){
+									if($user->getId() == $already_added_user->getId()){
+										$continue= false;
+									}
+								}
+								if($continue){
+									$user_id = $user->getId();
+									$counter++;
+									if(array_var($_POST, "project_user_$user_id") == 'checked') {
+	
+										$project_user = new ProjectUser();
+										$project_user->setProjectId($project->getId());
+										$project_user->setUserId($user_id);
+	
+										foreach($permissions as $permission => $permission_text) {
+	
+											// Owner company members have all permissions
+											$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
+	
+											$setter = 'set' . Inflector::camelize($permission);
+											$project_user->$setter($permission_value);
+	
+										} // if	
+										$project_user->save();	
 									} // if
-
-									$project_user->save();
-
-								} // if
-
+								}
 							} // foreach
 						} // if
 					} // if
@@ -372,15 +375,11 @@ class ProjectController extends ApplicationController {
 				return;
 
 			} catch(Exception $e) {
-				tpl_assign('error', $e);
+				DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
-				return;
-				DB::rollback();
 			} // try
-
 		} // if
-
 	} // add
 
 	/**
@@ -512,10 +511,8 @@ class ProjectController extends ApplicationController {
 				return;
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
 				flash_error($e->getMessage());
 				ajx_current("empty");
-				return;
 			} // try
 		} // if
 	} // edit
@@ -539,13 +536,15 @@ class ProjectController extends ApplicationController {
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			return;
+				ajx_current("empty");
+				return;
 			//$this->redirectTo('administration', 'projects');
 		} // if
 
 		if(!$project->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			return;
+				ajx_current("empty");
+				return;
 			//$this->redirectToReferer(get_url('administration', 'projects'));
 		} // if
 
@@ -584,12 +583,14 @@ class ProjectController extends ApplicationController {
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			$this->redirectTo('administration', 'projects');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$project->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('administration', 'projects'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -603,13 +604,13 @@ class ProjectController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success complete project', $project->getName()));
-
+			$this->redirectToReferer(get_url('administration', 'projects'));
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error complete project'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToReferer(get_url('administration', 'projects'));
 	} // complete
 
 	/**
@@ -622,12 +623,14 @@ class ProjectController extends ApplicationController {
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			$this->redirectTo('administration', 'projects');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$project->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('administration', 'projects'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -641,13 +644,14 @@ class ProjectController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success open project', $project->getName()));
+			$this->redirectToReferer(get_url('administration', 'projects'));
 
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error open project'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToReferer(get_url('administration', 'projects'));
 	} // open
 
 	/**
@@ -659,40 +663,46 @@ class ProjectController extends ApplicationController {
 	function remove_user() {
 		if(!active_project()->canChangePermissions(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(active_project()->getOverviewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		$user = Users::findById(get_id('user_id'));
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if($user->isAccountOwner()) {
 			flash_error(lang('user cant be removed from project'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project = Projects::findById(get_id('project_id'));
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project_user = ProjectUsers::findById(array('project_id' => $project->getId(), 'user_id' => $user->getId()));
 		if(!($project_user instanceof ProjectUser)) {
 			flash_error(lang('user not on project'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
 			$project_user->delete();
 			flash_success(lang('success remove user from project'));
+			$this->redirectTo('project', 'people');
 		} catch(Exception $e) {
 			flash_error(lang('error remove user from project'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectTo('project', 'people');
 	} // remove_user
 
 	/**
@@ -704,25 +714,29 @@ class ProjectController extends ApplicationController {
 	function remove_company() {
 		if(!active_project()->canChangePermissions(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(active_project()->getOverviewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project = Projects::findById(get_id('project_id'));
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = Companies::findById(get_id('company_id'));
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project_company = ProjectCompanies::findById(array('project_id' => $project->getId(), 'company_id' => $company->getId()));
 		if(!($project_company instanceof ProjectCompany)) {
 			flash_error(lang('company not on project'));
-			$this->redirectTo('project', 'people');
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -739,13 +753,13 @@ class ProjectController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success remove company from project'));
+			$this->redirectTo('project', 'people');
 
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error remove company from project'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectTo('project', 'people');
 	} // remove_company
 
 	/**
@@ -757,10 +771,10 @@ class ProjectController extends ApplicationController {
 		$this->setLayout("json");
 		$ps = array();
 		$all_projects=array();
-		if(logged_user()->isAdministrator())
-			$all_projects = Projects::getAll();
-		else 
-			$all_projects = logged_user()->getActiveProjects();
+//		if(logged_user()->isAdministrator())
+//			$all_projects = Projects::getAll();
+//		else 
+		$all_projects = logged_user()->getActiveProjects();
 		foreach ($all_projects as $p) {
 			$ps[] = array(
 				"id" => $p->getId(),

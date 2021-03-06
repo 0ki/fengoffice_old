@@ -46,18 +46,21 @@ class AccountController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = $user->getCompany();
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(get_url('administration'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canUpdateProfile(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$redirect_to = array_var($_GET, 'redirect_to');
@@ -80,7 +83,6 @@ class AccountController extends ApplicationController {
           'mobile_number' => $user->getMobileNumber(),
           'home_number'   => $user->getHomeNumber(),
           'timezone'      => $user->getTimezone(),
-          'is_admin'      => $user->getIsAdmin(),
           'auto_assign'   => $user->getAutoAssign(),
           'company_id'    => $user->getCompanyId(),
 			); // array
@@ -131,7 +133,8 @@ class AccountController extends ApplicationController {
 				$this->redirectToUrl($redirect_to);
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_profile
@@ -147,12 +150,14 @@ class AccountController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canUpdateProfile(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$redirect_to = array_var($_GET, 'redirect_to');
@@ -195,7 +200,8 @@ class AccountController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_password
@@ -210,24 +216,28 @@ class AccountController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canUpdatePermissions(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$company = $user->getCompany();
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$projects = $company->getProjects();
 		if(!is_array($projects) || !count($projects)) {
 			flash_error(lang('no projects owned by company'));
-			$this->redirectToReferer($company->getViewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		$permissions = ProjectUsers::getNameTextArray();
@@ -244,38 +254,45 @@ class AccountController extends ApplicationController {
 		tpl_assign('redirect_to', $redirect_to);
 
 		if(array_var($_POST, 'submitted') == 'submitted') {
-			DB::beginWork();
-			foreach($projects as $project) {
-				$relation = ProjectUsers::findById(array(
-            'project_id' => $project->getId(),
-            'user_id' => $user->getId(),
-				)); // findById
-
-				if(array_var($_POST, 'project_permissions_' . $project->getId()) == 'checked') {
-					if(!($relation instanceof ProjectUser)) {
-						$relation = new ProjectUser();
-						$relation->setProjectId($project->getId());
-						$relation->setUserId($user->getId());
-					} // if
-
-					foreach($permissions as $permission => $permission_text) {
-						$permission_value = array_var($_POST, 'project_permission_' . $project->getId() . '_' . $permission) == 'checked';
-
-						$setter = 'set' . Inflector::camelize($permission);
-						$relation->$setter($permission_value);
-					} // foreach
-
-					$relation->save();
-				} else {
-					if($relation instanceof ProjectUser) {
-						$relation->delete();
+			try{
+				DB::beginWork();
+				foreach($projects as $project) {
+					$relation = ProjectUsers::findById(array(
+	            		'project_id' => $project->getId(),
+	            		'user_id' => $user->getId(),
+					)); // findById
+					
+					if(array_var($_POST, 'project_permissions_'.$project->getId()) == 'on') {
+						if(!($relation instanceof ProjectUser)) {
+							$relation = new ProjectUser();
+							$relation->setProjectId($project->getId());
+							$relation->setUserId($user->getId());
+						} // if
+	
+						foreach($permissions as $permission => $permission_text) {
+							$post_id = 'project_permissions_'.$project->getId().'_'.$permission;
+							$post_value = array_var($_POST, $post_id);
+							$permission_value = $post_value == 'on';
+							$setter = 'set' . Inflector::camelize($permission);
+							$relation->$setter($permission_value);
+						} // foreach
+	
+						$relation->save();
+					} else {
+						if($relation instanceof ProjectUser) {
+							$relation->delete();
+						} // if
 					} // if
 				} // if
-			} // if
-			DB::commit();
-
-			flash_success(lang('success user permissions updated'));
-			$this->redirectToUrl($redirect_to);
+				DB::commit();
+	
+				flash_success(lang('success user permissions updated'));
+				$this->redirectToUrl($redirect_to);
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
 		} // if
 	} // update_permissions
 
@@ -289,12 +306,14 @@ class AccountController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canUpdateProfile(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$redirect_to = array_var($_GET, 'redirect_to');
@@ -335,9 +354,11 @@ class AccountController extends ApplicationController {
 				} // if
 
 				flash_success(lang('success edit avatar'));
+				$this->redirectToUrl($redirect_to);
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit_avatar
@@ -352,12 +373,14 @@ class AccountController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canUpdateProfile(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		} // if
 
 		$redirect_to = array_var($_GET, 'redirect_to');
@@ -368,7 +391,8 @@ class AccountController extends ApplicationController {
 
 		if(!$user->hasAvatar()) {
 			flash_error(lang('avatar dnx'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -380,12 +404,13 @@ class AccountController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete avatar'));
+			$this->redirectToUrl($redirect_to);
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete avatar'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToUrl($redirect_to);
 	} // delete_avatar
 
 } // AccountController

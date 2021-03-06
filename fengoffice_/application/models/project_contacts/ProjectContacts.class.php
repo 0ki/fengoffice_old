@@ -7,15 +7,6 @@
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
   class ProjectContacts extends BaseProjectContacts {
-    
-    /** All available user permissions **/
-    const CAN_MANAGE_MESSAGES   = 'can_manage_messages';
-    const CAN_MANAGE_TASKS      = 'can_manage_tasks';
-    const CAN_MANAGE_MILESTONES = 'can_manage_milestones';
-    const CAN_UPLOAD_FILES      = 'can_upload_files';
-    const CAN_MANAGE_FILES      = 'can_manage_files';
-    const CAN_ASSIGN_TO_OWNERS  = 'can_assign_to_owners';
-    const CAN_ASSIGN_TO_OTHER   = 'can_assign_to_other';
   
     /**
     * Return all contacts that are involved in specific project

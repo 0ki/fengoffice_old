@@ -27,10 +27,8 @@
     * @param Object $object
     * @return array
     */
-    static function getAllPermissionsByObject(Object $object) {
-      return self::findAll(array(
-        'conditions' => array('`rel_object_id` = ? AND `rel_object_manager` = ?', $object->getId(), get_class($object->manager()))
-      )); // findAll
+    static function getAllPermissionsByObject(ApplicationDataObject $object, $user_id_csvs = null ) {
+      return self::getAllPermissionsByObjectIdAndManager($object->getId(), get_class($object->manager()),$user_id_csvs);      
     } //  getAllPermissionsByObject
         
     /**
@@ -39,9 +37,12 @@
     * @param int $object
     * @return array
     */
-    static function getAllPermissionsByObjectIdAndManager($object_id, $manager) {
+    static function getAllPermissionsByObjectIdAndManager($object_id, $manager,$user_id_csvs='') {
+    	if ($user_id_csvs != '')
+    		$user_id_csvs = ' AND user_id in (' . $user_id_csvs . ') ';
       return self::findAll(array(
-        'conditions' => array('`rel_object_id` = ? AND `rel_object_manager` = ?', $object_id, $manager)
+        'conditions' => array('`rel_object_id` = ? AND `rel_object_manager` = ? ' . $user_id_csvs, $object_id, $manager),
+        'order' => '`user_id`',
       )); // findAll
     } //  getAllPermissionsByObject
     
@@ -57,7 +58,7 @@
 	  $perm = self::findOne(array(
         'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $object->getId(), get_class($object->manager()))
       )); // findAll
-      return $perm!=null && $perm->readPermission();
+      return $perm!=null && $perm->hasReadPermission();
     } //  userCanRead    
         
     /**
@@ -71,7 +72,7 @@
 	  $perm = self::findOne(array(
         'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $object->getId(), get_class($object->manager()))
       )); // findAll      
-      return $perm!=null && $perm->writePermission();
+      return $perm!=null && $perm->hasWritePermission();
     } //  userCanWrite   
         
     /**
@@ -85,7 +86,7 @@
 	  $perm = self::findOne(array(
         'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $object->getId(), get_class($object->manager()))
       )); // findAll      
-      return $perm!=null && $perm->cannotAccess();
+      return $perm!=null && $perm->hasNoAccess();
     } //  userCanWrite
     
   

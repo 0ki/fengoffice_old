@@ -1,88 +1,106 @@
 <?php
-
   set_page_title(lang('update permissions'));
-  if($user->getCompany()->isOwner()) {
-    administration_tabbed_navigation(ADMINISTRATION_TAB_COMPANY);
-    administration_crumbs(array(
-      array(lang('company'), $user->getCompany()->getViewUrl()),
-      array($user->getDisplayName(), $user->getCardUrl()),
-      array(lang('update permissions'))
-    ));
-  } else {
-    administration_tabbed_navigation(ADMINISTRATION_TAB_CLIENTS);
-    administration_crumbs(array(
-      array(lang('clients'), get_url('administration', 'clients')),
-      array($user->getCompany()->getName(), $user->getCompany()->getViewUrl()),
-      array($user->getDisplayName(), $user->getCardUrl()),
-      array(lang('update permissions'))
-    ));
-  } // if
   
   if($user->canUpdateProfile(logged_user())) {
-    add_page_action(array(
-      lang('update profile')  => $user->getEditProfileUrl(),
-      lang('change password') => $user->getEditPasswordUrl(),
-      lang('update avatar')   => $user->getUpdateAvatarUrl()
-    ));
+	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
+	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
+	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-properties');
   } // if
   
-  if($user->canUpdatePermissions(logged_user())) {
-    add_page_action(array(
-      lang('permissions')  => $user->getUpdatePermissionsUrl()
-    ));
-  } // if
-  
-  //add_stylesheet_to_page('admin/user_permissions.css');
-
 ?>
-<?php
-  $quoted_permissions = array();
-  foreach($permissions as $permission_id => $permission_text) {
-    $quoted_permissions[] = "'$permission_id'";
-  } // foreach
-?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/updateUserPermissions.js') ?>"></script>
 <script type="text/javascript">
-  App.modules.updateUserPermissions.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
+function expandCollapse(obj, id, textX, textC) {
+	var div = document.getElementById(id);
+	if (div.style.display == 'none') {
+		div.style.display = 'block';
+		obj.innerHTML = textC;
+	} else {
+		div.style.display = 'none';
+		obj.innerHTML = textX;
+	}
+}
+
+function checkUncheck(me, id) {
+	var div = Ext.get('div' + id);
+	var checkboxes = div.select('input.checkbox');
+	var count = 0;
+	checkboxes.each(function() {
+		this.dom.checked = me.checked;
+		this.dom.value = me.value;
+		count++;
+	});
+	if (me.checked) {
+		Ext.getDom('count'+id).innerHTML = count + "/" + count;
+	} else {
+		Ext.getDom('count'+id).innerHTML = "0/" + count;
+	}
+}
+
+function checkUncheckSingle(me, id) {
+	var c = Ext.getDom('count'+id);
+	var vals = c.innerHTML.split("/");
+	if (me.checked) {
+		c.innerHTML = (parseInt(vals[0]) + 1) + "/" + vals[1];
+		if (vals[0] == 0) {
+			Ext.getDom(id).checked = true;
+		}
+	} else {
+		c.innerHTML = (vals[0] - 1) + "/" + vals[1];
+		if (vals[0] == 1) {
+			Ext.getDom(id).checked = false;
+		}
+	}
+}
+
 </script>
 
-<?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
-<div id="userPermissions">
-  <form class="internalForm" action="<?php echo $user->getUpdatePermissionsUrl($redirect_to) ?>" method="post">
-    <div id="userProjects">
-<?php foreach($projects as $project) { ?>
-      <table class="blank">
-        <tr>
-          <td class="projectName">
-            <?php echo checkbox_field('project_permissions_' . $project->getId(), $user->isProjectUser($project), array('id' => 'projectPermissions' . $project->getId(), 'onclick' => 'App.modules.updateUserPermissions.projectCheckboxClick(' . $project->getId() . ')')) ?> 
-<?php if($project->isCompleted()) { ?>
-            <label for="projectPermissions<?php echo $project->getId() ?>" class="checkbox"><del class="help" title="<?php echo lang('project completed on by', format_date($project->getCompletedOn()), $project->getCompletedByDisplayName()) ?>"><?php echo clean($project->getName()) ?></del></label>
-<?php } else { ?>
-            <label for="projectPermissions<?php echo $project->getId() ?>" class="checkbox"><?php echo clean($project->getName()) ?></label>
-<?php } // if ?>
-          </td>
-          <td class="permissionsList">
-<?php if($user->isProjectUser($project)) { ?>
-            <div id="projectPermissionsBlock<?php echo $project->getId() ?>">
-<?php } else { ?>
-            <div id="projectPermissionsBlock<?php echo $project->getId() ?>" style="display: none">
-<?php } // if ?>
-              <div class="projectPermission">
-                <?php echo checkbox_field('project_permissions_' . $project->getId() . '_all', $user->hasAllProjectPermissions($project), array('id' => 'projectPermissions' . $project->getId() . 'All', 'onclick' => 'App.modules.updateUserPermissions.projectAllCheckboxClick(' . $project->getId() . ')')) ?> <label for="projectPermissions<?php echo $project->getId() ?>All" class="checkbox"><?php echo lang('all') ?></label>
-              </div>
-<?php foreach($permissions as $permission_name => $permission_text) { ?>
-              <div class="projectPermission">
-                <?php echo checkbox_field('project_permission_' . $project->getId() . '_' . $permission_name, $user->hasProjectPermission($project, $permission_name), array('id' => 'projectPermission' . $project->getId() . $permission_name, 'onclick' => 'App.modules.updateUserPermissions.projectPermissionCheckboxClick(' . $project->getId() . ')')) ?> <label for="projectPermission<?php echo $project->getId() . $permission_name ?>" class="checkbox normal"><?php echo clean($permission_text) ?></label>
-              </div>
-<?php } // foreach ?>
-            </div>
-          </td>
-        </tr>
-      </table>
-<?php } // foreach ?>
-    </div>
-    <input type="hidden" name="submitted" value="submitted" />
-    <?php echo submit_button(lang('update permissions')) ?>
-  </form>
+<div class="permissionWrapper">
+<form action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" method="POST">
+<input name="submitted" type="hidden" value="submitted" />
+<h1><?php echo lang("permissions for user", $user->getUsername()) ?></h1>
+<?php
+foreach ($projects as $project) {
+	$id = 'project_permissions_' . $project->getId();
+	$relation = ProjectUsers::findById(array(
+		'project_id' => $project->getId(),
+		'user_id' => $user->getId()
+	));
+	$amount = 0; $total = 0;
+	foreach ($permissions as $k => $p) {
+		if ($relation instanceof ProjectUser && $relation->getColumnValue($k)) {
+			$amount++;
+		}
+		$total++;
+	}
+	echo "<div class=\"permissionHeader\">";
+	echo "<input class=\"checkbox\" type=\"checkbox\" " . ($amount > 0?"checked=\"checked\"":"") . " id=\"$id\" name=\"".$id."\"onclick=\"checkUncheck(this, '$id')\" />";
+	echo "<label class=\"checkbox\" for=\"$id\">".$project->getName()."</label>";
+	echo "<span id=\"count$id\" class=\"count\">$amount/$total</span>";
+	echo "<a href=\"#\" onclick=\"expandCollapse(this, 'div$id', '".lang('more')."', '".lang('hide')."')\">";
+	echo lang('more');
+	echo "</a>";
+	echo "<div id=\"div$id\" style=\"display:none\" class=\"permissionMore\">";
+	echo "<table>";
+	$i = 1; $cols = 2;
+	foreach ($permissions as $k => $p) {
+		if ($i == 1) {
+			echo "<tr>";
+		}
+		echo "<td>";
+		echo "<input class=\"checkbox\" type=\"checkbox\" id=\"".$id."_".$k."\" name=\"".$id."_".$k."\" ".($relation instanceof ProjectUser && $relation->getColumnValue($k)?"checked=\"checked\"":"")."\" onclick=\"checkUncheckSingle(this, '$id')\" />";
+		echo "<label class=\"checkbox\" for=\"".$id."_".$k."\">$p</label>";
+		echo "</td>";
+		if ($i == $cols) {
+			$i = 0;
+			echo "</tr>";
+		}
+		$i++;
+	}
+	echo "</table>";
+	echo "</div>";
+	echo "</div>";
+}
+echo submit_button(lang('update permissions'));
+?>
+</form>
 </div>
-<?php } // if ?>

@@ -10,17 +10,6 @@
 .x-tree {
 	background:#fff !important;
 }
-.x-tree-node div.tag-all{
-	background:#eee url(images/cmp-bg.gif) repeat-x;
-	margin-top:1px;
-	border-top:1px solid #ddd;
-	border-bottom:1px solid #ccc;
-	padding-top:2px;
-	padding-bottom:1px;
-}
-.tag-all .x-tree-node-icon {
-	display:none;
-}
 .tag-item {
 	border:1px solid #fff;
 	margin:3px;

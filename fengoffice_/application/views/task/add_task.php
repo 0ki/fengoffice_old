@@ -7,7 +7,6 @@ array(lang('tasks'), get_url('task')),
 array($task_list->getTitle(), $task_list->getViewUrl()),
 array($task->isNew() ? lang('add task') : lang('edit task'))
 ));
-add_page_action(lang('add task list'), get_url('task', 'add_list'));
 
 ?>
 <?php if($task->isNew()) { ?>

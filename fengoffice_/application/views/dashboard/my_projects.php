@@ -1,11 +1,8 @@
 <?php 
-
   set_page_title(lang('my projects'));
-  dashboard_tabbed_navigation(DASHBOARD_TAB_MY_PROJECTS);
-  dashboard_crumbs(lang('my projects'));
   
   if(Project::canAdd(logged_user())) {
-    add_page_action(lang('add project'), get_url('project', 'add'));
+    add_page_action(lang('add project'), get_url('project', 'add'), 'ico-add');
   } // if
 
 ?>

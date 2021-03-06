@@ -35,17 +35,14 @@ echo  cal_top();
 	$id = $_GET['id'];
     if(!is_numeric($id)) $error = CAL_NO_EVENT_SELECTED;
 	// get event info from database
-    //$result = cal_query_get_event($id);
-    //if(($result==NULL OR $cal_db->sql_numrows($result)==0) AND $error=="") $error = CAL_DOESNT_EXIST;
-    //$row = $cal_db->sql_fetchrow($result);
 	// get user who submitted the event, subject, event description, etc.
-    $username = $event->getCreatedById();// $row['created_by_id'];
+    $username = Users::findById($event->getCreatedById())->getUsername();// $row['created_by_id'];
     $subject = $event->getSubject();// htmlentities($row['subject']);
 	$private = $event->getIsPrivate();// $row['private'];
-	$alias = $event->getCreatedById();//$row['created_by_id'];
+	$alias = Users::findById($event->getCreatedById())->getUsername();//$row['created_by_id'];
     $desc = $event->getDescription();//htmlentities(nl2br($row['description']));
     $thetime = $event->getStart();//$row['start_since_epoch'];
-	$mod_username = $event->getUpdatedById();//$row['updated_by_id'];
+	$mod_username = Users::findById($event->getUpdatedById())->getUsername();//$row['updated_by_id'];
 	$mod_stamp = $event->getUpdatedOn();//$row['updated_on'];
 	// check username to see if it's anonymous or not
 	if($username=="") $username = CAL_ANONYMOUS;
@@ -76,7 +73,7 @@ echo  cal_top();
 	else $duration .= CAL_HOUR;
 	if($durmin!="0") $duration .= ", ". $durmin. " ". CAL_MINUTES_SHORT;
 	// organize other time options for the event
-    $typeofevent = $event->getEventType();// $row['eventtype'];
+    $typeofevent = $event->getTypeId();
 	if($typeofevent=="2") $duration = CAL_FULL_DAY;
 	elseif($typeofevent=="3"){
 		$time = CAL_NOT_SPECIFIED;
@@ -92,10 +89,6 @@ echo  cal_top();
 	// make sure user is allowed to modify this event.
 	//$edit=0;
 	$permission = ProjectEvents::findById($id)->canEdit(logged_user());
-	/*if(($row['created_by_id'] !=  logged_user()->getId()) AND !cal_permission("editothers"));
-	else if(($row['created_by_id'] ==  logged_user()->getUsername()) AND !cal_permission('edit'));
-	else if(!cal_permission("editpast") AND date("Y-m-d",$row['start_since_epoch']) < date("Y-m-d"));
-	else $edit=1;*/
 	// print modify/delete links if allowed to modify the event
 	if($permission){
 		$modify_link = " - <a  class='internalLink' class='viewdateoption' href=\"".cal_getlink("index.php?action=modify&amp;id=$id&amp;day=$day&amp;month=$month&amp;year=$year")."\">".CAL_MODIFY."</a>";

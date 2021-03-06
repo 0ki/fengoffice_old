@@ -14,7 +14,35 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'company_id' => DATA_TYPE_INTEGER, 'username' => DATA_TYPE_STRING, 'email' => DATA_TYPE_STRING, 'token' => DATA_TYPE_STRING, 'salt' => DATA_TYPE_STRING, 'twister' => DATA_TYPE_STRING, 'display_name' => DATA_TYPE_STRING, 'title' => DATA_TYPE_STRING, 'avatar_file' => DATA_TYPE_STRING, 'office_number' => DATA_TYPE_STRING, 'fax_number' => DATA_TYPE_STRING, 'mobile_number' => DATA_TYPE_STRING, 'home_number' => DATA_TYPE_STRING, 'timezone' => DATA_TYPE_FLOAT, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'last_login' => DATA_TYPE_DATETIME, 'last_visit' => DATA_TYPE_DATETIME, 'last_activity' => DATA_TYPE_DATETIME, 'is_admin' => DATA_TYPE_BOOLEAN, 'auto_assign' => DATA_TYPE_BOOLEAN, 'personal_project_id' => DATA_TYPE_INTEGER);
+    static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER, 
+    	'company_id' => DATA_TYPE_INTEGER, 
+    	'username' => DATA_TYPE_STRING, 
+    	'email' => DATA_TYPE_STRING, 
+    	'token' => DATA_TYPE_STRING, 
+    	'salt' => DATA_TYPE_STRING, 
+    	'twister' => DATA_TYPE_STRING, 
+    	'display_name' => DATA_TYPE_STRING, 
+    	'title' => DATA_TYPE_STRING, 
+    	'avatar_file' => DATA_TYPE_STRING, 
+    	'office_number' => DATA_TYPE_STRING, 
+    	'fax_number' => DATA_TYPE_STRING, 
+    	'mobile_number' => DATA_TYPE_STRING, 
+    	'home_number' => DATA_TYPE_STRING, 
+    	'timezone' => DATA_TYPE_FLOAT, 
+    	'created_on' => DATA_TYPE_DATETIME, 
+    	'created_by_id' => DATA_TYPE_INTEGER, 
+    	'updated_on' => DATA_TYPE_DATETIME, 
+    	'last_login' => DATA_TYPE_DATETIME, 
+    	'last_visit' => DATA_TYPE_DATETIME, 
+    	'last_activity' => DATA_TYPE_DATETIME, 
+    	'can_edit_company_data'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_workspaces'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_security'=>DATA_TYPE_BOOLEAN,
+    	'can_manage_configuration'=>DATA_TYPE_BOOLEAN, 
+    	'auto_assign' => DATA_TYPE_BOOLEAN, 
+    	'personal_project_id' => DATA_TYPE_INTEGER,
+    	'can_manage_contacts'=>DATA_TYPE_BOOLEAN);
   
     /**
     * Construct

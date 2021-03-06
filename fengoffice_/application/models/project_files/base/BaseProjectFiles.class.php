@@ -17,7 +17,7 @@
     static private $columns = array(
     'id' => DATA_TYPE_INTEGER, 
     'project_id' => DATA_TYPE_INTEGER, 
-    'folder_id' => DATA_TYPE_INTEGER, 
+    //'folder_id' => DATA_TYPE_INTEGER, 
     'filename' => DATA_TYPE_STRING, 
     'description' => DATA_TYPE_STRING, 
     'is_private' => DATA_TYPE_BOOLEAN, 

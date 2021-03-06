@@ -301,7 +301,7 @@
   * @return null
   */
   function insert_before_file_extension($filename, $insert) {
-    return str_replace_first('.', '.' . $insert, $filename);
+    return str_replace_first('.', $insert . '.', $filename);
   } // insert_before_file_extension
   
   /**

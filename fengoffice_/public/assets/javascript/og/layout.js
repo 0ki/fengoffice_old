@@ -1,5 +1,16 @@
 Ext.onReady(function(){
 	Ext.get("loading").hide();
+	
+	// fix cursor not showing on message boxs
+	Ext.MessageBox.getDialog().on("show", function(d) {
+		var div = Ext.get(d.el);
+		div.setStyle("overflow", "auto");
+		var text = div.select(".ext-mb-textarea", true);
+		if (!text.item(0))
+			text = div.select(".ext-mb-text", true);
+		if (text.item(0))
+			text.item(0).dom.select();
+	});
 
 	Ext.state.Manager.setProvider(new og.HttpProvider({
 		saveUrl: og.getUrl('gui', 'save_state'),
@@ -7,6 +18,7 @@ Ext.onReady(function(){
 		autoRead: false
 	}));
 	Ext.state.Manager.getProvider().initState(og.initialGUIState);
+	
 
 	Ext.QuickTips.init();
 
@@ -20,7 +32,7 @@ Ext.onReady(function(){
 				title: lang('overview'),
 				id: 'overview-panel',
 				iconCls: 'ico-overview',
-				autoRefresh: true,
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "dashboard"
 				}
@@ -29,6 +41,7 @@ Ext.onReady(function(){
 				title: lang('messages'),
 				id: 'messages-panel',
 				iconCls: 'ico-messages',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "messages"
 				}
@@ -37,6 +50,7 @@ Ext.onReady(function(){
 				title: lang('contacts'),
 				id: 'contacts-panel',
 				iconCls: 'ico-contacts',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "contacts"
 				}
@@ -45,6 +59,7 @@ Ext.onReady(function(){
 				title: lang('calendar'),
 				id: 'calendar-panel',
 				iconCls: 'ico-calendar',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "url",
 					data: og.getUrl('event','index')
@@ -54,6 +69,7 @@ Ext.onReady(function(){
 				title: lang('documents'),
 				id: 'documents-panel',
 				iconCls: 'ico-documents',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "files"
 				}
@@ -62,6 +78,7 @@ Ext.onReady(function(){
 				title: lang('tasks'),
 				id: 'tasks-panel',
 				iconCls: 'ico-tasks',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "tasks"
 				}
@@ -70,6 +87,7 @@ Ext.onReady(function(){
 				title: lang('web pages'),
 				id: 'webpages-panel',
 				iconCls: 'ico-webpages',
+				refreshOnWorkspaceChange: true,
 				defaultContent: {
 					type: "webpages"
 				}

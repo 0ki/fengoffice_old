@@ -20,9 +20,9 @@ class AdministrationController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 
 		// Access permissios
-		if(!logged_user()->isAdministrator(owner_company())) {
+		if(!logged_user()->isCompanyAdmin(owner_company())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
 		} // if
 	} // __construct
 
@@ -69,7 +69,7 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function projects() {
-		if(logged_user()->isAdministrator())
+		if(can_manage_workspaces(logged_user()))
 			tpl_assign('projects', Projects::getAll());
 		else
 			tpl_assign('projects', logged_user()->getProjects());
@@ -84,6 +84,17 @@ class AdministrationController extends ApplicationController {
 	 */
 	function clients() {
 		tpl_assign('clients', owner_company()->getClientCompanies());
+	} // clients
+
+	/**
+	 * List groups
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function groups() {
+		tpl_assign('groups', Groups::getAll());
 	} // clients
 
 	/**

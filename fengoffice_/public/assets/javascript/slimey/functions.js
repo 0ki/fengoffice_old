@@ -180,12 +180,12 @@ function chooseColor(func, scope, button) {
 /**
  *  gets a string input.
  */
-function getInput(func, scope, button) {
+function getInput(func, scope, button, defVal) {
 	Ext.Msg.prompt('Save', 'Choose a filename:',
 		function(btn, text) {
 			if (btn == 'ok') {
-				func.call(scope, text);
+				func.call(this, text);
 			}
-		}
+		}, scope, false, defVal
 	);
 }

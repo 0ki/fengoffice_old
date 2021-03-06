@@ -8,7 +8,7 @@
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
       <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
-<?php if($company->isOwner()) { ?>
+<?php if(isset($company) && $company && $company->isOwner()) { ?>
 	<?php if ($user->isAdministrator()) { ?>
       	<div class="userIsAdmin"><span><?php echo lang('administrator') ?></span></div>
     <?php } ?>

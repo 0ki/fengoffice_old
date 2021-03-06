@@ -1,13 +1,13 @@
 <?php
   if($company->canEdit(logged_user())) {
-    add_page_action(lang('edit company'), $company->getEditUrl());
-    add_page_action(lang('edit company logo'), $company->getEditLogoUrl());
+    add_page_action(lang('edit company'), $company->getEditUrl(), 'ico-edit');
+    add_page_action(lang('edit company logo'), $company->getEditLogoUrl(), 'ico-picture');
     if(!$company->isOwner()) {
-      add_page_action(lang('update permissions'), $company->getUpdatePermissionsUrl());
+      add_page_action(lang('update permissions'), $company->getUpdatePermissionsUrl(), 'ico-properties');
     } // if
   } // if
   if(User::canAdd(logged_user(), $company)) {
-    add_page_action(lang('add user'), $company->getAddUserUrl());
+    add_page_action(lang('add user'), $company->getAddUserUrl(), 'ico-add');
   } // if
 
 ?>

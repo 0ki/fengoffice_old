@@ -44,12 +44,14 @@ class UserController extends ApplicationController {
 		$company = Companies::findById(get_id('company_id'));
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
-			$this->redirectTo('administration');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!User::canAdd(logged_user(), $company)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$user = new User();
@@ -96,6 +98,10 @@ class UserController extends ApplicationController {
 				DB::beginWork();
 				$user->save();
 
+				if (array_var($_POST, 'is_admin')) {
+					$user->setAsAdministrator();
+				}
+				
 				/* create personal project */
 				$project = new Project();
 				$project->setName($user->getUsername().'_personal');
@@ -103,6 +109,8 @@ class UserController extends ApplicationController {
 				$project->setCreatedById($user->getId());
 
 				$project->save();
+				
+				$new_project = $project;
 
 
 				$user->setPersonalProjectId($project->getId());
@@ -114,15 +122,7 @@ class UserController extends ApplicationController {
 				$project_user->setProjectId($project->getId());
 				$project_user->setUserId($user->getId());
 				$project_user->setCreatedById($user->getId());
-				$project_user->setCanManageMessages(true);
-				$project_user->setCanManageTasks(true);
-				$project_user->setCanManageMilestones(true);
-				$project_user->setCanUploadFiles(true);
-				$project_user->setCanManageFiles(true);
-				$project_user->setCanAssignToOwners(true);
-				$project_user->setCanAssignToOther(true);
-				$project_user->setCanManageEvents(true);
-				$project_user->setCanManageHandins(true);
+				$project_user->setAllPermissions(true);
 
 				$project_user->save();
 				/* end personal project */
@@ -148,9 +148,9 @@ class UserController extends ApplicationController {
 
 		  DB::commit();
 		  evt_add("workspace added", array(
-				"id" => $project->getId(),
-				"name" => $project->getName(),
-				"color" => $project->getColor()
+				"id" => $new_project->getId(),
+				"name" => $new_project->getName(),
+				"color" => $new_project->getColor()
 		  ));
 
 		  // Send notification...
@@ -167,7 +167,8 @@ class UserController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 
 		} // if
@@ -185,12 +186,14 @@ class UserController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectTo('administration');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$user->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -198,20 +201,25 @@ class UserController extends ApplicationController {
 			DB::beginWork();
 			$project = $user->getPersonalProject();
 			$user->delete();
-			if ($project instanceof Project)
-			$project->delete();
+			if ($project instanceof Project) {
+				$pid = $project->getId();
+				$project->delete();
+			}
 			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
+			
+			evt_add("workspace deleted", array(
+				"id" => $pid
+		  	));
 
 			flash_success(lang('success delete user', $user->getDisplayName()));
 
+			$this->redirectToUrl($user->getCompany()->getViewUrl());
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete user'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectToUrl($user->getCompany()->getViewUrl());
-
 	} // delete
 
 	/**
@@ -226,12 +234,14 @@ class UserController extends ApplicationController {
 		$user = Users::findById(get_id());
 		if(!($user instanceof User)) {
 			flash_error(lang('user dnx'));
-			$this->redirectToReferer(ROOT_URL);
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!logged_user()->canSeeUser($user)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(ROOT_URL);
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('user', $user);

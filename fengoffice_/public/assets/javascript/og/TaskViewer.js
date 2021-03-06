@@ -11,7 +11,7 @@ og.TaskViewer = function() {
 	this.store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-			url: og.getUrl('task', 'list_tasks')
+			url: og.getUrl('task', 'list_tasks', {ajax:true})
 		})),
 		reader: new Ext.data.JsonReader({
 			root: 'objects',
@@ -35,25 +35,50 @@ og.TaskViewer = function() {
 				}
 				var d = this.reader.jsonData;
 				og.processResponse(d);
+				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+				if (d.totalCount == 0) {
+					if (tag) {
+						this.manager.showMessage(lang("no objects with tag message", lang("tasks"), ws, tag));
+					} else {
+						this.manager.showMessage(lang("no objects message", lang("tasks"), ws));
+					}
+				} else {
+					this.manager.showMessage("");
+				}
+				og.hideLoading();
+			},
+			'beforeload': function() {
+				og.loading();
+				return true;
+			},
+			'loadexception': function() {
+				og.hideLoading();
 			}
 		}
 	});
 	this.store.setDefaultSort('dateUpdated', 'desc');
+	this.store.manager = this;
 
 	function renderName(value, p, r) {
+		if (r.data.type == 'task') {
+			var url = og.getUrl('task', 'view_list', {id: r.data.object_id});
+		} else if (r.data.type == 'milestone') {
+			var url = og.getUrl('milestone', 'view', {id: r.data.object_id});
+		}
 		return String.format(
 			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			value, r.data.name, og.getUrl('task', 'view_list', {id: r.data.object_id}));
+			value, r.data.name, url);
 	}
 	
 	function renderIcon(value, p, r) {
-		var classes = "db-ico unknown " + r.data.type;
+		var classes = "db-ico ico-unknown ico-" + r.data.type;
 		if (r.data.mimeType) {
 			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
 			var acc = "";
 			for (var i=0; i < path.length; i++) {
 				acc += path[i];
-				classes += " " + acc;
+				classes += " ico-" + acc;
 				acc += "-";
 			}
 		}
@@ -73,6 +98,9 @@ og.TaskViewer = function() {
 	}
 
 	function renderDate(value, p, r) {
+		if (!value) {
+			return "";
+		}
 		var now = new Date();
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
 			return value.dateFormat('M j');
@@ -189,7 +217,7 @@ og.TaskViewer = function() {
 	moreActions = {
 		properties: new Ext.Action({
 			text: lang('properties'),
-			iconCls: 'db-ico-properties',
+			iconCls: 'ico-properties',
 			handler: function(e) {
 				var o = sm.getSelected();
 				var url = og.getUrl('object', 'view', {id: o.data.object_id, manager: o.data.manager});
@@ -202,13 +230,13 @@ og.TaskViewer = function() {
 		newCO: new Ext.Action({
 			text: lang('new'),
             tooltip: lang('create an object'),
-            iconCls: 'db-ico-new',
+            iconCls: 'ico-new',
             menu: {items: [
-            	{text: lang('task'), iconCls: 'db-ico-task', handler: function() {
+            	{text: lang('task'), iconCls: 'ico-task', handler: function() {
 					var url = og.getUrl('task', 'add_list');
 					og.openLink(url);
 				}},
-				{text: lang('milestone'), iconCls: 'db-ico-milestone', handler: function() {
+				{text: lang('milestone'), iconCls: 'ico-milestone', handler: function() {
 					var url = og.getUrl('milestone', 'add');
 					og.openLink(url);
 				}}
@@ -217,7 +245,7 @@ og.TaskViewer = function() {
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
-            iconCls: 'db-ico-tag',
+            iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
 				listeners: {
@@ -237,7 +265,7 @@ og.TaskViewer = function() {
 		del: new Ext.Action({
 			text: lang('delete'),
             tooltip: lang('delete selected objects'),
-            iconCls: 'db-ico-delete',
+            iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
 				if (confirm(lang('confirm delete object'))) {
@@ -252,7 +280,7 @@ og.TaskViewer = function() {
 		more: new Ext.Action({
 			text: lang('more'),
             tooltip: lang('more actions on first selected object'),
-            iconCls: 'db-ico-more',
+            iconCls: 'ico-more',
 			disabled: true,
 			menu: {items: [
 				moreActions.properties
@@ -261,7 +289,7 @@ og.TaskViewer = function() {
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
-            iconCls: 'db-ico-refresh',
+            iconCls: 'ico-refresh',
 			handler: function() {
 				this.store.reload();
 			},
@@ -296,7 +324,22 @@ og.TaskViewer = function() {
 			actions.more,
 			'-',
 			actions.refresh
-		]
+		],
+		listeners: {
+			'render': {
+				fn: function() {
+					this.innerMessage = document.createElement('div');
+					this.innerMessage.className = 'inner-message';
+					var msg = this.innerMessage;
+					var elem = Ext.get(this.getEl());
+					var scroller = elem.select('.x-grid3-scroller');
+					scroller.each(function() {
+						this.dom.appendChild(msg);
+					});
+				},
+				scope: this
+			}
+		}
 	});
 
 	og.eventManager.addListener("tag changed", function(tag) {
@@ -307,7 +350,9 @@ og.TaskViewer = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		if (this.store.lastOptions) {
+			cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+		}
 	}, this);
 	
 	//this.load();
@@ -340,6 +385,10 @@ Ext.extend(og.TaskViewer, Ext.grid.GridPanel, {
 	
 	deactivate: function() {
 		this.active = false;
+	},
+	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
 	}
 });
 

@@ -157,28 +157,42 @@ class User extends BaseUser {
 	 */
 	function isProjectUser(Project $project) {
 		if(!isset($this->is_project_user_cache[$project->getId()])) {
-			$project_user = ProjectUsers::findById(array(
-          'project_id' => $project->getId(), 
-          'user_id' => $this->getId())
-			); // findById
+			$user_ids = $this->getId();
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+			if($group_ids && $group_ids != '')
+				$user_ids = $user_ids . ',' . $group_ids ;
+			$project_user = ProjectUsers::findOne(array('conditions' => 
+				'`user_id` in (' . $user_ids  . ') AND '.
+				'project_id =' . $project->getId() 
+			)); // findById
 			$this->is_project_user_cache[$project->getId()] = $project_user instanceof ProjectUser;
 		} // if
 		return $this->is_project_user_cache[$project->getId()];
 	} // isProjectUser
 
 	/**
-	 * Check if this of specific company website. If must be member of that company and is_admin flag set to true
+	 * Check if this user is member of administrators group (id = CONST_ADMIN_GROUP_ID )
 	 *
 	 * @param void
 	 * @return boolean
 	 */
 	function isAdministrator() {
 		if(is_null($this->is_administrator)) {
-			$this->is_administrator = $this->isAccountOwner() || ($this->isMemberOfOwnerCompany() && $this->getIsAdmin());
+			$this->is_administrator = GroupUsers::isUserInGroup($this->getId(),Group::CONST_ADMIN_GROUP_ID );
 		} // if
 		return $this->is_administrator;
 	} // isAdministrator
 
+	function setAsAdministrator() {
+		if ($this->isAdministrator()) {
+			return;
+		}
+		$group_user = new GroupUser();
+		$group_user->setUserId($this->getId());
+		$group_user->setGroupId(Group::CONST_MINIMUM_GROUP_ID);
+		$group_user->save();
+	}
+	
 	/**
 	 * Account owner is user account that was created when company website is created
 	 *
@@ -283,6 +297,24 @@ class User extends BaseUser {
 		} // if
 		return $this->active_projects;
 	} // getActiveProjects
+
+	/**
+	 * Returns csv list of email account Ids
+	 *
+	 * @return string
+	 */
+	function getMailAccountIdsCSV(){
+		$accounts = MailAccounts::findAll(array('conditions' => '`user_id` = ' . logged_user()->getId()));
+		$result = "";
+		if($accounts){
+			foreach ($accounts as $acc)
+				$result .= "," . $acc->getId();
+		}
+		if ($result == "")
+		return $result;
+		else
+		return substr($result,1);
+	}
 
 
 	/**
@@ -543,7 +575,7 @@ class User extends BaseUser {
 			$this->setAvatarFile('');
 		} // if
 	} // deleteAvatar
-	
+
 	/**
 	 * Delete personal project
 	 *
@@ -671,7 +703,7 @@ class User extends BaseUser {
 		if($user->isAccountOwner()) {
 			return true;
 		} // if
-		return $user->isAdministrator();
+		return can_manage_security(logged_user());
 	} // canAdd
 
 	/**
@@ -688,7 +720,7 @@ class User extends BaseUser {
 		if($user->isAccountOwner()) {
 			return true;
 		} // if
-		return $user->isAdministrator();
+		return can_manage_security(logged_user());
 	} // canEdit
 
 	/**
@@ -706,7 +738,7 @@ class User extends BaseUser {
 			return false; // can't delete self
 		} // if
 
-		return $user->isAdministrator();
+		return  can_manage_security(logged_user());
 	} // canDelete
 
 	/**
@@ -802,7 +834,7 @@ class User extends BaseUser {
 		if($this->isAccountOwner()) {
 			return false; // noone will touch this
 		} // if
-		return $user->isAdministrator();
+		return can_manage_security(logged_user());
 	} // canUpdatePermissions
 
 	/**
@@ -814,7 +846,7 @@ class User extends BaseUser {
 	 * @return boolean
 	 */
 	function isCompanyAdmin(Company $company) {
-		return ($this->getCompanyId() == $company->getId()) && $this->getIsAdmin();
+		return ($this->getCompanyId() == $company->getId()) && $this->isAdministrator();
 	} // isCompanyAdmin
 
 	/**
@@ -1095,7 +1127,7 @@ class User extends BaseUser {
 	 * @return string
 	 */
 	function getObjectTypeName() {
-		return lang('user');
+		return 'user';
 	} // getObjectTypeName
 
 	/**

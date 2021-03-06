@@ -14,7 +14,7 @@
     * @param ProjectDataObject $object
     * @return array
     */
-    static function getRelationsByObject(ProjectDataObject $object) {
+    static function getRelationsByObject(ApplicationDataObject $object) {
       return self::findAll(array(
         'conditions' => array('(`rel_object_manager` = ? and `rel_object_id` = ?) or (`object_manager` = ? and `object_id` = ?)', 
         		get_class($object->manager()), $object->getObjectId(), get_class($object->manager()), $object->getObjectId()),
@@ -30,7 +30,7 @@
     * @param boolean $exclude_private Exclude private objects
     * @return array
     */
-    static function getLinkedObjectsByObject(ProjectDataObject $object, $exclude_private = false) {
+    static function getLinkedObjectsByObject(ApplicationDataObject $object, $exclude_private = false) {
       return self::getObjectsByRelations(self::getRelationsByObject($object), $object, $exclude_private);
     } // getLinkedObjectsByObject
     
@@ -49,7 +49,9 @@
         $object = $relation->getOtherObject($originalObject);
         if($object instanceof ProjectDataObject) {
           if(!($exclude_private && $object->isPrivate())) $objects[] = $object;
-        } // if
+        } else {
+        	$objects[] = $object;
+        }
       } // if
       return count($objects) ? $objects : null;
     } //getObjectsByRelations
@@ -60,7 +62,7 @@
     * @param ProjectDataObject $object
     * @return boolean
     */
-    static function clearRelationsByObject(ProjectDataObject $object) {
+    static function clearRelationsByObject(ApplicationDataObject $object) {
       return self::delete(array('(`object_id` = ? and `object_manager` = ?) or (`object_id` = ? and `object_manager` = ?)', 
       $object->getId(), get_class($object->manager()), $object->getId(),  get_class($object->manager())));
     } // clearRelationsByObject

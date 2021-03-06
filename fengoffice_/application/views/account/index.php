@@ -2,18 +2,16 @@
 
   // Set page title and set crumbs to index
   set_page_title(logged_user()->getDisplayName());
-  account_tabbed_navigation();
-  account_crumbs(lang('index'));
-  add_page_action(array(
-    lang('update profile')  => logged_user()->getEditProfileUrl(),
-    lang('change password') => logged_user()->getEditPasswordUrl(),
-    lang('update avatar')   => logged_user()->getUpdateAvatarUrl()
-  ));
+  
+  
+  if($user->canUpdateProfile(logged_user())) {
+	add_page_action(lang('update profile'), $user->getEditProfileUrl(), 'ico-edit');
+	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
+	add_page_action(lang('change password'),$user->getEditPasswordUrl(), 'ico-properties');
+  } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-    add_page_action(array(
-      lang('permissions')  => $user->getUpdatePermissionsUrl()
-    ));
+  	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
   } // if
 
 ?>

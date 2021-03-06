@@ -75,10 +75,13 @@ class TagController extends ApplicationController {
 		$this->setLayout("json");
 		$this->setTemplate(get_template_path('json'));
 		$ts = array();
-		foreach (Tags::getTagNames() as $t) {
-			$ts[] = array(
-				"name" => $t
-			);
+		$tags = Tags::getTagNames();
+		if ($tags) {
+			foreach ($tags as $t) {
+				$ts[] = array(
+					"name" => $t
+				);
+			}
 		}
 		tpl_assign("object", $ts);
 	}

@@ -4,6 +4,8 @@
   
     // Objects
     'user' => 'User',
+    'group' => 'Group',
+    'groups' => 'Groups',
     'users' => 'Users',
     'member' => 'Member',
     'members' => 'Members',
@@ -22,8 +24,8 @@
     'milestones' => 'Milestones',
     'task' => 'Task',
     'tasks' => 'Tasks',
-    'task list' => 'Task list',
-    'task lists' => 'Task lists',
+    'task list' => 'Task',
+    'task lists' => 'Tasks',
     'tag' => 'Tag',
     'tags' => 'Tags',
     'attachment' => 'Attachment',
@@ -54,10 +56,10 @@
     'late milestones' => 'Late milestones',
     'today milestones' => 'Today milestones',
     'upcoming milestones' => 'Upcoming milestones',
-    'completed task list' => 'Completed task list',
-    'completed task lists' => 'Completed task lists',
-    'open task list' => 'Open task list',
-    'open task lists' => 'Open task lists',
+    'completed task list' => 'Completed task',
+    'completed task lists' => 'Completed tasks',
+    'open task list' => 'Open task',
+    'open task lists' => 'Open tasks',
     'active project' => 'Active workspace',
     'active projects' => 'Active workspaces',
     'finished project' => 'Closed workspace',
@@ -72,7 +74,7 @@
     
     'private message' => 'Private message',
     'private milestone' => 'Private milestone',
-    'private task list' => 'Private task lists',
+    'private task list' => 'Private tasks',
     'private comment' => 'Private comment',
     'private file' => 'Private file',
     

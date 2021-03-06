@@ -62,10 +62,7 @@
     * @return boolean
     */
     function canView(User $user) {
-      if(!$user->isMemberOfOwnerCompany()) {
-        return false; // user that is not member of owner company can't access contacts
-      } // if
-      return true;
+       return can_read($user,$this);
     } // canView
     
     /**
@@ -77,7 +74,7 @@
      * @return booelean
      */
     function canAdd(User $user, Project $project) {
-       return $this->getContact()->canEdit();
+       return can_add($user,$project,get_class(ProjectContacts::instance()));
     } // canAdd
     
     /**
@@ -88,7 +85,7 @@
     * @return boolean
     */
     function canEdit(User $user) {
-       return $this->getContact()->canEdit();
+       return can_write($user,$this);
     } // canEdit
     
     /**
@@ -99,10 +96,10 @@
     * @return boolean
     */
     function canDelete(User $user) {
-       return $this->getContact()->canEdit();
+       return can_delete($user, $this);
     } // canDelete
     
-  	
+  
 
   } // ProjectContact 
 

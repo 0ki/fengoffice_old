@@ -124,9 +124,9 @@ class Tags extends BaseTags {
 	 * @param ProjectDataObject $obj
 	 * @return null
 	 */
-	function addObjectTag($tag_name, ProjectDataObject $obj) {
+	function addObjectTag($tag_name, ApplicationDataObject $obj) {
 		$tag_name = trim($tag_name);
-		if (!(isset($obj) && $obj && ($obj instanceof ProjectDataObject) ) )
+		if (!(isset($obj) && $obj && ($obj instanceof ApplicationDataObject) ) )
 		return true;
 		$prevTags=Tags::getTagNamesByObject($obj);
 		if($prevTags){
@@ -178,6 +178,7 @@ class Tags extends BaseTags {
 					$tag->setIsPrivate($object->isPrivate());
 
 					$tag->save();
+					evt_add("tag added", array("name"=>$tag_name));
 				} // if
 
 			} // foreach

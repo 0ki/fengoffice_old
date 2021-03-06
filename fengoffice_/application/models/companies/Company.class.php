@@ -1,164 +1,164 @@
 <?php
 
-  /**
-  * Company class
-  * Generated on Sat, 25 Feb 2006 17:37:12 +0100 by DataObject generation tool
-  *
-  * @author Ilija Studen <ilija.studen@gmail.com>
-  */
-  class Company extends BaseCompany {
-    
-    /**
-    * Cached array of active company projects
-    *
-    * @var array
-    */
-    private $active_projects;
-    
-    /**
-    * Cached array of completed projects
-    *
-    * @var array
-    */
-    private $completed_projects;
-    
-    /**
-    * Return array of all company members
-    *
-    * @access public
-    * @param void
-    * @return array
-    */
-    function getUsers() {
-      return Users::findAll(array(
+/**
+ * Company class
+ * Generated on Sat, 25 Feb 2006 17:37:12 +0100 by DataObject generation tool
+ *
+ * @author Ilija Studen <ilija.studen@gmail.com>
+ */
+class Company extends BaseCompany {
+
+	/**
+	 * Cached array of active company projects
+	 *
+	 * @var array
+	 */
+	private $active_projects;
+
+	/**
+	 * Cached array of completed projects
+	 *
+	 * @var array
+	 */
+	private $completed_projects;
+
+	/**
+	 * Return array of all company members
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getUsers() {
+		return Users::findAll(array(
         'conditions' => '`company_id` = ' . DB::escape($this->getId())
-      )); // findAll
-    } // getUsers
-    
-    /* Return array of all company members
-    *
-    * @access public
-    * @param void
-    * @return array
-    */
-    function getContacts() {
-      return Contacts::findAll(array(
+		)); // findAll
+	} // getUsers
+
+	/* Return array of all company members
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getContacts() {
+		return Contacts::findAll(array(
         'conditions' => '`company_id` = ' . DB::escape($this->getId())
-      )); // findAll
-    } // getUsers
-    
-    /**
-    * Return number of company users
-    *
-    * @access public
-    * @param void
-    * @return integer
-    */
-    function countUsers() {
-      return Users::count('`company_id` = ' . DB::escape($this->getId()));
-    } // countUsers
-    
-    /**
-    * Return array of company users on specific project
-    *
-    * @access public
-    * @param Project $project
-    * @return array
-    */
-    function getUsersOnProject(Project $project) {
-      return ProjectUsers::getCompanyUsersByProject($this, $project);
-    } // getUsersOnProject
-    
-    /**
-    * Return users that have auto assign value set to true
-    *
-    * @access public
-    * @param void
-    * @return array
-    */
-    function getAutoAssignUsers() {
-      return Users::findAll(array(
+		)); // findAll
+	} // getUsers
+
+	/**
+	 * Return number of company users
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function countUsers() {
+		return Users::count('`company_id` = ' . DB::escape($this->getId()));
+	} // countUsers
+
+	/**
+	 * Return array of company users on specific project
+	 *
+	 * @access public
+	 * @param Project $project
+	 * @return array
+	 */
+	function getUsersOnProject(Project $project) {
+		return ProjectUsers::getCompanyUsersByProject($this, $project);
+	} // getUsersOnProject
+
+	/**
+	 * Return users that have auto assign value set to true
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getAutoAssignUsers() {
+		return Users::findAll(array(
         'conditions' => '`company_id` = ' . DB::escape($this->getId()) . ' AND `auto_assign` > ' . DB::escape(0)
-      )); // findAll
-    } // getAutoAssignUsers
-    
-    /**
-    * Return all client companies
-    *
-    * @access public
-    * @param void
-    * @return array
-    */
-    function getClientCompanies() {
-      return Companies::getCompanyClients($this);
-    } // getClientCompanies
-    
-    /**
-    * Return number of client companies
-    *
-    * @access public
-    * @param void
-    * @return integer
-    */
-    function countClientCompanies() {
-      return Companies::count('`client_of_id` = ' . DB::escape($this->getId()));
-    } // countClientCompanies
-    
-    /**
-    * Return all projects that this company is member of
-    *
-    * @access public
-    * @param void
-    * @return array
-    */
-    function getProjects() {
-      return $this->isOwner() ? Projects::getAll() : ProjectCompanies::getProjectsByCompany($this);
-    } // getProjects
-    
-    /**
-    * Return total number of projects
-    *
-    * @access public
-    * @param void
-    * @return integer
-    */
-    function countProjects() {
-      if($this->isOwner()) {
-        return Projects::count(); // all
-      } else {
-        return ProjectCompanies::count('`company_id` = ' . DB::escape($this->getId()));
-      } // if
-    } // countProjects
-    
-    /**
-    * Return active projects that are owned by this company
-    *
-    * @param void
-    * @return null
-    */
-    function getActiveProjects() {
-      if(is_null($this->active_projects)) {
-        if($this->isOwner()) {
-          $this->active_projects = Projects::findAll(array(
+		)); // findAll
+	} // getAutoAssignUsers
+
+	/**
+	 * Return all client companies
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getClientCompanies() {
+		return Companies::getCompanyClients($this);
+	} // getClientCompanies
+
+	/**
+	 * Return number of client companies
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function countClientCompanies() {
+		return Companies::count('`client_of_id` = ' . DB::escape($this->getId()));
+	} // countClientCompanies
+
+	/**
+	 * Return all projects that this company is member of
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getProjects() {
+		return $this->isOwner() ? Projects::getAll() : ProjectCompanies::getProjectsByCompany($this);
+	} // getProjects
+
+	/**
+	 * Return total number of projects
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function countProjects() {
+		if($this->isOwner()) {
+			return Projects::count(); // all
+		} else {
+			return ProjectCompanies::count('`company_id` = ' . DB::escape($this->getId()));
+		} // if
+	} // countProjects
+
+	/**
+	 * Return active projects that are owned by this company
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function getActiveProjects() {
+		if(is_null($this->active_projects)) {
+			if($this->isOwner()) {
+				$this->active_projects = Projects::findAll(array(
             'conditions' => '`completed_on` = ' . DB::escape(EMPTY_DATETIME)
-          )); // findAll
-        } else {
-          $this->active_projects = ProjectCompanies::getProjectsByCompany($this, '`completed_on` = ' . DB::escape(EMPTY_DATETIME));
-        } // if
-      } // if
-      return $this->active_projects;
-    } // getActiveProjects
-    
-    /**
-    * Return all completed projects
-    *
-    * @param void
-    * @return null
-    */
-    function getCompletedProjects() {
-      if(is_null($this->completed_projects)) {
-        if($this->isOwner()) {
-          $this->completed_projects = Projects::findAll(array(
+				)); // findAll
+			} else {
+				$this->active_projects = ProjectCompanies::getProjectsByCompany($this, '`completed_on` = ' . DB::escape(EMPTY_DATETIME));
+			} // if
+		} // if
+		return $this->active_projects;
+	} // getActiveProjects
+
+	/**
+	 * Return all completed projects
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function getCompletedProjects() {
+		if(is_null($this->completed_projects)) {
+			if($this->isOwner()) {
+				$this->completed_projects = Projects::findAll(array(
             'conditions' => '`completed_on` > ' . DB::escape(EMPTY_DATETIME)
           )); // findAll
         } else {
@@ -336,6 +336,17 @@
     } // canAddUser
     
     /**
+    * Check if this user can add new group to this company
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canAddGroup(User $user) {
+      return Group::canAdd($user, $this);
+    } // canAddUser
+    
+    /**
     * Check if user can update permissions of this company
     *
     * @param User $user
@@ -419,6 +430,17 @@
     */
     function getAddUserUrl() {
       return get_url('user', 'add', array('company_id' => $this->getId()));
+    } // getAddUserUrl  
+      
+    /**
+    * Return add group URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getAddGroupUrl() {
+      return get_url('group', 'add_group', array('company_id' => $this->getId()));
     } // getAddUserUrl
     
     /**
@@ -612,9 +634,10 @@
     * @return string
     */
     function getObjectTypeName() {
-      return lang('company');
+      return 'company';
     } // getObjectTypeName
     
   } // Company 
+
 
 ?>

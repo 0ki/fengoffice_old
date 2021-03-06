@@ -60,25 +60,33 @@ function cal_navbar($year, $month, $day, $tags){
   	$nm = 1;
 	$ny++;
   }
-  
+ if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())) {
+	 add_page_action(lang('add event'), get_url('event','add',
+	 		array("year"=> date("Y"),
+	 			 "month" => date("m"),
+	 			 "day" => date('d')
+	 			 )
+	 		), 'ico-event'
+	 );// cal_getlink('index.php?'.$today) );
+ }
  add_page_action(lang('today'), get_url('event','index',
  		array("year"=> date("Y"),
  			 "month" => date("m"),
  			 "day" => date('d')
  			 )
- 		)
+ 		), 'ico-today'
  );// cal_getlink('index.php?'.$today) );
  add_page_action(lang('previous month'), get_url('event','index',
  		array("year"=> $py,
  			 "month" => $pm
  			 )
- 		)
+ 		), 'ico-prevmonth'
  );// add_page_action(lang('previous month'), cal_getlink("index.php?year=$py&month=$pm"));
  add_page_action(lang('next month'), get_url('event','index',
  		array("year"=> $ny,
  			 "month" => $nm
  			 )
- 		)
+ 		), 'ico-nextmonth'
  );// add_page_action(lang('next month'), cal_getlink("index.php?year=$ny&month=$nm"));
 //  $output .= "<input type=\"button\" value=\"<<\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?year=$py&month=$pm") . "');\">";
 //  $output .= "<input type=\"button\" value=\">>\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?year=$ny&month=$nm") . "');\">";
@@ -189,75 +197,78 @@ function cal_navbar($year, $month, $day, $tags){
 			if($day_of_month >= 1){
 				$output .= "<a class='internalLink' href=\"$p\">$w</a>";				
 				// only display this link if the user has permission to add an event
-				if(active_project()!=null && ProjectEvent::canAdd(logged_user(),active_project())){// cal_permission("write")){
+				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
 					// if single digit, add a zero
 					$dom = $day_of_month;
 					if($dom < 10) $dom = "0".$dom;
 					// make sure user is allowed to edit the past
-					//if(	cal_permission("editpast") OR  ("$year-$month-$dom" >= date("Y-m-d")) ){
 						$output .= "<a  class='internalLink' href=\"$t\">+</a>";
-					//}
 				}
 				
 			}else $output .= "&nbsp;";
 			$output .= "</div>";
 			// This loop writes the events for the day in the cell
-			$result = cal_query_get_eventlist($w, $month, $year, $tags);
-			if($cal_db->sql_numrows($result)<1) $output .= "&nbsp;";
-			while($row = $cal_db->sql_fetchrow($result)) {
-				$subject = htmlentities(stripslashes($row['subject']));
-				$typeofevent = $row['eventtype'];
-				$private = $row['private'];
-				$eventid = $row['id'];
-				$desc = htmlentities($row['description']);
-				$overlib = "<strong>$subject</strong><br>$desc";
-				$color = $row['typecolor'];
-				if($color=="") $color = "AAEE00";
-				// organize the time and duraton data
-				$overlib_time = CAL_UNKNOWN_TIME;
-				switch($typeofevent) {
-					case 1:
-						if(!cal_option("hours_24")) $timeformat = 'g:i A';
-						else $timeformat = 'G:i';
-						$event_time = date($timeformat, $row['start_since_epoch']);
-						$overlib_time = "@ $event_time";
-						break;
-					case 2:
-						$event_time = CAL_FULL_DAY;
-						$overlib_time = CAL_FULL_DAY;
-						break;
-					case 3:
-						$event_time = '??:??';
-						$overlib_time = CAL_UNKNOWN_TIME;
-						break;
-					default: ;
-				} 
-				// build overlib text
-				$overlib = "<strong>$subject<br>$overlib_time</strong><br>" . $desc;
-				// see if event type color is dark.  If it is, make text white in overlib box.
-				$c1 = $color[0];
-				$c2 = $color[2];
-				$c3 = $color[4];
-				if(!is_numeric($c1)) $c1 = 10;
-				if(!is_numeric($c2)) $c2 = 10;
-				if(!is_numeric($c3)) $c3 = 10;
-				if($c1<4 AND $c2<9 AND $c3<9) $overlibtext = "#FFFFFF";
-				elseif($c2<4 AND $c1<9 AND $c3<9) $overlibtext = "#FFFFFF";
-				elseif($c3<4 AND $c1<9 AND $c2<9) $overlibtext = "#FFFFFF";
-				else $overlibtext = "#000000";
-				// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
-				if(!$private || !cal_anon()){
-					if($row['typecolor']=="") $output .= '<div class="event_block">';
-					else $output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-					if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
-					$output .= '<span onmouseover="return overlib(\''.str_replace("'","\\'",$overlib).'\',FGCOLOR,\'#'.$color.'\',BGCOLOR,\'#000000\',TEXTCOLOR,\''.$overlibtext.'\');" onmouseout="return nd();">';
-					if(cal_option("show_times")) $output .= "$event_time - $subject";
-					else $output .= "$subject";
-					$output .= '</span>';
-					$output .= "</div>";
-				}
-			} // end event writing loop
-			$output .= '</td>';
+			if (is_numeric($w)){ //if it is a day after the first of the month
+				$day_tmp = is_numeric($w) ? $w : 0;
+				$date = new DateTimeValue(mktime(0,0,0,$month,$day_tmp,$year)); 
+				$result = ProjectEvents::getDayProjectEvents($date, $tags); 
+				if(count($result)<1) $output .= "&nbsp;";
+				else
+				foreach ($result as $event){ 
+					$subject = $event->getSubject();
+					$typeofevent = $event->getTypeId(); 
+					$private = $event->getIsPrivate(); 
+					$eventid = $event->getId(); 
+					$desc = $event->getDescription(); 
+					$overlib = "<strong>$subject</strong><br>$desc";
+					$color = $event->getEventTypeObject()?$event->getEventTypeObject()->getTypeColor():''; 
+					if($color=="") $color = "AAEE00";
+					// organize the time and duraton data
+					$overlib_time = CAL_UNKNOWN_TIME;
+					switch($typeofevent) {
+						case 1:
+							if(!cal_option("hours_24")) $timeformat = 'g:i A';
+							else $timeformat = 'G:i';
+							$event_time = date($timeformat, $event->getStart()->getTimestamp()); 
+							$overlib_time = "@ $event_time";
+							break;
+						case 2:
+							$event_time = CAL_FULL_DAY;
+							$overlib_time = CAL_FULL_DAY;
+							break;
+						case 3:
+							$event_time = '??:??';
+							$overlib_time = CAL_UNKNOWN_TIME;
+							break;
+						default: ;
+					} 
+					// build overlib text
+					$overlib = "<strong>$subject<br>$overlib_time</strong><br>" . $desc;
+					// see if event type color is dark.  If it is, make text white in overlib box.
+					$c1 = $color[0];
+					$c2 = $color[2];
+					$c3 = $color[4];
+					if(!is_numeric($c1)) $c1 = 10;
+					if(!is_numeric($c2)) $c2 = 10;
+					if(!is_numeric($c3)) $c3 = 10;
+					if($c1<4 AND $c2<9 AND $c3<9) $overlibtext = "#FFFFFF";
+					elseif($c2<4 AND $c1<9 AND $c3<9) $overlibtext = "#FFFFFF";
+					elseif($c3<4 AND $c1<9 AND $c2<9) $overlibtext = "#FFFFFF";
+					else $overlibtext = "#000000";
+					// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
+					if(!$private || !cal_anon()){
+						if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
+						else $output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
+						if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
+						$output .= '<span onmouseover="return overlib(\''.str_replace("'","\\'",$overlib).'\',FGCOLOR,\'#'.$color.'\',BGCOLOR,\'#000000\',TEXTCOLOR,\''.$overlibtext.'\');" onmouseout="return nd();">';
+						if(cal_option("show_times")) $output .= "$event_time - $subject";
+						else $output .= "$subject";
+						$output .= '</span>';
+						$output .= "</div>";
+					}
+				} // end event writing loop
+				$output .= '</td>';
+			} //if is_numeric($w) 
 		} // end weekly loop
 		$output .= "\n  </tr>\n";
 		// If it's the last day, we're done

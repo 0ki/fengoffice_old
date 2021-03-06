@@ -6,3 +6,7 @@
 .save_new_revision {
 	background-image: url(../images/16x16/save_new.png) !important;
 }
+
+.save_as {
+	background-image: url(../images/16x16/save_as.png) !important;
+}

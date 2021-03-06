@@ -1,15 +1,10 @@
 <?php 
-
-  // Set page title and set crumbs to index
   set_page_title(lang('dashboard'));
-  dashboard_tabbed_navigation();
-  dashboard_crumbs(lang('overview'));
   
   if(Project::canAdd(logged_user())) {
-    add_page_action(lang('add project'), get_url('project', 'add'));
+    add_page_action(lang('add project'), get_url('project', 'add'), 'ico-add');
   } // if
   
-  //add_stylesheet_to_page('project/project_log.css');
 
 ?>
 <?php if(logged_user()->isMemberOfOwnerCompany() && !owner_company()->getHideWelcomeInfo()) { ?>

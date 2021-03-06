@@ -31,13 +31,13 @@ og.ObjectPicker = function(config) {
     	this.store.setDefaultSort('name', 'asc');
 
 		function renderIcon(value, p, r) {
-			var classes = "db-ico unknown " + r.data.type;
+			var classes = "db-ico ico-unknown ico-" + r.data.type;
 			if (r.data.mimeType) {
 				var path = r.data.mimeType.replace(/\//ig, "-").split("-");
 				var acc = "";
 				for (var i=0; i < path.length; i++) {
 					acc += path[i];
-					classes += " " + acc;
+					classes += " ico-" + acc;
 					acc += "-";
 				}
 			}
@@ -45,6 +45,9 @@ og.ObjectPicker = function(config) {
 		}
         
 		function renderDate(value, p, r) {
+			if (!value) {
+				return "";
+			}
 			var now = new Date();
 			if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
 				return value.dateFormat('M j');
@@ -127,7 +130,7 @@ og.ObjectPicker = function(config) {
 	        stripeRows: true,
 	        loadMask: true,
 	        bbar: new Ext.PagingToolbar({
-	            pageSize: 10,
+	            pageSize: og.pageSize,
 	            store: this.store,
 	            displayInfo: true,
 	            displayMsg: lang('displaying objects of'),
@@ -192,15 +195,14 @@ og.ObjectPicker = function(config) {
 		this.filters.filter = {filter: type, id: 0, name: ''};		
 		this.getSelectionModel().on({
 			'selectionchange' : function(sm, node) {
-				if (node) {
+				if (node && !this.pauseEvents) {
 					this.fireEvent("filterselect", node.filter);
 				}
 			},
 			scope:this
 		});
 		this.addEvents({filterselect: true});
-		
-		this.loadFilters();
+		//this.loadFilters();
 	};
 	Ext.extend(Filter, Ext.tree.TreePanel, {
 		addFilter: function(filter, config) {
@@ -209,8 +211,13 @@ og.ObjectPicker = function(config) {
 			if (exists) {
 				return;
 			}
+			if (filter.filter == 'ws') {
+				var iconCls = 'ico-color' + (filter.color || 0);
+			} else {
+				var iconCls = config.iconCls || 'ico-' + filter.filter;
+			} 
 			var config = Ext.apply(config, {
-				iconCls: config.iconCls || 'ico-' + filter.filter,
+				iconCls: iconCls,
 				leaf: true,
 				cls: 'item-' + filter.type,
 				text: filter.name,
@@ -236,6 +243,34 @@ og.ObjectPicker = function(config) {
 	});
 	
 	var TagFilter = function(config) {
+		// tree filter
+		var tree = this;
+		var filter = new Ext.tree.TreeFilter(this, {
+			clearBlank: true,
+			autoClear: true
+		});
+		function filterTree(e) {
+			var text = e.target.value;
+			if(!text){
+				filter.clear();
+				return;
+			}
+			tree.expandAll();
+			
+			var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
+			filter.filterBy(function(n){
+				return n == tree.filters || re.test(n.text.toLowerCase());
+			});
+		}
+		config.tbar = [new Ext.form.TextField({
+			width: 200,
+			emptyText:lang('filter tags'),
+			listeners:{
+				render: function(f){
+					f.el.on('keyup', filterTree, f, {buffer: 350});
+				}
+			}
+		})];
 		TagFilter.superclass.constructor.call(this, "tag", config);
 	}
 	Ext.extend(TagFilter, Filter, {
@@ -251,6 +286,10 @@ og.ObjectPicker = function(config) {
 							tags[i].filter = 'tag';
 							this.addFilter(tags[i]);
 						}
+						
+						this.pauseEvents = true;
+						this.filters.select();
+						this.pauseEvents = false;
 					} else {
 						og.msg(lang("error"), lang("server could not be reached"));
 					}
@@ -263,6 +302,34 @@ og.ObjectPicker = function(config) {
 	});
 	
 	var WSFilter = function(config) {
+		// tree filter
+		var tree = this;
+		var filter = new Ext.tree.TreeFilter(this, {
+			clearBlank: true,
+			autoClear: true
+		});
+		function filterTree(e) {
+			var text = e.target.value;
+			if(!text){
+				filter.clear();
+				return;
+			}
+			tree.expandAll();
+			
+			var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
+			filter.filterBy(function(n){
+				return n == tree.filters || re.test(n.text.toLowerCase());
+			});
+		}
+		config.tbar = [new Ext.form.TextField({
+			width: 200,
+			emptyText:lang('filter workspaces'),
+			listeners:{
+				render: function(f){
+					f.el.on('keyup', filterTree, f, {buffer: 350});
+				}
+			}
+		})];
 		WSFilter.superclass.constructor.call(this, "ws", config);
 	}
 	Ext.extend(WSFilter, Filter, {
@@ -278,6 +345,10 @@ og.ObjectPicker = function(config) {
 							wss[i].filter = 'ws';
 							this.addFilter(wss[i]);
 						}
+						
+						this.pauseEvents = true;
+						this.filters.select();
+						this.pauseEvents = false;
 					} else {
 						og.msg(lang("error"), lang("server could not be reached"));
 					}
@@ -328,14 +399,24 @@ og.ObjectPicker = function(config) {
 			}, {iconCls: 'ico-webpages'});
 			
 			this.filters.expand();
+			
+			this.pauseEvents = true;
+			this.filters.select();
+			this.pauseEvents = false;
 		}
 	});
 	
+	Ext.reg('tagfilter', TagFilter);
+	Ext.reg('typefilter', TypeFilter);
+	Ext.reg('wsfilter', WSFilter);
+	
 	og.ObjectPicker.superclass.constructor.call(this, Ext.apply(config, {
-		y: 100,
+		y: 50,
 		width: 640,
 		height: 480,
+		id: 'object-picker',
 		layout: 'border',
+		modal: true,
 		closeAction: 'hide',
 		iconCls: 'op-ico',
 		title: lang('select an object'),
@@ -349,11 +430,11 @@ og.ObjectPicker = function(config) {
 			scope: this
 		}],
 		items: [
-			new Ext.Panel({
+			{
 				region: 'center',
 				layout: 'fit',
 				tbar: [
-					new Ext.Action({
+					{
 						text: lang('view'),
 			            tooltip: lang('view desc'),
 			            iconCls: 'op-ico-view',
@@ -365,8 +446,7 @@ og.ObjectPicker = function(config) {
 								alert('icons');
 							}}
 						]}
-					}),
-					new Ext.Action({
+					},{
 						text: lang('refresh'),
 			            tooltip: lang('refresh desc'),
 			            iconCls: 'op-ico-refresh',
@@ -377,20 +457,21 @@ og.ObjectPicker = function(config) {
 							this.wsFilter.loadFilters();
 						},
 						scope: this
-					})
+					}
 				],
 				items: [
 					this.grid = new Grid()
 				]
-			}),
+			},
 			//new Grid({region:'center'}),
-			new Ext.Panel({
+			{
 				layout: 'border',
 				split: true,
 				width: 200,
 				region: 'west',
-				items: [
-					this.wsFilter = new WSFilter({
+				items: [{
+						xtype: 'wsfilter',
+						id: 'wsFilter',
 						region: 'north',
 						autoScroll: true,
 						split: true,
@@ -402,8 +483,9 @@ og.ObjectPicker = function(config) {
 								scope: this.grid
 							}
 						}
-					}),
-					this.typeFilter = new TypeFilter({
+					},{
+						xtype: 'typefilter',
+						id: 'typeFilter',
 						region: 'center',
 						autoScroll: true,
 						listeners: {
@@ -412,8 +494,9 @@ og.ObjectPicker = function(config) {
 								scope: this.grid
 							}
 						}
-					}),
-					this.tagFilter = new TagFilter({
+					},{
+						xtype: 'tagfilter',
+						id: 'tagFilter',
 						region: 'south',
 						autoScroll: true,
 						split: true,
@@ -424,9 +507,9 @@ og.ObjectPicker = function(config) {
 								scope: this.grid
 							}
 						}
-					})
+					}
 				]
-			})
+			}
 		]
 	}));
 	this.grid.on('rowdblclick', this.accept, this);
@@ -442,6 +525,12 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	
 	cancel: function() {
 		this.hide();
+	},
+	
+	loadFilters: function() {
+		this.findById('wsFilter').loadFilters();
+		this.findById('tagFilter').loadFilters();
+		this.findById('typeFilter').loadFilters();
 	}
 });
 
@@ -449,6 +538,7 @@ og.ObjectPicker.show = function(callback, scope) {
 	if (!this.dialog) {
 		this.dialog = new og.ObjectPicker();
 	}
+	this.dialog.loadFilters();
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});
 	this.dialog.show();

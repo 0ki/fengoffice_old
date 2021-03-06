@@ -59,7 +59,7 @@ return "";
   cal_navmenu()
    returns the navigation buttons for the day/module
 ###################################################################*/
-function cal_navmenu(){
+function cal_navmenu($show_date_title= true){
 	// get the date being requested.
 	$day = $_SESSION['cal_day'];
 	$month = $_SESSION['cal_month'];
@@ -82,6 +82,7 @@ function cal_navmenu(){
 	$nd = date('j', $nexttime);
 	$nm = date('n', $nexttime);
 	$ny = date('Y', $nexttime);
+	if ( !$show_date_title) $title ='';
 	// return menu output
 	$o = "
 	<table width='90%' cellpadding='3' cellspacing='0'><tr>
@@ -91,7 +92,7 @@ function cal_navmenu(){
 	
 	add_page_action(lang('back to calendar'), 'javascript:(function(){ Ext.getCmp(\'calendar-panel\').reset(); })()');
 	//$o .= "<input type=\"button\" value=\"".CAL_MENU_BACK_CALENDAR."\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&action=calendar&year=$year&month=$month&day=1');\"> ";
-	$can_add = (active_project() && ProjectEvent::canAdd(logged_user(),active_project()));
+	$can_add = (!active_project() || ProjectEvent::canAdd(logged_user(),active_project()));
 	if( ($a=="viewdate" OR $a=="delete" OR $a=="submitevent") AND  $can_add ) {		
  		add_page_action(lang('add event'), cal_getlink("index.php?action=add&year=$year&month=$month&day=$day") );
 		//$o .= "<input type=\"button\" value=\"".CAL_MENU_NEWEVENT."\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?action=add&year=$year&month=$month&day=$day") . "');\"> ";
@@ -266,36 +267,7 @@ function cal_top(){
 	$skin = cal_option("skin");
 	if($skin=="") $skin_link = "default";
 	else $skin_link = "skins/".$skin;
-/*	if(!file_exists(CAL_INCLUDE_PATH.$skin_link.".css")){
-		$output .= "<center><span style='color: red; font-size: 12px;'>Error Loading CSS skin from: ".CAL_INCLUDE_PATH.$skin_link.".css<br>Check your CAL_CALENDAR_PATH string in the config file.</span></center><br>";
-	}
-	if(CAL_STAND_ALONE){
-		
-		$output .= "<html><head>";
-		$output .= "<title>".CAL_STAND_ALONE_TITLE."</title>";
-		$output .= '<link href="'.CAL_INCLUDE_PATH.$skin_link.'.css" rel="stylesheet" type="text/css">';
-		$output .= '<script type="text/javascript" src="'.CAL_INCLUDE_PATH.'js/overlib.js"><!-- overLIB (c) Erik Bosrup --></script>';
-		$output .= "</head>";
-		$output .= "<body>";
-	}else{
-		// print the css from the file directly into the page
-		$css = file_get_contents(CAL_INCLUDE_PATH.$skin_link.".css");
-		$output .= "
-			<style type='text/css'>
-			$css
-			</style>
-			";
-		// print javascript for overlib directly ito the page
-		$js = file_get_contents(CAL_INCLUDE_PATH."js/overlib.js");
-		$output .= "
-			<script type='text/javascript'>
-			$js
-			</script>
-			";
-		unset($css);
-		unset($js);
-	}
-*/	// print the beginning of the calendar module
+	// print the beginning of the calendar module
 	$output .= '
 		<script type="text/javascript">
 			function cal_toggle(id){

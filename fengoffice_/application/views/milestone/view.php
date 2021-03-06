@@ -8,8 +8,8 @@
   ));
   
   if(!$milestone->isCompleted()) {    
-    if(ProjectMessage::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add message'), $milestone->getAddMessageUrl());
-    if(ProjectTask::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add task list'), $milestone->getAddTaskUrl());
+    //if(ProjectMessage::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add message'), $milestone->getAddMessageUrl());
+    if(ProjectTask::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
   } // if
 
 ?>

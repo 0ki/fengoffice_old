@@ -2,11 +2,9 @@
 
   // Set page title and set crumbs to index
   set_page_title(lang('clients'));
-  administration_tabbed_navigation(ADMINISTRATION_TAB_CLIENTS);
-  administration_crumbs(lang('clients'));
   
   if(owner_company()->canAddClient(logged_user())) {
-    add_page_action(lang('add client'), get_url('company', 'add_client'));
+    add_page_action(lang('add client'), get_url('company', 'add_client'), 'ico-add');
   } // if
 
 ?>

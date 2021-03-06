@@ -53,6 +53,7 @@ _lang = {
 	"checkin": "Check in",
 	"checkout": "Check out",
 	"checked out by": "Checked out by {0}",
+	"add file checked out by": "{0} was checked out by {1}",
 		
 	'error': 'Error',
 	'success': 'Success',
@@ -75,12 +76,12 @@ _lang = {
 	'contacts': 'Contacts',
 	'calendar': 'Calendar',
 	'tasks': 'Tasks',
-	'web pages': 'Web Pages',
+	'web pages': 'Web Links',
 	'documents': 'Documents',
 	'account': 'Account',
 	'administration': 'Administration',
 	'search': 'Search',
-	'webpage': 'Webpage',
+	'webpage': 'Weblink',
 	'message': 'Message',
 	
 	'workspaces': 'Workspaces',
@@ -131,12 +132,12 @@ _lang = {
 	/* webpage manager*/
 	'description': 'Description',
 	'title': 'Title',
-	'add new webpage': 'Add a new webpage',
-	'displaying webpages of': 'Displaying webpages {0} to {1} of {2}',
-	'no webpages to display': 'No webpages to display',
-	'delete selected webpages': 'Delete selected webpages',
-	'confirm delete webpages': 'Are you sure you want to delete the selected webpages?',
-	'tag selected webpages': 'Tag selected webpages',
+	'add new webpage': 'Add a new web link',
+	'displaying webpages of': 'Displaying web links {0} to {1} of {2}',
+	'no webpages to display': 'No web links to display',
+	'delete selected webpages': 'Delete selected web links',
+	'confirm delete webpages': 'Are you sure you want to delete the selected web links?',
+	'tag selected webpages': 'Tag selected web links',
 	'edit': 'Edit',
 	
 	/* message manager */
@@ -172,8 +173,29 @@ _lang = {
 	'alphabetical desc': 'Sort in alphabetical order',
 	'most active desc': 'Sort by most activity',
 	'sort desc': 'Sort the view',
+	'message': 'Message',
 	
+	'no objects message': 'There are no \'{0}\' in \'{1}\'',
+	'no objects with tag message': 'There are no {0} tagged as \'{2}\' in \'{1}\'',
+	'objects': 'Objects',
 	
+	'checkout description': 'Check out this file for editing',
+	'checkin description': 'Check in new version of this file',
+	
+	'existing filename info': '{0}, created by {1} on {2}',
+	
+	/*  */
+	
+	'email': 'Email',
+	'weblink': 'Web link',
+	'webpage': 'Web link',
+	'message': 'Message',
+	'task': 'Task',
+	'milestone': 'Milestone',
+	'emailunclassified': 'Email',
+	'file': 'File',
+	'contact': 'Contact',
+	'event': 'Event',
 	
 	'debug': 'Debug'
 }

@@ -36,8 +36,7 @@ class TaskController extends ApplicationController {
 
 
 	function list_tasks() {
-		$this->setLayout('json');
-		$this->setTemplate(get_template_path('json'));
+		ajx_current("empty");
 			
 		/* get query parameters */
 		$start = array_var($_GET,'start');
@@ -62,28 +61,23 @@ class TaskController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			list($succ, $err) = ObjectController::do_delete_objects($ids);
 			if ($err > 0) {
-				$errCode = -1;
-				$errMsg = lang('error delete objects', $err);
+				flash_error(lang('error delete objects', $err));
 			} else {
-				$errCode = 0;
-				$errMsg = lang('success delete objects', $succ);
+				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$tagTag = array_var($_GET, 'tagTag');
 			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids);
 			if ($err > 0) {
-				$errCode = -1;
-				$errMsg = lang('error tag objects', $err);
+				flash_error(lang('error tag objects', $err));
 			} else {
-				$errCode = 0;
-				$errMsg = lang('success tag objects', $succ);
+				flash_success(lang('success tag objects', $succ));
 			}
 		}
 		$result = null;
 
 		/* perform queries according to type*/
-		//$result = $this->getTasksAndMilestones($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
 		$result = $this->getTasksAndMilestones($page, config_option('files_per_page'), $tag, null, null, $type);
 		if (!$result) $result = array();
 		$total_items = $this->countTasksAndMilestones($tag, $type);
@@ -91,13 +85,10 @@ class TaskController extends ApplicationController {
 		/* prepare response object */
 		$object = array(
 			"totalCount" => $total_items,
-			"events" => evt_list(),
-			"errorCode" => isset($errCode)?$errCode:0,
-			"errorMessage" => isset($errMsg)?$errMsg:"",
-			"objects" => array()
+			"objects" => $result
 		);
-		$object["objects"] = $result;
-		tpl_assign("object", $object);
+		ajx_extra_data($object);
+		tpl_assign("listing", $object);
 	}
 
 	/**
@@ -111,12 +102,14 @@ class TaskController extends ApplicationController {
 		$task_list = ProjectTasks::findById(get_id());
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
-			$this->redirectTo('task');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task_list->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('task'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('task_list', $task_list);
@@ -150,6 +143,7 @@ class TaskController extends ApplicationController {
 		if(!ProjectTask::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list = new ProjectTask();
@@ -215,16 +209,16 @@ class TaskController extends ApplicationController {
 					$handin->save();
 				} // foreach
 
-		  $task_list->save_properties($task_list_data);
-		  ApplicationLogs::createLog($task_list, $project, ApplicationLogs::ACTION_ADD);
-		  DB::commit();
+				$task_list->save_properties($task_list_data);
+				ApplicationLogs::createLog($task_list, $project, ApplicationLogs::ACTION_ADD);
+				DB::commit();
 
-		  flash_success(lang('success add task list', $task_list->getTitle()));
-		  $this->redirectToUrl($task_list->getViewUrl());
+				flash_success(lang('success add task list', $task_list->getTitle()));
+				ajx_current("start");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -244,11 +238,13 @@ class TaskController extends ApplicationController {
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task_list->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list_data = array_var($_POST, 'task_list');
@@ -306,17 +302,17 @@ class TaskController extends ApplicationController {
 				}
 				$task_list->save();
 				$task_list->setTagsFromCSV(array_var($task_list_data, 'tags'));
-		  $task_list->save_properties($task_list_data);
-		  ApplicationLogs::createLog($task_list, $task_list->getProject(), ApplicationLogs::ACTION_EDIT);
-		   
-		  DB::commit();
+		  		$task_list->save_properties($task_list_data);
+				ApplicationLogs::createLog($task_list, $task_list->getProject(), ApplicationLogs::ACTION_EDIT);
+   
+				DB::commit();
 
-		  flash_success(lang('success edit task list', $task_list->getTitle()));
-		  $this->redirectToUrl($task_list->getViewUrl());
+				flash_success(lang('success edit task list', $task_list->getTitle()));
+				ajx_current("start");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -335,11 +331,13 @@ class TaskController extends ApplicationController {
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task_list->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -368,6 +366,7 @@ class TaskController extends ApplicationController {
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$back_to_list = (boolean) array_var($_GET, 'back_to_list');
@@ -376,12 +375,14 @@ class TaskController extends ApplicationController {
 		if(!$task_list->canReorderTasks(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$tasks = $task_list->getOpenSubTasks();
 		if(!is_array($tasks) || (count($tasks) < 1)) {
 			flash_error(lang('no open task in task list'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		tpl_assign('task_list', $task_list);
@@ -421,11 +422,13 @@ class TaskController extends ApplicationController {
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task_list->canAddSubTask(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$back_to_list = array_var($_GET, 'back_to_list');
@@ -462,12 +465,13 @@ class TaskController extends ApplicationController {
 		  if($back_to_list) {
 		  	$this->redirectToUrl($task_list->getViewUrl());
 		  } else {
-		  	$this->redirectTo('task');
+		  	ajx_current("start");
 		  } // if
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 
 		} // if
@@ -487,18 +491,20 @@ class TaskController extends ApplicationController {
 		if(!($task instanceof ProjectTask)) {
 			flash_error(lang('task dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list = $task->getParent();
 		if(!($task_list instanceof ProjectTask)) {
 			$task_list = $task;
-			//flash_error('task list dnx');
-			//$this->redirectTo('task');
+			ajx_current("empty");
+			return ;
 		} // if
 
 		if(!$task->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_data = array_var($_POST, 'task');
@@ -557,7 +563,7 @@ class TaskController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 
@@ -577,17 +583,20 @@ class TaskController extends ApplicationController {
 		if(!($task instanceof ProjectTask)) {
 			flash_error(lang('task dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list = $task->getParent();
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error('task list dnx');
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -617,17 +626,20 @@ class TaskController extends ApplicationController {
 		if(!($task instanceof ProjectTask)) {
 			flash_error(lang('task dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list = $task->getParent();
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -641,6 +653,7 @@ class TaskController extends ApplicationController {
 		} catch(Exception $e) {
 			flash_error(lang('error complete task'));
 			DB::rollback();
+			ajx_current("empty");
 		} // try
 	} // complete_task
 
@@ -656,17 +669,20 @@ class TaskController extends ApplicationController {
 		if(!($task instanceof ProjectTask)) {
 			flash_error(lang('task dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$task_list = $task->getParent();
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$task->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$redirect_to = array_var($_GET, 'redirect_to');
@@ -689,7 +705,7 @@ class TaskController extends ApplicationController {
 		} // try
 	} // open_task
 
-	function getTasksAndMilestones($page, $objects_per_page, $tag=null, $order=null, $order_dir=null){
+	private function getTasksAndMilestones($page, $objects_per_page, $tag=null, $order=null, $order_dir=null){
 		///TODO: this method is horrible on performance and should not be here!!!!
 		if (active_project()) {
 			$proj_ids = active_project()->getId();
@@ -697,14 +713,8 @@ class TaskController extends ApplicationController {
 			$proj_ids = logged_user()->getActiveProjectIdsCSV();
 		}
 		$proj_ids = ' (' . $proj_ids . ') ';
-		if (isset($tag) && $tag && $tag != '') {
-			$tag_str = " AND (SELECT count(*) from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager) > 0 ";
-		} else {
-			$tag_str= ' ';
-		}
-		$query = "SELECT 'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str .
-				" union SELECT 'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str;
-
+		$queries = ObjectController::getDashboardObjectQueries($proj_ids,$tag);
+		$query = $queries['Tasks'] . " UNION " . $queries['Milestones'];
 		if ($order) {
 			$query .= " order by " . $order . " ";
 			if ($order_dir) {
@@ -736,54 +746,33 @@ class TaskController extends ApplicationController {
 					//	$dash_object['id'] = $i++;
 					$objects[] = $dash_object;
 				}
-				//if($manager=='ProjectWebPages')
-				//$objects[count($objects[])-1]=null;
 			} //if($id && $manager)
 		}//foreach
 		return $objects;
 	} //getDashboardobjects
-	
+
 	/**
 	 * Counts dashboard objects
 	 *
 	 * @return unknown
 	 */
-	function countTasksAndMilestones($tag=null, $type) {
-		///TODO: this method is also horrible in performance and should not be here!!!!
+	private function countTasksAndMilestones($tag=null, $type) {
 		if (active_project()) {
 			$proj_ids = active_project()->getId();
 		} else {
 			$proj_ids = logged_user()->getActiveProjectIdsCSV();
 		}
 		$proj_ids = ' (' . $proj_ids . ') ';
-		if (isset($tag) && $tag && $tag!='') {
-			$tag_str_tasks = " AND (SELECT count(*) from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND co.id=t.rel_object_id AND t.rel_object_manager='ProjectTasks') > 0";
-			$tag_str_milestones = " AND (SELECT count(*) from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND co.id=t.rel_object_id AND t.rel_object_manager='ProjectMilestones') > 0";
-		} else {
-			$tag_str_tasks='';
-			$tag_str_milestones='';
-		}
-		$query1 = "SELECT count(id) q FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str_tasks;
-		$query2 = "SELECT count(id) q FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str_milestones;
+		$queries = ObjectController::getDashboardObjectQueries($proj_ids,$tag,true);
+		$query = $queries['Tasks'] . " UNION " . $queries['Milestones'];
 		$ret = 0;
-		$res1 = DB::execute($query1);
-		$res2 = DB::execute($query2);
+		$res1 = DB::execute($query);
 		if ($res1) {
 			$rows = $res1->fetchAll();
 			if ($rows) {
 				foreach ($rows as $row) {
-					if (isset($row['q'])) {
-						$ret += $row['q'];
-					}
-				}//foreach
-			}
-		}
-		if ($res2) {
-			$rows = $res2->fetchAll();
-			if ($rows) {
-				foreach ($rows as $row) {
-					if (isset($row['q'])) {
-						$ret += $row['q'];
+					if (isset($row['quantity'])) {
+						$ret += $row['quantity'];
 					}
 				}//foreach
 			}

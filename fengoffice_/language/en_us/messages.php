@@ -10,6 +10,8 @@
   return array(
   
     // Empty, dnx etc
+    'email dnx' => 'Requested email does not exist',
+  	'email dnx deleted' => 'Requested email was deleted from database',
     'project dnx' => 'Requested workspace does not exist in database',
     'message dnx' => 'Requested message does not exist',
     'no comments in message' => 'There are no comments on this message',
@@ -19,16 +21,16 @@
     'no activities in project' => 'There are no activities logged for this workspace',
     'comment dnx' => 'Requested comment does not exist',
     'milestone dnx' => 'Requested milestone does not exist',
-    'task list dnx' => 'Requested task list does not exist',
+    'task list dnx' => 'Requested task does not exist',
     'task dnx' => 'Requested task does not exist',
     'event type dnx' => 'Requested event type does not exist',
     'no milestones in project' => 'There are no milestones in this workspace',
     'no active milestones in project' => 'There are no active milestones in this workspace',
-    'empty milestone' => 'This milestone is empty. You can add a <a class="internalLink" href="{0}">message</a> or a <a class="internalLink" href="{1}">task list</a> to it at any time',
+    'empty milestone' => 'This milestone is empty. You can add a <a class="internalLink" href="{1}">task</a> to it at any time',
     'no logs for project' => 'There are no log entries related to this workspace',
     'no recent activities' => 'There are no recent activities logged in the database',
-    'no open task lists in project' => 'There are no open task lists in this workspace',
-    'no completed task lists in project' => 'There are no completed task lists in this workspace',
+    'no open task lists in project' => 'There are no open task in this workspace',
+    'no completed task lists in project' => 'There are no completed task in this workspace',
     'no open task in task list' => 'There are no tasks in this list',
     'no projects in db' => 'There are no defined workspaces in database',
     'no projects owned by company' => 'There are no workspaces owned by this company',
@@ -98,9 +100,9 @@
     'success edit comment' => 'Comment has been updated successfully',
     'success delete comment' => 'Comment has been delete successfully',
     
-    'success add task list' => 'Task list \'{0}\' has been added',
-    'success edit task list' => 'Task list \'{0}\' has been updated',
-    'success delete task list' => 'Task list \'{0}\' has been deleted',
+    'success add task list' => 'Task \'{0}\' has been added',
+    'success edit task list' => 'Task \'{0}\' has been updated',
+    'success delete task list' => 'Task \'{0}\' has been deleted',
     
     'success add task' => 'Selected task has been added',
     'success edit task' => 'Selected task has been updated',
@@ -112,6 +114,10 @@
     'success add client' => 'Client company {0} has been added',
     'success edit client' => 'Client company {0} has been updated',
     'success delete client' => 'Client company {0} has been deleted',
+    
+    'success add group' => 'Group {0} has been added',
+    'success edit group' => 'Group {0} has been updated',
+    'success delete group' => 'Group {0} has been deleted',
     
     'success edit company' => 'Company data has been updated',
     'success edit company logo' => 'Company logo has been updated',
@@ -178,9 +184,9 @@
     'success add event type' => 'Event Type has been added',
     'success delete event type' => 'Event Type has been deleted',
     
-    'success add webpage' => 'Weblink has been added',
-    'success edit webpage' => 'Weblink has been updated',
-    'success deleted webpage' => 'Weblink has been deleted',
+    'success add webpage' => 'Web link has been added',
+    'success edit webpage' => 'Web link has been updated',
+    'success deleted webpage' => 'Web link has been deleted',
   
     'success delete contacts' => 'The selected contacts have been deleted successfully',
   
@@ -195,10 +201,15 @@
   
   	'success check mail' => 'Email retrieval complete: {0} emails received.',
   
-	'success delete objects' => 'Object(s) deleted successfully',
-	'success tag objects' => 'Object(s) tagged successfully',
-	'error delete objects' => 'Failed to delete selected object(s)',
-	'error tag objects' => 'Failed to tag selected object(s)',
+	'success delete objects' => '{0} Object(s) deleted successfully',
+	'success tag objects' => '{0} Object(s) tagged successfully',
+	'error delete objects' => 'Failed to delete {0} object(s)',
+	'error tag objects' => 'Failed to tag {0} object(s)',
+	'success move objects' => '{0} Object(s) moved successfully',
+	'error move objects' => 'Failed to move {0} object(s)',
+  
+    'success checkout file' => 'File checked out successfully',
+    'success checkin file' => 'File checked in successfully',
     
     // Failures
     'error form validation' => 'Failed to save object because some of its properties are not valid',
@@ -241,7 +252,7 @@
     'error tag files' => 'Failed to tag {0} files',
     'error tag contacts' => 'Failed to tag {0} contacts',
     'error delete file revision' => 'Failed to delete file revision',
-    'error delete task list' => 'Failed to delete selected task list',
+    'error delete task list' => 'Failed to delete selected task',
     'error delete task' => 'Failed to delete selected task',
     'error check for upgrade' => 'Failed to check for a new version',
     'error link object' => 'Failed to link object(s)',
@@ -257,6 +268,7 @@
     'error delete contacts' => 'An error has ocurred while deleting these contacts',
   	'error check mail' => 'Error checking account \'{0}\': {1}',
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
+  	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to project \'{1}\' due to access permissions',
   
     
     // Access or data errors
@@ -266,7 +278,7 @@
     // Confirmation
     'confirm delete message' => 'Are you sure that you want to delete this message?',
     'confirm delete milestone' => 'Are you sure that you want to delete this milestone?',
-    'confirm delete task list' => 'Are you sure that you want to delete this task lists and all of its tasks?',
+    'confirm delete task list' => 'Are you sure that you want to delete this task and all of its sub tasks?',
     'confirm delete task' => 'Are you sure that you want to delete this task?',
     'confirm delete comment' => 'Are you sure that you want to delete this comment?',
     'confirm delete project' => 'Are you sure that you want to delete this workspace and all related data (messages, tasks, milestones, files...)?',
@@ -290,6 +302,7 @@
     'confirm delete revision' => 'Are you sure that you want to delete this revision?',
     'confirm reset form' => 'Are you sure that you want to reset this form?',
     'confirm delete contacts' => 'Are you sure that you want to delete these contacts?',
+	'confirm delete group' => 'Are you sure that you want to delete this comment?',
     
     // Errors...
     'system error message' => 'We are sorry, but a fatal error prevented OpenGoo from executing your request. An Error Report has been sent to the administrator.',
@@ -346,6 +359,8 @@
     'log delete contacts' => '\'{0}\' removed from project',
   
   	'no contacts in company' => 'The company has no contacts.',
+  
+  	'session expired error' => 'The session has expired. Please, refresh the page and login again.',
   
   ); // array
 

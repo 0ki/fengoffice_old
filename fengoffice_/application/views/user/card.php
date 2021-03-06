@@ -5,17 +5,13 @@
   dashboard_tabbed_navigation();
   dashboard_crumbs($user->getDisplayName());
   if($user->canUpdateProfile(logged_user())) {
-    add_page_action(array(
-      lang('update profile')  => $user->getEditProfileUrl(),
-      lang('change password') => $user->getEditPasswordUrl(),
-      lang('update avatar')   => $user->getUpdateAvatarUrl()
-    ));
+  	add_page_action(lang('update profile'),$user->getEditProfileUrl(), 'ico-edit');
+  	add_page_action(lang('change password'), $user->getEditPasswordUrl(), 'ico-properties');
+  	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
   } // if
   
   if($user->canUpdatePermissions(logged_user())) {
-    add_page_action(array(
-      lang('permissions')  => $user->getUpdatePermissionsUrl()
-    ));
+    add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-properties');
   } // if
 
 ?>

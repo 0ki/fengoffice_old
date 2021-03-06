@@ -20,6 +20,7 @@ var Slimey = function(config) {
 	if (config.rootDir) Slimey.rootDir = config.rootDir;
 	if (config.imagesDir) Slimey.imagesDir = config.imagesDir;
 	if (config.filename) this.filename = config.filename;
+	if (config.fileId) this.fileId = config.fileId;
 	if (config.slimContent) this.slimContent = config.slimContent;
 	if (config.saveUrl) this.saveUrl = config.saveUrl;
 	this.config = config;
@@ -40,7 +41,7 @@ var Slimey = function(config) {
 	this.container.appendChild(div);
 }
 
-Slimey.prototype.submitFile = function(newRevision) {
+Slimey.prototype.submitFile = function(newRevision, rename) {
 	function doSubmit(filename) {
 		this.filename = filename;
 		og.openLink(this.saveUrl, {
@@ -54,10 +55,10 @@ Slimey.prototype.submitFile = function(newRevision) {
 	}
 	var slim = this.navigation.getSLIMContent();
 	this.slimContent = escapeSLIM(slim);
-	if (this.filename) {
+	if (this.filename && !rename) {
 		doSubmit.call(this, this.filename);
 	} else {
-		getInput(doSubmit, this);
+		getInput(doSubmit, this, this.filename || '');
 	}
 }
 

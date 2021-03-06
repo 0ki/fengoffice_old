@@ -1,10 +1,7 @@
 <?php
-
   set_page_title(lang('forms'));
-  project_tabbed_navigation(PROJECT_TAB_FORMS);
-  project_crumbs(lang('forms'));
   if(ProjectForm::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add form'), get_url('form', 'add'));
+    add_page_action(lang('add form'), get_url('form', 'add'), 'ico-add');
   } // if
 
 ?>

@@ -19,9 +19,9 @@ class ConfigController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 
 		// Access permissios
-		if(!logged_user()->isAdministrator(owner_company())) {
+		if(!can_manage_configuration(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('dashboard');
+			ajx_current("empty");
 		} // if
 	} // __construct
 
@@ -32,6 +32,11 @@ class ConfigController extends ApplicationController {
 	 * @return null
 	 */
 	function update_category() {
+		// Access permissios
+		if(!can_manage_configuration(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+		} // if
 		$category = ConfigCategories::findById(get_id());
 		if(!($category instanceof ConfigCategory)) {
 			flash_error(lang('config category dnx'));

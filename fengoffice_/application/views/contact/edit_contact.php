@@ -2,11 +2,9 @@
 if (!$contact->isNew())
 {
 	if($contact->canEdit(logged_user())) {
-		add_page_action(array(
-		lang('update picture')   => $contact->getUpdatePictureUrl(),
-		lang('assign to project')   => $contact->getAssignToProjectUrl()
-		));
-	}
+		add_page_action(lang('update picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
+		add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
+	} //if
 } // if
 ?>
 

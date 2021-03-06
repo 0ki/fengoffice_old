@@ -5,7 +5,7 @@
   project_crumbs(lang('people'));
   
   if(active_project()->canChangePermissions(logged_user())) {
-    add_page_action(lang('permissions'), get_url('project', 'permissions'));
+    add_page_action(lang('permissions'), get_url('project', 'permissions'), 'ico-properties');
   } // if
   
   //add_stylesheet_to_page('project/people.css');

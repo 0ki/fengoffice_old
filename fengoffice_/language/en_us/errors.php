@@ -63,8 +63,8 @@
     'milestone due date required' => 'Milestone due date value is required',
     
     // Add task list
-    'task list name required' => 'Task list name value is required',
-    'task list name unique' => 'Task list name must be unique in workspace',
+    'task list name required' => 'Task name value is required',
+    'task list name unique' => 'Task name must be unique in workspace',
     
     // Add task
     'task text required' => 'Task text is required',
@@ -75,7 +75,7 @@
     'form success message required' => 'Success message is required',
     'form action required' => 'Form action is required',
     'project form select message' => 'Please select message',
-    'project form select task lists' => 'Please select task list',
+    'project form select task lists' => 'Please select task',
     
     // Submit project form
     'form content required' => 'Please insert content into text field',
@@ -109,6 +109,7 @@
   	'mail account server required' => 'Server required',
   	'mail account password required' => 'Password required',	
   
+  	'session expired error' => 'Session expired due to user inactivity. Please login again',
   ); // array
 
 ?>

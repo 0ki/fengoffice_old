@@ -1,97 +1,100 @@
-.unknown {
+.ico-unknown {
 	background-image: url(../../images/16x16/types/unknown.png);
 }
-.Milestone {
+.ico-milestone {
 	background-image: url(../../images/16x16/types/milestone.png);
 }
-.Email {
+.ico-email {
 	background-image: url(../../images/16x16/types/email.png);
 }
-.Weblink {
+.ico-emailunclassified {
+	background-image: url(../../images/16x16/types/classify.png);
+}
+.ico-weblink, .ico-webpage {
 	background-image: url(../../images/16x16/types/webpage.png);
 }
-.Task {
+.ico-task {
 	background-image: url(../../images/16x16/types/task.png);
 }
-.Event {
+.ico-event {
 	background-image: url(../../images/16x16/types/event.png);
 }
-.Contact {
+.ico-contact {
 	background-image: url(../../images/16x16/types/contact.png);
 }
-.Message {
+.ico-message {
 	background-image: url(../../images/16x16/types/message.png);
 }
-.File {
+.ico-file {
 	background-image: url(../../images/16x16/types/file.png);
 }
 
-.application {
+.ico-application {
 	background-image: url(../../images/16x16/types/application.png);
 }
-.application-pdf {
+.ico-application-pdf {
 	background-image: url(../../images/16x16/types/application-pdf.png);
 }
-.application-vnd.ms-excel, .sprd {
+.ico-application-vnd.ms-excel, .sprd {
 	background-image: url(../../images/16x16/types/application-vnd.ms-excel.png);
 }
-.application-vnd.ms-powerpoint, .prsn {
+.ico-application-vnd.ms-powerpoint, .prsn {
 	background-image: url(../../images/16x16/types/application-vnd.ms-powerpoint.png);
 }
-.application-vnd.ms-word, .txt {
+.ico-application-vnd.ms-word, .txt {
 	background-image: url(../../images/16x16/types/application-vnd.ms-word.png);
 }
-.application-vnd.oasis.opendocument.chart {
+.ico-application-vnd.oasis.opendocument.chart {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.chart.png);
 }
-.application-vnd.oasis.opendocument.database {
+.ico-application-vnd.oasis.opendocument.database {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.database.png);
 }
-.application-vnd.oasis.opendocument.formula {
+.ico-application-vnd.oasis.opendocument.formula {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.formula.png);
 }
-.application-vnd.oasis.opendocument.graphics {
+.ico-application-vnd.oasis.opendocument.graphics {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.graphics.png);
 }
-.application-vnd.oasis.opendocument.image {
+.ico-application-vnd.oasis.opendocument.image {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.image.png);
 }
-.application-vnd.oasis.opendocument.presentation {
+.ico-application-vnd.oasis.opendocument.presentation {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.presentation.png);
 }
-.application-vnd.oasis.opendocument.presentation-template {
+.ico-application-vnd.oasis.opendocument.presentation-template {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.presentation-template.png);
 }
-.application-vnd.oasis.opendocument.spreadsheet {
+.ico-application-vnd.oasis.opendocument.spreadsheet {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.spreadsheet.png);
 }
-.application-vnd.oasis.opendocument.spreadsheet-template {
+.ico-application-vnd.oasis.opendocument.spreadsheet-template {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.spreadsheet-template.png);
 }
-.application-vnd.oasis.opendocument.text {
+.ico-application-vnd.oasis.opendocument.text {
 	background-image: url(../../images/16x16/types/application-vnd.oasis.opendocument.text.png);
 }
-.application-vnd.rn-realmedia {
+.ico-application-vnd.rn-realmedia {
 	background-image: url(../../images/16x16/types/video.png);
 }
-.application-x-zip-compressed {
+.ico-application-x-zip-compressed {
 	background-image: url(../../images/16x16/types/application-zip.png);
 }
-.audio {
+.ico-audio {
 	background-image: url(../../images/16x16/types/audio.png);
 }
-.image {
+.ico-image {
 	background-image: url(../../images/16x16/types/image.png);
 }
-.text {
+.ico-text {
 	background-image: url(../../images/16x16/types/text.png);
 }
-.text-html {
+.ico-text-html {
 	background-image: url(../../images/16x16/types/text-html.png);
 }
-.text-xml {
+.ico-text-xml {
 	background-image: url(../../images/16x16/types/text-xml.png);
 }
-.video {
+.ico-video {
 	background-image: url(../../images/16x16/types/video.png);
 }

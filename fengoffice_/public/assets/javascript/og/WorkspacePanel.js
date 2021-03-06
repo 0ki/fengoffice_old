@@ -87,6 +87,8 @@ og.WorkspaceTree = function(workspaces) {
 	}
 
 	og.WorkspaceTree.superclass.constructor.call(this, {
+		ddGroup: 'WorkspaceDD',
+		enableDrop: true,
 		id: 'workspace-panel',
 		autoScroll: true,
 		rootVisible: false,
@@ -101,13 +103,33 @@ og.WorkspaceTree = function(workspaces) {
 					f.el.on('keyup', filterTree, f, {buffer: 350});
 				}
 			}
-		})]
+		})],
+		listeners: {
+            beforenodedrop: function(e) {
+            	var ws = e.target.ws.id;
+            	if (ws == 0) {
+            		return;
+            	}
+            	var s = e.data.selections, r = [];
+            	if (s.length == 0) {
+            		return;
+            	}
+            	var ids = "";
+				for(var i = 0, len = s.length; i < len; i++){
+					if (ids != "") {
+						ids += ";";
+					}
+					ids += s[i].data.manager + ":" + s[i].data.object_id;
+				}
+				var url = og.getUrl('object', 'move', {ids: ids, workspace: ws});
+				og.openLink(url, {callback: function() { e.data.reload(); }});
+            }
+        }
 	});
 
 	this.workspaces = this.root.appendChild(
 		new Ext.tree.TreeNode({
 			text: lang('all'),
-			cls: 'workspace-all',
 			expanded: true,
 			name: lang('all'),
 			listeners: {
@@ -136,7 +158,7 @@ og.WorkspaceTree = function(workspaces) {
 	og.eventManager.addListener('workspace added', this.addWS, this);
 	og.eventManager.addListener('workspace edited', this.addWS, this);
 	og.eventManager.addListener('workspace deleted', this.removeWS, this);
-	
+		
 	this.loadWorkspaces();
 };
 
@@ -187,7 +209,12 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		};
 		var node = new Ext.tree.TreeNode(config);
 		node.ws = ws;
-		this.workspaces.appendChild(node);
+		var iter = this.workspaces.firstChild;
+		while (iter && node.text.toLowerCase() > iter.text.toLowerCase()) {
+			iter = iter.nextSibling;
+		}
+		this.workspaces.insertBefore(node, iter);
+
 		/*Ext.fly(node.ui.elNode).slideIn('l', {
 			callback: Ext.emptyFn, scope: this, duration: .4
 		});*/

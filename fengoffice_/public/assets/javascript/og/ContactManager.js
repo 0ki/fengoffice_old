@@ -9,7 +9,7 @@ og.ContactManager = function() {
 	this.store = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-            url: og.getUrl('contact', 'list_all')
+            url: og.getUrl('contact', 'list_all', {ajax:true})
         })),
         reader: new Ext.data.JsonReader({
             root: 'contacts',
@@ -29,13 +29,32 @@ og.ContactManager = function() {
 				} else {
 					this.remoteSort = true;
 				}
-				var data = this.reader.jsonData;
-				og.processResponse(data);
+				var d = this.reader.jsonData;
+				og.processResponse(d);
+				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+				if (d.totalCount == 0) {
+					if (tag) {
+						this.manager.showMessage(lang("no objects with tag message", lang("contacts"), ws, tag));
+					} else {
+						this.manager.showMessage(lang("no objects message", lang("contacts"), ws));
+					}
+				} else {
+					this.manager.showMessage("");
+				}
+				og.hideLoading();
+			},
+			'beforeload': function() {
+				og.loading();
+				return true;
+			},
+			'loadexception': function() {
+				og.hideLoading();
 			}
 		}
     });
     this.store.setDefaultSort('name', 'asc');
-    this.store.contactManager = this;
+    this.store.manager = this;
     
     //--------------------------------------------
     // Renderers
@@ -124,7 +143,6 @@ og.ContactManager = function() {
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120,
-			hidden: true,
 			sortable: false
         },{
 			id: 'department',
@@ -221,7 +239,7 @@ og.ContactManager = function() {
 		newContact: new Ext.Action({
 			text: lang('new'),
             tooltip: lang('add new contact'),
-            iconCls: 'db-ico-contact',
+            iconCls: 'ico-contact',
             handler: function() {
 				var url = og.getUrl('contact', 'add');
 				og.openLink(url, null);
@@ -230,7 +248,7 @@ og.ContactManager = function() {
 		delContact: new Ext.Action({
 			text: lang('delete'),
             tooltip: lang('delete selected contacts'),
-            iconCls: 'db-ico-delete',
+            iconCls: 'ico-delete',
 			disabled: true,
 			handler: function() {
 				if (confirm(lang('confirm delete contacts'))) {
@@ -245,7 +263,7 @@ og.ContactManager = function() {
 		editContact: new Ext.Action({
 			text: lang('edit'),
             tooltip: lang('edit selected contact'),
-            iconCls: 'db-ico-new',
+            iconCls: 'ico-new',
 			disabled: true,
 			handler: function() {
 				var url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
@@ -267,7 +285,7 @@ og.ContactManager = function() {
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
-            iconCls: 'db-ico-refresh',
+            iconCls: 'ico-refresh',
 			handler: function() {
 				this.store.reload();
 			},
@@ -276,7 +294,7 @@ og.ContactManager = function() {
 		tag: new Ext.Action({
 			text: lang('tag'),
 	        tooltip: lang('tag selected contacts'),
-	        iconCls: 'db-ico-tag',
+	        iconCls: 'ico-tag',
 			disabled: true,
 			menu: new og.TagMenu({
 				listeners: {
@@ -322,7 +340,22 @@ og.ContactManager = function() {
 			actions.assignContact,
 			'-',
 			actions.refresh
-        ]
+        ],
+		listeners: {
+			'render': {
+				fn: function() {
+					this.innerMessage = document.createElement('div');
+					this.innerMessage.className = 'inner-message';
+					var msg = this.innerMessage;
+					var elem = Ext.get(this.getEl());
+					var scroller = elem.select('.x-grid3-scroller');
+					scroller.each(function() {
+						this.dom.appendChild(msg);
+					});
+				},
+				scope: this
+			}
+		}
     });
 
 	og.eventManager.addListener("tag changed", function(tag) {
@@ -333,8 +366,9 @@ og.ContactManager = function() {
     	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		cm.setHidden(cm.getIndexById('role'), this.store.lastOptions.params.active_project == 0);
-		cm.setHidden(cm.getIndexById('tags'), this.store.lastOptions.params.active_project == 0);
+		if (this.store.lastOptions) {
+			cm.setHidden(cm.getIndexById('role'), this.store.lastOptions.params.active_project == 0);
+		}
 	}, this);
 };
 
@@ -364,6 +398,10 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	
 	deactivate: function() {
 		this.active = false;
+	},
+	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
 	}
 });
 

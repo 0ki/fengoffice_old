@@ -8,6 +8,10 @@
 */
 class ObjectController extends ApplicationController {
 
+	function index(){
+		$this->setLayout('html');
+		
+	}
 	/**
 	* Construct the ObjectController
 	*
@@ -33,31 +37,45 @@ class ObjectController extends ApplicationController {
 		$object_id = get_id('object_id');
 	  
 		$object = get_object_by_manager_and_id($object_id, $manager_class);
-		if(!($object instanceof ProjectDataObject)) {
+		if(!($object instanceof ApplicationDataObject)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 		if(!($object->canEdit(logged_user()))){
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 		$rel_manager_class = array_var($_GET, 'rel_manager');
 		$rel_object_id = get_id('rel_object_id');
 	  
 		$rel_object = get_object_by_manager_and_id($rel_object_id, $rel_manager_class);
-		if(!($rel_object instanceof ProjectDataObject)) {
+		if(!($rel_object instanceof ApplicationDataObject)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 		if(!($rel_object->canEdit(logged_user()))){
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
-		DB::beginWork();
-		$object->linkObject($rel_object);
-		DB::commit();
-		flash_success(lang('success link object'));
-		$this->redirectToUrl($object->getObjectUrl());		
+		
+		try{
+			DB::beginWork();
+			$object->linkObject($rel_object);
+			DB::commit();
+			flash_success(lang('success link object'));
+			$this->redirectToUrl($object->getObjectUrl());		
+		} catch(Exception $e){
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		}
 	}
 	
 	
@@ -74,7 +92,9 @@ class ObjectController extends ApplicationController {
 		$object = get_object_by_manager_and_id($object_id, $manager_class);
 		if(!($object instanceof ProjectDataObject)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 	  
 		$already_linked_objects = $object->getLinkedObjects();
@@ -140,8 +160,8 @@ class ObjectController extends ApplicationController {
 					$linked_object->delete();
 					} // foreach
 				} // if
-			  
-				tpl_assign('error', $e);
+			    flash_error($e->getMessage());
+			    ajx_current("empty");
 			} // try
 		} // if
 	} // link_to_object
@@ -162,7 +182,9 @@ class ObjectController extends ApplicationController {
 		$object2 = get_object_by_manager_and_id($rel_object_id, $rel_object_manager);
 		if(!($object1 instanceof ProjectDataObject)|| !($object2 instanceof ProjectDataObject)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 	  
 		$linked_object = LinkedObjects::findById(array(
@@ -183,20 +205,24 @@ class ObjectController extends ApplicationController {
 		
 		if(!($linked_object instanceof LinkedObject )) {
 			flash_error(lang('object not linked to object'));
-			$this->redirectToReferer(get_url('dashboard'));
+			//$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 	  
 		try {
 			DB::beginWork();
 			$linked_object->delete();
 			DB::commit();
+			
 			flash_success(lang('success unlink object'));
+			$this->redirectToReferer($object1->getObjectUrl());
 		} catch(Exception $e) {
 			flash_error(lang('error unlink object'));
 			DB::rollback();
+			ajx_current("empty");
 		} // try
 	  
-		$this->redirectToReferer($object1->getObjectUrl());
 	} // unlink_from_object
 	
 	
@@ -215,13 +241,15 @@ class ObjectController extends ApplicationController {
 		if (!($obj instanceof ProjectDataObject ))
 		{
 	        flash_error(lang('object dnx'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		}
 		$properties = ObjectProperties::getAllPropertiesByObject($obj);
 		if(!($properties instanceof ObjectProperties ))
 		{
 	        flash_error(lang('properties dnx'));
-	        $this->redirectTo('dashboard');	        			
+			ajx_current("empty");
+			return;    			
 		}
 		tpl_assign('properties', $properties);
 	} // view_properties
@@ -241,12 +269,14 @@ class ObjectController extends ApplicationController {
 		$obj = get_object_by_manager_and_id ($object_id, $manager_class);
 	    if(!($obj instanceof ProjectDataObject )) {
 	        flash_error(lang('object dnx'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
       
 	    if(! logged_user()->getCanManageProperties()) {
 	        flash_error(lang('no access permissions'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
       
       $new_properties = array_var($_POST, 'new_properties');
@@ -277,12 +307,14 @@ class ObjectController extends ApplicationController {
 			tpl_assign('properties',ObjectProperties::getAllPropertiesByObject($obj));
           	ApplicationLogs::createLog($obj, active_project(), ApplicationLogs::ACTION_EDIT);  
           	DB::commit();
+          	
+        	flash_success(lang('success add properties'));
+			$this->redirectToReferer($obj->getObjectUrl());
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          flash_error($e->getMessage());
+			ajx_current("empty");
         } // 
-        flash_success(lang('success add properties'));
-        $this->redirectTo('dashboard');
       } // if
     } // update_properties	
     
@@ -302,13 +334,15 @@ class ObjectController extends ApplicationController {
 		if (!($obj instanceof ProjectDataObject ))
 		{
 	        flash_error(lang('object dnx'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 		}
 		$handins = ObjectHandins::getAllHandinsByObject($obj);
 		if(!($handins instanceof ObjectHandins))
 		{
 	        flash_error(lang('handins dnx'));
-	        $this->redirectTo('dashboard');	        			
+			ajx_current("empty");
+			return;       			
 		}
 		tpl_assign('handins', $handins);
 	} // view_handins
@@ -328,12 +362,14 @@ class ObjectController extends ApplicationController {
 		$obj = get_object_by_manager_and_id ($object_id, $manager_class);
 	    if(!($obj instanceof ProjectDataObject )) {
 	        flash_error(lang('object dnx'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
       
 	    if($obj->canEdit()) {
 	        flash_error(lang('no access permissions'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
       
       $new_handins = array_var($_POST, 'new_handins');
@@ -364,14 +400,77 @@ class ObjectController extends ApplicationController {
 			tpl_assign('handins',ObjectHandins::getAllHandinsByObject($obj));
           	ApplicationLogs::createLog($obj, active_project(), ApplicationLogs::ACTION_EDIT);  
           	DB::commit();
+          	
+        	flash_success(lang('success add handins'));
+			$this->redirectToReferer($obj->getObjectUrl());
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          flash_error($e->getMessage());
+          ajx_current("empty");
         } // 
-        flash_success(lang('success add handins'));
-        $this->redirectTo('dashboard');
       } // if
     } // update_handins
+    
+
+    /**
+     * Returns array of queries that will return Dashboard Objects
+     *
+     * @param string $proj_ids
+     * @param string $tag
+     * @param boolean $count if false the query will return objects, if true it will return object count
+     */
+	static function getDashboardObjectQueries($proj_ids, $tag = null, $count = false){
+    	
+    	if(isset($tag) && $tag && $tag!='')
+    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager) ";
+    	else
+    		$tag_str= ' ';
+    	$unclassifiedMails = "";
+    	if (!active_project()){
+    		$accountIds = logged_user()->getMailAccountIdsCSV();
+    		if ($accountIds != "")
+    			$unclassifiedMails = " union SELECT 'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . TABLE_PREFIX . "mail_contents co WHERE account_id in (" . $accountIds . ") " . $tag_str;
+    	}
+    	$res = array();
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Messages']  = "SELECT  'ProjectMessages' as object_manager, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Calendar'] = "SELECT  'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Documents'] = "SELECT  'ProjectFiles' as object_manager, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Tasks'] = "SELECT  'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Milestones'] = "SELECT  'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . 
+					TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Web Pages'] = "SELECT  'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . 
+					TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		$res['Emails'] = "SELECT  'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . 
+					TABLE_PREFIX . "mail_contents co WHERE project_id in " . $proj_ids . $tag_str . $permissions . $unclassifiedMails;
+		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
+		if (active_project()){
+			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
+					TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . 
+					TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" .
+					str_replace('object_manager)',"'ProjectContacts')",$tag_str) . $permissions;
+		}
+		else{
+			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
+						TABLE_PREFIX . "contacts co WHERE '1' = '1' " . str_replace('object_manager)',"'ProjectContacts')",$tag_str) . $permissions;
+		}
+		if($count){
+			foreach ($res as $p => $q){
+				$res[$p] ="SELECT count(*) as quantity FROM ( $q ) table_alias";
+			}
+		}
+		return $res;
+	}
     
     /**
      *  Returns al objects that will be found on the dashboard. 
@@ -386,61 +485,24 @@ class ObjectController extends ApplicationController {
     	///TODO: this method is horrible on performance and should not be here!!!!
     	if(active_project())
     		$proj_ids = active_project()->getId();
-    	else
+    	else{
     		$proj_ids = logged_user()->getActiveProjectIdsCSV();
-    	$proj_ids = ' (' . $proj_ids . ') ';
-    	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager) ";
-    	else
-    		$tag_str= ' ';
+    	}
+    	$proj_ids = ' (' . $proj_ids . ') ';    	
+    	$queries = $this->getDashboardObjectQueries($proj_ids, $tag,false);
 		if(isset($type) && $type){
-			switch ($type){
-	    		case 'Messages':{
-					$query = "SELECT  'ProjectMessages' as object_manager, id as oid, updated_on as last_update FROM " . 
-								TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Calendar':{
-					$query = "SELECT  'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . 
-								TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Documents':{
-					$query = "SELECT  'ProjectFiles' as object_manager, id as oid, updated_on as last_update FROM " . 
-								TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Tasks':{
-					$query = "SELECT  'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . 
-								TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Web Pages':{
-					$query = "SELECT  'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . 
-								TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Contacts':{
-					$query = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
-								TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . 
-								TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" .
-								 str_replace('object_manager)',"'ProjectContacts')",$tag_str) ;
-	    			break;
-	    		}
-	    		default:{					
-	    			$result	=null;
-	    		}
-			} //switch
+			$query = $queries[$type];
 		} //if $type
-		else //TODO: Change this to its better place     	
-    		$query = "SELECT  'ProjectMessages' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectFiles' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " .	TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" . str_replace('object_manager)',"'ProjectContacts')",$tag_str) ;
-					
+		else {
+			$query = '';
+			foreach ($queries as $q){
+				if($query == '')
+					$query = $q;
+				else 
+					$query .= " \n union \n" . $q;
+			}
+
+		}
 		if($order){
 			$query .= " order by " . mysql_real_escape_string($order) ." ";
 			if($order_dir)
@@ -486,71 +548,33 @@ class ObjectController extends ApplicationController {
      */
 	function countDashboardObjects($tag=null,$type){
 		  ///TODO: this method is also horrible in performance and should not be here!!!!
-		if(active_project())
+      	if(active_project())
     		$proj_ids = active_project()->getId();
-    	else
+    	else{
     		$proj_ids = logged_user()->getActiveProjectIdsCSV();
-    	$proj_ids = ' (' . $proj_ids . ') ';
-    	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND co.id=t.rel_object_id AND t.rel_object_manager=object_manager) ";
-    	else
-    		$tag_str='';		
-    	if(isset($type) && $type){
-			switch ($type){
-	    		case 'Messages':{
-					$query = "SELECT  'ProjectMessages' as object_manager, count(*) as q FROM " . 
-								TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Calendar':{
-					$query = "SELECT  'ProjectEvents' as object_manager,count(*) as q FROM " . 
-								TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Documents':{
-					$query = "SELECT  'ProjectFiles' as object_manager,count(*) as q FROM " . 
-								TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Tasks':{
-					$query = "SELECT  'ProjectTasks' as object_manager,count(*) as q FROM " . 
-								TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Web Pages':{
-					$query = "SELECT  'ProjectWebPages' as object_manager,count(*) as q FROM " . 
-								TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str ;
-	    			break;
-	    		}
-	    		case 'Contacts':{
-					$query = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " .
-						TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . 
-						"project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids ." ) " . 
-						str_replace('object_manager)','\'ProjectContacts\')',$tag_str);
-
-	    			break;
-	    		}
-	    		default:{					
-	    			$result	=null;
-	    		}
-			} //switch
+    	}
+    	$proj_ids = ' (' . $proj_ids . ') ';    	
+    	$queries = $this->getDashboardObjectQueries($proj_ids, $tag, true);
+		if(isset($type) && $type){
+			$query = $queries[$type];
 		} //if $type
-		else 
-		$query= "SELECT 'ProjectMessages' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectFiles' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectEvents' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids .$tag_str .
-					" union SELECT 'ProjectTasks' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectWebPages' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'Contacts' as object_manager, count(*) as q FROM " .	TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	" ) " . str_replace('object_manager)',"'ProjectContacts')",$tag_str) .
-					" union SELECT 'ProjectMilestones' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str;
+		else {
+			$query = '';
+			foreach ($queries as $q){
+				if($query == '')
+					$query = $q;
+				else 
+					$query .= " \n union \n" . $q;
+			}
+		}
 		$ret = 0;
 		$res = DB::execute($query);		
     	if(!$res)  return $ret;
     	$rows=$res->fetchAll();
 		if(!$rows) return  $ret;
     	foreach ($rows as $row){
-    		if(isset($row['q']))
-    			$ret += $row['q'];
+    		if(isset($row['quantity']))
+    			$ret += $row['quantity'];
     	}//foreach
     	return $ret;
 	}
@@ -641,15 +665,17 @@ class ObjectController extends ApplicationController {
 		$obj = get_object_by_manager_and_id($id,$manager);
 	    if(!($obj instanceof DataObject )) {
 	        flash_error(lang('object dnx'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
       
 	    if(! $obj->canView( logged_user())) {
 	        flash_error(lang('no access permissions'));
-	        $this->redirectTo('dashboard');
+			ajx_current("empty");
+			return;
 	    } // if
+	    
 	    redirect_to($obj->getObjectUrl(),true);
-		
 	}
 	
 	function do_delete_objects($ids,$manager=null) {
@@ -678,5 +704,45 @@ class ObjectController extends ApplicationController {
 		return array($succ, $err);
 	}
 
+	function move() {
+		ajx_current("empty");
+		
+		$ids = array_var($_GET, 'ids');
+		if (!$ids) {
+			return;
+		}
+		$workspace = array_var($_GET, 'workspace');
+		$p = Projects::findById($workspace);
+		if (!$p instanceof Project) {
+			flash_error(lang("project dnx"));
+			return;
+		}
+		$id_list = split(";", $ids);
+		$err = 0;
+		$succ = 0;
+		foreach ($id_list as $cid) {
+			list($manager, $id) = split(":", $cid);
+			try {
+				DB::beginWork();
+				$obj = get_object_by_manager_and_id($id, $manager);
+				if (!$obj) {
+					$err++;
+				} else {
+					$obj->setColumnValue('project_id', $workspace);
+					$obj->save();
+					DB::commit();
+					$succ++;
+				}
+			} catch (Exception $e) {
+				$err++;
+				DB::rollback();
+			}
+		}
+		if ($err > 0) {
+			flash_error(lang("error move objects", $err));
+		} else {
+			flash_success(lang("success move objects", $succ));
+		}
+	}
 }
 ?>

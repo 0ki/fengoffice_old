@@ -1,9 +1,9 @@
 <?php
 if($email->canDelete(logged_user())) {
-    add_page_action(lang('delete email'), $email->getDeleteUrl(), 'db-ico-delete');
+    add_page_action(lang('delete email'), $email->getDeleteUrl(), 'ico-delete');
   }
   if ($email->canEdit(logged_user())){
-    add_page_action(lang('classify'), $email->getClassifyUrl(), 'mm-ico-classify');
+    add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
   }
   $c = 0;
 ?>
@@ -18,9 +18,7 @@ if($email->canDelete(logged_user())) {
     <div class="private" title="<?php echo lang('private email') ?>"><span><?php echo lang('private email') ?></span></div>
 <?php } // if ?>
 	<div class="coTitle"><?php echo $email->getSubject() ?></div>
-	<?php if (isset($project)) { ?>
-		<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($email, $project) ?></div>
-	<?php } ?>
+	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($email) ?></div>
   </div>
   <div class="coInfo">
 	<table>
@@ -64,19 +62,17 @@ if($email->canDelete(logged_user())) {
   </div>
   </div>
   <div class="coMainBlock">
-  <?php if (isset($project)) { ?>
   	<div class="coLinkedObjects">
   		<?php echo render_object_links($email, $email->canEdit(logged_user())) ?>
   	</div>
-  <?php } ?>
   <div class="coContent">
-  <?php if($email->getBodyHtml() != ''){
-	echo $email->getBodyHtml();
+  <?php if($email->getBodyHtml() == ''){
+	echo convert_to_links($email->getBodyHtml());
 } else {
 	if ($email->getBodyPlain() != ''){
-		echo do_textile($email->getBodyPlain());
+		echo convert_to_links(clean($email->getBodyPlain()));
 	} else {
-		echo do_textile($email->getContent());
+		echo do_textile(convert_to_links($email->getContent()));
 	}
 }
  ?>

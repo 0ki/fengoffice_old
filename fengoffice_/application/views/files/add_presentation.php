@@ -38,7 +38,7 @@
 </div>
 
 <script type="text/javascript">
-	slimeyInstance = new Slimey({
+	var slimey<?php echo $id ?> = new Slimey({
 		container: 'slimey<?php echo $id ?>',
 		rootDir: '<?php echo SLIMEY_PATH ?>',
 		imagesDir: '<?php echo get_theme_url("slimey/images/") ?>',
@@ -51,13 +51,14 @@
 	imagesUrl = '<?php echo get_url('files', 'list_files', array('type' => 'image', 'ajax' => 'true')) ?>';
 	
 	og.eventManager.addListener("file saved", function(obj) {
-		slimeyInstance.fileId = obj.id;
-	}, null, {single:true});
+		this.fileId = obj.id;
+	}, slimey<?php echo $id ?>, {single:true});
 </script>
 
 <?php
-add_page_action(lang("save"), "javascript:(function(){ slimeyInstance.submitFile(false); })()", "save");
-add_page_action(lang("save as new revision"), "javascript:(function(){ slimeyInstance.submitFile(true); })()", "save_new_revision");
+add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(false); })()", "save");
+add_page_action(lang("save as new revision"), "javascript:(function(){ slimey$id.submitFile(true); })()", "save_new_revision");
+add_page_action(lang("save as"), "javascript:(function(){ slimey$id.submitFile(true, true); })()", "save_as");
 ?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>

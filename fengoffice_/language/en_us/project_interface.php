@@ -105,8 +105,8 @@ return array(
     'upload file desc' => 'You can upload files of any type. Max filesize you are allowed to upload is {0}',
     'file revision info short' => 'Revision #{0} <span>(created on {1})</span>',
     'file revision info long' => 'Revision #{0} <span>(by <a class="internalLink" href="{1}">{2}</a> on {3})</span>',
-    'file revision title short' => '<a class="internalLink" href="{0}">Revision #{1}</a> <span>(created on {2})</span>',
-    'file revision title long' => '<a class="internalLink" href="{0}">Revision #{1}</a> <span>(by <a class="internalLink" href="{2}">{3}</a> on {4})</span>',
+    'file revision title short' => '<a target="_blank" href="{0}">Revision #{1}</a> <span>(created on {2})</span>',
+    'file revision title long' => '<a target="_blank" href="{0}">Revision #{1}</a> <span>(by <a class="internalLink" href="{2}">{3}</a> on {4})</span>',
     'file checkout info short' => '<span>Checked out on {0}</span>',
     'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
     'update file' => 'Update file',
@@ -146,9 +146,9 @@ return array(
 
 // Private
     'private message desc' => 'Private messages are visible only to owner company members. Members of client companies will not be able to see them.',
-    'private webpage desc' => 'Private weblinks are visible only to owner company members. Members of client companies will not be able to see them.',
+    'private webpage desc' => 'Private web links are visible only to owner company members. Members of client companies will not be able to see them.',
     'private milestone desc' => 'Private milestones are visible only to owner company members. Members of client companies will not be able to see them.',
-    'private task list desc' => 'Private task lists are visible only to owner company members. Members of client companies will not be able to see them.',
+    'private task list desc' => 'Private tasks are visible only to owner company members. Members of client companies will not be able to see them.',
     'private comment desc' => 'Private comments are visible only to owner company members. Members of client companies will not be able to see them.',
     'private file desc' => 'Private files are visible only to the members of the owner company. Members of client companies will not be able to see them',
  
@@ -172,7 +172,7 @@ return array(
 	'color5' => 'Orange',
 	'color6' => 'Magenta',
 	'color7' => 'Cyan',
-	'color8' => 'Grey',
+	'color8' => 'Violet',
 	'choose a color' => 'Choose a color',
 ); // array
 

@@ -13,6 +13,157 @@ class ProjectEvents extends BaseProjectEvents {
 	const ORDER_BY_MODIFYTIME = 'dateUpdated';
 	
 	/**
+	 * Returns all events for the given date, tag and considers the active project
+	 *
+	 * @param DateTimeValue $date
+	 * @param String $tags
+	 * @return unknown
+	 */
+	static function getDayProjectEvents(DateTimeValue $date, $tags = ''){
+		$day = $date->getDay();
+		$month = $date->getMonth();
+		$year = $date->getYear();
+		
+		if(!is_numeric($day) OR !is_numeric($month) OR !is_numeric($year)){
+			return NULL;
+		}
+		// fix any date issues
+		$year = date("Y",mktime(0,0,1,$month, $day, $year));
+		$month = date("m",mktime(0,0,1,$month, $day, $year));
+		$day = date("d",mktime(0,0,1,$month, $day, $year));
+		//permission check
+		$limitation='';
+
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) .')';
+
+		if(active_project() instanceof Project ){
+			$limitation = "AND  ( project_id=" . active_project()->getId() ." )";
+		}
+		if(isset($tag) && $tag && $tag!='')
+	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
+		else
+			$tag_str= "";
+		// build the query
+//		$q = "SELECT UNIX_TIMESTAMP(`start`) as start_since_epoch,
+//			UNIX_TIMESTAMP(duration) as end_since_epoch, private, created_by_id, subject,
+//			description, eventtype, ".TABLE_PREFIX."project_events.id, 
+//			repeat_d, repeat_m, repeat_y, repeat_h, repeat_end, type_id, 
+//			typename, typedesc, typecolor, repeat_num, special_id, created_on
+//			FROM ".TABLE_PREFIX."project_events left outer join ".TABLE_PREFIX."eventtypes 
+//			
+//			ON ".TABLE_PREFIX."project_events.type_id=".TABLE_PREFIX."eventtypes.id 
+//			WHERE
+		$conditions = "	(
+				-- 
+				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
+				-- 
+				(
+					duration >= '$year-$month-$day 00:00:00' 
+					AND `start` <= '$year-$month-$day 23:59:59' 
+				) 
+				-- 
+				-- THIS RETURNS REGULAR REPEATING EVENTS - DAILY, WEEKLY, MONTHLY, OR YEARLY.
+				-- 
+				OR 
+				(
+					DATE(`start`) <= '$year-$month-$day' 
+					AND
+					(
+						(
+							MOD( DATEDIFF(DATE(`start`), '$year-$month-$day') ,repeat_d) = 0
+							AND
+							(
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$year-$month-$day' 
+								OR
+								repeat_forever = 1
+								OR
+								repeat_end >= '$year-$month-$day'
+							)
+						)
+						OR
+						(
+							MOD( PERIOD_DIFF(DATE_FORMAT(`start`,'%Y%m'),DATE_FORMAT('$year-$month-$day','%Y%m')) ,repeat_m) = 0
+							AND 
+							DAY(`start`)= '$day'
+							AND
+							(
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$year-$month-$day' 
+								OR
+								repeat_forever = 1
+								OR
+								repeat_end >= '$year-$month-$day'
+							)
+						)
+						OR
+						(
+							MOD( (YEAR(DATE(`start`))-YEAR('$year-$month-$day')) ,repeat_y) = 0
+							AND
+							MONTH(`start`)='$month' 
+							AND 
+							DAY(`start`) = '$day'
+							AND
+							(
+								ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$year-$month-$day' 
+								OR
+								repeat_forever = 1
+								OR
+								repeat_end >= '$year-$month-$day'
+							)
+						)
+					)		
+				)
+				-- 
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK OF THE MONTH NUMBERED 1-4
+				-- 
+				OR
+				(
+					repeat_h = 1
+					AND
+					MONTH(`start`) = $month 
+					AND 
+					(
+						(
+							DAYOFWEEK('$year-$month-01') <= DAYOFWEEK(`start`)
+							AND 
+							( DAYOFWEEK(`start`) - (DAYOFWEEK('$year-$month-01') - 1) + ( FLOOR((DAY(`start`)-1)/7) * 7) ) = $day
+						)
+						OR
+						(
+							DAYOFWEEK('$year-$month-01') > DAYOFWEEK(`start`)
+							AND 
+							( ( 7 - ( DAYOFWEEK('$year-$month-01') - 1 ) + DAYOFWEEK(`start`) ) + ( FLOOR((DAY(`start`)-1)/7) * 7 ) ) = $day
+						)
+					)			
+				)
+				-- 
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN THE LAST WEEK OF THE MONTH.
+				-- 
+				OR
+				(
+					repeat_h = 2
+					AND
+					MONTH(`start`) = $month 
+					AND 
+					DAY('$year-$month-$day') > (DAY(LAST_DAY('$year-$month-$day')) - 7) 
+					AND 
+					DAYOFWEEK(`start`) = DAYOFWEEK('$year-$month-$day')
+				)				
+			)
+			$limitation  
+			$permissions 
+			$tag_str ";
+		return self::findAll(array(
+			'conditions' => $conditions,
+			'order' => '`start`',
+		));
+//			$result = DB::execute($q); // $cal_db->sql_query($q);
+//		if(!$result AND DEBUG){
+//			echo "Error executing event-retrieval query.";
+//		}		
+//    	$rows=$result->fetchAll();
+//		return $rows;
+	}
+	/**
 	* Return paged project Events
 	*
 	* @param Project $project
@@ -128,7 +279,7 @@ class ProjectEvents extends BaseProjectEvents {
 */	
 
 	/**
-	* Reaturn all calednar Events
+	* Reaturn all calendar Events
 	*
 	* @param Project $project
 	* @return array

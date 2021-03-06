@@ -34,7 +34,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('typeParam',  array_var($_GET,'type'));
 		tpl_assign('tags', Tags::getTagNames());
 		if(isset($error))
-			tpl_assign('error', $error);
+		tpl_assign('error', $error);
 	} // index
 
 	// ---------------------------------------------------
@@ -49,24 +49,27 @@ class FilesController extends ApplicationController {
 	 */
 	function file_details() {
 		$this->addHelper('textile');
-		 
+			
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$file->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$revisions = $file->getRevisions();
 		if(!count($revisions)) {
 			flash_error(lang('no file revisions in file'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		tpl_assign('file', $file);
 		//deprecated tpl_assign('folder', $file->getFolder());
 		tpl_assign('last_revision', $file->getLastRevision());
@@ -74,19 +77,18 @@ class FilesController extends ApplicationController {
 		tpl_assign('order', null);
 		tpl_assign('page', null);
 		tpl_assign('important_files', $file->getProject()->getImportantFiles());
-		 
-		// This variables are required for the sidebar
-		//deprecated tpl_assign('current_folder', $file->getFolder());
-		//deprecated tpl_assign('folders', active_project()->getFolders());
-		 
-		//deprecated $this->setSidebar(get_template_path('index_sidebar', 'files'));
-		 
+			
 	} // file_details
 
 	function slideshow() {
 		$this->setLayout('slideshow');
 		$fileid = array_var($_GET, 'fileId');
 		$file = ProjectFiles::instance()->findById($fileid);
+		if(!$file->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		$content = $error = null;
 		if (!$file) {
 			$error = 'File not found';
@@ -108,26 +110,40 @@ class FilesController extends ApplicationController {
 	 */
 	function download_file() {
 		$inline = (boolean) array_var($_GET, 'inline', false);
-		 
+			
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
-	
-	
+
+
 	function checkout_file()
 	{
 		$file = ProjectFiles::findById(get_id());
+		if(!($file instanceof ProjectFile)) {
+			flash_error(lang('file dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		if(!$file->canEdit(logged_user())) {
+			flash_error(lang('file dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+
 		$file->setCheckedOutById(logged_user()->getId());
 		$file->setCheckedOutOn(new DateTimeValue(time()));
 		try{
@@ -139,7 +155,9 @@ class FilesController extends ApplicationController {
 		{
 			DB::rollback();
 		}
-		self::download_file();
+
+		flash_success(lang('success checkout file'));
+		$this->redirectTo('files','file_details',array ("id" => get_id()));
 	}
 
 	/**
@@ -153,19 +171,22 @@ class FilesController extends ApplicationController {
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$file = $revision->getFile();
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!($revision->canDownload(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize());
 		die();
 	} // download_revision
@@ -190,56 +211,78 @@ class FilesController extends ApplicationController {
 		if(!ProjectFile::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 		$file = new ProjectFile();
-		//deprecated $folder = null;
-		//deprecated $folder_id = get_id('folder_id');
-		//deprecated if($folder_id) {
-		//deprecated 	$folder = ProjectFolders::findById($folder_id);
-		//deprecated } // if
-		 
-		//deprecated if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
-		//deprecated 	$file_data = array(
-		//deprecated		'folder_id' => $folder->getId()
-		//deprecated	); // array
-		//deprecated } // if
-		 
+			
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 		tpl_assign('tags', Tags::getTagNames());
-		 
+			
 		if (is_array(array_var($_POST, 'file'))) {
 			$upload_id = array_var($_POST, "upload_id");
+			$skipSettings = false;
 			try {
 				DB::beginWork();
+				if (array_var($file_data, 'add_type') == 'regular'){
+					$file->setFilename(array_var($file_data, 'name'));
+				} else {
+					if (array_var($file_data, 'new_filename_check') == "true")
+						$file->setFilename(array_var($file_data, 'new_filename'));
+					else {
+						$skipSettings = true;
+						$file = ProjectFiles::findById(array_var($file_data, 'existing_file_id'));
+						
+						if (array_var($file_data, 'add_type') == 'checkedout'){ 
+							if ($file->canCheckin(logged_user()))  // Check for checkin permissions
+								$file->setCheckedOutById(0);
+							else{
+								flash_error(lang('no access permissions'));
+								ajx_current("empty");
+								return;
+							}
+						} else {  // Check for edit permissions
+							if (!$file->canEdit(logged_user())){
+								flash_error(lang('no access permissions'));
+								ajx_current("empty");
+								return;
+							}
+						}
+					}
+				}
 				$uploaded_file = array_var($_FILES, 'file_file');
-				$file->setFromAttributes($file_data);
-
-				if(!logged_user()->isMemberOfOwnerCompany()) {
-					$file->setIsPrivate(false);
-					$file->setIsImportant(false);
-					$file->setCommentsEnabled(true);
-					$file->setAnonymousCommentsEnabled(false);
-				} // if
-				$file->setFilename(array_var($uploaded_file, 'name'));
-				$file->setProjectId($project->getId());
-				$file->setIsVisible(true);
+				
+				if (!$skipSettings){
+					$file->setFromAttributes($file_data);
+	
+					if(!logged_user()->isMemberOfOwnerCompany()) {
+						$file->setIsPrivate(false);
+						$file->setIsImportant(false);
+						$file->setCommentsEnabled(true);
+						$file->setAnonymousCommentsEnabled(false);
+					} // if
+					$file->setProjectId($project->getId());
+					$file->setIsVisible(true);
+				}
 				$file->save();
-
-				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
 
 				//Add properties
-				$file->save_properties($file_data);			
-
+				if (!$skipSettings){
+					$file->save_properties($file_data);
+					$file->setTagsFromCSV(array_var($file_data, 'tags'));
+				}
 				ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
+				//flash_success(array_var($file_data, 'add_type'));
 
 				flash_success(lang('success add file', $file->getFilename()));
+				ajx_current("start");
 			} catch(Exception $e) {
 				DB::rollback();
-				flash_error($e);
-				
+				flash_error($e->getMessage());
+				ajx_current("empty");
+
 				// If we uploaded the file remove it from repository
 				if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 					FileRepository::deleteFile($revision->getRepositoryId());
@@ -260,7 +303,8 @@ class FilesController extends ApplicationController {
 				$file = ProjectFiles::findById($fileId);
 				if (!$file->canEdit(logged_user())) {
 					flash_error(lang('no access permissions'));
-					//$this->redirectToReferer(get_url('files'));
+					ajx_current("empty");
+					return;
 				} // if
 				DB::beginWork();
 				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
@@ -294,7 +338,7 @@ class FilesController extends ApplicationController {
 			// new document
 			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
-				//$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
 			} // if
 
 			// prepare the file object
@@ -307,18 +351,6 @@ class FilesController extends ApplicationController {
 			$file->setIsImportant(false);
 			$file->setCommentsEnabled(true);
 			$file->setAnonymousCommentsEnabled(false);
-
-			// search for destination folder
-			//deprecated $folder = null;
-			//deprecated $folder_id = get_id('file[folder_id]');
-			//deprecated if ($folder_id) {
-			//deprecated 	$folder = ProjectFolders::findById($folder_id);
-			//deprecated } // if
-			//deprecated if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
-			//deprecated 	$file_data = array(
-			//deprecated		'folder_id' => $folder->getId()
-			//deprecated	); // array
-			//deprecated} // if
 
 			//seteo esto para despues setear atributos
 			$file_content = array_var($_POST, 'fileContent');
@@ -365,6 +397,11 @@ class FilesController extends ApplicationController {
 			//edit presentation
 			try {
 				$file = ProjectFiles::findById($fileid);
+				if (!$file->canEdit(logged_user())) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
 				DB::beginWork();
 				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
 				$revision_comment = '';
@@ -413,17 +450,17 @@ class FilesController extends ApplicationController {
 
 			// search for destination folder
 			/*deprecated $folder = null;
-			$folder_id = get_id('file[folder_id]');
-			if ($folder_id) {
+			 $folder_id = get_id('file[folder_id]');
+			 if ($folder_id) {
 				$folder = ProjectFolders::findById($folder_id);
-			} // if
-			if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
+				} // if
+				if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
 				$file_data = array(
-					'folder_id' => $folder->getId()
+				'folder_id' => $folder->getId()
 				); // array
-			} // if
-			//deprecated*/
-			
+				} // if
+				//deprecated*/
+				
 			//seteo esto para despues setear atributos
 			$file_content = unescapeSLIM(array_var($_POST, 'slimContent'));
 			$file_dt['name'] = array_var($postFile, 'name');
@@ -468,6 +505,11 @@ class FilesController extends ApplicationController {
 			//edit spreadsheet
 			try {
 				$file = ProjectFiles::findById(get_id());
+				if (!$file->canEdit(logged_user())) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} // if
 				DB::beginWork();
 				$post_revision = array_var($_POST, 'new_revision_spreadsheet') == 'checked'; // change file?
 				$revision_comment = '';
@@ -500,32 +542,32 @@ class FilesController extends ApplicationController {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
-				
+
 			// create the file object
 			$file = new ProjectFile();
 			$postFile=array_var($_POST,'file');
 			$file->setFilename(array_var($postFile,'name'));
 			$file->setProjectId(active_or_personal_project()->getId());
 			$file->setIsVisible(true);
-				
+
 			$file->setIsPrivate(false);
 			$file->setIsImportant(false);
 			$file->setCommentsEnabled(true);
 			$file->setAnonymousCommentsEnabled(false);
-				
+
 			/* search for the destination folder //deprecated
-			$folder = null;
-			$folder_id = get_id('file[folder_id]');
-			if($folder_id) {
+			 $folder = null;
+			 $folder_id = get_id('file[folder_id]');
+			 if($folder_id) {
 				$folder = ProjectFolders::findById($folder_id);
-			} // if
-			if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+				} // if
+				if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
 				$file_data = array(
-					'folder_id' => $folder->getId()
+				'folder_id' => $folder->getId()
 				); // array
-			} // if
+				} // if
 				//deprecated*/
-				
+
 			//seteo esto para despues setear atributos
 			$file_content = array_var($_POST,"TrimSpreadsheet");
 			$file_dt['name'] = array_var($postFile,'name');
@@ -564,29 +606,86 @@ class FilesController extends ApplicationController {
 		}//new spreadsheet
 	}
 
+	function text_edit() {
+		$file_data = array_var($_POST, 'file');
+		if (!$file_data) {
+			// open text file
+			$file = ProjectFiles::findById(get_id());
+			if (!($file instanceof ProjectFile)) {
+				flash_error(lang('file dnx'));
+				ajx_current("empty");
+				return;
+			} // if
+
+			if (!$file->canEdit(logged_user())) {
+				flash_error(lang('no access permissions'));
+				ajx_current("empty");
+				return;
+			} // if
+
+				
+			tpl_assign('file', $file);
+		} else {
+			ajx_current("empty");
+			// save new file content
+			try {
+				$file = ProjectFiles::findById(array_var($file_data, 'id'));
+				if (!$file->canEdit(logged_user())) {
+					flash_error(lang('no access permissions'));
+					return;
+				} // if
+				DB::beginWork();
+				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
+				$revision_comment = '';
+
+				$file_dt['name'] = $file->getFilename();
+				$file_content = array_var($_POST, 'fileContent');
+				$file_dt['size'] = strlen($file_content);
+				$file_dt['type'] = $file->getTypeString();
+				$file_dt['tmp_name'] = './tmp/' . rand () ;
+				$handler = fopen($file_dt['tmp_name'], 'w');
+				fputs($handler, $file_content);
+				fclose($handler);
+				//$file->setFilename(array_var($postFile, 'name'));
+				$file->save();
+				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
+				ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_EDIT);
+				DB::commit();
+				unlink($file_dt['tmp_name']);
+
+				flash_success(lang('success save file', $file->getFilename()));
+			} catch(Exception $e) {
+				DB::rollback();
+				unlink($file_dt['tmp_name']);
+				flash_error(lang('error while saving'));
+			} // try
+		}// if
+	} // text_edit
 
 	function add_document() {
 		if (get_id() > 0) {
 			//open a document
 
 			$this->setTemplate('add_document');
-				
+
 			$file = ProjectFiles::findById(get_id());
 			if (!($file instanceof ProjectFile)) {
 				flash_error(lang('file dnx'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			if(!$file->canEdit(logged_user())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			$file_data = array_var($_POST, 'file');
 			if (!is_array($file_data)) {
 				$tag_names = $file->getTagNames();
 				$file_data = array(
-					//deprecated'folder_id' => $file->getFolderId(),
+				//deprecated'folder_id' => $file->getFolderId(),
 					'description' => $file->getDescription(),
 					'is_private' => $file->getIsPrivate(),
 					'is_important' => $file->getIsImportant(),
@@ -595,31 +694,32 @@ class FilesController extends ApplicationController {
 					'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
 				); // array
 			} // if
-				
+
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		} else {
 			//new document
 			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
-				
+
 			/*deprecated $folder = null;
-			$folder_id = get_id('folder_id');
-			if ($folder_id) {
+			 $folder_id = get_id('folder_id');
+			 if ($folder_id) {
 				$folder = ProjectFolders::findById($folder_id);
-			} // if
-				
-			if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
+				} // if
+
+				if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
 				$file_data = array(
-					'folder_id' => $folder->getId()
+				'folder_id' => $folder->getId()
 				); // array
-			} // if
-			//deprecated*/	
+				} // if
+				//deprecated*/
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		}//end new document
@@ -634,19 +734,21 @@ class FilesController extends ApplicationController {
 
 			if(!($file instanceof ProjectFile)) {
 				flash_error(lang('file dnx'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			if(!$file->canEdit(logged_user())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			$file_data = array_var($_POST, 'file');
 			if(!is_array($file_data)) {
 				$tag_names = $file->getTagNames();
 				$file_data = array(
-					//deprecated 'folder_id' => $file->getFolderId(),
+				//deprecated 'folder_id' => $file->getFolderId(),
 					'description' => $file->getDescription(),
 					'is_private' => $file->getIsPrivate(),
 					'is_important' => $file->getIsImportant(),
@@ -661,24 +763,25 @@ class FilesController extends ApplicationController {
 			// edit a spreadsheet
 			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
 
 			/*deprecated $folder = null;
-			$folder_id = get_id('folder_id');
-			if ($folder_id) {
+			 $folder_id = get_id('folder_id');
+			 if ($folder_id) {
 				$folder = ProjectFolders::findById($folder_id);
-			} // if
-				
-			if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
+				} // if
+
+				if (($folder instanceof ProjectFolder) && !is_array($file_data)) {
 				$file_data = array(
-					'folder_id' => $folder->getId()
+				'folder_id' => $folder->getId()
 				); // array
-			} // if
-			//deprecated */	
+				} // if
+				//deprecated */
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
 		}
@@ -692,19 +795,21 @@ class FilesController extends ApplicationController {
 
 			if (!($file instanceof ProjectFile)) {
 				flash_error(lang('file dnx'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			if (!$file->canEdit(logged_user())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-				
+
 			$file_data = array_var($_POST, 'file');
 			if (!is_array($file_data)) {
 				$tag_names = $file->getTagNames();
 				$file_data = array(
-					//'folder_id' => $file->getFolderId(),
+				//'folder_id' => $file->getFolderId(),
 					'description' => $file->getDescription(),
 					'is_private' => $file->getIsPrivate(),
 					'is_important' => $file->getIsImportant(),
@@ -719,23 +824,24 @@ class FilesController extends ApplicationController {
 			//new presentation
 			if(!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
-				$this->redirectToReferer(get_url('files'));
+				ajx_current("empty");
+				return;
 			} // if
-	   
+
 			$file = new ProjectFile();
 			$file_data = array_var($_POST, 'file');
 
 			/*deprecated$folder = null;
-			$folder_id = get_id('folder_id');
-			if($folder_id) {
+			 $folder_id = get_id('folder_id');
+			 if($folder_id) {
 				$folder = ProjectFolders::findById($folder_id);
-			} // if
-	   
-			if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+				} // if
+
+				if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
 				$file_data = array(
-				  'folder_id' => $folder->getId()
+				'folder_id' => $folder->getId()
 				); // array
-			} // if
+				} // if
 	   //deprecated*/
 			tpl_assign('file', $file);
 			tpl_assign('file_data', $file_data);
@@ -744,8 +850,8 @@ class FilesController extends ApplicationController {
 
 	function list_files() {
 		ajx_current("empty");
-		    	
-    	/* get query parameters */
+		 
+		/* get query parameters */
 		$start = array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
 		if (! $start) {
@@ -792,7 +898,7 @@ class FilesController extends ApplicationController {
 			$objects = null;
 			$pagination = 0 ;
 		} // if
-		
+
 		/* prepare response object */
 		$listing = array(
 			"totalCount" => $pagination->getTotalItems(),
@@ -805,21 +911,21 @@ class FilesController extends ApplicationController {
 				if ($o->getCheckedOutById() != 0)
 				{
 					if ($o->getCheckedOutById() == logged_user()->getId())
-						$coName = "self";
+					$coName = "self";
 					else
 					{
 						$coId = $o->getCheckedOutById();
 						$coName = Users::findById($coId)->getUsername();
 					}
 				}
-				
+
 				$listing["files"][] = array(
 					"id" => $o->getId(),
 					"object_id" => $o->getId(),
 					"name" => $o->getFilename(),
 					"type" => $o->getObjectTypeName(),
 					"mimeType" => $o->getTypeString(),
-					"tags" => project_object_tags($o, $o->getProject(), true),
+					"tags" => project_object_tags($o),
 					"createdBy" => Users::findById($o->getCreatedById())->getUsername(),
 					"createdById" => $o->getCreatedById(),
 					"dateCreated" => $o->getCreatedOn()->getTimestamp(),
@@ -835,25 +941,22 @@ class FilesController extends ApplicationController {
 					"checkedOutByName" => $coName,
 					"checkedOutById" => $coId
 				);
-	    	}
+			}
 		}
 		ajx_extra_data($listing);
-    	tpl_assign("listing", $listing);
+		tpl_assign("listing", $listing);
 	}
 
 	function open_file() {
 		$fileId = $_GET['id'];
 		$file = ProjectFiles::findById($fileId);
+		if (!$file->canEdit(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
 		if ($file) {
-			if (strcmp('sprd', $file->getTypeString()) == 0) {
-				$this->redirectTo('files', 'add_spreadsheet', array('id' => $fileId));
-			} else if (strcmp('txt', $file->getTypeString()) == 0) {
-				$this->redirectTo('files', 'add_document', array('id' => $fileId));
-			} else if (strcmp('prsn', $file->getTypeString()) == 0) {
-				$this->redirectTo('files', 'add_presentation', array('id' => $fileId));
-			} else {
-				$this->redirectTo('files', 'file_details', array('id' => $fileId));
-			}
+			$this->redirectToUrl($file->getModifyUrl());
 		} else {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
@@ -887,8 +990,13 @@ class FilesController extends ApplicationController {
 			if (trim($id) != '') {
 				try {
 					$file = ProjectFiles::findById($id);
-					Tags::addObjectTag($tag, $file);
-					$succ++;
+					if (!$file->canEdit(logged_user())) {
+						$err ++;
+					} // if
+					else {
+						Tags::addObjectTag($tag, $file);
+						$succ++;
+					}
 				} catch (Exception $e) {
 					$err ++;
 				}
@@ -897,7 +1005,7 @@ class FilesController extends ApplicationController {
 		return array($succ, $err);
 	}
 
-	 
+
 	/**
 	 * Edit file properties
 	 *
@@ -912,18 +1020,20 @@ class FilesController extends ApplicationController {
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$file->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
-		$file_data = array_var($_POST, 'file');		
+			
+		$file_data = array_var($_POST, 'file');
 		if(!is_array($file_data)) {
 			$tag_names = $file->getTagNames();
 			$file_data = array(
-				//'folder_id' => $file->getFolderId(),
+			//'folder_id' => $file->getFolderId(),
 				'description' => $file->getDescription(),
 				'is_private' => $file->getIsPrivate(),
 				'is_important' => $file->getIsImportant(),
@@ -931,11 +1041,14 @@ class FilesController extends ApplicationController {
 				'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
 				'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
 				'project_id' => $file->getProjectId(),
+				'edit_name' => $file->getFilename(),
+				'file_id' => get_id()
 			); // array
 		} // if
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
-		 
+		
+			
 		if(is_array(array_var($_POST, 'file'))) {
 			try {
 				$old_is_private = $file->isPrivate();
@@ -956,6 +1069,7 @@ class FilesController extends ApplicationController {
 					$file->setCommentsEnabled($old_comments_enabled);
 					$file->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
 				} // if
+				//$file->setFilename(array_var($file_data, 'name'));
 				$file->save();
 				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				if($handle_file) {
@@ -964,35 +1078,38 @@ class FilesController extends ApplicationController {
 				$file->save_properties($file_data);
 				ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
-
+				
+				
 				flash_success(lang('success edit file', $file->getFilename()));
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage() . $e->getTraceAsString());
 			} // try
 		} // if
 	} // edit_file
-	
+
 	function checkin_file() {
 		$this->setTemplate('add_file');
 
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$file->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
-		$file_data = array_var($_POST, 'file');		
+			
+		$file_data = array_var($_POST, 'file');
 		if(!is_array($file_data)) {
 			$tag_names = $file->getTagNames();
 			$file_data = array(
-				'folder_id' => $file->getFolderId(),
+			//'folder_id' => $file->getFolderId(),
 				'description' => $file->getDescription(),
 				'is_private' => $file->getIsPrivate(),
 				'is_important' => $file->getIsImportant(),
@@ -1005,7 +1122,7 @@ class FilesController extends ApplicationController {
 		tpl_assign('file', $file);
 		tpl_assign('file_data', $file_data);
 		tpl_assign('checkin', true);
-		 
+			
 		if(is_array(array_var($_POST, 'file'))) {
 			try {
 				$old_is_private = $file->isPrivate();
@@ -1040,10 +1157,10 @@ class FilesController extends ApplicationController {
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
-				flash_error($e);
+				flash_error($e->getMessage());
 			} // try
 		} // if
-	} // edit_file
+	} // checkin_file
 
 	/**
 	 * Delete files given by a comma-separated list of their ids
@@ -1070,8 +1187,14 @@ class FilesController extends ApplicationController {
 		foreach ($ids as $id) {
 			try {
 				if(trim($id)!=''){
-					FilesController::delete_file_by_id($id);
-					$succ ++;
+					$file = ProjectFiles::findById($id);
+					if(!$file->canDelete(logged_user())) {
+						$err ++;
+					} // if
+					else {
+						FilesController::delete_file_by_id($id);
+						$succ ++;
+					}
 				}
 			} catch(Exception $e) {
 				$err ++;
@@ -1087,10 +1210,9 @@ class FilesController extends ApplicationController {
 	 * @param void
 	 * @return null
 	 */
-	function delete_file_by_id($fileId) {
+	private function delete_file_by_id($fileId) {
 		$file = ProjectFiles::findById($fileId);
-		 
-		if(!$file->canEdit(logged_user())) {
+		if(!$file->canDelete(logged_user())) {
 			return ;
 		} // if
 		DB::beginWork();
@@ -1112,13 +1234,15 @@ class FilesController extends ApplicationController {
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
-		if(!$file->canEdit(logged_user())) {
+			
+		if(!$file->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		try {
 			DB::beginWork();
 			$file->delete();
@@ -1131,6 +1255,47 @@ class FilesController extends ApplicationController {
 			flash_error(lang('error delete file'));
 			ajx_current("empty");
 		} // try
+	}
+
+	function check_filename(){
+		ajx_current("empty");
+		$filename = array_var($_GET, 'filename');
+		$wsid = array_var($_GET, 'wsid');
+		$file = ProjectFiles::findOne(array('conditions' => "filename = '" . $filename . "' AND project_id = " . $wsid));
+
+		if ($file instanceof ProjectFile && $file->getId() != array_var($_GET, 'id')){
+			$c = 1;
+			$newFile = $file;
+			do {
+				$c++;
+				$newFilename = insert_before_file_extension($filename, "($c)");
+			} while ($this->filenameExists($newFilename, $wsid));
+				
+			evt_add("filename checked", array(
+				"id" => $file->getId(),
+				"name" => $file->getFilename(),
+				"description" => $file->getDescription(),
+				"size" => $file->getFilesize(),
+				"created_by_id" => $file->getCreatedById(),
+				"created_by_name" => Users::findById($file->getCreatedById())->getDisplayName(),
+				"created_on" => $file->getCreatedOn()->toISO8601(),
+				"suggestedName" => $newFilename,
+				"is_checked_out" => $file->isCheckedOut(),
+				"checked_out_by_name" => $file->getCheckedOutByDisplayName(),
+				"can_check_in" => $file->canCheckin(logged_user()),
+				"can_edit" => $file->canEdit(logged_user())
+			));
+		} else {
+			evt_add("filename checked", array(
+				"id" => 0,
+				"name" => $filename
+			));
+		}
+	}
+
+	function filenameExists($filename, $projectId){
+		$file = ProjectFiles::findOne(array('conditions' => "filename = '$filename' AND project_id = " . $projectId));
+		return $file instanceof ProjectFile;
 	}
 
 
@@ -1146,35 +1311,38 @@ class FilesController extends ApplicationController {
 	 */
 	function edit_file_revision() {
 		$this->setTemplate('add_file_revision');
-		 
+			
 		$revision = ProjectFileRevisions::findById(get_id());
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$file = $revision->getFile();
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$revision->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$revision_data = array_var($_POST, 'revision');
 		if(!is_array($revision_data)) {
 			$revision_data = array(
 				'comment' => $revision->getComment(),
 			); // array
 		} // if
-		 
+			
 		tpl_assign('revision', $revision);
 		tpl_assign('file', $file);
 		tpl_assign('revision_data', $revision_data);
-		 
+			
 		if(is_array(array_var($_POST, 'revision'))) {
 			try {
 				DB::beginWork();
@@ -1186,7 +1354,7 @@ class FilesController extends ApplicationController {
 				flash_success(lang('success edit file revision'));
 				$this->redirectToUrl($revision->getDetailsUrl());
 			} catch(Exception $e) {
-				tpl_assign('error', $e);
+				flash_error($e->getMessage());
 				DB::rollback();
 			} // try
 		} // if
@@ -1202,26 +1370,30 @@ class FilesController extends ApplicationController {
 		$revision = ProjectFileRevisions::findById(get_id());
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$file = $revision->getFile();
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		$all_revisions = $file->getRevisions();
 		if(count($all_revisions) == 1) {
 			flash_error(lang('cant delete only revision'));
-			$this->redirectToReferer($file->getDetailsUrl());
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		if(!$revision->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
+			return;
 		} // if
-		 
+			
 		try {
 			DB::beginWork();
 			$revision->delete();
@@ -1233,7 +1405,7 @@ class FilesController extends ApplicationController {
 			DB::rollback();
 			flash_error(lang('error delete file revision'));
 		} // try
-		 
+			
 		$this->redirectToUrl($file->getDetailsUrl());
 	} // delete_file_revision
 

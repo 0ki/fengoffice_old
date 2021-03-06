@@ -36,3 +36,7 @@ div.objectFiles div.objectFilesTitle span {
   font-weight: bolder;
   color: #333;
 }
+
+#object_linker {
+	cursor: pointer;
+}

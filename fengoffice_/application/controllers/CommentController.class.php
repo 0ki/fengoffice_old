@@ -98,7 +98,8 @@ class CommentController extends ApplicationController {
 				$this->redirectToUrl($redirect_to);
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // add
@@ -117,13 +118,15 @@ class CommentController extends ApplicationController {
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
 			flash_error(lang('comment dnx'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		$object = $comment->getObject();
 		if(!($object instanceof ProjectDataObject)) {
 			flash_error(lang('object dnx'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(trim($comment->getViewUrl())) {
@@ -134,7 +137,8 @@ class CommentController extends ApplicationController {
 
 		if(!$comment->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		$comment_data = array_var($_POST, 'comment');
@@ -168,7 +172,8 @@ class CommentController extends ApplicationController {
 				$this->redirectToUrl($redirect_to);
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				ajx_current("empty");
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit
@@ -185,20 +190,23 @@ class CommentController extends ApplicationController {
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
 			flash_error(lang('comment dnx'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		$object = $comment->getObject();
 		if(!($object instanceof ProjectDataObject)) {
 			flash_error(lang('object dnx'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(trim($object->getObjectUrl())) $redirect_to = $object->getObjectUrl();
 
 		if(!$comment->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("empty");
+			return;
 		} // if
 
 		try {
@@ -209,12 +217,13 @@ class CommentController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete comment'));
+			$this->redirectToUrl($redirect_to);
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete comment'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToUrl($redirect_to);
 	} // delete
 
 } // CommentController

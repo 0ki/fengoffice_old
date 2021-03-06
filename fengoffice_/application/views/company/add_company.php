@@ -27,7 +27,7 @@
 
   <div>
     <?php echo label_tag(lang('name'), 'clientFormName', true) ?>
-    <?php echo text_field('company[name]', array_var($company_data, 'name'), array('id' => 'clientFormName')) ?>
+    <?php echo text_field('company[name]', array_var($company_data, 'name'), array('class' => 'long', 'id' => 'clientFormName')) ?>
   </div>
   
   <div>

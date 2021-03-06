@@ -1,6 +1,6 @@
 <?php
   if(!active_project() || (active_project() && ProjectMessage::canAdd(logged_user(), active_project()))) {
-    add_page_action(lang('add message'), get_url('message', 'add'), 'mm-ico-message');
+    add_page_action(lang('add message'), get_url('message', 'add'), 'ico-message');
   } // if
   if($message->canEdit(logged_user())) {
   	add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit');
@@ -16,11 +16,11 @@
 <div class="coContainer">
   <div class="coHeader">
   <div class="coHeaderUpperRow">
+	<div class="coTitle">
 <?php if($message->isPrivate()) { ?>
     <div class="private" title="<?php echo lang('private message') ?>"><span><?php echo lang('private message') ?></span></div>
-<?php } // if ?>
-	<div class="coTitle"><?php echo $message->getTitle() ?></div>
-	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($message, $message->getProject()) ?></div>
+<?php } // if ?><?php echo clean($message->getTitle()) ?></div>
+	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($message) ?></div>
 	</div>
     <div class="coInfo">
     	<?php if($message->getCreatedBy() instanceof User) { ?>

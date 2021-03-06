@@ -32,6 +32,8 @@
     'is_deleted' => DATA_TYPE_BOOLEAN, 
     'is_shared' => DATA_TYPE_BOOLEAN,
     'is_private' => DATA_TYPE_BOOLEAN,
+    'created_on' => DATA_TYPE_DATETIME, 
+    'created_by_id' => DATA_TYPE_INTEGER
 );
   
     /**
