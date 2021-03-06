@@ -4,6 +4,7 @@ function parseFormula(formula) {
   var tokens =  getTokens(formula);
   return tokens ;
 }
+var PARAM_SEPARATOR = ";" ;
 
 var TOK_TYPE_NOOP      = "noop";
 var TOK_TYPE_OPERAND   = "operand";
@@ -172,10 +173,11 @@ function getTokens(formula) {
     }
 
     // scientific notation check
-
+    
     if (("+-").indexOf(currentChar()) != -1) {
       if (token.length > 1) {
         if (token.match(regexSN)) {
+     
           token += currentChar();
           offset += 1;
           continue;
@@ -242,7 +244,7 @@ function getTokens(formula) {
       continue;
     }
 
-    if (currentChar() == ";") {  
+/*    if (currentChar() == ";") {  
       if (token.length > 0) {
         tokens.add(token, TOK_TYPE_OPERAND);
         token = "";
@@ -253,7 +255,7 @@ function getTokens(formula) {
       offset += 1;
       continue;
     }
-
+*/
     if (currentChar() == "}") {  
       if (token.length > 0) {
         tokens.add(token, TOK_TYPE_OPERAND);
@@ -292,7 +294,23 @@ function getTokens(formula) {
       continue;     
     }
 
+    
+    
+    if (("-").indexOf(currentChar()) != -1) {
+        if (token.length > 0) {
+          tokens.add(token, TOK_TYPE_OPERAND);
+          token = "";
+        }
+        tokens.add(currentChar(), TOK_TYPE_OP_IN);
+        offset += 1;
+        continue;     
+      }
+
+    
     // standard infix operators
+    
+    
+    
     
     if (("+-*/^&=><").indexOf(currentChar()) != -1) {
       if (token.length > 0) {
@@ -331,7 +349,8 @@ function getTokens(formula) {
     
     // function, subexpression, array parameters
     
-    if (currentChar() == ",") {
+    if (currentChar() == PARAM_SEPARATOR) {
+    	
       if (token.length > 0) {
         tokens.add(token, TOK_TYPE_OPERAND);
         token = "";
@@ -406,6 +425,7 @@ function getTokens(formula) {
 
     token = tokens2.current();
     
+    
     if ((token.type == TOK_TYPE_OP_IN) && (token.value == "-")) {
       if (tokens2.BOF())
         token.type = TOK_TYPE_OP_PRE;
@@ -416,8 +436,9 @@ function getTokens(formula) {
                (tokens2.previous().type == TOK_TYPE_OPERAND)
               )
         token.subtype = TOK_SUBTYPE_MATH;
-      else
+      else{
         token.type = TOK_TYPE_OP_PRE;
+      }
       continue;
     }
 

@@ -35,7 +35,6 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 		'started_on' => DATA_TYPE_DATETIME,
 		'priority' => DATA_TYPE_INTEGER, 
 		'state' => DATA_TYPE_INTEGER,
-		'project_id' => DATA_TYPE_INTEGER,
 		'started_by_id' => DATA_TYPE_INTEGER,
     	'assigned_on' => DATA_TYPE_DATETIME,
 		'assigned_by_id' => DATA_TYPE_INTEGER,
@@ -44,6 +43,13 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 		'from_template_id' => DATA_TYPE_INTEGER,
 		'trashed_on' => DATA_TYPE_DATETIME,
      	'trashed_by_id' => DATA_TYPE_INTEGER,
+		'repeat_forever'=>DATA_TYPE_BOOLEAN,
+    	'repeat_end' => DATA_TYPE_DATETIME,
+    	'repeat_num' => DATA_TYPE_INTEGER,
+    	'repeat_d' => DATA_TYPE_INTEGER,
+    	'repeat_m' => DATA_TYPE_INTEGER,
+    	'repeat_y' => DATA_TYPE_INTEGER,
+		'repeat_by' => DATA_TYPE_STRING,
 	);
 
 	/**
@@ -154,6 +160,22 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     	$title = isset($values['title']) ? $values['title'] : ''; 
     	return $title;
     } // getReportObjectTitle
+    
+    /**
+    * Return template object properties
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getTemplateObjectProperties() {
+    	return array(
+    		array('id' => 'title', 'type' => self::getColumnType('title')),
+    		array('id' => 'text', 'type' => self::getColumnType('text')),
+    		array('id' => 'start_date', 'type' => self::getColumnType('start_date')),
+    		array('id' => 'due_date', 'type' => self::getColumnType('due_date'))
+    	);
+    } // getTemplateObjectProperties
 
 	// -------------------------------------------------------
 	//  Finders

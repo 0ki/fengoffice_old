@@ -33,7 +33,7 @@ class WorkspaceTemplates extends BaseWorkspaceTemplates {
 	 * @return array
 	 */
 	static function getWorkspacesByTemplate($template_id, $wsCSV = null){
-		$all = self::findAll(array('conditions' => "`template_id` = $template_id" . ($wsCSV ? " AND `workspace_id in` ($wsCSV)":'')));
+		$all = self::findAll(array('conditions' => "`template_id` = $template_id" . ($wsCSV ? " AND `workspace_id` IN ($wsCSV)":'')));
 		if (!is_array($all)) return array();
 		$csv = "";
 		foreach ($all as $w) {

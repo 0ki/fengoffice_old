@@ -59,8 +59,8 @@ og.WorkspaceTree = function(config) {
 	delete config.workspaces;
 	var id = config.id || 'workspace-panel';
 	Ext.applyIf(config, {
-		/*ddGroup: 'WorkspaceDD',
-		enableDrop: true,*/
+		/**/ddGroup: 'WorkspaceDD',
+		enableDrop: true,/**/
 		autoScroll: true,
 		autoLoadWorkspaces: false,
 		border: false,
@@ -93,7 +93,11 @@ og.WorkspaceTree = function(config) {
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
 			if (e.data.grid) {
-				e.data.grid.moveObjects(e.target.ws.id);
+				if (e.target.id == 'trash') {
+					e.data.grid.trashObjects();
+				} else {
+					e.data.grid.moveObjects(e.target.ws.id);
+				}
 			}
 			return false;
 		}
@@ -145,8 +149,8 @@ og.WorkspaceTree = function(config) {
 								refreshOnWorkspaceChange: true,
 								refreshOnTagChange: true,
 								defaultContent: {
-									type: "panel",
-									data: "trashcan"
+									type: "url",
+									data: og.getUrl('object', 'init_trash')
 								}
 							});
 							tp.add(cp);

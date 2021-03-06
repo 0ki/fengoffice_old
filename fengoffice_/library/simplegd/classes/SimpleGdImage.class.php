@@ -340,8 +340,23 @@
       
       if($this->getImageType() == IMAGETYPE_GIF) {
         $new_resource = imagecreate($new_width, $new_height);
+        $originaltransparentcolor = imagecolortransparent( $this->resource );
+		if( $originaltransparentcolor >= 0 // -1 for opaque image
+    		&& $originaltransparentcolor < imagecolorstotal( $this->resource ) ) {
+    		// for animated GIF, imagecolortransparent will return a color index larger
+		    // than total colors, in this case the image is treated as opaque ( actually
+		    // it is opaque )
+		    $transparentcolor = imagecolorsforindex( $this->resource, $originaltransparentcolor );
+		    $newtransparentcolor = imagecolorallocate($new_resource,$transparentcolor['red'],$transparentcolor['green'],$transparentcolor['blue']);
+			// for true color image, we must fill the background manually
+			imagefill( $new_resource, 0, 0, $newtransparentcolor );
+			// assign the transparent color in the thumbnail image
+			imagecolortransparent( $new_resource, $newtransparentcolor );
+		}
       } else {
         $new_resource = imagecreatetruecolor($new_width, $new_height);
+        imagealphablending($new_resource, false);
+        imagesavealpha($new_resource, true);
       } // if
       
       imagecopyresampled($new_resource, $this->resource, 0, 0, 0, 0, $new_width, $new_height, $this->getWidth(), $this->getHeight());

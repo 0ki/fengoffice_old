@@ -53,6 +53,8 @@ class AccessController extends ApplicationController {
 		} // if
 
 		$login_data = array_var($_POST, 'login');
+		$localization = array_var($_POST, 'configOptionSelect');
+		
 		if(!is_array($login_data)) {
 			$login_data = array();
 			foreach($_GET as $k => $v) {
@@ -76,7 +78,7 @@ class AccessController extends ApplicationController {
 				tpl_assign('error', new Error(lang('password value missing')));
 				$this->render();
 			} // if
-
+			
 			$user = Users::getByUsername($username, owner_company());
 			if(!($user instanceof User)) {
 				tpl_assign('error', new Error(lang('invalid login data')));
@@ -87,7 +89,11 @@ class AccessController extends ApplicationController {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
-
+			
+			//Start change user language
+			if ($localization != 'Default')
+			set_user_config_option('localization',$localization,$user->getId());
+			
 			$ref_controller = null;
 			$ref_action = null;
 			$ref_params = array();
@@ -140,6 +146,8 @@ class AccessController extends ApplicationController {
 			
 			try {
 				CompanyWebsite::instance()->logUserIn($user, $remember);
+				$ip  = get_ip_address();
+				ApplicationLogs::createLog($user,null,ApplicationLogs::ACTION_LOGIN,false,false,true,$ip);
 			} catch(Exception $e) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
@@ -155,7 +163,8 @@ class AccessController extends ApplicationController {
 
 	function index() {
 		if (is_ajax_request()) {
-			$this->redirectTo('dashboard');
+			$active_proj = array_var($_GET,'active_project', 0);
+			$this->redirectTo('dashboard', 'index', array('active_project' => $active_proj));
 		} else {
 			if (!logged_user() instanceof User) {
 				$this->redirectTo('access', 'login');

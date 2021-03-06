@@ -1,12 +1,12 @@
 <?php
-	require_javascript("modules/addFileForm.js");
+	require_javascript("og/modules/addFileForm.js");
 	include("public/assets/javascript/fckeditor/fckeditor.php");
 	$genid = gen_id();
 	$comments_required = config_option('file_revision_comments_required');
 	$instanceName = "fck" . $genid;
 ?>
 
-<form class="internalForm" style="height:100%" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og.addDocumentSubmit('<?php echo $genid ?>');">
+<form class="internalForm" style="height:100%; overflow:hidden;" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og.addDocumentSubmit('<?php echo $genid ?>');">
 <input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <input type="hidden" id="<?php echo $genid ?>commentsRequired" value="<?php echo config_option('file_revision_comments_required')? '1':'0'?>"/>
 <?php

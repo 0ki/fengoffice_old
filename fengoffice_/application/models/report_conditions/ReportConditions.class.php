@@ -56,6 +56,19 @@ class ReportConditions extends BaseReportConditions {
 		)); // findAll
 	} //  getAllReportConditionsForFields
 	
+	/**
+	 * Return specific condition with that field name for the given report
+	 *
+	 * @param $reportid
+	 * @param $field
+	 * @return ReportCondition
+	 */
+	static function getReportConditionField($reportid,$field) {
+		return self::findOne(array(
+			'conditions' => array('field_name = \'' . $field.'\'' ,'report_id = \'' . $reportid . '\'')
+		)); // findOne
+	} //  getReportConditionField
+	
 } // ReportConditions
 
 ?>

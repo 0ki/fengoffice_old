@@ -25,7 +25,7 @@ return array(
 
 	'chelp addfile' => 'You are given the option to upload a file or a web link.<br/>
 						<b> File:</b> Allows you to search and upload any document from you local hard drive.<br/>
-						<b> Web link:</b> Allows you to introduce the url of a web site you want to make reference to.<br/>',
+						<b> Web link:</b> Allows you to enter the url of a web site you want to make reference to.<br/>',
 
  	'remove context help' => 'Remove this help message',
 

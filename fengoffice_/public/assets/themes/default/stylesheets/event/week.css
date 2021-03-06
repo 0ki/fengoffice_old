@@ -125,7 +125,7 @@ div.inset {
 	margin-right:16px;
 	margin-left:40px;
 }
-#eventowner, #decowner {
+.eventowner, #decowner {
 	height:100%;
 	left:0pt;
 	position:absolute;

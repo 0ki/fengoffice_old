@@ -1,11 +1,13 @@
 <?php
+
+/**
+ * Generic model implementation.
+ * @abstract 
+ * @author Pepe <elpepe.uy@gmail.com> 
+ */
 class Model {
 	
-	function __construct(){
-
-		foreach (func_get_args() as $var)
-                print '<pre>'.print_r($var,1).'</pre>';
-	
+	function __construct(){	
 	}
 		
 	//TODO recorrer TODAS LAS fields que no sean array e insertarlas.
@@ -59,6 +61,7 @@ class Model {
 			if ( $err->isDebugging() ) {
 				$err->addContentElement("Table" , $tablename ) ;
 				$err->addContentElement("SQL Error" , mysql_error() ) ;
+				$err->addContentElement("SQL: ", $sql ) ;
 			}	
 			throw $err ; 
 		}
@@ -95,13 +98,14 @@ class Model {
 	function delete(){}
 	
 	function fromJson ($json_obj) {
-		foreach (get_class_vars() as $var) {
-			$this->$var  = $json_obj->$var ;  	
+		foreach (get_object_vars($json_obj) as $var_name => $var_value ) { 
+			$this->$var_name  = $var_value ;  	
 		}
+		return $this ;
 	}
 	
-	function toJson($obj) {
-		return json_encode($obj) ;
+	function toJson() {
+		return json_encode($this) ;
 	}
 	
 	/**
@@ -111,8 +115,7 @@ class Model {
 	 * @param array $attributes
 	 * @return unknown
 	 */
-	function __call($method, $attributes) {		
-		
+	function __call($method, $attributes) {	
 		$value = $attributes[0] ;
 		$fieldname = substr($method,3 ) ;
 		$fieldname[0] = strtolower($fieldname[0]) ;
@@ -128,7 +131,8 @@ class Model {
 			$fieldname.="s" ;
 			if ( $this->$fieldname == null )
 				$this->$fieldname = array() ;
-			$this->$fieldname[] = $value ; 			
+			array_push($this->$fieldname, $value) ;	
+			 			
 		
 		}
 	}

@@ -564,6 +564,8 @@ div.objectFiles div.objectFilesTitle span {
 
 .og-add-subscribers .companyMembers {
   padding-top: 5px;
+  margin: 5px 0 10px;
+  height: auto;
 }
 
 .og-add-subscribers .companyMembers ul {
@@ -773,4 +775,8 @@ div.taskList .taskListTags {
 
 div.taskList .taskListTags span {
   font-weight: bolder;
+}
+
+.mail-account-item {
+	padding: 5px 0;
 }

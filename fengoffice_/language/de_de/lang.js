@@ -558,5 +558,6 @@ addLangs({
 	'condition value not numeric': 'Der Wert für das Feld {0} muß numerisch sein',
 	'milestones': 'Meilensteine',
 	'no subject': 'Kein Betreff',
-	'value is already in the list': 'Dieser Wert befindet sich schon in der Liste'
+	'value is already in the list': 'Dieser Wert befindet sich schon in der Liste',
+	'file revision comments required': 'Kommentare zu den Datei-Revisionen sind erforderlich'
 });

@@ -73,7 +73,12 @@
 	'private comment' => 'Persönlicher Kommentar',
 	'private file' => 'Persönliche Datei',
 	'file contents' => 'Datei-Inhalt',
-	'emailunclassified' => 'E-Mail',
+	'emailunclassified' => 'Email',
 	'object reminders' => 'Erinnerungen',
 	'add object reminder' => 'Erinnerung hinzufügen',
+	'load file' => 'Lade Datei',
+	'time' => 'Zeit',
+	'reporting' => 'Reports',
+	'create document' => 'Erzeuge Dokumente',
+	'create presentation' => 'Erzeuge Präsentationen',
 ); ?>

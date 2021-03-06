@@ -20,6 +20,12 @@ class FilesController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 
+	function init() {
+		require_javascript("og/FileManager.js");
+		ajx_current("panel", "files", null, null, true);
+		ajx_replace(true);
+	}
+	
 	/**
 	 * Show files index page (list recent files)
 	 *
@@ -151,6 +157,33 @@ class FilesController extends ApplicationController {
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
+	
+	/**
+	 * |||||||||||||||||||||||||| get a public file
+	 * @param $id the repository id of the file
+	 * @return file url
+	 */
+	function get_public_file(){
+			$id = array_var($_GET,'id',0);
+			if (FileRepository::isInRepository($id)){
+				if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+					$path = FileRepository::getBackend()->getFilePath($id);
+					if (is_file($path)) {
+						$size = filesize($path);
+						header("Content-Type:" . FileRepository::getFileAttribute($id,'type'));
+						header("Content-Length: " . (string) $size);
+						readfile($path);
+						die();
+					}
+			} else {
+				$content = FileRepository::getFileContent($id); 
+				header("Content-Type: " . FileRepository::getFileAttribute($id,'type'));
+				header("Content-Length: " . strlen($content));
+				print $content;
+				die();
+			}
+		} // if	
+	}// get_public_file
 	
 	function download_image() {
 		$inline = (boolean) array_var($_GET, 'inline', false);
@@ -295,20 +328,7 @@ class FilesController extends ApplicationController {
 			
 		if (is_array(array_var($_POST, 'file'))) {
 			$this->setLayout("html");
-			$ids = array_var($_POST, "ws_ids", "");
-			$enteredWS = Projects::findByCSVIds($ids);
-			$validWS = array();
-			foreach ($enteredWS as $ws) {
-				if (ProjectFile::canAdd(logged_user(), $ws)) {
-					$validWS[] = $ws;
-				}
-			}
-			if (empty($validWS)) {
-				flash_error(lang('must choose at least one workspace error'));
-				ajx_current("empty");
-				return;
-			}
-			
+
 			$upload_option = array_var($file_data, 'upload_option');
 			$skipSettings = false;
 			try {
@@ -366,22 +386,20 @@ class FilesController extends ApplicationController {
 					unset($_SESSION[$upload_id]);
 				}
 				
+				$object_controller = new ObjectController();
 
 				//Add properties
 				if (!$skipSettings){
 					$file->setTagsFromCSV(array_var($file_data, 'tags'));
-					foreach ($validWS as $w) {
-						$file->addToWorkspace($w);
-					}
+					$object_controller->add_to_workspaces($file);
 				}
 
 				//Add links
-			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 				
-				ApplicationLogs::createLog($file, $validWS, ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
 				//flash_success(array_var($file_data, 'add_type'));
@@ -798,7 +816,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = '';
 
 				$file_dt['name'] = $file->getFilename();
-				$file_content = iconv(detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
+				$file_content = EncodingConverter::instance()->convert(detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = $file->getTypeString();
 				$file_dt['tmp_name'] = './tmp/' . rand () ;
@@ -1050,32 +1068,66 @@ class FilesController extends ApplicationController {
 */
 		} else if (array_var($_GET, 'action') == 'zip_add') {
 			$this->zip_add();
+		} else if (array_var($_GET, 'action') == 'move') {
+			$wsid = array_var($_GET, "moveTo");
+			$destination = Projects::findById($wsid);
+			if (!$destination instanceof Project) {
+				$resultMessage = lang('project dnx');
+				$resultCode = 1;
+			} else if (!can_add(logged_user(), $destination, 'ProjectFiles')) {
+				$resultMessage = lang('no access permissions');
+				$resultCode = 1;
+			} else {
+				$count = 0;
+				$active = active_project();
+				if ($active instanceof Project) {
+					$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
+				} else {
+					$ws_ids = logged_user()->getWorkspacesQuery();
+				}
+				$ids = explode(',', array_var($_GET, 'ids', ''));
+				for($i = 0; $i < count($ids); $i++){
+					$id = $ids[$i];
+					$file = ProjectFiles::findById($id);
+					if ($file instanceof ProjectFile && $file->canEdit(logged_user())){
+						if (!array_var($_GET, "mantainWs")) {
+							$ws = $file->getWorkspaces($ws_ids);
+							foreach ($ws as $w) {
+								if (can_add(logged_user(), $w, 'ProjectFiles')) {
+									$file->removeFromWorkspace($w);
+								}
+							}
+						}
+						$file->addToWorkspace($destination);
+						ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+						$count++;
+					};
+				}; // for
+				$resultMessage = lang("success move objects", $count);
+				$resultCode = 0;
+			}
 		}
 		
 		Hook::fire('classify_action', null, $ret);		
 
 		$project = Projects::findById($project_id);
 		/* perform query */
-		$result = ProjectFiles::getProjectFiles($project, null,
-		$hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
+		$result = ProjectFiles::getProjectFiles($project, null, $hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
+		$objects = null;
+		$pagination = null;
 		if (is_array($result)) {
 			list($objects, $pagination) = $result;
-			if ($pagination->getTotalItems() < (($page - 1) * $limit)){
+			if ($pagination->getTotalItems() < (($page - 1) * $limit)) {
+				// if we are past the last page show the first page
 				$start = 0;
 				$page = 1;
 				$result = ProjectFiles::getProjectFiles($project, null,
 				$hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
 				if (is_array($result)) {
 					list($objects, $pagination) = $result;
-				}else {
-					$objects = null;
-					$pagination = 0 ;
-				} // if
+				}
 			}
-		} else {
-			$objects = null;
-			$pagination = null ;
-		} // if
+		}
 
 		/* prepare response object */
 		$listing = array(
@@ -1083,12 +1135,11 @@ class FilesController extends ApplicationController {
 			"start" => $start,
 			"files" => array()
 		);
-		if($objects){
+		if ($objects) {
 			foreach ($objects as $o) {
 				$coName = "";
 				$coId = $o->getCheckedOutById();
-				if ($coId != 0)
-				{
+				if ($coId != 0) {
 					if ($coId == logged_user()->getId())
 						$coName = "self";
 					else
@@ -1106,23 +1157,25 @@ class FilesController extends ApplicationController {
 				} else {
 					$songInfo = array();
 				}
-
+				
 				$values = array(
 					"id" => $o->getId(),
 					"object_id" => $o->getId(),
 					"name" => $o->getFilename(),
-					"type" => $o->getObjectTypeName(),
+					"type" => $o->getTypeString(),
 					"mimeType" => $o->getTypeString(),
 					"tags" => project_object_tags($o),
 					"createdBy" => $o->getCreatedByDisplayName(),
 					"createdById" => $o->getCreatedById(),
-					"dateCreated" => $o->getCreatedOn() instanceof DateTimeValue ? $o->getCreatedOn()->getTimestamp() : 0,
+					"dateCreated" => $o->getCreatedOn() instanceof DateTimeValue ? ($o->getCreatedOn()->isToday() ? format_time($o->getCreatedOn()) : format_datetime($o->getCreatedOn())) : '',
+					"dateCreated_today" => $o->getCreatedOn() instanceof DateTimeValue ? $o->getCreatedOn()->isToday() : 0,
 					"updatedBy" => $o->getUpdatedByDisplayName(),
 					"updatedById" => $o->getUpdatedById(),
-					"dateUpdated" => $o->getUpdatedOn() instanceof DateTimeValue ? $o->getUpdatedOn()->getTimestamp() : 0,
+					"dateUpdated" => $o->getUpdatedOn() instanceof DateTimeValue ? ($o->getUpdatedOn()->isToday() ? format_time($o->getUpdatedOn()) : format_datetime($o->getUpdatedOn())) : '',
+					"dateUpdated_today" => $o->getUpdatedOn() instanceof DateTimeValue ? $o->getUpdatedOn()->isToday() : 0,
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
-					"wsIds" => $o->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+					"wsIds" => $o->getUserWorkspacesIdsCSV(logged_user()),
 					"url" => $o->getOpenUrl(),
 					"manager" => get_class($o->manager()),
 					"checkedOutByName" => $coName,
@@ -1131,7 +1184,7 @@ class FilesController extends ApplicationController {
 					"modifyUrl" => $o->getModifyUrl(),
 					"songInfo" => $songInfo,
 					"ftype" => $o->getType(),
-					"url" => $o->getUrl(),
+					"url" => $o->getUrl()
 				);
 				Hook::fire('add_classification_value', $o, $values);
 				$listing["files"][] = $values;
@@ -1243,20 +1296,6 @@ class FilesController extends ApplicationController {
 			
 		if(is_array(array_var($_POST, 'file'))) {
 			try {
-				$ids = array_var($_POST, "ws_ids", "");
-				$enteredWS = Projects::findByCSVIds($ids);
-				$validWS = array();
-				foreach ($enteredWS as $ws) {
-					if (ProjectFile::canAdd(logged_user(), $ws)) {
-						$validWS[] = $ws;
-					}
-				}
-				if (empty($validWS)) {
-					flash_error(lang('must choose at least one workspace error'));
-					ajx_current("empty");
-					return;
-				}
-
 				$old_is_private = $file->isPrivate();
 				$old_is_important = $file->getIsImportant();
 				$old_comments_enabled = $file->getCommentsEnabled();
@@ -1270,11 +1309,11 @@ class FilesController extends ApplicationController {
 				$file->setFromAttributes($file_data);
 				$file->setFilename(array_var($file_data, 'name'));
 				
-				if($file->getType() == ProjectFiles::TYPE_WEBLINK){
+				if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
 					$file->setUrl(array_var($file_data, 'url'));
 				}
 
-				if(!logged_user()->isMemberOfOwnerCompany()) {
+				if (!logged_user()->isMemberOfOwnerCompany()) {
 					$file->setIsPrivate($old_is_private);
 					$file->setIsImportant($old_is_important);
 					$file->setCommentsEnabled($old_comments_enabled);
@@ -1291,17 +1330,13 @@ class FilesController extends ApplicationController {
 					@unlink($uploaded_file['tmp_name']);
 				} // if
 
-				$file->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				foreach ($validWS as $w) {
-					$file->addToWorkspace($w);
-				}
-
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($file);
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 
-				ApplicationLogs::createLog($file, $validWS, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 				DB::commit();
 								
@@ -1360,7 +1395,7 @@ class FilesController extends ApplicationController {
 				'comments_enabled' => $file->getCommentsEnabled(),
 				'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
 				'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
-				'workspaces' => $file->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+				'workspaces' => $file->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),
 			); // array
 		} // if
 		tpl_assign('file', $file);
@@ -1466,7 +1501,7 @@ class FilesController extends ApplicationController {
 	function check_filename(){
 		ajx_current("empty");
 		$filename = array_var($_POST, 'filename');
-		$files = ProjectFiles::getAllByFilename($filename, logged_user()->getActiveProjectIdsCSV());
+		$files = ProjectFiles::getAllByFilename($filename, logged_user()->getWorkspacesQuery());
 
 		if (is_array($files) && count($files) > 0){
 			$files_array = array();
@@ -1486,9 +1521,9 @@ class FilesController extends ApplicationController {
 						"checked_out_by_name" => $file->getCheckedOutByDisplayName(),
 						"can_check_in" => $file->canCheckin(logged_user()),
 						"can_edit" => $file->canEdit(logged_user()),
-						"workspace_names" => $file->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
-						"workspace_ids" => $file->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-						"workspace_colors" => $file->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+						"workspace_names" => $file->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),
+						"workspace_ids" => $file->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+						"workspace_colors" => $file->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery()),
 					);
 				}
 			}
@@ -1808,6 +1843,12 @@ class FilesController extends ApplicationController {
 	function zip_add() {
 		ajx_current("empty");
 
+		$files = ProjectFiles::findByCSVIds(array_var($_GET, 'objects'), '`type` = 0');
+		if (count($files) == 0) {
+			flash_error(lang('no files to compress'));
+			return;
+		}
+		
 		$isnew = false;
 		$file = null;
 		if (array_var($_GET, 'filename')) {
@@ -1830,22 +1871,18 @@ class FilesController extends ApplicationController {
 		if (!$isnew) $zip->open($tmp_zip_path);
 		else $zip->open($tmp_zip_path, ZipArchive::OVERWRITE);
 		
-		$new_file_ids = explode(',', array_var($_GET, 'objects'));
 		$tmp_dir = ROOT.'/tmp/'.rand().'/';
 		mkdir($tmp_dir);
-		foreach ($new_file_ids as $id) {
-			$file_to_add = ProjectFiles::findById($id);
-			if ($file_to_add) {
-				if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-					$file_to_add_path = FileRepository::getBackend()->getFilePath($file_to_add->getLastRevision()->getRepositoryId());
-				} else {
-					$file_to_add_path = $tmp_dir . $file_to_add->getFilename();
-					$handle = fopen($file_to_add_path, 'wb');
-					fwrite($handle, $file_to_add->getLastRevision()->getFileContent(), $file_to_add->getLastRevision()->getFilesize());
-					fclose($handle);
-				}
-				$zip->addFile($file_to_add_path, $file_to_add->getFilename());
+		foreach ($files as $file_to_add) {
+			if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+				$file_to_add_path = FileRepository::getBackend()->getFilePath($file_to_add->getLastRevision()->getRepositoryId());
+			} else {
+				$file_to_add_path = $tmp_dir . $file_to_add->getFilename();
+				$handle = fopen($file_to_add_path, 'wb');
+				fwrite($handle, $file_to_add->getLastRevision()->getFileContent(), $file_to_add->getLastRevision()->getFilesize());
+				fclose($handle);
 			}
+			$zip->addFile($file_to_add_path, $file_to_add->getFilename());
 		}
 		$zip->close();
 		delete_dir($tmp_dir);
@@ -1854,7 +1891,7 @@ class FilesController extends ApplicationController {
 		$this->upload_file($file, $filename, $tmp_zip_path, $workspaces);
 		unlink($tmp_zip_path);
 		
-		flash_success(lang('success compressing files'));
+		flash_success(lang('success compressing files', count($files)));
 		ajx_current("reload");
 	}
 	

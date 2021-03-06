@@ -114,7 +114,7 @@
     function getValue() {
       $handler = $this->getConfigHandler();
       $handler->setRawValue(parent::getDefaultValue());
-      return $handler->getDefaultValue();
+      return $handler->getValue();
     } // getDefaultValue
     
     /**
@@ -127,7 +127,7 @@
     function setValue($value) {
       $handler = $this->getConfigHandler();
       $handler->setValue($value);
-      return parent::setValue($handler->getRawValue());
+      return parent::setDefaultValue($handler->getRawValue());
     } //  setDefaultValue
     
     /**

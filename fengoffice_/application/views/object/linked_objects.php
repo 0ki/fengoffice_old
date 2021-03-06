@@ -1,5 +1,5 @@
 <?php 
-require_javascript('modules/linkToObjectForm.js');
+require_javascript('og/modules/linkToObjectForm.js');
 ?>
 <a id="<?php echo $genid ?>before" href="#" onclick="App.modules.linkToObjectForm.pickObject(this)"><?php echo lang('link object') ?></a>
 

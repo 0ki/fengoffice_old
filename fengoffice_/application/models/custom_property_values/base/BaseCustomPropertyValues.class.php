@@ -15,6 +15,7 @@
     * @static
     */
     static private $columns = array(
+    	'id' => DATA_TYPE_INTEGER,
     	'object_id' => DATA_TYPE_INTEGER,
     	'custom_property_id' => DATA_TYPE_INTEGER,
     	'value' => DATA_TYPE_STRING
@@ -67,7 +68,7 @@
     * @return array or string
     */
     function getPkColumns() {
-      return array('object_id','custom_property_id');
+      return array('id');
     } // getPkColumns
     
     /**

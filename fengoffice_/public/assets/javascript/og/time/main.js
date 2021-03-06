@@ -17,6 +17,8 @@ ogTimeTimeslot = function(){
 	this.workspaceId;
 	this.userId;
 	this.userName;
+	this.lastUpdated;
+	this.lastUpdatedBy;
 
 	this.description = '';
 	this.taskName;
@@ -29,6 +31,8 @@ ogTimeTimeslot.prototype.setFromTdata = function(tdata){
 	this.workspaceId = tdata.pid;
 	this.userId = tdata.uid;
 	this.userName = tdata.uname;
+	this.lastUpdated = tdata.lastupdated;
+	this.lastUpdatedBy = tdata.lastupdatedby;
 	
 	if (tdata.desc)	this.description = tdata.desc; else this.description = '';
 	if (tdata.tn)	this.taskName = tdata.tn; else this.taskName = null;

@@ -16,7 +16,8 @@ Ext.extend(og.GooProxy, Ext.data.DataProxy, {
         			scope: scope,
         			arg: arg
         		},
-        		reader: reader
+        		reader: reader,
+        		timeout: this.timeout
         	});
         } else {
             callback.call(scope||this, null, arg, false);

@@ -3,14 +3,14 @@
  *
  */
 og.MailManager = function() {
-	var actions, moreActions;
+	var actions, moreActions, selectActions, accountActions, emailActions;
 	this.accountId = 0;
-	this.viewType = "emails";
+	this.viewType = "all";
 	this.readType = "all";
+	this.classifType = "all";
 	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
-	showLoading = true;
 
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
@@ -23,8 +23,8 @@ og.MailManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder'
+					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder','to'
 				]
 			}),
 			remoteSort: true,
@@ -50,11 +50,11 @@ og.MailManager = function() {
 	}
 	this.store = og.MailManager.store;
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
-
+	
 	function renderName(value, p, r) {
 		var name = '';
 		var bold = 'font-weight:normal;';
-		if (!r.data.isRead) {bold = 'font-weight:600;';}
+		if (!r.data.isRead) {bold = 'font-weight:bold;';}
 		var strAction = 'view';
 		
 		if (r.data.isDraft) {
@@ -90,7 +90,7 @@ og.MailManager = function() {
 		var strAction = 'view';
 		
 		if (r.data.isDraft) strAction = 'edit_mail';
-		if (!r.data.isRead) bold = 'font-weight:600;';
+		if (!r.data.isRead) bold = 'font-weight:bold;';
 		
 		var sender = og.clean(value.trim()) || '<i>' + lang("no sender") + '</i>';
 		
@@ -117,6 +117,10 @@ og.MailManager = function() {
 
 	function renderAccount(value, p, r) {
 		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account selected\',\'{1}\')">{0}</a>', og.clean(value), r.data.accountId);
+	}
+	
+	function renderTo(value, p, r) {
+		return String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{0}">{0}</a>', og.clean(value), og.getUrl('mail', 'add_mail', {}));
 	}
 	
 	function renderFolder(value, p, r) {
@@ -151,6 +155,7 @@ og.MailManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedIds = getSelectedIds;
 	
 	function getSelectedReadTypes() {
 		var selections = sm.getSelections();
@@ -181,6 +186,7 @@ og.MailManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedTypes = getSelectedTypes;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -188,7 +194,7 @@ og.MailManager = function() {
 		}
 		return '';
 	}
-
+	
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
 		function() {
@@ -202,7 +208,7 @@ og.MailManager = function() {
 				actions.del.setDisabled(false);
 				
 				var selTypes = getSelectedTypes();
-				if (/message/.test(selTypes)){//read/unread functionality not yet implemented in messages
+				if (/message/.test(selTypes)){
 					emailActions.markAsRead.setDisabled(true);
 					emailActions.markAsUnRead.setDisabled(true);
 				}else {								
@@ -245,9 +251,9 @@ og.MailManager = function() {
 			width: 120,
 			renderer: renderFrom
         },{
-			id: 'title',
-			header: lang("title"),
-			dataIndex: 'title',
+			id: 'subject',
+			header: lang("subject"),
+			dataIndex: 'subject',
 			width: 250,
 			renderer: renderName
         },{
@@ -257,16 +263,23 @@ og.MailManager = function() {
 			width: 60,
 			renderer: renderAccount
         },{
+			id: 'to',
+			header: lang("to"),
+			dataIndex: 'to',
+			width: 100,
+			hidden: true,
+			renderer: renderTo
+        },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
+			sortable: false,
 			width: 60
         },{
 			id: 'date',
 			header: lang("date"),
 			dataIndex: 'date',
 			width: 60,
-			sortable: true,
 			renderer: renderDate
         },{
 			id: 'folder',
@@ -274,259 +287,180 @@ og.MailManager = function() {
 			dataIndex: 'folderName',
 			width: 60,
 			sortable: true,
+			hidden: true,
 			renderer: renderFolder
         }]);
-	cm.defaultSortable = false;
+	cm.defaultSortable = true;
 
 	moreActions = {};
 	
-	viewActions = {
-			all: new Ext.Action({
-				text: lang('view all'),
-				handler: function() {
-					this.viewType = "emails";
-					this.readType = "all";
-					this.stateType = "all";
-					toggleButtons(false, false, false, false)
-					
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-					    };
-					this.load();
-				},
-				scope: this
-			}),
-			emails: new Ext.Action({
-				text: lang('all emails'),
-				iconCls: "ico-email",
-				handler: function() {
-					this.viewType = "emails";
-					this.readType = "all";
-					this.stateType = "all";
-					this.accountId = 0;
-					
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-				},
-				scope: this,
-				menu: new og.EmailAccountMenu({
-					listeners: {
-						'accountselect': {
-							fn: function(account) {
-								this.viewType = "emails";
-								this.readType = "all";
-								this.stateType = "all";
-								this.accountId = account;
-								
-			        			this.store.baseParams = {
-								      read_type: this.readType,
-								      view_type: this.viewType,
-								      state_type : this.stateType,
-								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-									  account_id: this.accountId
-								    };
-								this.load();
-							},
-							scope: this
-						}
-					}
-				},{},"view")
-			}),
-			unreademails: new Ext.Action({
-				text: lang('unread emails'),
-				iconCls: "ico-email",
-				handler: function() {
-					this.readType = "unreaded";
-					this.viewType = "emails";
-					this.stateType = "all";
-					this.accountId = 0;
-					
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-				},
-				scope: this,
-				menu: new og.EmailAccountMenu({
-					listeners: {
-						'accountselect': {
-							fn: function(account) {
-								this.viewType = "emails";
-								this.readType = "unreaded";
-								this.stateType = "all";
-								this.accountId = account;
-								
-			        			this.store.baseParams = {
-								      read_type: this.readType,
-								      view_type: this.viewType,
-								      state_type : this.stateType,
-								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-									  account_id: this.accountId
-								    };
-								this.load();
-							},
-							scope: this
-						}
-					}
-				},{},"view")
-			}),
-			drafts: new Ext.Action({
-				text: lang('draft'),
-				iconCls: "ico-email",
-				handler: function() {
-					this.readType = "all";
-					this.stateType = "draft";
-					this.viewType = "emails";
-					this.accountId = 0;
-					
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-				},
-				scope: this,
-				menu: new og.EmailAccountMenu({
-					listeners: {
-						'accountselect': {
-							fn: function(account) {
-								this.viewType = "emails";
-								this.stateType = "draft";
-								this.readType = "all";
-								this.accountId = account;
-								
-			        			this.store.baseParams = {
-								      read_type: this.readType,
-								      view_type: this.viewType,
-								      state_type : this.stateType,
-								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-									  account_id: this.accountId
-								    };
-								this.load();
-							},
-							scope: this
-						}
-					}
-				},{},"view")
-			}),
-			unclassified: new Ext.Action({
-				text: lang('unclassified emails'),
-				iconCls: "ico-classify",
-				handler: function() {
-					this.viewType = "unclassified";
-					this.accountId = 0;
-					
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-				},
-				scope: this,
-				menu: new og.EmailAccountMenu({
-					listeners: {
-						'accountselect': {
-							fn: function(account) {
-								this.viewType = "unclassified";
-								this.accountId = account;
-								
-			        			this.store.baseParams = {
-								      read_type: this.readType,
-								      view_type: this.viewType,
-								      state_type : this.stateType,
-								      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-									  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-									  account_id: this.accountId
-								    };
-								this.load();
-							},
-							scope: this
-						}
-					}
-				},{},"view")
-			})
-		};
+	filterReadUnread = {
+		all: new Ext.Action({
+			text: lang('view all'),
+			handler: function() {
+				this.reloadFiltering("all", null, null);
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('view by state'))
+			},
+			scope: this
+		}),
+		read: new Ext.Action({
+			text: lang('read'),
+			handler: function() {
+				this.reloadFiltering("read", null, null);
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('read'))
+			},
+			scope: this
+		}),
+		unread: new Ext.Action({
+			text: lang('unread'),
+			handler: function() {
+				this.reloadFiltering("unread", null, null);
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-read-unread').setText(lang('unread'))
+			},
+			scope: this
+		})
+	};
+	
+	filterClassification = {
+		all: new Ext.Action({
+			text: lang('view all'),
+			handler: function() {
+				this.reloadFiltering(null, null, null, 'all');
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('view by classification'))
+			},
+			scope: this
+		}),
+		classified: new Ext.Action({
+			text: lang('classified'),
+			handler: function() {
+				this.reloadFiltering(null, null, null, "classified");
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('classified'))
+			},
+			scope: this
+		}),
+		unclassified: new Ext.Action({
+			text: lang('unclassified'),
+			handler: function() {
+				this.reloadFiltering(null, null, null, "unclassified");
+				Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-classification').setText(lang('unclassified'))
+			},
+			scope: this
+		})
+	};
+	
+	filterAccounts = {};
 	
 	emailActions = {
-			addAccount: new Ext.Action({
-				text: lang('add mail account'),
-				handler: function(e) {
-					var url = og.getUrl('mail', 'add_account');
-					og.openLink(url);
-				}
-			}),			
-			markAsRead: new Ext.Action({
-				text: lang('mark read'),
-	            tooltip: lang('mark read'),
-	            iconCls: 'ico-mail-mark-read',
-				disabled: true,
-				handler: function() {
-					this.load({
-						action: 'markAsRead',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
-					});
-				},
-				scope: this
-			}),
-			markAsUnRead: new Ext.Action({
-				text: lang('mark unread'),
-	            tooltip: lang('mark unread'),
-	            iconCls: 'ico-mail-mark-unread',
-				disabled: true,
-				handler: function() {
-					this.load({
-						action: 'markAsUnRead',
-						ids: getSelectedIds(),
-						types: getSelectedTypes()
-					});
-				},
-				scope: this
-			}),
-			editAccount: new Ext.Action({
-				text: lang('edit account'),
-	            tooltip: lang('edit email account'),
-				disabled: false,
-				menu: new og.EmailAccountMenu({
-					listeners: {
-						'accountselect': {
-							fn: function(account) {
-								var url = og.getUrl('mail', 'edit_account', {id: account});
-								og.openLink(url);
-							},
-							scope: this
-						}
+		markAsRead: new Ext.Action({
+			text: lang('mark read'),
+            tooltip: lang('mark read'),
+            iconCls: 'ico-mail-mark-read',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markAsRead',
+					ids: getSelectedIds(),
+					types: getSelectedTypes()
+				});
+			},
+			scope: this
+		}),
+		markAsUnRead: new Ext.Action({
+			text: lang('mark unread'),
+            tooltip: lang('mark unread'),
+            iconCls: 'ico-mail-mark-unread',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markAsUnRead',
+					ids: getSelectedIds(),
+					types: getSelectedTypes()
+				});
+			},
+			scope: this
+		})
+	};
+	
+	accountActions = {
+		addAccount: new Ext.Action({
+			text: lang('add mail account'),
+			handler: function(e) {
+				var url = og.getUrl('mail', 'add_account');
+				og.openLink(url);
+			}
+		}),
+		editAccount: new Ext.Action({
+			text: lang('edit account'),
+            tooltip: lang('edit email account'),
+			disabled: false,
+			menu: new og.EmailAccountMenu({
+				listeners: {
+					'accountselect': {
+						fn: function(account) {
+							var url = og.getUrl('mail', 'edit_account', {id: account});
+							og.openLink(url);
+						},
+						scope: this
 					}
-				},{},"edit")
-			})
-		};
+				}
+			},{},"edit")
+		})
+	};
+	
+	selectActions = {
+		selectAll: new Ext.Action({
+			text: lang('all'),
+			handler: function(e) {
+				sm.selectAll();
+			}
+		}),
+		selectNone: new Ext.Action({
+			text: lang('none'),
+			handler: function(e) {
+				sm.clearSelections();
+			}
+		}),
+		selectRead: new Ext.Action({
+			text: lang('read'),
+			handler: function(e) {
+				sm.selectAll();
+				var selections = sm.getSelections();
+				for (var i=0; i < selections.length; i++) {
+					if (!selections[i].data.isRead) sm.deselectRow(i, false);
+				}	
+			}
+		}),
+		selectUnread: new Ext.Action({
+			text: lang('unread'),
+			handler: function(e) {
+				sm.selectAll();
+				var selections = sm.getSelections();
+				for (var i=0; i < selections.length; i++) {
+					if (selections[i].data.isRead) sm.deselectRow(i, false);
+				}	
+			}
+		}),
+		selectClassified: new Ext.Action({
+			text: lang('classified'),
+			handler: function(e) {
+				sm.selectAll();
+				var selections = sm.getSelections();
+				for (var i=0; i < selections.length; i++) {
+					if (!selections[i].data.projectId.length > 0) sm.deselectRow(i, false);
+				}	
+			}
+		}),
+		selectUnclassified: new Ext.Action({
+			text: lang('unclassified'),
+			handler: function(e) {
+				sm.selectAll();
+				var selections = sm.getSelections();
+				for (var i=0; i < selections.length; i++) {
+					if (selections[i].data.projectId.length > 0) sm.deselectRow(i, false);
+				}	
+			}
+		})
+	};
 	
 	actions = {
 		newCO: new Ext.Action({
@@ -538,107 +472,16 @@ og.MailManager = function() {
             	og.openLink(url, null);
             }
 		}),
-		inbox_email: new Ext.Action({
-	        text: lang('inbox'),
-	        toggleGroup : 'filter_option',
-	        enableToggle: true,
-	        pressed: true,
-	        id: 'inbox_btn',
-	        toggleHandler: function(item, pressed) {
-	        			if(pressed){
-							this.stateType = "received";	
-							this.viewType = "emails";
-		        			this.accountId = 0;
-		        			this.store.baseParams = {
-							      read_type: this.readType,
-							      view_type: this.viewType,
-							      state_type : this.stateType,
-							      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-								  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-								  account_id: this.accountId
-							    };
-							this.load();						
-	        			} 
-					},			
-			scope: this
-    	}),
-		sent_email: new Ext.Action({
-	        text: lang('sent'),
-	        toggleGroup : 'filter_option',
-	        enableToggle: true,
-	        pressed: false,
-	        id: 'sent_btn',
-	        toggleHandler: function(item, pressed) {
-        		if(pressed){
-					this.stateType = "sent";
-					this.viewType = "emails";
-        			this.accountId = 0;
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-        		} 
-			},
-			scope: this
-    	}),
-    	
-		draft_email: new Ext.Action({
-	        text: lang('draft'),
-	        toggleGroup : 'filter_option',
-	        enableToggle: true,
-	        pressed: false,
-	        id: 'draft_btn',
-			toggleHandler: function(item, pressed) {
-				if(pressed){
-					this.stateType = "draft";
-					this.viewType = "emails";
-        			this.accountId = 0;
-        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-					this.load();
-        		} 
-			},
-			scope: this
-    	}),
-	
-		unread_email: new Ext.Action({
-	        text: lang('unread'),
-	        enableToggle: true,
-	        pressed: false,
-	        id: 'unread_btn',
-	        toggleHandler: function(item, pressed) {
-	        			if(pressed){							
-							this.readType = "unreaded";						
-	        			} else {
-	        				this.readType = "all";
-	        			}
-	        			this.viewType = "emails";
-	        			this.accountId = 0;
-	        			
-	        			this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
-						
-	        			this.load();
-					},
-			scope: this
-    	}),
+		accounts: new Ext.Action({
+			text: lang('accounts'),
+            tooltip: lang('account options'),
+            iconCls: 'ico-administration',
+			disabled: false,
+			menu: {items: [
+				accountActions.addAccount,
+				accountActions.editAccount
+			]}
+		}),
 		tag: new Ext.Action({
 			text: lang('tag'),
             tooltip: lang('tag selected objects'),
@@ -660,40 +503,6 @@ og.MailManager = function() {
 				}
 			})
 		}),
-		checkMails: new Ext.Action({
-				text: lang('check mails'),
-				iconCls: 'ico-check_mails',
-				handler: function() {
-					this.load({
-						action: "checkmail"
-					});
-					this.action = "";
-				},
-				scope: this
-			}),
-		refresh: new Ext.Action({
-			text: lang('refresh'),
-            tooltip: lang('refresh desc'),
-            iconCls: 'ico-refresh',
-			handler: function() {
-				this.store.reload();
-			},
-			scope: this
-		}),
-		view: new Ext.Action({
-			text: lang('view'),
-            iconCls: 'ico-view_options',
-			disabled: false,
-			menu: {items: [
-				viewActions.all,
-				'-',
-				//viewActions.messages,
-				viewActions.unreademails,
-				//viewActions.drafts,
-				viewActions.emails,
-				viewActions.unclassified
-			]}
-		}),
 		del: new Ext.Action({
 			text: lang('move to trash'),
             tooltip: lang('move selected objects to trash'),
@@ -711,62 +520,220 @@ og.MailManager = function() {
 			},
 			scope: this
 		}),
-		email: new Ext.Action({
-			text: lang('email actions'),
-            tooltip: lang('more email actions'),
-            iconCls: 'ico-email_menu',
+		checkMails: new Ext.Action({
+			text: lang('check mails'),
+			iconCls: 'ico-check_mails',
+			handler: function() {
+				this.load({
+					action: "checkmail"
+				});
+				this.action = "";
+			},
+			scope: this
+		}),
+		inbox_email: new Ext.Action({
+	        text: lang('inbox'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: true,
+	        id: 'inbox_btn',
+	        toggleHandler: function(item, pressed) {
+       			if(pressed){
+					this.stateType = "received";	
+					this.viewType = "all";
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      classif_type: this.classifType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();						
+       			}
+			},			
+			scope: this
+    	}),
+		sent_email: new Ext.Action({
+	        text: lang('sent'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+	        id: 'sent_btn',
+	        toggleHandler: function(item, pressed) {
+        		if(pressed){
+					this.stateType = "sent";
+					this.viewType = "all";
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      classif_type: this.classifType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		} 
+			},
+			scope: this
+    	}),
+    	
+		draft_email: new Ext.Action({
+	        text: lang('draft'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+	        id: 'draft_btn',
+			toggleHandler: function(item, pressed) {
+				if(pressed){
+					this.stateType = "draft";
+					this.viewType = "all";
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      classif_type: this.classifType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		} 
+			},
+			scope: this
+    	}),
+	
+		refresh: new Ext.Action({
+			text: lang('refresh'),
+            tooltip: lang('refresh desc'),
+            iconCls: 'ico-refresh',
+			handler: function() {
+				this.store.reload();
+			},
+			scope: this
+		}),
+		viewReadUnread: new Ext.Action({
+			text: lang('view by state'),
+            iconCls: 'ico-mail-mark-read',
+			disabled: false,
+			id: 'tb-item-read-unread',
+			menu: {items: [
+				filterReadUnread.all,
+				'-',
+				filterReadUnread.read,
+				filterReadUnread.unread
+			]}
+		}),
+		viewByAccount: new Ext.Action({
+			text: lang('view by account'),
+            iconCls: 'ico-account',
+			disabled: false,
+			id: 'tb-item-byaccount',
+			menu: new og.EmailAccountMenu({
+				listeners: {
+					'accountselect': {
+						fn: function(account, name) {
+							this.accountId = account;
+							this.load();
+							if (account == 0) {
+								name = lang('view by account');
+							}
+							Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-byaccount').setText(name);
+						},
+						scope: this
+					}
+				}
+			},[{name: lang('view all'), email:'', id: '', separator:true}],"view")
+		}),
+		viewByClassification: new Ext.Action({
+			text: lang('view by classification'),
+            iconCls: 'ico-classify',
+			disabled: false,
+			id: 'tb-item-classification',
+			menu: {items: [
+				filterClassification.all,
+				'-',
+				filterClassification.classified,
+				filterClassification.unclassified
+			]}
+		}),
+		select: new Ext.Action({
+			text: lang('select'),
+            tooltip: lang('select'),
+            iconCls: 'ico-select',
 			disabled: false,
 			menu: {items: [
-				emailActions.markAsRead,
-				emailActions.markAsUnRead,
-				emailActions.addAccount,
-				emailActions.editAccount
+				selectActions.selectAll,
+				selectActions.selectNone,
+				'-',
+				selectActions.selectRead,
+				selectActions.selectUnread,
+				'-',
+				selectActions.selectClassified,
+				selectActions.selectUnclassified
 			]}
 		})
     };
 	this.actionRep = actions;
-    
+
+	this.topTbar1 = new Ext.Toolbar({
+		style: 'border:0px none;',
+		items: [
+			actions.newCO,
+			'-',
+			actions.tag,
+			actions.del,
+			'-',
+			emailActions.markAsRead,
+			emailActions.markAsUnRead,
+			'-',
+			actions.checkMails,
+			actions.accounts
+		]
+	});
+	
+	this.topTbar2 = new Ext.Toolbar({
+		style: 'border:0px none',
+		items: [
+			actions.select,
+			'-',
+			actions.inbox_email,
+			actions.sent_email,
+			actions.draft_email,
+			'-',
+			lang('filter')+': ',
+			actions.viewReadUnread,
+			actions.viewByClassification,
+			actions.viewByAccount
+		]
+	});
+		    
 	og.MailManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
 		cm: cm,
-		//id: 'message-manager',
+		enableDrag: true,
+		ddGroup: 'WorkspaceDD',
+		border: false,
+		bodyBorder: false,
 		stripeRows: true,
 		closable: true,
 		loadMask: false,
-		/*style: "padding:7px;",*/
+		id: 'mails-manager',
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
 			emptyMsg: lang("no objects to display")
-
 		}),
 		viewConfig: {
 			forceFit: true
 		},
 		sm: sm,
-		tbar:[
-			actions.newCO,
-			'-',
-			actions.inbox_email,
-			actions.sent_email,
-			actions.draft_email,
-			actions.unread_email,
-			
-			'-',
-			/*actions.refresh,
-			'-',*/
-			actions.view,
-			actions.email,
-			'-',
-			actions.tag,
-			actions.del,
-			'-',
-			actions.checkMails
-
-		],
+		tbar: this.topTbar2,
 		listeners: {
 			'render': {
 				fn: function() {
@@ -784,11 +751,10 @@ og.MailManager = function() {
 		}
 	});
 	
-	function toggleButtons(inb, sent, dra, unr) {
+	function toggleButtons(inb, sent, dra) {
 		Ext.getCmp('inbox_btn').toggle(inb);
 		Ext.getCmp('sent_btn').toggle(sent);
 		Ext.getCmp('draft_btn').toggle(dra);
-		Ext.getCmp('unread_btn').toggle(unr);
 	}
 	
 	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
@@ -802,8 +768,6 @@ og.MailManager = function() {
     		this.needRefresh = true;
     	}
 	}, this);
-
-
 };
 
 
@@ -820,6 +784,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 					      read_type: this.readType,
 					      view_type: this.viewType,
 					      state_type : this.stateType,
+					      classif_type: this.classifType,
 					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
@@ -830,13 +795,6 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 				limit: og.pageSize				
 			})
 		});
-	},
-	resetVars: function(){
-		this.viewUnclassified = false;
-		this.accountId = 0;
-		this.viewType = "emails";
-		this.readType = "all";
-		this.stateType = "received";
 	},
 	
 	activate: function() {
@@ -851,8 +809,99 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
+	},
+	
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			tagTag: tag
+		});
+	},
+	
+	getFirstToolbar: function() {
+		return this.topTbar1;
+	},
+	
+	reloadFiltering: function(readType, viewType, stateType, classifType) {
+		if (readType) this.readType = readType;
+		if (viewType) this.viewType = viewType;
+		if (stateType) this.stateType = stateType;
+		if (classifType) this.classifType = classifType;
+		
+		this.store.baseParams = {
+			read_type: this.readType,
+			view_type: this.viewType,
+			state_type : this.stateType,
+			classif_type : this.classifType,
+			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+		};
+		this.load();
 	}
 });
 
-
 Ext.reg("mails", og.MailManager);
+
+
+/************************************************
+Container for MailManager, adds a new toolbar
+*************************************************/
+og.MailManagerPanel = function() {
+	this.doNotRemove = true;
+	this.needRefresh = false;
+	
+	this.manager = new og.MailManager();
+
+	og.MailManagerPanel.superclass.constructor.call(this, {
+		layout: 'fit',
+		border: false,
+		bodyBorder: false,
+		tbar: this.manager.getFirstToolbar(),
+		items: [this.manager],
+		closable: true
+	});
+}
+
+Ext.extend(og.MailManagerPanel, Ext.Panel, {
+	load: function(params) {
+		this.manager.load(params);
+	},
+	activate: function() {
+		this.manager.activate();
+	},	
+	reset: function() {
+		this.manager.reset();
+	},	
+	showMessage: function(text) {
+		this.manager.showMessage(text);
+	}
+});
+
+Ext.reg("mails-containerpanel", og.MailManagerPanel);

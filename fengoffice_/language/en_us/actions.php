@@ -103,7 +103,7 @@
     'can manage security' => 'Can manage security',
     'can manage workspaces' => 'Can manage workspaces',
     'can manage configuration' => 'Can manage configuration',
-    'can manage contacts' => 'Can manage contacts',
+    'can manage contacts' => 'Can manage all contacts',
     'group users' => 'Group users',
     
     
@@ -174,7 +174,8 @@
     
     'link object' => 'Link Object',
     'link objects' => 'Link Objects',
-    'link more objects' => 'Link more objects',
+    'show all linked objects' => 'Show all Linked Objects({0})',
+  	'link more objects' => 'Link more objects',
     'unlink' => 'Unlink',
     'unlink object' => 'Unlink Object',
     'unlink objects' => 'Unlink Objects',

@@ -1,8 +1,8 @@
 <?php
-require_javascript('modules/addMessageForm.js'); 
+require_javascript('og/modules/addMessageForm.js'); 
 ?>
+
 <div class="og-add-subscribers">
-<p><?php echo lang('add subscribers desc') ?></p>
 <?php
 	if (!is_array($subscriberIds)) $subscriberIds = array(logged_user()->getId());
 	if (!isset($workspaces)) $workspaces = array(active_or_personal_project());
@@ -35,47 +35,39 @@ require_javascript('modules/addMessageForm.js');
 	} // foreach
 	$companyUsers = $grouped;
 ?>
-<div id="<?php echo $genid ?>notify_companies"></div>
-<script>
-var div = Ext.getDom('<?php echo $genid ?>notify_companies');
-div.notify_companies = {};
-var cos = div.notify_companies;
-</script>
+<div id="<?php echo $genid ?>notify_companies">
+
 <?php foreach($companyUsers as $companyId => $users) { ?>
-	<script type="text/javascript">
-		cos.company_<?php echo $companyId ?> = {
-			id          : <?php echo $companyId ?>,
-			checkbox_id : 'notifyCompany<?php echo $companyId ?>',
-			users       : []
-		};
-	</script>
+
+<div id="<?php echo $companyId?>" class="company-users" <?php echo is_array($users) == true? 'style ="margin-bottom: 10px;"' : '' ?>>
+
 	<?php if(is_array($users) && count($users)) { ?>
-	<div class="companyDetails">
-		<div class="companyName">
-			<?php echo checkbox_field('', null, 
-				array('id' => $genid.'notifyCompany' . $companyId, 
-					'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $companyId . ',"' . $genid. '","notify_companies", "notification")')) ?> 
-			<label for="<?php echo $genid ?>notifyCompany<?php echo $companyId ?>" class="checkbox"><?php echo clean(Companies::findById($companyId)->getName()) ?></label>
+		<div onclick="og.subscribeCompany(this)"  class="container-div company-name" onmouseout="og.rollOut(this,true)" onmouseover="og.rollOver(this)">
+		<?php $theCompany = Companies::findById($companyId) ?>
+			<label for="<?php echo $genid ?>notifyCompany<?php echo $theCompany->getId() ?>" style="background: url('<?php echo $theCompany->getLogoUrl() ?>') no-repeat;">
+				<span class="ico-company link-ico"><?php echo clean($theCompany->getName()) ?></span>
+			</label>
 		</div>
-		
-		<div class="companyMembers">
-		<ul>
+		<div style="padding-left:10px;">
 		<?php foreach($users as $user) { ?>
-			<li><?php echo checkbox_field('subscribers[user_' . $user->getId() . ']', 
-				in_array($user->getId(), $subscriberIds), 
-				array('id' => $genid.'notifyUser' . $user->getId(), 
-					'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $companyId . ', ' . $user->getId() . ',"' . $genid. '","notify_companies", "notification")')) ?> 
-				<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
-			<script type="text/javascript">
-				cos.company_<?php echo $companyId ?>.users.push({
-					id          : <?php echo $user->getId() ?>,
-					checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
-				});
-			</script></li>
+				<?php
+					$checked = in_array($user->getId(), $subscriberIds);
+				?>
+				<div id="<?php echo $user->getDisplayName() ?>" class="container-div <?php echo $checked==true? 'checked-user':'user-name' ?>" onmouseout="og.rollOut(this,false <?php echo $checked==true? ',true':',false' ?>)" onmouseover="og.rollOver(this)" onclick="og.checkUser(this)">
+					<input id="hiddenUser<?php echo $user->getDisplayName()?>" type="hidden" name="<?php echo 'subscribers[user_'.$user->getId() .']' ?>" value="<?php echo $checked == true? 'checked': '' ?>" />
+					<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" style=" width: 120px; overflow:hidden; background:url('<?php echo $user->getAvatarUrl() ?>') no-repeat;">
+						<span class="ico-user link-ico"><?php echo clean($user->getDisplayName()) ?></span>
+						<br>
+						<span style="color:#888888;font-size:90%;font-weight:normal;"> <?php echo $user->getEmail()  ?> </span>
+					</label>
+				</div>
+			
 		<?php } // foreach ?>
-		</ul>
-		</div>
+		<div style="clear:both;"></div>
 		</div>
 	<?php } // if ?>
+</div>	
 <?php } // foreach ?>
+
+</div>
 </div>

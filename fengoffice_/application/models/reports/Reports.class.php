@@ -140,40 +140,80 @@ class Reports extends BaseReports {
 			$sql .= permissions_sql_for_listings(new $manager(), ACCESS_LEVEL_READ, logged_user(), 'project_id', 't');
 			if(count($conditionsFields) > 0){
 				foreach($conditionsFields as $condField){
-					$skip_condition = false;
-					$model = $report->getObjectType();
-					$model_instance = new $model();
-					$col_type = $model_instance->getColumnType($condField->getFieldName());
-
-					$sql .= ' AND ';
-					$dateFormat = 'm/d/Y';
-					if(isset($params[$condField->getId()])){
-						$value = $params[$condField->getId()];
-						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME)
-						$dateFormat = user_config_option('date_format', 'd/m/Y');
-					}else{
-						$value = $condField->getValue();
-					}
-					if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
-					if (!$skip_condition) {
-						if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
-							$value = '%'.$value.'%';
-						}
-						if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
-							$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
-							$value = $dtValue->format('Y-m-d');
-						}
-						if($condField->getCondition() != '%'){
-							if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
-								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
+					if ($condField->getFieldName() == 'workspace' || $condField->getFieldName() == 'tag' ){	//if has a tag or workspace condition
+						if ($condField->getFieldName() == 'workspace'){
+							//if is a workspace condition:
+							$fiterUsingWorkspace = true;
+							if ($condField->getIsParametrizable() && isset ($params['workspace'])){
+								//if is parameter condition and is set the parameter
+								$ws_value = $params['workspace'];
 							}else{
-								$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+								//if is a fixed workspace value and is set
+								$val = $condField->getValue();
+								if (isset($val)){
+									$ws_value = $val;
+								}else{
+									//if there is no workspace to filter with it doesnt filter at all.
+									$fiterUsingWorkspace = false;
+								}
 							}
-						}else{
-							$sql .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
 						}
-					} else $sql .= ' true';
-				}
+						if ($condField->getFieldName() == 'tag'){
+							//if is a tag condition:
+							$fiterUsingTag = true;
+							if ($condField->getIsParametrizable() && isset ($params['tags'])){
+								//if is parameter condition and is set the parameter
+								$tags_csv = $params['tags'];
+								$tags = explode(',', $tags_csv);
+								$tag_value = trim($tags[0]);
+							}else{
+								//if is a fixed tag value and is set
+								$tval = $condField->getValue();
+								if (isset ($tval)){
+									$tag_value = trim(trim($tval),',');									
+								}else{
+									//if there is no tag to filter with it doesnt filter at all.
+									$fiterUsingTag = false;
+								}
+							}
+						}
+						
+					}else{
+						$skip_condition = false;
+						$model = $report->getObjectType();
+						$model_instance = new $model();
+						$col_type = $model_instance->getColumnType($condField->getFieldName());
+	
+						$sql .= ' AND ';
+						$dateFormat = 'm/d/Y';
+						if(isset($params[$condField->getId()])){
+							$value = $params[$condField->getId()];
+							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME)
+							$dateFormat = user_config_option('date_format', 'd/m/Y');
+						}else{
+							$value = $condField->getValue();
+						}
+						if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
+						if (!$skip_condition) {
+							if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
+								$value = '%'.$value.'%';
+							}
+							if ($col_type == DATA_TYPE_DATE || $col_type == DATA_TYPE_DATETIME) {
+								$dtValue = DateTimeValueLib::dateFromFormatAndString($dateFormat, $value);
+								$value = $dtValue->format('Y-m-d');
+							}
+							if($condField->getCondition() != '%'){
+								if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
+									$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.mysql_real_escape_string($value);
+								}else{
+									$sql .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' \''.mysql_real_escape_string($value).'\'';
+								}
+							}else{
+								$sql .= '`'.$condField->getFieldName().'` like "%'.mysql_real_escape_string($value).'"';
+							}
+						} else $sql .= ' true';
+					}//else
+				}//foreach
 			}
 			if(count($conditionsCp) > 0){
 
@@ -216,6 +256,20 @@ class Reports extends BaseReports {
 					}
 				}
 			}
+			// FILTER USING WORKSPACES AND TAGS
+			if(isset($fiterUsingWorkspace)&& $fiterUsingWorkspace && $ws_value != 0)
+			{
+				if ($manager == 'Contacts'){
+					$sql .= ' AND t.id IN (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id = '. $ws_value .')';
+				} else {
+					$sql .= ' AND t.id IN (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id = '. $ws_value .')';
+				}
+			}
+			if(isset($fiterUsingTag)&& $fiterUsingTag && $tag_value != '')
+			{
+				$sql .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+			}
+					
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
 
@@ -228,12 +282,11 @@ class Reports extends BaseReports {
 			foreach($rows as $row){
 				$ids[] = $row['id'];
 			}
-				
 			if(count($ids) == 0) return;
 				
 			$results['pagination'] = Reports::getReportPagination($id, $params, $offset, $limit, $totalResults);
 
-			$selectCols = 't.id';
+			$selectCols = 'distinct(t.id) as "id"';
 			$titleCols = $managerInstance->getReportObjectTitleColumns();
 			foreach($titleCols as $num => $title){
 				$selectCols .= ', t.'.$title.' as "titleCol'.$num.'"';
@@ -283,9 +336,10 @@ class Reports extends BaseReports {
 					}
 				}
 			}
-			$sql = 'SELECT '.$selectCols.' FROM ('.$openPar.$selectFROM.') '.$selectWHERE.' '.$order_by;
+			$sql = 'SELECT '.$selectCols.' FROM ('.$openPar.$selectFROM.') '.$selectWHERE.' GROUP BY id '.$order_by;
 			$rows = DB::executeAll($sql);
 			if (is_null($rows)) $rows = array();
+			$rows = Reports::removeDuplicateRows($rows);
 			foreach($rows as &$row){
 				$title = $managerInstance->getReportObjectTitle($row);
 				$id = $row['id'];
@@ -305,6 +359,33 @@ class Reports extends BaseReports {
 
 		return $results;
 	} //  executeReport
+	
+	static function removeDuplicateRows($rows){
+		$duplicateIds = array();
+		foreach($rows as $row){
+			if (!isset($duplicateIds[$row['id']])) $duplicateIds[$row['id']] = 0;
+			$duplicateIds[$row['id']]++;
+		}
+		foreach($duplicateIds as $id => $count){
+			if($count < 2){
+				unset($duplicateIds[$id]);
+			}
+		}
+		$duplicateIds = array_keys($duplicateIds);
+		foreach($rows as $row){
+			if(in_array($row['id'], $duplicateIds)){
+				alert(implode(',',array_keys($row)));
+				foreach($row as $col => $value){
+					$cp = CustomProperties::getCustomProperty($col);
+					if($cp instanceof CustomProperty && $cp->getIsMultipleValues()){
+						alert($cp->getCustomPropertyId());
+					}
+				}
+			}
+		}
+		//alert(implode(',', array_keys($duplicateIds)));
+		return $rows;
+	}
 
 	static function getReportPagination($report_id, $params, $offset, $limit, $total){
 		if($total == 0) return '';

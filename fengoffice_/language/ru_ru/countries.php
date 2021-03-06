@@ -60,7 +60,7 @@
 	'country dj' => 'Джибути',
 	'country dm' => 'Доминика',
 	'country do' => 'Доминиканская республика',
-	'country tp' => 'Восточный Тимор',
+	'country tl' => 'Восточный Тимор',
 	'country ec' => 'Эквадор',
 	'country eg' => 'Египет',
 	'country sv' => 'Сальвадор',
@@ -235,7 +235,7 @@
 	'country wf' => 'Острова Уоллис и Футуна',
 	'country eh' => 'Западная Сахара',
 	'country ye' => 'Йемен',
-	'country zr' => 'Заир',
+	
 	'country zm' => 'Замбия',
 	'country zw' => 'Зимбабве',
 ); ?>

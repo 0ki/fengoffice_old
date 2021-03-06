@@ -1,6 +1,3 @@
-<?php
-?>
-
 <script>
 //some event handlers
 og.eventManager.addListener('tag changed', 
@@ -30,6 +27,22 @@ og.eventManager.addListener('company added',
 	 			elems[i].appendChild(opt);
  			}
  		}
+ 	}
+);
+
+og.eventManager.addListener('contact added from mail', 
+	function (obj) {
+		var hf_contacts = document.getElementById(obj.hf_contacts);
+		if (hf_contacts) hf_contacts.value += (hf_contacts != '' ? "," : "") + obj.combo_val;
+		var div = Ext.get(obj.div_id);
+ 		if (div) div.remove();
+ 	}
+);
+
+og.eventManager.addListener('draft mail autosaved', 
+	function (obj) {
+		var hf_id = document.getElementById(obj.hf_id);
+		if (hf_id) hf_id.value = obj.id;
  	}
 );
 

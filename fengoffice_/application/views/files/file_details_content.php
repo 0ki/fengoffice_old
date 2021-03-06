@@ -11,25 +11,31 @@
 	<script>
 	og.expandDocumentView = function() {
 		if (this.oldParent) {
-			this.parentNode.parentNode.removeChild(this.parentNode);
-			this.oldParent.appendChild(this.parentNode);
+			//this.parentNode.parentNode.removeChild(this.parentNode);
+			//this.oldParent.appendChild(this.parentNode);
+			var parentBody = og.getParentContentPanelBody(this);
+			parentBody.style.overflow = 'auto';
 			this.parentNode.style.position = 'relative';
 			this.parentNode.style.height = '200px';
 			this.parentNode.style.zIndex = '0';
-			this.innerHTML = "<?php echo lang('expand') ?>";
+			this.title = "<?php echo lang('expand') ?>";
+			this.className = 'ico-expand';
 			this.oldParent = false;
 		} else {
 			this.oldParent = this.parentNode.parentNode;
-			this.oldParent.removeChild(this.parentNode);
-			document.body.appendChild(this.parentNode);
+			//this.oldParent.removeChild(this.parentNode);
+			//document.body.appendChild(this.parentNode);
+			var parentBody = og.getParentContentPanelBody(this);
+			parentBody.style.overflow = 'hidden';
 			this.parentNode.style.position = 'absolute';
 			this.parentNode.style.height = '100%';
 			this.parentNode.style.zIndex = '1000';
-			this.innerHTML = "<?php echo lang('collapse') ?>";
+			this.title = "<?php echo lang('collapse') ?>";
+			this.className = 'ico-collapse';
 		}
 	};
 	</script>
-	<button onclick="og.expandDocumentView.call(this)" style="position: absolute; right: 0px; top: 0px"><?php echo lang('expand') ?></button>
+	<a class="ico-expand" style="display: block; width: 16px; height: 16px; cursor: pointer; position: absolute; right: 20px; top: 2px" title="<?php echo lang('expand') ?>" onclick="og.expandDocumentView.call(this)"></a>
 	</div>
 </div>
 <?php } // if ?> 
@@ -37,7 +43,12 @@
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
 	<div>
 		<a href="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true)); ?>" target="_blank" title="<?php echo lang('show image in new page') ?>">
-			<img id="<?php echo $genid ?>Image" src="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true)); ?>" style="max-width:450px;max-height:500px"/>
+			<?php if ($file->getUpdatedOn() instanceof DateTimeValue) {
+				$modtime = $file->getUpdatedOn()->getTimestamp();
+			} else {
+				$modtime = $file->getCreatedOn()->getTimestamp();
+			}?>
+			<img id="<?php echo $genid ?>Image" src="<?php echo get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime)); ?>" style="max-width:450px;max-height:500px"/>
 		</a>
 	</div>
 <?php }?>
@@ -46,7 +57,7 @@
 	require_javascript('flashobject.js');
 	$flashurl = get_flash_url('visorFreemind.swf') ?>
 	<div id="<?php echo $genid ?>mm">
-	<script type="text/javascript">
+	<script>
 		var fo = new FlashObject("<?php echo $flashurl ?>", "visorFreeMind", "100%", "350px", 6, "#9999ff");
 		fo.addParam("quality", "high");
 		fo.addParam("bgcolor", "#ffffff");
@@ -116,12 +127,12 @@
 
 <?php if(($file->getDescription())) { ?>
       <fieldset><legend><?php echo lang('description')?></legend>
-      <?php echo nl2br(convert_to_links(clean($file->getDescription()))) ?>
+      <?php echo escape_html_whitespace(convert_to_links(clean($file->getDescription()))) ?>
       </fieldset>
 <?php } // if ?>
 
 <?php if(($ftype = $file->getFileType()) instanceof FileType && $ftype->getIsImage()){?>
-	<script type="text/javascript">
+	<script>
 	function resizeImage(genid){
 		var image = document.getElementById(genid + 'Image');
 		if (image){

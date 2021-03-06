@@ -2,7 +2,7 @@
 	$submit_url = get_url('contact', 'export_to_csv_file');
 	$genid = gen_id();
 ?>
-<script type="text/javascript">
+<script>
 og.download_exported_file = function() {
 	window.open(og.getUrl('contact', 'download_exported_file'));
 }
@@ -66,7 +66,7 @@ og.download_exported_file = function() {
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	btn = Ext.get('<?php echo $genid ?>csv_export_submit1');
 	if (btn != null) btn.focus();
 </script>

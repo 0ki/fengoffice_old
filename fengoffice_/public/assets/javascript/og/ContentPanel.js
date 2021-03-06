@@ -130,7 +130,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		return !this.preventClose;
 	},
 
-	load: function(content, isBack, isReset) {
+	load: function(content, isBack, isReload, isReset) {
 
 		if (!this.confirmClose()) {
 			if (isBack) {
@@ -174,6 +174,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		}
 
 		this.content = content;
+		if (content.makeDefault) {
+			this.defaultContent = content;
+		}
 		if (this.content.type != 'url') {
 			var i=0;
 			while (this.getComponent(i)) {
@@ -241,8 +244,31 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			if (content.notbar){
 				tbar = null;
 			}
+			var html = content.data
+			if (content.inlineScripts && content.inlineScripts.length) {
+				var id = Ext.id();
+				html += '<span id="' + id + '"></span>';
+				Ext.lib.Event.onAvailable(id, function() {
+					var start = new Date().getTime();
+					for (var inlineScriptContentIterator=0; inlineScriptContentIterator < content.inlineScripts.length; inlineScriptContentIterator++) {
+						try {
+							if (window.execScript) {
+								window.execScript(content.inlineScripts[inlineScriptContentIterator]);
+							} else {
+								window.eval(content.inlineScripts[inlineScriptContentIterator]);
+							}
+						} catch (e) {
+							og.err(e.message);
+						}
+					}
+					var end = new Date().getTime();
+					//og.log("scripits: " + (end - start) + " ms");
+					var el = document.getElementById(id);
+					if (el) Ext.removeNode(el);
+				});
+			}
 			var p = new og.HtmlPanel({
-				html: og.extractScripts(content.data),
+				html: og.extractScripts(html),
 				autoScroll: this.contentAutoScroll,//this.initialConfig.autoScroll,
 				tbar: tbar
 			});
@@ -267,11 +293,14 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					var config = content.config || {};
 					config.xtype = content.data || config.xtype;
 					content.panel = Ext.ComponentMgr.create(config);
+				} else if (content.config && typeof content.panel.newConfig == 'function') {
+					content.panel.newConfig(content.config);
 				}
+				content.panel.load();
 			}
 			if (isReset) {
 				content.panel.reset();
-			} else {
+			} else if (isReload) {
 				content.panel.load();
 			}
 
@@ -302,10 +331,10 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		var prev = this.history.pop();
 		if (!prev) {
 			this.load({type: 'start'});
-		} else if (prev.type == 'html' && prev.url) {
+/**/	} else if (prev.type == 'html' && prev.url) {
 			this.load({type: 'url', data: prev.url}, true);
-		} else { 
-			this.load(prev, true);
+/**/	} else { 
+			this.load(prev, true, true);
 		}
 	},
 	
@@ -313,7 +342,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (this.content.type == 'html' && this.content.url) {
 			this.load({type:'url',data:this.content.url}, true);
 		} else {
-			this.load(this.content, true);
+			this.load(this.content, true, true);
 		}
 	},
 		
@@ -321,7 +350,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (!this.confirmClose()) return;
 		this.loaded = false;
 		if (this.active) {
-			this.load(this.defaultContent, true, true);
+			this.load(this.defaultContent, true, true, true);
 		}
 		this.history = [];
 	}

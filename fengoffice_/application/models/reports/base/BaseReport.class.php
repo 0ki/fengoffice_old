@@ -145,6 +145,50 @@
       return $this->setColumnValue('is_order_by_asc', $value);
     } // setIsOrderByAsc() 
    
+     /**
+    * Return value of 'workspace' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getWorkspace() {
+      return $this->getColumnValue('workspace');
+    } // getId()
+    
+    /**
+    * Set value of 'workspace' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setWorkspace($value) {
+      return $this->setColumnValue('workspace', $value);
+    } // setId() 
+    
+     /**
+    * Return value of 'tags' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getTags() {
+      return $this->getColumnValue('tags');
+    } // getName()
+    
+    /**
+    * Set value of 'tags' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setTags($value) {
+      return $this->setColumnValue('tags', $value);
+    } // setName() 
+    
     /**
     * Return manager instance
     *

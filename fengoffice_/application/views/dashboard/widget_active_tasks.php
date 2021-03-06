@@ -9,7 +9,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 <table id="dashTableTIP" style="width:100%;">
 <?php
 $c = 0;
-foreach ($tasks_in_progress as $task){
+foreach ($tasks_in_progress as $task) {
 	$stCount = $task->countAllSubTasks();
 	$c++;
 	$text = $task->getText();
@@ -20,7 +20,7 @@ foreach ($tasks_in_progress as $task){
 	$text = clean($text);
 	?>
 		<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
-	<?php $dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+	<?php $dws = $task->getWorkspaces(logged_user()->getWorkspacesQuery());
 	$projectLinks = array();
 	foreach ($dws as $ws) {
 		$projectLinks[] = $ws->getId();
@@ -31,7 +31,7 @@ foreach ($tasks_in_progress as $task){
 		if ($timeslot) { 
 			if (!$timeslot->isPaused()) {?>
 			<div id="<?php echo $genid . $task->getId() ?>timespan"></div>
-			<script language="JavaScript">
+			<script>
 			og.startClock('<?php echo $genid . $task->getId() ?>', <?php echo $timeslot->getSeconds() ?>);
 			</script>
 		<?php } else {?>

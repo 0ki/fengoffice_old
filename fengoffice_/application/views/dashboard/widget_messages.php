@@ -12,7 +12,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 	<td class="db-ico ico-message"></td>
 	<td style="padding-left:5px">
 	<?php 
-		$mws = $message->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+		$mws = $message->getWorkspaces(logged_user()->getWorkspacesQuery());
 		$projectLinks = array();
 		foreach ($mws as $ws) {
 			$projectLinks[] =  $ws->getId();

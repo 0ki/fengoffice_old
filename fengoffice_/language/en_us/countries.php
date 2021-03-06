@@ -62,7 +62,7 @@
     'country dj' => 'Djibouti',
     'country dm' => 'Dominica',
     'country do' => 'Dominican Republic',
-    'country tp' => 'East Timor',
+    'country tl' => 'East Timor',
     'country ec' => 'Ecuador',
     'country eg' => 'Egypt',
     'country sv' => 'El Salvador',
@@ -237,7 +237,7 @@
     'country wf' => 'Wallis and Futuna Islands',
     'country eh' => 'Western Sahara',
     'country ye' => 'Yemen',
-    'country zr' => 'Zaire',
+    'country cd' => 'Democratic Republic of the Congo',
     'country zm' => 'Zambia',
     'country zw' => 'Zimbabwe'
   ); // array

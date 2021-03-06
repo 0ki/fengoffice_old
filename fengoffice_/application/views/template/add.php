@@ -1,6 +1,7 @@
 <?php
 	require_javascript("og/ObjectPicker.js");
-	require_javascript("modules/addTemplate.js");
+	require_javascript("og/modules/addTemplate.js");
+	require_javascript("og/DateField.js");
 	
 	
 	$workspaces = active_projects();
@@ -15,8 +16,7 @@
 	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $cotemplate->isNew() ? lang('new template') : lang('edit template') ?>
 	</td><td style="text-align:right"><?php echo submit_button($cotemplate->isNew() ? lang('add template') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
 	</div>
-	
-	</div>
+</div>
 	<div>
 	<?php echo label_tag(lang('name'), $genid . 'templateFormName', true) ?>
 	<?php echo text_field('template[name]', array_var($template_data, 'name'), 
@@ -29,20 +29,16 @@
 		<?php if (isset ($workspaces) && count($workspaces) > 0) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_objects_div',this)"><?php echo lang('objects') ?></a>
+		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_parameters_div',this)"><?php echo lang('parameters') ?></a>
+		- <a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_objects_div',this)"><?php echo lang('objects') ?></a>
+		
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
-<div class="coInputMainBlock">
-	
-	<div id="<?php echo $genid ?>add_template_objects_div">
-		<fieldset><legend><?php echo lang('objects')?></legend>
-			<a id="<?php echo $genid ?>before" href="#" onclick="og.pickObjectForTemplate(this)"><?php echo lang('add an object to template') ?></a>
-		</fieldset>
-	</div>	
+<div class="coInputMainBlock">	
 		
 	<?php if (isset ($workspaces) && count($workspaces) > 0) { ?>
 	<div id="<?php echo $genid ?>add_template_select_workspace_div" style="display:none">
@@ -55,7 +51,18 @@
 	</fieldset>
 	</div>
 	<?php } ?>
-		
+	
+	<div id="<?php echo $genid ?>add_template_parameters_div">
+		<fieldset><legend><?php echo lang('parameters')?></legend>
+			<a id="<?php echo $genid ?>params" href="#" onclick="og.promptAddParameter(this, 0)"><?php echo lang('add a parameter to template') ?></a>
+		</fieldset>
+	</div>
+	
+	<div id="<?php echo $genid ?>add_template_objects_div">
+		<fieldset><legend><?php echo lang('objects')?></legend>
+			<br/><a id="<?php echo $genid ?>before" href="#" onclick="og.pickObjectForTemplate(this)"><?php echo lang('add an object to template') ?></a>
+		</fieldset>
+	</div>
 	
 	<div>
 	<?php echo label_tag(lang('description'), 'templateFormDescription', false) ?>
@@ -83,10 +90,12 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
+	og.loadTemplateVars();
 	Ext.get('<?php echo $genid ?>templateFormName').focus();
 <?php
 if (is_array($objects)) {
+	$count = 0;
 	foreach ($objects as $o) {
 		if (!$o instanceof ProjectDataObject) continue;
 ?>
@@ -97,7 +106,20 @@ og.addObjectToTemplate(document.getElementById('<?php echo $genid ?>before'), {
 	'name': <?php echo json_encode($o->getObjectName()) ?>
 });
 <?php
+		if(is_array($object_properties)){
+			$oid = $o->getObjectId();
+			if(isset($object_properties[$oid])){
+				foreach($object_properties[$oid] as $objProp){  ?>
+				og.addTemplateObjectProperty(<?php echo $oid ?>, '<?php echo $objProp->getObjectManager() ?>', <?php echo $count ?>, '<?php echo $objProp->getProperty() ?>', '<?php echo $objProp->getValue() ?>');
+		  <?php }
+			}
+		}
+		$count++;
 	}
 }
-?>
+if (isset($parameters) && is_array($parameters)) {
+	foreach ($parameters as $param) { ?>
+	og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo $param->getName() ?>','<?php echo $param->getType() ?>'); 
+<?php }
+}?>
 </script>

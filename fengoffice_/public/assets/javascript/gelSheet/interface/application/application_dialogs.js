@@ -10,76 +10,165 @@
  *
  */
 
-function OpenFileDialog(top,left,height,width){
-	var self = document.createElement("DIV");
-	self.addHeader = function(file){
-		var row = document.createElement("TR");
-		var td = document.createElement("TH");
-		var td2 = document.createElement("TH");
-		var td3 = document.createElement("TH");
-		td.innerHTML = "Filename";
-		td.style.width = "34%";
-		td2.innerHTML = "Created On";
-		td2.style.width = "33%";
-		td3.innerHTML = "Creator";
-		td3.style.width = "33%";
+function formulaWizard() {
+	Ext.onReady(function(){
+		/*********** Data Source ***********/
+	    var store = new Ext.data.SimpleStore({
+	        fields: ['function_id', 'function_name', 'function_category' , 'function_description'],
+	        data :  calculator.getFunctionNameList() 
+	    });
+	    store.sort('function_id');
 
-		row.appendChild(td);
-		row.appendChild(td2);
-		row.appendChild(td3);
-		this.fileHeader.appendChild(row);
-	}
-	self.show = function(){
-		this.style.visibility = "visible";
-	}
+	    /********** Grid Panel ************/
+	    var grid = new Ext.grid.GridPanel({
+	        store		: store,
+	        columns		: [
+		            {header: "Function", width: 120, dataIndex: 'function_id', sortable: true},
+		            {header: "Category", width: 115, dataIndex: 'function_category', sortable: true}
+	        ],
+			sm			: new Ext.grid.RowSelectionModel({singleSelect: true}),
+			viewConfig	: {forceFit: true},
+	        height		:210,
+	        autoWidth	: true,
+			split		: true,
+			region		: 'north'
+	    });
+		
+		// define a template to use for the detail view
+	    var bookTpl = new Ext.Template([
+			'<br/>{function_description} <br/>'
+		]);
+		
+		
 
-	self.hide = function(){
-		this.style.visibility = "hidden";
-	}
+		var ct = new Ext.Panel({
+			
+			frame: true,
+			title: 'Select a function...',
+			//width: 500,
+			autoHeight: true,
+			autoWidth: true,
+			//layout: 'border',
+			items: [
+				grid,
+				{
+					id: 'detailPanel',
+					region: 'center',
+					bodyStyle: {
+						padding: '10px'
+					},
+					html: '<br><br><strong>Please select a function to see additional details.<strong>'
+				}
+			]
+		});
+		
+		grid.getSelectionModel().on('rowselect', function(sm, rowIdx, r) {
+			var detailPanel = Ext.getCmp('detailPanel');
+			bookTpl.overwrite(detailPanel.body, r.data);
+		});
+		
+		
+		var win = new Ext.Window({
+			title		  	: 'Insert a function:',
+	        applyToMarkup	: 'dialog-container',
+	        layout        	: 'fit',
+	        autoHeight  	: true ,
+	        width			: 500 ,
+	        plain       	: true ,
+	        modal 			: true , 
+	        items			: ct,  
+	        resizable		: false
+	    });
+		
+		function selectFunction() {
+	    	var functionName = "="+grid.getSelectionModel().getSelected().data.function_id +"()";
+			FormulaBar.setValue(functionName);
+			FormulaBar.focus() ;
+			win.close() ;
+		};
+		
+		win.addButton({
+			text:'Ok', 
+	        handler: selectFunction 
+		});
+		win.addButton( {text:'Close', handler: function(){win.close();}} ) ;
+		
+		grid.on('rowdblclick',selectFunction);
+		
+		win.show() ; 
+		//ct.show() ;
 
-	self.addFile = function(file){
-		alert(file.toSource());
-		var row = document.createElement("TR");
-		row.className = "OpenFileDialog";
-		row.onclick = function(){
-			alert(file.id);
-			self.hide();
-		}
-
-		var td = document.createElement("TD");
-		var td2 = document.createElement("TD");
-		var td3 = document.createElement("TD");
-		td.innerHTML = file.name;
-		td2.innerHTML = file.date;
-		td3.innerHTML = file.user;
-		row.appendChild(td);
-		row.appendChild(td2);
-		row.appendChild(td3);
-		this.fileBody.appendChild(row);
-	}
-
-
-	self.constructor = function(top,left,height,width){
-		this.className = "OpenFileDialog";
-		this.style.position = "absolute";
-		this.style.top = px(top);
-		this.style.left = px(left);
-		this.style.height = px(height);
-		this.style.width = px(width);
-
-		this.fileList = document.createElement("TABLE");
-		this.fileList.style.width = "100%";
-		this.fileList.style.height = "100%";
-		this.fileHeader = document.createElement("THEAD");
-
-		this.fileBody = document.createElement("TBODY");
-		this.addHeader();
-
-		this.appendChild(this.fileHeader);
-		this.appendChild(this.fileBody);
-
-	}
-
-	self.constructor(top,left,height,width);
-	return self;
+		});
 }
+
+
+function namesDialog() {
+	Ext.onReady(function(){
+		/*********** Data Source ***********/
+	    var store = new Ext.data.SimpleStore({
+	        fields: ['name', 'range'],
+	        data :  window.activeSheet.getNames()
+	        //data: [['pepe','a2:a4' ] , ['gelsheet','a232:a2344' ] ]
+	    });
+	    store.sort('name');
+
+	    /********** Grid Panel ************/
+	    var grid = new Ext.grid.GridPanel({
+	        store		: store,
+	        columns		: [
+		            {header: "Name", width: 120, dataIndex: 'name', sortable: true},
+		            {header: "Range", width: 115, dataIndex: 'range', sortable: true}
+	        ],
+			sm			: new Ext.grid.RowSelectionModel({singleSelect: true}),
+			viewConfig	: {forceFit: true},
+	        height		: 210,
+	        autoWidth	: true,
+			split		: true,
+			region		: 'north'
+	    });
+		
+		// define a template to use for the detail view
+	    var bookTpl = new Ext.Template([
+			'<br/>{name} => {range} <br/>'
+		]);
+		
+	
+		var ct = new Ext.Panel({
+			frame: true,
+			title: lang('Range names')+'...',
+			autoHeight: true,
+			autoWidth: true,
+			items: [
+				grid,
+				{
+					region: 'center',
+					bodyStyle: {
+						padding: '10px'
+					},
+					html: '<br><br><strong>Here are listed all the range names on the book.<strong>'
+				}
+			]
+		});
+		
+		var win = new Ext.Window({
+			title		  	: 'Ranges:',
+	        applyToMarkup	: 'dialog-container',
+	        layout        	: 'fit',
+	        autoHeight  	: true ,
+	        width			: 500 ,
+	        plain       	: true ,
+	        modal 			: true , 
+	        items			: ct,  
+	        resizable		: false
+	    });
+		win.addButton({
+			text:'Ok', 
+	        handler: function() {alert('Ok');} 
+		});
+		win.addButton( {text:'Close', handler: function(){win.close();}} ) ;
+		win.show() ; 
+
+		}
+	);
+}
+

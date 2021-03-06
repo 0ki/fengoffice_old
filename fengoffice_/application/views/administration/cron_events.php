@@ -1,6 +1,13 @@
 <div class="adminCronEvents" style="height:100%;background-color:white">
+<form class="internalForm" action="<?php echo get_url("administration", "cron_events") ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
 	<div class="adminHeader">
-		<div class="adminTitle"><?php echo lang("cron events") ?></div>
+		<div class="adminTitle">
+			<table style="width:535px"><tr><td>
+				<?php echo lang("cron events") ?>
+			</td><td style="text-align:right">
+				<?php echo submit_button(lang('save'), 's', array('style' => 'margin-top:0px;')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
+			</td></tr></table>
+		</div>
 	</div>
 	<div class="adminSeparator"></div>
 	<div class="adminMainBlock">
@@ -11,7 +18,6 @@
 	</div>
 
 <?php if (is_array($events) && count($events)) { ?>
-<form class="internalForm" action="<?php echo get_url("administration", "cron_events") ?>" method="post" onreset="return confirm('<?php echo escape_single_quotes(lang('confirm reset form')) ?>')">
 	<table class="cronEventsTable"><tbody>
 		<tr class="cronEventsHeader even">
 			<th class="cronEventsName"><?php echo lang("name") ?></th>
@@ -47,9 +53,9 @@
 	</tbody></table>
 
 	<?php echo submit_button(lang('save')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
-</form>
 <?php } else { ?>
 	<p><?php echo lang('no cron events to display') ?></p>
 <?php } // if ?>
 	</div>
+</form>
 </div>

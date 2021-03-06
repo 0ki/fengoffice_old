@@ -39,6 +39,22 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 			document.getElementById(genid + 'MainDiv').style.display = 'none';
 			return;
 		}
+
+		if (type == 'Users' || type == 'Projects')
+		{
+			tohide = document.getElementById("wsandTags");
+			tohide2  = document.getElementById("showhideOptions");
+			tohide.style.display = "none";
+			tohide2.style.display = "none";
+			
+			
+		}else{
+			toshow = document.getElementById("wsandTags");
+			tohide2  = document.getElementById("showhideOptions");
+			tohide2.style.display = "";
+			toshow.style.display = "";
+		}
+		
 		document.getElementById('report[object_type]').value = type;
 		og.openLink(og.getUrl('reporting', 'get_object_fields', {object_type: type}), {
 			callback: function(success, data) {
@@ -69,7 +85,9 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 								}
 							}
 							if(og.isReportFieldNumeric(field.id)){
-								CPs += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
+								if(!field.multiple){
+									CPs += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
+								}
 							}else{
 								fields += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
 							} 		
@@ -409,4 +427,6 @@ og.tttReportGbSelected = function(select, genid){
 			}
 		}
 	}
+	
+				
 };

@@ -14,8 +14,8 @@ define('SESSION_EXPIRED_ERROR_CODE', 2009);
  * @param array $actions
  * @param string $panel
  */
-function ajx_current($type, $data = null, $actions = null, $panel = null) {
-	AjaxResponse::instance()->setCurrentContent($type, $data, $actions, $panel);
+function ajx_current($type, $data = null, $actions = null, $config = null, $default = null) {
+	AjaxResponse::instance()->setCurrentContent($type, $data, $actions, $config, $default);
 }
 
 /**
@@ -151,6 +151,35 @@ function ajx_replace($replace = true) {
 function require_javascript($url) {
 	if (is_ajax_request()) {
 		AjaxResponse::instance()->addScript($url);
+	}
+}
+
+/**
+ * Start an inline javascript
+ * @return unknown_type
+ */
+function start_script() {
+	if (is_ajax_request()) ob_start();
+}
+
+/**
+ * End an inline javascript
+ * @return unknown_type
+ */
+function end_script() {
+	if (is_ajax_request()) {
+		$script = ob_get_clean();
+		AjaxResponse::instance()->addInlineScript($script);
+	}
+}
+
+/**
+ * Add an inline javascript
+ * @return unknown_type
+ */
+function add_inline_script($script) {
+	if (is_ajax_request()) {
+		AjaxResponse::instance()->addInlineScript($script);
 	}
 }
 ?>

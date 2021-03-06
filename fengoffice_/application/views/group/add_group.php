@@ -3,7 +3,7 @@
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
 ?>
 
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add_group') : $group->getEditUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add_group') : $group->getEditUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
 <div class="adminAddGroup">
   <div class="adminHeader">
@@ -74,6 +74,13 @@
     <?php } // for ?>
   </fieldset>
   
+   <fieldset class="">
+	 <legend><?php echo lang("project permissions") ?></legend>
+		<?php 
+			tpl_assign('genid', $genid);
+			$this->includeTemplate(get_template_path('group_permission_control', 'group'));
+		?>
+   </fieldset>
   <?php echo submit_button($group->isNew() ? lang('add group') : lang('save changes')) ?>
 </div>
 </div>

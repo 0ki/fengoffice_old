@@ -9,7 +9,7 @@
   class  ReadObjects extends BaseReadObjects {
   
     /**
-    * Return all unreaded objects ( ReadObjects) for specific object and user
+    * Return all unread objects ( ReadObjects) for specific object and user
     *
     * @param ProjectDataObject $object
     * @return array
@@ -23,7 +23,7 @@
     } // getUnreadByObject
     
     /**
-    * Return all readed objects ( ReadObjects) for specific object and user
+    * Return all read objects ( ReadObjects) for specific object and user
     *
     * @param ProjectDataObject $object
     * @return array

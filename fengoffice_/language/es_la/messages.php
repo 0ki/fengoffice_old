@@ -120,6 +120,7 @@
     'success open task' => 'La tarea seleccionada ha sido reabierta',
     'success n tasks updated' => '{0} tareas editadas',
 	'success add mail' => 'Correo enviado de forma satisfactoria',
+	'success autosave draft' => 'Borrador guardado automáticamente',
     
     'success add client' => 'El cliente {0} ha sido agregado',
     'success edit client' => 'El cliente {0} ha sido editado',
@@ -230,9 +231,9 @@
     'success checkin file' => 'Archivo devuelto en forma exitosa',
   	'success undo checkout file' => 'Bloqueo para edición del archivo cancelado en forma exitosa',
 	'success extracting files' => '{0} Archivos fueron extraidos',
-	'success compressing files' => 'Archivos comprimidos satisfactoriamente',
+	'success compressing files' => '{0} Archivos comprimidos satisfactoriamente',
   
-	'success add billing category' => 'Categoría de facturación añadida satisfactoriamente',
+	'success add billing category' => 'Categoría de facturación agregada satisfactoriamente',
 	'success delete billing category' => 'Categoría de facturación eliminada satisfactoriamente',
 	'success edit billing category' => 'Categoría de facturación editada satisfactoriamente',
       
@@ -461,7 +462,14 @@
     'log untrash mailcontents' => '\'{0}\' restaurado desde la papelera',
     'log trash timeslots' => '\'{0}\' movido a la papelera',
     'log untrash timeslots' => '\'{0}\' restaurado desde la papelera',
-    'success trash object' => 'Objeto movida a la papelera correctamente',
+  
+  	'log login users data' => 'usuario {0} ingresó desde IP: {1}',
+  	'log login users' => 'usuario {0} ingresó',
+    'log edit users' => 'usuario {0} editado',
+  	'log delete users' => 'usuario {0} eliminado',
+  	'log add users' => 'usuario {0} agregado',
+  
+    'success trash object' => 'Objeto movidao a la papelera correctamente',
     'error trash object' => 'Error al mover objeto a la papelera',
     'success untrash object' => 'Objeto restaurado correctamente desde la papelera',
     'error untrash object' => 'Error al restaurar objeto desde la papelera',

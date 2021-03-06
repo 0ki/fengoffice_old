@@ -8,12 +8,12 @@
 <div class="og-timeslot-work-paused" style="margin-top:6px;">
 <?php echo lang('paused timeslot message', DateTimeValue::FormatTimeDiff($timeslot_form_timeslot->getStartTime(), $timeslot_form_timeslot->getPausedOn(), "hm", 60, $timeslot_form_timeslot->getSubtract())) ?>
 <span style="padding-left:15px;"><?php echo lang('time since pause') ?>:&nbsp;<span id="<?php echo $genid ?>timespan"></span></span></div>
-<script language="JavaScript">
+<script>
 	og.startClock('<?php echo $genid ?>', <?php echo $timeslot_form_timeslot->getSecondsSincePause() ?>);
 </script>
 <?php } else { ?>
 <div class="og-timeslot-work-started" style="margin-top:6px;"><?php echo lang('open timeslot message') ?>&nbsp;<span id="<?php echo $genid ?>timespan"></span></div>
-<script language="JavaScript">
+<script>
 	og.startClock('<?php echo $genid ?>', <?php echo $timeslot_form_timeslot->getSeconds() ?>);
 </script>
 

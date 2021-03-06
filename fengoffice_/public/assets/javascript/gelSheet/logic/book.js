@@ -14,9 +14,18 @@ function Book(name){
 	self.constructor = function(name){
 		this.id = undefined;
 		this.name = name;
-		this.sheets = new Array();
+		this.sheet = undefined
+		//this.sheets = new Array(); //Comming soon array of sheets
 	}
-
+	
+	self.setSheet = function(sheet){
+		this.sheet = sheet;
+	}
+	
+	self.getSheet = function(){
+		return this.sheet;
+	}
+	
 	self.setId = function(id){
 		this.id = id;
 	}

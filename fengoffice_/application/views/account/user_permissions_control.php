@@ -1,8 +1,9 @@
 <?php 
 require_javascript("og/Permissions.js");
 ?>
-<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo $user->isNew()? '' : str_replace('"',"'", json_encode($user->getAllPermissions())) ?>"/>
-<input id="<?php echo $genid ?>hfPermsSend" name="permissions" type="hidden" value=""/>
+	<input id="<?php echo $genid ?>hfPerms" type="hidden" value="<?php echo $user->isNew()? '' : str_replace('"',"'", json_encode($user->getAllPermissions())) ?>"/>
+	
+	<input id="<?php echo $genid ?>hfPermsSend" name="permissions" type="hidden" value=""/>
 
 <table><tr><td>
   <?php	
@@ -83,7 +84,7 @@ require_javascript("og/Permissions.js");
     <br/><?php echo checkbox_field($genid . 'chk_1', false, array('id' => $genid . 'chk_1', 'onclick' => 'og.ogPermValueChanged("' . $genid . '")')) ?> <label style="font-weight:normal" for="<?php echo $genid ?>chk_1" class="checkbox"><?php echo lang('can assign to other') ?></label>
     </div>
    </td></tr></table>
-<script type="text/javascript">
+<script>
 	og.ogLoadPermissions('<?php echo $genid ?>');
 	var wsch = Ext.getCmp('workspace-chooser<?php echo $genid ?>');
 	wsch.on("wschecked", function(arguments) {

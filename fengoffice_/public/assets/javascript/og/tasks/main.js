@@ -45,6 +45,7 @@ ogTasksTask = function(){
 	this.isAdditional = false;
 	this.completedById;
 	this.completedOn;
+	this.repetitive = false;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -92,6 +93,7 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.tags) this.tags = tdata.tags; else this.tags = null;
 	if (tdata.cbid) this.completedById = tdata.cbid; else this.completedById = null;
 	if (tdata.con) this.completedOn = tdata.con; else this.completedOn = null;
+	if (tdata.rep) this.repetitive = true;
 }
 
 ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, completedTasks, isInternal){
@@ -135,6 +137,7 @@ ogTasks.loadDataFromHF = function(){
 	result['internalMilestones'] = Ext.util.JSON.decode(document.getElementById('hfIMilestones').value);
 	result['externalMilestones'] = Ext.util.JSON.decode(document.getElementById('hfEMilestones').value);
 	result['users'] = Ext.util.JSON.decode(document.getElementById('hfUsers').value);
+	result['allUsers'] = Ext.util.JSON.decode(document.getElementById('hfAllUsers').value);
 	result['companies'] = Ext.util.JSON.decode(document.getElementById('hfCompanies').value);
 	
 	return ogTasks.loadData(result);
@@ -177,6 +180,15 @@ ogTasks.loadData = function(data){
 		}
 	}
 	
+	this.AllUsers = [];
+	for (i in data['allUsers']){
+		var udata = data['allUsers'][i];
+		if (udata.id){
+			var user =  new ogTasksUser(udata.id,udata.name,udata.cid);
+			this.AllUsers[ogTasks.AllUsers.length] = user;
+		}
+	}
+
 	this.Companies = [];
 	for (i in data['companies']){
 		var cdata = data['companies'][i];
@@ -673,6 +685,20 @@ ogTasks.getUserCompanyName = function(assigned_to){
 				name = company.name;
 		}
 	}
+	// If user was not found, look in all users array
+	if (name == '') {
+		if (split[1] > 0){ //Look for user
+			var user = this.getUser(split[1], true);
+			if (user)
+				name = user.name;
+		} else { //Look for company
+			if (split[0] > 0){
+				var company = this.getCompany(split[0]);
+				if (company)
+					name = company.name;
+			}
+		}
+	}
 	return name;
 }
 
@@ -686,6 +712,13 @@ ogTasks.getTask = function(id){
 ogTasks.removeTask = function(id){
 	for (var i = 0; i < this.Tasks.length; i++)
 		if (this.Tasks[i].id == id){
+			if (this.Tasks[i].milestoneId > 0) {
+				var mstone = ogTasks.getMilestone(this.Tasks[i].milestoneId);
+				if (mstone && !this.Tasks[i].isCreatedClientSide) {
+					mstone.totalTasks -= 1;
+					mstone.completedTasks -= (this.Tasks[i].status == 0 && (this.Tasks[i].statusOnCreate == 1))? 1:0 ? 1 : 0;
+				}
+			}
 			this.Tasks.splice(i,1);
 			return true;
 		}
@@ -699,10 +732,16 @@ ogTasks.getMilestone = function(id){
 	return null;
 }
 
-ogTasks.getUser = function(id){
-	for (var i = 0; i < this.Users.length; i++)
-		if (this.Users[i].id == id)
-			return this.Users[i];
+ogTasks.getUser = function(id, lookInAll){
+	if (lookInAll) {
+		for (var i = 0; i < this.AllUsers.length; i++)
+			if (this.AllUsers[i].id == id)
+				return this.AllUsers[i];
+	} else {
+		for (var i = 0; i < this.Users.length; i++)
+			if (this.Users[i].id == id)
+				return this.Users[i];
+	}
 	return null;
 }
 

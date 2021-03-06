@@ -12,8 +12,8 @@ class ProjectMessages extends BaseProjectMessages {
 		parent::__construct();
 	}
 
-	private static function getWorkspaceString(){
-		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND `workspace_id` = ?)';
+	public static function getWorkspaceString($ids = '?') {
+		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ProjectMessages' AND `workspace_id` IN ($ids)) ";
 	}
 	 
 	/**
@@ -25,8 +25,6 @@ class ProjectMessages extends BaseProjectMessages {
 	 */
 	static function getProjectMessages(Project $project, $include_private = false) {
 		$condstr = self::getWorkspaceString();
-		if (is_null($condstr) || $condstr == '')
-			$condstr = '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND `workspace_id` = ?)';
 		
 		if ($include_private) {
 			$conditions = array($condstr, $project->getId());
@@ -60,6 +58,55 @@ class ProjectMessages extends BaseProjectMessages {
 	        'order' => '`created_on` DESC',
 		)); // findAll
 	} // getImportantProjectMessages
+	
+	function getMessages($tag, $project = null, $start = null, $limit = null, $order = null, $order_dir = null) {
+		switch ($order){
+			case 'updatedOn':
+				$order_crit = 'updated_on';
+				break;
+			case 'createdOn':
+				$order_crit = 'created_on';
+				break;
+			case 'title':
+				$order_crit = 'title';
+				break;
+			default:
+				$order_crit = 'updated_on';
+				break;
+		}
+		if (!$order_dir){
+			switch ($order){
+				case 'name': $order_dir = 'ASC'; break;
+				default: $order_dir = 'DESC';
+			}
+		}
+
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
+		} else {
+			$pids = logged_user()->getWorkspacesQuery();
+		}
+		$messageConditions = self::getWorkspaceString($pids);
+
+		if (!isset($tag) || $tag == '' || $tag == null) {
+			$tagstr = "";
+		} else {
+			$tagstr = "AND (SELECT count(*) FROM `" . TABLE_PREFIX . "tags` WHERE `" .
+				TABLE_PREFIX . "project_messages`.`id` = `" . TABLE_PREFIX . "tags`.`rel_object_id` AND `" .
+				TABLE_PREFIX . "tags`.`tag` = " . DB::escape($tag) . " AND `" . TABLE_PREFIX . "tags`.`rel_object_manager` ='ProjectMessages' ) > 0 ";
+		}
+		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+
+		$conditions = "`trashed_by_id` = 0 AND $messageConditions $tagstr  $permissions";
+		$page = (integer) ($start / $limit) + 1;
+		$order = "$order_crit $order_dir";
+
+		return self::paginate(array(
+			'conditions' => $conditions,
+			'order' => $order
+		), $limit, $page);
+	}
 
 } // ProjectMessages
 

@@ -71,7 +71,10 @@ class Mime_Types
     	'doc'	=> 'application/msword',
     	'ppt'	=> 'application/vnd.ms-powerpoint',
     	'xls'	=> 'application/vnd.ms-excel',
-    	'pdf'	=> 'application/pdf');
+    	'docx'	=> 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    	'xlsx'	=> 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    	'pptx'	=> 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'pdf'	=> 'application/pdf');
     
     /**
     * Path to file command - empty string disables the use of the file command

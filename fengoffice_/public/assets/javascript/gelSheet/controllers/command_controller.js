@@ -41,6 +41,14 @@ function cmdSetFontSizeStyle(size){
 	application.model.changeFontSizeToSelection(size);
 }
 
+function cmdSetAlignStyle(align){
+	application.model.changeAlignToSelection(align);
+}
+
+function cmdSetValignStyle(valign){
+	application.model.changeValignToSelection(valign);
+}
+
 
 function cmdSetLeftAlign(){
 	var selection = window.SelectionMan.getSelection();

@@ -250,6 +250,50 @@ class Project extends BaseProject {
 		}
 		return $this->subWScache[$key];
 	}
+	/**
+	 * Returns all descendence order by name and depth
+	 * @param $user the logged user
+	 * @return Array of workspaces.
+	 */
+	function getSortedChildren($user)
+	{
+		$projects = null;
+		$padres = $this->getSubWorkspacesSorted(false,$user);
+		foreach($padres as $hijo){
+				$projects[] = $hijo;
+				$aux = 	$hijo->getSortedChildren(logged_user());
+				foreach($aux as $a){$projects[] = $a;}
+		}
+		return $projects; 
+		}
+	/**
+	 * returns first level child workspaces sorted by name
+	 * @param $active
+	 * @param $user
+	 * @param $allLevels
+	 * @return unknown_type
+	 */
+	function getSubWorkspacesSorted($active = false, $user = null) {
+		 $allLevels = false;
+		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0)."_".($allLevels?'all':'single');
+		if (!(array_var($this->subWScache, $key))) {
+			$depth = $this->getDepth();
+			$conditions = array("id != " . $this->getId() . " AND `p" . $depth . "` = ?", $this->getId());
+			if (!$allLevels && $depth < 9)
+				$conditions[0] .= ' AND `p' . ($depth + 2) .'` = 0 ';
+			if ($active) {
+				$conditions[0] .= ' AND `completed_on` = ? ';
+				$conditions[] = EMPTY_DATETIME;
+			}
+			if ($user instanceof User && !can_manage_workspaces($user)) {
+				$pu_tbl = ProjectUsers::instance()->getTableName(true);
+				$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
+				$conditions[] = $user->getId();
+			}
+			$this->subWScache[$key] = Projects::findAll(array('conditions' => $conditions,'order'=>'name'));
+		}
+		return $this->subWScache[$key];
+	}
 	
 	function getAllSubWorkspacesCSV($active = false, $user = null) {
 		$key = ($active?"active":"closed")."_".($user instanceof User?$user->getId():0);
@@ -263,6 +307,22 @@ class Project extends BaseProject {
 			$this->sub_ws_ids[$key] = $csv;
 		}
 		return $this->sub_ws_ids[$key];
+	}
+	
+	function getAllSubWorkspacesQuery($active = true, $user = null) {
+		$id = $this->getId();
+		$table = $this->getTableName(true);
+		$condition = "(`p1` = $id OR `p2` = $id OR `p3` = $id OR `p4` = $id OR `p5` = $id OR `p6` = $id OR `p7` = $id OR `p8` = $id OR `p9` = $id OR `p10` = $id)";
+		if ($user instanceof User) {
+			$pu_tbl = ProjectUsers::instance()->getTableName(true);
+			$uid = $user->getId();
+			$condition .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = $uid)";
+		}
+		if ($active) {
+			$condition .= " AND `completed_on` = " . DB::escape(EMPTY_DATETIME);
+		}
+		$query = "SELECT `id` FROM $table WHERE $condition";
+		return $query;
 	}
 	
 	
@@ -517,7 +577,7 @@ class Project extends BaseProject {
 	}
 	
 	function getBillingTotal(User $user){
-		$project_ids = $this->getAllSubWorkspacesCSV($user);
+		//$project_ids = $this->getAllSubWorkspacesQuery($user);
 		
 		$user_cond = '';
 		if (isset($user_id))
@@ -531,14 +591,14 @@ class Project extends BaseProject {
 	}
 	
 	function getBillingTotalByUsers(User $user, $user_id = null){
-		$project_ids = $this->getAllSubWorkspacesCSV($user);
+		//$project_ids = $this->getAllSubWorkspacesQuery($user);
 		
 		$user_cond = '';
 		if (isset($user_id))
 			$user_cond = ' AND timeslots.user_id = ' . $user_id;
-		
+
 		$rows = DB::executeAll('SELECT SUM(timeslots.fixed_billing) as total_billing, timeslots.user_id as user from ' . Timeslots::instance()->getTableName() . ' as timeslots, ' . ProjectTasks::instance()->getTableName() .
-			' as tasks WHERE ((tasks.project_id = ' . $this->getId() . ' AND timeslots.object_id = tasks.id AND timeslots.object_manager = \'ProjectTasks\')' .
+			' as tasks WHERE ((tasks.' . trim(ProjectTasks::getWorkspaceString($this->getId())) . ' AND timeslots.object_id = tasks.id AND timeslots.object_manager = \'ProjectTasks\')' .
 			' OR (timeslots.object_manager = \'Project\' AND timeslots.object_id = ' . $this->getId() . '))' . $user_cond . ' GROUP BY user');
 		
 		if(!is_array($rows) || !count($rows)) 
@@ -718,7 +778,7 @@ class Project extends BaseProject {
 	function getAllMilestones() {
 		if(is_null($this->all_milestones)) {
 			$this->all_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ?', $this->getId()),
+          'conditions' => array(ProjectTasks::getWorkspaceString(), $this->getId()),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -736,7 +796,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllMilestones(); // member of owner company
 		if(is_null($this->milestones)) {
 			$this->milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ? AND `is_private` = ?', $this->getId(), 0),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `is_private` = ?', $this->getId(), 0),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -752,7 +812,7 @@ class Project extends BaseProject {
 	function getAllOpenMilestones() {
 		if(is_null($this->all_open_milestones)) {
 			$this->all_open_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ?', $this->getId(), EMPTY_DATETIME),
+          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getId()).' AND `completed_on` = ?', EMPTY_DATETIME),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -770,7 +830,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllOpenMilestones();
 		if(is_null($this->open_milestones)) {
 			$this->open_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
+          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getId()).' AND `completed_on` = ? AND `is_private` = ?', EMPTY_DATETIME, 0),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -786,7 +846,7 @@ class Project extends BaseProject {
 	function getAllCompletedMilestones() {
 		if(is_null($this->all_completed_milestones)) {
 			$this->all_completed_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` > ?', $this->getId(), EMPTY_DATETIME),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` > ?', $this->getId(), EMPTY_DATETIME),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -804,7 +864,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllCompletedMilestones();
 		if(is_null($this->completed_milestones)) {
 			$this->completed_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` > ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` > ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -887,7 +947,7 @@ class Project extends BaseProject {
 	function getAllTasks() {
 		if(is_null($this->all_task_lists)) {
 			$this->all_task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ?', $this->getId()),
+          'conditions' => array(ProjectTasks::getWorkspaceString(), $this->getId()),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -905,7 +965,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllTasks();
 		if(is_null($this->task_lists)) {
 			$this->task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ? AND `is_private` = ?', $this->getId(), 0),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `is_private` = ?', $this->getId(), 0),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -921,7 +981,7 @@ class Project extends BaseProject {
 	function getAllOpenTasks() {
 		if(is_null($this->all_open_task_lists)) {
 			$this->all_open_task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -939,7 +999,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllOpenTasks();
 		if(is_null($this->open_task_lists)) {
 			$this->open_task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` = ? AND `is_private` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME, 0),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` = ? AND `is_private` = ? AND (`parent_id` = 0 OR `parent_id` is NULL )', $this->getId(), EMPTY_DATETIME, 0),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -957,7 +1017,7 @@ class Project extends BaseProject {
 	function getAllCompletedTasks() {
 		if(is_null($this->all_completed_task_lists)) {
 			$this->all_completed_task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` > ?', $this->getId(), EMPTY_DATETIME),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` > ?', $this->getId(), EMPTY_DATETIME),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -975,7 +1035,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllCompletedTasks();
 		if(is_null($this->completed_task_lists)) {
 			$this->completed_task_lists = ProjectTasks::findAll(array(
-          'conditions' => array('`project_id` = ? AND `completed_on` > ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
+          'conditions' => array(ProjectTasks::getWorkspaceString().' AND `completed_on` > ? AND `is_private` = ?', $this->getId(), EMPTY_DATETIME, 0),
           'order' => '`order`'
           )); // findAll
 		} // if
@@ -1163,6 +1223,7 @@ class Project extends BaseProject {
 	 * @return array
 	 */
 	function getUsers($group_by_company = true) {
+		if ($this->isNew()) return array();
 		$users = ProjectUsers::getUsersByProject($this);
 		if(!is_array($users) || !count($users)) {
 			return null;
@@ -1240,7 +1301,7 @@ class Project extends BaseProject {
 	 * @return array
 	 */
 	function getUsersMilestones(User $user) {
-		$conditions = DB::prepareString('`project_id` = ? AND ((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `completed_on` = ?', array($this->getId(), $user->getId(), $user->getCompanyId(), 0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME));
+		$conditions = DB::prepareString(ProjectTasks::getWorkspaceString().' AND ((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `completed_on` = ?', array($this->getId(), $user->getId(), $user->getCompanyId(), 0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME));
 		if(!$user->isMemberOfOwnerCompany()) {
 			$conditions .= DB::prepareString(' AND `is_private` = ?', array(0));
 		} // if
@@ -1688,6 +1749,19 @@ class Project extends BaseProject {
 		} // if
 		return $this->all_webpages;
 	} //  getAllWebpages
+	
+	/**
+	 * This function will return all events in a project
+	 *
+	 * @param void
+	 * @return array
+	 */
+	function getAllEvents() {
+		if(is_null($this->all_events)) {
+			$this->all_events = ProjectEvents::getAllEventsByProject($this);
+		} // if
+		return $this->all_events;
+	} //  getAllEvents
 
 	// ---------------------------------------------------
 	//  System functions
@@ -1713,8 +1787,8 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	function delete() {
-		$wsIds = $this->getAllSubWorkspacesCSV();
-		if ($wsIds){
+		$wsIds = $this->getAllSubWorkspacesQuery();
+		if ($wsIds) {
 			$ws = $this->getSubWorkspaces();
 			if(isset($ws) && !is_null($ws)){
 				$wsToDelete = array();
@@ -1794,6 +1868,10 @@ class Project extends BaseProject {
 		$this->clearLogs();
 		$this->clearRoles();
 		$this->clearMails();
+		$this->clearWebpages();
+		$this->clearEvents();
+		$this->clearCompanies();
+		$this->clearTimeslots();
 		return parent::delete();
 	} // delete
 
@@ -1807,10 +1885,31 @@ class Project extends BaseProject {
 		$webpages = $this->getAllWebpages();
 		if(is_array($webpages)) {
 			foreach($webpages  as $webpage) {
-				$webpage->delete();
+				if (count($webpage->getWorkspaces()) == 1){
+					$webpage->delete();
+				} else {
+					$webpage->removeFromWorkspace($this);
+				} // if
 			} // foreach
 		} // if
 	} //  clearWebpages
+	
+	/**
+	 * Clear all project timeslots
+	 *
+	 * @param void
+	 * @return null
+	 */
+	private function clearTimeslots() {
+		if (is_null($this->all_timeslots)) {
+			$this->all_timeslots = Timeslots::getAllProjectTimeslots($this);
+		}
+		if (is_array($this->all_timeslots)) {
+			foreach ($this->all_timeslots as $t) {
+				$t->delete();
+			}
+		}
+	}
 
 	/**
 	 * Clear all project messages
@@ -1830,6 +1929,25 @@ class Project extends BaseProject {
 			} // foreach
 		} // if
 	} // clearMessages
+	
+	/**
+	 * Clear all project events
+	 *
+	 * @param void
+	 * @return null
+	 */
+	private function clearEvents() {
+		$events = $this->getAllEvents();
+		if(is_array($events)) {
+			foreach($events as $event) {
+				if (count($event->getWorkspaces()) == 1){
+					$event->delete();
+				} else {
+					$event->removeFromWorkspace($this);
+				} // if
+			} // foreach
+		} // if
+	} // clearEvents
 
 	/**
 	 * Clear all project mails

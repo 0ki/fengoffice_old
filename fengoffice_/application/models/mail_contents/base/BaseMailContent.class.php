@@ -144,6 +144,50 @@ abstract class BaseMailContent extends ProjectDataObject {
 	function setTo($value) {
 		return $this->setColumnValue('to', $value);
 	} // setTo()
+	
+	/**
+	 * Return value of 'cc' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getCc() {
+		return $this->getColumnValue('cc');
+	} // getCc()
+
+	/**
+	 * Set value of 'cc' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setCc($value) {
+		return $this->setColumnValue('cc', $value);
+	} // setCc()
+	
+	/**
+	 * Return value of 'bcc' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getBcc() {
+		return $this->getColumnValue('bcc');
+	} // getBcc()
+
+	/**
+	 * Set value of 'bcc' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setBcc($value) {
+		return $this->setColumnValue('bcc', $value);
+	} // setBcc()
 
 	/**
 	 * Return value of 'subject' field
@@ -166,28 +210,6 @@ abstract class BaseMailContent extends ProjectDataObject {
 	function setSubject($value) {
 		return $this->setColumnValue('subject', $value);
 	} // setSubject()
-
-	/**
-	 * Return value of 'date' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return DateTimeValue
-	 */
-	function getDate() {
-		return $this->getColumnValue('date');
-	} // getDate()
-
-	/**
-	 * Set value of 'date' field
-	 *
-	 * @access public
-	 * @param DateTimeValue $value
-	 * @return boolean
-	 */
-	function setDate($value) {
-		return $this->setColumnValue('date', $value);
-	} // setDate()
 
 	/**
 	 * Return value of 'sent_date' field
@@ -567,7 +589,6 @@ abstract class BaseMailContent extends ProjectDataObject {
       return $this->setColumnValue('content_file_id', $value);
     } // setContentFileId()
   
-    
 	/**
 	 * Return manager instance
 	 *

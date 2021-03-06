@@ -1,6 +1,6 @@
 <?php
-	require_javascript("modules/addProjectForm.js");
-	require_javascript('modules/updatePermissionsForm.js');
+	require_javascript("og/modules/addProjectForm.js");
+	require_javascript('og/modules/updatePermissionsForm.js');
   	if(!$project->isNew() && $project->canDelete(logged_user())) {
   		add_page_action(lang('delete'),  $project->getDeleteUrl() , 'ico-delete');
   	} // if
@@ -16,7 +16,7 @@
     $quoted_permissions[] = "'$permission_id'";
   } // foreach
 ?>
-    <script type="text/javascript">
+    <script>
         App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
 
     </script>
@@ -65,7 +65,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="projectPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="projectPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace','add_workspace'); ?>
 			</div>
 		<?php }?>
@@ -75,7 +75,7 @@
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace description','add_workspace'); ?>
 			</div>
 		<?php }?>	
@@ -94,7 +94,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="tasksPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add workspace permissions','add_workspace'); ?>
 			</div>
 		<?php }?>
@@ -111,12 +111,12 @@
 					<div class="projectCompanyLogo"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?>" /></div>
 					<div class="projectCompanyMeta">
 						<div class="projectCompanyTitle">
-					<?php if($company->isOwner()) { ?>
+					<?php //if($company->isOwner()) { ?>
 						<!-- <label><?php //echo clean($compangetName()) ?></label>-->
 							<input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" />
-					<?php } else { ?>
+					<?php //} else { ?>
 							<?php echo checkbox_field('project_company_' . $company->getId(), $company->isProjectCompany(active_or_personal_project()), array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
-					<?php } // if ?>
+					<?php //} // if ?>
 						</div>
 						<div class="projectCompanyUsers" id="<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>">
 							<table class="blank">
@@ -131,19 +131,19 @@
 <?php							 } // if ?>
 									</td>
 									<td>
-							<?php if(!$company->isOwner()) { ?>
+							<?php //if(!$company->isOwner()) { ?>
 										<div class="projectUserPermissions" id="<?php echo $genid ."user_".$user->getId() ?>_permissions">
 										<div><?php echo checkbox_field('project_user_' . $user->getId() . '_all', $user->hasAllProjectPermissions(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId() . '_all', 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionAllCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . '_all' ?>" class="checkbox" style="font-weight: bolder"><?php echo lang('all permissions') ?></label></div>
 								<?php foreach ($permissions as $permission_id => $permission_text) { ?>						
 										<div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_or_personal_project(), $permission_id), array('id' => $genid . 'project_user_' . $user->getId() . "_$permission_id", 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
 								<?php } // foreach ?>
 										</div>
-									<script type="text/javascript">
+									<script>
 										if (!document.getElementById( '<?php echo $genid ?>project_user_<?php echo $user->getId() ?>').checked) {
 											document.getElementById( '<?php echo $genid ?>user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
 										} // if
 									</script>
-							<?php } // if ?>
+							<?php //} // if ?>
 									</td>
 								</tr>
 						<?php } // foreach ?>
@@ -157,13 +157,13 @@
 						<div class="clear"></div>
 					</div>
 					</div>
-					<?php if (!$company->isOwner()) { ?>
-						<script type="text/javascript">
+					<?php //if (!$company->isOwner()) { ?>
+						<script>
 							if(!document.getElementById( '<?php echo $genid ?>project_company_<?php echo $company->getId() ?>').checked) {
 								document.getElementById( '<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>').style.display = 'none';
 							} // if
 						</script>
-					<?php } // if ?>
+					<?php //} // if ?>
 				</fieldset>
 				<?php } // if ?>
 			<?php } // foreach ?>
@@ -288,7 +288,7 @@
     <?php echo label_tag(lang('workspace color')) ?>
 		<input type="hidden" id="workspace_color" name="project[color]" value="<?php echo $project->isNew()?0:$project->getColor() ?>" />
 		<div>
-			<script type="text/javascript">
+			<script>
 			og.wsColorChoose = function(obj, color) {
 				var elements = document.getElementsByName("wsColor-<?php echo $genid ?>");
 				for (var i = 0; i < elements.length; i++){
@@ -343,6 +343,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('projectFormName').focus();
 </script>

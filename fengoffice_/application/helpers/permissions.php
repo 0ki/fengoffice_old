@@ -300,7 +300,7 @@
 		$str = " ( `created_by_id` = $user_id) ";
 		// element belongs to personal project
 		if($is_project_data_object) // TODO: type of element belongs to a project
-			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles || $manager instanceof Companies || $manager instanceof MailContents  ) {
+			if (!in_array('project_id', $manager->getColumns())) {
 				$str .= "\n OR ( EXISTS(SELECT * FROM $users_table_name `xx_u`, $wo_tablename `xx_wo`
 				WHERE `xx_u`.`id` = $user_id
 					AND `xx_u`.`personal_project_id` = `xx_wo`.`workspace_id`
@@ -318,7 +318,7 @@
 					AND `xx_oup`.`user_id` IN $all_ids 
 					AND `xx_oup`.$access_level_text = true) )" ; */
 		if($is_project_data_object){ // TODO: type of element belongs to a project
-			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles|| $manager instanceof Companies || $manager instanceof MailContents ) {
+			if (!in_array('project_id', $manager->getColumns())) {
 				$str .= "\n OR ( EXISTS ( SELECT * FROM $pu_table_name `xx_pu`, $wo_tablename `xx_wo` 
 				WHERE `xx_pu`.`user_id` IN $all_ids 
 					AND `xx_pu`.`project_id` = `xx_wo`.`workspace_id`
@@ -353,7 +353,8 @@
 	 * @return boolean
 	 */
 	function can_add(User $user, Project $project, $object_manager){
-		try{
+		try {
+			if (!$project instanceof Project) return false;
 			$user_id = $user->getId();
 			$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $project->getId())));
 			if ($proj_perm && can_manage_type($object_manager,$proj_perm, ACCESS_LEVEL_WRITE)){
@@ -434,7 +435,7 @@
 			if ($object instanceof ProjectFileRevision) {
 				return can_access($user, $object->getFile(), $access_level);
 			}
-			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company || $object instanceof MailContent) {
+			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company || $object instanceof MailContent || $object instanceof ProjectEvent ) {
 				// handle object in multiple workspaces
 				$user_id = $user->getId();
 				if($object->getCreatedById() == $user_id) {

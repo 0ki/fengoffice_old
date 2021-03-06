@@ -91,6 +91,8 @@ return array(
 	'field MailContents created_on' => 'Created on',
 	'field MailContents created_by_id' => 'Created by',
 	'field MailContents updated_by_id' => 'Updated by',
+	'field MailContents cc' => 'CC',
+	'field MailContents bcc' => 'BCC',
 
 	// Event fields
     'field ProjectEvents duration' => 'Duration',
@@ -188,7 +190,7 @@ return array(
     'field Users can_manage_security' => 'Can manage security',
     'field Users can_manage_configuration' => 'Can manage configuration', 
     'field Users auto_assign' => 'Auto assign', 
-    'field Users can_manage_contacts' => 'Can manage contacts',
+    'field Users can_manage_contacts' => 'Can manage all contacts',
     'field Users can_manage_templates' => 'Can manage templates',
 	'field Users can_manage_reports'=> 'Can manage reports',
 	'field Users created_by_id' => 'Created by',

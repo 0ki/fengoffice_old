@@ -136,6 +136,7 @@ class PHPExcel_Style_Color implements PHPExcel_IComparable
     		$pValue = '000000';
     	}
     	$this->_argb = 'FF' . $pValue;
+    	//echo "COLOR= " . $this->_argb ."<hr>";
     }
 
     /**

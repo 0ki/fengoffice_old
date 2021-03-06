@@ -1,5 +1,4 @@
 <?php $genid = gen_id();
-
 	$assign_type = 0; //All
 	if (isset($assigned_to_user_filter) && $assigned_to_user_filter > 0){
 		$assigned_to = Users::findById($assigned_to_user_filter);
@@ -11,7 +10,7 @@
 	}
 ?>
 
-<script type="text/javascript">
+<script>
 	var cant_tips = 0;
 	var tips_array = [];
 	
@@ -28,6 +27,7 @@
 
 
 <div id="<?php echo $genid ?>-db" style="padding:7px;">
+
 <div class="dashboard" style="width:100%;">
 
 <div class="dashWorkspace">
@@ -71,8 +71,7 @@ else
 </div>
 
 <table style="width:100%">
-
-<?php if (user_config_option('show getting started widget')){ ?>
+<?php if (user_config_option('show getting started widget')) { ?>
 <tr><td colspan=2>
 <?php 
 	tpl_assign("widgetClass", 'dashGettingStarted');
@@ -82,7 +81,6 @@ else
 ?>
 </td></tr>
 <?php } ?>
-
 <?php if ($showWorkspaceDescription) {?>
 <tr><td colspan=2>
 <?php 
@@ -93,7 +91,6 @@ else
 ?>
 </td></tr>
 <?php } ?>
-
 <tr><td colspan=2>
 <?php if (user_config_option('show calendar widget') && config_option('enable_calendar_module')) {
 	
@@ -103,11 +100,10 @@ else
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 } ?>
 </td></tr>
-
 <tr><td>
 <?php 
 if (isset($tasks_in_progress) && $tasks_in_progress) {
-	switch($assign_type){
+	switch($assign_type) {
 		case 0: $title = lang('tasks in progress'); break;
 		case 1: $title = lang('my tasks in progress'); break;
 		case 2: $title = lang('tasks in progress for', $assigned_to->getDisplayName()); break;
@@ -118,7 +114,6 @@ if (isset($tasks_in_progress) && $tasks_in_progress) {
 	tpl_assign("widgetTemplate", 'active_tasks');
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 }
-
 if ($hasToday || $hasLate) {
 	switch($assign_type){
 		case 0: $title = lang('late milestones and tasks'); break;
@@ -133,7 +128,6 @@ if ($hasToday || $hasLate) {
 	tpl_assign("widgetTemplate", 'late_tasks');
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 }
-
 if ($hasPendingTasks) {
 	switch($assign_type){
 		case 0: $title = lang('pending tasks'); break;
@@ -146,7 +140,6 @@ if ($hasPendingTasks) {
 	tpl_assign("widgetTemplate", 'pending_tasks');
 	$this->includeTemplate(get_template_path('widget', 'dashboard'));
 }
-
 if ($hasDocuments) {
 	tpl_assign("widgetClass", 'dashDocuments');
 	tpl_assign("widgetTitle", lang('documents'));
@@ -201,7 +194,7 @@ if ($hasCharts) {
 </tr></table>
 </div>
 </div>
-<script type="text/javascript">
+<script>
 og.showWsPaths('<?php echo $genid ?>-db');
 Ext.QuickTips.init();
 </script>

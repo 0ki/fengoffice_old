@@ -557,7 +557,7 @@
     		  if($this->mark_timestamps && $this->columnExists('created_by_id') && !$this->isColumnModified('created_by_id') && (logged_user() instanceof User)) {
     		    $this->setColumnValue('created_by_id', logged_user()->getId());
     		  } // if
-    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id')) {
+    		  if($this->mark_timestamps && $this->columnExists('updated_by_id') && !$this->isColumnModified('updated_by_id') && (logged_user() instanceof User)) {
     		    $this->setColumnValue('updated_by_id', logged_user()->getId());
     		  } // if
   		  } // if

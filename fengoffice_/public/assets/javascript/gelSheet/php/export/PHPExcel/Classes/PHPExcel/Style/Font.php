@@ -232,9 +232,9 @@ class PHPExcel_Style_Font implements PHPExcel_IComparable
      *
      * @param string $pValue
      */
-    public function setName($pValue = 'Calibri') {
+    public function setName($pValue = 'Arial') {
    		if ($pValue == '') {
-    		$pValue = 'Calibri';
+    		$pValue = 'Arial';
     	}
     	$this->propertyBeginBind()->_name = $pValue;
     }
@@ -361,7 +361,10 @@ class PHPExcel_Style_Font implements PHPExcel_IComparable
      * @param 	PHPExcel_Style_Color $pValue
      * @throws 	Exception
      */
-    public function setColor(PHPExcel_Style_Color $pValue = null) {
+    public function setColor($pValue = null) {
+    	if ($pValue == null){
+    		$pValue= new PHPExcel_Style_Color(PHPExcel_Style_Color::COLOR_BLACK);
+    	}
    		$this->propertyBeginBind()->_color = $pValue;
     }
 
@@ -379,7 +382,7 @@ class PHPExcel_Style_Font implements PHPExcel_IComparable
     		. ($property->_italic ? 't' : 'f')
     		. $property->_underline
     		. ($property->_striketrough ? 't' : 'f')
-    		//. $property->_color->getHashCode()
+    		. $property->_color->getHashCode()
     		. __CLASS__
     	);
     }

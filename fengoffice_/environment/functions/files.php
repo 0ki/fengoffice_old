@@ -193,7 +193,7 @@ function dir_size($dir) {
 
 function file_is_zip($mime_type, $extension = '') {
 	return ($mime_type == 'application/zip' || $mime_type == 'application/x-zip-compressed' || 
-			($mime_type == 'application/x-compressed' && $extension == 'zip'));
+			($mime_type == 'application/x-compressed' && $extension == 'zip') || $extension == 'zip');
 }
 
 /**

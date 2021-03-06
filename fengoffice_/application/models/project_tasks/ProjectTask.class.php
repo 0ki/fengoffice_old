@@ -97,6 +97,19 @@ class ProjectTask extends BaseProjectTask {
 
 	private $milestone;
 	
+	private $id = null;
+	
+	function getId() {
+		if ($this->id == null)
+			$this->id = parent::getId();
+		return $this->id;
+	}
+	
+	function setId($value) {
+		parent::setId($value);
+		$this->id = $value;
+	}
+	
 	function getMilestone(){
 		if ($this->getMilestoneId() > 0 && !$this->milestone){
 			$this->milestone = ProjectMilestones::findById($this->getMilestoneId());
@@ -114,7 +127,7 @@ class ProjectTask extends BaseProjectTask {
 		if ($this->getParentId()==0) return null;
 		$parent = ProjectTasks::findById($this->getParentId());
 		return $parent instanceof ProjectTask  ? $parent : null;
-	} // getProject
+	} // getParent
 	
 	/**
 	 * Return the user that last assigned the task
@@ -460,6 +473,108 @@ class ProjectTask extends BaseProjectTask {
 		}
 	}
 	
+	function cloneTask() {
+		$new_task = new ProjectTask();
+				
+		$new_task->setParentId($this->getParentId());
+		$new_task->setTitle($this->getTitle());
+		$new_task->setText($this->getText());
+		$new_task->setAssignedToCompanyId($this->getAssignedToCompanyId());
+		$new_task->setAssignedToUserId($this->getAssignedToUserId());
+		$new_task->setAssignedOn($this->getAssignedOn());
+		$new_task->setAssignedById($this->getAssignedById());
+		$new_task->setTimeEstimate($this->getTimeEstimate());
+		$new_task->setStartedOn($this->getStartedOn());
+		$new_task->setStartedById($this->getStartedById());
+		$new_task->setPriority(($this->getPriority()));
+		$new_task->setState($this->getState());
+		$new_task->setOrder($this->getOrder());
+		$new_task->setMilestoneId($this->getMilestoneId());
+		$new_task->setIsPrivate($this->getIsPrivate());
+		$new_task->setIsTemplate($this->getIsTemplate());
+		$new_task->setFromTemplateId($this->getFromTemplateId());
+		if ($this->getDueDate() instanceof DateTimeValue )
+			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
+		if ($this->getStartDate() instanceof DateTimeValue )
+			$new_task->setStartDate(new DateTimeValue($this->getStartDate()->getTimestamp()));
+		
+		$new_task->save();
+		$new_task->setTagsFromCSV(implode(",", $this->getTagNames()));
+		
+		foreach ($this->getWorkspaces() as $ws) {
+			$new_task->addToWorkspace($ws);
+		}
+		if (is_array($this->getAllLinkedObjects())) {
+			foreach ($this->getAllLinkedObjects() as $lo) {
+				$new_task->linkObject($lo);
+			}
+		}
+		$sub_tasks = $this->getAllSubTasks();
+		foreach ($sub_tasks as $st) {
+			$new_st = $st->cloneTask();
+			$new_task->attachTask($new_st);
+		}
+		foreach ($this->getAllComments() as $com) {
+			$new_com = new Comment();
+			$new_com->setAuthorEmail($com->getAuthorEmail());
+			$new_com->setAuthorName($com->getAuthorName());
+			$new_com->setAuthorHomepage($com->getAuthorHomepage());
+			$new_com->setCreatedById($com->getCreatedById());
+			$new_com->setCreatedOn($com->getCreatedOn());
+			$new_com->setIsAnonymous($com->getIsAnonymous());
+			$new_com->setIsPrivate($com->getIsPrivate());
+			$new_com->setText($com->getText());
+			$new_com->setRelObjectId($new_task->getId());
+			$new_com->setRelObjectManager("ProjectTasks");
+			
+			$new_com->save();
+		}
+		$_POST['subscribers'] = array();
+		foreach ($this->getSubscribers() as $sub) {
+			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
+		}
+		$obj_controller = new ObjectController();
+		$obj_controller->add_subscribers($new_task);
+		
+		foreach($this->getCustomProperties() as $prop) {
+			$new_prop = new ObjectProperty();
+			$new_prop->setRelObjectId($new_task->getId());
+			$new_prop->setRelObjectManager($prop->getRelObjectManager());
+			$new_prop->setPropertyName($prop->getPropertyName());
+			$new_prop->setPropertyValue($prop->getPropertyValue());
+			$new_prop->save();
+		}
+		
+		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType("ProjectTasks");
+		foreach ($custom_props as $c_prop) {
+			$values = CustomPropertyValues::getCustomPropertyValues($this->getId(), $c_prop->getId());
+			if (is_array($values)) {
+				foreach ($values as $val) {
+					$cp = new CustomPropertyValue();
+					$cp->setObjectId($new_task->getId());
+					$cp->setCustomPropertyId($val->getCustomPropertyId());
+					$cp->setValue($val->getValue());
+					$cp->save();
+				}
+			}
+		}
+		
+		$reminders = ObjectReminders::find(array('conditions' => "`object_id` = ".$this->getId()." AND `object_manager` = 'ProjectTasks'"));
+		$rem_cols = ObjectReminders::getColumns();
+		foreach($reminders as $reminder) {
+			$new_rem = new ObjectReminder();
+			foreach ($rem_cols as $col) {
+				$new_rem->setColumnValue($col, $reminder->getColumnValue($col));
+			}
+			$new_rem->setId(null);
+			$new_rem->setObjectId($new_task->getId());
+			$new_rem->save();
+		}
+		
+
+		return $new_task;
+	}
+	
 	// ---------------------------------------------------
 	//  TaskList Operations
 	// ---------------------------------------------------
@@ -790,7 +905,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('task', 'edit_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'edit_task', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -801,7 +916,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getEditListUrl() {
-		return get_url('task', 'edit_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'edit_task', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -812,7 +927,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('task', 'delete_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'delete_task', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	/**
@@ -823,7 +938,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getDeleteListUrl() {
-		return get_url('task', 'delete_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'delete_task', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	/**
@@ -873,7 +988,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getAddTaskUrl($redirect_to_list = true) {
-		$attributes = array('id' => $this->getId(), 'active_project' => $this->getProjectId());
+		$attributes = array('id' => $this->getId());
 		if($redirect_to_list) {
 			$attributes['back_to_list'] = true;
 		} // if
@@ -887,7 +1002,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getReorderTasksUrl($redirect_to_list = true) {
-		$attributes = array('task_list_id' => $this->getId(), 'active_project' => $this->getProjectId());
+		$attributes = array('task_list_id' => $this->getId());
 		if($redirect_to_list) {
 			$attributes['back_to_list'] = true;
 		} // if
@@ -901,7 +1016,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('task', 'view_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'view_task', array('id' => $this->getId()));
 	} // getViewUrl
 	
 	/**
@@ -1125,22 +1240,22 @@ class ProjectTask extends BaseProjectTask {
     	if($this->getUpdatedBy()){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
     		$updated_by_name = $this->getUpdatedByDisplayName();
-    		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
+			$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');	
     	}else {
     		if($this->getCreatedBy())
     			$updated_by_id = $this->getCreatedBy()->getId();
     		else
     			$updated_by_id = lang('n/a');
     		$updated_by_name = $this->getCreatedByDisplayName();
-    		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+			$updated_on = $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a');
     	}
     	if ($this instanceof ProjectTask)
     		$parent_id = $this->getParentId();
     	else 
     		$parent_id = $this->getId();
    	
-		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
-    	$deletedBy = Users::findById($this->getTrashedById());
+		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
+		$deletedBy = Users::findById($this->getTrashedById());
     	if ($deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
@@ -1155,11 +1270,11 @@ class ProjectTask extends BaseProjectTask {
 				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),
 				"createdById" => $this->getCreatedById(),
-				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+    			"dateCreated" => $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 				"url" => $this->getObjectUrl(),
 				"parentId" => $parent_id,
 				"status" => "Pending",
@@ -1252,9 +1367,16 @@ class ProjectTask extends BaseProjectTask {
 		if ($tags)
 			$result['tags'] = $tags;
 		
+		if ($this->isRepetitive())
+			$result['rep'] = 1;
+
 		return $result;
 	}
 	
+	function isRepetitive() {
+		return ($this->getRepeatForever() > 0 || $this->getRepeatNum() > 0 || 
+			($this->getRepeatEnd() instanceof DateTimeValue && $this->getRepeatEnd()->toMySQL() != EMPTY_DATETIME) );
+	}
 	
 	function getOpenTimeslots(){
 		if (is_null($this->timeslots)){
@@ -1285,6 +1407,24 @@ class ProjectTask extends BaseProjectTask {
 	function unsubscribeUser($user) {
 		parent::unsubscribeUser($user);
 		ObjectReminders::clearByObject($this);
+	}
+	
+	/**
+	 * Set the task's project
+	 * @param $project
+	 */
+	function setProject($project) {
+		$this->removeFromAllWorkspaces();
+		$this->addToWorkspace($project);
+	}
+	
+	/**
+	 * Get task's project's id
+	 */
+	function getProjectId() {
+		$project = $this->getProject();
+		if ($project instanceof Project) return $project->getId();
+		return 0;
 	}
 	
 } // ProjectTask

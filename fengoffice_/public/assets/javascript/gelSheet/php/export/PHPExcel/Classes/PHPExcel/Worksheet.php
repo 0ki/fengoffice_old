@@ -918,7 +918,8 @@ class PHPExcel_Worksheet implements PHPExcel_IComparable
     {
     	return $this->getStyle(PHPExcel_Cell::stringFromColumnIndex($pColumn) . $pRow);
     }
-
+    
+    
     /**
      * Set shared cell style to a range of cells
      *

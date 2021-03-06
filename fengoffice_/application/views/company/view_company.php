@@ -1,28 +1,28 @@
 <?php
 	if (!$company->isTrashed()){
-		if(User::canAdd(logged_user(), $company)) {
+		if (User::canAdd(logged_user(), $company)) {
 			add_page_action(lang('add user'), $company->getAddUserUrl(), 'ico-add');
 		} // if
-		if(Contact::canAdd(logged_user(),active_or_personal_project())) {
+		if (Contact::canAdd(logged_user(), active_or_personal_project())) {
 			add_page_action(lang('add contact'), $company->getAddContactUrl(), 'ico-add');
 		} // if
-		if($company->canEdit(logged_user())) {
-			add_page_action(lang('edit company'), $company->getEditUrl(), 'ico-edit');
-			add_page_action(lang('edit company logo'), $company->getEditLogoUrl(), 'ico-picture');
-			if(!$company->isOwner()) {
-				add_page_action(lang('update permissions'), $company->getUpdatePermissionsUrl(), 'ico-properties');
+		if ($company->canEdit(logged_user())) {
+			add_page_action(lang('edit company'), $company->getEditUrl(), 'ico-edit',null, null, true);
+			add_page_action(lang('edit company logo'), $company->getEditLogoUrl(), 'ico-picture', null, null, true);
+			if (!$company->isOwner()) {
+				add_page_action(lang('permissions'), $company->getUpdatePermissionsUrl(), 'ico-permissions', null, null, true);
 			} // if
 		} // if
 	}
-  
-    if ($company->canDelete(logged_user())){
-    	if ($company->isTrashed()) {
-    		add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $company->getUntrashUrl() ."');", 'ico-restore');
-    		add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $company->getDeletePermanentlyUrl() ."');", 'ico-delete');
-    	} else {
-    		add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $company->getTrashUrl() ."');", 'ico-trash');
-    	}
-    }
+
+	if ($company->canDelete(logged_user())){
+		if ($company->isTrashed()) {
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $company->getUntrashUrl() ."');", 'ico-restore',null,null,true);
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $company->getDeletePermanentlyUrl() ."');", 'ico-delete',null,null,true);
+		} else {
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $company->getTrashUrl() ."');", 'ico-trash',null,null,true);
+		}
+	}
   
 
 ?>

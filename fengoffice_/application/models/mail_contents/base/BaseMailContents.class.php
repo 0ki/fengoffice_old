@@ -21,7 +21,8 @@ abstract class BaseMailContents extends ProjectDataObjects {
     'from' => DATA_TYPE_STRING,
     'from_name' => DATA_TYPE_STRING,
     'to' => DATA_TYPE_STRING,
-    'date' => DATA_TYPE_DATETIME,
+    'cc' => DATA_TYPE_STRING,
+	'bcc' => DATA_TYPE_STRING,
     'sent_date' => DATA_TYPE_DATETIME,
     'subject' => DATA_TYPE_STRING,
     'content' => DATA_TYPE_STRING,
@@ -196,55 +197,6 @@ abstract class BaseMailContents extends ProjectDataObjects {
 			//return $instance->findAll($arguments);
 		} // if
 	} // findAll
-
-	function findAllUnread($arguments = null){
-		if(isset($this) && instance_of($this, 'MailContents')) {
-			if(!is_array($arguments)) $arguments = array();
-			// Collect attributes...
-			$one        = false;
-			$conditions = $this->prepareConditions( array_var($arguments, 'conditions', '') );
-			$order_by   = array_var($arguments, 'order', '');
-			$offset     = (integer) array_var($arguments, 'offset', 0);
-			$limit      = (integer) array_var($arguments, 'limit', 0);
-
-			// Prepare query parts
-				
-			$join_conditions = " (SELECT count(*) FROM " . TABLE_PREFIX . "read_objects WHERE rel_object_manager = 'MailContents'  and " .
-			TABLE_PREFIX . "read_objects.rel_object_id = " . $this->getTableName(true) . ".id) = 0";
-				
-			if ($conditions != '') {
-				$conditions .= " AND ";
-			}
-			$conditions .= "`trashed_by_id` = 0";
-				
-			$where_string = trim($conditions) == '' ? '' : "WHERE $join_conditions AND $conditions";
-			$order_by_string = trim($order_by) == '' ? '' : "ORDER BY $order_by";
-			$limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
-
-			// Prepare SQL
-			$sql = "SELECT distinct " . $this->getTableName(true) . ".* FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
-
-			// Run!
-			$rows = DB::executeAll($sql);
-
-			// Empty?
-			if(!is_array($rows) || (count($rows) < 1)) return null;
-
-			// If we have one load it, else loop and load many
-			if($one) {
-				return $this->loadFromRow($rows[0]);
-			} else {
-				$objects = array();
-				foreach($rows as $row) {
-					$object = $this->loadFromRow($row);
-					if(instance_of($object, $this->getItemClass())) $objects[] = $object;
-				} // foreach
-				return count($objects) > 0 ? $objects : array();
-			} // if
-		} else {
-			return MailContents::instance()->findAllUnread($arguments);
-		} // if
-	}
 
 	/**
 	 * Find one specific record

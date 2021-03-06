@@ -17,7 +17,7 @@ og.WebpageManager = function() {
 	            id: 'id',
 	            fields: [
 	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
-	                {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'}
+	                'updatedOn', 'updatedOn_today'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -58,10 +58,16 @@ og.WebpageManager = function() {
 		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
+			
+		var text = '';
+		if (r.data.description != ''){
+			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
+			text += og.clean(r.data.description) + "</span></i>";
+		}
 		
 		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
 	    
-		return projectsString + name + actions;
+		return projectsString + name + actions + text;
 	}
 	
 	function renderDateUpdated(value, p, r) {
@@ -72,10 +78,10 @@ og.WebpageManager = function() {
 	
 		var now = new Date();
 		var dateString = '';
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.updatedOn_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
     
@@ -91,6 +97,7 @@ og.WebpageManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedIds = getSelectedIds;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -117,25 +124,19 @@ og.WebpageManager = function() {
 			id: 'title',
 			header: lang("title"),
 			dataIndex: 'title',
-			width: 120,
+			width: 300,
 			sortable: true,
 			renderer: renderName
         },{
-			id: 'description',
-			header: lang("description"),
-			dataIndex: 'description',
-			width: 120,
-			renderer: og.clean
-		},{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
-			width: 120
+			width: 90
         },{
 			id: 'updated',
 			header: lang("last updated by"),
 			dataIndex: 'updatedOn',
-			width: 120,
+			width: 90,
 			renderer: renderDateUpdated,
 			sortable: true
         }]);
@@ -212,9 +213,11 @@ og.WebpageManager = function() {
         store: this.store,
 		layout: 'fit',
         cm: cm,
+		enableDrag: true,
+		ddGroup: 'WorkspaceDD',
         closable: true,
 		stripeRows: true,
-		/*style: "padding:7px;",*/
+		id: 'webpage-manager',
         bbar: new og.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
@@ -297,10 +300,34 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	reset: function() {
 		this.load({start:0});
 	},
-
+	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
+	},
+	
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				webpages: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
 	}
+	
 });
 
 Ext.reg("webpages", og.WebpageManager);

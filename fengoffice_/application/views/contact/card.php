@@ -2,28 +2,27 @@
 	//set_page_title(lang('contact card of').' '.$contact->getDisplayName());
 	if (!$contact->isTrashed()){
 		if($contact->canEdit(logged_user())) {
-			add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit');
-			add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
-			add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
+			add_page_action(lang('edit contact'), $contact->getEditUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit picture'), $contact->getUpdatePictureUrl(), 'ico-picture', null, null, true);
+			add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace',null, null, true);
 		}
 	}
-	if($contact->canDelete(logged_user())) {
+	if ($contact->canDelete(logged_user())) {
 		if ($contact->isTrashed()) {
-			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore');
-			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete');
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $contact->getUntrashUrl() ."');", 'ico-restore',null, null, true);
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $contact->getDeletePermanentlyUrl() ."');", 'ico-delete',null, null, true);
 		} else {
-			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash');
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $contact->getTrashUrl() ."');", 'ico-trash',null, null, true);
 		}
 	} // if
-	if (!$contact->isTrashed()){
-		if(can_manage_security(logged_user())){
-			if(! $contact->getUserId() || $contact->getUserId() == 0){
+	if (!$contact->isTrashed()) {
+		if (can_manage_security(logged_user())) {
+			if (! $contact->getUserId() || $contact->getUserId() == 0){
 				add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
 			}
 		}
 	}
 ?>
-   
    
 <div style="padding:7px">
 <div class="contact">

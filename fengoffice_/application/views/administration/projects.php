@@ -38,7 +38,13 @@ foreach($projects as $project) {
     </td>
     <?php } // if ?>
     <td class="long middle"><!-- a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"-->
-    	<?php echo clean($project->getName()) ?>
+    
+    <?php 
+    	$depth = $project->getDepth();
+    	for ($i=0;$i<=$depth;$i++){ ?>
+	    	&nbsp;&nbsp;&nbsp;
+    		<?php }echo '<img src="'. image_url('16x16/wscolors/color').$project->getColor().'.png" />'?>
+       		<?php echo clean($project->getName()) ?>
     <!-- /a --></td>
 <?php
   $options = array();

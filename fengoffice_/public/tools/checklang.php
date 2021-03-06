@@ -2,7 +2,7 @@
 $allowed = include 'access.php';
 if (!in_array('checklang.php', $allowed)) die("This tool is disabled.");
 
-header("Content-Type: text/html");
+header("Content-Type: text/html; charset=utf-8");
 define('LANG_DIR', 'language');
 define('TEST_LIST_PATH', 'all_langs.txt');
 chdir("../..");

@@ -1,20 +1,20 @@
 <?php
- 
-  /**
-  * ProjectChart class
-  *
-  * @author Carlos Palma <chonwil@gmail.com>
-  */
-  class ProjectChart extends BaseProjectChart {
-    
-    protected $data;
-    
-    protected $graph;
-    
-    protected $hasParameters = false;
-    
-    protected $parameters;
-    
+
+/**
+ * ProjectChart class
+ *
+ * @author Carlos Palma <chonwil@gmail.com>
+ */
+class ProjectChart extends BaseProjectChart {
+
+	protected $data;
+
+	protected $graph;
+
+	protected $hasParameters = false;
+
+	protected $parameters;
+
 	/* This project object is taggable
 	 *
 	 * @var boolean
@@ -26,76 +26,63 @@
 	protected $searchable_columns = array('title');
 
 	protected $is_commentable = false;
-	
+
 	protected $attr_protected = null;
 	protected $colours = array('#356aa0', '#a03535');
-    
+
 	function getHasParameters(){
 		return $this->hasParameters;
 	}
-	
+
 	function getParameters(){
 		if (!$this->hasParameters)
-			return null;
+		return null;
 		else {
 			if (!isset($this->parameters))
-				$this->parameters = ProjectChartParams::getProjectChartParams($this);
+			$this->parameters = ProjectChartParams::getProjectChartParams($this);
 		}
 		return $this->parameters;
 	}
-	
-    /**
-     * Return the graph of this chart
-     *
-     * @return graph
-     */
-    function getGraph(){
-    	if (!isset($this->graph) || is_null($this->graph))
-    		$this->graph = new graph();
-    	return $this->graph;
-    }
-    
-    /**
-    * Return project part of the relationship
-    *
-    * @param void
-    * @return Project
-    */
-    function getProject() {
-      if(is_null($this->project)) {
-        $this->project = Projects::findById($this->getProjectId());
-      } // if
-      return $this->project;
-    } // getProject
-    
-    function getColour($c){
-    	return $this->colours[$c % count($this->colours)];
-    }
-    
-    function DashboardDraw($g = null){
+
+	/**
+	 * Return the graph of this chart
+	 *
+	 * @return graph
+	 */
+	function getGraph(){
+		if (!isset($this->graph) || is_null($this->graph))
+		$this->graph = new graph();
+		return $this->graph;
+	}
+
+	function getColour($c){
+		return $this->colours[$c % count($this->colours)];
+	}
+
+	function DashboardDraw($g = null){
 		if (is_null($g))
-  			$g = $this->getGraph();
-    	$g2 = $this->Draw($g, true);
-  		//$g2->set_title('');
-  		if ($this->getDisplayId() == 20)
-  			$g2->set_height(180);
-  		else
-    		$g2->set_height(240);
-    	$g2->set_width(290);
-    	$g2->set_x_label_style(6);
-    	$g2->set_y_label_style(6);
-    	return $g2->render();
-    }
-    
-  	function Draw($g, $returnGraphObject = false){
+		$g = $this->getGraph();
+		$g2 = $this->Draw($g, true);
+		//$g2->set_title('');
+		if ($this->getDisplayId() == 20)
+		$g2->set_height(180);
+		else
+		$g2->set_height(240);
+		$g2->set_width(290);
+		$g2->set_x_label_style(6);
+		$g2->set_y_label_style(6);
+		return $g2->render();
+	}
+
+	function Draw($g, $returnGraphObject = false){
 		if (!isset($g))
-  			$g = $this->getGraph();
+		$g = $this->getGraph();
 		$g->set_bg_colour("#FFFFFF");
 		$g->set_title($this->getTitle(),"font-size: 12px; color: #404040;font-weight:bold;padding-bottom:4px" );
-		
+
 		$max = 0;
 		$min = 0;
-		
+
 		$g->set_x_labels($this->data['values'][0]['labels']);
 		$c = 0;
 		$seriesCount = count($this->data['values']);
@@ -140,23 +127,23 @@
 		$g->set_height(400);
 		$g->set_width(600);
 		if (isset($returnGraphObject) && $returnGraphObject)
-			return $g;
+		return $g;
 		else
-			return $g->render();
-  	}
-  	
-  	function PrintInfo(){
-  		return '';
-  	}
-  	
-  	function printData(){
-  		return var_dump($this->data);
-  	}
-  	
-  	function ExecuteQuery(){
-  		
-  	}
-  	// ---------------------------------------------------
+		return $g->render();
+	}
+	 
+	function PrintInfo(){
+		return '';
+	}
+	 
+	function printData(){
+		return var_dump($this->data);
+	}
+	 
+	function ExecuteQuery(){
+
+	}
+	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
 
@@ -200,7 +187,7 @@
 	 * @param User $user
 	 * @return boolean
 	 */
-	function canEdit(User $user) {		
+	function canEdit(User $user) {
 		return true;
 	} // canEdit
 
@@ -235,8 +222,8 @@
 	function canAddComment(User $user) {
 		return true;
 	} // canAddComment
-  	
-  	// ---------------------------------------------------
+	 
+	// ---------------------------------------------------
 	//  System
 	// ---------------------------------------------------
 
@@ -260,7 +247,7 @@
 	 */
 	function validate(&$errors) {
 		if($this->validatePresenceOf('title')) {
-			if(!$this->validateUniquenessOf('title', 'project_id')) $errors[] = lang('chart title unique');
+			if(!$this->validateUniquenessOf('title')) $errors[] = lang('chart title unique');
 		} else {
 			$errors[] = lang('chart title required');
 		} // if
@@ -275,7 +262,7 @@
 			}
 		}
 	}
-	
+
 	// ---------------------------------------------------
 	//  URLS
 	// ---------------------------------------------------
@@ -288,7 +275,7 @@
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('reporting', 'chart_details', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('reporting', 'chart_details', array('id' => $this->getId()));
 	} // getViewUrl
 
 	/**
@@ -299,7 +286,7 @@
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('reporting', 'edit_chart', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('reporting', 'edit_chart', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -310,7 +297,7 @@
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('reporting', 'delete_chart', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('reporting', 'delete_chart', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	// ---------------------------------------------------
@@ -348,7 +335,24 @@
 	function getObjectUrl() {
 		return '';
 	} // getObjectUrl
-  	
-    
-  } // ProjectChart 
+
+	/**
+	 * Set the chart's project
+	 * @param $project
+	 */
+	function setProject($project) {
+		$this->removeFromAllWorkspaces();
+		$this->addToWorkspace($project);
+	}
+	
+	/**
+	 * Get chart's project's id
+	 */
+	function getProjectId() {
+		$project = $this->getProject();
+		if ($project instanceof Project) return $project->getId();
+		return 0;
+	}
+
+} // ProjectChart
 ?>

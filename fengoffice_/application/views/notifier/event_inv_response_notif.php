@@ -4,8 +4,7 @@
 ?><?php echo "\r\n"
 ?><?php
 	echo lang('event invitation response');
-	$projectName = $event->getProject()->getName();
-	echo ': ' . $event->getSubject() . ' - ' . $projectName . ' - ';
+	echo ': ' . $event->getSubject() . ' - ';
 	echo lang('date') . ': ' . $date;
 	echo "\r\n\r\n";
 	if ($invitation->getInvitationState() == 1)
@@ -21,7 +20,7 @@
 ?><?php echo "\r\n"
 ?><?php echo lang('company') ?>: <?php echo owner_company()->getName() ?><?php echo "\r\n"
 ?><?php echo "\r\n"
-?><?php echo lang('workspace') ?>: <?php echo $projectName ?><?php echo "\r\n"
+?><?php echo lang('workspace') ?>: <?php echo $workspaces ?><?php echo "\r\n"
 ?><?php echo "\r\n"
 ?><?php echo "\r\n"
 ?> --<?php echo "\r\n"

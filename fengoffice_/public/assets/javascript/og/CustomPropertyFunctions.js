@@ -90,12 +90,12 @@ og.addCustomProperty = function(genid, property){
 		'<td ' + styleHidden + ' id="tdDefaultValueCheck' + count + '"><b>' + lang('default value') + 
 		'</b>:<br/><input type="checkbox" class="checkbox" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][default_value_boolean]" name="custom_properties[' + count + '][default_value_boolean]" {4}/>&nbsp;' + lang('checked') + '</td>' +
 		'<td ' + style + '><b>' + lang('required') + 
-		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][required]" name="custom_properties[' + count + '][required]" "{5}"/></td>' +
+		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][required]" name="custom_properties[' + count + '][required]" {5}/></td>' +
 		'<td ' + style + ' id="tdMultipleValues' + count + '"><b>' + lang('multiple values') + 
-		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][multiple_values]" name="custom_properties[' + count + '][multiple_values]" "{6}"/></td>' +
+		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][multiple_values]" name="custom_properties[' + count + '][multiple_values]" {6}/></td>' +
 		
 		'<td ' + style + ' id="tdVisibleByDefault' + count + '"><b>' + lang('visible by default') + 
-  		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][visible_by_default]" name="custom_properties[' + count + '][visible_by_default]" "{7}"/></td>' +
+  		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][visible_by_default]" name="custom_properties[' + count + '][visible_by_default]" {7}/></td>' +
   			
 		'<td style="width:250px;"></td><td><div style="display:none;" id="up' + count + '" class="clico ico-up" onclick="og.moveCustomPropertyUp(' + count + ',\'' + genid + '\')"></div></td>' +
 		'<td><div style="display:none;" id="down' + count + '" class="clico ico-down" onclick="og.moveCustomPropertyDown(' + count + ',\'' + genid + '\')"></div></td>' +
@@ -105,7 +105,7 @@ og.addCustomProperty = function(genid, property){
   		'</tr></table>';
   	if(property != null){
   	  	var defaultValue = (property.type != 'boolean' ? property.default_value : (property.default_value ? 'checked' : ''));
-  		table = String.format(table, property.id, property.name, (property.values ? property.values : ''), property.description, defaultValue, property.required == true ? 'checked' : '', property.multiple_values == true ? 'checked' : '', property.visible_by_default == true ? 'checked' : '');
+  		table = String.format(table, property.id, property.name, (property.values ? property.values : ''), property.description, defaultValue, property.required == true ? 'checked="checked"' : '', property.multiple_values == true ? 'checked="checked"' : '', property.visible_by_default == true ? 'checked="checked"' : '');
   	}else{
   		table = String.format(table, '', '', '', '', '', '', '');
   	}

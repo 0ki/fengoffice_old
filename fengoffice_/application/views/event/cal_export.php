@@ -3,7 +3,7 @@
 	$genid = gen_id();
 ?>
 
-<script type="text/javascript">
+<script>
 og.download_exported_cal = function() {
 	window.open(og.getUrl('event', 'download_exported_file'));
 }
@@ -53,7 +53,7 @@ og.download_exported_cal = function() {
 
 </div>
 </form>
-<script type="text/javascript">
+<script>
 	btn = Ext.get('<?php echo $genid ?>cal_export_submit1');
 	if (btn != null) btn.focus()
 </script>

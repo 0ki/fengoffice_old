@@ -36,9 +36,10 @@ class AccountController extends ApplicationController {
 		ajx_set_no_toolbar(true);
 		
 		$pids = null;
-		if (active_project() instanceof Project)
-			$pids = active_project()->getAllSubWorkspacesCSV();
-		$logs = ApplicationLogs::getOverallLogs(false,false,$pids,15,0,get_id());
+		if (active_project() instanceof Project) {
+			$pids = active_project()->getAllSubWorkspacesQuery();
+		}
+		$logs = ApplicationLogs::getOverallLogs(false, false, $pids, 15, 0, get_id());
 
 		tpl_assign('logs', $logs);
 	} // index
@@ -288,15 +289,16 @@ class AccountController extends ApplicationController {
 			  	if(is_array($permissions) && count($permissions) > 0) {
 			  		//Clear old modified permissions
 			  		$ids = array();
-			  		foreach($permissions as $perm)
+			  		foreach($permissions as $perm) {
 			  			$ids[] = $perm->wsid;
+			  		}
 			  			
-			  		ProjectUsers::clearByUser($user,implode(',',$ids));
+			  		ProjectUsers::clearByUser($user, implode(',', $ids));
 			  		
 			  		//Add new permissions
 			  		//TODO - Make batch update of these permissions
-			  		foreach($permissions as $perm){
-			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
+			  		foreach ($permissions as $perm) {
+			  			if (ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)) {			  				
 				  			$relation = new ProjectUser();
 					  		$relation->setProjectId($perm->wsid);
 					  		$relation->setUserId($user->getId());
@@ -339,7 +341,7 @@ class AccountController extends ApplicationController {
 	 */
 	function edit_avatar() {
 		$user = Users::findById(get_id());
-		if(!($user instanceof User)) {
+		if (!($user instanceof User)) {
 			flash_error(lang('user dnx'));
 			ajx_current("empty");
 			return;
@@ -366,7 +368,7 @@ class AccountController extends ApplicationController {
 					throw new InvalidUploadError($avatar, lang('error upload file'));
 				} // if
 
-				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png');
+				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png','image/x-png');
 				$max_width   = config_option('max_avatar_width', 50);
 				$max_height  = config_option('max_avatar_height', 50);
 
@@ -378,7 +380,7 @@ class AccountController extends ApplicationController {
 				DB::beginWork();
 
 				$user->setUpdatedOn(DateTimeValueLib::now());
-				if(!$user->setAvatar($avatar['tmp_name'], $max_width, $max_height)) {
+				if(!$user->setAvatar($avatar['tmp_name'], $avatar['type'], $max_width, $max_height)) {
 					throw new InvalidUploadError($avatar, lang('error edit avatar'));
 				} // if
 

@@ -15,8 +15,7 @@ abstract class BaseProjectWebpages extends ProjectDataObjects {
 	 * @static
 	 */
 	static private $columns = array(
-    'id' => DATA_TYPE_INTEGER,
-    'project_id' => DATA_TYPE_INTEGER,  
+    'id' => DATA_TYPE_INTEGER,  
     'url' => DATA_TYPE_STRING, 
     'title' => DATA_TYPE_STRING, 
     'description' => DATA_TYPE_STRING, 

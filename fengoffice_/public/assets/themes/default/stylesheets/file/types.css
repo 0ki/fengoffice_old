@@ -2,28 +2,28 @@
 	background-image: url(../../images/16x16/types/unknown.png);
 }
 .ico-milestone {
-	background-image: url(../../images/16x16/types/milestone.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -400px !important;
 }
 .ico-email {
-	background-image: url(../../images/16x16/types/email.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -437px !important;
 }
 .ico-emailunclassified {
 	background-image: url(../../images/16x16/types/classify.png);
 }
 .ico-weblink, .ico-webpage, .ico-weblinks, .ico-webpages {
-	background-image: url(../../images/16x16/types/webpage.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;
 }
 .ico-task {
-	background-image: url(../../images/16x16/types/task.png);
+	background: transparent url(../../images/16x16/tasks.png) no-repeat !important;
 }
 .ico-event {
-	background-image: url(../../images/16x16/types/event.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 0px !important;
 }
 .ico-contact {
-	background-image: url(../../images/16x16/types/contact.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -520px !important;
 }
 .ico-company {
-	background-image: url(../../images/16x16/types/company.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -540px !important;
 }
 .ico-message {
 	background-image: url(../../images/16x16/types/message.png);

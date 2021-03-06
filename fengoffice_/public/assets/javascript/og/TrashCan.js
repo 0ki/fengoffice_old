@@ -19,12 +19,10 @@ og.TrashCan = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-					'updatedBy', 'updatedById',
-					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'deletedBy', 'deletedById',
-					{name: 'dateDeleted', type: 'date', dateFormat: 'timestamp'},
+					'name', 'object_id', 'type', 'tags', 
+					'createdBy', 'createdById', 'dateCreated',
+					'updatedBy', 'updatedById',	'dateUpdated',
+					'deletedBy', 'deletedById',	'dateDeleted',
 					'icon', 'wsIds', 'manager', 'mimeType', 'url'
 				]
 			}),
@@ -61,8 +59,8 @@ og.TrashCan = function() {
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
 		if (r.data.type == 'webpage') {
 			viewUrl = og.getUrl('webpage', 'view', {id:r.data.object_id});
-			actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
-				r.data.linkurl, lang('open link in new window', value));
+			actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
+					r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		}
 		actions = '<span>' + actions + '</span>';
 	
@@ -117,12 +115,7 @@ og.TrashCan = function() {
 		if (!value) {
 			return "";
 		}
-		var now = new Date();
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat('M j');
-		} else {
-			return value.dateFormat('h:i a');
-		}
+		return value;
 	}
 
 	function getSelectedIds() {
@@ -275,11 +268,26 @@ og.TrashCan = function() {
 				this.load();
 			},
 			scope: this
+		}),
+		emptycan: new Ext.Action({
+			text: lang('empty trash can'),
+            tooltip: lang('empty trash can desc'),
+            iconCls: 'ico-trash',
+			disabled: false,
+			handler: function() {
+				if (confirm(lang("confirm delete objects permanently"))) {
+					this.load({
+						action: 'empty_trash_can'
+					});
+					this.getSelectionModel().clearSelections();
+				}
+			},
+			scope: this
 		})
     };
     
 	og.TrashCan.superclass.constructor.call(this, {
-		//enableDragDrop: true, //(breaks the checkbox selection)
+		enableDrag: true,
 		ddGroup : 'WorkspaceDD',
 		store: this.store,
 		layout: 'fit',
@@ -309,6 +317,7 @@ og.TrashCan = function() {
 				id: 'trash_warning',
 				text: og.daysOnTrash ? lang('trash emptied periodically', og.daysOnTrash) : ''
 			}
+		,'-',actions.emptycan
 		],
 		listeners: {
 			'render': {
@@ -376,7 +385,7 @@ Ext.extend(og.TrashCan, Ext.grid.GridPanel, {
 	reset: function() {
 		this.load({start:0});
 	},
-
+	
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

@@ -1,5 +1,5 @@
 <?php
-  require_javascript('modules/addMessageForm.js'); 
+  require_javascript('og/modules/addMessageForm.js'); 
   $genid = gen_id();
   $object = $milestone;
   if ($milestone->isNew()) {
@@ -62,7 +62,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone','add_milestone'); ?>
 			</div>
 		<?php }?>
@@ -76,12 +76,12 @@
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone workspace','add_milestone_workspace'); ?>
 			</div>
 		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project2('milestone[project_id]', $project->getId(), $genid) ?>
+		<?php echo select_project2('milestone[project_id]', $milestone->getProjectId(), $genid) ?>
 	</fieldset>
 	</div>
 
@@ -90,7 +90,7 @@
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_tags_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone tags', 'add_milestone_tags'); ?>
 			</div>
 		<?php }?>
@@ -105,7 +105,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_description_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone description','add_milestone_description'); ?>
 			</div>
 		<?php }?>
@@ -137,7 +137,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_reminders_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone reminders','add_milestone_reminders'); ?>
 			</div>
 		<?php }?>
@@ -158,7 +158,7 @@
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_custom_properties_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone custom properties','add_milestone_custom_properties'); ?>
 			</div>
 		<?php }?>
@@ -173,7 +173,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_subscribers_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone subscribers','add_milestone_subscribers'); ?>
 			</div>
 		<?php }?>
@@ -186,7 +186,7 @@
 	
 	<script>
 	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
-	wsTree.previousValue = <?php echo $project->getId() ?>;
+	wsTree.previousValue = <?php echo $milestone->getProjectId() ?>;
 	wsTree.on("click", function(ws) {
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
@@ -211,7 +211,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_linked_object_context_help', true, logged_user()->getId()))) {?>
-			<div id="milestonePanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="milestonePanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add milestone linked object','add_milestone_linked_object'); ?>
 			</div>
 		<?php }?>
@@ -246,6 +246,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>milestoneFormName').focus();
 </script>

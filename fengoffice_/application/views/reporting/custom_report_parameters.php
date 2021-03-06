@@ -31,7 +31,11 @@
 					$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
 					$name = clean($cp->getName());
 				  }else{
-					$name = lang('field ' . $model . ' ' . $condition->getFieldName());	
+				  	if ($condition->getFieldName()!= 'workspace' && $condition->getFieldName()!= 'tag'){
+				  	    $name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				  	}else{
+				  		$name = lang($condition->getFieldName());
+				  	}	
 				  } 
 				  $condId = $genid . 'rpcond' . $condition->getId();
 				if ($firstId == '')
@@ -61,6 +65,7 @@
 			<?php }else{ ?>
 				<td align='left'>
 				<?php 
+				if($condition->getFieldName() != 'workspace' && $condition->getFieldName() != 'tag'){
 					$model_instance = new $model();
 					$col_type = $model_instance->getColumnType($condition->getFieldName());
 					$externalCols = $model_instance->getExternalColumns();
@@ -79,17 +84,29 @@
 				<?php 	}
 					} ?>
 				</td>
-			<?php } ?>
+			<?php }//if
+			else{
+				//if is a tag selection or a workspace selection
+				$val=$condition->getValue();
+				if($condition->getFieldName() == 'workspace'){
+					echo select_project2('params[workspace]',isset($val)?$val:0, $genid , true);
+				}
+				if($condition->getFieldName() == 'tag'){
+					
+					echo autocomplete_tags_field("params[tags]", isset($val)?$val:null, null, 40);
+				}
+			 } ?>
 			</tr>
 		<?php
-			unset($cp); 
-			}//foreach ?>
+			unset($cp);
+			}//else 
+		}//foreach ?>
 	</table>
 	
 <?php echo submit_button(lang('generate report'),'s',array('tabindex' => $tiCount + 1))?>	
 </div>
 
-<script type="text/javascript">
+<script>
 var firstCond = Ext.getDom('<?php echo $firstId ?>');
 if (firstCond)
 	firstCond.focus();

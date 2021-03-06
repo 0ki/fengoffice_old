@@ -60,7 +60,7 @@
  "country dj" => "吉布地",
  "country dm" => "多米尼克",
  "country do" => "多明尼加",
- "country tp" => "東帝汶",
+ "country tl" => "東帝汶",
  "country ec" => "厄瓜多",
  "country eg" => "埃及",
  "country sv" => "薩爾瓦多",
@@ -235,7 +235,7 @@
  "country wf" => "瓦利斯群島和富圖納群島",
  "country eh" => "西撒哈拉",
  "country ye" => "葉門",
- "country zr" => "薩伊",
+ "country cd" => "薩伊",
  "country zm" => "尚比亞",
  "country zw" => "辛巴威",
 ); ?>

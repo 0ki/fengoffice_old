@@ -57,9 +57,11 @@
 					default:
 						$errors =  $newBook->save();
 						if(!$errors)
-							echo "{'Error':0,'Message':'Book saved succesfully','Data':{'BookId':".$newBook->getId()."}}";
-						else
-							echo "{'Error':1,'Message':'Ups!!! Sorry, Book could not be saved. Be aware you are running an alpha version.','Data':0}";
+							throw new Success('Book saved succesfully',"{'BookId':".$newBook->getId()."}");
+						else {
+							$error = new Error(302,"Error saving book.");
+							throw $error;						
+						}
 						break;
 				}
 			}

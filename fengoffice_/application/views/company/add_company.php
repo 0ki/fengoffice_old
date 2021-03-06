@@ -1,5 +1,5 @@
 <?php 
-	require_javascript('modules/addMessageForm.js');
+	require_javascript('og/modules/addMessageForm.js');
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
@@ -164,7 +164,7 @@
 	<fieldset><legend><?php echo lang('notes') ?></legend>
 	    <div>
 	      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
-	      <?php echo textarea_field('company[notes]', array_var($contact_data, 'notes'), array('id' => $genid.'profileFormNotes', 'tabindex' => '185')) ?>
+	      <?php echo textarea_field('company[notes]', array_var($company_data, 'notes'), array('id' => $genid.'profileFormNotes', 'tabindex' => '185')) ?>
 	    </div>
 	</fieldset>
 	</div>
@@ -199,6 +199,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('clientFormName').focus();
 </script>

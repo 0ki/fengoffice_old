@@ -38,7 +38,15 @@
 			<td style="padding-right:10px"><?php echo format_datetime($timeslot->getStartTime(), 'M d, H:i')?>
 				&nbsp;-&nbsp;<?php echo $timeslot->isOpen() ? ('<b>' . lang('work in progress') . '</b>') : 
 				( (format_date($timeslot->getEndTime()) != format_date($timeslot->getStartTime()))?  format_datetime($timeslot->getEndTime(), 'M d, H:i'): format_time($timeslot->getEndTime())) ?></td>
-			<td style="padding-right:10px"><?php echo DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), $timeslot->getEndTime(), "hm", 60, $timeslot->getSubtract())?></td>
+			<td style="padding-right:10px">
+				<?php 
+					echo DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), $timeslot->getEndTime(), "hm", 60, $timeslot->getSubtract());
+					if ($timeslot->getSubtract() > 0) {
+						$now = DateTimeValueLib::now();
+						echo " <span class='desc'>(" . lang('paused time') . ": " . DateTimeValue::FormatTimeDiff($now, $now, "hm", 60, $timeslot->getSubtract()) .")</span>";
+					}
+				?>
+			</td>
 			<td align="right">
 			<?php if(count($options)) { ?>
 					<?php echo implode(' | ', $options) ?>

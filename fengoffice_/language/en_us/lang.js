@@ -55,6 +55,8 @@ addLangs({
 	'upload a file': 'Upload a file',
 	'tag selected objects': 'Tag selected objects',
 	'delete': 'Delete',
+	'empty trash can' : 'Empty trash can',
+	'empty trash can desc' : 'Permanently delete all trashed objects',
 	'delete selected objects': 'Delete selected objects',
 	'confirm delete object': 'Are you sure you want to delete the selected object(s)?',
 	'confirm delete contact': 'Are you sure you want to delete this contact?',
@@ -80,6 +82,8 @@ addLangs({
 	'refresh desc': 'Refresh the view',
 	'templates desc': 'Manage templates',
 	'templates': 'Templates',
+	'string': 'String',
+	'add parameter': 'Add parameter',
 	'edit workspace': 'Edit the selected workspace',
 	'company': 'Company',
 	'companies': 'Companies',
@@ -237,7 +241,7 @@ addLangs({
 	'all emails': 'All emails',
 	'unclassified emails': 'Unclassified emails',
 	'view options': 'View options',
-	'check mails' : 'Check mail accounts',
+	'check mails' : 'Check mails',
 	'emails' : 'Emails',
 	'create an email' : 'Create an Email',
 	'checking email accounts' : 'Checking email accounts...',
@@ -245,6 +249,15 @@ addLangs({
 	'yes' : 'Yes',
 	'no' : 'No',
 	'delete account emails': 'Also delete e-mails',
+	'select' : 'Select',
+	'read' : 'Read',
+	'classified' : 'Classified',
+	'accounts' : 'Accounts',
+	'account options' : 'Account options',
+	'to' : 'To',
+	'view by state' : 'By State',
+	'view by account' : 'By Account', 
+	'view by classification' : 'By Classification',
 	
 	'filter workspaces': 'Filter workspaces...',
 	'filter tags': 'Filter tags...',
@@ -500,6 +513,7 @@ addLangs({
   	
 	'event start time': 'Time',
 	'all day event': 'All day',
+	'confirm repeating event edition': 'Editing this repeating event will modify every past and future events related.\nAre you sure you want to edit this event?',
 	
   	'choose an image': 'Choose an image',
   	'sort by': 'Sort by',
@@ -549,6 +563,7 @@ addLangs({
     'untagged': 'Untagged',
     'download selected file': 'Download selected file',
     'edit selected file properties': 'Edit selected file\' properties',
+    'update file':'Update File',
     'you must enter a name': 'You must enter a name',
     'sort tags': 'Sort tags',
     'sort tags alphabetically': 'Alphabetically',
@@ -564,6 +579,7 @@ addLangs({
     'minutes': 'minutes',
     'weeks': 'weeks',
     'days': 'days',
+    'months': 'months',
     'before': 'before',
     'remove object reminder': 'Remove reminder',
     'apply to subscribers': 'Apply to all subscribers',
@@ -635,6 +651,34 @@ addLangs({
   	'milestones': 'Milestones',
   	'no subject' : 'No subject',
   	
-  	'value is already in the list' : 'The value is already on the list'
+  	'value is already in the list' : 'The value is already on the list',
+  	'click to drag task': 'Click and hold to drag this task',
+  	
+  	'parameter name empty': 'Parameter name cannot be empty',
+  	'parameter name exists': 'There is another parameter with the entered name',
+  	'object exists in template': 'Object already exists in template',
+  	'edit object property': 'Edit object property',
+  	'fixed date': 'Fixed date',
+  	'parametric date': 'Parametric',
+  	'no parameters in template': 'There are no date parameters defined for this template',
+  	'open property editor': 'Open property editor',
+  	'template parameters': 'Parameters',
+  	'template property already selected': 'The selected property is already being used',
+    'no sender': 'No sender',
+    	
+   	/* Linked Objects*/
+    'linkedobjects':'Linked Objects',
+    'unlink':'Unlink',
+    'link':'Link',
+    'unlink object':'Unlink Object',
+    'link object':'Link Objects',
+   	'change parent':'Change Object',
+   	'confirm unlink objects' : 'Are you sure you want to unlink the selected object(s)?',
+   	
+   	'repetitive task':'Repetitive task',
     
+    'move to workspace': 'Move to workspace',
+    'keep old workspaces': 'Keep workspaces',
+    'move to workspace or keep old ones': 'Move to or keep old ones and add',
+    'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?'
 });

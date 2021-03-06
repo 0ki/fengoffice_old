@@ -40,7 +40,7 @@ class UserController extends ApplicationController {
 	 */
 	function add() {
    		$max_users = config_option('max_users');
-		if($max_users && (Users::count() >= $max_users) ){
+		if ($max_users && (Users::count() >= $max_users)) {
 			flash_error(lang('maximum number of users reached error'));
 			ajx_current("empty");
 			return;
@@ -48,28 +48,27 @@ class UserController extends ApplicationController {
 		$this->setTemplate('add_user');
 
 		$company = Companies::findById(get_id('company_id'));
-		if(!($company instanceof Company)) {
-			flash_error(lang('company dnx'));
-			ajx_current("empty");
-			return;
+		if (!($company instanceof Company)) {
+			$company = owner_company();
 		} // if
 
-		if(!User::canAdd(logged_user(), $company)) {
+		if (!User::canAdd(logged_user(), $company)) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} // if
 
 		$user = new User();
-
+		
 		$user_data = array_var($_POST, 'user');
-		if(!is_array($user_data)) {
-			//if it is a new contact
-			$contact_id = get_id('contact_id');			
-			if($contact_id && $contact = Contacts::findById($contact_id)){
+		if (!is_array($user_data)) {
+			//if it is a new user
+			$contact_id = get_id('contact_id');
+			$contact = Contacts::findById($contact_id);
+			if ($contact instanceof Contact) {
 				//if it will be created from a contact
 				$user_data = array(
-					'username' => substr_utf($contact->getFirstname(),0,1) . $contact->getLastname(),
+					'username' => $this->generateUserNameFromContact($contact),
 					'display_name' => $contact->getFirstname() . $contact->getLastname(),
 					'email' => $contact->getEmail(),
 					'contact_id' => $contact->getId(),
@@ -79,8 +78,7 @@ class UserController extends ApplicationController {
 					'create_contact' => false ,
 				); // array
 				
-			}
-			else{
+			} else {
 				// if it is new, and created from admin interface
 				$user_data = array(
 		          'password_generator' => 'random',
@@ -100,13 +98,18 @@ class UserController extends ApplicationController {
 		tpl_assign('user_data', $user_data);
 		tpl_assign('billing_categories', BillingCategories::findAll());
 
-		if(is_array(array_var($_POST, 'user'))) {
+		if (is_array(array_var($_POST, 'user'))) {
 			$user->setFromAttributes($user_data);
 			//$user->setCompanyId($company->getId());
-			$is_admin = logged_user()->isAdministrator() && array_var($_POST, 'is_admin');
-
+			$usr = array_var($_POST,'user');
+			if ($usr['createPersonalProject']) {
+				$usrPersonalWs = $usr['personal_project'];
+			} else {
+				$usrPersonalWs = 0;
+			}
+			$is_admin = logged_user()->isAdministrator() && array_var($_POST, 'is_admin') && ( $usr['company_id'] == owner_company()->getId());
 			try {
-			  $user = $this->createUser($user, $user_data, $is_admin, array_var($_POST,'permissions'));
+			  $user = $this->createUser($user, $user_data, $is_admin, array_var($_POST,'permissions'),$usrPersonalWs);
 			
 			  $object_controller = new ObjectController();
 			  $object_controller->add_custom_properties($user);
@@ -124,6 +127,26 @@ class UserController extends ApplicationController {
 
 	} // add
 	
+	private function generateUserNameFromContact($contact) {
+		$uname = "";
+		if ($contact->getLastname() == "") {
+			$uname = $contact->getFirstName();
+		} else if ($contact->getFirstname() == "") {
+			$uname = $contact->getLastName();
+		} else {
+			$uname = substr_utf($contact->getFirstname(), 0, 1) . $contact->getLastname();
+		}
+		$uname = strtolower(trim(str_replace(" ", "", $uname)));
+		if ($uname == "") {
+			$uname = strtolower(str_replace(" ", "_", lang("new user")));
+		}
+		$base = $uname;
+		for ($i=2; Users::getByUsername($uname) instanceof User; $i++) {
+			$uname = $base . $i;
+		}
+		return $uname;
+	}
+	
 	/**
 	 * Creates an user (called from add_user)
 	 *
@@ -131,9 +154,10 @@ class UserController extends ApplicationController {
 	 * @param array $user_data
 	 * @param boolean $is_admin
 	 * @param string $permissionsString
+	 * @param string $personalProjectName
 	 * @return User $user
 	 */
-	function createUser($user, $user_data, $is_admin, $permissionsString) {
+	function createUser($user, $user_data, $is_admin, $permissionsString,$personalProjectId=0) {
 		if (!$user) {
 			$user = new User();
 			$user->setFromAttributes($user_data);
@@ -204,19 +228,53 @@ class UserController extends ApplicationController {
 				}
 			}
 		}
+		$contact = $user->getContact();
+		if ($contact instanceof Contact) {
+			// update contact data with data entered for this user
+			$contact->setCompanyId($user->getCompanyId());
+			// make user's email the contact's main email address
+			if ($contact->getEmail2() == $user->getEmail()) {
+				$contact->setEmail2($contact->getEmail());
+			} else if ($contact->getEmail3() == $user->getEmail()) {
+				$contact->setEmail3($contact->getEmail());
+			} else if ($contact->getEmail2() == "") {
+				$contact->setEmail2($contact->getEmail());
+			} else {
+				$contact->setEmail3($contact->getEmail());
+			}
+			$contact->setEmail($user->getEmail());
+			$contact->save();
+		}
 
-		/* create personal project */
-		$project = new Project();
-		$project->setName($user->getUsername().'_personal');
-		$project->setDescription(lang('files'));
-		$project->setCreatedById($user->getId());
-
-		$project->save(); //Save to set an ID number
-		$project->setP1($project->getId()); //Set ID number to the first project
-		$project->save();
+		/* create personal project or assing the selected*/
+		//if recived a personal project assing this 
+		//project as personal project for this user
+		if($personalProjectId){
+			$projects = Projects::findByCSVIds($personalProjectId) ;
+			if (is_array($projects)&& count($projects)>0){
+				$project = $projects[0];
+				$new_project = null;
+			}
+		}else{
+			$project = new Project();
+			$wname = new_personal_project_name($user->getUsername());
+			$project->setName($wname);
+			
+			$wdesc = Localization::instance()->lang(lang('personal workspace description'));
+			if (!is_null($wdesc)) {
+				$project->setDescription($wdesc);
+			}
+			$project->setCreatedById($user->getId());
+	
+			$project->save(); //Save to set an ID number
+			$project->setP1($project->getId()); //Set ID number to the first project
+			$project->save();
+			$new_project = $project;		
+		}
 		
-		$new_project = $project;
+		
 		$user->setPersonalProjectId($project->getId());
+		
 		$user->save();
 
 		ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
@@ -237,46 +295,52 @@ class UserController extends ApplicationController {
 	  	if(is_array($permissions)) {
 	  		foreach($permissions as $perm){			  			
 	  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){	
-		  			$relation = new ProjectUser();
+					$relation = new ProjectUser();
 			  		$relation->setProjectId($perm->wsid);
 			  		$relation->setUserId($user->getId());
-		  			
+					
 			  		$relation->setCheckboxPermissions($perm->pc);
 			  		$relation->setRadioPermissions($perm->pr);
 			  		$relation->save();
 	  			}
 	  		}
-		  } // if
+		} // if
 
-		  // update contact info if user was created from a contact
-		  $contact_id = array_var($user_data,'contact_id');
-		  if($contact_id && $contact = Contacts::findById($contact_id)){
-		  	 if($contact->getUserId()==0){
-			  	 $contact->setUserId($user->getId());
-			  	 $contact->save();
-		  	 }
-		  }
-		  // End: update contact info if user was created from a contact
-		  DB::commit();
-		  if (logged_user()->isProjectUser($new_project)) {
-		  	evt_add("workspace added", array(
+		DB::commit();
+		
+		if ($new_project instanceof Project && logged_user()->isProjectUser($new_project)) {
+			evt_add("workspace added", array(
 				"id" => $new_project->getId(),
 				"name" => $new_project->getName(),
 				"color" => $new_project->getColor()
 			));
-		  }
+		}
 
-		  // Send notification...
-		  try {
-		  	if(array_var($user_data, 'send_email_notification')) {
-		  		Notifier::newUserAccount($user, $password);
-		  	} // if
-		  } catch(Exception $e) {
+		// Send notification...
+		try {
+			if(array_var($user_data, 'send_email_notification')) {
+				Notifier::newUserAccount($user, $password);
+			} // if
+		} catch(Exception $e) {
 		
-		  } // try
-		  return $user;
+		} // try
+		return $user;
 	}
 
+	function confirm_delete_user(){
+		$user = Users::findById(array_var($_GET,'user_id'));
+		if(!($user instanceof User)) {
+			flash_error(lang('user dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+		if(!$user->canDelete(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		tpl_assign('user',$user);
+	}
 	/**
 	 * Delete specific user
 	 *
@@ -297,29 +361,35 @@ class UserController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
+		$delete_ws = array_var($_POST,'delete_user_ws');
+				
 		try {
 
 			DB::beginWork();
 			$project = $user->getPersonalProject();
 			$user->delete();
-			if ($project instanceof Project) {
+			if ($project instanceof Project && $delete_ws == 1) {
+								
 				$pid = $project->getId();
-				if ($project->delete()){
-					evt_add("workspace deleted", array(
-						"id" => $pid
-		  			));
+				
+				$users_with_perosnal_project = Users::GetByPersonalProject($project->getId());
+				if (is_array($users_with_perosnal_project)&& count($users_with_perosnal_project) <= 0){
+						if ($project->delete()){
+						evt_add("workspace deleted", array(
+							"id" => $pid
+			  			));
+					}
 				}
 			}
 			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
-			
 			flash_success(lang('success delete user', $user->getDisplayName()));
-
-			ajx_current("reload");
+			ajx_current("back");
+			
 		} catch(Exception $e) {
 			DB::rollback();
-			flash_error(lang('error delete user'));
+			flash_error($e->getMessage());
 			ajx_current("empty");
 		} // try
 	} // delete
@@ -361,7 +431,7 @@ class UserController extends ApplicationController {
 		catch (Exception  $exx){
 			flash_error(lang('error add contact from user') . $exx->getMessage());
 		}
-	}
+	}	
 	
 	/**
 	 * Show user card
@@ -386,9 +456,10 @@ class UserController extends ApplicationController {
 		} // if
 		
 		$pids = null;
-		if (active_project() instanceof Project)
-			$pids = active_project()->getAllSubWorkspacesCSV();
-		$logs = ApplicationLogs::getOverallLogs(false,false,$pids,15,0,get_id());
+		if (active_project() instanceof Project) {
+			$pids = active_project()->getAllSubWorkspacesQuery();
+		}
+		$logs = ApplicationLogs::getOverallLogs(false, false, $pids, 15, 0, get_id());
 
 		tpl_assign('logs', $logs);
 		tpl_assign('user', $user);

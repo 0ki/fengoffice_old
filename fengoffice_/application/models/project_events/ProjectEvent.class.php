@@ -101,7 +101,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return string
 	 */
 	function getDetailsUrl() {
-		return get_url('event', 'viewevent', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('event', 'viewevent', array('id' => $this->getId()));
 	} // getDetailsUrl
 
 	/**
@@ -147,7 +147,7 @@ class ProjectEvent extends BaseProjectEvent {
 
 	
 	function getViewUrl() {
-		return get_url('event', 'viewevent', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('event', 'viewevent', array('id' => $this->getId()));
 	}
 	
 	
@@ -285,20 +285,6 @@ class ProjectEvent extends BaseProjectEvent {
 	function getObjectUrl() {
 		return $this->getDetailsUrl();
 	} // getObjectUrl
-
-	/**
-	 * Return parent project
-	 *
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		if(is_null($this->project)) {
-			$this->project = Projects::findById($this->getProjectId());
-		} // if
-		return $this->project;
-	} // getProject
-
 	 
 	 /**
 	 * Validate before save
@@ -323,6 +309,25 @@ class ProjectEvent extends BaseProjectEvent {
 		}
 	}
 
+	function getProject() {
+		$trace = debug_backtrace();
+	    Logger::log("trace count: ".count($trace));   
+	    foreach($trace as $tn=>$tr) {
+	        if (is_array($tr)) {
+	            Logger::log($tn . ": " . $tr['file'] . " " . $tr['line']);
+	        }
+	    }
+	}
+	
+	function getProjectId() {
+		$trace = debug_backtrace();
+	    Logger::log("trace count: ".count($trace));   
+	    foreach($trace as $tn=>$tr) {
+	        if (is_array($tr)) {
+	            Logger::log($tn . ": " . $tr['file'] . " " . $tr['line']);
+	        }
+	    }
+	}
 
 } // projectEvent
 

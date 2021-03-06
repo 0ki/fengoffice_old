@@ -24,6 +24,7 @@
   	'select unselect all' => 'Select/Unselect all',
   	'ascending' => 'Ascending',
   	'descending' => 'Descending',
+    'parametrizable'=> 'Paramenter?',
   );
   
 ?>

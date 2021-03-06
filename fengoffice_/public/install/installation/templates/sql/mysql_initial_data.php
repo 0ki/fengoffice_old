@@ -54,8 +54,8 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'file_revision_comments_required', '0', 'BoolConfigHandler', '0', '0', NULL),
 	('general', 'currency_code', '$', 'StringConfigHandler', '0', '0', NULL),
 	('general', 'checkout_for_editing_online', '0', 'BoolConfigHandler', '0', '0', NULL),
-	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL);
-	
+	('general', 'show_feed_links', '0', 'BoolConfigHandler', '0', '0', NULL),
+	('general', 'ask_administration_autentification', 0, 'BoolConfigHandler', 0, 0, NULL);
 
 INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_searchable`, `is_image`) VALUES
 	('zip', 'archive.png', 0, 0),
@@ -101,6 +101,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_
 	('task panel', 0, 0, 2),
 	('time panel', 1, 0, 3),
 	('calendar panel', 0, 0, 4),
+	('mails panel', 0, 0, 5),
 	('context help', 1, 0, 5);
 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
@@ -225,7 +226,13 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('context help', 'show_add_event_inivitation_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('general', 'custom_report_tab', 'tasks', 'StringConfigHandler', '1', '0', NULL),
  ('general', 'show_context_help', 'until_close', 'ShowContextHelpConfigHandler', '0', '0', NULL),
- ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL);
+ ('general', 'last_mail_format', 'plain', 'StringConfigHandler', '1', '0', NULL),
+ ('general', 'amount_objects_to_show', '5', 'IntegerConfigHandler', '0', '0', NULL),
+ ('task panel', 'noOfTasks', '8', 'IntegerConfigHandler', '0', '100', NULL),
+ ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'block_email_images', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'draft_autosave_timeout', '60', 'IntegerConfigHandler', '0', '100', NULL),
+ ('mails panel', 'attach_docs_content', '0', 'BoolConfigHandler', '0', '0', NULL);
 
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
 	('check_mail', '1', '10', '0', '1', '0000-00-00 00:00:00'),

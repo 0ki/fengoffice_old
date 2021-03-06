@@ -544,7 +544,7 @@ abstract class ApplicationDataObject extends DataObject {
 			return $ret;
 		}
 	} // getLinkedObjects
-
+	
 	/**
 	 * Drop all relations with linked objects for this object
 	 *
@@ -623,9 +623,7 @@ abstract class ApplicationDataObject extends DataObject {
 
 
 	function getProject() {
-		if (Env::isDebugging()) {
-			//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
-		}
+		Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
 		return null;
 	}
 	

@@ -1,5 +1,5 @@
 <?php
-  require_javascript('modules/linkToObjectForm.js');
+  require_javascript('og/modules/linkToObjectForm.js');
   set_page_title(lang('link objects'));
   project_tabbed_navigation(PROJECT_TAB_FILES);
   project_crumbs(array(
@@ -31,7 +31,7 @@
     <?php echo render_linked_objects() ?>
   </div>
   
-  <script type="text/javascript">
+  <script>
     App.modules.linkToObjectForm.toggleLinkForms();
   </script>
   

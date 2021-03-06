@@ -145,10 +145,15 @@ class Localization {
 
 		// Get settings file path and include it
 		$settings_file = $this->getLanguageDirPath() . '/' . $this->getLocale() . '.php';
-		if(is_file($settings_file)) {
+		if (is_file($settings_file)) {
 			include $settings_file;
 		} else {
-			throw new FileDnxError($settings_file, "Failed to find language settings file. Expected location: '$settings_file'.");
+			$base_settings = $this->getLanguageDirPath() . '/default.php';
+			if (is_file($base_settings)) {
+				include $base_settings;
+			} else {
+				throw new FileDnxError($settings_file, "Failed to find language settings file. Expected location: '$settings_file'.");
+			}
 		} // if
 
 		// Clear langs

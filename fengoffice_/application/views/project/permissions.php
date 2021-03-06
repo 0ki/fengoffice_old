@@ -1,6 +1,6 @@
 <div style="padding:10px">
 <?php
-  require_javascript('modules/updatePermissionsForm.js');
+  require_javascript('og/modules/updatePermissionsForm.js');
   set_page_title(lang('permissions'));
   project_tabbed_navigation(PROJECT_TAB_PEOPLE);
   project_crumbs(array(
@@ -15,7 +15,7 @@
     $quoted_permissions[] = "'$permission_id'";
   } // foreach
 ?>
-<script type="text/javascript">
+<script>
   App.modules.updatePermissionsForm.owner_company_id = <?php echo owner_company()->getId() ?>;
   App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
 </script>
@@ -69,7 +69,7 @@
             </td>
           </tr>
 <?php if(!$company->isOwner()) { ?>
-          <script type="text/javascript">
+          <script>
             if(!document.getElementById('project_user_<?php echo $user->getId() ?>').checked) {
               document.getElementById('user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
             } // if
@@ -87,7 +87,7 @@
     </div>
   </div>
 <?php if(!$company->isOwner()) { ?>
-  <script type="text/javascript">
+  <script>
     if(!document.getElementById('project_company_<?php echo $company->getId() ?>').checked) {
       document.getElementById('project_company_users_<?php echo $company->getId() ?>').style.display = 'none';
     } // if

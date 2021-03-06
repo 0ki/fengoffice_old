@@ -429,13 +429,23 @@ class Timeslot extends BaseTimeslot {
 		} else {
 			$displayname = lang("n/a");
 		}
+		
+		$lastUpdated = '';
+		$lastUpdatedBy = '';
+		if ($this->getUpdatedOn()->getTimestamp() != $this->getCreatedOn()->getTimestamp()) {
+			$lastUpdated = $this->getUpdatedOn()->format(user_config_option('date format', 'd/m/Y'));
+			$lastUpdatedBy = $this->getUpdatedByDisplayName();
+		}
+		
 		$result = array(
 			'id' => $this->getId(),
 			'date' => $this->getStartTime()->getTimestamp(),
 			'time' => $this->getSeconds(),
 			'pid' => $project_id,
 			'uid' => $this->getUserId(),
-			'uname' => $displayname
+			'uname' => $displayname,
+			'lastupdated' => $lastUpdated,
+			'lastupdatedby' => $lastUpdatedBy
 		);
 		
 		if ($this->getDescription() != '')

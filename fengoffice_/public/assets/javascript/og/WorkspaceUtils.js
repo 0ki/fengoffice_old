@@ -203,20 +203,25 @@ og.showSubWsMenu = function(node){
 	var html = "";
 	for (var i = 0; i < node.childNodes.length; i++){
 		var cn = node.childNodes[i];
-		if (cn.id != 'trash')
-			html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs()\">" + cn.ws.name + "</a></div>";
+		if (cn.id != 'trash') {
+			html += "<div class=\"subwscrumbs\"><a class=\"ico-color" + cn.ws.color + "\" style=\"padding-bottom:2px;padding-top:1px;padding-left:18px;background-repeat:no-repeat!important\" href=\"#\" onclick=\"Ext.getCmp('workspace-panel').select(" + cn.ws.id + ");og.clearSubWsCrumbs();return false;\">" + cn.ws.name + "</a></div>";
+		}
 	}
 		
 	var expander = document.getElementById('subWsExpander');
 	expander.innerHTML = html;
-	var wsCrumbs = document.getElementById('wsCrumbsDiv');
-	expander.style.left = (wsCrumbs.offsetWidth + 70) + "px";
 	expander.style.display = 'block';
-	
 	clearTimeout(og.eventTimeouts['swst']);
 	expander = Ext.get('subWsExpander');
 	expander.slideIn("l", {duration: 0.5, useDisplay: true});
 	og.eventTimeouts['swst'] = setTimeout("og.HideSubWsTooltip()", 5000);
+
+};
+
+og.adjustSubWsCrumbsPosition = function(){
+	var expander = document.getElementById('subWsExpander');
+	var wsCrumbs = document.getElementById('wsCrumbsDiv');
+	expander.style.left = (wsCrumbs.offsetWidth + 70) + "px";
 };
 
 og.setSubWsTooltipTimeout = function(value){
@@ -246,7 +251,7 @@ og.updateWsCrumbs = function(newWs) {
 			break;
 		if (first){
 			first = false;
-			html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + actNode.ws.id + ')">' + actNode.text + '</a></div>' + html;
+			html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.adjustSubWsCrumbsPosition()" onclick="og.expandSubWsCrumbs(' + actNode.ws.id + ')">' + actNode.text + '</a></div>' + html;
 		} else
 			html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + actNode.ws.id + ')">' + actNode.text + '</a>' + html;
 		
@@ -259,7 +264,7 @@ og.updateWsCrumbs = function(newWs) {
 	}
 	
 	if (first){
-		html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
+		html = '<div id="curWsDiv" style="font-size:150%;display:inline;"><a href="#" style="display:inline;line-height:28px" onmouseover="og.adjustSubWsCrumbsPosition()" onclick="og.expandSubWsCrumbs(' + newWs.id + ')">' + newWs.name + '</a></div>' + html;
 	} else html = '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(0)">' + lang('all') + '</a>' + html;
 	var crumbsdiv = Ext.get('wsCrumbsDiv');
 	crumbsdiv.dom.innerHTML = html;
@@ -277,9 +282,9 @@ og.updateWsCrumbsTag = function(newTag) {
 
 
 if(document.addEventListener)
-	document.addEventListener("mouseup", og.HideSubWsTooltip, false);
+	document.addEventListener("mouseup", og.setSubWsTooltipTimeout.createCallback(null, 100), false);
 else
-	document.attachEvent("onmouseup", og.HideSubWsTooltip);
+	document.attachEvent("onmouseup", og.setSubWsTooltipTimeout.createCallback(null, 100));
 
 
 

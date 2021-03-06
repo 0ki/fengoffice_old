@@ -1,6 +1,6 @@
 <?php
-require_javascript("modules/addFileForm.js");
-require_javascript('modules/addMessageForm.js');
+require_javascript("og/modules/addFileForm.js");
+require_javascript('og/modules/addMessageForm.js');
 if ($file->isNew()) {
 	$submit_url = get_url('files', 'add_file');
 } else if (isset($checkin) && $checkin) {
@@ -52,7 +52,7 @@ $comments_required = config_option('file_revision_comments_required');
 			<?php 
 				$show_help_option = user_config_option('show_context_help', 'until_close'); 
 				if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_file_context_help', true, logged_user()->getId()))) {?>
-				<div id="weblinkFileContextHelp" style="margin-bottom:3px;">
+				<div id="weblinkFileContextHelp" class="contextHelpStyle">
 					<?php render_context_help($this, 'chelp addfile', 'add_file'); ?>
 				</div>
 			<?php }?>
@@ -120,7 +120,7 @@ $comments_required = config_option('file_revision_comments_required');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file','upload_file'); ?>
 			</div>
 		<?php }?>
@@ -208,7 +208,7 @@ $comments_required = config_option('file_revision_comments_required');
 		        </div>
 		   	<?php } ?>
 			<?php if (!isset($checkin) && $file->getType() == ProjectFiles::TYPE_DOCUMENT) {?>
-				<script type="text/javascript">
+				<script>
 					App.modules.addFileForm.updateFileClick('<?php echo $genid ?>');
 					App.modules.addFileForm.versionFileChangeClick('<?php echo $genid ?>');
 				</script>
@@ -221,13 +221,6 @@ $comments_required = config_option('file_revision_comments_required');
 
 	<div id="<?php echo $genid ?>add_file_select_workspace_div" style="display: none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_workspace_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php render_context_help($this, 'chelp upload file workspace','upload_file_workspace'); ?>
-			</div>
-		<?php }?>
 			<legend><?php echo lang('workspace') ?></legend>
 			<?php if ($file->isNew()) {
 				echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
@@ -254,7 +247,7 @@ $comments_required = config_option('file_revision_comments_required');
 			<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_tags_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file tags','upload_file_tags'); ?>
 			</div>
 		<?php }?>
@@ -268,7 +261,7 @@ $comments_required = config_option('file_revision_comments_required');
 			<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_description_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file description','upload_file_description'); ?>
 			</div>
 		<?php }?>
@@ -313,7 +306,7 @@ $comments_required = config_option('file_revision_comments_required');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_custom_properties_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file custom properties','upload_file_custom_properties'); ?>
 			</div>
 		<?php }?>
@@ -328,7 +321,7 @@ $comments_required = config_option('file_revision_comments_required');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 					if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_subscribers_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file subscribers','upload_file_subscribers'); ?>
 			</div>
 		<?php }?>
@@ -361,7 +354,7 @@ $comments_required = config_option('file_revision_comments_required');
 			<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_upload_file_linked_objects_context_help', true, logged_user()->getId())) {?>
-			<div id="uploadFileContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="uploadFileContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp upload file linked objects','upload_file_linked_objects'); ?>
 			</div>
 		<?php }?>
@@ -403,7 +396,7 @@ $comments_required = config_option('file_revision_comments_required');
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	var ctl = Ext.get('<?php echo $genid ?>fileFormFile');
 	if (ctl) ctl.focus();
 </script>

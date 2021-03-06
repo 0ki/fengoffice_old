@@ -20,7 +20,7 @@ og.ObjectPicker = function(config) {
             	]
         	}),
         	remoteSort: true
-        });
+    	});
     	this.store.setDefaultSort('name', 'asc');
 
 		function renderIcon(value, p, r) {
@@ -235,6 +235,7 @@ og.ObjectPicker = function(config) {
 					'Milestones':true,
 					'WebPages':true
 				}
+				this.filters.filter.type = '';
 			}
 			// load types
 			if (types['Messages']) {
@@ -458,6 +459,9 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	},
 	
 	loadFilters: function(config) {
+		delete this.grid.store.baseParams.type;
+		delete this.grid.store.baseParams.tag;
+		delete this.grid.store.baseParams.active_project;
 		var typef = this.findById('typeFilter');
 		var tagf = this.findById('tagFilter');
 		var wsf = this.findById('wsFilter');

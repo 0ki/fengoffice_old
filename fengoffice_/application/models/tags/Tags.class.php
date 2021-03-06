@@ -212,7 +212,7 @@ class Tags extends BaseTags {
 		} // if
 		else
 		$private='';
-		$proj_ids = logged_user()->getActiveProjectIdsCSV();
+		$proj_ids = logged_user()->getWorkspacesQuery();
 		$rows = DB::executeAll("SELECT DISTINCT `tag` FROM " . self::instance()->getTableName(true) . " WHERE
       ((`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_messages co WHERE project_id in (" . $proj_ids ."))) OR 
       (`rel_object_manager` = ? AND `rel_object_id` in ( SELECT id  FROM " . TABLE_PREFIX . "project_files co WHERE project_id in (" . $proj_ids ."))) OR 

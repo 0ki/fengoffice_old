@@ -53,6 +53,18 @@ function removeStateFilter(filter) {
 	actual_status_filter = actual_status_filter.replace(' ' + filter, '');
 }
 
+og.getSelectedEventsCsv = function() {
+	els = document.getElementsByName('obj_selector');
+	ids = '';
+	if (els.length > 0) {
+		for (i=0; i<els.length; i++) {
+			if (els[i].checked)
+				ids += ',' + els[i].id.substr(4);
+		}
+		ids = ids.substr(1);
+	}
+	return ids;
+}
 
 // Toolbar Items
 var topToolbarItems = { 
@@ -139,17 +151,104 @@ var topToolbarItems = {
 				og.openLink(url);
 			}}
 		]}
+	}),
+	tag: new Ext.Action({
+		text: lang('tag'),
+        tooltip: lang('tag selected events'),
+        iconCls: 'ico-tag',
+		disabled: true,
+		menu: new og.TagMenu({
+			listeners: {
+				'tagselect': {
+					fn: function(tag) {
+						ids = og.getSelectedEventsCsv();
+						og.openLink(og.getUrl('event', 'tag_events', {ids: ids, tags: tag}));
+					},
+					scope: this
+				}
+			}
+		})
+	}),
+	del: new Ext.Action({
+		text: lang('move to trash'),
+        tooltip: lang('move selected objects to trash'),
+        iconCls: 'ico-trash',
+		disabled: true,
+		handler: function() {
+			if (confirm(lang('confirm move to trash'))) {
+				og.openLink(og.getUrl('event', 'delete', {ids: og.getSelectedEventsCsv()}));
+			}
+		},
+		scope: this
+	}),
+	edit: new Ext.Action({
+		text: lang('edit'),
+        tooltip: lang('edit selected event'),
+        iconCls: 'ico-new',
+		disabled: true,
+		handler: function() {
+			ev_id = og.getSelectedEventsCsv();
+			if (ev_id.length == 0) {
+				og.err(lang('must select an event'));
+			} else {
+				if (ev_id.indexOf(',') != -1) {
+					og.err(lang('select only one event'));
+				} else {
+					var url = og.getUrl('event', 'edit', {id:ev_id});
+					og.openLink(url, null);
+				}
+			}
+		}
 	})
 };
 
+/**************************************************************************************/
+/* Main Top Toolbar 																  */
+/**************************************************************************************/
 
 og.CalendarTopToolbar = function(config) {
 	Ext.applyIf(config,{
-			id: "calendarPanelTopToolbarObject",
-			renderTo: "calendarPanelTopToolbar",
-			height: 28,
-			style:"border:0px none"
-		});
+		id: "calendarPanelTopToolbarObject",
+		height: 28,
+		style:"border:0px none"
+	});
+		
+	og.CalendarTopToolbar.superclass.constructor.call(this, config);
+	
+	this.add(topToolbarItems.add);
+	this.addSeparator();
+	this.add(topToolbarItems.tag);
+	this.add(topToolbarItems.del);
+	this.add(topToolbarItems.edit);
+	this.addSeparator();
+	this.add(topToolbarItems.imp_exp);
+}
+
+Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
+	updateCheckedStatus : function(eventsSelected){
+		if (eventsSelected > 0) {
+			topToolbarItems.del.enable();
+			topToolbarItems.tag.enable();
+			if (eventsSelected == 1) topToolbarItems.edit.enable();
+			else topToolbarItems.edit.disable();
+		} else {
+			topToolbarItems.del.disable();
+			topToolbarItems.tag.disable();
+			topToolbarItems.edit.disable();
+		}
+	}
+});
+
+/**************************************************************************************/
+/* Second Top Toolbar 																  */
+/**************************************************************************************/
+
+og.CalendarSecondTopToolbar = function(config) {
+	Ext.applyIf(config,{
+		id: "calendarPanelSecondTopToolbarObject",
+		height: 28,
+		style:"border:0px none"
+	});
 		
 	og.CalendarTopToolbar.superclass.constructor.call(this, config);
 	
@@ -280,10 +379,7 @@ og.CalendarTopToolbar = function(config) {
 			viewActionsState.maybe
 		]}
 	});
-    
-    
-	this.add(topToolbarItems.add);
-	this.addSeparator();
+	
 	this.add(topToolbarItems.view_month);
 	this.add(topToolbarItems.view_week);
 	this.add(topToolbarItems.view_date);
@@ -296,12 +392,11 @@ og.CalendarTopToolbar = function(config) {
 	this.add(lang('user'));
 	this.add(' ');
 	this.add(filterNamesCompaniesCombo);
-	this.addSeparator();
-	this.add(status_menu);
-	this.addSeparator();
-	this.add(topToolbarItems.imp_exp);
+	this.add(' ');
+	this.add(status_menu);	
 }
 
-Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {});
+Ext.extend(og.CalendarSecondTopToolbar, Ext.Toolbar, {});
 
 Ext.reg("calendarTopToolbar", og.CalendarTopToolbar);
+Ext.reg("calendarSecondTopToolbar", og.CalendarSecondTopToolbar);

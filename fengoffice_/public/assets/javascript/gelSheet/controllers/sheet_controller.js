@@ -55,30 +55,36 @@ function scSetCell(sheet,cell){
 	sheet.cells[cell.row][cell.column] = cell;
 }
 
-function scLoadSheet(sheet, book){
-//	var book = response.data;
-//	alert(book.toSource());
+function scLoadSheet(sheet, data){
 	application.activeBook = new Book(book.name);
 	application.activeBook.setId(book.id);
 	application.setBookName(book.name);
 	var values = book.sheets[0].cells;
-	//alert(values.length + "   " + data.sheets[0].cells.toSource());
-
 	for(var i=0;i<values.length;i++){
-		sheet.setFormula(values[i].r,values[i].c,values[i].f);
+		sheet.setFormula(values[i].r,values[i].c,values[i].f, true);
+		sheet.setCellFontStyleId(values[i].r,values[i].c,values[i].fs, true);
 	}
+	
+	
 }
 
 function scSheetToJSON(sheet){
     sheet = window.activeSheet; //TODO: sacar
-
+    var formula = 'null';
     var json = '{"sheetId":null,"cells":[';
     var cells = "";
     for(var i=0;i<sheet.cells.length;i++){
     	if(sheet.cells[i])
         	for(var j=0;j<sheet.cells[i].length;j++){
-                if(sheet.cells[i][j])
-               	 	cells+=',{"dataRow":"' + i +'","dataColumn":"'+j+'","cellFormula":"'+ sheet.cells[i][j].getFormula()+'","fontStyleId":"'+ sheet.cells[i][j].getFontStyleId() + '","layoutStyleId":"0"}';
+                if(sheet.cells[i][j]){
+                	formula = sheet.cells[i][j].getFormula();
+                	if(formula ==undefined)
+                		formula = 'null' ;
+                	else
+                		formula = '"'+ formula +'"' ;
+      
+                	cells+=',{"dataRow":"' + i +'","dataColumn":"'+j+'","cellFormula":'+ formula +',"fontStyleId":"'+ sheet.cells[i][j].getFontStyleId() + '","layoutStyleId":"0"}';
+                }
         	}
     }
     json += cells.substr(1);

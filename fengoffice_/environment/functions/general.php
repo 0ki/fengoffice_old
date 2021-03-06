@@ -419,10 +419,12 @@ function get_referer($default = null) {
  * @return integer
  */
 function get_max_upload_size() {
-	return min(
-	php_config_value_to_bytes(ini_get('upload_max_filesize')),
-	php_config_value_to_bytes(ini_get('post_max_size'))
-	); // max
+	$max = min(
+		php_config_value_to_bytes(ini_get('upload_max_filesize')),
+		php_config_value_to_bytes(ini_get('post_max_size'))
+	);
+	Hook::fire('max_upload_size', null, $max);
+	return $max;
 } // get_max_upload_size
 
 /**
@@ -528,6 +530,15 @@ function remove_scripts($html) {
 	return preg_replace('/<script[^>]*>.*(<\/script>|$)/i', '', $html);
 }
 
+function remove_images_from_html($html) {
+	$html = preg_replace('/<img[^>]*>/i', '', $html);
+	return preg_replace('/<\/img>/i', '', $html);
+}
+
+function html_has_images($html) {
+	return preg_match('/<img[^>]*>/i', $html) > 0;
+}
+
 function make_ajax_url($url) {
 	$q = strpos($url, '?');
 	$n = strpos($url, '#');
@@ -589,5 +600,24 @@ function purify_html($html) {
 	$p = new HTMLPurifier();
 	return $p->purify($html);
 }
-
+/**
+ * 
+ * @return the real Clients IP
+ */
+function get_ip_address()
+{
+    if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
+    {
+      $ip=$_SERVER['HTTP_CLIENT_IP'];
+    }
+    elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
+    {
+      $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
+    }
+    else
+    {
+      $ip=$_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
 ?>

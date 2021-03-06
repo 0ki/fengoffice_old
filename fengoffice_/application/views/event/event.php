@@ -1,17 +1,18 @@
 <?php
-require_javascript('modules/addMessageForm.js'); 
+require_javascript('og/modules/addMessageForm.js'); 
+$genid = gen_id(); 
 ?>
-<script type="text/javascript">
+<script>
 
-	function cal_hide(id) {
+	og.cal_hide = function(id) {
 		document.getElementById(id).style.display = "none";
 	}
 
-	function cal_show(id) {
+	og.cal_show = function(id) {
 		document.getElementById(id).style.display = "block";
 	}
 	
-	function toggleDiv(div_id){
+	og.toggleDiv = function(div_id){
 		var theDiv = document.getElementById(div_id);
 		dis = !theDiv.disabled;
 	    var theFields = theDiv.getElementsByTagName('*');
@@ -19,30 +20,44 @@ require_javascript('modules/addMessageForm.js');
 	    theDiv.disabled=dis;
 	}
 	
-	function changeRepeat() {
-		cal_hide("cal_extra1");
-		cal_hide("cal_extra2");
-		cal_hide("cal_extra3");
+	og.changeRepeat = function() {
+		og.cal_hide("cal_extra1");
+		og.cal_hide("cal_extra2");
+		og.cal_hide("cal_extra3");
+		og.cal_hide("<?php echo $genid?>add_reminders_warning");
 		if(document.getElementById("daily").selected){
 			document.getElementById("word").innerHTML = '<?php echo escape_single_quotes(lang("days"))?>';
-			cal_show("cal_extra1");
-			cal_show("cal_extra2");
+			og.cal_show("cal_extra1");
+			og.cal_show("cal_extra2");
+			og.cal_show("<?php echo $genid?>add_reminders_warning");
 		} else if(document.getElementById("weekly").selected){
 			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("weeks"))?>';
-			cal_show("cal_extra1");
-			cal_show("cal_extra2");
+			og.cal_show("cal_extra1");
+			og.cal_show("cal_extra2");
+			og.cal_show("<?php echo $genid?>add_reminders_warning");
 		} else if(document.getElementById("monthly").selected){
 			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("months"))?>';
-			cal_show("cal_extra1");
-			cal_show("cal_extra2");
+			og.cal_show("cal_extra1");
+			og.cal_show("cal_extra2");
+			og.cal_show("<?php echo $genid?>add_reminders_warning");
 		} else if(document.getElementById("yearly").selected){
 			document.getElementById("word").innerHTML =  '<?php echo escape_single_quotes(lang("years"))?>';
-			cal_show("cal_extra1");
-			cal_show("cal_extra2");
+			og.cal_show("cal_extra1");
+			og.cal_show("cal_extra2");
+			og.cal_show("<?php echo $genid?>add_reminders_warning");
 		} else if(document.getElementById("holiday").selected){
-			cal_show("cal_extra3");
+			og.cal_show("cal_extra3");
+			og.cal_show("<?php echo $genid?>add_reminders_warning");
 		}
 	}
+	
+	og.confirmEditRepEvent = function(ev_id, is_repetitive) {
+		if (is_repetitive) {
+			return confirm(lang('confirm repeating event edition'));
+		}
+		return true;
+	}
+	
 </script>
 
 
@@ -60,15 +75,10 @@ require_javascript('modules/addMessageForm.js');
     along with this file; if not, write to the Free Software
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-$genid = gen_id();
 $object = $event;
 
 $active_projects = logged_user()->getActiveProjects();
-if ($event->isNew()) {
-	$project = active_or_personal_project();
-} else {
-	$project = $event->getProject();
-}
+$project = active_or_personal_project();
 
 $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
@@ -126,7 +136,10 @@ $use_24_hours = user_config_option('time_format_use_24');
 					<td>
 					<?php echo $event->isNew() ? lang('new event') : lang('edit event') ?></td>
 					<td style="text-align:right">
-						<?php echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 200))?>
+					<?php
+						$is_repetitive = ($event->getRepeatD() > 0 || $event->getRepeatM() > 0 || $event->getRepeatY() > 0 || $event->getRepeatH() > 0) ? 'true' : 'false'; 
+						echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 200, 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : '')));
+					?>
 					</td>
 				</tr>
 				</table>
@@ -162,7 +175,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event','add_event'); ?>
 			</div>
 		<?php }?>
@@ -172,12 +185,16 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_workspace_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event workspace','add_event_workspace'); ?>
 			</div>
 		<?php }?>
 		<legend><?php echo lang('workspace') ?></legend>
-			<?php echo select_project2('event[project_id]', $project->getId(), $genid) ?>
+			<?php if ($object->isNew()) {
+				echo select_workspaces('ws_ids', null, array($project), $genid.'ws_ids');
+			} else {
+				echo select_workspaces('ws_ids', null, $object->getWorkspaces(), $genid.'ws_ids');
+			} ?>
 		</fieldset>
 		</div>
 		<div id="trap1"><fieldset id="fs1" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
@@ -187,7 +204,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_tag_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event tag','add_event_tag'); ?>
 			</div>
 		<?php }?>
@@ -202,7 +219,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 			<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_description_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event description','add_event_description'); ?>
 			</div>
 		<?php }?>
@@ -219,100 +236,110 @@ $use_24_hours = user_config_option('time_format_use_24');
 	$rnum = array_var($event_data, 'rnum'); 
 	$rend = array_var($event_data, 'rend');?>
 		
-		<div id="<?php echo $genid ?>event_repeat_options_div" style="display:none">
+	<div id="<?php echo $genid ?>event_repeat_options_div" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help', 'until_close'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
-				<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
-			</div>
-		<?php }?>
-			<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
-		<?php
-		// calculate what is visible given the repeating options
-		$hide = '';
-		$hide2 = (isset($occ) && $occ == 6)? '' : "display: none;";
-		if((!isset($occ)) OR $occ == 1 OR $occ=="6" OR $occ=="") $hide = "display: none;";
-		// print out repeating options for daily/weekly/monthly/yearly repeating.
-		if(!isset($rsel1)) $rsel1=true;
-		if(!isset($rsel2)) $rsel2="";
-		if(!isset($rsel3)) $rsel3="";
-		if(!isset($rnum) || $rsel2=='') $rnum="";
-		if(!isset($rend) || $rsel3=='') $rend="";
-		if(!isset($hide2) ) $hide2="";?>
-<table border="0" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="left" valign="top" style="padding-bottom:6px">
-		
-			<table><tr><td><?php echo lang('CAL_REPEAT')?> 
-			<select name="event[occurance]" onChange="changeRepeat()" tabindex="40">
-				<option value="1" id="today"<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?></option>
-				<option value="2" id="daily"<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?></option>
-				<option value="3" id="weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
-				<option value="4" id="monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?></option>
-				<option value="5" id="yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?></option>
-				<option value="6" id="holiday"<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>><?php echo lang('CAL_HOLIDAY_EVENT') ?></option>
-			</select>
-			<?php if (isset($occ) && $occ > 1 && $occ < 6){ ?>
-			<script type="text/javascript">
-				changeRepeat();
-			</script>
-			<?php } ?>
-			</td><td>
-			<div id="cal_extra1" style="<?php echo $hide ?>">
-				&nbsp;<?php echo lang('CAL_EVERY') . text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '50', 'maxlength' => '100', 'style'=>'width:25px')) ?>
-				<span id="word"></span>
-			</div>
-			</td></tr></table>
-		</td>
-		</tr><tr>
-		<td>
-			<div id="cal_extra2" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
-				<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1', 'tabindex' => '60')) . lang('CAL_REPEAT_FOREVER')?>
-				<br/>
-				<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2', 'tabindex' => '70')) .lang('CAL_REPEAT');
-				echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80')) ."&nbsp;" . lang('CAL_TIMES') ?>
-				<br/>
-				<table><tr><td><?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3', 'tabindex' => '90')) .lang('CAL_REPEAT_UNTIL');?></td>
-				<td><?php echo pick_date_widget2('event[repeat_end]', $rend, $genid, 95);?></td></tr></table>
-				<br>
-			</div>
-			<div id="cal_extra3" style="width: 300px; align: center; text-align: left; <?php echo $hide2 ?>'">
-				<?php
-				// get the week number
-				$tmp = 1;
-				$week = 0;
-				while($week < 5 AND $tmp <= $day){
-					$week++;
-					$tmp += 7;
-				}
-				// get days in month and day name
-				$daysinmonth = date("t",mktime(0,0,1,$month,$day,$year));
-				$dayname = date("l",mktime(0,0,1,$month,$day,$year));
-				$dayname = "CAL_" .strtoupper  ($dayname);
-				// use week number, and days in month to calculate if it's on the last week.
-				if($day > $daysinmonth - 7) $lastweek = true;
-				else $lastweek = false;
-				// calculate the correct number endings
-				if($week==1) $weekname = "1st";
-				elseif($week==2) $weekname = "2nd";
-				elseif($week==3) $weekname = "3rd";
-				else $weekname = $week."th";
-				// print out the data for holiday repeating
-		
-				echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ". lang($dayname) ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
-		
-				if($lastweek){// if it's the last week, add option to have event repeat on LAST week every month (holiday repeating only)
-					echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." " . lang($dayname)." ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
-				}
-				?>
-			</div>
-		</td>
-	</tr>
-</table>
+			<?php 
+				$show_help_option = user_config_option('show_context_help', 'until_close'); 
+				if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_repeat_options_context_help', true, logged_user()->getId())) {?>
+				<div id="addEventPanelContextHelp" class="contextHelpStyle">
+					<?php render_context_help($this, 'chelp add event repeat options','add_event_repeat_options'); ?>
+				</div>
+			<?php }?>
+				<legend><?php echo lang('CAL_REPEATING_EVENT')?></legend>
+			<?php
+			// calculate what is visible given the repeating options
+			$hide = '';
+			$hide2 = (isset($occ) && $occ == 6)? '' : "display: none;";
+			if((!isset($occ)) OR $occ == 1 OR $occ=="6" OR $occ=="") $hide = "display: none;";
+			// print out repeating options for daily/weekly/monthly/yearly repeating.
+			if(!isset($rsel1)) $rsel1=true;
+			if(!isset($rsel2)) $rsel2="";
+			if(!isset($rsel3)) $rsel3="";
+			if(!isset($rnum) || $rsel2=='') $rnum="";
+			if(!isset($rend) || $rsel3=='') $rend="";
+			if(!isset($hide2) ) $hide2="";?>
+			
+			<table border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="left" valign="top" style="padding-bottom:6px">
+						<table>
+							<tr>
+								<td align="left" valign="top" style="padding-bottom:6px">
+									<?php echo lang('CAL_REPEAT')?> 
+										<select name="event[occurance]" onChange="og.changeRepeat()" tabindex="40">
+											<option value="1" id="today"<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?></option>
+											<option value="2" id="daily"<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?></option>
+											<option value="3" id="weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
+											<option value="4" id="monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?></option>
+											<option value="5" id="yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?></option>
+											<option value="6" id="holiday"<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>><?php echo lang('CAL_HOLIDAY_EVENT') ?></option>
+										</select>
+									<?php if (isset($occ) && $occ > 1 && $occ < 6){ ?>
+									<script>
+										og.changeRepeat();
+									</script>
+									<?php } ?>
+								</td>
+							</tr>
+						</table>
+					</td>
+					</tr><tr>
+					<td>
+						<div id="cal_extra2" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
+							<div id="cal_extra1" style="<?php echo $hide ?>">
+								<?php echo lang('CAL_EVERY') ."&nbsp;". text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '50', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+								<span id="word"></span>
+							</div>
+							<table>
+								<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
+									<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1', 'tabindex' => '60')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+								</td></tr>
+								<tr><td colspan="2" style="vertical-align:middle">
+									<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2', 'tabindex' => '70')) ."&nbsp;". lang('CAL_REPEAT');
+									echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80')) ."&nbsp;" . lang('CAL_TIMES') ?>
+								</td></tr>
+								<tr><td style="vertical-align:middle">
+									<?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3', 'tabindex' => '90')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?>
+								</td><td style="padding-left:8px;">
+									<?php echo pick_date_widget2('event[repeat_end]', $rend, $genid, 95);?>
+								</td></tr>
+							</table>
+						</div>
+						<div id="cal_extra3" style="width: 300px; align: center; text-align: left; <?php echo $hide2 ?>'">
+							<?php
+							// get the week number
+							$tmp = 1;
+							$week = 0;
+							while($week < 5 AND $tmp <= $day){
+								$week++;
+								$tmp += 7;
+							}
+							// get days in month and day name
+							$daysinmonth = date("t",mktime(0,0,1,$month,$day,$year));
+							$dayname = date("l",mktime(0,0,1,$month,$day,$year));
+							$dayname = "CAL_" .strtoupper  ($dayname);
+							// use week number, and days in month to calculate if it's on the last week.
+							if($day > $daysinmonth - 7) $lastweek = true;
+							else $lastweek = false;
+							// calculate the correct number endings
+							if($week==1) $weekname = "1st";
+							elseif($week==2) $weekname = "2nd";
+							elseif($week==3) $weekname = "3rd";
+							else $weekname = $week."th";
+							// print out the data for holiday repeating
+					
+							echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ". lang($dayname) ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+					
+							if($lastweek){// if it's the last week, add option to have event repeat on LAST week every month (holiday repeating only)
+								echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." " . lang($dayname)." ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
+							}
+							?>
+						</div>
+					</td>
+				</tr>
+			</table>
 		</fieldset>
-		</div>
+	</div>
 	<div id="trap4"><fieldset id="fs4" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
@@ -320,11 +347,14 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_reminders_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event reminders','add_event_reminders'); ?>
 			</div>
 		<?php }?>
 	<legend><?php echo lang('object reminders')?></legend>
+		<div id="<?php echo $genid ?>add_reminders_warning" class="desc" style="display:none;">
+			<?php echo lang('reminders will not apply to repeating events') ?>
+		</div>
 		<?php echo render_add_reminders($object, "start");?>
 	</fieldset>
 	</div>
@@ -335,7 +365,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_custom_properties_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event custom properties','add_event_custom_properties'); ?>
 			</div>
 		<?php }?>
@@ -351,7 +381,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_subscribers_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event subscribers','add_event_subscribers'); ?>
 			</div>
 		<?php }?>
@@ -363,24 +393,19 @@ $use_24_hours = user_config_option('time_format_use_24');
 	</div>
 	
 	<script>
-	var wsTree = Ext.get('<?php echo $genid ?>wsSel');
-	wsTree.previousValue = <?php echo $project->getId() ?>;
-	wsTree.on("click", function(ws) {
+	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+	wsch.on("wschecked", function(arguments) {
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-		var wsid = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
-		if (wsid != this.previousValue) {
-			this.previousValue = wsid;
-			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-				url: og.getUrl('object', 'render_add_subscribers', {
-					workspaces: wsid,
-					users: uids,
-					genid: '<?php echo $genid ?>',
-					object_type: '<?php echo get_class($object->manager()) ?>'
-				}),
-				scripts: true
-			});
-		}
-	}, wsTree);
+		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+			url: og.getUrl('object', 'render_add_subscribers', {
+				workspaces: this.getValue(),
+				users: uids,
+				genid: '<?php echo $genid ?>',
+				object_type: '<?php echo get_class($object->manager()) ?>'
+			}),
+			scripts: true
+		});
+	}, wsch);
 	</script>
 	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
@@ -391,7 +416,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_linked_objects_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event linked objects','add_event_linked_objects'); ?>
 			</div>
 		<?php }?>
@@ -407,7 +432,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_invitation_context_help', true, logged_user()->getId())) {?>
-			<div id="addEventPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addEventPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add event invitation','add_event_invitation'); ?>
 			</div>
 		<?php }?>
@@ -438,9 +463,9 @@ $use_24_hours = user_config_option('time_format_use_24');
 			} // if ?>
 
 			<p><?php echo lang('event invitations desc') ?></p>
-
-			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification', 'tabindex' => '110')) ?> 
+			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification', 'tabindex' => '110')) ?>
 			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
+			
 	</fieldset>
 	</div>	
 	<div id="trap9"><fieldset id="fs9" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
@@ -503,7 +528,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px">&nbsp;</td>
 		<td align='left'>
 			<?php
-			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'tabindex' => '170', 'onchange' => 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'));
+			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'tabindex' => '170', 'onchange' => 'og.toggleDiv(\''.$genid.'event[start_time]\'); og.toggleDiv(\''.$genid.'ev_duration_div\');'));
 			echo lang('CAL_FULL_DAY');
 			?>
 		</td>
@@ -532,21 +557,15 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php echo render_object_custom_properties($object, 'ProjectEvents', true) ?>
 	</div><br/>
 	
-	<?php 
-	// THIS IS HERE SO THAT THE DURATION CAN BE SET CORRECTLY ACCORDING TO THE EVENT'S ACTUAL START DATE.
-	// otherwise, if you modify a repeating event, it can save the duration as a totally different date!
-	echo  submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '180'));?>
+	<?php echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 180, 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : ''))); ?>
 	</div></div>
 </form>
 
+<script>
 
-
-<script type="text/javascript">
-
-
-var wsTree = Ext.get('<?php echo $genid ?>wsSel');
-var filter_user = '<?php echo $filter_user ?>';
-var prevWsVal = -1;
+var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
+og.eventInvitationsUserFilter = '<?php echo $filter_user ?>';
+og.eventInvitationsPrevWsVal = -1;
 
 og.drawInnerHtml = function(companies) {
 	var htmlStr = '';
@@ -572,26 +591,26 @@ og.drawInnerHtml = function(companies) {
 			
 			htmlStr += '</div>';
 			htmlStr += '<div class="companyMembers">';
-			htmlStr += '<ul>';
+			htmlStr += '<table><tr>';
 			
 			for (j = 0; j < companies[i].users.length; j++) {
 				usr = companies[i].users[j];
-				htmlStr += '<li><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input>'; 
-				htmlStr += '<label for="<?php echo $genid ?>inviteUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
+				htmlStr += '<td><div class="checkBoxListItem"><table><tr><td><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>inviteUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\',\'invite_companies\', \'invitation\')"></input></td>'; 
+				htmlStr += '<td><label for="<?php echo $genid ?>inviteUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label>';
 				htmlStr += '<script type="text/javascript">';
 				htmlStr += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
-				htmlStr += '\<\/script></li>';
+				htmlStr += '\<\/script></td></tr></table></div></td>';
 			}
-			htmlStr += '</ul>';
+			htmlStr += '</tr></table>';
 			htmlStr += '</div>';
 			htmlStr += '</div>';
 		}
 	}
 	return htmlStr;
-}
+};
 
 og.drawUserList = function(success, data) {
-	companies = data.companies;
+	var companies = data.companies;
 
 	var inv_div = Ext.get('<?php echo $genid ?>inv_companies_div');
 	if (inv_div != null) inv_div.remove();
@@ -601,20 +620,30 @@ og.drawUserList = function(success, data) {
 		inv_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>inv_companies_div">' + og.drawInnerHtml(companies) + '</div>');	
 		inv_div.repaint();
 	}
-}
+};
 
-og.redrawUserList = function(){
-	var wsVal = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
-	
-	if (wsVal != prevWsVal) {
-		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:filter_user}), {callback:og.drawUserList});
-		prevWsVal = wsVal;
+og.redrawUserList = function(wsVal){
+	if (wsVal != og.eventInvitationsPrevWsVal) {
+		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:og.eventInvitationsUserFilter}), {callback:og.drawUserList});
+		og.eventInvitationsPrevWsVal = wsVal;
+	}
+};
+wsch.on("wschecked", function() {
+	og.redrawUserList(this.getValue());
+}, wsch);
+<?php if ($object->isNew()) {
+	$ws_ids = $project->getId();
+} else {
+	$ws_ids = "";
+	foreach ($object->getWorkspaces() as $w) {
+		if ($ws_ids != "") $ws_ids .= ",";
+		$ws_ids .= $w->getId();
 	}
 }
-wsTree.addListener('click', og.redrawUserList);
-og.redrawUserList();
+?>
+og.redrawUserList('<?php echo $ws_ids ?>');
 
 Ext.get('eventSubject').focus();
-<?php if (array_var($event_data, 'typeofevent') == 2) echo 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
+<?php if (array_var($event_data, 'typeofevent') == 2) echo 'og.toggleDiv(\''.$genid.'event[start_time]\'); og.toggleDiv(\''.$genid.'ev_duration_div\');'; ?>
 
 </script>

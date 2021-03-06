@@ -37,9 +37,9 @@ if(count($cps) > 0){
 						echo '<div id="listValues'.$customProp->getId().'" name="listValues'.$customProp->getId().'">';
 						$isMemo = $customProp->getType() == 'memo';
 						$count = 0;
-						$fieldValues = explode(',', $default_value);
+						$fieldValues = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
 						foreach($fieldValues as $value){
-							$value = str_replace('|', ',', $value);
+							$value = str_replace('|', ',', $value->getValue());
 							if($value != ''){
 								echo '<div id="value'.$count.'">';
 								if($isMemo){
@@ -75,8 +75,26 @@ if(count($cps) > 0){
 					break;
 				case 'date':
 					// dates from table are saved as a string in "Y-m-d H:i:s" format
-					$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
-					echo pick_date_widget2($name, $value, null, $startTi + $ti);
+					if($customProp->getIsMultipleValues()){
+						$name .= '[]';
+						$count = 0;
+						$fieldValues = CustomPropertyValues::getCustomPropertyValues($_custom_properties_object->getId(), $customProp->getId());
+						echo '<table id="table'.$genid.$customProp->getId().'"><tbody>';
+						foreach($fieldValues as $val){
+							$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $val->getValue());
+							echo '<tr><td style="width:150px;">';
+							echo pick_date_widget2($name, $value, null, $startTi + $ti);
+							echo '</td><td>';
+							echo '<a href="#" class="link-ico ico-delete" onclick="og.removeCPDateValue(\''.$genid.'\','.$customProp->getId().','.$count.')"></a>';
+							echo '</td></tr>';
+							$count++;
+						}
+						echo '</tbody></table>';
+						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().')">'.lang('add value').'</a><br/>';
+					}else{
+						$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
+						echo pick_date_widget2($name, $value, null, $startTi + $ti);
+					}
 					break;
 				case 'list':
 					$options = array();
@@ -105,6 +123,5 @@ if(count($cps) > 0){
 		}
 	}
 }
-
 
 ?>

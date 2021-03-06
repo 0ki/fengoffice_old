@@ -10,9 +10,15 @@ if ($attendance != null) {
 }
 ?>
 <br><b><?php echo lang('CAL_DURATION')?>:</b> <?php echo $duration?><br>
-<br><b><?php echo lang('CAL_DESCRIPTION')?>:</b><br><?php echo $desc . ($desc != '' ? '<br>' : ''); ?>
-<?php
-if ($otherInvitationsTable != null) {
-	echo '<br><b>' . lang('invitations') . ':</b><br>' . $otherInvitationsTable;
-}
-?>
+<?php if ($desc) { ?>
+<fieldset>
+<legend><?php echo lang('CAL_DESCRIPTION')?></legend>
+<?php echo $desc; ?>
+</fieldset>
+<?php } ?>
+<?php if ($otherInvitationsTable != null) { ?>
+<fieldset>
+<legend><?php echo lang('invitations') ?></legend>
+<?php echo $otherInvitationsTable; ?>
+</fieldset>
+<?php } ?>

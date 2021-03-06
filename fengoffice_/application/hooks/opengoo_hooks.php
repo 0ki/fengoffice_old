@@ -15,7 +15,7 @@ Hook::register("opengoo");
  * - render_getting_started: Add additional getting started help.
  * 		- $unused
  * 		- &$unused
- *   
+ *
  * - render_object_properties: Called when drawing properties for an object's view. Echo the HTML to be drawn.
  *  	- $object : ProjectDataObject,
  *  		Object that is being viewed.
@@ -136,10 +136,8 @@ function opengoo_reminder_email($reminder, &$ret) {
 	$ret++;
 }
 
-if (!defined('UPLOAD_HOOK')) define('UPLOAD_HOOK', 'opengoo');
-
 function opengoo_render_upload_control($args, &$ret) {
-	if (UPLOAD_HOOK == 'opengoo') {
+	if (upload_hook() == 'opengoo') {
 		$attributes = $args['attributes'];
 		echo file_field('file_file', null, $attributes);
 	}

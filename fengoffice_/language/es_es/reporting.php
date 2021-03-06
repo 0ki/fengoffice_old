@@ -2,12 +2,12 @@
 	'custom' => 'Personalizado',
 	'custom reports' => 'Reportes personalizados',
 	'no custom reports' => 'No hay reportes personalizados',
-	'add custom report' => 'Agregar un reporte customizado',
+	'add custom report' => 'Añadir un reporte customizado',
 	'edit custom report' => 'Editar reporte personalizado',
 	'new custom report' => 'Nuevo reporte personalizado',
-	'add report' => 'Agregar reporte',
+	'add report' => 'Añadir reporte',
 	'object type' => 'Tipo de Objeto',
-	'add condition' => 'Agregar condición',
+	'add condition' => 'Añadir condición',
 	'custom report created' => 'Reporte personalizado creado',
 	'custom report updated' => 'Reporte personalizado actualizado',
 	'conditions' => 'Condiciones',
@@ -19,5 +19,6 @@
 	'condition' => 'Condición',
 	'select unselect all' => 'Seleccionar/Deseleccionar todas',
   	'ascending' => 'Ascendente',
-  	'descending' => 'Descendente'
+  	'descending' => 'Descendente',
+	'parametrizable'=> 'Parametrizable?',
 ); ?>

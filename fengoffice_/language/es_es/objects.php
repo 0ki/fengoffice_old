@@ -35,7 +35,7 @@
     'form' => 'Formulario',
     'forms' => 'Formularios',
     'file' => 'Archivo',
-  	'files' => 'Archivos',
+    'files' => 'Archivos',
     'file revision' => 'Revisión de archivo',
     'file revisions' => 'Revisión de archivos',
     'revision' => 'Revisión',
@@ -51,6 +51,8 @@
   	'reporting' => 'Reportes',
   
     // Variations
+    'modify object subscribers' => 'Modificar Subscritores',
+  	'subscription modified successfully' => 'Subscritores modificados exitosamente',
     'owner company' => 'Empresa propietaria',
   	'client companies' => 'Empresas clientes',
     
@@ -87,7 +89,7 @@
   	'file contents' => 'Contenido del archivo',
   
   	'object reminders' => 'Recordatorios',
-    'add object reminder' => 'Agregar recordatorio',
+    'add object reminder' => 'Añadir recordatorio',
   
   	'load file'=> 'Cargar archivo',
   	'create document' => 'Crear Documentos',

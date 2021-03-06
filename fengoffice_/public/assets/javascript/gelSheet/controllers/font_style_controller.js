@@ -22,6 +22,13 @@ function toBool(val){
 		return 0;
 }
 
+function toBoolFromString(val){
+	if(parseInt(val))
+		return true;
+	else
+		return false;
+}
+
 function fscChangeBold(object){
 	var fstyle = styleHandler.getFontStyle(object.getFontStyleId());
 	var oldValue = fstyle.bold;
@@ -30,15 +37,3 @@ function fscChangeBold(object){
 	return oldValue;
 }
 
-function fscFontsStyleToJSON(){
-	var styles = Styler.getAllFontsStyles();
-	var json = "";
-	for(var item in styles){
-		if(item!="remove")
-			json+=',{"fontStyleId":"' + item +'","fontId":"'+(styles[item].font +1)+'","fontBold":"'+toBool(styles[item].bold)+'","fontItalic":"'+toBool(styles[item].italic)+'","fontSize":"'+styles[item].size+'","fontColor":"'+styles[item].color+'","fontUnderline":"'+toBool(false)+'"}';
-	}
-	json = '"fontStyles":['+ json.substr(1) + ']';
-	window.activeSheet.setValue(1,1,json);
-//	alert(json);
-	return json;
-}

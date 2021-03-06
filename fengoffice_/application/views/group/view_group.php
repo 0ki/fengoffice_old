@@ -1,4 +1,4 @@
-
+<?php add_page_action(lang('edit group'), get_url('group', 'edit_group', array('id' => $group->getId())), 'ico-edit')?>
 
 <div class="adminGroups" style="height:100%;background-color:white">
   <div class="adminHeader">

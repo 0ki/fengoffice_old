@@ -65,6 +65,13 @@ function __production_error_handler($code, $message, $file, $line) {
 	} // if
 
 	Logger::log("Error: $message in '$file' on line $line (error code: $code)", Logger::ERROR);
+/*	$trace = debug_backtrace();
+	Logger::log("trace count: ".count($trace));	
+	foreach($trace as $tn=>$tr) {
+		if (is_array($tr)) {
+			Logger::log($tn . ": " . (isset($tr['file']) ? $tr['file']:'No File') . " " . (isset($tr['line']) ? $tr['line']:'No Line'));
+		} 
+	}*/
 } // __production_error_handler
 
 /**
@@ -329,6 +336,16 @@ function personal_project() {
 	return $usr?$usr->getPersonalProject():null;
 } // active_project
 
+/**
+ * Return which is the upload hook
+ * @return string
+ */
+function upload_hook() {
+	if (!defined('UPLOAD_HOOK')) define('UPLOAD_HOOK', 'opengoo');
+	return UPLOAD_HOOK;
+}
+
+
 // ---------------------------------------------------
 //  Config interface
 // ---------------------------------------------------
@@ -375,6 +392,8 @@ function user_config_option($option, $default = null, $user_id = null) {
 	if (!$user_id) {
 		if (logged_user() instanceof User) {
 			$user_id = logged_user()->getId();
+		} else if (is_null($default)) {
+			return UserWsConfigOptions::getDefaultOptionValue($option, $default);
 		} else {
 			return $default;
 		}
@@ -482,6 +501,15 @@ function remove_dir($dir) {
 	}
 	@closedir($dh);
 	@rmdir($dir);
+}
+
+function new_personal_project_name($username = null) {
+	$wname = Localization::instance()->lang('personal workspace name');
+	if (is_null($wname)) {
+		$wname = "{0} Personal";
+	}
+	if ($username != null) $wname = str_replace("{0}", $username, $wname);
+	return $wname;	
 }
 
 ?>

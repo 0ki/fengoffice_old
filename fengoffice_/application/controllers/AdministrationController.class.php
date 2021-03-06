@@ -1,5 +1,7 @@
 <?php
 
+define('ADMIN_SESSION_TIMEOUT', 3600);
+
 /**
  * Administration controller
  *
@@ -25,6 +27,37 @@ class AdministrationController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 		} // if
+		
+		//Autentify password
+		$pasword_required = ConfigOptions::getByName('ask_administration_autentification');
+		if ($pasword_required instanceof ConfigOption){
+			$optionValue = $pasword_required->getValue();
+			if ($optionValue == 1) {
+				$last_login = array_var($_SESSION, 'admin_login', 0);
+				if ($last_login < time() - ADMIN_SESSION_TIMEOUT && array_var($_GET, 'a') != 'password_autentify') {
+					//$this->setTemplate(get_template_path('password_autentify', 'administration'));
+					$ref_controller = null;
+					$ref_action = null;
+					$ref_params = array();
+					foreach($_GET as $k => $v) {
+						$ref_var_name = $k;
+						switch ($ref_var_name) {
+							case 'c':
+								$ref_controller = $v;
+								break;
+							case 'a':
+								$ref_action = $v;
+								break;
+							default:
+								$ref_params[$ref_var_name] = $v;
+						}// switch
+						}
+					$url = get_url($ref_controller, $ref_action, $ref_params);
+					//alert("URL = $url");
+					$this->redirectTo('administration', 'password_autentify', array('url' => $url));
+				}//foreach
+			}//if
+	   }//if
 	} // __construct
 
 	/**
@@ -35,9 +68,62 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
-
+		 
+		
 	} // index
 
+	/**
+	 * Validate user information in order to give acces to the administration panel
+	 * */
+	function password_autentify() {
+		if (isset($_POST['enetedPassword'])) {
+			$userName = array_var($_POST,'userName');
+
+			$pass = array_var($_POST,'enetedPassword');
+		
+			if(trim($userName) == '') {
+				flash_error(lang('username value missing'));
+				ajx_current("empty");	
+				return;		
+			} // if
+			if(trim($pass) == '') {
+				flash_error(lang('password value missing'));
+				ajx_current("empty");	
+				return;
+			} // if
+			
+			$user = Users::getByUsername($userName);
+			if(!($user instanceof User)) {
+					flash_error(lang('invalid login data'));
+					ajx_current("empty");
+					return;							
+			} // if
+			
+			if(!$user->isValidPassword($pass)) {
+					flash_error(lang('invalid login data'));
+					ajx_current("empty");
+					return;
+			} // if
+	
+			if ($userName != logged_user()->getUsername()){
+				flash_error(lang('invalid login data'));
+				ajx_current("empty");
+				return;
+			}
+					
+			$_SESSION['admin_login'] = time();
+			$this->redirectToUrl($_POST['url']);
+		} else {
+			$last_login = array_var($_SESSION, 'admin_login', 0);
+			if ($last_login >= time() - ADMIN_SESSION_TIMEOUT) {
+				$this->redirectToUrl(array_var($_GET, 'url', get_url('administration', 'index')));
+			}
+		}
+
+		tpl_assign('url', array_var($_GET, 'url', get_url('administration', 'index')));
+
+	}
+	
 	/**
 	 * Show company page
 	 *
@@ -63,6 +149,8 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('users_by_company', Users::getGroupedByCompany());
 	} // members
 
+	
+
 	/**
 	 * List all company projects
 	 *
@@ -71,10 +159,18 @@ class AdministrationController extends ApplicationController {
 	 * @return null
 	 */
 	function projects() {
-		if(can_manage_workspaces(logged_user()))
-			tpl_assign('projects', Projects::getAll());
-		else
-			tpl_assign('projects', logged_user()->getProjects());
+		$projects=null;
+		if (can_manage_workspaces(logged_user())) {
+			$padres = Projects::getAll('name','p2 = 0');//traigo todos los nivel 1
+		} else {
+			$padres = logged_user()->getProjects('name','p2 = 0');
+		}
+		foreach($padres as $hijo){
+			$projects[] = $hijo;
+			$aux = 	$hijo->getSortedChildren(logged_user());
+			foreach($aux as $a){$projects[] = $a;}
+		}
+		tpl_assign('projects',  $projects);
 	} // projects
 
 	/**

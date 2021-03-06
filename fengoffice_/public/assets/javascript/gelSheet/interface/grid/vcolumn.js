@@ -10,38 +10,35 @@
  *
  */
 function ColumnReziseArea(){
-	var self = document.createElement("TABLE");
+	var self = document.createElement("DIV");
 
 	self.constructor = function(){
-		var tbody = document.createElement("TBODY");
-		self.style.top = "0px";
-		self.style.left = "0px";
-		self.style.borderCollapse = "collapse";
-		self.style.width = "100%";
-		self.style.height = "100%";
-		var trHeader = document.createElement("TR");
-		trHeader.style.height = "100%";
-		var tdHeader = document.createElement("TD");
-
-		var tdResizer = document.createElement("TD");
+		this.data = document.createElement("DIV");
+		this.data.style.width = "100%";
+		this.data.style.top = "0px" ;
+		this.data.style.left = "0px" ;
+		this.data.style.height = "100%" ;
+		
+		var tdResizer = document.createElement("DIV");
 		tdResizer.offset = 0;
-		tdResizer.style.width = "5px";
+		tdResizer.style.width = "8px";
 		tdResizer.style.cursor = "e-resize";
 		tdResizer.style.backgroundColor = "transparent";
+		
+		tdResizer.style.height = "100%" ;
+		tdResizer.style.cssFloat = "right" ;
 
 		tdResizer.onmousedown = function(e){
 			e ? e : e = window.event; //get event for IE
 			this.offset = e.screenX;
 			if(self.onresizing) self.onresizing(e); //Ghost function call, to support external resizing from outside
 		}
-
+		this.tdResizer = tdResizer;
+		self.style.width="100%" ;
+		self.style.height="100%" ;
 		self.style.backgroundColor = "transparent";
-
-		trHeader.appendChild(tdHeader);
-		trHeader.appendChild(tdResizer);
-		this.data = tdHeader;
-		tbody.appendChild(trHeader);
-		self.appendChild(tbody);
+		self.appendChild(tdResizer) ;
+		self.appendChild(this.data) ;
 	}
 
 	self.setInnerHTML = function(value){
@@ -56,77 +53,20 @@ function VColumn(index){
 
 	self.constructor = function(index){
 		this.index = index;
-		this.column = new Column(index);
 		this.vcells = new Array();
-		//this.innerHTML = String.fromCharCode(65+index);
 		this.style.textAlign = "center";
-		//this.style.position = "absolute";
-		this.style.overflow = "hidden";
+		//this.style.overflow = "hidden";
 		this.style.cursor = "url(img/col.cur.ico), default";
 		this.className = "ColumnUnselected";
 
 		this.resizeArea = new ColumnReziseArea();
 
-		this.resizeArea.onresizing = function(e){
-			//e ? e : e = window.event; //get event for IE
-			if(self.onresizing) self.onresizing(e);
-		}
-
-		/*this.resizeArea.onmousedown = function(e){ //TODO: Emprolijar no usar acceso atributos
-			var handler = self.parentNode.verticalResizer; //parentNode = GRID
-			//var pos = (window.Event) ? parseInt(e.pageX): parseInt(event.clientX);
-			handler.element = self;
-			handler.style.left = px(self.getLeft() + self.getWidth());
-			handler.onmousedown(e);
-		}*/
-
 		this.resizeArea.setInnerHTML(String.fromCharCode(65+index));
 		this.appendChild(this.resizeArea);
 		WrapStyle(this);
 	}
-
-	self.setInnerHTML = function(value){
-		this.resizeArea.setInnerHTML(value);
-	}
-
-	self.setTitle = function(value){
-		this.resizeArea.setInnerHTML(value);
-	}
-
-	self.setColumn = function(column){
-		this.column = column;
-	}
-
-	self.addCell = function(cell){
-		this.vcells.push(cell);
-	}
-
-	self.activate = function(){
-		this.className = "ColumnFocused";
-	}
-
-	self.deactivate = function(){
-		this.className = "ColumnUnselected";
-	}
-
-	self.select = function(){
-		this.className = "ColumnSelected";
-
-		for(var i=0;i<this.vcells.length;i++){
-			this.vcells[i].select();
-		}
-	}
-
-	self.unselect = function(){
-		this.className = "ColumnUnselected";
-		for(var i=0;i<this.vcells.length;i++){
-			this.vcells[i].unselect();
-		}
-	}
-
-	self.getName = function(){
-		return this.innerHTML;
-	}
+	
+	//############ GETTERS AND SETTERS ##################################
 
 	self.setIndex = function(index){
 		this.index = index;
@@ -136,20 +76,8 @@ function VColumn(index){
 		return this.index;
 	}
 
-	self.resize = function(newvalue){
-		var width = this.getWidth() - newvalue;
-		if (width < 6) width = 0;
-		this.setWidth(width);
-
-		/*for(i=0;i<this.vcells.length;i++){
-			this.vcells[i].setWidth(newvalue);
-		}
-		EventManager.fire(EVT_COLUMN_CHANGE,this.vcells[0]);*/
-		//fire own event, this  must be implemented by grid
-		if(this.columnChanged) this.columnChanged();
-	}
-	self.addCell = function(cell){
-		this.vcells.push(cell);
+	self.getAddress = function(){
+		return {col:this.index};
 	}
 
 	self.getSize = function(){
@@ -160,18 +88,139 @@ function VColumn(index){
 		return this.setWidth(size);
 	}
 
-	self.refresh = function(){
-		//this.innerHTML = nameSpace.getColumnName(this.index);
-		/*this.appendChild(this.resizeArea); //Restores Resize Area
+	self.setInnerHTML = function(value){
+		this.resizeArea.setInnerHTML(value);
+	}
 
-		if(this.vcells[0].getLeft()!= this.getLeft()){
-			for(var i=0;i<this.vcells.length;i++)
-				this.vcells[i].setLeft(this.getLeft());
-		}*/
+	self.setTitle = function(value){
+		this.resizeArea.setInnerHTML(value);
+	}
+	
+	//############### METHODS ###########################################
+	/**
+	 * Adds a Cell (VCell) to the Column
+	 */
+	self.addCell = function(cell){
+		this.vcells.push(cell);
+	}
+
+	/**
+	 * Changes Style of column to an activated mode defined by the ColumnFocused style
+	 * on style.css
+	 */
+	self.activate = function(){
+		this.className = "ColumnFocused";
+	}
+
+	/**
+	 * Changes Style of column to an unselected mode defined by the ColumnUnselected style
+	 * on style.css
+	 */
+	self.deactivate = function(){
+		this.className = "ColumnUnselected";
+	}
+
+	/**
+	 * Changes Style of column to an selected mode defined by the ColumnSelected style
+	 * on style.css
+	 * Extends on each of Cell
+	 */
+	self.select = function(){
+		this.className = "ColumnSelected";
+
+		for(var i=0;i<this.vcells.length;i++){
+			this.vcells[i].select();
+		}
 	}
 
 
+	/**
+	 * Changes Style of column to an unselected mode defined by the ColumnUnselected style
+	 * on style.css
+	 * Extends on each of Cell
+	 */
+	self.unselect = function(){
+		this.className = "ColumnUnselected";
+		for(var i=0;i<this.vcells.length;i++){
+			this.vcells[i].unselect();
+		}
+	}
+
+	/**
+	 * Changes Size of the column to a new offset (delta)
+	 */
+	self.resize = function(delta){
+		var width = this.getWidth() - delta;
+		if (width < 6) width = 0;
+		this.setWidth(width);
+		
+//		if(this.columnChanged) this.columnChanged();
+	}
+	
 	self.constructor(index);
 
+	//################ EVENTS ###################################
+
+	self.resizeArea.onresizing = function(e){
+		e ? e : e =window.event; //get event for IE
+		self.fire('resizemousedown',e);
+	}
+	
+	self.onmousedown = function(e){
+		e ? e : e =window.event; //get event for IE
+		self.fire('mousedown',e);
+	}
+	
+	self.onmouseover = function(e){
+		e ? e : e =window.event; //get event for IE
+		self.fire('mouseover',e);
+	}
+//	
+
+	WrapEvents(self);
+	self.register('mousedown');
+	self.register('mouseover');
+	self.register('resizemousedown');
 	return self;
 }
+
+/*
+var posx = 0;
+var posy = 0;
+if (!e) var e = window.event;
+if (e.pageX || e.pageY) 	{
+	posx = e.pageX;
+	posy = e.pageY;
+}
+else if (e.clientX || e.clientY) 	{
+	posx = e.clientX + document.body.scrollLeft
+		+ document.documentElement.scrollLeft;
+	posy = e.clientY + document.body.scrollTop
+		+ document.documentElement.scrollTop;
+}
+// posx and posy contain the mouse position relative to the document
+// Do something with this information
+
+
+
+//============================================================
+// functions to find the X and Y coords of an element on which
+// an event occurred - the event object is passed
+//============================================================
+function findPosX(e)
+{
+    var x = (e.offsetX) ? e.offsetX : e.layerX;
+    var X = (e.pageX)   ? e.pageX   : e.clientX;
+    var pos = X - x;
+    return pos;
+}
+
+function findPosY(e)
+{
+    var y = (e.offsetY) ? e.offsetY : e.layerY;
+    var Y = (e.pageY)   ? e.pageY   : e.clientY;
+    var pos = Y - y;
+    return pos;
+}
+
+*/

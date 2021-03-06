@@ -163,4 +163,6 @@
 	'attach from workspace' => 'Anhang vom Arbeitsbereich auswählen',
 	'new notification comment' => 'Neuer Kommentar bei \'{0}\'',
 	'new notification comment desc' => 'Neuer Kommentar bei \'{0}\' wurde durch {1} hinzugefügt.',
+	'deleted notification email' => 'Email \'{0}\' wurde in den Papierkorb verschoben.',
+	'deleted notification email desc' => 'Email \'{0}\' wurde von {1} in den Papierkorb verschoben.',
 ); ?>

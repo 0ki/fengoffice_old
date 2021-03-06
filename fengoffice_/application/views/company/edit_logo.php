@@ -17,7 +17,11 @@
   } // if
 
 ?>
-<form action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+
+<div class="avatar">
+<div class="coInputSeparator"></div>
+<div class="coInputMainBlock">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   
@@ -40,5 +44,6 @@
   </div>
   
   <?php echo submit_button(lang('edit company logo')) ?>
-  
+</div>
+</div>
 </form>

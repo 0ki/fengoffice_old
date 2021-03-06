@@ -263,7 +263,7 @@ class Notifier {
 		
 		$properties['unique id'] = $uid;
 		$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
-				
+
 		tpl_assign('object', $object);
 		tpl_assign('description', $description);
 		tpl_assign('properties', $properties);
@@ -277,6 +277,11 @@ class Notifier {
 				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
 				$properties['workspace'] = $workspaces;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
+		
+				$properties['accept or reject invitation help, click on one of the links below'] = '';
+				$properties['accept invitation'] = get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()));
+				$properties['reject invitation'] = get_url('event', 'change_invitation_state', array('at' => 2, 'e' => $object->getId(), 'u' => $user->getId()));
+				
 				tpl_assign('properties', $properties);
 				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
 				$emails[] = array(
@@ -315,11 +320,14 @@ class Notifier {
 			$locale = $user->getLocale();
 			Localization::instance()->loadSettings($locale, ROOT . '/language');
 			$date = Localization::instance()->formatDescriptiveDate($event->getStart(), $user->getTimezone());
+			if ($event->getTypeId() != 2) $date .= " " . Localization::instance()->formatTime($event->getStart(), $user->getTimezone());
+			$workspaces = implode(", ", $event->getUserWorkspacePaths($user));
+			tpl_assign('workspaces', $workspaces);
 			tpl_assign('date', $date);
 			self::queueEmail(
 				array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 				self::prepareEmailAddress($from_user->getEmail(), $from_user->getDisplayName()),
-				$event->getProject()->getName() . ' - ' . lang('event invitation response') . ': ' . $event->getSubject(),
+				lang('event invitation response') . ': ' . $event->getSubject(),
 				tpl_fetch(get_template_path('event_inv_response_notif', 'notifier'))
 			); // send
 		} // foreach
@@ -453,6 +461,17 @@ class Notifier {
 	 * @return bool successful
 	 */
 	static function sendEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
+		$ret = false;
+		Hook::fire('notifier_send_email', array(
+			'to' => $to,
+			'from' => $from,
+			'subject' => $subject,
+			'body' => $body,
+			'type' => $type,
+			'encoding' => $encoding,
+		), $ret);
+		if ($ret) return true;
+		
 		Env::useLibrary('swift');
 
 		$mailer = self::getMailer();

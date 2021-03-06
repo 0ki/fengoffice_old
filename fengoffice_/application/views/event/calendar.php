@@ -63,8 +63,16 @@ foreach($companies as $company)
 	<input type="hidden" id="hfCalUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
 </div>
 
+<script>
+	og.ev_cell_dates = [];
+	og.events_selected = 0;
+	og.eventSelected(0);
+	var ev_dropzone = new Ext.dd.DropZone('calendar', {ddGroup:'ev_dropzone'});
+</script>
+
 <div id="cal_main_div" class="calendar" style="position:relative;width:100%;height:100%;overflow:hidden">
-<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
 
 <table style="width:100%;height:100%;">
 <tr>
@@ -145,7 +153,21 @@ foreach($companies as $company)
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
 					$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
-								
+					$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
+					
+					$result = array();
+					if($milestones) {
+						$result = array_merge($result, $milestones );
+					}
+					if($tasks) {
+						foreach ($tasks as $task) {
+							$result = array_merge($result, replicateRepetitiveTaskForCalendar($task, $date_end));
+						}
+					}
+					if($birthdays) {
+						$result = array_merge($result, $birthdays );
+					}
+					
 					// Loop to render the calendar
 					for ($week_index = 0;; $week_index++) {
 					?>
@@ -161,26 +183,16 @@ foreach($companies as $company)
 							$i = $week_index * 7 + $day_of_week;
 							$day_of_month = $i - $firstday + 1;
 							// if weekends override do this
-							if(cal_option("weekendoverride")){
-								// set whether the date is in the past or future/present
-								if($day_of_week == 0 OR $day_of_week == 6){
-									$daytype = "weekend";
-								}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
-									$daytype = "weekday";
-								}else{
-									$daytype = "weekday_future";
-								}
+							if( !user_config_option("start_monday") AND ($day_of_week == 0 OR $day_of_week == 6) ){
+								$daytype = "weekend";
+							}elseif( user_config_option("start_monday") AND ($day_of_week == 5 OR $day_of_week == 6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+								$daytype = "weekend";
+							}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
+								$daytype = "weekday";
 							}else{
-								if( !user_config_option("start_monday") AND ($day_of_week == 0 OR $day_of_week == 6) ){
-									$daytype = "weekend";
-								}elseif( user_config_option("start_monday") AND ($day_of_week == 5 OR $day_of_week == 6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
-									$daytype = "weekend";
-								}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
-									$daytype = "weekday";
-								}else{
-									$daytype = "weekday_future";
-								}
+								$daytype = "weekday_future";
 							}
+
 							$date_tmp = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
 							$extra_style = '';
 							// see what type of day it is
@@ -206,18 +218,34 @@ foreach($companies as $company)
 					<?php
 						
 							if($day_of_month <= $lastday AND $day_of_month >= 1){ 
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
-								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
+								$p = get_url('event', 'viewdate', array(
+									'day' => $day_of_month,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
+								$t = get_url('event', 'add', array(
+									'day' => $day_of_month,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
 								$w = $day_of_month;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
 							}elseif($day_of_month < 1){
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
-								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
+								$p = get_url('event', 'viewdate', array(
+									'day' => $day_of_month,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
+								$t = get_url('event', 'add', array(
+									'day' => $day_of_month,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
 								$ld = idate('d', mktime(0, 0, 0, $month_aux, 0, $year_aux));//date("t", strtotime("last month",mktime(0,0,0,$month-1,1,$year)));
 								$w = $ld + $day_of_month ;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);  
 								
-							}else{
+							} else {
 								if($day_of_month == $lastday + 1){
 									$month_aux++;
 									if($month_aux == 13){
@@ -225,15 +253,23 @@ foreach($companies as $company)
 										$year_aux++;
 									}
 								}
-								$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
-								$t = cal_getlink("index.php?action=add&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
+								$p = get_url('event', 'viewdate', array(
+									'day' => $day_of_month - $lastday,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
+								$t = get_url('event', 'add', array(
+									'day' => $day_of_month - $lastday,
+									'month' => $month_aux,
+									'year' => $year_aux
+								));
 								$w = $day_of_month - $lastday;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);
 							}
 							$start_value = $dtv->format(user_config_option('date_format', 'd/m/Y'));
 														
 					?>	
-						 		<div style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
+						 		<div id="m<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>" style='z-index:0; min-height:90px; height:100%; cursor:pointer;<?php echo $extra_style ?>' onclick="showMonthEventPopup('<?php echo $dtv->getDay() ?>','<?php echo $dtv->getMonth()?>','<?php echo $dtv->getYear()?>','<?php echo $start_value ?>');" >
 						 			<div class='<?php echo $daytitle?>' style='text-align:right;'>
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="og.disableEventPropagation(event);return true;"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
@@ -252,21 +288,16 @@ foreach($companies as $company)
 							
 							// This loop writes the events for the day in the cell
 							if (is_numeric($w)){ //if it is a day after the first of the month
-								$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $status_filter); 
-								if(!$result)
-									$result = array();
-								if($milestones)
-									$result = array_merge($result, $milestones );
-									
-								if($tasks)
-									$result = array_merge($result, $tasks );
 								
-								if(count($result) < 1) { ?> 
+								$result_evs = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $status_filter); 
+								if (!is_array($result_evs)) $result_evs = array();
+								
+								if(count($result) + count($result_evs) < 1) { ?> 
 									&nbsp; 				
 								<?php
 								} else {
 									$count = 0;
-									foreach($result as $event){
+									foreach($result_evs as $event){
 										if($event instanceof ProjectEvent ){
 											$count++;
 											$subject =  clean($event->getSubject());
@@ -291,12 +322,13 @@ foreach($companies as $company)
 												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
 												<div style="border: 1px solid;border-color:<?php echo $border_color ?>;">
 													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
-													<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
+													<a href='<?php echo get_url('event', 'viewevent', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
 														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
 														<span><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?></span>
 													</a>
 													</td><td align="right">
 														<div align="right" style="padding-right:1px;">
+														<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin-top:2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);og.disableEventPropagation(event)"></input>
 														<?php
 														if ($user_filter != -1) { 
 															$invitations = $event->getInvitations();
@@ -319,11 +351,12 @@ foreach($companies as $company)
 													</td></tr></table>
 											 	</div>
 											 	</div>
-										 		<script type="text/javascript">
+										 		<script>
 										 			<?php
 										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A')) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
 										 			?>
 													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
+													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() ?>', '<?php echo $event->getId()?>', 'event'); // Drag
 												</script>
 											 	
 								<?php
@@ -331,7 +364,10 @@ foreach($companies as $company)
 								?>
 												
 								<?php
-										} elseif($event instanceof ProjectMilestone ){
+										}
+									}
+									foreach($result as $event){
+										if($event instanceof ProjectMilestone ){
 											$milestone=$event;
 											$due_date=$milestone->getDueDate();
 											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
@@ -348,13 +384,14 @@ foreach($companies as $company)
 													
 								?>
 													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<nobr><a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
-																<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
-															<?php echo $cal_text ?>
-														</a></nobr>
+														<a href='<?php echo $milestone->getViewUrl()?>' class="internalLink" onclick="og.disableEventPropagation(event);return true;" >
+															<img src="<?php echo image_url('/16x16/milestone.png')?>" style="vertical-align: middle;border-width: 0px;">
+															<span><?php echo $cal_text ?></span>
+														</a>
 													</div>
-													<script type="text/javascript">
+													<script>
 														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
+														og.createMonthlyViewDrag('m_ms_div_<?php echo $milestone->getId() ?>', '<?php echo $milestone->getId()?>', 'milestone'); // Drag
 													</script>
 								<?php
 												}//if count
@@ -368,8 +405,26 @@ foreach($companies as $company)
 											$task = $event;
 											$start_date = $task->getStartDate();
 											$due_date = $task->getDueDate();
-											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
-											if ($now == mktime(0, 0, 0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {	
+											$end_of_task = false;
+											$start_of_task = false;
+											if ($due_date instanceof DateTimeValue)
+												if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
+											if ($start_date instanceof DateTimeValue)
+												if ($dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+											if ($start_of_task || $end_of_task) {
+												if ($start_of_task && $end_of_task) {
+													$tip_title = lang('task');
+													$img_url = image_url('/16x16/tasks.png');
+													$tip_pre = '';
+												} else if ($end_of_task) {
+													$tip_title = lang('end of task');
+													$img_url = image_url('/16x16/task_end.png');
+													$tip_pre = 'end_';
+												} else {
+													$tip_title = lang('start of task');
+													$img_url = image_url('/16x16/task_start.png');
+													$tip_pre = 'st_';
+												}
 												$count++;
 												if ($count <= 3){
 													$color = 'B1BFAC'; 
@@ -381,14 +436,15 @@ foreach($companies as $company)
 													if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
 								
-													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<nobr><a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
-																	<img src="<?php echo image_url('/16x16/tasks.png')?>" style="vertical-align: middle;">
-														 		<?php echo $cal_text ?>
-														</a></nobr>
+													<div id="m_ta_div_<?php echo $tip_pre.$task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+														<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
+															<img src="<?php echo $img_url ?>" style="vertical-align: middle;">
+														 	<span><?php echo $cal_text ?></span>
+														</a>
 													</div>
-													<script type="text/javascript">
-														addTip('m_ta_div_<?php echo $task->getId() ?>', '<i>' + lang('task') + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
+													<script>
+														addTip('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<i>' + '<?php echo $tip_title ?>' + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
+														og.createMonthlyViewDrag('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<?php echo $task->getId()?>', 'task'); // Drag
 													</script>
 								<?php
 												}//if count
@@ -397,6 +453,32 @@ foreach($companies as $company)
 								<?php
 											}
 										}//endif task
+										elseif($event instanceof Contact){
+											$contact = $event;
+											$bday = $contact->getOBirthday();
+											$now = mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear());
+											if ($now == mktime(0, 0, 0, $bday->getMonth(), $bday->getDay(), $dtv->getYear())) {	
+												$count++;
+												if ($count <= 3){
+													$color = 'B1BFAC';
+													$subject = clean($contact->getDisplayName()).' - <i>'.lang('birthday').'</i>';
+								?>
+													<div id="m_bd_div_<?php echo $contact->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+														<a href='<?php echo $contact->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);return true;"  style="border-width:0px">
+															<img src="<?php echo image_url('/16x16/contacts.png')?>" style="vertical-align: middle;">
+														 	<span><?php echo $contact->getDisplayName() ?></span>
+														</a>
+													</div>
+													<script>
+														addTip('m_bd_div_<?php echo $contact->getId() ?>', '<i>' + '<?php echo escape_single_quotes(lang('birthday')) ?>' + '</i> - ' + <?php echo json_encode(clean($contact->getDisplayName()))?>, '');
+													</script>
+								<?php
+												}//if count
+								?>
+													
+								<?php
+											}
+										}
 									} // end foreach event writing loop
 									if ($count > 3) {
 								?>
@@ -406,7 +488,12 @@ foreach($companies as $company)
 									}
 								}
 								?>	
-								</div>								
+								</div>
+								<script>
+									div_id = 'm<?php echo $dtv->getMonth() ?>_d<?php echo $dtv->getDay() ?>';
+									og.ev_cell_dates[og.ev_cell_dates.length] = {key:div_id, day:<?php echo $dtv->getDay() ?>, month:<?php echo $dtv->getMonth()?>, year:<?php echo $dtv->getYear()?>}
+									var ev_dropzone = new Ext.dd.DropZone(div_id, {ddGroup:'ev_dropzone'});
+								</script>
 								</td>
 								<?php
 							} //if is_numeric($w) 
@@ -431,14 +518,17 @@ foreach($companies as $company)
 </tr></table>
 </div>
 
-<script type="text/javascript">
+<script>
 	// Top Toolbar	
 	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfCalUserPreferences').value);
 	var ogCalTT = new og.CalendarTopToolbar({
+		renderTo:'calendarPanelTopToolbar'
+	});
+	var ogCalSecTT = new og.CalendarSecondTopToolbar({
 		usersHfId:'hfCalUsers',
 		companiesHfId:'hfCalCompanies',
-		renderTo:'calendarPanelTopToolbar'
-	});	
+		renderTo: 'calendarPanelSecondTopToolbar'
+	});
 	
 	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
@@ -472,11 +562,11 @@ foreach($companies as $company)
 		if (maindiv == null) {
 			og.removeDomEventHandler(window, 'resize', id);
 		} else {
-			var cptt = document.getElementById('calendarPanelTopToolbar');
+			var tbarsh = Ext.get('calendarPanelSecondTopToolbar').getHeight() + Ext.get('calendarPanelTopToolbar').getHeight();
 			var cmt = document.getElementById('calendarMonthTitle');
 			var mainHeight = maindiv.offsetHeight;
 			
-			var divHeight = maindiv.offsetHeight - cptt.offsetHeight - cmt.offsetHeight;
+			var divHeight = maindiv.offsetHeight - tbarsh - cmt.offsetHeight;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
 
 			if (Ext.isGecko) {			

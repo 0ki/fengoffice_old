@@ -6,11 +6,18 @@ og.EmailAccountMenu = function(config, accounts, type) {
 	
 	this.addEvents({accountselect: true});
 	this.accountnames = {};
-	if (accounts) {
-		this.addAccounts(accounts);
+	if (accounts) this.addAccounts(accounts);
+	
+	if (type == 'view') {
+		if (og.email_accounts_toview)
+			this.addAccounts(og.email_accounts_toview);
+		else this.loadAccounts(type);
+	} else if (type == 'edit') {
+		if (og.email_accounts_toview)
+			this.addAccounts(og.email_accounts_toedit);
+		else this.loadAccounts(type);
 	}
 	
-	this.loadAccounts(type);
 	og.eventManager.addListener('mail account added', this.addAccount, this);
 	og.eventManager.addListener('mail account deleted', this.removeAccount, this);
 	og.eventManager.addListener('mail account edited', this.editAccount, this);
@@ -41,11 +48,12 @@ Ext.extend(og.EmailAccountMenu, Ext.menu.Menu, {
 			text: og.clean(account.name),
             tooltip: og.clean(account.email),
 			handler: function() {
-				this.fireEvent('accountselect', account.id);
+				this.fireEvent('accountselect', account.id, account.name);
 			},
 			scope: this
 		});
-		this.insert(0, item);
+		this.addItem(item);
+		if (account.separator) this.addSeparator();
 		this.accountnames[account.id] = item;
 		return item;
 	},

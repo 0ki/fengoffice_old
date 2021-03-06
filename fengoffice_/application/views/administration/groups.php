@@ -55,7 +55,7 @@ foreach($groups as $group) {
 </div>
 
 
-<script type="text/javascript">
+<script>
 	var div = document.getElementById('<?php echo $genid ?>adminContainer');
 	div.parentNode.style.backgroundColor = '#FFFFFF'; 
 </script>

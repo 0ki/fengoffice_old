@@ -20,9 +20,15 @@
     * @param void
     * @return array
     */
-    static function getAll($order_by = self::ORDER_BY_NAME) {
-      return Projects::findAll(array(
-        'order' => $order_by
+    static function getAll($order_by = self::ORDER_BY_NAME, $where = null) {
+    	if ($where != null)
+    	    return Projects::findAll(array(
+        'order' => $order_by,
+    	'conditions' => $where   	    
+      )); // findAll
+      else
+	      return Projects::findAll(array(
+        'order' => $order_by    	    
       )); // findAll
     } // getAll
     
@@ -112,6 +118,9 @@
       
       return count($projects) ? $projects : null;
     } // getProjectsByUser
+    
+    
+    
   } // Projects 
 
 ?>

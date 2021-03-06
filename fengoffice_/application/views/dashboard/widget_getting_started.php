@@ -27,7 +27,7 @@
 	$step++;
 ?>
 
-<?php if(count(logged_user()->getOwnProjects()) > 1) { ?>
+<?php if (count(Projects::count('`created_by_id` = ' . logged_user()->getId())) > 0) { ?>
   <p><b><?php echo '<a class="internalLin dashboard-link" href="' . get_url('project', 'add') . '">' . lang('new account step start workspace', $step) . '</a>' ?></b><img src="<?php echo image_url('16x16/complete.png');?>"/></p>
   <?php echo lang('new account step start workspace info', '<img src="'.image_url('16x16/add.png').'" />', logged_user()->getPersonalProject()->getName()) ?><br/><br/>
 <?php } else { ?>
@@ -38,10 +38,10 @@
 
 <b><?php echo lang('new account step actions',$step) ?></b>
 	<?php 
-	$task = ProjectTasks::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
-	$note = ProjectMessages::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
+	$task_count = ProjectTasks::count('`created_by_id` = ' . logged_user()->getId());
+	$note_count = ProjectMessages::count('`created_by_id` = '.logged_user()->getId());
 	//$contact = ProjectContacts::findOne(array('conditions'=>'created_by_id='.logged_user()->getId()));
-	if($task instanceof ProjecTasks || $note instanceof ProjectMessages){
+	if ($task_count > 0 || $note_count > 0) {
 		echo '<img src="'.image_url('16x16/complete.png').'" />';
 	}?><br/>
 <?php echo lang('new account step actions info') ?><br/>
@@ -87,5 +87,5 @@
 <?php Hook::fire('render_getting_started', null, $ret)?>
 
 <br/><br/><p><a class='internalLink' href='<?php echo get_url('config', 'remove_getting_started_widget')?> ' ><?php echo lang('remove this widget')?></a></p>
-	
+
 </div>

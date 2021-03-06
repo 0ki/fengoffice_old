@@ -39,6 +39,7 @@ class TemplateController extends ApplicationController {
 		} else {
 			$cotemplate = new COTemplate();
 			$cotemplate->setFromAttributes($template_data);
+			$object_ids = array();
 			try {
 				DB::beginWork();
 				$cotemplate->save();
@@ -46,7 +47,48 @@ class TemplateController extends ApplicationController {
 				foreach ($objects as $objid) {
 					$split = split(":", $objid);
 					$object = get_object_by_manager_and_id($split[1], $split[0]);
-					$cotemplate->addObject($object);
+					$oid = $cotemplate->addObject($object);
+					$object_ids[$objid] = $oid;
+				}
+				$objectPropertyValues = array_var($_POST, 'propValues');
+				$propValueParams = array_var($_POST, 'propValueParam');
+				$propValueOperation = array_var($_POST, 'propValueOperation');
+				$propValueAmount = array_var($_POST, 'propValueAmount');
+				$propValueUnit = array_var($_POST, 'propValueUnit');
+				foreach($objectPropertyValues as $objInfo => $propertyValues){
+					foreach($propertyValues as $property => $value){
+						$split = split(":", $objInfo);
+						$object_id = $split[1];
+						$templateObjPropValue = new TemplateObjectProperty();
+						$templateObjPropValue->setTemplateId($cotemplate->getId());
+						$templateObjPropValue->setObjectId($object_ids[$objInfo]);
+						$templateObjPropValue->setObjectManager($split[0]);
+						$templateObjPropValue->setProperty($property);
+						$propValue = '';
+						if(isset($propValueParams[$objInfo][$property])){
+							$param = $propValueParams[$objInfo][$property];
+							$operation = $propValueOperation[$objInfo][$property];
+							$amount = $propValueAmount[$objInfo][$property];
+							$unit = $propValueUnit[$objInfo][$property];
+							$propValue = '{'.$param.'}'.$operation.$amount.$unit;
+						}else{
+							if(is_array($value)){
+								$propValue = $value[0];
+							}else{
+								$propValue = $value;
+							}
+						}
+						$templateObjPropValue->setValue($propValue);
+						$templateObjPropValue->save();
+					}
+				}
+				$parameters = array_var($_POST, 'parameters');
+				foreach($parameters as $parameter){
+					$newTemplateParameter = new TemplateParameter();
+					$newTemplateParameter->setTemplateId($cotemplate->getId());
+					$newTemplateParameter->setName($parameter['name']);
+					$newTemplateParameter->setType($parameter['type']);
+					$newTemplateParameter->save();
 				}
 				$wss = Projects::findByCSVIds(array_var($_POST, "ws_ids"));
 				WorkspaceTemplates::deleteByTemplate($cotemplate->getId());
@@ -76,9 +118,9 @@ class TemplateController extends ApplicationController {
 			$object = get_object_by_manager_and_id(array_var($_GET, 'id'), array_var($_GET, 'manager'));
 			if ($object instanceof ProjectDataObject) {
 				$objects[] = $object;
+				tpl_assign('add_to', true);
 			}
 		}
-		tpl_assign('add_to', true);
 		tpl_assign('objects', $objects);
 		tpl_assign('cotemplate', $template);
 		tpl_assign('template_data', $template_data);
@@ -101,11 +143,15 @@ class TemplateController extends ApplicationController {
 		} // if
 
 		$template_data = array_var($_POST, 'template');
+		$object_properties = array();
 		if(!is_array($template_data)) {
 			$template_data = array(
 				'name' => $cotemplate->getName(),
 				'description' => $cotemplate->getDescription(),
 			); // array
+			foreach($cotemplate->getObjects() as $obj){
+				$object_properties[$obj->getObjectId()] = TemplateObjectProperties::getPropertiesByTemplateObject(get_id(), $obj->getObjectId());
+			}
 		} else {
 			$cotemplate->setFromAttributes($template_data);
 			try {
@@ -116,7 +162,8 @@ class TemplateController extends ApplicationController {
 				foreach ($objects as $objid) {
 					$split = split(":", $objid);
 					$object = get_object_by_manager_and_id($split[1], $split[0]);
-					$cotemplate->addObject($object);
+					$oid = $cotemplate->addObject($object);
+					$object_ids[$objid] = $oid;
 				}
 				$wss = Projects::findByCSVIds(array_var($_POST, "ws_ids"));
 				WorkspaceTemplates::deleteByTemplate($cotemplate->getId());
@@ -126,6 +173,48 @@ class TemplateController extends ApplicationController {
 					$obj->setTemplateId($cotemplate->getId());
 					$obj->setInludeSubWs(false);
 					$obj->save();
+				}
+				TemplateObjectProperties::deletePropertiesByTemplate(get_id());
+				$objectPropertyValues = array_var($_POST, 'propValues');
+				$propValueParams = array_var($_POST, 'propValueParam');
+				$propValueOperation = array_var($_POST, 'propValueOperation');
+				$propValueAmount = array_var($_POST, 'propValueAmount');
+				$propValueUnit = array_var($_POST, 'propValueUnit');
+				foreach($objectPropertyValues as $objInfo => $propertyValues){
+					foreach($propertyValues as $property => $value){
+						$split = split(":", $objInfo);
+						$object_id = $split[1];
+						$templateObjPropValue = new TemplateObjectProperty();
+						$templateObjPropValue->setTemplateId($cotemplate->getId());
+						$templateObjPropValue->setObjectId($object_ids[$objInfo]);
+						$templateObjPropValue->setObjectManager($split[0]);
+						$templateObjPropValue->setProperty($property);
+						$propValue = '';
+						if(isset($propValueParams[$objInfo][$property])){
+							$param = $propValueParams[$objInfo][$property];
+							$operation = $propValueOperation[$objInfo][$property];
+							$amount = $propValueAmount[$objInfo][$property];
+							$unit = $propValueUnit[$objInfo][$property];
+							$propValue = '{'.$param.'}'.$operation.$amount.$unit;
+						}else{
+							if(is_array($value)){
+								$propValue = $value[0];
+							}else{
+								$propValue = $value;
+							}
+						}
+						$templateObjPropValue->setValue($propValue);
+						$templateObjPropValue->save();
+					}
+				}
+				TemplateParameters::deleteParametersByTemplate(get_id());
+				$parameters = array_var($_POST, 'parameters');
+				foreach($parameters as $parameter){
+					$newTemplateParameter = new TemplateParameter();
+					$newTemplateParameter->setTemplateId($cotemplate->getId());
+					$newTemplateParameter->setName($parameter['name']);
+					$newTemplateParameter->setType($parameter['type']);
+					$newTemplateParameter->save();
 				}
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, null, ApplicationLogs::ACTION_EDIT);
@@ -137,6 +226,8 @@ class TemplateController extends ApplicationController {
 				ajx_current("empty");
 			}
 		}
+		tpl_assign('object_properties', $object_properties);
+		tpl_assign('parameters', TemplateParameters::getParametersByTemplate(get_id()));
 		tpl_assign('objects', $cotemplate->getObjects());
 		tpl_assign('cotemplate', $cotemplate);
 		tpl_assign('template_data', $template_data);
@@ -214,12 +305,26 @@ class TemplateController extends ApplicationController {
 		tpl_assign("object", $object);
 	}
 
+	function template_parameters(){
+		$id = get_id();
+		$parameters = TemplateParameters::getParametersByTemplate($id);
+		ajx_current("empty");
+		ajx_extra_data(array('parameters' => $parameters));
+	}
+
 	function instantiate() {
 		$id = get_id();
 		$template = COTemplates::findById($id);
 		if (!$template instanceof COTemplate) {
 			flash_error(lang("template dnx"));
 			ajx_current("empty");
+			return;
+		}
+
+		$parameters = TemplateParameters::getParametersByTemplate($id);
+		$parameterValues = array_var($_POST, 'parameterValues');
+		if(count($parameters) > 0 && !isset($parameterValues)) {
+			ajx_current("back");
 			return;
 		}
 
@@ -230,17 +335,76 @@ class TemplateController extends ApplicationController {
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
-			if ($copy instanceof ProjectTask) $copy->setMilestoneId(0);
+			if ($copy instanceof ProjectTask) {
+				$copy->setMilestoneId(0);
+				$copy->setParentId(0);
+			}
 			$copy->save();
-			$copy->addToWorkspace(active_or_personal_project());
+			$wsId = array_var($_POST, 'project_id', active_or_personal_project()->getId());
+			$copy->addToWorkspace(Projects::findById($wsId));
+			$copy->setTagsFromCSV(array_var($_POST, 'tags'));
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
+				$manager = new ProjectTask();
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, false);
+				$manager = new ProjectMilestone();
 			}
 			$copy->copyCustomPropertiesFrom($object);
+			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
+			foreach($objProp as $property){
+				$propName = $property->getProperty();
+				$value = $property->getValue();
+				if($manager->getColumnType($propName) == DATA_TYPE_STRING){
+					if(is_array($parameterValues)){
+						foreach($parameterValues as $param => $val){
+							$value = str_replace('{'.$param.'}', $val, $value);
+						}
+					}
+				}else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME){
+					Logger::log($value);
+					$operator = '+';
+					if(strpos($value, '+') === false){
+						$operator = '-';
+					}
+					$opPos = strpos($value, $operator);
+					if($opPos !== false){
+						$dateParam = substr($value, 1, strpos($value, '}') - 1);
+						$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
+						if($dateUnit == 'm') {
+							$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
+						}
+						$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
+						
+						$date = $parameterValues[$dateParam];
+						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format', 'd/m/Y'), $date);
+						$value = $date->add($dateUnit, $dateNum);
+					}
+				}
+				if($value != ''){
+					$copy->setColumnValue($propName, $value);
+					$copy->save();
+				}
+			}
 		}
-		ajx_current("reload");
+		ajx_current("back");
+	}
+
+	function instantiate_parameters(){
+		if(is_array(array_var($_POST, 'parameterValues'))){
+			ajx_current("back");
+			$this->instantiate();
+		}else{
+			$id = get_id();
+			$parameters = TemplateParameters::getParametersByTemplate($id);
+			$params = array();
+			foreach($parameters as $parameter){
+				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType());
+			}
+			ajx_set_panel("tasks-panel");
+			tpl_assign('id', $id);
+			tpl_assign('parameters', $params);
+		}
 	}
 
 	function assign_to_ws() {
@@ -277,6 +441,17 @@ class TemplateController extends ApplicationController {
 				ajx_current("empty");
 			}
 		}
+	}
+
+	function get_object_properties(){
+		$type = array_var($_GET, 'object_type');
+		$props = array();
+		eval('$objectProperties = '.$type.'::getTemplateObjectProperties();');
+		foreach($objectProperties as $property){
+			$props[] = array('id' => $property['id'], 'name' => lang('field '.$type.' '.$property['id']), 'type' => $property['type']);
+		}
+		ajx_current("empty");
+		ajx_extra_data(array('properties' => $props));
 	}
 }
 

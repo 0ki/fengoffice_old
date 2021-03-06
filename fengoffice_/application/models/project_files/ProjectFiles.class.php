@@ -18,8 +18,8 @@ class ProjectFiles extends BaseProjectFiles {
 		parent::__construct();
 	}
 	
-	private static function getWorkspaceString(){
-		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectFiles\' AND `workspace_id` = ?)';
+	public static function getWorkspaceString($ids = '?') {
+		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ProjectFiles' AND `workspace_id` IN ($ids)) ";
 	}
 	
 	/**
@@ -66,11 +66,11 @@ class ProjectFiles extends BaseProjectFiles {
 		} // if		
 		
 		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
+			$pids = logged_user()->getWorkspacesQuery();
 		}
-		$projectstr = " AND `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($pids)) ";
+		$projectstr = " AND " . self::getWorkspaceString($pids);
 		
 		if ($tag == '' || $tag == null) {
 			$tagstr = "";
@@ -120,14 +120,14 @@ class ProjectFiles extends BaseProjectFiles {
 
 		if ($workspace instanceof Project){
 			if ($include_sub_workspaces) {
-				$wsids = $workspace->getAllSubWorkspacesCSV(true, $user);
+				$wsids = $workspace->getAllSubWorkspacesQuery(true, $user);
 			} else {
 				$wsids = "".$workspace->getId();
 			}
 		} else {
-			$wsids = $user->getActiveProjectIdsCSV();
+			$wsids = $user->getWorkspacesQuery();
 		}
-		$wscond = " `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wsids)) ";
+		$wscond = self::getWorkspaceString($wsids);
 		
 		if ($tag == '' || $tag == null) {
 			$tagcond = "";
@@ -156,7 +156,6 @@ class ProjectFiles extends BaseProjectFiles {
 		} else {
 			$order_by = '`filename`' . $orderdir;
 		}
-		
 		return self::findAll(array(
 			'conditions' => $conditions,
 			'order' => $order_by,
@@ -250,7 +249,7 @@ class ProjectFiles extends BaseProjectFiles {
 	static function getAllByFilename($filename, $project_ids = null) {
 		$projectstr = '';
 		if ($project_ids){
-			$projectstr = " AND `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($project_ids)) ";
+			$projectstr = " AND " . self::getWorkspaceString($project_ids);
 		}
 		
 		$conditions = array('`filename` = ?' . $projectstr, $filename);
@@ -355,6 +354,15 @@ class ProjectFiles extends BaseProjectFiles {
 		
 		return count($result) ? $result : null;
 	} // handleHelperUploads
+	
+	function findByCSVIds($ids, $additional_conditions = NULL) {
+		if (isset($additional_conditions)) {
+			$additional_conditions = " AND $additional_conditions";
+		} else {
+			$additional_conditions = "";
+		}
+		return self::findAll(array('conditions' => "`id` IN ($ids) $additional_conditions"));
+	}
   
 } // ProjectFiles 
 

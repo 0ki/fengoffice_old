@@ -24,6 +24,9 @@ class PHPOds {
 	var $currentCell;
 	var $lastRowAtt;
 	var $repeat;
+	
+	var $stylesNew= array();
+	var $valuesNew= array();
 
 	function PHPOds() {
 
@@ -55,7 +58,7 @@ class PHPOds {
 
 	function array2ods() {
 		$fontArray = $this->fonts;
-		$styleArray = $this->styles;
+		$styleArray = $this->stylesNew;
 		$sheetArray = $this->sheets;
 		// Header
 		$string = '<?xml version="1.0" encoding="UTF-8"?><office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" office:version="1.0">';
@@ -65,60 +68,115 @@ class PHPOds {
 
 		// Fonts
 		$string .= '<office:font-face-decls>';
-		foreach ($fontArray as $fontName => $fontAttribs) {
-			$string .= '<style:font-face ';
-			foreach ($fontAttribs as $attrName => $attrValue) {
-				$string .= strtolower($attrName) . '="' . $attrValue . '" ';
-			}
-			$string .= '/>';
-		}
+//		foreach ($fontArray as $fontName => $fontAttribs) {
+//			$string .= '<style:font-face ';
+//			foreach ($fontAttribs as $attrName => $attrValue) {
+//				$string .= strtolower($attrName) . '="' . $attrValue . '" ';
+//			}
+//			$string .= '/>';
+//		}
+
+$string .= '<style:font-face style:name="Lucida Sans Console" svg:font-family="Lucida Sans Console" style:font-family-generic="swiss"/>';
+$string .= '<style:font-face style:name="Tahoma" svg:font-family="Tahoma" style:font-family-generic="swiss"/>';
+$string .= '<style:font-face style:name="Courier" svg:font-family="Courier" style:font-family-generic="modern" style:font-pitch="fixed"/>';
+$string .= '<style:font-face style:name="Times New Roman" svg:font-family="Times New Roman" style:font-family-generic="roman" style:font-pitch="variable"/>';
+$string .= '<style:font-face style:name="Arial" svg:font-family="Arial" style:font-family-generic="swiss" style:font-pitch="variable"/>';
+$string .= '<style:font-face style:name="Verdana" svg:font-family="Verdana" style:font-family-generic="swiss" style:font-pitch="variable"/>';
+$string .= '<style:font-face style:name="DejaVu Sans" svg:font-family="DejaVu Sans" style:font-family-generic="system" style:font-pitch="variable"/>';
+
+		
+		
 		$string .= '</office:font-face-decls>';
 
 		// Styles
 		$string .= '<office:automatic-styles>';
-		foreach ($styleArray as $styleName => $styleAttribs) {
-			$string .= '<style:style ';
-			foreach ($styleAttribs['attrs'] as $attrName => $attrValue) {
-				$string .= strtolower($attrName) . '="' . $attrValue . '" ';
-			}
-			$string .= '>';
+		
+		$string .= "<style:style style:name='co1' style:family='table-column'>
+		<style:table-column-properties fo:break-before='auto' style:column-width='0.8925in'/>
+		</style:style>";
 
-			// Subnodes
-			foreach ($styleAttribs['styles'] as $nodeName => $nodeTree) {
-				$string .= '<' . $nodeName . ' ';
-				foreach ($nodeTree as $attrName => $attrValue) {
-					$string .= strtolower($attrName) . '="' . $attrValue . '" ';
-				}
-				$string .= '/>';
-			}
+		$string .= "<style:style style:name='ro1' style:family='table-row'>
+		<style:table-row-properties style:row-height='0.178in' fo:break-before='auto' style:use-optimal-row-height='true'/>
+		</style:style>";		
+		
+		$string .= "<style:style style:name='ta1' style:family='table' style:master-page-name='Default'>
+		<style:table-properties table:display='true' style:writing-mode='lr-tb'/>
+		</style:style>";
 
-			$string .= '</style:style>';
-		}
+		foreach($styleArray as $styleName => $styleAttribs){
+			
+			
+			
+				$string .= "<style:style style:name='$styleName' style:family='table-cell' style:parent-style-name='Default'>";
+				
+				$string .= $styleAttribs;
+						
+				$string .= '</style:style>';
+					
+			
+		} 
+		
+		
+		
+//		foreach ($styleArray as $styleName => $styleAttribs) {
+//			$string .= '<style:style ';
+//			foreach ($styleAttribs['attrs'] as $attrName => $attrValue) {
+//				$string .= strtolower($attrName) . '="' . $attrValue . '" ';
+//			}
+//			$string .= '>';
+//
+//			// Subnodes
+//			foreach ($styleAttribs['styles'] as $nodeName => $nodeTree) {
+//				$string .= '<' . $nodeName . ' ';
+//				foreach ($nodeTree as $attrName => $attrValue) {
+//					$string .= strtolower($attrName) . '="' . $attrValue . '" ';
+//				}
+//				$string .= '/>';
+//			}
+//
+//			$string .= '</style:style>';
+//		}
 		$string .= '</office:automatic-styles>';
 
 		// Body
 		$string .= '<office:body>';
 		$string .= '<office:spreadsheet>';
 		foreach ($sheetArray as $tableIndex => $tableContent) {
-			$string .= '<table:table table:name="' . $tableIndex . '" table:print="false">';
+			
+			$sheetNumber= $tableIndex +1;
+			$string .= '<table:table table:name= "Sheet '. $sheetNumber .'"  table:style-name="ta1" table:print="false">';
 			//$string .= '<office:forms form:automatic-focus="false" form:apply-design-mode="false"/>';
-
+						
+			$currentRow= 1;
 			foreach ($tableContent['rows'] as $rowIndex => $rowContent) {
-				$string .= '<table:table-row>';
-
-				foreach($rowContent as $cellIndex => $cellContent) {
-					$string .= '<table:table-cell ';
-					foreach ($cellContent['attrs'] as $attrName => $attrValue) {
-						$string .= strtolower($attrName) . '="' . $attrValue . '" ';
-					}
-					$string .= '>';
-
-					if (isset($cellContent['value'])) {
-						$string .= '<text:p>' . $cellContent['value'] . '</text:p>';
-					}
-
-					$string .= '</table:table-cell>';
-				}
+				
+				$string.= armarEmptyRow($currentRow, $rowIndex);
+				$currentRow= $rowIndex;
+				
+				
+				$string .= '<table:table-row table:style-name="ro1">';				
+				
+								$currentCell=-1;
+								
+								foreach($rowContent as $cellIndex => $cellContent) {
+									
+									$string.= armarEmptyCells($currentCell, $cellIndex);
+									$currentCell= $cellIndex; 
+									
+									$style_name= "ce".$rowIndex.$cellIndex;
+									$string .= '<table:table-cell table:style-name="'.$style_name.'" ';				
+									
+									foreach ($cellContent['attrs'] as $attrName => $attrValue) {
+										$string .= strtolower($attrName) . '="' . $attrValue . '" ';
+									}
+									$string .= '>';
+				
+									if (isset($cellContent['value'])) {
+										$string .= '<text:p>' . $cellContent['value'] . '</text:p>';
+									}
+				
+									$string .= '</table:table-cell>';
+								}
 
 				$string .= '</table:table-row>';
 			}
@@ -220,15 +278,12 @@ class PHPOds {
 
 	function getStyle() {
 		return '<?xml version="1.0" encoding="UTF-8"?>
-			<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dom="http://www.w3.org/2001/xml-events" office:version="1.0"><office:font-face-decls><style:font-face style:name="Liberation Sans" svg:font-family="&apos;Liberation Sans&apos;" style:font-family-generic="swiss" style:font-pitch="variable"/><style:font-face style:name="DejaVu Sans" svg:font-family="&apos;DejaVu Sans&apos;" style:font-family-generic="system" style:font-pitch="variable"/></office:font-face-decls><office:styles><style:default-style style:family="table-cell"><style:table-cell-properties style:decimal-places="2"/><style:paragraph-properties style:tab-stop-distance="1.25cm"/><style:text-properties style:font-name="Liberation Sans" fo:language="es" fo:country="ES" style:font-name-asian="DejaVu Sans" style:language-asian="zxx" style:country-asian="none" style:font-name-complex="DejaVu Sans" style:language-complex="zxx" style:country-complex="none"/></style:default-style><number:number-style style:name="N0"><number:number number:min-integer-digits="1"/>
-			</number:number-style><number:currency-style style:name="N103P0" style:volatile="true"><number:number number:decimal-places="2" number:min-integer-digits="1" number:grouping="true"/><number:text> </number:text><number:currency-symbol number:language="es" number:country="ES">€</number:currency-symbol></number:currency-style><number:currency-style style:name="N103"><style:text-properties fo:color="#ff0000"/><number:text>-</number:text><number:number number:decimal-places="2" number:min-integer-digits="1" number:grouping="true"/><number:text> </number:text><number:currency-symbol number:language="es" number:country="ES">€</number:currency-symbol><style:map style:condition="value()&gt;=0" style:apply-style-name="N103P0"/></number:currency-style><style:style style:name="Default" style:family="table-cell"/><style:style style:name="Result" style:family="table-cell" style:parent-style-name="Default"><style:text-properties fo:font-style="italic" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color" fo:font-weight="bold"/></style:style><style:style style:name="Result2" style:family="table-cell" style:parent-style-name="Result" style:data-style-name="N103"/><style:style style:name="Heading" style:family="table-cell" style:parent-style-name="Default"><style:table-cell-properties style:text-align-source="fix" style:repeat-content="false"/><style:paragraph-properties fo:text-align="center"/><style:text-properties fo:font-size="16pt" fo:font-style="italic" fo:font-weight="bold"/></style:style><style:style style:name="Heading1" style:family="table-cell" style:parent-style-name="Heading"><style:table-cell-properties style:rotation-angle="90"/></style:style></office:styles><office:automatic-styles><style:page-layout style:name="pm1"><style:page-layout-properties style:writing-mode="lr-tb"/><style:header-style><style:header-footer-properties fo:min-height="0.751cm" fo:margin-left="0cm" fo:margin-right="0cm" fo:margin-bottom="0.25cm"/></style:header-style><style:footer-style><style:header-footer-properties fo:min-height="0.751cm" fo:margin-left="0cm" fo:margin-right="0cm" fo:margin-top="0.25cm"/>
-			</style:footer-style></style:page-layout><style:page-layout style:name="pm2"><style:page-layout-properties style:writing-mode="lr-tb"/><style:header-style><style:header-footer-properties fo:min-height="0.751cm" fo:margin-left="0cm" fo:margin-right="0cm" fo:margin-bottom="0.25cm" fo:border="0.088cm solid #000000" fo:padding="0.018cm" fo:background-color="#c0c0c0"><style:background-image/></style:header-footer-properties></style:header-style><style:footer-style><style:header-footer-properties fo:min-height="0.751cm" fo:margin-left="0cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:border="0.088cm solid #000000" fo:padding="0.018cm" fo:background-color="#c0c0c0"><style:background-image/></style:header-footer-properties></style:footer-style></style:page-layout></office:automatic-styles><office:master-styles><style:master-page style:name="Default" style:page-layout-name="pm1"><style:header><text:p><text:sheet-name>???</text:sheet-name></text:p></style:header><style:header-left style:display="false"/><style:footer><text:p>Página <text:page-number>1</text:page-number></text:p></style:footer><style:footer-left style:display="false"/></style:master-page><style:master-page style:name="Report" style:page-layout-name="pm2"><style:header><style:region-left><text:p><text:sheet-name>???</text:sheet-name> (<text:title>???</text:title>)</text:p></style:region-left><style:region-right><text:p><text:date style:data-style-name="N2" text:date-value="2008-02-18">18/02/2008</text:date>, <text:time>00:17:06</text:time></text:p></style:region-right></style:header><style:header-left style:display="false"/><style:footer><text:p>Página <text:page-number>1</text:page-number> / <text:page-count>99</text:page-count></text:p></style:footer><style:footer-left style:display="false"/></style:master-page></office:master-styles></office:document-styles>';
+				<office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0" xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0" xmlns:math="http://www.w3.org/1998/Math/MathML" xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0" xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0" xmlns:ooo="http://openoffice.org/2004/office" xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc" xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:rpt="http://openoffice.org/2005/report" xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2" xmlns:rdfa="http://docs.oasis-open.org/opendocument/meta/rdfa#" office:version="1.2"><office:font-face-decls><style:font-face style:name="Lucida Sans Console" svg:font-family="&apos;Lucida Sans Console&apos;" style:font-family-generic="swiss"/><style:font-face style:name="Tahoma" svg:font-family="Tahoma" style:font-family-generic="swiss"/><style:font-face style:name="Courier" svg:font-family="Courier" style:font-family-generic="modern" style:font-pitch="fixed"/><style:font-face style:name="Times New Roman" svg:font-family="&apos;Times New Roman&apos;" style:font-family-generic="roman" style:font-pitch="variable"/><style:font-face style:name="Arial" svg:font-family="Arial" style:font-family-generic="swiss" style:font-pitch="variable"/><style:font-face style:name="Verdana" svg:font-family="Verdana" style:font-family-generic="swiss" style:font-pitch="variable"/><style:font-face style:name="DejaVu Sans" svg:font-family="&apos;DejaVu Sans&apos;" style:font-family-generic="system" style:font-pitch="variable"/></office:font-face-decls><office:styles><style:default-style style:family="table-cell"><style:table-cell-properties style:decimal-places="2"/><style:paragraph-properties style:tab-stop-distance="0.5in"/><style:text-properties style:font-name="Arial" fo:language="en" fo:country="US" style:font-name-asian="DejaVu Sans" style:language-asian="zxx" style:country-asian="none" style:font-name-complex="DejaVu Sans" style:language-complex="zxx" style:country-complex="none"/></style:default-style><number:number-style style:name="N0"><number:number number:min-integer-digits="1"/></number:number-style><number:currency-style style:name="N104P0" style:volatile="true"><number:currency-symbol number:language="en" number:country="US">$</number:currency-symbol><number:number number:decimal-places="2" number:min-integer-digits="1" number:grouping="true"/></number:currency-style><number:currency-style style:name="N104"><style:text-properties fo:color="#ff0000"/><number:text>-</number:text><number:currency-symbol number:language="en" number:country="US">$</number:currency-symbol><number:number number:decimal-places="2" number:min-integer-digits="1" number:grouping="true"/><style:map style:condition="value()&gt;=0" style:apply-style-name="N104P0"/></number:currency-style><style:style style:name="Default" style:family="table-cell"/><style:style style:name="Result" style:family="table-cell" style:parent-style-name="Default"><style:text-properties fo:font-style="italic" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color" fo:font-weight="bold"/></style:style><style:style style:name="Result2" style:family="table-cell" style:parent-style-name="Result" style:data-style-name="N104"/><style:style style:name="Heading" style:family="table-cell" style:parent-style-name="Default"><style:table-cell-properties style:text-align-source="fix" style:repeat-content="false"/><style:paragraph-properties fo:text-align="center"/><style:text-properties fo:font-size="16pt" fo:font-style="italic" fo:font-weight="bold"/></style:style><style:style style:name="Heading1" style:family="table-cell" style:parent-style-name="Heading"><style:table-cell-properties style:rotation-angle="90"/></style:style></office:styles><office:automatic-styles><style:page-layout style:name="Mpm1"><style:page-layout-properties style:writing-mode="lr-tb"/><style:header-style><style:header-footer-properties fo:min-height="0.2957in" fo:margin-left="0in" fo:margin-right="0in" fo:margin-bottom="0.0984in"/></style:header-style><style:footer-style><style:header-footer-properties fo:min-height="0.2957in" fo:margin-left="0in" fo:margin-right="0in" fo:margin-top="0.0984in"/></style:footer-style></style:page-layout><style:page-layout style:name="Mpm2"><style:page-layout-properties style:writing-mode="lr-tb"/><style:header-style><style:header-footer-properties fo:min-height="0.2957in" fo:margin-left="0in" fo:margin-right="0in" fo:margin-bottom="0.0984in" fo:border="0.0346in solid #000000" fo:padding="0.0071in" fo:background-color="#c0c0c0"><style:background-image/></style:header-footer-properties></style:header-style><style:footer-style><style:header-footer-properties fo:min-height="0.2957in" fo:margin-left="0in" fo:margin-right="0in" fo:margin-top="0.0984in" fo:border="0.0346in solid #000000" fo:padding="0.0071in" fo:background-color="#c0c0c0"><style:background-image/></style:header-footer-properties></style:footer-style></style:page-layout></office:automatic-styles><office:master-styles><style:master-page style:name="Default" style:page-layout-name="Mpm1"><style:header><text:p><text:sheet-name>???</text:sheet-name></text:p></style:header><style:header-left style:display="false"/><style:footer><text:p>Page <text:page-number>1</text:page-number></text:p></style:footer><style:footer-left style:display="false"/></style:master-page><style:master-page style:name="Report" style:page-layout-name="Mpm2"><style:header><style:region-left><text:p><text:sheet-name>???</text:sheet-name> (<text:title>???</text:title>)</text:p></style:region-left><style:region-right><text:p><text:date style:data-style-name="N2" text:date-value="2009-06-09">06/09/2009</text:date>, <text:time>04:23:25</text:time></text:p></style:region-right></style:header><style:header-left style:display="false"/><style:footer><text:p>Page <text:page-number>1</text:page-number> / <text:page-count>99</text:page-count></text:p></style:footer><style:footer-left style:display="false"/></style:master-page></office:master-styles></office:document-styles>';
 	}
 
 	function getSettings() {
 		return '<?xml version="1.0" encoding="UTF-8"?>
-		<office:document-settings xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:ooo="http://openoffice.org/2004/office" office:version="1.0"><office:settings><config:config-item-set config:name="ooo:view-settings"><config:config-item config:name="VisibleAreaTop" config:type="int">0</config:config-item><config:config-item config:name="VisibleAreaLeft" config:type="int">0</config:config-item><config:config-item config:name="VisibleAreaWidth" config:type="int">2258</config:config-item><config:config-item config:name="VisibleAreaHeight" config:type="int">903</config:config-item><config:config-item-map-indexed config:name="Views"><config:config-item-map-entry><config:config-item config:name="ViewId" config:type="string">View1</config:config-item><config:config-item-map-named config:name="Tables"><config:config-item-map-entry config:name="Hoja1"><config:config-item config:name="CursorPositionX" config:type="int">0</config:config-item><config:config-item config:name="CursorPositionY" config:type="int">1</config:config-item><config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item><config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item><config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item><config:config-item config:name="VerticalSplitPosition" config:type="int">0</config:config-item><config:config-item config:name="ActiveSplitRange" config:type="short">2</config:config-item><config:config-item config:name="PositionLeft" config:type="int">0</config:config-item><config:config-item config:name="PositionRight" config:type="int">0</config:config-item><config:config-item config:name="PositionTop" config:type="int">0</config:config-item><config:config-item config:name="PositionBottom" config:type="int">0</config:config-item></config:config-item-map-entry></config:config-item-map-named><config:config-item config:name="ActiveTable" config:type="string">Hoja1</config:config-item><config:config-item config:name="HorizontalScrollbarWidth" config:type="int">270</config:config-item><config:config-item config:name="ZoomType" config:type="short">0</config:config-item><config:config-item config:name="ZoomValue" config:type="int">100</config:config-item><config:config-item config:name="PageViewZoomValue" config:type="int">60</config:config-item><config:config-item config:name="ShowPageBreakPreview" config:type="boolean">false</config:config-item><config:config-item config:name="ShowZeroValues" config:type="boolean">true</config:config-item><config:config-item config:name="ShowNotes" config:type="boolean">true</config:config-item><config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item><config:config-item config:name="GridColor" config:type="long">12632256</config:config-item><config:config-item config:name="ShowPageBreaks" config:type="boolean">true</config:config-item><config:config-item config:name="HasColumnRowHeaders" config:type="boolean">true</config:config-item><config:config-item config:name="HasSheetTabs" config:type="boolean">true</config:config-item><config:config-item config:name="IsOutlineSymbolsSet" config:type="boolean">true</config:config-item><config:config-item config:name="IsSnapToRaster" config:type="boolean">false</config:config-item><config:config-item config:name="RasterIsVisible" config:type="boolean">false</config:config-item><config:config-item config:name="RasterResolutionX" config:type="int">1000</config:config-item><config:config-item config:name="RasterResolutionY" config:type="int">1000</config:config-item><config:config-item config:name="RasterSubdivisionX" config:type="int">1</config:config-item>
-		<config:config-item config:name="RasterSubdivisionY" config:type="int">1</config:config-item><config:config-item config:name="IsRasterAxisSynchronized" config:type="boolean">true</config:config-item></config:config-item-map-entry></config:config-item-map-indexed></config:config-item-set><config:config-item-set config:name="ooo:configuration-settings"><config:config-item config:name="ShowZeroValues" config:type="boolean">true</config:config-item><config:config-item config:name="ShowNotes" config:type="boolean">true</config:config-item><config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item><config:config-item config:name="GridColor" config:type="long">12632256</config:config-item><config:config-item config:name="ShowPageBreaks" config:type="boolean">true</config:config-item><config:config-item config:name="LinkUpdateMode" config:type="short">3</config:config-item><config:config-item config:name="HasColumnRowHeaders" config:type="boolean">true</config:config-item><config:config-item config:name="HasSheetTabs" config:type="boolean">true</config:config-item><config:config-item config:name="IsOutlineSymbolsSet" config:type="boolean">true</config:config-item><config:config-item config:name="IsSnapToRaster" config:type="boolean">false</config:config-item><config:config-item config:name="RasterIsVisible" config:type="boolean">false</config:config-item><config:config-item config:name="RasterResolutionX" config:type="int">1000</config:config-item><config:config-item config:name="RasterResolutionY" config:type="int">1000</config:config-item><config:config-item config:name="RasterSubdivisionX" config:type="int">1</config:config-item><config:config-item config:name="RasterSubdivisionY" config:type="int">1</config:config-item><config:config-item config:name="IsRasterAxisSynchronized" config:type="boolean">true</config:config-item><config:config-item config:name="AutoCalculate" config:type="boolean">true</config:config-item><config:config-item config:name="PrinterName" config:type="string">Generic Printer</config:config-item><config:config-item config:name="PrinterSetup" config:type="base64Binary">WAH+/0dlbmVyaWMgUHJpbnRlcgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU0dFTlBSVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWAAMAngAAAAAAAAAFAFZUAAAkbQAASm9iRGF0YSAxCnByaW50ZXI9R2VuZXJpYyBQcmludGVyCm9yaWVudGF0aW9uPVBvcnRyYWl0CmNvcGllcz0xCm1hcmdpbmRhanVzdG1lbnQ9MCwwLDAsMApjb2xvcmRlcHRoPTI0CnBzbGV2ZWw9MApjb2xvcmRldmljZT0wClBQRENvbnRleERhdGEKUGFnZVNpemU6TGV0dGVyAAA=</config:config-item><config:config-item config:name="ApplyUserData" config:type="boolean">true</config:config-item><config:config-item config:name="CharacterCompressionType" config:type="short">0</config:config-item><config:config-item config:name="IsKernAsianPunctuation" config:type="boolean">false</config:config-item><config:config-item config:name="SaveVersionOnClose" config:type="boolean">false</config:config-item><config:config-item config:name="UpdateFromTemplate" config:type="boolean">false</config:config-item><config:config-item config:name="AllowPrintJobCancel" config:type="boolean">true</config:config-item><config:config-item config:name="LoadReadonly" config:type="boolean">false</config:config-item></config:config-item-set></office:settings></office:document-settings>';
+				<office:document-settings xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" xmlns:ooo="http://openoffice.org/2004/office" office:version="1.2"><office:settings><config:config-item-set config:name="ooo:view-settings"><config:config-item config:name="VisibleAreaTop" config:type="int">449</config:config-item><config:config-item config:name="VisibleAreaLeft" config:type="int">2258</config:config-item><config:config-item config:name="VisibleAreaWidth" config:type="int">11290</config:config-item><config:config-item config:name="VisibleAreaHeight" config:type="int">8351</config:config-item><config:config-item-map-indexed config:name="Views"><config:config-item-map-entry><config:config-item config:name="ViewId" config:type="string">View1</config:config-item><config:config-item-map-named config:name="Tables"><config:config-item-map-entry config:name="Sheet1"><config:config-item config:name="CursorPositionX" config:type="int">8</config:config-item><config:config-item config:name="CursorPositionY" config:type="int">10</config:config-item><config:config-item config:name="HorizontalSplitMode" config:type="short">0</config:config-item><config:config-item config:name="VerticalSplitMode" config:type="short">0</config:config-item><config:config-item config:name="HorizontalSplitPosition" config:type="int">0</config:config-item><config:config-item config:name="VerticalSplitPosition" config:type="int">0</config:config-item><config:config-item config:name="ActiveSplitRange" config:type="short">2</config:config-item><config:config-item config:name="PositionLeft" config:type="int">0</config:config-item><config:config-item config:name="PositionRight" config:type="int">0</config:config-item><config:config-item config:name="PositionTop" config:type="int">0</config:config-item><config:config-item config:name="PositionBottom" config:type="int">0</config:config-item><config:config-item config:name="ZoomType" config:type="short">0</config:config-item><config:config-item config:name="ZoomValue" config:type="int">100</config:config-item><config:config-item config:name="PageViewZoomValue" config:type="int">60</config:config-item><config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item></config:config-item-map-entry></config:config-item-map-named><config:config-item config:name="ActiveTable" config:type="string">Sheet1</config:config-item><config:config-item config:name="HorizontalScrollbarWidth" config:type="int">270</config:config-item><config:config-item config:name="ZoomType" config:type="short">0</config:config-item><config:config-item config:name="ZoomValue" config:type="int">100</config:config-item><config:config-item config:name="PageViewZoomValue" config:type="int">60</config:config-item><config:config-item config:name="ShowPageBreakPreview" config:type="boolean">false</config:config-item><config:config-item config:name="ShowZeroValues" config:type="boolean">true</config:config-item><config:config-item config:name="ShowNotes" config:type="boolean">true</config:config-item><config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item><config:config-item config:name="GridColor" config:type="long">12632256</config:config-item><config:config-item config:name="ShowPageBreaks" config:type="boolean">true</config:config-item><config:config-item config:name="HasColumnRowHeaders" config:type="boolean">true</config:config-item><config:config-item config:name="HasSheetTabs" config:type="boolean">true</config:config-item><config:config-item config:name="IsOutlineSymbolsSet" config:type="boolean">true</config:config-item><config:config-item config:name="IsSnapToRaster" config:type="boolean">false</config:config-item><config:config-item config:name="RasterIsVisible" config:type="boolean">false</config:config-item><config:config-item config:name="RasterResolutionX" config:type="int">1270</config:config-item><config:config-item config:name="RasterResolutionY" config:type="int">1270</config:config-item><config:config-item config:name="RasterSubdivisionX" config:type="int">1</config:config-item><config:config-item config:name="RasterSubdivisionY" config:type="int">1</config:config-item><config:config-item config:name="IsRasterAxisSynchronized" config:type="boolean">true</config:config-item></config:config-item-map-entry></config:config-item-map-indexed></config:config-item-set><config:config-item-set config:name="ooo:configuration-settings"><config:config-item config:name="ShowZeroValues" config:type="boolean">true</config:config-item><config:config-item config:name="ShowNotes" config:type="boolean">true</config:config-item><config:config-item config:name="ShowGrid" config:type="boolean">true</config:config-item><config:config-item config:name="GridColor" config:type="long">12632256</config:config-item><config:config-item config:name="ShowPageBreaks" config:type="boolean">true</config:config-item><config:config-item config:name="LinkUpdateMode" config:type="short">3</config:config-item><config:config-item config:name="HasColumnRowHeaders" config:type="boolean">true</config:config-item><config:config-item config:name="HasSheetTabs" config:type="boolean">true</config:config-item><config:config-item config:name="IsOutlineSymbolsSet" config:type="boolean">true</config:config-item><config:config-item config:name="IsSnapToRaster" config:type="boolean">false</config:config-item><config:config-item config:name="RasterIsVisible" config:type="boolean">false</config:config-item><config:config-item config:name="RasterResolutionX" config:type="int">1270</config:config-item><config:config-item config:name="RasterResolutionY" config:type="int">1270</config:config-item><config:config-item config:name="RasterSubdivisionX" config:type="int">1</config:config-item><config:config-item config:name="RasterSubdivisionY" config:type="int">1</config:config-item><config:config-item config:name="IsRasterAxisSynchronized" config:type="boolean">true</config:config-item><config:config-item config:name="AutoCalculate" config:type="boolean">true</config:config-item><config:config-item config:name="PrinterName" config:type="string"/><config:config-item config:name="PrinterSetup" config:type="base64Binary"/><config:config-item config:name="ApplyUserData" config:type="boolean">true</config:config-item><config:config-item config:name="CharacterCompressionType" config:type="short">0</config:config-item><config:config-item config:name="IsKernAsianPunctuation" config:type="boolean">false</config:config-item><config:config-item config:name="SaveVersionOnClose" config:type="boolean">false</config:config-item><config:config-item config:name="UpdateFromTemplate" config:type="boolean">true</config:config-item><config:config-item config:name="AllowPrintJobCancel" config:type="boolean">true</config:config-item><config:config-item config:name="LoadReadonly" config:type="boolean">false</config:config-item><config:config-item config:name="IsDocumentShared" config:type="boolean">false</config:config-item></config:config-item-set></office:settings></office:document-settings>';
 	}
 
 	function getManifest() {
@@ -271,7 +326,211 @@ class PHPOds {
 		$this->sheets[$sheet]['rows'][$row][$cell]['attrs']['OFFICE:VALUE'] = $value;
 		$this->sheets[$sheet]['rows'][$row][$cell]['value'] = $value;
 	}
+	
+	function addStyle($fontStyle, $cell){
+		
+		$celda= new Cell();
+		$celda= $cell;
+		
+		$styleName= "ce".$celda->getDataRow().$celda->getDataColumn();
+		
+		$this->stylesNew[$styleName]= armarStyleODF($fontStyle);
+				
+	}
+	
 }
+
+
+
+function armarStyleODF($fontStyle){
+	
+//	$celda= new Cell();
+//	$celda= $cell;
+//	
+//	$fontStyle= new FontStyle();
+//	$fontId= $celda->getFontStyleId();
+//	$fontStyle= $book->getFontStyle($fontId);
+	$fontName= $fontStyle->getFontName();
+	
+
+	$str= '';
+	
+	switch ($fontStyle->fontHAlign){
+		
+		case 0:
+
+			switch ($fontStyle->fontVAlign){
+				
+				case 0:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" />';
+					$str.= '<style:paragraph-properties fo:text-align="justify" fo:margin-left="0in"/>';					
+					break;
+				case 1:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="middle"/>';
+					$str.= '<style:paragraph-properties fo:text-align="justify" fo:margin-left="0in"/>';					
+					break;
+				case 2:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="top"/>';
+					$str.= '<style:paragraph-properties fo:text-align="justify" fo:margin-left="0in"/>';					
+					break;				
+			}			
+			break;
+		case 1:
+			switch ($fontStyle->fontVAlign){
+				
+				case 1:
+					$str= '<style:table-cell-properties style:vertical-align="middle"/>';
+					break;
+				case 2:
+					$str= '<style:table-cell-properties style:vertical-align="top"/>';
+					break;
+			}			
+			
+			break;
+		case 2:
+			switch ($fontStyle->fontVAlign){
+				
+				case 0:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false"/>';
+					$str.= '<style:paragraph-properties fo:text-align="center" fo:margin-left="0in"/>';
+					break;
+				case 1:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="middle"/>';
+					$str.= '<style:paragraph-properties fo:text-align="center" fo:margin-left="0in"/>';
+					break;
+				case 2:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="top"/>';
+					$str.= '<style:paragraph-properties fo:text-align="center" fo:margin-left="0in"/>';
+					break;				
+			}			
+			
+			break;
+		case 3:
+
+			switch ($fontStyle->fontVAlign){
+				
+				case 0:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false"/>';
+					$str.= '<style:paragraph-properties fo:text-align="end" fo:margin-left="0in"/>';
+					break;
+				case 1:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="middle"/>';
+					$str.= '<style:paragraph-properties fo:text-align="end" fo:margin-left="0in"/>';
+					break;
+				case 2:
+					$str= '<style:table-cell-properties style:text-align-source="fix" style:repeat-content="false" style:vertical-align="top"/>';
+					$str.= '<style:paragraph-properties fo:text-align="end" fo:margin-left="0in"/>';
+					break;
+			}			
+			
+			break;								
+	}
+
+		
+	$str.= "<style:text-properties ";
+	
+	$str.= "fo:color= '".$fontStyle->getFontColor()."' ";
+	
+	$str.= "style:font-name='$fontName' ";
+	
+	$str.= "fo:font-size= '" .$fontStyle->getFontSize()."pt' ";
+	
+	if ($fontStyle->getFontItalic() == 1)
+		$str.= "fo:font-style= 'italic' ";
+			
+	if ($fontStyle->getFontBold() == 1)
+		$str.= "fo:font-weight= 'bold' ";
+		
+	$str.= "style:font-size-asian= '".$fontStyle->getFontSize()."pt' ";
+	
+	if ($fontStyle->getFontItalic() == 1)
+		$str.= "style:font-style-asian= 'italic' ";
+			
+	if ($fontStyle->getFontBold() == 1)
+		$str.= "style:font-weight-asian= 'bold' ";
+				
+	$str.= "style:font-size-complex= '".$fontStyle->getFontSize()."pt' ";
+	
+	if ($fontStyle->getFontItalic() == 1)
+		$str.= "style:font-style-complex= 'italic' ";
+			
+	if ($fontStyle->getFontBold() == 1)
+		$str.= "style:font-weight-complex= 'bold' ";
+		
+	$str.="/>";
+		
+	
+	
+	return $str;
+	/*
+
+							switch ($fontStyle->fontHAlign){
+								
+								case 0:									
+									$HzAlign= PHPExcel_Style_Alignment::HORIZONTAL_GENERAL;
+									break;
+								case 1:									
+									$HzAlign= PHPExcel_Style_Alignment::HORIZONTAL_LEFT;
+									break;
+								case 2:									
+									$HzAlign= PHPExcel_Style_Alignment::HORIZONTAL_CENTER;
+									break;
+								case 3:									
+									$HzAlign= PHPExcel_Style_Alignment::HORIZONTAL_RIGHT;
+									break;								
+							}
+
+
+
+
+
+
+<style:text-properties fo:color="#ff3333" 
+fo:font-size="16pt" 
+fo:font-style="italic" 
+fo:font-weight="bold" 
+style:font-size-asian="16pt" 
+style:font-style-asian="italic" 
+style:font-weight-asian="bold" 
+style:font-size-complex="16pt" 
+style:font-style-complex="italic" 
+style:font-weight-complex="bold"/>
+
+
+
+ */
+	
+	
+	
+}
+
+
+function armarEmptyCells($currentCell, $cellIndex){
+	
+	$str_aux= null;
+	
+	//cho "$currentCell - $cellIndex\n";
+	//if ($currentCell == 0) $currentCell--;
+
+	for ($i= $currentCell; $i <$cellIndex -1; $i++)
+		$str_aux.= "<table:table-cell/>";
+	
+		return $str_aux;
+}
+
+function  armarEmptyRow($currentRow, $rowIndex){
+	
+	$str_aux= null;
+	
+	//cho "$currentCell - $cellIndex\n";
+
+	for ($i= $currentRow; $i <$rowIndex -1 ; $i++)
+		$str_aux.= "<table:table-row table:style-name=\"ro1\"/>";
+	
+		return $str_aux;
+	
+}
+
 
 //END OF CLASS
 
@@ -292,18 +551,10 @@ function saveOds($obj,$file) {
 
 	$charset = ini_get('default_charset');
 	//ini_set('default_charset', 'UTF-8');
-
 	global $cnf;
-
 	$current= $cnf['path']['Temp'];
 	$tmp= "";
 
-			
-	
-	//shell_exec('cd '.$current.'/'.$tmp.';rm -rf *');
-		
-	
-	//echo $current . $tmp;
 	file_put_contents($current.$tmp.'/content.xml',$obj->array2ods());
 	file_put_contents($current.$tmp.'/mimetype','application/vnd.oasis.opendocument.spreadsheet');
 	file_put_contents($current.$tmp.'/meta.xml',$obj->getMeta('es-ES'));
@@ -337,7 +588,6 @@ function saveOds($obj,$file) {
 	
 		*/
 	$zip = new ZipArchive();
-
 	
 	$name= tempnam($current.$tmp, "default");
 	
@@ -386,15 +636,30 @@ function saveOds($obj,$file) {
 	
 	$filename= basename($name);
 	
-	header("Pragma: public");
-	header("Expires: 0");
-	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-	header("Content-Type: application/force-download");
-	header("Content-Type: application/octet-stream");
-	header("Content-Type: application/download");
-	header("Content-Disposition: attachment;filename= $filename.ods");
-	header("Content-Transfer-Encoding: binary ");
+//	header("Pragma: public");
+//	header("Expires: 0");
+//	header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+//	header("Content-Type: application/force-download");
+//	header("Content-Type: application/octet-stream");
+//	header("Content-Type: application/download");
+//	header("Content-Disposition: attachment;filename= $filename.ods");
+//	header("Content-Transfer-Encoding: binary ");
 
+	
+	    //Begin writing headers
+    header("Pragma: public");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header("Cache-Control: public");
+    header("Content-Description: File Transfer");
+   
+    //Use the switch-generated Content-Type
+    header("Content-Type: application/vnd.oasis.opendocument.spreadsheet");
+
+    //Force the download
+    $header="Content-Disposition: attachment; filename=spreadsheet.ods";
+    header($header);
+    header("Content-Transfer-Encoding: binary");
 
 	readfile($cnf['path']['Temp'].$filename.".zip");
 	unlink($cnf['path']['Temp'].$filename) ;

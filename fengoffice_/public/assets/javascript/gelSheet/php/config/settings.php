@@ -16,7 +16,7 @@
 
 	include_once "../../../../../config/config.php";
 
-	$debugging = true; //Set true iif on debugging mode
+	$debugging = false; //Set true iif on debugging mode
 	
 	# # # # # INSTALLATION DEPENDENT VARIABLES # # # # # #
 	$cnf['db']['url'] 	 = DB_HOST;

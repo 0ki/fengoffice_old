@@ -35,50 +35,35 @@
 	/*padding: 5px 0px 5px 22px;*/
 }
 .ico-overview {
-	background-image: url(../../images/16x16/overview.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -356px !important;	
 }
 .ico-messages {
-	background-image: url(../../images/16x16/message.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -418px !important;
 }
 .ico-contacts {
-	background-image: url(../../images/16x16/contacts.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -517px !important;
 }
 .ico-companies {
-	background-image: url(../../images/16x16/companies.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -356px !important;
 }
 .ico-calendar {
-	background-image: url(../../images/16x16/calendar.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 2px !important;
 }
 .ico-documents {
-	background-image: url(../../images/16x16/documents.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -478px !important;
 }
 .ico-tasks {
-	background-image: url(../../images/16x16/tasks.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -178px !important;
 }
 .ico-webpages {
-	background-image: url(../../images/16x16/webpages.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;
 }
-
+.ico-linkedobjects {
+	background: transparent url(../../images/16x16/linked-objects.png) no-repeat scroll 0 3px !important;
+}
 
 .ext-strict .ext-ie6 .x-layout-split{
 	background-color: #dfe8f6; /* fixes split panels in ie6 */
-}
-.x-box-mc {
-	font-size: 14px;
-}
-.err .x-box-mc h3 {
-	color: #AA0000;
-}
-.reminder .x-box-mc h3 {
-	color: #008800;
-}
-#msg-div {
-	position:absolute;
-	left:35%;
-	top:10px;
-	width:250px;
-	z-index:20000;
-	cursor: pointer;
 }
 .toggle_collapsed {
 	background-repeat: no-repeat;
@@ -162,4 +147,63 @@
 
 .contextualHelp .internalLink:hover {
 	color:#FF5A00;
+}
+
+/** message div **/
+#msg-div {
+	position: absolute;
+	left: 35%;
+	width: 30%;
+	z-index:20000;
+	cursor: pointer;
+}
+#msg-div h3 {
+	float: left;
+	margin-right: 5px;
+}
+#msg-div .err h3 {
+	color: #AA0000;
+}
+#msg-div .reminder h3 {
+	color: #008800;
+}
+.og-box-tl {
+	background: url(../../images/box/corners.png) no-repeat top left;
+	padding-left: 4px;
+}
+.og-box-tc {
+	padding-top: 4px;
+	background: #fffbbb;
+	border-top: 1px solid #E1B269;
+}
+.og-box-tr {
+	background: url(../../images/box/corners.png) no-repeat top right;
+	padding-right: 4px;
+}
+.og-box-ml {
+	padding-left: 4px;
+	background: #fffbbb;
+	border-left: 1px solid #E1B269;
+}
+.og-box-mc {
+	background: #fffbbb;
+}
+.og-box-mr {
+	padding-right: 4px;
+	background: #fffbbb;
+	border-right: 1px solid #E1B269;
+}
+.og-box-bl {
+	padding-left: 4px;
+	background:transparent url(../../images/box/corners.png) no-repeat scroll bottom left;zoom:1;
+	
+}
+.og-box-bc {
+	padding-bottom: 4px;
+	background: #fffbbb;
+	border-bottom: 1px solid #E1B269;
+}
+.og-box-br {
+	padding-right: 4px;
+	background:transparent url(../../images/box/corners.png) repeat bottom right;zoom:1;
 }

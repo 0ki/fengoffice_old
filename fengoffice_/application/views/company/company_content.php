@@ -49,7 +49,7 @@
   <?php if ($company->getNotes()) {?>
   <fieldset>
   <legend><?php echo lang('notes'); ?></legend>
-  <div><?php echo nl2br(clean($company->getNotes())) ?></div>
+  <div><?php echo escape_html_whitespace(convert_to_links(clean($company->getNotes()))) ?></div>
   </fieldset>
   <?php } ?>
   

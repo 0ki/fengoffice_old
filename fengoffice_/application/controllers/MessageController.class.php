@@ -24,6 +24,13 @@ class MessageController extends ApplicationController {
 	//  Index
 	// ---------------------------------------------------
 	
+	function init() {
+//		require_javascript("og/HtmlPanel.js");
+		require_javascript("og/MessageManager.js");
+		ajx_current("panel", "messages", null, null, true);
+		ajx_replace(true);
+	}
+	
 	function list_all() {
 		ajx_current("empty");
 		
@@ -42,9 +49,8 @@ class MessageController extends ApplicationController {
 			"types" => explode(',', array_var($_GET,'types')),
 			"tag" => array_var($_GET,'tagTag'),
 			"accountId" => array_var($_GET,'account_id'),
-			"viewType" => array_var($_GET,'view_type'),
-			"readType" => array_var($_GET,'read_type'),
-			"stateType" => array_var($_GET,'state_type')
+			"moveTo" => array_var($_GET,'moveTo'),
+			"mantainWs" => array_var($_GET,'mantainWs'),
 		);
 		
 		//Resolve actions to perform
@@ -57,18 +63,18 @@ class MessageController extends ApplicationController {
 				flash_error($actionMessage["errorMessage"]);
 			}
 		} 
-		
+
 		// Get all emails and messages to display
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
-//		$emails = $this->getEmails($action, $tag, $attributes, $project);
-		$messages = $this->getMessages($action, $tag, $attributes, $project, $order, $order_dir);
-//		$totMsg = $this->addMessagesAndEmails($messages, $emails);
-		
+		list($messages, $pagination) = ProjectMessages::getMessages($tag, $project, $start, $limit, $order, $order_dir);
+		$total = $pagination->getTotalItems();
+
 		// Prepare response object
-		$object = $this->prepareObject($messages, $start, $limit);
+		$object = $this->prepareObject($messages, $start, $limit, $total);
 		ajx_extra_data($object);
-    	tpl_assign("listing", $object);
+		tpl_assign("listing", $object);
+
 	}
 	
 	/**
@@ -145,27 +151,51 @@ class MessageController extends ApplicationController {
 				
 			case "move":
 				$wsid = $attributes["moveTo"];
-				$count = 0;
-				for($i = 0; $i < count($attributes["ids"]); $i++){
-					$id = $attributes["ids"][$i];
-					$type = $attributes["types"][$i];
-					switch ($type){
-						case "message":
-							$message = ProjectMessages::findById($id);
-							if (isset($message) && $message->canEdit(logged_user())){
-								// TODO
-								//ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT,false,null,true,$tag);
-								$count++;
-							};
-							break;
-
-						default:
-							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
-							$resultCode = 2;
-							break;
-					}; // switch
-				}; // for
-				$resultMessage = lang("success move objects", $count);
+				$destination = Projects::findById($wsid);
+				if (!$destination instanceof Project) {
+					$resultMessage = lang('project dnx');
+					$resultCode = 1;
+				} else if (!can_add(logged_user(), $destination, 'ProjectMessages')) {
+					$resultMessage = lang('no access permissions');
+					$resultCode = 1;
+				} else {
+					$count = 0;
+					$active = active_project();
+					if ($active instanceof Project) {
+						$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
+					} else {
+						$ws_ids = logged_user()->getWorkspacesQuery();
+					}
+					for($i = 0; $i < count($attributes["ids"]); $i++){
+						$id = $attributes["ids"][$i];
+						$type = $attributes["types"][$i];
+						switch ($type){
+							case "message":
+								$message = ProjectMessages::findById($id);
+								if ($message instanceof ProjectMessage && $message->canEdit(logged_user())){
+									if (!$attributes["mantainWs"]) {
+										$ws = $message->getWorkspaces($ws_ids);
+										foreach ($ws as $w) {
+											if (can_add(logged_user(), $w, 'ProjectMessages')) {
+												$message->removeFromWorkspace($w);
+											}
+										}
+									}
+									$message->addToWorkspace($destination);
+									ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									$count++;
+								};
+								break;
+	
+							default:
+								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+								$resultCode = 2;
+								break;
+						}; // switch
+					}; // for
+					$resultMessage = lang("success move objects", $count);
+					$resultCode = 0;
+				}
 				break;
 				
 			default:
@@ -174,108 +204,6 @@ class MessageController extends ApplicationController {
 				break;		
 		} // switch
 		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
-	}
-
-	/**
-	 * Adds the messages and emails arrays
-	 *
-	 * @param array $messages
-	 * @param array $emails
-	 * @return array
-	 */
-	private function addMessagesAndEmails($messages, $emails){
-		$totCount = 0;
-		if (isset($emails)) $totCount = count($emails);
-		if (isset($messages)) $totCount += count($messages);
-		
-		//Order messages and emails by date
-		if (!isset($messages))
-			$totMsg = $emails;
-		else {
-			$e = 0;
-			$m = 0;
-			while (($e + $m) < $totCount){
-				if ($e < count($emails))
-					if ($m < count($messages))
-						if ($emails[$e]['comp_date'] > $messages[$m]['comp_date']){
-							$totMsg[] = $emails[$e];
-							$e++;
-						} else {
-							$totMsg[] = $messages[$m];
-							$m++;
-						}
-					else {
-						$totMsg[] = $emails[$e];
-						$e++;
-					}
-				else {
-					$totMsg[] = $messages[$m];
-					$m++;
-				}
-			}
-		}
-		
-		return $totMsg;
-	}
-	
-	
-	/**
-	 * Returns a list of messages according to the requested parameters
-	 *
-	 * @param string $action
-	 * @param string $tag
-	 * @param array $attributes
-	 * @param Project $project
-	 * @return array
-	 */
-	private function getMessages($action, $tag, $attributes, $project = null, $order = null, $order_dir = null) {
-		switch ($order){
-			case 'updatedOn':
-				$order_crit = 'updated_on';
-				break;
-			case 'createdOn':
-				$order_crit = 'created_on';
-				break;
-			case 'title':
-				$order_crit = 'title';
-				break;
-			default:
-				$order_crit = 'updated_on';
-				break;
-		}
-		if (!$order_dir){
-			switch ($order){
-				case 'name': $order_dir = 'ASC'; break;
-				default: $order_dir = 'DESC';
-			}
-		}
-		if (isset($attributes["viewType"]) && 
-			($attributes["viewType"] != "all" && $attributes["viewType"] != "messages"))
-			return null;
-
-		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
-		}
-		$messageConditions = "`id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($pids))";
-
-		if (!isset($tag) || $tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-				TABLE_PREFIX . "project_messages.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMessages' ) > 0 ";
-		}
-		
-		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-
-		$res = DB::execute("SELECT id, 'ProjectMessages' as manager, $order_crit from " . TABLE_PREFIX. "project_messages where " . 
-			"`trashed_by_id` = 0 AND ".$messageConditions . " AND " . $tagstr . $permissions 
-			. " ORDER BY $order_crit $order_dir");
-			
-		if(!$res) return null;
-		return $res->fetchAll();
 	}
 	
 	/**
@@ -286,42 +214,31 @@ class MessageController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $attributes = null) {
+	private function prepareObject($totMsg, $start, $limit, $total) {
 		$object = array(
-			"totalCount" => count($totMsg),
-			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
+			"totalCount" => $total,
+			"start" => $start,
 			"messages" => array()
 		);
-		for ($i = $start; $i < $start + $limit; $i++){
+		for ($i = 0; $i < $limit; $i++){
 			if (isset($totMsg[$i])){
-				$manager= $totMsg[$i]['manager'];
-    			$id = $totMsg[$i]['id'];
-    			if($id && $manager){
-    				$msg=get_object_by_manager_and_id($id, $manager);  
-					
-					if ($msg instanceof ProjectMessage){
-						$text = $msg->getText();
-						if (strlen($text) > 300)
-							$text = substr_utf($text,0,300) . "...";
-						$object["messages"][] = array(
-						    "id" => $i,
-							"object_id" => $msg->getId(),
-							"type" => 'message',
-							"hasAttachment" => false,
-							"accountId" => 0,
-							"accountName" => '',
-							"title" => $msg->getTitle(),
-							"text" => $text,
-							"date" => $msg->getUpdatedOn() instanceof DateTimeValue ? $msg->getUpdatedOn()->getTimestamp() : 0,
-							"wsIds" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"userId" => $msg->getCreatedById(),
-							"userName" => $msg->getCreatedByDisplayName(),
-							"tags" => project_object_tags($msg),
-							"from" => $msg->getCreatedByDisplayName(),							
-							"isDraft" => 0,
-							"isSent"=> 0
-						);
-					}
+				$msg = $totMsg[$i];
+				if ($msg instanceof ProjectMessage){
+					$text = $msg->getText();
+					if (strlen($text) > 100) $text = substr_utf($text,0,100) . "...";
+					$object["messages"][] = array(
+					    "id" => $i,
+						"object_id" => $msg->getId(),
+						"type" => 'message',
+						"title" => $msg->getTitle(),
+						"text" => $text,
+						"date" => $msg->getUpdatedOn() instanceof DateTimeValue ? ($msg->getUpdatedOn()->isToday() ? format_time($msg->getUpdatedOn()) : format_datetime($msg->getUpdatedOn())) : '',
+						"is_today" => $msg->getUpdatedOn() instanceof DateTimeValue ? $msg->getUpdatedOn()->isToday() : 0,
+						"wsIds" => $msg->getUserWorkspacesIdsCSV(logged_user()),
+						"userId" => $msg->getCreatedById(),
+						"userName" => $msg->getCreatedByDisplayName(),
+						"tags" => project_object_tags($msg),
+					);
     			}
 			}
 		}
@@ -408,20 +325,6 @@ class MessageController extends ApplicationController {
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
-			$ids = array_var($_POST, "ws_ids", "");
-			$enteredWS = Projects::findByCSVIds($ids);
-			$validWS = array();
-			foreach ($enteredWS as $ws) {
-				if (ProjectMessage::canAdd(logged_user(), $ws)) {
-					$validWS[] = $ws;
-				}
-			}
-			if (empty($validWS)) {
-				flash_error(lang('must choose at least one workspace error'));
-				ajx_current("empty");
-				return;
-			}
-			
 			try {
 				$message->setFromAttributes($message_data);
 				$message->setIsPrivate(false);
@@ -435,17 +338,14 @@ class MessageController extends ApplicationController {
 				DB::beginWork();
 				$message->save();
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
-				$message->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				foreach ($validWS as $w) {
-					$message->addToWorkspace($w);
-				}
 				
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($message);
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				
-				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 			    
 				DB::commit();
 
@@ -533,30 +433,13 @@ class MessageController extends ApplicationController {
 				$message->save();
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
 				
-				/* <multiples workspaces> */
-				$message->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
-				$ids = array_var($_POST, "ws_ids", "");
-				$enteredWS = Projects::findByCSVIds($ids);
-				$validWS = array();
-				foreach ($enteredWS as $ws) {
-					if (ProjectMessage::canAdd(logged_user(), $ws)) {
-						$validWS[] = $ws;
-					}
-				}
-				if (empty($validWS)) {
-					throw new Exception(lang('must choose at least one workspace error'));
-				}
-				foreach ($validWS as $w) {
-					$message->addToWorkspace($w);
-				}
-				/* </multiples workspaces> */
-				
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($message);
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
 				
-				ApplicationLogs::createLog($message, $validWS, ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 			    
 				DB::commit();
 				

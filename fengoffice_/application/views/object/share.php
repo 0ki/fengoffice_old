@@ -1,6 +1,6 @@
 <?php $genid = gen_id(); ?>
 
-<script type="text/javascript">
+<script>
 	var allCompanies = [];
 	var emailComp = []
 <?php 
@@ -148,6 +148,6 @@
 </div>
 </form>
 </div>
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>shareWithEmails').focus();
 </script>

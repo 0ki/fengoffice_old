@@ -78,11 +78,11 @@
 		}
 
 		public function getFontStyles() {
+//			var_dump($this);
 			if ( $this->fontStyles == null ) {
 				// The object is not loaded, so have to access the db . . .
 				if ( isset($this->bookId) ) {
-					$this->loadFontStyles($this->bookId);
-
+					return $this->loadFontStyles($this->bookId);
 				}else {
 					return null ;
 					//BookId is not setted, set it first ...
@@ -107,13 +107,14 @@
 		
 		
 		public function getFontStyle($fontId) {
+//			var_dump($this->fontStyles);
 			if ($this->fontStyles == null)
 				$this->loadFontStyles($this->bookId);
 
 			foreach ($this->fontStyles as $font){
-				//echo "<br><pre>".print_r($font)."</pre><br>";
-				if ($font->getId() == $fontId){
-
+//				echo $fontId. " el id : ".$font->getFontStyleId();
+//				echo "<br><pre>".print_r($font)."</pre><br>";
+				if ($font->getFontStyleId() == $fontId){
 					return $font;
 
 				}
@@ -196,7 +197,7 @@
 		}
 
 		function loadFontStyles($BookId) {
-			$sql = "select FontStyleId,BookId,FontId,FontSize,FontBold,FontItalic,FontUnderline,FontColor
+			$sql = "select FontStyleId,BookId,FontId,FontSize,FontBold,FontItalic,FontUnderline,FontColor,FontVAlign,FontHAlign
 					from ".table('fontStyles'). "
 					where BookId=$BookId";
 			$result = mysql_query($sql);
@@ -210,7 +211,9 @@
 												$row->FontBold,
 												$row->FontItalic,
 												$row->FontUnderline,
-												$row->FontColor
+												$row->FontColor,
+												$row->FontVAlign,
+												$row->FontHAlign
 											);
 				$this->addFontStyle($fontStyle);
 
@@ -237,7 +240,15 @@
 		function loadSheets($BookId) {
 			$sql = "select SheetId from ".table('sheets'). " where BookId=$BookId" ;
 			$result =  mysql_query($sql);
-
+			if (!$result) {
+				$error = new Error(302,"Error loading book.");
+				if($error->isDebugging()){
+					$err = str_replace("'", '"', mysql_error());
+					$error->addContentElement("BookId",$BookId);
+					$error->addContentElement("MySql Error",$err);
+				}
+				throw $error;					
+			}			
 			while ($row = mysql_fetch_object($result)){
 				$sheet = new Sheet();
 				$sheet->load($row->SheetId);
@@ -258,30 +269,35 @@
 
 			if(!isset($this->userId))
 				$this->userId = 1;    //TODO: Remove only for debugging user must be always setted (logged user)
-
-			//die('<pre>'. print_r($this,1).'</pre>' );
+			
 			$sql = "INSERT INTO ".table('books'). " (BookId, BookName, UserId) VALUES ($this->bookId,'$this->bookName',$this->userId)";
 
-			//$this->delete(false);
-			// ver que hacemos en caso de que exista..
 
-			if (isset($this->bookId)) {
-			// Edit book..
-				
+			if (isset($this->bookId)) { // Edit book..
 				//Check if the the id is correct..
 				$res = mysql_query("SELECT BookId FROM ".table('books'). " where BookId=$this->bookId");
 				if(!$res){
+					$error = new Error(302,"Error loading book.");
+					if($error->isDebugging()){
+						$error->addContentElement("BookId",$BookId);
+						$err = str_replace("'", '"', mysql_error());
+						$error->addContentElement("MySql Error",$err);
+					}
+					throw $error;					
 					$hasErrors = true;
-					echo mysql_error();
 				}
 
 				$row = mysql_fetch_object($res);
 				if (!$row) {
-				//ERROR: trying to save a book that does exist. Must have null value the bookid
-					
+					//ERROR: trying to save a book that does exist. Must have null value the bookid
 					if(!mysql_query($sql)){
-						echo mysql_error();
-						//$hasErrors = true;
+						$error = new Error(302,"Error saving book. Book don't exists");
+						if($error->isDebugging()){
+							$error->addContentElement("BookId",$BookId);
+							$err = str_replace("'", '"', mysql_error());
+							$error->addContentElement("MySql Error",$err);
+						}
+						throw $error;					
 					}
 
 				}else {
@@ -294,13 +310,19 @@
 
 
 					if(!mysql_query($sql)){
-						echo mysql_error();
+						$error = new Error(302,"Error saving book. Book don't exists");
+						if($error->isDebugging()){
+							$error->addContentElement("BookId",$BookId);
+							$err = str_replace("'", '"', mysql_error());
+							$error->addContentElement("MySql Error",$err);
+						}
+						throw $error;					
 						$hasErrors = true;
 					}
 
 				}
 
-			}else {
+			}else { 
 				//SAVE AS...
 				
 				$sql = "INSERT INTO ".table('books'). " (BookName, UserId) VALUES ('$this->bookName',$this->userId)";
@@ -309,7 +331,14 @@
 					$this->bookId= mysql_insert_id();
 				else{
 					
-					echo mysql_error();echo "<hr>";
+					$error = new Error(302,"Error saving book.");
+					if($error->isDebugging()){
+						$error->addContentElement("BookId",$BookId);
+						$err = str_replace("'", '"', mysql_error());
+						$error->addContentElement("MySql Error",$err);
+					}
+					throw $error;					
+					
 					$hasErrors = true;
 				}
 			}

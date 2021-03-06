@@ -19,6 +19,7 @@
     'view' => 'Ver',
     'edit' => 'Editar',
     'delete' => 'Eliminar',
+  	'empty trash can' => 'Vaciar la papelera',
     'save' => 'Guardar',
     'update' => 'Actualizar',
     'submit' => 'Enviar',
@@ -147,7 +148,7 @@
   
   	'copy of' => 'Copia de {0}',
   	'task templates' => 'Plantilla de tarea',
-  	'add task template' => 'Agregar Plantilla de tarea',
+  	'add task template' => 'Añadir Plantilla de tarea',
   	'template' => 'Plantilla',
   	'workspaces' => 'Áreas de trabajo',
   	'assign to workspace' => 'Asignar a áreas de trabajo',  	
@@ -157,6 +158,11 @@
   	'create contact from user' => 'Crear contacto con datos del usuario',
   	'confirm create contact from user' => 'Está seguro de que desea crear un contacto con los datos de este usuario?',
   	'create contact from user desc' => 'Al seleccionar sí, se creará un contacto del sistema asociado a este usuario',
+  	'use previous personal workspace' =>'Usar un Espacio de trabajo ya existente como espacio de trabajo personal para este usuario',
+  	'use previous personal workspace desc' =>'Al seleccionar Si deberá determinar que espacio de trabajo utilizar como espacio de trabajo personal para este usuario',
+  	'select personal workspace' => 'Seleccione un Espacio de Trabajo',
+ 	 'create personal workspace' => 'Crear un nuevo Espacio de Trabajo',
+    'use an existing workspace' => 'Usar un espacio de trabajo existente',
   	'no task templates' => 'No hay plantillas de tareas',
   	'go to contact' => 'Ir a datos de contacto',
   	'show assigned to' => 'Mostrar asignados a',
@@ -173,15 +179,36 @@
   	'weblinks' => 'Enlaces Web',
   	'include subworkspaces' => 'Incluir subáreas',
     'timeslot on object' => 'Tiempo de trabajo en {0}',
-	'add work' => 'Agregar trabajo',
+	'add work' => 'Añadir trabajo',
   
   	'date format' => 'd/m/Y',
   	'date format description' => '(día/mes/año)',
     'confirm move to trash' => 'Está seguro que desea mover el objeto seleccionado a la papelera?',
-  	'add' => 'Agregar',
+  	'add' => 'Añadir',
   	'shared with' => 'Compartido con',
   	'remove' => 'Quitar',
-
+  	'mime type' => 'Tipo MIME',
+  	
+  	'default' => 'Predeterminado',
+  	'language' => 'Idioma',
+  	'before' => 'antes',
+	
+	'repeat by' => 'Repetir según',
+	'repeating task' => 'Tarea Repetitiva',
+	'this task repeats' => 'Esta tarea se repite',
+  	'forever' => 'para siempre',
+	'n times' => '{0} veces',
+	'until x' => 'hasra {0}',
+	'n days' => '{0} días',
+	'n months' => '{0} meses',
+	'n years' => '{0} años',
+  	'every' => 'cada',
+	'generate repetitition' => 'Generar repetición de la tarea',
+  	'end of task' => 'Inicio de Tarea',
+	'start of task' => 'Fin de Tarea',
+  	'new task repetition generated' => 'Se ha generado una nueva repetición de la tarea',
+  
+	'reminders will not apply to repeating events' => 'Aviso: los recordatorios no se aplican a eventos repetitivos',
   ); // array
 
 ?>

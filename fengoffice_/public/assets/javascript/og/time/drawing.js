@@ -130,6 +130,24 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	var date = new Date(timeslot.date * 1000);
 	var now = new Date();
 	var time = timeslot.time / 3600;
+	var minutes = time * 60;
+	while(minutes > 60){
+		minutes -= 60;
+	}
+	
+	
+	var hours;
+	hours = time*60;
+	hours -= minutes;
+	hours /= 60;
+	minutes = Math.round(minutes);
+	if (minutes == 60){
+		hours++;
+		minutes = "00";
+	}
+	if (minutes<10 && minutes > 0){
+		minutes = "0" + minutes;
+	}
 	var row = table.insertRow(position);
 	row.id = genid + 'TMTimespanTableRow' + timeslot.id;
 	row.height = '20px';
@@ -156,23 +174,30 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(3);
-	textNode = document.createTextNode(time);
+	updatedInfo = '';
+	if (timeslot.lastUpdated != '') {
+		updatedInfo = lang('last updated by on', timeslot.lastUpdatedBy, timeslot.lastUpdated);
+	}
+	textNode = document.createTextNode(updatedInfo);
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(4);
-	textNode = document.createTextNode(timeslot.description);
+	textNode = document.createTextNode(hours + ":" + minutes);
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(5);
+	textNode = document.createTextNode(timeslot.description);
+	cell.appendChild(textNode);
+	
+	cell = row.insertCell(6);
 	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('edit') + '">&nbsp;</a>';
 	cell.width = 18;
 	
-	cell = row.insertCell(6);
+	cell = row.insertCell(7);
 	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
 	cell.width = 18;
 	
-	
-	cell = row.insertCell(7);
+	cell = row.insertCell(8);
 	var textNode = document.createTextNode(timeslot.id);
 	cell.appendChild(textNode);
 	cell.style.display = 'none';

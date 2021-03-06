@@ -21,7 +21,7 @@ class TaskController extends ApplicationController {
 	} // __construct
 
 	private function task_item(ProjectTask $task) {
-		$isCurrentProject = active_project() instanceof Project && $task->getProject()->getId() == active_project()->getId();
+		$isCurrentProject = active_project() instanceof Project && $task->getProjectId() == active_project()->getId();
 		
 		return array(
 			"id" => $task->getId(),
@@ -29,9 +29,9 @@ class TaskController extends ApplicationController {
 			"parent" => $task->getParentId(),
 			"milestone" => $task->getMilestoneId(),
 			"assignedTo" => $task->getAssignedTo()? $task->getAssignedToName():'',
-			"workspaces" => ($isCurrentProject? '' : $task->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV())),
-			"workspaceids" => ($isCurrentProject? '' : $task->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV())),
-			"workspacecolors" => ($isCurrentProject? '' : $task->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV())),
+			"workspaces" => ($isCurrentProject? '' : $task->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery())),
+			"workspaceids" => ($isCurrentProject? '' : $task->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery())),
+			"workspacecolors" => ($isCurrentProject? '' : $task->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery())),
 			"completed" => $task->isCompleted(),
 			"completedBy" => $task->getCompletedByName(),
 			"isLate" => $task->isLate(),
@@ -118,7 +118,6 @@ class TaskController extends ApplicationController {
 			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
 			
 			$task->setFromAttributes($task_data);
-			$task->setProjectId($project->getId());
 			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -141,6 +140,7 @@ class TaskController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$task->save();
+				$task->setProject($project);
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 				
 				//Add new work timeslot for this task
@@ -209,9 +209,7 @@ class TaskController extends ApplicationController {
 			
 			$task->setFromAttributes($task_data);
 			$project = Projects::findById(array_var($task_data, 'project_id', 0));
-			if ($project instanceof Project && $task->canAdd(logged_user(),$project)) {
-				$task->setProjectId($project->getId());
-			}
+			
 			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -235,6 +233,9 @@ class TaskController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$task->save();
+				if ($project instanceof Project && $task->canAdd(logged_user(),$project)) {
+					$task->setProject($project);
+				}
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 				
 				//Add new work timeslot for this task
@@ -448,11 +449,11 @@ class TaskController extends ApplicationController {
 		}
 		
 		if ($project instanceof Project) {
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
+			$pids = logged_user()->getWorkspacesQuery();
 		}
-		$projectstr = " AND `project_id` IN ($pids) ";
+		$projectstr = " AND " . ProjectTasks::getWorkspaceString($pids);
 		
 		$task_status_condition = "";
 		switch($status){
@@ -476,10 +477,10 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectTasks' ) > 0 ";
 		}
 		
-		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr;
+		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr . " AND `trashed_by_id` = 0";
 		
 		//Now get the tasks
-		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => '0 501'));
+		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => '501'));
 		ProjectTasks::populateTimeslots($tasks);
 		ProjectTasks::populateTags($tasks);
 		//Find all internal milestones for these tasks
@@ -502,7 +503,7 @@ class TaskController extends ApplicationController {
 		if ($status == 0) {
 			$pendingstr = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " ";
 		} else {
-			 $pendingstr = "";
+			$pendingstr = "";
 		}
 		
 		if ($tag == '') {
@@ -532,11 +533,13 @@ class TaskController extends ApplicationController {
 		}
 		
 		//Get Users Info
-		if (logged_user()->isMemberOfOwnerCompany())
+		if (logged_user()->isMemberOfOwnerCompany()) {
 			$users = Users::getAll();
-		else
+			$allUsers = array();
+		} else {
 			$users = logged_user()->getCompany()->getUsers();
-		
+			$allUsers = Users::getAll();
+		}
 		//Get Companies Info
 		if (logged_user()->isMemberOfOwnerCompany())
 			$companies = Companies::getCompaniesWithUsers();
@@ -557,6 +560,7 @@ class TaskController extends ApplicationController {
 			tpl_assign('internalMilestones', $internalMilestones);
 			tpl_assign('externalMilestones', $externalMilestones);
 			tpl_assign('users', $users);
+			tpl_assign('allUsers', $allUsers);
 			tpl_assign('companies', $companies);
 			tpl_assign('userPreferences', array(
 				'filterValue' => isset($filter_value)?$filter_value:'',
@@ -682,59 +686,66 @@ class TaskController extends ApplicationController {
 			
 			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
-			
-			$task->setFromAttributes($task_data);
-			
-			$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) +
-				(array_var($task_data, 'time_estimate_minutes',0));
-			$task->setTimeEstimate($totalMinutes);
-			
-			$task->setIsPrivate(false); // Not used, but defined as not null.
-			$task->setProjectId($project->getId());
-			// Set assigned to
-			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$company_id = array_var($assigned_to, 0, 0);
-			$user_id = array_var($assigned_to, 1, 0);
-			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
-			if ($can_assign !== true) {
-				flash_error($can_assign);
-				ajx_current("empty");
-				return;
-			}
-			$task->setAssignedToCompanyId($company_id);
-			$task->setAssignedToUserId($user_id);
-			
-			$id = array_var($_GET, 'id', 0);
-			$parent = ProjectTasks::findById($id);
-			if ($parent instanceof ProjectTask) {
-				$task->setParentId($id);
-				if ($parent->getIsTemplate()) {
-					$task->setIsTemplate(true);
-				}
-			}
-			
-			if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
-				flash_error(lang('task child of child error'));
-				ajx_current("empty");
-				return;
-			}
-			
-			//Add handins
-			$handins = array();
-			for($i = 0; $i < 4; $i++) {
-				if(isset($task_data["handin$i"]) && is_array($task_data["handin$i"]) && (trim(array_var($task_data["handin$i"], 'title')) <> '')) {
-					$assigned_to = explode(':', array_var($task_data["handin$i"], 'assigned_to', ''));
-					$handins[] = array(
-						'title' => array_var($task_data["handin$i"], 'title'),
-						'responsible_company_id' => array_var($assigned_to, 0, 0),
-						'responsible_user_id' => array_var($assigned_to, 1, 0)
-					); // array
-				} // if
-			} // for
-
 			try {
+				$err_msg = $this->setRepeatOptions($task_data);
+				if ($err_msg) {
+					flash_error($err_msg);
+					ajx_current("empty");
+					return;
+				}
+				
+				$task->setFromAttributes($task_data);
+				
+				$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) +
+					(array_var($task_data, 'time_estimate_minutes',0));
+				$task->setTimeEstimate($totalMinutes);
+				
+				$task->setIsPrivate(false); // Not used, but defined as not null.
+				// Set assigned to
+				$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
+				$company_id = array_var($assigned_to, 0, 0);
+				$user_id = array_var($assigned_to, 1, 0);
+				$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+				if ($can_assign !== true) {
+					flash_error($can_assign);
+					ajx_current("empty");
+					return;
+				}
+				$task->setAssignedToCompanyId($company_id);
+				$task->setAssignedToUserId($user_id);
+				
+				$id = array_var($_GET, 'id', 0);
+				$parent = ProjectTasks::findById($id);
+				if ($parent instanceof ProjectTask) {
+					$task->setParentId($id);
+					if ($parent->getIsTemplate()) {
+						$task->setIsTemplate(true);
+					}
+				}
+				
+				if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
+					flash_error(lang('task child of child error'));
+					ajx_current("empty");
+					return;
+				}
+				
+				//Add handins
+				$handins = array();
+				for($i = 0; $i < 4; $i++) {
+					if(isset($task_data["handin$i"]) && is_array($task_data["handin$i"]) && (trim(array_var($task_data["handin$i"], 'title')) <> '')) {
+						$assigned_to = explode(':', array_var($task_data["handin$i"], 'assigned_to', ''));
+						$handins[] = array(
+							'title' => array_var($task_data["handin$i"], 'title'),
+							'responsible_company_id' => array_var($assigned_to, 0, 0),
+							'responsible_user_id' => array_var($assigned_to, 1, 0)
+						); // array
+					} // if
+				} // for
+	
+				
 				DB::beginWork();
 				$task->save();
+				$task->setProject($project);
 				//echo 'pepe'; DB::rollback(); die();
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 					
@@ -866,6 +877,8 @@ class TaskController extends ApplicationController {
 
 		$task_data = array_var($_POST, 'task');
 		if(!is_array($task_data)) {
+			$this->getRepeatOptions($task, $occ, $rsel1, $rsel2, $rsel3, $rnum, $rend, $rjump);
+			
 			$tag_names = $task->getTagNames();
 			$task_data = array(
 				'title' => array_var($_POST, 'title', $task->getTitle()),
@@ -880,7 +893,16 @@ class TaskController extends ApplicationController {
 				'assigned_to' => array_var($_POST, 'assigned_to', $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId()),
 				'priority' => array_var($_POST, 'priority', $task->getPriority()),
 				'send_notification' => array_var($_POST, 'notify') == 'true',
-				'time_estimate' => $task->getTimeEstimate()
+				'time_estimate' => $task->getTimeEstimate(),
+				'forever' => $task->getRepeatForever(),
+				'rend' => $rend,
+				'rnum' => $rnum,
+				'rjump' => $rjump,
+				'rsel1' => $rsel1,
+				'rsel2' => $rsel2,
+				'rsel3' => $rsel3,
+				'occ' => $occ,
+				'repeat_by' => $task->getRepeatBy(),
 			); // array
 			$handins = ObjectHandins::getAllHandinsByObject($task);
 			$id = 0;
@@ -911,62 +933,72 @@ class TaskController extends ApplicationController {
 			$project_id = $task_data['project_id'];
 			if ($old_project_id != $project_id) {
 				$newProject = Projects::findById($project_id);
-				if($newProject && !$task->canAdd(logged_user(),$newProject)) {
+				if (!$newProject instanceof Project || !$task->canAdd(logged_user(), $newProject)) {
 					flash_error(lang('no access permissions'));
 					ajx_current("empty");
 					return;
-				} // if
+				}
 			}
 			
 			$task_data['due_date'] = getDateValue(array_var($_POST, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($_POST, 'task_start_date'));
 			
-			$task->setFromAttributes($task_data);
-			// Set assigned to
-			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
-			$company_id = array_var($assigned_to, 0, 0);
-			$user_id = array_var($assigned_to, 1, 0);
-			$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
-			if ($can_assign !== true) {
-				flash_error($can_assign);
-				return;
-			}
-			$task->setAssignedToCompanyId($company_id);
-			$task->setAssignedToUserId($user_id);
-			if(!logged_user()->isMemberOfOwnerCompany()) $task->setIsPrivate($old_is_private);
-			
-			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
-				(array_var($task_data, 'time_estimate_minutes'));
-			$task->setTimeEstimate($totalMinutes);
-			
-			//Add handins
-			$handins = array();
-			for($i = 0; $i < 4; $i++) {
-				if(isset($task_data["handin$i"]) && is_array($task_data["handin$i"]) && (trim(array_var($task_data["handin$i"], 'title')) <> '')) {
-					$assigned_to = explode(':', array_var($task_data["handin$i"], 'assigned_to', ''));
-					$handins[] = array(
-              'title' => array_var($task_data["handin$i"], 'title'),
-              'responsible_company_id' => array_var($assigned_to, 0, 0),
-              'responsible_user_id' => array_var($assigned_to, 1, 0)
-					); // array
-				} // if
-			} // for
-			
-			if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
-				flash_error(lang('task child of child error'));
-				ajx_current("empty");
-				return;
-			}
 			try {
+				$err_msg = $this->setRepeatOptions($task_data);
+				if ($err_msg) {
+					flash_error($err_msg);
+					ajx_current("empty");
+					return;
+				}
+				
+				$task->setFromAttributes($task_data);
+				// Set assigned to
+				$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
+				$company_id = array_var($assigned_to, 0, 0);
+				$user_id = array_var($assigned_to, 1, 0);
+				$can_assign = can_assign_task_to_company_user(logged_user(), $task, $company_id, $user_id);
+				if ($can_assign !== true) {
+					flash_error($can_assign);
+					return;
+				}
+				$task->setAssignedToCompanyId($company_id);
+				$task->setAssignedToUserId($user_id);
+				if(!logged_user()->isMemberOfOwnerCompany()) $task->setIsPrivate($old_is_private);
+				
+				$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
+					(array_var($task_data, 'time_estimate_minutes'));
+				$task->setTimeEstimate($totalMinutes);
+				
+				//Add handins
+				$handins = array();
+				for($i = 0; $i < 4; $i++) {
+					if(isset($task_data["handin$i"]) && is_array($task_data["handin$i"]) && (trim(array_var($task_data["handin$i"], 'title')) <> '')) {
+						$assigned_to = explode(':', array_var($task_data["handin$i"], 'assigned_to', ''));
+						$handins[] = array(
+	              'title' => array_var($task_data["handin$i"], 'title'),
+	              'responsible_company_id' => array_var($assigned_to, 0, 0),
+	              'responsible_user_id' => array_var($assigned_to, 1, 0)
+						); // array
+					} // if
+				} // for
+				
+				if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
+					flash_error(lang('task child of child error'));
+					ajx_current("empty");
+					return;
+				}
+				
 				DB::beginWork();
-				if($task_data['project_id'] && $task_data['project_id'] != $old_project_id){
+				if (isset($newProject) && $newProject instanceof Project) {
 					//update projectid for child tasks
 					foreach ($task->getSubTasks() as $subtask){
-						$subtask->setProjectId(array_var($task_data, 'project_id'));
-						$subtask->save();
+						$subtask->setProject($newProject);
 					}
 				}
 				$task->save();
+				if (isset($newProject) && $newProject instanceof Project) {
+					$task->setProject($newProject);
+				}
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
 
 				try {
@@ -1063,6 +1095,85 @@ class TaskController extends ApplicationController {
 	//  Tasks
 	// ---------------------------------------------------
 
+	private function getNextRepetitionDates($task, &$new_st_date, &$new_due_date) {
+		$new_due_date = null;
+		$new_st_date = null;
+		
+		if ($task->getStartDate() instanceof DateTimeValue ) {
+			$new_st_date = new DateTimeValue($task->getStartDate()->getTimestamp());
+		} 
+		if ($task->getDueDate() instanceof DateTimeValue ) {
+			$new_due_date = new DateTimeValue($task->getDueDate()->getTimestamp());
+		}
+		if ($task->getRepeatD() > 0) { 
+			if ($new_st_date instanceof DateTimeValue)
+				$new_st_date = $new_st_date->add('d', $task->getRepeatD());
+			if ($new_due_date instanceof DateTimeValue)
+				$new_due_date = $new_due_date->add('d', $task->getRepeatD());
+		}
+		else if ($task->getRepeatM() > 0) {
+			if ($new_st_date instanceof DateTimeValue)
+				$new_st_date = $new_st_date->add('M', $task->getRepeatM());
+			if ($new_due_date instanceof DateTimeValue)
+				$new_due_date = $new_due_date->add('M', $task->getRepeatM());
+		}
+		else if ($task->getRepeatY() > 0) {
+			if ($new_st_date instanceof DateTimeValue)
+				$new_st_date = $new_st_date->add('y', $task->getRepeatY());
+			if ($new_due_date instanceof DateTimeValue)
+				$new_due_date = $new_due_date->add('y', $task->getRepeatY());
+		}
+	}
+	
+	function generate_new_repetitive_instance() {
+		ajx_current("empty");
+		$task = ProjectTasks::findById(get_id());
+		if (!($task instanceof ProjectTask)) {
+			flash_error(lang('task dnx'));
+			return;
+		} // if
+
+		if (!$task->isRepetitive()) {
+			flash_error(lang('task not repetitive'));
+			return;
+		}
+		
+		$this->getNextRepetitionDates($task, $new_st_date, $new_due_date);
+			
+		// if this is the last task of the repetetition, do not generate a new instance
+		if ($task->getRepeatNum() > 0) {
+			$task->setRepeatNum($task->getRepeatNum() - 1);
+			if ($task->getRepeatNum() == 0) {
+				flash_error(lang('task cannot be instantiated more times'));
+				return;
+			}
+		}				
+		if ($task->getRepeatEnd() instanceof DateTimeValue) {
+			if ($task->getRepeatBy() == 'start_date' && $new_st_date > $task->getRepeatEnd() ||
+				$task->getRepeatBy() == 'due_date' && $new_due_date > $task->getRepeatEnd() ) {
+					flash_error(lang('task cannot be instantiated more times'));
+					return;
+				}
+		}
+		try {
+			DB::beginWork();
+			$new_task = $task->cloneTask();
+			$new_task->save();
+			
+			// set next values for repetetive task
+			if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
+			if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
+	
+			$task->save();
+			DB::commit();
+			flash_success(lang("new task repetition generated"));
+			ajx_current("reload");
+		} catch (Exception $e) {
+			flash_error($e->getMessage());
+			DB::rollback();
+		}		
+	}
+	
 	/**
 	 * Complete task
 	 *
@@ -1085,8 +1196,41 @@ class TaskController extends ApplicationController {
 
 		try {
 			DB::beginWork();
-			$task->completeTask();
-			
+			// if task is repetitive, generate a complete instance of this task and modify repeat values
+			if ($task->isRepetitive()) {
+				$complete_last_task = false;
+				// calculate next repetition date
+				$this->getNextRepetitionDates($task, $new_st_date, $new_due_date);
+				
+				// if this is the last task of the repetetition, complete it, do not generate a new instance
+				if ($task->getRepeatNum() > 0) {
+					$task->setRepeatNum($task->getRepeatNum() - 1);
+					if ($task->getRepeatNum() == 0) 
+						$complete_last_task = true;
+				}				
+				if (!$complete_last_task && $task->getRepeatEnd() instanceof DateTimeValue) {
+					if ($task->getRepeatBy() == 'start_date' && $new_st_date > $task->getRepeatEnd() ||
+						$task->getRepeatBy() == 'due_date' && $new_due_date > $task->getRepeatEnd() ) {
+							$complete_last_task = true;
+						}
+				}
+				if (!$complete_last_task) {
+					// generate completed task
+					$new_task = $task->cloneTask();
+					$new_task->completeTask();
+					
+					// set next values for repetetive task
+					if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
+					if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
+	
+					$task->save();
+				} else {
+					// if this is the last repetition, complete this
+					$task->completeTask();
+				}
+			} else {
+				$task->completeTask();
+			}
 			/*$completed_tasks = array(); //Completes the parents if all subtasks are complete
 			$parent = $task->getParent();
 			while ($parent instanceof ProjectTask && $parent->countOpenSubTasks() <= 0) {
@@ -1107,7 +1251,7 @@ class TaskController extends ApplicationController {
 			flash_success(lang('success complete task'));
 			
 			$redirect_to = array_var($_GET, 'redirect_to', false);
-			if (array_var($_GET, 'quick', false)) {
+			if (array_var($_GET, 'quick', false) && !$task->isRepetitive()) {
 				ajx_current("empty");
 				ajx_extra_data(array("task" => $task->getArrayInfo()));
 			} else {
@@ -1346,6 +1490,140 @@ class TaskController extends ApplicationController {
 		ajx_extra_data($object);
 		ajx_current("empty");
 	} // allowed_users_to_assign
+	
+	function change_start_due_date() {
+		$task = ProjectTasks::findById(get_id());
+		if(!$task->canEdit(logged_user())){	    	
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return ;
+	    }
+	    
+	    $tochange = array_var($_GET, 'tochange', '');
+	    
+	    $year = array_var($_GET, 'year', $task->getDueDate()->getYear());
+	    $month = array_var($_GET, 'month', $task->getDueDate()->getMonth());
+	    $day = array_var($_GET, 'day', $task->getDueDate()->getDay());
+	    $new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
+	    
+	    if (($tochange == 'both' || $tochange == 'due') && $task->getDueDate() instanceof DateTimeValue ) {
+	    	$task->setDueDate($new_date);	    	
+	    }
+		if (($tochange == 'both' || $tochange == 'start') && $task->getStartDate() instanceof DateTimeValue ) {
+	    	$task->setStartDate($new_date);
+	    }
+	    
+	    DB::beginWork();
+	    $task->save();
+	    DB::commit();
+	    
+	    ajx_current("empty");
+	}
+	
+	private function getRepeatOptions($task, &$occ, &$rsel1, &$rsel2, &$rsel3, &$rnum, &$rend, &$rjump) {
+		//Repeating options
+		$rsel1 = false;
+		$rsel2 = false; 
+		$rsel3 = false;
+		$rend = null;
+		$rnum = null;
+		$occ = 1;
+		if($task->getRepeatD() > 0) { 
+			$occ = 2; 
+			$rjump = $task->getRepeatD();
+		}
+		if($task->getRepeatD() > 0 AND $task->getRepeatD()%7 == 0) { 
+			$occ = 3; 
+			$rjump = $task->getRepeatD() / 7;
+		}
+		if($task->getRepeatM() > 0) { 
+			$occ = 4; 
+			$rjump = $task->getRepeatM();
+		}
+		if($task->getRepeatY() > 0) { 
+			$occ = 5; 
+			$rjump = $task->getRepeatY();
+		}
+		if($task->getRepeatEnd()) $rend = $task->getRepeatEnd();	
+		if($task->getRepeatNum() > 0) $rnum = $task->getRepeatNum();
+		if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
+		// decide which repeat type it is
+		if($task->getRepeatForever()) $rsel1 = true; //forever
+		else if(isset($rnum) AND $rnum > 0) $rsel2 = true; //repeat n-times
+		else if(isset($rend) AND $rend instanceof DateTimeValue) $rsel3 = true; //repeat until
+		else $rsel1 = true; // default
+	}
+	
+	private function setRepeatOptions(&$task_data) {
+		// repeat options
+		$repeat_d = 0;
+		$repeat_m = 0;
+		$repeat_y = 0;
+		$repeat_h = 0;
+		$rend = '';		
+		$forever = 0;
+		$jump = array_var($task_data, 'occurance_jump');
+		
+		if(array_var($task_data, 'repeat_option') == 1) $forever = 1;
+		elseif(array_var($task_data, 'repeat_option') == 2) $rnum = array_var($task_data, 'repeat_num');
+		elseif(array_var($task_data, 'repeat_option') == 3) $rend = getDateValue(array_var($task_data, 'repeat_end'));
+		// verify the options above are valid
+		if(isset($rnum) && $rnum) {
+			if(!is_numeric($rnum) || $rnum < 1 || $rnum > 1000) throw new Exception(lang('repeat x times must be a valid number between 1 and 1000'));
+		} else $rnum = 0;
+
+		if(isset($jump) && $jump) {
+			if(!is_numeric($jump) || $jump < 1 || $jump > 1000) throw new Exception(lang('repeat period must be a valid number between 1 and 1000'));
+		}
+		
+	    // check for repeating options
+		// 1=repeat once, 2=repeat daily, 3=weekly, 4=monthy, 5=yearly, 6=holiday repeating
+		$oend = null;
+		switch(array_var($task_data, 'occurance')){
+			case "1":
+				$forever = 0;
+				$task_data['repeat_d'] = 0;
+				$task_data['repeat_m'] = 0;
+				$task_data['repeat_y'] = 0;
+				$task_data['repeat_by'] = ''; 
+				break;
+			case "2":
+				$task_data['repeat_d'] = $jump;
+				if(isset($forever) && $forever == 1) $oend = null;
+				else $oend = $rend;
+				break;
+			case "3":
+				$task_data['repeat_d'] = 7 * $jump;
+				if(isset($forever) && $forever == 1) $oend = null;
+				else $oend = $rend;
+				break;
+			case "4":
+				$task_data['repeat_m'] = $jump;
+				if(isset($forever) && $forever == 1) $oend = null;
+				else $oend = $rend;
+				break;
+			case "5":
+				$task_data['repeat_y'] = $jump;
+				if(isset($forever) && $forever == 1) $oend = null;
+				else $oend = $rend;
+				break;
+			default: break;
+		}
+		$task_data['repeat_num'] = $rnum;
+		$task_data['repeat_forever'] = $forever;
+		$task_data['repeat_end'] =  $oend;
+		
+		if ($task_data['repeat_num'] || $task_data['repeat_forever'] || $task_data['repeat_end']) {
+			if ($task_data['repeat_by'] == 'start_date' && !$task_data['start_date'] instanceof DateTimeValue ) {
+				return lang('to repeat by start date you must specify task start date');
+			}
+			if ($task_data['repeat_by'] == 'due_date' && !$task_data['due_date'] instanceof DateTimeValue ) {
+				return lang('to repeat by due date you must specify task due date');
+			}
+		}
+		return null;
+	}
+	
 	
 } // TaskController
 

@@ -14,12 +14,12 @@ function Cell(row, column){
 
 	self.constructor = function(row, column){
 		this.formula = undefined;
-		this.dependencies = new Array();
 		this.row = row;
 		this.column = column;
 		//Set default Styles
 		this.fontStyleId = 0;
 		this.layerStyleId = 0;
+		this.references = new Array() ;
 	}
 
 	self.calculate = function(){
@@ -32,7 +32,21 @@ function Cell(row, column){
 				this.value = this.formula;
 			}
 	}
-
+	
+	self.addReference = function(reference){
+		this.references.push(reference) ;
+	}
+	
+	
+	self.clearReferences = function(reference){
+		delete this.references  ;
+		this.references = new Array() ;
+	}
+	
+	self.getReferences = function() {
+		return this.references ;
+	}
+	
 	//Style Functions
 	self.getFontStyleId = function(){
 		return this.fontStyleId;
@@ -52,9 +66,6 @@ function Cell(row, column){
 	}
 
 
-	self.getAddress = function(){
-		return {row:this.row,col:this.column};
-	}
 	//Contents Functions
 	self.getValue = function(){
 		return this.value;

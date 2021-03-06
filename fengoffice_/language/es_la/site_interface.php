@@ -90,7 +90,7 @@ return array(
     'massmailer message' => 'Mensaje',
     'massmailer recipients' => 'Destinatarios',
 
-// Dashboard ESTE ESTA BIEN
+// Dashboard
 
 	'welcome to new account' => '{0}, Bienvenido a su nueva cuenta',
 	'welcome to new account info' => 'A partir de ahora podrá acceder a su cuenta desde {0} (le recomendamos agregar este vínculo a marcadores).<br/> 
@@ -108,7 +108,7 @@ return array(
 	'new account step start workspace' => 'Paso {0}: Comience a organizar su información; Cree un Espacio de trabajo',
 	'new account step start workspace info' => 'Espacio de trabajo es el lugar donde se guarda y organiza toda la información de su empresa. Pueden estar divididos por Clientes, Proyectos, Departamentos de la empresa o cualquier otra forma de organizar la información.
 												Siga {0} en el panel izquierdo para crear un nuevo espacio de trabajo.<br/>
-												Automáticamente se crea un espacio personal para cada usuario ({1}). Este espacio solo será visto por su dueño.
+												Automáticamente se crea un espacio personal para cada usuario ({1}_personal). Este espacio solo será visto por su dueño.
 											',
 	
 	'new account step configuration' => 'Paso {0}: Configuración',
@@ -128,10 +128,8 @@ return array(
 
 	'new account step2' => 'Paso 2: Agregue miembros a su equipo',
     'new account step2 info' => 'Usted puede <a class="internalLink" href="{0}">crear nuevas cuentas de usuarios</a> para todos los miembros de su equipo. Cada miembro obtendrá un nombre de usuario y una contraseña, que utilizará para acceder al sistema',
-    
     'new account step3' => 'Paso 3: Agregue empresas clientes y sus miembros',
     'new account step3 info' => 'Ahora <a class="internalLink" href="{0}">defina una empresa cliente</a>. Al finalizar puede agregar sus miembros o dejar que el encargado de ese grupo se encargue. Estos miembros son muy similares a los de su empresa, sólo que tienen acceso limitado a algunos contenidos y funciones (pueden establecerse distintos niveles de acceso a cada espacio o miembro)',
-    
     'new account step4' => 'Paso 4: Crear un espacio',
     'new account step4 info' => 'Definir un <a class="internalLink" href="{0}"> nuevo espacio</a> es muy fácil: establezca un nombre y descripción (opcional) e ingrese los datos. A continuación podrá establecer los permisos de los miembros de su equipo y sus cientes.',
 
@@ -300,6 +298,11 @@ return array(
   'after' => 'luego de',
   'delete mails from server' => 'Eliminar correos del serviror',
   'mail account delete mails from server description' => 'Habilite esta opción para que los correos sean eliminados del servidor luego de cierto tiempo.',
+  'show images' => 'Mostrar imágenes.',
+  'images are blocked' => 'Las imágenes están bloqueadas',
+  'mail add contacts' => 'Nuevos contactos',
+  'no contacts to add' => 'No hay nuevos contactos para agregar.',
+  'linked attachments' => 'Objetos adjuntos',
 
 //Checkout
   'checkout file' => 'Bloquear archivo',
@@ -424,7 +427,7 @@ return array(
   'pause work' => 'Pausar',
   'resume work' => 'Retomar',
   'end work description' => 'Finalizar con la descripción del trabajo',
-  'add timeslot' => 'Añadir tiempo de trabajo',
+  'add timeslot' => 'Agregar tiempo de trabajo',
   'edit timeslot' => 'Editar tiempo de trabajo',
   'start date' => 'Fecha de comienzo',
   'start time' => 'Hora de comienzo',
@@ -450,9 +453,10 @@ return array(
   'multiples workspace object permanent delete' => 'Aquellos objetos contenidos en más de un espacio no seran eliminados.',
   'cancel permanent delete' => 'Para cancelar la eliminacion presione "Volver", o cierre esta ventana.',
   'confirm permanent delete workspace' => 'Por favor, confirme su deseo de eliminar el espacio <b>{0}</b>',
-
+  'confirm permanent delete user' => 'Por favor, confirme su deseo de eliminar',
   'latest user activity' => 'Última actividad del usuario',
-
+  'user personal workspace' => 'Eliminar también el Espacio de Trabajo: <b> {0} </b> y todo su contenido',
+  'other user personal workspace' => 'Otros usuarios tienen asignado el espacio personal <b>{0}</b>, éste no puede ser eliminado',
   'hours' => 'Horas',
   'minutes' => 'Minutos',
   'seconds' => 'Segundos',
@@ -501,7 +505,7 @@ return array(
   'last updated by on' => '{0}, en {1}',
   'updated' => 'Actualizado',
   'group by' => 'Agrupar por',
-
+  'last updated by' => 'Última actualización por',
 
   'enter tags desc' => 'Ingrese etiquetas separadas por coma ...',
 
@@ -519,6 +523,7 @@ return array(
   'task data' => 'Datos de tarea',
   'search in all workspaces' => 'Buscar en todos los espacios',
 
+  'paused time' => 'Tiempo pausado',
   'total pause time' => 'Tiempo total pausado',
   'pause time cannot be negative' => 'El tiempo de pausa no puede ser negativo',
   'pause time cannot exceed timeslot time' => 'El tiempo de pausa no puede exceder el tiempo total de trabajo',
@@ -614,8 +619,19 @@ return array(
   	'new share notification milestone' => 'El hito \'{0}\' ha sido compartido.',
 	'new share notification weblink' => 'El enlace web \'{0}\' ha sido compartido.',
 	'new version notification title' => 'Nueva versión',
-	
-
+	'new account step1 owner' => 'Paso 1: Actualizar la información de su compañía.',
+	'new account step1 owner info' => '<a class="internalLink" href="{0}">Ingrese los detalles de su compañía</a> tales como teléfono, fax, correo electrónico, sitio web, etc',
+	'new account step add members' => 'Step {0}: Agregar miembros del equipo',
+	'new account step add members info' => 'Puedes <a class="internalLink" href="{0}">crear cuentas de usuario</a> para los miembros de tu equipo. Cada miembro obtendrá su nombre de usuario y contraseña, que podrán utilizar para acceder al sistema',
+	'new account step start workspace' => 'Step {0}: Iniciar un espacio de trabajo',
+	'new account step start workspace info' => 'Definir una <a class="internalLink" href="{0}">nueva área de trabajo</a> es muy sencillo: ingrese un nombre y una descripción (opcional) y haga clic en Enviar. Luego puedes configurar permisos para los miembros de tu equipo y clientes.',
+	'new account step configuration' => 'Step {0}: Configuración',
+	'new account step configuration info' => '<a class="internalLink" href="{0}">Maneje</a> la configuración general de opengoo, configuración de correo, habilite/deshabilite módulos, entre otras opciones',
+	'new account step profile' => 'Step {0}: Actualizar perfil',
+	'new account step profile info' => 'Actualice su <a class="internalLink" href="{0}">perfil de usuario</a>',
+	'new account step preferences' => 'Step {0}: Actualice preferencias de usuario',
+	'new account step preferences info' => 'Actualice sus <a class="internalLink" href="{0}">preferencias de usuario</a> tales como preferencias generales, opciones de panel principal y tareas',
+	'new account step actions' => 'Step {0}: Acciones',
 	'getting started' => 'Comenzando',
 	'checked out by' => 'Bloqueado por',
 	'workspace contacts' => 'Contactos',
@@ -629,6 +645,9 @@ return array(
 	'weblink' => 'Enlace web',
 	'add value' => 'Agregar valor',
 	'remove value' => 'Quitar valor',
+	'hide options' => 'Ocultar opciones',
+    'personal workspace name' => '{0} Personal',
+    'personal workspace description' => 'Espacio personal',
 
 ); // array
 

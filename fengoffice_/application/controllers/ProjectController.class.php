@@ -94,10 +94,11 @@ class ProjectController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			if(active_project())
+			if (active_project()) {
 				$projects = active_project()->getId();
-			else 
-				$projects = logged_user()->getActiveProjectIdsCSV();
+			} else { 
+				$projects = logged_user()->getWorkspacesQuery();
+			}
 			list($search_results, $pagination) = SearchableObjects::searchPaginated($search_for, $projects, logged_user()->isMemberOfOwnerCompany());
 		} // if
 		$timeEnd = microtime(true);
@@ -273,8 +274,10 @@ class ProjectController extends ApplicationController {
 		
 		/* <permissions> */
 		if ($project->canChangePermissions(logged_user())) {
-			tpl_assign('project_users', $project->getUsers(false));
-			tpl_assign('project_companies', $project->getCompanies());
+			if (!$project->isNew()){
+				tpl_assign('project_users', $project->getUsers(false));
+				tpl_assign('project_companies', $project->getCompanies());
+			}
 			tpl_assign('user_projects', logged_user()->getProjects());
 
 			$permissions = ProjectUsers::getNameTextArray();

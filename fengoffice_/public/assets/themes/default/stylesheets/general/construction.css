@@ -21,6 +21,7 @@
 .headerLogoAndWorkspace {
 	float: left;
 }
+
 #systemNoticesWrapper {
 	background: red;
 	color: white;
@@ -127,7 +128,7 @@
 }
 
 .ico-quick-add {
-	background-image: url(../../images/16x16/add.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -599px !important;
 }
 .quickAddButton {
 	width: 60px;
@@ -459,8 +460,4 @@ div.private span {
 
 td.td-pr {
 	padding-right:8px;
-}
-
-.dashboard-link {
-	text-decoration: underline;
 }

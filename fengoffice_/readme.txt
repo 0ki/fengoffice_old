@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.4.2
-    ===================
+    About OpenGoo 1.5 beta
+    ======================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,11 +61,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.4.2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.4 beta 2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config, upload and public/files folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.4.2
+    	from your current version to 1.4 beta 2
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,160 +86,104 @@
 
 	Changelog
 	=========
-	
-	Since 1.4.1
-	-----------
-	- bugfix: Error when adding contacts when DEBUG mode is off and All workspace is selected
-	- bugfix: Tasks showed due date instead of start date
-	- bugfix: When editing an event on the 31st of a month it appeared on the 1st of the month
-	- bugfix: An error when making backups.
-	- bugfix: 'Number of tasks to display' config option fixed.
-	- bugfix: When creating a user from a contact it wasn't being assigned to the contact
-	
-	- usability: Language selection displayed in alphabetical order
-	- usability: Custom properties are no longer truncated.
-	
-	- langs: Updated translations
 
-	Since 1.4
-	---------
-	
-	- usability: Dim dates on calendar's monthly view which belong to another month.
-	
-	- bugfix: Date pickers ignored the start monday setting.
-	- bugfix: Week number on weekly view was always the same.
-	- bugfix: No error was displayed if adding a document with no comments even if file revision comments were required.
-	- bugfix: Non admin user with write permissions for Contacts on a workspace couldn't edit contacts of that workspace without the can manage contacts permission.
-	- bugfix: Removed repeated SEED constant definitions in config.php
-	- bugfix: No notification was being sent to people invited to an event.
-	- bugfix: Workspace comment permissions were not working properly on object views.
-	- bugfix: Object picker sometimes ordered only the loaded data and not all of the data in the server.
-	- bugfix: Translate tool didn't recognize javascript translation keys enclosed with double quotes. Now comboboxes are ordered alphabetically.
-
-	Since 1.4 RC
-	------------
-	
-	- usability: Now you can open weblinks with ctrl+click, mouse wheel or context menu.
-	- usability: Users are now automatically subscribed to emails they receive.
-	
-	- bugfix: When fetching email through IMAP, an error on one email would cause no more emails to be fetched.
-	- bugfix: Encoding was being ignored when displaying text files.
-	- bugfix: Paused time was not being calculated correctly for incomplete tasks on reports.
-	- bugfix: Task filters on the task panel were sometimes left blank.
-	- bugfix: Users without permissions on their personal workspaces were still able to write documents.
-	- bugfix: When viewing an event and then closing it you were always being taken to "today" instead of the date you were viewing.
-	- bugfix: When viewing page X of Email module and changing to a workspace with less pages, you were still being shown page X with no objects (same for other listings).
-	- bugfix: Zip files with mime types other than application/zip were not being recognized as zip files.
-	
-	- system: Help panel removed as it was not helpful enough. Top right help link now points to the wiki.
-
-	Since 1.4 beta 2
-	----------------
-	
-	- bugfix: Login url doesn't redirect correctly when already logged in
-	- bugfix: Note modified notification sends wrong modifier
-	- bugfix: Dates on time report
-	- bugfix: Missing lang new notification comment
-	- bugfix: Repeating events were not being shown correctly if not using GMT timezone
-	- bugfix: Email filter wasn't being kept when changing workspace
-	- bugfix: Some text on notifications was not on the user's locale
-	- bugfix: Tag control had wrong width
-	- bugfix: Workspace tree nodes not expanded correclty when filtering in Chrome
-	- bugfix: When deleting an email account while filtering by that account an error is shown
-	- bugfix: Autocomplete on emails didn't check for permissions
-
-	- usability: Object description added to notifications
-	- usability: A maximum of two error messages are now displayed on the GUI simultaneously
-	- usability: Don't show the Custom Porperty ctageory for users if there are none defined
-	- usability: When a translation isn't found, and when not debugging, show the english text 
-
-	Since 1.4 beta
-	--------------
-
-	- feature: Several improvements to custom reports and custom properties, like pagination, memo field type
-	- feature: Config option to show week number in calendar
-	
-	- usability: Added word OpenGoo to new account email subject; ie: 'Your new OpenGoo account has been created'	
-	- usability: Amount of tasks shown on the tasks panel can be configured	
-	- usability: Custom properties for workspaces displays nothing when none defined	
-	- usability: Don't show the help if the lang is not there	
-	- usability: Make date widget help string dependant on the date format (now it is a static lang)	
-	- usability: There should be contextual help explaining about File links (files with URL) when uploading
-	- usability: Change the updated_on field when a comment is added
-	- usability: Include Note's text on modification notification
-	- usability: Complete workspace path on email notifications
-	- usability: Increase size of textareas when editing notes, comments and descriptions
-	- usability: Limit Contact field sizes on GUI to match the size in the database
-	- usability: Open objects in new tab in reports
-	- usability: When editing comments the submit button should read Save Changes instead of Edit Comment
-		
-	- bugfix: Avoid using mb_detect_encoding if not available (mbstring extension not installed)	
-	- bugfix: Calendar view sometimes was not being remembered on calendar	
-	- bugfix: Companies with no workspaces were not listed	
-	- bugfix: Error adding custom report	
-	- bugfix: Error importing contacts (country)	
-	- bugfix: Error when creating a task from quick add	
-	- bugfix: Error when listing contacts	
-	- bugfix: Minor problem(s) with workspace selection control when editing a workspace on IE7	
-	- bugfix: When adding a new user, opengoo refreshes and the user is not added	
-	- bugfix: Sometimes when changing localization nothing happens.	
-	- bugfix: When deleting a tag it is still filtering by that tag	
-	- bugfix: When filtering for workspaces on a workspace chooser, the workspaces aren't expanded
-	- bugfix: Load custom css even when using minified CSS that doesn't include it
-	- bugfix: Avoid popup blocking when downloading
-	- bugfix: Error when deleting workspace with assigned emails
-	- bugfix: Error 500 on Overview only when not in debug mode
-	- bugfix: Comment notifications were not being sent
-
-	- security: Config option to enable/disable feeds with warning about security issues
-
-	Since 1.3.1
+	Since 1.4.2
 	-----------
 	
-	- feature: Custom properties per object type, used for extending the number of fields for each object type.
-	- feature: Custom reports based on object types. Custom properties are also displayed and can be used in filtering and ordering criteria.
-	- feature: References to external documents via urls can be added as documents in the upload file view.
-	- feature: New "Getting started" widget displays information that helps new users in using the system
-	- feature: Contextual help messages added in places throughout the system. 
-	- feature: Workspace information widget improved, shows users and contacts assigned to the current workspace.
-	- feature: Configurable date format.
-	- feature: Allow to unclassify email.
-	- feature: Notify an event creator when someone confirms assistance to an event.
-	- feature: Calendar option - Start Week on Monday.
-	- feature: Config option to automatically check out documents when editing online.
-	- feature: Companies now have a field for adding notes on it.
+	- feature: Email improved.
+		- Email attachments as links or in case of files optionally attach the content.
+		- Email text signature.
+		- Email checking improved.
+		- Autosave email drafts
+		- When replying or forwarding an email use the same account as the 'To' address. If the 'To' is not a user account use the default account chosen by the user.
+		- Allow to see emails from deleted accounts.
+		- Classify mail attachments generates a new revision if filename already exists.
+		- Config option to block images on emails enabled by default. When images are blocked allow to choose to show them temporarily for that email.
+		- Toolbar improved (selection menu, filters)
+	- feature: Drag and drop
+		- Move objects to other workspaces by dragging it from a listing into a workspace.
+		- Apply tags to an object by dragging an object into a tag.
+		- Change an event, task or milestone dates by dragging it in the calendar.
+		- Change the duration of an event by dragging its bottom edge.
+		- Sort emails by title and date.
+	- feature: Multiple workspaces for Events and Weblinks.
+	- feature: Calendar toolbar improved (tag, edit and trash actions).
+	- feature: Event selection by checking a checkbox in events' box.
+	- feature: Recurrent tasks.
+		- Define periodic tasks based on start or due date.
+		- Once you complete a task the next task is shown.
+		- You can instantiate an occurrence of the recurrent task to edit it individually.
+	- feature: Filter custom reports by workspace and tag.
+	- feature: Templates improved.
+		- Define parameters for a template that you can fill in when creating the objects.
+		- Parameters can be text or dates.
+		- This allows you to define templates with tasks or milestones whose dates depend on each others'.
+	- feature: Set default values for user config options.
+	- feature: Action to empty trash can.
+	- feature: Config option to ask for password when accessing the admin panel (disabled by default).
+	- feature: log user login with IP on the application log and show in user history	
+	- feature: Choose a personal workspace when for a user when creating it.
+	- feature: Allow setting workspace permissions for groups. This permissions apply to all users in the group.
 	
-	- administration: User password security and complexity options are now configurable
-	- administration: Document revision comments can be set as required via a configuration option
-	- administration: Billing currency symbol is now configurable
-	- administration: New "Can manage reports" permission added to users and groups, allowing the creation, edition and deletion of custom reports.
+	- usability: Now you can select events and perform actions on the selected events like on all other modules.
+	- usability: Tasks on the calendar are shown one time for the start time and one time for the due date.
+	- usability: Popup messages are now smaller.
+	- usability: Change the user's language in the login interface.
+	- usability: Only show most common actions on object's view and show the rest when pressing More...
+	- usability: Choose parent task with an ObjectPicker that shows only tasks in a task's view.
+	- usability: Confirm dialog when editing repeating events (warn user that all past and future events will be edited).
+	- usability: Show a Save button on top on all edition screens.
+	- usability: Improved user selection interfaces to select subscribers.
+	- usability: Subscribe users on object's view (without going to the edit view).
+	- usability: Sort users alphabetically when selecting subscribers, event invititions, milestone assign to.
+	- usability: Add 'Confirm' and 'Reject' links to event invitation mails.
+	- usability: Custom property fields are longer when viewing an object.
+	- usability: Dashboard: Config option to show a two week calendar.
+	- usability: Dashboard: Late milestones and tasks are sorted by due date.
+	- usability: Limited amount of information displayed in the dashboard to improve loading time.
+	- usability: Changed action 'Properties' or 'Edit file properties' in files for 'Update file'.
+	- usability: Links in mail are opened in a new window or tab.
+	- usability: Only a configurable amount of linked objects are shown and the rest can be seen in a 'View all linked objects' link.
+	- usability: Removed padding from context help containers and put margin to its children.
+	- usability: Removed workspace crumbs from name in contacts tab, add a new column with the workspaces.
+	- usability: Set user as administrator option is no longer shown when its company is not the owner company.
+	- usability: Timeslots now clearly show how much of the time is pause time, how much is active time, and dates of start and finish.
+	- usability: Timeslots now show last edition time and user.
+	- usability: The workspaces popup that showed when hovering the workspace name on the top left is now only shown when clicking it.
+	- usability: Improved display of workspaces on Administration -> Workspaces.
+	- usability: Adding work hours now accepts the format 'Hours:Minutes'.
+	- usability: Improved 'create user from contact' functionality.
 	
-	- usability: Three to four contacts / users are displayed in one column in the workspace info, which can be expanded to include all contacts / users
-	- usability: Contacts can now be assigned to workspaces through the edit workspace view.
-	- usability: "Checked out" icon displayed with documents in the documents widget
-	- usability: "Checked out" information now displayed in the document view header and under the properties panel.
-	- usability: Editable documents can be expanded to fill the whole page for easier viewing.
-	- usability: Improved the reporting panel view. This panel will be displayed by default on new installations
-	- usability: Added support for html help files in the right sidebar.
-	- usability: Calendar, monthly view: Paint all events with workspace color
-	- usability: Improved content of email notifications (more info and in user's language).
-
-	- system: Initial loading time reduced by loading javascript files as they are needed.
-	- system: Added new lang folder for plugin langs, which is loaded in filename order and after default OpenGoo lang files.
-	- system: Added new lang folder for help langs, displayed in the right sidebar of OpenGoo.
-	- system: New hooks added.
-	- system: Mail notifications can be sent through cron, so that user doesn't have to wait for it to send.
-	- system: Slimey updated to 0.2. It is now translatable.
+	- system: Add PHPUTF8 lib to OpenGoo to handle UTF8 when mbstring module is not available.
+	- system: Country codes updated for Zaire and East Timor
+	- system: Fixed a performance issue when there are too many workspaces.
+	- system: Image spriting is now used to load initial images.
+	- system: Public files are now saved using the file repository (database or filesystem depending on configuration).
+	- system: Updated FCKEditor to latest version.
 	
-	- bugfix: Handle timezones correctly.
-	- bugfix: Various issues with importing/exporting events.
-	- bugfix: Bug when fetching imap folders with non-ascii characters.
-	- bugfix: Calendar doesn't show milestones assigned to user, without tasks assigned to user.
-	- bugfix: Calendar titles too high.
-	- bugfix: Contact/User deletion.
-	- bugfix: Company csv export puts values in different order than titles.
-	- bugfix: Contact import crashes with chinese characters.
-	- bugfix: Mail doesn't show images that are attachments.
-	- bugfix: Minor CSS issue (email actions inherit CSS style from HTML emails).
-	- bugfix: When editing an IMAP account, changing the IMAP data makes no effect.
-	- bugfix: Assigning a role when editing a contact which already had a role would duplicate roles. 
+	- bugfix: Error when adding a workspace with a custom property.
+	- bugfix: IE error in task drag and drop: scrolling did not scroll task rows.
+	- bugfix: When editing events of last day of month the date shown was the first day of that month.
+	- bugfix: 'Set number of tasks shown as default' config option was not working
+	- bugfix: Bug with boolean custom properties.
+	- bugfix: CC was not shown when viewing mail content.
+	- bugfix: Checking email through imap sometimes saved emails with no subject, sender or body.
+	- bugfix: Download a document failed in IE, when 'Checkout notification dialog for documents' was enabled.
+	- bugfix: Event import did not import first event in file.
+	- bugfix: Problem with timezone when exporting events to Ical.
+	- bugfix: Image Transparency patch added for avatars, logos and pictures.
+	- bugfix: Couldn't delete reports by clicking the delete button.
+	- bugfix: Now you can only assign to a task milestones on the same workspace as the task.
+	- bugfix: Latest comments widget context help was always being shown.
+	- bugfix: Milestones completed tasks bar counted trashed tasks, and did not always refresh.
+	- bugfix: Problem with permissions in tasks with non admin users.
+	- bugfix: Reminders showed up inmediately after adding an event in Chrome.
+	- bugfix: Some reporting errors.
+	- bugfix: Task drag & drop did not work in IE.
+	- bugfix: Task list did not scroll properly in IE.
+	- bugfix: Time panel, button add was over description field.
+	- bugfix: View task displayed start date equal to due date.
+	- bugfix: When updating an image the image preview wasn't being updated.
+	- bugfix: In IE the Tasks toolbar buttons were enabled/disabled when the checkboxes lost focus, and not when they were checked/unchecked.
+	
+	- security: Don't allow a non-admin user to edit another user's comments

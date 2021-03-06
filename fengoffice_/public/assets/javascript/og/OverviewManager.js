@@ -19,11 +19,8 @@ og.OverviewManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-					'updatedBy', 'updatedById',
-					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'icon', 'wsIds', 'manager', 'mimeType', 'url'
+					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById', 'dateCreated', 
+					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url'
 				]
 			}),
 			remoteSort: true,
@@ -59,8 +56,8 @@ og.OverviewManager = function() {
 		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
 		if (r.data.type == 'webpage') {
 			viewUrl = og.getUrl('webpage', 'view', {id:r.data.object_id});
-			actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
-				r.data.url, lang('open link in new window', value));
+			actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
+					r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		}
 		actions = '<span>' + actions + '</span>';
 	
@@ -93,23 +90,26 @@ og.OverviewManager = function() {
 	}
 
 	function renderUser(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
+		if (r.data.updatedById) {
+			return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
+		} else {
+			return lang("n/a");
+		}
 	}
 
 	function renderAuthor(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+		if (r.data.createdById) {
+			return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+		} else {
+			return lang("n/a");
+		}
 	}
 
 	function renderDate(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var now = new Date();
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat('M j');
-		} else {
-			return value.dateFormat('h:i a');
-		}
+		return value;
 	}
 
 	function getSelectedIds() {
@@ -124,6 +124,8 @@ og.OverviewManager = function() {
 			return ret.substring(1);
 		}
 	}
+	
+	this.getSelectedIds = getSelectedIds;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -318,7 +320,7 @@ og.OverviewManager = function() {
     };
     
 	og.OverviewManager.superclass.constructor.call(this, {
-		//enableDragDrop: true, //(breaks the checkbox selection)
+		enableDrag: true,
 		ddGroup : 'WorkspaceDD',
 		store: this.store,
 		layout: 'fit',
@@ -326,7 +328,7 @@ og.OverviewManager = function() {
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		/*style: "padding:7px;",*/
+		id: 'overview-manager',
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -410,7 +412,30 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	reset: function() {
 		this.load({start:0});
 	},
-
+	
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				objects: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+	
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

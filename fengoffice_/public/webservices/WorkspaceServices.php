@@ -30,7 +30,7 @@ class WorkspacesServices extends WebServicesBase {
 	}
 	
 	private function workspace_toxml(Project $ws) {
-		$activeProjects = explode(',', logged_user()->getActiveProjectIdsCSV());
+		$activeProjects = logged_user()->getWorkspaces(true);
 		$parentIds = '';
 		$i = 1;
 		$pid = $ws->getPID($i);

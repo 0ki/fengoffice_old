@@ -2,7 +2,7 @@
   set_page_title(lang('edit picture'));
 ?>
 
-<form style='height:100%;background-color:white' action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
   
 <div class="avatar">
 <div class="coInputSeparator"></div>
@@ -31,6 +31,6 @@
  </div>
  </div>
 </form>
-<script type="text/javascript">
+<script>
 	Ext.get('pictureFormPicture').focus();
 </script>

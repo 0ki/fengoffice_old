@@ -70,7 +70,6 @@ class ProjectMessage extends BaseProjectMessage {
 		$comment->setIsPrivate($is_private);
 		return $this->attachComment($comment);
 	} // addComment
-
 	
 
 

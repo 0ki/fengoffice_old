@@ -54,6 +54,34 @@
     	$this->setCanManageTemplates($value);
     	$this->setCanManageReports($value);
     }
+    
+  function getAllPermissions($user_permissions = null) {
+    	if (is_null($user_permissions) && !$this->isNew())
+    		$user_permissions = ProjectUsers::findAll(array('conditions' => 'user_id = '. $this->getId()) );
+    	$result = array();
+    	if (is_array($user_permissions)){
+	    	foreach ($user_permissions as $perm){
+	    		$chkArray = array();
+	    		$chkArray[0] = ($perm->getCanAssignToOwners() ? 1 : 0);
+	    		$chkArray[1] = ($perm->getCanAssignToOther() ? 1 : 0);
+	    		
+	    		$radioArray = array();
+	    		$radioArray[0] = ($perm->getCanWriteMessages() ? 2 : ($perm->getCanReadMessages()? 1 : 0));
+	    		$radioArray[1] = ($perm->getCanWriteTasks() ? 2 : ($perm->getCanReadTasks()? 1 : 0));
+	    		$radioArray[2] = ($perm->getCanWriteMilestones() ? 2 : ($perm->getCanReadMilestones()? 1 : 0));
+	    		$radioArray[3] = ($perm->getCanWriteMails() ? 2 : ($perm->getCanReadMails()? 1 : 0));
+	    		$radioArray[4] = ($perm->getCanWriteComments() ? 2 : ($perm->getCanReadComments()? 1 : 0));
+	    		$radioArray[5] = ($perm->getCanWriteContacts() ? 2 : ($perm->getCanReadContacts()? 1 : 0));
+	    		$radioArray[6] = ($perm->getCanWriteWeblinks() ? 2 : ($perm->getCanReadWeblinks()? 1 : 0));
+	    		$radioArray[7] = ($perm->getCanWriteFiles() ? 2 : ($perm->getCanReadFiles()? 1 : 0));
+	    		$radioArray[8] = ($perm->getCanWriteEvents() ? 2 : ($perm->getCanReadEvents()? 1 : 0));
+	    		
+	    		$result[] = array("wsid" => $perm->getProjectId(), "pc" => $chkArray, "pr" => $radioArray);
+	    	}
+    	}
+    	
+    	return $result;
+    }
 //    /**
 //    * Return array of group users on specific project
 //    *

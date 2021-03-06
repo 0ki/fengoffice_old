@@ -73,6 +73,21 @@ class MailAccount extends BaseMailAccount {
 		return $uids;
 	}
 	
+	function getMaxUID($folder = null){
+		$maxUID = 0;
+		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
+				"` WHERE `account_id` = ". $this->getId();
+		if (!is_null($folder)) 
+			$sql .= " AND `imap_folder_name` = '$folder'";
+		$sql .= " AND id = (SELECT max(id) FROM `". MailContents::instance()->getTableName() .
+				"` WHERE `account_id` = ". $this->getId(). " AND `state` < 2)";
+		$rows = DB::executeAll($sql);
+		if (isset($rows)){
+			$maxUID = $rows[0]['uid'];
+		}
+		return $maxUID;
+	}
+	
 	// ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------

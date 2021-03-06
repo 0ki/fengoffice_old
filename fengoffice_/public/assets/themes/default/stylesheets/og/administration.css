@@ -43,12 +43,11 @@
 .og-add-template-object {
 	position: relative;
 	background-repeat: no-repeat;
-	padding-left: 34px;
-	height: 25px;
+	padding-left: 24px;
+	height: 21px;
 	width: 400px;
 	vertical-align:'middle';
-	line-height:25px;
-	background-position: 10px center;
+	line-height: 20px;
 }
 .og-add-template-object .name {
 	width: 300px;
@@ -117,3 +116,6 @@
 	margin-left: 20px;
 }
 /* </upgrade> */
+.configCategory, .userWsConfigCategory {
+	margin: 5px 0;
+}

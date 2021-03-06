@@ -9,25 +9,7 @@
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
  */
-function SheetSection(name ,top,left, width, height){
-	var self = this;
-	self.constructor = function(name){
-		this.id = name;
-		this.style.position = "absolute";
-		this.style.top = top;
-		this.style.left = left;
-		this.style.width = width;
-		this.style.height = height;
-		this.style.backgroundColor = "#FFFFFF";
-
-	}
-
-	self.constructor(name,top,left,width,height);
-
-	return self;
-}
-
-function Sheet(nRows, nColumns){
+function Sheet(configs){
 	var self = this;
 
 	self.getHeight = function(){
@@ -48,7 +30,6 @@ function Sheet(nRows, nColumns){
 		//Create new Row
 		this.rows[index] = new Row(index);
 		this.cells[index] = new Array();
-		//alert("entra " + this.size.height);
 		return this.rows[index];
 	}
 
@@ -57,7 +38,7 @@ function Sheet(nRows, nColumns){
 		//Updates Sheet Height
 		if(index > this.cols.length){ //TODO: check index > maxrange
 			var offset = index - this.cols.length;
-			this.size.width += this.defaultColumnHeight*offset;
+			this.size.width += configs.defaultColumnHeight*offset;
 		}
 		//Create new Column
 		this.cols[index] = new Column(index);
@@ -81,47 +62,98 @@ function Sheet(nRows, nColumns){
 			this.cells[row][col] = undefined;
 	}
 
-	self.constructor = function(nRows, nColumns){
-		var sheet = document.createElement("DIV");
+	self.constructor = function(configs){
 		this.cells = new Array();
 		this.rows = new Array();
 		this.cols = new Array();
 
-		//Set default Properties
-		this.defaultColumnWidth = 80;
-		this.defaultRowHeight = 18;
-		this.defaultFontStyleId = 0;
-
-		this.nRows = nRows;
-		this.nColumns = nColumns;
 		this.namespace = new NameHandler(); //TODO: move to Book
-		this.maxRange = {row:65545,col:256};
+		this.maxRange = {row:configs.rows,cols:configs.cols};
 		this.size = {height:0,width:0};
+		this.store = new Store();// For the Control Zeta
+	}
+
+	self.beginTransaction = function () {
+		this.store.beginTransaction() ;
+	}
+
+		
+	self.rollBack = function () {
+		var currentState = this.store.getCurrent() ;
+		this.store.rollBack() ;
+
+		for ( var i=0 ; i< currentState.length; i++  ) {
+			var state = currentState[i] ;
+			switch (state.property) {
+				case 'formula' :
+					this.setFormula(state.address.row, state.address.col, state.oldValue,true) ;
+				break;
+				case 'fstyle' : 
+					this.setCellFontStyleId(state.address.row, state.address.col, state.oldValue,true) ;
+				break;
+				case 'size':
+					if(state.address.row == undefined)
+						this.setColumnSize(state.address.col,state.oldValue,true);
+					else
+						this.setRowSize(state.address.row,state.oldValue,true);
+					
+				break;
+			}  
+		} 
 	}
 
 
-
+	self.restore = function () { //TODO Eliminar codigo repetido
+		if ( this.store.canRestore() ) {
+			this.store.restore() ; 
+			var currentState = this.store.getCurrent() ;
+		
+			for ( var i=0 ; i< currentState.length; i++  ) {
+				var state = currentState[i] ;
+				switch (state.property) {
+					case 'formula' :
+						this.setFormula(state.address.row, state.address.col, state.newValue,true) ; 
+					break; 
+					case 'fstyle' :
+						this.setCellFontStyleId(state.address.row, state.address.col, state.newValue,true) ; 
+					break; 
+					case 'size':
+						if(state.address.row == undefined)
+							this.setColumnSize(state.address.col,state.newValue,true);
+						else{
+							
+							this.setRowSize(state.address.row,state.newValue,true);
+						}
+					break;
+				}  
+			} 
+		}  
+	}
+	
 	/************* ModelData Interface Implementation ********************/
 	self.getRowIndexByPosition = function(top){
-		return parseInt(top/this.defaultRowHeight);
+		return parseInt(top/configs.defaultRowHeight);
 	}
 
 	self.getRowSize = function(row){
 		if(this.rows[row])
 			return this.rows[row].getSize();
 		else
-			return this.defaultRowHeight; //TODO: use default configs
+			return configs.defaultRowHeight; //TODO: use default configs
 	}
 
-	self.setRowSize = function(row,size){
+	self.setRowSize = function(row,size,dontStore){
 		var previousSize = 0;
-		if(this.rows[row]){
-			previousSize = this.rows[row].getSize();
-			this.rows[row].setSize(size);
-		}else{
-			var row = this.addRow(row);
-			this.rows[row].setSize(size);
+		if(this.rows[row]==undefined)
+			this.addRow(row);
+		
+		if(dontStore == undefined){
+			var state = new State({row:row},'size',this.rows[row].getSize(),size) ;
+			this.store.add(state);
 		}
+		var previousSize = this.rows[row].getSize(); 
+		this.rows[row].setSize(size);
+		
 		//Adjust Sheet Height
 		this.size.height += size - previousSize;
 	}
@@ -130,18 +162,20 @@ function Sheet(nRows, nColumns){
 		if(this.cols[column])
 			return this.cols[column].getSize();
 		else
-			return this.defaultColumnWidth; //TODO: use default configs
+			return configs.defaultColumnWidth; //TODO: use default configs
 	}
 
 
-	self.setColumnSize = function(column,size){
-		if(this.cols[column])
-			this.cols[column].setSize(size);
-		else{
+	self.setColumnSize = function(column,size,dontStore){
+		if(this.cols[column]==undefined)
 			this.addColumn(column);//this.cols[column] = new Column(column);
-			this.cols[column].setSize(size);
-		}
 
+		if(dontStore == undefined){
+			var state = new State({col:column},'size',this.cols[column].getSize(),size) ;
+			this.store.add(state);
+		}
+		
+		this.cols[column].setSize(size);
 	}
 
 	self.getColumnName = function(column){
@@ -174,50 +208,123 @@ function Sheet(nRows, nColumns){
 		this.cells[row][column].setValue(value);
 	}
 
-	self.calculate = function (formula,row,col) {
+	self.clearCellReferences = function(row,col){
+		if(self.cells[row])
+			if(self.cells[row][col])
+				self.cells[row][col].clearReferences();
+	}
+	
+	self.getCellReferences = function(row,col){
+		if(self.cells[row])
+			if(self.cells[row][col])
+				return self.cells[row][col].getReferences();
+	}
 
+	
+	self.checkCircularReferences = function(row,col,range){
+		//First check that range doesn't have the cell(row,col)
+		
+		if(range.addressInside(row,col))
+			return true; 
+		
+		//Check that address isn't inside references in cells inside the range
+		for(var i=range.start.row; i <= range.end.row;i++)
+			for(var j=range.start.col; j <= range.end.col;j++){
+				var refs = self.getCellReferences(i,j);
+				if(refs != undefined){
+					for(var r=0;r < refs.length;r++)
+						try{
+							if (self.checkCircularReferences(row,col,refs[r]))
+								throw(new Error(300,""));
+						}catch(e){
+							e.description += "<br>Address: " + self.getRangeName(new Range({row:i,col:j})) + " Formula: " + self.getFormula(i,j);
+							throw (e);
+						}
+				}
+			}
+			return false;
+	}
+	
+	
+	self.calculate = function (formula,row,col) {
 		var tokens = parseFormula(formula) ;//
 		var result = null ;
 		var strtoeval = '' ;
-
+		var current_args = new Array();
 		var current_func = null ;
+		var current_prefix = "";
+		var func_stack = new Array();
+		
+		var cell = self.cells[row][col];
+		
+		cell.clearReferences();
+		
 		while (tokens.moveNext()) {
     		var token = tokens.current();
     		switch (token.type) {
-				case 'operator-infix' :
+    			case 'operator-prefix':
+    				current_prefix = token.value ;
+    				break;
+				case 'operator-infix':
 					strtoeval += token.value ;
 				case 'operand' :
 					switch (token.subtype) {
 						case 'number' :
 							if (current_func != undefined) {
-								strtoeval += calculator.calc(current_func,token.value) ;
+								current_args.push(current_prefix + token.value) ;
+								current_prefix = "";
+								//strtoeval += calculator.calc(current_func,token.value) ;
+							}else {
+								strtoeval += current_prefix + token.value ;
+								current_prefix = "";
 							}
-							strtoeval += token.value ;
+						break ;
+						case 'text' :
+							if (current_func != undefined) {
+								current_args.push(current_prefix + token.value) ;
+								current_prefix = "";
+								//strtoeval += calculator.calc(current_func,token.value) ;
+							}else {
+								strtoeval += "'" +current_prefix + token.value + "'" ;
+//								
+								current_prefix = "";
+							}
 						break ;
 						case 'range' :
-		    				address = this.namespace.getRangeAddress(token.value) ;
-		    				References.addReference(address,{row:row,col:col});
-		    				if (address.end == undefined ) {
-		    					// single value ! 
-			    				var value = this.getValue(address.start.row, address.start.col) ;
-			    				if (current_func != undefined) {
-			    					
-									strtoeval += calculator.calc(current_func,new Array(value) ) ;
-									
-								}else {
-									strtoeval += value ;
-								}
-		    				}else {
-		    					//range ! 
+		    				var range = this.namespace.getNameAddress(token.value) ;
+		    				range.normalize();
+		    				try{
+		    					self.checkCircularReferences(row,col,range);
+		    				}catch(e){
+		    					e.description = "Circular Reference Detected<br>Address: " + self.getRangeName(new Range({row:row,col:col})) + " Formula: " + formula +  e.description;
+		    					throw(e);
+		    				}
+		    				
+		    				cell.addReference(range);
+		    				
+		    				References.addReference(range,{row:row,col:col});
+		    				if (range != undefined ) {
 								var values = new Array() ;
-								values.pop();
-	    						for ( var i = address.start.row ; i <= address.end.row; i++ ) {
-	    							for ( var j = address.start.col ; j <= address.end.col; j++ ) {
+	    						for ( var i = range.start.row ; i <= range.end.row; i++ ) {
+	    							for ( var j = range.start.col ; j <= range.end.col; j++ ) {
 	    							    var value = this.getValue(i,j) ;
+	    							    
+	    							    if(typeof value == 'string')
+	    							    	value = "'"+value+"'"; 
+	    							    	
 	    								if ( value != undefined ) values.push( value ) ;
 	    							}
 	    						}
-	    						strtoeval += calculator.calc(current_func,values) ;
+	    						//strtoeval += calculator.calc(current_func,values) ;
+	    						if (current_func != undefined) {
+									current_args.push(values) ;
+									current_prefix = "";
+									//strtoeval += calculator.calc(current_func,token.value) ;
+								}else {
+									strtoeval += values ;//									
+									current_prefix = "";
+								}
+	    						
 			    			}
 						break ;						
 					}				
@@ -225,13 +332,28 @@ function Sheet(nRows, nColumns){
     		
     			case 'function' :
     				if (token.subtype == 'start') {
-    					current_func = token.value.toUpperCase()  ;
+    					if(current_func!=undefined){
+	    					var old_func = {args:current_args,func:current_func};
+	    					func_stack.push(old_func);
+    					}
+    					current_args = new Array() ;
+    					current_func = token.value  ;
     				}else {
-    					current_func = '' ;
+    					//stop
+    					
+    					var value = calculator.calc(current_func,current_args);
+    					var current = func_stack.pop() ;
+    					if(current==undefined)
+    						strtoeval += calculator.calc(current_func,current_args) ;
+    					else{
+    						current.args.push(value);
+    						current_func = current.func;
+    						current_args = current.args;
+    					}
+    					
     				}
     			break ;
     			case 'subexpression' :
-    			alert('parettesis');
 					if (token.subtype == 'start') {
 						strtoeval += "(" ;
 					}else {
@@ -240,24 +362,29 @@ function Sheet(nRows, nColumns){
 				break; 
     		}
 		}
-		
-		
+				
 		try {
 		 	result = eval(strtoeval);
-		}catch ( e) {
-			result =  "INVALID";
+		 	
+		}catch (e) {
+			result =  INVALID;
 		}
 		
 		return result ;
 	}
 
-	self.setFormula = function(row,column,value){
+	self.setFormula = function(row,column,value,dontStore){
 		if(this.cells[row]==undefined)
 			this.addCell(row,column);
 		else
 			if(this.cells[row][column] == undefined){
 				this.addCell(row,column);
 			}
+		
+		if(dontStore == undefined){
+			var state = new State({row:row, col:column},'formula',this.cells[row][column].getFormula(),value) ;
+			this.store.add(state);
+		}
 				
 		this.cells[row][column].setFormula(value);
 		
@@ -265,24 +392,22 @@ function Sheet(nRows, nColumns){
 			if (value.length) {
 				if  ( (value[0] == '=') || (value[0] == '+') )  {
 					this.cells[row][column].setValue(this.calculate(value,row,column));
-					this.cells[row][column].setValue(this.calculate(value));
+//					this.cells[row][column].setValue(this.calculate(value));
 				}
 				else {
 					this.cells[row][column].setValue(value) ;
 				}
 			}
-		}
+		}else
+			this.cells[row][column].setValue(value) ;
 		self.updateReferences({row:row,col:column});
 	}
 
 	self.updateReferences = function(address){
 		var references = References.getReferenced(address);
-		//alert(references.toSource());
 		for(var ref in references){
-			//alert(ref.toSource());
 			if(ref!='remove'){
 				var c = references[ref];
-				//alert(c.toSource()+ " " +c.row + " " + c.col + " " + this.getFormula(c.row,c.col));
 				this.setFormula(c.row,c.col,this.getFormula(c.row,c.col));
 			}
 		}
@@ -315,6 +440,7 @@ function Sheet(nRows, nColumns){
 	self.setRow = function(index,column){
 		this.cols[index] = column;
 	}
+	
 	self.getColumn = function(index){
 		return this.rows[index];
 	}
@@ -343,8 +469,33 @@ function Sheet(nRows, nColumns){
 		cell.isEmpty = true;
 		return cell;
 	}
+	
+	//Name Handling Operations
+	self.getRangeName = function(range){
+		return self.namespace.getRangeName(range);
+	};
+	
+	self.addName = function(name,range){
+		return self.namespace.addName(name,range);
+	};
+	
+	self.deleteName = function(name){
+		self.namespace.deleteName(name);
+	};
+	
+	self.existsName = function(name){
+		return self.namespace.existsName(name);
+	};
+	
+	self.getNameAddress = function(name){
+		return self.namespace.getNameAddress(name);
+	};
 
-	self.constructor(nRows, nColumns);
+	self.getNames = function(){		
+		return self.namespace.getNames();
+	};
+	
+	self.constructor(configs);
 	addSheetStyleOperations(self);
 
 	return self;

@@ -396,7 +396,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	// ---------------------------------------------------
 
 	function getViewUrl() {
-		return get_url('milestone', 'view', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('milestone', 'view', array('id' => $this->getId()));
 	} // getViewUrl
 
 	/**
@@ -407,7 +407,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return string
 	 */
 	function getEditUrl() {
-		return get_url('milestone', 'edit', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('milestone', 'edit', array('id' => $this->getId()));
 	} // getEditUrl
 
 	/**
@@ -418,7 +418,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return string
 	 */
 	function getDeleteUrl() {
-		return get_url('milestone', 'delete', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('milestone', 'delete', array('id' => $this->getId()));
 	} // getDeleteUrl
 
 	/**
@@ -464,7 +464,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return string
 	 */
 	function getAddMessageUrl() {
-		return get_url('message', 'add', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('message', 'add', array('milestone_id' => $this->getId()));
 	} // getAddMessageUrl
 
 	/**
@@ -475,7 +475,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @return string
 	 */
 	function getAddTaskUrl() {
-		return get_url('task', 'add_task', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('task', 'add_task', array('milestone_id' => $this->getId()));
 	} // getAddTaskUrl
 
 	// ---------------------------------------------------
@@ -585,8 +585,8 @@ class ProjectMilestone extends BaseProjectMilestone {
 	}
 	
 	function getArrayInfo(){
-		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId());
-		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_by_id > 0');
+		$tnum = ProjectTasks::count('milestone_id = ' . $this->getId() . " AND `trashed_by_id` = 0");
+		$tc = ProjectTasks::count('milestone_id = ' . $this->getId() . ' and completed_by_id > 0 AND `trashed_by_id` = 0');
 		
 		$result = array(
 			'id' => $this->getId(),
@@ -608,7 +608,23 @@ class ProjectMilestone extends BaseProjectMilestone {
 		return $result;
 	}
 	
+	/**
+	 * Set the milestone's project
+	 * @param $project
+	 */
+	function setProject($project) {
+		$this->removeFromAllWorkspaces();
+		$this->addToWorkspace($project);
+	}
 	
+	/**
+	 * Get milestone's project's id
+	 */
+	function getProjectId() {
+		$project = $this->getProject();
+		if ($project instanceof Project) return $project->getId();
+		return 0;
+	}
 	
 } // ProjectMilestone
 

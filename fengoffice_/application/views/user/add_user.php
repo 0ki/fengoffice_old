@@ -1,12 +1,12 @@
 <?php
-	require_javascript("modules/addUserForm.js");
+	require_javascript("og/modules/addUserForm.js");
 	require_javascript("og/Permissions.js");
 	$genid=gen_id();
 	$object = $user;
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
 <div class="adminAddUser">
   <div class="adminHeader">
   	<div class="adminHeaderUpperRow">
@@ -18,9 +18,9 @@
   	</div>
   	
   <div>
-    <?php echo label_tag(lang('username'), 'userFormName', true) ?>
+  <?php echo label_tag(lang('username'), 'userFormName', true) ?>
     <?php echo text_field('user[username]', array_var($user_data, 'username'), 
-    	array('class' => 'medium', 'id' => 'userFormName', 'tabindex' => '100')) ?>
+    	array('class' => 'medium', 'id' => 'userFormName', 'tabindex' => '100','onchange'=>'og.determinePersonalwsName(this, \'' . escape_single_quotes(new_personal_project_name()) .'\')')) ?>
   </div>
   	
   <div>
@@ -31,9 +31,37 @@
   
   	<?php if(logged_user()->isAdministrator()) { ?>
   <div>
+   
+  	<script>
+  	  	
+  		//Hide the "is administrator" option if the selected company is no the ownerCompany
+  		//it also set the option isAdministrator to NO when it is hidden.
+  		og.validateOwnerCompany = function(selectedCompany,genid)
+  		{
+  			var ownerCompanyId = <?php echo owner_company()->getId()?>;
+  	  		companyId= selectedCompany.value;
+  	  		idDivAdmin = genid + "isAdministratorDiv";
+  	  		adminOption = document.getElementById(idDivAdmin);
+  	  		if (companyId == ownerCompanyId){
+				if (adminOption){
+	  	  	  		adminOption.style.display = "block";
+	  	  	  	}
+  	  		}else
+  	  	  		{
+		  	  		if (adminOption)
+			  	  	{
+		  	  			radioNo = document.getElementById("userFormIsAdminNo");		  	  			 
+		  	  			radioYes = document.getElementById("userFormIsAdminYes");
+		  	  			radioNo.checked = "checked";
+		  	  			radioYes.checked = "";
+		  	  	  		adminOption.style.display = "none";
+		  	  	  	}
+  	  	  		}
+  		};
+  	</script>
     <?php echo label_tag(lang('company'), $genid.'userFormCompany', true) ?>
     <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
-    	array('id' => $genid.'userFormCompany', 'tabindex' => '300')) ?>
+    	array('id' => $genid.'userFormCompany', 'tabindex' => '300','onchange' => "og.validateOwnerCompany(this,'$genid')")) ?>
     	
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
@@ -88,7 +116,7 @@
       </div>
     </div>
   </fieldset>
-  <script type="text/javascript">
+  <script>
     App.modules.addUserForm.generateRandomPasswordClick();
   </script>
 <?php } // if ?>
@@ -96,7 +124,7 @@
 
 <?php if($company->isOwner()) { ?>
   <div class="formBlock">
-    <div>
+    <div id="<?php echo $genid . 'isAdministratorDiv'?>">
       <?php echo label_tag(lang('is administrator'), null, true) ?>
       <?php echo yes_no_widget('is_admin', 'userFormIsAdmin', $user->isAdministrator(), lang('yes'), lang('no'), '1100') ?>
     </div>
@@ -126,8 +154,42 @@
     <br /><span class="desc"><?php echo lang('create contact from user desc') ?></span>
   </div>
   <?php } ?>
-  <br/>
+  <div class="formBlock">
+  <div id="<?php echo $genid . 'createPersonalWS'?>" onclick="og.showSelectPersonalWS('<?php echo $genid ?>')">
+      <?php echo label_tag(lang('use previous personal workspace'), null, true) ?>
+      <?php echo yes_no_widget('user[createPersonalProject]', 'user[createPersonalProject]', false, lang('use an existing workspace'), lang('create personal workspace'), '1500') ?>
+      <br /><span class="desc"><?php echo lang('use previous personal workspace desc') ?></span>
+      <div class="ico-color0" style="padding-left:18px" id="newWsName"></div>
+    <div id="<?php echo $genid ?>selectPersonalProject" style="display:none">
+      	<?php echo label_tag(lang('select personal workspace'), null, true) ?>
+      	<?php echo select_project2('user[personal_project]',($user->getPersonalProject())? $user->getPersonalProject()->getId():0,$genid) ?>
+	</div>
+  <script>
+   og.determinePersonalwsName = function (input, template)
+	{
+		div = document.getElementById("newWsName");
+		div.innerHTML = template.replace('{0}', input.value);
+		
+		
+	};
+	
+  	og.showSelectPersonalWS= function(genid){
+		check = document.getElementById("user[createPersonalProject]Yes");
+		div = document.getElementById(genid + "selectPersonalProject");
+		div2 = document.getElementById("newWsName");
+		if (check.checked == true){
+			div.style.display= "";
+			div2.style.display= "none";
+			}else{
+				div.style.display= "none";
+				div2.style.display= "";
+			}
+	  };
+  </script>
+  </div>
   
+  </div>
+  </br>
 <?php if (isset($billing_categories) && count($billing_categories) > 0) {?>
 <fieldset>
 	<legend><?php echo lang('billing') ?></legend>
@@ -179,11 +241,9 @@
 </div>
 </form>
 
-<script type="text/javascript">
-	Ext.get('userFormName').focus();
-</script>
-
 <script>
+Ext.get('userFormName').focus();
+
 og.eventManager.addListener("company added", function(company) {
 	var id = '<?php echo $genid.'userFormCompany' ?>';
 	var select = document.getElementById('<?php echo $genid.'userFormCompany' ?>');

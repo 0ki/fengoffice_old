@@ -55,15 +55,15 @@ class TimeController extends ApplicationController {
 		//Timeslots view
 		switch ($showTimeType){
 			case 0: //Show only timeslots added through the time panel
-				$timeslots = Timeslots::getProjectTimeslots(logged_user()->getActiveProjectIdsCSV(),$timeslotsUser,active_project(),0,20);
+				$timeslots = Timeslots::getProjectTimeslots(logged_user()->getWorkspacesQuery(), $timeslotsUser, active_project(), 0, 20);
 				
 				break;
 			case 1: //Show only timeslots added through the tasks panel / tasks
 				throw new Error('not yet implemented' . $showTimeType);
 				/*if (active_project() instanceof Project){
-					$workspacesCSV = active_project()->getAllSubWorkspacesCSV(false,logged_user());
+					$workspacesCSV = active_project()->getAllSubWorkspacesQuery(false,logged_user());
 				} else {
-					$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
+					$workspacesCSV = logged_user()->getWorkspacesQuery();
 				}
 				$taskTimeslots = Timeslots::getTaskTimeslots(null, $timeslotsUser, $workspacesCSV, null , null, null, null,0,20);*/
 				//break;
@@ -103,6 +103,17 @@ class TimeController extends ApplicationController {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
 				$hoursToAdd = str_replace(',','.',$hoursToAdd);
+			if (strpos($hoursToAdd,':') && !strpos($hoursToAdd,'.')) {
+				$pos = strpos($hoursToAdd,':') + 1;
+				$len = strlen($hoursToAdd) - $pos;
+				$minutesToAdd = substr($hoursToAdd,$pos,$len);
+				if( !strlen($minutesToAdd)<=2 || !strlen($minutesToAdd)>0){
+					$minutesToAdd = substr($minutesToAdd,0,2);
+				}
+				$mins = $minutesToAdd / 60;
+				$hours = substr($hoursToAdd, 0, $pos-1);
+				$hoursToAdd = $hours + $mins;
+			}
 				
 			if ($hoursToAdd <= 0){
 				flash_error(lang('time has to be greater than 0'));
@@ -161,6 +172,18 @@ class TimeController extends ApplicationController {
 			$hoursToAdd = array_var($timeslot_data, 'hours',0);
 			if (strpos($hoursToAdd,',') && !strpos($hoursToAdd,'.'))
 				$hoursToAdd = str_replace(',','.',$hoursToAdd);
+			if (strpos($hoursToAdd,':') && !strpos($hoursToAdd,'.')) {
+				$pos = strpos($hoursToAdd,':') + 1;
+				$len = strlen($hoursToAdd) - $pos;
+				$minutesToAdd = substr($hoursToAdd,$pos,$len);
+				if( !strlen($minutesToAdd)<=2 || !strlen($minutesToAdd)>0){
+					$minutesToAdd = substr($minutesToAdd,0,2);
+				}
+				$mins = $minutesToAdd / 60;
+				$hours = substr($hoursToAdd, 0, $pos-1);
+				$hoursToAdd = $hours + $mins;
+			}
+
 				
 			if ($hoursToAdd <= 0){
 				flash_error(lang('time has to be greater than 0'));

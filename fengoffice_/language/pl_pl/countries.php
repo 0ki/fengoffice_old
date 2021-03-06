@@ -62,7 +62,7 @@
     'country dj' => 'Dżibuti',
     'country dm' => 'Dominika',
     'country do' => 'Dominikana',
-    'country tp' => 'Timor Wschodni',
+    'country tl' => 'Timor Wschodni',
     'country ec' => 'Ekwador',
     'country eg' => 'Egipt',
     'country sv' => 'Salwador',
@@ -237,7 +237,7 @@
     'country wf' => 'Wallis i Futuna',
     'country eh' => 'Sahara Zachodnia',
     'country ye' => 'Jemen',
-    'country zr' => 'Zair',
+    
     'country zm' => 'Zambia',
     'country zw' => 'Zimbabwe'
   ); // array

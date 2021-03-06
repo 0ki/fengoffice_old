@@ -1,5 +1,5 @@
 <div id="userbox">
-	<?php echo lang('welcome back', clean($_userbox_user->getDisplayName())) ?> (<a href="<?php echo get_url('access', 'logout') ?>"><?php echo lang('logout') ?></a>) :
+	<?php echo lang('welcome back', clean($_userbox_user->getDisplayName())) ?> (<a target="_self" href="<?php echo get_url('access', 'logout') ?>"><?php echo lang('logout') ?></a>) :
 	<?php foreach ($_userbox_extra_crumbs as $crumb) {
 		echo '<a class="internalLink"';
 		if (isset($crumb['target'])) echo ' target="' . $crumb['target'] .'"';

@@ -17,9 +17,9 @@ og.ContactManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', {name: 'createdOn', type: 'date', dateFormat: 'timestamp'}, 'role', 'tags',
+	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'createdOn', 'createdOn_today', 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'}
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', 'updatedOn', 'updatedOn_today'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -68,7 +68,10 @@ og.ContactManager = function() {
 					og.clean(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}// end else
-		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
+		return name;
+    }
+    function renderWsCrumbs(value, p, r) {
+    	return String.format('<span class="project-replace">{0}</span>&nbsp;', value);
     }
     function renderCompany(value, p, r) {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
@@ -101,10 +104,10 @@ og.ContactManager = function() {
 	
 		var now = new Date();
 		var dateString = '';
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.updatedOn_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
 	
@@ -116,10 +119,10 @@ og.ContactManager = function() {
 	
 		var now = new Date();
 		var dateString = '';
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.createdOn_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
 	
@@ -136,6 +139,7 @@ og.ContactManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedIds = getSelectedIds;
 	
 	function getSelectedTypes() {
 		var selections = sm.getSelections();
@@ -149,6 +153,7 @@ og.ContactManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedTypes = getSelectedTypes;
 	
 	function getFirstSelectedType() {
 		if (sm.hasSelection()) {
@@ -195,8 +200,15 @@ og.ContactManager = function() {
 			id: 'name',
 			header: lang("name"),
 			dataIndex: 'name',
-			width: 200,
+			width: 150,
 			renderer: renderContactName,
+			sortable:true
+        },{
+			id: 'workspaces',
+			header: lang("workspaces"),
+			dataIndex: 'wsIds',
+			width: 70,
+			renderer: renderWsCrumbs,
 			sortable:true
         },
 		{
@@ -489,9 +501,11 @@ og.ContactManager = function() {
         store: this.store,
 		layout: 'fit',
         cm: cm,
+        enableDrag: true,
+		ddGroup: 'WorkspaceDD',
         closable: true,
 		stripeRows: true,
-		/*style: "padding:7px;",*/
+		id: 'contact-manager',
         bbar: new og.PagingToolbar({
             pageSize: og.pageSize,
             store: this.store,
@@ -572,12 +586,46 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		}
 	},
 	
+	showMessage: function(text) {
+		this.innerMessage.innerHTML = text;
+	},
+	
 	reset: function() {
 		this.load({start:0});
 	},
 	
-	showMessage: function(text) {
-		this.innerMessage.innerHTML = text;
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			tagTag: tag
+		});
 	}
 });
 

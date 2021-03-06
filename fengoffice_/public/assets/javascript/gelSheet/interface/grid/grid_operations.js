@@ -15,11 +15,11 @@ function addGridOperations(grid){
 	grid.resizeColumn = function(){
 		var offset = grid.verticalResizer.endResizing();
 		grid.columnUsed.resize(offset);
-		grid.selectorBox.fitToRange(grid.activeCell);
+//		grid.selectorBox.reFit(grid.activeCell);
 
 		var diff = grid.offsetWidth- (grid.cols[grid.cols.length-1].offsetLeft + grid.cols[grid.cols.length-1].offsetWidth);
 		if(diff>0){
-			for(var i=0;i<diff/grid.cfgs["defaultColWidth"];i++)
+			for(var i=0;i<diff/grid.configs.colHeader.width;i++)
 				grid.addColumn();
 		}
 
@@ -27,48 +27,74 @@ function addGridOperations(grid){
 		//Fire Fake Event
 		if(grid.onColumnSizeChange) grid.onColumnSizeChange(grid.columnUsed);
 		grid.columnUsed = undefined;
-	}
+	};
+	
+	grid.resizeRow = function(pos){
+		var offset = grid.horizontalResizer.endResizing(pos);
+		grid.rowUsed.resize(offset);
+//		grid.selectorBox.fitToRange(grid.activeCell);
+		
+		var diff = grid.offsetHeight - (grid.rows[grid.rows.length-1].offsetTop + grid.rows[grid.rows.length-1].offsetHeight);
+		if(diff>0){
+			for(var i=0;i<diff/grid.configs.rowHeader.height;i++)
+				grid.addRow();
+		}
+		
+		grid.adjustViewPortY();
+		//Fire Fake Event
+//		if(grid.onColumnSizeChange) grid.onColumnSizeChange(grid.columnUsed);
+		grid.fire("RowSizeChanged",grid.rowUsed.getAddress(),grid.rowUsed.getSize());
+		grid.rowUsed = undefined;
+	};
 
 	grid.getActiveCell = function(){
 		return grid.activeCell;
-	}
+	};
 
 	grid.setValue = function(row,col,value){
 		this.cells[row][col].setValue(value);
-	}
+	};
 
 	grid.setCell = function(row,col,value,fontStyleId){
-		this.cells[row][col].setValue(value);
-		this.cells[row][col].updateFontStyle(fontStyleId);
-	}
+		try{
+			this.cells[row][col].setValue(value);
+			this.cells[row][col].updateFontStyle(fontStyleId);
+		}catch(e){
+			//should not be here, but might be some bug
+		}
+	};
 
 	grid.setFontStyle = function(row,col,fontStyleId){
 		WrapFontStyle(this.cells[row][col],fontStyleId);
-	}
+	};
 
 	grid.setLayerStyle = function(row,col,layerStyleId){
 		WrapLayerStyle(this.cells[row][col],layerStyleId);
-	}
+	};
 
 	grid.setLayoutStyle = function(row,col,layoutStyleId){
 		WrapLayoutStyle(this.cells[row][col],layoutStyleId);
-	}
+	};
 
 
 	grid.getRowCount = function(){
 		return grid.viewport.row;
-	}
+	};
 
 	grid.getColumnCount = function(){
 		return grid.viewport.col;
-	}
+	};
 
 	grid.getColumn = function(index){
 		return grid.cols[index];
-	}
+	};
 
 	grid.getRow = function(index){
 		return grid.rows[index];
-	}
+	};
+	
+	grid.getViewport = function(){
+		return this.viewport;
+	};
 
 }

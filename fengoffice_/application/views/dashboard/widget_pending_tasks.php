@@ -20,17 +20,18 @@ foreach ($dashtasks as $task){
 	$text = clean($text);
 	?>
 		<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-		<td class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></td><td style="padding-left:5px;padding-bottom:2px">
+		<td class="db-ico ico-task<?php echo $task->getPriority() == 300? '-high-priority' : ($task->getPriority() == 100? '-low-priority' : '') ?>"></td>
+		<td style="padding-left:5px;padding-bottom:2px">
 	<?php 
-	$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+	$dws = $task->getWorkspaces(logged_user()->getWorkspacesQuery());
 	$projectLinks = array();
 	foreach ($dws as $ws) {
 		$projectLinks[] = $ws->getId();
 	}
 	echo '<span class="project-replace">' . implode(',',$projectLinks) . '</span>';?>
-	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
+	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>" title="<?php echo clean($task->getTitle()) ?>">
 	<?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
-	    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
+	    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean(strlen($task->getTitle()) > 40 ? substr($task->getTitle(), 0, 40)." ..." : $task->getTitle()) ?>
 	<?php } else { ?>
 	    <?php echo clean($task->getTitle()) ?>
 	<?php } // if ?>
@@ -47,11 +48,20 @@ foreach ($dashtasks as $task){
 		}?></td>
 	<td style="text-align:right"><a class='internalLink' href='<?php echo $task->getCompleteUrl() ?>' title="<?php echo lang('complete task')?>"><?php echo lang('do complete')?></a></td>
 	</tr>
+	
 <?php } // foreach ?>
+<?php if ($c >= 10) {?>
+	<tr class="dashSMTC" style="display:none">
+		<td></td><td></td><td></td><td></td>
+		<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('tasks-panel');"><?php echo lang('show all') ?>...</a>
+	</tr>
+<?php } ?>	
 </table>
 <?php if ($c > 5) { ?>
-<div id="dashSMTT" style="width:100%; text-align:right">
-	<a href="#" onclick="og.hideAndShowByClass('dashSMTT', 'dashSMTC', 'dashTablePT'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
-</div>
+  <div id="dashSMTT" style="width:100%; text-align:right">
+	<a href="#" onclick="og.hideAndShowByClass('dashSMTT', 'dashSMTC', 'dashTablePT'); return false;">
+		<?php echo lang("show more amount", $c -5) ?>...
+	</a>
+  </div>
 <?php } //if ?>
 </div>

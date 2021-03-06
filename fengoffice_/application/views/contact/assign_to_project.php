@@ -52,7 +52,7 @@ foreach ($projects as $project) {
 
 </form>
 
-<script type="text/javascript">
+<script>
 var wsch = Ext.getCmp('<?php echo $genid ?>');
 wsch.on("wsselected", function(ws) {
 		if (this.visibleField) {

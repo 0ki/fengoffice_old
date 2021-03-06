@@ -99,7 +99,7 @@ class ApplicationLog extends BaseApplicationLog {
 	} // getText
 	
 	function getActionData() {
-		$result = '';
+		$result = $this->getLogData();
 		
 		if ($this->getLogData() != ''){
 			switch($this->getAction()){

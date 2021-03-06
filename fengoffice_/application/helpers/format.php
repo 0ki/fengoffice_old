@@ -145,34 +145,25 @@ function truncate($string, $length, $etc = '...', $charset='UTF-8',
 {
     if ($length == 0)
         return '';
-    if (function_exists('mb_strlen')) {
- 		$len = mb_strlen($string);
- 		$lenetc = mb_strlen($etc);
-    } else {
-    	$len = strlen($string);
-    	$lenetc = strlen($etc);
-    }
+    
+ 		$len = utf8_strlen($string);
+ 		$lenetc = utf8_strlen($etc);
+    
     if ($len > $length) {
         $length -= min($length, $lenetc);
         if (!$break_words && !$middle) {
-        	if(function_exists('mb_substr')) {
-            	$string = preg_replace('/\s+?(\S+)?$/', '', mb_substr($string, 0, $length+1, $charset));
-        	} else {
-        		$string = preg_replace('/\s+?(\S+)?$/', '', substr($string, 0, $length+1));
-        	}
+        	
+            $string = preg_replace('/\s+?(\S+)?$/', '', utf8_substr($string, 0, $length+1, $charset));
+        	
         }
         if(!$middle) {
-        	if(function_exists('mb_substr')) {
-            	return mb_substr($string, 0, $length, $charset) . $etc;
-        	} else {
-        		return substr($string, 0, $length) . $etc;
-        	}
+        	
+            return utf8_substr($string, 0, $length, $charset) . $etc;
+        	
         } else {
-        	if(function_exists('mb_substr')) {
-            	return mb_substr($string, 0, $length/2, $charset) . $etc . mb_substr($string, -$length/2, $charset);
-        	} else {
-        		return substr($string, 0, $length/2) . $etc . substr($string, -$length/2);
-        	}
+        	
+            return utf8_substr($string, 0, $length/2, $charset) . $etc . utf8_substr($string, -$length/2, $charset);
+        	
         }
     } else {
         return $string;

@@ -8,6 +8,11 @@
  */
 class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 
+
+	/** Names of database tables, prefix will be added in front of them **/
+	const FILES_TABLE = 'file_repo';
+	const ATTRIBUTES_TABLE = 'file_repo_attributes';
+
 	/**
 	 * Path to repository directory in the file system
 	 *
@@ -15,22 +20,20 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 */
 	private $repository_dir;
 
-	/**
-	 * Array of attributes indexed by file ID
-	 *
-	 * @var array
-	 */
-	private $attributes = null;
-
+	private $db_link;
+	private $table_prefix;
+	 
 	/**
 	 * Construct the FileRepository_Backend_FileSystem
 	 *
 	 * @param string $repository_dir Path to the file system repository
 	 * @return FileRepository_Backend_FileSystem
 	 */
-	function __construct($repository_dir) {
+	function __construct($repository_dir,$db_link, $table_prefix) {
+		$this->setDbLink($db_link);
+		$this->setTablePrefix($table_prefix);
 		$this->setRepositoryDir($repository_dir);
-		$this->loadFileAttributes();
+
 	} // __construct
 
 	// ---------------------------------------------------
@@ -44,7 +47,15 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 * @return null
 	 */
 	function listFiles() {
-		return array_keys($this->attributes);
+		$files_table = $this->getFilesTableName();
+		if($result = mysql_query("SELECT `id` FROM $files_table ORDER BY `order`", $this->db_link)) {
+			$ids = array();
+			while($row = mysql_fetch_assoc($result)) {
+				$ids[] = $row['id'];
+			} // while
+			return $ids;
+		} // if
+		return array();
 	} // listFiles
 
 	/**
@@ -54,7 +65,13 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	 * @return integer
 	 */
 	function countFiles() {
-		return count($this->attributes);
+		$files_table = $this->getFilesTableName();
+		if($result = mysql_query("SELECT COUNT(`id`) AS 'row_count' FROM $files_table", $this->db_link)) {
+			if($row = mysql_fetch_assoc($result)) {
+				return (integer) $row['row_count'];
+			} // if
+		} // if
+		return 0;
 	} // countFiles
 
 	/**
@@ -89,8 +106,30 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new FileNotInRepositoryError($file_id);
 		} // if
 
-		return is_array($this->attributes[$file_id]) ? $this->attributes[$file_id] : array();
+		$attributes_table = $this->getAttributesTableName();
+		$escaped_id = mysql_real_escape_string($file_id);
+		if($result = mysql_query("SELECT `attribute`, `value` FROM $attributes_table WHERE `id` = '$escaped_id'", $this->db_link)) {
+			$attributes = array();
+			while($row = mysql_fetch_assoc($result)) {
+				$attributes[$row['attribute']] = eval($row['value']);
+			} // while
+			return $attributes;
+		} // if
+		return array();
+
+		//return is_array($this->attributes[$file_id]) ? $this->attributes[$file_id] : array();
 	} // getFileAttributes
+
+	/**
+	 * Return attributes table name
+	 *
+	 * @param boolean $escape Escape table name
+	 * @return string
+	 */
+	protected function getAttributesTableName($escape = true) {
+		$table_name = $this->getTablePrefix() . self::ATTRIBUTES_TABLE;
+		return $escape ? '`' . $table_name . '`' : $table_name;
+	} // getAttributesTableName
 
 	/**
 	 * Return value of specific file attribute
@@ -106,11 +145,16 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new FileNotInRepositoryError($file_id);
 		} // if
 
-		if(isset($this->attributes[$file_id]) && is_array($this->attributes[$file_id]) && isset($this->attributes[$file_id][$attribute_name])) {
-			return $this->attributes[$file_id][$attribute_name];
+		$attributes_table = $this->getAttributesTableName();
+		$escaped_id = mysql_real_escape_string($file_id);
+		$escaped_attribute = mysql_real_escape_string($attribute_name);
+		if($result = mysql_query("SELECT `value` FROM $attributes_table WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute'", $this->db_link)) {
+			if($row = mysql_fetch_assoc($result)) {
+				return eval($row['value']);
+			} // if
 		} // if
-
 		return $default;
+		 
 	} // getFileAttribute
 
 	/**
@@ -128,17 +172,22 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new FileNotInRepositoryError($file_id);
 		} // if
 
-		if(!isset($this->attributes[$file_id]) || !is_array($this->attributes[$file_id])) {
-			$this->attributes[$file_id] = array();
-		} // if
 
 		if(is_object($attribute_value) || is_resource($attribute_value)) {
 			throw new InvalidParamError('$attribute_value', $attribute_value, 'Objects and resources are not supported as attribute values');
 		} // if
 
-		if(!isset($this->attributes[$file_id][$attribute_name]) || ($this->attributes[$file_id][$attribute_name] <> $attribute_value)) {
-			$this->attributes[$file_id][$attribute_name] = $attribute_value;
-			$this->saveFileAttributes();
+		$attributes_table = $this->getAttributesTableName();
+		$escaped_id = mysql_real_escape_string($file_id);
+		$escaped_attribute = mysql_real_escape_string($attribute_name);
+		$escaped_value = mysql_real_escape_string('return ' . var_export($attribute_value, true) . ';');
+
+		if($result = mysql_query("SELECT `value` FROM $attributes_table WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute'", $this->db_link)) {
+			if(mysql_num_rows($result) == 0) {
+				mysql_query("INSERT INTO $attributes_table (`id`, `attribute`, `value`) VALUES ('$escaped_id', '$escaped_attribute', '$escaped_value')", $this->db_link);
+			} else {
+				mysql_query("UPDATE $attributes_table SET `value` = '$escaped_value' WHERE `id` = '$escaped_id' AND `attribute` = '$escaped_attribute''", $this->db_link);
+			} // if
 		} // if
 	} // setFileAttribute
 
@@ -374,58 +423,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 	//  Attribute handling
 	// ---------------------------------------------------
 
-	/**
-	 * Load file attributes
-	 *
-	 * @param void
-	 * @return null
-	 */
-	protected function loadFileAttributes() {
-		/*$file = $this->getAttributesFilePath();
 
-		if(is_file($file)) {
-		if(!is_readable($file)) {
-		throw new FileDnxError($file);
-		} // if
-
-		$attributes = include $file; // read from file
-		if(is_array($attributes)) {
-		$this->attributes = $attributes;
-		} else {
-		$this->attributes = array();
-		$this->saveFileAttributes();
-		} // if
-
-		} else {
-		$this->attributes = array();
-		$this->saveFileAttributes();
-		} // if*/
-
-	} // loadFileAttributes
-
-	/**
-	 * Safe file attribute value to a file
-	 *
-	 * @param void
-	 * @return boolean
-	 */
-	protected function saveFileAttributes() {
-		/*$file = $this->getAttributesFilePath();
-		 if(is_file($file) && !file_is_writable($file)) {
-		 throw new FileNotWriableError($file);
-		 } // if
-		 return file_put_contents($file, "<?php\n\nreturn " . var_export($this->attributes, true) . ";\n\n?>");*/
-	} // saveFileAttributes
-
-	/**
-	 * Return path of file where we save file attributes
-	 *
-	 * @param void
-	 * @return string
-	 */
-	protected function getAttributesFilePath() {
-		return with_slash($this->getRepositoryDir()) . 'attributes.php';
-	} // getAttributesFilePath
 
 	// ---------------------------------------------------
 	//  Getters and setters
@@ -460,7 +458,49 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 
 		$this->repository_dir = $value;
 	} // setRepositoryDir
+	
+	/**
+	 * Get db_link
+	 *
+	 * @param null
+	 * @return resource
+	 */
+	function getDbLink() {
+		return $this->db_link;
+	} // getDbLink
 
+	/**
+	 * Set db_link value
+	 *
+	 * @param resource $value
+	 * @return null
+	 */
+	function setDbLink($value) {
+		if(!is_resource($value) || (strpos(get_resource_type($value), 'mysql') === false)) {
+			throw new InvalidParamError('value', $value, 'DB link need to be MySQL connection resouce');
+		} // if
+		$this->db_link = $value;
+	} // setDbLink
+
+	/**
+	 * Get table_prefix
+	 *
+	 * @param null
+	 * @return string
+	 */
+	function getTablePrefix() {
+		return $this->table_prefix;
+	} // getTablePrefix
+
+	/**
+	 * Set table_prefix value
+	 *
+	 * @param string $value
+	 * @return null
+	 */
+	function setTablePrefix($value) {
+		$this->table_prefix = $value;
+	} // setTablePrefix
 	
 	// --------------------------------------------------------------
 	// Deprecated, do not use directly
@@ -522,7 +562,7 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			} // if
 		} // foreach
 	}
-
+	
 } // FileRepository_Backend_FileSystem
 
 ?>

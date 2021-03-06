@@ -39,7 +39,12 @@
 				$paramName = $cp->getName();
 				$coltype = $cp->getOgType();
 			}else{
-				$name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				if ($condition->getFieldName()!= 'workspace' && $condition->getFieldName()!= 'tag'){
+					    $name = lang('field ' . $model . ' ' . $condition->getFieldName());
+				}else{
+				 		$name = lang($condition->getFieldName());
+				}	
+				//$name = lang('field ' . $model . ' ' . $condition->getFieldName());
 				$coltype = array_key_exists($condition->getFieldName(), $types)? $types[$condition->getFieldName()]:'';
 				$paramName = $condition->getId();
 			}

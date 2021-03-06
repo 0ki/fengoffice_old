@@ -73,7 +73,7 @@
     'file not selected' => 'There is no selected file',
     'file revision dnx' => 'Requested revision does not exists in the database',
     'no file revisions in file' => 'Invalid file - there are no revisions associated with this file',
-    'cant delete only revision' => 'You can\'t delete this reivion. Every file need to have at least one revision posted',
+    'cant delete only revision' => 'You can\'t delete this revision. Every file needs to have at least one revision posted',
     'config category dnx' => 'Configuration category you requested does not exists',
     'config category is empty' => 'Selected configuration category is empty',
     'email address not in use' => '{0} is not in use',
@@ -120,6 +120,7 @@
     'success open task' => 'Selected task has been reopened',
     'success n tasks updated' => '{0} tasks updated',
 	'success add mail' => 'Email sent successfully',
+	'success autosave draft' => 'Draft automatically saved',
     
     'success add client' => 'Client company {0} has been added',
     'success edit client' => 'Client company {0} has been updated',
@@ -231,7 +232,7 @@
     'success checkin file' => 'File checked in successfully',
   	'success undo checkout file' => 'File checkout canceled successfully',
 	'success extracting files' => '{0} Files were extracted',
-	'success compressing files' => 'Files compressed succesfully',
+	'success compressing files' => '{0} Files compressed succesfully',
   
 	'success add billing category' => 'Billing category added successfully',
 	'success delete billing category' => 'Billing category deleted successfully',
@@ -578,6 +579,13 @@
     'log delete timeslots' => '\'{0}\' deleted',
   	'log trash timeslots' => '\'{0}\' moved to trash',
   	'log untrash timeslots' => '\'{0}\' restored from trash',
+  
+  	'log login users data' => 'user {0} loged from IP: {1}',
+  	'log login users' => 'user {0} loged',
+    'log edit users' => 'user {0} edited',
+  	'log delete users' => 'user {0} deleted',
+  	'log add users' => 'user {0} added',
+  
   	'error assign workspace' => 'Failed to assign template to workspace',
   	'success assign workspaces' => 'Succeeded to assign template to workspace',
   	'success update config value' => 'Configuration values updated',

@@ -2,10 +2,6 @@
 
 class AjaxResponse {
 
-	public $events = array();
-	
-	public $scripts = array();
-
 	public $contents = null;
 
 	public $current = null;
@@ -23,7 +19,13 @@ class AjaxResponse {
 	}
 	
 	function addScript($url) {
+		if (!isset($this->scripts)) $this->scripts = array();
 		$this->scripts[] = is_valid_url($url) ? $url : get_javascript_url($url);
+	}
+	
+	function addInlineScript($script) {
+		if (!isset($this->inlineScripts)) $this->inlineScripts = array();
+		$this->inlineScripts[] = $script;
 	}
 	
 	function addContent($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null, $noback = null) {
@@ -45,23 +47,18 @@ class AjaxResponse {
 		}
 	}
 
-	function setCurrentContent($type, $data = null, $actions = null, $panel = null) {
+	function setCurrentContent($type, $data = null, $actions = null, $config = null, $default = null) {
 		if ($type == 'empty') {
 			$this->current = false;
 			return;
-		}
-		
-		if (isset($panel)) {
-			$dpanel = $panel;
-		} else {
-			$dpanel = array_var($_GET, 'current', "");
 		}
 		 
 		$this->current = array(
 			"type" => $type,
 			"data" => $data,
 			"actions" => $actions,
-			"panel" => $dpanel,
+			"config" => $config,
+			"makeDefault" => $default,
 		);
 		// extra current content config
 		if (isset($this->notbar)) {

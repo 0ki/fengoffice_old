@@ -20,6 +20,12 @@ class WebpageController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 
+	function init() {
+		require_javascript("og/WebpageManager.js");
+		ajx_current("panel", "webpages", null, null, true);
+		ajx_replace(true);
+	}
+	
 	/**
 	 * Add webpage
 	 *
@@ -46,14 +52,11 @@ class WebpageController extends ApplicationController {
 		} // if
 
 		if(is_array(array_var($_POST, 'webpage'))) {
-
 			try {
 				if(substr_utf($webpage_data['url'],0,7) != 'http://' && substr_utf($webpage_data['url'],0,7) != 'file://' && substr_utf($webpage_data['url'],0,8) != 'https://' && substr_utf($webpage_data['url'],0,6) != 'about:' && substr_utf($webpage_data['url'],0,6) != 'ftp://')
 					$webpage_data['url'] = 'http://' . $webpage_data['url'];
 				$webpage->setFromAttributes($webpage_data);
 
-				$project_id = $webpage_data["project_id"];
-				$webpage->setProjectId($project_id);
 				$webpage->setIsPrivate(false);
 				// Options are reserved only for members of owner company
 				if(!logged_user()->isMemberOfOwnerCompany()) {
@@ -65,6 +68,7 @@ class WebpageController extends ApplicationController {
 				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
 
 				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($webpage);
 				$object_controller->link_to_new_object($webpage);
 				$object_controller->add_subscribers($webpage);
 				$object_controller->add_custom_properties($webpage);
@@ -84,7 +88,6 @@ class WebpageController extends ApplicationController {
 
 		} // if
 
-		$webpage_data["project_id"] = active_or_personal_project()->getId();
 		tpl_assign('webpage', $webpage);
 		tpl_assign('webpage_data', $webpage_data);
 	} // add
@@ -118,7 +121,6 @@ class WebpageController extends ApplicationController {
 			$webpage_data = array(
           'url' => $webpage->getUrl(),
           'title' => $webpage->getTitle(),
-          'project_id' => $webpage->getProjectId(),
           'description' => $webpage->getDescription(),
           'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
           'is_private' => $webpage->isPrivate()
@@ -127,20 +129,8 @@ class WebpageController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'webpage'))) {
 			try {
-				$old_project_id = $webpage->getProjectId();
-				$project_id = $webpage_data["project_id"];
-				if ($old_project_id != $project_id) {
-					$newProject = Projects::findById($project_id);
-					if(!$webpage->canAdd(logged_user(),$newProject)) {
-						flash_error(lang('no access permissions'));
-						ajx_current("empty");
-						return;
-					} // if
-				}
-
 				$old_is_private = $webpage->isPrivate();
 				$webpage->setFromAttributes($webpage_data);
-				$webpage->setProjectId($project_id);
 
 				// Options are reserved only for members of owner company
 				if(!logged_user()->isMemberOfOwnerCompany()) {
@@ -151,17 +141,18 @@ class WebpageController extends ApplicationController {
 				$webpage->save();
 				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
 
-		  $object_controller = new ObjectController();
-		  $object_controller->link_to_new_object($webpage);
-		  $object_controller->add_subscribers($webpage);
-		  $object_controller->add_custom_properties($webpage);
-		  
-		  ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
-		  
-		  DB::commit();
-
-		  flash_success(lang('success edit webpage', $webpage->getTitle()));
-		  ajx_current("back");
+				$object_controller = new ObjectController();
+				$object_controller->add_to_workspaces($webpage);
+				$object_controller->link_to_new_object($webpage);
+				$object_controller->add_subscribers($webpage);
+				$object_controller->add_custom_properties($webpage);
+				  
+				ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+				  
+				DB::commit();
+				
+				flash_success(lang('success edit webpage', $webpage->getTitle()));
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -286,12 +277,50 @@ class WebpageController extends ApplicationController {
 				flash_success(lang('success tag objects', $succ));
 				}
 				*/
+		} else if (array_var($_GET, 'action') == 'move') {
+			$wsid = array_var($_GET, "moveTo");
+			$destination = Projects::findById($wsid);
+			if (!$destination instanceof Project) {
+				$resultMessage = lang('project dnx');
+				$resultCode = 1;
+			} else if (!can_add(logged_user(), $destination, 'ProjectWebpages')) {
+				$resultMessage = lang('no access permissions');
+				$resultCode = 1;
+			} else {
+				$count = 0;
+				$active = active_project();
+				if ($active instanceof Project) {
+					$ws_ids = $active->getAllSubWorkspacesQuery(true, logged_user());
+				} else {
+					$ws_ids = logged_user()->getWorkspacesQuery();
+				}
+				$ids = explode(',', array_var($_GET, 'ids', ''));
+				for($i = 0; $i < count($ids); $i++){
+					$id = $ids[$i];
+					$webpage = ProjectWebpages::findById($id);
+					if ($webpage instanceof ProjectWebpage && $webpage->canEdit(logged_user())){
+						if (!array_var($_GET, "mantainWs")) {
+							$ws = $webpage->getWorkspaces($ws_ids);
+							foreach ($ws as $w) {
+								if (can_add(logged_user(), $w, 'ProjectWebpages')) {
+									$webpage->removeFromWorkspace($w);
+								}
+							}
+						}
+						$webpage->addToWorkspace($destination);
+						ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+						$count++;
+					};
+				}; // for
+				$resultMessage = lang("success move objects", $count);
+				$resultCode = 0;
+			}
 		}
 
 		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
+			$pids = logged_user()->getWorkspacesQuery();
 		}
 
 		$result = ProjectWebpages::getWebpages($pids, $tag, $page, $limit, $order, $orderdir);
@@ -325,18 +354,20 @@ class WebpageController extends ApplicationController {
 		if (isset($webpages))
 		{
 			foreach ($webpages as $w) {
-				if ($w->getProject() instanceof Project)
-				$tags = project_object_tags($w);
-				else
-				$tags = "";
+				if ($w->getProject() instanceof Project) {
+					$tags = project_object_tags($w);
+				} else {
+					$tags = "";
+				}
 				$object["webpages"][] = array(
 					"id" => $w->getId(),
 					"title" => $w->getTitle(),
 					"description" => $w->getDescription(),
 					"url" => $w->getUrl(),
 					"tags" => $tags,
-					"wsIds" => $w->getProjectId(),
-					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->getTimestamp() : 0,
+					"wsIds" => $w->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? ($w->getUpdatedOn()->isToday() ? format_time($w->getUpdatedOn()) : format_datetime($w->getUpdatedOn())) : '',
+					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
 					"updatedBy" => $w->getUpdatedByDisplayName(),
 					"updatedById" => $w->getUpdatedById(),
 				);

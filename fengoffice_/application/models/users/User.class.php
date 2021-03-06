@@ -392,9 +392,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getProjects() {
+	function getProjects($order_by = '', $where = null) {
 		if(is_null($this->projects)) {
-			$this->projects = ProjectUsers::getProjectsByUser($this);
+			$this->projects = ProjectUsers::getProjectsByUser($this, $where, $order_by);
 		} // if
 		return $this->projects;
 	} // getProjects
@@ -433,7 +433,7 @@ class User extends BaseUser {
 	 */
 	function getOwnProjects() {
 		if(is_null($this->own_projects)) {
-			$this->own_projects = Projects::find('`created_by` = ' . $this->getId());
+			$this->own_projects = Projects::find('`created_by_id` = ' . $this->getId());
 		} // if
 		return $this->own_projects;
 	} // getOwnProjects
@@ -465,19 +465,30 @@ class User extends BaseUser {
 	 * @return array
 	 */
 	function getActiveProjectIdsCSV() {
-		if(is_null($this->active_projects_ids)){
+		if (is_null($this->active_projects_ids)) {
 			$active_proj = $this->getWorkspaces();
-			if (!is_null($active_proj)){
+			if (!is_null($active_proj)) {
 				$list = array();
-				foreach ($active_proj as $p)
+				foreach ($active_proj as $p) {
 					$list[] = $p->getId();
+				}
 				$this->active_projects_ids = implode(',', $list);
-			}
-			else 
+			} else { 
 				$this->active_projects_ids = "0";
+			}
 		}
 		return $this->active_projects_ids;
 	} // getActiveProjects
+
+	/**
+	 * Return the user's workspaces query that returns user's workspaces ids.
+	 * @return string
+	 */
+	function getWorkspacesQuery() {
+		$project_users_table =  ProjectUsers::instance()->getTableName(true);
+		return "SELECT $project_users_table.`project_id` FROM $project_users_table WHERE $project_users_table.`user_id` = " . DB::escape($this->getId());
+	}
+	
 	/**
 	 * Return the personal project of the user
 	 *
@@ -526,9 +537,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getLateMilestones($project = null, $tag = null) {
-		if(is_null($this->late_milestones)) {
-			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this, $project, $tag);
+	function getLateMilestones($project = null, $tag = null,$limit = null) {
+		if (is_null($this->late_milestones)) {
+			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this, $project, $tag, $limit);
 		} // if
 		return $this->late_milestones;
 	} // getLateMilestones
@@ -540,9 +551,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getTodayMilestones($project = null, $tag = null) {
-		if(is_null($this->today_milestones)) {
-			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this, $project, $tag);
+	function getTodayMilestones($project = null, $tag = null, $limit) {
+		if (is_null($this->today_milestones)) {
+			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this, $project, $tag, $limit);
 		} // if
 		return $this->today_milestones;
 	} // getTodayMilestones
@@ -639,7 +650,7 @@ class User extends BaseUser {
 	 * @param boolean $save Save user object when done
 	 * @return string
 	 */
-	function setAvatar($source, $max_width = 50, $max_height = 50, $save = true) {
+	function setAvatar($source,$fileType, $max_width = 50, $max_height = 50, $save = true) {
 		if(!is_readable($source)) return false;
 
 		do {
@@ -652,10 +663,10 @@ class User extends BaseUser {
 			$image = new SimpleGdImage($source);
 			$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
 			$thumb->saveAs($temp_file, IMAGETYPE_PNG);
-
-			$public_filename = PublicFiles::addFile($temp_file, 'png');
-			if($public_filename) {
-				$this->setAvatarFile($public_filename);
+			
+			$public_fileId = FileRepository::addFile($temp_file,array('type'=>$fileType));
+			if($public_fileId) {
+				$this->setAvatarFile($public_fileId);
 				if($save) {
 					$this->save();
 				} // if
@@ -667,8 +678,8 @@ class User extends BaseUser {
 		} // try
 
 		// Cleanup
-		if(!$result && $public_filename) {
-			PublicFiles::deleteFile($public_filename);
+		if(!$result && $public_fileId) {
+			FileRepository::deleteFile($public_fileId);
 		} // if
 		@unlink($temp_file);
 
@@ -683,21 +694,22 @@ class User extends BaseUser {
 	 */
 	function deleteAvatar() {
 		if($this->hasAvatar()) {
-			PublicFiles::deleteFile($this->getAvatarFile());
+			FileRepository::deleteFile($this->getAvatarFile());
 			$this->setAvatarFile('');
 		} // if
 	} // deleteAvatar
 
 	/**
 	 * Delete personal project
-	 *
+	 * It doesnt delete the project If more than one user have this project as personal project. 
 	 * @param void
 	 * @return null
 	 */
 	function deletePersonalProject() {
-		if($this->personal_project) {
+		$usersWithThatProject = count(Users::GetByPersonalProject($this->getPersonalProjectId()));
+		if($this->personal_project && $usersWithThatProject == 1){
 			$this->personal_project->delete();
-		} // if
+		}// if
 	} // deletePersonalProject
 
 	/**
@@ -719,7 +731,8 @@ class User extends BaseUser {
 	 * @return string
 	 */
 	function getAvatarUrl() {
-		return $this->hasAvatar() ? PublicFiles::getFileUrl($this->getAvatarFile()) : get_image_url('avatar.gif');
+		return $this->hasAvatar() ? get_url('files', 'get_public_file', array('id' => $this->getAvatarFile())): get_image_url('avatar.gif');
+		//return $this->hasAvatar() ? PublicFiles::getFileUrl($this->getAvatarFile()) : get_image_url('avatar.gif');
 	} // getAvatarUrl
 
 	/**
@@ -730,7 +743,7 @@ class User extends BaseUser {
 	 * @return boolean
 	 */
 	function hasAvatar() {
-		return (trim($this->getAvatarFile()) <> '') && is_file($this->getAvatarPath());
+		return (trim($this->getAvatarFile()) <> '') && FileRepository::isInRepository($this->getAvatarFile());
 	} // hasAvatar
 
 	// ---------------------------------------------------
@@ -1263,7 +1276,7 @@ class User extends BaseUser {
 		} // if
 
 		$this->deleteAvatar();
-		$this->deletePersonalProject();
+		//$this->deletePersonalProject();
 		Contacts::updateUserIdOnUserDelete($this->getId());
 		ProjectUsers::clearByUser($this);
 		ObjectSubscriptions::clearByUser($this);
@@ -1323,6 +1336,18 @@ class User extends BaseUser {
 	function getLocale() {
 		return user_config_option("localization", DEFAULT_LOCALIZATION, $this->getId());
 	}
+	/**
+	 * Returns true if $user is logged user or if user is an administrator
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function canView(User $user) {
+		if (logged_user()->getId()==$user->getId() || logged_user()->isAdministrator()) {
+			return true;
+		}//if
+		return false;
+	} // canView	    
 } // User
 
 ?>

@@ -1,7 +1,7 @@
 <?php
 /*
  * FCKeditor - The text editor for Internet - http://www.fckeditor.net
- * Copyright (C) 2003-2008 Frederico Caldeira Knabben
+ * Copyright (C) 2003-2009 Frederico Caldeira Knabben
  *
  * == BEGIN LICENSE ==
  *
@@ -132,7 +132,7 @@ class FCKeditor
 		$this->InstanceName	= $instanceName ;
 		$this->BasePath		= '/fckeditor/' ;
 		$this->Width		= '100%' ;
-		$this->Height		= '100%' ;
+		$this->Height		= '200' ;
 		$this->ToolbarSet	= 'Default' ;
 		$this->Value		= '' ;
 
@@ -157,7 +157,7 @@ class FCKeditor
 	{
 		$HtmlValue = htmlspecialchars( $this->Value ) ;
 
-		$Html = '<div style="overflow:hidden;position:relative;width:100%;height:100%">' ;
+		$Html = '' ;
 
 		if ( $this->IsCompatible() )
 		{
@@ -194,8 +194,6 @@ class FCKeditor
 
 			$Html .= "<textarea name=\"{$this->InstanceName}\" rows=\"4\" cols=\"40\" style=\"width: {$WidthCSS}; height: {$HeightCSS}\">{$HtmlValue}</textarea>" ;
 		}
-		
-		$Html .= '</div>';
 
 		return $Html ;
 	}

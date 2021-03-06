@@ -30,12 +30,13 @@
 					if ($customProp->getType() == 'boolean'){
 						$htmlValue = '<div class="db-ico ico-'.($value?'complete':'delete').'">&nbsp;</div>';
 					} else if ($customProp->getIsMultipleValues()) {
-						$multValues = explode(',', $value); //Change to new separator logic
+						$multValues = CustomPropertyValues::getCustomPropertyValues($__properties_object->getId(), $customProp->getId());
 						$htmlValue = '<table style="width:100%;margin-bottom:2px">';
 						$newAlt = $alt;
 						foreach ($multValues as $mv){
-							$title =  (strlen($mv) > 100 && $customProp->getType() != 'memo') ? clean(str_replace('|', ',', $mv)) : '';
-							$showValue = $customProp->getType() == 'memo' ? str_replace('|', ',', $mv) : truncate($mv,100);
+							$value = str_replace('|', ',', $mv->getValue());
+							$title =  (strlen($value) > 100 && $customProp->getType() != 'memo') ? clean(str_replace('|', ',', $value)) : '';
+							$showValue = $customProp->getType() == 'memo' ? $value : truncate($value,100);
 							$htmlValue .= '<tr class="' . ($newAlt ? 'altRow' : 'row') . '"><td style="padding:0px 5px" title="' . $title . '">' . clean($showValue) . '</td></tr>';
 							$newAlt = !$newAlt; 
 						}

@@ -16,7 +16,6 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 */
 	static private $columns = array(
     	'id' => DATA_TYPE_INTEGER,
-    	'project_id' => DATA_TYPE_INTEGER,
     	'name' => DATA_TYPE_STRING,
     	'description' => DATA_TYPE_STRING,
     	'due_date' => DATA_TYPE_DATETIME,
@@ -143,6 +142,20 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
     	$name = isset($values['name']) ? $values['name'] : ''; 
     	return $name;
     } // getReportObjectTitle
+    
+    /**
+    * Return template object properties
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getTemplateObjectProperties() {
+    	return array(
+    		array('id' => 'name', 'type' => self::getColumnType('name')),
+    		array('id' => 'description', 'type' => self::getColumnType('description'))
+    	);
+    } // getTemplateObjectProperties
 
 	// -------------------------------------------------------
 	//  Finders

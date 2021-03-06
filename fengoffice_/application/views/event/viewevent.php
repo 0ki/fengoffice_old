@@ -20,17 +20,17 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	$user_id = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
 	
 	if (!$event->isTrashed()){
-		if($event->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit');
+		if ($event->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit', null, null, true);
 		}
 	}
 		
-	if($event->canDelete(logged_user())) {
+	if ($event->canDelete(logged_user())) {
 		if ($event->isTrashed()) {
-	    	add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $event->getUntrashUrl() ."');", 'ico-restore');
-	    	add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $event->getDeletePermanentlyUrl() ."');", 'ico-delete');
+	    	add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $event->getUntrashUrl() ."');", 'ico-restore',null, null, true);
+	    	add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $event->getDeletePermanentlyUrl() ."');", 'ico-delete',null, null, true);
 	    } else {
-	    	add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $event->getTrashUrl() ."');", 'ico-trash');
+	    	add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $event->getTrashUrl() ."');", 'ico-trash', null, null, true);
 	    }
 	} // if
 
@@ -45,7 +45,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
     $subject = clean($event->getSubject());
 	$private = $event->getIsPrivate();
 	$alias = clean($event->getCreatedByDisplayName());
-    $desc = convert_to_links(clean($event->getDescription()));
+    $desc = escape_html_whitespace(convert_to_links(clean($event->getDescription())));
     $start_time = $event->getStart();
 	$mod_username = clean($event->getUpdatedBy()->getUsername());
 	$mod_stamp = $event->getUpdatedOn();
@@ -131,14 +131,21 @@ if (isset($event) && $event instanceof ProjectEvent) {
 			$cant = 0;
 			foreach ($otherInvitations as $inv) {
 				$inv_user = Users::findById($inv->getUserId());
-				if ($inv_user instanceof User && $inv_user->hasProjectPermission($event->getProject(), ProjectUsers::CAN_READ_EVENTS)) {
-					$state_desc = lang('pending response');
-					if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
-					else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
-					else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-					$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getDisplayName()) . '</td><td>' . $state_desc . '</td></tr>';
-					$isAlt = !$isAlt;
-					$cant++;
+				if ($inv_user instanceof User) {
+					$hasPermissions = false;
+					foreach ($event->getWorkspaces() as $ws) {
+						$hasPermissions = $inv_user->hasProjectPermission($ws, ProjectUsers::CAN_READ_EVENTS);
+						if ($hasPermissions) break;
+					}
+					if ($hasPermissions) {
+						$state_desc = lang('pending response');
+						if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
+						else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
+						else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
+						$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getDisplayName()) . '</td><td>' . $state_desc . '</td></tr>';
+						$isAlt = !$isAlt;
+						$cant++;
+					}
 				}
 			}
 			if ($cant > 0) $otherInvitationsTable .= '</table></div>';

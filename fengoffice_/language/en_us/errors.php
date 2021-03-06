@@ -81,7 +81,12 @@
   
     // Add task
     'task text required' => 'Task text is required',
-    
+	'repeat x times must be a valid number between 1 and 1000' => 'Repeat X times must be a valid number between 1 and 1000.',
+	'repeat period must be a valid number between 1 and 1000' => 'Repeat period must be a valid number between 1 and 1000.',
+  	'to repeat by start date you must specify task start date' => 'To repeat by start date you must specify task start date',
+	'to repeat by due date you must specify task due date' => 'To repeat by due date you must specify task due date',
+	'task cannot be instantiated more times' => 'Task cannot be instantiated more times, this is the last repetition.',
+	
     // Add event
     'event subject required' => 'Event subject is required',
     'event description maxlength' => 'Description must be under 3000 characters',
@@ -174,6 +179,8 @@
 	'error assign task permissions user' => 'You don\'t have permissions to assign a task to that user',
 	'error assign task company dnx' => 'Trying to assign to an inexistent company',
 	'error assign task permissions company' => 'You don\'t have permissions to assign a task to that company',
+  	'account already being checked' => 'Account is already being checked.',
+  	'no files to compress' => 'No files to compress',
    ); // array
 
 ?>

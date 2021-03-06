@@ -221,9 +221,21 @@ class Timeslots extends BaseTimeslots {
 	
 	}
 
-	static function getProjectTimeslots($allowedWorkspaceIdsCSV, $user = null, $project = null, $offset = 0, $limit = 20){
-		$project_ids = ($project instanceof Project)? intersectCSVs($project->getAllSubWorkspacesCSV(), $allowedWorkspaceIdsCSV) : $allowedWorkspaceIdsCSV;
-		$project_sql = " AND object_id in (" .$project_ids . ")";
+	static function getAllProjectTimeslots($project) {
+		return Timeslots::findAll(array(
+			'conditions' => "object_manager = 'Projects' AND `object_id` = " . $project->getId() 
+		));
+	}
+	
+	static function getProjectTimeslots($allowedWorkspaceIdsCSV = null, $user = null, $project = null, $offset = 0, $limit = 20) {
+		$project_sql = "";
+		if ($allowedWorkspaceIdsCSV != null) {
+			$project_sql .= " AND `object_id` IN ($allowedWorkspaceIdsCSV)";
+		}
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesQuery();
+			$project_sql .= " AND `object_id` IN ($pids)";
+		}
 			
 		$user_sql = "";
 		if ($user instanceof User)

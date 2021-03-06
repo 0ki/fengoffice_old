@@ -17,7 +17,8 @@
 <div class="reportTotalTimeParams">
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
-		<div class="coInputTitle"><?php echo lang('task time report') ?></div>
+		<div class="coInputTitle"><?php echo lang('task time report') ?>
+		<?php echo submit_button(lang('generate report'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></div>
 	</div>
 </div>
 <div class="coInputSeparator"></div>

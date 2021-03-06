@@ -8,6 +8,10 @@
  */
 class Contacts extends BaseContacts {
 
+	public static function getWorkspaceString($ids = '?') {
+		return " `id` IN (SELECT `contact_id` FROM `" . TABLE_PREFIX . "project_contacts` WHERE `project_id` IN ($ids)) ";
+	}
+	
 	/**
 	 * Return all Contacts
 	 *
@@ -95,43 +99,15 @@ class Contacts extends BaseContacts {
 	 * @param integer $current_page
 	 * @return array
 	 */
-	function getByProject(Project $project, $arguments = null, $items_per_page = 10, $current_page = 1)
-	{
-		if(!is_array($arguments)) $arguments = array();
-		$conditions = array_var($arguments, 'conditions', '');
-		$rolesTableName = ProjectContacts::instance()->getTableName(true);
-		 
-		$pagination = new DataPagination($this->count($conditions), $items_per_page, $current_page);
+	function getByProject(Project $project, $arguments = null, $items_per_page = 10, $current_page = 1) {
+		if (!is_array($arguments)) $arguments = array();
+		$conditions = array_var($arguments, 'conditions', '');		 
+		$conditions .= "`trashed_by_id` = 0 AND " . self::getWorkspaceString($project->getId());
 
-		if (strlen($conditions) > 0)
-		$conditions .= "`trashed_by_id` = 0 AND ".$this->getTableName(true).".id = $rolesTableName.contact_id";
-		else
-		$conditions = '`trashed_by_id` = 0 AND ' . $this->getTableName(true).".id = $rolesTableName.contact_id";
-		$conditions .= " AND $rolesTableName.project_id = ".$project->getId();
-
-		$offset = $pagination->getLimitStart();
-		$limit = $pagination->getItemsPerPage();
-
-		$sql = "SELECT ". $this->getTableName(true) .".* FROM " . $this->getTableName(true) . ", $rolesTableName" .
-      " WHERE $conditions ORDER BY UPPER(lastname) ASC, UPPER(firstname) ASC LIMIT $offset, $limit";
-
-		// Run!
-		$rows = DB::executeAll($sql);
-
-		if(!is_array($rows) || (count($rows) < 1)) $items =  null;
-
-		$objects = array();
-		if (isset($rows))
-		{
-			foreach($rows as $row) {
-				$object = $this->loadFromRow($row);
-				if(instance_of($object, $this->getItemClass())) $objects[] = $object;
-			} // foreach
-		}
-		$items = count($objects) ? $objects : null;
-		$pagination->setTotalItems(count($objects));
-
-		return array($items, $pagination);
+		return self::paginate(array(
+			'conditions' => $conditions,
+			'order' => '`lastname`, `firstname`'
+		), $items_per_page, $current_page);
 	}
 
 	/**
@@ -139,12 +115,36 @@ class Contacts extends BaseContacts {
 	 *
 	 */
 	function updateUserIdOnUserDelete($user_id){
-		if(!is_numeric($user_id))
-		return false;
+		if(!is_numeric($user_id)) return false;
 		$c = new Contact();
 		$name = $c->getTableName(true);
 		$sql = "UPDATE " . $name  . " SET user_id = 0 WHERE user_id = " .$user_id ;
 		return DB::execute($sql);
+	}
+	
+	function getRangeContactsByBirthday($from, $to, $tags = '', $project = null) {
+		if (!$from instanceof DateTimeValue || !$to instanceof DateTimeValue ) {
+			return;
+		}
+		
+		$from = new DateTimeValue($from->getTimestamp());
+		$from->beginningOfDay();
+		$to = new DateTimeValue($to->getTimestamp());
+		$to->endOfDay();
+		
+		$contacts = array();
+		$allowed = $this->getAllowedContacts();
+		foreach($allowed as $c) {
+			if ($c->getOBirthday() instanceof DateTimeValue) {
+				$date = new DateTimeValue($c->getOBirthday()->getTimestamp());
+				$date->setYear($from->getYear());
+				if ($date->getTimestamp() >= $from->getTimestamp() && $date->getTimestamp() <= $to->getTimestamp()) {
+					$contacts[] = $c;
+				}
+			}
+		}
+
+		return $contacts;
 	}
 
 	static function getContactFieldNames() {

@@ -18,7 +18,7 @@
 
 <div id="file-manager"></div>
 
-<script type="text/javascript">
+<script>
 	var fm = new og.FileManager({
 		<?php if ($projectParam) echo "project: " . $projectParam . "," ?>
 		<?php if ($userParam) echo "user: " . $userParam . "," ?>

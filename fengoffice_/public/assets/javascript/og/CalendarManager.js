@@ -35,6 +35,7 @@ og.CalendarManager = function() {
 	og.CalendarManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',
+		border: false,
         closable: true
     });
 
@@ -64,7 +65,7 @@ Ext.extend(og.CalendarManager, Ext.Panel, {
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})
 		});
-		this.needRefresh = false;
+		this.needRefresh = true;
 	},
 	
 	activate: function() {
@@ -75,7 +76,7 @@ Ext.extend(og.CalendarManager, Ext.Panel, {
 	
 	reset: function() {
 		this.load({start:0});
-	},	
+	},
 	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;

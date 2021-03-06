@@ -90,8 +90,8 @@ class CalFormatUtilities {
 		foreach ($events as $event) {
 			$ical_info .= "BEGIN:VEVENT\r\n";
 			
-			$event_start = new DateTimeValue($event->getStart()->getTimestamp());
-			$event_duration = new DateTimeValue($event->getDuration()->getTimestamp());
+			$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * $user->getTimezone());
+			$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * $user->getTimezone());
 			
 			$startNext = new DateTimeValue($event_start->getTimestamp());
 			$startNext->add('d', 1);
@@ -107,7 +107,7 @@ class CalFormatUtilities {
 			$description = str_replace(chr(13).chr(10),"  ", $event->getDescription());
 			$ical_info .= "DESCRIPTION:$description\r\n";
             $ical_info .= "SUMMARY:" . $event->getSubject() . "\r\n";
-            $ical_info .= "UID:$uid\r\n";
+		    $ical_info .= "UID:$uid\r\n";
 		    $ical_info .= "SEQUENCE:0\r\n";
 		    $ical_info .= "DTSTAMP:".$event->getCreatedOn()->format('Ymd').'T'.$event->getCreatedOn()->format('His')."\r\n";
 			

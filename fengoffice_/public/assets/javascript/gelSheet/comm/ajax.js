@@ -9,6 +9,7 @@
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
  */
+var AJAX_METHOD = "GET";
 
 function Ajax(){
    try{
@@ -35,7 +36,7 @@ var dataRequest = new Ajax();
 
 function getServerData(callback,url,params){
 
-	dataRequest.open("GET", window.enviromentAjaxPrefix+url+"?"+params, true);
+	dataRequest.open(AJAX_METHOD, window.enviromentAjaxPrefix+url+"?"+params, true);
 	dataRequest.onreadystatechange = function(){
 		if (dataRequest.readyState == 4){
 			if (dataRequest.status == 200){
@@ -54,13 +55,13 @@ function getServerData(callback,url,params){
 }
 
 
-function loadData(bookId){
-	getServerData(application.loadSheet,"","c=Spreadsheet&m=loadBook&param1="+bookId);
-}
+//function loadData(bookId){
+//	getServerData(application.loadBook,"","c=Spreadsheet&m=loadBook&param1="+bookId);
+//}
 
-function loadUserBooks(){
-	getServerData(application.openFiles,"","c=User&m=getUserBooks&param1="+null);
-}
+//function loadUserBooks(){
+//	getServerData(application.openFiles,"","c=User&m=getUserBooks&param1="+null);
+//}
 
 function bookSaveServerResponse(data){
 	if(data.Error)
@@ -111,7 +112,7 @@ function sendBook(data, format){
 var dataServerSend = new Ajax();
 
 function sendServerData(url,params,callback){
-	dataServerSend.open("GET",window.enviromentAjaxPrefix+url+"?"+params, true);
+	dataServerSend.open(AJAX_METHOD,window.enviromentAjaxPrefix+url+"?"+params, true);
 	dataServerSend.onreadystatechange = function(){
 		if (dataServerSend.readyState == 4){
 			if (dataServerSend.status == 200){
@@ -133,7 +134,7 @@ function sendServerData(url,params,callback){
 
 var dataOpengooServerSend = new Ajax();
 function sendOpengooData(url,params){
-	dataOpengooServerSend.open("GET",url+"?"+params, true);
+	dataOpengooServerSend.open(AJAX_METHOD,url+"?"+params, true);
 	dataOpengooServerSend.onreadystatechange = function(){
 		if (dataOpengooServerSend.readyState == 4){
 			if (dataOpengooServerSend.status == 200){
@@ -154,18 +155,18 @@ function sendOpengooData(url,params){
 	dataOpengooServerSend.send(null);
 }
 
-function deleteBook(id, callback) {
-	ajx = new Ajax();
-	ajx.open("GET", window.enviromentAjaxPrefix + "?c=Spreadsheet&m=deleteBook&param1=" + id, true);
-	ajx.onreadystatechange = function() {
-		if (ajx.readyState == 4){
-			if (ajx.status == 200){
-				var data = eval("(" + ajx.responseText + ")");
-				if (callback) {
-					callback(data);
-				}
-			}
-    	}
-    }
-    ajx.send(null);
-}
+//function deleteBook(id, callback) {
+//	ajx = new Ajax();
+//	ajx.open(AJAX_METHOD, window.enviromentAjaxPrefix + "?c=Spreadsheet&m=deleteBook&param1=" + id, true);
+//	ajx.onreadystatechange = function() {
+//		if (ajx.readyState == 4){
+//			if (ajx.status == 200){
+//				var data = eval("(" + ajx.responseText + ")");
+//				if (callback) {
+//					callback(data);
+//				}
+//			}
+//    	}
+//    }
+//    ajx.send(null);
+//}

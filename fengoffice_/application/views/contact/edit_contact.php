@@ -1,5 +1,5 @@
 <?php
-	require_javascript("modules/addContactForm.js");
+	require_javascript("og/modules/addContactForm.js");
 	$genid = gen_id();
 	$object = $contact;
 ?>
@@ -17,6 +17,8 @@
 	</div>
 	
 	</div>
+	<input type="hidden" name="contact[new_contact_from_mail_div_id]" value="<?php echo $contact_data['new_contact_from_mail_div_id'] ?>"/>
+	<input type="hidden" name="contact[hf_contacts]" value="<?php echo $contact_data['hf_contacts'] ?>"/>
 	<table><tr><td>
 		<div>
 			<?php echo label_tag(lang('first name'), $genid . 'profileFormFirstName') ?>
@@ -58,7 +60,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_contact_context_help', true, logged_user()->getId())) {?>
-			<div id="contactPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="contactPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add contact','add_contact'); ?>
 			</div>
 		<?php }?>
@@ -405,7 +407,7 @@
 	
   	<?php echo submit_button($contact->isNew() ? lang('add contact') : lang('save changes'),'s',array('tabindex' => '400', 'id' => $genid . 'submit2')) ?>
 
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>profileFormFirstName').focus();
 </script>
 </div>

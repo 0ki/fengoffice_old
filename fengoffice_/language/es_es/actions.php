@@ -1,75 +1,50 @@
-<?php
-
-  // Actions
-  return array(
-  
-    // Registration
-    'register' => 'Registrar',
-    'login' => 'Conexión',
-    'logout' => 'Desconexión',
-    'hide welcome info' => '&raquo; Ocultar información de forma permanente',
-    
-    // Companies
-    'add company' => 'Añadir empresa',
-    'edit company' => 'Editar datos de la compañía',
-    'delete company' => 'Eliminar compañía',
-    'edit company logo' => 'Guardar logo',
-    'delete company logo' => 'Eliminar logo',
-    
-    // Clients
-    'add client' => 'Añadir cliente',
-    'edit client' => 'Editar cliente',
-    'delete client' => 'Eliminar cliente',
-    
-    // Users
-    'add user' => 'Añadir usuario',
-    'edit user' => 'Editar usuario',
-    'delete user' => 'Eliminar usuario',
-    'create user from contact' => 'Crear usuario a partir de un contacto existente',
-    
-    // Group
-    'add group' => 'Añadir grupo',
-    'edit group' => 'Editar grupo',
-    'delete group' => 'Eliminar grupo',
-    
-    // Project
-    'add project' => 'Añadir área de trabajo',
-    'edit project' => 'Editar área de trabajo',
-    'delete project' => 'Eliminar área de trabajo',
-    'mark project as finished' => 'Marcar área de trabajo como cerrada',
-    'mark project as active' => 'Marcar área de trabajo como activa',
-    
-    // Workspace
-    'add workspace' => 'Añadir nueva área de trabajo',
-    'edit workspace' => 'Editar área de trabajo',
-    'delete workspace' => 'Eliminar área de trabajo',
-    'mark workspace as finished' => 'Marcar área de trabajo como finalizada',
-    'mark workspace as active' => 'Marcar área de trabajo como activa',
-    
-    // Messages
-    'add message' => 'Añadir nota',
-    'edit message' => 'Editar nota',
-    'delete message' => 'Eliminar nota',
-    'view message' => 'Mostrar nota',
-    'update message options' => 'Actializar opciones de nota',
-    'subscribe to object' => 'Suscribirse al objeto',
-    'unsubscribe from object' => 'Borrar suscripción al objeto',
-    
-    // Comments
-    'add comment' => 'Añadir comentario',
-    'edit comment' => 'Editar comentario',
-    
-    // Task list
-    'add task list' => 'Añadir tarea',
-    'edit task list' => 'Editar tarea',
-    'delete task list' => 'Eliminar tarea',
-    'reorder tasks' => 'Reordenar tareas',
+<?php return array(
+	'register' => 'Registrarse',
+	'login' => 'Conexión',
+	'logout' => 'Desconexión',
+	'hide welcome info' => '» Ocultar información de forma permanente',
+	'add company' => 'Añadir empresa',
+	'edit company' => 'Editar datos de la compañía',
+	'delete company' => 'Eliminar compañía',
+	'edit company logo' => 'Guardar logo',
+	'delete company logo' => 'Eliminar logo',
+	'add client' => 'Añadir cliente',
+	'edit client' => 'Editar cliente',
+	'delete client' => 'Eliminar cliente',
+	'add user' => 'Añadir usuario',
+	'edit user' => 'Editar usuario',
+	'delete user' => 'Eliminar usuario',
+	'create user from contact' => 'Crear usuario a partir de un contacto existente',
+	'add group' => 'Añadir grupo',
+	'edit group' => 'Editar grupo',
+	'delete group' => 'Eliminar grupo',
+	'add project' => 'Añadir área de trabajo',
+	'edit project' => 'Editar área de trabajo',
+	'delete project' => 'Eliminar área de trabajo',
+	'mark project as finished' => 'Marcar área de trabajo como cerrada',
+	'mark project as active' => 'Marcar área de trabajo como activa',
+	'add workspace' => 'Añadir nueva área de trabajo',
+	'edit workspace' => 'Editar área de trabajo',
+	'delete workspace' => 'Eliminar área de trabajo',
+	'mark workspace as finished' => 'Marcar área de trabajo como finalizada',
+	'mark workspace as active' => 'Marcar área de trabajo como activa',
+	'add message' => 'Añadir nota',
+	'edit message' => 'Editar nota',
+	'delete message' => 'Eliminar nota',
+	'view message' => 'Mostrar nota',
+	'update message options' => 'Actializar opciones de nota',
+	'subscribe to object' => 'Suscribirse al objeto',
+	'unsubscribe from object' => 'Borrar suscripción al objeto',
+	'add comment' => 'Añadir comentario',
+	'edit comment' => 'Editar comentario',
+	'add task list' => 'Añadir tarea',
+	'edit task list' => 'Editar tarea',
+	'delete task list' => 'Eliminar tarea',
+	'reorder tasks' => 'Reordenar tareas',
 	'reorder sub tasks' => 'Reordenar sub-tareas',
-  	'copy task' => 'Copiar tarea',
-  	'copy milestone' => 'Copiar hito',
-    
-    // Task
-    'add task' => 'Añadir tarea',
+	'copy task' => 'Copiar tarea',
+	'copy milestone' => 'Copiar hito',
+	'add task' => 'Añadir tarea',
 	'add sub task' => 'Añadir subtarea',
     'edit task' => 'Editar tarea',
     'delete task' => 'Eliminar tarea',
@@ -102,7 +77,7 @@
     'can manage security' => 'Permitir la modificación de las configuraciones de seguridad',
     'can manage workspaces' => 'Permitir la modificación de las configuraciones de áreas de trabajo',
     'can manage configuration' => 'Permitir la modificación de las configuraciones',
-    'can manage contacts' => 'Permitirl la modificación de las configuraciones de contactos',
+    'can manage contacts' => 'Permitirl la modificación de las configuraciones de todos los contactos',
     'group users' => 'Agrupar usuarios',
     
     
@@ -174,38 +149,29 @@
     'link object' => 'Vincular este objecto',
     'link objects' => 'Vincular estos objectos',
     'link more objects' => 'Vincular a más objectos',
+    'show all linked objects' => 'Mostrar todos los Objetos Vinculados ({0})',
     'unlink' => 'Eliminar vínculo',
     'unlink object' => 'Eliminar vínculo con este objecto',
     'unlink objects' => 'Eliminar vínculo con estos objectos',
 	'extract' => 'Extraer',
-  	'add files to zip' => 'Agregar archivos',
-    	
-    // Tags
-    'delete tag'  => 'Eliminar etiqueta',
-    
-    // Permissions
-    'update permissions' => 'Actualizar los permisos',
-    'edit permissions' => 'Editar permisos',
-    'edit permissions explanation'  => 'Seleccione los usuarios habilitados para acceder al área de trabajo creada.',
-  
-  	'save as new revision' => 'Guardar como nueva revisión',
+	'add files to zip' => 'Añadir archivos',
+	'delete tag' => 'Eliminar etiqueta',
+	'update permissions' => 'Actualizar los permisos',
+	'edit permissions' => 'Editar permisos',
+	'edit permissions explanation' => 'Seleccione los usuarios habilitados para acceder al área de trabajo creada.',
+	'save as new revision' => 'Guardar como nueva revisión',
 	'save as' => 'Guardar como',
 	'details' => 'Detalles',
 	'view history for' => 'Ver historial',
 	'view history' => 'Ver historial',
 	'edit preferences' => 'Editar preferencias',
-  	'add new message' => 'Añadir nueva nota',  
-    'view milestone' => 'Ver hito',
-    'custom properties' => 'Propiedades Personalizadas',
-  	'edit file properties' => 'Editar propiedades del archivo',
-    'move to trash' => 'Enviar a la papelera',
-    'restore from trash' => 'Restaurar de la papelera',
-    'delete permanently' => 'Eliminar permanentemente',
-  
-  	'copy file' => 'Copiar este archivo',
-  	'open weblink' => 'Abrir enlace web',
-  
-  
-  ); // array
-
-?>
+	'add new message' => 'Añadir nueva nota',
+	'view milestone' => 'Ver hito',
+	'custom properties' => 'Propiedades Personalizadas',
+	'edit file properties' => 'Editar propiedades del archivo',
+	'move to trash' => 'Enviar a la papelera',
+	'restore from trash' => 'Restaurar de la papelera',
+	'delete permanently' => 'Eliminar permanentemente',
+	'copy file' => 'Copiar este archivo',
+	'open weblink' => 'Abrir enlace web',
+); ?>

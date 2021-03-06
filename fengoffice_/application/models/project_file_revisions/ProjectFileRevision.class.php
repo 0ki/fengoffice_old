@@ -344,8 +344,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			(defined('CATPPT_PATH') && CATPPT_PATH != '' && $extension == "ppt")){
 			exec(($extension == "doc"? CATDOC_PATH . ' -a ' : CATPPT_PATH) . ' ' . escapeshellarg($fname) . ' 2>&1', $result, $return_var);
 			if ($return_var > 0){
-				if (Env::isDebugging())
-					Logger::log(implode(" ",$result),Logger::WARNING);	// catdoc command not found
+				Logger::log(implode(" ",$result),Logger::WARNING);	// catdoc command not found
 				return false;
 			}
 			return trim(implode(" ",$result));
@@ -442,9 +441,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		try {
 			FileRepository::deleteFile($this->getRepositoryId());
 		} catch (Exception $ex) {
-			if (Env::isDebugging()) {
-				Logger::log($ex->getMessage());
-			}
+			Logger::log($ex->getMessage());
 		}
 		$this->deleteThumb(false);
 		return parent::delete();

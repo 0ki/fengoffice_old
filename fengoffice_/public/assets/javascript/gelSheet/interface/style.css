@@ -1,96 +1,121 @@
 .ColumnUnselected{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: normal;
-	color: #000;
+	color: #15428B;
 	text-align:center;
-	border: 1px solid #9AC6FF ;
-	
-	/* border: solid 1px #4B4B6F; */
+	border: 1px solid #84a0c4 ;
 	overflow: hidden;
-	/* background-color:#DFDFEA; */
 	background-color: #D4E1F1 ;
-	/*background-image:url(./img/backgroundShadow.png);*/
-	/*background-image:url(./img/backgroundShadowLight.png);*/
-	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
+	background-image: url(img/white-top-bottom.gif);
+	
+	
 }
 
 .ColumnSelected{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: bold;
 	color: #FFF;
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#003F90;
-	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
+	background-image: url(img/white-top-bottom-dark.gif);
 }
 
 
 .ColumnFocused{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: bold;
 	color: #000;
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
 	background-color:#FFC06F;
-	/* background-image:url(./toolbar/img/backgroundShadowLight.png); */
+	background-image: url(img/white-top-bottom-light.gif);
 }
 
 .RowUnselected{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: normal;
-	color: #000;
-	border: 1px solid #9AC6FF ;
-	
-/*	border: solid 1px #4B4B6F; */
+	color: #15428B;
+	border: 1px solid #84a0c4;
 	overflow: hidden;
 	background-color:#D4E1F1;
-	/* background-color:#DFDFEA; */
-	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
+	
 }
 
 .RowSelected{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: bold;
 	color: #FFF;
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
-	background-color:#003F90;
-	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
+	background-color: #96bae6 ;
+	background-repeat: repeat-x ; 
+	background-image:  url(img/white-top-bottom-dark.gif) ;
 }
 
+.VerticalResizeArea {
+	cursor: s-resize ;
+	height: 5px ;
+	width: 100% ;
+}
 
 .RowFocused{
-	font-family: Arial;
+	font-family: tahoma,arial,verdana,sans-serif ;
 	font-size: 10pt;
 	font-weight: bold;
 	color: #000;
 	border: solid 1px #4B4B6F;
 	overflow: hidden;
-	background-color:#FFC06F;
-	
-	/* background-image:url(./toolbar/img/hBackgroundShadowLight.png); */
+	background: #FFC57E url(img/white-top-bottom-light.gif) repeat-x;
 }
 
-.CellSelected{
+
+.Cell{
 	font-family: Arial;
-	font-size: 10pt;
-	border: solid 2px #C0C0C0;
-	overflow: visible;
+	font-size: 10pt; 
+	overflow: hidden;
+	border: 1px solid #C0C0C0 ;
+	cursor: url(img/cell.cur.ico), default ;
+	height: 18px ;
+}
+
+
+.Cell.Selected {
+	background-color: #E4E4E8;
+}
+
+.Cell.Selected.Editing {
+	background-color: #FFFFFF;
+}
+
+.Cell.Selected .CellContainer    {
 	background-color:#E4E4E8;
 }
 
-.CellUnselected{
-	font-family: Arial;
-	font-size: 10pt;
-	border: solid 1px #C0C0C0;
-	overflow: visible;
+.Cell.Selected .CellContainer input   {
 	background-color:#FFFFFF;
 }
+
+
+.Cell.Unselected{
+	background-color:#FFFFFF;
+}
+
+.Cell.Editing {
+	cursor: text ;
+}
+.Cell .CellContainer {
+	height: 18px ;
+	overflow: visible ; 
+	display: inline ;
+	background-color: #FFF ;
+}
+
 
 
 .OpenFileDialog{
@@ -122,6 +147,7 @@
     background-color: #0F0;
 }
 
+
 #ActiveCell{
 	font-family: Arial;
 	font-size: 10pt;
@@ -130,6 +156,7 @@
 }
 
 #ActiveRange{
+	cursor: text ;
 	font-family: Arial;
 	font-size: 10pt;
 	border: solid 3px #000000;
@@ -154,10 +181,20 @@
 	background-image: url(./img/gelsheet_logo-132x51-Tab-transparent.png);   
 	background-repeat: no-repeat ;
 	width: 132px;
-	height: 51px;
+	height: 50px;
 	
 	top: 0px;
 	right:0px;
 	position: absolute ;
 	float: right ;		
 }
+
+.top-right-cell {
+	background: #D4E1F1 url(./img/select-all.png);
+	/* border: 2px solid  #dae7f6 ; */
+	
+	background-position:  -10px -0px ;
+	border-left: 1px solid #FFFFFF;
+}
+
+

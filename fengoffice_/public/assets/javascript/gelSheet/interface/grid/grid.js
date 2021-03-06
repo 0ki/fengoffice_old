@@ -10,82 +10,68 @@
  *
  */
 
-//TODO: remove section parameter, pass height and width
-function Grid(width,height){
-
+function Grid(configs){
     var self = document.createElement("DIV");
-    self.cfgs = new Array();
-	self.cfgs["defaultRowHeight"]	 	= 18;
-	self.cfgs["defaultRowWidth"] 		= 20;
-	self.cfgs["defaultColWidth"] 		= 80;
-	self.cfgs["defaultHandlerWidth"] 	= 5;
-	self.cfgs["scrollbarWidth"] 		= 17;
-	self.cfgs["scrollbarHeight"]		= 16;
+    //Now the defaults properties are set
+    self.configs = {
+		height:500,
+		width:700,
+		rowHeader:{height:18,width:20},
+		colHeader:{height:18,width: 80},
+		scrollbar:{height:16,width:17},
+		resizeHandler:{size:5}
+    };
+    
+    //All thouse properties set in configs will override defaults
+    for(var prop in configs)
+    	self.configs[prop] = configs[prop];
+    
+    WrapEvents(self);
+    self.register('ColumnSizeChange');
+    self.register('ColumnFormatChange');
 
-	self.focusActiveCell = function(){
-		this.cellEditor.fitToCell(this.activeCell);
-		this.selectorBox.fitToRange(this.activeCell);
-	}
-	
-	self.setActiveCell = function(cell){
-		//Deactivate all selected objects
-		/*var selection = self.selectionManager.getSelection();
-		for(var i=0; i<selection.length;i++){
-			selection[i].deactivate();
-		}*/
+    self.register('RowSizeChanged');    
+    self.register('SelectionChange');
 
-		if(this.onCellValueChange) this.onCellValueChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getValue());
-		if(this.onCellFontStyleChange) this.onCellFontStyleChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getFontStyleId());
-		this.rows[this.activeCell.getRow()].deactivate();
-		this.cols[this.activeCell.getColumn()].deactivate();
+    self.register('CellValueChange');
+    self.register('ActiveCellChange');
+    
+    self.register('RowAdded');
+    self.register('ColumnAdded');
 
-		this.selectionManager.setSelection(cell);
-		//this.activeCell.deactivate();
-		this.rows[cell.row].activate();
-		this.cols[cell.column].activate();
-		this.activeCell = cell;
-		//alert(self.cellEditor.fitToCell.toSource());
-		this.focusActiveCell();
-//		this.cellEditor.fitToCell(cell);
-//		this.selectorBox.fitToRange(cell);
-		if(this.onActiveCellChange) this.onActiveCellChange(this.cellEditor);
-	}
-	
-	self.editActiveCell = function(newValue){
-		this.cellEditor.updateValue(newValue);
-	}
-	
-	self.onmousedown = function(e){
-//		e ? e : e =window.event; //get event for IE
-//		//this.selecting = true;
-//		if(this.onActiveCellChange) this.onActiveCellChange(this.cellEditor);
-		return false; 			//Disables Text Selection
-	}
+//	self.focusActiveCell = function(){
+//		this.cellEditor.fitToCell(this.activeCell);
+////		this.selectorBox.fitToRange(this.activeCell);
+//	}
+//	
+//	self.updateActiveCell =function(row,col){
+//		this.setActiveCell(this.cell[row][col]);
+//	}
+//	
+//	self.setActiveCell = function(cell){
+//		self.fire("CellValueChange",this.activeCell.getAddress(),this.cellEditor.getValue());
+////		if(this.onCellValueChange) this.onCellValueChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getValue());
+////		if(this.onCellFontStyleChange) this.onCellFontStyleChange(this.activeCell.getRow(),this.activeCell.getColumn(),this.cellEditor.getFontStyleId());
+//		this.rows[this.activeCell.getRow()].deactivate();
+//		this.cols[this.activeCell.getColumn()].deactivate();
+//
+////		this.selectionManager.setSelection(cell);
+//		this.rows[cell.row].activate();
+//		this.cols[cell.column].activate();
+//		this.activeCell = cell;
+//		this.focusActiveCell();
+//		//if(this.onActiveCellChange) this.onActiveCellChange(this.cellEditor);
+//	}
+//	
+//	self.editActiveCell = function(newValue){
+//		this.cellEditor.updateValue(newValue);
+//	}
+//	
 
-	self.onmouseup = function(e){
-		e ? e : e =window.event; //get event for IE
-		this.selecting = false;
-		this.selectingRow = false;
-		this.selectingCol = false;
-
-		if(this.columnResizing){
-			this.resizeColumn();
-		}
-
-		this.columnResizing = false;
-	}
-
-	self.onmousemove = function(e){
-		e ? e : e = window.event; //get event for IE
-		if(self.columnResizing){
-			self.verticalResizer.setLeft(e.screenX);
-		}
-	}
-
-	self.addRow = function(){
+	self.addRow = function(passive){
 		//Creates Visual Row
 		var row = new VRow(this.rows.length);
-		row.setHeight(this.cfgs["defaultRowHeight"]);
+		row.setHeight(this.configs.rowHeader.height);
 		//Adds VRow to grids Rows
 		var i = this.rows.push(row)-1;
 		this.cells[i] = new Array();
@@ -104,13 +90,15 @@ function Grid(width,height){
 		addGridRowEvents(self,row);
 		//Finally add Row to Browser
    		this.body.appendChild(row);
-	}
+//   		if(!passive) self.fire("RowAdded",row.getIndex(),row.getHeight());
+	};
 
 
 	self.addColumn = function(){
 		var column = new VColumn(this.cols.length);
-		column.setHeight(this.cfgs["defaultRowHeight"]);
-		column.setWidth(this.cfgs["defaultColWidth"]);
+		column.setHeight(this.configs.rowHeader.height);
+		column.setWidth(this.configs.colHeader.width);
+		
 		var idx = this.cols.push(column);
 		addGridColumnEvents(self,column);
 
@@ -123,7 +111,7 @@ function Grid(width,height){
         	addGridCellEvents(self,cell);
         }
    		this.colHeader.appendChild(column);
-	}
+	};
 
 	self.adjustViewPortX = function(){
 		if(this.viewport.col >= this.cols.length)
@@ -131,18 +119,14 @@ function Grid(width,height){
 
 		var width = parseInt(this.offsetWidth);
 		if(this.cols[this.viewport.col].offsetLeft >= width){
-			//alert("Mayor " + this.viewport.col +  "  " + this.cols[this.viewport.col].offsetLeft  +" / " + width);
 			for(var j = this.viewport.col; this.cols[j].offsetLeft > width; j--)
 				this.viewport.col = j-1;
 
 		}else{
-			//alert("Menor");
 			for(var j = this.viewport.col-1;(this.cols[j].offsetLeft + this.cols[j].offsetWidth) < width;j++)
 				this.viewport.col = j + 1;
 		}
-
-		//alert(this.viewport.col);
-	}
+	};
 
 	self.adjustViewPortY = function(){
 		if(this.viewport.row >= this.rows.length)
@@ -151,61 +135,60 @@ function Grid(width,height){
 		var height = parseInt(this.style.height);
 
 		if(this.rows[this.viewport.row].offsetTop > height){
-			//alert("Mayor");
 			for(var i = this.viewport.row; this.rows[i].offsetTop >= height; i--)
 				this.viewport.row = i-1;
 		}else{
-			//alert("Menor");
-			//var i =this.viewport.row;
-			//alert(this.rows.length + " antes " + j + " " + (this.rows[j].offsetTop + this.rows[j].offsetHeight) + " / " +height);
 			try{for(var i = this.viewport.row; (i<this.rows.length) && (this.rows[i].offsetTop + this.rows[i].offsetHeight) <= height;i++)
 				this.viewport.row = i;
 				}catch(e){}
 		}
-	}
+	};
 	self.adjustViewPort = function(){
 		self.adjustViewPortX();
 		self.adjustViewPortY();
-	}
+	};
 
 	self.setDimensions = function(width,height){
 		this.scrollbars.setHeight(height);
 		this.scrollbars.setWidth(width);
-	}
+	};
 
 	self.getMinHeight = function(){
 		return this.minDimension.height;
-	}
+	};
 
 	self.getHeight = function(){
 		return this.scrollbars.getHeight();
-	}
+	};
 
 	self.getVisibleHeight = function(){
 		return parseInt(this.grid.style.height);
-	}
+	};
 
 	self.setHeight = function(height){
 		this.scrollbars.setHeight(height);
-	}
+	};
 
 	self.getVisibleWidth = function(){
 		return parseInt(this.grid.style.width);
-	}
+	};
 
 	self.getMinWidth = function(){
 		return this.minDimension.width;
-	}
+	};
 
 	self.getWidth = function(){
 		return this.scrollbars.getWidth();
-	}
+	};
 
 	self.setWidth = function(width){
 		this.scrollbars.setWidth(width);
-	}
+	};
 
-    self.constructor = function(width,height){
+    self.constructor = function(){
+    	var width = this.configs.width;
+    	var height = this.configs.height;
+    	
 	//Private Attributes definitions
 		//Data Attributes
     	this.cols = new Array();
@@ -217,16 +200,19 @@ function Grid(width,height){
 		this.selectingRow = false;
 		this.selectingCol = false;
 		this.columnResizing = false;
-
+		this.rowResizing = false;
+		
+		this.selection = {start:{row:0,col:0},end:undefined};
+		
     	//Temporal References
-		this.columnUsed = undefined; // used for mantain a reference for resizing
+		this.columnUsed = undefined; // used for maintain a reference for resizing
 
-	//Main Properties Setup
-    	var gridHeight = height - this.cfgs["scrollbarHeight"];
-    	var gridWidth = width - this.cfgs["scrollbarWidth"];
+		//Main Properties Setup
+    	var gridHeight = height - this.configs.scrollbar.height;
+    	var gridWidth = width - this.configs.scrollbar.width;
 
-    	var ncols = (gridWidth - this.cfgs["defaultRowWidth"])/ this.cfgs["defaultColWidth"];
-    	var nrows = (gridHeight - this.cfgs["defaultRowHeight"])/ this.cfgs["defaultRowHeight"];
+    	var ncols = (gridWidth - this.configs.rowHeader.width)/ this.configs.colHeader.width;
+    	var nrows = (gridHeight - this.configs.rowHeader.height)/ this.configs.rowHeader.height;
 
 		//Visual Properties
     	this.viewport = {row:parseInt(nrows),col:parseInt(ncols)};
@@ -235,7 +221,7 @@ function Grid(width,height){
 		createGridGui(self,width,height);
 
 		//Disable Text Selection
-		document.onselectstart = function() {return false;} // For IE
+	//	document.onselectstart = function() {return false;}; // For IE
 
 		//Grid Columns and Rows Creation
 		for(var j=0;j<ncols;j++){
@@ -245,22 +231,42 @@ function Grid(width,height){
 		for(var i=0;i<nrows;i++){
 			self.addRow();
 		}
-
-		//Add Managers
-		this.selectionManager = new SelectionHandler();
-    }
-
+    };
+    
+    self.adjustGrid = function(width,height){
+    	if(width!=undefined && height !=undefined){
+    		while(this.rows[this.viewport.row].offsetTop < height){
+    			self.addRow(true);
+    			this.viewport.row++;
+    		}
+    		
+    		while(this.cols[this.viewport.col].offsetLeft < width){
+    			self.addColumn(true);
+    			this.viewport.col++;
+    		}
+    		self.adjustViewPort();
+    	}
+    };
+    
 	self.inicialize = function(){
-		this.activeCell = this.cells[0][0];
-		this.setActiveCell(this.cells[0][0]);
 		this.adjustViewPort();
-	}
+	};
 
-    self.constructor(width,height);
+	self.resize = function(width,height){
+		self.adjustGrid(width,height);
+		self.setSize(width,height);
+//		self.gridContainer.parentNode.style.width = px(width);
+//		self.gridContainer.parentNode.style.height = px(height);
+//		self.gridContainer.style.width = px(width);
+//		self.gridContainer.style.height = px(height);
+//		self.setDimensions(parseInt(width),parseInt(height));
+	};
+	
+    self.constructor();
 
 	addGridOperations(self);
-	addGridNavigation(self);
 	addGridMethods(self);
+	addGridSelectionOperations(self);
     return self;
 }
 

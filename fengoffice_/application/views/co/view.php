@@ -1,10 +1,5 @@
 <?php 
-	if($object instanceof ProjectDataObject && $object->canView(logged_user())) 	{
-		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history');
-		/*if (!$object->isTrashed())
-			add_page_action(lang('share'), $object->getShareUrl(), 'ico-share');
-		*/
-	}
+	
 	Hook::fire("render_page_actions", $object, $ret = 0);
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))
@@ -12,13 +7,17 @@
 		
 	$genid = gen_id();
 	$date_format = user_config_option('date_format', 'd/m/Y');
+	if ($object instanceof ProjectDataObject && $object->canView(logged_user()) || $object instanceof User) {
+		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history',null,null,false);
+		/*if (!$object->isTrashed())
+			add_page_action(lang('share'), $object->getShareUrl(), 'ico-share');
+		*/
+	}
 ?>
-
 <table style="width:100%" id="<?php echo $genid ?>-co"><tr>
 <td>
 	<table style="width:100%;border-collapse:collapse;">
-		<col width="12px"/><col width="36px"/><col/><col width="12px"/>
-		<tr><td></td><td></td><td></td><td style="width:12px"></td></tr>
+		
 		<tr>
 			<td class="coViewIcon" colspan=2 rowspan=2>
 				<?php if (isset($image)) { echo $image; } else {?>
@@ -52,10 +51,11 @@
 			<td class="coViewBody" colspan=3>
 			<div style="padding-bottom:15px">
 				<?php 
-				if (isset($content_template) && is_array($content_template)){
+				if (isset($content_template) && is_array($content_template)) {
 					tpl_assign('object', $object);
-					if (isset($variables))
+					if (isset($variables)) {
 						tpl_assign('variables', $variables);
+					}
 					$this->includeTemplate(get_template_path($content_template[0], $content_template[1]));
 				}
 				else if (isset($content)) echo $content;
@@ -98,21 +98,55 @@
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	
 	<tr>
-		<td class="coViewBody" colspan=2>
-		<?php if(count(PageActions::instance()->getActions()) > 0 ) {?>
-			<div>
-			<?php
+		<td class="coViewBody" colspan=2> <?php
+		if (count(PageActions::instance()->getActions()) > 0 ) { ?>
+			<div id="actionsDialog1"> <?php
 				$pactions = PageActions::instance()->getActions();
-				foreach ($pactions as $action) { 
-					if ($action->getTarget() != '') {
-					?>
-					<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>">
-					<?php } else { ?>
-					<a style="display:block" class="<?php $attribs = $action->getAttributes(); echo $attribs["download"] ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>">
-				<?php } echo $action->getTitle() ?></a>
-			<?php } ?>
-			</div>
-		<?php } ?>
+				$shown = 0;
+				foreach ($pactions as $action) {
+					if ($action->isCommon) {
+				 		//if it is a common action sets the style display:block
+				 		if ($action->getTarget() != '') { ?>
+	   				    	<a id="<?php $atrib = $action->getAttributes(); echo $atrib['id']; ?>" style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
+				 		} else { ?>
+							<a id="<?php $atrib = $action->getAttributes(); echo $atrib['id']; ?>" style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
+				 		}
+				 		echo $action->getTitle(); ?>
+				 		</a> <?php
+						$shown++;
+					} //if
+				}//foreach ?>
+			</div> <?php
+			
+			$count = count($pactions);
+			$hidden = false;
+			foreach ($pactions as $action) {
+				if (!$action->isCommon) {
+					if (!$hidden && $shown >= 4 && $shown + 1 < $count) {
+						// if 4 actions have already been shown and there's more than one action left to show, hide the rest ?>
+			 			<div id="otherActions<?php echo $genid ?>" style="display:none"><?php
+			 			$hidden = true;
+			 		}
+			 		
+			 		if ($action->getTarget() != '') { ?>
+						<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
+			 		} else { ?>
+						<a style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
+			 		}
+			    	echo $action->getTitle() ?>
+			    	</a> <?php
+			    	$shown++;
+				}
+			} // foreach
+			if ($hidden) {
+				// close the hidden div and show the "More" link ?>
+				</div>											
+				<a id="moreOption<?php echo $genid; ?>" style="display:block" class="coViewAction" href="javascript: og.showMoreActions('<?php echo $genid ?>')">
+			    	<?php echo lang('more').'...' ?>
+			    </a> <?php 
+			}
+		 }
+		 PageActions::clearActions(); ?>
 		</td>
 	</tr>
 	
@@ -141,37 +175,70 @@
 				<span style="color:333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
 			</div>
 		<?php 
-		if ($object instanceof ProjectDataObject)
-			$user_object_workspaces = $object->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+		if ($object instanceof ProjectDataObject) {
+			$user_object_workspaces = $object->getWorkspaces(logged_user()->getWorkspacesQuery());
+		}
 		
 		$has_wss = $object instanceof ProjectDataObject && (is_array($user_object_workspaces) && count($user_object_workspaces) > 0);
 		if ($has_wss || $object->isTaggable()) { ?>
 			<div class="prop-col-div" style="width:200;">
 			<?php if ($has_wss) {?>
-			<span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
-		<?php
-			$projectLinks = array();
-			foreach ($user_object_workspaces as $ws) {
-				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+				<span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
+			<?php
+				$projectLinks = array();
+				foreach ($user_object_workspaces as $ws) {
+					$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
+				}
+				echo '<br/>' . implode('<br/>', $projectLinks);
 			}
-			echo '<br/>' . implode('<br/>',$projectLinks);
-		}
 		
-		if ($object->isTaggable() && ($tags = project_object_tags2($object)) && $tags != '--') {?>
-			<br/>
-			<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
-		<?php } ?>
+			if ($object->isTaggable() && ($tags = project_object_tags2($object)) && $tags != '--') {?>
+				<br/>
+				<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
+			<?php } ?>
 		</div>
 	<?php } // if ?>
 	
-	<?php if($object->isLinkableObject() && !$object->isTrashed()) { ?>
+	<?php if($object->isLinkableObject() && !$object->isTrashed()) {?>
+	
 		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
-	
-	<?php if ($object instanceof ProjectDataObject) { ?>
-		<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?></div>
-	<?php } ?>
+    	<?php if ($object instanceof ProjectDataObject) { ?>
+    	<script>
+  
 
+    		og.show_hide_subscribers_list2 = function(manager, id, genid) {
+        		og.openLink(og.getUrl('object', 'add_subscribers_list', {obj_id: id, manager: manager, genid: genid}), {
+        			preventPanelLoad:true,
+					onSuccess: function(data) {
+					
+	        			og.ExtendedDialog.show({
+	
+	                		html: data.current.data,
+	                		height: 450,
+	                		width: 685,
+	                		ok_fn: function() {
+	                			formy = document.getElementById(genid + "add-User-Form");
+	                			var params = Ext.Ajax.serializeForm(formy);
+	            				var options = {};
+	            				options[formy.method.toLowerCase()] = params;
+	            				og.openLink(formy.getAttribute('action'), options);
+	            				og.ExtendedDialog.hide();        			
+	            			}        			
+	                	});
+	                	return;
+        			}
+        		});
+    		};
+    		
+    	</script>
+			<div class="prop-col-div" style="width:200;"><?php echo render_object_subscribers($object)?>
+				
+				
+				<a id="<?php echo $genid.'add_subscribers_link' ?>" onclick="og.show_hide_subscribers_list2('<?php echo get_class($object->manager()) ?>', '<?php echo $object->getId() ?>', '<?php echo $genid ?>'); return false;" href="#" class="ico-add internalLink" style="background-repeat: no-repeat; padding-left: 18px; padding-bottom: 3px;"><?php echo lang('modify object subscribers')?></a>
+					</div>
+		
+	<?php } ?>
 	<div class="prop-col-div" style="border:0px;width:200;">
     	<?php if($object->getCreatedBy() instanceof User) { ?>
     		<span style="color:#333333;font-weight:bolder;">
@@ -204,14 +271,14 @@
 				if (logged_user()->getId() == $object->getUpdatedBy()->getId())
 					$username = lang('you');
 				else
-					$username = clean($object->getUpdatedBy()->getDisplayName());
+					$username = clean($object->getUpdatedByDisplayName());
 
 				if ($object->getUpdatedOn()->isToday()){
 					$datetime = format_time($object->getUpdatedOn());
-					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
+					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedByDisplayName()));
 				} else {
 					$datetime = format_datetime($object->getUpdatedOn(), $date_format, logged_user()->getTimezone());
-					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedBy()->getDisplayName()));
+					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, clean($object->getUpdatedByDisplayName()));
 				}
 			}?></div>
 		<?php } // if ?>
@@ -241,11 +308,16 @@
 		<?php } // if ?>
 		
 		<?php
-		if ($object instanceof ProjectFile) { ?>
+		if ($object instanceof ProjectFile && $object->getLastRevision() instanceof ProjectFileRevision) { ?>
 			<span style="color:#333333;font-weight:bolder;">
     			<?php echo lang('mime type') ?>:
-			</span><br/><div style="padding-left:10px">
-				<?php echo $object->getLastRevision()->getTypeString(); ?>
+    			<?php $mime = $object->getLastRevision()->getTypeString(); ?>
+			</span><br/><div style="padding-left:10px" title="<?php echo  $mime ?>">
+				<?php if (strlen($mime) > 30) {
+					echo substr_utf($mime, 0, 15) . '&hellip;' . substr_utf($mime, -15);
+				} else {
+					echo $object->getLastRevision()->getTypeString();
+				}?>
 			</div>
 		<?php if ($object->isCheckedOut()) { ?>
 	    		<span style="color:#333333;font-weight:bolder;">
@@ -284,6 +356,7 @@
 	</table>
 </td>
 </tr></table>
-<script type="text/javascript">
+<script>
 og.showWsPaths('<?php echo $genid ?>-co',null,true);
 </script>
+

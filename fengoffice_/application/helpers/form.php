@@ -158,7 +158,7 @@
   */
   function checkbox_field($name, $checked = false, $attributes = null) {
     
-    // Prepare attributes array
+  	// Prepare attributes array
     if(is_array($attributes)) {
       $attributes['type'] = 'checkbox';
       if(!isset($attributes['class'])) $attributes['class'] = 'checkbox';
@@ -418,15 +418,16 @@
   	$daterow = '';
   	if ($display_date_info)
   		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
-  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>";
-	$html .= "<script type='text/javascript'>
-	var dtp" . gen_id() . " = new og.DateField({
-		renderTo:'" . $genid . $name . "',
-		name: '" . $name . "',
-		id: '" . $genid . $name . "Cmp',".
-		(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
-		"value: '" . $dateValue . "'});
-	</script>";
+  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>
+	<script>
+		var dtp" . gen_id() . " = new og.DateField({
+			renderTo:'" . $genid . $name . "',
+			name: '" . $name . "',
+			id: '" . $genid . $name . "Cmp',".
+			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
+			"value: '" . $dateValue . "'});
+	</script>
+	";
 	return $html;
   } // pick_date_widget
   
@@ -448,16 +449,17 @@
   		$value = $value->format($format);
   	}
   	
-  	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>";
-	$html .= "<script type='text/javascript'>
-	var tp" . gen_id() . " = new Ext.form.TimeField({
-		renderTo:'" . $genid . $name . "',
-		name: '" . $name . "',
-		format: '" . $format . "',
-		width: 80,".
-		(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
-		"value: '" . $value . "'});
-	</script>";
+  	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>
+	<script>
+		var tp" . gen_id() . " = new Ext.form.TimeField({
+			renderTo:'" . $genid . $name . "',
+			name: '" . $name . "',
+			format: '" . $format . "',
+			width: 80,".
+			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
+			"value: '" . $value . "'});
+	</script>
+	";
   	return $html;
   }
   /**

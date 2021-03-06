@@ -13,10 +13,10 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 		if (!$email->getIsDeleted()) {
 			$c++;?>
 			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMUC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
-			<td class="db-ico ico-email"></td>
+			<td><div class="db-ico ico-email" /></td>
 			<td style="padding-left:5px">
 			<?php 
-				$mws = $email->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+				$mws = $email->getWorkspaces(logged_user()->getWorkspacesQuery());
 				$projectLinks = array();
 				foreach ($mws as $ws) {
 					$projectLinks[] = $ws->getId();

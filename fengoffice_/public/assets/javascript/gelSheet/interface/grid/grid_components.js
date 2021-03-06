@@ -19,28 +19,37 @@ function CellEditor(){
 		//this.style.position  = "absolute";
 		this.style.overflow  = "visible";
 		//this.style.border = "2px solid #000000";
-		this.style.backgroundColor = "#FFFFFF";
+		//this.style.backgroundColor = "#FFFFFF";
 		this.style.zIndex = 1000;
 		this.activeCell = undefined;
 		this.style.top = "0px";
 		this.style.left = "0px";
 		this.style.width = "100%";
-		this.style.height = "100%";
+		//this.style.height = "100%";
 		this.cell = undefined;
 		this.fontStyleId = 0;
 		WrapStyle(this);
+		WrapEvents(this);
+		self.register("ValueChanged");
 	}
 
+	self.reFit = function(){
+		this.style.width = "100%";
+		//this.style.height = "100%";
+	}
+	
 	self.fitToCell = function(vcell){
 		this.cell = vcell;
 		self.style.visibility = "hidden";
-		self.value = vcell.innerHTML;
-		vcell.innerHTML = "";
+//		self.value = vcell.innerHTML;
+		vcell.setInnerHTML("");
+		this.value = "";
 		this.fontStyleId = vcell.getFontStyleId();
 		//if(vcell.getFontStyleId() != this.fontStyleId){
 			WrapFontStyle(self,vcell.getFontStyleId());
 		//}
-		vcell.appendChild(self);
+		vcell.add(self);
+		vcell.className = vcell.className + " Editing" ; 
 		self.style.visibility = "visible";
 		self.focus();
 	}
@@ -57,8 +66,10 @@ function CellEditor(){
 	}
 
 	self.setValue = function(value){
-		if(value)
+		if(value!=undefined)
 			this.value = value;
+		else
+			this.value = "";
 	}
 
 	self.getValue = function(){
@@ -83,9 +94,9 @@ function CellEditor(){
 	}
 	
 	self.onkeyup = function(){
-			var formulaBar = document.getElementById("FormulaBar");
-			formulaBar.value = this.value;
-	}
+			self.fire("ValueChanged",this.value);
+//			formulaBar.value = this.value;
+	};
 	
 	/*self.onchange = function(){
 		//alert("entra");
@@ -133,8 +144,15 @@ function SelectorBox(){
 		//this.focus();
 	}
 
+	self.setVisible = function(value){
+		if(value)
+			this.style.visibility = "visible";
+		else
+			this.style.visibility = "hidden";
+	}
 	self.fitToRange = function(range){
 		//alert(range.getAddress().toSource());
+		
 		var borderWidth = 3;//parseInt(self.style.borderWidth);
 		self.setLeft(range.offsetLeft-borderWidth/2);
 		self.setTop(range.offsetTop-borderWidth/2);
@@ -144,24 +162,30 @@ function SelectorBox(){
 			self.fillBox.style.left = px(parseInt(self.style.width)-2);
 			self.fillBox.style.top =  px(parseInt(self.style.height)-2);
 		}catch(e){};
-		/*self.setLeft(range.getLeft() - borderWidth/2 +1);
-		self.setTop(range.getAbsoluteTop() - borderWidth/2);
-		self.setWidth(range.getAbsoluteWidth()-borderWidth-1);
-		self.setHeight(range.getAbsoluteHeight()-borderWidth-1);
-		*/
-
+		this.style.visibility = "visible";
+	}
+	
+	
+	self.fitToArea = function(area){
+		//alert(range.getAddress().toSource());
+		var borderWidth = 3;//parseInt(self.style.borderWidth);
+		
+		self.setLeft(area.left-borderWidth/2);
+		self.setTop(area.top-borderWidth/2);
+		try{
+			self.setWidth(area.width-2);
+			self.setHeight(area.height-2);
+			self.fillBox.style.left = px(parseInt(self.style.width)-2);
+			self.fillBox.style.top =  px(parseInt(self.style.height)-2);
+		}catch(e){};
 	}
 
 	self.refresh = function(){
 		self.fitToRange(grid.activeCell);
 	}
-
+	
+	
 	self.constructor();
-	//Register Fake Events
-	//EventManager.register(EVT_SELECTION_CHANGE,self.fitToRange,true);
-	//EventManager.register(EVT_COLUMN_CHANGE,self.refresh,true);
-	//EventManager.register(EVT_ROW_CHANGE,self.refresh,true);
-
 	return self;
 }
 

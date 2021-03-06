@@ -24,7 +24,7 @@ CREATE TABLE `<?php echo $table_prefix ?>application_logs` (
   `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink') <?php echo $default_collation ?> default NULL,
+  `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink','login') <?php echo $default_collation ?> default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
   `is_silent` tinyint(1) unsigned NOT NULL default '0',
   `log_data` text <?php echo $default_collation ?>,
@@ -261,7 +261,6 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_h` smallint(6) NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
   `special_id` int(11) NOT NULL default '0',
-  `project_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -356,7 +355,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_messages` (
 
 CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `project_id` int(10) unsigned default NULL,
   `name` varchar(100) <?php echo $default_collation ?> default NULL,
   `description` text <?php echo $default_collation ?>,
   `due_date` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -374,7 +372,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `is_template` BOOLEAN NOT NULL default '0',
   `from_template_id` int(10) NOT NULL default '0',
   PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`),
   KEY `due_date` (`due_date`),
   KEY `completed_on` (`completed_on`),
   KEY `created_on` (`created_on`)
@@ -383,7 +380,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
 CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `parent_id` int(10) unsigned default NULL,
-  `project_id` INTEGER UNSIGNED NOT NULL,
   `title` TEXT <?php echo $default_collation ?>,
   `text` text <?php echo $default_collation ?>,
   `due_date` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -410,6 +406,13 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `is_private` BOOLEAN NOT NULL default '0',
   `is_template` BOOLEAN NOT NULL default '0',
   `from_template_id` int(10) NOT NULL default '0',
+  `repeat_end` DATETIME NOT NULL default '0000-00-00 00:00:00',
+  `repeat_forever` tinyint(1) NOT NULL,
+  `repeat_num` int(10) unsigned NOT NULL default '0',
+  `repeat_d` int(10) unsigned NOT NULL,
+  `repeat_m` int(10) unsigned NOT NULL,
+  `repeat_y` int(10) unsigned NOT NULL,
+  `repeat_by` varchar(15) collate utf8_unicode_ci NOT NULL default '',
   PRIMARY KEY  (`id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
@@ -516,6 +519,7 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `updated_by_id` int(10) unsigned default NULL,
   `last_login` datetime NOT NULL default '0000-00-00 00:00:00',
   `last_visit` datetime NOT NULL default '0000-00-00 00:00:00',
   `last_activity` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -615,7 +619,6 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_contacts` (
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `project_id` int(10) unsigned NOT NULL default '0',
   `url` text <?php echo $default_collation ?>  ,
   `title` varchar(100) <?php echo $default_collation ?> default '',
   `description` text <?php echo $default_collation ?> ,
@@ -626,8 +629,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
   `trashed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `trashed_by_id` int(10) unsigned default NULL,
   `is_private` tinyint(1) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
@@ -637,10 +639,10 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `from` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
   `from_name` VARCHAR( 250 ) NULL,
   `to` text <?php echo $default_collation ?> NOT NULL,
-  `date` timestamp,
+  `cc` text <?php echo $default_collation ?> NOT NULL,
+  `bcc` text <?php echo $default_collation ?> NOT NULL,
   `sent_date` timestamp,
   `subject` text <?php echo $default_collation ?>,
-  `content` longtext <?php echo $default_collation ?> NOT NULL,
   `body_plain` longtext <?php echo $default_collation ?>,
   `body_html` longtext <?php echo $default_collation ?>,
   `has_attachments` int(1) NOT NULL default '0',
@@ -658,7 +660,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `content_file_id` varchar(40) <?php echo $default_collation ?> NOT NULL default '',
   PRIMARY KEY  (`id`),
   KEY `account_id` (`account_id`),
-  KEY `sent_date` USING BTREE (`sent_date`)
+  KEY `sent_date` USING BTREE (`sent_date`),
+  KEY `uid` (`uid`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
@@ -679,6 +682,9 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_accounts` (
   `smtp_port` INTEGER UNSIGNED NOT NULL default 25,
   `del_from_server` INTEGER UNSIGNED NOT NULL default 0,
   `outgoing_transport_type` VARCHAR(5) <?php echo $default_collation ?> NOT NULL default '',
+  `last_checked` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `is_default` BOOLEAN NOT NULL default '0',
+  `signature` text <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -710,7 +716,6 @@ CREATE TABLE `<?php echo $table_prefix ?>workspace_objects` (
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_charts` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `project_id` int(10) unsigned default NULL,
   `type_id` int(10) unsigned default NULL,
   `display_id` int(10) unsigned default NULL,
   `title` varchar(100) <?php echo $default_collation ?> default NULL,
@@ -722,8 +727,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_charts` (
   `updated_by_id` int(10) unsigned default NULL,
   `trashed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `trashed_by_id` int(10) unsigned default NULL,
-  PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_chart_params` (
@@ -869,7 +873,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>gs_columns` (
   PRIMARY KEY  (`SheetId`,`ColumnIndex`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
-CREATE TABLE  `<?php echo $table_prefix ?>gs_fontStyles` (
+CREATE TABLE  `<?php echo $table_prefix ?>gs_fontstyles` (
   `FontStyleId` int(11) NOT NULL,
   `BookId` int(11) NOT NULL,
   `FontId` int(11) NOT NULL,
@@ -877,7 +881,10 @@ CREATE TABLE  `<?php echo $table_prefix ?>gs_fontStyles` (
   `FontBold` tinyint(1) NOT NULL default '0',
   `FontItalic` tinyint(1) NOT NULL default '0',
   `FontUnderline` tinyint(1) NOT NULL default '0',
-  `FontColor` varchar(6) <?php echo $default_collation ?> NOT NULL default '',
+  `FontColor` varchar(7) <?php echo $default_collation ?> NOT NULL default '',
+  `FontVAlign` int(11) NOT NULL default '0',                                    
+  `FontHAlign` int(11) NOT NULL default '0',      
+  
   PRIMARY KEY  USING BTREE (`FontStyleId`,`BookId`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -887,7 +894,27 @@ CREATE TABLE  `<?php echo $table_prefix ?>gs_fonts` (
   PRIMARY KEY  (`FontId`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?> AUTO_INCREMENT=7;
 
-CREATE TABLE  `<?php echo $table_prefix ?>gs_mergedCells` (
+CREATE TABLE  `<?php echo $table_prefix ?>gs_borderstyles` (
+  `BorderStyleId` int(11) NOT NULL auto_increment,
+  `BorderColor` varchar(7) <?php echo $default_collation ?>  default NULL,
+  `BorderWidth` int(11) NOT NULL DEFAULT 0,
+  `BorderStyle` varchar(64) DEFAULT NULL,
+  `BookId` int(11) DEFAULT NULL, 
+  PRIMARY KEY  (`BorderStyleId`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>gs_layoutstyles` (                          
+  `LayoutStyleId` int(11) NOT NULL AUTO_INCREMENT,        
+  `BorderLeftStyleId` int(11) DEFAULT NULL,               
+  `BackgroundColor` varchar(7) <?php echo $default_collation ?> DEFAULT NULL,              
+  `BorderRightStyleId` int(11) DEFAULT NULL,              
+  `BorderTopStyleId` int(11) DEFAULT NULL,                
+  `BorderBottomStyleId` int(11) DEFAULT NULL,             
+  `BookId` int(11) DEFAULT NULL,                          
+  PRIMARY KEY (`LayoutStyleId`)                           
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>gs_mergedcells` (
   `SheetId` int(11) NOT NULL,
   `MergedCellRow` int(11) NOT NULL,
   `MergedCellCol` int(11) NOT NULL,
@@ -1000,10 +1027,11 @@ CREATE TABLE `<?php echo $table_prefix ?>custom_properties` (
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_property_values` (
-  `object_id` int(10) NOT NULL AUTO_INCREMENT,
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `object_id` int(10) NOT NULL,
   `custom_property_id` int(10) NOT NULL,
   `value` varchar(255) NOT NULL,
-  PRIMARY KEY (`object_id`,`custom_property_id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE `<?php echo $table_prefix ?>queued_emails` (
@@ -1024,6 +1052,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>reports` (
   `object_type` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `order_by` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `is_order_by_asc` tinyint(1) <?php echo $default_collation ?> NOT NULL,
+  `workspace` INTEGER <?php echo $default_collation ?> NOT NULL,
+  `tags` varchar(45) <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -1044,4 +1074,20 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_conditions` (
   `value` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `is_parametrizable` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_parameters` (
+`id` INT( 10 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`template_id` INT( 10 ) NOT NULL ,
+`name` VARCHAR( 255 ) NOT NULL ,
+`type` VARCHAR( 255 ) NOT NULL
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_object_properties` (
+`template_id` INT( 10 ) NOT NULL ,
+`object_id` INT( 10 ) NOT NULL ,
+`object_manager` varchar(255) NOT NULL,
+`property` VARCHAR( 255 ) NOT NULL ,
+`value` TEXT NOT NULL ,
+PRIMARY KEY ( `template_id` , `object_id` ,`object_manager`, `property` )
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

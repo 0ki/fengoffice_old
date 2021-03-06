@@ -19,6 +19,7 @@
     'view' => 'View',
     'edit' => 'Edit',
     'delete' => 'Delete',
+  	'empty trash can' => 'Empty trash can',
     'save' => 'Save',
   	'add' => 'Add',
     'update' => 'Update',
@@ -159,6 +160,11 @@
   	'create contact from user' => 'Create contact with user data',
   	'confirm create contact from user' => 'Are you sure you want to create a contact with user data?',
   	'create contact from user desc' => 'If yes is selected, the user will be stored in the system as a contact',
+  	'use previous personal workspace' =>'Use an existing workspace as user\'s personal workspace?',
+  	'use previous personal workspace desc' =>'If yes is selected you can determine which workspace assing as personal for this user',
+  	'select personal workspace' => 'Select a Workspace',
+    'create personal workspace' => 'Create a new one',
+    'use an existing workspace' => 'Use an existing Workspace',
   	'go to contact' => 'Go to contact data',
   	'show assigned to' => 'Show assigned to',
   	'timeslot on object' => 'Timeslot on {0}',
@@ -179,8 +185,29 @@
   	'date format description' => '(mm/dd/yyyy)',
   	'confirm move to trash' => 'Are you sure you want to move the selected object to the trash?',
   
-  	'remove' => 'Remove'
+  	'remove' => 'Remove',
+  	'mime type' => 'MIME type',
+  	
+  	'default' => 'Default',
+  	'language' => 'Language',
+  	'before' => 'before',
+  
+	'repeat by' => 'Repeat by',
+	'repeating task' => 'Repeating task',
+  	'this task repeats' => 'This task repeats',
+  	'forever' => 'forever',
+	'n times' => '{0} times',
+	'until x' => 'until {0}',
+	'n days' => '{0} days',
+	'n months' => '{0} months',
+	'n years' => '{0} years',
+  	'every' => 'every',
+	'generate repetitition' => 'Generate task repetition',
+	'end of task' => 'End of Task',
+	'start of task' => 'Start of Task',
+  	'new task repetition generated' => 'New task repetition successfully generated',
 
+	'reminders will not apply to repeating events' => 'Warning: reminders will not apply to repeating events',
   ); // array
 
 ?>

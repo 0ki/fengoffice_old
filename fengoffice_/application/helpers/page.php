@@ -849,7 +849,13 @@
   * @return string
   */
   function get_javascript_url($file_name) {
-    return get_public_url('assets/javascript/' . $file_name);
+  	if (defined('VERSIONED_JS') && VERSIONED_JS) {
+  		$prefix = include 'version.php';
+  		$prefix .= "/";
+  	} else {
+  		$prefix = "";
+  	}
+    return get_public_url("assets/javascript/$prefix$file_name");
   } // get_javascript_url
   
   function get_flash_url($file_name) {

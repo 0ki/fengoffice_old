@@ -13,6 +13,28 @@
     // -------------------------------------------------------
   
     /**
+    * Return value of 'id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getId() {
+      return $this->getColumnValue('id');
+    } // getObjectId()
+    
+    /**
+    * Set value of 'id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setId($value) {
+      return $this->setColumnValue('id', $value);
+    } // setId() 
+    
+    /**
     * Return value of 'object_id' field
     *
     * @access public

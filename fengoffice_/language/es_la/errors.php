@@ -70,7 +70,12 @@
   
     // Add task
     'task text required' => 'Texto de tarea no ingresado, intente nuevamente',
-    
+   	'repeat x times must be a valid number between 1 and 1000' => 'El número de repeticiones debe ser un número válido entre 1 y 1000.',
+	'repeat period must be a valid number between 1 and 1000' => 'El período de repeticiones debe ser un número válido entre 1 y 1000.',
+	'to repeat by start date you must specify task start date' => 'Debe especificar la fecha de comienzo de la tarea si la repetición va a ser según fecha de comienzo',
+	'to repeat by due date you must specify task due date' => 'Debe especificar la fecha de fin de la tarea si la repetición va a ser según fecha de fin',
+	'task cannot be instantiated more times' => 'Esta tarea no puede ser instanciada más veces, ésta es la última repetición.',
+
     // Add event
     'event subject required' => 'El asunto del evento debe ser ingresado, intente nuevamente',
     'event description maxlength' => 'La descripción no debe pasar los 3000 caracteres',
@@ -170,6 +175,8 @@
     'error assign task permissions user' => 'No tiene permisos para asignar la tarea al usuario',
     'error assign task company dnx' => 'Asignando una tarea a una compañía inexistente',
     'error assign task permissions company' => 'No tiene permisos para asignar la tarea a la compañía',
+  	'account already being checked' => 'La cuenta ya se está verificando.',
+    'no files to compress' => 'No hay archivos para comprimir.',
  ); // array
 
 ?>

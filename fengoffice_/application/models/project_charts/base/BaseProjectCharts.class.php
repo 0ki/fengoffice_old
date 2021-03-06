@@ -12,8 +12,7 @@
     * @static
     */
     static private $columns = array(
-    	'id' => DATA_TYPE_INTEGER, 
-    	'project_id' => DATA_TYPE_INTEGER,
+    	'id' => DATA_TYPE_INTEGER,
     	'type_id' => DATA_TYPE_INTEGER,
     	'display_id' => DATA_TYPE_INTEGER, 
     	'title' => DATA_TYPE_STRING, 

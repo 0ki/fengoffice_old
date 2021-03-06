@@ -48,7 +48,7 @@ return array(
     'mail from' => 'De',
     'mail body' => 'Cuerpo',
     'send mail' => 'Enviar Mail',
-    'smtp server' => 'Servidos SMTP',
+    'smtp server' => 'Servidor SMTP',
     'mail account smtp server description' => ' El servidor SMTP es el que va a ser usado para enviar mails',
     'smtp use auth' => 'Autenticación del servidor SMTP',
     'mail account smtp use auth description' => ' La forma en que se va a realizar la autenticación con el servidor SMTP. Por lo general, \'Usar entrante\' es la opción mas correcta.',
@@ -180,7 +180,7 @@ return array(
 	'attach from workspace' => 'Seleccionar adjunto del área de trabajo',
 	'new notification comment' => 'Nuevo comentario en \'{0}\'',
     'new notification comment desc' => 'Un nuevo comentario en \'{0}\' fue agregado por {1}.',
-
+	'mail format options' => 'Formato',
 
 ); // array
 ?>

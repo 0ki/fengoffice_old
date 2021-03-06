@@ -1,4 +1,22 @@
 <?php set_page_title(lang('login')) ?>
+<script>
+	showMoreOptions = function() {
+		var div = document.getElementById("optionsDiv");
+		var more = document.getElementById("optionsLink");
+		var hide = document.getElementById("hideOptionsLink");
+		div.style.display = "block";
+		hide.style.display = "inline";
+		more.style.display = "none";
+	}
+	hideMoreOptions = function() {
+		var div = document.getElementById("optionsDiv");
+		var more = document.getElementById("optionsLink");
+		var hide = document.getElementById("hideOptionsLink");
+		div.style.display = "none";
+		hide.style.display = "none";
+		more.style.display = "inline";
+	}
+</script>
 <form action="<?php echo get_url('access', 'login') ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
@@ -24,7 +42,28 @@
 <?php } // if ?>
 <?php } // foreach ?>
 <?php } // if ?>
+
+	<!-- table><tr><td -->
+  		<div id="loginSubmit">
+  			<?php echo submit_button(lang('login')) ?>
+  			<span>(<a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?>?</a>)</span>
+  			<a id="optionsLink" href="javascript:showMoreOptions()"> <?php echo lang('options'); ?></a>
+  			<a id="hideOptionsLink" style="display:none" href="javascript:hideMoreOptions()"> <?php echo lang ('hide options'); ?></a>
+  		</div>
+  	<!-- /td><td -->
+  		
+  	<!-- /td></tr></table -->
   
-  <div id="loginSubmit"><?php echo submit_button(lang('login')) ?><span>(<a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?>?</a>)</span></div>
-  <!-- <p><a class="internalLink" href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></p> -->
+  	<div id="optionsDiv" style="display:none">
+	<table>
+	<tr>
+		<label><?php echo lang('language')?>:</label>
+  		<?php
+  			$handler = new LocalizationConfigHandler();
+  			echo $handler->render('configOptionSelect', array('text' => lang('default'), 'value' => 'Default'));
+  		?>
+  	</tr>
+	</table>
+	</div>    
 </form>
+

@@ -108,6 +108,8 @@ class GroupController extends ApplicationController {
 			flash_error(lang('group dnx'));
 			$this->redirectTo('administration', 'groups');
 		} // if
+		
+		$permissions = ProjectUsers::getNameTextArray();
 
 		$group_data = array_var($_POST, 'group');
 		if(!is_array($group_data)) {
@@ -128,7 +130,8 @@ class GroupController extends ApplicationController {
 				$group_data['user['.$usr->getId().']'] = true;
 		tpl_assign('group', $group);
 		tpl_assign('group_data', $group_data);
-
+		tpl_assign('permissions', $permissions);
+		
 		if(is_array(array_var($_POST, 'group'))) {
 			$group->setFromAttributes($group_data);
 			if(array_var($group_data, "can_edit_company_data") != 'checked') $group->setCanEditCompanyData(false);
@@ -140,6 +143,35 @@ class GroupController extends ApplicationController {
 			if(array_var($group_data, "can_manage_reports") != 'checked') $group->setCanManageReports(false);
 			try {
 				DB::beginWork();
+				//set permissions
+				$permissionsString = array_var($_POST,'permissions');
+				if ($permissionsString && $permissionsString != ''){
+					$permissions = json_decode($permissionsString);
+				}
+			  	if(is_array($permissions) && count($permissions) > 0) {
+			  		//Clear old modified permissions
+			  		$ids = array();
+			  		foreach($permissions as $perm)
+			  			$ids[] = $perm->wsid;
+			  			
+			  		ProjectUsers::clearByUser($group,implode(',',$ids));
+			  		
+			  		//Add new permissions
+			  		//TODO - Make batch update of these permissions
+			  		foreach($permissions as $perm){
+			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){			  				
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($perm->wsid);
+					  		$relation->setUserId($group->getId());
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			} //endif
+			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
+			  		} //end foreach
+				} // if
+				
 				$group->save();
 				$gus = array();
 				if(array_var($_POST, 'user') != ''){

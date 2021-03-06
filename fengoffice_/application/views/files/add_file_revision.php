@@ -17,6 +17,6 @@
   <?php echo submit_button(lang('save changes'),'s',array('tabindex' => 2)) ?>
 </form>
 </div></div>
-<script type="text/javascript">
+<script>
 	document.getElementById('<?php echo $genid ?>fileRevisionComment').focus();
 </script>

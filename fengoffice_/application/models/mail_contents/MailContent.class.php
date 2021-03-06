@@ -93,7 +93,13 @@ class MailContent extends BaseMailContent {
 				FileRepository::deleteFile($this->getContentFileId());
 			}
 		}
-		return parent::delete();
+		DB::beginWork();
+		$this->setIsDeleted(true);
+		$ok = $this->save();
+		DB::commit();
+		
+		return $ok; 
+		//return parent::delete();
 	}
 
 	function deleteContents()
@@ -127,9 +133,8 @@ class MailContent extends BaseMailContent {
 	 * @return string
 	 */
 	function getContent() {
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem && 
-			FileRepository::isInRepository($this->getContentFileId())) {
-				return FileRepository::getFileContent($this->getContentFileId());
+		if (FileRepository::isInRepository($this->getContentFileId())) {
+			return FileRepository::getFileContent($this->getContentFileId());
 		}
 		else if ($this->columnExists('content'))
 			return $this->getColumnValue('content');
@@ -459,29 +464,37 @@ class MailContent extends BaseMailContent {
     	$type = "emailunclassified";
     	$tags = project_object_tags($this);
     	
-  		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
+  		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
     	$deletedBy = Users::findById($this->getTrashedById());
     	if ($deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
     		$deletedBy = lang("n/a");
     	}
-    	$sentTimestamp = $this->getSentDate() instanceof DateTimeValue ? $this->getSentDate()->getTimestamp() : 0;
+		$createdBy = Users::findById($this->getAccount()->getOwner());
+    	if ($createdBy instanceof User) {
+    		$createdById = $createdBy->getId();
+    		$createdBy = $createdBy->getDisplayName();
+    	} else {
+    		$createdById = 0;
+    		$createdBy = lang("n/a");
+    	}
+    	$sentTimestamp = $this->getSentDate() instanceof DateTimeValue ? ($this->getSentDate()->isToday() ? format_time($this->getSentDate()) : format_datetime($this->getSentDate())) : lang('n/a');
     	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
 				"name" => $this->getObjectName(),
 				"type" => $type,
 				"tags" => $tags,
-				"createdBy" => $this->getAccount()->getOwner()->getDisplayName(),
-				"createdById" => $this->getAccount()->getOwner()->getId(),
+				"createdBy" => $createdBy,
+				"createdById" => $createdById,
 				"dateCreated" => $sentTimestamp,
-				"updatedBy" => $this->getAccount()->getOwner()->getDisplayName(),
-				"updatedById" => $this->getAccount()->getOwner()->getId(),
+				"updatedBy" => $createdBy,
+				"updatedById" => $createdById,
 				"dateUpdated" => $sentTimestamp,
-				"project" => $this->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),//$project,
-				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+				"project" => $this->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),//$project,
+				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager()),
     			"deletedById" => $this->getTrashedById(),

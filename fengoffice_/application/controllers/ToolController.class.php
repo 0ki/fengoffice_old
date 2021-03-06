@@ -49,8 +49,8 @@ class ToolController extends ApplicationController {
 			$jsmin = JSMin::minify($jsmin);
 			echo "Done!<br>\n";
 		}
-		
-		echo "Writing to file 'ogmin.js' ... ";
+
+		echo "Writing to file 'min.js' ... ";
 		file_put_contents("public/assets/javascript/ogmin.js", $jsmin);
 		echo "Done!<br>";
 		
@@ -58,7 +58,6 @@ class ToolController extends ApplicationController {
 		
 		
 		// process CSS
-		
 		function changeUrls($css, $base) {
 			return preg_replace("/url\s*\(\s*['\"]?([^\)'\"]*)['\"]?\s*\)/i", "url(".$base."/$1)", $css);
 		}
@@ -87,7 +86,8 @@ class ToolController extends ApplicationController {
 		}
 		
 		echo "Writing to file 'ogmin.css' ... ";
-		file_put_contents("public/assets/themes/default/stylesheets/ogmin.css", $cssmin);
+		$version = include "version.php";
+		file_put_contents("public/assets/themes/default/stylesheets/ogmin$version.css", $cssmin);
 		echo "Done!<br>";
 
 	}
@@ -153,7 +153,7 @@ class ToolController extends ApplicationController {
 				$count = 0;
 				foreach ($all as $k => $v) {
 					$count++;
-					fwrite($f, "\t'$k': '" . escape_lang($v). "'");
+					fwrite($f, "\t'$k': '" . escape_lang_js($v). "'");
 					if ($count == $total) {
 						fwrite($f, "\n");
 					} else {
@@ -202,17 +202,36 @@ class ToolController extends ApplicationController {
 define('LANG_DIR', 'language');
 
 function escape_lang($string) {
-	// TODO: this function needs to be checked for special cases
-	// replace multiple backslashes for one
-	// (this doesn't allow more than one consecutive backslash but eases escaping the string)
-	$string = preg_replace("/[\\\\]+/", "\\", $string);
-	// the form sends quotes with a leading backlash, so first remove those extra backslashes and then escape the string
-	return str_replace(array("\\'", "\\\"", "'", "\r\n", "\r", "\n"), array("'", "\"", "\\'", "\\n", "\\n", "\\n"), $string);
+	return str_replace(array("\\", "'", "\r\n", "\r"), array("\\\\", "\\'", "\n", "\n"), $string);
 }
 
-function unescape_lang($string) {
-	$string = preg_replace("/[\\\\]+/", "\\", $string);
-	return str_replace(array("\\'", "\\n", "\\\\"), array("'", "\n", "\\"), $string);
+function escape_lang_js($string) {
+	return str_replace(array("\\", "'", "\r\n", "\r", "\n"), array("\\\\", "\\'", "\n", "\n", "\\n"), $string);
+}
+
+function unescape_lang_js($string) {
+	$count = strlen($string);
+	$escaped = "";
+	$bs = false;
+	for ($i=0; $i < $count; $i++) {
+		if ($bs) {
+			if ($string[$i] == 'n') {
+				$escaped .= "\n";
+			} else if ($string[$i] == "'") {
+				$escaped .= "'";
+			} else if ($string[$i] == "\\") {
+				$escaped .= "\\";
+			} else {
+				$escaped .= "\\" . $string[$i];
+			}
+			$bs = false;
+		} else if ($string[$i] == "\\") {
+			$bs = true;
+		} else {
+			$escaped .= $string[$i];
+		}
+	}
+	return $escaped;
 }
 
 function loadFileTranslations($locale, $file) {
@@ -226,7 +245,7 @@ function loadFileTranslations($locale, $file) {
 		preg_match_all("/\s*['\"](.*)['\"]\s*:\s*['\"](.*[^\\\\])['\"]\s*,?/", $contents, $matches, PREG_SET_ORDER);
 		$lang = array();
 		foreach ($matches as $match) {
-			$lang[$match[1]] = $match[2];
+			$lang[$match[1]] = unescape_lang_js($match[2]);
 		}
 		return $lang;
 	} else {

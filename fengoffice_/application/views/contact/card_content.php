@@ -1,4 +1,6 @@
-<?php $contact = $object; ?>
+<?php
+	$contact = $object;
+?>
     <table width=100%><col width=250px/><col/>
     <?php if ($contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()
     || is_array($im_values = $contact->getImValues()) && count($contact) || $contact->getOBirthday()) {?>
@@ -10,7 +12,13 @@
       <?php if ($contact->getEmail3()) { ?><div style="padding-left:10px"><a href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
       <?php } ?>
       <?php if ($contact->getOBirthday()) { ?><?php echo $hasEmailAddrs? '<br/>':'' ?>
-      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean(format_datetime($contact->getOBirthday(),user_config_option('date_format', 'd/m/Y')));?></div><?php } ?>
+      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> 
+      <?php if ($contact->getOBirthday() instanceof DateTimeValue) {
+      		$bday = new DateTimeValue($contact->getOBirthday()->getTimestamp() - logged_user()->getTimezone() * 3600);
+      		echo clean(format_datetime($bday, user_config_option('date_format', 'd/m/Y')));
+      } ?>
+      </div>
+      <?php } ?>
       </td><td>
       <?php if(is_array($im_values = $contact->getImValues()) && count($im_values)) { ?>
 	  <span style="font-weight:bold"><?php echo lang('instant messaging') ?>:</span>
@@ -139,7 +147,7 @@
     <tr><td colspan=2><div style="font-weight:bold; font-size:120%; color:#888; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
     	<?php echo lang('notes'); ?>
     </div></td></tr><tr><td colspan=2>
-      <div style="padding-left:10px"><?php echo nl2br(clean($contact->getNotes())) ?></div>
+      <div style="padding-left:10px"><?php echo escape_html_whitespace(convert_to_links(clean($contact->getNotes()))) ?></div>
     </td></tr> 
     <?php } ?>
     

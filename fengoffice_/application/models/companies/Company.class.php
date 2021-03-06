@@ -100,6 +100,10 @@ class Company extends BaseCompany {
 	function getUsersOnProject(Project $project) {
 		return ProjectUsers::getCompanyUsersByProject($this, $project);
 	} // getUsersOnProject
+	
+	function getUsersOnWorkspaces($ws) {
+		return ProjectUsers::getCompanyUsersByWorkspaces($this, $ws);
+	} // getUsersOnWorkspaces
 
 	/**
 	 * Return users that have auto assign value set to true
@@ -241,7 +245,7 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function isProjectCompany(Project $project) {
-      if($this->isOwner() && ($project->getCompanyId() == $this->getId())) {
+      if ($this->isOwner()) {
         return true;
       } // uf
       return ProjectCompanies::findById(array('project_id' => $project->getId(), 'company_id' => $this->getId())) instanceof ProjectCompany;
@@ -551,7 +555,7 @@ class Company extends BaseCompany {
     * @param boolean $save Save object when done
     * @return null
     */
-    function setLogo($source, $max_width = 50, $max_height = 50, $save = true) {
+    function setLogo($source, $fileType, $max_width = 50, $max_height = 50, $save = true) {
       if(!is_readable($source)) return false;
       
       do {
@@ -564,10 +568,10 @@ class Company extends BaseCompany {
         $image = new SimpleGdImage($source);
         $thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
         $thumb->saveAs($temp_file, IMAGETYPE_PNG);
-        
-        $public_filename = PublicFiles::addFile($temp_file, 'png');
-        if($public_filename) {
-          $this->setLogoFile($public_filename);
+        				 
+        $public_fileid = FileRepository::addFile($temp_file,array('type'=>$fileType));
+        if($public_fileid) {
+          $this->setLogoFile($public_fileid);
           if($save) {
             $this->save();
           } // if
@@ -579,8 +583,8 @@ class Company extends BaseCompany {
       } // try
       
       // Cleanup
-      if(!$result && $public_filename) {
-        PublicFiles::deleteFile($public_filename);
+      if(!$result && $public_fileid) {
+        FileRepository::deleteFile($public_fileid);
       } // if
       @unlink($temp_file);
       
@@ -595,7 +599,7 @@ class Company extends BaseCompany {
     */
     function deleteLogo() {
       if($this->hasLogo()) {
-        PublicFiles::deleteFile($this->getLogoFile());
+        FileRepository::deleteFile($this->getLogoFile());
         $this->setLogoFile('');
       } // if
     } // deleteLogo
@@ -619,7 +623,8 @@ class Company extends BaseCompany {
     * @return string
     */
     function getLogoUrl() {
-      return $this->hasLogo() ? PublicFiles::getFileUrl($this->getLogoFile()) : get_image_url('logo.gif');
+    	return $this->hasLogo() ? get_url('files', 'get_public_file', array('id' => $this->getLogoFile())): get_image_url('avatar.gif');
+      //return $this->hasLogo() ? PublicFiles::getFileUrl($this->getLogoFile()) : get_image_url('logo.gif');
     } // getLogoUrl
     
     /**
@@ -630,7 +635,7 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function hasLogo() {
-      return trim($this->getLogoFile()) && is_file($this->getLogoPath());
+      return trim($this->getLogoFile()) && FileRepository::isInRepository($this->getLogoFile());
     } // hasLogo
     
     // ---------------------------------------------------

@@ -1,6 +1,6 @@
 <?php $genid = gen_id(); ?>
 
-<script type="text/javascript">
+<script>
 function showProjectTagsDiv()
 {
 	var sel = document.getElementById('classifyFormProject');

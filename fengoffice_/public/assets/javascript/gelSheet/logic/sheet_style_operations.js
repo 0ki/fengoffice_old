@@ -43,7 +43,13 @@ function addSheetStyleOperations(sheet){
 	}
 
 	//Sets the Font Style Id of a Cell if exists else returns default (of Row, else of Column else of Sheet)
-	sheet.setCellFontStyleId = function(rowIndex,colIndex,fontStyleId){
+	sheet.setCellFontStyleId = function(rowIndex,colIndex,fontStyleId,dontStore){
+		
+		if(dontStore == undefined){
+			var state = new State({row:rowIndex, col:colIndex},'fstyle',this.getCellFontStyleId(rowIndex,colIndex),fontStyleId) ;
+			this.store.add(state);
+		}
+		
 		if(sheet.cells[rowIndex]==undefined)
 			sheet.addCell(rowIndex, colIndex);
 		else
@@ -74,6 +80,22 @@ function addSheetStyleOperations(sheet){
 			if(sheet.cells[i])
 				if(sheet.cells[i][column])
 					this.changeCellFontStyleProp(i,column,property,value);
+				
+	}
+	
+	sheet.changeRowFontStyleProp = function(row,property,value){
+		if(sheet.rows[row]==undefined)
+			sheet.addRow(row);
+		//TODO: cambiar acoplamiento con Styler
+		var styleId = this.getRowFontStyleId(row);
+		var newStyleId = Styler.changeFontStyleProp(styleId,property,value);
+		
+		sheet.rows[row].setFontStyleId(newStyleId);
+
+		if(sheet.cells[row])
+			for(var i=0;i<sheet.cells[row].length;i++)			
+				if(sheet.cells[row][i])
+					this.changeCellFontStyleProp(row,i,property,value);
 				
 	}
 

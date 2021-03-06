@@ -43,6 +43,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>billingFormName').focus();
 </script>

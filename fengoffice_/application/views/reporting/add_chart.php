@@ -4,7 +4,7 @@
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('reporting', 'add_chart')  ?>" method="post">
 
-<script type="text/javascript">
+<script>
 function setSave(){
 	document.getElementById('hfSaveChart').value = 1;	
 }

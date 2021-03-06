@@ -16,11 +16,10 @@ startDrag: function(x, y) {
 	var dragEl = Ext.get(this.getDragEl());
 	var el = Ext.get(this.getEl());
 	
-	if (!Ext.isIE) {
-		dragEl.applyStyles({border:'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
-	}
-	var task = ogTasks.getTask(this.config.dragData.i_t);
-	dragEl.update(/*el.up('table').dom.innerText*/ task.title);
+	if (!Ext.isIE) dragEl.applyStyles({'border':'1px solid gray;','border-width':'1px 1px 1px 6px','width':'auto','height':'auto','cursor':'move'});
+	else dragEl.setWidth('auto');
+	var task = ogTasks.getTask(this.config.dragData.i_t);	
+	dragEl.update(task.title);
 	dragEl.addClass(el.dom.className + ' RX__tasks_dd-proxy'); 
 },
 onDragOver: function(e, targetId) {
@@ -646,7 +645,7 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level)
 	var rx__drag_h = '';
 	var tgId = "T" + task.id + 'G' + group_id;
 	if(rx__TasksDrag.allowDrag)
-		rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' class='RX__tasks_og-drag ogTasksIcon' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'></div>";
+		rx__drag_h = "<div id='RX__ogTasksPanelDrag" + tgId + "' class='RX__tasks_og-drag ogTasksIcon' title='"+lang('click to drag task')+"' onmouseover='rx__TasksDrag.prepareExt("+task.id+", \"" + group_id + "\",this.id)' onmousedown='rx__TasksDrag.onDragStart("+task.id+", \"" + group_id + "\",this.id); return false;'></div>";
 
 	var html = '<div style="padding-left:' + padding + 'px" id="' + containerName + '" class="RX__tasks_row" onmouseover="rx__TasksDrag.showHandle(\''+tgId+'\',1)"  onmouseout="rx__TasksDrag.showHandle(\''+tgId+'\',0)">' + rx__drag_h 
 		 + this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level) + '</div>';
@@ -670,7 +669,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		default: break;
 	}
 	sb.append('<td width=19 class="ogTasksCheckbox" style="background-color:' + priorityColor + '">');
-	sb.append('<input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelChk' + tgId + '" ' + (task.isChecked?'checked':'') + ' onchange="ogTasks.TaskSelected(this,' + task.id + ', \'' + group_id + '\')"/></td>'); 
+	sb.append('<input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelChk' + tgId + '" ' + (task.isChecked?'checked':'') + ' onclick="ogTasks.TaskSelected(this,' + task.id + ', \'' + group_id + '\')"/></td>'); 
 	
 	//Draw subtasks expander
 	if (task.subtasks.length > 0){
@@ -715,6 +714,10 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}
 	sb.append('<a class="internalLink" href="#" onclick="og.openLink(\'' + og.getUrl('task', 'view_task', {id: task.id}) + '\')" id="rx__dd'+(++rx__dd)+'">' + taskName + '</a>');
 	
+	//Draw repeat icon (if repetitive)
+	if (task.repetitive > 0){
+		sb.append('<span style="margin: 0px 8px; padding: 0px 0px 2px 15px;" class="ico-recurrent" title="'+ lang('repetitive task') +'"></span>');
+	}
 	//Draw tags
 	if (drawOptions.show_tags)
 		if (task.tags)

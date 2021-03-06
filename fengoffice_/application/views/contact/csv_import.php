@@ -3,7 +3,7 @@
 	$genid = gen_id();
 ?>
 
-<script type="text/javascript">
+<script>
 og.submitCsv = function(genid) {
 	fname = document.getElementById(genid + 'filenamefield');
 	ok = true;
@@ -147,7 +147,7 @@ og.submitCsv = function(genid) {
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	btn = Ext.get('<?php echo $genid ?>filenamefield');
 	if (btn != null) btn.focus();
 </script>

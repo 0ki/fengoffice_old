@@ -10,17 +10,8 @@
  * @param integer $length Extract number of characters
  * @return string
  */
-function substr_utf($string, $start = 0, $length = null) {
-
-	$start = (integer) $start >= 0 ? (integer) $start : 0;
-	if(is_null($length)) $length = strlen_utf($string) - $start;
-
-	if(function_exists('mb_substr')) {
-		return mb_substr($string, $start, $length, 'UTF-8');
-	} else {
-		return substr($string, $start, $length);
-	} // if
-
+function substr_utf($string, $start = 0, $length = false) {
+		return utf8_substr($string, $start, $length, 'UTF-8');
 } // substr_utf
 
 /**
@@ -31,11 +22,7 @@ function substr_utf($string, $start = 0, $length = null) {
  * @return integer
  */
 function strlen_utf($string) {
-	if(function_exists('mb_strlen')) {
-		return mb_strlen($string);
-	} else {
-		return strlen($string);
-	} // if
+		return utf8_strlen($string);
 } // strlen_utf
 
 if (!function_exists('iconv')) {
@@ -45,11 +32,7 @@ if (!function_exists('iconv')) {
 }
 
 function strpos_utf($haystack, $needle, $offset = 0) {
-	if (function_exists('mb_strpos')) {
-		return mb_strpos($haystack, $needle, $offset, 'UTF-8');
-	} else {
-		return strpos($haystack, $needle, $offset);
-	} // if
+	return utf8_strpos($haystack, $needle, $offset, 'UTF-8');
 }
 
 function detect_encoding($string, $encoding_list = null, $strict = false) {

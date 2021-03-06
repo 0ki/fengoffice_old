@@ -20,6 +20,12 @@ class ContactController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 
+	function init() {
+		require_javascript("og/ContactManager.js");
+		ajx_current("panel", "contacts", null, null, true);
+		ajx_replace(true);
+	}
+	
 	/**
 	 * Creates a system user, receiving a Contact id
 	 *
@@ -38,13 +44,7 @@ class ContactController extends ApplicationController {
 			return;
 		} // if
 		
-		$company = Companies::findById($contact->getCompanyId());
-		if(!($company instanceof Company)) {
-			flash_error(lang('company dnx') .'. ' . lang('users must belong to a company'));
-			ajx_current("empty");
-			return;
-		} // if
-		$this->redirectTo('user','add',array('company_id' => $company->getId(), 'contact_id' => $contact->getId()));
+		$this->redirectTo('user','add',array('company_id' => $contact->getCompanyId(), 'contact_id' => $contact->getId()));
 		
 	}
 	
@@ -52,8 +52,7 @@ class ContactController extends ApplicationController {
 	 * Lists all contacts and clients
 	 *
 	 */
-	function list_all()
-	{
+	function list_all() {
 		ajx_current("empty");
 		
 		// Get all variables from request
@@ -68,11 +67,13 @@ class ContactController extends ApplicationController {
 		$tag = array_var($_GET,'tag');
 		$action = array_var($_GET,'action');
 		$attributes = array(
-			"ids" => explode(',', array_var($_GET,'ids')),
-			"types" => explode(',', array_var($_GET,'types')),
-			"tag" => array_var($_GET,'tagTag'),
-			"accountId" => array_var($_GET,'account_id'),
-			"viewType" => array_var($_GET,'view_type')
+			"ids" => explode(',', array_var($_GET, 'ids')),
+			"types" => explode(',', array_var($_GET, 'types')),
+			"tag" => array_var($_GET, 'tagTag'),
+			"accountId" => array_var($_GET, 'account_id'),
+			"viewType" => array_var($_GET, 'view_type'),
+			"moveTo" => array_var($_GET, 'moveTo'),
+			"mantainWs" => array_var($_GET, 'mantainWs'),
 		);
 		
 		//Resolve actions to perform
@@ -95,27 +96,33 @@ class ContactController extends ApplicationController {
 		$union = $this->addContactsAndCompanies($contacts, $companies);*/
 		
 		$type = null;
-		if ($attributes['viewType'] == 'contacts')
+		if ($attributes['viewType'] == 'contacts') {
 			$type = 'Contacts';
-		else if ($attributes['viewType'] == 'companies')
+		} else if ($attributes['viewType'] == 'companies') {
 			$type = 'Companies';
-		
+		}
+
 		$count = $this->countContactObjects($tag, $type, active_project());
-		if ($start > $count){
+		if ($start > $count) {
 			$start = 0;
 			$page = 1;
 		}
-		if ($count > 0)
-			$union = $this->getContactObjects($page,$limit,$tag,$order,$order_dir,$type,active_project());
-		else $union = array();
+
+		if ($count > 0) {
+			$union = $this->getContactObjects($page, $limit, $tag, $order, $order_dir, $type, active_project());
+		} else {
+			$union = array();
+		}
+
 		// Prepare response object
 		$object = $this->newPrepareObject($union, $count, $start, $attributes);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
+
 	}
 	
 	
-	private static function getContactQueries($project = null, $tag = null, $count = false, $order=null){
+	private static function getContactQueries($project = null, $tag = null, $count = false, $order = null) {
 		switch ($order){
 			case 'updatedOn':
 				$order_crit_companies = 'updated_on';
@@ -131,12 +138,9 @@ class ContactController extends ApplicationController {
 				break;
 		}
 		if (isset($project)) {
-    		$proj_ids = $project->getAllSubWorkspacesCSV(true, logged_user());
+    		$proj_ids = $project->getAllSubWorkspacesQuery(true, logged_user());
     	} else {
-    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
-    		if ($proj_ids && $proj_ids != '')
-    			$proj_ids .= ',';
-    		$proj_ids .= '0';
+    		$proj_ids = logged_user()->getWorkspacesQuery();
     	}
     	
     	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
@@ -147,10 +151,11 @@ class ContactController extends ApplicationController {
     		$proj_cond_companies = 'true';
     	} 
     	
-    	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
-    	else
+    	if (isset($tag) && $tag && $tag!='') {
+    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
+    	} else {
     		$tag_str= ' ';
+    	}
     	$res = array();
     	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
@@ -163,20 +168,20 @@ class ContactController extends ApplicationController {
 					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND EXISTS (SELECT * FROM `" . 
 					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
 					str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
-		} else{
+		} else {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
 					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		}
 		
-		if($count){
-			foreach ($res as $p => $q){
+		if ($count) {
+			foreach ($res as $p => $q) {
 				$res[$p] ="SELECT count(*) AS `quantity`, '$p' AS `objectName` FROM ( $q ) `table_alias`";
 			}
 		}
 		return $res;
 	}
 	
-	function countContactObjects($tag = null, $type = null, $project = null){
+	function countContactObjects($tag = null, $type = null, $project = null) {
     	$queries = $this->getContactQueries($project, $tag, true);
 		if(isset($type) && $type){
 			$query = $queries[$type];
@@ -204,6 +209,7 @@ class ContactController extends ApplicationController {
 	}
 
 	private function getContactObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $type = null, $project = null){
+
     	$queries = $this->getContactQueries($project, $tag, false, $order);
 		if (!$order_dir){
 			switch ($order){
@@ -211,7 +217,7 @@ class ContactController extends ApplicationController {
 				default: $order_dir = 'DESC';
 			}
 		}
-		if(isset($type) && $type){
+		if (isset($type) && $type) {
 			$query = $queries[$type];
 		} //if $type
 		else {
@@ -225,29 +231,31 @@ class ContactController extends ApplicationController {
 
 		}
 		$query .= " ORDER BY order_value $order_dir ";
-		if($page && $objects_per_page){
+		if ($page && $objects_per_page) {
 			$start=($page-1) * $objects_per_page ;
 			$query .=  " LIMIT " . $start . "," . $objects_per_page. " ";
-		}		
-		elseif($objects_per_page)
+		} elseif($objects_per_page) {
 			$query .= " LIMIT " . $objects_per_page;
-		
+		}
+
     	$res = DB::execute($query);
     	$objects = array();
-    	if(!$res)  return $objects;
-    	$rows=$res->fetchAll();
-    	if(!$rows)  return $objects;
-    	$i=1;
-    	foreach ($rows as $row){
+    	if (!$res)  return $objects;
+    	$rows = $res->fetchAll();
+    	if (!$rows)  return $objects;
+    	$i = 1;
+
+    	foreach ($rows as $row) {
     		$manager= $row['object_manager_value'];
     		$id = $row['oid'];
-    		if($id && $manager){
-    			$obj=get_object_by_manager_and_id($id,$manager);    			
-    			if($obj->canView(logged_user())){
-    				$objects[]=$obj;
+    		if ($id && $manager) {
+    			$obj = get_object_by_manager_and_id($id,$manager);    			
+    			if ($obj->canView(logged_user())) {
+    				$objects[] = $obj;
     			}
     		} //if($id && $manager)
     	}//foreach
+
     	return $objects;
     }
 	
@@ -351,6 +359,57 @@ class ContactController extends ApplicationController {
 					}; // switch
 				}; // for
 				break;
+				
+			case "move":
+				$wsid = $attributes["moveTo"];
+				$destination = Projects::findById($wsid);
+				if (!$destination instanceof Project) {
+					$resultMessage = lang('project dnx');
+					$resultCode = 1;
+				} else {
+					$count = 0;
+					$w = active_project();
+					if ($w instanceof Project) {
+						$ws_ids = $w->getAllSubWorkspacesQuery(true, logged_user());
+					} else {
+						$ws_ids = logged_user()->getWorkspacesQuery();
+					}
+					for($i = 0; $i < count($attributes["ids"]); $i++){
+						$id = $attributes["ids"][$i];
+						$type = $attributes["types"][$i];
+						switch ($type){
+							case "contact":
+								$count += $this->addProjectContact($id, $destination, $attributes["mantainWs"]);
+								break;
+								
+							case "company":
+								if (!can_add(logged_user(), $destination, 'Companies')) continue;
+								$company = Companies::findById($id);
+								if ($company instanceof Company && $company->canEdit(logged_user())){
+									if (!$attributes["mantainWs"]) {
+										$ws = $company->getWorkspaces($ws_ids);
+										foreach ($ws as $w) {
+											if (can_add(logged_user(), $w, 'Companies')) {
+												$company->removeFromWorkspace($w);
+											}
+										}
+									}
+									$company->addToWorkspace($destination);
+									ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									$count++;
+								};
+								break;
+	
+							default:
+								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+								$resultCode = 2;
+								break;
+						}; // switch
+					}; // for
+					$resultMessage = lang("success move objects", $count);
+					$resultCode = 0;
+				}
+				break;
 
 			default:
 				$resultMessage = lang("unimplemented action" . ": '" . $action . "'");// if 
@@ -358,6 +417,25 @@ class ContactController extends ApplicationController {
 				break;		
 		} // switch
 		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
+	}
+	
+	function addProjectContact($id, $destination, $mantainWs = true) {
+		$contact = Contacts::findById($id);
+		$pc = ProjectContacts::getRole($contact, $destination);
+		if (!ProjectContact::canAdd(logged_user(), $destination)) return 0;
+		
+		if (!$pc instanceof ProjectContact) {
+			if (!$mantainWs) {
+				$old_roles = $contact->getRoles();
+				foreach ($old_roles as $role) $role->delete();
+			}
+			$pc = new ProjectContact();
+			$pc->setProjectId($destination->getId());
+			$pc->setContactId($contact->getId());
+			$pc->setRole($role);
+			$pc->save();
+		}
+		return 1;		
 	}
 	
 		
@@ -398,8 +476,8 @@ class ContactController extends ApplicationController {
 						"id" => $i,
 						"object_id" => $c->getId(),
 						"type" => 'contact',
-						"wsIds" => $c->getProjectIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-    					"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+						"wsIds" => $c->getUserWorkspacesIdsCSV(logged_user()),
+    					"workspaceColors" => $c->getUserWorkspaceColorsCSV(logged_user()),
 						"name" => $c->getReverseDisplayName(),
 						"email" => $c->getEmail(),
 						"companyId" => $c->getCompanyId(),
@@ -420,10 +498,12 @@ class ContactController extends ApplicationController {
 						"homePhone1" => $c->getHPhoneNumber(),
 						"homePhone2" => $c->getHPhoneNumber2(),
 						"mobilePhone" =>$c->getHMobileNumber(),
-						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->getTimestamp() : 0,
+						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? ($c->getCreatedOn()->isToday() ? format_time($c->getCreatedOn()) : format_datetime($c->getCreatedOn())) : '',
+						"createdOn_today" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->isToday() : 0,
 						"createdBy" => $c->getCreatedByDisplayName(),
 						"createdById" => $c->getCreatedById(),
-						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->getTimestamp() : 0,
+						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? ($c->getUpdatedOn()->isToday() ? format_time($c->getUpdatedOn()) : format_datetime($c->getUpdatedOn())) : '',
+						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById()
 					);
@@ -445,8 +525,8 @@ class ContactController extends ApplicationController {
 						"id" => $i,
 						"object_id" => $c->getId(),
 						"type" => 'company',
-						"wsIds" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-    					"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+						"wsIds" => $c->getUserWorkspacesIdsCSV(logged_user()),
+    					"workspaceColors" => $c->getUserWorkspaceColorsCSV(logged_user()),
 						'name' => $c->getName(),
 						'email' => $c->getEmail(),
 						'website' => $c->getHomepage(),
@@ -467,10 +547,12 @@ class ContactController extends ApplicationController {
 						"homePhone1" => '',
 						"homePhone2" => '',
 						"mobilePhone" =>'',
-						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->getTimestamp() : 0,
+						"createdOn" => $c->getCreatedOn() instanceof DateTimeValue ? ($c->getCreatedOn()->isToday() ? format_time($c->getCreatedOn()) : format_datetime($c->getCreatedOn())) : '',
+						"createdOn_today" => $c->getCreatedOn() instanceof DateTimeValue ? $c->getCreatedOn()->isToday() : 0,
 						"createdBy" => $c->getCreatedByDisplayName(),
 						"createdById" => $c->getCreatedById(),
-						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->getTimestamp() : 0,
+						"updatedOn" => $c->getUpdatedOn() instanceof DateTimeValue ? ($c->getUpdatedOn()->isToday() ? format_time($c->getUpdatedOn()) : format_datetime($c->getUpdatedOn())) : '',
+						"updatedOn_today" => $c->getUpdatedOn() instanceof DateTimeValue ? $c->getUpdatedOn()->isToday() : 0,
 						"updatedBy" => $c->getUpdatedByDisplayName(),
 						"updatedById" => $c->getUpdatedById()
 					);
@@ -548,14 +630,19 @@ class ContactController extends ApplicationController {
 		$im_types = ImTypes::findAll(array('order' => '`id`'));
 		$contact_data = array_var($_POST, 'contact');
 		if(!array_var($contact_data,'company_id')){
-//			$company_id = get_id('company_id');
-//			if($company_id && ( Companies::findById($company_id) instanceof Company) ) {
-				$contact_data['company_id'] = get_id('company_id');
-				$contact_data['timezone'] = logged_user()->getTimezone();
-//			}	
+			$contact_data['company_id'] = get_id('company_id');
+			$contact_data['timezone'] = logged_user()->getTimezone();
 		}
 		$redirect_to = get_url('contact');
-
+		
+		// Create contact from mail content, when writing an email...
+		$contact_email = array_var($_GET, 'ce');
+		if ($contact_email) $contact_data['email'] = $contact_email;
+		if (array_var($_GET, 'div_id')) {
+			$contact_data['new_contact_from_mail_div_id'] = array_var($_GET, 'div_id');
+			$contact_data['hf_contacts'] = array_var($_GET, 'hf_contacts');
+		}
+		
 		tpl_assign('contact', $contact);
 		tpl_assign('contact_data', $contact_data);
 		tpl_assign('im_types', $im_types);
@@ -631,7 +718,11 @@ class ContactController extends ApplicationController {
 				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
-
+				
+				if (isset($contact_data['new_contact_from_mail_div_id'])) {
+					$combo_val = trim($contact->getFirstname() . ' ' . $contact->getLastname() . ' <' . $contact->getEmail() . '>');
+					evt_add("contact added from mail", array("div_id" => $contact_data['new_contact_from_mail_div_id'], "combo_val" => $combo_val, "hf_contacts" => $contact_data['hf_contacts']));
+				}
 				flash_success(lang('success add contact', $contact->getDisplayName()));
 				ajx_current("back");
 
@@ -878,10 +969,9 @@ class ContactController extends ApplicationController {
 					throw new InvalidUploadError($picture, lang('error upload file'));
 				} // if
 
-				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png');
+				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png','image/x-png');
 				$max_width   = config_option('max_avatar_width', 50);
 				$max_height  = config_option('max_avatar_height', 50);
-
 				if(!in_array($picture['type'], $valid_types) || !($image = getimagesize($picture['tmp_name']))) {
 					throw new InvalidUploadError($picture, lang('invalid upload type', 'JPG, GIF, PNG'));
 				} // if
@@ -889,7 +979,7 @@ class ContactController extends ApplicationController {
 				$old_file = $contact->getPicturePath();
 				DB::beginWork();
 
-				if(!$contact->setPicture($picture['tmp_name'], $max_width, $max_height)) {
+				if(!$contact->setPicture($picture['tmp_name'], $picture['type'], $max_width, $max_height)) {
 					throw new InvalidUploadError($avatar, lang('error edit picture'));
 				} // if
 
@@ -1110,6 +1200,8 @@ class ContactController extends ApplicationController {
 	
 	
 	function import_from_csv_file() {
+		set_time_limit(0);
+		ini_set('auto_detect_line_endings', '1');
 		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['history_back']);
 		if (isset($_SESSION['history_back'])) {
 			unset($_SESSION['history_back']);
@@ -1509,10 +1601,7 @@ class ContactController extends ApplicationController {
 		
 		$search_for = array_var($_POST,'search_for',false);
 		if ($search_for){
-			$projects = logged_user()->getActiveProjectIdsCSV();
-			if ($projects != '')
-				$projects .= ',';
-			$projects .= '0';
+			$projects = logged_user()->getWorkspacesQuery();
 			
 			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Contacts', true, 50);
 			$contacts = $search_results[0];

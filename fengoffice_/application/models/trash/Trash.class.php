@@ -28,6 +28,7 @@ class Trash {
 						"conditions" => array("`trashed_by_id` <> 0 AND `trashed_on` < ?", $date))
 				);
 				if (is_array($objects)) {
+					// delete one by one because each one knows what else to delete
 					foreach ($objects as $o) {
 						try {
 							DB::beginWork();
@@ -38,9 +39,7 @@ class Trash {
 							$count++;
 						} catch (Exception $e) {
 							DB::rollback();
-							if (Env::isDebugging()) {
-								Logger::log("Error delting object in purge_trash: " . $e->getMessage(), Logger::ERROR);
-							}
+							Logger::log("Error delting object in purge_trash: " . $e->getMessage(), Logger::ERROR);
 						}
 					}
 				}

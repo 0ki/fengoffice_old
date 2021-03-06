@@ -73,6 +73,9 @@
 	'field MailContents imap_folder_name' => 'Nombre de carpeta IMAP',
 	'field MailContents account_email' => 'Cuenta de correo',
 	'field MailContents created_on' => 'Creado',
+	'field MailContents cc' => 'CC',
+	'field MailContents bcc' => 'BCC',
+
 	'field ProjectEvents duration' => 'Duración',
 	'field ProjectEvents start' => 'Comienzo',
 	'field ProjectEvents subject' => 'Asunto',
@@ -115,7 +118,7 @@
 	'field ProjectMessages created_on' => 'Creado',
 	'field ProjectMessages updated_on' => 'Actualizado',
 	'field ProjectTasks text' => 'Texto',
-	'field ProjectTasks completed_on' => 'Creada',
+	'field ProjectTasks completed_on' => 'Completada',
 	'field ProjectTasks due_date' => 'Fecha de límite',
 	'field ProjectTasks start_date' => 'Fecha de comienzo',
 	'field ProjectTasks created_on' => 'Creada',

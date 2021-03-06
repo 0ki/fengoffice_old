@@ -20,9 +20,10 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_COMMENT     = 'comment';
 	const ACTION_LINK     	 = 'link';
 	const ACTION_UNLINK      = 'unlink';
+	const ACTION_LOGIN       = 'login';
 
-	private static function getWorkspaceString(){
-		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ApplicationLogs\' AND `workspace_id` IN (?))';
+	public static function getWorkspaceString($ids = '?') {
+		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ApplicationLogs' AND `workspace_id` IN ($ids))";
 	}
 	
 	/**
@@ -198,17 +199,17 @@ class ApplicationLogs extends BaseApplicationLogs {
 		if ($user_id)
 		$userCond = " AND `taken_by_id` = " . $user_id;
 
-		if(is_array($project_ids)) {
-			$conditions = array('`is_private` <= ? AND `is_silent` <= ? AND '.self::getWorkspaceString() . $userCond, $private_filter, $silent_filter, $project_ids);
+		if(!is_null($project_ids)) {
+			$conditions = array('`is_private` <= ? AND `is_silent` <= ? AND '.self::getWorkspaceString($project_ids) . $userCond, $private_filter, $silent_filter);
 		} else {
 			$conditions = array('`is_private` <= ? AND `is_silent` <= ?' . $userCond, $private_filter, $silent_filter);
 		} // if
 
 		return self::findAll(array(
-        'conditions' => $conditions,
-        'order' => '`created_on` DESC',
-        'limit' => $limit,
-        'offset' => $offset,
+			'conditions' => $conditions,
+			'order' => '`created_on` DESC',
+			'limit' => $limit,
+			'offset' => $offset,
 		)); // findAll
 	} // getOverallLogs
 
@@ -245,7 +246,8 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_TAG,
 			self::ACTION_COMMENT,
 			self::ACTION_LINK,
-			self::ACTION_UNLINK
+			self::ACTION_UNLINK,
+			self::ACTION_LOGIN
 			); // array
 		} // if
 

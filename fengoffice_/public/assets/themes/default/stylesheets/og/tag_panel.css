@@ -2,10 +2,10 @@
 	background:#dadadb;
 }
 .ico-tag {
-	background-image: url(../../images/16x16/tags.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -219px !important;
 }
 .ico-tags {
-	background-image: url(../../images/16x16/tags.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -219px !important;
 }
 .x-tree {
 	background:#fff !important;

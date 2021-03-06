@@ -1,12 +1,12 @@
 <?php
 	if (!$cotemplate->isTrashed()){
-		if($cotemplate->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $cotemplate->getEditUrl(), 'ico-edit');
+		if ($cotemplate->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $cotemplate->getEditUrl(), 'ico-edit', null, null, true);
 		} // if
 	} // if
 	
-	if($cotemplate->canDelete(logged_user())) {
-		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete object'))) og.openLink('" . $cotemplate->getDeleteUrl() ."');", 'ico-delete');
+	if ($cotemplate->canDelete(logged_user())) {
+		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete object'))) og.openLink('" . $cotemplate->getDeleteUrl() ."');", 'ico-delete', null, null, true);
 	} // if
 ?>
 

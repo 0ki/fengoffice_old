@@ -73,18 +73,18 @@ class ConfigController extends ApplicationController {
 	} // update_category
 
 	/**
-	 * List user preferences
+	 * Default user preferences
 	 *
 	 */
-	function list_user_categories(){
+	function default_user_preferences() {
 		tpl_assign('config_categories', UserWsConfigCategories::getAll());
 	} //list_preferences
 
 	/**
-	 * List user preferences
+	 * Update default user preferences
 	 *
 	 */
-	function update_user_preferences(){
+	function update_default_user_preferences(){
 		$category = UserWsConfigCategories::findById(get_id());
 		if(!($category instanceof UserWsConfigCategory)) {
 			flash_error(lang('config category dnx'));
@@ -104,26 +104,25 @@ class ConfigController extends ApplicationController {
 		tpl_assign('config_categories', $categories);
 
 		$submited_values = array_var($_POST, 'options');
-		if(is_array($submited_values)) {
-			try{
+		if (is_array($submited_values)) {
+			try {
 				DB::beginWork();
-				foreach($options as $option) {
+				foreach ($options as $option) {
 					$new_value = array_var($submited_values, $option->getName());
-					if(is_null($new_value) || ($new_value == $option->getUserValue(logged_user()->getId()))) continue;
+					if (is_null($new_value) || ($new_value == $option->getValue())) continue;
 
-					$option->setUserValue($new_value, logged_user()->getId());
+					$option->setValue($new_value);
 					$option->save();
 				} // foreach
 				DB::commit();
 				flash_success(lang('success update config value', $category->getDisplayName()));
 				ajx_current("back");
-			}
-			catch (Exception $ex){
+			} catch (Exception $ex) {
 				DB::rollback();
 				flash_success(lang('error update config value', $category->getDisplayName()));
 			}
 		} // if
-	} //list_preferences
+	} // update_default_user _preferences
 
 	/**
 	 * Remove Getting Started widget from dashboard

@@ -21,7 +21,6 @@ Ext.onReady(function(){
 		Ext.state.Manager.getProvider().initState(og.initialGUIState);
 	}
 	
-	today_date = new Date();
 	Ext.QuickTips.init();
 
 	// SETUP PANEL LAYOUT
@@ -48,8 +47,8 @@ Ext.onReady(function(){
 			iconCls: 'ico-messages',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "messages"
+				type: 'url',
+				data: og.getUrl('message', 'init')
 			}
 		}),
 		og.panels.email = new og.ContentPanel({
@@ -58,8 +57,8 @@ Ext.onReady(function(){
 			iconCls: 'ico-email',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "mails"
+				type: 'url',
+				data: og.getUrl('mail', 'init')
 			}
 		}),
 		og.panels.contacts = new og.ContentPanel({
@@ -68,8 +67,8 @@ Ext.onReady(function(){
 			iconCls: 'ico-contacts',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "contacts"
+				type: 'url',
+				data: og.getUrl('contact', 'init')
 			}
 		}),
 		og.panels.calendar = new og.ContentPanel({
@@ -77,9 +76,10 @@ Ext.onReady(function(){
 			id: 'calendar-panel',
 			iconCls: 'ico-calendar',
 			refreshOnWorkspaceChange: true,
+			refreshOnTagChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "events"
+				type: 'url',
+				data: og.getUrl('event', 'view_calendar')
 			}
 		}),
 		og.panels.documents = new og.ContentPanel({
@@ -88,8 +88,8 @@ Ext.onReady(function(){
 			iconCls: 'ico-documents',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "files"
+				type: 'url',
+				data: og.getUrl('files', 'init')
 			}
 		}),
 		og.panels.tasks = new og.ContentPanel({
@@ -108,8 +108,8 @@ Ext.onReady(function(){
 			iconCls: 'ico-webpages',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "panel",
-				data: "webpages"
+				type: 'url',
+				data: og.getUrl('webpage', 'init')
 			}
 		}),
 		og.panels.time = new og.ContentPanel({
@@ -126,7 +126,7 @@ Ext.onReady(function(){
 			title: lang('reporting'),
 			id: 'reporting-panel',
 			iconCls: 'ico-reporting',
-			refreshOnWorkspaceChange: true,
+			//refreshOnWorkspaceChange: true,
 			defaultContent: {
 				type: "url",
 				data: og.getUrl('reporting','index')
@@ -294,6 +294,7 @@ Ext.onReady(function(){
 	});
 	
     og.captureLinks();
+
     
     if (og.hasNewVersions) {
     	og.msg(lang('new version notification title'), og.hasNewVersions, 0);

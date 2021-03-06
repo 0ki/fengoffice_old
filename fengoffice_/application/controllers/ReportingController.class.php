@@ -57,6 +57,12 @@ class ReportingController extends ApplicationController {
 
 
 		if (is_array(array_var($_POST, 'chart'))) {
+			$project = Projects::findById(array_var($chart_data, 'project_id'));
+			if (!$project instanceof Project) {
+				flash_error(lang('project dnx'));
+				ajx_current("empty");
+				return;
+			}
 			$chart = $factory->getChart(array_var($chart_data, 'type_id'));
 			$chart->setDisplayId(array_var($chart_data, 'display_id'));
 			$chart->setTitle(array_var($chart_data, 'title'));
@@ -67,6 +73,7 @@ class ReportingController extends ApplicationController {
 				try {
 					DB::beginWork();
 					$chart->save();
+					$chart->setProject($project);
 					DB::commit();
 					flash_success(lang('success add chart', $chart->getTitle()));
 					ajx_current('back');
@@ -183,11 +190,11 @@ class ReportingController extends ApplicationController {
 		logged_user()) . ')';*/
 
 		if ($isProjectView) {
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
+			$pids = logged_user()->getWorkspacesQuery();
 		}
-		$project_str = " AND `project_id` IN ($pids) ";
+		$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
 
 		list($charts, $pagination) = ProjectCharts::paginate(
 		array("conditions" => '`trashed_by_id` = 0 AND ' . $tagstr . $permission_str . $project_str ,
@@ -259,12 +266,13 @@ class ReportingController extends ApplicationController {
 		$user = Users::findById(array_var($report_data, 'user'));
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
-			if (array_var($report_data, 'include_subworkspaces'))
-			$workspacesCSV = $workspace->getAllSubWorkspacesCSV(false,logged_user());
-			else
-			$workspacesCSV = $workspace->getId();
+			if (array_var($report_data, 'include_subworkspaces')) {
+				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false,logged_user());
+			} else {
+				$workspacesCSV = $workspace->getId();
+			}
 		} else {
-			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
+			$workspacesCSV = logged_user()->getWorkspacesQuery();
 		}
 
 		$st = DateTimeValueLib::now();
@@ -381,13 +389,14 @@ class ReportingController extends ApplicationController {
 
 		$workspace = Projects::findById(array_var($report_data, 'project_id'));
 		if ($workspace instanceof Project){
-			if (array_var($report_data, 'include_subworkspaces'))
-			$workspacesCSV = $workspace->getAllSubWorkspacesCSV(false,logged_user());
-			else
-			$workspacesCSV = $workspace->getId();
+			if (array_var($report_data, 'include_subworkspaces')) {
+				$workspacesCSV = $workspace->getAllSubWorkspacesQuery(false,logged_user());
+			} else {
+				$workspacesCSV = $workspace->getId();
+			}
 		}
 		else {
-			$workspacesCSV = logged_user()->getActiveProjectIdsCSV();
+			$workspacesCSV = logged_user()->getWorkspacesQuery();
 		}
 
 		$start = getDateValue(array_var($report_data, 'start_value'));
@@ -439,11 +448,59 @@ class ReportingController extends ApplicationController {
 				$newReport->setObjectType($report_data['object_type']);
 				$newReport->setOrderBy($report_data['order_by']);
 				$newReport->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
+				
 				try{
 					DB::beginWork();
 					$newReport->save();
 					$allowed_columns = $this->get_allowed_columns($report_data['object_type']);
-
+					//create conditions for workspaces and tags
+					$tag_names = array();
+					$tags_csv = $report_data['tags'];
+					$tgs = "";
+					if(trim($tags_csv)) {
+						$tag_set = array();
+						$tags = explode(',', $tags_csv);
+						foreach($tags as $k => $v) {
+							$tag = trim($v);
+							if($tag <> '' && array_var($tag_set, $tag) == null) {
+								$tag_names[] = $tag;
+								$tag_set[$tag] = true;
+							}
+						} // foreach
+					} // if
+					if (is_array($tag_names) && count($tag_names)>0)
+						{
+							$tgs = $tag_names[0];
+						}						
+					$ws = $report_data['workspace'];
+					$parametrizable_ws = array_var($_POST,'parametizable_ws');
+					$parametrizable_tag = array_var($_POST,'parametizable_tags');
+					if (isset($ws)&& $ws!=0 || isset($parametrizable_ws)){
+						$wsCondition = new ReportCondition();
+						$wsCondition->setReportId($newReport->getId());
+						$wsCondition->setCustomPropertyId(0);
+						$wsCondition->setFieldName('workspace');
+						$wsCondition->setCondition('=');
+						$condValue = $ws;
+						$wsCondition->setValue($condValue);
+						$wsCondition->setIsParametrizable(isset($parametrizable_ws));
+						$wsCondition->save();
+					}					
+					
+					//	tagcondition
+					if (isset($tgs) && $tgs != '' || isset($parametrizable_tag)){
+						$tagCondition = new ReportCondition();
+						$tagCondition->setReportId($newReport->getId());
+						$tagCondition->setCustomPropertyId(0);
+						$tagCondition->setFieldName('tag');
+						$tagCondition->setCondition('=');
+						$condValue = $tgs;
+						$tagCondition->setValue($condValue);
+						$tagCondition->setIsParametrizable(isset($parametrizable_tag));
+						$tagCondition->save();
+					}
+					//end WS and tags conditions
+					
 					foreach($conditions as $condition){
 						foreach ($allowed_columns as $ac){
 							if ($condition['field_name'] == $ac['id']){
@@ -510,6 +567,8 @@ class ReportingController extends ApplicationController {
 		array("ProjectWebpages", lang("webpage")),
 		array("Projects", lang("workspace")),
 		);
+		
+		
 		tpl_assign('object_types', $types);
 		tpl_assign('selected_type', $selected_type);
 	}
@@ -533,7 +592,76 @@ class ReportingController extends ApplicationController {
 				$report->setObjectType($report_data['object_type']);
 				$report->setOrderBy($report_data['order_by']);
 				$report->setIsOrderByAsc($report_data['order_by_asc'] == 'asc');
+				
+				
 				$report->save();
+				
+					//create conditions for workspaces and tags
+					$tag_names = array();
+					$tags_csv = $report_data['tags'];
+					$tgs = "";
+					if(trim($tags_csv)) {
+						$tag_set = array();
+						$tags = explode(',', $tags_csv);
+						foreach($tags as $k => $v) {
+							$tag = trim($v);
+							if($tag <> '' && array_var($tag_set, $tag) == null) {
+								$tag_names[] = $tag;
+								$tag_set[$tag] = true;
+							}
+						} // foreach
+					} // if
+					if (is_array($tag_names) && count($tag_names)>0)
+						{
+							$tgs = $tag_names[0];
+						}						
+					$ws = $report_data['workspace'];
+					$parametrizable_ws = array_var($_POST,'parametizable_ws');
+					$parametrizable_tag = array_var($_POST,'parametizable_tags');
+					$continue = true;
+					$wsCondition = new ReportCondition();
+					if (isset($report_data['workspceid'])){
+						$wsCondition = ReportConditions::getCondition($report_data['workspceid']);
+						if ($ws == 0 && !isset($parametrizable_ws) )
+						{
+							$wsCondition->delete();
+							$continue = false;
+						}							
+					}							
+					if ($continue && ($ws != "" || isset($parametrizable_ws))){
+						$wsCondition->setReportId($report->getId());
+						$wsCondition->setCustomPropertyId(0);
+						$wsCondition->setFieldName('workspace');
+						$wsCondition->setCondition('=');
+						$condValue = $ws;
+						$wsCondition->setValue($condValue);
+						$wsCondition->setIsParametrizable(isset($parametrizable_ws));
+						$wsCondition->save();
+					}					
+					//	tagcondition
+									
+					$continue = true;
+					$tagCondition = new ReportCondition();
+					if (isset($report_data['tagid'])){
+						$tagCondition = ReportConditions::getCondition($report_data['tagid']);
+						if ($tgs == "" && ! isset($parametrizable_tag) )
+						{
+							$tagCondition->delete();
+							$continue = false;
+						}
+					}
+					if ($continue && ($tgs != "" || isset($parametrizable_tag))){
+						$tagCondition->setReportId($report->getId());
+						$tagCondition->setCustomPropertyId(0);
+						$tagCondition->setFieldName('tag');
+						$tagCondition->setCondition('=');
+						$condValue = $tgs;
+						$tagCondition->setValue($condValue);
+						$tagCondition->setIsParametrizable(isset($parametrizable_tag));
+						$tagCondition->save();						
+					}
+					//end WS and tags conditions
+				
 				$conditions = array_var($_POST, 'conditions');
 				if (!is_array($conditions))
 				$conditions = array();
@@ -595,7 +723,9 @@ class ReportingController extends ApplicationController {
 					'description' => $report->getDescription(),
 					'object_type' => $report->getObjectType(),
 					'order_by' => $report->getOrderBy(),
-					'order_by_asc' => $report->getIsOrderByAsc()
+					'order_by_asc' => $report->getIsOrderByAsc(),
+					'workspace' => $report->getWorkspace(),
+					'tags' => $report->getTags()
 				);
 				tpl_assign('report_data', $report_data);
 				$conditions = ReportConditions::getAllReportConditions($report_id);
@@ -768,9 +898,7 @@ class ReportingController extends ApplicationController {
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$objectFields = array();
 			foreach($customProperties as $cp){
-				if(!$cp->getIsMultipleValues()){
-					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues());
-				}
+				$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
 			}
 			eval('$managerInstance = ' . $object_type . "::instance();");
 			$objectColumns = $managerInstance->getColumns();
@@ -792,10 +920,11 @@ class ReportingController extends ApplicationController {
 				}
 				$fields[] = array('id' => $name, 'name' => lang('field ' . $object_type . ' ' .$name), 'type' => $type);
 			}
-
+	
 			$externalFields = $managerInstance->getExternalColumns();
 			foreach($externalFields as $extField){
-				$fields[] = array('id' => $extField, 'name' => lang('field ' . $object_type . ' '.$extField), 'type' => 'external');
+				
+				$fields[] = array('id' => $extField, 'name' => lang('field ' . $object_type . ' '.$extField), 'type' => 'external', 'multiple' => 0);
 			}
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));

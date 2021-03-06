@@ -8,9 +8,11 @@ class MailUtilities {
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
-		
+
 		$old_memory_limit = ini_get('memory_limit');
-		ini_set('memory_limit', '96M');
+		if (php_config_value_to_bytes($old_memory_limit) < 96*1024*1024) {
+			ini_set('memory_limit', '96M');
+		}
 
 		$err = 0;
 		$succ = 0;
@@ -18,8 +20,22 @@ class MailUtilities {
 		$mailsReceived = 0;
 
 		if (isset($accounts)) {
-			foreach($accounts as $account){
-				try{
+			foreach($accounts as $account) {
+				try {
+					DB::beginWork();
+					$lastChecked = $account->getLastChecked();
+					$minutes = 5;
+					if ($lastChecked instanceof DateTimeValue && $lastChecked->getTimestamp() + $minutes*60 >= DateTimeValueLib::now()->getTimestamp()) {
+						$errAccounts[$err]["accountName"] = $account->getEmail();
+						$errAccounts[$err]["message"] = lang("account already being checked");
+						$err++;
+						DB::commit();
+						continue;
+					} else {
+						$account->setLastChecked(DateTimeValueLib::now());
+						$account->save();
+						DB::commit();
+					}
 					$accId = $account->getId();
 					$emails = array();
 					if (!$account->getIsImap()) {
@@ -27,18 +43,22 @@ class MailUtilities {
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
+					$account->setLastChecked(EMPTY_DATETIME);
+					$account->save();
 
 					$succ++;
 				} catch(Exception $e) {
+					$account->setLastChecked(EMPTY_DATETIME);
+					$account->save();
 					$errAccounts[$err]["accountName"] = $account->getEmail();
 					$errAccounts[$err]["message"] = $e->getMessage();
 					$err++;
 				}
 			}
 		}
-		
+
 		ini_set('memory_limit', $old_memory_limit);
-		
+
 		tpl_assign('err',$err);
 		tpl_assign('errAccounts',$errAccounts);
 		tpl_assign('accounts',$accounts);
@@ -59,7 +79,7 @@ class MailUtilities {
 		}
 		return $f;
 	}
-	
+
 	private function SaveContentToFilesystem($uid, &$content) {
 		$tmp = ROOT . '/tmp/' . rand();
 		$handle = fopen($tmp, "wb");
@@ -67,9 +87,9 @@ class MailUtilities {
 		fclose($handle);
 		$date = DateTimeValueLib::now()->format("Y_m_d_H_i_s__");
 		$repository_id = FileRepository::addFile($tmp, array('name' => $date.$uid, 'type' => 'text/plain', 'size' => strlen($content)));
-		
+
 		unlink($tmp);
-		
+
 		return $repository_id;
 	}
 
@@ -77,6 +97,7 @@ class MailUtilities {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
 		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
+		$enc_conv = EncodingConverter::instance();
 		$from = self::getAddresses(array_var($parsedMail, "From"));
 		if ($state == 0) {
 			if ($from == $account->getEmailAddress()) {
@@ -90,12 +111,15 @@ class MailUtilities {
 		$mail->setState($state);
 		$mail->setImapFolderName($imap_folder_name);
 		$mail->setFrom($from);
+		$mail->setCc(self::getAddresses(array_var($parsedMail, "Cc")));
 		
+		$from_name = trim(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));
+		if ($from_name == '') $from_name = $from;
 		if (array_key_exists('Encoding', $parsedMail)){
-			$mail->setFromName(iconv($encoding, 'UTF-8//IGNORE', array_var(array_var(array_var($parsedMail, 'From'), 0), 'name')));
-			$mail->setSubject(iconv($encoding, 'UTF-8//IGNORE', $parsedMail['Subject']));
+			$mail->setFromName($enc_conv->convert($encoding, 'UTF-8//IGNORE', $from_name));
+			$mail->setSubject($enc_conv->convert($encoding, 'UTF-8//IGNORE', $parsedMail['Subject']));
 		} else {
-			$mail->setFromName(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));
+			$mail->setFromName($from_name);
 			$mail->setSubject($parsedMail['Subject']);
 		}
 		$mail->setTo(self::getAddresses(array_var($parsedMail, "To")));
@@ -109,37 +133,38 @@ class MailUtilities {
 		$mail->setCreatedOn(new DateTimeValue(time()));
 		$mail->setCreatedById($account->getUserId());
 		$mail->setAccountEmail($account->getEmail());
-		
+
 		$uid = trim($uidl);
 		if ($uid[0]== '<') {
-			$uid = mb_substr($uid, 1, mb_strlen($uid, $encoding) - 2, $encoding);
+			$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
 		}
 		$mail->setUid($uid);
 
 		$type = array_var($parsedMail, 'Type', 'text');
+		
 		switch($type) {
-			case 'html': $mail->setBodyHtml(iconv($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
-			case 'text': $mail->setBodyPlain(iconv($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
-			case 'delivery-status': $mail->setBodyPlain(iconv($encoding, 'UTF-8//IGNORE', $parsedMail['Response'])); break;
+			case 'html': $mail->setBodyHtml($enc_conv->convert($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
+			case 'text': $mail->setBodyPlain($enc_conv->convert($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
+			case 'delivery-status': $mail->setBodyPlain($enc_conv->convert($encoding, 'UTF-8//IGNORE', $parsedMail['Response'])); break;
 		}
-
 			
 		if (isset($parsedMail['Alternative'])) {
+			$body = $enc_conv->convert(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', ''));
 			if ($parsedMail['Alternative'][0]['Type'] == 'html') {
-				$mail->setBodyHtml(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', '')));
+				$mail->setBodyHtml($body);
 			} else {
-				$mail->setBodyPlain(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', '')));
+				$mail->setBodyPlain($body);
 			}
 		}
-		
+
 		// Remove everything beyond the end of the html
 		if (($end_pos = strpos($mail->getBodyHtml(), "</html>")) > 0) {
 			$mail->setBodyHtml(substr($mail->getBodyHtml(), 0, $end_pos + strlen("</html>")));
 		}
-		
-		$repository_id = self::SaveContentToFilesystem($mail->getUid(), iconv($encoding, 'UTF-8//IGNORE', $content));
+
+		$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
 		$mail->setContentFileId($repository_id);
-		
+
 		try {
 			DB::beginWork();
 			$mail->save();
@@ -181,9 +206,9 @@ class MailUtilities {
 	 * @return array
 	 */
 	private function getNewPOP3Mails(MailAccount $account, $max = 0) {
-		$mime = new mime_parser_class();
 		$pop3 = new Net_POP3();
 
+		$received = 0;
 		// Connect to mail server
 		if ($account->getIncomingSsl()) {
 			$pop3->connect("ssl://" . $account->getServer(), $account->getIncomingSslPort());
@@ -193,36 +218,32 @@ class MailUtilities {
 		if (PEAR::isError($ret=$pop3->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()), 'USER'))) {
 			throw new Exception($ret->getMessage());
 		}
-		$emails = $pop3->getListing();
-		$oldUids = $account->getUids();
-
-		// get the index of the last received email
-		$lastReceived = count($emails) - 1;
-		while ($lastReceived >= 0 && !in_array($emails[$lastReceived]['uidl'], $oldUids)) {
-			$lastReceived--;
+		$numMessages = $pop3->numMsg();
+		
+		$mailsToGet = array();
+		$summary = $pop3->getListing();
+		foreach ($summary as $k => $info) {
+			if (!MailContents::mailRecordExists($account->getId(), $info['uidl'])) {
+				$mailsToGet[] = $k;
+			}			
 		}
-		$lastReceived++;
-		if ($lastReceived >= count($emails)) {
-			// there's no new emails
-			$newEmails = array();
-		} else {
-			// get the first max (or available) unread emails
-			if ($max == 0) {
-				$newEmails = array_slice($emails, $lastReceived, count($emails) - $lastReceived);
-			} else {
-				$newEmails = array_slice($emails, $lastReceived, min(array($max, count($emails) - $lastReceived)));
-			}
-			if (!empty($newEmails)) {
-				for ($i=0; $i < count($newEmails); $i++) {
-					$content = $pop3->getMsg($newEmails[$i]['msg_id']);
-					self::SaveMail($content, $account, $newEmails[$i]['uidl']);
-					unset($content);
-				}
+		
+		if ($max == 0) $toGet = count($mailsToGet);
+		else $toGet = min(count($mailsToGet), $max);
+		
+		// fetch newer mails first
+		for ($i = count($mailsToGet)-1; $received < $toGet && $i >= 0; $i--) {
+			$content = $pop3->getMsg($mailsToGet[$i]);
+			if ($content != '') {
+				$uid = $summary[$mailsToGet[$i]]['uidl'];
+				self::SaveMail($content, $account, $uid);
+				unset($content);
+				$received++;
 			}
 		}
 		$pop3->disconnect();
 
-		return count($newEmails);
+		return $received;
 	}
 
 	public function displayMultipleAddresses($addresses, $clean = true) {
@@ -281,26 +302,31 @@ class MailUtilities {
 			}
 		}
 		if ($url != ""){
-			return '<a class="internalLink" href="'.$url.'" title="'.$email.'">'.$name."</a>";
+			return '<a class="internalLink" href="'.$url.'" title="'.$email.'">'.$name." &lt;$email&gt;</a>";
 		} else {
-			return $email;
+			if(!(active_project() instanceof Project ? Contact::canAdd(logged_user(),active_project()) : can_manage_contacts(logged_user()))) {
+				return $email;
+			} else {
+				$url = get_url('contact', 'add', array('ce' => $email));
+				return $email . '&nbsp;<a class="internalLink link-ico ico-add" style="padding-left:16px;" href="'.$url.'" title="'.lang('add contact').'"></a>';
+			}
 		}
 	}
 
-	
+
 	//function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
-	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$attachments=null,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
+	function sendMail($smtp_server, $to, $from, $subject, $body, $cc, $bcc, $attachments=null, $smtp_port=25, $smtp_username = null, $smtp_password ='', $type='text/plain', $transport=0) {
 		//Load in the files we'll need
 		Env::useLibrary('swift');
 		// Load SMTP config
 		$smtp_authenticate = $smtp_username != null;
-		
+
 		switch ($transport) {
 			case 'ssl': $transport = SWIFT_SSL; break;
 			case 'tls': $transport = SWIFT_TLS; break;
 			default: $transport = 0; break;
 		}
-		
+
 		//Start Swift
 		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
 
@@ -317,14 +343,17 @@ class MailUtilities {
 		// Send Swift mail
 		$mailer->addCc(explode(",",$cc));
 		$mailer->addBcc(explode(",",$bcc));
+		
 		// add attachments
  		if (is_array($attachments)) {
  			$mailer->addPart($body, $type); // real body
-         		foreach ($attachments as $att)
+         	foreach ($attachments as $att) {
  				$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+ 			}
  			$body = false; // multipart
  		}
-		$ok = $mailer->send($to, $from, $subject,$body,$type);
+		// add linked attachments
+ 		$ok = $mailer->send($to, $from, $subject, $body, $type);
 		$mailer->close();
 		return $ok;
 	}
@@ -341,12 +370,12 @@ class MailUtilities {
 	}
 
 	/****************************** IMAP ******************************/
-	
+
 	private function getNewImapMails(MailAccount $account, $max = 0) {
 		$received = 0;
 
 		if ($account->getIncomingSsl()) {
-			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
 		} else {
 			$imap = new Net_IMAP("tcp://" . $account->getServer());
 		}
@@ -355,30 +384,31 @@ class MailUtilities {
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
 				if ($box->getCheckFolder()) {
-					
 					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName());
 						$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
-						
-						$mails_info = array();
 						if (!is_array($oldUids) || count($oldUids) == 0) {
 							$lastReceived = 0;
 						} else {
-							$lastReceived = $numMessages;
-							$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
-							while (is_array($mails_info[$lastReceived]) && $lastReceived > 0 && !in_array($mails_info[$lastReceived][0]['UID'], $oldUids)) {
+							$lastReceived = $numMessages - 1;
+							$maxUID = $account->getMaxUID($box->getFolderName());
+							for ($i = $numMessages - 1; $i >= 0; $i--) {
+								$summary = $imap->getSummary($i);
+								$uid = $summary[0]['UID'];
+								if ($maxUID == $uid) break;
 								$lastReceived--;
-								$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
+								if ($lastReceived == 0) break;
 							}
 						}
-						
+						$lastReceived++;
+
 						if ($max == 0) $toGet = $numMessages;
 						else $toGet = min($lastReceived + $max, $numMessages);
-						
+
 						// get mails since last received (last received is not included)
-						for ($i = $lastReceived; $i < $toGet; $i++) {
+						for ($i = $lastReceived; $i < $toGet || ($received < $max && $i < $numMessages); $i++) {
 							$index = $i+1;
-							$summary = array_var($mails_info, $index, $imap->getSummary($index));
+							$summary = $imap->getSummary($index);
 							if (PEAR::isError($summary)) {
 								Logger::log($summary->getMessage());
 							} else {
@@ -387,11 +417,13 @@ class MailUtilities {
 								
 								$messages = $imap->getMessages($index);
 								if (PEAR::isError($messages)) {
-									Logger::log($messages->getMessage());
 									continue;
 								}
-								self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
-								$received++;
+								$content = array_var($messages, $index, '');
+								if ($content != '') {
+									self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
+									$received++;
+								}
 							}
 						}
 
@@ -405,7 +437,7 @@ class MailUtilities {
 
 	function getImapFolders(MailAccount $account) {
 		if ($account->getIncomingSsl()) {
-			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+			$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
 		} else {
 			$imap = new Net_IMAP("tcp://" . $account->getServer());
 		}
@@ -431,23 +463,23 @@ class MailUtilities {
 					if ($select && isset($name)) $result[] = utf8_encode($name);
 				}
 			}
-		}		
+		}
 		$imap->disconnect();
 		return $result;
 	}
-	
+
 	function deleteMailsFromServer(MailAccount $account) {
-		if ($account->getDelFromServer() > 0) {
+		if ($account->getDelFromServer() >= 0) {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {
 				if ($account->getIncomingSsl()) {
-					$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());	
+					$imap = new Net_IMAP("ssl://" . $account->getServer(), $account->getIncomingSslPort());
 				} else {
 					$imap = new Net_IMAP("tcp://" . $account->getServer());
 				}
 				$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-				
+
 				$result = array();
 				if ($ret === true) {
 					$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
@@ -455,13 +487,15 @@ class MailUtilities {
 						foreach ($mailboxes as $box) {
 							if ($box->getCheckFolder()) {
 								$numMessages = $imap->getNumberOfMessages(utf8_decode($box->getFolderName()));
-								for ($i = 1; $i < $numMessages; $i++) {
+								for ($i = 0; $i < $numMessages; $i++) {
 									$summary = $imap->getSummary($i);
 									if (is_array($summary)) {
 										$m_date = DateTimeValueLib::makeFromString($summary[0]['INTERNALDATE']);
-										if ($max_date->getTimestamp() > $m_date->getTimestamp())
+										if ($max_date->getTimestamp() > $m_date->getTimestamp()) {
 											$imap->deleteMessages($i);
-										else break;
+										} else {
+											break;
+										}
 									} 
 								}
 								$imap->expunge();
@@ -469,7 +503,7 @@ class MailUtilities {
 						}
 					}
 				}
-				
+
 			} else {
 				//require_once "Net/POP3.php";
 				$pop3 = new Net_POP3();
@@ -487,52 +521,52 @@ class MailUtilities {
 					}
 				}
 				$pop3->disconnect();
-										
+
 			}
 		}
 	}
-	
+
 	function getContent($smtp_server, $smtp_port, $transport, $smtp_username, $smtp_password, $body, $attachments)
- 	{
- 		//Load in the files we'll need
+	{
+		//Load in the files we'll need
 		Env::useLibrary('swift');
- 		
+
 		switch ($transport) {
 			case 'ssl': $transport = SWIFT_SSL; break;
 			case 'tls': $transport = SWIFT_TLS; break;
 			default: $transport = 0; break;
 		}
- 		
+
 		//Start Swift
- 		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
- 		
- 		if(!$mailer->isConnected()) {
- 			return false;
- 		} // if
- 		$mailer->setCharset('UTF-8');
- 
- 		if($smtp_username != null) {
+		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
+
+		if(!$mailer->isConnected()) {
+			return false;
+		} // if
+		$mailer->setCharset('UTF-8');
+
+		if($smtp_username != null) {
 			if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
 				return false;
 			}
 		}
 		if(! $mailer->isConnected() )  return false;
-		
- 		// add attachments
- 		$mailer->addPart($body); // real body
- 		if (is_array($attachments) && count($attachments) > 0) {
-	 		foreach ($attachments as $att)
-	 			$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
- 		}
- 		
- 		$content = $mailer->getFullContent(false);
- 		$mailer->close();
- 		return $content;
- 	}
- 
- 	public function saveContent($content)
- 	{
- 		return $this->saveContentToFilesystem("UID".rand(), $content);
- 	}
+
+		// add attachments
+		$mailer->addPart($body); // real body
+		if (is_array($attachments) && count($attachments) > 0) {
+			foreach ($attachments as $att)
+			$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+		}
+
+		$content = $mailer->getFullContent(false);
+		$mailer->close();
+		return $content;
+	}
+
+	public function saveContent($content)
+	{
+		return $this->saveContentToFilesystem("UID".rand(), $content);
+	}
 }
 ?>

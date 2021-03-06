@@ -19,7 +19,7 @@ if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user
 			<div class="db-ico ico-unknown ico-locked" style="padding-left:16px;display:inline" title="<?php echo lang('checked out by') . " " . $document->getCheckedOutBy()->getDisplayName()?>">&nbsp;</div>
 	<?php } // if ?>
 	<?php 
-		$dws = $document->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+		$dws = $document->getWorkspaces(logged_user()->getWorkspacesQuery());
 		$projectLinks = array();
 		foreach ($dws as $ws) {
 			$projectLinks[] = $ws->getId();

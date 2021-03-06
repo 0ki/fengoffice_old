@@ -144,6 +144,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('profileFormDisplayName').focus();
 </script>

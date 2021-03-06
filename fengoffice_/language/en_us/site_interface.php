@@ -118,9 +118,10 @@
 	
   	'new account step profile' => 'Step {0}: Update profile',
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
-  	
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
+  	'new account step actions' => 'Step {0}: Actions',
+  	'getting started' => 'Getting Started',
   	
   	'new account step actions' => 'Step {0}: Assume the complete management of your online office',
   	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
@@ -293,6 +294,11 @@
   'after' => 'after',
   'delete mails from server' => 'Delete mails from server',
   'mail account delete mails from server description' => 'Enable this option in order to delete mails from server after desired time.',
+  'show images' => 'Show images.',
+  'images are blocked' => 'Images are blocked',
+  'mail add contacts' => 'Add new contacts',
+  'no contacts to add' => 'No contacts to add.',
+  'linked attachments' => 'Linked attachments',
   
   //Checkout
   'checkout file' => 'Checkout file',
@@ -445,7 +451,9 @@
   'multiples workspace object permanent delete' => 'Objects that are contained in more than one workspace will not be deleted.',
   'cancel permanent delete' => 'To cancel delete, press back or close this tab.',
   'confirm permanent delete workspace' => 'Please confirm your intention to delete the Workspace <b>{0}</b>',
-  
+  'confirm permanent delete user' => 'Please confirm your intention to delete:',  
+  'user personal workspace' => 'Also delete the Personal Workspace <b> {0} </b> and all its content',
+  'other user personal workspace' => 'Other users have assigned <b>{0}</b> as personal Workspace, it can not be deleted',
   'latest user activity' => 'Latest user activity',
   
   'hours' => 'Hours',
@@ -496,6 +504,7 @@
   'last updated by on' => '{0}, on {1}',
   'updated' => 'Updated',
   'group by' => 'Group by',
+  'last updated by' => 'Last updated by',
   
   'total' => 'Total',
   'enter tags desc' => 'Enter comma separated tag names...',
@@ -514,6 +523,7 @@
   'task data' => 'Task data',
   'search in all workspaces' => 'Search in all workspaces',
   
+  'paused time' => 'Paused time',
   'total pause time' => 'Total pause time',
   'pause time cannot be negative' => 'Pause time cannot be negative',
   'pause time cannot exceed timeslot time' => 'Pause time cannot exceed timeslot time',
@@ -619,6 +629,11 @@
   
   'add value' => 'Add value',
   'remove value' => 'Remove value',
+  
+  'hide options' => 'Hide options',
+  
+  'personal workspace name' => '{0} Personal',
+  'personal workspace description' => 'Personal workspace',
   
   ); // array
 

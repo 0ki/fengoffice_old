@@ -26,11 +26,12 @@ try {
 			VersionChecker::check(true);
 		}
 	}
-	$locale = user_config_option("localization", DEFAULT_LOCALIZATION);
+	$locale = user_config_option("localization");
+	if (!$locale) $locale = DEFAULT_LOCALIZATION;
 	Localization::instance()->loadSettings($locale, ROOT . '/language');
 
 	if(config_option('file_storage_adapter', 'mysql') == FILE_STORAGE_FILE_SYSTEM) {
-		FileRepository::setBackend(new FileRepository_Backend_FileSystem(FILES_DIR));
+		FileRepository::setBackend(new FileRepository_Backend_FileSystem(FILES_DIR, DB::connection()->getLink(), TABLE_PREFIX));
 	} else {
 		FileRepository::setBackend(new FileRepository_Backend_MySQL(DB::connection()->getLink(), TABLE_PREFIX));
 	} // if

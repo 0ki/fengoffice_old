@@ -241,7 +241,7 @@ class Cell {
 	}
 
 	public function toJson(){
-		return "{r:$this->dataRow,c:$this->dataColumn,f:'$this->cellFormula'}";
+		return "{r:$this->dataRow,c:$this->dataColumn,f:'$this->cellFormula', fs:'$this->fontStyleId'}";
 	}
 
 }

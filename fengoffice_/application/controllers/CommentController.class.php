@@ -120,13 +120,13 @@ class CommentController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
 		if(trim($comment->getViewUrl())) {
 			$redirect_to = $comment->getViewUrl();
 		} elseif(trim($object->getObjectUrl())) {
 			$redirect_to = $object->getObjectUrl();
 		} // if
-
+		
 		if(!$comment->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");

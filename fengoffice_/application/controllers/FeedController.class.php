@@ -160,19 +160,12 @@
 		$inc_sub = isset($_GET['isw']) && $_GET['isw'] == 1;
 		if (Users::tokenExists($token)) {
 			$user = Users::getByToken($token);
-			if ($cal == 0) $pids = $user->getActiveProjectIdsCSV();
+			if ($cal == 0) $pids = $user->getWorkspacesQuery();
 			else {
-				if ($inc_sub) {
-					$project = Projects::findById($cal);
-					$url_ids = explode(",", str_replace(", ",",",$project->getAllSubWorkspacesCSV(true, $user)));
-				} else {
-					$url_ids = array($cal);
-				}
-				$ids = explode(",", $user->getActiveProjectIdsCSV());
-				$pids = implode(",", array_intersect($url_ids, $ids));
+				$pids = Projects::findById($cal)->getAllSubWorkspacesQuery(true, $user);
 			}
 			
-			$events = ProjectEvents::findAll(array('conditions' => array("`project_id` IN ($pids)")));
+			$events = ProjectEvents::findAll(array('conditions' => array(ProjectEvents::getWorkspaceString($pids))));
 			
 			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getDisplayName();
 			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));

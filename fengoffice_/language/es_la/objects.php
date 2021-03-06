@@ -51,6 +51,8 @@
   	'reporting' => 'Reportes',
   
     // Variations
+    'modify object subscribers' => 'Modificar Subscritores',
+  	'subscription modified successfully' => 'Subscritores modificados exitosamente',
     'owner company' => 'Empresa propietaria',
   	'client companies' => 'Empresas clientes',
     

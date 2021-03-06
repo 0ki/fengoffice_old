@@ -3,7 +3,7 @@
 	$genid = gen_id();
 ?>
 
-<script type="text/javascript">
+<script>
 og.submitFile = function(genid) {
 	fname = document.getElementById(genid + 'filenamefield');
 	if (fname.value != '') {
@@ -38,6 +38,6 @@ og.submitFile = function(genid) {
 </div>
 </div>
 </form>
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>filenamefield').focus();
 </script>

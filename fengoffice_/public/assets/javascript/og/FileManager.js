@@ -10,9 +10,9 @@ og.FileManager = function() {
 	
 	this.fields = [
 		'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-		{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+		'dateCreated', 'dateCreated_today',
 		'updatedBy', 'updatedById',
-		{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
 		'modifyUrl', 'songInfo', 'ftype', 'url'
@@ -93,10 +93,10 @@ og.FileManager = function() {
 	
 		var now = new Date();
 		var dateString = '';
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.dateUpdated_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
 	
@@ -108,10 +108,10 @@ og.FileManager = function() {
 	
 		var now = new Date();
 		var dateString = '';
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.dateCreated_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
 
@@ -143,8 +143,13 @@ og.FileManager = function() {
 		
 		if(r.data.ftype == 0){
 			if(og.showCheckoutNotification == 0){
-				actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>.</a>',
+				if (Ext.isIE) {
+					actions += String.format('<a class="list-action ico-download" href="#" onclick="window.open(\'{0}\');" title="{1}" ' + actionStyle + '>.</a>',
 						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
+				} else {
+					actions += String.format('<a class="list-action ico-download" href="#" onclick="location.href = \'{0}\'" title="{1}" ' + actionStyle + '>.</a>',
+						og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
+				}
 			}else{
 				actions += String.format('<a class="list-action ico-download" href="#" onclick="og.checkDownload(\'{0}\', \'{1}\', \'{2}\');" title="{3}" ' + actionStyle + '>.</a>',
 				og.getUrl('files', 'download_file', {id: r.id}), r.data.checkedOutById, r.data.checkedOutByName, lang('download'));
@@ -200,6 +205,7 @@ og.FileManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedIds = getSelectedIds;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -350,7 +356,7 @@ og.FileManager = function() {
 			})
 		}),
 		properties: new Ext.Action({
-			text: lang('properties'),
+			text: lang('update file'),
 			tooltip: lang('edit selected file properties'),
 			iconCls: 'ico-properties',
 			disabled: true,
@@ -409,9 +415,11 @@ og.FileManager = function() {
 		store: this.store,
 		layout: 'fit',
 		cm: cm,
+		enableDrag: true,
+		ddGroup: 'WorkspaceDD',
 		stripeRows: true,
 		closable: true,
-		/*style: "padding:7px;",*/
+		id: 'file-manager',
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -503,6 +511,29 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;
+		}
+	},
+	
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				objects: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
 		}
 	}
 });

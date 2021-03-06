@@ -53,6 +53,7 @@ class COTemplate extends BaseCOTemplate {
 		$to->setObject($template);
 		$to->setTemplate($this);
 		$to->save();
+		return $template->getId();
 	}
 	
 	// ---------------------------------------------------
@@ -180,6 +181,8 @@ class COTemplate extends BaseCOTemplate {
 			}
 		}
 		$this->removeObjects();
+		TemplateParameters::deleteParametersByTemplate($this->getId());
+		TemplateObjectProperties::deletePropertiesByTemplate($this->getId());
 		parent::delete();
 	} // delete
 

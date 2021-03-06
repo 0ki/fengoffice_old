@@ -283,11 +283,11 @@ if ($to != "") {
 					if ($count > $start && $count <= $start + $pagesize) { ?>
 					<tr>
 						<td class="key"><?php echo $key ?></td>
-						<td class="from"><textarea readonly="readonly" tabindex="-1"><?php echo unescape_lang($value) ?></textarea></td> <?php
+						<td class="from"><textarea readonly="readonly" tabindex="-1"><?php echo $value ?></textarea></td> <?php
 					if (!isset($locales[$to][$file]) || !isset($locales[$to][$file][$key])) { ?>
 						<td class="to"><textarea name="lang[<?php echo $key ?>]" onfocus="textFocus.call(this)" onblur="textBlur.call(this)" onchange="textChange()"></textarea></td> <?php
 					} else { ?>
-						<td class="to"><textarea name="lang[<?php echo $key ?>]" onfocus="textFocus.call(this)" onblur="textBlur.call(this)" onchange="textChange()"><?php echo unescape_lang($locales[$to][$file][$key]) ?></textarea></td> <?php
+						<td class="to"><textarea name="lang[<?php echo $key ?>]" onfocus="textFocus.call(this)" onblur="textBlur.call(this)" onchange="textChange()"><?php echo $locales[$to][$file][$key] ?></textarea></td> <?php
 					} ?>
 					</tr> <?php
 					}

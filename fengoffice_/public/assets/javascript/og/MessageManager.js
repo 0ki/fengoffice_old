@@ -5,9 +5,6 @@
 og.MessageManager = function() {
 	var actions, moreActions;
 	this.accountId = 0;
-	this.viewType = "messages";
-	this.readType = "unreaded";
-	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
@@ -21,8 +18,8 @@ og.MessageManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-					'wsIds', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','isDraft','isSent'
+					'object_id', 'type', 'title', 'text', 'date', 'is_today',
+					'wsIds', 'userId', 'userName', 'tags', 'workspaceColors'
 				]
 			}),
 			remoteSort: true,
@@ -85,11 +82,10 @@ og.MessageManager = function() {
 		}
 		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.userName), og.getUrl('user', 'card', {id: r.data.userId}));
 	
-		var now = new Date();
-		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return lang('last updated by on', userString, value.dateFormat(og.date_format));
+		if (!r.data.is_today) {
+			return lang('last updated by on', userString, value);
 		} else {
-			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+			return lang('last updated by at', userString, value);
 		}
 	}
 
@@ -105,6 +101,7 @@ og.MessageManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedIds = getSelectedIds;
 	
 	function getSelectedTypes() {
 		var selections = sm.getSelections();
@@ -118,6 +115,7 @@ og.MessageManager = function() {
 			return ret.substring(1);
 		}
 	}
+	this.getSelectedTypes = getSelectedTypes;
 	
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
@@ -154,7 +152,7 @@ og.MessageManager = function() {
 		},{
 			id: 'from',
 			header: lang("from"),
-			dataIndex: 'from',
+			dataIndex: 'userName',
 			width: 120,
 			renderer: renderFrom
         },{
@@ -201,12 +199,7 @@ og.MessageManager = function() {
 				listeners: {
 					'tagselect': {
 						fn: function(tag) {
-							this.load({
-								action: 'tag',
-								ids: getSelectedIds(),
-								types: getSelectedTypes(),
-								tagTag: tag
-							});
+							this.tagObjects(tag);
 						},
 						scope: this
 					}
@@ -248,11 +241,12 @@ og.MessageManager = function() {
 		store: this.store,
 		layout: 'fit',
 		cm: cm,
-		//id: 'message-manager',
+		enableDrag: true,
+		ddGroup: 'WorkspaceDD',
+		id: 'message-manager',
 		stripeRows: true,
 		closable: true,
 		loadMask: false,
-		/*style: "padding:7px;",*/
 		bbar: new og.PagingToolbar({
 			pageSize: og.pageSize,
 			store: this.store,
@@ -313,9 +307,6 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 			start = 0;
 		}
 		this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
 					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
@@ -330,9 +321,6 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	resetVars: function(){
 		this.viewUnclassified = false;
 		this.accountId = 0;
-		this.viewType = "messages";
-		this.readType = "unreaded";
-		this.stateType = "received";
 	},
 	
 	activate: function() {
@@ -347,8 +335,85 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	
 	showMessage: function(text) {
 		this.innerMessage.innerHTML = text;
+	},
+	
+	moveObjects: function(ws) {
+		og.moveToWsOrMantainWs(this.id, ws);
+	},
+	
+	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		this.load({
+			action: 'move',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			moveTo: ws,
+			mantainWs: mantain
+		});
+	},
+	
+	trashObjects: function() {
+		if (confirm(lang('confirm move to trash'))) {
+			this.load({
+				action: 'delete',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+	
+	tagObjects: function(tag) {
+		this.load({
+			action: 'tag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			tagTag: tag
+		});
 	}
 });
 
 
 Ext.reg("messages", og.MessageManager);
+
+/************************************************
+Container for MessageManager,
+*************************************************/
+og.MessageManagerPanel = function() {
+	this.doNotRemove = true;
+	this.needRefresh = false;
+	
+	this.manager = new og.MessageManager();
+	
+	this.helpPanel = new og.HtmlPanel({
+		html:'<div style="height:50px; line-height:50px; background-color:green;">HOLA</div>',
+		style:'height: 50px;'
+	});
+
+	og.MessageManagerPanel.superclass.constructor.call(this, {
+		layout: 'fit',
+		border: false,
+		bodyBorder: false,
+		items: [
+			this.helpPanel,
+			this.manager
+		],
+		closable: true
+	});
+}
+
+Ext.extend(og.MessageManagerPanel, Ext.Panel, {
+	load: function(params) {
+		this.manager.load(params);
+	},
+	activate: function() {
+		this.manager.activate();
+	},	
+	reset: function() {
+		this.manager.reset();
+	},	
+	showMessage: function(text) {
+		this.manager.showMessage(text);
+	}
+});
+
+Ext.reg("messages-containerpanel", og.MessageManagerPanel);

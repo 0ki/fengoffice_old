@@ -102,6 +102,8 @@ og.TagTree = function(config) {
 
 	Ext.applyIf(config, {
 		id: 'tag-panel',
+		/**/ddGroup: 'WorkspaceDD',
+		enableDrop: true,/**/
 		autoScroll: true,
 		autoLoadTags: false,
 		rootVisible: false,
@@ -128,6 +130,15 @@ og.TagTree = function(config) {
 			}
 		}]
 	});
+	if (!config.listeners) config.listeners = {};
+	Ext.apply(config.listeners, {
+		beforenodedrop: function(e) {
+			if (e.data.grid) {
+				e.data.grid.tagObjects(e.target.tag.name);
+			}
+			return false;
+		}
+    });
 	og.TagTree.superclass.constructor.call(this, config);
 
 	this.tags = this.root.appendChild(
@@ -329,7 +340,12 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	
 	renameTag: function(tagname, newTagname) {
 		if (!this.hasTag(newTagname) || confirm(lang('confirm merge tags', tagname, newTagname))) {
-			this.loadTags(og.getUrl('tag', 'rename_tag', {tag: tagname, new_tag: newTagname}));
+			this.loadTags(og.getUrl('tag', 'rename_tag', {tag: tagname, new_tag: newTagname}), {
+				callback: function() {
+					this.fireEvent('tagselect', this.tags.tag);
+				},
+				scope: this
+			});
 		}
 	},
 	/**

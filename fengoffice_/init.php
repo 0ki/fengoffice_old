@@ -85,8 +85,6 @@ if (Env::isDebuggingTime()) {
 	TimeIt::start("Total");
 }
 
-include_once 'library/cal/index.php';
-
 include_once 'library/json/json.php';
 
 // Lets prepare everything for autoloader
@@ -94,16 +92,16 @@ require APPLICATION_PATH . '/functions.php'; // __autoload() function is defined
 @include ROOT . '/cache/autoloader.php';
 
 // Prepare logger... We might need it early...
-if(Env::isDebugging()) {
+//if(Env::isDebugging()) {
 	Logger::setSession(new Logger_Session('default'));
 	Logger::setBackend(new Logger_Backend_File(CACHE_DIR . '/log.php'));
 	 
 	set_error_handler('__production_error_handler');
 	set_exception_handler('__production_exception_handler');
-} else {
+/*} else {
 	Logger::setSession(new Logger_Session('default'));
 	Logger::setBackend(new Logger_Backend_Null());
-} // if
+} // if*/
 
 register_shutdown_function('__shutdown');
 
@@ -137,7 +135,7 @@ if(Env::isDebugging()) {
 // some of the application classes may need CONTROLLER, ACTION or $_GET
 // data collected by the matched route
 require_once APPLICATION_PATH . '/application.php';
-
+require_once LIBRARY_PATH . '/utf8/utf8.php';
 
 // Set handle request timer...
 if(Env::isDebugging()) {

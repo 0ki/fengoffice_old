@@ -1,8 +1,8 @@
 <?php
-require_javascript("modules/addTaskForm.js");
+require_javascript("og/modules/addTaskForm.js");
 $task_list = $object;
 ?>
-<script type="text/javascript">
+<script>
   if(App.modules.addTaskForm) {
     App.modules.addTaskForm.task_lists[<?php echo $task_list->getId() ?>] = {
       id               : <?php echo $task_list->getId() ?>,
@@ -34,14 +34,15 @@ $task_list = $object;
 		<?php 
 				$show_help_option = user_config_option('show_context_help', 'until_close');
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_list_task_context_help', true, logged_user()->getId()))) {?>
-					<div id="tasksCardContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+					<div id="tasksCardContextHelp" class="contextHelpStyle">
 						<?php render_context_help($this, 'chelp task card','list_task'); ?>
 					</div>
 		<?php }?>
 
 <?php if($task_list->getText()) { ?>
-  <div style="padding-bottom:20px;color:#333"><table><tr><td style="padding-right:5px;"><b>
-  <?php echo lang('description') ?>:</b></td><td style="padding-left:5px;border-left:0px solid #CCC"><?php echo convert_to_links(nl2br(clean($task_list->getText())))?></td></tr></table></div>
+  <fieldset><legend><?php echo lang('description') ?></legend>
+  	<?php echo escape_html_whitespace(convert_to_links(clean($task_list->getText())))?>
+  </fieldset>
 <?php } // if ?>
 
 
@@ -182,5 +183,20 @@ $task_list = $object;
 		</span></td></tr>
 <?php } ?>
 </table>
+<?php } ?>
+
+<?php if ($task_list->isRepetitive()) { ?>
+	<div style="font-weight:bold">
+	<?php 
+		echo '<br>' . lang('this task repeats'). '&nbsp;';
+		if ($task_list->getRepeatForever()) echo lang('forever');
+		else if ($task_list->getRepeatNum()) echo lang('n times', $task_list->getRepeatNum());
+		else if ($task_list->getRepeatEnd()) echo lang('until x', format_date($task_list->getRepeatEnd()));
+		echo ", " . lang ('every') . " ";
+		if ($task_list->getRepeatD() > 0) echo lang('n days', $task_list->getRepeatD()) . ".";
+		else if ($task_list->getRepeatM() > 0) echo lang('n months', $task_list->getRepeatM()) . ".";
+		else if ($task_list->getRepeatY() > 0) echo lang('n years', $task_list->getRepeatY()) . ".";
+	?>
+	</div>
 <?php } ?>
   

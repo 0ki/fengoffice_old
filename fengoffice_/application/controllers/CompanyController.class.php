@@ -7,7 +7,7 @@
  * @author Ilija Studen <ilija.studen@gmail.com> , Marcos Saiz <marcos.saiz@opengoo.org>
  */
 class CompanyController extends ApplicationController {
-
+	
 	/**
 	 * Construct the CompanyController
 	 *
@@ -159,7 +159,7 @@ class CompanyController extends ApplicationController {
 				DB::beginWork();
 				$company->save();
 				$company->setTagsFromCSV(array_var($company_data, 'tags'));
-//				$company->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
+//				$company->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
 				foreach ($validWS as $w) {
 					$company->addToWorkspace($w);
 				}
@@ -224,7 +224,8 @@ class CompanyController extends ApplicationController {
 	          'zipcode' => $company->getZipcode(),
 	          'country' => $company->getCountry(),
 	          'phone_number' => $company->getPhoneNumber(),
-	          'fax_number' => $company->getFaxNumber()
+	          'fax_number' => $company->getFaxNumber(),
+			  'notes' => $company->getNotes(),
 			); // array
 		} // if
 
@@ -405,7 +406,7 @@ class CompanyController extends ApplicationController {
 					throw new InvalidUploadError($logo, lang('error upload file'));
 				} // if
 
-				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png');
+				$valid_types = array('image/jpg', 'image/jpeg', 'image/pjpeg', 'image/gif', 'image/png','image/x-png');
 				$max_width   = config_option('max_logo_width', 50);
 				$max_height  = config_option('max_logo_height', 50);
 
@@ -417,7 +418,7 @@ class CompanyController extends ApplicationController {
 
 				DB::beginWork();
 
-				if(!$company->setLogo($logo['tmp_name'], $max_width, $max_height, true)) {
+				if(!$company->setLogo($logo['tmp_name'], $logo['type'], $max_width, $max_height, true)) {
 					throw new InvalidUploadError($avatar, lang('error edit company logo'));
 				} // if
 
@@ -438,6 +439,7 @@ class CompanyController extends ApplicationController {
 					)
 				);
 				tpl_assign("object", $object);
+				flash_success(lang('success edit company logo'));
 				ajx_current("back");
 			} catch(Exception $e) {
 				ajx_current("empty");

@@ -30,16 +30,17 @@ class EventController extends ApplicationController {
 	*/
 	function __construct() {
 		parent::__construct();
-		prepare_company_website_controller($this, 'website');	
-		// Reece calendar initialization
-		//define('CAL_SECURITY_BIT',1);
-		$_SESSION['cal_loginfailed'] = 0;
-		$_SESSION['cal_user'] = logged_user()->getUsername();
-		$_SESSION['cal_userid'] = logged_user()->getId();
-		cal_add_to_links('c=event');
-		cal_load_permissions();
+		prepare_company_website_controller($this, 'website');
+		$this->addHelper('calendar');
 	} // __construct
-     	
+     
+	
+	function init() {
+		require_javascript("og/CalendarManager.js");
+		ajx_current("panel", "events", null, null, true);
+		ajx_replace(true);
+	}
+	
 	/**
 	* Show events index page (list recent events)
 	*
@@ -84,10 +85,16 @@ class EventController extends ApplicationController {
 	}
 	
 	function change_invitation_state($attendance = null, $event_id = null, $user_id = null) {
-		$from_post = $attendance == null || $event_id == null; 
+		$from_post_get = $attendance == null || $event_id == null;
+		// Take variables from post
 		if ($attendance == null) $attendance = array_var($_POST, 'event_attendance');
 		if ($event_id == null) $event_id = array_var($_POST, 'event_id');
 		if ($user_id == null) $user_id = array_var($_POST, 'user_id');
+		
+		// If post is empty, take variables from get
+		if ($attendance == null) $attendance = array_var($_GET, 'at');
+		if ($event_id == null) $event_id = array_var($_GET, 'e');
+		if ($user_id == null) $user_id = array_var($_GET, 'u');
 		
 		if ($attendance == null || $event_id == null) {
 			flash_error('Missing parameters');
@@ -99,16 +106,23 @@ class EventController extends ApplicationController {
 				$inv->setInvitationState($attendance);
 				$inv->save();
 			}
-			if ($from_post) {
+			if ($from_post_get) {
 				// Notify creator (only when invitation is accepted or declined)
 				if ($inv->getInvitationState() == 1 || $inv->getInvitationState() == 2) {
 					$event = ProjectEvents::findById(array('id' => $event_id));
 					$user = Users::findById(array('id' => $user_id));
 					session_commit();
 					Notifier::notifEventAssistance($event, $inv, $user);
+					if ($inv->getInvitationState() == 1) flash_success(lang('invitation accepted'));
+					else flash_success(lang('invitation rejected'));
+				} else {
+					flash_success(lang('success edit event', ''));
 				}
-				flash_success(lang('success edit event', ''));
-				ajx_current("back");
+				if (array_var($_GET, 'at')) {
+					self::view_calendar();
+				} else {
+					ajx_current("back");
+				}
 			}
 		}
 	}
@@ -216,13 +230,15 @@ class EventController extends ApplicationController {
 			if ($durationhour == 0 && $durationmin < 15 && $typeofevent != 2) {
 				throw new Exception(lang('duration must be at least 15 minutes'));
 			}
-									
+				
 			// calculate timestamp and durationstamp
 			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
 			$timestamp = $dt_start->format('Y-m-d H:i:s');
-			if ($hour + $durationhour > 24)
+			if ($hour + $durationhour > 24) {
 				$dt_duration = DateTimeValueLib::make(0, 0, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
-			else
+				$dt_duration->add('d', 1);
+				$dt_duration->add('m', -1 * logged_user()->getTimezone() * 60);
+			} else
 				$dt_duration = DateTimeValueLib::make($dt_start->getHour() + $durationhour, $dt_start->getMinute() + $durationmin, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
 			$durationstamp = $dt_duration->format('Y-m-d H:i:s');
 			
@@ -314,18 +330,7 @@ class EventController extends ApplicationController {
 			try {
 				$data = $this->getData($event_data);
 				
-				// run the query to set the event data 
-				$projId = array_var($event_data, 'project_id');      
-				if($projId != '') {
-					$project = Projects::findById($projId );
-				}
-				else {
-			 		$project = active_or_personal_project();
-				}
-
-	        	$event->setProjectId($project->getId());
 			    $event->setFromAttributes($data);
-			    
 
 			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
 		
@@ -348,7 +353,12 @@ class EventController extends ApplicationController {
             		Notifier::notifEvent($event, $users_to_inv, 'new', logged_user());
 		        }
 		        
+		        if (array_var($_POST, 'popup', false)) {
+		        	$_POST['ws_ids'] = active_or_personal_project()->getId();
+		        }
+		        
 			    $object_controller = new ObjectController();
+			    $object_controller->add_to_workspaces($event);
 			    $object_controller->link_to_new_object($event);
 				$object_controller->add_subscribers($event);
 				$object_controller->add_custom_properties($event);
@@ -378,48 +388,61 @@ class EventController extends ApplicationController {
 	function delete(){
 		//check auth
 		$event = ProjectEvents::findById(get_id());
-	    if(!$event->canDelete(logged_user())){	    	
-			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
-			return ;
-	    }
-		$this->setTemplate('viewdate');
+		if ($event != null) {
+		    if(!$event->canDelete(logged_user())){	    	
+				flash_error(lang('no access permissions'));
+				//$this->redirectTo('event');
+				ajx_current("empty");
+				return ;
+		    }
+		    $events = array($event);
+		} else {
+			$ev_ids = explode(',', array_var($_GET, 'ids', ''));
+			if (!is_array($ev_ids) || count($ev_ids) == 0) {
+				flash_error(lang('no objects selected'));
+				ajx_current("empty");
+				return ;
+			}
+			$events = array();
+			foreach($ev_ids as $id) {
+				$e = ProjectEvents::findById($id);
+				if ($e instanceof ProjectEvent) $events[] = $e;
+			}
+		}
+	    
+	    $this->getUserPreferences($view_type, $user_filter, $status_filter);
+		$this->setTemplate($view_type);
+		
 		$tag = active_tag();
 		tpl_assign('tags',$tag);
 		try {
-			
-			$notifications = array();
-			$invs = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
-			if (is_array($invs)) {
-				foreach ($invs as $inv) {
-					if ($inv->getUserId() != logged_user()->getId()) 
-						$notifications[] = Users::findById(array('id' => $inv->getUserId()));
+			foreach ($events as $event) {
+				$notifications = array();
+				$invs = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
+				if (is_array($invs)) {
+					foreach ($invs as $inv) {
+						if ($inv->getUserId() != logged_user()->getId()) 
+							$notifications[] = Users::findById(array('id' => $inv->getUserId()));
+					}
+				} else {
+					if ($invs->getUserId() != logged_user()->getId()) 
+						$notifications[] = Users::findById(array('id' => $invs->getUserId()));
 				}
-			} else {
-				if ($invs->getUserId() != logged_user()->getId()) 
-					$notifications[] = Users::findById(array('id' => $invs->getUserId()));
+				Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
+				
+				DB::beginWork();
+				// delete event
+				$event->trash();
+				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+				DB::commit();
 			}
-			Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
-			
-			DB::beginWork();
-			// delete event
-			$event->trash();
-			ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
-			DB::commit();
-
-			flash_success(lang('success delete event', $event->getSubject()));
-			
-			if (array_var($_POST, 'popup', false)) {
-				ajx_current("reload");
-          	} else {
-          		ajx_current("back");
-          	}
-          	ajx_add("overview-panel", "reload");          	
+			flash_success(lang('success delete event', ''));
+			ajx_current("reload");			
+          	ajx_add("overview-panel", "reload");
+			          	
 		} catch(Exception $e) {
 			DB::rollback();
-			if (Env::isDebugging()) {
-				Logger::log($e->getTraceAsString());
-			}
+			Logger::log($e->getTraceAsString());
 			flash_error(lang('error delete event'));
 			ajx_current("empty");
 		} // try
@@ -642,17 +665,6 @@ class EventController extends ApplicationController {
 			try {
 				$data = $this->getData($event_data);
 				// run the query to set the event data 
-				$projId = array_var($event_data,'project_id');
-				$old_project_id = $event->getProjectId();
-				if($projId != '' && $projId != $old_project_id) {
-					$project = Projects::findById($projId);
-					if(!$event->canAdd(logged_user(),$project)) {
-						flash_error(lang('no access permissions'));
-						ajx_current("empty");
-						return;
-					} // if
-	        		$event->setProjectId($project->getId());
-				}
 			    $event->setFromAttributes($data); 
 			    
 			    $this->registerInvitations($data, $event);
@@ -677,6 +689,7 @@ class EventController extends ApplicationController {
 	         	$event->setTagsFromCSV(array_var($event_data, 'tags')); 
 			 	
 			 	$object_controller = new ObjectController();
+			 	$object_controller->add_to_workspaces($event);
 			    $object_controller->link_to_new_object($event);
 				$object_controller->add_subscribers($event);
 				$object_controller->add_custom_properties($event);
@@ -701,6 +714,18 @@ class EventController extends ApplicationController {
 		} // if
 	} // edit
 	
+	function tag_events() {
+		$ids = explode(',', array_var($_GET, 'ids', ''));
+		foreach ($ids as $id) {
+			$event = ProjectEvents::findById($id);
+			if ($event instanceof ProjectEvent && $event->canEdit(logged_user())) {
+				$tags_csv = implode(',', $event->getTagNames()) .",". array_var($_GET, 'tags');
+				$event->setTagsFromCSV($tags_csv);
+			}
+		}
+		flash_success(lang("success tag objects", ''));
+		ajx_current("empty");
+	}
 	
 	/**
 	 * Returns hour and minute in 24 hour format
@@ -729,27 +754,33 @@ class EventController extends ApplicationController {
 		$comp_array = array();
 		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
 		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
-		$ws = Projects::findById($wspace_id);
+		$ws = Projects::findByCSVIds($wspace_id);
 		
-		$companies = $ws->getCompanies();
+		$companies = Companies::findAll();
 		
 		$i = 0;
 		foreach ($companies as $comp) {
-			$users = $comp->getUsersOnProject($ws);
+			$users = $comp->getUsersOnWorkspaces($ws);
 			if (is_array($users)) {
 				
 				foreach ($users as $k => $user) { // removing event creator from notification list
-					$proj_us = ProjectUsers::findById(array('project_id' => $wspace_id, 'user_id' => $user->getId()));
-					if ($user->getId() == $actual_user_id || $proj_us == null || !$proj_us->getCanReadEvents()) {
-						unset($users[$k]);
+					foreach ($ws as $w) {
+						$proj_us = ProjectUsers::findById(array('project_id' => $w->getId(), 'user_id' => $user->getId()));
+						$keep = false;
+						if ($proj_us != null && $proj_us->getCanReadEvents()) {
+							$keep = true;
+						}
 					}
+					if ($user->getId() == $actual_user_id || !$keep) {
+						unset($users[$k]);	
+					} 
 				}
 				if (count($users) > 0) {
 					$comp_data = array(
-									'id' => $i++,
-									'object_id' => $comp->getId(),
-									'name' => $comp->getName(),
-									'users' => array() 
+						'id' => $i++,
+						'object_id' => $comp->getId(),
+						'name' => $comp->getName(),
+						'users' => array() 
 					);
 					foreach ($users as $user) {
 						$comp_data['users'][] = array('id' => $user->getId(), 'name' => $user->getDisplayName());			
@@ -786,7 +817,6 @@ class EventController extends ApplicationController {
 				copy($filedata['tmp_name'], $filename);
 				
 				$events_data = CalFormatUtilities::decode_ical_file($filename);
-				unset($events_data[0]); //cal headers
 				if (count($events_data)) {
 					DB::beginWork();		
 					foreach ($events_data as $ev_data) {
@@ -794,10 +824,10 @@ class EventController extends ApplicationController {
 				 		$project = active_or_personal_project();
 						if ($ev_data['subject'] == '') $ev_data['subject'] = lang('no subject');
 			
-			        	$event->setProjectId($project->getId());
 					    $event->setFromAttributes($ev_data);
 					    
 					    $event->save();
+					    $event->addToWorkspace($project);
 					    $object_controller = new ObjectController();
 					    $object_controller->add_subscribers($event);
 					    ApplicationLogs::createLog($event, null, ApplicationLogs::ACTION_ADD);
@@ -874,8 +904,7 @@ class EventController extends ApplicationController {
 		} else {
 			$cal_name = Projects::findById($ws->getId())->getName();
 			if (isset($_GET['inc_subws']) && $_GET['inc_subws'] == 'true') {
-				$ws_ids = $ws->getAllSubWorkspacesCSV(true, logged_user());
-				$ws_ids = str_replace(" ", "", $ws_ids);
+				$ws_ids = $ws->getAllSubWorkspacesQuery(true, logged_user());
 			} else {
 				$ws_ids = $ws->getId();
 			}			
@@ -888,6 +917,87 @@ class EventController extends ApplicationController {
 		ajx_current("empty");		
 	}
 	
+	function change_duration() {
+		$event = ProjectEvents::findById(get_id());
+		if(!$event->canEdit(logged_user())){	    	
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return ;
+	    }
+	    
+	    $hours = array_var($_GET, 'hours', -1);
+	    $mins = array_var($_GET, 'mins', -1);
+	    if ($hours == -1 || $mins == -1) {
+	    	ajx_current("empty");
+	    	return;
+	    }
+	    
+	    $duration = new DateTimeValue($event->getStart()->getTimestamp());
+	    $duration->add('h', $hours);
+	    $duration->add('m', $mins);
+	    
+	    DB::beginWork();
+	    $event->setDuration($duration->format("Y-m-d H:i:s"));
+	    $event->save();
+	    DB::commit();
+	    
+	    ajx_extra_data($this->get_updated_event_data($event));
+	    ajx_current("empty");
+	}
+	
+	function move_event() {
+		$event = ProjectEvents::findById(get_id());
+		if(!$event->canEdit(logged_user())){	    	
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return ;
+	    }
+	    
+	    $year = array_var($_GET, 'year', $event->getStart()->getYear());
+	    $month = array_var($_GET, 'month', $event->getStart()->getMonth());
+	    $day = array_var($_GET, 'day', $event->getStart()->getDay());
+	    $hour = array_var($_GET, 'hour', 0);
+	    $min = array_var($_GET, 'min', 0);
+	    
+	    if ($hour == -1) $hour = $event->getStart()->getHour();
+	    if ($min == -1) $min = $event->getStart()->getMinute();
+	    
+	    $diff = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp());
+	    $new_start = new DateTimeValue(mktime($hour, $min, 0, $month, $day, $year) - logged_user()->getTimezone() * 3600);
+	    $new_duration = new DateTimeValue($new_start->getTimestamp());
+	    $new_duration->add('h', $diff['hours']);
+	    $new_duration->add('m', $diff['minutes']);
+
+	    // veify that event is placed only in one day
+	    $st = new DateTimeValue(mktime($hour, $min, 0, $month, $day, $year));
+	    $dur = new DateTimeValue($st->getTimestamp());
+	    $dur->add('h', $diff['hours']);
+	    $dur->add('m', $diff['minutes']); 
+	    if ($dur->beginningOfDay()->getTimestamp() > $st->endOfDay()->getTimestamp()) {
+	    	$new_duration = new DateTimeValue(mktime(0, 0, 0, $month, $day+1, $year) - logged_user()->getTimezone() * 3600);
+	    }
+	    
+        DB::beginWork();
+	    $event->setStart($new_start->format("Y-m-d H:i:s"));
+	    $event->setDuration($new_duration->format("Y-m-d H:i:s"));
+	    $event->save();
+	    DB::commit();
+    
+	    ajx_extra_data($this->get_updated_event_data($event));
+	    ajx_current("empty");
+	}
+	
+	private function get_updated_event_data($event) {
+		$new_start = new DateTimeValue($event->getStart()->getTimestamp() + logged_user()->getTimezone() * 3600);
+	    $new_duration = new DateTimeValue($event->getDuration()->getTimestamp() + logged_user()->getTimezone() * 3600);
+	    $ev_data = array (
+	    	'start' => $new_start->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
+	    	'end' => $new_duration->format(user_config_option('time_format_use_24') ? "G:i" : "g:i A"),
+	    	'subject' => clean($event->getSubject()),
+	    );
+	    return array("ev_data" => $ev_data);
+	}
+	
 } // EventController
 
 /***************************************************************************
@@ -897,7 +1007,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.85.2.2 2009/05/25 17:13:26 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.94 2009/06/29 14:12:41 idesoto Exp $
  *
  ***************************************************************************/
 

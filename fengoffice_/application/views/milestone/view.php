@@ -1,29 +1,29 @@
 <?php
 if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 	if (!$milestone->isTrashed()){
-		if(!$milestone->isCompleted() && $milestone->canEdit(logged_user())) {
-			add_page_action(lang('complete milestone'), $milestone->getCompleteUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-complete');
+		if (!$milestone->isCompleted() && $milestone->canEdit(logged_user())) {
+			add_page_action(lang('complete milestone'), $milestone->getCompleteUrl(rawurlencode(get_url('milestone', 'view', array('id'=>$milestone->getId())))) , 'ico-complete', null, null, true);
 		} // if
-		if($milestone->isCompleted() && $milestone->canEdit(logged_user())) {
-			add_page_action(lang('open milestone'), $milestone->getOpenUrl(rawurlencode(get_url('milestone','view',array('id'=>$milestone->getId())))) , 'ico-reopen');
+		if ($milestone->isCompleted() && $milestone->canEdit(logged_user())) {
+			add_page_action(lang('open milestone'), $milestone->getOpenUrl(rawurlencode(get_url('milestone', 'view', array('id'=>$milestone->getId())))) , 'ico-reopen', null, null, true);
 		}
-		if(!$milestone->isCompleted()) {
+		if (!$milestone->isCompleted()) {
 			if(ProjectTask::canAdd(logged_user(), $milestone->getProject()))
 			add_page_action(lang('add task list'), $milestone->getAddTaskUrl(), 'ico-task');
 		} // if
-		if($milestone->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit');
+		if ($milestone->canEdit(logged_user())) {
+			add_page_action(lang('edit'), $milestone->getEditUrl(), 'ico-edit', null, null, true);
 		} // if
 	}
 	
-	if($milestone->canDelete(logged_user())) {
+	if ($milestone->canDelete(logged_user())) {
 		if ($milestone->isTemplate()) {
-			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeletePermanentlyUrl() ."');", 'ico-delete');
+			add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete milestone'))) og.openLink('" . $milestone->getDeletePermanentlyUrl() ."');", 'ico-delete', null, null, true);
 		} else if ($milestone->isTrashed()) {
-			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $milestone->getUntrashUrl() ."');", 'ico-restore');
-			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $milestone->getDeleteUrl() ."');", 'ico-delete');
+			add_page_action(lang('restore from trash'), "javascript:if(confirm(lang('confirm restore objects'))) og.openLink('" . $milestone->getUntrashUrl() ."');", 'ico-restore', null, null, true);
+			add_page_action(lang('delete permanently'), "javascript:if(confirm(lang('confirm delete permanently'))) og.openLink('" . $milestone->getDeleteUrl() ."');", 'ico-delete', null, null, true);
 		} else {
-			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $milestone->getTrashUrl() ."');", 'ico-trash');
+			add_page_action(lang('move to trash'), "javascript:if(confirm(lang('confirm move to trash'))) og.openLink('" . $milestone->getTrashUrl() ."');", 'ico-trash', null, null, true);
 		}
 	} // if
 	
@@ -37,8 +37,6 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 			}
 		}
 	}
-	
-	//add_page_action(lang('save as template'), get_url("milestone", "new_template", array("id" => $milestone->getId())), 'ico-template-milestone');
 
 ?>
 
@@ -52,7 +50,7 @@ if (isset($milestone) && $milestone instanceof ProjectMilestone) {
 		$content = '<div class="dueDate"><b>' . lang('due date') . ':</b> ' . format_descriptive_date($milestone->getDueDate(), 0) . '</div>';
 	} // if 
 	if ($milestone->getDescription()){
-		$content .= '<div class="description">' . convert_to_links(nl2br(clean($milestone->getDescription()))) . '</div>';
+		$content .= '<fieldset><legend>'.lang('description').'</legend>'. escape_html_whitespace(convert_to_links(clean($milestone->getDescription()))) . '</fieldset>';
 	}
 	$openSubtasks = $milestone->getOpenSubTasks();
 	if (is_array($openSubtasks)) { 
@@ -138,7 +136,8 @@ $on_list_page = false;
 		 } // foreach 
 		 if(!$on_list_page && $counter > 5) { 
 		      $content .= '<tr>
-		        <td colspan="2"><a class="internalLink" href="'. $milestone->getViewUrl() .'"> ' . lang('view all completed tasks', $counter) .'</a></td>
+		      
+		        <td colspan="2"><a class="internalLink" href="'. get_url("task","new_list_tasks",array('status' => '1','filter' => 'milestone','fval' => $milestone->getId())) .'"> ' . lang('view all completed tasks', $counter) .'</a></td>
 		      </tr>';
 		 } // if 	   
 		$content .= ' </table> </div> </td></tr></table>';

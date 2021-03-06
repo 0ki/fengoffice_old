@@ -133,10 +133,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			if($this->columnExists('project_id')) {
 				$this->project = Projects::findById($this->getProjectId());
 			} else {
-				if (Env::isDebugging()) {
-					//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
-				}
-				return null;
+				//Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
+				$wo = WorkspaceObjects::findOne(array('conditions' => "`object_manager` = '".get_class($this->manager())."' AND `object_id` = ".$this->getId()));
+				$this->project = $wo->getWorkspace();
 			}
 		} // if
 		return $this->project;
@@ -151,25 +150,14 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->isNew()) {
 			return array(active_or_personal_project());
 		} else if (!$this->columnExists('project_id')) {
-			//if (is_null($this->workspaces)){
-				$this->workspaces = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
-			//}
-
-			if (!is_null($wsIds)){
-				$result = array();
-				foreach($this->workspaces as $w){
-					if ($this->isInCsv($w->getId(),$wsIds))
-					$result[] = $w;
-				}
-				return $result;
-			} else
-				return $this->workspaces;
+			return WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId(), $wsIds);
 		} else {
 			$project = $this->getProject();
-			if (is_null($wsIds) || (!is_null($wsIds) && $project instanceof Project && $this->isInCsv($project->getId(), $wsIds)))
+			if (is_null($wsIds) || $this->manager()->count("`id` = " . $this->getId() . " AND `project_id` IN ($wsIds)") > 0) {
 				return array($project);
-			else
+			} else {
 				return array();
+			}
 		}
 	}
 
@@ -228,7 +216,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$user = logged_user();
 			if (!$user instanceof User) return;
 		}
-		$wsIds = $user->getActiveProjectIdsCSV();
+		$wsIds = $user->getWorkspacesQuery();
 		return $this->getWorkspaces($wsIds);
 	}
 	
@@ -248,6 +236,18 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$paths[] = $w->getPath();
 		}
 		return $paths;
+	}
+	
+	function getUserWorkspacesIdsCSV($user) {
+		$project_users_table =  ProjectUsers::instance()->getTableName(true);
+		$pids = $user->getWorkspacesQuery();
+		return $this->getWorkspacesIdsCSV($pids);
+	}
+	
+	function getUserWorkspaceColorsCSV($user) {
+		$project_users_table=  ProjectUsers::instance()->getTableName(true);
+		$pids = $user->getWorkspacesQuery();
+		return $this->getWorkspaceColorsCSV($pids);
 	}
 
 	/**
@@ -312,7 +312,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	function removeFromWorkspaces($wsCSV) {
 		WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ? AND `workspace_id` in ($wsCSV)", $this->getObjectManagerName(), $this->getId()));
 	}
-
+	
 	// ---------------------------------------------------
 	//  Permissions
 	// ---------------------------------------------------
@@ -536,6 +536,40 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	} // setTags
 
 	/**
+	 * Add a tag to the object.
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function addTag($tag_name) {
+		$tag = new Tag();
+		$tag->setTag($tag_name);
+		$tag->setRelObjectId($this->getId());
+		$tag->setRelObjectManager(get_class($this->manager()));
+		$tag->setIsPrivate($this->isPrivate());
+		$tag->save();
+		if ($this->isSearchable()) {
+			$this->addTagsToSearchableObject();
+		}
+	}
+	
+	/**
+	 * returns true if the object has been tagged with $tag_name
+	 * @param $tag_name string
+	 * @return boolean
+	 */
+	function hasTag($tag_name) {
+		$tag = Tags::findOne(array('conditions' => array(
+			'`rel_object_manager` = ? AND `rel_object_id` = ? AND `tag` = ?',
+			get_class($this->manager()),
+			$this->getId(),
+			$tag_name
+		)));
+		return $tag instanceof Tag;
+	}
+	
+	/**
 	 * Clear object tags
 	 *
 	 * @access public
@@ -690,14 +724,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 */
 	function onAddComment(Comment $comment) {
 		if ($this->isSearchable()){
-			$project = $this->getProject();
 			$searchable_object = new SearchableObject();
 			 
 			$searchable_object->setRelObjectManager(get_class($this->manager()));
 			$searchable_object->setRelObjectId($this->getObjectId());
 			$searchable_object->setColumnName('comment' . $comment->getId());
 			$searchable_object->setContent($comment->getText());
-			if($project instanceof Project) $searchable_object->setProjectId($project->getId());
 			$searchable_object->setIsPrivate($this->isPrivate());
 			 
 			$searchable_object->save();
@@ -719,14 +751,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	function onEditComment(Comment $comment) {
 		if ($this->isSearchable()){
 			SearchableObjects::dropContentByObjectColumn($this,'comment' . $comment->getId());
-			$project = $this->getProject();
 			$searchable_object = new SearchableObject();
 			 
 			$searchable_object->setRelObjectManager(get_class($this->manager()));
 			$searchable_object->setRelObjectId($this->getObjectId());
 			$searchable_object->setColumnName('comment' . $comment->getId());
 			$searchable_object->setContent($comment->getText());
-			if($project instanceof Project) $searchable_object->setProjectId($project->getId());
 			$searchable_object->setIsPrivate($this->isPrivate());
 			 
 			$searchable_object->save();
@@ -1053,10 +1083,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 					$searchable_object->setRelObjectId($this->getObjectId());
 					$searchable_object->setColumnName($column_name);
 					$searchable_object->setContent($content);
-					if($this->getProject() instanceof Project)
-						$searchable_object->setProjectId($this->getProject()->getId());
-					else
-						$searchable_object->setProjectId(0);
 					$searchable_object->setIsPrivate(false);
 					 
 					$searchable_object->save();
@@ -1073,10 +1099,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$searchable_object->setRelObjectId($this->getObjectId());
 			$searchable_object->setColumnName('uid');
 			$searchable_object->setContent($this->getUniqueObjectId());
-			if($this->getProject() instanceof Project)
-				$searchable_object->setProjectId($this->getProject()->getId());
-			else
-				$searchable_object->setProjectId(0);
 			$searchable_object->setIsPrivate(false);
 
 			$searchable_object->save();
@@ -1090,10 +1112,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		$searchable_object->setRelObjectId($this->getObjectId());
 		$searchable_object->setColumnName('property'.$property->getId());
 		$searchable_object->setContent($property->getPropertyValue());
-		if($this->getProject() instanceof Project)
-		$searchable_object->setProjectId($this->getProject()->getId());
-		else
-		$searchable_object->setProjectId(0);
 		$searchable_object->setIsPrivate(false);
 	  
 		$searchable_object->save();
@@ -1112,10 +1130,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$searchable_object->setRelObjectId($this->getObjectId());
 			$searchable_object->setColumnName('tags');
 			$searchable_object->setContent(implode(' ', $tag_names));
-			if($this->getProject() instanceof Project)
-				$searchable_object->setProjectId($this->getProject()->getId());
-			else
-				$searchable_object->setProjectId(0);
 			$searchable_object->setIsPrivate($this->isPrivate());
 			 
 			$searchable_object->save();
@@ -1206,18 +1220,18 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if($this->getUpdatedById()){
 			$updated_by_id = $this->getUpdatedById();
 			$updated_by_name = $this->getUpdatedByDisplayName();
-			$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
-		}else {
+			$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');
+		} else {
 			if($this->getCreatedById())
-			$updated_by_id = $this->getCreatedById();
+				$updated_by_id = $this->getCreatedById();
 			else
-			$updated_by_id = lang('n/a');
+				$updated_by_id = lang('n/a');
 			$updated_by_name = $this->getCreatedByDisplayName();
-			$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+			$updated_on = $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a');
 		}
 		
-		$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
-    	$deletedBy = Users::findById($this->getTrashedById());
+		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
+		$deletedBy = Users::findById($this->getTrashedById());
     	if ($deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
@@ -1232,11 +1246,11 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),
 				"createdById" => $this->getCreatedById(),
-				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+				"dateCreated" => $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager()),
 				"deletedById" => $this->getTrashedById(),

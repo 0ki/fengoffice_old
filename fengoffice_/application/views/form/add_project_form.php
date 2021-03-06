@@ -1,5 +1,5 @@
 <?php
-  require_javascript("modules/addProjectForm.js");
+  require_javascript("og/modules/addProjectForm.js");
   set_page_title($project_form->isNew() ? lang('add form') : lang('edit form'));
   project_tabbed_navigation(PROJECT_TAB_FORMS);
   project_crumbs(array(
@@ -9,7 +9,6 @@
   //add_stylesheet_to_page('project/forms.css');
   
 ?>
-<script type="text/javascript" src="<?php echo get_javascript_url('modules/addProjectForm.js') ?>"></script>
 <form class="internalForm" action="<?php echo $project_form->isNew() ? get_url('form', 'add') : $project_form->getEditUrl() ?>" method="post">
 
 
@@ -44,7 +43,7 @@
           <td><?php echo lang('add task to list short') ?>: <?php echo select_task_list('project_form[task_list_id]', active_project(), array_var($project_form_data, 'task_list_id'), false, array('id' => 'projectFormActionSelectTaskList')) ?></td>
         </tr>
       </table>
-      <script type="text/javascript">
+      <script>
         App.modules.addProjectForm.formActionClick();
       </script>
     </fieldset>

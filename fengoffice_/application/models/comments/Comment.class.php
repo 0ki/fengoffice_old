@@ -184,7 +184,9 @@ class Comment extends BaseComment {
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		return can_write($user,$this);
+		$userId = $user->getId();
+		$creatorId = $this->getCreatedBy()->getId();
+		return can_write($user,$this) && ( $user->isAdministrator() || $userId == $creatorId);
 	} // canEdit
 
 	/**

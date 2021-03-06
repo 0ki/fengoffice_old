@@ -247,7 +247,7 @@ class Contact extends BaseContact {
     * @param boolean $save Save user object when done
     * @return string
     */
-    function setPicture($source, $max_width = 50, $max_height = 50, $save = true) {
+    function setPicture($source, $fileType, $max_width = 50, $max_height = 50, $save = true) {
       if(!is_readable($source)) return false;
       
       do {
@@ -261,9 +261,9 @@ class Contact extends BaseContact {
         $thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
         $thumb->saveAs($temp_file, IMAGETYPE_PNG);
         
-        $public_filename = PublicFiles::addFile($temp_file, 'png');
-        if($public_filename) {
-          $this->setPictureFile($public_filename);
+        $public_fileId = FileRepository::addFile($temp_file,array('type'=> $fileType));
+        if($public_fileId) {
+          $this->setPictureFile($public_fileId);
           if($save) {
             $this->save();
           } // if
@@ -275,8 +275,8 @@ class Contact extends BaseContact {
       } // try
       
       // Cleanup
-      if(!$result && $public_filename) {
-        PublicFiles::deleteFile($public_filename);
+      if(!$result && $public_fileId) {
+        FileRepository::deleteFile($public_fileId);
       } // if
       @unlink($temp_file);
       
@@ -291,7 +291,7 @@ class Contact extends BaseContact {
     */
     function deletePicture() {
       if($this->hasPicture()) {
-        PublicFiles::deleteFile($this->getPictureFile());
+        FileRepository::deleteFile($this->getPictureFile());
         $this->setPictureFile('');
       } // if
     } // deletePicture
@@ -315,7 +315,8 @@ class Contact extends BaseContact {
     * @return string
     */
     function getPictureUrl() {
-      return $this->hasPicture() ? PublicFiles::getFileUrl($this->getPictureFile()) : get_image_url('avatar.gif');
+    	return $this->hasPicture() ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('avatar.gif');
+      //return $this->hasPicture() ? PublicFiles::getFileUrl($this->getPictureFile()) : get_image_url('avatar.gif');
     } // getPictureUrl
     
     /**
@@ -326,7 +327,7 @@ class Contact extends BaseContact {
     * @return boolean
     */
     function hasPicture() {
-      return (trim($this->getPictureFile()) <> '') && is_file($this->getPicturePath());
+      return (trim($this->getPictureFile()) <> '') && FileRepository::isInRepository($this->getPictureFile());
     } // hasPicture
     
     // ---------------------------------------------------
@@ -672,11 +673,7 @@ class Contact extends BaseContact {
      * @return booelean
      */
     function canAdd(User $user, Project $project) {
-    	if ($project instanceof Project) { 
-    		return can_manage_contacts($user, true) || $user->getProjectPermission($project, ProjectUsers::CAN_WRITE_CONTACTS);
-    	} else {
-			return can_manage_contacts($user, true);
-    	}
+		return can_manage_contacts($user, true) || ($project instanceof Project ? $user->getProjectPermission($project, ProjectUsers::CAN_WRITE_CONTACTS) : false);
     } // canAdd
     
     /**
@@ -890,17 +887,17 @@ class Contact extends BaseContact {
     	if($this->getUpdatedBy()){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
     		$updated_by_name = $this->getUpdatedByDisplayName();
-    		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
+    		$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');
     	}else {
     		if($this->getCreatedBy())
     			$updated_by_id = $this->getCreatedBy()->getId();
     		else
     			$updated_by_id = lang('n/a');
     		$updated_by_name = $this->getCreatedByDisplayName();
-    		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+			$updated_on = $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a');
     	}
     	
-    	$deletedOn = $this->getTrashedOn() ? $this->getTrashedOn()->getTimestamp() : lang('n/a');
+		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
     	$deletedBy = Users::findById($this->getTrashedById());
     	if ($deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
@@ -916,7 +913,7 @@ class Contact extends BaseContact {
 				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
 				"createdById" => $this->getCreatedById(),
-				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+    			"dateCreated" => $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,

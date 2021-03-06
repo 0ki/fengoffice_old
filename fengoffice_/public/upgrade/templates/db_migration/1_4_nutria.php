@@ -109,7 +109,7 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`
  ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
  ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
  ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
- ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
+ ('general', 'rememberGUIState', '1', 'BoolConfigHandler', 0, 300, ''),
  ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
  ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
  ('general', 'date_format', 'd/m/Y', 'StringConfigHandler', 0, 600, 'Date objects will be displayed using this format.'),
@@ -278,6 +278,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_conditions` (
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `default_value` = '' WHERE `category_name` = 'general' AND `name` = 'localization';
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `default_value` = 1 WHERE `category_name` = 'general' AND `name` = 'rememberGUIState';
 
 ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_manage_templates`;
 ALTER TABLE `<?php echo $table_prefix ?>groups` ADD COLUMN `can_manage_reports` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `can_manage_templates`;

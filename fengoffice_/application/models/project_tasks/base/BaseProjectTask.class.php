@@ -367,28 +367,6 @@ abstract class BaseProjectTask extends ProjectDataObject {
 	} // setMilestoneId()
 
 	/**
-	 * Return value of 'project_id' field
-	 *
-	 * @access public
-	 * @param void
-	 * @return integer
-	 */
-	function getProjectId() {
-		return $this->getColumnValue('project_id');
-	} // getProjectId()
-
-	/**
-	 * Set value of 'project_id' field
-	 *
-	 * @access public
-	 * @param integer $value
-	 * @return boolean
-	 */
-	function setProjectId($value) {
-		return $this->setColumnValue('project_id', $value);
-	} // setProjectId()
-
-	/**
 	 * Return value of 'assigned_on' field
 	 *
 	 * @access public
@@ -669,6 +647,159 @@ abstract class BaseProjectTask extends ProjectDataObject {
       return $this->setColumnValue('trashed_by_id', $value);
     } // setTrashedById()
 	
+    /**
+    * Return value of 'repeat_forever' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getRepeatForever() {
+      return $this->getColumnValue('repeat_forever');
+    } //  getForever()
+    
+    /**
+    * Set value of 'repeat_forever' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function  setRepeatForever($value) {
+      return $this->setColumnValue('repeat_forever', $value);
+    } //  setForever()
+
+    
+    /**
+    * Return value of 'repeat_end' field
+    *
+    * @access public
+    * @param void
+    * @return Date 
+    */
+    function getRepeatEnd() {
+      return $this->getColumnValue('repeat_end');
+    } //  getRepeatEnd()
+    
+    /**
+    * Set value of 'repeat_end' field
+    *
+    * @access public   
+    * @param Date $value
+    * @return boolean
+    */
+    function  setRepeatEnd($value) {
+      return $this->setColumnValue('repeat_end', $value);
+    } //  setRepeatEnd() 
+    
+    /**
+    * Set value of 'repeat_num' field
+    *
+    * @access public   
+    * @param Integer $value
+    * @return boolean
+    */
+    function  setRepeatNum($value) {
+      return $this->setColumnValue('repeat_num', $value);
+    } //  setRepeatNum() 
+    
+    /**
+    * Return value of 'repeat_num' field
+    *
+    * @access public
+    * @param void
+    * @return  Integer 
+    */
+    function getRepeatNum() {
+      return $this->getColumnValue('repeat_num');
+    } //  getRepeatNum()
+    
+    /**
+    * Set value of 'repeat_d' field
+    *
+    * @access public   
+    * @param Integer $value
+    * @return boolean
+    */
+    function  setRepeatD($value) {
+      return $this->setColumnValue('repeat_d', $value);
+    } //  setRepeatD() 
+    
+    /**
+    * Return value of 'repeat_d' field
+    *
+    * @access public
+    * @param void
+    * @return  Integer 
+    */
+    function getRepeatD() {
+      return $this->getColumnValue('repeat_d');
+    } //  setRepeatD()
+    /**
+    * Set value of 'repeat_m' field
+    *
+    * @access public   
+    * @param Integer $value
+    * @return boolean
+    */
+    function  setRepeatM($value) {
+      return $this->setColumnValue('repeat_m', $value);
+    } //  getRepeatM() 
+    
+    /**
+    * Return value of 'repeat_m' field
+    *
+    * @access public
+    * @param void
+    * @return  Integer 
+    */
+    function getRepeatM() {
+      return $this->getColumnValue('repeat_m');
+    } //  getRepeatM()
+    /**
+    * Set value of 'repeat_y' field
+    *
+    * @access public   
+    * @param Integer $value
+    * @return boolean
+    */
+    function  setRepeatY($value) {
+      return $this->setColumnValue('repeat_y', $value);
+    } //  setRepeatY() 
+    
+    /**
+    * Return value of 'repeat_y' field
+    *
+    * @access public
+    * @param void
+    * @return  Integer 
+    */
+    function getRepeatY() {
+      return $this->getColumnValue('repeat_y');
+    } //  getRepeatY()
+    
+	/**
+	 * Return value of 'repeat_by' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getRepeatBy() {
+		return $this->getColumnValue('repeat_by');
+	} // getRepeatBy()
+
+	/**
+	 * Set value of 'repeat_by' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setRepeatBy($value) {
+		return $this->setColumnValue('repeat_by', $value);
+	} // setRepeatBy()
+
 } // BaseProjectTask
 
 

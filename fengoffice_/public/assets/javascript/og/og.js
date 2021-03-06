@@ -23,22 +23,23 @@ og.msg =  function(title, text, timeout, classname, sound) {
 	if (typeof timeout == 'undefined') timeout = 4;
 	if (!classname) classname = "msg";
 
-	var click_to_remove_msg = ''; // only show this message if error
+	var click_to_remove_msg = ''; // only show this message if message doesn't vanish by itself
 	if (timeout == 0)
 		click_to_remove_msg = '<div style="text-align:center; font-size:small; font-style:italic"><a>' + lang('click to remove') + '</a></div>';
 			
 	var box = ['<div class="' + classname + '" title="' + lang('click to remove') + '">',
-			'<div class="x-box-tl"><div class="x-box-tr"><div class="x-box-tc"></div></div></div>',
-			'<div class="x-box-ml"><div class="x-box-mr"><div class="x-box-mc"><h3>{0}</h3>{1}',
-			click_to_remove_msg,
+			'<div class="og-box-tl"><div class="og-box-tr"><div class="og-box-tc"></div></div></div>',
+			'<div class="og-box-ml"><div class="og-box-mr"><div class="og-box-mc"><h3>{0}:</h3><p>{1}</p>',
+			//click_to_remove_msg,
 			'</div></div></div>',
-			'<div class="x-box-bl"><div class="x-box-br"><div class="x-box-bc"></div></div></div>',
+			'<div class="og-box-bl"><div class="og-box-br"><div class="og-box-bc"></div></div></div>',
 			'</div>'].join('');
+	
 	if( !this.msgCt){
 	    this.msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
 	}
-	this.msgCt.alignTo(document, 't-t');
-	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text.replace(/([^>]?)\n/g, '$1<br/>\n'))}, true);
+	//	this.msgCt.alignTo(document, 't-t');
+	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, text.replace(/([^>])\n/g, '$1<br/>\n'))}, true);
 	Ext.get(m).on('click', function() {
 		if (timeout > 0) {
 			this.setStyle('display', 'none');
@@ -160,7 +161,7 @@ og.timeslotTypeSelectChange = function(select, genid) {
 
 og.switchToOverview = function(){
 	var opanel = Ext.getCmp('overview-panel');
-	opanel.defaultContent = {type: 'panel', data: 'overview'};
+	opanel.defaultContent = {type: 'url', data: og.getUrl('dashboard', 'init_overview')};
 	opanel.load(opanel.defaultContent);
 };
 
@@ -226,7 +227,7 @@ og.hideOtherMessage = function() {
 };
 
 og.toggle = function(id, btn) {
-	var obj = Ext.get(id);
+	var obj = Ext.fly(id);
 	if (obj.isDisplayed()) {
 		obj.slideOut("t", {duration: 0.5, useDisplay: true});
 		if (btn) Ext.fly(btn).replaceClass('toggle_expanded', 'toggle_collapsed');
@@ -388,16 +389,18 @@ og.debug = function(obj, level) {
 };
 
 og.captureLinks = function(id, caller) {
-	var links = Ext.select((id?"#" + id + " ":"") + "a.internalLink");
-	links.each(function() {
-		if (this.dom.href.indexOf('javascript:') == 0) {
-			return;
+	var element = document.getElementById(id);
+	if (!element) element = document;
+	var links = element.getElementsByTagName("a");
+	for (var i=0; i < links.length; i++) {
+		var link = links[i];
+		if (!link.href || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
+		if (link.target == '_blank' || link.target == '_self') continue;
+		if (caller && !link.target) {
+			link.target = caller.id;
 		}
-		if (caller && !this.dom.target) {
-			this.dom.target = caller.id;
-		}
-		this.dom.onvalidate = this.dom.onclick;
-		this.dom.onclick = function(e) {
+		link.onvalidate = link.onclick;
+		link.onclick = function(e) {
 			if (typeof this.onvalidate != 'function') {
 				var p = true;
 			} else {
@@ -411,11 +414,13 @@ og.captureLinks = function(id, caller) {
 			}
 			return false;
 		}
-	});
-	links = Ext.select((id?"#" + id + " ":"") + "form.internalForm");
-	links.each(function() {
-		var onsubmit = this.dom.onsubmit;
-		this.dom.onsubmit = function() {
+	};
+	forms = element.getElementsByTagName("form");
+	for (var i=0; i < forms.length; i++) {
+		var form = forms[i];
+		if (form.target == '_blank' || form.target == '_self') continue;
+		var onsubmit = form.onsubmit;
+		form.onsubmit = function() {
 			if (onsubmit && !onsubmit()) {
 				return false;
 			} else {
@@ -426,7 +431,7 @@ og.captureLinks = function(id, caller) {
 			}
 			return false;
 		}
-	});
+	};
 };
 
 og.log = function(msg) {
@@ -509,7 +514,7 @@ og.openLink = function(url, options) {
 				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}
 			var endTime = new Date().getTime();
-			og.log(url + ": " + (endTime - startTime) + " ms");
+			//og.log(url + ": " + (endTime - startTime) + " ms");
 		},
 		caller: options.caller,
 		postProcess: options.callback || options.postProcess,
@@ -587,7 +592,7 @@ og.processResponse = function(data, options, url) {
 	if (!data) return;
 	
 	// first load scripts
-	og.loadScripts(data.scripts, {
+	og.loadScripts(data.scripts || [], {
 		callback: function() {
 			if (options) var caller = options.caller;
 			
@@ -621,6 +626,7 @@ og.processResponse = function(data, options, url) {
 				
 				//Loads data into a single panel
 				if (data.current) {
+					data.current.inlineScripts = data.inlineScripts;
 					if (data.current.panel || caller) { //Loads data into a specific panel
 						var panelName = data.current.panel ? data.current.panel : caller; //sets data into current.panel, otherwise into caller
 						var p = Ext.getCmp(panelName);
@@ -761,11 +767,11 @@ og.showHelp = function() {
 };
 
 og.extractScripts = function(html) {
-	var startTime = new Date().getTime();
 	var id = Ext.id();
 	html += '<span id="' + id + '"></span>';
 	Ext.lib.Event.onAvailable(id, function() {
 		try {
+			var startTime = new Date().getTime();
 			var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
 			var match;
 			while (match = re.exec(html)) {
@@ -782,7 +788,7 @@ og.extractScripts = function(html) {
 				}
 			}
 			var endTime = new Date().getTime();
-			og.log("scripts: " + (endTime - startTime) + " ms");
+			//og.log("scripts: " + (endTime - startTime) + " ms");
 			var el = document.getElementById(id);
 			if (el) { Ext.removeNode(el); }
 		} catch (e) { alert(e);}
@@ -1026,15 +1032,15 @@ og.billingEditValue = function(id){
 };
 
 og.checkDownload = function(url, checkedOutById, checkedOutBy) {
-	var options = {};
-	options.preventPanelLoad = true;
 	var checkOut = function() {
 		og.ExtendedDialog.dialog.destroy();
-		og.openLink(url + "&checkout=1&validate=1", options);
+		if (Ext.isIE) window.open(url + "&checkout=1");
+		else location.href = url + "&checkout=1";
 	};
 	var readOnly = function() {
 		og.ExtendedDialog.dialog.destroy();
-		og.openLink(url + "&checkout=0&validate=1", options);
+		if (Ext.isIE) window.open(url + "&checkout=0");
+		else location.href = url + "&checkout=0";
 	}
 	var checkedOutByName = checkedOutBy;
 	if (checkedOutByName == 'self') {
@@ -1045,7 +1051,6 @@ og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 			title :lang('checkout notification'),
 			y :50,
 			id :'checkDownloadDialog',
-			layout :'border',
 			modal :true,
 			height :150,
 			width :300,
@@ -1059,13 +1064,13 @@ og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 				id :'download_button',
 				scope :this
 			} ],
-			html :lang('document checked out by', checkedOutByName),
 			dialogItems : [ {
 				xtype :'label',
 				name :'checked_label',
 				id :'checkedout',
 				hideLabel :true,
-				value :false
+				style: 'font-size:100%;',
+				text :lang('document checked out by', checkedOutByName)
 			} ]
 		};
 	} else {
@@ -1073,7 +1078,6 @@ og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 			title :lang('checkout confirmation'),
 			y :50,
 			id :'checkDownloadDialog',
-			layout :'border',
 			modal :true,
 			height :150,
 			width :300,
@@ -1092,14 +1096,14 @@ og.checkDownload = function(url, checkedOutById, checkedOutBy) {
 				id :'readOnly_button',
 				scope :this
 			} ],
-			html :lang('checkout recommendation'),
-			dialogItems : {
+			dialogItems : [{
 				xtype :'label',
 				name :'checked_label',
 				id :'checkedout',
 				hideLabel :true,
-				value :false
-			}
+				style: 'font-size:100%;',
+				text :lang('checkout recommendation')
+			}]
 		};
 	}
 	og.ExtendedDialog.show(config);
@@ -1183,7 +1187,7 @@ og.FileIsZip = function(mimetype, name) {
 	var ix = name.lastIndexOf('.');
 	var extension = ix >= 0 ? name.substring(ix + 1) : "";
 	return (mimetype == 'application/zip' || mimetype == 'application/x-zip-compressed' || 
-			(mimetype == 'application/x-compressed' && extension == 'zip'));
+			(mimetype == 'application/x-compressed' && extension == 'zip') || extension == 'zip');
 };
 
 og.disableEventPropagation = function(event) { 
@@ -1191,6 +1195,140 @@ og.disableEventPropagation = function(event) {
 		window.event.cancelBubble = true; 
 	} else {
 		event.stopPropagation();
-	}
+	} 
 };
 
+og.showMoreActions = function(genid) {
+	var obj = document.getElementById('otherActions' + genid);
+	obj.style.display = 'block';
+	var moreOp = document.getElementById('moreOption' + genid);
+	moreOp.style.display = 'none';
+};
+
+og.loadEmailAccounts = function(type) {
+	og.openLink(og.getUrl('mail', 'list_accounts', {type: type}),{
+		callback: function(success, data) {
+			if (success) {
+				if (type == 'view') og.email_accounts_toview = data.accounts;
+				else if (type == 'edit') og.email_accounts_toedit = data.accounts;
+			}
+		}
+	});
+};
+//	SUBSCRIBERS LIST FUNCTIONS
+
+og.rollOver = function(div)
+{
+	div.className += " rolling-over";
+};
+og.rollOut = function(div,isCompany)
+{
+	
+	
+	if (isCompany){
+		isChecked=Ext.fly(div).hasClass("checked");
+		div.className = "container-div company-name";
+		if (isChecked){
+			div.className += " checked";
+		}
+	}else{
+		isChecked=Ext.fly(div).hasClass("checked-user");
+		if (isChecked){
+			div.className = "container-div checked-user";
+		}else{
+			div.className = "container-div user-name";
+		}
+	}
+};
+og.checkUser = function (div){
+	
+	hiddy = document.getElementById("hiddenUser" + div.id);
+	if (hiddy){
+		if (hiddy.value == "checked"){
+			hiddy.value = "";
+			div.className = "container-div user-name";
+		}
+		else{
+			hiddy.value = "checked";
+			div.className = "container-div checked-user";
+			
+		}
+		
+	} 
+};
+og.subscribeCompany = function (div){
+		isChecked=Ext.fly(div).hasClass("checked");
+		hids = div.parentNode.getElementsByTagName("input");
+		for (i=0;i<hids.length;i++)
+		{
+			if (!isChecked){
+				hiddenTag = hids.item(i);
+				if (hiddenTag.id.substr(0,10)== "hiddenUser" && hiddenTag.value != "checked"){
+					og.checkUser(hiddenTag.parentNode);
+				}				
+			}else{
+				hiddenTag = hids.item(i);
+				og.checkUser(hiddenTag.parentNode);
+			}
+		}
+		
+		if (!isChecked) {
+			div.className += " checked";
+		}else{
+			div.className = "container-div company-name";
+		}
+	
+};
+
+og.moveToWsOrMantainWs = function(manager, ws) {
+	var man = Ext.getCmp(manager);
+	
+	var moveAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+		man.moveObjectsToWsOrMantainWs(0, ws);
+	};
+	var mantainAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+		man.moveObjectsToWsOrMantainWs(1, ws);
+	};
+
+	var config = {
+		title :lang('move to workspace or keep old ones'),
+		y :50,
+		id :'moveToWsOrAddWs',
+		modal :true,
+		height :150,
+		width :300,
+		resizable :false,
+		closeAction :'hide',
+		iconCls :'op-ico',
+		border :false,
+		buttons : [ {
+			text :lang('move to workspace'),
+			handler :moveAction,
+			id :'move_button',
+			scope :this
+		}, {
+			text :lang('keep old workspaces'),
+			handler :mantainAction,
+			id :'add_button',
+			scope :this
+		} ],
+		dialogItems : [ {
+			xtype :'label',
+			name :'moveadd_label',
+			id :'moveadd',
+			hideLabel :true,
+			style: 'font-size:100%;',
+			text :lang('do you want to move objects to this ws or keep old ones and add this ws')
+		} ]
+	};
+	og.ExtendedDialog.show(config);
+};
+
+og.replaceAllOccurrences = function(str, search, replace) {
+	while (str.indexOf(search) != -1) {
+		str = str.replace(search, replace);
+	}
+	return str;
+};

@@ -109,30 +109,9 @@ var CH_BACK_SLASH= 220;
 var CH_CLOSE_BRAKET= 221;
 var CH_SINGLE_QUOTE= 222;
 
-
-function keyHandler(e){
-	e ? e : e =window.event; //get event for IE
- 	/*var pressedKey;
- 	if (document.all)	{ e = window.event; }
- 	if (document.layers || e.which) { pressedKey = e.which; }
- 	if (document.all)	{ pressedKey = e.keyCode; }
- 	alert(pressedKey +"ctrl1"+ pressedKey.ctrlKey);
- 	pressedCharacter = String.fromCharCode(pressedKey);
- 	alert(' Character = ' + pressedCharacter + ' [Decimal value = ' + pressedKey + ']');
- 	*/
-
-	var targ = e ? e : window.event;
-	key = targ.keyCode ? targ.keyCode : targ.charCode;
-	if(targ.ctrlKey == true) { // 106 is key 'j', 107 is key 'k'
-
-	}
-
-	var propagate = true;
-	//try{
-		propagate = keyManager.runAction(key);
-	//}catch(e){alert(e);}
-	return propagate;
-}
+var CH_SHIFT = 1000;
+var CH_ALT = 2000;
+var CH_CTRL = 4000;
 
 /* Alt + Ctrl Combination not supported yet*/
 
@@ -141,7 +120,7 @@ function KeyAction(propagate, callback){
 	self.constructor = function(propagate,callback){
 		this.propagate = propagate;
 		this.run = callback;
-	}
+	};
 
 	self.constructor(propagate,callback);
 	return self;
@@ -149,36 +128,22 @@ function KeyAction(propagate, callback){
 
 function KeyHandler(){
 	var self = this;
-	self.constructor = function(){
-		this.ctrlComination = Array();
-		this.altComination = Array();
-		this.singleKey = Array();
-	}
+	self.constructor = function(){		
+		this.callbacks = Array();
+	};
 
-	self.addAction = function(callback,propagate, keycode,ctrl,alt){
+	self.addAction = function(callback,propagate, keycode){
 		if(keycode!=undefined){
 			var item = new KeyAction(propagate, callback);
-			if(ctrl!=undefined)
-				this.ctrlComination[keycode]= item;
-			else
-				if(alt!=undefined)
-					this.altComination[keycode]= item;
-				else
-					this.singleKey[keycode]= item;
+			this.callbacks[keycode]= item;
 		}else{
 			alert("Invalid action configuration. Keycode must be defined");
 		}
 	}
-	self.runAction = function(keycode,ctrl,alt){
-		var action = undefined;
-		if(keycode!=undefined){
-			if(ctrl!=undefined)
-				action = this.ctrlComination[keycode];
-			else
-				if(alt!=undefined)
-					action =this.altComination[keycode];
-				else
-					action = this.singleKey[keycode];
+	self.runAction = function(keycode){
+		if(keycode!=undefined){			
+			var action = this.callbacks[keycode];
+			
 			if(action==undefined)
 				return true;
 			else{
@@ -190,6 +155,36 @@ function KeyHandler(){
 		}
 		return true;
 	}
+	self.keyHandler = function(e){
+		e ? e : e =window.event; //get event for IE
+	 	/*var pressedKey;
+	 	if (document.all)	{ e = window.event; }
+	 	if (document.layers || e.which) { pressedKey = e.which; }
+	 	if (document.all)	{ pressedKey = e.keyCode; }
+	 	alert(pressedKey +"ctrl1"+ pressedKey.ctrlKey);
+	 	pressedCharacter = String.fromCharCode(pressedKey);
+	 	alert(' Character = ' + pressedCharacter + ' [Decimal value = ' + pressedKey + ']');
+	 	*/
+		
+		var propagate = true;	
+		var targ = e ? e : window.event;
+		key = targ.keyCode ? targ.keyCode : targ.charCode;
+		
+		if(targ.ctrlKey) 	key += CH_CTRL;
+		if(targ.altKey)  	key += CH_ALT;
+		if(targ.shiftKey)  	key += CH_SHIFT;
+		propagate = self.runAction(key);
+		
+		if(!propagate){
+			if (e.stopPropagation) 		
+				e.stopPropagation();
+			else 
+				e.cancelBubble = true;
+			
+		} 
+		return propagate;
+	}
+
 	self.constructor();
 	return self;
 }

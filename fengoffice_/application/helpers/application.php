@@ -131,10 +131,11 @@ function select_project2($name, $projectId, $genid, $allowNone = false, $extraWS
 		}
 	}
 	$extra = "[$extra]";
-	$html = "<div id='" . $genid  . "wsSel'></div>";
-	$html .= "<script type='text/javascript'>
-	og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra);
-	</script>";
+	$html = "<div id='" . $genid  . "wsSel'></div>
+		<script>
+		og.drawWorkspaceSelector('" .  $genid  . "wsSel', $projectId, '$name', " . ($allowNone? 'true':'false') . ", $extra);
+		</script>
+	";
 	
 	return $html;
 } // select_project
@@ -198,18 +199,19 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 		$loadFrom = "'workspace-panel'";
 	}
 	$output = "<div id=\"$id-wsTree\"></div>
-			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\">
-			<script type=\"text/javascript\">
-				var wsTree = new og.WorkspaceChooserTree({
-					renderTo: '$id-wsTree',
-					field: '$id-field',
-					loadWorkspacesFrom: $loadFrom,
-					id: '$id',
-					workspaces: " . json_encode($workspacesToJson) . ",
-					height: 320,
-					width: 210
-				});
-			</script>";
+			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\"></input>
+		<script>
+		var wsTree = new og.WorkspaceChooserTree({
+			renderTo: '$id-wsTree',
+			field: '$id-field',
+			loadWorkspacesFrom: $loadFrom,
+			id: '$id',
+			workspaces: " . json_encode($workspacesToJson) . ",
+			height: 320,
+			width: 210
+		});
+		</script>
+	";
 	return $output;
 } // select_workspaces
 
@@ -891,6 +893,45 @@ function render_add_subscribers(ProjectDataObject $object, $genid = null, $subsc
 	tpl_assign('genid', $genid);
 	return tpl_fetch(get_template_path('add_subscribers', 'object'));
 }
+/**
+ * Renders a list of users to add as subscribers, used to add subscribers from the objects view.
+ * @param $object
+ * @param $genid
+ * @param $subscribers
+ * @param $workspaces
+ * @return html text
+ */
+function render_add_subscribers_select(ProjectDataObject $object, $genid = null, $subscribers = null, $workspaces = null) {
+	if (!isset($genid)) {
+		$genid = gen_id();
+	}
+	$subscriberIds = array();
+	if (is_array($subscribers)) {
+		foreach ($subscribers as $u) {
+			$subscriberIds[] = $u->getId();
+		}
+	} else {
+		if ($object->isNew()) {
+			$subscriberIds[] = logged_user()->getId();
+		} else {
+			foreach ($object->getSubscribers() as $u) {
+				$subscriberIds[] = $u->getId();
+			}
+		}
+	}
+	if (!isset($workspaces)) {
+		if ($object->isNew()) {
+			$workspaces = array(active_or_personal_project());
+		} else {
+			$workspaces = $object->getWorkspaces();
+		}
+	}
+	tpl_assign('type', get_class($object->manager()));
+	tpl_assign('workspaces', $workspaces);
+	tpl_assign('subscriberIds', $subscriberIds);
+	tpl_assign('genid', $genid);
+	return tpl_fetch(get_template_path('add_subscribers_list', 'object'));
+}
 
 /**
  * Creates a button that shows an object picker to link the object given by $object with the one selected in
@@ -1022,7 +1063,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 	$attributes["id"] = $id;
 
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
-		<script type="text/javascript">
+		<script>
 		new og.CSVCombo({
 			store: new Ext.data.SimpleStore({
         		fields: ["value", "name", "clean"],
@@ -1037,7 +1078,7 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
         	emptyText: "",
         	applyTo: "'.$id.'"
     	});
-		</script>
+    	</script>
 	';
 	return $html;
 }
@@ -1060,9 +1101,9 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 	foreach ($options as $o) {
 		if ($jsArray != "") $jsArray .= ",";
 		if (count($o) < 2) {
-			$jsArray .= '['.json_encode($o).','.json_encode(clean($o)).','.json_encode(clean($o)).']';
+			$jsArray .= '['.json_encode($o).','.json_encode($o).','.json_encode(clean($o)).']';
 		} else {
-			$jsArray .= '['.json_encode($o[0]).','.json_encode(clean($o[1])).','.json_encode(clean($o[1])).']';
+			$jsArray .= '['.json_encode($o[0]).','.json_encode($o[1]).','.json_encode(clean($o[1])).']';
 		}
 	}
 	$jsArray = "[$jsArray]";
@@ -1071,7 +1112,7 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 	$attributes["id"] = $id;
 
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
-		<script type="text/javascript">
+		<script>
 		new og.EmailCombo({
 			store: new Ext.data.SimpleStore({
         		fields: ["value", "name", "clean"],
@@ -1086,7 +1127,7 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
         	emptyText: "",
         	applyTo: "'.$id.'"
     	});
-		</script>
+    	</script>
 	';
 	return $html;
 }
@@ -1100,7 +1141,7 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 
 	if (trim($value) != "") $value .= ", ";
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
-		<script type="text/javascript">
+		<script>
 		var tags = Ext.getCmp("tag-panel").getTags();
 		var arr = [];
 		for (var i=0; i < tags.length; i++) {
@@ -1119,7 +1160,7 @@ function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
         	emptyText: "",
         	applyTo: "'.$id.'"
     	});
-		</script>
+    	</script>
 	';
 	return $html;
 }
@@ -1129,7 +1170,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 		$defaults = array(
 			'type' => 'reminder_popup',
 			'duration' => '15',
-			'duration_type' => 'minutes'
+			'duration_type' => '1'
 		); 
 	}
 	if (is_null($genid)) {
@@ -1147,6 +1188,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 		<div id="'.$genid.'" class="og-add-reminders">
 			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\');return false;">' . lang("add object reminder") . '</a>
 		</div>
+		
 		<script>
 		og.reminderTypes = ['.$typecsv.'];
 		og.reminderDurations = [0, 1, 2, 5, 10, 15, 30];
@@ -1189,7 +1231,7 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 				html += \'>\' + lang(og.reminderDurationTypes[i]) + \'</option>\';
 			}
 			html += \'</select>\';
-			html += \' before. \';
+			html += \' '. lang('before') .'. \';
 			var id = Ext.id();
 			html += \'<img title="\' + lang("remove object reminder") + \'" class="ico ico-delete" src="s.gif" style="vertical-align:middle;width:16px;height:16px;margin: 0 5px;position:relative;top:-2px;cursor:pointer" onclick="og.removeReminder(this.parentNode, \\\'\' + context + \'\\\');return false;" />\';
 			html += \'<span style="margin-left:2px;position:relative;top:2px"><input class="checkbox" type="checkbox" name="reminder_subscribers[\' + context + \'][\' + count + \']" \' + (for_subscribers ? \'checked="checked"\' : "") + \' id="\' + id + \'" /><label class="checkbox" for="\' + id + \'">\' + lang("apply to subscribers") + \'</label></span>\';
@@ -1222,10 +1264,11 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 				row = row.nextSibling;
 			}
 		}
+		</script>
 	';
 	
 	if ($object->isNew()) {
-		$output .= 'og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'");';
+		$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'");</script>';
 	} else {
 		$reminders = ObjectReminders::getAllRemindersByObjectAndUser($object, logged_user(), $context, true);
 		foreach($reminders as $reminder) {
@@ -1241,16 +1284,13 @@ function render_add_reminders($object, $context, $defaults = null, $genid = null
 				$duration_type = "60";
 			} else {
 				$duration = $mins;
-				$duration_type = "minutes";
+				$duration_type = "1";
 			}
 			$type = $reminder->getType();
 			$forSubscribers = $reminder->getUserId() == 0 ? "true" : "false";
-			$output .= 'og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.');';
+			$output .= '<script>og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.');</script>';
 		} // for
 	}
-	$output .= '
-		</script>
-	';
 	return $output;
 }
 
@@ -1310,17 +1350,15 @@ function render_add_custom_properties(ProjectDataObject $object) {
 				row = row.nextSibling;
 			}
 		}
+		</script>
 	';
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
 	if (is_array($properties)) {
 		foreach($properties as $property) {
-			$output .= 'og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");';
+			'<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");</script>';
 		} // for
 	} // if
-	$output .= '
-		og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");
-		</script>
-	';
+	'<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");</script>';
 	return $output;
 }
 
@@ -1386,11 +1424,10 @@ function select_task_priority($name, $selected = null, $attributes = null) {
  */ 
 function filter_assigned_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
 	$logged_user = logged_user();
-	if($project){		
-		$project_ids = $project->getAllSubWorkspacesCSV(true,logged_user());
-	}
-	else{
-		$project_ids = logged_user()->getActiveProjectIdsCSV();
+	if ($project) {		
+		$project_ids = $project->getAllSubWorkspacesQuery(true,logged_user());
+	} else {
+		$project_ids = logged_user()->getWorkspacesQuery();
 	}
 	$grouped_users = Users::getGroupedByCompanyFromProjectIds($project_ids);
 

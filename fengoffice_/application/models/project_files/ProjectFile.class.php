@@ -279,7 +279,7 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function getTypeString() {
 		$revision = $this->getLastRevision();
-		return $revision instanceof ProjectFileRevision ? $revision->getTypeString() : null;
+		return $revision instanceof ProjectFileRevision ? $revision->getTypeString() : ($this->getType() ==  ProjectFiles::TYPE_WEBLINK ? lang('weblink') : null);
 	} // getTypeString
 
 	/**

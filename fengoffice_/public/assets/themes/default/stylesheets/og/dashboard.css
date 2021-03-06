@@ -30,10 +30,9 @@
 
 .dashActions .viewAsList {
 	backgroud-position: 0pt 2px;
-	background-repeat: no-repeat;
 	height: 16px;
 	padding-left:20px;
-	background-image: url(../../images/16x16/view_as_list.png);
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -100px !important;
 	cursor: pointer;		
 }
 

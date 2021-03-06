@@ -20,6 +20,7 @@
 	if (logged_user()->isAdministrator()){
 		$reportPages["users"] = array("type" => "Users");
 	}
+	require_javascript("og/ReportingFunctions.js");
 ?>
 
 <div style="padding:7px">
@@ -111,7 +112,7 @@
 	foreach ($reportPages as $pageTitle => $pageInfo) {?>
 <tr><td class="report_<?php echo $pageTitle == $selectedPage ? '' : 'un'?>selected_menu">
 <a href="#" onclick="javascript:og.selectReportingMenuItem(this, '<?php echo $genid . $pageTitle?>', '<?php echo $pageTitle ?>')">
-	<div class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:90px;padding-bottom:8px"><?php echo lang($pageTitle) ?></div>
+	<div class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:90px;padding-bottom:2px"><?php echo lang($pageTitle) ?></div>
 </a>
 </td><td class="coViewRight"></td>
 </tr>
@@ -125,3 +126,11 @@
 </table>
 
 </div>
+
+<script>
+	og.deleteReport = function(id){
+		if(confirm(lang('delete report confirmation'))){
+			og.openLink(og.getUrl('reporting', 'delete_custom_report', {id: id}));
+		}
+	};
+</script>

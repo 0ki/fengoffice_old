@@ -13,7 +13,7 @@
  	</div>
 
 	<textarea class="textedit" name="fileContent"><?php
-		echo htmlEntities(iconv(detect_encoding($filecontent, array('UTF-8','ISO-8859-1')),'UTF-8',$filecontent), null, 'UTF-8');
+		echo htmlEntities(EncodingConverter::instance()->convert(detect_encoding($filecontent, array('UTF-8','ISO-8859-1')),'UTF-8',$filecontent), null, 'UTF-8');
 	?></textarea>
 <?php
 add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$iname'); form.new_revision_document.value = 'checked'; form.onsubmit(); })()", "save");

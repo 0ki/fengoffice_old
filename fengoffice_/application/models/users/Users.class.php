@@ -165,11 +165,30 @@ class Users extends BaseUsers {
 
 	function getContactManagers() {
 		$users = Users::findAll(array(
-			'conditions' => array('`can_manage_contacts` = 1')
+			'conditions' => array('`can_manage_contacts` = 1'),
+			'order' => 'display_name',
 		));
 		if (!is_array($users)) $users = array();
 		return $users;
 	}
+	
+	/**
+	 * It returns all the users that have the recived project as
+	 * personal project. used to detect whether to delete or not a
+	 * workspace.
+	 * @param int $project_id 
+	 * @return array
+	 */
+	function GetByPersonalProject($project_id)
+	{
+		if ($project_id != ""){
+			$users = Users::findAll(array(
+				'conditions' => array('`personal_project_id` = ' . $project_id)
+			));
+		}
+		if (!is_array($users)) $users = array();
+		return $users;
+	}//getByPersonalProject
 } // Users
 
 ?>

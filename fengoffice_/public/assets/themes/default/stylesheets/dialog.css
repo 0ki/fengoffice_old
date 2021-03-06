@@ -248,3 +248,22 @@ span.required {
 #repeatPasswordDiv {
   margin-left: 170px;
 }
+
+#loginSubmit {
+	position: relative;
+}
+
+#optionsLink, #hideOptionsLink {
+	position: absolute;
+	right: 0px;
+	top: 10px;
+}
+
+#optionsDiv {
+	padding-top: 10px;
+}
+#optionsDiv label {
+	float: left;
+	width: 100px;
+	margin-right: 10px;
+}

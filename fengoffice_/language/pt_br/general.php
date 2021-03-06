@@ -164,7 +164,4 @@
 	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Confirma envio do objeto para lixeira?',
 	'add' => 'Adicionar',
-	'new password' => 'Nova Senha',
-	'change' => 'Mudar',
-	'remove' => 'Remover',
 ); ?>

@@ -9,7 +9,7 @@ class FilesServices extends WebServicesBase {
 	function FilesServices() {
 		
 		$this->__dispatch_map['listFiles'] = array(
-            "in"  => array("username" => "string", "password" => "string", "tags" => "string", "workspaces" => "string", "name" => "string", "offset" => "int", "limit" => "int"),
+            "in"  => array("username" => "string", "password" => "string", "tags" => "string", "workspaces" => "string", "name" => "string", "offset" => "int", "limit" => "int","type" => "string"),
             "out" => array("list" => "string")
 		);
 		
@@ -41,7 +41,7 @@ class FilesServices extends WebServicesBase {
 		$this->WebServicesBase();
 	}
 	
-	function listFiles($username, $password, $tags, $workspaces, $name, $offset=0, $limit=1000) {
+	function listFiles($username, $password, $tags, $workspaces, $name, $offset=0, $limit=1000, $type="") {
 		$result = '';
 		if ($this->loginUser($username, $password)) {
 			$wspaces = Projects::findByCSVIds($workspaces);
@@ -51,10 +51,10 @@ class FilesServices extends WebServicesBase {
 			if (trim($tags) == '') $tags = null;
 			
 			if ($ws == null) {
-				$files = ProjectFiles::getUserFiles(logged_user(), null, $tags, null, ProjectFiles::ORDER_BY_NAME, 'ASC', $offset, $limit);
+				$files = ProjectFiles::getUserFiles(logged_user(), null, $tags, $type, ProjectFiles::ORDER_BY_NAME, 'ASC', $offset, $limit);
 			} else {
 				$listfiles = ProjectFiles::getProjectFiles($ws, null,
-					false, ProjectFiles::ORDER_BY_NAME, 'ASC', ($offset/$limit), $limit, false, $tags);
+					false, ProjectFiles::ORDER_BY_NAME, 'ASC', ($offset/$limit), $limit, false, $tags,$type);
 				if (is_array($listfiles) && count($listfiles))
 					$files = $listfiles[0];
 				else $files = array();
@@ -117,7 +117,7 @@ class FilesServices extends WebServicesBase {
 				DB::beginWork();
 
 				$file = null;
-				$files = ProjectFiles::getAllByFilename($filename, logged_user()->getActiveProjectIdsCSV());
+				$files = ProjectFiles::getAllByFilename($filename, logged_user()->getWorkspacesQuery());
 				
 				if (is_array($files) && count($files) > 0) {
 					if ($generate_rev) {
@@ -287,7 +287,7 @@ class FilesServices extends WebServicesBase {
 					'comments_enabled' => $file->getCommentsEnabled(),
 					'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
 					'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
-					'workspaces' => $file->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+					'workspaces' => $file->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),
 				); // array
 	
 				try {

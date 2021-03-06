@@ -16,7 +16,6 @@ abstract class BaseProjectEvents extends ProjectDataObjects {
 	 */
 	static private $columns = array(
     	'id' => DATA_TYPE_INTEGER,
-    	'project_id' => DATA_TYPE_INTEGER,
     	'duration' => DATA_TYPE_DATETIME,
     	'start' => DATA_TYPE_DATETIME,
     	'subject' => DATA_TYPE_STRING,

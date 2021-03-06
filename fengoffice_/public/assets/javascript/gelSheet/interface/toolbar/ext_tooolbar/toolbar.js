@@ -15,7 +15,9 @@ function createToolbars(){
 	        icon: iconspath+'pencil-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
 	        tooltip: '<b>'+lang('Save')+'</b><br/>'+lang('Save the current book'),
-	        handler: window.editBook
+	        handler: function(){
+	    		window.saveBook();
+	    	}
 	    });
 	    
 		
@@ -25,8 +27,12 @@ function createToolbars(){
 	        icon: iconspath+'saveas-16x16.png', // icons can also be specified inline
 	        cls: 'x-btn-icon',
 	        tooltip: '<b>'+lang('Save as')+'..</b><br/>'+lang('Save the spreadsheet with a new filename'),
-	        handler: saveBookConfirm 
+	        handler: function(){
+				saveBookConfirm() ;
+			}
 	    },'-');
+			
+			
 			
 		//----------- EXPORT ------------//
 	
@@ -68,6 +74,26 @@ function createToolbars(){
 	        menu: exportMenu,  
 	    },'-');
 	
+		//----------- UNDO ------------//
+
+		
+		tb.add({
+	        icon: iconspath+'undo-16x16.png', // icons can also be specified inline
+	        cls: 'x-btn-icon',
+	        tooltip: '<b>'+lang('undo')+'</b>',
+	        handler: undo
+	    });
+
+
+		//----------- REDO ------------//
+		
+		tb.add({
+	        icon: iconspath+'redo-16x16.png', // icons can also be specified inline
+	        cls: 'x-btn-icon',
+	        tooltip: '<b>'+lang('redo')+'</b>',
+	        handler: redo
+	    });
+
 
 		//----------- FONT BOLD ------------//
 
@@ -265,97 +291,205 @@ function createToolbars(){
 		tb.add("-");
 		
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'align_left-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Align left')+'</i>',
-	        handler: function(){}
+	        handler: function() { cmdSetAlignStyle('left') ; }
 	    });
 
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'align_center-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Align center')+'</i>',
-	        handler: function(){}
+	        handler: function() { cmdSetAlignStyle('center') ; }
 	    });		
 
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'align_right-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Align right')+'</i>',
-	        handler: function(){}
+	        handler: function() { cmdSetAlignStyle('right') ; }
 	    });
 	
 		tb.add("-");
 
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'valign_button-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Vertical align bottom')+'</i>',
-	        handler: function(){}
+	        handler: function(){cmdSetValignStyle('bottom') ;}
 	    });
 
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'valign_center-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Vertical align center')+'</i>',
-	        handler: function(){}
+	        handler: function(){cmdSetValignStyle('middle') ;}
 	    });		
 
 		tb.add({
-			disabled: true ,
+			disabled: false ,
 	        icon: iconspath+'valign_top-16x16.gif', 
 	        cls: 'x-btn-icon',
 	        tooltip: '<i>'+lang('Vertical align top')+'</i>',
-	        handler: function(){}
-	    });
-
-		tb.add("-") ;		
-		/***************** SECOND TOOLBAR *****************/ 
-	
-	    var tb2 = new Ext.Toolbar();
-	    tb2.render('north');
-		
-		tb2.add('-');
-		
-		tb2.add('<span style="font-weight: bold; font-style: italic; font-family: Verdana ; color: #0005AA">F(x)=</span>');
-		
-				
-	    var functions = new Ext.data.SimpleStore({
-	        fields: ['function_id', 'function_name'],
-	        data : Ext.data.functions // from functions.js
+	        handler: function(){cmdSetValignStyle('top') ;}
 	    });
 
 		
-		var text = new Ext.form.TextField({
-			fieldLabel: 'f(x)',
-			width:547,
-			id: 'FormulaBar' ,
-			enableKeyEvents: true 
-			 
+		tb.add("-");
+
+		tb.add({
+	        icon: iconspath+'fx-16x16.png',
+	        cls: 'x-btn-icon',
+	        menu:
+				new Ext.menu.Menu({
+			        items: [
+			            {
+			            	hideLabel: true ,
+			            	text: 'Sum',
+			        		handler: function(){window.FormulaBar.setValue("=Sum("); window.FormulaBar.focus();} 
+			            },
+			            {
+			            	hideLabel: true ,
+			            	text: 'Average',
+			        		handler: function(){window.FormulaBar.setValue("=Average("); window.FormulaBar.focus();} 
+			            },
+			            {
+			            	hideLabel: true ,
+			            	text: 'Count',
+			        		handler: function(){window.FormulaBar.setValue("=Count("); window.FormulaBar.focus();} 
+			            },
+			            {
+			            	hideLabel: true ,
+			            	text: 'Max',
+			        		handler: function(){window.FormulaBar.setValue("=Max("); window.FormulaBar.focus();} 
+			            },     
+			            {
+			            	hideLabel: true ,
+			            	text: 'Min',
+			        		handler: function(){window.FormulaBar.setValue("=Min("); window.FormulaBar.focus();} 
+			            },
+			            "-",
+			            {
+			            	hideLabel: true ,
+			            	text: lang('More formulas'),
+			        		handler: formulaWizard
+			            },
+			            
+					]
+			    })
 		});
 		
-		/*text.on('keydown', function(object,e) {
-				e.stopPropagation();
-				alert(e.browserEvent.toSource());
-		});*/
+		tb.add({
+			disabled: false ,
+	        icon: iconspath+'range.png', 
+	        cls: 'x-btn-icon',
+	        tooltip: '<i>'+lang('Range names')+'</i>',
+	        handler: function() {namesDialog();}
+	    });
+
 		
-		text.on('keyup', function(object,e) {
-				application.grid.editActiveCell(text.getValue()); //TODO: Desacoplar que acceda a grid
+		/***************** SECOND TOOLBAR *****************/ 
+		
+	    var tb2 = new Ext.Toolbar();
+	    tb2.render('north');
+	   
+	    var nameSelector = new Ext.form.ComboBox({
+	    	displayField: 'name' ,
+	    	store: namesStore,
+	        typeAhead: true,
+	        mode: 'local',
+	        forceSelection: false,
+	        width: 148 ,
+	        height: 23 ,
+	        triggerAction: 'all',
+	        selectOnFocus: true,
+	        enableKeyEvents: true,
+	        ctCls: 'nameSelectorContainer',
+	        id: 'nameSelector'
+	    }) ;
+	    
+	    window.nameSelector = nameSelector;
+	    nameSelector.on('keydown', function(object,e) {
+		    if (e.getKey() == e.ENTER) {
+				if ( ! text.isExpanded() ) {
+					setTimeout(function() {application.nameSelectorChanged(nameSelector.getValue())} , 1);
+					//application.model.moveDown() ;
+				}
+			}
+	    });
+	    
+	    nameSelector.on('select',function(){
+	    	application.nameSelectorChanged(nameSelector.getValue());
+	    });
+	    
+	    tb2.add(nameSelector); 
+	
+		tb2.add('') ;
+		
+		tb2.add( {
+	        icon: iconspath+'fx-16x16.png', // icons can also be specified inline
+	        cls: 'x-btn-icon',
+	        tooltip: lang('Insert Function'),
+	        handler: formulaWizard 
+	    });		
+		
+		tb2.add('') ;
+				
+	    var function_list = new Ext.data.SimpleStore({
+	        fields: ['function_id', 'function_name'],
+	        data :  calculator.getFunctionList() 
+	    });
+	    function_list.sort('function_id');
+
+	    
+	    var text = new Ext.form.ComboBox({
+	        store: function_list , 
+	        displayField:'function_name',
+	        hideTrigger: true ,
+	        typeAhead: true,
+	        mode: 'local',
+	        forceSelection: false,
+	        width: 460 ,
+	        triggerAction: 'all',
+	        selectOnFocus: false,
+	        id: 'FormulaBar',
+	        enableKeyEvents: true
+	    });
+	
+	    
+		text.on('keydown', function(object,e) {
+				if (e.getKey() == e.ENTER) {
+					if ( ! text.isExpanded() ) {
+						setTimeout(function() {application.editActiveCell(text.getValue())} , 1);
+						application.model.moveDown() ;
+					}
+				}
+				setTimeout(function() {application.editActiveCell(text.getValue())} , 1);
+				return true ;
+			} 
+		);
+	
+		
+		text.on('select', function(object,e) {
+				application.model.editActiveCell(text.getValue()); 
+				return false ; 
 			} 
 		);
 		
+		text.on('focus', function(object,e) {
+				application.editActiveCell(text.getValue());
+				return true ;
+			}
+		);
+		
+		
 		tb2.addField(text) ;
-		tb2.add('-');
-		
-	    // They can also be referenced by id in or components
-	
-		
-	
-	    
+		window.FormulaBar = text ;
 	});
 }

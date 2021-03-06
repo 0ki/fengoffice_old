@@ -223,15 +223,16 @@ class DateTimeValue {
 	 * @return null
 	 */
 	private function parse() {
-		$data = getdate($this->timestamp);
+		$data = gmdate("Y-m-d-H-i-s", $this->timestamp);
+		$splitted = explode("-", $data);
 
 		if($data) {
-			$this->year   = (integer) $data['year'];
-			$this->month  = (integer) $data['mon'];
-			$this->day    = (integer) $data['mday'];
-			$this->hour   = (integer) $data['hours'];
-			$this->minute = (integer) $data['minutes'];
-			$this->second = (integer) $data['seconds'];
+			$this->year   = (integer) $splitted[0];
+			$this->month  = (integer) $splitted[1];
+			$this->day    = (integer) $splitted[2];
+			$this->hour   = (integer) $splitted[3];
+			$this->minute = (integer) $splitted[4];
+			$this->second = (integer) $splitted[5];
 		} // if
 	} // parse
 

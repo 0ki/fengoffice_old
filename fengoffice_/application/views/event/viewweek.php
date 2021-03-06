@@ -5,8 +5,11 @@ require_javascript('og/CalendarFunctions.js');
 require_javascript('og/EventPopUp.js');
 ?>
 
-<script type="text/javascript">
+<script>
 	scroll_to = -1;
+	og.ev_cell_dates = [];
+	og.events_selected = 0;
+	og.eventSelected(0);
 </script>
 
 <?php
@@ -55,6 +58,28 @@ $tags = active_tag();
 	
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+	
+/*		$tasks = $temp_tasks;
+		foreach ($tasks as $task){
+			$start_date = $task->getStartDate();
+			$due_date = $task->getDueDate();
+			$added = false;
+			if ($due_date instanceof DateTimeValue) {
+				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
+					$alldayevents[$day_of_week][] = $task;
+					$added = true;
+				}
+			}
+			if (!$added && $start_date instanceof DateTimeValue) {
+				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
+					$alldayevents[$day_of_week][] = $task;
+					$added = true;
+				}
+			}
+		}
+	}*/
+		
+	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
 	
 	$dates = array(); //datetimevalue for each day of week
 	$results = array();
@@ -110,11 +135,33 @@ $tags = active_tag();
 				}			
 			}
 		}
+		
 		if(is_array($tasks)){
-			foreach ($tasks as $task){
-				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$task->getDueDate()->getMonth(),$task->getDueDate()->getDay(),$task->getDueDate()->getYear())) {	
-					$alldayevents[$day_of_week][] = $task;
-				}			
+			$tmp_tasks = array();
+			foreach ($tasks as $task) {
+				$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_end));
+			}
+	
+			foreach ($tmp_tasks as $task) {
+				$added = false;
+				if ($task->getDueDate() instanceof DateTimeValue &&
+					$dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $task->getDueDate()->getMonth(), $task->getDueDate()->getDay(), $task->getDueDate()->getYear())) {
+						$alldayevents[$day_of_week][] = $task;
+						$added = true;
+				}
+				if (!$added && $task->getStartDate() instanceof DateTimeValue &&
+					$dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $task->getStartDate()->getMonth(), $task->getStartDate()->getDay(), $task->getStartDate()->getYear())) {
+						$alldayevents[$day_of_week][] = $task;
+						$added = true;
+				}
+			}
+		}
+		
+		if (is_array($birthdays)) {
+			foreach($birthdays as $c) {
+				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$c->getOBirthday()->getMonth(),$c->getOBirthday()->getDay(),$dates[$day_of_week]->getYear())) {
+					$alldayevents[$day_of_week][] = $c;
+				}
 			}
 		}
 		$allday_events_count[$day_of_week]=  count(array_var($alldayevents, $day_of_week, array()));
@@ -138,8 +185,9 @@ $tags = active_tag();
 </div>
 
 
-<div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
-<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+<div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="og.clearPaintedCells();">
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
+<div id="calendarPanelSecondTopToolbar" class="x-panel-tbar" style="width:100%;height:28px;display:block;background-color:#F0F0F0;"></div>
 
 <table style="width:100%;height:100%;">
 <tr>
@@ -148,7 +196,7 @@ $tags = active_tag();
 	<tr>
 	<td class="coViewHeader" colspan=2 rowspan=1>
 	<div class="coViewTitle">
-		<table style="width:100%"><tr><td>
+		<table style="width:100%;"><tr><td style="height:15px;">
 			<span id="chead0">
 			<?php if (user_config_option("show_week_numbers")) {
 				$weeknumber = date("W", mktime(0, 0, 0, $month, $startday, $year));
@@ -156,7 +204,7 @@ $tags = active_tag();
 			}?>
 			<?php echo date($date_format, mktime(0, 0, 0, $month, $startday, $year)) ." - ". date($date_format, mktime(0, 0, 0, $month, $endday-1, $year))
 		 	.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName())));?></span>
-		 </td><td style="width:100px;">
+		 </td><td style="width:100px;height:15px;">
 		 	<?php if (config_option("show_feed_links")) { ?>
 			 	<?php echo checkbox_field("include_subws", true, array("id" => "include_subws", "style" => "float:right;", "onclick" => "javascript:og.change_link_incws('ical_link', 'include_subws')", "title" => lang('check to include sub ws'))) ?>
 			 	<?php echo label_tag(lang('subws'), "include_subws", false, array("style" => "float:right;font-size:60%;margin:0px 3px;vertical-align:top;", "title" => lang('check to include sub ws')), "") ?>
@@ -167,16 +215,16 @@ $tags = active_tag();
 			 	<a class="iCalSubscribe" id="ical_link" style="float:right;" href="<?php echo ROOT_URL ."/index.php?c=feed&a=ical_export&n=$export_name&cal=$export_ws&t=".$user->getToken()."&isw=1" ?>" 
 			 		title="<?php echo lang('copy this url in your calendar client software')?>"
 			 		onclick="Ext.Msg.show({
-								title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
-								msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
-								icon: Ext.MessageBox.INFO }); return false;"></a>
+							   	title: '<?php echo escape_single_quotes(lang('import events from third party software')) ?>',
+							   	msg: '<?php echo escape_single_quotes(lang('copy this url in your calendar client software')) ."<br><br><br>"?>'+document.getElementById('ical_link').href,
+					   			icon: Ext.MessageBox.INFO });return false;"></a>
 			<?php } ?>
 		 </td></tr></table>	
 	</div>		
 	</td>
 	</tr>
 	<tr>
-		<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>					
+		<td class="coViewBody" style="padding:0px;height:100%;" colspan=2>
 		<div id="chrome_main2" style="width:100%; height:100%">
 		<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:15px;margin-left:40px;position:relative;">
 		<?php					
@@ -194,26 +242,16 @@ $tags = active_tag();
 				}else $daytitle = 'daylink';
 				
 				// if weekends override do this
-				if(cal_option("weekendoverride")){
-					// set whether the date is in the past or future/present
-					if($day_of_week==0 OR $day_of_week==6){
-						$daytype = "weekend";
-					}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
-						$daytype = "weekday";
-					}else{
-						$daytype = "weekday_future";
-					}
+				if( !user_config_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekend";
+				}elseif( user_config_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekend";
+				}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
+					$daytype = "weekday";
 				}else{
-					if( !user_config_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
-						$daytype = "weekend";
-					}elseif( user_config_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
-						$daytype = "weekend";
-					}elseif($day_of_month <= $lastday AND $day_of_month >= 1){
-						$daytype = "weekday";
-					}else{
-						$daytype = "weekday_future";
-					}
+					$daytype = "weekday_future";
 				}
+
 				// see what type of day it is
 				if($currentyear == $year && $currentmonth == $month && $currentday == $day_of_month){
 				  $daytitle = 'todaylink';
@@ -225,8 +263,16 @@ $tags = active_tag();
 				
 										
 				$dtv_temp = $dates[$day_of_week];
-				$p = cal_getlink("index.php?action=viewdate&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");
-				$t = cal_getlink("index.php?action=add&day=".$dtv_temp->getDay()."&month={$dtv_temp->getMonth()}&year={$dtv_temp->getYear()}");							
+				$p = get_url('event', 'viewdate', array(
+					'day' => $dtv_temp->getDay(),
+					'month' => $dtv_temp->getMonth(),
+					'year' => $dtv_temp->getYear()
+				));
+				$t = get_url('event', 'add', array(
+					'day' => $dtv_temp->getDay(),
+					'month' => $dtv_temp->getMonth(),
+					'year' => $dtv_temp->getYear()
+				));							
 
 				$format_d_m = str_replace('d', 'j', $date_format);
 				$format_d_m = str_replace(array('Y','y','o'), '', $format_d_m);
@@ -240,14 +286,14 @@ $tags = active_tag();
 					$format_d_m = substr($format_d_m, 0, strlen($format_d_m) - 1);
 
 		?>
-				<div class="chead cheadNotToday" style="width: <?php echo $width_percent ?>%; left: <?php echo $width ?>%;text-align:center;position:absolute;top:0%;">
+				<div id="alldaycelltitle_<?php echo $day_of_week ?>" class="chead cheadNotToday" style="width: <?php echo $width_percent ?>%; left: <?php echo $width ?>%;text-align:center;position:absolute;top:0%;">
 					<span id="chead<?php echo $day_of_week ?>">
 						<a class="internalLink" href="<?php echo $p; ?>"  onclick="og.disableEventPropagation(event) "><?php $dtime = mktime(0, 0, 0, $dtv_temp->getMonth(), $dtv_temp->getDay(), $dtv_temp->getYear()); echo lang(strtolower(date("l", $dtime)) . ' short') . date(' '. $format_d_m, $dtime); ?></a>
 					</span>
 				</div>
-				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
+				<div id="allDay<?php echo $day_of_week ?>" class="allDayCell" style="left: <?php echo $width ?>%; height: 100%;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;background:#E8EEF7;top:0%;"></div>
 
-				<div id="alldayeventowner" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');">
+				<div id="alldayeventowner_<?php echo $day_of_week ?>" style="width: <?php echo $width_percent ?>%;position:absolute;left: <?php echo $width ?>%; top: 12px;height: <?php echo $alldaygridHeight ?>px;" onclick="og.showEventPopup(<?php echo $dtv_temp->getDay() ?>, <?php echo $dtv_temp->getMonth()?>, <?php echo $dtv_temp->getYear()?>, -1, -1, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $dtv_temp->format($date_format) ?>');">
 					<?php	
 						$top=5;
 						if(is_array(array_var($alldayevents,$day_of_week))){
@@ -256,31 +302,64 @@ $tags = active_tag();
 								$divtype = '';
 								$div_prefix = '';
 								if ($event instanceof ProjectMilestone ){
-									$div_prefix = 'w_ms_div_';									
+									$div_prefix = 'w_ms_div_';
+									$objType = 'milestone';									
 									$subject = clean($event->getName());
 									$img_url = image_url('/16x16/milestone.png');
 									$due_date=$event->getDueDate();
 									$divtype = '<i>' . lang('milestone') . '</i> - ';
 									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getDescription())) != '' ? '<br><br>' . trim(clean($event->getDescription())) : '');
 								}elseif ($event instanceof ProjectTask){
-									$div_prefix = 'w_ta_div_';
+									$start_date = $event->getStartDate();
+									$due_date = $event->getDueDate();
+									$start_of_task = false;
+									$end_of_task = false;
+									$is_repe_task = $event->isRepetitive();
+									if ($due_date instanceof DateTimeValue) {
+										if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) $end_of_task = true;
+									}
+									if ($start_date instanceof DateTimeValue) {
+										if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) $start_of_task = true;
+									}
+									if ($start_of_task && $end_of_task) {
+										$tip_title = lang('task');
+										$img_url = image_url('/16x16/tasks.png');
+										$tip_pre = '';
+									} else if ($end_of_task) {
+										$tip_title = lang('end of task');
+										$img_url = image_url('/16x16/task_end.png');
+										$tip_pre = 'end_';
+									} else {
+										$tip_title = lang('start of task');
+										$img_url = image_url('/16x16/task_start.png');
+										$tip_pre = 'st_';
+									}
+									$div_prefix = 'w_ta_div_' . $tip_pre;
+									$objType = 'task';
 									$subject = clean($event->getTitle());
-									$img_url = image_url('/16x16/tasks.png');
-									$due_date=$event->getDueDate();
-									$divtype = '<i>' . lang('task') . '</i> - ';
+									$divtype = '<i>' . $tip_title . '</i> - ';
 									$tipBody = lang('assigned to') .': '. clean($event->getAssignedToName()) . (trim(clean($event->getText())) != '' ? '<br><br>' . trim(clean($event->getText())) : '') ;
 								}elseif ($event instanceof ProjectEvent){
 									$div_prefix = 'w_ev_div_';
+									$objType = 'event';
 									$subject = clean($event->getSubject());
 									$img_url = image_url('/16x16/calendar.png'); /* @var $event ProjectEvent */											
 									$divtype = '<i>' . lang('event') . '</i> - ';
 									$tipBody = (trim(clean($event->getDescription())) != '' ? '<br>' . clean($event->getDescription()) : '');									
+								}elseif ($event instanceof Contact ) {
+									$div_prefix = 'w_bd_div_';
+									$objType = 'contact';
+									$subject = clean($event->getDisplayName());
+									$img_url = image_url('/16x16/contacts.png');
+									$due_date = new DateTimeValue(mktime(0,0,0, $event->getOBirthday()->getMonth(), $event->getOBirthday()->getDay(), $dates[$day_of_week]->getYear()));
+									$divtype = '<i>' . lang('birthday') . '</i> - ';
 								}
 								$tipBody = str_replace("\r", '', $tipBody);
 								$tipBody = str_replace("\n", '<br>', $tipBody);
 								if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 								
-								if ($event instanceof ProjectEvent || ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear()))) {	
+								if ($event instanceof ProjectEvent || ($due_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear()))
+																   || ($start_date instanceof DateTimeValue && $dates[$day_of_week]->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear()))) {	
 									$dws = $event->getWorkspaces();
 									$ws_color = 0;
 									if (count($dws) >= 1){
@@ -292,13 +371,22 @@ $tags = active_tag();
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
 						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 							<div class="" style="overflow: hidden; padding-bottom: 1px;">
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
+								<table style="width:100%"><tr><td>
+								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+								<?php if ($objType == 'event') { ?>
+								</td><td align="right">
+								<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 2px 0 0;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);og.disableEventPropagation(event);"></input>
+								<?php } ?>
+								</td></tr></table>
 							</div>
 						</div>
 						<div class="t3 <?php echo  $ws_class;?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
 					</div>
-					<script type="text/javascript">
+					<script>
 						addTip('<?php echo $div_prefix . $event->getId() ?>', <?php echo json_encode($divtype . $subject) ?>, <?php echo json_encode($tipBody) ?>);
+						<?php if (!($event instanceof Contact || (isset($is_repe_task) && $is_repe_task))) { ?>
+						og.createEventDrag('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $event->getId()?>', '<?php echo $objType ?>', true, 'ev_dropzone_allday');
+						<?php } ?>
 					</script>
 					<?php
 									$top += 21;
@@ -306,13 +394,16 @@ $tags = active_tag();
 							}
 						}
 					?>
-				</div>		
+				</div>
+			<script>
+				var ev_dropzone_allday = new Ext.dd.DropZone('alldayeventowner_<?php echo $day_of_week ?>', {ddGroup:'ev_dropzone_allday'});
+				var ev_dropzone_allday = new Ext.dd.DropZone('alldaycelltitle_<?php echo $day_of_week ?>', {ddGroup:'ev_dropzone_allday'});
+			</script>
 		<?php
 				$width += $width_percent;
 			}
 		?>
 	</div>
-	
 	
 	<div id="gridcontainer" style="background-color:#fff; position:relative; overflow-x:hidden; overflow-y:scroll; height:504px;">	
 			<div id='calowner' style="display:block; width:100%;">  
@@ -334,9 +425,6 @@ $tags = active_tag();
 						</td>
 						<td id="gridcontainercell" style="width:100%;position:relative" >	
 							<div id="grid" style="height: 100%;background-color:#fff;position:relative;" class="grid">										
-								<div id="decowner">
-									
-								</div>
 								
 							<?php
 								for ($hour=0; $hour<=47; $hour++){	
@@ -350,33 +438,40 @@ $tags = active_tag();
 									}
 									$top = (PX_HEIGHT/2) * $hour;
 							?>
-<div id="r<?php echo $hour?>"" class="hrule <?php echo $parity?>" onmousedown="" onmouseup="" style="top: <?php echo $top?>px; height:0px; z-index:101; position:absolute; left:0px;<?php echo $style?>;width:100%">
+<div id="r<?php echo $hour?>" class="hrule <?php echo $parity?>" onmousedown="" onmouseup="" style="top: <?php echo $top?>px; height:0px; z-index:1; position:absolute; left:0px;<?php echo $style?>;width:100%">
 <?php $hour == $curr_hour? print("<span id='curr_hour' style='visibility:hidden;height:0px;width:0px'></span>"):print('');?>
 </div>
 <?php
 								}
-								
-								for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {										
+?>
+<div id="eventowner" class="eventowner" style="z-index: 102;" onclick="og.disableEventPropagation(event) ">
+<?php
+								for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {
 									$date = $dates[$day_of_week];
 									$left = (100/7)*$day_of_week;
+									
 									for ($hour=0; $hour<=47; $hour++){
 										$top = (PX_HEIGHT/2) * $hour;
 								
 									$div_id = 'h' . $day_of_week . "_" . $hour; 
-									$border_style = ($currentyear == $date->getYear() && $currentmonth == $date->getMonth() && $currentday == $date->getDay()) || ($year == $date->getYear() && $month == $date->getMonth() && $day == $date->getDay()) ? ($hour % 2 == 0 ? "border-top:1px solid #DDDDDD;" : "border-top:1px dotted #DDDDDD;") : ''; 
+
 ?>
 
-<div id="<?php echo $div_id?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:21px;position:absolute;z-index: 100;<?php echo $today_style[$day_of_week].$border_style ?>"
-onmouseover="if (!selectingCells) overCell('<?php echo $div_id?>'); else paintSelectedCells('<?php echo $div_id?>');"
-onmouseout="if (!selectingCells) resetCell('<?php echo $div_id?>');"
-onmousedown="selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); resetCell('<?php echo $div_id?>'); paintingDay = <?php echo $day_of_week ?>; paintSelectedCells('<?php echo $div_id?>');"
-onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>');"
+<div id="<?php echo $div_id?>" style="left:<?php echo $left ?>%;width:<?php echo $width_percent ?>%;top:<?php echo $top?>px;height:21px;position:absolute;z-index: 90;<?php echo $today_style[$day_of_week]?>"
+onmouseover="if (!og.selectingCells) og.overCell('<?php echo $div_id?>'); else og.paintSelectedCells('<?php echo $div_id?>');"
+onmouseout="if (!og.selectingCells) og.resetCell('<?php echo $div_id?>');"
+onmousedown="og.selectStartDateTime(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 == 0) ? 0 : 30 ?>); og.resetCell('<?php echo $div_id?>'); og.paintingDay = <?php echo $day_of_week ?>; og.paintSelectedCells('<?php echo $div_id?>');"
+onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMonth()?>, <?php echo $date->getYear()?>, <?php echo date("G",mktime(($hour+1)/2))?>, <?php echo (($hour+1) % 2 == 0) ? 0 : 30 ?>, <?php echo ($use_24_hours ? 'true' : 'false'); ?>,'<?php echo $date->format($date_format) ?>');"
 ></div>
 
+<script>
+	og.ev_cell_dates[<?php echo $day_of_week?>] = {day:<?php echo $date->getDay() ?>, month:<?php echo $date->getMonth()?>, year:<?php echo $date->getYear()?>}
+	var ev_dropzone = new Ext.dd.DropZone('<?php echo $div_id?>', {ddGroup:'ev_dropzone'});
+</script>
+
 <?php								} ?>
-									
+
 									<div id="vd<?php echo $day_of_week ?>" style="left: <?php echo $left ?>%; height: <?php echo (PX_HEIGHT)*24 ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;z-index:110;"></div>
-									<div id="eventowner" style="z-index: 120;" onclick="og.disableEventPropagation(event) ">
 <?php
 										$cells = array();
 										for ($i = 0; $i < 24; $i++) {
@@ -435,8 +530,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											}
 											$top = PX_HEIGHT * $hr_start + (PX_HEIGHT*(($min_start*100)/(60*100)));
 											$bottom = PX_HEIGHT * $hr_end + (PX_HEIGHT*(($min_end*100)/(60*100)));
-											$height = $bottom - $top - 5; //substract 4px for the rounded corners, 1px for separation
-											if ($height < PX_HEIGHT/2 - 5) $height = PX_HEIGHT/2 - 5;
+											$height = $bottom - $top; 
 											
 											$evs_same_time = 0;
 											$i = $event_start->getHour();
@@ -486,7 +580,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											
 											$width = (100/7) / $evs_same_time;
 											$left = $width * $posHoriz + ((100/7) * $day_of_week) + 0.25;
-											$width -= 0.2;
+											$width -= 0.5;
 											
 											if ($event_start->getMinute() < 30) {
 												$occup[$event_start->getHour()][0][$posHoriz] = true;
@@ -507,7 +601,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											
 											$event_duration->add('s', 1);
 											$end_time = date($timeformat, $event_duration->getTimestamp());
-											if ($posHoriz + 1 == $evs_same_time) $width = $width - 0.5;
+											//if ($posHoriz + 1 == $evs_same_time) $width = $width - 0.5;
 											
 											$tipBody = $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 											$tipBody = str_replace("\r", '', $tipBody);
@@ -516,26 +610,32 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 											
 											$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp()); 
 ?>
-											<script type="text/javascript">
+											<script>
 												if (<?php echo $top; ?> < scroll_to || scroll_to == -1) {
 													scroll_to = <?php echo $top;?>;
 												}
 												addTip('w_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
 											</script>
-											
-						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="og.disableEventPropagation(event)" onmouseup="clearPaintedCells()">
+
+
+						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;height:<?php echo $height ?>px;z-index:120;" onclick="og.disableEventPropagation(event)" onmouseup="og.clearPaintedCells()">
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
-						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
-						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
-							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>;">
-							<table width="100%"><tr><td>
-								<a 
-								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
+						<div id="inner_w_ev_div_<?php echo $event->getId()?>" class="chipbody edit og-wsname-color-<?php echo $ws_color?>" style="height:<?php echo $height ?>px;">
+						<div style="height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
+							<table style="width:100%;"><tr><td>
+								<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 0 0 2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);"></input>
+								<a href='<?php echo get_url('event', 'viewevent', array(
+										'view' => 'viewweek',
+										'id' => $event->getId(),
+										'user_id' => $user_filter
+									)); ?>'
 								onclick="og.disableEventPropagation(event);"
-								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></div></a>
+								class='internalLink'>
+									<span name="w_ev_div_<?php echo $event->getId()?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></span>																				
+								</a>
 							</td><td align="right">
-								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
+								<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
 								<?php
 								if ($user_filter != -1) { 
 									$invitations = $event->getInvitations();
@@ -555,36 +655,39 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 										}
 									} // if
 								} // if ?>
-								</div></dd>
-							</td></tr></table>
-							</dt>
-							<?php
-							if ($ev_duration['hours'] > 0) { ?>
-							<dd>
-							<div><a
-								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="og.disableEventPropagation(event);"
-								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></div></a>
-							</div>
-							</dd>
-							<?php } //if ?>
-						</dl>
-						</div>
-						<div class="b2 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid; border-color:<?php echo $border_color ?>">
-						</div>
-						<div class="b1 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 2px 0px 2px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>">
+								</div>
+							</td></tr>
+							<tr><td>
+								<div><a href='<?php echo get_url('event', 'viewevent', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
+									onclick="og.disableEventPropagation(event);"
+									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></span></a>
+								</div>
+							</td></tr>
+							<tr style="height:100%;">
+								<td style="width:100%;" colspan="2"><div style="height: <?php echo $height - PX_HEIGHT ?>px;"></div></td>
+							</tr>
+							</table>
 						</div>
 						</div>
+						<div class="b2 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid; border-color:<?php echo $border_color ?>"></div>
+						<div class="b1 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 2px 0px 2px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
+						</div>
+						
+						<script>
+							og.setResizableEvent('w_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>'); // Resize
+							og.createEventDrag('w_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', 'event', false, 'ev_dropzone'); // Drag
+						</script>
+
 <?php												}//foreach ?>
-											</div>
+											
 <?php										}//day of week ?>
-										</div>
-									</td>
-									<td id="ie_scrollbar_adjust" style="width:0px;"></td>
+</div><!-- eventowner -->
+										</div><!-- grid -->
+									</td><td id="ie_scrollbar_adjust" style="width:0px;"></td>
 								</tr>
 							</table>
-						</div><!--calowner -->															 
-				</div><!--gridcontainer -->
+						</div><!-- calowner -->
+				</div><!-- gridcontainer -->
 				
 			</div>		
 			
@@ -607,14 +710,17 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
  ?>
 
 
-<script type="text/javascript">
+<script>
 	// Top Toolbar	
 	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfCalUserPreferences').value);
-	var ogCalTT = new og.CalendarTopToolbar({
-		usersHfId:'hfCalUsers',
-		companiesHfId:'hfCalCompanies',
+	og.ogCalTT = new og.CalendarTopToolbar({
 		renderTo:'calendarPanelTopToolbar'
 	});	
+	og.ogCalSecTT = new og.CalendarSecondTopToolbar({
+		usersHfId:'hfCalUsers',
+		companiesHfId:'hfCalCompanies',
+		renderTo: 'calendarPanelSecondTopToolbar'
+	});
 
 	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
@@ -633,7 +739,8 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 			og.removeDomEventHandler(window, 'resize', id);
 		} else {
 			var divHeight = maindiv.offsetHeight;
-			divHeight = divHeight - 30 - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
+			var tbarsh = Ext.get('calendarPanelSecondTopToolbar').getHeight() + Ext.get('calendarPanelTopToolbar').getHeight();
+			divHeight = divHeight - tbarsh - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
 		}
 	}

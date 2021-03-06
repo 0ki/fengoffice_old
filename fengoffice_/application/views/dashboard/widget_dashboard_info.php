@@ -1,4 +1,4 @@
-<?php 
+<?php
 	$show_help_option = user_config_option('show_context_help', 'until_close'); 
 	if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_dashboard_info_widget_context_help', true, logged_user()->getId()))) {
 		render_context_help($this, 'chelp dashboard info widget', 'dashboard_info_widget');
@@ -11,13 +11,13 @@
 
 
 	$project = active_project();
-		$contacts = ProjectContacts::getContactsByProject($project);
+	$contacts = ProjectContacts::getContactsByProject($project);
+	//if (can_manage_contacts(logged_user())){
 		if (count($contacts) > 0){
 			?><div class='endSeparatorDiv'>
 			<b><?php echo lang('workspace contacts') ?>:</b>
 				<div style='padding-left:15px'><?php
 			$c = 0;
-			//echo var_dump($users);
 			foreach ($contacts as $contact){
 				if ($c != 0)
 					echo '<br/>';
@@ -28,7 +28,7 @@
 			}
 			?></div>
 			</div>
-<?php }
+<?php }//}
 
 	if (logged_user()->isMemberOfOwnerCompany()){
 		$users = $project->getUsers(false); 

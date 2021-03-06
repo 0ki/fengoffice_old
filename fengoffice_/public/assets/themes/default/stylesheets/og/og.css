@@ -24,7 +24,19 @@
 /** /autoCompleter **/
 
 .ico-reporting {
-	background-image: url(../../images/16x16/reporting.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -258px !important;
+}
+
+.ico-task-start {
+	background-image: url(../../images/16x16/task_start.png) !important;
+}
+
+.ico-task-end {
+	background-image: url(../../images/16x16/task_end.png) !important;
+}
+
+.ico-recurrent {
+	background-image: url(../../images/16x16/recurrent.png) !important;
 }
 
 .ico-template {
@@ -32,7 +44,7 @@
 }
 
 .ico-account {
-	background-image: url(../../images/16x16/account.png);
+	background-image: url(../../images/16x16/account.png) !important;
 }
 .ico-add {
 	background-image: url(../../images/16x16/add.png) !important;
@@ -41,7 +53,7 @@
 	background-image: url(../../images/16x16/tags.png) !important;
 }
 .ico-administration {
-	background-image: url(../../images/16x16/administration.png);
+	background-image: url(../../images/16x16/administration.png) !important;
 }
 .ico-attachment {
 	background-image: url(../../images/16x16/attach.png) !important;
@@ -77,19 +89,19 @@
 	background-image: url(../../images/16x16/reopen.png) !important;
 }
 .ico-contact {
-	background-image: url(../../images/16x16/contacts.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -520px !important;
 }
 .ico-company {
-	background-image: url(../../images/16x16/company.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -540px !important;
 }
 .ico-dash-expanded {
-	background-image: url(../../images/16x16/dash_expanded.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -19px !important;
 }
 .ico-dash-collapsed {
-	background-image: url(../../images/16x16/dash_collapsed.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -1155px !important;
 }
 .ico-delete {
-	background-image: url(../../images/16x16/del.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -498px !important;
 }
 .ico-doc {
 	background-image: url(../../images/16x16/doc.png) !important;
@@ -98,10 +110,10 @@
 	background-image: url(../../images/16x16/download.png) !important;
 }
 .ico-edit {
-	background-image: url(../../images/16x16/new.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;
 }
 .ico-email, .ico-emails {
-	background-image: url(../../images/16x16/email.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -437px !important;
 }
 .ico-check_mails {
 	background-image: url(../../images/16x16/mail_receive.png) !important;
@@ -122,11 +134,14 @@
 .ico-email_menu {
 	background-image: url(../../images/16x16/email.png) !important;
 }
+.ico-select {
+	background-image: url(../../images/16x16/select.png) !important;
+}
 .ico-empty {
 	background-image: url(../../images/s.gif) !important;
 }
 .ico-event, .ico-events {
-	background-image: url(../../images/16x16/calendar.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 2px !important;
 }
 .ico-calendar-month {
 	background-image: url(../../images/16x16/view_calendar_month.png) !important;
@@ -174,7 +189,7 @@
 	background-image: url(../../images/16x16/locked.png) !important;
 }
 .ico-message {
-	background-image: url(../../images/16x16/message.png) !important;
+	background: transparent url(../../images/16x16/message.png) no-repeat !important;
 }
 .ico-comment {
 	background-image: url(../../images/16x16/comment.png) !important;
@@ -186,7 +201,7 @@
 	background-image: url(../../images/16x16/more.png) !important;
 }
 .ico-new {
-	background-image: url(../../images/16x16/new.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;
 }
 .ico-copy {
 	background-image: url(../../images/16x16/copy.png) !important;
@@ -204,13 +219,13 @@
 	background-image: url(../../images/16x16/properties.png) !important;
 }
 .ico-prsn {
-	background-image: url(../../images/16x16/prsn.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -320px !important;
 }
 .ico-refresh {
 	background-image: url(../../images/16x16/refresh.png) !important;
 }
 .ico-rename {
-	background-image: url(../../images/16x16/rename.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -280px !important;
 }
 .ico-restore {
 	background-image: url(../../images/16x16/undo.png) !important;
@@ -228,19 +243,19 @@
 	background-image: url(../../images/16x16/sprd.png) !important;
 }
 .ico-tag {
-	background-image: url(../../images/16x16/tags.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -219px !important;
 }
 .ico-task {
 	background-image: url(../../images/16x16/tasks.png) !important;
 }
 .ico-task-high-priority {
-	background-image: url(../../images/16x16/task-high.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -199px !important;
 }
 .ico-task-low-priority {
 	background-image: url(../../images/16x16/task-low.png) !important;
 }
 .ico-time {
-	background-image: url(../../images/16x16/time.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -158px !important;
 }
 .ico-time-pause {
 	background-image: url(../../images/16x16/time_pause.png) !important;
@@ -252,7 +267,7 @@
 	background-image: url(../../images/16x16/time_stop.png) !important;
 }
 .ico-trash {
-	background-image: url(../../images/16x16/trash.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -138px !important;
 }
 .ico-undo {
 	background-image: url(../../images/16x16/undo.png) !important;
@@ -261,7 +276,7 @@
 	background-image: url(../../images/16x16/unlocked.png) !important;
 }
 .ico-upload {
-	background-image: url(../../images/16x16/upload.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -120px !important;
 }
 .ico-view_options {
 	background-image: url(../../images/16x16/view.png) !important;
@@ -319,7 +334,7 @@
 	background-image: url(../../images/16x16/sort_abc.png) !important;
 }
 .ico-sort-count {
-	background-image: url(../../images/16x16/sort_321.png) !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -240px !important;
 }
 .ico-sort-asc {
 	background-image: url(../../images/16x16/sort_asc.png) !important;
@@ -351,13 +366,19 @@
 .ico-open-link {
 	background-image: url(../../images/16x16/openlink.png) !important;
 }
+.ico-expand {
+	background-image: url(../../images/16x16/expand.png) !important;
+}
+.ico-collapse {
+	background-image: url(../../images/16x16/collapse.png) !important;
+}
 
 .link-ico {
 	height: 16px;
 	background-repeat: no-repeat;
-	padding-left:20px;
-	padding-top:1px;
-	padding-bottom:1px;
+	padding-left:23px;
+	padding-top:2px;
+	padding-bottom:4px;
 }
 
 .clico {
@@ -427,6 +448,7 @@
 
 .og-wsname-color-0 {
 	border-color: #777777;
+	background-color: #EEEEEE;
 	color: #777777;
 }
 
@@ -707,4 +729,66 @@ select.select_milestone, select.select_task_list, select.select_message {
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+.container-div{
+	padding-left:2px; 
+	padding-top:0px;
+	padding-bottom:4px;
+	height:52px;
+	margin-bottom: 5px;
+	cursor: pointer;
+	
+}
+.company-name{
+	background:#F9F9FC none repeat scroll 0 0;
+	border:1px solid #DDDDDD;
+	cursor: pointer;
+}
+.container-div label
+{
+	height:44px;
+	width: 35px;
+	padding-left:56px;
+	padding-top:6px;
+	width:150px;
+	cursor: pointer;
+}
+.user-name{
+	background:#fafafa none repeat scroll 0 0;
+	border:1px solid #eee;
+	cursor: pointer;
+}
+.checked-user
+{
+	background: #fea url(../../images/16x16/complete.png) no-repeat scroll 185px 10px;
+	border:1px solid #f84;
+	cursor: pointer;
+}
+.rolling-over
+{
+	background-color:#d9d9Ff;
+	border:1px solid #99f;
+	cursor: pointer;
+	
+}
+.company-users {
+	margin-top:0;
+	cursor: pointer;
+}
+.company-users .user-name{
+	margin-left: 10px;
+	width: 200px;
+	float: left;
+	cursor: pointer;
+}
+.company-users .checked-user
+{
+	margin-left: 10px;
+	width: 200px;
+	float: left;
+	cursor: pointer;
+	
+}
+.contextHelpStyle .contextualHelp{
+	margin: 15px;
 }

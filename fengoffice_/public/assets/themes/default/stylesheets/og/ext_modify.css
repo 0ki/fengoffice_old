@@ -60,6 +60,16 @@ input.x-tree-node-cb {
 	height:1px;
 }
 
-.og-csvcombo-container .x-form-field-wrap {
+.ext-safari .x-form-field-wrap .x-form-trigger {
+	right: auto;
+}
+
+.x-form-field-wrap {
 	width: auto !important;
-} 
+	padding-right: 17px;
+}
+
+.x-resizable-over .x-resizable-handle, .x-resizable-pinned .x-resizable-handle {
+	opacity:0.5;
+	filter: alpha(opacity = 50);
+}

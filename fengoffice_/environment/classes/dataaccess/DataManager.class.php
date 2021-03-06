@@ -146,6 +146,17 @@
     } // getReportObjectTitle
     
     /**
+    * Return template object properties
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getTemplateObjectProperties() {
+    	return array();
+    } // getTemplateObjectProperties
+    
+    /**
     * Return array of lazy load columns
     *
     * @access public

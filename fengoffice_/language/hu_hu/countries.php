@@ -60,7 +60,7 @@
 	'country dj' => 'Dzsibuti',
 	'country dm' => 'Dominika',
 	'country do' => 'Dominikai Köztársaság',
-	'country tp' => 'Kelet Timor',
+	'country tl' => 'Kelet Timor',
 	'country ec' => 'Ecuador',
 	'country eg' => 'Egyiptom',
 	'country sv' => 'El Salvador',
@@ -235,7 +235,7 @@
 	'country wf' => 'Wallis és Futuna Szigetek',
 	'country eh' => 'Nyugat Szahara',
 	'country ye' => 'Jemen',
-	'country zr' => 'Zaire',
+	
 	'country zm' => 'Zambia',
 	'country zw' => 'Zimbabwe',
 ); ?>

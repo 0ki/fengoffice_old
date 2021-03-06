@@ -35,7 +35,7 @@
     'form' => 'Form',
     'forms' => 'Forms',
     'file' => 'File',
-  	'files' => 'Files',
+    'files' => 'Files',
     'file revision' => 'File revision',
     'file revisions' => 'File revisions',
   	'file contents' => 'File contents',
@@ -54,6 +54,8 @@
   	'reporting' => 'Reports',
   
     // Variations
+    'modify object subscribers' => 'Modify Subscribers',
+  	'subscription modified successfully' => 'Subscribers Modified successfully',
     'owner company' => 'Owner company',
   	'client companies' => 'Client companies',
     

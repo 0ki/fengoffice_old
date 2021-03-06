@@ -11,64 +11,34 @@
  */
 function Application(container){
     var self = window;
+    
     self.constructor = function(container){
+    	var configs = loadConfigs();
+    	self.configs = configs;
     	this.container = container;
-    	if(window.enviromentPrefix==undefined)
-    		window.enviromentPrefix = "";
-    	if(window.enviromentAjaxPrefix==undefined)
-    		window.enviromentAjaxPrefix = "../php/";
-
-
-        //if(window.event) window.event.cancelBubble = true //disable bubble behaviour in IE
-    	//TODO: Borrar debugger
-		//window.errorConsole = new Debugger();
-		//document.body.appendChild(errorConsole);
-
+    	this.JsonManager = new JsonHandler();
+    	
 		this.Fonts = loadFonts(); //Function getted from server in fonts.js.php
-
-    	var rows = 20;
-    	var cols = 6;
-    	this.activeBook = new Book("Book1");
+    	this.activeBook = new Book(configs.book.defaultName);
     	this.sheets = new Array();
-		var sheet = new Sheet(rows,cols);
+		var sheet = new Sheet(configs.sheet);
 
+		this.namesStore = new Ext.data.SimpleStore({ 
+	    		fields: ['name', 'range']
+	    });
+	  
 		this.sheets.push(sheet);
 		this.activeSheet = sheet;
-
-
-
+//		
+		
 		//TODO: fix when multi books supported this.books = new Array();
 		/*this.activeBook = new Book();
 		*/
 		//--------------Load Handlers------------------//
 		//Style Handler
-		this.Styler = new StyleHandler();
-		//Command Handler
-		this.Commander = new CommandHandler();
-		//Events Handler
-      	this.EventManager = new EventHandler();
-		//Create Selection Manager
-		this.Selectioner = new SelectionHandler()
-
-		//this.NameSpace = new NameSpace();
-		//Define Application (Window) Sections
-    	this.sections = new SectionHandler(container);
+		this.Styler = new StyleHandler(configs.style);
+		this.CommManager = new CommHandler(configs.communication);
 		
-		this.CommManager = new CommHandler();
-		
-    	//Header Section Definition
-    	//PEPE - Comentado porque metia un div de mas 
-    	//this.header = new Section(0,0,10,100);
-    	//this.sections.addSection(header,false);
-
-		//this.formulaBar = new FormulaBar();
-		//loadToolbars(self,this.header);
-
-		//header.appendChild(this.formulaBar);
-		
-
-    	//Data Section Definition
-//    	this.data = new Section(10,0,90,100);
 		createToolbars();
 		
 		var dataSection = new Ext.Viewport({
@@ -110,210 +80,99 @@ function Application(container){
 
 		
 		var center = document.getElementById("center");
-		this.grid = new Grid(center.offsetWidth,center.offsetHeight);
+		this.grid = new Grid({width:center.offsetWidth,height:center.offsetHeight});
     	center.appendChild(this.grid);
     	this.grid.inicialize();
-//    	dataSection.on('afterlayout',function(e){alert(e);});
-//    	this.sections.addSection(data,true); //True = forces update
 
-    	
-
-
-//		Model Definition
+    	//		Model Definition
 		this.model = new GridModel(this.grid);
 		this.model.setDataModel(this.activeSheet);
+		
+		this.model.on('Error',function(caller,e){
+//			alert(e.toSource());
+			Ext.Msg.alert('Error', e.description);
+		});
+		
+		this.model.on('NameChanged',function(){
+			var data = self.model.getNames();
+			self.namesStore.loadData(data);
+		});
+		
+//		this.model.on('ActiveCellChanged',function(obj,address){
+		this.model.on('SelectionChanged',function(obj,address){
+			nameSelector.setValue(address);
+		});
+		
+		this.model.on('ActiveCellChanged',function(obj,value){
+			FormulaBar.setValue(value);
+		});
+		
 		this.model.refresh();
-
-		/*
-    	//Footer Section Definition
-    	//this.footer = new Section(95,0,5,100);
-    	//this.sections.addSection(footer,true);
-
-        this.activeSheet = sheet;
-
-        var navBar = new NavigationBar();
-        //document.body.appendChild(navBar);
-		window.navBar = navBar;
-
-		*/
-
-		this.eventManager = new EventHandler();
+		
 		//Create Key Manager
-		this.keyManager = new KeyHandler();
-		/*this.keyManager.addAction(navBar.pageUp,false, CH_PAGE_UP);
-		this.keyManager.addAction(navBar.pageDown,false, CH_PAGE_DOWN);*/
-		this.keyManager.addAction(this.grid.goToHome,false, CH_HOME);
+		this.gridShortCuts = new KeyHandler();
+		
+		this.gridShortCuts.addAction(this.model.goToHome,false, CH_CTRL + CH_HOME);
 		//this.keyManager.addAction(navBar.goToEnd,false, CH_END);
-		this.keyManager.addAction(this.grid.moveRight,false, CH_TAB);
-		this.keyManager.addAction(this.grid.moveDown,false, CH_ENTER);
-		this.keyManager.addAction(this.grid.moveLeft,false, CH_LEFT_ARROW);
-		this.keyManager.addAction(this.grid.moveRight,false, CH_RIGHT_ARROW);
-		this.keyManager.addAction(this.grid.moveUp,false, CH_UP_ARROW);
-		this.keyManager.addAction(this.grid.moveDown,false, CH_DOWN_ARROW);
+		this.gridShortCuts.addAction(this.model.moveRight,false, CH_TAB);
+		this.gridShortCuts.addAction(this.model.moveDown,false, CH_ENTER);
+		this.gridShortCuts.addAction(this.model.moveLeft,false, CH_LEFT_ARROW);
+		this.gridShortCuts.addAction(this.model.moveRight,false, CH_RIGHT_ARROW);
+		this.gridShortCuts.addAction(this.model.moveUp,false, CH_UP_ARROW);
+		this.gridShortCuts.addAction(this.model.moveDown,false, CH_DOWN_ARROW);
+		this.gridShortCuts.addAction(this.model.undo,false, CH_CTRL + CH_Z);
+		this.gridShortCuts.addAction(this.model.redo,false, CH_CTRL + CH_SHIFT + CH_Z);
+		this.gridShortCuts.addAction(model.deleteSelection,false, CH_DELETE);
+		this.gridShortCuts.addAction(model.setValueToSelection,false, CH_CTRL + CH_ENTER);
+		this.grid.onkeydown = gridShortCuts.keyHandler;
+		
+		this.documentShortCuts = new KeyHandler();
+		
+		this.documentShortCuts.addAction(this.model.pageUp,false, CH_PAGE_UP);
+		this.documentShortCuts.addAction(this.model.pageDown,false, CH_PAGE_DOWN);
+		
+		this.documentShortCuts.addAction(self.saveBook,false, CH_CTRL + CH_S);
+		this.documentShortCuts.addAction(saveBookConfirm,false, CH_CTRL + CH_SHIFT + CH_S);
+		
 
-		this.eventManager.register("keydown",keyHandler);
-//		this.eventManager.register("keypress",keyHandler);
-		try{
-			//document.addEventListener('onkeydown',keyHandler,true);
-			//this.grid.onkeydown = keyHandler;
-		}catch(e){
-			//document.attachEvent('onkeydown',keyHandler,true); //IE Mode
-			//this.eventManager.register("onkeydown",borrar);
+		this.documentShortCuts.addAction(cmdSetBoldStyle,false, CH_CTRL + CH_B);
+		this.documentShortCuts.addAction(cmdSetItalicStyle,false, CH_CTRL + CH_I);
+		this.documentShortCuts.addAction(cmdSetUnderlineStyle,false, CH_CTRL + CH_U);
+		
+		this.window.onkeydown = documentShortCuts.keyHandler;
+		
+		//Disable Text Selection
+		this.grid.onselectstart = function() {return false;}; // ie
+		this.grid.onmousedown = function() {return false;}; // mozilla
 
+		//Capture Resize Event
+		window.onresize = function (){
+			this.grid.resize(center.offsetWidth,center.offsetHeight);
 		}
-
-
-/*		this.grid.onkeydown = function(e){ //should be window.onkeydown IE doesnt support
-		    alert(2);
-			e ? e : e =window.event; //get event for IE
-			keyHandler(e);
-		}*/
-		/*
-		//loadSheet
-		//loadData(1);
-		//errorConsole.println("Styler "  + this.styleHandler.fonts.toSource());
-
-		addApplicationEvents(this);*/
-		
-		this.fileDialog = createOpenFileDialog();
-		container.appendChild(this.fileDialog);
-		
-		/*** Color palette: (perico: acomodate esto donde queras ) **/
-		 
-		this.colorPalette = document.createElement('div');
-		this.colorPalette.id = 'colorPalette' ;
-		this.colorPalette.style.position = 'absolute';
-		this.colorPalette.style.background = '#FFFFFF' ;
-		this.colorPalette.style.zIndex=9000;
-		this.colorPalette.style.visibility = 'hidden' ;
-		window.colorPaletteActive = false ;
-
-		container.appendChild(this.colorPalette) ;
-    }
-
-    self.loadSheet = function(response){
-    	this.activeBook.setId(response.data.id);
-    	scLoadSheet(this.activeSheet, response.data);
-    	//this.model.setDataModel(this.activeSheet);
-    	this.model.refresh();
-		//this.grid.update(); //Update Grid contents
     }
     
-    self.bookLoaded = function(data){
-    	alert(data.toSource());
-    	scLoadSheet(this.activeSheet, data);
-    	//this.model.setDataModel(this.activeSheet);
-    	this.model.refresh();
+    self.nameSelectorChanged = function(name){
+    	if(self.model.existsName(name))
+    		self.model.goToName(name);
+    	else
+    		if(true){ //TODO:Change to check if is a valid name
+    			self.model.addName(name);
+    		}
     }
 
-	self.setBookName = function(bookName){
-		this.activeBook.setName(bookName);
-		document.title = "Opengoo Gel Sheet - " + bookName;
-	};
+   
+//    self.bookLoaded = function(data){
+//    	var sheet =  JsonManager.importSheet(self.con, data);
+//    	this.model.refresh();
+//    }
     
-
-    /**
-     * Edit Book
-     */
-	self.editBook = function() {
-		//var bookId = "null";
-		var bookId = self.activeBook.getId();
-		if ( bookId == undefined ) {
-			saveBookConfirm() ;
-			return ;
-		} 
-		
-		var json = '{"bookId":'+ bookId + ',"bookName":"'+ self.activeBook.getName()+'"';
-	    json +=	',"sheets":['; //Start of Sheets Array
-    	json += scSheetToJSON(self.activeSheet);
-	 	json += "]"; //End of Sheets Array
-	 	json += ","+fscFontsStyleToJSON();
-	    json += "}"; //End of Book
-		sendBook(json);
-	}
-
-
-    
-    /**
-     * Save As..
-     */
-	self.saveBook = function(bookName, format) {
-		var bookId = "null";
-		//var bookId = this.activeBook.getId(); 
-		if(typeof format == 'undefined' && typeof bookName == 'undefined') { //if not save as...
-			if(window.ogID) {
-				bookName = this.activeBook.getName();
-			} else {
-				saveBookConfirm();
-				return;
-			}
-		}
-		this.setBookName(bookName);
-		var json = '{"bookId":'+ bookId + ',"bookName":"'+ bookName+'"';
-	    json +=	',"sheets":['; //Start of Sheets Array
-    	json += scSheetToJSON(this.activeSheet);
-	 	json += "]"; //End of Sheets Array
-	 	json += ","+fscFontsStyleToJSON();
-	    json += "}"; //End of Book
-
-		/*try{
-		var temp = eval("("+json+")");
-
-		}catch(e){
-			alert(e.toSource());
-		}*/
-		sendBook(json, format);
-		//fscFontsStyleToJSON();
-	}
-	
-	self.newBook = function(){
-		this.activeBook = new Book("Book1");
-		this.activeSheet = new Sheet();
-		this.setBookName("Book1");
-		this.model.setDataModel(this.activeSheet);
-	}
-	
-	self.openFiles  = function(data){
-		if(!this.openFileDialog)
-			this.openFileDialog = new OpenFileDialog(50,50,300,300);
-		for(var i=0 ;i < data.files.length;i++){
-			this.openFileDialog.addFile(data.files[i]);
-		}
-		this.container.appendChild(this.openFileDialog);
-
-	}
-
-/*
-    self.saveBook = function(){
-    	var json = '{"bookId":null,"bookName":"'+ activeBook.getName()+'"';
-	    json +=	',"sheets":['; //Start of Sheets Array
-    	json += scSheetToJSON(this.activeSheet);
-	 	json += "]"; //End of Sheets Array
-	 	json += ","+fscFontsStyleToJSON();
-	    json += "}"; //End of Book
-	    errorConsole.clear();
-		errorConsole.println(json);
-		/*try{
-		var temp = eval("("+json+")");
-
-		}catch(e){
-			alert(e.toSource())} * /
-		sendBook(json);
-		//fscFontsStyleToJSON();
-    }
-	/*
-	self.setTitle = function(title){
-		document.title = "OpenGoo Gel SpreadSheet - " + title;
-	}
-	*/
+    addApplicationAPI(self);
     self.constructor(container);
-    //Register Fake Events
-   /*	EventManager.register(EVT_CELL_FOCUS,self.cellFocus,true);
-   	EventManager.register(EVT_BOOK_NAME_CHANGE,self.setTitle,true);
-*/
     window.application = self;
+    
     return self;
 }
+    
 
 /** This is high-level function.
  * It must react to delta being more/less than zero.
@@ -321,9 +180,9 @@ function Application(container){
  */
 function handle(delta) {
         if (delta < 0)
-		alert("menor");
+        	grid.scrollDown(2);
         else
-		alert("maher");
+        	grid.scrollDown(-2);
 }
 
 /** Event handler for mouse wheel event.
@@ -362,10 +221,10 @@ function wheel(event){
 /** Initialization code. 
  * If you use your own event management code, change it as required.
  */
-//if (window.addEventListener)
-//        /** DOMMouseScroll is for mozilla. */
-//        window.addEventListener('DOMMouseScroll', wheel, false);
-///** IE/Opera. */
-//window.onmousewheel = document.onmousewheel = wheel;
+if (window.addEventListener)
+        /** DOMMouseScroll is for mozilla. */
+        window.addEventListener('DOMMouseScroll', wheel, false);
+/** IE/Opera. */
+window.onmousewheel = document.onmousewheel = wheel;
 
 

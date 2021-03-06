@@ -273,6 +273,13 @@ return array(
 
 	'remove this widget' => 'Remove this widget',
 	'add a new' => 'Add a new',
+	'other settings' => 'Other settings',
+	'incoming settings' => 'Incoming settings',
+	'default account' => 'Default account',
+	'default account description' => 'The default account is the one used by default when you compose an email.',
+	'signature' => 'Signature',
+	'signature description' => 'The signature will be appended to every mail you send from this account.',
+	'attach contents' => 'Attach contents',
 ); // array
 
 ?>

@@ -1,20 +1,21 @@
 <?php
-	require_javascript('modules/addMessageForm.js'); 
+	require_javascript('og/modules/addMessageForm.js'); 
 	$project = active_or_personal_project();
 	$projects =  active_projects();
 	$genid = gen_id();
 	$object = $message;
-
 ?>
-		
-		
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
+<form style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
 
 <div class="message">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
-	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $message->isNew() ? lang('new message') : lang('edit message') ?>
-	</td><td style="text-align:right"><?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '100')) ?></td></tr></table>
+	<div class="coInputTitle">
+		<table style="width:535px"><tr><td>
+			<?php echo $message->isNew() ? lang('new message') : lang('edit message') ?>
+		</td><td style="text-align:right">
+			<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '100')) ?>
+		</td></tr></table>
 	</div>
 	
 	</div>
@@ -48,7 +49,8 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_context_help', true, logged_user()->getId())) {?>
-			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
+			
 				<?php render_context_help($this, 'chelp add note','add_note'); ?>
 			</div>
 		<?php }?>
@@ -59,7 +61,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_workspace_context_help', true, logged_user()->getId())) {?>
-			<div id="addContactPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addContactPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note workspace','add_note_workspace'); ?>
 			</div>
 		<?php }?>
@@ -78,7 +80,7 @@
 	<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_tags_context_help', true, logged_user()->getId())) {?>
-			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note tags','add_note_tags'); ?>
 			</div>
 		<?php }?>
@@ -123,12 +125,12 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 						if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_custom_properties_context_help', true, logged_user()->getId())) {?>
-			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note custom properties','add_note_custom_properties'); ?>
 			</div>
 		<?php }?>
 		<legend><?php echo lang('custom properties') ?></legend>
-		<?php echo render_object_custom_properties($message, 'ProjectMessages', false) ?><br/><br/>
+		<?php echo render_object_custom_properties($message, 'ProjectMessages', false) ?>
 		<?php echo render_add_custom_properties($object); ?>
 	</fieldset>
 	</div>
@@ -138,7 +140,7 @@
 			<?php 
 				$show_help_option = user_config_option('show_context_help', 'until_close'); 
 							if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_subscribers_context_help', true, logged_user()->getId())) {?>
-				<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+				<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 			<?php render_context_help($this, 'chelp add note subscribers','add_note_subscribers'); ?>
 			</div>
 		<?php }?>
@@ -171,7 +173,7 @@
 		<?php 
 			$show_help_option = user_config_option('show_context_help', 'until_close'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_linked_object_context_help', true, logged_user()->getId())) {?>
-			<div id="addNotesPanelContextHelp" style="padding-left:7px;padding:15px;background-color:white;">
+			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
 				<?php render_context_help($this, 'chelp add note linked objects','add_note_linked_object'); ?>
 			</div>
 		<?php }?>
@@ -201,13 +203,7 @@
 	<?php if(!$message->isNew() && trim($message->getAdditionalText())) { ?>
 		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?>:</label>
 		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText', 'tabindex' => '25')) ?>
-	<?php } /* else { ?>
-		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?> (<a href="#" onclick="return App.modules.addMessageForm.toggleAdditionalText(this, '<?php echo $genid ?>messageFormAdditionalText', 
-				'<?php echo escape_single_quotes(lang('expand additional text')) ?>', '<?php echo escape_single_quotes(lang('collapse additional text')) ?>')"><?php echo lang('expand additional text') ?></a>):</label>
-		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
-		<script type="text/javascript">
-		document.getElementById('<?php echo $genid ?>messageFormAdditionalText').style.display = 'none';</script>
-	<?php } */ // if ?>
+	<?php } ?>
 	</div>
 	
 	<div>
@@ -220,6 +216,6 @@
 </div>
 </form>
 
-<script type="text/javascript">
+<script>
 	Ext.get('<?php echo $genid ?>messageFormTitle').focus();
 </script>

@@ -37,7 +37,13 @@
 	'config category name passwords' => 'Passwords',
     'config category desc passwords' => 'Use these settings to manage password options.',
 	
-    
+	//--------------------------------------------------
+    // Validate Password
+    // ---------------------------------------------------
+
+  	'autentify password title'=> 'Autentify Password',
+  	'autentify password desc'=> 'You requested to enter to the administrator panel.<br/> Please re-enter your password',
+  
     // ---------------------------------------------------
     //  Options
     // ---------------------------------------------------
@@ -61,7 +67,10 @@
     'config option desc file_revision_comments_required' => 'If set, adding new file revisions requires users to provide a new comment for each revision.',
  	'config option name show_feed_links' => 'Show feed links',
     'config option desc show_feed_links' => 'This allows you to show links to RSS or iCal feeds to the logged user throughout the system, so that he can subscribe to them. WARNING: These links contain information that can login a user to the system. If an unaware user shares one of this links he could be compromising all of his information.',
-
+	
+    'config option name ask_administration_autentification' => 'Autentify administration',
+    'config option desc ask_administration_autentification' => 'Sets whether a pasword autentification dialog is displayed when accsesing the administration panel',
+  
   	'config option name enable_notes_module' => 'Enable Notes Module',
   	'config option name enable_email_module' => 'Enable Email Module',
   	'config option name enable_contacts_module' => 'Enable Contacts Module',
@@ -123,7 +132,7 @@
   	'can manage security' => 'Can manage security',
   	'can manage workspaces' => 'Can manage workspaces',
   	'can manage configuration' => 'Can manage configuration',
-  	'can manage contacts' => 'Can manage contacts',
+  	'can manage contacts' => 'Can manage all contacts',
   	'can manage reports' => 'Can manage reports',
   	'group users' => 'Group users',
     
@@ -132,6 +141,7 @@
   	'user ws config category name task panel' => 'Task options',
   	'user ws config category name general' => 'General',
 	'user ws config category name calendar panel' => 'Calendar options',
+	'user ws config category name mails panel' => 'Email options',
   	'user ws config option name show pending tasks widget' => 'Show pending tasks widget',
   	'user ws config option name pending tasks widget assigned to filter' => 'Show tasks assigned to',
   	'user ws config option name show late tasks and milestones widget' => 'Show late tasks and milestones widget',
@@ -168,13 +178,19 @@
 	'user ws config option desc show_week_numbers' => 'Shows the week numbers on the monthly and weekly views.',
   
   	'user ws config option name date_format' => 'Date format',
-  	'user ws config option desc date_format' => 'Template format to be applied to date values.',
+  	'user ws config option desc date_format' => 'Template format to be applied to date values. Code explanations: d = Day number (2 digits with leading zeros), D = Day name (three letters), j = Day number, l = Complete day name, m = Month number (with leading zeros), M = Month name (three letters), n = Month number, F = Complete month name, Y = Year (4 digits), y = Year (2 digits).',
   	'user ws config option name descriptive_date_format' => 'Descriptive date format',
-  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values.',
+  	'user ws config option desc descriptive_date_format' => 'Template format to be applied to descriptive date values. Code explanations: same as \'Date Format\'',
 
   	'user ws config option name show_context_help' => 'Show contextual help',
   	'user ws config option desc show_context_help' => 'Select if you want to always view help, never view it, or view it until each box is closed.',
-  	
+  	'user ws config option name view deleted accounts emails' => 'View deleted accounts\' emails',
+  	'user ws config option desc view deleted accounts emails' => 'Enables you to view the emails from your deleted email accounts (when you delete an account you must not delete emails to use this option)',
+	'user ws config option name block_email_images' => 'Block email images',
+	'user ws config option desc block_email_images' => 'Do not show images that are embedded in mail objects.',
+	'user ws config option name draft_autosave_timeout' => 'Draft autosave interval',
+	'user ws config option desc draft_autosave_timeout' => 'Seconds between each autosave operation for draft mails (0 to disable autosave)',
+  
 	'show context help always' => 'Always',
 	'show context help never' => 'Never',
 	'show context help until close' => 'Until close',
@@ -224,10 +240,12 @@
 	'no objects in template' => 'There are no objects in this template',
 	'add to a template' => 'Add to a template',
   	'add an object to template' => 'Add an object to this template',
+  	'add a parameter to template' => 'Add a parameter to this template',
 	'you are adding object to template' => 'You are adding {0} \'{1}\' to a template. Choose a template below or create a new one for this {0}.',
 	'success add object to template' => 'Object added to template successfully',
 	'object type not supported' => 'This object type is not supported for templates',
   	'assign template to workspace' => 'Assign template to workspace',
+  	'parameters' => 'Parameters',
   
   	'cron events' => 'Cron events',
   	'about cron events' => 'Learn about cron events...',
@@ -263,6 +281,16 @@
   	'email type' => 'Email',
   	'custom properties updated' => 'Custom properties updated',
   	'user ws config option name noOfTasks' => 'Set number of tasks shown as default',
+  
+  	'user ws config option name amount_objects_to_show' => 'Number of Linked Objects to show',
+  	'user ws config option desc amount_objects_to_show' => 'Sets the number of Linked Objects to be displayed on object\'s views',
+   	'user ws config option name show_two_weeks_calendar' => 'Show two weeks calendar widget',
+  	'user ws config option desc show_two_weeks_calendar' => 'Sets the calendar widget to display two weeks',
+	'user ws config option name attach_docs_content' => 'Attach files contents',
+	'user ws config option desc attach_docs_content' => 'When this option is set to "Yes" file attachments will be added as regular email attachments. When "No" is chosen file attachments will be sent as a link to the file.',
+  	'edit default user preferences' => 'Edit default user preferences',
+  	'default user preferences' => 'Default user preferences',
+  	'default user preferences desc' => 'Choose the default values for user preferences. This values apply when the user hasn\'t chosen a value for an option yet.',
   ); // array
 
 ?>

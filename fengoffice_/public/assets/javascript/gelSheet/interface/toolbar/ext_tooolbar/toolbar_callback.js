@@ -33,23 +33,31 @@ function saveBookConfirm() {
 }
 
 function exportPDF() {
-	window.export('pdf');
+	window.exportBook('pdf');
 }
 
 function exportXLS() {
-	window.export('xls');
+	window.exportBook('xls');
 }
 
 function exportXLSX() {
-	window.export('xlsx');
+	window.exportBook('xlsx');
 }
 
 function exportHTML() {
-	window.export('html');
+	window.exportBook('html');
 }
 
 function exportODS() {
-	Ext.Msg.alert("Warning", "Unimplemented");
+	window.exportBook('ods');
+}
+
+function undo() {
+	window.model.undo() ;
+}
+
+function redo() {
+	window.model.redo() ;
 }
 
 function bold() {
@@ -68,11 +76,6 @@ function unformat() {
 	cmdSetFontStyleId(0) ;
 }
 
-function setFont(p1,p2) {
-	alert('setFont'); 
-	alert(p1.toSource()); 
-	alert(p2.toSource()); 
-}
 
 function setBorderLeft() {
 	var cell = application.grid.activeCell ;

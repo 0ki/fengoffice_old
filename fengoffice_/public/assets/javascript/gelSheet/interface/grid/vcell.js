@@ -8,25 +8,28 @@
  *  Gelsheet is free distributable under the terms of an GPL license.
  *  For details see: http://www.gnu.org/copyleft/gpl.html
  *
- */function VCell(row, column){
+ */
+	function VCell(row, column){
 	var self = document.createElement("TD");
 
 	self.constructor = function(row, column){
-		this.className = "CellUnselected";
+		this.className = "Cell Unselected";
 		this.row = row;
 		this.column = column;
 		this.address = {"row":row,"col":column}; //Reference Address
-		this.style.borderWidth = "1px";
-		this.style.overflow = "hidden";
-		this.style.whiteSpace = "nowrap";
-		this.style.padding = "0px";
-		this.style.margin = '0px';
-		this.style.cursor = "url(img/cell.cur.ico), default";
 		this.value = undefined;
-		this.fontStyleId =0;
+		this.fontStyleId = 0;
+		this.container = document.createElement("DIV");
+		this.container.className ='CellContainer' ;
+		this.style.whiteSpace = "nowrap";
+		self.appendChild(this.container) ;
 		WrapStyle(this);
+		WrapEvents(this);
 	}
 
+	self.add = function(elem){
+		this.container.appendChild(elem) ;
+	}
 	self.getFontStyleId = function(){
 		return this.fontStyleId;
 	}
@@ -39,9 +42,11 @@
 		this.address.row = row;
 		this.address.col = column;
 	}
+	
 
+	
 	self.getAddress = function(){
-		return this.address;
+		return {row:this.address.row,col:this.address.col};
 	}
 
 	self.getColumn = function(){
@@ -53,7 +58,7 @@
 	}
 	self.setValue = function(value){
 		this.value = value;
-		this.innerHTML = value;
+		self.setInnerHTML(value);
 	}
 
 	self.setCell = function(cell){
@@ -61,26 +66,26 @@
 	}
 
 	self.activate = function(){
-		this.className = "CellFocused";
+		this.className = "Cell Focused";
 	}
 
 	self.deactivate = function(){
-		this.className = "CellUnselected";
+		this.className = "Cell Unselected";
 	}
 
 	self.select = function(){
-		this.className = "CellSelected";
+		this.className = "Cell Selected";
 	}
 
 	self.unselect = function(){
-		this.className = "CellUnselected";
+		this.className = "Cell Unselected";
 	}
 
 	self.setInnerHTML = function(value){
 	    if(value)
-		    this.innerHTML = value;
+		    this.container.innerHTML = value;
 		else
-		    this.innerHTML = "";
+		    this.container.innerHTML = "";
 	}
 
 	self.updateFontStyle = function(newFontStyleId){
@@ -93,14 +98,27 @@
 	self.refresh = function(){
 		if(this.cell!=undefined)
 			if(this.cell.value!=undefined) //IE doesnt support AND with short circuit
-				this.innerHTML = this.cell.value;
+				this.container.innerHTML = this.cell.value;
 			else
-				this.innerHTML = "";
+				this.container.innerHTML = "";
 		else
-			this.innerHTML = "";
+			this.conteiner.innerHTML = "";
 	}
-
+	
 	self.constructor(row, column);
+	
+	/***** must override constructor methods:  *****/
+	self.setHeight = function(height) {
+		this.style.height = px(height) ;
+		//this.container.style.height = px(height) ;
+	}
+	self.setTextDecoration = function(value){
+		self.container.style.textDecoration = value ;
+	}
+	self.getTextDecoration = function(){
+		return self.container.style.textDecoration ;
+	}
+	
 	return self;
 }
 

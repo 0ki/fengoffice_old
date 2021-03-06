@@ -49,9 +49,10 @@
       $name = array_var($args, 2);
       $target = array_var($args, 3);
       $attributes = array_var($args, 4);
+      $isCommon = array_var($args, 5);
       
       if(!empty($title) && !empty($url)) {
-        PageActions::instance()->addAction( new PageAction($title, $url, $name, $target, $attributes) );
+        PageActions::instance()->addAction( new PageAction($title, $url, $name, $target, $attributes,$isCommon) );
       } // if
       
     } // if
@@ -89,6 +90,8 @@
     
     public $target;
     
+    public $isCommon;
+    
     public $attributes = array();
   
     /**
@@ -98,12 +101,13 @@
     * @param void
     * @return PageAction
     */
-    function __construct($title, $url, $name, $target = null, $attributes = null) {
+    function __construct($title, $url, $name, $target = null, $attributes = null,$isCommon = true) {
       $this->setTitle($title);
       $this->setURL($url);
       $this->setName($name);
       $this->setTarget($target);
       $this->setAttributes($attributes);
+      $this->setIsCommon($isCommon);
     } // __construct
     
     // ---------------------------------------------------
@@ -216,6 +220,29 @@
     function setAttributes($value) {
       $this->attributes = $value;
     } // setAttributes
+    
+    /**
+    * Get isCommon
+    *
+    * @access public
+    * @param null
+    * @return boolean
+    */
+    function getIsCommon() {
+      return $this->isCommon;
+    } // getIsCommon
+    
+    /**
+    * Set isCommon value
+    *
+    * @access public
+    * @param boolean $value
+    * @return null
+    */
+    function setIsCommon($value) {
+      $this->isCommon = $value;
+    } // setIsCommon
+    
   } // PageAction
   
   /**

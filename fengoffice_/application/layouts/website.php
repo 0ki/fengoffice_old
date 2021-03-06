@@ -5,14 +5,15 @@
 	<!-- script src="http://www.savethedevelopers.org/say.no.to.ie.6.js"></script -->
 	<title><?php echo clean(CompanyWebsite::instance()->getCompany()->getName()) . ' - ' . PRODUCT_NAME ?></title>
 	<?php echo link_tag(with_slash(ROOT_URL)."favicon.ico", "rel", "shortcut icon") ?>
-	<?php echo add_javascript_to_page("app.js") // loaded first because it's needed for translating?>
+	<?php echo add_javascript_to_page("og/app.js") // loaded first because it's needed for translating?>
 	<?php echo add_javascript_to_page(get_url("access", "get_javascript_translation")); ?>
 	<?php //echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
 <?php
 
+	$version = include "version.php";
 	if (defined('COMPRESSED_CSS') && COMPRESSED_CSS) {
-		echo stylesheet_tag('ogmin.css');
+		echo stylesheet_tag("ogmin$version.css");
 	} else {
 		echo stylesheet_tag('website.css');
 	}
@@ -24,7 +25,7 @@
 	}
 
 	if (defined('COMPRESSED_JS') && COMPRESSED_JS) {
-		$jss = array('ogmin.js');
+		$jss = array("ogmin.js");
 	} else {
 		$jss = include "javascripts.php";
 	}
@@ -47,7 +48,7 @@
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
 </div>
 
-<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px"></div>
+<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px;"></div>
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>
@@ -62,7 +63,7 @@
 				<table><tr><td>
 					<div id="wsCrumbsDiv">
 						<div style="font-size:150%;display:inline;">
-							<a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a>
+							<a href="#" style="display:inline;line-height:28px" onclick="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a>
 						</div>
 					</div>
 				</td><td>
@@ -154,6 +155,7 @@ og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
 
+<?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 setInterval(function() {
 	og.openLink(og.getUrl('object', 'popup_reminders'), {
 		hideLoading: true,
@@ -161,9 +163,14 @@ setInterval(function() {
 		preventPanelLoad: true
 	});
 }, 60000);
+<?php } ?>
 
 og.date_format = '<?php echo user_config_option('date_format', 'd/m/Y') ?>';
 og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
+og.draftAutosaveTimeout = <?php echo user_config_option('draft_autosave_timeout', '60') ?> * 1000;
+
+og.loadEmailAccounts('view');
+og.loadEmailAccounts('edit');
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

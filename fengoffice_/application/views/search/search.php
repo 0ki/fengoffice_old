@@ -111,6 +111,6 @@ if($has_search_results) {
 </div>
 </div>
 </div>
-<script type="text/javascript">
+<script>
 og.showWsPaths('<?php echo $genid; ?>Search',true);
 </script>

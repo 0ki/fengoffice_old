@@ -1,6 +1,5 @@
 <?php
 
-	require_javascript('slimey/slang/' . Localization::instance()->getLocale() . '.js');
 	require_javascript('slimey/slimey.js');
 	require_javascript('slimey/functions.js');
 	require_javascript('slimey/stack.js');
@@ -37,7 +36,7 @@
 <div id="<?php echo $id ?>" style="width: 100%; height: 100%; overflow: hidden;">
 </div>
 
-<script type="text/javascript">
+<script>
 	var panel = Ext.getCmp(og.getParentContentPanel('<?php echo $id ?>').id);
 	var <?php echo $id ?> = new Slimey({
 		container: "<?php echo $id ?>",

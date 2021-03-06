@@ -76,9 +76,4 @@
 	'emailunclassified' => 'Email',
 	'object reminders' => 'Lembretes',
 	'add object reminder' => 'Criar lembrete',
-	'load file' => 'Carregar arquivo',
-	'time' => 'Hora',
-	'reporting' => 'Relatórios',
-	'create document' => 'Criar Documentos',
-	'create presentation' => 'Criar Apresentações',
 ); ?>
