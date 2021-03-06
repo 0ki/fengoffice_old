@@ -900,7 +900,7 @@ class ObjectController extends ApplicationController {
 	 * @param boolean $count if false the query will return objects, if true it will return object count
 	 */
 	static function getDashboardObjectQueries($project = null, $tag = null, $count = false, $trashed = false, $linkedObject = null, $order = 'updatedOn', $filterName = '', $archived = false, $filterManager = ''){
-		if ($trashed && $trashed != 'all') $order = 'trashedOn';
+		if ($trashed && $trashed !== 'all') $order = 'trashedOn';
 		else if ($archived) $order = 'archivedOn';
 		switch ($order){
 			case 'createdOn':
@@ -1001,7 +1001,7 @@ class ObjectController extends ApplicationController {
 		
 		
 		if ($trashed) {
-			if ($trashed == 'all') $trashed_cond = '`trashed_on` >= ' . DB::escape(EMPTY_DATETIME);
+			if ($trashed === 'all') $trashed_cond = '`trashed_on` >= ' . DB::escape(EMPTY_DATETIME);
 			else $trashed_cond = '`trashed_on` > ' . DB::escape(EMPTY_DATETIME);
 			$archived_cond = '1 = 1'; // Show all objects in trash
 			$comments_arch_cond = "1 = 1";
@@ -1395,9 +1395,10 @@ class ObjectController extends ApplicationController {
 			list($succ, $err) = $this->do_mark_as_read_unread_objects($ids, false);
 			
 		}else if (array_var($_GET, 'action') == 'empty_trash_can') {
-							
+
 			$Allitems = $this->getDashboardObjects(null,null,null,null,null,null,active_project(),true);
 			
+			$ids = array();
 			for ($i=0;$i<count($Allitems);$i++){
 				$id = $Allitems[$i]['object_id'];
 				$manager = $Allitems[$i]['manager'];

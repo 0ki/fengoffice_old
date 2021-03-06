@@ -386,22 +386,24 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 					// create a new panel of the type
 					var config = content.config || {};
 					config.xtype = content.data || config.xtype;
-					content.panel = Ext.ComponentMgr.create(config);
+					if (Ext.ComponentMgr.isRegistered(config.xtype))
+						content.panel = Ext.ComponentMgr.create(config);
+					else return false;
 				} else if (content.config && typeof content.panel.newConfig == 'function') {
 					content.panel.newConfig(content.config);
 				}
 				//content.panel.load();
 			}
 			if (isReset) {
-				content.panel.reset();
+				if (content.panel) content.panel.reset();
 			} else {//if (!isBack) {//if (isReload) {
 				if (!isBack || content.data != 'mails-containerpanel') {
-					content.panel.load();
+					if (content.panel) content.panel.load();
 				}
 			}
 
 			this.add(content.panel);
-			content.panel.show();
+			if (content.panel) content.panel.show();
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else {

@@ -107,6 +107,11 @@ class EventController extends ApplicationController {
 			$conditions = array('conditions' => "`event_id` = " . DB::escape($event_id) . " AND `user_id` = ". DB::escape($user_id));
 			$inv = EventInvitations::findOne($conditions);
 			if ($inv != null) {
+				if ($inv->getUserId() != logged_user()->getId()) {
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				}
 				try {
 					DB::beginWork();
 					$inv->setInvitationState($attendance);

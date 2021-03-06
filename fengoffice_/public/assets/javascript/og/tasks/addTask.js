@@ -282,6 +282,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	if (data.startDate){
 		var date = new Date(data.startDate * 1000);
+		date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
 		var sd = date.dateFormat(og.preferences['date_format']);
 	} else sd = '';
 	var DtStart = new og.DateField({
@@ -293,6 +294,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	});
 	if (data.dueDate){
 		var date = new Date(data.dueDate * 1000);
+		date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
 		var dd = date.dateFormat(og.preferences['date_format']);
 	} else dd = '';
 	var DtDue = new og.DateField({

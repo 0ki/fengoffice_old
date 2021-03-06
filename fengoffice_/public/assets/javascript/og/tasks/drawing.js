@@ -215,14 +215,23 @@ var rx__TasksDrag = {
 					}
 			}
 			
-			// Workspace changed -> milestone control
-			if (this.displayCriteria.group_by == 'workspace' && milestone.workspaceIds != parameters['project_id'] && 
-				!og.IsWorkspaceParentOf(milestone.workspaceIds, parameters['project_id'])) {
+			// Workspace changed -> milestone control, assigned control
+			if (this.displayCriteria.group_by == 'workspace' && milestone.workspaceIds != parameters['project_id']) { 
+				if (!og.IsWorkspaceParentOf(milestone.workspaceIds, parameters['project_id'])) {
 					if (!confirm(lang('task milestone does not belong to workspace'))) {
 						return;
 					} else {
 						params2["task[milestone_id]"] = 0;
 					}
+				}
+				/*if (!og.canAssignTask(parameters['project_id'], task.assignedToId)) {
+					if (!confirm(lang('task cant be assigned to current user'))) {
+						return;
+					} else {
+						params2["task[assigned_to]"] = 0;
+					}
+				}*/
+				alert(task.assignedToId);
 			}
 		}
 
@@ -829,6 +838,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		
 		if (task.startDate){
 			var date = new Date(task.startDate * 1000);
+			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
 			var now = new Date();
 			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
 			sb.append(lang('start') + ':&nbsp;' + dateFormatted);
@@ -838,6 +848,7 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		
 		if (task.dueDate){
 			var date = new Date((task.dueDate) * 1000);
+			date = new Date(Date.parse(date.toUTCString().slice(0, -4)));
 			var now = new Date();
 			var dateFormatted = date.getYear() != now.getYear() ? date.dateFormat('M j, Y'): date.dateFormat('M j');
 			var dueString = lang('due') + ':&nbsp;' + dateFormatted;

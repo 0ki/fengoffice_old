@@ -14,11 +14,12 @@
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
   
-<?php if($comment->isNew()) { ?>
-<form class="internalForm" action="<?php echo Comment::getAddUrl($comment_form_object) ?>" method="post">
-<?php } else { ?>
-<form class="internalForm" action="<?php echo $comment->getEditUrl() ?>" method="post">
-<?php } // if ?>
+<?php if($comment->isNew()) {
+		$form_action = Comment::getAddUrl($comment_form_object);
+	  } else {
+	  	$form_action = $comment->getEditUrl();
+	  } ?>
+<form class="internalForm" action="<?php echo $form_action ?>" method="post">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

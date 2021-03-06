@@ -33,8 +33,17 @@ class MailUtilities {
 						$succ++;
 						continue;
 					} else {
-						$account->setLastChecked(DateTimeValueLib::now());
-						$account->save();
+						try {
+							DB::beginWork();
+							$account->setLastChecked(DateTimeValueLib::now());
+							$account->save();
+							DB::commit();
+						} catch (Exception $ex) {
+							DB::rollback();
+							$errAccounts[$err]["accountName"] = $account->getEmail();
+							$errAccounts[$err]["message"] = $e->getMessage();
+							$err++;
+						}
 					}
 					$accId = $account->getId();
 					$emails = array();

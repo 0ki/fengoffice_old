@@ -26,8 +26,8 @@ og.pickObjectForTemplate = function(before) {
 		}
 	}, before, {
 		types: {
-			'Tasks': true,
-			'Milestones': true
+			'ProjectTasks': true,
+			'ProjectMilestones': true
 		}
 	});
 };

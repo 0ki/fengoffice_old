@@ -11,13 +11,15 @@
   
 <?php if(isset($tools) && is_array($tools) && count($tools)) { ?>
 <div id="administrationTools">
-<?php foreach($tools as $tool) { ?>
+<?php foreach($tools as $tool) { 
+		if ($tool->getVisible()) { ?>
   <div class="administrationTool">
     <div class="administrationToolName">
       <h2><a class="internalLink" href="<?php echo $tool->getToolUrl() ?>"><?php echo clean($tool->getDisplayName()) ?></a></h2>
     </div>
     <div class="administrationToolDesc"><?php echo clean($tool->getDisplayDescription()) ?></div>
   </div>
+  <?php } // if ?>
 <?php } // foreach ?>
 </div>
 <?php } else { ?>

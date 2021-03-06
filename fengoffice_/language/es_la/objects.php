@@ -92,6 +92,7 @@
 	'the event' => 'el evento',
 	'the file' => 'el archivo',
 	'the file revision' => 'la versión de archivo',
+	'the file_revision' => 'la versión de archivo',
 	'the task' => 'la tarea',
 	'the milestone' => 'el hito',
 	'the webpage' => 'el enlace',

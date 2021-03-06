@@ -858,7 +858,7 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				}
-
+				
 				$task->setFromAttributes($task_data);
 
 				$totalMinutes = (array_var($task_data, 'time_estimate_hours',0) * 60) +
@@ -974,7 +974,7 @@ class TaskController extends ApplicationController {
 			} // try
 		} // if
 	} // add_task
-
+	
 	/**
 	 * Copy task
 	 *

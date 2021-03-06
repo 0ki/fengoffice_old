@@ -56,7 +56,7 @@ class MailController extends ApplicationController {
 			ajx_current("empty");
 		}
 		$original_mail = MailContents::findById(get_id('id',$_GET));
-		if(! $original_mail) {
+		if(!$original_mail) {
 			flash_error('Invalid parameter.');
 			ajx_current("empty");
 		}
@@ -137,6 +137,10 @@ class MailController extends ApplicationController {
 			); // array
 		} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		if(!$mail_accounts) {
+			flash_error(lang('no mail accounts set'));
+			ajx_current("empty");
+		}
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
@@ -663,6 +667,7 @@ class MailController extends ApplicationController {
 					"conditions" => array("`is_deleted`=0 AND `state` >= 200 AND `account_id` = ? AND `created_by_id` = ?", $account->getId(), logged_user()->getId()),
 					"order" => "`state` ASC"
 				));
+				$count = 0;
 				foreach ($mails as $mail) {
 					$errorMailId = $mail->getId();
 					$to = preg_split('/;|,/', $mail->getTo());
@@ -687,8 +692,9 @@ class MailController extends ApplicationController {
 						$sentOK = $utils->sendMail($account->getSmtpServer(), $to, $from, $subject, $body, $cc, $bcc, $attachments, $account->getSmtpPort(), $account->smtpUsername(), $account->smtpPassword(), $type, $account->getOutgoingTrasnportType(), $msg_id, $in_reply_to_id, $images, $complete_mail);
 					} catch (Exception $e) {
 						// actions are taken below depending on the sentOK variable
+						$sentOK = false;
 					}
-					
+
 					try {
 						DB::beginWork();
 						if ($sentOK) {
@@ -706,7 +712,9 @@ class MailController extends ApplicationController {
 							$mail->setSentDate(DateTimeValueLib::now());
 							$mail->setReceivedDate(DateTimeValueLib::now());
 							$mail->save();
-							evt_add("mail sent", array("mail_id" => $mail->getId()));
+							$properties = array("id" => $mail->getId());
+							evt_add("mail sent", $properties);
+							$count++;
 						} else {
 							$mail->setState($mail->getState() + 2);
 							$mail->save();
@@ -716,7 +724,9 @@ class MailController extends ApplicationController {
 						DB::rollback();
 					}
 				}
-				
+				if ($count > 0) {
+					evt_add("mails sent", $count);
+				}
 			} catch (Exception $e) {
 				$errorEmailUrl = '';
 				if ($errorMailId > 0){
@@ -1855,7 +1865,9 @@ class MailController extends ApplicationController {
 				MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
 				$tmp_folder = "/tmp/" . $original_mail->getId() . "_fwd";
 				if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
-				$fwd_body = self::rebuild_body_html($fwd_body, $decoded[0]['Parts'], $tmp_folder);
+				if ($parts_container = array_var($decoded, 0)) {
+					$fwd_body = self::rebuild_body_html($fwd_body, array_var($parts_container, 'Parts'), $tmp_folder);
+				}
 			}
 			
 			//Attachs
@@ -2088,43 +2100,7 @@ class MailController extends ApplicationController {
 			if (isset($totMsg[$i])) {
 				$msg = $totMsg[$i];
 				if ($msg instanceof MailContent) {/* @var $msg MailContent */
-					$text = $msg->getTextBody();
-					// plain body is already converted to UTF-8 (when mail was saved)
-					if (strlen_utf($text) > 150) {
-						$text = substr_utf($text, 0, 150) . "...";
-					}
-					$show_as_conv = user_config_option('show_emails_as_conversations');
-					if ($show_as_conv) {
-						$conv_total = MailContents::countMailsInConversation($msg);
-						$conv_unread = MailContents::countUnreadMailsInConversation($msg);
-					}
-					$properties = array(
-					    "id" => $msg->getId(),
-						"ix" => $i,
-						"object_id" => $msg->getId(),
-						"type" => 'email',
-						"hasAttachment" => $msg->getHasAttachments(),
-						"accountId" => $msg->getAccountId(),
-						"accountName" => ($msg->getAccount() instanceof MailAccount ? $msg->getAccount()->getName() : lang('n/a')),
-						"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
-						"subject" => $msg->getSubject(),
-						"text" => $text,
-						"date" => $msg->getReceivedDate() instanceof DateTimeValue ? ($msg->getReceivedDate()->isToday() ? format_time($msg->getReceivedDate()) : format_datetime($msg->getReceivedDate())) : lang('n/a'),
-						"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getId() : 0),
-						"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
-						"tags" => implode(", ", $msg->getTagNames()),
-						"isRead" => $show_as_conv ? ($conv_unread == 0) : $msg->getIsRead(logged_user()->getId()),
-						"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
-						"from_email" => $msg->getFrom(),
-						"isDraft" => $msg->getIsDraft(),
-						"isSent" => $msg->getIsSent(),
-						"folder" => $msg->getImapFolderName(),
-						"to" => $msg->getTo(),
-					);
-					if ($show_as_conv) {
-						$properties["conv_total"] = $conv_total;
-						$properties["conv_unread"] = $conv_unread;
-					}
+					$properties = $this->getMailProperties($msg, $i);
 					$object["messages"][] = $properties;
 				}
 			}
@@ -2133,6 +2109,48 @@ class MailController extends ApplicationController {
 	}
 
 
+	private function getMailProperties($msg, $i=0) {
+		$text = $msg->getTextBody();
+		// plain body is already converted to UTF-8 (when mail was saved)
+		if (strlen_utf($text) > 150) {
+			$text = substr_utf($text, 0, 150) . "...";
+		}
+		$show_as_conv = user_config_option('show_emails_as_conversations');
+		if ($show_as_conv) {
+			$conv_total = MailContents::countMailsInConversation($msg);
+			$conv_unread = MailContents::countUnreadMailsInConversation($msg);
+			$conv_hasatt = MailContents::conversationHasAttachments($msg);
+		}
+		$properties = array(
+		    "id" => $msg->getId(),
+			"ix" => $i,
+			"object_id" => $msg->getId(),
+			"type" => 'email',
+			"hasAttachment" => $msg->getHasAttachments(),
+			"accountId" => $msg->getAccountId(),
+			"accountName" => ($msg->getAccount() instanceof MailAccount ? $msg->getAccount()->getName() : lang('n/a')),
+			"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+			"subject" => $msg->getSubject(),
+			"text" => $text,
+			"date" => $msg->getReceivedDate() instanceof DateTimeValue ? ($msg->getReceivedDate()->isToday() ? format_time($msg->getReceivedDate()) : format_datetime($msg->getReceivedDate())) : lang('n/a'),
+			"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getId() : 0),
+			"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof User ? $msg->getAccount()->getOwner()->getDisplayName() : lang('n/a')),
+			"tags" => implode(", ", $msg->getTagNames()),
+			"isRead" => $show_as_conv ? ($conv_unread == 0) : $msg->getIsRead(logged_user()->getId()),
+			"from" => $msg->getFromName()!=''?$msg->getFromName():$msg->getFrom(),
+			"from_email" => $msg->getFrom(),
+			"isDraft" => $msg->getIsDraft(),
+			"isSent" => $msg->getIsSent(),
+			"folder" => $msg->getImapFolderName(),
+			"to" => $msg->getTo(),
+		);
+		if ($show_as_conv) {
+			$properties["conv_total"] = $conv_total;
+			$properties["conv_unread"] = $conv_unread;
+			$properties["conv_hasatt"] = $conv_hasatt;
+		}
+		return $properties;
+	}
 
 	/**
 	 * Resolve action to perform
@@ -2557,7 +2575,9 @@ class MailController extends ApplicationController {
 			MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 			$tmp_folder = "/tmp/" . $email->getAccountId() . "_" . logged_user()->getId() . "_temp_mail_content_res";
 			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
-			$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), $decoded[0]['Parts'], $tmp_folder));
+			if ($parts_container = array_var($decoded, 0)) {
+				$email->setBodyHtml(self::rebuild_body_html($email->getBodyHtml(), array_var($parts_container, 'Parts'), $tmp_folder));
+			}
 		}
 		
 		tpl_assign('email', $email);

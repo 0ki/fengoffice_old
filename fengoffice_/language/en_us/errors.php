@@ -185,6 +185,8 @@
   	'error add contact from user' => 'Could not add contact from user.',
   	'zip not supported' => 'ZIP is not supported by the server',
   	'no tag specified' => 'No tag specified',
+  
+    'no mailAccount error' => 'Action unavailable. You do not have an email account added.',
   ); // array
 
 ?>

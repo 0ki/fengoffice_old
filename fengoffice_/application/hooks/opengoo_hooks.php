@@ -83,6 +83,12 @@ Hook::register("fengoffice");
  *  		Type of object (e.g. ProjectFile),
  *  	- &$columns : assoc of database columns to add to the object (column_name => column_type). Add to this array.
  *  
+ * - add_user_permissions: Allows to define permissions for objects.
+ * 		Must be combined with 'object_definition' hook, to add the columns to users table.
+ * 		- $ignored
+ *  	- &$permissions : array of assoc
+ *  		Name for the permission (e.g. can_drink_coffee): value of the permission at users table (boolean)
+ *  
  * - render_object_description: Called when rendering the description that goes below the title in an object's view.
  *  	- $object,
  *  	- &$description : string
@@ -115,6 +121,10 @@ Hook::register("fengoffice");
  *  		required: Whether it should be marked as required (red asterix after the name)
  *  
  *  - before_object_save: Called before saving an object, to be able to set some fields on the last minute.
+ *   	- $object : DataObject,
+ *   	- &$ignored
+ *   
+ *  - after_object_save: Called after saving an object.
  *   	- $object : DataObject,
  *   	- &$ignored
  *   

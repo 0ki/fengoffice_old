@@ -89,7 +89,7 @@
 				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
 				
 			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>"/><?php echo lang('hours') ?>,&nbsp;
-			<select name="timeslot[subtract_minutes]" size="1" tabindex="70">
+			</b><select name="timeslot[subtract_minutes]" size="1" tabindex="70">
 			<?php
 			for($i = 0; $i < 60; $i++) {
 				echo "<option value='$i'";

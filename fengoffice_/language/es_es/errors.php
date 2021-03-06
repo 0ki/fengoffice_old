@@ -115,4 +115,5 @@
 	'error add contact from user' => 'No se pudo crear el contacto a partir del usuario.',
 	'zip not supported' => 'El servidor no soporta ZIP.',
 	'no tag specified' => 'No se especificó una etiqueta',
+    'no mailAccount error' => 'La acción no está disponible. Debe agregar su cuenta de correo.',
 ); ?>

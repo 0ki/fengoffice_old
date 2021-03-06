@@ -329,6 +329,7 @@ class ProjectController extends ApplicationController {
 				}
 
 				/* <permissions> */
+				$permissions = null;
 				$permissionsString = array_var($_POST, 'permissions');
 				if ($permissionsString && $permissionsString != '') {
 					$permissions = json_decode($permissionsString);
@@ -493,6 +494,7 @@ class ProjectController extends ApplicationController {
 				
 				
 				/* <permissions> */
+				$permissions = null;
 				$permissionsString = array_var($_POST, 'permissions');
 				if ($permissionsString && $permissionsString != '') {
 					$permissions = json_decode($permissionsString);

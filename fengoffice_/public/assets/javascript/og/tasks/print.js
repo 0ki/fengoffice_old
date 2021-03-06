@@ -79,8 +79,10 @@ ogTasks.printGroupTasks = function(group, printWindow){
 			parent = parent.parent;
 		}
 		var color = 'White';
-		if (task.priority == 300)
+		if (task.priority == 400)
 			color = '6';
+		else if (task.priority == 300)
+			color = '18';
 		else if (task.priority == 200)
 			color = '0';
 		

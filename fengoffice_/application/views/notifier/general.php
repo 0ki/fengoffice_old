@@ -17,6 +17,12 @@
 	}		 
 	?>
 	<br><br>
+	
+	<?php if (isset($second_properties) && is_array($second_properties)){
+			 foreach ($second_properties as $k => $p) { ?>
+			<span style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><?php echo lang($k) ?>: <?php echo $p ?></span><br><br>
+		  <?php }  ?>
+	<?php }  ?>
 
 	<div style="color: #818283; font-style: italic; border-top: 2px solid #818283; padding-top: 2px; font-family: Verdana, Arial, sans-serif; font-size: 12px;">
 	<?php echo lang('system notification email'); ?><br>

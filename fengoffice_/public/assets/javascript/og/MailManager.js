@@ -14,6 +14,13 @@ og.MailManager = function() {
 	this.needRefresh = false;
 	this.maxrowidx = 0;
 
+	var fields = [
+		'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
+		'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from',
+		'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread', 'conv_hasatt'
+	];
+	this.Record = Ext.data.Record.create(fields);
+	
 	if (!og.MailManager.store) {
 		og.MailManager.store = new Ext.data.Store({
 			proxy: new og.GooProxy({
@@ -24,11 +31,7 @@ og.MailManager = function() {
 				root: 'messages',
 				totalProperty: 'totalCount',
 				id: 'id',
-				fields: [
-					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from',
-					'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread'
-				]
+				fields: fields
 			}),
 			remoteSort: true,
 			listeners: {
@@ -57,7 +60,7 @@ og.MailManager = function() {
 					var view = manager.getView();
 					for (i=0; i<manager.maxrowidx; i++) {
 						var el = view.getRow(i);
-						el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
+						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
 				}
 			}
@@ -225,7 +228,7 @@ og.MailManager = function() {
 			return false;
 		} else {
 			for (var i=0; i < selections.length; i++) {
-				if (selections[i].data.hasAttachment) return true;
+				if (selections[i].data.hasAttachment || selections[i].data.conv_hasatt) return true;
 			}	
 			return false;
 		}
@@ -802,7 +805,7 @@ og.MailManager = function() {
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
-					this.load();						
+					this.load({start:0});						
        			}
 			},			
 			scope: this
@@ -828,7 +831,7 @@ og.MailManager = function() {
 					markactions.markAsHam.hide();
 					cm.setHidden(cm.getIndexById('from'), true);
 					cm.setHidden(cm.getIndexById('to'), false);
-        			this.store.baseParams = {
+					this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
 					      state_type : this.stateType,
@@ -837,7 +840,7 @@ og.MailManager = function() {
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
-					this.load();
+					this.load({start:0});
         		}
 			},
 			scope: this
@@ -873,7 +876,7 @@ og.MailManager = function() {
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
-					this.load();
+					this.load({start:0});
         		} 
 			},
 			scope: this
@@ -909,7 +912,7 @@ og.MailManager = function() {
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
-					this.load();
+					this.load({start:0});
         		} 
 			},
 			scope: this
@@ -945,7 +948,7 @@ og.MailManager = function() {
 						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 						  account_id: this.accountId
 					    };
-					this.load();
+					this.load({start:0});
         		}
 			},
 			scope: this
@@ -1141,7 +1144,7 @@ og.MailManager = function() {
 		if (this.stateType == "outbox") {
 			var view = Ext.getCmp('mails-manager').getView();
 	        var sto = og.MailManager.store;
-	        var idx = sto.indexOfId(data.mail_id);
+	        var idx = sto.indexOfId(data.id);
 	        if (idx == -1) return;
 	        var sto_row = sto.getAt(idx);
 	        if (sto_row) {
@@ -1149,6 +1152,10 @@ og.MailManager = function() {
 	        }
 		}
 		og.msg(lang('success'), lang('mail sent msg'), 2);
+	}, this);
+	
+	var mailssent_ev = og.eventManager.addListener("mails sent", function(data) {
+		this.load();
 	}, this);
 	
 	// auto refresh emails

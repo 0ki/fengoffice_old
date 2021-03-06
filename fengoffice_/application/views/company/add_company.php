@@ -4,11 +4,12 @@
 	$projects =  active_projects();
 	$genid = gen_id();
 	$object = $company;
-	if($company->isNew()) { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('company', 'add_client') ?>" method="post">
-<?php } else { ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getEditUrl() ?>" method="post">
-<?php } // if ?>
+	if($company->isNew()) { 
+		$form_action = get_url('company', 'add_client'); 
+	} else {
+		$form_action = $company->getEditUrl();
+	}?>
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $form_action ?>" method="post">
 
 
 <div class="adminAddCompany">

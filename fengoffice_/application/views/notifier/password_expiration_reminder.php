@@ -1,4 +1,4 @@
-<span style="font-family: Verdana, Arial, sans-serif; font-size: 12px;">
+<div style="font-family: Verdana, Arial, sans-serif; font-size: 12px;">
 
 <?php echo lang('hi john doe', $user->getDisplayName()) ?><br><br>
 
@@ -11,4 +11,4 @@
 	<a href="<?php echo ROOT_URL; ?>" target="_blank" style="font-family: Verdana, Arial, sans-serif; font-size: 12px;"><?php echo ROOT_URL; ?></a>
 	</div>
 
-</span>
+</div>

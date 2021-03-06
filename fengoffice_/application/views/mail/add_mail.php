@@ -283,7 +283,7 @@ sig.actualHtmlSignature = '';
     	'onkeypress' => "if (!og.thisDraftHasChanges) og.checkMailBodyChanges();", 'autocomplete' => 'off')) ?>
 
     <div id="<?php echo $genid ?>ck_editor" style="display:<?php echo $display_fck ?>; width:100%; height:100%; padding:0px; margin:0px; min-height:265px;overflow: hidden">
-		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" autocomplete="off" tabindex="51"><?php echo clean($html_body) ?></textarea>
+		<textarea style="display:none;" id="<?php echo $genid ?>ckeditor" tabindex="51"><?php echo clean($html_body) ?></textarea>
 	</div>
 </div>
 </div>

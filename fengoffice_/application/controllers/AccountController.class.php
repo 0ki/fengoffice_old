@@ -305,7 +305,9 @@ class AccountController extends ApplicationController {
 			  'can_manage_reports' => $user->getCanManageReports(),
 			  'can_manage_time' => $user->getCanManageTime(),
 			  'can_add_mail_accounts' => $user->getCanAddMailAccounts(),
-			); // array			
+			); // array
+			
+			Hook::fire('add_user_permissions', $user, $user_data);
 		} // if
 
 		tpl_assign('user_data', $user_data);
@@ -359,6 +361,11 @@ class AccountController extends ApplicationController {
 				$user->setCanManageReports(false);
 				$user->setCanManageTime(false);
 				$user->setCanAddMailAccounts(false);
+				$other_permissions = array();
+				Hook::fire('add_user_permissions', $user, $other_permissions);
+				foreach ($other_permissions as $k => $v) {
+					$user->setColumnValue($k, false);
+				}
 				$user->setFromAttributes($user_data);
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();

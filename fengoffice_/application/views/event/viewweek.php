@@ -564,20 +564,20 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 												for($i = $event_start->getHour()+1; $canPaint && $i < $event_duration->getHour(); $i++) {
 													if (isset($occup[$i][0][$posHoriz]) && $occup[$i][0][$posHoriz] || isset($occup[$i][1][$posHoriz]) && $occup[$i][1][$posHoriz]) {
 														$canPaint = false;
-													}																
+													}
 												}
 												if ($canPaint) {
 													if ($event_duration->getMinute() > 30) {
 														$canPaint = !(isset($occup[$event_duration->getHour()][0][$posHoriz]) && $occup[$event_duration->getHour()][0][$posHoriz]
 														|| isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 													} else {
-														$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
+														$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz] && $event_duration->getDay() == $event_start->getDay());
 													}
 												}
 												
 												if (!$canPaint) $posHoriz++;
 											}
-											
+
 											$width = (100/7) / $evs_same_time;
 											$left = $width * $posHoriz + ((100/7) * $day_of_week) + 0.25;
 											$width -= 0.5;
@@ -642,6 +642,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 									)); ?>'
 								onclick="og.disableEventPropagation(event);"
 								class='internalLink'>
+									<?php if ($width < 13 && str_ends_with($ev_hour_text, "M")) $ev_hour_text = trim(substr($ev_hour_text, 0, -2)); ?>
 									<span name="w_ev_div_<?php echo $event->getId() . $id_suffix?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight:"<?php echo $bold ?>";"><?php echo "$ev_hour_text"?></span>																				
 								</a>
 							</td><td align="right">
@@ -668,10 +669,17 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 								</div>
 							</td></tr>
 							<tr><td>
-								<div><a href='<?php echo get_url('event', 'viewevent', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
+								<?php
+									if ($width < 13) $to_show_len = 12;
+									else if ($width > 13 && $height < 50) $to_show_len = 25;
+									else $to_show_len = 45;
+									$subject_toshow = mb_strlen($subject) < $to_show_len ? $subject : mb_substr($subject, 0, $to_show_len-3)."..."; 
+								?>
+								<div><?php echo ($height < 50 || $width < 13 ? "<nobr>" : "")?>
+									<a href='<?php echo get_url('event', 'viewevent', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
 									onclick="og.disableEventPropagation(event);"
-									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject . $eventTagString ;?></span></a>
-								</div>
+									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject_toshow . $eventTagString ;?></span></a>
+								<?php echo ($height < 50 || $width < 13 ? "</nobr>" : "")?></div>
 							</td></tr>
 							<tr style="height:100%;">
 								<td style="width:100%;" colspan="2"><div style="height: <?php echo $height - PX_HEIGHT ?>px;"></div></td>

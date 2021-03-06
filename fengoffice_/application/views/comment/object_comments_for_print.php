@@ -82,5 +82,5 @@
 <?php } else { ?>
 		<p><?php echo lang('no comments associated with object') ?></p>
 <?php } // if ?>
-
+	</div>
 <?php } ?>

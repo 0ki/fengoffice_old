@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7-rc2
+ * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7-rc3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6.2');
-		$this->setVersionTo('1.7-rc2');
+		$this->setVersionTo('1.7-rc3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -108,6 +108,27 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 					INSERT INTO `" . TABLE_PREFIX . "user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  						('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', 0, 800, '')
 					ON DUPLICATE KEY UPDATE id=id;
+				";
+			}
+			if (version_compare($installed_version, '1.7-rc') <= 0) {
+				$upgrade_script .= "
+					ALTER TABLE `" . TABLE_PREFIX . "administration_tools` ADD COLUMN `visible` BOOLEAN NOT NULL DEFAULT 1;
+					UPDATE `" . TABLE_PREFIX . "administration_tools` SET `visible`=0 WHERE `name`='mass_mailer';
+				";
+			}
+			
+			if (!$this->checkTableExists(TABLE_PREFIX.'administration_logs', $this->database_connection)) {
+				$upgrade_script .= "
+					CREATE TABLE  `<?php echo $table_prefix ?>administration_logs` (
+					  `id` int(10) unsigned NOT NULL auto_increment,
+					  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+					  `title` varchar(50) NOT NULL default '',
+					  `log_data` text NOT NULL,
+					  `category` enum('system','security') NOT NULL,
+					  PRIMARY KEY  (`id`),
+					  KEY `created_on` (`created_on`),
+					  KEY `category` (`category`)
+					) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 				";
 			}
 		}

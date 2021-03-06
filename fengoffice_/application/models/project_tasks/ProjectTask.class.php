@@ -538,6 +538,8 @@ class ProjectTask extends BaseProjectTask {
 			$new_com->setAuthorHomepage($com->getAuthorHomepage());
 			$new_com->setCreatedById($com->getCreatedById());
 			$new_com->setCreatedOn($com->getCreatedOn());
+			$new_com->setUpdatedById($com->getUpdatedById());
+			$new_com->setUpdatedOn($com->getUpdatedOn());
 			$new_com->setIsAnonymous($com->getIsAnonymous());
 			$new_com->setIsPrivate($com->getIsPrivate());
 			$new_com->setText($com->getText());
@@ -1416,7 +1418,6 @@ class ProjectTask extends BaseProjectTask {
 			
 		if ($this->getDueDate())
 			$result['dd'] = $this->getDueDate()->getTimestamp();
-			
 		if ($this->getStartDate())
 			$result['sd'] = $this->getStartDate()->getTimestamp();
 		

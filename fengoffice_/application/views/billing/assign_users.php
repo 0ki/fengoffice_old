@@ -49,5 +49,7 @@
 
 <?php 	} // foreach
 	echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px'));?>
-	</form>
 <?php } // if ?>
+</div>
+</div>
+</form>

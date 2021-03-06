@@ -12291,9 +12291,12 @@ Ext.ComponentMgr = function(){
             cls.xtype = xtype;
         },
 
+		isRegistered : function(xtype) {
+			return types[xtype];
+		},
         
         create : function(config, defaultType){
-            return new types[config.xtype || defaultType](config);
+				return new types[config.xtype || defaultType](config);
         }
     };
 }();

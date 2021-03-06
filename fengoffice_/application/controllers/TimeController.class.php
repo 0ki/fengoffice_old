@@ -244,7 +244,7 @@ class TimeController extends ApplicationController {
 			$timeslot->save();
 			DB::commit();
 			
-			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo()));
+			ajx_extra_data(array("timeslot" => $timeslot->getArrayInfo(true)));
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

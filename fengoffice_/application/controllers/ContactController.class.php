@@ -411,15 +411,23 @@ class ContactController extends ApplicationController {
 								$contact = Contacts::findById($id);
 								if ($contact instanceof Contact && $contact->canEdit(logged_user())){
 									if (!$attributes["mantainWs"]) {
+										$removed = "";
 										$ws = $contact->getWorkspaces(null, $destination);
 										foreach ($ws as $w) {
 											if (can_add(logged_user(), $w, 'Contacts')) {
 												$contact->removeFromWorkspace($w);
+												$removed .= $w->getId() . ",";
 											}
 										}
+										$removed = substr($removed, 0, -1);
+										$log_action = ApplicationLogs::ACTION_MOVE;
+										$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
+									} else {
+										$log_action = ApplicationLogs::ACTION_COPY;
+										$log_data = "to:$wsid";
 									}
 									$contact->addToWorkspace($destination);
-									ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+									ApplicationLogs::createLog($contact, $contact->getWorkspaces(), $log_action, false, null, true, $log_data);
 									$count++;
 								};
 								break;
@@ -1003,7 +1011,7 @@ class ContactController extends ApplicationController {
 					}
 				}
 				
-				$contact_data['o_birthday'] = getDateValue($contact_data["o_birthday_value"]);
+				$contact_data['o_birthday'] = getDateValue(array_var($contact_data, "o_birthday_value",''));
 				
 				$contact->setFromAttributes($contact_data);
 				

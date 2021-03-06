@@ -199,7 +199,7 @@ function replicateRepetitiveTaskForCalendar(ProjectTask $task, $from_date, $to_d
 			
 			$num_repetitions++;
 			if ($top_repeat_num > 0 && $top_repeat_num == $num_repetitions) break;
-			if ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() <= $ref_date->getTimestamp()) break;
+			if ($last_repeat instanceof DateTimeValue && $last_repeat->getTimestamp() < $ref_date->getTimestamp()) break;
 
 			$new_task_array[] = $new_task;
 			$task = $new_task;

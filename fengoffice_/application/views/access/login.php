@@ -56,13 +56,13 @@
   
   	<div id="optionsDiv" style="display:none">
 	<table>
-	<tr>
+	<tr><td>
 		<label><?php echo lang('language')?>:</label>
   		<?php
   			$handler = new LocalizationConfigHandler();
   			echo $handler->render('configOptionSelect', array('text' => lang('last language'), 'value' => 'Default'));
   		?>
-  	</tr>
+  	</td></tr>
 	</table>
 	</div>    
 </form>

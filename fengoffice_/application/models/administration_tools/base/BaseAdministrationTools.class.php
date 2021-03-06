@@ -14,7 +14,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'controller' => DATA_TYPE_STRING, 'action' => DATA_TYPE_STRING, 'order' => DATA_TYPE_INTEGER);
+    static private $columns = array('id' => DATA_TYPE_INTEGER, 'name' => DATA_TYPE_STRING, 'controller' => DATA_TYPE_STRING, 'action' => DATA_TYPE_STRING, 'order' => DATA_TYPE_INTEGER, 'visible' => DATA_TYPE_BOOLEAN);
   
     /**
     * Construct

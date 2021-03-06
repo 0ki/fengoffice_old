@@ -484,6 +484,7 @@ class ReportingController extends ApplicationController {
 					$allowed_columns = $this->get_allowed_columns($report_data['object_type'], true);
 										
 					foreach($conditions as $condition){
+						if($condition['deleted'] == "1") continue;
 						foreach ($allowed_columns as $ac){
 							if ($condition['field_name'] == $ac['id']){
 								$newCondition = new ReportCondition();

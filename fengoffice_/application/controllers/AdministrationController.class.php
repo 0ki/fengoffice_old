@@ -439,7 +439,7 @@ class AdministrationController extends ApplicationController {
 				$completePath = substr($completePath, strpos($completePath, "fengoffice") + strlen("fengoffice") + 1);
 				$completeName = substr($completeName, strpos($completeName, "fengoffice") + strlen("fengoffice") + 1);
 		
-				@mkdir($completePath, true);
+				@mkdir($completePath, 0777, true);
 		
 				if (zip_entry_open($zip, $zip_entry, "r")) {
 					if ($fd = @fopen($completeName, 'w')) {
@@ -447,7 +447,7 @@ class AdministrationController extends ApplicationController {
 						fclose($fd);
 					} else {
 						// Empty directory
-						@mkdir($completeName);
+						@mkdir($completeName, 0777);
 					}
 					zip_entry_close($zip_entry);
 				}

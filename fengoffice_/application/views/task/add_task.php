@@ -160,7 +160,7 @@ og.checkSubmitAddTask = function(genid) {
     		<script>
     		og.pickParentTask = function(before) {
     			og.ObjectPicker.show(function (objs) {
-    				if (objs) {
+    				if (objs && objs.length > 0) {
     					var obj = objs[0].data;
     					if (obj.type != 'task') {
     						og.msg(lang("error"), lang("object type not supported"), 4, "err");
@@ -170,7 +170,7 @@ og.checkSubmitAddTask = function(genid) {
     				}
     			}, before, {
     				types: {
-    					'Tasks': true
+    					'ProjectTasks': true
     				}
     			});
     		};

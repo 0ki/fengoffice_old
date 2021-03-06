@@ -180,20 +180,23 @@ class Reports extends BaseReports {
 								//if is parameter condition and is set the parameter
 								$tags_csv = $params['tag'];
 								$tags = explode(',', $tags_csv);
-								$tag_value = trim($tags[0]);
 							}else{
 								//if is a fixed tag value and is set
 								$tval = $condField->getValue();
 								if (isset ($tval)){
-									$tag_value = trim(trim($tval),',');									
+									$tags = explode(',', $tags_csv);									
 								}else{
 									//if there is no tag to filter with it doesnt filter at all.
 									$fiterUsingTag = false;
 								}
 							}
 							$tagCondition = $condField->getCondition();
-							if ($fiterUsingTag && $tag_value != '') {
-								$allConditions .= ' AND t.id '.($tagCondition == '=' ? 'IN' : 'NOT IN').' (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+							if ($fiterUsingTag && is_array($tags)) {
+								foreach ($tags as $tag_value) {
+									$tag_value = trim($tag_value);
+									if ($tag_value == '') continue;
+									$allConditions .= ' AND t.id '.($tagCondition == '=' ? 'IN' : 'NOT IN').' (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+								}
 							}
 						}
 						

@@ -254,6 +254,18 @@
 				<a href="javascript:og.toggle('<?php echo $genid ?>can_add_mail_accounts_help')">?</a>
 				<div id="<?php echo $genid ?>can_add_mail_accounts_help" class="permissions-help" style="display:none"><?php echo lang('can_add_mail_accounts description') ?></div>
 			</div>
+			<?php
+				$other_permissions = array();
+				Hook::fire('add_user_permissions', $user, $other_permissions);
+				foreach ($other_permissions as $perm => $perm_val) {?>
+					<div id="<?php echo $genid ?>div_<?php echo $perm ?>">
+				      <?php echo checkbox_field("user[$perm]", array_var($user_data,$perm), array('id' => $genid . "user[$perm]" )) ?> 
+				      <label for="<?php echo $genid . "user[$perm]" ?>" class="checkbox"><?php echo lang($perm) ?></label>
+				      <a href="javascript:og.toggle('<?php echo $genid ?><?php echo $perm ?>_help')">?</a>
+				      <div id="<?php echo $genid ?><?php echo $perm ?>_help" class="permissions-help" style="display:none"><?php echo lang($perm.' description') ?></div>
+					</div>
+				<?php }
+			?>
 		</fieldset>
 		<fieldset>
 			<legend><?php echo lang('project permissions') ?></legend>

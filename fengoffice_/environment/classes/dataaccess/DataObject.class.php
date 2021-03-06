@@ -416,8 +416,9 @@
   	  } // if
   	  
   	  Hook::fire('before_object_save', $this, $ret);
-  	  
-  	  return $this->doSave();
+  	  $saved = $this->doSave();
+  	  Hook::fire('after_object_save', $this, $ret);
+  	  return $saved;
   	} // save
   	
   	/**

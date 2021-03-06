@@ -1,5 +1,5 @@
 
-    About Feng Office 1.7
+    About Feng Office 1.7 rc3
     =====================
 
     Feng Office is a free and open source Web Office, project management
@@ -91,6 +91,29 @@
 	Changelog
 	=========
 	
+	Since 1.7-rc2
+	------------
+	bugfix: Double refresh necessary to view mail inbox
+	bugfix: Last instance of a repetitive task not showing in calendar when repetition is until a date.
+	bugfix: Task end date being incorrectly saved	
+	bugfix: Object picker filtering not working correctly	
+	bugfix: Email not going into workspace	
+	bugfix: Reporting error sorting by Workspace
+	bugfix: Solved Error: 'A[C.xtype||D]' is not a constructor when browsing workspaces
+	bugfix: One calendar event appearing in wrong date in specific scenario.	
+	bugfix: Task dates issue	
+	bugfix: Wrong dates when deleting and restoring comments
+	bugfix: Birthday dates are always shown in calendar.	
+	bugfix: Time slot edit looses billing info	
+	bugfix: Using drag + drop does not register in application log	
+	bugfix: Parent task picker not working	
+	bugfix: Empty trash bug deleted objects incorrectly	
+	bugfix: Added color for urgent issues in task view 	
+	bugfix: User could accept other users invitation to event.	
+	bugfix: Dates issue in comments	
+		
+	system: Cleared warnings	
+	system: Some language fixes
 	
 	Since 1.7-rc
 	------------

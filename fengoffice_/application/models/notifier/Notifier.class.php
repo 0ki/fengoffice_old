@@ -52,7 +52,7 @@ class Notifier {
 		self::objectNotification($object, $people, logged_user(), 'share');
 	}
 	
-	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array()) {
+	static function objectNotification($object, $people, $sender, $notification, $description = null, $descArgs = null, $properties = array(), $links = array()) {
 		if (!is_array($people) || !count($people)) {
 			return; // nothing here...
 		} // if
@@ -118,7 +118,7 @@ class Notifier {
 				}
 				$properties['workspace'] = $ws;
 				
-				tpl_assign('links', array());				
+				tpl_assign('links', $links);
 				tpl_assign('properties', $properties);
 				tpl_assign('description', langA($description, $descArgs));
 				$from = self::prepareEmailAddress($senderemail, $sendername);
@@ -289,7 +289,9 @@ class Notifier {
 		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
 		
 		$properties= array();
-		$properties['unique id'] = $uid;
+		
+		$second_properties = array();
+		$second_properties['unique id'] = $uid;
 		//$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
 
 		tpl_assign('object', $object);
@@ -309,10 +311,11 @@ class Notifier {
 					$css = get_workspace_css_properties($w->getColor());
 					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
 				}
+				Logger::log("count: ".count($workspaces)." ws: [$ws]");
 				$properties['workspace'] = $ws;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
 				if ($object->getTypeId() != 2) {
-					$properties['time'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
+					$properties['CAL_HOUR'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
 				}
 		
 				$properties['accept or reject invitation help, click on one of the links below'] = '';
@@ -325,6 +328,8 @@ class Notifier {
 				tpl_assign('links', $links);
 				
 				tpl_assign('properties', $properties);
+				tpl_assign('second_properties', $second_properties);
+				
 				$from = self::prepareEmailAddress($sender->getEmail(), $sender->getDisplayName());
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),

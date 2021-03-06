@@ -138,6 +138,11 @@ class Contacts extends BaseContacts {
 			$condition = "`o_birthday` <> '0000-00-00 00:00:00'";
 		}
 		
+		$active_project = active_project();
+		if ($active_project instanceof Project){
+			$condition .= " AND " . $this->getWorkspaceString($active_project->getAllSubWorkspacesCSV());
+		}
+		
 		return $this->getAllowedContacts($condition);
 	}
 

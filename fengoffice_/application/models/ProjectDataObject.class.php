@@ -1301,7 +1301,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				$this->columnExists('trashed_by_id')) {
 			$this->setColumnValue('trashed_by_id', logged_user()->getId());
 		}
+		$this->setMarkTimestamps(false); // Don't modify updated on
 		$this->save();
+		$this->setMarkTimestamps(true);
 	}
 	
 	function untrash() {
@@ -1311,7 +1313,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->columnExists('trashed_by_id')) {
 			$this->setColumnValue('trashed_by_id', 0);
 		}
+		$this->setMarkTimestamps(false); // Don't modify updated on
 		$this->save();
+		$this->setMarkTimestamps(true);
 	}
 	
 	function isTrashable() {

@@ -44,6 +44,7 @@ class GUIController extends ApplicationController {
 			$names .= DB::escape($a->name);
 		}
 		$query .= $values;
+		if ($names == "") $names = "0";
 		$queryd .= $names . ")";
 		try {
 			DB::execute($queryd);

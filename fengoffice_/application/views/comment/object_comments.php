@@ -64,7 +64,7 @@
 <?php } else { ?>
 		<p><?php echo lang('no comments associated with object') ?></p>
 <?php } // if ?>
-
+	</div>
 <?php } ?>
 
 <?php if($__comments_object->canComment(logged_user()) && !$__comments_object->isTrashed()) {?>

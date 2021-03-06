@@ -119,13 +119,11 @@
 					if ($action->isCommon) {
 				 		//if it is a common action sets the style display:block
 				 		if ($action->getTarget() != '') { ?>
-	   				    	<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib, 'id'); ?>" style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
-				 		} else { ?>
-							<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib, 'id'); ?>" style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
-				 		}
-				 		echo $action->getTitle(); ?>
-				 		</a> <?php
-						$shown++;
+	   				    	<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib,'id'); ?>" style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php echo $action->getTitle(); ?></a>
+				 		<?php } else { ?>
+							<a id="<?php $atrib = $action->getAttributes(); echo array_var($atrib,'id'); ?>" style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php echo $action->getTitle(); ?></a>
+						<?php }
+				 		$shown++;
 					} //if
 				}//foreach ?>
 			</div> <?php
@@ -141,12 +139,10 @@
 			 		}
 			 		
 			 		if ($action->getTarget() != '') { ?>
-						<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php
-			 		} else { ?>
-						<a style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php
-			 		}
-			    	echo $action->getTitle() ?>
-			    	</a> <?php
+						<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>"> <?php echo $action->getTitle() ?></a>
+					<?php } else { ?>
+						<a style="display:block" class="<?php $attribs = $action->getAttributes(); echo isset($attribs["download"]) ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>"> <?php echo $action->getTitle() ?></a>
+					<?php }
 			    	$shown++;
 				}
 			} // foreach
@@ -161,7 +157,6 @@
 		 PageActions::clearActions(); ?>
 		</td>
 	</tr>
-	
 	<tr>
 		<td class="coViewBottomLeft" style="width:12px;">&nbsp;</td>
 		<td class="coViewBottom" style="width:216px;"></td>

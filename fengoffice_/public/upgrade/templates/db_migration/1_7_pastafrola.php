@@ -15,6 +15,9 @@ ON DUPLICATE KEY UPDATE id=id;
 
 DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `category_name`='general' AND `name`='detect_mime_type_from_extension';
 
+ALTER TABLE `<?php echo $table_prefix ?>administration_tools` ADD COLUMN `visible` BOOLEAN NOT NULL DEFAULT 1;
+UPDATE `<?php echo $table_prefix ?>administration_tools` SET `visible`=0 WHERE `name`='mass_mailer';
+
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones`
  ADD COLUMN `is_urgent` BOOLEAN NOT NULL default '0';
  
@@ -37,14 +40,26 @@ CREATE TABLE  `<?php echo $table_prefix ?>application_read_logs` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `taken_by_id` int(10) NOT NULL default '0',
   `rel_object_id` int(10) NOT NULL default '0',
-  `rel_object_manager` varchar(50) collate utf8_unicode_ci NOT NULL default '',
+  `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `action` enum('read','download') collate utf8_unicode_ci default NULL,
+  `action` enum('read','download') <?php echo $default_collation ?> default NULL,
   PRIMARY KEY  (`id`),
   KEY `created_on` (`created_on`),
   KEY `object_key` (`rel_object_id`, `rel_object_manager`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>administration_logs` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `title` varchar(50) NOT NULL default '',
+  `log_data` text NOT NULL,
+  `category` enum('system','security') NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `created_on` (`created_on`),
+  KEY `category` (`category`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
 
 CREATE TABLE  `<?php echo $table_prefix ?>mail_datas` (
   `id` int(10) unsigned NOT NULL,

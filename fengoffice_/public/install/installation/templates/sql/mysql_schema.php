@@ -12,6 +12,7 @@ CREATE TABLE `<?php echo $table_prefix ?>administration_tools` (
   `controller` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `action` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `order` tinyint(3) unsigned NOT NULL default '0',
+  `visible` tinyint(1) NOT NULL default '1',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
@@ -1181,11 +1182,22 @@ CREATE TABLE  `<?php echo $table_prefix ?>application_read_logs` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `taken_by_id` int(10) NOT NULL default '0',
   `rel_object_id` int(10) NOT NULL default '0',
-  `rel_object_manager` varchar(50) collate utf8_unicode_ci NOT NULL default '',
+  `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `action` enum('read','download') collate utf8_unicode_ci default NULL,
+  `action` enum('read','download') <?php echo $default_collation ?> default NULL,
   PRIMARY KEY  (`id`),
   KEY `created_on` (`created_on`),
   KEY `object_key` (`rel_object_id`, `rel_object_manager`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>administration_logs` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `title` varchar(50) NOT NULL default '',
+  `log_data` text NOT NULL,
+  `category` enum('system','security') NOT NULL,
+  PRIMARY KEY  (`id`),
+  KEY `created_on` (`created_on`),
+  KEY `category` (`category`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

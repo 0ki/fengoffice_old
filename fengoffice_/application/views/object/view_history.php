@@ -11,7 +11,7 @@
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock adminMainBlock">
 
-<span id="bt<?php echo $genid?>">
+<div id="bt<?php echo $genid?>">
 <a href="#" style="<?php echo $key == $genid.'mod' ? 'font-weight:bold' : 'font-weight:normal'?>;margin-right:10px" onclick="og.toggleSimpleTab('<?php echo $genid.'mod'; ?>LO', 'hp<?php echo $genid; ?>', 'bt<?php echo $genid; ?>', this)">
 <?php echo lang("modifications tab") ?><span style="font-size:80%"></span></a>
 
@@ -77,8 +77,6 @@ if (is_array($logs_read)) {
 </table>
 </div>
 </div>
-
 </div>
 </div>
-
-</span>
+</div>

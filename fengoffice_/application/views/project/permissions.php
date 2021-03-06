@@ -21,7 +21,7 @@
 </script>
 
 <label><b><?php echo lang('edit permissions') ?></b></label>
-<label><k><?php echo lang('edit permissions explanation') ?></k></label>
+<label><i><?php echo lang('edit permissions explanation') ?></i></label>
 <?php if(isset($companies) && is_array($companies) && count($companies)) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'permissions') ?>" method="post">
 <div id="projectCompanies">
@@ -65,16 +65,14 @@
                 <div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_project(), $permission_id), array('id' => 'project_user_' . $user->getId() . "_$permission_id", 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ")")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
 <?php } // foreach ?>
               </div>
+              <script>
+	            if(!document.getElementById('project_user_<?php echo $user->getId() ?>').checked) {
+	              document.getElementById('user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
+	            } // if
+	          </script>
 <?php } // if ?>
             </td>
           </tr>
-<?php if(!$company->isOwner()) { ?>
-          <script>
-            if(!document.getElementById('project_user_<?php echo $user->getId() ?>').checked) {
-              document.getElementById('user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
-            } // if
-          </script>
-<?php } // if ?>
 <?php } // foreach ?>
 <?php } else { ?>
           <tr>

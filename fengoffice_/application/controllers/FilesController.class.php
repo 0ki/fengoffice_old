@@ -521,14 +521,16 @@ class FilesController extends ApplicationController {
 		$id = array_var($_GET, 'id');
 		$uploaded_file = array_var($_FILES, 'file_file');
 		$fname = ROOT . "/tmp/$id";
-		copy($uploaded_file['tmp_name'], $fname);
-		$_SESSION[$id] = array(
-			'name' => $uploaded_file['name'],
-			'size' => $uploaded_file['size'],
-			'type' => $uploaded_file['type'],
-			'tmp_name' => $fname,
-			'error' => $uploaded_file['error']
-		);
+		if (!empty($uploaded_file['tmp_name'])) {
+			copy($uploaded_file['tmp_name'], $fname);
+			$_SESSION[$id] = array(
+				'name' => $uploaded_file['name'],
+				'size' => $uploaded_file['size'],
+				'type' => $uploaded_file['type'],
+				'tmp_name' => $fname,
+				'error' => $uploaded_file['error']
+			);
+		}
 	}
 	
 	private function upload_document_image($url, $filename, $img_num, $tags = '') {

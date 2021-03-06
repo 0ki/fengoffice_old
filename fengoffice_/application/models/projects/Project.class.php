@@ -366,19 +366,20 @@ class Project extends BaseProject {
 	 * @param $user the logged user
 	 * @return Array of workspaces.
 	 */
-	function getSortedChildren($user)
-	{
+	function getSortedChildren($user) {
 		$projects = null;
-		$padres = $this->getSubWorkspacesSorted(false,$user);
-		foreach($padres as $hijo){
+		$padres = $this->getSubWorkspacesSorted(false, $user);
+		if (is_array($padres)) {
+			foreach($padres as $hijo){
 				$projects[] = $hijo;
-				$aux = 	$hijo->getSortedChildren(logged_user());
+				$aux = $hijo->getSortedChildren($user);
 				if (is_array($aux)){
 					foreach($aux as $a){$projects[] = $a;}
 				}
+			}
 		}
 		return $projects; 
-		}
+	}
 	/**
 	 * returns first level child workspaces sorted by name
 	 * @param $active

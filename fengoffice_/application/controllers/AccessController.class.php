@@ -73,18 +73,32 @@ class AccessController extends ApplicationController {
 			$password = array_var($login_data, 'password');
 			$remember = array_var($login_data, 'remember') == 'checked';
 
+			if (config_option('block_login_after_x_tries')) {
+				$from_time = DateTimeValueLib::now();
+				$from_time = $from_time->add('m', -10);
+				$sec_logs = AdministrationLogs::getLastLogs(AdministrationLogs::ADM_LOG_CATEGORY_SECURITY, "invalid login", array_var($_SERVER, 'REMOTE_ADDR'), 10, "`created_on` > '".$from_time->toMySQL()."'");
+				if (is_array($sec_logs) && count($sec_logs) >= 5) {
+					AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
+					tpl_assign('error', new Error(lang('invalid login data')));
+					$this->render();
+				}
+			}
+
 			if(trim($username == '')) {
+				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('username value missing')));
 				$this->render();
 			} // if
 
 			if(trim($password) == '') {
+				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('password value missing')));
 				$this->render();
 			} // if
 			
 			$user = Users::getByUsername($username, owner_company());
 			if(!($user instanceof User)) {
+				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
@@ -99,6 +113,7 @@ class AccessController extends ApplicationController {
 			}
 		
 			if (!$userIsValidPassword) {
+				AdministrationLogs::createLog("invalid login", array_var($_SERVER, 'REMOTE_ADDR'), AdministrationLogs::ADM_LOG_CATEGORY_SECURITY);
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if

@@ -11,7 +11,7 @@
 	<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?>
 <?php
 
-	$version = include "version.php";
+	$version = product_version();
 	if (defined('COMPRESSED_CSS') && COMPRESSED_CSS) {
 		echo stylesheet_tag("ogmin.css");
 	} else {
@@ -159,7 +159,8 @@ og.loggedUser = {
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
 	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>,
 	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>,
-	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>
+	isGuest: <?php echo logged_user()->isGuest() ? 'true' : 'false' ?>,
+	tz: <?php echo logged_user()->getTimezone() ?>
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;
 og.hasNewVersions = <?php

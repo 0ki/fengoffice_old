@@ -590,7 +590,7 @@ Ext.extend(og.GooPlayer, Ext.Panel, {
 				
 			}, this, {
 				types: {
-					'Documents': true
+					'ProjectFiles': true
 				}
 			}
 		);

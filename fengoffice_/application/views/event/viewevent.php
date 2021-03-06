@@ -137,12 +137,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 			foreach ($otherInvitations as $inv) {
 				$inv_user = Users::findById($inv->getUserId());
 				if ($inv_user instanceof User) {
-					$hasPermissions = false;
-					foreach ($event->getWorkspaces() as $ws) {
-						$hasPermissions = $inv_user->hasProjectPermission($ws, ProjectUsers::CAN_READ_EVENTS);
-						if ($hasPermissions) break;
-					}
-					if ($hasPermissions) {
+					if (can_access($inv_user, $event, ACCESS_LEVEL_READ)) {
 						$state_desc = lang('pending response');
 						if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
 						else if ($inv->getInvitationState() == 2) $state_desc = lang('no');

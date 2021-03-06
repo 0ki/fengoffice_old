@@ -24,6 +24,9 @@ $year = isset($_GET['year']) ? $_GET['year'] : (isset($_SESSION['year']) ? $_SES
 $month = isset($_GET['month']) ? $_GET['month'] : (isset($_SESSION['month']) ? $_SESSION['month'] : date('n'));
 $day = isset($_GET['day']) ? $_GET['day'] : (isset($_SESSION['day']) ? $_SESSION['day'] : date('j'));
 
+if (!is_numeric($month)) $month = date('n');
+if (!is_numeric($year)) $month = date('Y');
+
 $_SESSION['year'] = $year;
 $_SESSION['month'] = $month;
 $_SESSION['day'] = $day;

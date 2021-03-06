@@ -74,6 +74,19 @@ class MailContents extends BaseMailContents {
 		return (is_array($rows) ? count($rows) : 0);
 	}
 	
+	public static function conversationHasAttachments($mail = null, $include_trashed = false) {
+		if (!$mail instanceof MailContent || $mail->getConversationId() == 0) return false;
+		$conversation_id = $mail->getConversationId();
+		$deleted = ' AND `is_deleted` = false';
+		if (!$include_trashed) $deleted .= ' AND `trashed_by_id` = 0';
+		$sql = "SELECT `has_attachments` FROM `". TABLE_PREFIX ."mail_contents` WHERE `conversation_id` = '$conversation_id' $deleted AND `account_id` = " . $mail->getAccountId();
+		$rows = DB::executeAll($sql);
+		foreach ($rows as $row) {
+			if (array_var($row, 'has_attachments')) return true;
+		}
+		return false;;
+	}
+	
 	public static function getNextConversationId($account_id) {
 		$sql = "INSERT INTO `".TABLE_PREFIX."mail_conversations` () VALUES ()";
 		DB::execute($sql);

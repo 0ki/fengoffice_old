@@ -58,7 +58,7 @@ require_javascript('og/EventPopUp.js');
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
-	
+
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
 		$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
@@ -556,20 +556,20 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 												for($i = $event_start->getHour()+1; $canPaint && $i < $event_duration->getHour(); $i++) {
 													if (isset($occup[$i][0][$posHoriz]) && $occup[$i][0][$posHoriz] || isset($occup[$i][1][$posHoriz]) && $occup[$i][1][$posHoriz]) {
 														$canPaint = false;
-													}																
+													}
 												}
 												if ($canPaint) {
 													if ($event_duration->getMinute() > 30) {
 														$canPaint = !(isset($occup[$event_duration->getHour()][0][$posHoriz]) && $occup[$event_duration->getHour()][0][$posHoriz]
 														|| isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
 													} else {
-														$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz]);
+														$canPaint = !(isset($occup[$event_duration->getHour()][1][$posHoriz]) && $occup[$event_duration->getHour()][1][$posHoriz] && $event_duration->getDay() == $event_start->getDay());
 													}
 												}
 												
 												if (!$canPaint) $posHoriz++;
 											}
-											
+
 											$width = (100/5) / $evs_same_time;
 											$left = $width * $posHoriz + ((100/5) * $day_of_week) + 0.25;
 											$width -= 0.5;

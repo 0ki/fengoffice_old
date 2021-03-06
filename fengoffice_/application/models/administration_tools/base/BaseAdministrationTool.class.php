@@ -121,6 +121,28 @@
       return $this->setColumnValue('order', $value);
     } // setOrder() 
     
+    /**
+    * Return value of 'visible' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getVisible() {
+      return $this->getColumnValue('visible');
+    } // getVisible()
+    
+    /**
+    * Set value of 'visible' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setVisible($value) {
+      return $this->setColumnValue('visible', $value);
+    } // setVisible() 
+  
     
     /**
     * Return manager instance

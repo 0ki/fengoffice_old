@@ -209,29 +209,37 @@ if (isset($email)){
 			// FULL CONTENT
 			$tmppath = ROOT.'/tmp/'.$tmpfile;
 			$handle = fopen($tmppath, 'wb');
-			fwrite($handle, $html_content);
-			fclose($handle);
+			if ($handle) {
+				fwrite($handle, $html_content);
+				fclose($handle);
+			}
 			
 			// CONTENT NO IMAGES
 			$html_no_images = remove_images_from_html($html_content);
 			$tmppath = ROOT.'/tmp/i_'.$tmpfile;
 			$handle = fopen($tmppath, 'wb');
-			fwrite($handle, $html_no_images);
-			fclose($handle);
+			if ($handle) {
+				fwrite($handle, $html_no_images);
+				fclose($handle);
+			}
 			
 			// CONTENT NO QUOTED
 			$html_no_quoted = MailUtilities::replaceQuotedBlocks($html_content, '<div style="color: #777;font-style:italic;padding: 5px 20px">&lt;'.lang('hidden quoted text').'&gt;</div>');
 			$tmppath = ROOT.'/tmp/q_'.$tmpfile;
 			$handle = fopen($tmppath, 'wb');
-			fwrite($handle, $html_no_quoted);
-			fclose($handle);
+			if ($handle) {
+				fwrite($handle, $html_no_quoted);
+				fclose($handle);
+			}
 			
 			// CONTENT NO QUOTED NO IMAGES
 			$html_no_quoted_no_images = MailUtilities::replaceQuotedBlocks($html_no_images, '<div style="color: #777;font-style:italic;padding: 5px 20px">&lt;'.lang('hidden quoted text').'&gt;</div>');
 			$tmppath = ROOT.'/tmp/iq_'.$tmpfile;
 			$handle = fopen($tmppath, 'wb');
-			fwrite($handle, $html_no_quoted_no_images);
-			fclose($handle);
+			if ($handle) {
+				fwrite($handle, $html_no_quoted_no_images);
+				fclose($handle);
+			}
 			
 			// VIEW CONTENT (iframe and links)
 			$remove_images = false;

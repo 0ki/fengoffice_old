@@ -702,6 +702,11 @@ function create_user($user_data, $permissionsString) {
 		$user->setCanManageReports(array_var($user_data, 'can_manage_reports'));
 		$user->setCanManageTime(array_var($user_data, 'can_manage_time'));
 		$user->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
+		$other_permissions = array();
+		Hook::fire('add_user_permissions', $user, $other_permissions);
+		foreach ($other_permissions as $k => $v) {
+			$user->setColumnValue($k, array_var($user_data, $k));
+		}
 	}
 
 	if (array_var($user_data, 'password_generator', 'random') == 'random') {
@@ -872,7 +877,6 @@ function create_user($user_data, $permissionsString) {
 }
 
 function utf8_safe($text) {
-	//$safe = @iconv("UTF-8", "UTF-8//IGNORE", $text);
 	$safe = html_entity_decode(htmlentities($text, ENT_COMPAT, "UTF-8"), ENT_COMPAT, "UTF-8");
 	return preg_replace('/[\xF0-\xF4][\x80-\xBF][\x80-\xBF][\x80-\xBF]/', "", $safe);
 }

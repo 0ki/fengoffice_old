@@ -112,6 +112,7 @@
   	'the comment' => 'the comment',
   	'the user' => 'the user',
 	'the project' => 'the workspace',
+    'the file_revision' => 'the file revision',
 	
   	'activity add' => "{1} added {0} {2}",
   	'activity edit' => "{1} edited {0} {2}",
