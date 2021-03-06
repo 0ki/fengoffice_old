@@ -113,7 +113,7 @@
 		           	<a href="#" onclick="og.openLink('<?php echo $contact->getUpdatePictureUrl();?>&reload_picture=<?php echo $genid?>_avatar_img<?php echo ($contact->isNew() ? '&new_contact='.$genid.'_picture_file' :'')?>', {caller:'edit_picture'});" 
 		           		class="coViewAction ico-picture"><?php echo ($contact->isNew() ? lang('new avatar') : lang('update avatar'))?></a>
 		           	<?php if ($contact->isNew()) { ?>
-		           		<input type="hidden" id="<?php echo $genid?>_picture_file" name="contact[picture_file]" value=""/>
+		           		<input type="hidden" id="<?php echo $genid?>_picture_file" name="contact[picture_file]" value="<?php echo $contact->getPictureFile()?>"/>
 		           	<?php }?>
 				</div>
 				
@@ -130,7 +130,8 @@
 				}
 				$listeners = array('on_selection_change' => '');
 				$contact_obj = isset($object) && $object instanceof Contact ? $object : $contact;
-				if ($contact->isNew()) {
+				
+				if ($contact->isNew() && !array_var($_REQUEST, 'create_user_from_contact')) {
 					render_member_selectors($contact_obj->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 
 				} else {
 					render_member_selectors($contact_obj->manager()->getObjectTypeId(), $genid, $contact_obj->getMemberIds(), array('listeners' => $listeners, 'hidden_field_name' => 'no_perm_members'), $skipped_dimensions, null, false); 

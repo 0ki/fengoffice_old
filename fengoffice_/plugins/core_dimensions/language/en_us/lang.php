@@ -40,4 +40,6 @@
 	
 	'update subtasks' => 'Update subtasks',
 	'success complete subtasks of' => 'Subtasks of \'{0}\' completed successfully',
+	'you have x new emails' => 'You have {0} new emails',
+	'notify assigned user' => 'Notify assigned user',
 );

@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4
+	About Feng Office 3.4.0.7
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,72 @@
 	
 	Changelog
 	=========
+	
+	Since 3.4.0.6
+	----------------
+	bugfix: do not check permissions for super admin on archived objects list.
+	bugfix: users can view other users with lower rol if they don't have can_manage_security.
+	bugfix: root objects permissions.
+	bugfix: classification error on user edit form.
+	
+	Since 3.4.0.5
+	----------------
+	feature: allow to edit precharged subejct and body variables when instantiating a template from an email.
+	feature: allow all day events container to be expanded to show all items.
+	feature: mails panel, when filtering by unread, dont remove mails immediately after marking as read, remove them when leaving the tab or opening an email.
+	feature: constant to remove help links in settings.
+	
+	bugfix: in mail list when several requests are sent to load the list (different filters) only the last response must be loaded.
+	bugfix: when classifying from mail view always return to first page.
+	bugfix: if template parameters has name with capital letters and are saved in lowercase (if browser sent them in lowercase) the parameter is not applied.
+	bugfix: if sunday is a working day, 5 days calendar view should start in sunday.
+	bugfix: encoding error in general search.
+	bugfix: show all childs in memeber trees after expand.
+	bugfix: cannot advance to second page of projects list.
+	bugfix: mail panel grid selections doesn't work fine after marking mail as read and filtering by unread.
+	
+	Since 3.4.0.4
+	----------------
+	bugfix: single member selector does not show filter input in chrome.
+	bugfix: performance improved when checking for new emails.
+	bugfix: tasks toolbar complete button does not prompt to complete subtasks.
+	bugfix: remove rows from mail list when mail is deleted. archived, classified in other place, etc.
+	bugfix: only admins can change timeslot person.
+	bugfix: if pdf file doesn't have extension the preview is not displayed
+	bugfix: when clients and projects are in different dimensions the tasks cannot be grouped by projects
+	
+	Since 3.4.0.3
+	----------------
+	feature: massive task reassignation button in tasks list
+	feature: allow to add/subtract minutes of date variables in task templates.
+	
+	bugfix: member custom properties of type user does not load all users with permissions
+	bugfix: email panel, new emails must be loaded only in first page
+	bugfix: members list custom properties columns, disabled custom properties must not be shown.
+	bugfix: member templates add/edit render empty divs for selectors of disabled dimensions
+	bugfix: let superadmins view and modify confidential users
+	bugfix: when template adds more than one day to a date variable and the resulting date is a non-working day then that amount must be added to keep the gap.
+	bugfix: add subtask from task view.
+
+	Since 3.4.0.2
+	----------------
+	bugfix: when submitting comment disable the button to prevent double comment if pressed twice.
+	bugfix: email list performance improvements.
+
+	Since 3.4.0.1
+	----------------
+	feature: email polling check if there are new mails and add them to the list instead of reloading all the panel
+	feature: in lists allow checkboxes to work with shift key
+	bugfix: breadcrumbs does not appear in expenses report the first time it is executed.
+
+	Since 3.4
+	----------------
+	bugfix: some non-standard characters cause that some workspaces are not shown unless the searchbox is used.
+	bugfix: companies csv export does not use .csv as file extension.
+	bugfix: sql modified for superamins in clients and projects listings.
+	bugfix: in permissions "all" checkbox doesn't work if user is collaborator or guest.
+	bugfix: user subscribers are deleted after user edition.
+	bugfix: mail report fields to, cc, bcc and body doesn't allow 'like' condition.	
 	
 	Since 3.4-rc
 	----------------

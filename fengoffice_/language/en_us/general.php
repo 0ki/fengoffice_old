@@ -437,7 +437,6 @@ return array(
 	'select user' => 'Select user',
 	
 	'completed by name on' => 'Completad by {0} on {1}',
-	'notify assigned user' => 'Notify assigned user',
 	'overdue and upcomming' => 'Overdue and Upcomming',
 	
 	'extend billing categories with advanced billing' => 'Extend billing categories with advanced billing',

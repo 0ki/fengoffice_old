@@ -83,6 +83,12 @@ function mail_do_mark_as_read_unread_objects($ids_to_mark, $read) {
 	$all_accounts = array();
 	$all_accounts_ids = array();
 	
+	// update mail list
+	$dont_remove = array_var($_REQUEST, 'dont_remove');
+	if ($read && user_config_option('mails read filter') == 'unread' || !$read && user_config_option('mails read filter') == 'read') {
+		evt_add("remove from email list", array('ids' => $ids_to_mark, 'remove_later' => $dont_remove));
+	}
+	
 	foreach ($ids_to_mark as $id) {
 		$obj = Objects::findObject($id);
 		if ($obj instanceof MailContent && logged_user() instanceof Contact) {
@@ -144,3 +150,30 @@ function mail_do_mark_as_read_unread_objects($ids_to_mark, $read) {
 	}	
 
 }
+
+function mail_custom_reports_external_column_info($params, &$field) {
+	$ot = array_var($params, 'object_type');
+	$fname = array_var($params, 'field_name');
+	
+	if ($ot instanceof ObjectType && $ot->getName() == 'mail') {
+		if (in_array($fname, array('to','cc','bcc','body_plain','body_html'))) {
+			$field['type'] = 'text';
+		}
+	}
+}
+
+
+function mail_after_object_controller_trash($ids, &$ignored) {
+	if (!is_array($ids)) {
+		$ids = explode(',', $ids);
+	}
+	evt_add("remove from email list", array('ids' => $ids));
+}
+
+function mail_after_object_controller_archive($ids, &$ignored) {
+	if (!is_array($ids)) {
+		$ids = explode(',', $ids);
+	}
+	evt_add("remove from email list", array('ids' => $ids));
+}
+

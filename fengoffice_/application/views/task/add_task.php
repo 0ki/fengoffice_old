@@ -38,7 +38,8 @@
 		require_javascript('og/tasks/task_dependencies.js');
 	}
 	
-	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+	$cp_count = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId());
+	$has_custom_properties = $cp_count > 0;
 	
 	$categories = array(); Hook::fire('object_edit_categories', $task, $categories);
 	
@@ -53,6 +54,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 .task .coInputMainBlock .dimension-selector-container label {
 	margin-right: 10px;
 	min-width: 0px;
+}
+.task .left-section {
+	max-width:465px;
+}
+.task .custom-properties textarea {
+	width: 260px;
 }
 </style>
 <form id="<?php echo $genid ?>submit-edit-form" class="add-task" action="<?php echo $form_url ?>" method="post" onsubmit="<?php echo $on_submit?>">
@@ -228,7 +235,10 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<div id="<?php echo $genid ?>add_custom_properties_div">
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
 		    	<div id="<?php echo $genid ?>not_required_custom_properties">
-		      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
+		      	<?php 
+		      	if ($cp_count <= 10) {
+		      		echo render_object_custom_properties($task);
+				} ?>
 		      	</div>
 		    </div>
 	      <?php echo render_add_custom_properties($task); ?>
@@ -876,7 +886,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	});
 
 	//User combo
-	og.drawAssignedToSelectBox([], false, [])
+	og.drawAssignedToSelectBox([], false, []);
 	if(<?php echo $task->isNew() ? '0' : '1'?>){
 		var task_members_json = Ext.util.JSON.decode('<?php echo json_encode($task->getMembersIdsToDisplayPath()) ?>');
 		for (var key in task_members_json) {
@@ -995,6 +1005,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		$('#<?php echo $genid?>taskFormApplyAssignee').change(function(event){
 			ogTasks.applyAssignedToSubtasksInTaskForm('<?php echo $genid?>');
 		});
+
+
+		<?php if ($cp_count > 10) { ?>
+		$('#<?php echo $genid ?>not_required_custom_properties').html('<div class="widget-body loading">'+lang('loading')+'</div>');
+		og.openLink(og.getUrl('object','render_cps', {id:<?php echo $task->getId()?>, ot_id: <?php echo $task->getObjectTypeId()?>}), {
+			callback: function(success, data) {
+				$('#<?php echo $genid ?>not_required_custom_properties').html(data.html);
+			}
+		});
+		<?php } ?>
+		
 
 		$("#<?php echo $genid?>tabs").tabs();
 

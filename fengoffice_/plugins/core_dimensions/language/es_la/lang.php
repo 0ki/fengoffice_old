@@ -41,4 +41,6 @@
 	'add new row' => 'Agregar nueva fila',
 	'update subtasks' => 'Modificar subtareas',
 	'success complete subtasks of' => 'Las subtareas de \'{0}\' fueron completadas exitosamente',
+	'you have x new emails' => 'Tienes {0} nuevos correos.',
+	'notify assigned user' => 'Notificar al usuario asignado',
 );

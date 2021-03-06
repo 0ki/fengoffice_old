@@ -583,7 +583,8 @@ class TaskController extends ApplicationController {
 		$tasksToReturn = array();
 		$subt_info = array();
 		$showSuccessMessage = true;
-		
+		$additional_error_message_info = "";
+		$pending_subtasks_after_complete = array();
 		
 		$application_logs = array();
 		try{
@@ -627,8 +628,13 @@ class TaskController extends ApplicationController {
 									$reload_view = true;
 								}
 							}
+							$has_pending_sub = false;
 							foreach($task->getAllSubTasks() as $sub){
 								$tasksToReturn[]=$sub->getArrayInfo();
+								if ($sub->getCompletedById() == 0) $has_pending_sub = true;
+							}
+							if ($has_pending_sub) {
+								$pending_subtasks_after_complete[] = $task->getId();
 							}
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
@@ -688,6 +694,33 @@ class TaskController extends ApplicationController {
 							$task->resumeTimeslots(logged_user());
 							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
+						}
+						break;
+					case 'reassign_tasks':
+						if (can_manage_tasks(logged_user()) && $task->canEdit(logged_user())) {
+							$user_id = array_var($_POST, 'reassign_to');
+							$user = Contacts::findById($user_id);
+							
+							if ($user instanceof Contact && $user->isUser()) {
+								
+								if (!can_task_assignee($user) || !$task->canView($user)) {
+									$additional_error_message_info .= "\n - ".lang('task x cant be assigned to user y', $task->getName(), $user->getName());
+								} else {
+									$task->setAssignedToContactId($user->getId());
+									$task->save();
+									$tasksToReturn[] = $task->getArrayInfo();
+									$application_logs[] = array($task, ApplicationLogs::ACTION_EDIT, false, array_var($_POST, 'send_subs_notifications'));
+									
+									if (array_var($_POST, 'send_assigned_to_notification')) {
+										Notifier::taskAssigned($task);
+									}
+								}
+							} else {
+								$task->setAssignedToContactId(0);
+								$task->save();
+								$tasksToReturn[] = $task->getArrayInfo();
+								$application_logs[] = array($task, ApplicationLogs::ACTION_EDIT, false, array_var($_POST, 'send_subs_notifications'));
+							}
 						}
 						break;
 					case 'push_tasks_dates':
@@ -751,14 +784,19 @@ class TaskController extends ApplicationController {
 			
 			DB::commit();
 						
-			foreach ($application_logs as $log){				
+			foreach ($application_logs as $log){
 				if(count($log) >= 2 && $log[0] instanceof ApplicationDataObject){
 					call_user_func_array( 'ApplicationLogs::createLog', $log );	
 				}			
-			}			
+			}
+
+			// ask to complete pending subtasks of completed tasks
+			if (count($pending_subtasks_after_complete) > 0) {
+				evt_add('ask to complete subtasks', array('parent_id' => implode(',', $pending_subtasks_after_complete)));
+			}
 			
 			if (count($tasksToReturn) < $count_tasks) {
-				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restrictions'));
+				flash_error(lang('tasks updated') . '. ' . lang('some tasks could not be updated due to permission restrictions') . $additional_error_message_info);
 			} else if ($showSuccessMessage) {
 				flash_success(lang('tasks updated'));
 			}
@@ -2692,8 +2730,12 @@ class TaskController extends ApplicationController {
 						$params['msg'] = lang('success add template', $task->getObjectName());
 						$params['object'] = $template_task_data['object'];
 					}
-					print_modal_json_response($params, true, array_var($_REQUEST, 'use_ajx'));
-					
+
+					if (array_var($_REQUEST, 'reload')) {
+						evt_add("reload current panel");
+					}
+
+					print_modal_json_response($params, true, array_var($_REQUEST, 'use_ajx'));					
 				} else {
 					if ($task instanceof TemplateTask) {
 						flash_success(lang('success add template', $task->getObjectName()));
@@ -3448,7 +3490,7 @@ class TaskController extends ApplicationController {
 				if (array_var($_REQUEST, 'modal')) {
 					$this->setLayout("json");
 					$this->setTemplate(get_template_path("empty"));
-					print_modal_json_response(array('errorCode' => 1, 'errorMessage' => $e->getMessage(), 'showMessage' => 1), true, array_var($_REQUEST, 'use_ajx'));
+					print_modal_json_response(array('errorCode' => 1, 'errorMessage' => $e->getMessage(), 'showMessage' => 1), true, true);
 				} else {
 					flash_error($e->getMessage());
 				}

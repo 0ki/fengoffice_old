@@ -1135,7 +1135,7 @@
 			throw new Exception("Invalid dimension");
 		}
 		
-		if (logged_user()->isMemberOfOwnerCompany()) {
+		if (logged_user()->isMemberOfOwnerCompany() || logged_user()->isAdminGroup()) {
 			$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", 'order' => 'first_name'));
 		} else {
 			$companies = array(owner_company());

@@ -875,8 +875,10 @@ class DimensionController extends ApplicationController {
 		// re-sort by parent and name
 		$tmp_members = array();
 		foreach ($members as $m) {
-			$tmp_members[str_pad(array_var($m, 'depth'), 20, "0", STR_PAD_LEFT) . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
+			$key = strtolower(htmlentities(array_var($m, 'name')));
+			$tmp_members[str_pad(array_var($m, 'depth'), 20, "0", STR_PAD_LEFT) . $key . array_var($m, 'id')] = $m;
 		}
+		
 		ksort($tmp_members, SORT_STRING);
 		$members = $tmp_members;		
 		return $members ;

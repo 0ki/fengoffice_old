@@ -289,7 +289,7 @@ class Reports extends BaseReports {
 											case '<=':
 											case '>=':
 												$allConditions .= '(`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
-												break;																
+												break;
 										}										
 									} else {
 										$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
@@ -359,6 +359,14 @@ class Reports extends BaseReports {
 			
 			if ($ot->getHandlerClass() == 'Contacts' && in_array($order_by_col, $contact_extra_columns)) {
 				$join_params = self::get_extra_contact_column_order_by($order_by_col, $order_by_col, $select_columns);
+				
+			} else if ($ot->getHandlerClass() == 'MailContents') {
+				$join_params = array(
+					'table' => TABLE_PREFIX."mail_datas",
+					'jt_field' => 'id',
+					'e_field' => 'object_id',
+					'join_type' => 'inner'
+				);
 			}
 			
 			$original_order_by_col = $order_by_col;
@@ -382,6 +390,9 @@ class Reports extends BaseReports {
 			if ($ot->getName() == 'task' && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
 				$allConditions .= " AND assigned_to_contact_id = ".logged_user()->getId();
 			}
+			
+			Hook::fire('custom_report_extra_conditions', array('report' => $report), $allConditions);
+			Logger::log_r($allConditions);
 			if ($managerInstance) {
 				if ($order_by_col == "order"){
 					$order_by_col = "`$order_by_col`";

@@ -69,7 +69,7 @@ og.MemberManager = function() {
 					this.dimension_id = d.dimension_id;
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 					} catch (e) {
-						console.log(e);
+						//console.log(e);
 					}
 				},
 				'datachanged': function() {
@@ -78,7 +78,8 @@ og.MemberManager = function() {
 						if (man) {
 							var has_associations = man.columnModelHasDimensionAssociations();
 							if (has_associations) {
-								man.needRefresh = !man.needRefresh;
+								//man.needRefresh = !man.needRefresh;
+								if (man.needRefresh) man.needRefresh=false;
 								man.activate();
 							}
 						}
@@ -315,14 +316,16 @@ og.MemberManager = function() {
 	// custom property columns
 	var cps = og.custom_properties_by_type[this.object_type_name] ? og.custom_properties_by_type[this.object_type_name] : [];
 	for (i=0; i<cps.length; i++) {
-		cm_info.push({
-			id: 'cp_' + cps[i].id,
-			hidden: parseInt(cps[i].visible_def) == 0,
-			header: cps[i].name,
-			dataIndex: 'cp_' + cps[i].id,
-			sortable: true,
-			renderer: og.clean
-		});
+		if (!parseInt(cps[i].disabled)) {
+			cm_info.push({
+				id: 'cp_' + cps[i].id,
+				hidden: parseInt(cps[i].visible_def) == 0,
+				header: cps[i].name,
+				dataIndex: 'cp_' + cps[i].id,
+				sortable: true,
+				renderer: og.clean
+			});
+		}
 	}
 	
 	// add associated dimensions fields 

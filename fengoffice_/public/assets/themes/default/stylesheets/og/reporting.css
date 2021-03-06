@@ -460,3 +460,8 @@
 	display: inline-block;
 	margin: 1px 0;
 }
+
+.reportTotalTimeParams .coInputMainBlock label {
+	min-width: 100px;
+	float: none;
+}

@@ -579,9 +579,11 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 			var start = 0;
 		}
 		Ext.apply(this.store.baseParams, {
-		      context: og.contextManager.plainContext()			
+		      context: og.contextManager.plainContext(),
+		      type_filter: params.type_filter ? params.type_filter : this.actual_type_filter
 		});
 		this.store.removeAll();
+
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,

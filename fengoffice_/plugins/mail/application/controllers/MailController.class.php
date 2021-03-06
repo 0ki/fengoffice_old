@@ -1163,6 +1163,11 @@ class MailController extends ApplicationController {
 		if ($email instanceof MailContent) {
 			$object_controler = new ObjectController();
 			$object_controler->do_mark_as_read_unread_objects(array($email->getId()), false);
+			
+			// if filtering list by unread reload it to include the new unread email
+			if (user_config_option('mails read filter') == 'unread') {
+				evt_add("update email list", array('ids' => array($email->getId())));
+			}
 			ajx_current("back");
 		} else {
 			flash_error(lang("email dnx"));
@@ -1626,7 +1631,14 @@ class MailController extends ApplicationController {
 		MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 		if (array_var($_POST,'submit')){
 			$members = json_decode(array_var($_POST, 'members'));
-			$this->do_classify_mail($email, $members); 
+			$this->do_classify_mail($email, $members);
+			// update mail list
+			if (user_config_option('mails classification filter') == 'unclassified' && count($members)>0 
+				|| user_config_option('mails classification filter') == 'classified' && count($members)==0) {
+				evt_add("remove from email list", array('ids' => array($email->getId())));
+			} else if (array_var($_REQUEST, 'from_mail_view')) {
+				evt_add("update email list", array('ids' => array($email->getId())));
+			}
 		} 
 		tpl_assign('email', $email);
 		tpl_assign('parsedEmail', $parsedEmail);
@@ -1950,8 +1962,16 @@ class MailController extends ApplicationController {
 
 	function checkmail() {
 		@set_time_limit(0);
-		$accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		
+		$account_id = array_var($_GET, 'account_id');
+		if (is_numeric($account_id) && $account_id > 0) {
+			$accounts = MailAccounts::findAll(array('conditions' => "id='$account_id'"));
+		} else {
+			$accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		}
+		
 		session_commit();
+		$mailsReceived = 0;
 		
 		if (is_array($accounts) && count($accounts) > 0){
 			// check a maximum of $max emails per account
@@ -1971,6 +1991,12 @@ class MailController extends ApplicationController {
 		} else {
 			$err = 1;
 			$errMessage = lang('no mail accounts set for check');
+		}
+		
+		ajx_current("empty");
+		ajx_extra_data(array('mails_received' => $mailsReceived));
+		if (!array_var($_GET, 'hide_message')) {
+			flash_success($errMessage);
 		}
 		
 		ajx_add("overview-panel", "reload");
@@ -2731,8 +2757,9 @@ class MailController extends ApplicationController {
 		$emails = $result->objects;
 		
 		// Prepare response object
-		$object = $this->prepareObject($emails, $start, $limit, $total,$attributes);
+		$object = $this->prepareObject($emails, $start, $limit, $total, $attributes, array_var($_REQUEST, 'check_id'));
 		ajx_extra_data($object);
+		
 		//ajx_extra_data(array('unreadCount' => MailContents::countUserInboxUnreadEmails()));
 		tpl_assign("listing", $object);
 	}
@@ -2747,7 +2774,7 @@ class MailController extends ApplicationController {
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null, $conversation_list = null, $only_count_result = null) {
+	private function getEmails($attributes, $context = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC',$join_params = null, $conversation_list = null, $only_count_result = null, $extra_cond="") {
 		// Return if no emails should be displayed
 		if (!isset($attributes["viewType"]) || ($attributes["viewType"] != "all" && $attributes["viewType"] != "emails")) return null;
 		$account = array_var($attributes, "accountId");
@@ -2760,7 +2787,7 @@ class MailController extends ApplicationController {
 		
 		$state = array_var($attributes, 'stateType');
 		
-		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params, null, $conversation_list, $only_count_result);
+		$result = MailContents::getEmails($account, $state, $read_filter, $classif_filter, $context, $start, $limit, $order_by, $dir, $join_params, null, $conversation_list, $only_count_result, $extra_cond);
 		
 
 		return $result;
@@ -2785,11 +2812,12 @@ class MailController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($emails, $start, $limit, $total, $attributes = null) {
+	private function prepareObject($emails, $start, $limit, $total, $attributes = null, $check_id="") {
 		$object = array(
 			"totalCount" => intval($total),
 			"start" => $start,//(integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
-			"messages" => array()
+			"messages" => array(),
+			"check_id" => $check_id,
 		);
 		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(MailContents::instance()->getObjectTypeId());
 		$i=0;
@@ -2870,6 +2898,7 @@ class MailController extends ApplicationController {
 			"subject" => $msg->getSubject(),
 			"text" => $text,
 			"date" => $msg->getReceivedDate() instanceof DateTimeValue ? ($msg->getReceivedDate()->isToday() ? format_time($msg->getReceivedDate()) : format_datetime($msg->getReceivedDate())) : lang('n/a'),
+			"rawdate" => $msg->getReceivedDate() instanceof DateTimeValue ? $msg->getReceivedDate()->getTimestamp() : 0,
 			"userId" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof Contact ? $msg->getAccount()->getOwner()->getId() : 0),
 			"userName" => ($msg->getAccount() instanceof MailAccount  && $msg->getAccount()->getOwner() instanceof Contact ? $msg->getAccount()->getOwner()->getObjectName() : lang('n/a')),
 			"isRead" => $show_as_conv ? ($conv_unread == 0) : $msg->getIsRead(logged_user()->getId()),
@@ -3307,12 +3336,79 @@ class MailController extends ApplicationController {
                         $spam_filter->setText($email->getFrom());
                         $spam_filter->setSpamState($spam_state);
                         $spam_filter->save();
-                    }                                             
+                    }
+
+                    evt_add("remove from email list", array('ids' => array($email->getId())));
             }
             catch(Exception $e) {
                     flash_error($e->getMessage());
                     ajx_current("empty");
             }
         }
+
+	function check_if_new_mails() {
+
+		ajx_current("empty");
+		
+		try {
+			
+			// Get all variables from request
+			$start = array_var($_GET, 'start');
+			$limit = user_config_option('mails_per_page')? user_config_option('mails_per_page') : config_option('files_per_page');
+			if (!is_numeric($start)) {
+				$start = 0;
+			}
+			
+			$date = null;
+			$last_date = array_var($_GET, 'last_date');
+			if ($last_date) {
+				$date = new DateTimeValue($last_date);
+			}
+			if (!$date instanceof DateTimeValue) return;
+			
+			// prevent using all the emails in the query, only use last week's emails
+			if ($date->getTimestamp() == 0) {
+				$date = DateTimeValueLib::now();
+				$date = $date->add('d', -7);
+			}
+			
+			$attributes = array(
+				"ids" => explode(',', array_var($_GET,'ids')),
+				"types" => explode(',', array_var($_GET,'types')),
+				"accountId" => array_var($_GET,'account_id'),
+				"viewType" => array_var($_GET,'view_type'),
+				"classifType" => array_var($_GET,'classif_type'),
+				"readType" => array_var($_GET,'read_type'),
+				"stateType" => array_var($_GET,'state_type'),
+				"moveTo" => array_var($_GET, 'moveTo'),
+				"mantainWs" => array_var($_GET, 'mantainWs'),
+				"classify_atts" => array_var($_GET, 'classify_atts'),
+			);
+			
+			$order = "`received_date`";
+			$dir = "DESC";
+			
+			// Get all emails to display
+			$context = active_context();
+			
+			// Get only last mail in conversation for this folder if is set show_emails_as_conversations
+			$conversation_list = user_config_option('show_emails_as_conversations') ? 1 : 0;
+			
+			$only_count_result = false;
+			
+			$extra_cond = " AND received_date > '".$date->toMySQL()."'";
+			
+			$result = $this->getEmails($attributes, $context, $start, $limit, $order, $dir, $join_params, $conversation_list,$only_count_result, $extra_cond);
+			$emails = $result->objects;
+			
+			// Prepare response object
+			$object = $this->prepareObject($emails, $start, $limit, $total,$attributes);
+			
+			ajx_extra_data(array('mails' => $object['messages']));
+			
+		} catch (Exception $e) {
+			
+		}
+	}
 
 } // MailController

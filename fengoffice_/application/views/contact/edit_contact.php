@@ -335,6 +335,9 @@
 			</div>
 		</div>
 		<?php } ?>
+		
+		
+		<?php $null = null; Hook::fire('render_additional_user_data_fields', $contact, $null); ?>
 	</div>
 	
 	

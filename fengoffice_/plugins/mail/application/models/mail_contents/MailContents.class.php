@@ -208,7 +208,7 @@ class MailContents extends BaseMailContents {
 	 * @param Project $project
 	 * @return array
 	 */
-	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false, $conversation_list = null, $only_count_result = false) {
+	function getEmails($account_id = null, $state = null, $read_filter = "", $classif_filter = "", $context = null, $start = null, $limit = null, $order_by = 'received_date', $dir = 'ASC', $join_params = null, $archived = false, $conversation_list = null, $only_count_result = false, $extra_cond="") {
 		$mailTablePrefix = "e";
 		if (!$limit) $limit = user_config_option('mails_per_page') ? user_config_option('mails_per_page') : config_option('files_per_page');
 		$accountConditions = "";
@@ -296,7 +296,7 @@ class MailContents extends BaseMailContents {
 			$conversation_cond = "AND e.conversation_last = 1";
 		}
 		
-		$extra_conditions = "$accountConditions $classified $read $conversation_cond $box_cond";
+		$extra_conditions = "$accountConditions $classified $read $conversation_cond $box_cond $extra_cond";
 		
 		Hook::fire("listing_extra_conditions", null, $extra_conditions);
 		

@@ -10,6 +10,9 @@
 			if ($selection instanceof Member) $active_members[] = $selection;
 		}
 	}
+	$extra_conditions = "";
+	Hook::fire("widget_extra_conditions", 'people', $extra_conditions);
+	
 	$mnames = array();
 	//if there are members selcted
 	if (count($active_members) > 0) {
@@ -33,11 +36,14 @@
 		//user to display on the widget
 		$intersection_condition = count($intersection) > 0 ? 'object_id IN ('.implode(',',$intersection).') AND' : '';
 		$intersection_condition = "";
-				
+		
+		$extra_conditions = "";
+		Hook::fire("widget_extra_conditions", 'people', $extra_conditions);
+		
 		$result = Contacts::instance()->listing(array(
 				"order" => $order,
 				"order_dir" => "DESC",
-				"extra_conditions" => " AND `is_company` = 0 AND disabled = 0",
+				"extra_conditions" => " AND `is_company` = 0 AND disabled = 0 ".$extra_conditions,
 				"start" => 0,
 				"limit" => $limit
 		));
@@ -71,7 +77,7 @@
 		$result = Contacts::instance()->listing(array(
 			"order" => $order,
 			"order_dir" => "DESC",
-			"extra_conditions" => " AND `is_company` = 0 AND disabled = 0 AND `user_type` > 0",
+			"extra_conditions" => " AND `is_company` = 0 AND disabled = 0 AND `user_type` > 0 ".$extra_conditions,
 			"start" => 0,
 			"limit" => $limit
 		));

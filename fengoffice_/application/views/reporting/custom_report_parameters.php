@@ -65,10 +65,10 @@
 			<?php }else{ ?>
 				<td align='left'>
 				<?php 
-					$model_instance = new $model();
-					$col_type = $model_instance->getColumnType($condition->getFieldName());
-					$externalCols = $model_instance->getExternalColumns();
-						if(in_array($condition->getFieldName(), $externalCols)){
+						$model_instance = new $model();
+						$col_type = $model_instance->getColumnType($condition->getFieldName());
+						
+						if(in_array($condition->getFieldName(), $external_fields)){
 				?>
 						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId() ?>]">
 				<?php 		foreach($external_fields[$condition->getFieldName()] as $value){ ?>

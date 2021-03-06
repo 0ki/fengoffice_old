@@ -496,7 +496,7 @@ class TemplateController extends ApplicationController {
 			$param_val = array_var($parameterValues, $param->getName(), '');
 			$param_val = escape_character($param_val);
 			DB::execute("INSERT INTO `".TABLE_PREFIX."template_instantiated_parameters` (`template_id`, `instantiation_id`, `parameter_name`, `value`) VALUES
-					('".$template->getId()."', '$instantiation_id', '".escape_character($param->getName())."', '$param_val') ON DUPLICATE KEY UPDATE template_id=template_id");
+					('".$template->getId()."', '$instantiation_id', '".escape_character($param->getName())."', ".DB::escape($param_val).") ON DUPLICATE KEY UPDATE template_id=template_id");
 		}
 		
 		set_config_option('last_template_instantiation_id', $instantiation_id);

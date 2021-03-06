@@ -413,7 +413,6 @@
 	'select group to add user' => 'Elija un grupo de la lista para agregar el usuario a ese grupo.',
 	'there are no custom properties defined message' => 'No hay propiedades personalizadas para {0}.',
 	'there are no custom properties defined link' => 'Por favor vea <a href="http://wiki.fengoffice.com/doku.php/custom_properties" target="_blank" class="wiki-link">este artículo</a> para consultar el uso de las propiedades personalizadas.',
-	'notify assigned user' => 'Notificar al usuario asignado',
 
 	'extend billing categories with advanced billing' => 'Extienda las categorías de facturación con "Facturación avanzada"',
 	'relations' => 'Relaciones',

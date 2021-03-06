@@ -794,6 +794,13 @@ class ReportingController extends ApplicationController {
 			if (class_exists($ot->getHandlerClass())) {
 				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
 				$externalCols = $managerInstance->getExternalColumns();
+				
+				if ($ot->getName() == 'mail') {
+					foreach ($externalCols as $k => $ecol) {
+						if (in_array($ecol, array('to','cc','bcc','body_plain','body_html'))) unset($externalCols[$k]);
+					}
+				}
+				
 			} else {
 				$externalCols = array();
 			}
@@ -1445,7 +1452,10 @@ class ReportingController extends ApplicationController {
 					$field_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$extField);
 					if (is_null($field_name)) $field_name = lang('field Objects '.$extField);
 					
-					$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+					$f = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
+					Hook::fire('custom_reports_external_column_info', array('object_type' => $ot, 'field_name' => $extField), $f);
+					
+					$fields[] = $f;
 				}
 			}
 			//if Object type is person

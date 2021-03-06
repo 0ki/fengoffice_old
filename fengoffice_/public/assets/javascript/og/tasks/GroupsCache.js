@@ -76,7 +76,9 @@ ogTasks.updateTaskGroups = function(data, add_new_tasks){
 	var drawOptions = topToolbar.getDrawOptions();
 	
 	for (var i = 0; i < data.groups.length; i++){
+		if (!data.groups[i]) continue;
 		var group = ogTasks.getGroup(data.groups[i].group_id);
+		if (!group) continue;
 		
 		if (typeof add_new_tasks != 'undefined'){			
 			

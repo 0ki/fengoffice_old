@@ -17,7 +17,7 @@ if (isset($email)){
 		}
 	}
 	if ($email->canEdit(logged_user()) && !$email->isTrashed()){
-		add_page_action(lang('classify'), "javascript: og.render_modal_form('', {c:'mail', a:'classify', params: {id: '" .$email->getId(). "'}, focusFirst: false})", 'ico-classify', null, null, true);
+		add_page_action(lang('classify'), "javascript: og.render_modal_form('', {c:'mail', a:'classify', params: {id: '" .$email->getId(). "', from_mail_view:1}, focusFirst: false})", 'ico-classify', null, null, true);
 		
 		if (!$email->isArchived()) {
 			add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $email->getArchiveUrl() ."');", 'ico-archive-obj');
@@ -407,3 +407,10 @@ if (isset($email)){
 </div>
 <?php } else { echo lang('email not available'); } //if ?>
 
+<script>
+	// prevent mails panel full reload after closing this email
+	og.viewing_mail = true;
+	
+	// remove from list the emails that are marked to be removed
+	og.mail.removePendingMailsFromList();
+</script>

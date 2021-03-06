@@ -26,24 +26,45 @@ Ext.tree.DefaultSelectionModel.override({
 
 Ext.grid.CheckboxSelectionModel.override({
 	handleMouseDown: function(grid, rowIndex, e) {
+		var t = e.getTarget();
+		var checkbox_clicked = (t.className == 'x-grid3-row-checker');
 		
-		t = e.getTarget();
-		if(e.button === 0 && t.className != 'x-grid3-row-checker'){
+		if(e.button === 0){
 			e.stopEvent();
 			var row = e.getTarget('.x-grid3-row');
 			if(row){
 				var index = row.rowIndex;
 				if(this.isSelected(index)){
-					this.deselectRow(index);
+					if (!checkbox_clicked) this.deselectRow(index);
 				}else{
 					if (e.shiftKey) {
 						// range selection
 	            		var sels = this.getSelections();
 	            		if (sels.length > 0) {
-	            			var first_idx = sels[0].data.ix;
+	            			// get first selected index
+	            			var first_idx = 0;
+	            			var all_items = sels[0].store.data.items;
+	            			for (var k=0; k<all_items.length; k++) {
+	            				if (sels[0].data.object_id == all_items[k].data.object_id) break;
+	            				first_idx++;
+	            			}
+	            			
+	            			if (checkbox_clicked) {
+	            				// avoid selecting the clicked checkbox row, let its handler to select it.
+	            				if (first_idx < index) {
+	            					index = index-1;
+	            				} else {
+	            					index = index+1;
+	            				}
+	            			}
+	            			// make the selection
 	            			this.selectRange(first_idx, index);
 	            		}
 	            	} else {
+	            		if (checkbox_clicked) {
+	            			// let the checkbox handler to handle the selection
+	            			return;
+	            		}
 	            		// single selection, if ctrlKey then keep previous selection
 	            		this.selectRow(index, e.ctrlKey === true);
 	            	}

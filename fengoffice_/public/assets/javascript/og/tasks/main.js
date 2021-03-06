@@ -329,7 +329,7 @@ ogTasks.GroupSelected = function(checkbox, group_id){
 		tasks[i].isChecked = checkbox.checked;
 		var tgId = "T" + tasks[i].id + 'G' + group_id;
 		var chkTask = document.getElementById('ogTasksPanelChk' + tgId);
-		chkTask.checked = checkbox.checked;
+		if (chkTask) chkTask.checked = checkbox.checked;
 		
 		//if (chkTask.checked) rx__TasksDrag.addTaskToMove(tasks[i].id);
 		//else rx__TasksDrag.removeTaskToMove(tasks[i].id);

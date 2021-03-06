@@ -293,7 +293,7 @@ class TimeController extends ApplicationController {
 		$timeslot_data = array_var($_POST, 'timeslot');
 		if (!is_array($timeslot_data)) {
 			
-			if (logged_user()->isAdministrator()) {
+			if (logged_user()->isAdminGroup()) {
 				//Get Users Info
 				$users = array();
 				if (!can_manage_time(logged_user())) {
@@ -395,7 +395,7 @@ class TimeController extends ApplicationController {
 					where om.object_id=".$timeslot->getId()." and d.is_manageable;"));
 				
 				//Only admins can change timeslot user
-				if (!array_var($timeslot_data, 'contact_id') && !logged_user()->isAdministrator()) {
+				if (!array_var($timeslot_data, 'contact_id') && !logged_user()->isAdminGroup()) {
 					$timeslot_data['contact_id'] = $timeslot->getContactId();
 				}
 				$timeslot->setFromAttributes($timeslot_data);

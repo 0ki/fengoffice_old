@@ -86,7 +86,10 @@ function __shutdown() {
  */
 function __production_error_handler($code, $message, $file, $line) {
 	// Skip non-static method called staticly type of error...
-	if($code == 2048) {
+	if (($code == 8192 || $code == 2048) && version_compare(phpversion(), '5.6') >= 0) {
+		return;
+	}
+	if($code == 2048 && version_compare(phpversion(), '5.6') < 0) {
 		return;
 	} // if
 
@@ -2177,8 +2180,8 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 			if (is_array($parameterValues)){
 				$is_present = false;
 				foreach($parameterValues as $param => $val){
-					if (strpos($value, '{'.$param.'}') !== FALSE) {
-						$value = str_replace('{'.$param.'}', $val, $value);
+					if (stripos($value, '{'.$param.'}') !== FALSE) {
+						$value = str_replace('{'.strtolower($param).'}', $val, strtolower($value));
 						$is_present = true;
 					}
 				}
@@ -2231,15 +2234,18 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 					
 				}
 	
-				$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
+				$dateUnit = substr($value, strlen($value) - 1); // i, d, w or m (for days, weeks or months, i for minutes)
 				if($dateUnit == 'm') {
 					$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
 				}
+				if($dateUnit == 'i') {
+					$dateUnit = 'm'; // DateTimeValue::add function needs minute option as 'm'
+				}
 				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
 				
-				//Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
-				
+				Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'unit' => $dateUnit, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
 				$value = $date->add($dateUnit, $dateNum);
+				
 			}else{
 				$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
 			}
@@ -2247,6 +2253,12 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 		if($value != '') {
 			if (!$copy->setColumnValue($propName, $value)){
 				$copy->object->setColumnValue($propName, $value);
+			}
+			if ($propName == 'start_date' && $dateUnit == 'm') {
+				$copy->setUseStartTime(true);
+			}
+			if ($propName == 'due_date' && $dateUnit == 'm') {
+				$copy->setUseDueTime(true);
 			}
 			if ($propName == 'text' && $copy->getTypeContent() == 'text') {
 				$copy->setText(html_to_text($copy->getText()));

@@ -401,7 +401,6 @@
 	'click to select country' => 'Click aquí para selccionar país',
 		
 	'completed by name on' => 'Completado por {0} el {1}',
-	'notify assigned user' => 'Notificar al usuario asignado',
     'select contact' => 'Seleccione un contacto',
     'select user' => 'Seleccione un usuario',
     'settings' => 'Ajustes',

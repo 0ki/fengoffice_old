@@ -65,7 +65,7 @@
 		
 		<div id="<?php echo $genid ?>add_timeslot_details" class="editor-container form-tab">
 		
-			<?php if (logged_user()->isAdministrator()) { ?>
+			<?php if (logged_user()->isAdminGroup()) { ?>
 			<div class="dataBlock" style="<?php echo (can_manage_time(logged_user())) ? '':'display: none;'?>">
 				<?php echo label_tag(lang('user')) ?>
 				<?php

@@ -74,7 +74,8 @@
 <?php }?>
 
 <?php
-   if (strtolower(substr($file->getFilename(), -3)) == 'pdf'){
+	/* @var $last_revision ProjectFileRevision */
+   if (strtolower(substr($file->getFilename(), -3)) == 'pdf' || $last_revision instanceof ProjectFileRevision && $last_revision->getTypeString() == 'application/pdf'){
       echo'<div>';
       if($file->getType() != ProjectFiles::TYPE_WEBLINK){       
         $urlpdf=get_url('files', 'download_image', array('id' => $file->getId(), 'inline' => true, 'modtime' => $modtime));

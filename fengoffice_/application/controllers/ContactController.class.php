@@ -975,14 +975,14 @@ class ContactController extends ApplicationController {
 				return;
 			} // if
 
-			if (array_var($_REQUEST, 'create_user_from_contact')){
-				$contact_data = $this->get_contact_data_from_contact($contact_old);
-				tpl_assign('userFromContactId', get_id());
-				
-				$contact_old->setNew(true);
-				// to keep custom properties and linked objects
-				tpl_assign('object', $contact_old);
-			}
+		
+			$contact_data = $this->get_contact_data_from_contact($contact_old);
+			tpl_assign('userFromContactId', get_id());
+			
+			$contact_old->setNew(true);
+			// to keep custom properties and linked objects
+			tpl_assign('object', $contact_old);
+		
 		}
 		if(array_var($_REQUEST, 'user_from_contact_id') > 0){
 			$contact = Contacts::findById(array_var($_REQUEST, 'user_from_contact_id'));
@@ -1440,10 +1440,12 @@ class ContactController extends ApplicationController {
 				
 				if ($newCompany) $object_controller->add_to_members($company, $member_ids);
 				$object_controller->link_to_new_object($contact);
-				$object_controller->add_subscribers($contact);
 				$object_controller->add_custom_properties($contact);
 				
-				
+				// modify subscribers only if contact is not an user
+				if (trim(array_var($contact_data, 'username', '')) == '') {
+					$object_controller->add_subscribers($contact);
+				}
 
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
@@ -2474,7 +2476,7 @@ class ContactController extends ApplicationController {
 			$size = filesize($path);
 			
 			$name = array_var($_REQUEST, 'fname', array_var($_SESSION, 'fname', ''));
-			if ($name == '') {
+			if ($name == '' || !str_ends_with($name, '.csv')) {
 				$name = (array_var($_SESSION, 'import_type', 'contact') == 'contact' ? 'contacts.csv' : 'companies.csv');
 			}
 			
@@ -3916,6 +3918,8 @@ class ContactController extends ApplicationController {
 			$name_condition = " AND o.name LIKE '%$name_filter%'";
 		}
 		
+		$permissions_checked = false;
+		
 		// by default list only contacts
 		$type_condition = " AND is_company=0";
 		
@@ -3932,6 +3936,7 @@ class ContactController extends ApplicationController {
 						
 					} else if ($col == 'has_permissions') {
 						
+						$permissions_checked = true;
 						$extra_conditions .= " AND `user_type`>0 AND EXISTS(
 							SELECT * FROM ".TABLE_PREFIX."contact_member_permissions cmp
 							WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id)
@@ -3965,8 +3970,11 @@ class ContactController extends ApplicationController {
 		$info = array();
 		$pg_ids = logged_user()->getPermissionGroupIds();
 		if (count($pg_ids) > 0) {
-			$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
-			
+			if ($permissions_checked) {
+				$permissions_condition = ""; // if filtering by users the permissions are already checked with filters
+			} else {
+				$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
+			}
 			$conditions = "o.trashed_by_id=0 AND o.archived_by_id=0 $name_condition $permissions_condition $type_condition $extra_conditions";
 			$query_params = array(
 				'condition' => $conditions,

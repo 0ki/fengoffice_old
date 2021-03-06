@@ -65,10 +65,12 @@
     static function clearRelationsByObject(ApplicationDataObject $object) {
     	// check permissions to unlink every linked object
     	$linked_objs = self::getLinkedObjectsByObject($object);
-    	foreach ($linked_objs as $lo) {
+    	if (is_array($linked_objs)) {
+    	  foreach ($linked_objs as $lo) {
     		if ($lo->canEdit(logged_user())) {
     			self::delete(array('(`object_id` = ? AND `rel_object_id` = ?) or (`rel_object_id` = ? AND `object_id` = ?)', $object->getId(), $lo->getId(), $object->getId(), $lo->getId()));
     		}
+    	  }
     	}
     } // clearRelationsByObject
     

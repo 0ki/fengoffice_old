@@ -280,6 +280,12 @@ og.MemberTree = function(config) {
 	    				}
 	    			}
 	    		});
+	        }else{
+	        	//ensure show childs
+	        	for (var i = 0 ; i < node.childNodes.length ; i++) {
+						var child = node.childNodes[i];
+						child.getUI().show();
+				}
 	        }
 			
 		},
@@ -375,6 +381,12 @@ og.MemberTree = function(config) {
 		    				dimension_tree.innerCt.unmask();    						    				
 		    			}
 		    		});
+		        }else{
+		        	//ensure show childs
+		        	for (var i = 0 ; i < node.childNodes.length ; i++) {
+							var child = node.childNodes[i];
+							child.getUI().show();
+					}
 		        }		        		       				
 			}
 		},

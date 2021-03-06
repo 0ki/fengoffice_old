@@ -782,6 +782,34 @@ INSERT INTO fo_custom_property_values (`object_id`, `custom_property_id`, `value
 ON DUPLICATE KEY UPDATE custom_property_id=cpv.custom_property_id;
 
 -- WORKSPACE CUSTOM PROPERTIES
+CREATE TABLE IF NOT EXISTS `fo_member_custom_properties` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `object_type_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) collate utf8_unicode_ci NOT NULL,
+  `code` varchar(255) collate utf8_unicode_ci NOT NULL,
+  `type` varchar(255) collate utf8_unicode_ci NOT NULL,
+  `description` text collate utf8_unicode_ci NOT NULL,
+  `values` text collate utf8_unicode_ci NOT NULL,
+  `default_value` text collate utf8_unicode_ci NOT NULL,
+  `is_system` tinyint(1) NOT NULL,
+  `is_required` tinyint(1) NOT NULL,
+  `is_multiple_values` tinyint(1) NOT NULL,
+  `property_order` int(10) NOT NULL,
+  `visible_by_default` tinyint(1) NOT NULL,
+  `is_special` tinyint(1) NOT NULL,
+  `is_disabled` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `fo_member_custom_property_values` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `member_id` int(10) NOT NULL,
+  `custom_property_id` int(10) NOT NULL,
+  `value` text collate utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `member_id` USING HASH (`member_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 INSERT INTO fo_member_custom_properties (`id`, `object_type_id`, `name`, `type`, `description`, `values`, `default_value`, `is_required`, `is_multiple_values`, `property_order`, `visible_by_default`)
  SELECT `cp`.`id`, (SELECT id FROM fo_object_types WHERE name='workspace' limit 1), `cp`.`name`, `cp`.`type`, `cp`.`description`, `cp`.`values`, `cp`.`default_value`, `cp`.`is_required`, `cp`.`is_multiple_values`, `cp`.`property_order`, `cp`.`visible_by_default`
  FROM og_custom_properties cp
@@ -1261,3 +1289,5 @@ update fo_contacts set avatar_file='' where avatar_file is null;
 update fo_contacts set last_login='0000-00-00 00:00:00' where last_login is null;
 update fo_contacts set last_visit='0000-00-00 00:00:00' where last_visit is null;
 update fo_contacts set personal_member_id=0 where personal_member_id is null;
+update fo_members set archived_by_id=0 where archived_by_id is null;
+update fo_members set archived_on='0000-00-00 00:00:00' where archived_on is null;

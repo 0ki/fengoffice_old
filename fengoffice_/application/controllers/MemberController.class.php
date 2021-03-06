@@ -177,9 +177,13 @@ class MemberController extends ApplicationController {
 		$current_member_cond = $parent instanceof Member ? "AND parent_member_id=".$parent->getId() : "";
 
 		if ($parent instanceof Member) {
-			$extra_conds = " AND archived_by_id=0 AND EXISTS (
-				SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp 
-				WHERE cmp.member_id=".TABLE_PREFIX."members.id AND cmp.permission_group_id IN (".implode(',',$pg_array)."))";
+			if (!logged_user()->isAdministrator()) {
+				$extra_conds = " AND archived_by_id=0 AND EXISTS (
+					SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp 
+					WHERE cmp.member_id=".TABLE_PREFIX."members.id AND cmp.permission_group_id IN (".implode(',',$pg_array)."))";
+			} else {
+				$extra_conds = " AND archived_by_id=0 ";
+			}
 	
 			$members = $parent->getAllChildren(true, 'name', $extra_conds);
 	
@@ -233,6 +237,7 @@ class MemberController extends ApplicationController {
 			$group_by = "GROUP BY mem.id";
 		}
 		
+		$ids = array_filter($ids);
 		if (count($ids) == 0) $ids[] = 0;
 
 		$sql = "SELECT mem.*, mem.id as member_id $dimension_association_sel_cols FROM ".TABLE_PREFIX."members mem

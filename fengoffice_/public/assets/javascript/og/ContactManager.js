@@ -105,11 +105,6 @@ og.ContactManager = function() {
 					og.clean(r.data.companyName), og.getUrl('contact', 'view_company', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}
-		/*
-		mem_path = "";
-		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
-		*/
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
 		if (mpath){ 

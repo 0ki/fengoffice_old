@@ -33,7 +33,7 @@
 				<?php 	}
 					} ?>
 				
-				<input type="text" id="name" name="<?php echo "custom_properties[{number}][name]"?>" value="" />
+				<input type="text" id="name" name="<?php echo "custom_properties[{number}][name]"?>" value="" placeholder="<?php echo lang('name')?>"/>
 			</td>
 			
 			<td><?php echo get_custom_property_type_selector_html(array('id' => 'type', 'name' => 'type', 'name_prefix' => "custom_properties[{number}]")) ?>

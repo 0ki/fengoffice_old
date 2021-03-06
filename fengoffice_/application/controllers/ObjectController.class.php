@@ -31,6 +31,16 @@ class ObjectController extends ApplicationController {
 		$this->setLayout("html");
 	}
 	
+	function render_cps() {
+		ajx_current("empty");
+		$object = Objects::findObject(get_id());
+		$html = "";
+		if ($object instanceof ContentDataObject) {
+			$html = render_object_custom_properties($object);
+		}
+		ajx_extra_data(array('html' => $html));
+	}
+	
 	function add_subscribers(ContentDataObject $object, $subscribers = null, $check_permissions = true) {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
@@ -275,7 +285,7 @@ class ObjectController extends ApplicationController {
 					break;
 				}
 			}
-			if (!$exists){
+			if (!$exists && !($object instanceof TemplateTask || $object instanceof TemplateMilestone || ($object instanceof Contact && $object->isUser()))){
 				throw new Exception(lang('must choose at least one member of',$rdim->getName()));
 			}
 		}
@@ -1245,6 +1255,9 @@ class ObjectController extends ApplicationController {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNTRASH);
 				flash_success(lang("success untrash object"));
 				if ($object instanceof Contact) self::reloadPersonsDimension();
+				else if ($object instanceof MailContent) {
+					evt_add("update email list", array('ids' => array($object->getId())));
+				}
 			} catch (Exception $e) {
 				$errorString = is_null($errorMessage) ? lang("error untrash objects", $error) : $errorMessage;
 				flash_error($errorString);
@@ -1389,6 +1402,7 @@ class ObjectController extends ApplicationController {
 		} else {
 			flash_success(lang("success archive objects", $count));
 			if ($count_persons > 0) self::reloadPersonsDimension();
+			Hook::fire('after_object_controller_archive', array_var($_GET, 'ids', array_var($_GET, 'object_id')), $ignored);
 		}
 	}
 	
@@ -1408,6 +1422,9 @@ class ObjectController extends ApplicationController {
 				ApplicationLogs::createLog($object, ApplicationLogs::ACTION_UNARCHIVE);
 				flash_success(lang("success unarchive objects", 1));
 				if ($object instanceof Contact) self::reloadPersonsDimension();
+				else if ($object instanceof MailContent) {
+					evt_add("update email list", array('ids' => array($object->getId())));
+				}
 			} catch (Exception $e) {
 				DB::rollback();
 				flash_error(lang("error unarchive objects", 1));
@@ -2049,9 +2066,11 @@ class ObjectController extends ApplicationController {
 			// editing template items do not check permissions
 			$sql_permissions = "";
 		} else {
-			$sql_permissions = "
-				AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
-			";
+			if(!logged_user()->isAdministrator()){
+				$sql_permissions = "
+								AND EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND sh.group_id IN ($logged_user_pg_ids))
+							";
+			}			
 		}
 		
 		// Main select
@@ -2080,7 +2099,7 @@ class ObjectController extends ApplicationController {
 		
 		// Full SQL
 		$sql = "$sql_select $sql_joins $sql_where $sql_order $sql_limit";
-		Logger::log($sql);
+		
 		// Execute query
 		if (!$only_count_result) {
 			$rows = DB::executeAll($sql);

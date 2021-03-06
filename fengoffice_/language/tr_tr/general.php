@@ -394,6 +394,5 @@
 	'select contact' => 'Kişi seçin',
 	'select user' => 'Kullanıcı seçin',
 	'completed by name on' => '{0} tarafından {1} tarihinde tamamlandı',
-	'notify assigned user' => 'Atanmış kullanıcıya bildir',
 	'overdue and upcomming' => 'Zamanı Geçmiş ve Yaklaşan',
 ); ?>

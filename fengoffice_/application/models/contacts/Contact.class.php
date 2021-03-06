@@ -45,6 +45,17 @@ class Contact extends BaseContact {
 		else return 'contact';
 	}
 	
+	
+	
+	function getObjectName() {
+		$name = parent::getObjectName();
+		
+		Hook::fire('override_contact_name', array('contact' => $this), $name);
+		
+		return $name;
+	}
+	
+	
 	/**
 	 * Array of email accounts
 	 *
@@ -462,10 +473,13 @@ class Contact extends BaseContact {
 				AND email_address IS NOT NULL
 				AND contact_id = $contact_id
 				$type_condition order by is_main desc LIMIT 1";
+	 	
+	 	$email_address = null;
 		if ($row = DB::executeOne($sql)) {
-			return $row['email_address'];	
-		}				
-		return null;
+			$email_address = $row['email_address'];
+		}
+		Hook::fire('override_contact_email', array('contact' => $this), $email_address);
+		return $email_address;
 	 } 
 	
 	 	 
@@ -1072,12 +1086,18 @@ class Contact extends BaseContact {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
+		
+		$return_false = false;
+		Hook::fire('contact_can_view', $this, $return_false);
+		if ($return_false) return false;
+		
 		if ( $this->isOwnerCompany()) return true;
 		if ( $this->getId() == logged_user()->getId() ) return true ;
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator());
+			return ($this->getUserType() > $user->getUserType() || $user->isAdministrator());
 		}
+		 
 		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	
@@ -1126,6 +1146,10 @@ class Contact extends BaseContact {
 	 */
 	function canEdit(Contact $user) {
 		if ($this->isUser()) {
+		
+			$return_false = false;
+			Hook::fire('contact_can_edit', $this, $return_false);
+			if ($return_false) return false;
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
 			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator()) || $this->getObjectId() == $user->getObjectId();
 		} 
@@ -1522,6 +1546,10 @@ class Contact extends BaseContact {
 	
     function getPictureUrl($size = 'small') {
     	$default_img_file = $this->getIsCompany() ? 'default-company.png' : 'default-avatar.png';
+    	
+    	$url = null; Hook::fire('override_contact_picture_url', $this, $url);
+    	if ($url != null) return $url;
+    	
     	switch ($size) {
     		case 'small':
     			return ($this->getPictureFileSmall() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileSmall())): get_image_url($default_img_file));

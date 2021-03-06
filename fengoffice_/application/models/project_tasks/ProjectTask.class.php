@@ -333,6 +333,11 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canChangeStatus(Contact $user) {
+		$continue_check = true;
+		Hook::fire('can_change_task_status', array('task' => $this, 'user' => $user), $continue_check);
+		if (!$continue_check) {
+			return false;
+		}
 		return (can_manage_tasks($user) || $this->isAsignedToUserOrCompany($user));
 	} // canChangeStatus
 

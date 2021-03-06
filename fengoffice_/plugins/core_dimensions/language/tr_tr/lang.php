@@ -31,4 +31,5 @@
 	'delete selected member' => 'Seçilmiş {0} Ögesini Sil',
 	'delete member warning' => 'Bu {0} ögesini silmek istediğinize emin misiniz?',
 	'tasks list' => 'Görev Listesi',
+	'notify assigned user' => 'Atanmış kullanıcıya bildir',
 ); ?>

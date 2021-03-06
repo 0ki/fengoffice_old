@@ -14,9 +14,10 @@ og.MailManager = function() {
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	this.maxrowidx = 0;
+	this.last_email_date = '0000-00-00 00:00:00';
 
 	this.fields = [
-		'object_id', 'type', 'ot_id', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
+		'object_id', 'type', 'ot_id', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date', 'rawdate',
 		'memberIds', 'projectName', 'userId', 'userName', 'workspaceColors','isRead', 'from', 'memPath',
 		'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread', 'conv_hasatt'
 	];
@@ -53,6 +54,13 @@ og.MailManager = function() {
 			listeners: {
 				'load': function(store, rs) {
 					var d = this.reader.jsonData;
+					var manager = Ext.getCmp('mails-manager');
+					
+					// if response has check_id check if it is the last check_id sent, if not then ignore the response.
+					if (d.check_id && d.check_id != manager.last_check_id) {
+						return;
+					}
+					
 					store.totalLength = store.proxy.totalLength;
 					if (d.totalCount == 0) {
 						var sel_context_names = og.contextManager.getActiveContextNames();
@@ -69,19 +77,27 @@ og.MailManager = function() {
 						og.updateUnreadEmail(d.unreadCount);
 					}
 					
-					var manager = Ext.getCmp('mails-manager');
+					
 					var view = manager.getView();
 					for (i=0; i<manager.maxrowidx; i++) {
 						var el = view.getRow(i);
 						if (el) el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
 					
+					og.mail.mails_to_remove_from_list = [];
+					
 					//reload columns for this folder
 					showFolderColumns();
 					
-					Ext.getCmp('mails-manager').reloadGridPagingToolbar('mail','list_all','mails-manager');
+					manager.reloadGridPagingToolbar('mail','list_all','mails-manager');
 					
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+					
+					// save last email date in a variable
+					var active_page = manager.getBottomToolbar().getPageData().activePage;
+					if (active_page == 1 && d.messages.length > 0) {
+						manager.last_email_date = d.messages[0].rawdate;
+					}
 				}
 			}
 		});
@@ -99,8 +115,9 @@ og.MailManager = function() {
 		if (r.data.isDraft) {
 			strDraft = "<span style='font-size:90%;color:red'>"+lang('draft')+"&nbsp;</style>";			
 			strAction = 'edit_mail';
+		} else {
+			strDraft = '';
 		}
-		else { strDraft = ''; }
 		
 		var subject = value && og.clean(value.trim()) || '<span class="italic">' + lang("no subject") + '</span>';
 		var conv_str = r.data.conv_total > 1 ? " <span class='db-ico ico-comment' style='margin-left:3px;padding-left: 18px;'><span style='font-size:80%'>(" + (r.data.conv_unread > 0 ? '<b style="font-size:130%">' + r.data.conv_unread + '</b>/' : '') + r.data.conv_total + ")</span></span>" : "";
@@ -173,7 +190,7 @@ og.MailManager = function() {
 	}
 	
 	function renderIsRead(value, p, r){
-		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = !r.data.isRead;og.openLink(og.getUrl(\'object\', \'' + (value ? 'mark_as_unread' : 'mark_as_read') + '\', {ids:\'' + r.data.object_id + '\'}));r.commit();';
+		var js = 'var r = og.MailManager.store.getById(\'' + r.id + '\'); r.data.isRead = !r.data.isRead;og.openLink(og.getUrl(\'object\', \'' + (value ? 'mark_as_unread' : 'mark_as_read') + '\', {ids:\'' + r.data.object_id + '\', dont_remove:1}), {hideLoading:true});r.commit();';
 		return String.format(
 				'<div title="{0}" class="db-ico {2}" onclick="{1}"></div>',
 				value ? lang('mark as unread') : lang('mark as read'), js, value ? 'ico-read' : 'ico-unread'
@@ -518,7 +535,7 @@ og.MailManager = function() {
 					sel[i].set('isRead', true);
 					sel[i].commit();
 				}
-				if (ids) og.openLink(og.getUrl('object', 'mark_as_read', {ids:ids}));
+				if (ids) og.openLink(og.getUrl('object', 'mark_as_read', {ids:ids, dont_remove:1}), {hideLoading:true});
 				sm.clearSelections();
 			},
 			scope: this
@@ -538,7 +555,7 @@ og.MailManager = function() {
 					sel[i].set('isRead', false);
 					sel[i].commit();
 				}
-				if (ids) og.openLink(og.getUrl('object', 'mark_as_unread', {ids:ids}));
+				if (ids) og.openLink(og.getUrl('object', 'mark_as_unread', {ids:ids, dont_remove:1}), {hideLoading:true});
 				sm.clearSelections();
 			},
 			scope: this
@@ -749,9 +766,7 @@ og.MailManager = function() {
 			text: lang('check mails'),
 			iconCls: 'ico-check_mails',
 			handler: function() {
-				this.load({
-					action: "checkmail"
-				});
+				this.checkmail();
 			},
 			scope: this
 		}),
@@ -977,6 +992,7 @@ og.MailManager = function() {
 							this.load();
 							if (account == 0) {
 								name = lang('view by account');
+								this.checkmail(true); // check all account emails because if filter was in a particular account then there are unchecked accounts.
 							}
 							Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-byaccount').setText(name);
 						},
@@ -1236,13 +1252,8 @@ og.MailManager = function() {
 	// auto refresh emails
 	var me = this;
 	this.emailRefreshInterval = setInterval(function() {
-		var p = me.getBottomToolbar().getPageData().activePage;
-		if (window.isActiveBrowserTab && (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel' && p == 1)) {
-			me.needRefresh = false;
-			og.MailManager.store.reload();
-		} else {
-			me.needRefresh = true;
-		}
+		me.needRefresh = false;
+		me.checkIfNewMails();
 	}, 60000);
 	/*poll to see if an error has happened while checking mail*/
 	if (og.preferences.email_check_acc_errors > 0) {
@@ -1257,12 +1268,17 @@ og.MailManager = function() {
 
 Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	load: function(params) {
+		if (og.viewing_mail) {
+			og.viewing_mail = false;
+			return;
+		}
+		
 		if (!params) params = {};
 		var start;
 		if (typeof params.start == 'undefined') {
 			start = (this.getBottomToolbar().getPageData().activePage - 1) * mails_per_page;
 		} else {
-			start = 0;
+			start = isNaN(params.start) ? 0 : params.start;
 		}
 		
 		this.store.baseParams = {
@@ -1275,7 +1291,11 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	    };
 		
 		this.actionRep.checkMails.disable();
-		//this.store.removeAll();
+		
+		// send a random id to the server and save it as the last, if the response has the last check_id then load it, else ignore it.
+		this.last_check_id = Ext.id();
+		params.check_id = this.last_check_id;
+		
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
@@ -1289,6 +1309,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
+		og.mail.removePendingMailsFromList();
 		if (this.needRefresh) {
 			this.load({start:0});
 		}
@@ -1296,7 +1317,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	
 	reset: function() {
 		this.load({start:0});
-                this.getSelectionModel().clearSelections();
+		this.getSelectionModel().clearSelections();
 	},
 	
 	showMessage: function(text) {
@@ -1327,6 +1348,89 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		return this.topTbar1;
 	},
 	
+	checkmail: function(hide_message) {
+		this.actionRep.checkMails.disable();
+		setTimeout(function() {
+			Ext.getCmp("mails-manager").actionRep.checkMails.enable();
+		}, 3000);
+		var params = {};
+		if (!isNaN(this.accountId) && this.accountId > 0) {
+			params.account_id = this.accountId;
+		}
+		if (hide_message) {
+			params.hide_message = hide_message;
+		}
+		og.openLink(og.getUrl('mail', 'checkmail', params), {
+			callback: function(success, data) {
+				if (data.mails_received > 0) {
+					this.checkIfNewMails(false);
+				}
+			},
+			scope: this
+		});
+	},
+	
+	checkIfNewMails: function(show_message) {
+		if (typeof(show_message) == 'undefined') {
+			show_message = true;
+		}
+		
+		// use same params of last query
+		var params = {
+	      read_type: this.readType,
+	      view_type: this.viewType,
+	      state_type : this.stateType,
+	      classif_type: this.classifType,
+	      context: og.contextManager.plainContext(),
+		  account_id: this.accountId,
+		  last_date: this.last_email_date
+	    }
+		// check if there are new mails
+		og.openLink(og.getUrl('mail', 'check_if_new_mails', params), {
+			hideLoading: true,
+			callback: function(success, data) {
+				
+				if (!data.mails || data.mails.length == 0) return;
+				
+				var man = Ext.getCmp("mails-manager");
+				var active_page = man.getBottomToolbar().getPageData().activePage;
+				
+				if (active_page == 1) {
+					// to restore original scroll
+					var old_scroll_top = $("#mails-panel .x-grid3-scroller").scrollTop();
+					
+					// reverse order because they are all inserted in position 0
+					var mails = data.mails.reverse();
+					
+					var records = [];
+					for (var x=0; x<mails.length; x++) {
+						var obj = mails[x];
+						var record = new Ext.data.Record(obj, obj.id);
+						records.push(record);
+						
+						// add record in the first line
+						if (og.MailManager.store && typeof(og.MailManager.store.add) == 'function' && og.MailManager.store.data.keys.indexOf(obj.id) == -1) {
+							og.MailManager.store.insert(0, record);
+						}
+						man.last_email_date = obj.rawdate;
+					}
+					
+					// scroll list to original position if user has already scrolled
+					if (old_scroll_top > 0) {
+						setTimeout(function() {
+							var lines_height = 37 * mails.length;
+							$("#mails-panel .x-grid3-scroller").scrollTop(old_scroll_top + lines_height);
+						}, 50);
+					}
+				}
+				if (show_message) {
+					og.msg(lang('information'), lang('you have x new emails', mails.length));
+				}
+			}
+		});
+		
+	},
+	
 	reloadFiltering: function(readType, viewType, stateType, classifType) {
 		if (readType) this.readType = readType;
 		if (viewType) this.viewType = viewType;
@@ -1339,7 +1443,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 			state_type : this.stateType,
 			classif_type : this.classifType
 		};
-		this.load();
+		this.load({start: 0});
 	}
 });
 

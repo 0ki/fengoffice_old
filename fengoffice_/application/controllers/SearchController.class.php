@@ -724,7 +724,7 @@ class SearchController extends ApplicationController {
     	
     	if(strlen($text) > 100){
 	    	$text_ret = '...';    	    
-	    	$text_ret .= substr($text, strpos($text, $pieces[0]) , 100);
+	    	$text_ret .= substr_utf($text, strpos($text, $pieces[0]) , 100);
 	    	$text_ret .= '...';
     	}else{
     		$text_ret = $text;

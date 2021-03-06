@@ -502,7 +502,10 @@ og.eventManager.addListener('ask to complete subtasks',
 					$("#"+genid+"_buttons").css('text-align', 'right').css('margin', '10px 0');
 					$("#"+genid+"_question").css('margin', '10px 0');
 					$("#"+genid+"_buttons button.yes").css('margin-right', '10px').click(function(){
-						og.openLink(og.getUrl('task', 'complete_subtasks', {id: data.parent_id}), {
+
+						var pids = (data.parent_id+"").split(',');
+						for (var k=0; k<pids.length; k++) {
+						  og.openLink(og.getUrl('task', 'complete_subtasks', {id: pids[k]}), {
 							callback: function(success, cbdata) {
 								if (success && cbdata && cbdata.tasks) {
 									for (var i=0; i<cbdata.tasks.length; i++) {
@@ -514,7 +517,8 @@ og.eventManager.addListener('ask to complete subtasks',
 									}
 								}
 							}
-						});
+						  });
+						}
 						$('.modal-close').click();
 					});
 					$("#"+genid+"_buttons button.no").css('margin-right', '10px').click(function(){

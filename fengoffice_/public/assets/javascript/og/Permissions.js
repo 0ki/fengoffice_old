@@ -199,7 +199,14 @@ og.ogPermSetLevel = function(genid, dim_id, level){
 //Action to execute when the 'All' checkbox is checked or unchecked
 og.ogPermAllChecked = function(genid, dim_id, value){
 	var level = value ? 3 : 0;
-	og.ogPermSetLevel(genid, dim_id, level);
+	if (level == 3) {
+		// gradually set all permissions
+		og.ogPermSetLevel(genid, 1);
+		og.ogPermSetLevel(genid, 2);
+		og.ogPermSetLevel(genid, 3);
+	} else {
+		og.ogPermSetLevel(genid, level);
+	}
 }
 
 //Applies the current member permission settings to all submembers
@@ -755,7 +762,7 @@ og.ogSetCheckedValue = function(radioObj, newValue) {
 og.afterUserTypeChangeAndPermissionsClick = function(genid) {
 	
 	if (og.tmp_must_check_member_permissions && og.tmp_must_check_member_permissions[genid]) {
-		if (is_new_contact) {
+		if (og.is_new_contact) {
     		// poner permisos por defecto
 			og.setDefaultPermissionsForAllMembers(genid);
 		} else {
@@ -865,7 +872,7 @@ og.setDefaultPermissionsForAllMembers = function(genid) {
 ******************************************************/
 
 og.userPermissions = {};
-og.userPermissions.permissionInfo = [];
+og.userPermissions.permissionInfo = {};
 
 og.userPermissions.loadPermissions = function (genid, selector_id) {
 	var hf = document.getElementById(genid + 'hfPerms');
@@ -1017,7 +1024,14 @@ og.userPermissions.ogPermValueChanged = function(genid, obj_type){
 //Action to execute when the 'All' checkbox is checked or unchecked
 og.userPermissions.ogPermAllChecked = function(genid, value){
 	var level = value ? 3 : 0;
-	og.userPermissions.ogPermSetLevel(genid, level);
+	if (level == 3) {
+		// gradually set all permissions
+		og.userPermissions.ogPermSetLevel(genid, 1);
+		og.userPermissions.ogPermSetLevel(genid, 2);
+		og.userPermissions.ogPermSetLevel(genid, 3);
+	} else {
+		og.userPermissions.ogPermSetLevel(genid, level);
+	}
 }
 
 og.userPermissions.ogPermPrepareSendData = function(genid, send_all){

@@ -1272,7 +1272,17 @@ abstract class ContentDataObjects extends DataManager {
 			}
 						
 		} else {
-			
+				// 3.2 No memeber dimensions defines permissions.
+				// esta en root tenemos que buscar todos los PermissionGroups que tengan permiso de lectura en root para este tipo de objeto
+				if (config_option('let_users_create_objects_in_root')) {
+					$gids = array_flat(DB::executeAll("
+							SELECT DISTINCT(`permission_group_id`)
+							FROM  `".TABLE_PREFIX."contact_member_permissions`
+							WHERE  `member_id` = 0
+							AND  `object_type_id` = $tid
+							"));
+				}
+							
 				// if this object is an email and it is unclassified in members that defines permissions 
 				// => add to sharing table the permission groups of the users that have permissions in the email's account
 				if (Plugins::instance()->isActivePlugin('mail')) {

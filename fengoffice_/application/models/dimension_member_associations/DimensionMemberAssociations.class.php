@@ -142,20 +142,25 @@
 						
 						$object_type_id = $assoc->getObjectTypeId();
 						$assoc_dimension_id = $assoc->getAssociatedDimensionMemberAssociationId();
-						$assoc_dimension_name = Dimensions::getDimensionById($assoc->getAssociatedDimensionMemberAssociationId())->getName();
+						$assoc_dim = Dimensions::getDimensionById($assoc->getAssociatedDimensionMemberAssociationId());
+						$assoc_dimension_name = $assoc_dim->getName();
+						$assoc_dimension_code = $assoc_dim->getCode();
 						$assoc_object_type_id = $assoc->getAssociatedObjectType();
 					} else {
 						if (!in_array($assoc->getDimensionId(), $enabled_dimensions)) continue;
 						
 						$object_type_id = $assoc->getAssociatedObjectType();
 						$assoc_dimension_id = $assoc->getDimensionId();
-						$assoc_dimension_name = Dimensions::getDimensionById($assoc->getDimensionId())->getName();
+						$assoc_dim = Dimensions::getDimensionById($assoc->getDimensionId());
+						$assoc_dimension_name = $assoc_dim->getName();
+						$assoc_dimension_code = $assoc_dim->getCode();
 						$assoc_object_type_id = $assoc->getObjectTypeId();
 					}
 					
 					$info = array(
 						'id' => $assoc->getId(),
 						'name' => $assoc_dimension_name,
+						'code' => $assoc_dimension_code,
 						'assoc_dimension_id' => $assoc_dimension_id,
 						'assoc_object_type_id' => $assoc_object_type_id,
 						'is_required' => $assoc->getIsRequired(),

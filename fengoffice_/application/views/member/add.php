@@ -149,7 +149,7 @@
 				//echo label_tag(lang('located under'), "", false);
 				//render_single_dimension_tree($current_dimension, $genid, $selected_members, array('checkBoxes'=>false,'all_members' => true));
 				
-				render_single_member_selector($current_dimension, $genid, $selected_members, array('is_multiple' => false, 'label' => lang('located under'), 'width'=>400,
+				render_single_member_selector($current_dimension, $genid, $selected_members, array('is_multiple' => false, 'label' => lang('located under'), 'width'=>400, 'allow_non_manageable' => true,
 					'select_function' => 'og.onParentMemberSelect', 'listeners' => array('on_remove_relation' => "og.onParentMemberRemove('".$genid."');")), false);
 				
 				

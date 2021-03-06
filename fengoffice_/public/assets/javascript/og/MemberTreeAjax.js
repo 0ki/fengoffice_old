@@ -203,17 +203,25 @@ og.MemberTreeAjax = function(config) {
 			
 			
 			if(!this.isMultiple){
+				
+				if (!og.tree_focus) og.tree_focus = {};
+				
 				$("#" + tree.id + '-textfilter').hide();				
 				$("#" + tree.id + '-textfilter').closest('.x-panel-tbar').attr("tabindex", -1);
 				$("#" + tree.id + '-textfilter').parent().append( "<div id='"+ tree.id +"-current-selected' class='single_current_selected ico-search-m'><div class='empty-text'>"+tree.getRootNode().text+"</div></div>" );
-								
 
 				$("#" + tree.id + '-textfilter').closest('.x-panel-tbar').focusin(function(e) {
+					
+					// flag class to check if the input has the focus
+					$("#" + tree.id + '-textfilter').addClass("filter-has-focus");
+					
+					// hide the selection, show the filter and set the focus to the textfilter input 
 					$("#" + tree.id + '-textfilter').show();
 					$("#" + tree.id + '-textfilter').select();
 					$("#" + tree.id + '-current-selected').hide();
 
-					setTimeout(function(){					
+					// show the tree and position it just below the text filter 
+					setTimeout(function(){
 						tree.body.show();
 						var top = $("#"+tree.tbar.id).offset().top + $("#"+tree.tbar.id).height();
 						$("#"+tree.body.id).css({top: top+'px'});
@@ -224,36 +232,27 @@ og.MemberTreeAjax = function(config) {
 				});
 				
 				$("#" + tree.id + '-textfilter').closest('.x-panel-tbar').focusout(function(e) {
-					if(!tree.body.hasClass( "have-focus" )){				 			
-				 			$("#" + tree.id + '-textfilter').hide();
-				 			$("#" + tree.id + '-current-selected').show();
+					
+					// only show selection and hide filter if filter input has lost its focus
+					if(!$("#" + tree.id + '-textfilter').hasClass("filter-has-focus")){
+						$("#" + tree.id + '-textfilter').hide();
+			 			$("#" + tree.id + '-current-selected').show();
 				 	}
+					
 				 	setTimeout(function(){
+				 		// hide tree if the tree has lost its focus (selecting a node or clicking outside)
 				 		if(!tree.body.hasClass( "have-focus" )){
 				 			tree.body.hide();
 				 			tree.clearFilter();
-				 					 			
-				 			$("#" + tree.id + '-textfilter').val("");
-				 			
 				 		}
+				 		// after losing focus of the tree remove the flag of the filter so it can be hidden and the current selection can be shown
+				 		$("#" + tree.id + '-textfilter').val("");
+				 		$("#" + tree.id + '-textfilter').removeClass("filter-has-focus");
+				 		
 				 	}, 300);			 	
 				});
 				
-				var cont = $("#"+this.body.id);
-				cont.attr("tabindex", -1);
-				cont.focusin(function() {
-						cont.addClass("have-focus");
-					});
-				cont.focusout(function() {
-				 	cont.removeClass("have-focus");
-				 	setTimeout(function(){
-				 		tree.body.hide();
-				 		tree.clearFilter();
-				 		$("#" + tree.id + '-textfilter').val("");
-				 		$("#" + tree.id + '-textfilter').hide();
-			 			$("#" + tree.id + '-current-selected').show();
-				 	}, 200);			 	
-				});	
+				
 			}else{
 				$("#"+this.tbar.id).focusin(function() {
 					
@@ -289,21 +288,22 @@ og.MemberTreeAjax = function(config) {
 				 	}, 300);			 	
 				});
 				
-				var cont = $("#"+this.body.id);
-				cont.attr("tabindex", -1);
-				cont.focusin(function() {
-						cont.addClass("have-focus");
-					});
-				cont.focusout(function() {
-				 	cont.removeClass("have-focus");
-				 	setTimeout(function(){
-				 		tree.body.hide();
-				 		tree.clearFilter();
-				 		$("#" + tree.id + '-textfilter').val("");			 		
-				 	}, 200);			 	
-				});	
-			}			
-						
+			}
+			
+			// same events for both kind of trees, mark with "have-focus" class when the tree is displayed and remove this flag class when the focus is lost
+			var cont = $("#"+this.body.id);
+			cont.attr("tabindex", -1);
+			cont.focusin(function() {
+				cont.addClass("have-focus");
+			});
+			cont.focusout(function() {
+				cont.removeClass("have-focus");
+				setTimeout(function(){
+					tree.body.hide();
+					tree.clearFilter();
+					$("#" + tree.id + '-textfilter').val("");
+				}, 200);
+			});
 		}
 	});
 	

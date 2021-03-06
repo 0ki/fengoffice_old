@@ -504,12 +504,23 @@ og.TasksTopToolbar = function(config) {
 
 					var url = og.getUrl('account', 'update_user_preference', {name: 'tasksShowDimensionCols', value:ogTasks.userPreferences.showDimensionCols.toString()});
 					og.openLink(url,{hideLoading:true});
+					
+					if (ogTasks.userPreferences.showDimensionCols.indexOf(parseInt(this.value)) != -1) {
+						og.breadcrumbs_skipped_dimensions[this.value] = this.value.toString();
+					} else {
+						og.breadcrumbs_skipped_dimensions[this.value] = 0;
+					}
+					
 					ogTasks.redrawGroups = false;
 					ogTasks.draw();
-					ogTasks.redrawGroups = true;			
-				}				
+					ogTasks.redrawGroups = true;
+				}
 			});
-			og.breadcrumbs_skipped_dimensions[did] = did;
+			if (ogTasks.userPreferences.showDimensionCols.indexOf(parseInt(did)) != -1) {
+				og.breadcrumbs_skipped_dimensions[did] = did;
+			} else {
+				og.breadcrumbs_skipped_dimensions[did] = 0;
+			}
 		}
 	}
 	

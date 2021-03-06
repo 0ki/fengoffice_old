@@ -2524,7 +2524,8 @@ og.reload_subscribers = function(genid, object_type_id, user_ids) {
 		var uids = user_ids;
 	}
 	
-	Ext.get(genid + 'add_subscribers_content').mask();
+	var subs = Ext.get(genid + 'add_subscribers_content');
+	if (subs) subs.mask();
 	
 	og.openLink(og.getUrl('object', 'render_add_subscribers', {
 		context: Ext.util.JSON.encode(member_selector[genid].sel_context),
@@ -2927,7 +2928,7 @@ og.render_modal_form = function(genid, options) {
 					//$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
 					
 					// first execution sometimes fails to center the modal
-					var offset = $(".simplemodal-data").offset();
+					/*var offset = $(".simplemodal-data").offset();
 					if (offset.top == 0) {
 						setTimeout(function(){
 							var h = $(".simplemodal-data").innerHeight();
@@ -2937,7 +2938,12 @@ og.render_modal_form = function(genid, options) {
 								$(".simplemodal-container").css({top: Math.floor(d/2) + 'px'});
 							}
 						}, 100);
-					}
+					}*/
+					
+					// adjust container height
+					$(".simplemodal-container .simplemodal-wrap").css('min-height', ($("#simplemodal-data").outerHeight()+20)+'px');
+					$(".simplemodal-container .simplemodal-wrap").css('height', 'auto');
+					$(".simplemodal-container .simplemodal-wrap").css('overflow', '');
 					
 					// set main input width
 					og.update_modal_main_input_width();
@@ -3044,6 +3050,11 @@ og.submit_modal_form = function(form_id, callback_fn, options) {
 		hideLoading: options.hideLoading || false,
 		hideErrors: options.hideErrors || false,
 		callback: function(success, data) {
+			if (typeof(data) == "string") {
+				try {
+					data = eval(data);
+				} catch (e) {}
+			}
 			if (data.errorCode > 0) {
 				if (data.showMessage) og.err(data.errorMessage);
 				return;
