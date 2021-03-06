@@ -8,7 +8,7 @@ require_javascript('og/tasks/task_dependencies.js');
 if (isset($task_list) && ($task_list instanceof ProjectTask || $task_list instanceof TemplateTask)) {
 	if (!$task_list->isTrashed()){
 		if($task_list->canEdit(logged_user())) {
-			add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit', null, null, true);
+			add_page_action(lang('edit'), "javascript:og.render_modal_form('', {c:'task', a:'edit_task', params: {id:".$task_list->getId().",template_task:1}});", 'ico-edit', null, null, true);
 		} // if
 	}
 

@@ -45,7 +45,7 @@ og.addPreviousTask = function(before, obj, genid) {
 	div.innerHTML =
 		'<input type="hidden" name="task[previous]['+og.previousTasksIdx+']" value="' + obj.object_id + '" />' +
 		'<div class="previous-task-name action-ico ico-'+ type +'">' + og.clean(obj.name) + '</div>' +
-		'<a href="#" onclick="og.removePreviousTask(this.parentNode, \''+genid+'\', '+og.previousTasksIdx+')" class="removeDiv link-ico ico-delete" style="display: block;">'+lang('remove')+'</a>';
+		'<a href="#" onclick="og.removePreviousTask(this.parentNode, \''+genid+'\', '+og.previousTasksIdx+')" class="removeDiv link-ico ico-delete" style="display: block;">'+lang('remove')+'</a><div class="clear"></div>';
 	var label = document.getElementById(genid + 'no_previous_selected');
 	if (label) label.style.display = 'none';
 	parent.insertBefore(div, before);

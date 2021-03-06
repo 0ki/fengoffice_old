@@ -564,7 +564,7 @@
 	    		$("#user_role_div").remove();
 
 		    	<?php if (count($all_user_groups) > 0) { ?>
-		    		var groups_store_tmp = Ext.util.JSON.decode('<?php echo json_encode($all_user_groups);?>');
+		    		var groups_store_tmp = Ext.util.JSON.decode('<?php echo str_replace("'", "\'", json_encode($all_user_groups));?>');
 		    		var groups_store = [];
 		    		for (x in groups_store_tmp) {
 		    			groups_store.push([groups_store_tmp[x].id, groups_store_tmp[x].name]);

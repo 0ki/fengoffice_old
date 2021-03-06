@@ -753,3 +753,12 @@ button.add-first-btn.no-tasks-add-task-btn {
     vertical-align: middle;
     width: 35px;
 }
+
+.sub-section-div {
+	margin: 10px 0;
+	border-top: 1px solid #ccc;
+}
+.sub-section-div h2 {
+	color: #333;
+	margin: 10px 0;
+}

@@ -17,11 +17,11 @@ if (!isset($attr)) $attr = "";
 	
 	<td>
 		<?php 
-		$email_attrs = array('to' => clean($linked_object->getEmail()));
+		$email_attrs = array('to' => clean($linked_object->getEmailAddress()));
 		if ($linked_objects_object instanceof ProjectTask) {
 			$email_attrs['link_to_objects'] = 'ProjectTasks-' . $linked_objects_object->getId();
 		}?>
-		<a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', $email_attrs) . '"' : 'target="_self" href="mailto:' . clean($linked_object->getEmail()) . '"' ?>><?php echo clean($linked_object->getEmail());?></a></td>
+		<a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', $email_attrs) . '"' : 'target="_self" href="mailto:' . clean($linked_object->getEmailAddress()) . '"' ?>><?php echo clean($linked_object->getEmailAddress());?></a></td>
 	
 	<td style="text-align:right;">
 		<?php if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 

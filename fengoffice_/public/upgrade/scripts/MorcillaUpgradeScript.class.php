@@ -110,7 +110,7 @@ class MorcillaUpgradeScript extends ScriptUpgraderScript {
 		
 		$v_from = array_var($_POST, 'form_data');
 		$original_version_from = array_var($v_from, 'upgrade_from', $installed_version);
-		if (version_compare($installed_version, $this->getVersionFrom()) <= 0 && version_compare($original_version_from, '2.0.0.0-beta') > 0
+		if (false && version_compare($installed_version, $this->getVersionFrom()) <= 0 && version_compare($original_version_from, '2.0.0.0-beta') > 0
 			 && (!isset($_SESSION['from_feng1']) || !$_SESSION['from_feng1'])) {
 			// upgrading from a version lower than this script's 'from' version
 			$upgrade_script = tpl_fetch(get_template_path('db_migration/2_4_morcilla'));

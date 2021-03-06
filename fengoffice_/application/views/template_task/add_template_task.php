@@ -15,11 +15,13 @@
 		$form_url = $task->getEditListUrl();
 	}
 	
+	if (!isset($additional_onsubmit)) $additional_onsubmit = "";
+	
 	// on submit functions
 	if (array_var($_REQUEST, 'modal')) {
-		$on_submit = "og.setDescription(); og.submit_modal_form('".$genid."submit-edit-form', ogTasks.drawTaskRowAfterEdit); return false;";
+		$on_submit = "og.setDescription(); og.submit_modal_form('".$genid."submit-edit-form', og.redrawTemplateObjectsLists); return false;";
 	} else {
-		$on_submit = "return App.modules.addTaskForm.checkSubmitAddTask('".$genid."','". $task->manager()->getObjectTypeId()."') && og.setDescription()". 
+		$on_submit = "return App.modules.addTaskForm.checkSubmitAddTask('".$genid."','". $task->manager()->getObjectTypeId()."') && og.setDescription()". ($additional_onsubmit != "" ? " && $additional_onsubmit" : "").
 		((array_var($task_data, 'multi_assignment') && Plugins::instance()->isActivePlugin('crpm')) ? "&& typeof('og.TaskMultiAssignment')=='function' ? og.TaskMultiAssignment() : true" : "").";";
 	}
     
@@ -29,7 +31,7 @@
 		require_javascript('og/tasks/task_dependencies.js');
 	}
 	
-	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType($object->getObjectTypeId()) > 0;
+	$has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId()) > 0;
 	
 	$categories = array(); Hook::fire('object_edit_categories', $task, $categories);
 	
@@ -88,6 +90,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	<input id="<?php echo $genid?>view_add" type="hidden" name="view_add" value="true" />
 	<input id="<?php echo $genid?>control_dates" type="hidden" name="control_dates" value="false" />
 	<input id="<?php echo $genid?>template_id" type="hidden" name="template_id" value="<?php echo $template_id ?>" />
+	<input id="<?php echo $genid?>additional_tt_params" type="hidden" name="additional_tt_params" value="<?php echo str_replace('"', "'", $additional_tt_params)?>" />
         
 	
 
@@ -96,21 +99,16 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 		<ul id="<?php echo $genid?>tab_titles">
 			
-			<li><a href="#<?php echo $genid?>add_task_more_div"><?php echo lang('task data') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_task_desc_div"><?php echo lang('details') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_reminders_div"><?php echo lang('object reminders') ?></a></li>
-			<li><a href="#<?php echo $genid?>task_repeat_options_div"><?php echo lang('repeating task') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_task_subtasks_div"><?php echo lang('subtasks') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_basic_div"><?php echo lang('basic data') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_desc_div"><?php echo lang('description') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_more_details_div"><?php echo lang('more details') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			
+			<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
-			
-			<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
-			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
-			<?php } ?>
 			
 			<?php foreach ($categories as $category) { ?>
 			<li><a href="#<?php echo $genid . $category['id'] ?>"><?php echo $category['name'] ?></a></li>
@@ -118,7 +116,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</ul>
 		
 	
-	<div id="<?php echo $genid ?>add_task_more_div" class="task-data form-tab">
+	<div id="<?php echo $genid ?>add_task_basic_div" class="task-data form-tab">
 	<div class="left-section">
 	
 		<div class="dataBlock">
@@ -203,6 +201,18 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			}
 		?>
 		
+		
+		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<div id="<?php echo $genid ?>add_custom_properties_div">
+			<div id="<?php echo $genid ?>not_required_custom_properties_container">
+		    	<div id="<?php echo $genid ?>not_required_custom_properties">
+		      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
+		      	</div>
+		    </div>
+	      <?php echo render_add_custom_properties($task); ?>
+	 	</div>
+	 	<?php } ?>
+		
   	</div>
   	
   	<div class="right-section">
@@ -244,7 +254,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     		<?php if (isset($task_data['parent_id'])&& $task_data['parent_id'] == 0) {?>
     			    			    			
     			<span id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
-    			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a>
+    			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a>
     			
     		<?php }else{
     			if(array_var($_GET, 'template_task', false)){
@@ -255,7 +265,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
  				
  				if ($parentTask instanceof ProjectTask || $parentTask instanceof TemplateTask){?>
  				<span style="display: none;" id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
-    			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a> 
+    			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a> 
 				<div class="og-add-template-object">
 					<input type="hidden" name="task[parent_id]" value="<?php echo $parentTask->getId() ?>" />
     				<div class="parent-task-name action-ico ico-task"> <?php echo $parentTask->getTitle() ?> </div>
@@ -268,13 +278,14 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		<?php if (config_option('use tasks dependencies')) { ?>
 		<div class="dataBlock">
-		<?php echo label_tag(lang('previous tasks')) ?>
+		<?php echo label_tag(lang('previous tasks')) ?><br />
 		<?php 	
 			if (!$task->isNew())
 				$previous_tasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '.$task->getId()));
 			else $previous_tasks = array();
 		?>
 			<div>
+				<div>
 			<?php if (count($previous_tasks) == 0) { ?>
 				<span id="<?php echo $genid?>no_previous_selected"><?php echo lang('none') ?></span>
 				<script>if (!og.previousTasks) og.previousTasks = []; og.previousTasksIdx = og.previousTasks.length;</script>
@@ -285,6 +296,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 					og.previousTasksIdx = '<?php echo count($previous_tasks)?>';
 				</script>
 				<input type="hidden" name="task[clean_dep]" value="1" />
+				
 				<?php 
 					foreach ($previous_tasks as $task_dep) {
 						$task = TemplateTasks::findById($task_dep->getPreviousTaskId());
@@ -293,6 +305,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 						<input type="hidden" name="task[previous]['<?php echo $k?>']" value="<?php echo $task->getId()?>" />
 						<div class="previous-task-name action-ico ico-task"><?php echo clean($task->getTitle()) ?></div>
 						<a href="#" onclick="og.removePreviousTask(this.parentNode, '<?php echo $genid?>', '<?php echo $k?>')" class="removeDiv link-ico ico-delete" style="display: block;"><?php echo lang('remove') ?></a>
+						<div class="clear"></div>
 					</div>
 					<script>
 						var obj={id:'<?php echo $task_dep->getPreviousTaskId() ?>'};
@@ -302,7 +315,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<?php $k++;
 					}
 				} ?>
-				
+				</div>
 				<a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#"  
 					onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>','<?php echo $template_id?>')"><?php echo lang('add previous task') ?></a>
 				
@@ -369,14 +382,14 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 			og.setDescription = function() {
 				var form = Ext.getDom('<?php echo $genid ?>submit-edit-form');
-				if (form.preventDoubleSubmit) return false;
+				if (form && form.preventDoubleSubmit) return false;
 
 				setTimeout(function() {
-					form.preventDoubleSubmit = false;
+					if (form) form.preventDoubleSubmit = false;
 				}, 2000);
 
 				var editor = og.getCkEditorInstance('<?php echo $genid ?>ckeditor');
-				form['task[text]'].value = editor.getData();
+				if (form) form['task[text]'].value = editor.getData();
 
 				return true;
 			};
@@ -400,28 +413,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			};
 		</script>
 	<?php }?>
-  	</div>
-  	
-  	
-  	<div id="<?php echo $genid ?>add_task_subtasks_div" class="form-tab">
-  	
-		<div class="dataBlock">
-			<?php echo checkbox_field('task[apply_assignee_subtasks]', false, array('id' => $genid . 'taskFormApplyAssignee')) ?>
-			<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox" style="font-weight:normal;margin-right:5px;"><?php echo lang('apply assignee to subtasks') ?></label>
-			<div class="clear"></div>
-		</div>
+	</div>
+
+  	<div id="<?php echo $genid ?>add_task_more_details_div" class="task-data form-tab">
 		
-  		<div id="<?php echo $genid ?>subtasks" class="subtasks-container">
-  		</div>
-  		<div class="add-subtask-container">
-  			<a href="#" class="link-ico ico-add" onclick="ogTasks.drawAddSubTaskInputs('<?php echo $genid?>')"><?php echo lang('add sub task')?></a>
-  			<a href="#" class="link-ico ico-undo" onclick="ogTasks.undoRemoveSubtasks('<?php echo $genid?>')" style="display:none;margin-left:20px;" id="<?php echo $genid?>undo_remove"><?php echo lang('undo remove subtasks')?></a>
-  		</div>
-  		
-  	</div>
-  	
-	
-		<div id="<?php echo $genid ?>add_reminders_div" class="form-tab">
+		<div class="reminders-div sub-section-div" style="border-top:0px none;">
+			<h2><?php echo lang('object reminders')?></h2>
 			<div id="<?php echo $genid ?>add_reminders_content">
 				<?php 
 				$render_defaults = false;
@@ -433,7 +430,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			</div>
 		</div>
 		
-		<div id="<?php echo $genid ?>task_repeat_options_div" class="form-tab">
+		<div class="repeat-options-div sub-section-div">
+			<h2><?php echo lang('repeating task')?></h2>
 		<?php
 			if(!$task->isCompleted()){
 				$occ = array_var($task_data, 'occ');
@@ -533,8 +531,56 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			echo lang('option repetitive task completed');
 		}?>
 		</div>
-  
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+	
+		
+		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
+		<div class="linked-objects-div sub-section-div">
+			<h2><?php echo lang('linked objects')?></h2>
+			<div id="<?php echo $genid ?>add_linked_objects_div">
+		<?php
+			$pre_linked_objects = null;
+			if (isset($from_email) && $from_email instanceof MailContent) {
+				$pre_linked_objects = array($from_email);
+				$attachments = $from_email->getLinkedObjects();
+				foreach ($attachments as $att) {
+					if ($att instanceof ProjectFile) {
+						$pre_linked_objects[] = $att;
+					}
+				}
+			}
+			echo render_object_link_form($task, $pre_linked_objects)
+		
+		?>
+			</div>
+		</div>
+	<?php } // if ?>
+	
+		<div class="subtasks-div sub-section-div">
+			<h2><?php echo lang('subtasks')?></h2>
+			<div id="<?php echo $genid ?>add_task_subtasks_div">
+  	
+				<div class="dataBlock">
+					<?php echo checkbox_field('task[apply_assignee_subtasks]', false, array('id' => $genid . 'taskFormApplyAssignee')) ?>
+					<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox" style="font-weight:normal;margin-right:5px;"><?php echo lang('apply assignee to subtasks') ?></label>
+					<div class="clear"></div>
+				</div>
+				
+		  		<div id="<?php echo $genid ?>subtasks" class="subtasks-container">
+		  		</div>
+		  		<div class="add-subtask-container">
+		  			<a href="#" class="link-ico ico-add" onclick="ogTasks.drawAddSubTaskInputs('<?php echo $genid?>')"><?php echo lang('add sub task')?></a>
+		  			<a href="#" class="link-ico ico-undo" onclick="ogTasks.undoRemoveSubtasks('<?php echo $genid?>')" style="display:none;margin-left:20px;" id="<?php echo $genid?>undo_remove"><?php echo lang('undo remove subtasks')?></a>
+		  		</div>
+		  		
+		  	</div>
+		</div>
+		
+  	</div>
+  	
+  	
+  	
+  	  
+		<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
 		    	<div id="<?php echo $genid ?>not_required_custom_properties">
@@ -565,24 +611,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			</div>
 		</div>
 	
-	<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
-		<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div" class="form-tab">
-		<?php
-			$pre_linked_objects = null;
-			if (isset($from_email) && $from_email instanceof MailContent) {
-				$pre_linked_objects = array($from_email);
-				$attachments = $from_email->getLinkedObjects();
-				foreach ($attachments as $att) {
-					if ($att instanceof ProjectFile) {
-						$pre_linked_objects[] = $att;
-					}
-				}
-			}
-			echo render_object_link_form($task, $pre_linked_objects)
-		
-		?>
-		</div>
-	<?php } // if ?>
+	
 	
 	<?php foreach ($categories as $category) { ?>
 		<div id="<?php echo $genid . $category['id'] ?>" class="form-tab">
@@ -829,22 +858,26 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}
 	?>
 
-	og.pickParentTask = function(before) {
+	og.pickParentTemplateTask = function(before, genid, task_id, template_id) {
+		var extra_list_params = {
+				template_id:template_id
+		};
 		og.ObjectPicker.show(function (objs) {
 			if (objs && objs.length > 0) {
 				var obj = objs[0].data;
 				if (obj.type != 'template_task') {
 					og.msg(lang("error"), lang("object type not supported"), 4, "err");
 				} else {
-					og.addParentTask(this, obj);
+					og.addParentTask(this, obj, genid);
 				}
 			}
 		}, before, {
 			types: ['template_task'],
-			selected_type: 'template_task'
-		},"",<?php echo $task->getId()? $task->getId():0;?>);
+			selected_type: 'template_task',
+			extra_list_params : extra_list_params
+		},'', task_id);
 	};
-
+	
 	og.addParentTask = function(before, obj) {
 		var parent = before.parentNode;
 		var count = parent.getElementsByTagName('input').length;
@@ -908,7 +941,20 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		$("#<?php echo $genid?>tabs").tabs();
 
+		setTimeout(function() {
+			var w = 20;
+			var tabs = $("#<?php echo $genid?>tabs .ui-tabs-anchor");
+			for (x=0; x<tabs.length; x++) {
+				var t = tabs[x];
+				w += $(t).outerWidth() + 5;
+			}
+			
+			$("#<?php echo $genid?>tabs").css({'min-width': w+'px'});
+			$("#<?php echo $genid?>tabs").parent().css({'overflow-x': 'auto'});
+		}, 100);
+
 		$("#ogTasksPanelATTitle").focus();
+
 	});
 	
 </script>

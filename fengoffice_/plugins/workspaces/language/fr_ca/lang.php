@@ -14,5 +14,5 @@
 	'user config option name lp_dim_tags_show_as_column' => 'Voir les étiquettes dans une colonne séparée',
 	'user config option desc lp_dim_tags_show_as_column' => 'Voir les étiquettes dans une colonne séparée et pas à côté de l’objet dans la liste.',
 	'add a new member in workspaces' => 'Ajouter un espace de travail',
-	'add a new member in tags' => 'ajouter une étiquette',
+	'add a new member in tags' => 'Ajouter une étiquette',
 ); ?>

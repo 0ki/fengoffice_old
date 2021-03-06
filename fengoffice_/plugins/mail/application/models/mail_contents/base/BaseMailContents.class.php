@@ -110,9 +110,9 @@ abstract class BaseMailContents extends ContentDataObjects {
     * @param void
     * @return array
     */
-    /*function getExternalColumns() {
-      return array('created_by_id');
-    }*/ // getExternalColumns
+    function getExternalColumns() {
+      return array('to', 'cc', 'bcc', 'body_plain', 'body_html');
+    } // getExternalColumns
 	
 	/**
     * Return report object title columns

@@ -200,9 +200,8 @@
 </form>
 
 <script>
-
-
-
+	og.member_is_new = <?php echo ($member->isNew() ? "1" : "0")?>;
+	
 	og.prev_parent = null;
 	var genid = '<?php echo $genid?>';
 	

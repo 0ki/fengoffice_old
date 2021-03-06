@@ -370,8 +370,13 @@ function core_dimensions_after_update($object, &$ignored) {
 			$depth = $member->getDepth();
 			if ($object->getCompanyId() > 0) {
 				$pmember = Members::findOne(array('conditions' => '`object_id` = '.$object->getCompanyId().' AND `object_type_id` = '.$company_ot->getId(). ' AND `dimension_id` = '.$person_dim->getId()));
-				$member->setParentMemberId($pmember->getId());
-				$member->setDepth($pmember->getDepth() + 1);
+				if ($pmember instanceof Member) {
+					$member->setParentMemberId($pmember->getId());
+					$member->setDepth($pmember->getDepth() + 1);
+				} else {
+					$member->setDepth(1);
+					$member->setParentMemberId(0);
+				}
 			}else{
 				//Is first level 
 				$member->setDepth(1);

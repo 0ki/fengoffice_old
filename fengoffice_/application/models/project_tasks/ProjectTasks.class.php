@@ -47,8 +47,15 @@ class ProjectTasks extends BaseProjectTasks {
 		));
 
 		$objects = $result->objects;
-
-		return $objects;
+		
+		$tasks = array();
+		foreach ($result->objects as $task) {
+			if ($task->canView(logged_user())) {
+				$tasks[] = $task;
+			}
+		}
+		
+		return $tasks;
 	}
 	
 	/**

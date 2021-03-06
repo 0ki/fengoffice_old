@@ -218,20 +218,12 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 	
 		<ul id="<?php echo $genid?>tab_titles">
 		
-			<li><a href="#<?php echo $genid?>time_and_duration"><?php echo lang('event details') ?></a></li>
-			<li><a href="#<?php echo $genid?>event_repeat_options_div"><?php echo lang('CAL_REPEATING_EVENT') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_reminders_div"><?php echo lang('object reminders') ?></a></li>
+			<li><a href="#<?php echo $genid?>time_and_duration"><?php echo lang('basic data') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_more_details_div"><?php echo lang('more details') ?></a></li>
+			
 			<li><a href="#<?php echo $genid?>add_event_invitation_div"><?php echo lang('event invitations') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
-			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
-			<?php } ?>
-			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
-			
-			<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
-			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
-			<?php } ?>
 			
 			<?php foreach ($categories as $category) { ?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
@@ -315,11 +307,31 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 			<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'rows' => '5', 'style' => "width:500px;"));?>
 		  </div>
 		  <div class="clear"></div>
+		  
+		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		  <div id="<?php echo $genid ?>add_custom_properties_div">
+			<?php echo render_object_custom_properties($object, false) ?>
+			<?php echo render_add_custom_properties($object);?>
+		  </div>
+		<?php } ?>		  
+		  
 		</div>
 		
+		<div id="<?php echo $genid ?>add_more_details_div"  class="form-tab">
 		
+		  <div class="reminders-div sub-section-div" style="border-top:0px none;">
+			<h2><?php echo lang('object reminders')?></h2>
+			<div id="<?php echo $genid ?>add_reminders_content">
+				<div id="<?php echo $genid ?>add_reminders_warning" class="desc" style="display:none;">
+					<?php echo lang('reminders will not apply to repeating events') ?>
+				</div>
+				<?php echo render_add_reminders($object, "start", null, null, "event");?>
+			</div>
+		  </div>
 		
-		<div id="<?php echo $genid ?>event_repeat_options_div" class="form-tab">
+		  <div class="repeat-options-div sub-section-div">
+			<h2><?php echo lang('CAL_REPEATING_EVENT')?></h2>
+			<div id="<?php echo $genid ?>event_repeat_options_div">
 <?php 
 			$occ = array_var($event_data, 'occ'); 
 			$rsel1 = array_var($event_data, 'rsel1'); 
@@ -464,26 +476,18 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
                                     </td>
                                 </tr>
 			</table>
-		
-	</div>
-	
-
-	<div id="<?php echo $genid ?>add_reminders_div"  class="form-tab">
-		<div id="<?php echo $genid ?>add_reminders_warning" class="desc" style="display:none;">
-			<?php echo lang('reminders will not apply to repeating events') ?>
 		</div>
-		<?php echo render_add_reminders($object, "start", null, null, "event");?>
+	  </div>
+	  
+	  <div class="linked-objects-div sub-section-div">
+		<h2><?php echo lang('linked objects')?></h2>
+		<div id="<?php echo $genid ?>add_linked_objects_div">
+		  <?php echo render_object_link_form($object) ?>
+  		</div>
+	  </div>
 	</div>
+
 	
-	<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
-	<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
-	<fieldset>
-	<legend><?php echo lang('custom properties')?></legend>
-		<?php echo render_object_custom_properties($object, false) ?>
-		<?php echo render_add_custom_properties($object);?>
-	</fieldset>
-	</div>
-	<?php } ?>
 	
 	<div id="<?php echo $genid ?>add_subscribers_div" class="form-tab">
 		<?php $subscriber_ids = array();
@@ -499,10 +503,6 @@ $has_custom_properties = CustomProperties::countAllCustomPropertiesByObjectType(
 	</div>
 	
 
-	<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div" class="form-tab">
-		<?php echo render_object_link_form($object) ?>
-	</div>
-	
 	<div id="<?php echo $genid ?>add_event_invitation_div" class="og-add-subscribers form-tab">
 	
 		<div class="dataBlock">

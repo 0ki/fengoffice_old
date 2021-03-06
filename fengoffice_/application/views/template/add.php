@@ -51,7 +51,8 @@
 			<br/>
 			<div class="db-ico ico-task" style="float: left;"></div>
 			
-			<a id="<?php echo $genid ?>add_template_task" class='internalLink dashboard-link' href="#" onmousedown="og.openLink(og.getUrl('task', 'add_task', {template_task:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}), {caller:'new_task_template'});" onclick="Ext.getCmp('tabs-panel').activate('new_task_template');">
+			<?php $add_task_link_js = "og.render_modal_form('', {c:'task', a:'add_task', params: {template_task:1, template_id:". ($cotemplate->getId()? $cotemplate->getId():0) ."}});"?>
+			<a id="<?php echo $genid ?>add_template_task" class='internalLink dashboard-link' href="#" onclick="<?php echo $add_task_link_js ?>">
 		<?php echo lang('add a new task to this template') ?></a>
 		 
 		 <?php if (config_option('use_milestones')){ ?>	
@@ -117,14 +118,15 @@
 
 	for (x=0; x<og.templateObjects.length; x++) {
 		var tobj = og.templateObjects[x];
-		if (tobj.type == 'task') og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[tobj.object_id]).dom, tobj);
+		if (tobj.type == 'task' && tobj.object_id) og.drawTemplateObjectMilestonesCombo(Ext.get(og.add_template_input_divs[tobj.object_id]).dom, tobj);
 	}
 
 	og.redrawTemplateObjectsLists = function(data){
-		if(data.type == "template_task"){
-			og.redrawTemplateTaskList(data);
+		obj = data.object ? data.object : data;
+		if(obj.type == "template_task"){
+			og.redrawTemplateTaskList(obj);
 		}else if(data.type == "template_milestone"){
-			og.redrawTemplateMilestoneList(data);
+			og.redrawTemplateMilestoneList(obj);
 		}
 		
 	}
@@ -222,7 +224,7 @@
 			
 	og.editTempObj = function(id, type){
 		if(type == "template_task"){
-			og.openLink(og.getUrl('task', 'edit_task', {id: id, template_task:1, template_id:<?php echo $cotemplate->getId()? $cotemplate->getId():0 ?>}), {caller:'new_task_template'});
+			og.render_modal_form('', {c:'task', a:'edit_task', params: {id: id, template_task:1, template_id:<?php echo $cotemplate->getId() ? $cotemplate->getId():0 ?>}});
 		}else if(type == "template_milestone"){
 			og.openLink(og.getUrl('milestone', 'edit', {id: id, template_milestone:1}), {caller:'new_task_template'});
 		}
@@ -235,6 +237,5 @@
 			og.openLink(og.getUrl('milestone', 'edit', {id: id, template_milestone:1}), {caller:'new_task_template'});
 		}
 	}
-	
 	
 </script>

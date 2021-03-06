@@ -73,7 +73,7 @@
 	'can manage workspaces' => 'Peut gérer les espaces de travail',
 	'can manage configuration' => 'Peut gérer la configuration',
 	'can manage contacts' => 'Peut gérer les contacts',
-	'group users' => 'Groupe d\'utilisateurs',
+	'group users' => 'Groupes utilisateurs',
 	'update people' => 'Modifier',
 	'remove user from project' => 'Retirer de l\'espace de travail',
 	'remove company from project' => 'Retirer de l\'espace de travail',

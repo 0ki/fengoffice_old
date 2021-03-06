@@ -260,47 +260,14 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 	
 	Ext.reg('typefilter', TypeFilter);
 	
-	og.ObjectPicker.superclass.constructor.call(this, Ext.apply(config, {
-		y: 50,
-		width: 640,
-		height: 480,
-		id: 'object-picker',
-		layout: 'border',
-		modal: true,
-		closeAction: 'close',
-		iconCls: 'op-ico',
-		title: lang('select an object'),
-		buttons: [{
-			text: lang('ok'),
-			handler: this.accept,
-			scope: this
-		},{
-			text: lang('cancel'),
-			handler: this.cancel,
-			scope: this
-		}],
-		items: [
-			{
-				region: 'center',
-				layout: 'fit',
-				tbar: [
-					/*{
-						text: lang('view'),
-			            tooltip: lang('view desc'),
-			            iconCls: 'op-ico-view',
-						menu: {items: [
-							{text: lang('details'), iconCls: 'op-ico-details', handler: function() {
-								alert('details');
-							}},
-							{text: lang('icons'), iconCls: 'op-ico-icons', handler: function() {
-								alert('icons');
-							}}
-						]}
-					},*/{
+	var hideUploadButton = config.hideUploadButton || og.preferences.link_objects_hide_upload_button;
+	
+	var tbarItems = [
+	                 {
 						text: lang('upload'),
 			            tooltip: lang('quick upload desc'),
 			            iconCls: 'ico-upload',
-			            hidden: (og.preferences.link_objects_hide_upload_button ? og.preferences.link_objects_hide_upload_button : false),
+			            hidden: (hideUploadButton ? hideUploadButton : false),
 			            handler: function() {
 							var quickId = Ext.id();
 							var picker = this;
@@ -371,7 +338,38 @@ og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_contex
 						},
 						scope: this
 					}
-				],
+    ];
+	
+	if (config.more_tbar_items) {
+		for (var i=0; i<config.more_tbar_items.length; i++) {
+			tbarItems.push(config.more_tbar_items[i]);
+		}
+	}
+	
+	og.ObjectPicker.superclass.constructor.call(this, Ext.apply(config, {
+		y: 50,
+		width: 640,
+		height: 480,
+		id: 'object-picker',
+		layout: 'border',
+		modal: true,
+		closeAction: 'close',
+		iconCls: 'op-ico',
+		title: lang('select an object'),
+		buttons: [{
+			text: lang('ok'),
+			handler: this.accept,
+			scope: this
+		},{
+			text: lang('cancel'),
+			handler: this.cancel,
+			scope: this
+		}],
+		items: [
+			{
+				region: 'center',
+				layout: 'fit',
+				tbar: tbarItems,
 				items: [
 					this.grid = new Grid()
 				]

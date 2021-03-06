@@ -425,6 +425,11 @@ class Reports extends BaseReports {
 									$results['columns'][$field] = lang('field Objects '.$field);
 									$results['db_columns'][lang('field Objects '.$field)] = $field;
 								}
+							} else if($ot->getHandlerClass() == 'MailContents'){
+								if (in_array($field, array('to', 'cc', 'bcc', 'body_plain', 'body_html'))){
+									$results['columns'][$field] = lang('field Objects '.$field);
+									$results['db_columns'][lang('field Objects '.$field)] = $field;
+								}
 							}
 						}
 					}
@@ -565,6 +570,27 @@ class Reports extends BaseReports {
 										if ($field == "home_address") $row_values[$field] = $contact->getStringAddress('home');
 										else if ($field == "work_address") $row_values[$field] = $contact->getStringAddress('work');
 										else if ($field == "other_address") $row_values[$field] = $contact->getStringAddress('other');
+									}
+								}
+							} else if($ot->getHandlerClass() == 'MailContents') {
+								if (in_array($field, array('to', 'cc', 'bcc', 'body_plain', 'body_html'))){
+									$mail_data = MailDatas::findById($object->getId());
+									$row_values[$field] = $mail_data->getColumnValue($field);
+									if ($field == "body_html") {
+										if (class_exists("DOMDocument")) {
+											$d = new DOMDocument;
+											$mock = new DOMDocument;
+											$d->loadHTML(remove_css_and_scripts($row_values[$field]));
+											$body = $d->getElementsByTagName('body')->item(0);
+											foreach ($body->childNodes as $child){
+												$mock->appendChild($mock->importNode($child, true));
+											}
+											// if css is inside an html comment => remove it
+											$row_values[$field] = preg_replace('/<!--(.*)-->/Uis', '', remove_css($row_values[$field]));
+											
+										} else {
+											$row_values[$field] = preg_replace('/<!--(.*)-->/Uis', '', remove_css_and_scripts($row_values[$field]));
+										}
 									}
 								}
 							}

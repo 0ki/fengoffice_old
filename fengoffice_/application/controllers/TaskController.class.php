@@ -67,18 +67,18 @@ class TaskController extends ApplicationController {
 				$duetime = getTimeValue(array_var($task_data, 'task_due_time'));
 				if (is_array($duetime)) {
 					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
-					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));					
-				}
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));	
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_due_time'] = is_array($duetime);
 			}
 			if ($task_data['start_date'] instanceof DateTimeValue) {
 				$starttime = getTimeValue(array_var($task_data, 'task_start_time'));
 				if (is_array($starttime)) {
 					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
-					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));					
-				}
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));	
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				}				
 				$task_data['use_start_time'] = is_array($starttime);
 			}
 
@@ -303,18 +303,18 @@ class TaskController extends ApplicationController {
 				$duetime = getTimeValue(array_var($task_data, 'task_due_time'));
 				if (is_array($duetime)) {
 					$task_data['due_date']->setHour(array_var($duetime, 'hours'));
-					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));					
-				}		
-				$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['due_date']->setMinute(array_var($duetime, 'mins'));	
+					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+				}					
 				$task_data['use_due_time'] = is_array($duetime);
 			}
 			if ($task_data['start_date'] instanceof DateTimeValue) {
 				$starttime = getTimeValue(array_var($task_data, 'task_start_time'));
 				if (is_array($starttime)) {
 					$task_data['start_date']->setHour(array_var($starttime, 'hours'));
-					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));					
-				}	
-				$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					$task_data['start_date']->setMinute(array_var($starttime, 'mins'));	
+					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+				}					
 				$task_data['use_start_time'] = is_array($starttime);
 			}
 				
@@ -1435,7 +1435,7 @@ class TaskController extends ApplicationController {
 						
 			$empty_milestones = ProjectMilestones::instance()->listing(array(
 					"select_columns" => array("`e`.`object_id` AS group_id ", "`name` AS group_name "),
-					"extra_conditions" => $conditions." AND `jt`.`object_id` IS NULL",
+					"extra_conditions" => " AND `jt`.`object_id` IS NULL",
 					"join_params"=> $join_params,
 					"count_results" => false,
 					"raw_data" => true,
@@ -1444,7 +1444,7 @@ class TaskController extends ApplicationController {
 			foreach($empty_milestones as $keym => $empty_milestone){
 				$empty_group = array();
 				$empty_group['group_name'] = $empty_milestone['group_name'];
-				$empty_group['id'] = $empty_milestone['group_id'];
+				$empty_group['group_id'] = $empty_milestone['group_id'];
 				$empty_group['group_icon'] = 'ico-milestone';
 				$empty_group['group_tasks'] = array();
 				$groups[] = $empty_group;
@@ -1729,10 +1729,9 @@ class TaskController extends ApplicationController {
 				$order_dir = 'ASC';
 				break;			
 		}
-		
-		
+				
 		//START tasks tree
-		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
+		$list_subtasks = user_config_option('tasksShowSubtasksStructure') && !user_config_option('show_tasks_list_as_gantt');
 		if($list_subtasks){
 			$tasks_tree = ProjectTasks::instance()->listing(array(
 					"select_columns" => array("e.object_id","e.parent_id","e.depth","e.parents_path"),
@@ -1768,9 +1767,16 @@ class TaskController extends ApplicationController {
 				"raw_data" => true,
 		))->objects;
 		
+		$task_ids = array();
 		$tasks_array = array();
 		foreach ($tasks as $task){
 			$tasks_array[] = ProjectTasks::getArrayInfo($task);
+			$task_ids[] = $task['object_id'];
+		}
+		
+		$read_objects = ReadObjects::getReadByObjectList($task_ids, logged_user()->getId());
+		foreach($tasks_array as &$data) {
+			$data['isread'] = isset($read_objects[$data['id']]);
 		}
 		
 		$return_array = array();
@@ -1847,7 +1853,7 @@ class TaskController extends ApplicationController {
 			$groups = $this->getDimensionGroups($dim_id,$conditions,$show_more_conditions,$list_subtasks_cond);
 		}
 		
-		$list_subtasks = user_config_option('tasksShowSubtasksStructure');
+		$list_subtasks = user_config_option('tasksShowSubtasksStructure') && !user_config_option('show_tasks_list_as_gantt');
 		if(!$list_subtasks){
 			foreach ($groups as &$group) {
 				$group['root_total'] = $group['total'];
@@ -2184,6 +2190,8 @@ class TaskController extends ApplicationController {
 				$template_id = 0;
 			}			
 			tpl_assign('template_id', $template_id);
+			
+			tpl_assign('additional_tt_params', array_var($_REQUEST, 'additional_tt_params'));
 		}
 		
 		if (logged_user()->isGuest()) {
@@ -2275,6 +2283,8 @@ class TaskController extends ApplicationController {
 					tpl_assign('from_email', $email);
 				}
 			}
+			
+			tpl_assign('additional_onsubmit', array_var($_REQUEST, 'additional_onsubmit'));
 			
 		} // if
 		
@@ -2492,8 +2502,17 @@ class TaskController extends ApplicationController {
 					$ico = "ico-task";
 					$action = "add";
 					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId, $subTasks, $parentId, $ico);
-															
-					evt_add("template object added", $object);
+					
+					$template_task_data = array('object' => $object);
+					
+					if (array_var($_REQUEST, 'additional_tt_params')) {
+						$additional_tt_params = json_decode(str_replace("'", '"', array_var($_REQUEST, 'additional_tt_params')), true);
+						foreach ($additional_tt_params as $k=>$v) $template_task_data[$k] = $v;
+					}
+					
+					if (!array_var($_REQUEST, 'modal')) {
+						evt_add("template object added", $template_task_data);
+					}
 				}
 				$isSailent = true;
 				// notify asignee
@@ -2523,8 +2542,13 @@ class TaskController extends ApplicationController {
 					ajx_current("empty");
 					$this->setLayout("json");
 					$this->setTemplate(get_template_path("empty"));
-
-					print_modal_json_response(array('msg' => lang('success add task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST, 'reload')), true, array_var($_REQUEST, 'use_ajx'));
+					
+					$params = array('msg' => lang('success add task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST, 'reload'));
+					if ($task instanceof TemplateTask) {
+						$params['msg'] = lang('success add template', $task->getObjectName());
+						$params['object'] = $template_task_data['object'];
+					}
+					print_modal_json_response($params, true, array_var($_REQUEST, 'use_ajx'));
 					
 				} else {
 					if ($task instanceof TemplateTask) {
@@ -2716,7 +2740,10 @@ class TaskController extends ApplicationController {
 				$template_id = array_var($_REQUEST, 'template_id');
 			}else{
 				$template_id = $task->getTemplateId();
-			}			
+			}
+			
+			tpl_assign('additional_tt_params', array_var($_REQUEST, 'additional_tt_params'));
+			
 			tpl_assign('template_id', $template_id);
 			if(!($task instanceof TemplateTask)) {
 				flash_error(lang('task list dnx'));
@@ -2899,8 +2926,8 @@ class TaskController extends ApplicationController {
 					if (is_array($duetime)) {
 						$task_data['due_date']->setHour(array_var($duetime, 'hours'));
 						$task_data['due_date']->setMinute(array_var($duetime, 'mins'));
-					}
-					$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+						$task_data['due_date']->advance(logged_user()->getTimezone() * -3600);
+					}					
 					$task_data['use_due_time'] = is_array($duetime);
 				}
 				if ($task_data['start_date'] instanceof DateTimeValue) {
@@ -2908,8 +2935,8 @@ class TaskController extends ApplicationController {
 					if (is_array($starttime)) {
 						$task_data['start_date']->setHour(array_var($starttime, 'hours'));
 						$task_data['start_date']->setMinute(array_var($starttime, 'mins'));
-					}
-					$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+						$task_data['start_date']->advance(logged_user()->getTimezone() * -3600);
+					}					
 					$task_data['use_start_time'] = is_array($starttime);
 				}
 	
@@ -3177,8 +3204,17 @@ class TaskController extends ApplicationController {
 					$ico = "ico-task";
 					$action = "edit";
 					$object = TemplateController::prepareObject($objectId, $id, $objectName, $objectTypeName, $manager, $action,$milestoneId, $subTasks, $parentId, $ico);
+					
+					$template_task_data = array('object' => $object);
 						
-					evt_add("template object added", $object);
+					if (array_var($_REQUEST, 'additional_tt_params')) {
+						$additional_tt_params = json_decode(str_replace("'", '"', array_var($_REQUEST, 'additional_tt_params')), true);
+						foreach ($additional_tt_params as $k=>$v) $template_task_data[$k] = $v;
+					}
+					
+					if (!array_var($_REQUEST, 'modal')) {
+						evt_add("template object added", $template_task_data);
+					}
 				}
 				
 				try {
@@ -3202,7 +3238,7 @@ class TaskController extends ApplicationController {
 				if(array_var($task_data, 'send_notification') == 'checked') $isSailent = false;
 				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, $isSailent, true, $log_info);
 				
-				flash_success(lang('success edit task list', $task->getObjectName()));
+				//flash_success(lang('success edit task list', $task->getObjectName()));
 				if (array_var($_REQUEST, 'modal')) {
 					if (array_var($_REQUEST, 'reload')) {
 						evt_add("reload current panel");
@@ -3211,7 +3247,13 @@ class TaskController extends ApplicationController {
 						$this->setLayout("json");
 						$this->setTemplate(get_template_path("empty"));
 						
-						print_modal_json_response(array('msg' => lang('success edit task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST,'reload')), true, array_var($_REQUEST, 'use_ajx'));
+						$params = array('msg' => lang('success edit task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST, 'reload'));
+						if ($task instanceof TemplateTask) {
+							//$params['msg'] = lang('success edit template', $task->getObjectName());
+							$params['object'] = $template_task_data['object'];
+						}
+						//print_modal_json_response($params, true, array_var($_REQUEST, 'use_ajx'));
+						ajx_extra_data($params);
 					}
 						
 				} else {

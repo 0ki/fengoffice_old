@@ -73,14 +73,16 @@ class  SharingTableController extends ApplicationController {
 				$del_count = 0;
 			}
 			if ($permission->r) {
-				$read_conditions[] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) ";
-				
-				$read_count++;
-				if ($read_count >= 500) {
-					$all_read_conditions[] = $read_conditions;
-					$read_count = 0;
-					$read_conditions = array();
-				}
+				if(!isset($read_conditions[$objectTypeId."_".$memberId])){
+					$read_conditions[$objectTypeId."_".$memberId] = " ( object_type_id = '$objectTypeId' AND om.member_id = '$memberId' ) ";
+					
+					$read_count++;
+					if ($read_count >= 500) {
+						$all_read_conditions[] = $read_conditions;
+						$read_count = 0;
+						$read_conditions = array();
+					}
+				}				
 			}
 		}
 		$all_read_conditions[] = $read_conditions;

@@ -746,6 +746,7 @@ addLangs({
   	'edit object property': 'Edit object property',
   	'fixed date': 'Fixed date',
   	'parametric date': 'Parametric',
+  	'date of task creation': 'Date of task creation',
   	'no parameters in template': 'There are no date parameters defined for this template',
   	'no user parameters in template': 'There are no user parameters defined for this template',
   	'open property editor': 'Open property editor',
@@ -935,6 +936,7 @@ addLangs({
 	'select contact' : 'Select contact',
 	'viewing all information' : 'Viewing all Information',
 	'add a variable to this task': 'Add a variable to this task',
+	'add a variable to this milestone': 'Add a variable to this milestone',
 	
 	'phone number': 'Phone number',
 	'address': 'Address',

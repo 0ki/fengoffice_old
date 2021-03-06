@@ -76,6 +76,7 @@ class SharingTables extends BaseSharingTables {
 					$obj_count++;
 				}
 			}
+			set_config_option('last_sharing_table_rebuild', DateTimeValueLib::now()->toMySQL());
 			DB::commit();
 		} catch(Exception $e) {
 			DB::rollback();

@@ -31,7 +31,7 @@
 	'no projects in db' => 'Il n\'y a pas de dimensions définis dans cette base de données.',
 	'no projects owned by company' => 'Il n\'y a pas de dimensions appartenant à cette société.',
 	'no projects started' => 'Il n\'y a pas de dimensions en cours.',
-	'no active projects in db' => 'Il n\'y a pas de dimensions actifs.',
+	'no active projects in db' => 'Il n\'y a pas de dimensions actives.',
 	'no new objects in project since last visit' => 'Aucun nouvel objet dans cette dimension depuis votre dernière visite.',
 	'no clients in company' => 'Votre société n\'a aucun client enregistré.',
 	'no users in company' => 'Il n\'y a pas d\'utilisateur dans cette société.',

@@ -89,6 +89,8 @@ class CommentController extends ApplicationController {
 				ApplicationLogs::createLog($comment, ApplicationLogs::ACTION_COMMENT, false, false, true, $comment_head);
 				flash_success(lang('success add comment'));
 
+				evt_add("scroll to comment", array('comment_id' => $comment->getId()));
+				
 				ajx_current("reload");
 			} catch(Exception $e) {
 				DB::rollback();

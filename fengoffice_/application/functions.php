@@ -2037,3 +2037,68 @@ function get_associated_status_member_id($member, $dimension, $ot=null) {
 	return 0;
 }
 
+
+function instantiate_template_task_parameters(TemplateTask $object, ProjectTask $copy, $parameterValues = array()) {
+	
+	$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($object->getTemplateId(), $object->getId());
+	$manager = $copy->manager();
+	
+	foreach($objProp as $property) {
+	
+		$propName = $property->getProperty();
+		$value = $property->getValue();
+	
+		if ($manager->getColumnType($propName) == DATA_TYPE_STRING || $manager->getColumnType($propName) == DATA_TYPE_INTEGER) {
+			if (is_array($parameterValues)){
+				$is_present = false;
+				foreach($parameterValues as $param => $val){
+					if (strpos($value, '{'.$param.'}') !== FALSE) {
+						$value = str_replace('{'.$param.'}', $val, $value);
+						$is_present = true;
+					}
+				}
+				// if parameter not present replace the parameter code with empty string
+				if (!$is_present) {
+					$value = preg_replace('/[{].*[}]/U', '', $value);
+				}
+			}
+		} else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME) {
+			$operator = '+';
+			if (strpos($value, '+') === false) {
+				$operator = '-';
+			}
+			$opPos = strpos($value, $operator);
+			if ($opPos !== false) {
+				// Is parametric
+				$dateParam = substr($value, 1, strpos($value, '}') - 1);
+				if ($dateParam == 'task_creation') {
+					$date = DateTimeValueLib::now();
+					$date = $date->add('s', logged_user()->getTimezone()*3600);
+				} else {
+					$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $parameterValues[$dateParam]);
+				}
+	
+				$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
+				if($dateUnit == 'm') {
+					$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
+				}
+				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
+	
+				$date = new DateTimeValue($date->getTimestamp() - logged_user()->getTimezone()*3600);// set date to GMT 0
+				$value = $date->add($dateUnit, $dateNum);
+			}else{
+				$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
+			}
+		}
+		if($value != '') {
+			if (!$copy->setColumnValue($propName, $value)){
+				$copy->object->setColumnValue($propName, $value);
+			}
+			if ($propName == 'text' && $copy->getTypeContent() == 'text') {
+				$copy->setText(html_to_text($copy->getText()));
+			}
+			$copy->save();
+		}
+		
+	}
+}

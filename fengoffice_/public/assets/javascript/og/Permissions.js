@@ -1126,7 +1126,33 @@ og.userPermissions.onUserSelect = function(genid, arguments) {
 	}
 }
 
-og.userPermissions.drawUserListItem = function(genid, item) {
+og.userPermissions.removeAllPermissions = function(genid) {
+	og.userPermissions.permissionInfo[genid].permissions = {};
+}
+
+og.userPermissions.reload_member_permissions = function (genid, dimension_id, parent_id) {
+	if (og.member_is_new) {
+		og.openLink(og.getUrl('member', 'get_parent_permissions', {dim_id: dimension_id, parent:parent_id}), {
+			preventPanelLoad: true,
+			callback: function(success, data) {
+				if (data.perms) {
+					$("#" + genid + "_permissions_list").html("");
+					$("#" + genid + "_more_users_permissions").hide();
+					
+					og.userPermissions.removeAllPermissions(genid);
+					for (pg_id in data.perms) {
+						var p = data.perms[pg_id];
+						og.userPermissions.permissionInfo[genid].permissions[pg_id] = p;
+						og.userPermissions.drawUserListItem(genid, data.pg_data[pg_id], true);
+					}
+				}
+				
+			}
+		});
+	}
+}
+
+og.userPermissions.drawUserListItem = function(genid, item, noclick) {
 	var el = document.getElementById(genid + '_pg_' + item.pg_id);
 	if (!el) {
 		var html = '<li class="user-data" id="'+genid+'_pg_'+item.pg_id+'" onclick="og.userPermissions.showPermissionsPopup(this, \''+genid+'\');">';
@@ -1150,7 +1176,9 @@ og.userPermissions.drawUserListItem = function(genid, item) {
 		$("#" + genid + "_permissions_list").append(html);
 	}
 	
-	$("#" + genid + '_pg_' + item.pg_id).click();
+	if (!noclick) {
+		$("#" + genid + '_pg_' + item.pg_id).click();
+	}
 }
 
 

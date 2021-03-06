@@ -177,3 +177,24 @@ function core_dimensions_update_8_9() {
 	
 	}
 }
+
+function core_dimensions_update_9_10() {
+	$template_ot = ObjectTypes::findByName('template');
+	$users = Contacts::getAllUsers();
+	foreach ($users as $user) {/* @var $user Contact */
+		if (!$user->isAdminGroup()) {
+			continue;
+		}
+
+		// don't allow to write emails for collaborators and guests
+		$user_type_name = $user->getUserTypeName();
+		if ($template_ot instanceof ObjectType) {
+			DB::executeAll("UPDATE ".TABLE_PREFIX."contact_member_permissions SET can_write=1, can_delete=1 WHERE object_type_id=".$template_ot->getId()." AND permission_group_id=".$user->getPermissionGroupId());
+		}
+	}
+	
+	$pgs = PermissionGroups::findAll(array("conditions" => "`name` in ('Super Administrator','Administrator')"));
+	foreach ($pgs as $pg) {
+		DB::executeAll("UPDATE ".TABLE_PREFIX."role_object_type_permissions SET can_write=1, can_delete=1 WHERE object_type_id=".$template_ot->getId()." AND role_id=".$user->getPermissionGroupId());
+	}
+}

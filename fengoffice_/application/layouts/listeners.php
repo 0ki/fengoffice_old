@@ -10,7 +10,9 @@ og.eventManager.addListener('reload company users', function(data){
 });
 
 og.eventManager.addListener('template object added',function(data){
-	og.redrawTemplateObjectsLists(data);
+	if (data.object) {
+		og.redrawTemplateObjectsLists(data.object);
+	}
 });
 
 og.eventManager.addListener('reload member restrictions', 
@@ -421,6 +423,22 @@ og.eventManager.addListener('new user added',
  	}
 );
 
+
+og.eventManager.addListener('scroll to comment', 
+ 	function (data){
+ 		if (data && data.comment_id > 0) {
+ 	 		var interval = setInterval(function() {
+	 			var offset = $("#comment"+data.comment_id).offset();
+	 			if (offset && offset.top) {
+		 			$('.x-panel-body.x-panel-body-noheader').animate({
+		 	 			scrollTop: offset.top
+		 	 		}, 'slow');
+		 	 		clearInterval(interval);
+	 			}
+ 	 		}, 500);
+ 		}
+ 	}
+);
 
 og.eventManager.addListener('ask to assign default permissions', 
 	function (data){

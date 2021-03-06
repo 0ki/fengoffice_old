@@ -229,12 +229,13 @@ og.addFileOption = function(table, file, genid){
 	cell.style.paddingLeft = '10px';
 	var div = document.createElement('div');
 	var dateToShow = '';
-	var newDate = new Date(file.created_on*1000).add("d", 1);
+	var newDate = new Date(file.created_on * 1000);
 	var currDate = new Date();
-	if (newDate.getFullYear() != currDate.getFullYear())
+	if (newDate.getFullYear() != currDate.getFullYear()) {
 		dateToShow = newDate.format("j M Y");
-	else
+	} else {
 		dateToShow = newDate.format("j M");
+	}
 	cell.innerHTML = lang("created by on", file.created_by_name, dateToShow);
 	
 	var cell = row.insertCell(3);

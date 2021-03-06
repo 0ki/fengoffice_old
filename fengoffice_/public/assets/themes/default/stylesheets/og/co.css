@@ -869,3 +869,9 @@
 .ico-large-objectives-module, .ico-large-objectives {
 	background-image: url(../../images/48x48/objective.png);
 }
+.og-add-custom-properties {
+	margin: 12px 0;
+}
+.event .og-add-custom-properties {
+	margin-left: 200px;
+}

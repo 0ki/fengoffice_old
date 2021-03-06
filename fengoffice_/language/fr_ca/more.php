@@ -6,4 +6,7 @@
 	'learn about and manage your Feng Office' => 'Apprendre et gérer Feng Office',
 	'system module documents-panel hint' => 'Feng Office vous permet de stocker et de partager tous types de documents .',
 	'system module mails-panel hint' => 'Le client de messagerie Feng Office est un client courriel entièrement fonctionnelle , entièrement intégrée . Comme votre système de messagerie traditionnel, mais avec les avantages d\'être à l\'intérieur de Feng Office.',
+	'users groups and permissions' => 'Utilisateurs, groupes et permissions',
+	'there are x users more' => 'Il y a {0} utilisateurs de plus.',
+	'gantt chart' => 'Diagramme de Gantt',
 ); ?>

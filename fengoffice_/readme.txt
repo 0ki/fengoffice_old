@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.2.2
+	About Feng Office 3.1.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,10 +105,63 @@
 	Changelog
 	=========
 	
+	Since 3.1.2.8
+	----------------
+	bugfix: if user has no permissions to see assigned to other user tasks he/she can view them in the calendar.
+	bugfix: super admin cannot view all files.
+	bugfix: task list print does not work
+	bugfix: upgrade fix if cron event already exists
+	bugfix: remove from sharing table objects when user has no permissions to access objects without classification.
+	bugfix: when adding a workspace, client, project or folder without parent and changing the parent in the form, the permissions are not inherited.
+	feature: scroll to comment after adding one.
+	language: updaed ru_ru, fr_ca and fr_fr
+	
+	Since 3.1.2.7
+	----------------
+	bugfix: in user edition, user group names are not escaped and the form crahsed depending on the content.
+	
+	Since 3.1.2.6
+	----------------
+	perfomance: user selector on add/edit task view.
+	performance: add to sharing table
+	bugfix: add index member_id in object_members
+    bugfix: get max uid for imap folder
+	bugfix: when saving an email don't begin the transaction if it is not needed
+
+	Since 3.1.2.5
+	----------------	
+	bugfix: upgrade scripts for expenses and objectives plugins, add max permissions for executives.
+	
+	Since 3.1.2.4
+	----------------	
+	bugfix: can not select empty milestones on tasks list.
+	bugfix: when uploading an existing document, the list of files shows each file date 1 day after the real date.
+	bugfix: email due date reminders shows company name instead of due date.
+		
+	Since 3.1.2.3
+	----------------	
+	bugfix: sql error when upgrading from feng 1.7.
+	bugfix: on tasks drag and drop the task loses its description.
+	bugfix: load gantt if user config option is set to do that.
+	bugfix: show subtasks on gantt.
+	bugfix: show milestone due date on task list.
+	bugfix: show empty milestones on task list fails when filtering by dates ranges.
+	bugfix: cannot delete user groups.
+	bugfix: cannot edit user data.
+	bugfix: document is always attached to notifications.
+	bugfix: email due date reminders does not show the date correctly.
+	language: russian translations updated.
+
+	feature: template tasks workflow (in conditional_tasks plugin)
+
+	Since 3.1.2.2
+	----------------	
+	bugfix: forward mail not working in some cases.
+	
 	Since 3.1.2.1
 	----------------
 	bugfix: Users without permissions to add timeslots can add timeslots if the task is assigned to him/her.
-	bugfix: In tasks list, in show menu, user has no time permissions but time option is shown, and are also shown the time links in task row.
+	bugfix: In tasks list, user has no time permissions for a task but time options are shown.
 	bugfix: In tasks list, if action popover button has no actions, it is shown with an empty menu.
 	bugfix: on template tasks add dependant task not working.
 	bugfix: after edit member update all childs depths.

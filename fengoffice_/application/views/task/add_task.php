@@ -106,21 +106,15 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 	
 		<ul id="<?php echo $genid?>tab_titles">
 			
-			<li><a href="#<?php echo $genid?>add_task_more_div"><?php echo lang('task data') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_task_desc_div"><?php echo lang('details') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_reminders_div"><?php echo lang('object reminders') ?></a></li>
-			<li><a href="#<?php echo $genid?>task_repeat_options_div"><?php echo lang('repeating task') ?></a></li>
-			<li><a href="#<?php echo $genid?>add_task_subtasks_div"><?php echo lang('subtasks') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_basic_div"><?php echo lang('basic data') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_desc_div"><?php echo lang('description') ?></a></li>
+			<li><a href="#<?php echo $genid?>add_task_more_details_div"><?php echo lang('more details') ?></a></li>
 			
-			<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+			<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
 			<li><a href="#<?php echo $genid?>add_custom_properties_div"><?php echo lang('custom properties') ?></a></li>
 			<?php } ?>
 			
 			<li><a href="#<?php echo $genid?>add_subscribers_div"><?php echo lang('object subscribers') ?></a></li>
-			
-			<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?>
-			<li><a href="#<?php echo $genid?>add_linked_objects_div"><?php echo lang('linked objects') ?></a></li>
-			<?php } ?>
 			
 			<?php foreach ($categories as $category) { ?>
 			<li><a href="#<?php echo $genid . $category['name'] ?>"><?php echo $category['name'] ?></a></li>
@@ -128,7 +122,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		</ul>
 		
 	
-	<div id="<?php echo $genid ?>add_task_more_div" class="task-data form-tab">
+	<div id="<?php echo $genid ?>add_task_basic_div" class="task-data form-tab">
+	<table><tr><td>
 	<div class="left-section">
 	
 		<div class="dataBlock">
@@ -203,6 +198,17 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php }?>
 		
 		
+		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<div id="<?php echo $genid ?>add_custom_properties_div">
+			<div id="<?php echo $genid ?>not_required_custom_properties_container">
+		    	<div id="<?php echo $genid ?>not_required_custom_properties">
+		      	<?php echo render_object_custom_properties($task, false, $co_type) ?>
+		      	</div>
+		    </div>
+	      <?php echo render_add_custom_properties($task); ?>
+	 	</div>
+	 	<?php } ?>
+	 	
 		
 		<?php $task_types = ProjectCoTypes::getObjectTypesByManager('ProjectTasks');
 			if (count($task_types) > 0) {?>
@@ -214,7 +220,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		?>
 		
   	</div>
-  	
+  	</td><td>
   	<div class="right-section">
   		<div id="<?php echo $genid ?>add_task_select_context_div" class="context-selector-container">
 		<?php
@@ -273,13 +279,14 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 		<?php if (config_option('use tasks dependencies')) { ?>
 		<div class="dataBlock">
-		<?php echo label_tag(lang('previous tasks')) ?>
+		<?php echo label_tag(lang('previous tasks')) ?><br />
 		<?php 	
 			if (!$task->isNew())
 				$previous_tasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '.$task->getId()));
 			else $previous_tasks = array();
 		?>
 			<div>
+				<div>
 			<?php if (count($previous_tasks) == 0) { ?>
 				<span id="<?php echo $genid?>no_previous_selected"><?php echo lang('none') ?></span>
 				<script>if (!og.previousTasks) og.previousTasks = []; og.previousTasksIdx = og.previousTasks.length;</script>
@@ -307,7 +314,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<?php $k++;
 					}
 				} ?>
-				
+				</div>
 				<a class="coViewAction ico-add" id="<?php echo $genid?>previous_before" href="#"  
 					onclick="og.pickPreviousTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>')"><?php echo lang('add previous task') ?></a>
 				
@@ -318,6 +325,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php } ?>
 		
   	</div>
+  	</td></tr></table>
   	<div class="clear"></div>
   	
   	<?php Hook::fire('draw_additional_task_html', $genid, $task); ?>
@@ -405,28 +413,12 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			};
 		</script>
 	<?php }?>
-  	</div>
-  	
-  	
-  	<div id="<?php echo $genid ?>add_task_subtasks_div" class="form-tab">
-  	
-		<div class="dataBlock">
-			<?php echo checkbox_field('task[apply_assignee_subtasks]', false, array('id' => $genid . 'taskFormApplyAssignee')) ?>
-			<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox" style="font-weight:normal;margin-right:5px;"><?php echo lang('apply assignee to subtasks') ?></label>
-			<div class="clear"></div>
-		</div>
+	</div>
+
+  	<div id="<?php echo $genid ?>add_task_more_details_div" class="task-data form-tab">
 		
-  		<div id="<?php echo $genid ?>subtasks" class="subtasks-container">
-  		</div>
-  		<div class="add-subtask-container">
-  			<a href="#" class="link-ico ico-add" onclick="ogTasks.drawAddSubTaskInputs('<?php echo $genid?>')"><?php echo lang('add sub task')?></a>
-  			<a href="#" class="link-ico ico-undo" onclick="ogTasks.undoRemoveSubtasks('<?php echo $genid?>')" style="display:none;margin-left:20px;" id="<?php echo $genid?>undo_remove"><?php echo lang('undo remove subtasks')?></a>
-  		</div>
-  		
-  	</div>
-  	
-	
-		<div id="<?php echo $genid ?>add_reminders_div" class="form-tab">
+		<div class="reminders-div sub-section-div" style="border-top:0px none;">
+			<h2><?php echo lang('object reminders')?></h2>
 			<div id="<?php echo $genid ?>add_reminders_content">
 					<?php 
 					$render_defaults = true;
@@ -438,108 +430,158 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			</div>
 		</div>
 		
-		<div id="<?php echo $genid ?>task_repeat_options_div" class="form-tab">
-		<?php
-			if(!$task->isCompleted()){
-				$occ = array_var($task_data, 'occ');
-				$rsel1 = array_var($task_data, 'rsel1', true);
-				$rsel2 = array_var($task_data, 'rsel2', '');
-				$rsel3 = array_var($task_data, 'rsel3', '');
-				$rnum = array_var($task_data, 'rnum', '');
-				$rend = array_var($task_data, 'rend', '');
-				// calculate what is visible given the repeating options
-				$hide = '';
-				if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
-		?>
-		  <table border="0" cellpadding="0" cellspacing="0">
-			<tr>
-				<td align="left" valign="top" style="padding-bottom:6px">
-					<table><tr><td><span style="padding-top:2px;"><?php echo lang('CAL_REPEAT')?></span> 
-						<select name="task[occurance]" onChange="og.changeTaskRepeat()">
-							<option value="1" id="<?php echo $genid ?>today"<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?></option>
-							<option value="2" id="<?php echo $genid ?>daily"<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?></option>
-							<option value="3" id="<?php echo $genid ?>weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
-							<option value="4" id="<?php echo $genid ?>monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?></option>
-							<option value="5" id="<?php echo $genid ?>yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?></option>
-						</select>
-					</td></tr></table>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<div id="<?php echo $genid ?>repeat_options" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
-						<div>
-							<?php echo lang('CAL_EVERY') . " " .text_field('task[occurance_jump]', array_var($task_data, 'rjump', '1'), array('size' => '2', 'id' => $genid.'occ_jump', 'maxlength' => '100', 'style'=>'width:25px')) ?>
-							<span id="<?php echo $genid ?>word"></span>
-						</div>
-						<script type="text/javascript">
-							og.selectRepeatMode = function(mode) {
-								var id = '';
-								if (mode == 1) id = 'repeat_opt_forever';
-								else if (mode == 2) id = 'repeat_opt_times';
-								else if (mode == 3) id = 'repeat_opt_until';
-								if (id != '') {
-									el = document.getElementById('<?php echo $genid ?>'+id);
-									if (el) el.checked = true;
-								} 
-							}
-
-							og.viewDays = function(view) {
-								var btn = Ext.get('<?php echo $genid ?>repeat_days');
-								if(view){
-									if (btn) btn.dom.style.display = 'block';
-								}else{
-									if (btn) btn.dom.style.display = 'none';
-								}
-							}
-						</script>
-						<table>
-							<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
-								<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
-							</td></tr>
-							<tr><td colspan="2" style="vertical-align:middle">
-								<?php echo radio_field('task[repeat_option]', $rsel2, array('id' => $genid.'repeat_opt_times','value' => '2', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
-								echo "&nbsp;" . text_field('task[repeat_num]', $rnum, array('size' => '3', 'id' => $genid.'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;". lang('CAL_TIMES') ?>
-							</td></tr>
-							<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
-								<td style="padding-left:8px;"><?php echo pick_date_widget2('task[repeat_end]', $rend, $genid, 99);?>
-							</td></tr>
-						</table>
-						<script type="text/javascript">
-							var els = document.getElementsByName('task[repeat_end]');
-							for (i=0; i<els.length; i++) {
-								els[i].onchange = function() {
-									og.selectRepeatMode(3);
-								}
-							}
-						</script>
-						<div style="padding-top: 4px;">
-							<?php echo lang('repeat by') . ' ' ?>
-							<select name="task[repeat_by]">
-								<option value="start_date" id="<?php echo $genid ?>rep_by_start_date"<?php if (array_var($task_data, 'repeat_by') == 'start_date') echo ' selected="selected"'?>><?php echo lang('field ProjectTasks start_date')?></option>
-								<option value="due_date" id="<?php echo $genid ?>rep_by_due_date"<?php if (array_var($task_data, 'repeat_by') == 'due_date') echo ' selected="selected"'?>><?php echo lang('field ProjectTasks due_date')?></option>
+		<div class="repeat-options-div sub-section-div">
+			<h2><?php echo lang('repeating task')?></h2>
+			<div id="<?php echo $genid ?>task_repeat_options_div">
+			<?php
+				if(!$task->isCompleted()){
+					$occ = array_var($task_data, 'occ');
+					$rsel1 = array_var($task_data, 'rsel1', true);
+					$rsel2 = array_var($task_data, 'rsel2', '');
+					$rsel3 = array_var($task_data, 'rsel3', '');
+					$rnum = array_var($task_data, 'rnum', '');
+					$rend = array_var($task_data, 'rend', '');
+					// calculate what is visible given the repeating options
+					$hide = '';
+					if((!isset($occ)) OR $occ == 1 OR $occ=="") $hide = "display: none;";
+			?>
+			  <table border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td align="left" valign="top" style="padding-bottom:6px">
+						<table><tr><td><span style="padding-top:2px;"><?php echo lang('CAL_REPEAT')?></span> 
+							<select name="task[occurance]" onChange="og.changeTaskRepeat()">
+								<option value="1" id="<?php echo $genid ?>today"<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?></option>
+								<option value="2" id="<?php echo $genid ?>daily"<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?></option>
+								<option value="3" id="<?php echo $genid ?>weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
+								<option value="4" id="<?php echo $genid ?>monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?></option>
+								<option value="5" id="<?php echo $genid ?>yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?></option>
 							</select>
+						</td></tr></table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div id="<?php echo $genid ?>repeat_options" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
+							<div>
+								<?php echo lang('CAL_EVERY') . " " .text_field('task[occurance_jump]', array_var($task_data, 'rjump', '1'), array('size' => '2', 'id' => $genid.'occ_jump', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+								<span id="<?php echo $genid ?>word"></span>
+							</div>
+							<script type="text/javascript">
+								og.selectRepeatMode = function(mode) {
+									var id = '';
+									if (mode == 1) id = 'repeat_opt_forever';
+									else if (mode == 2) id = 'repeat_opt_times';
+									else if (mode == 3) id = 'repeat_opt_until';
+									if (id != '') {
+										el = document.getElementById('<?php echo $genid ?>'+id);
+										if (el) el.checked = true;
+									} 
+								}
+	
+								og.viewDays = function(view) {
+									var btn = Ext.get('<?php echo $genid ?>repeat_days');
+									if(view){
+										if (btn) btn.dom.style.display = 'block';
+									}else{
+										if (btn) btn.dom.style.display = 'none';
+									}
+								}
+							</script>
+							<table>
+								<tr><td colspan="2" style="vertical-align:middle; height: 22px;">
+									<?php echo radio_field('task[repeat_option]', $rsel1, array('id' => $genid.'repeat_opt_forever','value' => '1', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_FOREVER')?>
+								</td></tr>
+								<tr><td colspan="2" style="vertical-align:middle">
+									<?php echo radio_field('task[repeat_option]', $rsel2, array('id' => $genid.'repeat_opt_times','value' => '2', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT');
+									echo "&nbsp;" . text_field('task[repeat_num]', $rnum, array('size' => '3', 'id' => $genid.'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'onchange' => 'og.selectRepeatMode(2);')) ."&nbsp;". lang('CAL_TIMES') ?>
+								</td></tr>
+								<tr><td style="vertical-align:middle"><?php echo radio_field('task[repeat_option]', $rsel3,array('id' => $genid.'repeat_opt_until','value' => '3', 'style' => 'vertical-align:middle', 'onclick' => 'og.viewDays(true)')) ."&nbsp;". lang('CAL_REPEAT_UNTIL');?></td>
+									<td style="padding-left:8px;"><?php echo pick_date_widget2('task[repeat_end]', $rend, $genid, 99);?>
+								</td></tr>
+							</table>
+							<script type="text/javascript">
+								var els = document.getElementsByName('task[repeat_end]');
+								for (i=0; i<els.length; i++) {
+									els[i].onchange = function() {
+										og.selectRepeatMode(3);
+									}
+								}
+							</script>
+							<div style="padding-top: 4px;">
+								<?php echo lang('repeat by') . ' ' ?>
+								<select name="task[repeat_by]">
+									<option value="start_date" id="<?php echo $genid ?>rep_by_start_date"<?php if (array_var($task_data, 'repeat_by') == 'start_date') echo ' selected="selected"'?>><?php echo lang('field ProjectTasks start_date')?></option>
+									<option value="due_date" id="<?php echo $genid ?>rep_by_due_date"<?php if (array_var($task_data, 'repeat_by') == 'due_date') echo ' selected="selected"'?>><?php echo lang('field ProjectTasks due_date')?></option>
+								</select>
+							</div>
 						</div>
-					</div>
-				</td>
-			</tr>
-
-			<tr id="<?php echo $genid ?>repeat_days" style="display: none;">
-				<td>
-				<table>
-					<tr><td><input class="checkbox" type="checkbox" value="1" name="task[repeat_saturdays]" /> <?php echo lang('repeat on saturdays')?></td></tr>
-					<tr><td><input class="checkbox" type="checkbox" value="1" name="task[repeat_sundays]" /> <?php echo lang('repeat on sundays')?></td></tr>
-					<tr><td><input class="checkbox" type="checkbox" value="1" name="task[working_days]" /> <?php echo lang('repeat working days')?></td></tr>
-				</table>
-				</td>
-			</tr>
-		  </table>
-		<?php }else{ 
-			echo lang('option repetitive task completed');
-		}?>
+					</td>
+				</tr>
+	
+				<tr id="<?php echo $genid ?>repeat_days" style="display: none;">
+					<td>
+					<table>
+						<tr><td><input class="checkbox" type="checkbox" value="1" name="task[repeat_saturdays]" /> <?php echo lang('repeat on saturdays')?></td></tr>
+						<tr><td><input class="checkbox" type="checkbox" value="1" name="task[repeat_sundays]" /> <?php echo lang('repeat on sundays')?></td></tr>
+						<tr><td><input class="checkbox" type="checkbox" value="1" name="task[working_days]" /> <?php echo lang('repeat working days')?></td></tr>
+					</table>
+					</td>
+				</tr>
+			  </table>
+			<?php }else{ 
+				echo lang('option repetitive task completed');
+			}?>
+			</div>
 		</div>
+		
+		
+		
+		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
+		<div class="linked-objects-div sub-section-div">
+			<h2><?php echo lang('linked objects')?></h2>
+			<div id="<?php echo $genid ?>add_linked_objects_div">
+			<?php
+				$pre_linked_objects = null;
+				if (isset($from_email) && $from_email instanceof MailContent) {
+					$pre_linked_objects = array($from_email);
+					$attachments = $from_email->getLinkedObjects();
+					foreach ($attachments as $att) {
+						if ($att instanceof ProjectFile) {
+							$pre_linked_objects[] = $att;
+						}
+					}
+				}
+				echo render_object_link_form($task, $pre_linked_objects)
+			
+			?>
+			</div>
+		</div>
+		<?php } ?>
+		
+		<div class="subtasks-div sub-section-div">
+			<h2><?php echo lang('subtasks')?></h2>
+			<div id="<?php echo $genid ?>add_task_subtasks_div">
+  	
+				<div class="dataBlock">
+					<?php echo checkbox_field('task[apply_assignee_subtasks]', false, array('id' => $genid . 'taskFormApplyAssignee')) ?>
+					<label for="<?php echo $genid ?>taskFormApplyAssignee" class="checkbox" style="font-weight:normal;margin-right:5px;"><?php echo lang('apply assignee to subtasks') ?></label>
+					<div class="clear"></div>
+				</div>
+				
+		  		<div id="<?php echo $genid ?>subtasks" class="subtasks-container">
+		  		</div>
+		  		<div class="add-subtask-container">
+		  			<a href="#" class="link-ico ico-add" onclick="ogTasks.drawAddSubTaskInputs('<?php echo $genid?>')"><?php echo lang('add sub task')?></a>
+		  			<a href="#" class="link-ico ico-undo" onclick="ogTasks.undoRemoveSubtasks('<?php echo $genid?>')" style="display:none;margin-left:20px;" id="<?php echo $genid?>undo_remove"><?php echo lang('undo remove subtasks')?></a>
+		  		</div>
+	  		
+	  		</div>
+		</div>
+  	</div>
+  	
+  	
   
-		<?php if ($has_custom_properties || config_option('use_object_properties')) { ?>
+		<?php if (false && ($has_custom_properties || config_option('use_object_properties')) ) { ?>
 		<div id="<?php echo $genid ?>add_custom_properties_div" class="form-tab">
 			<div id="<?php echo $genid ?>not_required_custom_properties_container">
 		    	<div id="<?php echo $genid ?>not_required_custom_properties">
@@ -570,24 +612,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			</div>
 		</div>
 	
-	<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
-		<div style="display:none" id="<?php echo $genid ?>add_linked_objects_div" class="form-tab">
-		<?php
-			$pre_linked_objects = null;
-			if (isset($from_email) && $from_email instanceof MailContent) {
-				$pre_linked_objects = array($from_email);
-				$attachments = $from_email->getLinkedObjects();
-				foreach ($attachments as $att) {
-					if ($att instanceof ProjectFile) {
-						$pre_linked_objects[] = $att;
-					}
-				}
-			}
-			echo render_object_link_form($task, $pre_linked_objects)
-		
-		?>
-		</div>
-	<?php } // if ?>
 	
 	<?php foreach ($categories as $category) { ?>
 		<div id="<?php echo $genid . $category['name'] ?>" class="form-tab">
@@ -714,6 +738,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 					}
 				}
 				og.redrawingUserList = false;
+				og.eventManager.fireEvent('after usersStore init', null);
 			}});
 			setTimeout(function() { 
 				og.redrawingUserList = false;
@@ -804,10 +829,22 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
         }    
 	});
 
-	var listenerId = og.eventManager.addListener('after member_selector init',function(){
-		og.reload_task_form_selectors(<?php echo $task->isNew() ? '1' : '0'?>, false);
-		og.eventManager.removeListener(listenerId) ;
-	});	
+	//User combo
+	og.drawAssignedToSelectBox([], false, [])
+	if(<?php echo $task->isNew() ? '0' : '1'?>){
+		var task_members_json = Ext.util.JSON.decode('<?php echo json_encode($task->getMembersIdsToDisplayPath()) ?>');
+		for (var key in task_members_json) {
+			task_members_json[key] = $.map(task_members_json[key], function(value, index) {
+			    return [value];
+			});
+		};
+
+		task_members_json = Ext.util.JSON.encode(task_members_json);
+	}else{
+		var task_members_json = og.contextManager.plainContext();
+	}
+		
+	og.redrawUserLists(task_members_json);
 
 	function selectRelated(val){
 		$("#<?php echo $genid?>type_related").val(val);
@@ -889,21 +926,25 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php if(!$task->isCompleted()){ ?>
 			og.changeTaskRepeat();
 		<?php }?>
-
-		<?php
+		
+		var listenerId = og.eventManager.addListener('after usersStore init',function(){		
+			<?php
 			if (!$task->isNew()) {
 				$subtasks = ProjectTasks::findAll(array('conditions' => "parent_id=".$task->getId()." AND trashed_by_id=0"));
 				foreach ($subtasks as $st) {
 					$st_name = clean(str_replace_first("'", "\'", $st->getObjectName()));
 					?>
 					ogTasks.drawAddSubTaskInputs('<?php echo $genid ?>', {id:'<?php echo $st->getId()?>', name:'<?php echo $st_name?>', assigned_to:'<?php echo $st->getAssignedToContactId()?>'});
-		<?php
+			<?php
 				}
 			} else {?>
-			ogTasks.drawAddSubTaskInputs('<?php echo $genid ?>');
-		<?php
+				ogTasks.drawAddSubTaskInputs('<?php echo $genid ?>');
+			<?php
 			}
-		?>
+			?>
+		
+			og.eventManager.removeListener(listenerId) ;
+		});	
 
 		$('#<?php echo $genid?>taskFormApplyAssignee').change(function(event){
 			ogTasks.applyAssignedToSubtasksInTaskForm('<?php echo $genid?>');

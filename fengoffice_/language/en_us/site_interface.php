@@ -574,6 +574,8 @@ return array(
   'do complete' => 'Complete',
 
   'task data' => 'Task data',
+  'basic data' => 'Basic data',
+  'more details' => 'More details',
   'search in all workspaces' => 'Search everywhere',
 
   'paused time' => 'Paused time',
@@ -729,7 +731,7 @@ return array(
    'web pages' => 'Web Links',	
 
 
-	'previous tasks' => 'Previous tasks',
+	'previous tasks' => 'Previous tasks that must be completed before this task',
 	'add previous task' => 'Add previous task',
 	'previous tasks must be completed before completion of this task' => 'Previous tasks must be completed before the completion of this task',
 	'task depends on incomplete tasks' => 'This task has previous open tasks',

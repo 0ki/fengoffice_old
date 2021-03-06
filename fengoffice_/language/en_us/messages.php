@@ -771,6 +771,8 @@
   	'and xx more' => 'and {0} more.',
   	
   	'permissions successfully saved' => 'Permissions saved successfully',
+  	
+  	'cannot delete file' => 'You don\'t have permissions to delete file \'{0}\'',
   ); // array
 
 ?>

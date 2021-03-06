@@ -115,6 +115,50 @@ class MemberController extends ApplicationController {
 		
 		return $object;
 	}
+	
+	
+	function get_parent_permissions() {
+		ajx_current("empty");
+		
+		$dim_id = array_var($_REQUEST, 'dim_id');
+		$parent = array_var($_REQUEST, 'parent');
+		
+		$permission_parameters = array();
+		$permission_parameters = get_default_member_permission($parent, $permission_parameters);
+		
+		$pg_data = array();
+		$perms = array();
+		foreach ($permission_parameters['member_permissions'] as $pg_id => $p) {
+			if (is_array($p) && count($p) > 0) {
+				$perms[$pg_id] = $p;
+				// type picture_url name is_guest company_name role
+				$pg = PermissionGroups::findById($pg_id);
+				if ($pg->getType() == 'permission_groups') {
+					$c = Contacts::findById($pg->getContactId());
+					$name = $name = str_replace("'", "\'", $c->getObjectName());
+					$picture_url = $c->getPictureUrl();
+					$company_name = ($c->getCompany() instanceof Contact ? str_replace("'", "\'", $c->getCompany()->getObjectName()) : "");
+					$type = 'contact';
+					$is_guest = $c->isGuest() ? "1" : "0";
+					$role = $c->getUserTypeName();
+				} else {
+					$name = str_replace("'", "\'", $pg->getName());
+					$picture_url = "";
+					$company_name = "";
+					$type = 'group';
+					$is_guest = "0";
+					$role = "";
+				}
+				
+				$pg_data[$pg_id] = array('pg_id' => $pg_id, 'type' => $type, 'picture_url' => $picture_url, 'name' => $name, 'is_guest' => $is_guest, 'company_name' => $company_name, 'role' => $role);
+			}
+		}
+		
+		ajx_extra_data(array('perms' => $perms, 'pg_data' => $pg_data));
+		
+	} 
+	
+	
 
 	
 	/**

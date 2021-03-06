@@ -30,6 +30,7 @@ og.ExtendedDialog = function(config) {
 		buttons: [{
 			text: (config.YESNO ? lang('yes') : lang('ok')),
 			handler: this.accept,
+			hidden: config.noOkBtn,
 			id: config.genid + 'ok_button',
 			scope: this
 		},{

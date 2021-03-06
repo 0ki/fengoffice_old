@@ -823,7 +823,7 @@
 					$system_permissions->save();
 					
 					//object type root permissions
-					$can_have_root_permissions = in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'));
+					$can_have_root_permissions = config_option('let_users_create_objects_in_root') && in_array($user_type_name, array('Super Administrator','Administrator','Manager','Executive'));
 					if ($rp_genid && $can_have_root_permissions) {
 						ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
 						foreach ($rp_permissions_data as $name => $value) {
@@ -850,11 +850,14 @@
 					}
 					if (!$can_have_root_permissions) {
 						ContactMemberPermissions::delete("permission_group_id = $pg_id AND member_id = 0");
+						$sh_controller = new SharingTableController();
+						$all_object_type_ids = ObjectTypes::findAll(array('id' => true));
+						$sh_controller->adjust_root_permissions($pg_id, array('root_permissions_sharing_table_delete' => $all_object_type_ids));
 					}
 					
 				} catch (Exception $e) {
 					
-					Logger::log("Error saving system permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					Logger::log("Error saving system and root permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 					throw $e;
 				}
 			}

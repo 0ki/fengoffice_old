@@ -1,7 +1,9 @@
 <?php
 require_javascript("og/CustomProperties.js");
 
-$cps = CustomProperties::getAllCustomPropertiesByObjectType($_custom_properties_object->getObjectTypeId(), $co_type);
+$object_type_id = $_custom_properties_object instanceof TemplateTask ? ProjectTasks::instance()->getObjectTypeId() : $_custom_properties_object->getObjectTypeId();
+
+$cps = CustomProperties::getAllCustomPropertiesByObjectType($object_type_id, $co_type);
 $ti = 0;
 
 if (!isset($genid)) $genid = gen_id();
@@ -18,7 +20,7 @@ if(count($cps) > 0){
 				$default_value = $cpv->getValue();
 			}
 			$name = 'object_custom_properties['.$customProp->getId().']';
-			echo '<div style="margin-top:6px">';
+			echo '<div style="margin-top:12px">';
 
 			if ($customProp->getType() == 'boolean')
 				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getId()));

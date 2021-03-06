@@ -335,7 +335,9 @@ class ObjectController extends ApplicationController {
 		$date_format_tip = date_format_tip($date_format);
 		
 		$required_custom_props = array();
-		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object->getObjectTypeId());
+		$object_type_id = $object instanceof TemplateTask ? ProjectTasks::instance()->getObjectTypeId() : $object->getObjectTypeId();
+		
+		$customProps = CustomProperties::getAllCustomPropertiesByObjectType($object_type_id);
 		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
 		foreach($customProps as $cp){
 			if($cp->getType() == 'boolean'){
@@ -440,7 +442,7 @@ class ObjectController extends ApplicationController {
 					if ($object->isSearchable() && 
 						($custom_property->getType() == 'text' || $custom_property->getType() == 'list' || $custom_property->getType() == 'numeric')){
 						
-						$name = $custom_property->getName();
+						$name = str_replace_first("'", "\'", $custom_property->getName());
 						$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_id` = ".$object->getId()." AND `column_name` = '$name'"));
 						if (!$searchable_object)
 							$searchable_object = new SearchableObject();
@@ -1121,9 +1123,9 @@ class ObjectController extends ApplicationController {
 			}					
 			$tmpl_task = TemplateTasks::findById(intval($id_no_select));
 			if($tmpl_task instanceof TemplateTask){
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` IN (".$tmpl_task->getTemplateId().", 0) )";
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".$tmpl_task->getTemplateId()." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
 			}else{
-				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id` IN (".intval($template_id).", 0) )";
+				$template_extra_condition = "o.id IN (SELECT object_id from ".TABLE_PREFIX."template_tasks WHERE `template_id`=".intval($template_id)." OR `template_id`=0 AND `session_id`=".logged_user()->getId()." )";
 			}
 		}else{
 			$template_object_names = "AND name <> 'template_task' AND name <> 'template_milestone'" ;

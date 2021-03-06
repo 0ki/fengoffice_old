@@ -195,7 +195,9 @@ class Notifier {
 		
 		$attachments = array();
 		try {
-			if ($object instanceof ProjectFile && ($object->getAttachToNotification() || config_option('show images in document notifications') && in_array($object->getTypeString(), ProjectFiles::$image_types))) {
+			if ($object instanceof ProjectFile && ($object->getAttachToNotification() || $object->getFileType() && $object->getFileType()->getIsImage() && config_option('show images in document notifications') 
+					&& in_array($object->getTypeString(), ProjectFiles::$image_types))) {
+				
 				if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
 					$file_path = FileRepository::getBackend()->getFilePath($object->getLastRevision()->getRepositoryId());
 				} else {
@@ -289,8 +291,9 @@ class Notifier {
 						if ($object->getColumnValue('due_date') instanceof DateTimeValue) {
 							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('due_date'), $user->getTimezone());
 							$time = Localization::instance()->formatTime($object->getColumnValue('due_date'), $user->getTimezone());
-							if($time > 0)
-							$date .= " " . $time;
+							if($time > 0) {
+								$date .= " " . $time;
+							}
 						}
 					}
 					//start
@@ -298,11 +301,12 @@ class Notifier {
 						if ($object->getColumnValue('start') instanceof DateTimeValue) {
 							$date = Localization::instance()->formatDescriptiveDate($object->getColumnValue('start'), $user->getTimezone());
 							$time = Localization::instance()->formatTime($object->getColumnValue('start'), $user->getTimezone());
-							if($time > 0)
-							$date .= " " . $time;
+							if($time > 0) {
+								$date .= " " . $time;
+							}
 						}
 					}
-					$descArgs = array(clean($name), $sendername, $object_type, $object->getCreatedByDisplayName(),$date);
+					$descArgs = array(clean($name), ($date!="" ? $date : $sendername), $object_type, $object->getCreatedByDisplayName(),$date);
 				}
 				tpl_assign('description_title', langA($description, $descArgs));//description_title
 

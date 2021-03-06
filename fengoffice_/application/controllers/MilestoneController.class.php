@@ -167,7 +167,7 @@ class MilestoneController extends ApplicationController {
 							"manager" => get_class($milestone->manager())							
 					);
 					
-					evt_add("template object added", $object);
+					evt_add("template object added", array('object' => $object));
 				}
 
 				// Send notification
@@ -298,7 +298,7 @@ class MilestoneController extends ApplicationController {
 							"manager" => get_class($milestone->manager())
 					);
 						
-					evt_add("template object added", $object);
+					evt_add("template object added", array('object' => $object));
 				}
 				
 				flash_success(lang('success edit milestone', $milestone->getObjectName()));

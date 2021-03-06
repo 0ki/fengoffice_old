@@ -666,4 +666,6 @@
 	'and xx more' => 'y {0} más.',
 		
 	'permissions successfully saved' => 'Permisos editados exitosamente',
+	
+	'cannot delete file' => 'No tiene permisos para borrar el documento \'{0}\'',
 ); ?>

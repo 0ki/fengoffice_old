@@ -411,7 +411,7 @@ addLangs({
 	'sunday': 'Dimanche',
 	'comment': 'Commentaire ',
 	'change user': 'Changer d\'utilisateur',
-	'start work': 'Début',
+	'start work': 'Démarrer',
 	'add a new task to this group': 'Ajouter une nouvelle tâche à ce groupe',
 	'login dialog desc': 'Faute d\'activité, la session a expiré.',
 	'user not found': 'Utilisateur introuvable (id : {0})',

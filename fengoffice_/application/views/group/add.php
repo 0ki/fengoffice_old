@@ -4,6 +4,7 @@
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
     $genid = gen_id();
     tpl_assign('genid', $genid);
+    
 ?>
 
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add') : $group->getEditUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">

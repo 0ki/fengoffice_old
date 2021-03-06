@@ -122,8 +122,10 @@ og.renderContactSelector = function(config) {
 		displayField: 'name',
         mode: 'remote',
         width: !isNaN(config.width) ? config.width : 300,
-		listWidth: 'auto',
+		listWidth: config.listWidth ? config.listWidth : 'auto',
         cls: config.cls ? config.cls : 'assigned-to-combo',
+        listClass: config.listClass ? config.listClass : '',
+        shadow: config.shadow != 'undefined' ? config.shadow : true,
         triggerAction: 'all',
         selectOnFocus: true,
         valueField: 'id',
@@ -202,7 +204,7 @@ og.selectContactFromCombo = function(contact_id, contact_name, combo, container_
 	document.getElementById(hf_id).value = contact_id;
 	// draw contact div and hide combo
 	if (!is_multiple) combo.hide();
-	var html = '<div class="" style="min-width:600px; width:600px;">'+contact_name+
+	var html = '<div class="" style="min-width:500px; width:500px;">'+contact_name+
 		'<a href="#" onclick="document.getElementById(\''+hf_id+'\').value=0;og.showContactCombo(\''+combo.getId()+'\'); Ext.get(this).parent().remove();" style="float:right;padding-left:18px;" class="link-ico ico-delete">'+lang('remove')+'</a></div>';
 	Ext.get(container_id).insertHtml('beforeEnd', html);
 	

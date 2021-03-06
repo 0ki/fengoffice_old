@@ -8,9 +8,9 @@
 
 
 ogTasks.printAllGroups = function(){
-        var printWindow = this.createPrintWindow();
+	var printWindow = this.createPrintWindow();
  	for (var i = 0; i < this.Groups.length; i++){
- 		if (this.Groups[i].group_tasks.length > 0){
+ 		if (this.Groups[i].group_tasks != {}){
  			this.printGroupHeader(this.Groups[i], printWindow);
  			this.printGroupTasks(this.Groups[i], printWindow);
  		}
@@ -68,11 +68,9 @@ ogTasks.printGroupTasks = function(group, printWindow){
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
 	var drawOptions = topToolbar.getDrawOptions();
 	
-
-	var tasks = this.flattenTasks(group.group_tasks);
-	for (var i = 0 ; i < tasks.length; i++){
+	for (var i in group.group_tasks){
 		sb.append("<tr><td>");
-		var task = tasks[i];
+		var task = group.group_tasks[i];
 		var level = 0;
 		var parent = task.parent
 		while (i - level > 0 && parent != null){
@@ -80,36 +78,37 @@ ogTasks.printGroupTasks = function(group, printWindow){
 			parent = parent.parent;
 		}
 		var color = 'White';
-		if (task.priority == 400)
+		if (task.priority == 400) {
 			color = '6';
-		else if (task.priority == 300)
+		} else if (task.priority == 300) {
 			color = '18';
-		else if (task.priority == 200)
+		} else if (task.priority == 200) {
 			color = '0';
+		}
 		
 		sb.append("<div class='task' style='margin-left:" + (4 + (level * 15)) + "px;'>");
 		sb.append("<table style='width:100%'><tr><td width=20><img src='" + og.hostName + "/public/assets/themes/default/images/16x16/wscolors/color" + color + ".png' style='padding-right:3px'/></td><td>");
-		if(task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group.group_id))
+		if(task.assignedToId && (displayCriteria.group_by != 'assigned_to' || task.assignedToId != group.group_id)) {
 			sb.append("<b>" + og.clean(this.getUserCompanyName(task.assignedToId)) + '</b>:&nbsp;');
+		}
 		sb.append(og.clean(task.title));
 		sb.append("</td>");		
 		sb.append("<td width='1px' align=right><table><tr>");		
 		//Draw dates
-		if (drawOptions.show_dates){
+		if (drawOptions.show_end_dates || drawOptions.show_start_dates){
 			sb.append('<td style="color:#888;font-size:10px;padding-left:6px;padding-right:6px;white-space:nowrap">');
 			if (task.status == 1)
 				sb.append('<span style="text-decoration:line-through;">');
 			else
 				sb.append('<span>');			
-                        
-                        if (task.estimatedTime){ 	
-                            sb.append(lang('estimated') + ': '+task.estimatedTime + '<br/>'); 
-                            var task_percent = task.percentCompleted;
-                            if(task.percentCompleted > 100){
-                                task_percent = 100;
-                            }
-                            sb.append(lang('progress') + ": " + task_percent + '%<br/>');
-                        }
+                if (task.estimatedTime){
+                    sb.append(lang('estimated') + ': '+task.estimatedTime + '<br/>'); 
+                    var task_percent = task.percentCompleted;
+                    if(task.percentCompleted > 100){
+                        task_percent = 100;
+                    }
+                    sb.append(lang('progress') + ": " + task_percent + '%<br/>');
+                }
 			if (task.startDate){
 				var date = new Date(task.startDate * 1000);
 				sb.append(lang('start') + ':&nbsp;' + date.dateFormat('M j'));

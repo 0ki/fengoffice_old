@@ -650,6 +650,7 @@ addLangs({
 	'edit object property': 'Editar las propiedades de este objeto',
 	'fixed date': 'Fecha fija',
 	'parametric date': 'Paramétrica',
+  	'date of task creation': 'Fecha de creación de la tarea',
 	'no parameters in template': 'No hay parámetros de fecha definidos para esta plantilla',
 	'no user parameters in template': 'No hay parámetros de usuario definidos para esta plantilla',
 	'open property editor': 'Abrir editor de propiedades',
@@ -832,6 +833,7 @@ addLangs({
 	
 	'viewing all information' : 'Viendo toda la Infomación',
 	'add a variable to this task': 'Agregar una variable a esta tarea',
+	'add a variable to this milestone': 'Agregar una variable a este hito',
 	
 	'phone number': 'Teléfono',
 	'edit_picture':'Editar foto',

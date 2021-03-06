@@ -84,7 +84,13 @@ class MailAccount extends BaseMailAccount {
 		if (!is_null($folder)) {
 			$box_cond = " AND `imap_folder_name` = '$folder'";
 		}
-		$sql .= "$box_cond AND received_date = (SELECT max(received_date) FROM `". MailContents::instance()->getTableName() . "` WHERE `account_id` = ". $this->getId(). " AND `state` in (0,1,4) $box_cond) LIMIT 1";
+		if ($this->getIsImap()) {			
+			$max_param = "object_id";
+		}else{
+			$max_param = "received_date";
+		}
+		$sql .= "$box_cond AND $max_param = (SELECT max($max_param) FROM `". MailContents::instance()->getTableName() . "` WHERE `account_id` = ". $this->getId(). " AND `state` in (0,1,4) $box_cond) LIMIT 1";
+		
 		$res = DB::execute($sql);
 		$rows = $res->fetchAll();
 		if (is_array($rows) && count($rows) > 0){

@@ -497,9 +497,20 @@ abstract class ContentDataObjects extends DataManager {
 					AND sh.group_id  IN ($logged_user_pgs)
 			)";
 			
-			if (!$this instanceof MailContents && !$this instanceof ProjectFiles && logged_user()->isAdministrator() || 
+			if (!$this instanceof MailContents && logged_user()->isAdministrator() || 
 					($this instanceof Contacts && $this->object_type_name == 'contact' && can_manage_contacts(logged_user()))) {
 				$permissions_condition = "true";
+			}
+			
+			if ($this instanceof ProjectFiles && logged_user()->isAdministrator()) {
+				$permissions_condition = "IF(e.mail_id > 0,
+					  e.mail_id IN (
+										SELECT sh.object_id FROM fo_sharing_table sh
+										WHERE e.mail_id = sh.object_id
+										AND sh.group_id  IN ($logged_user_pgs)
+					  ),
+					  true
+					)";
 			}
 			
 			if($template_objects){

@@ -185,7 +185,6 @@ class MailUtilities {
 	function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '', $read = null) {
 		
 		try {
-			DB::beginWork();
 			
 			if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 			self::parseMail($content, $decoded, $parsedMail, $warnings);
@@ -440,9 +439,11 @@ class MailUtilities {
 	
 			$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
 			$mail->setContentFileId($repository_id);
-						
+			
+			// START TRANSACTION
+			DB::beginWork();
+			
 			// Conversation
-						
 			//check if exists a conversation for this mail
 			$conv_mail = "";
 			if ($in_reply_to_id != "" && $message_id != "") {

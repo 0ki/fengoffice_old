@@ -101,7 +101,7 @@
 	<?php if ($count > $max_users_to_show) { ?>
 		<div class="clear"></div>
 		<div style="margin-top: 15px;">
-			<a class="db-ico coViewAction ico-expand" href="#" onclick="$('.user-data').removeClass('hidden');$(this).hide();"><?php echo lang('show all users with permissions x more', $count - $max_users_to_show)?></a>
+			<a class="db-ico coViewAction ico-expand" href="#" onclick="$('.user-data').removeClass('hidden');$(this).hide();" id="<?php echo $genid?>_more_users_permissions"><?php echo lang('show all users with permissions x more', $count - $max_users_to_show)?></a>
 		</div>
 	<?php } ?>
 		

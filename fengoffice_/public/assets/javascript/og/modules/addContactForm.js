@@ -284,6 +284,7 @@ og.addNewAddressInput = function(container_id, pre_id, sel_type, sel_data) {
 	
 	og.renderAddressInput(id, name, container_id + og.addressCount, sel_type, sel_data);
 
+	$(".address-input-container").css('max-width', ($('#'+container_id).width()-270)+'px');
 	og.addressCount++;
 }
 

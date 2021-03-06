@@ -163,7 +163,7 @@ var rx__TasksDrag = {
 		parameters["milestone_id"] = task.milestoneId;
 		parameters["priority"] = task.priority;
 		parameters["title"] = task.title;
-		parameters["text"] = task.description;
+		//parameters["text"] = task.description;
 		
 		var ehours = Math.floor(task.TimeEstimate / 60);
 		var emins = task.TimeEstimate - ehours*60;
@@ -629,7 +629,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	if (displayCriteria.group_by == 'milestone' && this.getMilestone(group.group_id)){
 		var milestone = this.getMilestone(group.group_id);
 		sb.append("<table><tr>");
-		if (drawOptions.show_dates){
+		if (milestone){
 			sb.append('<td><span style="padding-left:12px;color:#888;">');
 			var date = new Date();
 			date.setTime((milestone.dueDate + date.getTimezoneOffset()*60)* 1000);

@@ -156,7 +156,7 @@
 	'log read mail' => 'L\'utilisateur a consulté le mail',
 	'log read event' => 'L\'utilisateur a consulté l\'événement',
 	'log read weblink' => 'L\'utilisateur a consulté  le lien',
-	'warning file extension type' => 'Attention: le document que vous voulez sauvez a une extension différente du précédent (cela peut créer des problèmes pour les ouvrir)',
+	'warning file extension type' => 'Attention: le document que vous voulez sauver a une extension différente du précédent (cela peut créer des problèmes pour les ouvrir)',
 	'the Time activity' => 'Un intervalle de temps',
 	'the workspace activity' => 'L\'espace de travail {0}',
 	'the workspace' => 'l\'espace de travail',

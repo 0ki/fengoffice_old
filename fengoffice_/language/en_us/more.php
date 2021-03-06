@@ -69,6 +69,7 @@ return array(
 		'system module mails-panel hint' => 'Feng Office e-mail is a fully-functional, fully-integrated e-mail client. Like your traditional e-mail, but with the advantages of being inside Feng Office.',
 		'system module time-panel hint' => 'The system allows the tracking of hours for each workspace, sub-space, task and user. Reporting capabilities allow to easily produce a list of hours for any time period, users and workspace.',
 		'system module gantt hint' => 'Using Gantt chart you will be able to represent phases and activities of a project breakdown structure and the flow it should have.',
+		'system module purchase-order hint' => 'This module allows you to manage the purchase orders of your organization.',
 		
 		'system dimension customer_project hint' => 'Allows you to organize all your clients and projects with all their related information.',
 		'system dimension workspaces hint' => 'Workspaces allow individuals and teams to organize their data and tasks, and share them with other people.',

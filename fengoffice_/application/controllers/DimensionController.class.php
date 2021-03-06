@@ -919,10 +919,21 @@ class DimensionController extends ApplicationController {
 			}
 			
 		} else {
+			// only use available object types
+			$ots = ObjectTypes::getAvailableObjectTypes();
+			$available_ots_csv = "";
+			foreach ($ots as $ot) {
+				$available_ots_csv .= ($available_ots_csv == "" ? "" : ",") . $ot->getId();
+			}
+			if (trim($available_ots_csv) != "") {
+				$ot_cond = " AND cmp.object_type_id IN ($available_ots_csv)";
+			} else {
+				$ot_cond = "";
+			}
 			if (array_var($_REQUEST, 'only_with_perm')) {
-				$extra_cond .= " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg', '-1').")";
+				$extra_cond .= " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg', '-1')." $ot_cond)";
 			} else if (array_var($_REQUEST, 'only_without_perm')) {
-				$extra_cond .= " AND NOT EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg', '-1').")";
+				$extra_cond .= " AND NOT EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp WHERE cmp.member_id=id AND cmp.permission_group_id=".array_var($_REQUEST, 'pg', '-1')." $ot_cond)";
 			}
 		}
 		

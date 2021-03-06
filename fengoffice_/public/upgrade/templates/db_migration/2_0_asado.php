@@ -1155,7 +1155,7 @@ INSERT INTO `fo_contact_member_permissions` (`permission_group_id`, `member_id`,
 UPDATE `fo_contact_config_options` 
  SET default_value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='root_dimensions';
-UPDATE `fo__config_options` 
+UPDATE `fo_config_options` 
  SET value = concat((SELECT `id` FROM `fo_dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='feng_persons'),',', (SELECT `id` FROM `fo_dimensions` WHERE `code`='tags')) 
  WHERE name='enabled_dimensions';
 

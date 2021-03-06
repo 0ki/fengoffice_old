@@ -523,6 +523,8 @@ class TemplateController extends ApplicationController {
 		$copiesIds = array();
 		$dependencies = array();
 		
+		Hook::fire("verify_objects_before_template_instantiation", $template, $objects);
+		
 		foreach ($objects as $object) {
 			if (!$object instanceof ContentDataObject) continue;
 			// copy object
@@ -610,62 +612,9 @@ class TemplateController extends ApplicationController {
 			
 			// copy custom properties
 			$copy->copyCustomPropertiesFrom($object);
-			// set property values as defined in template
-			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
 			
-			foreach($objProp as $property) {
-				
-				$propName = $property->getProperty();
-				$value = $property->getValue();
-				
-				if ($manager->getColumnType($propName) == DATA_TYPE_STRING || $manager->getColumnType($propName) == DATA_TYPE_INTEGER) {
-					if (is_array($parameterValues)){
-						foreach($parameterValues as $param => $val){
-							if (strpos($value, '{'.$param.'}') !== FALSE) {
-								$value = str_replace('{'.$param.'}', $val, $value);
-							}
-						}
-					}
-				} else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME) {
-					$operator = '+';
-					if (strpos($value, '+') === false) {
-						$operator = '-';
-					}
-					$opPos = strpos($value, $operator);
-					if ($opPos !== false) {
-						// Is parametric
-						$dateParam = substr($value, 1, strpos($value, '}') - 1);
-						$date = $parameterValues[$dateParam];
-						
-						$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
-						if($dateUnit == 'm') {
-							$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
-						}
-						$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
-						
-						
-						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $date);
-						$date = new DateTimeValue($date->getTimestamp() - logged_user()->getTimezone()*3600);// set date to GMT 0
-						$value = $date->add($dateUnit, $dateNum);
-					}else{
-						$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
-					}
-				}
-				if($value != '') {
-					if (!$copy->setColumnValue($propName, $value)){
-						$copy->object->setColumnValue($propName, $value);
-					}
-					if ($propName == 'text' && $copy->getTypeContent() == 'text') {
-						$copy->setText(html_to_text($copy->getText()));
-					}
-					$copy->save();
-				}
-				/**
-				 * Allow to override property value in the new instantiated object
-				 */
-				$args = array('property' => $property, 'object' => $copy, 'value' => $value, 'parameterValues' => $parameterValues);
-				Hook::fire('instantiate_template_properties', $args, $ret);
-			}
+			// set property values as defined in template
+			instantiate_template_task_parameters($object, $copy, $parameterValues);
 			
 			// subscribe assigned to
 			if ($copy instanceof ProjectTask) {
@@ -821,6 +770,26 @@ class TemplateController extends ApplicationController {
 		}
 		ajx_current("empty");
 		ajx_extra_data(array('properties' => $props));
+	}
+	
+	
+	function get_template_tasks_data() {
+		ajx_current("empty");
+		
+		$ids = explode(',', array_var($_REQUEST, 'ids'));
+		foreach($ids as $k => &$id) {
+			if (!is_numeric($id)) unset($ids[$k]);
+		}
+		$objects = array();
+		if (count($ids) > 0) {
+			$tasks = TemplateTasks::findAll(array('conditions' => 'id IN ('.implode(',', $ids).')'));
+			$ot = ObjectTypes::findByName('template_task');
+			foreach ($tasks as $task) {
+				$objects[] = $this->prepareObject($task->getId(), $task->getId(), $task->getObjectName(), $ot->getName(), $task->manager(), "", $task->getMilestoneId(), array(), $task->getParentId(), 'ico-task');
+			}
+		}
+		
+		ajx_extra_data(array('tasks' => $objects));
 	}
 }
 

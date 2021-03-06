@@ -2804,7 +2804,9 @@ og.onParentMemberSelect = function (genid, dimension_id, member_id){
 	
 	document.getElementById(genid + "memberParent").value = member_id;
 	member_selector.add_relation(dimension_id, genid, member_id,false);
-	og.prev_parent = member_id;		
+	og.prev_parent = member_id;
+	
+	og.userPermissions.reload_member_permissions(genid, dimension_id, member_id);
 }
 
 
@@ -2886,6 +2888,7 @@ og.render_modal_form = function(genid, options) {
 					
 					// resize and reposition form when changing tab and content is larger than the available space
 					$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
+					og.resize_modal_form();
 					
 					// first execution sometimes fails to center the modal
 					var offset = $(".simplemodal-data").offset();
@@ -2899,6 +2902,8 @@ og.render_modal_form = function(genid, options) {
 							}
 						}, 100);
 					}
+					
+					og.resize_modal_form();
 					
 					// set main input width
 					og.update_modal_main_input_width();
@@ -2918,6 +2923,9 @@ og.resize_modal_form = function() {
 		var modalh = $(".simplemodal-data").height();
 		var winh = $(".simplemodal-overlay").height();
 		var headerh = $(".simplemodal-data .coInputHeader").height();
+		var cont_offset = $(".simplemodal-container").offset();
+		
+		$(".simplemodal-data .form-tab").css({'max-height':(winh - (cont_offset && cont_offset.top ? cont_offset.top : 0) - 175)+'px', overflow:'auto'});
 		
 		if (modalh > winh) {
 			// resize and reposition
@@ -2928,6 +2936,7 @@ og.resize_modal_form = function() {
 			var otop = (winh - modalh) / 2;
 			if (otop < 0) otop = 0;
 			$(".simplemodal-container").css({top:(otop)+'px'});
+			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 175)+'px', overflow:'auto'});
 		}
 	}, 500);
 }

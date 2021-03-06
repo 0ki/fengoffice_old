@@ -470,7 +470,7 @@ class FilesController extends ApplicationController {
 					$file->setIsVisible(true);
 				}
 				
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{
@@ -592,6 +592,12 @@ class FilesController extends ApplicationController {
 	
 			$file->setIsVisible(true);
 		
+			$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
+			if(array_var($file_data, 'default_subject_sel') == 'subject'){
+				$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
+			}else{
+				$file->setDefaultSubject('');
+			}
 		
 			$file->save();
 		
@@ -1737,6 +1743,11 @@ class FilesController extends ApplicationController {
 						$err++;
 					}
 				} else {
+					if (!$file instanceof ProjectFile) {
+						evt_add("popup", array('title' => lang('error'), 'message' => lang("file dnx")));
+					} else if (!$file->canDelete(logged_user())) {
+						evt_add("popup", array('title' => lang('error'), 'message' => lang("cannot delete file", $file->getObjectName())));
+					}
 					$err++;
 				}
 			}
@@ -2056,14 +2067,15 @@ class FilesController extends ApplicationController {
 				$post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
 				$revision_comment = trim(array_var($file_data, 'revision_comment')); // user comment?
 
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				$file->setFromAttributes($file_data);
+				
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true");
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{
 					$file->setDefaultSubject('');
 				}
 				
-				$file->setFromAttributes($file_data);
 				$fname = array_var($file_data, 'name');
 				$ext = trim(array_var($file_data, 'extension'));
 				if ($ext != '') {
@@ -2299,7 +2311,7 @@ class FilesController extends ApplicationController {
 				$file->setFilename(array_var($file_data, 'name'));
 				$file->checkIn();
 
-				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification'),0);
+				$file->setAttachToNotification(array_var($file_data, 'attach_to_notification') == "true",0);
 				if(array_var($file_data, 'default_subject_sel') == 'subject'){
 					$file->setDefaultSubject(array_var($file_data, 'default_subject_text'));
 				}else{

@@ -650,8 +650,10 @@ $(document).ready(function() {
 	$(window).resize(function() {
 		og.Breadcrumbs.resizeHeaderBreadcrumbs();
 		og.checkAndAdjustTabsSize();
-	});	
+	});
 });
+
+
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

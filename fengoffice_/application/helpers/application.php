@@ -1073,7 +1073,7 @@ function render_add_custom_properties(ContentDataObject $object) {
 			td.innerHTML = \'<input class="value" type="text" name="custom_prop_values[\' + count + \']" value="\' + value + \'" tabindex=\' + (ti + 1) + \'>\';;
 			tr.appendChild(td);
 			var td = document.createElement("td");
-			td.innerHTML = \'<div class="ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
+			td.innerHTML = \'<div class="link-ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
 			tr.appendChild(td);
 			tbody.appendChild(tr);
 			if (input && focus)

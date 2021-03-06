@@ -23,7 +23,7 @@ if(count($cps) > 0){
 				$default_value = $cpv->getValue();
 			}
 			$name = 'member_custom_properties['.$customProp->getId().']';
-			echo '<div style="margin-top:6px">';
+			echo '<div style="margin-top:12px">';
 
 			if ($customProp->getType() == 'boolean')
 				echo checkbox_field($name, $default_value, array('tabindex' => $startTi + $ti, 'style' => 'margin-right:4px', 'id' => $genid . 'cp' . $customProp->getId()));

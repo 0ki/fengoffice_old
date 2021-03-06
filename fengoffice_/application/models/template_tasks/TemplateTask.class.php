@@ -592,7 +592,7 @@ class TemplateTask extends BaseTemplateTask {
 			$new_prop->save();
 		}
 	
-		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType("TemplateTasks");
+		$custom_props = CustomProperties::getAllCustomPropertiesByObjectType(ProjectTasks::instance()->getObjectTypeId());
 		foreach ($custom_props as $c_prop) {
 			$values = CustomPropertyValues::getCustomPropertyValues($this->getId(), $c_prop->getId());
 			if (is_array($values)) {

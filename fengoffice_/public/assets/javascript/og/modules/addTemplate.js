@@ -100,7 +100,7 @@ og.drawTemplateObjectMilestonesCombo = function(object_div, object) {
 		if (combo) combo.parentNode.style.display = 'none';
 	}
 }
-
+/*
 og.toggleTemplateSubtasks = function(taskId){
 	var subtasksDiv = document.getElementById('ogTasksPanelSubtasksT' + taskId);
 	var expander = document.getElementById('ogTasksPanelFixedExpanderT' + taskId);
@@ -111,7 +111,7 @@ og.toggleTemplateSubtasks = function(taskId){
 		expander.className = "og-task-expander " + ((task.isExpanded)?'toggle_expanded':'toggle_collapsed');
 	}
 }
-
+*/
 og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	target = $('#'+target);
 	
@@ -154,6 +154,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 		div.insertBefore(subtasksExpander,div.firstChild);
 	//}
 	
+	og.eventManager.fireEvent('more template object actions', {obj: obj, actions_div: divActions});
 	
 	var subTasksDiv = document.createElement('fieldset');
 	subTasksDiv.id = 'subTasksDiv' + obj.object_id;
@@ -166,7 +167,11 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	editPropDiv.style.paddingLeft = '30px';
 	
 	var addTempObjProp = document.createElement('a');
-	addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ lang('add a variable to this task') + '</a>';
+	if (obj.type == 'template_task') {
+		addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ lang('add a variable to this task') + '</a>';
+	} else if (obj.type == 'template_milestone') {
+		addTempObjProp.innerHTML = '<a href="#" onclick="og.addTemplateObjectProperty(' + obj.object_id + ',' + obj.object_id + ',\'\', \'\')" class="link-ico ico-add">'+ lang('add a variable to this milestone') + '</a>';
+	}
 	var propertyDiv = document.createElement('fieldset');
 	propertyDiv.id = 'propertyDiv'+ obj.object_id;	
 	propertyDiv.className = 'template-property-div';
@@ -207,7 +212,17 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 			}
 		}
 	}
-		
+	
+	//expand container if is subtask or is under a milestone
+	if(obj.milestone_id && !obj.parent_id){	
+		if(target.css('display') == 'none'){
+			og.toggleTemplateSubtasks(obj.milestone_id);		
+		}
+	}else if(obj.parent_id){
+		if(target.css('display') == 'none'){
+			og.toggleTemplateSubtasks(obj.parent_id);	
+		}		
+	}		
 };
 
 og.toggleTemplateSubtasks = function(object_id){
@@ -313,9 +328,17 @@ og.addTemplateObjectProperty = function(obj_id, count, property, value){
 	var total = 0;
 	for (var i=0; i < selects.length; i++) {
 		if(selects[i].className == 'propertySelect'){
-			total++;
+			var res = selects[i].id.split("[");			
+			if(res.length > 2){
+				var prop_id = parseInt(res[2].replace("]", ""));
+				if(prop_id > total){
+					total = prop_id;
+				}
+			}			
 		}
 	}
+	total++;
+	
 	var html = '';
 	html += '<table><tr><td id="deletePropTD' + total + '" style="padding-right:5px;"><div class="clico ico-delete" onclick="og.deleteTemplateObjectProperty(' + obj_id + ',\'' + total + '\')"></div></td>' +
 		'<td><select class="propertySelect" style="display:none;" id="objectProperties[' + obj_id + '][' + total + ']" ' + 
@@ -420,11 +443,12 @@ og.objectPropertyChanged = function(obj_id, count, value){
 			propValueTD.innerHTML = ' <textarea id="propValues[' + obj_id + '][' + prop.value + ']" name="propValues[' + obj_id + '][' + prop.value + ']">' + value + '</textarea>&nbsp;' +
 				'<a href="#" onclick="og.editStringTemplateObjectProperty(' + obj_id + ',\'' + prop.value + '\')">[' + lang('open property editor') + ']</a>';
 		}else if(prop.className == 'DATETIME'){
-			propValueTD.innerHTML = '<select id="datePropType[' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
-				+ '<option value="-1">' + lang('select') + '</option><option value="0">' + lang('fixed date') + '</option><option value="1">' + lang('parametric date') + '</option></select>';
+			propValueTD.innerHTML = '<select style="display:none;" id="datePropType[' + obj_id + '][' + count + ']" onchange="og.datePropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
+				+ '<option value="-1">' + lang('select') + '</option><option value="0">' + lang('fixed date') + '</option><option value="1" selected="selected">' + lang('parametric date') + '</option></select>';
+			
 			var newTD = document.createElement('td');
 			newTD.id = 'datePropTD[' + obj_id + '][' + count + ']';
-			newTD.style.paddingLeft = '10px';
+			//newTD.style.paddingLeft = '10px';
 			propValueTD.parentNode.appendChild(newTD);
 			if(value != ''){
 				var datePropTypeSel = document.getElementById('datePropType[' + obj_id + '][' + count + ']');
@@ -451,6 +475,7 @@ og.objectPropertyChanged = function(obj_id, count, value){
 							paramSel.selectedIndex = i;
 						}
 					}
+					paramSel.style.display = '';
 					var opSel = document.getElementById('propValueOperation[' + obj_id + '][' + prop.value + ']');
 					for(i=0; i < opSel.length; i++){
 						var op = opSel.options[i].value;
@@ -473,6 +498,8 @@ og.objectPropertyChanged = function(obj_id, count, value){
 					var dateProp = document.getElementById('propValues[' + obj_id + '][' + prop.value + ']');
 					dateProp.value = value; 
 				}
+			} else {
+				og.datePropertyTypeSel(count, obj_id);
 			}
 		}else if(prop.className == 'USER'){
 			propValueTD.innerHTML = '<select id="integerPropType[' + obj_id + '][' + count + ']" onchange="og.integerPropertyTypeSel(' + count + ',\'' + obj_id + '\')">'
@@ -540,6 +567,7 @@ og.datePropertyTypeSel = function(count, obj_id){
 						selectParam += '<option>' + item['name'] + '</option>';
 					}
 				}
+				selectParam += '<option value="task_creation">' + lang('date of task creation') + '</option>';
 				selectParam += '</select>';
 				datePropTD.innerHTML = '= &nbsp;<input type="hidden" name="propValues[' + obj_id + '][' + prop + ']">' + 
 					selectParam + '&nbsp;<select name="propValueOperation[' + obj_id + '][' + prop + ']" id="propValueOperation[' + obj_id + '][' + prop + ']">' +

@@ -167,7 +167,7 @@
 	'mail account id description' => 'L\'utilisateur ou l\'identifiant du compte utilisé pour se connecter au serveur (par exemple \'jean@mailserver.com\')',
 	'mail account password description' => 'Le mot de passe requis pour se connecter au compte de messagerie',
 	'mail account server description' => 'L\'adresse du serveur de messagerie (par exemple \'pop3.mailserver.com\')',
-	'checkout file' => 'Vérifier le fichier',
+	'checkout file' => 'Bloquer l\'édition du fichier',
 	'checkin file' => 'Vérifier dans le Fichier',
 	'new filename' => 'Nouveau nom de fichier',
 	'add as revision' => 'Ajouter comme révision',

@@ -65,111 +65,20 @@ class MailController extends ApplicationController {
 		if (!is_array($mail_data)) {
 			$re_subject = str_starts_with(strtolower($original_mail->getSubject()), 're:') ? $original_mail->getSubject() : 'Re: ' . $original_mail->getSubject();
 			
-			$type = null;
-			if ($original_mail->getBodyHtml() != '') $type = 'html';
-			else $type = user_config_option('last_mail_format');
-			if (!$type) $type = 'plain';
-			if(!$original_mail->getIsRead(logged_user()->getId())){
-				$original_mail->setIsRead(logged_user()->getId(), true);
-			}
-			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
-				if (!defined('SANDBOX_URL')) {
-					$re_body = purify_html($original_mail->getBodyHtml());
-				} else {
-					$html_content = $original_mail->getBodyHtml();
-					if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
-						$p1 = strpos($html_content, "/* Font Definitions */", 0);
-						$html_content1 = substr($html_content, 0, $p1);
-						$p0 = strrpos($html_content1, "</style>");
-						$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
-						
-						$re_body = str_replace_first("/* Font Definitions */","<style>", $html_content);
-					} else {
-						$re_body = $html_content;
-					}
-				}
-			}else{
-				$re_body = $original_mail->getBodyPlain();
-			}
-			if ($type == 'html') {
-				$pre_quote = '<blockquote type="cite" style="margin-left: 10px; padding-left:10px; border-left: 1px solid #987ADD;">';
-				$post_quote = "</blockquote>";
-			} else {
-				$pre_quote = "";
-				$post_quote = "";
-				$lines = explode("\n", $re_body);
-				$re_body = "";
-				foreach($lines as $line) {
-					$re_body .= ">$line\n";
-				}
-			}
-			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
-				$re_body = str_replace("\n", "<br>", $re_body);
-			}
-			$re_info = $this->build_original_mail_info($original_mail, $type);
-			
-			$pos = stripos($re_body, "<body");
-			if ($pos !== FALSE) {
-				$pos = stripos($re_body, ">", $pos);
-			}
-			
-			if ($pos !== FALSE) {
-				$re_body = substr($re_body, 0, $pos+1) . $re_info . $pre_quote . substr($re_body, $pos+1) . $post_quote;
-			} else {
-				$re_body = $re_info . $pre_quote . $re_body . $post_quote;
-			}
-			
-			// Put original mail images in the reply
-			if ($original_mail->getBodyHtml() != '') {
-				MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
-				$tmp_folder = "/tmp/" . $original_mail->getId() . "_reply";
-				if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
-				if ($parts_container = array_var($decoded, 0)) {
-					$re_body = self::rebuild_body_html($re_body, array_var($parts_container, 'Parts'), $tmp_folder);
-				}
-			}
-			
-			$to = $original_mail->getFrom();
-			$cc = "";
-			$my_address = $original_mail->getAccount()->getEmailAddress();
-			if (array_var($_GET,'all','') != '') {
-				if ($original_mail->getFrom() != $my_address) {
-					$cc = $original_mail->getTo() . "," . $original_mail->getCc();
-					$regexp = '/[^\,]*' . preg_quote($my_address) . '[^,]*/';
-					$cc = preg_replace($regexp, "", $cc);
-					$cc = preg_replace('/\,\s*?\,/', ',', $cc);
-					$cc = trim($cc, ',');
-					$to = $original_mail->getFrom();
-				} else {
-					$cc = $original_mail->getCc();
-					$to = $original_mail->getTo();
-				}
-			}
-
-			$cache_fname = "";
-			if (strlen($re_body) > 200 * 1024) {
-				$cache_fname = gen_id();
-				file_put_contents(ROOT . "/tmp/$cache_fname", $re_body);
-				$re_body = lang("content too long not loaded");
-			}
-			
-			if (defined('SANDBOX_URL')) {
-				$re_body = str_replace('<!--', '<!-- ', $re_body);
-			}
-			$re_body = preg_replace("/<body*[^>]*>/i",'<body>', $re_body);
-			$re_body = '<div id="original_mail">'.$re_body.'</div>';
+			$clean_mail = $this->cleanMailBodyAndGetMailData($original_mail);
+				
 			$mail_data = array(
-				'to' => $to,
-				'cc' => $cc,
-				'type' => $type,
+				'to' => $clean_mail['to'],
+				'cc' => $clean_mail['cc'],
+				'type' => $clean_mail['type'],
 				'subject' => $re_subject,
 				'account_id' => $original_mail->getAccountId(),
-				'body' => $re_body,
+				'body' =>  '<div id="original_mail">'.$clean_mail['clean_body'].'</div>',
 				'conversation_id' => $original_mail->getConversationId(),
 				'in_reply_to_id' => $original_mail->getMessageId(),
 				'original_id' => $original_mail->getId(),
 				'last_mail_in_conversation' => MailContents::getLastMailIdInConversation($original_mail->getConversationId(), true),
-				'pre_body_fname' => $cache_fname,
+				'pre_body_fname' => $clean_mail['cache_fname'],
 			); // array
 		} // if
 		$mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
@@ -188,6 +97,131 @@ class MailController extends ApplicationController {
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
 		
+	}
+	
+	private function cleanMailBodyAndGetMailData($original_mail, $copy_attachments = false) {
+		$return_mail_data = array();
+		
+		if ($original_mail->getBodyHtml() != '') $type = 'html';
+		else $type = user_config_option('last_mail_format');
+		if (!$type) $type = 'plain';
+		if(!$original_mail->getIsRead(logged_user()->getId())){
+			$original_mail->setIsRead(logged_user()->getId(), true);
+		}
+		if ($original_mail->getBodyHtml() != '' && $type == 'html'){
+			if (!defined('SANDBOX_URL')) {
+				$re_body = purify_html($original_mail->getBodyHtml());
+			} else {
+				$html_content = $original_mail->getBodyHtml();
+				if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
+					$p1 = strpos($html_content, "/* Font Definitions */", 0);
+					$html_content1 = substr($html_content, 0, $p1);
+					$p0 = strrpos($html_content1, "</style>");
+					$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
+		
+					$re_body = str_replace_first("/* Font Definitions */","<style>", $html_content);
+				} else {
+					$re_body = $html_content;
+				}
+			}
+		}else{
+			$re_body = $original_mail->getBodyPlain();
+		}
+		if ($type == 'html') {
+			$pre_quote = '<blockquote type="cite" style="margin-left: 10px; padding-left:10px; border-left: 1px solid #987ADD;">';
+			$post_quote = "</blockquote>";
+		} else {
+			$pre_quote = "";
+			$post_quote = "";
+			$lines = explode("\n", $re_body);
+			$re_body = "";
+			foreach($lines as $line) {
+				$re_body .= ">$line\n";
+			}
+		}
+		if ($original_mail->getBodyHtml() == '' && $type == 'html') {
+			$re_body = str_replace("\n", "<br>", $re_body);
+		}
+		$re_info = $this->build_original_mail_info($original_mail, $type);
+			
+		$pos = stripos($re_body, "<body");
+		if ($pos !== FALSE) {
+			$pos = stripos($re_body, ">", $pos);
+		}
+			
+		if ($pos !== FALSE) {
+			$re_body = substr($re_body, 0, $pos+1) . $re_info . $pre_quote . substr($re_body, $pos+1) . $post_quote;
+		} else {
+			$re_body = $re_info . $pre_quote . $re_body . $post_quote;
+		}
+			
+		// Put original mail images in the reply or foward
+		if ($original_mail->getBodyHtml() != '') {
+			MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
+			$tmp_folder = "/tmp/" . $original_mail->getId() . "_reply";//$hola _fwd
+			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
+			if ($parts_container = array_var($decoded, 0)) {
+				$re_body = self::rebuild_body_html($re_body, array_var($parts_container, 'Parts'), $tmp_folder);
+			}
+		}
+		
+		$attachs = array();
+		if($copy_attachments){
+			//Attachs			
+			if ($original_mail->getHasAttachments()) {
+				$utils = new MailUtilities();
+				if (!isset($parsedEmail)) {
+					MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warns);
+				}
+				if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
+				foreach($attachments as $att) {
+					$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
+					$fName = str_replace(':', ' ', $fName);
+					$fileType = $att["content-type"];
+					$fid = gen_id();
+					$attachs[] = "FwdMailAttach:$fName:$fileType:$fid";
+					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fid", $att['Data']);
+				}
+			}
+		}
+		
+		$to = $original_mail->getFrom();
+		$cc = "";
+		$my_address = $original_mail->getAccount()->getEmailAddress();
+		if (array_var($_GET,'all','') != '') {
+			if ($original_mail->getFrom() != $my_address) {
+				$cc = $original_mail->getTo() . "," . $original_mail->getCc();
+				$regexp = '/[^\,]*' . preg_quote($my_address) . '[^,]*/';
+				$cc = preg_replace($regexp, "", $cc);
+				$cc = preg_replace('/\,\s*?\,/', ',', $cc);
+				$cc = trim($cc, ',');
+				$to = $original_mail->getFrom();
+			} else {
+				$cc = $original_mail->getCc();
+				$to = $original_mail->getTo();
+			}
+		}
+		
+		$cache_fname = "";
+		if (strlen($re_body) > 200 * 1024) {
+			$cache_fname = gen_id();
+			file_put_contents(ROOT . "/tmp/$cache_fname", $re_body);
+			$re_body = lang("content too long not loaded");
+		}
+			
+		if (defined('SANDBOX_URL')) {
+			$re_body = str_replace('<!--', '<!-- ', $re_body);
+		}
+		$re_body = preg_replace("/<body*[^>]*>/i",'<body>', $re_body);
+				
+		$return_mail_data['clean_body'] = $re_body;
+		$return_mail_data['to'] = $to;
+		$return_mail_data['cc'] = $cc;
+		$return_mail_data['type'] = $type;		
+		$return_mail_data['attachs'] = $attachs;
+		$return_mail_data['cache_fname'] = $cache_fname;		
+		
+		return $return_mail_data;
 	}
 	
 	private function checkRequiredCustomPropsBeforeSave($custom_props) {
@@ -2425,99 +2459,15 @@ class MailController extends ApplicationController {
 
 		if(!is_array($mail_data)) {
 			$fwd_subject = str_starts_with(strtolower($original_mail->getSubject()),'fwd:') ? $original_mail->getSubject() : 'Fwd: ' . $original_mail->getSubject();
-			if(!$original_mail->getIsRead(logged_user()->getId())){
-				$original_mail->setIsRead(logged_user()->getId(), true);
-			}
-			if ($original_mail->getBodyHtml() != '') $type = 'html';
-			else $type = user_config_option('last_mail_format');
-			if (!$type) $type = 'plain';
-			if ($original_mail->getBodyHtml() != '' && $type == 'html'){
-				if (!defined('SANDBOX_URL')) {
-					$body = purify_html($original_mail->getBodyHtml());
-				} else {					
-					$html_content = $original_mail->getBodyHtml();
-					// prevent some outlook malformed tags
-					if(substr_count($html_content, "<style>") != substr_count($html_content, "</style>") && substr_count($html_content, "/* Font Definitions */") >= 1) {
-						$p1 = strpos($html_content, "/* Font Definitions */", 0);
-						$html_content1 = substr($html_content, 0, $p1);
-						$p0 = strrpos($html_content1, "</style>");
-						$html_content = ($p0 >= 0 ? substr($html_content1, 0, $p0) : $html_content1) . substr($html_content, $p1);
+			
+			$clean_mail = $this->cleanMailBodyAndGetMailData($original_mail, true);
 						
-						$body = str_replace_first("/* Font Definitions */","<style>", $html_content);
-					} else {
-						$body = $html_content;
-					}
-				}				
-			}else{
-				$body = $original_mail->getBodyPlain();
-			}
-			if ($type == 'html') {
-				$pre_quote = "<blockquote type='cite' style='padding-left:10px; border-left:1px solid #987ADD;'>";
-				$post_quote = "</blockquote>";
-			} else {
-				$pre_quote = "";
-				$post_quote = "";
-				$lines = explode("\n", $body);
-				$body = "";
-				foreach($lines as $line) {
-					$body .= ">$line\n";
-				}
-			}
-			if ($original_mail->getBodyHtml() == '' && $type == 'html') {
-				$body = str_replace("\n", "<br>", $body);
-			}
-			$fwd_info = $this->build_original_mail_info($original_mail, $type);
-						
-			$pos = stripos($body, "<body");
-			if ($pos !== FALSE) {
-				$pos = stripos($body, ">", $pos);
-			}
-			
-			if ($pos !== FALSE) {
-				$fwd_body = substr($body, 0, $pos+1) . $fwd_info . $pre_quote . substr($body, $pos+1) . $post_quote;
-			} else {
-				$fwd_body = $fwd_info . $pre_quote . $body . $post_quote;
-			}
-						
-			// Put original mail images in the forwarded mail
-			if ($original_mail->getBodyHtml() != '') {
-				MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
-				$tmp_folder = "/tmp/" . $original_mail->getId() . "_fwd";
-				if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
-				if ($parts_container = array_var($decoded, 0)) {
-					$fwd_body = self::rebuild_body_html($fwd_body, array_var($parts_container, 'Parts'), $tmp_folder);
-				}
-			}
-			
-			//Attachs
-			$attachs = array();
-			if ($original_mail->getHasAttachments()) {
-				$utils = new MailUtilities();
-				if (!isset($parsedEmail)) {
-					MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warns);
-				}
-				if (isset($parsedEmail['Attachments'])) $attachments = $parsedEmail['Attachments'];
-				foreach($attachments as $att) {
-					$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-					$fName = str_replace(':', ' ', $fName);				
-					$fileType = $att["content-type"];
-					$fid = gen_id();
-					$attachs[] = "FwdMailAttach:$fName:$fileType:$fid";
-					file_put_contents(ROOT . "/tmp/" . logged_user()->getId() . "_" .$original_mail->getAccountId() . "_FwdMailAttach_$fid", $att['Data']);
-				}
-			}
-			
-			if (defined('SANDBOX_URL')) {
-				$fwd_body = str_replace('<!--', '<!-- ', $fwd_body);
-			}
-			$fwd_body = preg_replace("/<body*[^>]*>/i",'<body>', $fwd_body);
-			
 			$mail_data = array(
 	          'to' => '',
 	          'subject' => $fwd_subject,
-	          'body' => $fwd_body,
-	          'type' => $type,
-			  'attachs' => $attachs,
+	          'body' =>  '<div id="original_mail">'.$clean_mail['clean_body'].'</div>',
+	          'type' => $clean_mail['type'],
+			  'attachs' => $clean_mail['attachs'],
 	          'account_id' => $original_mail->getAccountId(),
 			  'conversation_id' => $original_mail->getConversationId(),
 			  'in_reply_to_id' => $original_mail->getMessageId(),

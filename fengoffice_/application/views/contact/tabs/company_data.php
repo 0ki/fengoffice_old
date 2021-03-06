@@ -1,3 +1,4 @@
+<?php require_javascript("og/modules/addContactForm.js"); ?>
 <div class="contact_form_container form-tab" id="<?php echo $genid?>company_data">
 		<div class="information-block no-border-bottom">
 			<!-- <div class="main-data-title"><?php //echo lang('main data')?></div> -->
@@ -97,7 +98,7 @@
 <script>
 
 $(document).ready(function() {
-
+try {
 	og.telephoneCount = 0;
 	og.telephone_types = Ext.util.JSON.decode('<?php echo json_encode($all_telephone_types)?>');
 
@@ -159,6 +160,9 @@ $(document).ready(function() {
 	<?php } ?>
 	<?php if (count(array_var($company_data, 'all_emails')) == 0) { ?>
 		og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', def_email_type);
-	<?php } ?>	
+	<?php } ?>
+} catch(e) {
+	console.log(e);
+}
 });
 </script>
