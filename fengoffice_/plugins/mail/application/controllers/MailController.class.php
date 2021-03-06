@@ -306,6 +306,7 @@ class MailController extends ApplicationController {
 		}
 		$this->setTemplate('add_mail');
 		$mail_data = array_var($_POST, 'mail');
+		$sendBtnClick = array_var($mail_data, 'sendBtnClick', '') == 'true' ? true : false;
 		$isDraft = array_var($mail_data, 'isDraft', '') == 'true' ? true : false;
 		$isUpload = array_var($mail_data, 'isUpload', '') == 'true' ? true : false;
 		$autosave = array_var($mail_data,'autosave', '') == 'true';
@@ -638,7 +639,7 @@ class MailController extends ApplicationController {
 				$mail->setInReplyToId($in_reply_to_id);
 				
 				$mail->setUid(gen_id());
-				$mail->setState($isDraft ? 2 : 200);
+				$mail->setState(($isDraft && !$sendBtnClick)? 2 : 200);
 				
 				set_user_config_option('last_mail_format', array_var($mail_data, 'format', 'plain'), logged_user()->getId());
 				$body = utf8_safe($body);
@@ -766,7 +767,7 @@ class MailController extends ApplicationController {
 				$mail->setIsRead(logged_user()->getId(), true);
 				
 				if (!$autosave) {
-					if ($isDraft) {
+					if ($isDraft && !$sendBtnClick) {
 						flash_success(lang('success save mail'));
 						ajx_current("empty");
 					} else {
@@ -844,19 +845,30 @@ class MailController extends ApplicationController {
 		return $attachments;
 	}
 	
-	function send_outbox_mails() {
+	function send_outbox_mails($user=null,$user_account=null,$from_time=null) {
+		if(is_null($user)){
+			$user = logged_user();
+		}
+		
+		$from_time_cond = "";
+		if(!is_null($from_time) && $from_time instanceof DateTimeValue){
+			$from_time_cond = " AND `created_on` > '".$from_time->toMySQL()."'";						
+		}
+		
 		session_commit();
 		set_time_limit(0);
 		
 		$utils = new MailUtilities();
 		
-		if (!array_var($_GET, 'acc_id')) {
-			$userAccounts = MailAccounts::getMailAccountsByUser(logged_user());
-		} else {
+		if(!is_null($user_account)){
+			$userAccounts = array($user_account);
+		}elseif (array_var($_GET, 'acc_id')){
 			$account = MailAccounts::findById(array_var($_GET, 'acc_id'));
 			$userAccounts = array($account);
+		}else{
+			$userAccounts = MailAccounts::getMailAccountsByUser($user);
 		}
-		
+				
 		$old_memory_limit = ini_get('memory_limit');
 		if (php_config_value_to_bytes($old_memory_limit) < 256*1024*1024) {
 			ini_set('memory_limit', '256M');
@@ -865,7 +877,7 @@ class MailController extends ApplicationController {
 		foreach ($userAccounts as $account) {
 			
 			$accountUser = null;
-			if (logged_user() instanceof Contact) $accountUser = MailAccountContacts::getByAccountAndContact($account, logged_user());
+			if ($user instanceof Contact) $accountUser = MailAccountContacts::getByAccountAndContact($account, $user);
 			
 			if (!$account || !$accountUser) {
 				flash_error(lang('no access permissions'));
@@ -876,7 +888,7 @@ class MailController extends ApplicationController {
 			
 			try {
 				$mails = MailContents::findAll(array(
-					"conditions" => array("`is_deleted`=0 AND `state` >= 200 AND `account_id` = ? AND `created_by_id` = ?", $account->getId(), $accountUser->getContactId()),
+					"conditions" => array("`is_deleted`=0 AND `state` >= 200 AND `account_id` = ? AND `created_by_id` = ? $from_time_cond", $account->getId(), $accountUser->getContactId()),
 					"order" => "`state` ASC"
 				));
 				$count = 0;
@@ -900,8 +912,8 @@ class MailController extends ApplicationController {
 						if (!$accountUser instanceof MailAccountContact) {
 							$from = array($account->getEmailAddress() => $account->getFromName());
 						} else {
-							if (logged_user() instanceof Contact && $accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
-								$from = array($account->getEmailAddress() => logged_user()->getObjectName());
+							if ($user instanceof Contact && $accountUser->getIsDefault() && $accountUser->getSenderName()=="") {
+								$from = array($account->getEmailAddress() => $user->getObjectName());
 							} else {
 								$from = array($account->getEmailAddress() => $accountUser->getSenderName());
 							}
@@ -3130,7 +3142,8 @@ class MailController extends ApplicationController {
 			}
 			tpl_assign('imap_folders', $imap_folders);
 		} catch (Exception $e) {
-			//Logger::log($e->getTraceAsString());
+			Logger::log($e->getMessage());
+			Logger::log($e->getTraceAsString());
 		}
 	}
 

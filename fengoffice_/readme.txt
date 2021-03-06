@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.4.3
+	About Feng Office 3.1.5.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,24 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.5
+	----------------
+	bugfix: in member permissions radiobuttons that cannot be selected (depending on role) must not be shown.
+	bugfix: collaborator user can't view tasks where is the assigned user.
+	bugfix: when editing objects and changing context, subscribers are reloaded and users without permissions are not removed if they were subscribed previously.
+	bugfix: permission trees loading concurrence fixes.
+	bugfix: user can edit other users with higher role.
+	bugfix: collaborator cannot add worked time from tasks list if no member selected.
+	bugfix: adding folders from quick add does not inherit permissions from parent member.
+	language: ja_jp updated
+	
+	Since 3.1.4.3
+	----------------
+	permissions: give guests and collaborators read permissions over reports by default.
+	bugfix: error sending mail.
+	
+	feature: cron function send outbox mail.
 	
 	Since 3.1.4.2
 	----------------

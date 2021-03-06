@@ -341,6 +341,7 @@ class GroupController extends ApplicationController {
 			}
 			// picture
 			if ($pg_data['type'] == 'permission_groups') {
+				$data['user_id'] = array_var($pg_data, 'object_id');
 				if (array_var($pg_data, 'picture_file') != '') {
 					$data['picture_url'] = get_url('files', 'get_public_file', array('id' => array_var($pg_data, 'picture_file')));
 				}

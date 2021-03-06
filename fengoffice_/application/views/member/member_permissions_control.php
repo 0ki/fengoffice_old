@@ -12,10 +12,10 @@
 	$pg_condition = " AND EXISTS (SELECT pg.id FROM ".TABLE_PREFIX."permission_groups pg WHERE pg.type<>'roles' AND pg.id=cmp.permission_group_id)";
 	$with_perm_pg_ids = array();
 	if ($member instanceof Member) {
-		$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$member->getId()." $pg_condition");
+		$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$member->getId()." $pg_condition AND object_type_id IN (".implode(',', $allowed_object_types_json).")");
 	} else {
 		if (isset($parent_sel) && $parent_sel > 0) {
-			$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$parent_sel." $pg_condition");
+			$with_perm_pg_ids = DB::executeAll("SELECT DISTINCT(cmp.permission_group_id) FROM ".TABLE_PREFIX."contact_member_permissions cmp where cmp.member_id=".$parent_sel." $pg_condition AND object_type_id IN (".implode(',', $allowed_object_types_json).")");
 		} else {
 			$with_perm_pg_ids = DB::executeAll("SELECT c.permission_group_id FROM ".TABLE_PREFIX."contacts c where c.user_type IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type='roles' AND name IN ('Executive','Manager','Administrator','Super Administrator'));");
 		}
@@ -168,12 +168,12 @@
 				$save_perms_fn = "";
 			}
 		?>
-			<button title="<?php echo lang('save changes')?>" class="add-first-btn" onclick="<?php echo $save_perms_fn?> og.userPermissions.afterChangingPermissions('<?php echo $genid?>'); $('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_close_btn">
-				<img src="public/assets/themes/default/images/16x16/save.png">&nbsp;<?php echo lang('save changes')?>
+			<button title="<?php echo lang('cancel')?>" class="add-first-btn" onclick="$('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_cancel_btn" style="margin-right:10px;">
+				<img src="public/assets/themes/default/images/16x16/del.png">&nbsp;<?php echo lang('cancel')?>
 			</button>
 			
-			<button title="<?php echo lang('cancel')?>" class="add-first-btn" onclick="$('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_cancel_btn" style="margin-left:10px;">
-				<img src="public/assets/themes/default/images/16x16/del.png">&nbsp;<?php echo lang('cancel')?>
+			<button title="<?php echo lang('save changes')?>" class="add-first-btn" onclick="<?php echo $save_perms_fn?> og.userPermissions.afterChangingPermissions('<?php echo $genid?>'); $('#<?php echo $genid?>_close_link').click();" id="<?php echo $genid?>_close_btn">
+				<img src="public/assets/themes/default/images/16x16/save.png">&nbsp;<?php echo lang('save changes')?>
 			</button>
 			
 		  </div>

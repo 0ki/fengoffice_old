@@ -64,12 +64,16 @@ og.canEditPermissionObjType = function(genid, member_id, obj_type) {
 
 og.setReadOnlyObjectTypeRow = function(genid, dim_id, obj_type, readonly) {
 	for (var i=0; i<4; i++) {
-		var radio = Ext.get(genid + 'rg_'+ i +'_' + dim_id + '_' + obj_type).dom;
+		var radio = null;
+		var el = Ext.get(genid + 'rg_'+ i +'_' + dim_id + '_' + obj_type);
+		if (el) radio = el.dom;
 		if (radio) radio.disabled = readonly;
 	}
 	var label = Ext.get(genid + 'obj_type_label' + dim_id + '_' + obj_type);
-	if (readonly) label.addClass('desc');
-	else label.removeClass('desc');
+	if (label) {
+		if (readonly) label.addClass('desc');
+		else label.removeClass('desc');
+	}
 }
 
 og.loadMemberPermissions = function(genid, dim_id, member_id) {
@@ -948,6 +952,11 @@ og.userPermissions.ogPermSetLevel = function(genid, level){
 
 	for (var i=0; i<permissions.length; i++) {
 		
+		var radio_el = document.getElementById(genid + "rg_" + level + "_" + permissions[i].o);
+		if (!radio_el || radio_el.style.display == 'none') {
+			continue;
+		}
+		
 		permissions[i].d = (level == 3);
 		permissions[i].w = (level >= 2);
 		permissions[i].r = (level >= 1);
@@ -1107,8 +1116,8 @@ og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_
 		if (max_perms[ot] && max_perms[ot].can_write) $("#" + genid + "rg_2_" + ot).show();
 		else $("#" + genid + "rg_2_" + ot).hide();
 		
-		if (max_perms[ot]) $("#" + genid + "rg_1_" + dim_id + '_' + ot).show();
-		else $("#" + genid + "rg_1_" + dim_id + '_' + ot).hide();
+		if (max_perms[ot]) $("#" + genid + "rg_1_" + ot).show();
+		else $("#" + genid + "rg_1_" + ot).hide();
 	}
 }
 
@@ -1174,6 +1183,7 @@ og.userPermissions.drawUserListItem = function(genid, item, noclick) {
 		html +=	'<div class="user-name-container">'+
 				'<span id="username_'+ item.pg_id +'" class="bold">'+item.name+'</span>'+
 				'<input id="'+genid+'_is_guest_'+ item.pg_id +'" name="is_guest" type="hidden" value="'+item.is_guest+'"/>'+
+				'<input id="'+genid+'_user_id_'+ item.pg_id +'" name="user_id" type="hidden" value="'+ (item.user_id ? item.user_id : 0)+'"/>'+
 				'<div class="desc">'+(item.company_name ? item.company_name : '')+'</div>'+
 				'<div class="desc">'+(item.role ? item.role : '')+'</div>'+
 			'</div>'+

@@ -724,7 +724,7 @@
 			}
 		}
 		
-		$all_object_types = ObjectTypes::findAll(array("conditions" => "`type` IN ('content_object', 'located') AND name <> 'template_task' AND name <> 'template_milestone'  AND `name` <> 'file revision'"));
+		$all_object_types = ObjectTypes::findAll(array("conditions" => "`type` IN ('content_object', 'located') AND name <> 'template_task' AND name <> 'template_milestone' AND `name` <> 'template' AND `name` <> 'file revision'"));
 		return array(
 			'member_types' => $member_types,
 			'allowed_object_types_by_member_type' => $allowed_object_types_by_member_type,
@@ -1183,7 +1183,8 @@
 			} else if (!$dim->deniesAllForContact($pg_id)) {
 				$member_permissions[$pg_id] = array();
 				if ($member) {
-					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ? $disabled_ot_cond", $pg_id, $member->getId())));
+					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ? 
+							AND object_type_id IN (".implode(',', $allowed_object_types_json).") $disabled_ot_cond", $pg_id, $member->getId())));
 					if (is_array($mpgs)) {
 						foreach ($mpgs as $mpg) {
 							$member_permissions[$mpg->getPermissionGroupId()][] = array(

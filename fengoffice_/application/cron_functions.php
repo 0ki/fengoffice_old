@@ -8,6 +8,16 @@ function check_mail() {
 	}
 }
 
+function send_outbox_mails() {
+	if (Plugins::instance()->isActivePlugin('mail')) {
+		_log("Sending outbox emails...");
+		$from_time = DateTimeValueLib::now();
+		$from_time = $from_time->add('h', -24);
+		MailUtilities::sendOutboxMailsAllAccounts($from_time);
+		_log("End Sending outbox emails.");
+	}
+}
+
 function purge_trash() {
 	_log("Purging trash...");
 	$count = Trash::purge_trash();

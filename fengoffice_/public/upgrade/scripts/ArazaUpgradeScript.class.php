@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.4.3
+ * Araza upgrade script will upgrade FengOffice 3.1 to FengOffice 3.1.5.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1');
-		$this->setVersionTo('3.1.4.3');
+		$this->setVersionTo('3.1.5.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -188,6 +188,25 @@ class ArazaUpgradeScript extends ScriptUpgraderScript {
 				UPDATE `".$t_prefix."max_system_permissions` SET `can_link_objects`=1 WHERE `permission_group_id` IN (
 					SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive','Internal Collaborator','Collaborator Customer','External Collaborator')
 				);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.1.5') < 0) {
+			$upgrade_script .= "
+				insert into ".$t_prefix."role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+				  select id,(select id from ".$t_prefix."object_types where name='report'),0,0 from ".$t_prefix."permission_groups where type='roles' and parent_id>0
+				on duplicate key update role_id=role_id;
+			";
+			
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
+					('send_outbox_mails', '1', '1', '1', '1', '0000-00-00 00:00:00')
+				ON DUPLICATE KEY UPDATE `name`=`name`;
+			";
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('general', 'inherit_permissions_from_parent_member', 1, 'BoolConfigHandler', '0', '0', NULL)
+				ON DUPLICATE KEY UPDATE name=name;
 			";
 		}
 		

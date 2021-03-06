@@ -1146,6 +1146,28 @@ class MailUtilities {
 		$imap->disconnect();
 		return $result;
 	}
+	
+	function sendOutboxMailsAllAccounts($from_time) {	
+		if(is_null($from_time) || !$from_time instanceof DateTimeValue){
+			return;
+		}	
+
+		$mail_controller = new MailController();
+				
+		$accounts = MailAccounts::findAll();
+		foreach ($accounts as $account) {
+			try {
+				if($account instanceof MailAccount){
+					$user = Contacts::findById($account->getContactId());
+					if ($user instanceof Contact){
+						$mail_controller->send_outbox_mails($user,$account,$from_time);
+					}
+				}				
+			} catch (Exception $e) {
+				Logger::log($e->getMessage());
+			}
+		}		
+	}
 
 	function deleteMailsFromServerAllAccounts() {
 		$accounts = MailAccounts::findAll();

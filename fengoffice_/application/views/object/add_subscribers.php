@@ -16,16 +16,6 @@ require_javascript('og/modules/addMessageForm.js');
 		$users["u".$u->getId()] = $u;
 	}
 	
-	// include subscribed users that now are not allowed
-	foreach ($subscriberIds as $uid) {
-		if (!array_key_exists($uid, $users)) {
-			$cobj = Contacts::findById($uid);
-			if ($cobj instanceof Contact) {
-				$users["u".$uid] = $cobj;
-			}
-		}
-	}
-
 	$grouped = array();
 	$allChecked = true;
 	foreach($users as $user) {

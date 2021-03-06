@@ -473,8 +473,10 @@
 				var parent_input = Ext.get(genid + 'associated_members_' + dim + '_' + parent_id);
 				var checkbox = Ext.get(genid + 'associated_members_' + dim + '_' + mem_id);
 
-				checkbox.dom.disabled = !parent_input.dom.checked;
-				if (checkbox.dom.disabled) checkbox.dom.checked = false;
+				if (checkbox) {
+					checkbox.dom.disabled = !parent_input.dom.checked;
+					if (checkbox.dom.disabled) checkbox.dom.checked = false;
+				}
 
 				var name = Ext.get(genid + 'name_' + dim + '_' + mem_id);
 				if (name) name.setStyle('color', checkbox.dom.disabled ? '#AAA' : '#333');

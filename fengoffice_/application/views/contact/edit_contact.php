@@ -123,7 +123,7 @@
 			// root permissions for new user
 			$root_permissions = array();
 			if (config_option('let_users_create_objects_in_root') && ($user->isAdminGroup() || $user->isExecutive() || $user->isManager())) {
-				$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND name <> 'template_task' AND name <> 'template_milestone' AND
+				$all_object_types = ObjectTypes::instance()->findAll(array('conditions' => "type IN ('content_object', 'located') AND type NOT IN ('comment') AND name <> 'file revision' AND name <> 'template_task' AND name <> 'template_milestone' AND `name` <> 'template' AND
 					(plugin_id IS NULL OR plugin_id = 0 OR plugin_id IN (SELECT id FROM ".TABLE_PREFIX."plugins WHERE is_activated > 0 AND is_installed > 0))"));
 
 				foreach ($all_object_types as $ot) {

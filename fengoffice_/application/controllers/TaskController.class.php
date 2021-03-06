@@ -703,7 +703,7 @@ class TaskController extends ApplicationController {
 														
 							if($time_push > 0){								
 								$dd = $task->getDueDate() instanceof DateTimeValue ? $task->getDueDate() : null;
-								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate()->advance(logged_user()->getTimezone() * 3600, false) : null;
+								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate() : null;
 									
 								if($dd){
 									$task->setDueDate($dd->advance($time_push * 3600, false));

@@ -2668,7 +2668,7 @@ og.addNodesToTree = function(tree_id) {
 			n.object_controller = o[i].object_controller;
 			n.allow_childs = o[i].allow_childs;
 
-			if (n) og.tmp_node[tree.dimensionId].appendChild(n);
+			if (n) og.tmp_node[tree_id].appendChild(n);
 		}
 	}
 }

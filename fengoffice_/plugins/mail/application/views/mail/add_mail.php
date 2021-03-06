@@ -34,6 +34,7 @@ sig.actualHtmlSignature = '';
 <form style="height:100%;background-color:white;" id="<?php echo $genid ?>form" name="frmMail"  class="internalForm" action="<?php echo $mail->getSendMailUrl()?>" method="post"  onsubmit="return og.checkFrom() && og.mailSetBody('<?php echo $genid ?>')">
 <input type="hidden" name="instanceName" value="<?php echo $genid?>" />
 <input type="hidden" name="mail[body]" value="" />
+<input type="hidden" name="mail[sendBtnClick]" id="<?php echo $genid ?>sendBtnClick" value="false" />
 <input type="hidden" name="mail[isDraft]" id="<?php echo $genid ?>isDraft" value="true" />
 <input type="hidden" name="mail[id]" id="<?php echo $genid ?>id" value="<?php echo  array_var($mail_data, 'id') ?>" />
 <input type="hidden" name="mail[hf_id]" id="<?php echo $genid ?>hf_id" value="<?php echo $genid ?>id" />
@@ -434,10 +435,14 @@ og.checkAttach = function() {
 	if(!attach && ((text.indexOf("adjunt") !== -1 && (text.indexOf("adjunt") < originalMail || originalMail == -1)) || (text.indexOf("attach") !== -1 && (text.indexOf("attach") < originalMail || originalMail == -1)))){
 		var conf = confirm(lang("confirm_mail_without_attach"));
 		if (conf==true){
+			og.setHfValue('<?php echo $genid;?>', 'sendBtnClick', 'true');	
 			og.setHfValue('<?php echo $genid;?>', 'isDraft', 'false');
 			og.stopAutosave('<?php echo $genid;?>');
+		}else{
+			og.setHfValue('<?php echo $genid;?>', 'sendBtnClick', 'false');	
 		}
 	}else{
+		og.setHfValue('<?php echo $genid;?>', 'sendBtnClick', 'true');	
 		og.setHfValue('<?php echo $genid;?>', 'isDraft', 'false');
 		og.stopAutosave('<?php echo $genid;?>');
 	}

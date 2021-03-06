@@ -269,27 +269,50 @@ class MemberController extends ApplicationController {
 		try {
 			$ok = $this->saveMember($member_data, $member);
 			
-			// if added from quick-add add default permissions for executives, managers and administrators
-			if (config_option('add_default_permissions_for_users') && array_var($_GET, 'quick') && $member->getParentMemberId() == 0) {
-				$user_types = implode(',', config_option('give_member_permissions_to_new_users'));
-				if (trim($user_types) != "") {
-					$users = Contacts::findAll(array('conditions' => "user_type IN (".$user_types.")"));
-					
-					if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
-					$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
-					foreach ($users as $user) {
-						$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
-						foreach ($role_perms as $role_perm) {
-							$pg_obj = new stdClass();
-							$pg_obj->pg = $user->getPermissionGroupId();
-							$pg_obj->o = $role_perm->getObjectTypeId();
-							$pg_obj->d = $role_perm->getCanDelete();
-							$pg_obj->w = $role_perm->getCanWrite();
-							$pg_obj->r = 1;
-							$permissions_decoded[] = $pg_obj;
+			if (config_option('add_default_permissions_for_users') && array_var($_GET, 'quick')) {
+				if ($member->getParentMemberId() == 0) {
+					// if added from quick-add add default permissions for executives, managers and administrators
+					$user_types = implode(',', config_option('give_member_permissions_to_new_users'));
+					if (trim($user_types) != "") {
+						$users = Contacts::findAll(array('conditions' => "user_type IN (".$user_types.")"));
+						
+						if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
+						$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
+						foreach ($users as $user) {
+							$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
+							foreach ($role_perms as $role_perm) {
+								$pg_obj = new stdClass();
+								$pg_obj->pg = $user->getPermissionGroupId();
+								$pg_obj->o = $role_perm->getObjectTypeId();
+								$pg_obj->d = $role_perm->getCanDelete();
+								$pg_obj->w = $role_perm->getCanWrite();
+								$pg_obj->r = 1;
+								$permissions_decoded[] = $pg_obj;
+							}
+						}
+						$_REQUEST['permissions'] = json_encode($permissions_decoded);
+					}
+				} else {
+					// inherit permissions from parent member
+					if ($member->getParentMemberId() > 0) {
+						$perm_params = get_default_member_permission($member->getParentMemberId(), array());
+						if (is_array($perm_params) && is_array(array_var($perm_params, 'member_permissions'))) {
+							$mem_perms = array_var($perm_params, 'member_permissions');
+							$permissions_decoded = array();
+							foreach ($mem_perms as $pg_id => $perms) {
+								foreach ($perms as $perm) {
+									$pg_obj = new stdClass();
+									$pg_obj->pg = $pg_id;
+									$pg_obj->o = array_var($perm, 'o');
+									$pg_obj->d = array_var($perm, 'd');
+									$pg_obj->w = array_var($perm, 'w');
+									$pg_obj->r = array_var($perm, 'r');
+									$permissions_decoded[] = $pg_obj;
+								}
+							}
+							$_REQUEST['permissions'] = json_encode($permissions_decoded);
 						}
 					}
-					$_REQUEST['permissions'] = json_encode($permissions_decoded);
 				}
 			}
 			

@@ -147,6 +147,7 @@ class TimeController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
+			$member_ids = $object->getMemberIds();
 		}else{
 			$member_ids = json_decode(array_var($_POST, 'members',array()));	
 			// clean member_ids
@@ -254,7 +255,9 @@ class TimeController extends ApplicationController {
 				$task->calculatePercentComplete();
 			}
 			
-			$member_ids = json_decode(array_var($_POST, 'members'));
+			if (!isset($member_ids) || !is_array($member_ids) || count($member_ids) == 0) {
+				$member_ids = json_decode(array_var($_POST, 'members'));
+			}
 			$object_controller = new ObjectController();
 			$object_controller->add_to_members($timeslot, $member_ids);
 			

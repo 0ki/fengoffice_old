@@ -502,10 +502,10 @@ abstract class ContentDataObjects extends DataManager {
 				$permissions_condition = "true";
 			}
 			
-			if ($this instanceof ProjectFiles && logged_user()->isAdministrator()) {
+			if ($this instanceof ProjectFiles && logged_user()->isAdministrator() && Plugins::instance()->isActivePlugin('mail')) {
 				$permissions_condition = "IF(e.mail_id > 0,
 					  e.mail_id IN (
-										SELECT sh.object_id FROM fo_sharing_table sh
+										SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh
 										WHERE e.mail_id = sh.object_id
 										AND sh.group_id  IN ($logged_user_pgs)
 					  ),

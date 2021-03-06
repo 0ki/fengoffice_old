@@ -461,9 +461,10 @@ ogTasks.draw = function(){
 	// *** /RX ***
 	
 	var container = document.getElementById('tasksPanelContainer');
-	container.innerHTML = '';
-	
-	container.innerHTML = sb.toString();
+	if (container) {
+		container.innerHTML = '';
+		container.innerHTML = sb.toString();
+	}
 	
 	ogTasks.resizeRows();
 	if(this.Groups.length != 0) {

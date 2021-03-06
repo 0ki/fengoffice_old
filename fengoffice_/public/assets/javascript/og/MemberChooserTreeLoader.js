@@ -91,7 +91,7 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 			og.tmp_members_to_add[tree_id] = tmp_member_array;
 			
 			if (!og.tmp_node) og.tmp_node = [];
-			og.tmp_node[dimension_id] = node;
+			og.tmp_node[tree_id] = node;
 			
 			// mask
 			var old_text = this.ownerTree.getRootNode().text;

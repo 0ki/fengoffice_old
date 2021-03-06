@@ -277,7 +277,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		$other_perm_conditions = SystemPermissions::userHasSystemPermission($user, 'can_see_assigned_to_other_tasks') || $this->getAssignedById() == $user->getId();
+		$other_perm_conditions = SystemPermissions::userHasSystemPermission($user, 'can_see_assigned_to_other_tasks') || $this->getAssignedToContactId() == $user->getId();
 		return can_read_sharing_table($user, $this->getId()) && $other_perm_conditions;
 	} // canView
 	
