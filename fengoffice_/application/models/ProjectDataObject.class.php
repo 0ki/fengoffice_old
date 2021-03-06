@@ -128,9 +128,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	function getProject() {
 		if($this->isNew() && function_exists('active_project')) {
 			if(active_project())
-			return active_project();
+				return active_project();
 			else
-			return personal_project();
+				return personal_project();
 		} // if
 
 		if(is_null($this->project)) {
@@ -1124,9 +1124,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		return false;
 	} // save
 
-	function addToSearchableObjects(){
+	function addToSearchableObjects($wasNew){
 		$columns_to_drop = array();
-		if ($this->isNew() || ($this->columnExists('project_id') && $this->isColumnModified('project_id')))
+		if ($wasNew || ($this->columnExists('project_id') && $this->isColumnModified('project_id')))
 			$columns_to_drop = $this->getSearchableColumns();
 		else {
 			foreach ($this->getSearchableColumns() as $column_name){
@@ -1159,8 +1159,8 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		} // if
 		 
 		//Add Unique ID to search
-		if ($this->isNew() || ($this->columnExists('project_id') && $this->isColumnModified('project_id'))){
-			if (!$this->isNew())
+		if ($wasNew || ($this->columnExists('project_id') && $this->isColumnModified('project_id'))){
+			if (!$wasNew)
 				SearchableObjects::dropContentByObjectColumns($this,array('uid'));
 			$searchable_object = new SearchableObject();
 
@@ -1197,9 +1197,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	function addTagsToSearchableObject(){
 		$tag_names = $this->getTagNames();
 		 
-		if (is_array($tag_names)){
+		if (is_array($tag_names) && count($tag_names) > 0){
 			if (!$this->isNew())
-			SearchableObjects::dropContentByObjectColumn($this,'tags');
+				SearchableObjects::dropContentByObjectColumn($this,'tags');
 
 			$searchable_object = new SearchableObject();
 
@@ -1208,9 +1208,9 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$searchable_object->setColumnName('tags');
 			$searchable_object->setContent(implode(' ', $tag_names));
 			if($this->getProject() instanceof Project)
-			$searchable_object->setProjectId($this->getProject()->getId());
+				$searchable_object->setProjectId($this->getProject()->getId());
 			else
-			$searchable_object->setProjectId(0);
+				$searchable_object->setProjectId(0);
 			$searchable_object->setIsPrivate($this->isPrivate());
 			 
 			$searchable_object->save();

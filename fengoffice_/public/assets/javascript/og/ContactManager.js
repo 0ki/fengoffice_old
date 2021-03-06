@@ -18,9 +18,9 @@ og.ContactManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'role', 'tags',
+	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', {name: 'createdOn', type: 'date', dateFormat: 'timestamp'}, 'role', 'tags',
 	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors'
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone','wsIds','workspaceColors','updatedBy','updatedById', {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'}
 	            ]
 	        }),
 	        remoteSort: true,
@@ -38,9 +38,9 @@ og.ContactManager = function() {
 						}
 					} else {
 						this.fireEvent('messageToShow', "");
-					}					
+					}
+					og.hideLoading();	
 					og.showWsPaths();
-					og.hideLoading();
 				},
 				'beforeload': function() {
 					og.loading();
@@ -211,14 +211,16 @@ og.ContactManager = function() {
 			header: lang("name"),
 			dataIndex: 'name',
 			width: 200,
-			renderer: renderContactName
+			renderer: renderContactName,
+			sortable:true
         },
 		{
 			id: 'role',
 			header: lang("role"),
 			dataIndex: 'role',
 			width: 60,
-			renderer: og.clean
+			renderer: og.clean,
+			sortable:false
         },{
 			id: 'email',
 			header: lang("email"),
@@ -318,7 +320,7 @@ og.ContactManager = function() {
         },{
 			id: 'updated',
 			header: lang("last updated by"),
-			dataIndex: 'dateUpdated',
+			dataIndex: 'updatedOn',
 			width: 120,
 			hidden: true,
 			renderer: renderDateUpdated,
@@ -326,10 +328,11 @@ og.ContactManager = function() {
         },{
 			id: 'created',
 			header: lang("created by"),
-			dataIndex: 'dateCreated',
+			dataIndex: 'createdOn',
 			width: 120,
 			hidden: true,
-			renderer: renderDateCreated
+			renderer: renderDateCreated,
+			sortable: true
 		}]);
     cm.defaultSortable = false;
 

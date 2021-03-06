@@ -1,3 +1,5 @@
+@CHARSET "UTF-8";
+@import 'custom.css';
 @import 'general/rewrites.css';
 @import '../extjs/css/ext-all.css';
 @import 'og/ext_modify.css';

@@ -1,4 +1,5 @@
 <?php
+define('CONSOLE_MODE', true);
 require_once('WebServicesBase.php');
 
 class TagsServices extends WebServicesBase {
@@ -21,9 +22,9 @@ class TagsServices extends WebServicesBase {
 			$this->initXml('tags');
 			if (is_array($tags)) {
 				foreach ($tags as $tag) {
-					XMLWriter::startElement('tag');
-					XMLWriter::text($tag);
-					XMLWriter::endElement();
+					$this->instance->startElement('tag');
+					$this->instance->text($tag);
+					$this->instance->endElement();
 				}
 			}
 			$result = $this->endXml();

@@ -107,11 +107,30 @@
     		$wsSearch .=  "`project_id` in ($project_csvs)";
     		
     	$wsSearch .= ')';
+    	
+    	//Check for trashed and other permissions
+    	$tableName = eval("return $object_type::instance()->getTableName();");
+    	$trashed = '';
+    	if ($object_type != 'Projects' && $object_type != 'Users'){
+    		$trashed = " and EXISTS(SELECT * FROM $tableName co where `rel_object_id` = id and trashed_by_id = 0 ";
+    		if ($object_type != 'ProjectFileRevisions' && $object_type != 'Contacts')
+    			$trashed .= ' AND ( ' . permissions_sql_for_listings(eval("return $object_type::instance();"), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
+    		else if ($object_type == "Contacts"){
+    			if (!can_manage_contacts(logged_user())){
+					$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
+					$trashed .= " AND `co`.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `co`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pc`') .'))';
+    			}
+    		} else if ($object_type == "ProjectFileRevisions"){
+				$fileTableName = "`" . TABLE_PREFIX . 'project_files`';
+    			$trashed .= " AND `co`.`id` IN ( SELECT `id` FROM $fileTableName `pf` WHERE `pf`.`id` = `co`.`file_id` AND (" . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pf`') .'))';
+    		}
+    		$trashed .= ')';
+    	}
     
     	if($include_private) {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $otSearch . $columnsSearch );
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
     	} else {
-    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $otSearch . $columnsSearch);
+    		return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $trashed . $otSearch . $columnsSearch);
     	} // if
     } // getSearchConditions
     

@@ -71,10 +71,10 @@ abstract class ApplicationDataObject extends DataObject {
 		return SearchableObjects::dropContentByObject($this);
 	} // clearSearchIndex
 
-	function addToSearchableObjects(){
+	function addToSearchableObjects($wasNew){
 		$columns_to_drop = array();
-		if ($this->isNew())
-		$columns_to_drop = $this->getSearchableColumns();
+		if ($wasNew)
+			$columns_to_drop = $this->getSearchableColumns();
 		else {
 			foreach ($this->getSearchableColumns() as $column_name){
 				if ($this->isColumnModified($column_name))
@@ -83,7 +83,8 @@ abstract class ApplicationDataObject extends DataObject {
 		}
 		 
 		if (count($columns_to_drop) > 0){
-			SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
+			if (!$wasNew)
+				SearchableObjects::dropContentByObjectColumns($this,$columns_to_drop);
 
 			foreach($columns_to_drop as $column_name) {
 				$content = $this->getSearchableColumnContent($column_name);
@@ -103,7 +104,7 @@ abstract class ApplicationDataObject extends DataObject {
 		} // if
 		 
 		//Add Unique ID to search
-		if ($this->isNew()){
+		if ($wasNew){
 			$searchable_object = new SearchableObject();
 
 			$searchable_object->setRelObjectManager(get_class($this->manager()));
@@ -122,10 +123,7 @@ abstract class ApplicationDataObject extends DataObject {
 		$result = parent::save();
 
 		if ($result && $this->isSearchable()){
-			$isNew = $this->isNew();
-			$this->setNew($wasNew);
-			$this->addToSearchableObjects();
-			$this->setNew($isNew);
+			$this->addToSearchableObjects($wasNew);
 		}
 
 		return $result;
@@ -579,8 +577,17 @@ abstract class ApplicationDataObject extends DataObject {
 		$class = get_class($this);
 		$copy = new $class();
 		$cols = $this->getColumns();
+		$not_to_be_copied = array(
+			'id',
+			'created_on',
+			'created_by_id',
+			'updated_on',
+			'updated_by_id',
+			'trashed_on',
+			'trashed_by_id',
+		); // columns with special meanings that are not to be copied
 		foreach ($cols as $col) {
-			if ($col != 'id') {
+			if (!in_array($col, $not_to_be_copied)) {
 				$copy->setColumnValue($col, $this->getColumnValue($col));
 			}
 		}

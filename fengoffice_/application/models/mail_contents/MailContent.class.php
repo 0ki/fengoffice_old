@@ -314,9 +314,9 @@ class MailContent extends BaseMailContent {
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------
 
-    function addToSearchableObjects(){
+    function addToSearchableObjects($wasNew){
     	$columns_to_drop = array();
-    	if ($this->isNew())
+    	if ($wasNew)
     		$columns_to_drop = $this->getSearchableColumns();
     	else {
 	    	foreach ($this->getSearchableColumns() as $column_name){
@@ -346,8 +346,8 @@ class MailContent extends BaseMailContent {
 	        } // foreach
     	} // if
     	
-    	if ($this->isNew() || ($this->isColumnModified('project_id'))){
-        	if (!$this->isNew())
+    	if ($wasNew || ($this->isColumnModified('project_id'))){
+        	if (!$wasNew)
     			SearchableObjects::dropContentByObjectColumns($this,array('uid'));
         	$searchable_object = new SearchableObject();
             

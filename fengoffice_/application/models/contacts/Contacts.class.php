@@ -109,43 +109,6 @@
 
       return array($items, $pagination);
     }
-  
-  	function tagRolesByProject($tag, $ids, Project $project) {
-		$err = $succ = 0;
-		foreach ($ids as $id) {
-			if (trim($id) != '') {
-				try {	
-						$role = ProjectContacts::findOne(array('conditions' => "contact_id = $id AND project_id = " . $project->getId()));
-						if ($role instanceof ProjectContact)
-							Tags::addObjectTag($tag, $role, $project);
-					$succ++;
-				} catch (Exception $e) {
-					$err ++;
-				}
-			}
-		}
-		return array($succ, $err);
-	}
-	
-	function tagContacts($tag, $ids){
-		$err = $succ = 0;
-		$idsCSV = "";
-		foreach ($ids as $id)
-			$idsCSV .= ','.$id;
-		if ($idsCSV != ""){
-			$idsCSV = substr($idsCSV, 1);
-			$contacts = Contacts::findAll(array('conditions' => 'id in (' . $idsCSV .')'));
-			foreach ($contacts as $contact){
-				try {	
-					Tags::addObjectTag($tag,$contact);	
-					$succ++;
-				} catch (Exception $e) {
-					$err ++;
-				}
-			}
-		}
-		return array($succ, $err);
-	}
 	
 	/**
 	 * Set user_id to 0 for all users that that previously were associated with a recently deleted user

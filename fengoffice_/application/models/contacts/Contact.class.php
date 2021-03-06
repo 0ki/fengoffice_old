@@ -440,7 +440,7 @@ class Contact extends BaseContact {
     * @return string
     */
     function getViewUrl() {
-      return get_url('contact', 'index');
+      return get_url('contact', 'card', $this->getId());
     } // getAccountUrl
     
     /**
@@ -643,12 +643,18 @@ class Contact extends BaseContact {
 		if (can_manage_contacts($user, true))
 			return true;
 		else {
-			$roles = $this->getRoles();
-			foreach ($roles as $role){
-				if ($role->canView($user))
-					return true;
+			if (can_read($user,$this))
+				return true;
+			else{
+				$roles = $this->getRoles();
+				if ($roles){
+					foreach ($roles as $role){
+						if ($role->canView($user))
+							return true;
+					}
+				}
+				return false;
 			}
-			return false;
 		}
     } // canView
     

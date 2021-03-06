@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.1 RC1
+    About OpenGoo 1.1 RC2
     =====================
 
     OpenGoo is a free WebOffice, project management and collaboration
@@ -68,7 +68,7 @@
     ==========================================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.1 RC1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.1 RC2 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 1.0 to 1.1.
@@ -98,8 +98,18 @@
 	Changelog
 	=========
 	
+	Since 1.1 RC1
+	-------------
+	
+	- bugfix: Adding a subtask to a task template wouldn't set it as a template.
+	- bugfix: Bugfixes in webservices files.
+	- bugfix: Pagination in contact listings.
+	- bugfix: Sorting a contact listing by more columns.
+	- bugfix: Search for contacts was fixed.
+	
 	Since 1.1 beta
 	--------------
+	
 	- bugfix: Database error on time reports.
 	- bugfix: When adding or editing an event, the list of users that can be invited is now the users that have permissions to view events on the selected workspace in the workspace control of the add/edit event view.
 	- bugfix: When adding a task to a template, all subtasks are now added too.
@@ -110,6 +120,7 @@
 	- bugfix: Removed a scrollbar when editing documents.
 
 	- usability: Email module is still disabled by default, but can now be enabled in Administration / Configuration / General. 
+	
 	
 	Since 1.0
 	---------

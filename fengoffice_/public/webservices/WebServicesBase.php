@@ -10,7 +10,8 @@ require_once(LIBRARY_PATH . DIRECTORY_SEPARATOR . 'PEAR/SOAP/Disco.php');
 require_once(LIBRARY_PATH . DIRECTORY_SEPARATOR . 'PEAR/SOAP/Type/hexBinary.php');
 
 class WebServicesBase {
-	
+	protected $instance = null;
+
 	function WebServicesBase() {
 		$this->__dispatch_map['checkUser'] = array(
             'in'  => array('username' => 'string', 'password' => 'string'),
@@ -59,25 +60,26 @@ class WebServicesBase {
 		$this->initXml($nodename);
 		if (is_array($res)) {
 			foreach ($res as $k => $v) {
-				XMLWriter::startElement($k);
-				XMLWriter::text($v);
-				XMLWriter::endElement();
+				$this->instance->startElement($k);
+				$this->instance->text($v);
+				$this->instance->endElement();
 			}
 		}
 		return $this->endXml();
 	}
 	
 	protected function initXml($doc_name) {
-		XMLWriter::openMemory();
-		XMLWriter::setIndent(true);
-		XMLWriter::startDocument('1.0', 'utf-8');
-		XMLWriter::startElement($doc_name);
+		$this->instance = new XMLWriter();
+		$this->instance->openMemory();
+		$this->instance->setIndent(true);
+		$this->instance->startDocument('1.0', 'utf-8');
+		$this->instance->startElement($doc_name);
 	}
 	
 	protected function endXml() {
-		XMLWriter::endElement();
-		XMLWriter::endDocument();
-		return XMLWriter::outputMemory();
+		$this->instance->endElement();
+		$this->instance->endDocument();
+		return $this->instance->outputMemory();
 	}
 }
 

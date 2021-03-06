@@ -57,11 +57,14 @@ class ContactController extends ApplicationController {
 		ajx_current("empty");
 		
 		// Get all variables from request
-		$start = array_var($_GET,'start');
-		$limit = config_option('files_per_page');
-		if (! $start) {
-			$start = 0;
+		$start = array_var($_GET,'start', 0);
+		$limit = array_var($_GET,'limit', config_option('files_per_page'));
+		$page = 1;
+		if ($start > 0){
+			$page = ($start / $limit) + 1;
 		}
+		$order = array_var($_GET,'sort');
+		$order_dir = array_var($_GET,'dir');
 		$tag = array_var($_GET,'tag');
 		$action = array_var($_GET,'action');
 		$attributes = array(
@@ -86,67 +89,162 @@ class ContactController extends ApplicationController {
 		// Get all emails and companies to contacts
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
-		$contacts = $this->getContacts($tag, $attributes, $project);
-		$companies = array();
-		$companies = $this->getCompanies($tag, $attributes, $project);
-		$union = $this->addContactsAndCompanies($contacts, $companies);
+		
+		$type = null;
+		if ($attributes['viewType'] == 'contacts')
+			$type = 'Contacts';
+		else if ($attributes['viewType'] == 'companies')
+			$type = 'Companies';
+		
+		$count = $this->countContactObjects($tag, $type, active_project());
+		if ($start > $count){
+			$start = 0;
+			$page = 1;
+		}
+		if ($count > 0)
+			$union = $this->getContactObjects($page,$limit,$tag,$order,$order_dir,$type,active_project());
 		
 		// Prepare response object
-		$object = $this->prepareObject($union, $start, $limit);
+		$object = $this->newPrepareObject($union, $count, $start, $attributes);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 	}
 	
-	/**
-	 * Adds the contacts and companies arrays
-	 *
-	 * @param array $messages
-	 * @param array $emails
-	 * @return array
-	 */
-	private function addContactsAndCompanies($contacts, $companies){
-		$totCount = 0;
-		if (isset($contacts)) $totCount = count($contacts);
-		if (isset($companies)) $totCount += count($companies);
-		$totContacts = array();
-		//Order messages and emails by name
-		if (!isset($contacts)){
-			$totContacts = $companies ;
+	
+	private static function getContactQueries($project = null, $tag = null, $count = false, $order=null){
+		switch ($order){
+			case 'updatedOn':
+				$order_crit_companies = 'updated_on';
+				$order_crit_contacts = 'updated_on';
+				break;
+			case 'createdOn':
+				$order_crit_companies = 'created_on';
+				$order_crit_contacts = 'created_on';
+				break;
+			default:
+				$order_crit_contacts = "TRIM(CONCAT(' ', `lastname`, `firstname`, `middlename`))";
+				$order_crit_companies = 'name';
+				break;
 		}
-		else if (!isset($companies))
-			$totContacts  = $contacts;
-		else {
-			$e = 0;
-			$m = 0;
-			while (($e + $m) < $totCount){
-				if ($e < count($contacts))
-					if ($m < count($companies)){						
-						$contact_name = trim( array_var($contacts[$e],'lastname','') . ' ' .
-											  array_var($contacts[$e],'firstname','') . ' ' .
-											  array_var($contacts[$e],'middlename','')
-											);
-						$company_name = array_var($companies[$m], 'name', '');
-						if (strcasecmp($contact_name ,$company_name)  < 0 ){
-							$totContacts [] = $contacts[$e];
-							$e++;
-						} else {
-							$totContacts [] = $companies[$m];
-							$m++;
-						}
-					}
-					else {
-						$totContacts [] = $contacts[$e];
-						$e++;
-					}
-				else {
-					$totContacts [] = $companies[$m];
-					$m++;
-				}
-			}
+		if (isset($project)) {
+    		$proj_ids = $project->getAllSubWorkspacesCSV(true, logged_user());
+    	} else {
+    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
+    		if ($proj_ids && $proj_ids != '')
+    			$proj_ids .= ',';
+    		$proj_ids .= '0';
+    	}
+    	
+    	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
+    	$proj_cond_contacts = ' `project_id` IN (' . $proj_ids . ')';
+    	
+    	if(isset($tag) && $tag && $tag!='')
+    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `oid` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
+    	else
+    		$tag_str= ' ';
+    	$res = array();
+    	
+		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
+		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
+					TABLE_PREFIX . "companies` `co` WHERE " .$proj_cond_companies . $tag_str . $permissions;
+					
+		if (!can_manage_contacts(logged_user())){
+			$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
+			$permissions = " AND `co`.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = `co`.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`pc`') .'))';
+		} else $permissions = '';
+		
+		if (isset($project)) {
+			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
+					TABLE_PREFIX . "contacts` `co` WHERE EXISTS (SELECT * FROM `" . 
+					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
+					str_replace('= `object_manager_value`', "= 'ProjectContacts'", $tag_str) . $permissions;
+		} else{
+			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
+					TABLE_PREFIX . "contacts` `co` WHERE '1' = '1' " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		}
 		
-		return $totContacts ;
+		if($count){
+			foreach ($res as $p => $q){
+				$res[$p] ="SELECT count(*) AS `quantity`, '$p' AS `objectName` FROM ( $q ) `table_alias`";
+			}
+		}
+		return $res;
 	}
+	
+	function countContactObjects($tag = null, $type = null, $project = null){
+    	$queries = $this->getContactQueries($project, $tag, true);
+		if(isset($type) && $type){
+			$query = $queries[$type];
+		} //if $type
+		else {
+			$query = '';
+			foreach ($queries as $q){
+				if($query == '')
+					$query = $q;
+				else 
+					$query .= " \n UNION \n" . $q;
+			}
+		}
+		$ret = 0;
+    	//echo $query;die();
+		$res = DB::execute($query);	
+    	if(!$res)  return $ret;
+    	$rows=$res->fetchAll();
+		if(!$rows) return  $ret;	
+    	foreach ($rows as $row){
+    		if(isset($row['quantity']))
+    			$ret += $row['quantity'];
+    	}//foreach
+    	return $ret;
+	}
+
+	private function getContactObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $type = null, $project = null){
+    	$queries = $this->getContactQueries($project, $tag, false, $order);
+		if (!$order_dir){
+			switch ($order){
+				case 'name': $order_dir = 'ASC'; break;
+				default: $order_dir = 'DESC';
+			}
+		}
+		if(isset($type) && $type){
+			$query = $queries[$type];
+		} //if $type
+		else {
+			$query = '';
+			foreach ($queries as $q){
+				if($query == '')
+					$query = $q;
+				else 
+					$query .= " \n UNION \n" . $q;
+			}
+
+		}
+		$query .= " ORDER BY order_value $order_dir ";
+		if($page && $objects_per_page){
+			$start=($page-1) * $objects_per_page ;
+			$query .=  " LIMIT " . $start . "," . $objects_per_page. " ";
+		}		
+		elseif($objects_per_page)
+			$query .= " LIMIT " . $objects_per_page;
+		
+    	$res = DB::execute($query);
+    	$objects = array();
+    	if(!$res)  return $objects;
+    	$rows=$res->fetchAll();
+    	if(!$rows)  return $objects;
+    	$i=1;
+    	foreach ($rows as $row){
+    		$manager= $row['object_manager_value'];
+    		$id = $row['oid'];
+    		if($id && $manager){
+    			$obj=get_object_by_manager_and_id($id,$manager);    			
+    			if($obj->canView(logged_user())){
+    				$objects[]=$obj;
+    			}
+    		} //if($id && $manager)
+    	}//foreach
+    	return $objects;
+    }
 	
 	/**
 	 * Resolve action to perform
@@ -263,206 +361,116 @@ class ContactController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $attributes = null)
+	private function newPrepareObject($objects, $count, $start = 0, $attributes = null)
 	{
 		$object = array(
-			"totalCount" => count($totMsg),
-			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
+			"totalCount" => $count,
+			"start" => $start,
 			"contacts" => array()
 		);
-		for ($i = $start; $i < $start + $limit; $i++){
-			if (isset($totMsg[$i])){
-				$manager= $totMsg[$i]['manager'];
-    			$id = $totMsg[$i]['id'];
-    			if($id && $manager){
-    				$c=get_object_by_manager_and_id($id,$manager);  
+		for ($i = 0; $i < count($objects); $i++){
+			if (isset($objects[$i])){
+				$c= $objects[$i];
 					
-					if ($c instanceof Contact){						
-						$roleName = "";
-						$roleTags = "";
-						$project = active_project();
-						if ($project ) {
-							$role = $c->getRole($project);
-							if ($role instanceof ProjectContact) {
-								$roleName = $role->getRole();
-							}
+				if ($c instanceof Contact){
+					$roleName = "";
+					$roleTags = "";
+					$project = active_project();
+					if ($project ) {
+						$role = $c->getRole($project);
+						if ($role instanceof ProjectContact) {
+							$roleName = $role->getRole();
 						}
-						$company = $c->getCompany();
-						$companyName = '';
-						if (!is_null($company))
-						$companyName= $company->getName();
-						$usr_created_by = Users::findById($c->getCreatedById());
-						$object["contacts"][] = array(
-							"id" => $i,
-							"object_id" => $c->getId(),
-							"type" => 'contact',
-							"wsIds" => $c->getProjectIdsCSV(),
-    						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
-							"name" => $c->getReverseDisplayName(),
-							"email" => $c->getEmail(),
-							"companyId" => $c->getCompanyId(),
-							"companyName" => $companyName,
-							"website" => $c->getHWebPage(),
-							"jobTitle" => $c->getJobTitle(),
-							"createdBy" => $usr_created_by?$usr_created_by->getUsername():'',
-							"createdById" => $c->getCreatedById(),
-					    	"role" => $roleName,
-							"tags" => project_object_tags($c),
-							"department" => $c->getDepartment(),
-							"email2" => $c->getEmail2(),
-							"email3" => $c->getEmail3(),
-							"workWebsite" => $c->getWWebPage(),
-							"workAddress" => $c->getFullWorkAddress(),
-							"workPhone1" => $c->getWPhoneNumber(),
-							"workPhone2" => $c->getWPhoneNumber2(),
-							"homeWebsite" => $c->getHWebPage(),
-							"homeAddress" => $c->getFullHomeAddress(),
-							"homePhone1" => $c->getWPhoneNumber(),
-							"homePhone2" => $c->getWPhoneNumber2(),
-							"mobilePhone" =>$c->getHMobileNumber()
-						);
-					} else if ($c instanceof Company ){					
-						$roleName = "";
-						$roleTags = "";
-//						$project = active_project();
-//						if ($project ) {
-//							$role = $c->getRole($project);
-//							if ($role instanceof ProjectContact) {
-//								$roleName = $role->getRole();
-//							}
-//						}
-//						$company = $c->getCompany();
-//						$companyName = '';
-						if (!is_null($c))
-						$companyName= $c->getName();
-						$object["contacts"][] = array(
-							"id" => $i,
-							"object_id" => $c->getId(),
-							"type" => 'company',
-							"wsIds" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
-    						"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
-							'name' => $c->getName(),
-							'email' => $c->getEmail(),
-							'website' => $c->getHomepage(),
-							'workPhone1' => $c->getPhoneNumber(),
-          					'workPhone2' => $c->getFaxNumber(),
-          					'workAddress' => $c->getAddress() . ' - ' . $c->getAddress2(),
-							"companyId" => $c->getId(),
-							"companyName" => $c->getName(),
-							"jobTitle" => '',
-							"createdBy" => Users::findById($c->getCreatedById())->getUsername(),
-							"createdById" => $c->getCreatedById(),
-					    	"role" => lang('company'),
-							"tags" => project_object_tags($c),
-							"department" => lang('company'),
-							"email2" => '',
-							"email3" => '',
-							"workWebsite" => $c->getHomepage(),
-							"homeWebsite" => '',
-							"homeAddress" => '',
-							"homePhone1" => '',
-							"homePhone2" => '',
-							"mobilePhone" =>''
-						);
 					}
-    			}
-			}
+					$company = $c->getCompany();
+					$companyName = '';
+					if (!is_null($company))
+					$companyName= $company->getName();
+					$object["contacts"][] = array(
+						"id" => $i,
+						"object_id" => $c->getId(),
+						"type" => 'contact',
+						"wsIds" => $c->getProjectIdsCSV(),
+    					"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+						"name" => $c->getReverseDisplayName(),
+						"email" => $c->getEmail(),
+						"companyId" => $c->getCompanyId(),
+						"companyName" => $companyName,
+						"website" => $c->getHWebPage(),
+						"jobTitle" => $c->getJobTitle(),
+				    	"role" => $roleName,
+						"tags" => project_object_tags($c),
+						"department" => $c->getDepartment(),
+						"email2" => $c->getEmail2(),
+						"email3" => $c->getEmail3(),
+						"workWebsite" => $c->getWWebPage(),
+						"workAddress" => $c->getFullWorkAddress(),
+						"workPhone1" => $c->getWPhoneNumber(),
+						"workPhone2" => $c->getWPhoneNumber2(),
+						"homeWebsite" => $c->getHWebPage(),
+						"homeAddress" => $c->getFullHomeAddress(),
+						"homePhone1" => $c->getWPhoneNumber(),
+						"homePhone2" => $c->getWPhoneNumber2(),
+						"mobilePhone" =>$c->getHMobileNumber(),
+						"createdOn" => $c->getCreatedOn()->getTimestamp(),
+						"createdBy" => $c->getCreatedByDisplayName(),
+						"createdById" => $c->getCreatedById(),
+						"updatedOn" => $c->getUpdatedOn()->getTimestamp(),
+						"updatedBy" => $c->getUpdatedByDisplayName(),
+						"updatedById" => $c->getUpdatedById()
+					);
+				} else if ($c instanceof Company ){
+					$roleName = "";
+					$roleTags = "";
+//					$project = active_project();
+//					if ($project ) {
+//						$role = $c->getRole($project);
+//						if ($role instanceof ProjectContact) {
+//							$roleName = $role->getRole();
+//						}
+//					}
+//					$company = $c->getCompany();
+//					$companyName = '';
+					if (!is_null($c))
+					$companyName= $c->getName();
+					$object["contacts"][] = array(
+						"id" => $i,
+						"object_id" => $c->getId(),
+						"type" => 'company',
+						"wsIds" => $c->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+    					"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+						'name' => $c->getName(),
+						'email' => $c->getEmail(),
+						'website' => $c->getHomepage(),
+						'workPhone1' => $c->getPhoneNumber(),
+          				'workPhone2' => $c->getFaxNumber(),
+          				'workAddress' => $c->getAddress() . ' - ' . $c->getAddress2(),
+						"companyId" => $c->getId(),
+						"companyName" => $c->getName(),
+						"jobTitle" => '',
+				    	"role" => lang('company'),
+						"tags" => project_object_tags($c),
+						"department" => lang('company'),
+						"email2" => '',
+						"email3" => '',
+						"workWebsite" => $c->getHomepage(),
+						"homeWebsite" => '',
+						"homeAddress" => '',
+						"homePhone1" => '',
+						"homePhone2" => '',
+						"mobilePhone" =>'',
+						"createdOn" => $c->getCreatedOn()->getTimestamp(),
+						"createdBy" => $c->getCreatedByDisplayName(),
+						"createdById" => $c->getCreatedById(),
+						"updatedOn" => $c->getUpdatedOn()->getTimestamp(),
+						"updatedBy" => $c->getUpdatedByDisplayName(),
+						"updatedById" => $c->getUpdatedById()
+					);
+				}
+    		}
 		}
 		return $object;
 	}
-	
-	/**
-	 * Get all contacts for list_all
-	 *
-	 */
-	function getContacts( $tag, $attributes, $project)
-	{
-		$isProjectView = ($project instanceof Project);
-		if (isset($attributes["viewType"]) && 
-			($attributes["viewType"] != "all" && $attributes["viewType"] != "contacts"))
-			return null;
-
-		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
-		}
-//		$contactConditions = "`id` IN (SELECT `contact_id` FROM `".TABLE_PREFIX."project_contacts` WHERE `project_id` IN ($pids))";
-
-		if (!isset($tag) || $tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-				TABLE_PREFIX . "contacts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Contacts' ) > 0 ";
-		}
-		
-		/**
-		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
-		 */
-		$pc_tbl = ProjectContacts::instance()->getTableName(true);
-		if (!can_manage_contacts(logged_user())) {
-			$pids = $isProjectView ? $project->getAllSubWorkspacesCSV(true, logged_user()): logged_user()->getActiveProjectIdsCSV();
-			$permission_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl WHERE $pc_tbl.`project_id` IN ($pids) AND (" . permissions_sql_for_listings(ProjectContacts::instance(),ACCESS_LEVEL_READ, logged_user(),'project_id') . '))';
-		} else {
-			if ($isProjectView) {
-				$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-				$permission_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl pc WHERE pc.`project_id` IN ($pids))";
-			} else $permission_str = "";
-		}
-		
-		$res = DB::execute("SELECT `id`, TRIM(CONCAT(' ', `lastname`, `firstname`, `middlename`)) AS `display_name`,`lastname`, `firstname`, `middlename`, 'Contacts' AS manager FROM " . TABLE_PREFIX. "contacts WHERE " . 
-			"`trashed_by_id` = 0 AND " . $tagstr . $permission_str . " ORDER BY `display_name` ");
-			
-		if(!$res) return null;
-		return $res->fetchAll();
-	}
-		
-	/**
-	 * Get all companies for list_all
-	 *
-	 */
-	function getCompanies($tag, $attributes, $project)
-	{
-		$isProjectView = ($project instanceof Project);
-		if (isset($attributes["viewType"]) && 
-			($attributes["viewType"] != "all" && $attributes["viewType"] != "companies"))
-			return null;
-
-		if ($project instanceof Project){
-			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
-		} else {
-			$pids = logged_user()->getActiveProjectIdsCSV();
-		}
-		$contactConditions = "";
-		/**
-		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
-		 */
-		if($isProjectView){
-			$contactConditions = " `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'Companies' AND `workspace_id` IN ($pids)) AND ";
-		}
-		
-					
-		if (!isset($tag) || $tag == '' || $tag == null) {
-			$tagstr = " '1' = '1'"; // dummy condition
-		} else {
-			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-				TABLE_PREFIX . "companies.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Companies' ) > 0 ";
-		}
-		if (!can_manage_contacts(logged_user())) {
-			$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
-		}
-		else {
-			$permissions =' ';
-		}
-		$res = DB::execute("SELECT id, name, 'Companies' as manager, `updated_on` as comp_date FROM " . TABLE_PREFIX. "companies WHERE " . 
-			"`trashed_by_id` = 0 AND " . $contactConditions . $tagstr . $permissions . " ORDER BY name");
-			
-		if(!$res) return null;
-		return $res->fetchAll();
-	}
-
 
 	/**
 	 * View single contact
@@ -1182,7 +1190,7 @@ class ContactController extends ApplicationController {
 	} //read_csv_file
 	
 	
-function buildContactData($position, $checked, $fields) {
+	function buildContactData($position, $checked, $fields) {
 		$contact_data = array();
 		if (isset($checked['firstname']) && $checked['firstname']) $contact_data['firstname'] = array_var($fields, $position['firstname']);
 		if (isset($checked['lastname']) && $checked['lastname']) $contact_data['lastname'] = array_var($fields, $position['lastname']);

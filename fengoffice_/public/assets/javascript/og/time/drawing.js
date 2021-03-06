@@ -130,6 +130,7 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 		position = -1;
 	
 	var date = new Date(timeslot.date * 1000);
+	var now = new Date();
 	var time = timeslot.time / 3600;
 	var row = table.insertRow(position);
 	row.id = genid + 'TMTimespanTableRow' + timeslot.id;
@@ -138,7 +139,11 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 		row.style.backgroundColor = '#F0F6FF';
 	
 	var cell = row.insertCell(0);
-	var textNode = document.createTextNode(date.dateFormat('M j'));
+	if (date.dateFormat('Y') != now.dateFormat('Y'))
+		var textNode = document.createTextNode(date.dateFormat('M j, Y'));
+	else
+		var textNode = document.createTextNode(date.dateFormat('M j'));
+	
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(1);

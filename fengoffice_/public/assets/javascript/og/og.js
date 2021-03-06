@@ -388,7 +388,10 @@ og.openLink = function(url, options) {
 		if (options.caller && ! params.current)
 			params.current = options.caller;
 	}
-	url = og.makeAjaxUrl(url, params);
+	if (url.substring(url.length - 5) != '.html') {
+		// don't add params to HTML pages (this prevents 405 errors from apache 1.3)
+		url = og.makeAjaxUrl(url, params);
+	}
 	if (!options.post) options.post = " ";
 	
 	Ext.Ajax.request({
@@ -753,10 +756,11 @@ Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
  		var total = this.store.getTotalCount();
 		var	ap	=	Math.ceil((this.cursor+this.pageSize)/this.pageSize);
 		if (this.store.reader.jsonData) {
+			var start = parseInt(this.store.reader.jsonData.start);
 			// go to the specified page
-			ap	=	Math.ceil((this.store.reader.jsonData.start + this.pageSize)/this.pageSize);
+			ap	=	Math.ceil((start + this.pageSize)/this.pageSize);
 			// also set the cursor so that 'prev' and 'next' buttons behave correctly
-			this.cursor	=	this.store.reader.jsonData.start;
+			this.cursor	= start;
 		}
 
 		return {

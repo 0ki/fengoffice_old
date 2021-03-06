@@ -660,8 +660,14 @@ class TaskController extends ApplicationController {
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));
 			
-			if (array_var($_GET, 'id'))
-				$task->setParentId(array_var($_GET, 'id'));
+			$id = array_var($_GET, 'id', 0);
+			$parent = ProjectTasks::findById($id);
+			if ($parent instanceof ProjectTask) {
+				$task->setParentId($id);
+				if ($parent->getIsTemplate()) {
+					$task->setIsTemplate(true);
+				}
+			}
 			
 			if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
 				flash_error(lang('task child of child error'));

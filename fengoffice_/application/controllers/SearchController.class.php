@@ -74,8 +74,17 @@ class SearchController extends ApplicationController {
 	function searchContacts($search_term, $search_results = null, $row_count = 5){
 		if (!is_array($search_results))
 			$search_results = array();
+		
+		if(array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project)
+			$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+		else {
+			$projects = logged_user()->getActiveProjectIdsCSV();
+			if ($projects != '')
+				$projects .= ',';
+			$projects .= '0';
+		}
 			
-		$results = SearchableObjects::searchByType($search_term, '0', 'Contacts', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];
@@ -86,7 +95,7 @@ class SearchController extends ApplicationController {
 			$search_results[] = $sr;
 		}
 		
-		$results = SearchableObjects::searchByType($search_term, '0', 'Companies', true, $row_count);
+		$results = SearchableObjects::searchByType($search_term, $projects, 'Companies', true, $row_count);
 		if (count($results[0]) > 0){
 			$sr = array();
 			$sr['result'] = $results[0];

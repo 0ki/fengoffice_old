@@ -1,4 +1,5 @@
 <?php
+define('CONSOLE_MODE', true);
 require_once('WebServicesBase.php');
 
 class WorkspacesServices extends WebServicesBase {
@@ -35,30 +36,30 @@ class WorkspacesServices extends WebServicesBase {
 		$pid = $ws->getPID($i);
 		while ($pid != $ws->getId() && $pid != 0 && $i <= 10) {
 			$coma = $parentIds == '' ? '' : ',';
-			if (array_search($pid, $activeProjects)) $parentIds .= $coma . $pid;
+			if (in_array($pid, $activeProjects)) $parentIds .= $coma . $pid;
 			$i++;
 			$pid = $ws->getPID($i);
 		}
 		
-		XMLWriter::startElement('workspace');
+		$this->instance->startElement('workspace');
 		
-		XMLWriter::startElement('id');
-		XMLWriter::text($ws->getId());
-		XMLWriter::endElement();
+		$this->instance->startElement('id');
+		$this->instance->text($ws->getId());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('name');
-		XMLWriter::text($ws->getName());
-		XMLWriter::endElement();
+		$this->instance->startElement('name');
+		$this->instance->text($ws->getName());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('description');
-		XMLWriter::text($ws->getDescription());
-		XMLWriter::endElement();
+		$this->instance->startElement('description');
+		$this->instance->text($ws->getDescription());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('parentids');
-		XMLWriter::text($parentIds);
-		XMLWriter::endElement();
+		$this->instance->startElement('parentids');
+		$this->instance->text($parentIds);
+		$this->instance->endElement();
 		
-		XMLWriter::endElement();
+		$this->instance->endElement();
 	}
 	
 }

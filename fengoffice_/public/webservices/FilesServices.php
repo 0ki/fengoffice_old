@@ -1,4 +1,5 @@
 <?php
+define('CONSOLE_MODE', true);
 require_once('WebServicesBase.php');
 
 include ROOT . DIRECTORY_SEPARATOR . 'application' . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'permissions.php';
@@ -337,15 +338,15 @@ class FilesServices extends WebServicesBase {
 			$result['status'] = $file != null;
 			if ($file != null) {
 				$this->initXml('result');
-				XMLWriter::startElement('status');
-				XMLWriter::text('true');
-				XMLWriter::endElement();
-				XMLWriter::startElement('errorid');
-				XMLWriter::text(0);
-				XMLWriter::endElement();
-				XMLWriter::startElement('message');
+				$this->instance->startElement('status');
+				$this->instance->text('true');
+				$this->instance->endElement();
+				$this->instance->startElement('errorid');
+				$this->instance->text(0);
+				$this->instance->endElement();
+				$this->instance->startElement('message');
 				$this->file_toxml($file);
-				XMLWriter::endElement();
+				$this->instance->endElement();
 				$xml = $this->endXml();
 			} else {
 				$result['errorid'] = 1001;
@@ -362,45 +363,46 @@ class FilesServices extends WebServicesBase {
 	}
 	
 	private function file_toxml(ProjectFile $f) {
-		XMLWriter::startElement('file');
+		$this->instance->startElement('file');
 		
-		XMLWriter::startElement('id');
-		XMLWriter::text($f->getId());
-		XMLWriter::endElement();
+		$this->instance->startElement('id');
+		$this->instance->text($f->getId());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('name');
-		XMLWriter::text(clean($f->getFilename()));
-		XMLWriter::endElement();
+		$this->instance->startElement('name');
+		$this->instance->text(clean($f->getFilename()));
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('description');
-		XMLWriter::text(clean($f->getDescription()));
-		XMLWriter::endElement();
+		$this->instance->startElement('description');
+		$this->instance->text(clean($f->getDescription()));
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('version');
-		XMLWriter::text($f->getRevisionNumber());
-		XMLWriter::endElement();
+		$this->instance->startElement('version');
+		$this->instance->text($f->getRevisionNumber());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('modifiedOn');
-		XMLWriter::text($f->getLastRevision()->getCreatedOn()->format('d/m/Y'));
-		XMLWriter::endElement();
+		$this->instance->startElement('modifiedOn');
+		$this->instance->text($f->getLastRevision()->getCreatedOn()->format('d/m/Y'));
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('modifiedBy');
-		XMLWriter::text(clean($f->getLastRevision()->getCreatedBy()->getDisplayName()));
-		XMLWriter::endElement();
+		$this->instance->startElement('modifiedBy');
+		$creator = $f->getLastRevision()->getCreatedBy();
+		$this->instance->text(clean($creator?$creator->getDisplayName():'unknown'));
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('workspaces');
-		XMLWriter::text($f->getWorkspacesIdsCSV());
-		XMLWriter::endElement();
+		$this->instance->startElement('workspaces');
+		$this->instance->text($f->getWorkspacesIdsCSV());
+		$this->instance->endElement();
 		
-		XMLWriter::startElement('tags');
-		XMLWriter::text(implode(', ', $f->getTagNames()));
-		XMLWriter::endElement();
+		$this->instance->startElement('tags');
+		$this->instance->text(implode(', ', $f->getTagNames()));
+		$this->instance->endElement();
 
-		XMLWriter::startElement('uid');
-		XMLWriter::text('d' . str_pad($f->getId(), 3, '0', STR_PAD_LEFT) . 'r' . $f->getRevisionNumber());
-		XMLWriter::endElement();
+		$this->instance->startElement('uid');
+		$this->instance->text('d' . str_pad($f->getId(), 3, '0', STR_PAD_LEFT) . 'r' . $f->getRevisionNumber());
+		$this->instance->endElement();
 		
-		XMLWriter::endElement();
+		$this->instance->endElement();
 	}
 			
 }
@@ -422,5 +424,4 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST') {
          echo $disco->getDISCO();
      }
 }
-
 ?>
