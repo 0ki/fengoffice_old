@@ -97,7 +97,7 @@
 	'modified notification task' => 'La tâche \'{0}\' a été modifiée',
 	'modified notification task desc' => 'La tâche \'{0}\' a été modifiée par {1}.',
 	'modified notification event' => 'L\'évènement \'{0}\' a été modifié',
-	'modified notification event desc' => 'La tâche \'{0}\' a été modifié par {1}.',
+	'modified notification event desc' => 'L\'évènement \'{0}\' a été modifié par {1}.',
 	'modified notification file' => 'Le fichier \'{0}\' a été modifié',
 	'modified notification file desc' => 'La fichier \'{0}\' a été modifié par {1}.',
 	'modified notification webpage' => 'Le lien web \'{0}\' a été modifié',

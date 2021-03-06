@@ -332,25 +332,25 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'settings_closed', '0', 'BoolConfigHandler', 1, 0, '');
 
 INSERT INTO `<?php echo $table_prefix ?>object_types` (`name`,`handler_class`,`table_name`,`type`,`icon`,`plugin_id`) VALUES
- ('workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', null),
- ('tag', '', '', 'dimension_group', 'tag', null),
- ('message', 'ProjectMessages', 'project_messages', 'content_object', 'message', null),
- ('weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', null),
- ('task', 'ProjectTasks', 'project_tasks', 'content_object', 'task', null),
- ('file', 'ProjectFiles', 'project_files', 'content_object', 'file', null),
- ('form', 'ProjectForms', 'project_forms', '', '', null),
- ('chart', 'ProjectCharts', 'project_charts', '', '', null),
- ('milestone', 'ProjectMilestones', 'project_milestones', 'content_object', 'milestone', null),
- ('event', 'ProjectEvents', 'project_events', 'content_object', 'event', null), 
- ('report', 'Reports', 'reports', 'located', 'reporting', null),
- ('template', 'COTemplates', 'templates', 'located', 'template', null),
- ('comment', 'Comments', 'comments', 'comment', 'comment', null), 
- ('billing', 'Billings', 'billings', '', '', null),
- ('contact', 'Contacts', 'contacts', 'content_object', 'contact', null),
- ('file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', null),
- ('timeslot', 'Timeslots', 'timeslots', 'located', 'time', null),
- ('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', null),
- ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', null);
+ ('workspace', 'Workspaces', 'workspaces', 'dimension_object', 'workspace', 0),
+ ('tag', '', '', 'dimension_group', 'tag', 0),
+ ('message', 'ProjectMessages', 'project_messages', 'content_object', 'message', 0),
+ ('weblink', 'ProjectWebpages', 'project_webpages', 'content_object', 'weblink', 0),
+ ('task', 'ProjectTasks', 'project_tasks', 'content_object', 'task', 0),
+ ('file', 'ProjectFiles', 'project_files', 'content_object', 'file', 0),
+ ('form', 'ProjectForms', 'project_forms', '', '', 0),
+ ('chart', 'ProjectCharts', 'project_charts', '', '', 0),
+ ('milestone', 'ProjectMilestones', 'project_milestones', 'content_object', 'milestone', 0),
+ ('event', 'ProjectEvents', 'project_events', 'content_object', 'event', 0), 
+ ('report', 'Reports', 'reports', 'located', 'reporting', 0),
+ ('template', 'COTemplates', 'templates', 'located', 'template', 0),
+ ('comment', 'Comments', 'comments', 'comment', 'comment', 0), 
+ ('billing', 'Billings', 'billings', '', '', 0),
+ ('contact', 'Contacts', 'contacts', 'content_object', 'contact', 0),
+ ('file revision', 'ProjectFileRevisions', 'file_revisions', 'content_object', 'file', 0),
+ ('timeslot', 'Timeslots', 'timeslots', 'located', 'time', 0),
+ ('template_task', 'TemplateTasks', 'template_tasks', 'content_object', 'task', 0),
+ ('template_milestone', 'TemplateMilestones', 'template_milestones', 'content_object', 'milestone', 0);
 
 INSERT INTO `<?php echo $table_prefix ?>address_types` (`name`,`is_system`) VALUES
  ('home', 1),
@@ -394,19 +394,19 @@ INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`title`,`icon_cls`,`re
 
 
 INSERT INTO `<?php echo $table_prefix ?>permission_groups` (`name`, `contact_id`, `is_context`, `plugin_id`, `type`) VALUES
-('Super Administrator',	0,	0,	NULL, 'roles'),
-('Administrator',	0,	0,	NULL, 'roles'),
-('Manager',	0,	0,	NULL, 'roles'),
-('Executive',	0,	0,	NULL, 'roles'),
-('Collaborator Customer',	0,	0,	NULL, 'roles'),
-('Internal Collaborator',	0,	0,	NULL, 'roles'),
-('External Collaborator',	0,	0,	NULL, 'roles'),
-('ExecutiveGroup',	0,	0,	NULL, 'roles'),
-('CollaboratorGroup',	0,	0,	NULL, 'roles'),
-('GuestGroup',	0,	0,	NULL, 'roles'),
-('Guest Customer',	0,	0,	NULL, 'roles'),
-('Guest',	0,	0,	NULL, 'roles'),
-('Non-Exec Director',	0,	0,	NULL, 'roles');
+('Super Administrator',	0,	0,	0, 'roles'),
+('Administrator',	0,	0,	0, 'roles'),
+('Manager',	0,	0,	0, 'roles'),
+('Executive',	0,	0,	0, 'roles'),
+('Collaborator Customer',	0,	0,	0, 'roles'),
+('Internal Collaborator',	0,	0,	0, 'roles'),
+('External Collaborator',	0,	0,	0, 'roles'),
+('ExecutiveGroup',	0,	0,	0, 'roles'),
+('CollaboratorGroup',	0,	0,	0, 'roles'),
+('GuestGroup',	0,	0,	0, 'roles'),
+('Guest Customer',	0,	0,	0, 'roles'),
+('Guest',	0,	0,	0, 'roles'),
+('Non-Exec Director',	0,	0,	0, 'roles');
 
 SET @exegroup := (SELECT pg.id FROM <?php echo $table_prefix ?>permission_groups pg WHERE pg.name = 'ExecutiveGroup');
 SET @colgroup := (SELECT pg.id FROM <?php echo $table_prefix ?>permission_groups pg WHERE pg.name = 'CollaboratorGroup');

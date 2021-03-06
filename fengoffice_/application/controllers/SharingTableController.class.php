@@ -206,9 +206,13 @@ class  SharingTableController extends ApplicationController {
 					
 					$values = "";
 					foreach ($ids as $id) {
-						$values .= ($values == "" ? "" : ",") . "('$id','$group')";
+						if ($id) {
+							$values .= ($values == "" ? "" : ",") . "('$id','$group')";
+						}
 					}
-					DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values ON DUPLICATE KEY UPDATE group_id=group_id;");
+					if ($values != "") {
+						DB::execute("INSERT INTO ".TABLE_PREFIX."sharing_table (object_id, group_id) VALUES $values ON DUPLICATE KEY UPDATE group_id=group_id;");
+					}
 				}
 			}
 		}

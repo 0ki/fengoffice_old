@@ -20,7 +20,7 @@ og.OverviewManager = function() {
 				totalProperty: 'totalCount',
 				id: 'id',
 				fields: [
-					'name', 'object_id', 'type', 'ot_id', 'createdBy', 'createdById', 'dateCreated', 
+					'name', 'object_id', 'type', 'ot_id', 'createdBy', 'createdById', 'dateCreated', 'completedBy', 'dateCompleted',
 					'updatedBy', 'updatedById', 'dateUpdated', 'icon', 'wsIds', 'manager', 'mimeType', 'url', 'ix', 'isRead', 'memPath'
 				]
 			}),
@@ -108,7 +108,7 @@ og.OverviewManager = function() {
 		if (!r.data.isRead && !notReadable[r.data.manager]) classes += " bold";
 		
 		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
+		var actionStyle = ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat;" ';
 		if (r.data.type == 'webpage') {
 			viewUrl = og.getUrl('webpage', 'view', {id:r.data.object_id});
 			actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '> </a>',
@@ -130,7 +130,12 @@ og.OverviewManager = function() {
 			mem_path += "</div>";
 		}
 		
-		var name = String.format('<a style="font-size:120%" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes) + mem_path;
+		var additional_style = '';
+		if (r.data.type == 'task' && r.data.completedBy > 0) {
+			additional_style += 'text-decoration:line-through;';
+		}
+		
+		var name = String.format('<a style="font-size:120%;'+additional_style+'" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes) + mem_path;
 		
 		return name + actions;
 	}

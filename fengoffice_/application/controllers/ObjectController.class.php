@@ -2125,6 +2125,9 @@ class ObjectController extends ApplicationController {
 					}
 				} else if ($instance instanceof ProjectFile) {
 					$info_elem['mimeType'] = $instance->getTypeString();
+				} else if ($instance instanceof ProjectTask) {
+					$info_elem['completedBy'] = $instance->getCompletedById();
+					$info_elem['dateCompleted'] = $instance->getCompletedOn() instanceof DateTimeValue ? format_datetime($instance->getCompletedOn()) : '';
 				}
 					
 				$info[] = $info_elem;

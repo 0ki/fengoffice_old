@@ -1412,7 +1412,7 @@ class TaskController extends ApplicationController {
 		}			
 	}
 		
-	private function getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond){
+	private function getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond,$include_empty_milestones=true){
 		$milestone_field = "`milestone_id`";
 		$groupId = $show_more_conditions['groupId'];
 		$start = $show_more_conditions['start'];
@@ -1455,7 +1455,7 @@ class TaskController extends ApplicationController {
 			}
 		}
 		
-		if(user_config_option('tasksShowEmptyMilestones')){
+		if(user_config_option('tasksShowEmptyMilestones') && $include_empty_milestones){
 			//group totals
 			$join_params['join_type'] = "LEFT ";
 			$join_params['table'] = TABLE_PREFIX."project_tasks";
@@ -1843,7 +1843,7 @@ class TaskController extends ApplicationController {
 		return $root_nodes_ids;
 	}
 	
-	private function getGroups($groupBy,$conditions,$show_more_conditions){
+	private function getGroups($groupBy,$conditions,$show_more_conditions,$include_empty_milestones=true){
 		$groups = array();
 		
 		$group_by_date = array('due_date','start_date','created_on','completed_on');
@@ -1869,7 +1869,7 @@ class TaskController extends ApplicationController {
 			$groups = $this->getStatusGroups($conditions,$show_more_conditions,$list_subtasks_cond);
 		//Group by milestone
 		}elseif(in_array($groupBy,$group_by_milestone)){
-			$groups = $this->getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond);
+			$groups = $this->getMilestoneGroups($conditions,$show_more_conditions,$list_subtasks_cond,$include_empty_milestones);
 		//Group by nothing
 		}elseif(in_array($groupBy,$group_by_nothing)){
 			$groups = $this->getNothingGroups($conditions,$show_more_conditions,$list_subtasks_cond);
@@ -1895,7 +1895,7 @@ class TaskController extends ApplicationController {
 		$task_id = array_var($_REQUEST,'taskId',0);
 		$conditions= " AND `e`.`object_id` = $task_id";
 		$groupBy = user_config_option('tasksGroupBy');
-		$groups = $this->getGroups($groupBy,$conditions);
+		$groups = $this->getGroups($groupBy,$conditions,null,false);
 		
 		if(is_null($groups)){
 			$groups = array();

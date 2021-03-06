@@ -279,7 +279,7 @@ final class acInstallation {
 		$mysql_version = mysql_get_server_info($this->database_connection);
 		
 		// check if mysql is >= mysql 5.6 
-		if($mysql_version && version_compare($mysql_version, '5.6', '>=')){
+		if($mysql_version && (version_compare($mysql_version, '5.6', '>=') || strpos($mysql_version, 'MariaDB') !== false)){
 			//mysql 5.6 have_innodb is deprecated
 			if($res = mysql_query("SHOW ENGINES", $this->database_connection)){
 				while($rows = mysql_fetch_assoc($res)) {

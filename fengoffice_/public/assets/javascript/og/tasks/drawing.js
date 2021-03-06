@@ -861,8 +861,10 @@ ogTasks.drawAllGroupsTasks = function(){
 };
 
 ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level, target, returnHtml){
+	if (!task) return;
 	//Draw indentation
-	task.divInfo[task.divInfo.length] = {group_id: group_id, drawOptions: drawOptions, displayCriteria: displayCriteria, group_id: group_id, level:level};
+	var pos = (task.divInfo && !isNaN(task.divInfo.length)) ? task.divInfo.length : 0;
+	task.divInfo[pos] = {group_id: group_id, drawOptions: drawOptions, displayCriteria: displayCriteria, group_id: group_id, level:level};
 
 	var html = this.drawTaskRow(task, drawOptions, displayCriteria, group_id, level);
 		
@@ -1405,8 +1407,6 @@ ogTasks.loadTimeslotUsers = function(genid, task_id) {
 				for (var i=0; i<data.users.length; i++) {
 					var u = data.users[i];
 					var sel = u.id == og.loggedUser.id ? 'selected="selected"' : '';
-					console.log(sel);
-					console.log(u);
 					$('#' + genid + 'tsUser').append('<option value="'+ u.id +'" '+ sel +'>'+ u.name +'</option>');
 				}
 				$('#' + genid + 'tsUserContainer').show();

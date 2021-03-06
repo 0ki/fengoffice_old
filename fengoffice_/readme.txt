@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4-rc
+	About Feng Office 3.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,11 +105,16 @@
 	Changelog
 	=========
 	
+	Since 3.4-rc
+	----------------
+	bugfix: webpages display issue in contacts view.
+	bugfix: tasks list grouped by milestones, if showing empty milestones, when adding/editing task, it is replicated in all emtpy milestones.
+	bugfix: change 'null' for '0' in plugin_id column in installer initial data quieries.
+	
 	Since 3.4-beta
 	----------------
 	bugfix: cannot instantiate template from mail if template has no variables.
 	bugfix: in some languages somtimes the messages widget crashes the overview.
-	
 	
 	Since 3.3.0.11
 	----------------
