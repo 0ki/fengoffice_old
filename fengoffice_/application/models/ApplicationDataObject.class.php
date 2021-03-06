@@ -26,6 +26,7 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @var array
 	 */
 	protected $searchable_columns = array();
+	protected $searchable_composite_columns = array();
 	 
 	/**
 	 * Returns true if this object is searchable (maked as searchable and has searchable columns)
@@ -57,7 +58,8 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return string
 	 */
 	function getSearchableColumnContent($column_name) {
-		if(!$this->columnExists($column_name)) throw new Error("Object column '$column_name' does not exist");
+		if(!$this->columnExists($column_name)) 
+			throw new Error("Object column '$column_name' does not exist");
 		return (string) $this->getColumnValue($column_name);
 	} // getSearchableColumnContent
 
@@ -77,8 +79,15 @@ abstract class ApplicationDataObject extends DataObject {
 			$columns_to_drop = $this->getSearchableColumns();
 		else {
 			foreach ($this->getSearchableColumns() as $column_name){
-				if ($this->isColumnModified($column_name))
-				$columns_to_drop[] = $column_name;
+				if (isset($this->searchable_composite_columns[$column_name])){
+					foreach ($this->searchable_composite_columns[$column_name] as $colName){
+						if ($this->isColumnModified($colName)){
+							$columns_to_drop[] = $column_name;
+							break;
+						}
+					}
+				} else if ($this->isColumnModified($column_name))
+					$columns_to_drop[] = $column_name;
 			}
 		}
 		 
@@ -88,6 +97,9 @@ abstract class ApplicationDataObject extends DataObject {
 
 			foreach($columns_to_drop as $column_name) {
 				$content = $this->getSearchableColumnContent($column_name);
+				if (get_class($this->manager()) == 'ProjectFiles') {
+					$content = utf8_encode($content);
+				}
 				if(trim($content) <> '') {
 					$searchable_object = new SearchableObject();
 					 
@@ -102,38 +114,6 @@ abstract class ApplicationDataObject extends DataObject {
 				} // if
 			} // foreach
 		} // if
-		
-		// Add custom properties
-		$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($this->manager()));
-		foreach($pids as $id) {
-			$custom_property = CustomProperties::findById($id);
-			$name = $custom_property->getName();
-			$values = CustomPropertyValues::getCustomPropertyValues($this->getObjectId(), $id);
-			if ($custom_property->getIsRequired() && (!is_array($values) || count($values) == 0)) {
-				$v = new CustomPropertyValue();
-				$v->setValue($custom_property->getDefaultValue());
-				$values = array($v);
-			}
-			$cpval_index = 0;
-			foreach ($values as $cpval) {
-				$value = $cpval->getValue();
-				if(trim($value) <> '') {
-					$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_manager` = '".get_class($this->manager())."' AND `rel_object_id` = ".$this->getId()." AND `column_name` = '$name'"));
-					if (!$searchable_object)
-						$searchable_object = new SearchableObject();
-					 
-					$searchable_object->setRelObjectManager(get_class($this->manager()));
-					$searchable_object->setRelObjectId($this->getId());
-					$searchable_object->setColumnName($name.($cpval_index > 0 ? $cpval_index : ''));
-					$searchable_object->setContent($value);
-					$searchable_object->setProjectId(0);
-					$searchable_object->setIsPrivate(false);
-					
-					$searchable_object->save();
-					$cpval_index++;
-				}
-			}
-		}
 		 
 		//Add Unique ID to search
 		if ($wasNew){
@@ -535,9 +515,9 @@ abstract class ApplicationDataObject extends DataObject {
 	 * @return array
 	 */
 	function getAllLinkedObjects() {
-		if(is_null($this->all_linked_objects)) {
+	//	if(is_null($this->all_linked_objects)) {
 			$this->all_linked_objects = LinkedObjects::getLinkedObjectsByObject($this);
-		} // if
+	//	} // if
 		return $this->all_linked_objects;
 	} //  getAllLinkedObjects
 
@@ -734,7 +714,18 @@ abstract class ApplicationDataObject extends DataObject {
 			} // if
 			else break;
 		} // for
+	}
 
+	function addPropertyToSearchableObject(ObjectProperty $property){
+		$searchable_object = new SearchableObject();
+		 
+		$searchable_object->setRelObjectManager(get_class($this->manager()));
+		$searchable_object->setRelObjectId($this->getObjectId());
+		$searchable_object->setColumnName('property'.$property->getId());
+		$searchable_object->setContent($property->getPropertyValue());
+		$searchable_object->setIsPrivate(false);
+	  
+		$searchable_object->save();
 	}
 
 	/**
@@ -829,6 +820,9 @@ abstract class ApplicationDataObject extends DataObject {
 
 	function clearObjectProperties(){
 		ObjectProperties::deleteAllByObject($this);
+		if ($this->isSearchable()){
+			SearchableObjects::dropObjectPropertiesByObject($this);
+		}
 	}
 
 	// ---------------------------------------------------

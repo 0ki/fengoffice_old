@@ -6,6 +6,58 @@
  * @author Carlos Palma <chonwil@gmail.com>
  */
 class MailContents extends BaseMailContents {
+	
+	public static function getMailsFromConversation(MailContent $mail) {
+		$conversation_id = $mail->getConversationId();
+		if ($conversation_id == 0) return array();
+		return self::findAll(array(
+			"conditions" => "`conversation_id` = '$conversation_id' AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2",
+			"order" => "`sent_date` DESC"
+		));
+	}
+	
+	public static function getMailIdsFromConversation(MailContent $mail, $check_permissions = false) {
+		$conversation_id = $mail->getConversationId();
+		if ($conversation_id == 0) return array($mail->getId());
+		if ($check_permissions) {
+			$permissions = " AND " . permissions_sql_for_listings(self::instance(), ACCESS_LEVEL_READ, logged_user());
+		} else {
+			$permissions = "";
+		}
+		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `conversation_id` = '$conversation_id'  AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2 $permissions";
+		$rows = DB::executeAll($sql);
+		if (is_array($rows)){
+			$result = array();
+			foreach ($rows as $row){
+				$result[] = $row['id'];
+			}
+			return $result;
+		} else 
+			return array($mail->getId());
+	}
+	
+	public static function countMailsInConversation($mail = null) {
+		if (!$mail instanceof MailContent || $mail->getConversationId() == 0) return 0;
+		$conversation_id = $mail->getConversationId();
+		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `conversation_id` = '$conversation_id'  AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2";
+		$rows = DB::executeAll($sql);
+		return (is_array($rows) ? count($rows) : 0);
+	}
+	
+	public static function countUnreadMailsInConversation($mail = null) {
+		if (!$mail instanceof MailContent || $mail->getConversationId() == 0) return 0;
+		$conversation_id = $mail->getConversationId();
+		$unread_cond = "AND NOT `id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "read_objects` `t` WHERE `user_id` = " . logged_user()->getId() . " AND `t`.`rel_object_manager` = 'MailContents' AND `t`.`is_read` = '1')";
+		$sql = "SELECT `id` FROM `". TABLE_PREFIX ."mail_contents` WHERE `conversation_id` = '$conversation_id'  AND `account_id` = " . $mail->getAccountId() . " AND `state` <> 2 $unread_cond";
+		$rows = DB::executeAll($sql);
+		return (is_array($rows) ? count($rows) : 0);
+	}
+	
+	public static function getNextConversationId($account_id) {
+		$sql = "INSERT INTO `".TABLE_PREFIX."mail_conversations` () VALUES ()";
+		DB::execute($sql);
+		return DB::lastInsertId();
+	}
 	 
 	public static function getWorkspaceString($ids = '?') {
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'MailContents' AND `workspace_id` IN ($ids)) ";
@@ -54,6 +106,7 @@ class MailContents extends BaseMailContents {
 				}
 				Logger::log("Mails deleted: $count --- errors: $err");
 			}
+			
 			return parent::delete($condition);
 		} else {
 			return MailContents::instance()->delete($condition);
@@ -68,7 +121,7 @@ class MailContents extends BaseMailContents {
 	 * @param Project $project
 	 * @return array
 	 */
-	function getEmails($tag = null, $account_id = null, $state = null, $read_filter = "", $classif_filter = "", $project = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC') {
+	function getEmails($tag = null, $account_id = null, $state = null, $read_filter = "", $classif_filter = "", $project = null, $start = null, $limit = null, $order_by = 'sent_date', $dir = 'ASC', $archived = false, $count = false) {
 		// Check for accounts
 		$accountConditions = "";
 		$singleAccount = false;
@@ -79,9 +132,7 @@ class MailContents extends BaseMailContents {
 				$accounts = array($acc);
 			}
 		} else { // All user accounts
-			$accounts = MailAccounts::findAll(array(
-      			'conditions' => '`user_id` = ' . logged_user()->getId())
-			);
+			$accounts = MailAccounts::getMailAccountsByUser(logged_user());
 		}
 
 		if (isset($accounts) && count($accounts) > 0) {
@@ -111,11 +162,15 @@ class MailContents extends BaseMailContents {
 
 		// Check for drafts emails
 		if ($state == "draft") {
-			$stateConditions = "AND `state` = '2'";
+			$stateConditions = " `state` = '2'";
 		} else if ($state == "sent") {
-			$stateConditions = "AND (`state` = '1' OR `state` = '3' OR `state` = '5')";
+			$stateConditions = " (`state` = '1' OR `state` = '3' OR `state` = '5')";
 		} else if ($state == "received") {
-			$stateConditions = "AND (`state` = '0' OR `state` = '5')";
+			$stateConditions = " (`state` = '0' OR `state` = '5')";
+		} else if ($state == "junk") {
+			$stateConditions = " `state` = '4'";
+		} else if ($state == "outbox") {
+			$stateConditions = " `state` >= 200";
 		} else {
 			$stateConditions = "";
 		}
@@ -162,16 +217,54 @@ class MailContents extends BaseMailContents {
 		}
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
 
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
+		else $archived_cond = "AND `archived_by_id` = 0";
+
+		$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " `state` <> '2' AND ";
+		$state_conv_cond_2 = $state != 'received' ? " AND (`mc`.`state` = '1' OR `mc`.`state` = '3' OR `mc`.`state` = '5') " : " AND `mc`.`state` <> '2' ";
+		
+		if (user_config_option('show_emails_as_conversations')) {
+			$archived_by_id = $archived ? "AND `mc`.`archived_by_id` != 0" : "AND `mc`.`archived_by_id` = 0";
+			$trashed_by_id = "AND `mc`.`trashed_by_id` = 0";
+			$conversation_cond = "AND IF(`conversation_id` = 0, $stateConditions, $state_conv_cond_1 NOT EXISTS (SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`sent_date` < `mc`.`sent_date` $state_conv_cond_2))";
+			$box_cond = "AND IF(EXISTS(SELECT * FROM `".TABLE_PREFIX."mail_contents` `mc` WHERE `".TABLE_PREFIX."mail_contents`.`conversation_id` = `mc`.`conversation_id` AND `".TABLE_PREFIX."mail_contents`.`id` <> `mc`.`id` AND `".TABLE_PREFIX."mail_contents`.`account_id` = `mc`.`account_id` $archived_by_id AND `mc`.`is_deleted` = 0 $trashed_by_id), TRUE, $stateConditions)";
+		} else {
+			$conversation_cond = "";	
+			$box_cond = "AND $stateConditions";
+		}
+
 		//$not_classified_by_other_user = " NOT EXISTS (SELECT `id` FROM $table_name mc WHERE mc.`subject` = $table_name.`subject` AND mc.`sent_date` = $table_name.`sent_date` AND mc.`from` = $table_name.`from` AND mc.`account_id` <> $table_name.`account_id` AND $wspace_obj_string)";
-		$conditions = " `is_deleted` = 0 $projectConditions  $tagstr $classified $read $stateConditions $permissions";	//. " AND $not_classified_by_other_user";
+		$conditions = "`trashed_by_id` = 0 AND `is_deleted` = 0 $archived_cond $projectConditions $tagstr $classified $read $permissions $conversation_cond $box_cond";	//. " AND $not_classified_by_other_user";
 
-		$page = (integer) ($start / $limit) + 1;
-		$order = "$order_by $dir";
-
-		return self::paginate(array(
-			'conditions' => $conditions,
-			'order' => $order
-		), $limit, $page);
+		if ($count) {
+			return self::count($conditions);
+		} else {
+			$page = (integer) ($start / $limit) + 1;
+			$order = "$order_by $dir";
+			$count = null;
+			if (defined('INFINITE_PAGING') && INFINITE_PAGING) $count = 10000000;
+			$pagination = new DataPagination($count ? $count : self::count($conditions), $limit, $page);
+			$ids = self::findAll(array(
+				'conditions' => $conditions,
+				'order' => $order,
+				'offset' => $pagination->getLimitStart(),
+				'limit' => $pagination->getItemsPerPage(),
+				'id' => true,
+			));
+			$objects = array();
+			foreach ($ids as $id) {
+				$objects[] = self::findById($id);
+			}
+      		return array($objects, $pagination);
+		}
+	}
+	
+	function getByMessageId($message_id) {
+		return self::findOne(array('conditions' => array('`message_id` = ?', $message_id)));
+	}
+	
+	function countUserInboxUnreadEmails() {
+		return self::getEmails(null, null, 'received', 'unread', "", null, null, null, 'sent_date', 'ASC', false, true);
 	}
 
 } // MailContents

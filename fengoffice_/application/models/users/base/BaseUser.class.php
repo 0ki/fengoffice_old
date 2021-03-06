@@ -584,6 +584,28 @@ abstract class BaseUser extends ApplicationDataObject {
 	function setCanManageTime($value) {
 		return $this->setColumnValue('can_manage_time', $value);
 	} // setCanManageTime()
+
+	/**
+	 * Return value of 'can_add_mail_accounts' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getCanAddMailAccounts() {
+		return $this->getColumnValue('can_add_mail_accounts');
+	} // getCanAddMailAccounts()
+
+	/**
+	 * Set value of 'can_add_mail_accounts' field
+	 *
+	 * @access public
+	 * @param boolean $value
+	 * @return boolean
+	 */
+	function setCanAddMailAccounts($value) {
+		return $this->setColumnValue('can_add_mail_accounts', $value);
+	} // setCanAddMailAccounts()
 	
 	/**
 	 * Return value of 'auto_assign' field

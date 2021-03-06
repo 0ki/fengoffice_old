@@ -20,6 +20,7 @@
 	$users_array = array();
 	$companies_array = array();
 	$allUsers_array = array();
+	$object_subtypes_array = array();
 	
 	
 	if (isset($all_templates) && !is_null($all_templates))
@@ -41,7 +42,9 @@
 		$users_array[] = $user->getArrayInfo();
 	foreach($companies as $company)
 		$companies_array[] = $company->getArrayInfo();
-	
+	foreach($object_subtypes as $ot) {
+		$object_subtypes_array[] = $ot->getArrayInfo();
+	}
 ?>
 <script>
 og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
@@ -56,6 +59,7 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 	<input type="hidden" id="hfAllUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($allUsers_array)))) ?>"/>
 	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
 	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+	<input type="hidden" id="hfObjectSubtypes" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($object_subtypes_array)))) ?>"/>
 </div>
 
 <div id="tasksPanel" class="ogContentPanel" style="background-color:white;background-color:#F0F0F0;height:100%;width:100%;">
@@ -84,21 +88,25 @@ og.noOfTasks = <?php echo user_config_option('noOfTasks') ?>;
 
 
 
-<script>
+<script type="text/javascript">
+	if (rx__TasksDrag)
+		rx__TasksDrag.initialize();
 	ogTasks.userPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
 	var ogTasksTT = new og.TasksTopToolbar({
 		projectTemplatesHfId:'hfProjectTemplates',
 		allTemplatesHfId:'hfAllTemplates',
-		usersHfId:'hfUsers',
-		companiesHfId:'hfCompanies',
-		internalMilestonesHfId:'hfIMilestones',
-		externalMilestonesHfId:'hfEMilestones',
 		renderTo:'tasksPanelTopToolbar'
 		});
 	var ogTasksBT = new og.TasksBottomToolbar({
-		renderTo:'tasksPanelBottomToolbar'
+		renderTo:'tasksPanelBottomToolbar',
+		usersHfId:'hfUsers',
+		companiesHfId:'hfCompanies',
+		internalMilestonesHfId:'hfIMilestones',
+		externalMilestonesHfId:'hfEMilestones'
 		});
 
+	og.defaultTaskType = <?php echo config_option('default task co type', '0') ?>;
+	
 	function resizeTasksPanel(e, id) {
 		var tpc = document.getElementById('tasksPanelContent');
 		if (tpc) {

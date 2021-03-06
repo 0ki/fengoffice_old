@@ -27,7 +27,10 @@
 			tpl_assign('company', $company);
 		?>
 <div style='padding-bottom:20px;max-width:700px'>
-<div style="padding:10px;background-color:#D7E5F5"><h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>"><?php echo clean($company->getName()) ?></a></h1></div>
+<div style="padding:10px;padding-bottom:13px;background-color:#D7E5F5">
+	<h1 style="font-size:140%;font-weight:bold"><a class="internalLink" href="<?php echo $company->getCardUrl() ?>"><?php echo clean($company->getName()) ?></a></h1>
+	<div style="float:right;" id="companypagination<?php echo $company->getId(); ?>"></div>
+</div>
 <div id="usersList" style="border:1px solid #DDD">
 
   <?php $this->includeTemplate(get_template_path('list_users', 'administration')); ?>
@@ -36,3 +39,24 @@
   
   </div>
  </div>
+ <script type="text/javascript">
+ og.userListPagination=function(page,compid,cantpages,element)
+ 	{ 
+	 divs = element.parentNode.childNodes;	 
+	 		for (i=1;i<=cantpages;i++){
+		 		d = divs[i-1];
+			 	d.className="pagination-user";
+				elem = document.getElementById(i + '-' + compid + 'userspage');
+				if(elem){
+					elem.style.display = "none";					
+				}
+			 }
+	 	element.className = "pagination-user-active";
+		page = document.getElementById(page + '-' + compid + 'userspage');
+		if (page){
+		 	page.style.display = "";
+		}
+
+	};
+ </script>
+ 

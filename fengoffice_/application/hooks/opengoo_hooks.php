@@ -11,6 +11,10 @@ Hook::register("opengoo");
  * - render_page_header: Called when drawing the page header.
  *  	- $unused
  *   	- &$unused
+ * 
+ * - render_page_footer: Called when drawing the page footer.
+ *  	- $unused
+ *   	- &$unused
  *   
  * - render_getting_started: Add additional getting started help.
  * 		- $unused
@@ -119,20 +123,38 @@ function opengoo_reminder_email($reminder, &$ret) {
 	$object = $reminder->getObject();
 	$date = $object->getColumnValue($reminder->getContext());
 	if ($reminder->getContext() == "due_date" && ($object instanceof ProjectTask || $object instanceof ProjectMilestone)) {
-		if ($object->isCompleted()) {
-			// don't send due date reminders for completed tasks
-			$reminder->delete();
+		if ($object->isCompleted() || $object->isTrashed()) {
+			// don't send due date reminders for completed or trashed tasks
+			if ($object instanceof ProjectTask && $object->isRepetitive()) {
+				// if repetitive task then don't delete the reminder, but disable it
+				$reminder->setDate(EMPTY_DATETIME);
+				$reminder->save();
+			} else {
+				$reminder->delete();
+			}
 			return;
 		}
 	}
-	if (!$date instanceof DateTimeValue) return;
+	if (!$date instanceof DateTimeValue) return; // skip reminders without a date
 	if ($date->getTimestamp() + 24*60*60 < DateTimeValueLib::now()->getTimestamp()) {
 		// don't send reminders older than a day
-		$reminder->delete();
+		if ($object instanceof ProjectTask && $object->isRepetitive()) {
+			// if repetitive task then don't delete the reminder, but disable it
+			$reminder->setDate(EMPTY_DATETIME);
+			$reminder->save();
+		} else {
+			$reminder->delete();
+		}
 		throw new Exception("Reminder too old");
 	}
 	Notifier::objectReminder($reminder);
-	$reminder->delete();
+	if ($object instanceof ProjectTask && $object->isRepetitive()) {
+		// if repetitive task then don't delete the reminder, but disable it
+		$reminder->setDate(EMPTY_DATETIME);
+		$reminder->save();
+	} else {
+		$reminder->delete();
+	}
 	$ret++;
 }
 

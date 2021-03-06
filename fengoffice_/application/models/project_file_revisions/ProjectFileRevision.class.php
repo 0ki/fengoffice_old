@@ -112,19 +112,38 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 */
 	function getSearchableColumnContent($column_name) {
 		if($column_name == 'filecontent') {
-
-			// Unknown type or type not searchable
 			$file_type = $this->getFileType();
-			if(!($file_type instanceof FileType) || !$file_type->getIsSearchable()) {
+			
+			// Unknown type or type not searchable
+			if(!($file_type instanceof FileType)) {
 				return null;
 			} // if
-
-			$content = $this->getFileContent();
-			if(strlen($content) <= MAX_SEARCHABLE_FILE_SIZE) return $content;
-
-		} else {
+			
+			// Simple search for .txt and .html documents
+			if ($file_type->getIsSearchable()){ 
+				$content = $this->getFileContent();
+				if(strlen($content) <= MAX_SEARCHABLE_FILE_SIZE)
+					return strip_tags($content); // Remove unnecesary html tags
+			} else 
+			
+			// Search for .doc and .ppt documents
+			if (($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
+				&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
+				
+				$backend = FileRepository::getBackend();
+				if ($backend->isInRepository($this->getRepositoryId())){
+					$filepath = $backend->getFilePath($this->getRepositoryId());
+					$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
+					
+					if($fileContents && strlen($fileContents) <= MAX_SEARCHABLE_FILE_SIZE){
+					    return $fileContents;
+					}
+				}
+			}
+			return null;
+		} 
+		else
 			return parent::getSearchableColumnContent($column_name);
-		} // if
 	} // getSearchableColumnContent
 
 	/**
@@ -174,6 +193,18 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	//  URLs
 	// ---------------------------------------------------
 
+	/**
+    * Return object URl
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getObjectUrl() {
+    	$file = $this->getFile();
+		return $file  instanceof ProjectFile ? $file->getObjectUrl()  : null;
+    } // getObjectUrl
+	
 	/**
 	 * Return revision details URL
 	 *
@@ -350,51 +381,6 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 			return trim(implode(" ",$result));
 		} else return false;
 	}
- 
-	function save(){
-		parent::save();
-		
-		if ($this->getFile()->isModifiable()){
-			
-			if (!$this->isNew())
-	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
-	    	
-		    $searchable_object = new SearchableObject();
-		          
-		    $searchable_object->setRelObjectManager(get_class($this->manager()));
-		    $searchable_object->setRelObjectId($this->getObjectId());
-		    $searchable_object->setColumnName('filecontent');
-		    $searchable_object->setContent($this->getFileContent());
-	        $searchable_object->setProjectId(0); //TODO: search
-		    $searchable_object->setIsPrivate($this->isPrivate());
-		            
-		    $searchable_object->save();
-		} else // add .doc and .ppt files to the search 
-		if ($this->getFileType() && ($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
-			&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
-			if (!$this->isNew())
-	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
-	    		
-			$backend = FileRepository::getBackend();
-			if ($backend->isInRepository($this->getRepositoryId())){
-				$filepath = $backend->getFilePath($this->getRepositoryId());
-				$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
-				
-				if ($fileContents){
-				    $searchable_object = new SearchableObject();
-				          
-				    $searchable_object->setRelObjectManager(get_class($this->manager()));
-				    $searchable_object->setRelObjectId($this->getObjectId());
-				    $searchable_object->setColumnName('filecontent');
-				    $searchable_object->setContent($fileContents);
-			        $searchable_object->setProjectId(0); //TODO: search
-				    $searchable_object->setIsPrivate($this->isPrivate());
-				            
-				    $searchable_object->save();
-				}
-			}
-		}
-	}
 	
 	/**
 	 * Validate before save. This one is used to keep the data in sync. Users
@@ -492,17 +478,6 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	function getObjectTypeName() {
 		return 'file_revision';
 	} // getObjectTypeName
-
-	/**
-	 * Return object URl
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getObjectUrl() {
-		return $this->getDetailsurl();
-	} // getObjectUrl
 
 
   	function getUniqueObjectId(){

@@ -35,6 +35,8 @@ $user = Users::findById(array('id' => $user_filter));
 if ($user == null) $user = logged_user(); 
 
 $use_24_hours = user_config_option('time_format_use_24');
+if($use_24_hours) $timeformat = 'G:i';
+else $timeformat = 'g:i A';
 
 global $cal_db;
 // get actual current day info
@@ -221,7 +223,8 @@ foreach($companies as $company)
 								$p = get_url('event', 'viewdate', array(
 									'day' => $day_of_month,
 									'month' => $month_aux,
-									'year' => $year_aux
+									'year' => $year_aux,
+									'view_type' => 'viewdate'
 								));
 								$t = get_url('event', 'add', array(
 									'day' => $day_of_month,
@@ -234,7 +237,8 @@ foreach($companies as $company)
 								$p = get_url('event', 'viewdate', array(
 									'day' => $day_of_month,
 									'month' => $month_aux,
-									'year' => $year_aux
+									'year' => $year_aux,
+									'view_type' => 'viewdate'
 								));
 								$t = get_url('event', 'add', array(
 									'day' => $day_of_month,
@@ -256,7 +260,8 @@ foreach($companies as $company)
 								$p = get_url('event', 'viewdate', array(
 									'day' => $day_of_month - $lastday,
 									'month' => $month_aux,
-									'year' => $year_aux
+									'year' => $year_aux,
+									'view_type' => 'viewdate'
 								));
 								$t = get_url('event', 'add', array(
 									'day' => $day_of_month - $lastday,
@@ -305,26 +310,51 @@ foreach($companies as $company)
 											$private = $event->getIsPrivate(); 
 											$eventid = $event->getId();
 											
-											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											getEventLimits($event, $dtv, $event_start, $event_duration, $end_modified);
+											
+											$real_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											$real_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
+											$pre_tf = $real_start->getDay() == $real_duration->getDay() ? '' : 'D j, ';
+											if (!$event->isRepetitive() && $real_start->getDay() != $event_start->getDay()) $subject = "... $subject";
 											
 											$dws = $event->getWorkspaces();
 											$ws_color = 0;											
-											if (count($dws) >= 1) $ws_color = $dws[0]->getColor();											
-											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);											
+											if (count($dws) >= 1) $ws_color = $dws[0]->getColor();
+											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
+											
+											$id_suffix = "_$w";
 										
 											// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 											if(!$private && $count <= 3){
 												$tip_text = str_replace("\r", '', clean($event->getDescription()));
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+							
+									$bold = "bold";
+									if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
+										$bold = "normal";
+									}
+
+									$tags = $event->getTags();
+									$eventTagString = '';
+									if (is_array($tags) && count($tags)>0){													
+										$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
+										$c= 0;
+										foreach ($tags as $t){
+											$eventTagString .= $t;
+											$c++;
+											count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
+										}
+									}
 								?>
-												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
+
+												<div id="m_ev_div_<?php echo $event->getId() . $id_suffix?>" class="<?php echo "og-wsname-color-$ws_color" ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;<?php echo $extra_style ?>">
 												<div style="border: 1px solid;border-color:<?php echo $border_color ?>;">
 													<table style="width:100%;" class="<?php echo "og-wsname-color-$ws_color" ?>"><tr><td>
 													<a href='<?php echo get_url('event', 'viewevent', array('id' => $event->getId(), 'user_id' => $user_filter)); ?>' class='internalLink' onclick="og.disableEventPropagation(event); return true;" <?php echo "style='color:$txt_color;'" ?>>
 														<img src="<?php echo image_url('/16x16/calendar.png')?>" style="vertical-align: middle;border-width: 0px;">
-														<span><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?></span>
+														<span style="font-weight: <?php echo $bold ?>"><?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...') . $eventTagString ?></span>															
 													</a>
 													</td><td align="right">
 														<div align="right" style="padding-right:1px;">
@@ -353,10 +383,11 @@ foreach($companies as $company)
 											 	</div>
 										 		<script>
 										 			<?php
-										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A')) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
+										 			$tipbody = ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : format_date($real_start, $pre_tf.$timeformat, 0) .' - '. format_date($real_duration, $pre_tf.$timeformat, 0)) . ($tip_text != '' ? '<br><br>' . $tip_text : '');
 										 			?>
-													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
-													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() ?>', '<?php echo $event->getId()?>', 'event'); // Drag
+													addTip('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipbody);?>);
+													<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
+													og.createMonthlyViewDrag('m_ev_div_<?php echo $event->getId() . $id_suffix ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event'); // Drag
 												</script>
 											 	
 								<?php
@@ -391,7 +422,7 @@ foreach($companies as $company)
 													</div>
 													<script>
 														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - ' + <?php echo json_encode(clean($milestone->getTitle())) ?>, <?php echo json_encode($tip_text != '' ? $tip_text : '');?>);
-														og.createMonthlyViewDrag('m_ms_div_<?php echo $milestone->getId() ?>', '<?php echo $milestone->getId()?>', 'milestone'); // Drag
+														og.createMonthlyViewDrag('m_ms_div_<?php echo $milestone->getId() ?>', '<?php echo $milestone->getId()?>', false, 'milestone'); // Drag
 													</script>
 								<?php
 												}//if count
@@ -444,7 +475,7 @@ foreach($companies as $company)
 													</div>
 													<script>
 														addTip('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<i>' + '<?php echo $tip_title ?>' + '</i> - ' + <?php echo json_encode(clean($task->getTitle()))?>, <?php echo json_encode(trim($tip_text) != '' ? trim($tip_text) : '');?>);
-														og.createMonthlyViewDrag('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<?php echo $task->getId()?>', 'task'); // Drag
+														og.createMonthlyViewDrag('m_ta_div_<?php echo $tip_pre.$task->getId() ?>', '<?php echo $task->getId()?>', false, 'task'); // Drag
 													</script>
 								<?php
 												}//if count
@@ -550,7 +581,7 @@ foreach($companies as $company)
 								type_id:2, 
 								view:'month', 
 								title: lang('add event'),
-								time_format: '<?php echo ($use_24_hours ? 'G:i' : 'g:i A') ?>',
+								time_format: '<?php echo $timeformat ?>',
 								hide_calendar_toolbar: 1
 								}, '');
 	}

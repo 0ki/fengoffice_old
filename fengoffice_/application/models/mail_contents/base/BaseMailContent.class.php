@@ -479,6 +479,51 @@ abstract class BaseMailContent extends ProjectDataObject {
       return $this->setColumnValue('created_by_id', $value);
     } // setCreatedById() 
 
+    /**
+    * Return value of 'created_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getUpdatedOn() {
+      return $this->getColumnValue('created_on');
+    } // getUpdatedOn()
+    
+    /**
+    * Set value of 'created_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setUpdatedOn($value) {
+      return true;
+    } // setUpdatedOn() 
+    
+    /**
+    * Return value of 'created_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getUpdatedById() {
+      return $this->getColumnValue('created_by_id');
+    } // getUpdatedById()
+    
+    /**
+    * Set value of 'created_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setUpdatedById($value) {
+      return true;
+    } // setUpdatedById() 
+    
+    
     /** Return value of 'trashed_on' field
     *
     * @access public
@@ -588,7 +633,118 @@ abstract class BaseMailContent extends ProjectDataObject {
     function setContentFileId($value) {
       return $this->setColumnValue('content_file_id', $value);
     } // setContentFileId()
-  
+
+    /**
+    * Return value of 'archived_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getArchivedById() {
+      return $this->getColumnValue('archived_by_id');
+    } // getArchivedById()
+    
+    /**
+    * Set value of 'archived_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setArchivedById($value) {
+      return $this->setColumnValue('archived_by_id', $value);
+    } // setArchivedById()
+    
+    /** Return value of 'archived_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getArchivedOn() {
+      return $this->getColumnValue('archived_on');
+    } // getArchivedOn()
+    
+    /**
+    * Set value of 'archived_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setArchivedOn($value) {
+      return $this->setColumnValue('archived_on', $value);
+    } // setArchivedOn() 
+    
+    /**
+    * Return value of 'message_id' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getMessageId() {
+      return $this->getColumnValue('message_id');
+    } // getMessageId()
+    
+    /**
+    * Set value of 'message_id' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setMessageId($value) {
+      return $this->setColumnValue('message_id', $value);
+    } // setMessageId()
+    
+    /**
+    * Return value of 'conversation_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getConversationId() {
+      return $this->getColumnValue('conversation_id');
+    } // getConversationId()
+    
+    /**
+    * Set value of 'conversation_id' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setConversationId($value) {
+      return $this->setColumnValue('conversation_id', $value);
+    } // setConversationId()
+    
+    /**
+    * Return value of 'in_reply_to_id' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getInReplyToId() {
+      return $this->getColumnValue('in_reply_to_id');
+    } // getInReplyToId()
+    
+    /**
+    * Set value of 'in_reply_to_id' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setInReplyToId($value) {
+      return $this->setColumnValue('in_reply_to_id', $value);
+    } // setInReplyToId()
+    
+    
+    
 	/**
 	 * Return manager instance
 	 *

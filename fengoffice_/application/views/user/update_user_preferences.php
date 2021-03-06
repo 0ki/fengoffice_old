@@ -24,7 +24,9 @@
 						<div class="configOptionDescription desc"><?php echo clean($option_description) ?></div>
 					<?php } // if ?>
 					</div>
-					<div class="configOptionControl"><?php echo $option->render('options[' . $option->getName() . ']') ?></div>
+					<div class="configOptionControl">
+						<?php echo $option->render('options[' . $option->getName() . ']') ?>
+					</div>
 					<div class="clear"></div>
 				</div>
 			<?php } // foreach ?>

@@ -54,6 +54,13 @@ if (isset($file) && $file instanceof ProjectFile) {
 				add_page_action(lang('add files to zip'), "javascript:og.pickObjectToZip({$file->getId()})", 'ico-zip-add');
 			}
 		}
+		
+		if ($file->canEdit(logged_user())) {
+			if (!$file->isArchived())
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $file->getArchiveUrl() ."');", 'ico-archive-obj');
+			else
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $file->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
+		}
 	}
 	
 	if ($file->canDownload(logged_user()) && $file->getType() != ProjectFiles::TYPE_WEBLINK) { 
@@ -143,7 +150,7 @@ if (isset($file) && $file instanceof ProjectFile) {
 	}
 
 	if (!$file->isTrashed() && $file->getType() != ProjectFiles::TYPE_WEBLINK) {
-		tpl_assign('image', '<div><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
+		tpl_assign('image', '<div class="coViewIconImage"><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
 	}
 	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' : ($file->getType() != ProjectFiles::TYPE_WEBLINK? 'ico-large-files':'ico-large-webfile'));
 	tpl_assign('description', $description);

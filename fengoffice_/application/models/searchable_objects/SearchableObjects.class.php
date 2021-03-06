@@ -34,7 +34,7 @@
         $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, $include_private);
 	    $tagconditions = SearchableObjects::getTagSearchConditions($search_for, $project_csvs);
 	    $pagination = new DataPagination(SearchableObjects::countUniqueObjects($conditions, $tagconditions), $items_per_page, $current_page);
-	    $items = SearchableObjects::doSearch($conditions, $tagconditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+	    $items = SearchableObjects::doSearch($conditions, $tagconditions, $pagination->getItemsPerPage(), $pagination->getLimitStart(), $search_for);
 		 return array($items, $pagination);
     } // searchPaginated
     
@@ -45,7 +45,7 @@
 	    $count = SearchableObjects::countUniqueObjects($conditions);
 	    $pagination = new DataPagination($count, $items_per_page, $current_page);
 	    if ($count > 0)
-	    	$items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+	    	$items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart(), $search_for);
 	    else
 	    	$items = array();
         return array($items, $pagination);
@@ -77,6 +77,8 @@
     		$wsSearch .=  "`rel_object_id` IN (SELECT o.id FROM " . TABLE_PREFIX ."project_file_revisions o where o.file_id IN (SELECT p.`object_id` FROM `".TABLE_PREFIX."workspace_objects` p WHERE p.`object_manager` = 'ProjectFiles' && p.`workspace_id` IN ($project_csvs)))";
     	else if ($object_type=="Contacts")
     		$wsSearch .=  " (`rel_object_id` IN (SELECT o.contact_id FROM " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_contacts o where o.`project_id` IN ($project_csvs) AND o.`contact_id` = `rel_object_id`) = 0)";
+    	else if ($object_type=="Companies")
+    		$wsSearch .=  " (`rel_object_id` IN (SELECT o.company_id FROM " . TABLE_PREFIX ."project_companies o where o.`project_id` IN ($project_csvs)) OR (SELECT COUNT(*) from " . TABLE_PREFIX ."project_companies o where o.`project_id` IN ($project_csvs) AND o.`company_id` = `rel_object_id`) = 0)";
     	else
     		$wsSearch .= "`rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
     	$wsSearch .=  ')';
@@ -111,14 +113,14 @@
     	}
     	
     	if($include_private) {
-    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh')
+    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh') {
     			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\'' . $wsSearch . $trashed . $otSearch . $columnsSearch );
-    		else
+    		} else
     			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE)'  . $wsSearch . $trashed . $otSearch . $columnsSearch );
     	} else {
-    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh')
+    		if (substr(Localization::instance()->getLocale(),0,2) == 'zh') {
     			return DB::prepareString('`content` LIKE \'%' . $search_for . '%\' AND `is_private` = 0' . $wsSearch . $trashed . $otSearch . $columnsSearch );
-    		else
+    		} else
     			return DB::prepareString('MATCH (`content`) AGAINST (\'' . $search_for . '\' IN BOOLEAN MODE) AND `is_private` = 0' .$wsSearch . $trashed . $otSearch . $columnsSearch);
     	} // if
     } // getSearchConditions
@@ -141,7 +143,7 @@
     * @param integer $offset
     * @return array
     */
-    function doSearch($conditions, $limit = null, $offset = null) {
+    function doSearch($conditions, $limit = null, $offset = null, $search_for = '') {
       $table_name = SearchableObjects::instance()->getTableName(true);
       //$tags_table_name = Tags::instance()->getTableName();
       
@@ -167,7 +169,7 @@
       }
       $new_where = " AND (" . $new_where . ')';
       
-      $sql = "SELECT `rel_object_manager`, `rel_object_id`, 'column_name' FROM $table_name $where $new_where ORDER BY `rel_object_id`";
+      $sql = "SELECT `rel_object_manager`, `rel_object_id`, `column_name`, `content` FROM $table_name $where $new_where ORDER BY `rel_object_id`";
       $result = DB::executeAll($sql);
       if(!is_array($result)) return null;
       
@@ -178,23 +180,68 @@
         $manager_class = array_var($row, 'rel_object_manager');
         $object_id = array_var($row, 'rel_object_id');
         
-        if(!isset($loaded[$manager_class . '-' . $object_id]) || !($loaded[$manager_class . '-' . $object_id])) {
+        if(!isset($loaded[$manager_class.'-'.$object_id])) {
           if(class_exists($manager_class)) {
             $object = get_object_by_manager_and_id($object_id, $manager_class);
             if($object instanceof ApplicationDataObject) {
-              $loaded[$manager_class . '-' . $object_id] = true;
-              $objects[] = array('object' => $object, 'column_name' => array(array_var($row, 'column_name')));
+              $objects[] = array(
+              	'object' => $object, 
+              	'context' => array(array('context' => SearchableObjects::getContext(array_var($row, 'content'), $search_for),
+              		'column_name' => array_var($row, 'column_name'))));
+              $loaded[$manager_class . '-' . $object_id] = count($objects) - 1;
             } // if
           } // if
         } else {
-        	for ($i = 0; $i < count($objects); $i++)
-        		if ($objects[$i]['object'] instanceof ProjectDataObject && $objects[$i]['object']->getObjectId() == $object_id && get_class($objects[$i]['object']->getObjectManagerName()) == $manager_class)
-        			$objects[$i]['column_name'][] = array_var($row, 'column_name');
+        	$objects[$loaded[$manager_class.'-'.$object_id]]['context'][] = array(
+	        	'context' => SearchableObjects::getContext(array_var($row, 'content'), $search_for),
+	        	'column_name' => array_var($row, 'column_name'));
         } // if
       } // foreach
       
       return count($objects) ? $objects : null;
     } // doSearch
+    
+    /**
+     * Returns the searched words placed in a context, already cleaned and formatted in HTML
+     * 
+     * @param $content The content where the words were found
+     * @param $search_for The searched words
+     * @return String
+     */
+    function getContext($content, $search_for){
+    	$context = '';
+    	$context_length = 80;
+    	
+    	$content_lc = strtolower($content);
+    	$search_for_lc = strtolower($search_for);
+    	$pos = strpos($content_lc,$search_for_lc);
+    	
+    	if ($pos !== false){
+	    	$beginning = substr($content, 0, $pos);
+	    	
+	    	//Get the beginning of the context
+	    	if (strlen($beginning) > $context_length){
+				$short_beginning = substr($beginning, strlen($beginning)-$context_length); // Shorten the part
+	    		$beginning = '&hellip;' . clean(substr($short_beginning, strpos($short_beginning,' ') + 1)); // Do not cut words in half
+	    	} else
+	    		$beginning = clean($beginning);
+	    	
+	    	// Get the word searched for
+	    	$middle = clean(substr($content, $pos, strlen($search_for)));
+	    	
+	    	//Get the end part of the context
+	    	$ending = substr($content, $pos + strlen($search_for));
+	    	if (strlen($ending) > $context_length){
+	    		$short_ending = substr($ending, 0, $context_length);
+	    		$ending = clean(substr($short_ending, 0, strrpos($short_ending,' '))) . '&hellip;';
+	    	} else
+	    		$ending = clean($ending);
+	    	
+	    	//Form the sentence
+	    	$context = $beginning . '<b>' . $middle . '</b>' . $ending;
+    	}
+    	return $context;
+    }
     
     /**
     * Return number of unique objects
@@ -223,6 +270,16 @@
     */
     static function dropContentByObject(ApplicationDataObject $object) {
     	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ?', get_class($object->manager()), $object->getObjectId()));
+    } // dropContentByObject
+    
+    /**
+    * Drop all content from table related to $object
+    *
+    * @param ProjectDataObject $object
+    * @return boolean
+    */
+    static function dropObjectPropertiesByObject(ApplicationDataObject $object) {
+    	return SearchableObjects::delete(array('`rel_object_manager` = ? AND `rel_object_id` = ? AND `column_name` LIKE "property%" ', get_class($object->manager()), $object->getObjectId()));
     } // dropContentByObject
     
     /**

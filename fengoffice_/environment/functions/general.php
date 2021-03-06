@@ -199,20 +199,16 @@ function get_id($var_name = 'id', $from = null, $default = null) {
  * This function checks wether the current http request is ajax
  */
 function is_ajax_request() {
-	return array_var($_GET, 'ajax') == 'true';
+	return array_var($_GET, 'ajax') == 'true' || is_iframe_request();
 } // is_ajax_request
 
 
 /**
  * This function checks wether the current http request is an upload
  */
-function is_upload_request() {
-	return array_var($_GET, 'upload') == 'true';
-} // is_upload_request
-
-function is_download_request() {
-	return array_var($_GET, 'a') == 'download_revision'; //TODO generalize
-} // is_upload_request
+function is_iframe_request() {
+	return array_var($_GET, 'upload') == 'true' || array_var($_GET, 'download') == 'true';
+} // is_iframe_request
 
 /**
  * This function returns true if the specified value is found in the csv formatted string
@@ -532,12 +528,15 @@ function remove_scripts($html) {
 }
 
 function remove_images_from_html($html) {
+	$html = preg_replace('/background="[^"]*"/i', '', $html);
+	$html = preg_replace('/background-image:url\([^\)]*\)/i', '', $html);
+	
 	$html = preg_replace('/<img[^>]*>/i', '', $html);
 	return preg_replace('/<\/img>/i', '', $html);
 }
 
 function html_has_images($html) {
-	return preg_match('/<img[^>]*>/i', $html) > 0;
+	return preg_match('/<img[^>]*>/i', $html) > 0 || preg_match('/background-image:url\([^\)]*\)/i', $html) > 0 || preg_match('/background="[^"]*"/i', $html) > 0;
 }
 
 function make_ajax_url($url) {

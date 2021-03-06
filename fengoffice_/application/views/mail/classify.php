@@ -30,6 +30,9 @@ function showProjectTagsDiv()
 		<?php echo select_workspaces('classification[project_ids]', null, array_var($classification_data, 'project_ids'), $genid.'wsSel'); ?>
 		<?php echo label_tag(lang('tags')) ?>
 	<?php echo autocomplete_tags_field("classification[tag]", array_var($classification_data, 'tag'), null, 20); ?>
+	<br />
+	<?php echo checkbox_field('classification[create_task]', false, array('id' => $genid.'create_task', 'tabindex' => '30')); ?>
+	<label class="yes_no" for="<?php echo $genid.'create_task';?>"><?php echo lang('create task from email')?></label>
 </fieldset>
    
    <?php if ($email->getHasAttachments()) {?>
@@ -39,14 +42,14 @@ function showProjectTagsDiv()
    $c = 0;
    foreach($parsedEmail["Attachments"] as $att) { 
    	    $fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-   		echo checkbox_field('classification[att_'.$c.']', true, array('id' => 'classifyFormAddAttachment'.$c, 'tabindex' => '30'));?>
-    <label for="<?php echo 'classifyFormAddAttachment'.$c ?>" class="yes_no"><?php echo $fName ?></label>
+   		echo checkbox_field('classification[att_'.$c.']', true, array('id' => $genid.'classifyFormAddAttachment'.$c, 'tabindex' => '40'));?>
+    <label for="<?php echo $genid.'classifyFormAddAttachment'.$c ?>" class="yes_no"><?php echo $fName ?></label>
     <?php $c++;
    }?>
    </fieldset>
 <?php } ?>
 
-<?php echo submit_button(lang('classify'), 's', array('tabindex' => '40')) ?>
+<?php echo submit_button(lang('classify'), 's', array('tabindex' => '50')) ?>
   </div>
 </div>
 </form>

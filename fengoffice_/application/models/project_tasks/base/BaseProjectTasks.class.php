@@ -50,6 +50,9 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     	'repeat_m' => DATA_TYPE_INTEGER,
     	'repeat_y' => DATA_TYPE_INTEGER,
 		'repeat_by' => DATA_TYPE_STRING,
+    	'archived_on' => DATA_TYPE_DATETIME,
+    	'archived_by_id' => DATA_TYPE_INTEGER,
+		'object_subtype' => DATA_TYPE_INTEGER,
 	);
 
 	/**
@@ -123,7 +126,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      		'parent_id', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 'assigned_by_id', 'from_template_id')
+      		'object_subtype', 'parent_id', 'assigned_to_user_id', 'assigned_to_company_id', 'completed_by_id', 'milestone_id', 'state', 'started_by_id', 'assigned_by_id', 'from_template_id')
 		);
 	} // getSystemColumns
 	
@@ -173,7 +176,8 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
     		array('id' => 'title', 'type' => self::getColumnType('title')),
     		array('id' => 'text', 'type' => self::getColumnType('text')),
     		array('id' => 'start_date', 'type' => self::getColumnType('start_date')),
-    		array('id' => 'due_date', 'type' => self::getColumnType('due_date'))
+    		array('id' => 'due_date', 'type' => self::getColumnType('due_date')),
+    		array('id' => 'assigned_to_user_id', 'type' => 'USER')
     	);
     } // getTemplateObjectProperties
 

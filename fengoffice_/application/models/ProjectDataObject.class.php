@@ -105,6 +105,56 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	public $timeslots_count;
 
 	// ---------------------------------------------------
+	//  Readable Objects
+	// ---------------------------------------------------
+
+	protected $is_read_markable = true;
+	
+	
+	function isReadMarkable(){
+		return $this->is_read_markable;
+	}
+
+	/**
+	 * Cached parent workspaces reference
+	 *
+	 * @var array
+	 */
+	public $is_read = array();
+	
+	function getIsRead($user_id) {
+		if (!array_key_exists($user_id,$this->is_read)){
+			$this->is_read[$user_id] = ReadObjects::userHasRead($user_id,$this);
+		}
+		return $this->is_read[$user_id];
+	} // getIsRead()
+	
+	/**
+	 * remove the entry on readObjects table for this object and the given user
+	 * or set is as read.
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function setIsRead($user_id,$isRead) {
+		if ($isRead) {
+			if ($this->getIsRead($user_id)) {
+				return; // object is already marked as read
+			}
+			$read_object = new ReadObject();
+	    	$read_object->setRelObjectManager(get_class($this->manager()));
+			$read_object->setRelObjectId($this->getId());
+			$read_object->setUserId($user_id);
+			$read_object->setIsRead(true);
+			$read_object->save();
+		} else {
+			ReadObjects::delete('rel_object_id = ' . $this->getId() . ' AND rel_object_manager = \''.get_class($this->manager()).'\' AND user_id = ' . logged_user()->getId());
+		}
+	} // setIsRead()
+	
+	
+	// ---------------------------------------------------
 	//  General Methods
 	// ---------------------------------------------------
 
@@ -167,6 +217,39 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			}
 		}
 	}
+	
+	
+	/**
+	 * Returns an array of relevant workspace information
+	 * 
+	 * @return unknown_type
+	 */
+	function getWorkspacesInfoCSV($wsIds = null, $user = null){
+		$result = array();
+		if ($this->isNew()) {
+			return array(
+				'id' => active_or_personal_project()->getId(),
+				'name' => active_or_personal_project()->getName(),
+				'color' => active_or_personal_project()->getColor());
+		} else {
+			$ids = array();
+			$names = array();
+			$colors = array();
+			$wss = $this->getWorkspaces($wsIds);
+			if(is_array($wss) && count($wss) > 0){
+				foreach ($wss as $w) {
+					$ids[] = $w->getId();
+					$names[] = $w->getName();
+					$colors[] = $w->getColor();
+				}
+			}
+			return array(
+				'id' => join(',', $ids),
+				'name' => join(',', $names),
+				'color' => join(',', $colors));
+		}
+	}
+	
 
 	/**
 	 * Returns the object's workspaces names separated by a comma
@@ -381,19 +464,26 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	
 	private function checkCommentsPermissions($user, $accesLevel) {
 		if(!$this->isCommentable()) return false;
-
 		if(!($user instanceof User) && !($user instanceof AnonymousUser)) {
 			throw new InvalidInstanceError('user', $user, 'User or AnonymousUser');
 		} // if
-
+		
 		// Access permissions
 		if($user instanceof User) {
 			if($user->isAdministrator()) return true; // admins have all the permissions
 			$ws = $this->getWorkspaces();
 			$can = false;
+			$groups = $user->getGroups();
 			foreach ($ws as $w) {
 				if($user->isProjectUser($w) && $user->getProjectPermission($w, $accesLevel)) {
 					$can = true;
+					break;
+				}
+				foreach ($groups as $group) {
+					if ($group->getProjectPermission($w, $accesLevel)) {
+						$can = true;
+						break;
+					}
 				}
 			}
 			if (!$can) return false;
@@ -403,6 +493,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if($user instanceof AnonymousUser) {
 			if($this->columnExists('anonymous_comments_enabled') && !$this->getAnonymousCommentsEnabled()) return false;
 		} // if
+
 		return true;
 	}
 
@@ -1062,6 +1153,21 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 					$this->subscribeUser($user);
 				}
 			} catch (Exception $e) {}*/
+			//remove all entries
+		
+			if (get_class($this->manager()) != 'MailContents') {
+				$condition = ' `rel_object_manager` = \'' . get_class($this->manager()) . '\' AND `rel_object_id` = ' . $this->getObjectId();
+				ReadObjects::delete($condition);
+				if (logged_user() instanceof User) {
+					$read_object = new ReadObject();
+					$read_object->setRelObjectManager(get_class($this->manager()));
+					$read_object->setRelObjectId($this->getObjectId());
+					$read_object->setUserId(logged_user()->getId());
+					$read_object->setIsRead(true);
+					$read_object->save();
+				}
+			}
+			
 			return true;
 		}
 		return false;
@@ -1073,8 +1179,15 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 			$columns_to_drop = $this->getSearchableColumns();
 		else {
 			foreach ($this->getSearchableColumns() as $column_name){
-				if ($this->isColumnModified($column_name))
-				$columns_to_drop[] = $column_name;
+				if (isset($this->searchable_composite_columns[$column_name])){
+					foreach ($this->searchable_composite_columns[$column_name] as $colName){
+						if ($this->isColumnModified($colName)){
+							$columns_to_drop[] = $column_name;
+							break;
+						}
+					}
+				} else if ($this->isColumnModified($column_name))
+					$columns_to_drop[] = $column_name;
 			}
 		}
 		 
@@ -1096,38 +1209,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				} // if
 			} // foreach
 		} // if
-
-		// Add custom properties
-		$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($this->manager()));
-		foreach($pids as $id) {
-			$custom_property = CustomProperties::findById($id);
-			$name = $custom_property->getName();
-			$values = CustomPropertyValues::getCustomPropertyValues($this->getObjectId(), $id);
-			if ($custom_property->getIsRequired() && (!is_array($values) || count($values) == 0)) {
-				$v = new CustomPropertyValue();
-				$v->setValue($custom_property->getDefaultValue());
-				$values = array($v);
-			}
-			$cpval_index = 0;
-			foreach ($values as $cpval) {
-				$value = $cpval->getValue();
-				if(trim($value) <> '') {
-					$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_manager` = '".get_class($this->manager())."' AND `rel_object_id` = ".$this->getId()." AND `column_name` = '$name'"));
-					if (!$searchable_object)
-						$searchable_object = new SearchableObject();
-					 
-					$searchable_object->setRelObjectManager(get_class($this->manager()));
-					$searchable_object->setRelObjectId($this->getId());
-					$searchable_object->setColumnName($name.($cpval_index > 0 ? $cpval_index : ''));
-					$searchable_object->setContent($value);
-					$searchable_object->setProjectId(0);
-					$searchable_object->setIsPrivate(false);
-					
-					$searchable_object->save();
-					$cpval_index++;
-				}
-			}
-		}
 		
 		//Add Unique ID to search
 		if ($wasNew || ($this->columnExists('project_id') && $this->isColumnModified('project_id'))){
@@ -1142,18 +1223,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 
 			$searchable_object->save();
 		}
-	}
-
-	function addPropertyToSearchableObject(ObjectProperty $property){
-		$searchable_object = new SearchableObject();
-		 
-		$searchable_object->setRelObjectManager(get_class($this->manager()));
-		$searchable_object->setRelObjectId($this->getObjectId());
-		$searchable_object->setColumnName('property'.$property->getId());
-		$searchable_object->setContent($property->getPropertyValue());
-		$searchable_object->setIsPrivate(false);
-	  
-		$searchable_object->save();
 	}
 
 	function addTagsToSearchableObject(){
@@ -1199,6 +1268,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
 		SharedObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
 		ObjectUserPermissions::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+		ReadObjects::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
 		return parent::delete();
 	} // delete
 
@@ -1256,12 +1326,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	}
 
 	function getDashboardObject(){
-		if($this->getUpdatedById()){
+		if($this->getUpdatedById() > 0){
 			$updated_by_id = $this->getUpdatedById();
 			$updated_by_name = $this->getUpdatedByDisplayName();
 			$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');
 		} else {
-			if($this->getCreatedById())
+			if($this->getCreatedById() > 0)
 				$updated_by_id = $this->getCreatedById();
 			else
 				$updated_by_id = lang('n/a');
@@ -1270,20 +1340,36 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 		
 		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
-		$deletedBy = Users::findById($this->getTrashedById());
-    	if ($deletedBy instanceof User) {
+		if ($this->getTrashedById() > 0)
+			$deletedBy = Users::findById($this->getTrashedById());
+    	if (isset($deletedBy) && $deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
     		$deletedBy = lang("n/a");
     	}
-		 
-		return array(
+		
+    	if ($this instanceof Comment ) {
+    		$archivedBy = lang("n/a");
+    		$archivedOn = lang("n/a");
+    	} else {
+			$archivedOn = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn(), 'M j')) : lang('n/a');
+			
+			if ($this->getArchivedById() > 0)
+				$archivedBy = Users::findById($this->getArchivedById());
+	    	if (isset($archivedBy) &&  $archivedBy instanceof User) {
+	    		$archivedBy = $archivedBy->getDisplayName();
+	    	} else {
+	    		$archivedBy = lang("n/a");
+	    	}
+    	}
+
+    	return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
 				"name" => $this->getObjectName(),
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
-				"createdBy" => $this->getCreatedByDisplayName(),
+				"createdBy" => $this->getCreatedById() > 0 ? $this->getCreatedByDisplayName() : '',
 				"createdById" => $this->getCreatedById(),
 				"dateCreated" => $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a'),
 				"updatedBy" => $updated_by_name,
@@ -1294,7 +1380,10 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 				"manager" => get_class($this->manager()),
 				"deletedById" => $this->getTrashedById(),
     			"deletedBy" => $deletedBy,
-    			"dateDeleted" => $deletedOn
+    			"dateDeleted" => $deletedOn,
+    			"archivedById" => $this instanceof Comment ? 0 : $this->getArchivedById(),
+    			"archivedBy" => $archivedBy,
+    			"dateArchived" => $archivedOn
 		);
 	}
 
@@ -1458,6 +1547,54 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	
 	function getShareUrl() {
 		return get_url('object', 'share', array(
+			'object_id' => $this->getId(),
+			'manager' => get_class($this->manager())
+		));
+	}
+	
+	
+	// ARCHIVE
+	function archive($archiveDate = null) {
+		if(!isset($archiveDate))
+			$archiveDate = DateTimeValueLib::now();
+		if ($this->columnExists('archived_on')) {
+			$this->setColumnValue('archived_on', $archiveDate);
+		}
+		if (function_exists('logged_user') && logged_user() instanceof User &&
+				$this->columnExists('archived_by_id')) {
+			$this->setColumnValue('archived_by_id', logged_user()->getId());
+		}
+		$this->save();
+	}
+	
+	function unarchive() {
+		if ($this->columnExists('archived_on')) {
+			$this->setColumnValue('archived_on', EMPTY_DATETIME);
+		}
+		if ($this->columnExists('archived_by_id')) {
+			$this->setColumnValue('archived_by_id', 0);
+		}
+		$this->save();
+	}
+	
+	function isArchivable() {
+		return $this->columnExists('archived_by_id');
+	}
+	
+	function isArchived() {
+		if (!$this->isArchivable()) return false;
+		return $this->getColumnValue('archived_by_id') != 0;
+	}
+	
+	function getArchiveUrl() {
+		return get_url('object', 'archive', array(
+			'object_id' => $this->getId(),
+			'manager' => get_class($this->manager())
+		));
+	}
+	
+	function getUnarchiveUrl() {
+		return get_url('object', 'unarchive', array(
 			'object_id' => $this->getId(),
 			'manager' => get_class($this->manager())
 		));

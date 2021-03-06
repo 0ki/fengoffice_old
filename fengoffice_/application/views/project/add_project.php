@@ -1,23 +1,22 @@
 <?php
 	require_javascript("og/modules/addProjectForm.js");
 	require_javascript('og/modules/updatePermissionsForm.js');
-  	if(!$project->isNew() && $project->canDelete(logged_user())) {
+  	if(!$project->isNew() && $project->canEdit(logged_user())) {
+  		if ($project->getCompletedById() == 0)
+			add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $project->getCompleteUrl() ."');", 'ico-archive-obj');
+		else
+			add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $project->getOpenUrl() ."');", 'ico-unarchive-obj');
+  	} // if
+	if(!$project->isNew() && $project->canDelete(logged_user())) {
   		add_page_action(lang('delete'),  $project->getDeleteUrl() , 'ico-delete');
   	} // if
   	
   	$genid = gen_id();
   	$object = $project;
 ?>
-<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $project->isNew() ? get_url('project', 'add') : $project->getEditUrl()?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $project->isNew() ? get_url('project', 'add') : $project->getEditUrl()?>" method="post" onsubmit="og.ogPermPrepareSendData('<?php echo $genid ?>');return true;">
 
-<?php
-  $quoted_permissions = array();
-  foreach($permissions as $permission_id => $permission_text) {
-    $quoted_permissions[] = "'$permission_id'";
-  } // foreach
-?>
     <script>
-        App.modules.updatePermissionsForm.project_permissions = new Array(<?php echo implode(', ', $quoted_permissions) ?>);
 		var genid = '<?php echo $genid ?>';
     </script>
     
@@ -38,7 +37,7 @@
     </div>
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::getHiddenCustomPropertiesByObjectType('Projects'); ?>
+  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType('Projects'); ?>
   
   	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>
@@ -54,7 +53,7 @@
 		<?php foreach ($categories as $category) { ?>
 			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
-		<?php if (count($cps) > 0) { ?>
+		<?php if ($cps > 0) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		<?php } ?> 
 	</div>
@@ -92,91 +91,9 @@
 		<?php $field_tab = 30; ?>
 		<div id="<?php echo $genid ?>workspace_permissions" style="display:none">
 		<fieldset>
-		<?php 
-			$show_help_option = user_config_option('show_context_help'); 
-			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_workspace_context_help', true, logged_user()->getId()))) {?>
-			<div id="tasksPanelContextHelp" class="contextHelpStyle">
-				<?php render_context_help($this, 'chelp add workspace permissions','add_workspace'); ?>
-			</div>
-		<?php }?>
 		<legend><?php echo lang('edit permissions') ?></legend>
-		
-		<label><?php echo lang('edit permissions explanation') ?></label>
-		<?php if (isset($companies) && is_array($companies) && count($companies)) { ?>
-			<div id="projectCompaniesContainer"><div id="projectCompanies">
-			<?php foreach ($companies as $company) { ?>
-				<?php if ($company->countUsers() > 0) { ?>
-				<fieldset>
-				<legend><?php echo clean($company->getName()) ?></legend>
-					<div class="projectCompany" style="border:0">
-					<div class="projectCompanyLogo"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?>" /></div>
-					<div class="projectCompanyMeta">
-						<div class="projectCompanyTitle">
-					<?php //if($company->isOwner()) { ?>
-						<!-- <label><?php //echo clean($compangetName()) ?></label>-->
-							<!-- input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" / -->
-					<?php //} else {
-						$has_checked_users = false;
-						foreach ($company->getUsers() as $user) {
-							if ($user->isProjectUser(active_or_personal_project())) {
-								$has_checked_users = true;
-								break;
-							}
-						}
-						echo checkbox_field('project_company_' . $company->getId(), $has_checked_users, array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox" onclick="og.showHide('<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>')"><?php echo clean($company->getName()) ?></label>
-					<?php //} // if ?>
-						</div>
-						<div class="projectCompanyUsers" id="<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>">
-							<table class="blank">
-					<?php if ($users = $company->getUsers()) { ?>
-<?php						 foreach ($users as $user) { ?>
-								<tr class="user">
-									<td>
-								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>" onclick="og.showHide('<?php echo $genid ."user_".$user->getId() ?>_permissions')"><?php echo clean($user->getDisplayName()) ?></label>
-<?php //							 } // if ?>
-<?php							 if($user->isAdministrator()) {?> 
-										<span class="desc">(<?php echo lang('administrator') ?>)</span>
-<?php							 } // if ?>
-									</td>
-									<td>
-							<?php //if(!$company->isOwner()) { ?>
-										<div class="projectUserPermissions" id="<?php echo $genid ."user_".$user->getId() ?>_permissions">
-										<div><?php echo checkbox_field('project_user_' . $user->getId() . '_all', $user->hasAllProjectPermissions(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId() . '_all', 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionAllCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . '_all' ?>" class="checkbox" style="font-weight: bolder"><?php echo lang('all permissions') ?></label></div>
-								<?php foreach ($permissions as $permission_id => $permission_text) { ?>						
-										<div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_or_personal_project(), $permission_id), array('id' => $genid . 'project_user_' . $user->getId() . "_$permission_id", 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
-								<?php } // foreach ?>
-										</div>
-									<script>
-										if (!document.getElementById( '<?php echo $genid ?>project_user_<?php echo $user->getId() ?>').checked) {
-											document.getElementById( '<?php echo $genid ?>user_<?php echo $user->getId() ?>_permissions').style.display = 'none';
-										} // if
-									</script>
-							<?php //} // if ?>
-									</td>
-								</tr>
-						<?php } // foreach ?>
-					<?php } else { ?>
-								<tr>
-								<td colspan="2"><?php echo lang('no users in company') ?></td>
-								</tr>
-					<?php } // if ?>
-							</table>
-						</div>
-						<div class="clear"></div>
-					</div>
-					</div>
-					<?php //if (!$company->isOwner()) { ?>
-						<script>
-							if(!document.getElementById( '<?php echo $genid ?>project_company_<?php echo $company->getId() ?>').checked) {
-								document.getElementById( '<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>').style.display = 'none';
-							} // if
-						</script>
-					<?php //} // if ?>
-				</fieldset>
-				<?php } // if ?>
-			<?php } // foreach ?>
-			</div></div>
-		<?php } // if ?>
+		<?php tpl_assign('genid', $genid);
+		$this->includeTemplate(get_template_path('workspace_permissions_control', 'project')); ?>
 		</fieldset>
 		</div>
 	<?php } // if ?>
@@ -333,7 +250,7 @@
 	</div>
 	<?php } ?>
 	
-	<?php if (count($cps) > 0) { ?>
+	<?php if ($cps > 0) { ?>
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
@@ -348,7 +265,6 @@
 	
 	<div>
 	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('id'=>$genid.'submit_btn2', 'tabindex' => '250')) ?>
-	<div id="<?php echo $genid ?>load2" class="loading-indicator" style="display: none;"><?php echo lang('loading') ?></div>
 	</div>
 </div>
 </div>
@@ -362,17 +278,16 @@
 				var overwrite = confirm(lang('confirm inherit permissions'));
 				if (overwrite) {
 					document.getElementById(genid + 'load1').style.display = 'block';
-					document.getElementById(genid + 'load2').style.display = 'block';
-					document.getElementById(genid + 'submit_btn1').style.display = 'none';
-					document.getElementById(genid + 'submit_btn2').style.display = 'none';
-					Ext.get('projectCompaniesContainer').load({
-						url: og.getUrl('project', 'get_ws_permissions', {ws_id:wsVal, genid:genid}),
-						scripts: true,
-						callback: function (){
+					document.getElementById(genid + 'submit_btn1').disabled = true;
+					document.getElementById(genid + 'submit_btn2').disabled = true;
+					og.openLink(og.getUrl('project', 'get_ws_permissions', {ws_id: wsVal}), {
+						callback: function(success, data) {
 							document.getElementById(genid + 'load1').style.display = 'none';
-							document.getElementById(genid + 'load2').style.display = 'none';
-							document.getElementById(genid + 'submit_btn1').style.display = 'block';
-							document.getElementById(genid + 'submit_btn2').style.display = 'block';
+							document.getElementById(genid + 'submit_btn1').disabled = false;
+							document.getElementById(genid + 'submit_btn2').disabled = false;
+							if (success && data.permissions) {
+								og.ogLoadPermissionsFromArray('<?php echo $genid ?>', data.permissions<?php if ($project->isNew()) echo ", true"; ?>);
+							}
 						}
 					});
 					if (document.getElementById(genid + 'workspace_permissions').style.display == 'none') {

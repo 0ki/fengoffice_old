@@ -36,6 +36,7 @@ class PropertyController extends ApplicationController {
 				$prop['required'] = $custom->getIsRequired();
 				$prop['multiple_values'] = $custom->getIsMultipleValues();
 				$prop['visible_by_default'] = $custom->getVisibleByDefault();
+				$prop['co_types'] = CustomPropertiesByCoType::instance()->getCoTypesIdsForCpCSV($custom->getId());
 				$customProperties[] = $prop;
 			}
 			ajx_current("empty");

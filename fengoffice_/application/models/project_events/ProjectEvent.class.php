@@ -63,6 +63,10 @@ class ProjectEvent extends BaseProjectEvent {
 	function getTitle(){
 		return $this->getSubject();
 	}
+	
+	function isRepetitive() {
+		return $this->getRepeatD() > 0 || $this->getRepeatM() > 0 || $this->getRepeatY() > 0 || $this->getRepeatH() > 0;
+	}
 
 	// ---------------------------------------------------
 	//  URLs

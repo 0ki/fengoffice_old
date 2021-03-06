@@ -121,6 +121,19 @@ class Companies extends BaseCompanies {
 			'company[notes]' => lang('notes'),
 		);
 	}
+	
+	
+	/**
+	 * Returns an array of: (name, email)
+	 * from companies that the logged user can access. 
+	 * @return array
+	 */
+	function getCompanyEmailAddresses() {
+		$permissions = permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user());
+		$sql = "SELECT `name`, `email` FROM `" . TABLE_PREFIX . "companies` WHERE " .
+			"`trashed_by_id` = 0 AND $permissions AND `email` <> ''";
+		return DB::executeAll($sql);
+	}
 } // Companies
 
 ?>

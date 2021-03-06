@@ -145,6 +145,12 @@
   	'saturday short' => 'Sáb',
   	'sunday short' => 'Dom',
   
+  	'1st' => '1er',
+  	'2nd' => '2do',
+  	'3rd' => '3er',
+  	'4th' => '4to',
+  	'5th' => '5to',
+  
   	'copy of' => 'Copia de {0}',
   	'task templates' => 'Plantilla de tarea',
   	'add task template' => 'Agregar Plantilla de tarea',
@@ -208,6 +214,16 @@
   	'new task repetition generated' => 'Se ha generado una nueva repetición de la tarea',
   
 	'reminders will not apply to repeating events' => 'Aviso: los recordatorios no se aplican a eventos repetitivos',
+  
+	'move all to right' => 'Mover todos hacia la derecha',
+	'move to right' => 'Mover hacia la derecha',
+	'move to left' => 'Mover hacia la izquierda',
+	'move all to left' => 'Mover todos hacia la izquierda',
+	'move up' => 'Subir',
+	'move down' => 'Bajar',
+  
+	'this file is included in document' => "Este documento está incluido en: {0}",
+  
   ); // array
 
 ?>

@@ -37,6 +37,30 @@
     } // getReadByObject
     
     
+    
+    /**
+    * Return all read objects ( ReadObjects) for specific object and user
+    *
+    * @param ProjectDataObject $object
+    * @return array
+    */
+    static function getReadByObjectList($object_id_list, $object_manager, $user_id) {
+    	$idsCSV = implode(',',$object_id_list);
+      $rol = self::findAll(array(
+        'conditions' => array("`rel_object_manager` = ? and `rel_object_id` in ($idsCSV) and `user_id` = ? and is_read = 1", 
+        		$object_manager, $user_id)
+      )); // findAll
+      if (is_array($rol) && count($rol) > 0){
+      	$result = array();
+      	foreach ($rol as $ro){
+      		$result[$ro->getRelObjectId()] = true;
+      	}
+      	return $result;
+      } else
+      	return array();
+    } // getReadByObject
+    
+    
     /**
     * User has read object
     *

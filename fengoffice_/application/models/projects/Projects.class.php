@@ -78,7 +78,7 @@
 		return self::findOne(array(
 			'conditions' => $conditions
 		));
-	} // getByFilename
+	} // getByName
 	
 	/**
 	 * Receives comma seperated ids and returns the workspaces with those ids

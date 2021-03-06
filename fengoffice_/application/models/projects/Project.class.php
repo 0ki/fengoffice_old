@@ -84,13 +84,16 @@ class Project extends BaseProject {
 	 	return $workspace->getPID($depth) == $this->getId();
 	}
 	
-	function getParentIds(){
+	function getParentIds($include_self = false){
 		$result = array();
 		for ($i = 1; $i <= 10; $i++){
 			if ($this->getPID($i) != $this->getId())
 				$result[$i] = $this->getPID($i);
-			else
+			else{
+				if ($include_self)
+					$result[$i] = $this->getPID($i);
 				break;
+			}
 		}
 		return $result;
 	}
@@ -127,6 +130,110 @@ class Project extends BaseProject {
 		
 		return $path;
 	}
+
+	function unarchive() {
+		$this->open();
+	}
+	
+	function open() {
+		if(!$this->canChangeStatus(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		try {
+			$this->setCompletedOn(EMPTY_DATETIME);
+			$this->setCompletedById(0);
+
+			DB::beginWork();
+			$this->save();
+			ApplicationLogs::createLog($this, null, ApplicationLogs::ACTION_UNARCHIVE);
+			DB::commit();
+
+			flash_success(lang('success unarchive objects', 1));
+			
+			evt_add("workspace added", array(
+				"id" => $this->getId(),
+				"name" => $this->getName(),
+				"color" => $this->getColor(),
+				"parent" => $this->getParentId()
+			));
+			
+			ajx_current("reload");
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error(lang('error unarchive objects'));
+			ajx_current("empty");
+		} // try
+	}
+	
+	function archive() {
+		$this->complete();
+	}
+	
+	function complete() {
+		if(!$this->canChangeStatus(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		try {
+			$this->setCompletedOn(DateTimeValueLib::now());
+			$this->setCompletedById(logged_user()->getId());
+
+			DB::beginWork();
+			$this->save();
+			ApplicationLogs::createLog($this, null, ApplicationLogs::ACTION_ARCHIVE);
+			DB::commit();
+
+			flash_success(lang('success archive objects', 1));
+			evt_add("workspace deleted", array(
+				"id" => $this->getId(),
+				"name" => $this->getName()
+			));
+			ajx_current("reload");
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error(lang('error archive objects'));
+			ajx_current("empty");
+		} // try
+	}
+	
+	function getDashboardObject(){
+    	$updated_by_name = $this->getUpdatedByDisplayName();
+		$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');	
+    	
+		$created_by_name = $this->getCreatedByDisplayName();
+		$created_on = $this->getObjectCreationTime() instanceof DateTimeValue ? ($this->getObjectCreationTime()->isToday() ? format_time($this->getObjectCreationTime()) : format_datetime($this->getObjectCreationTime())) : lang('n/a');
+    	
+    	$archivedOn = $this->getCompletedOn() instanceof DateTimeValue ? ($this->getCompletedOn()->isToday() ? format_time($this->getCompletedOn()) : format_datetime($this->getCompletedOn(), 'M j')) : lang('n/a');
+		$archivedBy = $this->getCompletedByDisplayName();
+    		
+    	return array(
+				"id" => $this->getObjectTypeName() . $this->getId(),
+				"object_id" => $this->getId(),
+				"name" => $this->getObjectName(),
+				"type" => $this->getObjectTypeName(),
+				"tags" => '',
+				"createdBy" => $created_by_name,
+				"createdById" => $this->getCreatedById(),
+    			"dateCreated" => $created_on,
+				"updatedBy" => $updated_by_name,
+				"updatedById" => $this->getUpdatedById(),
+				"dateUpdated" => $updated_on,
+				"wsIds" => '',
+				"url" => $this->getEditUrl(),
+				"manager" => get_class($this->manager()),
+    			"deletedById" => 0,
+    			"deletedBy" => lang("n/a"),
+    			"dateDeleted" => lang("n/a"),
+    			"archivedById" => $this->getCompletedById(),
+    			"archivedBy" => $archivedBy,
+    			"dateArchived" => $archivedOn
+			);
+    }
 	
 	
 	// ---------------------------------------------------
@@ -257,7 +364,7 @@ class Project extends BaseProject {
 	 */
 	function getSortedChildren($user)
 	{
-		$projects = array();
+		$projects = null;
 		$padres = $this->getSubWorkspacesSorted(false,$user);
 		foreach($padres as $hijo){
 				$projects[] = $hijo;
@@ -812,7 +919,7 @@ class Project extends BaseProject {
 	function getAllOpenMilestones() {
 		if(is_null($this->all_open_milestones)) {
 			$this->all_open_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getId()).' AND `completed_on` = ?', EMPTY_DATETIME),
+          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getParentIds(true)).' AND `completed_on` = ?', EMPTY_DATETIME),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -830,7 +937,7 @@ class Project extends BaseProject {
 		if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllOpenMilestones();
 		if(is_null($this->open_milestones)) {
 			$this->open_milestones = ProjectMilestones::findAll(array(
-          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getId()).' AND `completed_on` = ? AND `is_private` = ?', EMPTY_DATETIME, 0),
+          'conditions' => array(ProjectMilestones::getWorkspaceString($this->getParentIds(true)).' AND `completed_on` = ? AND `is_private` = ?', EMPTY_DATETIME, 0),
           'order' => 'due_date'
           )); // findAll
 		} // if
@@ -1431,6 +1538,17 @@ class Project extends BaseProject {
 	} // canAdd
 
 	/**
+	 * Returns true if user can view specific project
+	 *
+	 * @access public
+	 * @param User $user
+	 * @return boolean
+	 */
+	function canView(User $user) {
+		return $user->getPersonalProjectId() == $this->getId() || $user->isAccountOwner() || can_manage_workspaces(logged_user());
+	} // canView
+
+	/**
 	 * Returns true if user can update specific project
 	 *
 	 * @access public
@@ -1440,7 +1558,7 @@ class Project extends BaseProject {
 	function canEdit(User $user) {
 		return $user->getPersonalProjectId() == $this->getId() || $user->isAccountOwner() || can_manage_workspaces(logged_user());
 	} // canEdit
-
+	
 	/**
 	 * Returns true if user can delete specific project
 	 *
@@ -1655,6 +1773,28 @@ class Project extends BaseProject {
 	function getOpenUrl() {
 		return get_url('project', 'open', $this->getId());
 	} // getOpenUrl
+	
+	/**
+	 * Return archive project url
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getArchiveUrl() {
+		return get_url('project', 'archive', $this->getId());
+	} // getArchiveUrl
+
+	/**
+	 * Return unarchive project URL
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getUnarchiveUrl() {
+		return get_url('project', 'unarchive', $this->getId());
+	} // getUnarchiveUrl
 
 	/**
 	 * Return remove user from project URL
@@ -1748,10 +1888,43 @@ class Project extends BaseProject {
 		return $this->all_events;
 	} //  getAllEvents
 
+	function getAllPermissions($project_permissions = null) {
+    	if (is_null($project_permissions) && !$this->isNew()) {
+    		$project_permissions = ProjectUsers::findAll(array('conditions' => 'project_id = '. $this->getId()) );
+    	}
+    	$result = array();
+    	if (is_array($project_permissions)) {
+	    	foreach ($project_permissions as $perm){
+	    		$chkArray = array();
+	    		$chkArray[0] = ($perm->getCanAssignToOwners() ? 1 : 0);
+	    		$chkArray[1] = ($perm->getCanAssignToOther() ? 1 : 0);
+	    		
+	    		$radioArray = array();
+	    		$radioArray[0] = ($perm->getCanWriteMessages() ? 2 : ($perm->getCanReadMessages()? 1 : 0));
+	    		$radioArray[1] = ($perm->getCanWriteTasks() ? 2 : ($perm->getCanReadTasks()? 1 : 0));
+	    		$radioArray[2] = ($perm->getCanWriteMilestones() ? 2 : ($perm->getCanReadMilestones()? 1 : 0));
+	    		$radioArray[3] = ($perm->getCanWriteMails() ? 2 : ($perm->getCanReadMails()? 1 : 0));
+	    		$radioArray[4] = ($perm->getCanWriteComments() ? 2 : ($perm->getCanReadComments()? 1 : 0));
+	    		$radioArray[5] = ($perm->getCanWriteContacts() ? 2 : ($perm->getCanReadContacts()? 1 : 0));
+	    		$radioArray[6] = ($perm->getCanWriteWeblinks() ? 2 : ($perm->getCanReadWeblinks()? 1 : 0));
+	    		$radioArray[7] = ($perm->getCanWriteFiles() ? 2 : ($perm->getCanReadFiles()? 1 : 0));
+	    		$radioArray[8] = ($perm->getCanWriteEvents() ? 2 : ($perm->getCanReadEvents()? 1 : 0));
+	    		
+	    		$result[] = array("wsid" => $perm->getUserId(), "pc" => $chkArray, "pr" => $radioArray);
+	    	}
+    	}
+    	
+    	return $result;
+    }
+	
 	// ---------------------------------------------------
 	//  System functions
 	// ---------------------------------------------------
 
+	function isTrashable() {
+		return false;
+	}
+    
 	/**
 	 * Validate object before save
 	 *

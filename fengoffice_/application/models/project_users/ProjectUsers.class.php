@@ -75,7 +75,7 @@ class ProjectUsers extends BaseProjectUsers {
 				$users[] = Users::instance()->loadFromRow($row);
 			} // foreach
 		} // if
-		return $users;
+		return count($users) ? $users : null;
 	} // getUsersByProject
 
 	/**
@@ -132,6 +132,33 @@ class ProjectUsers extends BaseProjectUsers {
 
 		return count($projects) ? $projects : null;
 	} // getProjectsByUser
+	
+	function getProjectIdsByUser(User $user, $additional_conditions = null, $order_by = null) {
+		$projects_table = Projects::instance()->getTableName(true);
+		$project_users_table =  ProjectUsers::instance()->getTableName(true);
+		$group_users_table = GroupUsers::instance()->getTableName(true);
+
+		$projects = array();
+
+		$usercond = "($project_users_table.`user_id` = " . DB::escape($user->getId()) . ")";
+		$groupcond = "($project_users_table.`user_id` IN (SELECT `group_id` FROM $group_users_table WHERE $group_users_table.`user_id` = " . DB::escape($user->getId()) . "))";
+		$commoncond = "$projects_table.`id` = $project_users_table.`project_id`";
+		$sql = "SELECT $projects_table.`id` as `id` FROM $projects_table, $project_users_table WHERE $commoncond AND ($usercond OR $groupcond) ";
+		if(trim($additional_conditions) <> '') {
+			$sql .= " AND ($additional_conditions)";
+		} // if
+		if ($order_by) {
+			$sql .= " ORDER BY '". $order_by;
+		} else {
+			$sql .= " ORDER BY $projects_table.`name`";
+		}
+		$rows = DB::executeAll($sql);
+		$ids = array();
+		foreach ($rows as $row) {
+			$ids[] = $row['id'];
+		}
+		return $ids;
+	} // getProjectsByUser
 
 	/**
 	 * Return all users associated with specific project
@@ -140,8 +167,11 @@ class ProjectUsers extends BaseProjectUsers {
 	 * @param Project $project
 	 * @return boolean
 	 */
-	static function clearByProject(Project $project) {
-		return self::delete(array('`project_id` = ?', $project->getId()));
+	static function clearByProject(Project $project, $ids = null) {
+		$ids_condition = "";
+		if (!is_null($ids) && $ids != '')
+		$ids_condition = " and `user_id` in (" . $ids . ")";
+		return self::delete(array('`project_id` = ?' . $ids_condition, $project->getId()));
 	} // clearByProject
 
 	/**
@@ -157,6 +187,10 @@ class ProjectUsers extends BaseProjectUsers {
 		return self::delete(array('`user_id` = ?' . $ids_condition, $user->getId()));
 	} // clearByUser
 
+	static function clearByProjectAndUser(Project $project, User $user) {
+		return self::delete(array('`user_id` = ? AND `project_id` = ?', $user->getId(), $project->getId()));
+	}
+	
 	/**
 	 * This function will return array of permission columns in table. Permission column name is
 	 * used as permission ID in rest of the script

@@ -29,7 +29,7 @@
 			old_line = Ext.get(pre+"currentHourLine");
 			if (old_line) old_line.remove();
 			
-			var title = date.format(og.timeFormat24 ? 'G:i' : 'g:i A');
+			var title = date.format(og.config['time_format_use_24'] ? 'G:i' : 'g:i A');
 			var new_top = cell.getTop(true) + cell.getHeight() * top / 100;
 			var cant_d = pre == 'w_' ? 7 : 1;
 			var html = '<div id="'+pre+'currentHourLine" title="'+title+'" style="height:2px; z-index:200; position:absolute; top:'+ new_top +'px; left:'+ (d*100/cant_d) +'%; border-top:2px solid #B95000; width:'+(100/cant_d)+'%; opacity:0.7; filter:alpha(opacity=70);"></div>';
@@ -76,6 +76,11 @@
 			if (target) this.lastTarget = target;
 	    },
 		endDrag: function() {
+			var ok = true;
+			if (this.config.dragData.is_repe) {
+				ok = confirm(lang('confirm repeating event edition'));
+			}
+			if (!ok) return;
 			date = null;
 			for (i=0; i<og.ev_cell_dates.length; i++) {
 				if (og.ev_cell_dates[i].key == this.lastTarget.id) {
@@ -125,6 +130,12 @@
 			if(this.lastTarget) {
 				var str_temp = this.lastTarget.id.split	('_');
 				isAllDay = (this.lastTarget.id.indexOf('alldayeventowner_') >= 0) || (this.lastTarget.id.indexOf('alldaycelltitle_') >= 0);
+				var ok = true;
+				if (this.config.dragData.is_repe) {
+					ok = confirm(lang('confirm repeating event edition'));
+				}
+				if (!ok) return;
+				
 				if (isAllDay) {
 					var parent = Ext.get('alldayeventowner_'+str_temp[1]);
 					parent.appendChild(el);
@@ -171,11 +182,11 @@
 		
 	});
 	
-	og.createEventDrag = function(div_id, obj_id, type, isAllday, dropzone) {
+	og.createEventDrag = function(div_id, obj_id, is_repetitive, origdate, type, isAllday, dropzone) {
 		var obj_div = Ext.get(div_id);
 		
 		obj_div.dd = new og.eventDD(div_id, dropzone, {
-			dragData: {id: obj_id},
+			dragData: {id: obj_id, is_repe: is_repetitive, orig_date: origdate},
 			scope: this,
 			isTarget:false,
 			fn: function(dd, ddata) {
@@ -185,7 +196,7 @@
 							ddata.hour = -1;
 							ddata.min = -1;
 						}
-						og.openLink(og.getUrl('event', 'move_event', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:ddata.hour, min:ddata.min}), {
+						og.openLink(og.getUrl('event', 'move_event', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:ddata.hour, min:ddata.min, orig_date:ddata.orig_date}), {
 							callback: function(success, data) {
 								if (!isAllday) {
 									updateTip(div_id, data.ev_data.subject, data.ev_data.start + " - " + data.ev_data.end);
@@ -221,16 +232,16 @@
 		});
 	}
 	
-	og.createMonthlyViewDrag = function(div_id, obj_id, type) {
+	og.createMonthlyViewDrag = function(div_id, obj_id, is_repetitive, origdate, type) {
 		var obj_div = Ext.get(div_id);
 		obj_div.dd = new og.monthViewEventDD(div_id, 'ev_dropzone', {
-			dragData: {id: obj_id},
+			dragData: {id: obj_id, is_repe: is_repetitive, orig_date: origdate},
 			scope: this,
 			isTarget:false,
 			fn: function(dd, ddata) {
 				switch (type) {
 					case 'event':
-						og.openLink(og.getUrl('event', 'move_event', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:-1, min:-1}), {});
+						og.openLink(og.getUrl('event', 'move_event', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:-1, min:-1, orig_date:ddata.orig_date}), {});
 						break;
 					case 'milestone':
 						og.openLink(og.getUrl('milestone', 'change_due_date', {id:ddata.id, year:ddata.year, month:ddata.month, day:ddata.day, hour:-1, min:-1}), {});
@@ -246,7 +257,7 @@
 	}
 	
 	
-	og.setResizableEvent = function(div_id, ev_id) {
+	og.setResizableEvent = function(div_id, ev_id, w_day) {
 		var resizer = new Ext.Resizable(div_id, {
 		    adjustments: [0,-4],
 		    handles: 's',
@@ -254,13 +265,18 @@
 		    resizeChild: 'inner_' + div_id,
 		    pinned: true
 		});
-		resizer.on('resize', function(){
+		var prev_height = 0;
+		resizer.on('beforeResize', function() {
+			el = resizer.getEl();
+			if (el) prev_height = el.getHeight();
+		});
+		resizer.on('resize', function() {
 			el = resizer.getEl();
 			var grid = Ext.get('grid');
 			width = 100 * el.getWidth() / grid.getWidth();
 			el.applyStyles('width:'+width+'%;');
-							
-			rows = el.getHeight() / 21;
+
+			rows = (el.getHeight() - prev_height) / 21;
 			dur_h = Math.floor(rows / 2);
 			dur_m = rows % 2 == 0 ? 0 : 30;
 			og.openLink(og.getUrl('event', 'change_duration', {id:ev_id, hours:dur_h, mins:dur_m}), {

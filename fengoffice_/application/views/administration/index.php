@@ -14,7 +14,7 @@ if (can_manage_security(logged_user())) {
 		'ico' => 'ico-large-company',
 		'url' => get_url('administration', 'clients'),
 		'name' => lang('client companies'),
-		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('company', 'add_client') . '">' . lang('add client') . '</a>'
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('company', 'add_client') . '">' . lang('add company') . '</a>'
 	);
 }
 if (can_edit_company_data(logged_user())) {
@@ -39,6 +39,14 @@ if (can_manage_workspaces(logged_user())) {
 		'url' => get_url('administration', 'projects'),
 		'name' => lang('projects'),
 		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('project', 'add') . '">' . lang('add project') . '</a>',
+	);
+}
+if (can_manage_security(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-email',
+		'url' => get_url('administration', 'mail_accounts'),
+		'name' => lang('mail accounts'),
+		'extra' => '<a class="internalLink coViewAction ico-add" href="' . get_url('mail', 'add_account') . '">' . lang('add mail account') . '</a>',
 	);
 }
 if (can_manage_templates(logged_user())) {

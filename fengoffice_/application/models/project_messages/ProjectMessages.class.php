@@ -59,7 +59,7 @@ class ProjectMessages extends BaseProjectMessages {
 		)); // findAll
 	} // getImportantProjectMessages
 	
-	function getMessages($tag, $project = null, $start = null, $limit = null, $order = null, $order_dir = null) {
+	function getMessages($tag, $project = null, $start = null, $limit = null, $order = null, $order_dir = null, $archived = false) {
 		switch ($order){
 			case 'updatedOn':
 				$order_crit = 'updated_on';
@@ -98,7 +98,10 @@ class ProjectMessages extends BaseProjectMessages {
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
-		$conditions = "`trashed_by_id` = 0 AND $messageConditions $tagstr  $permissions";
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND";
+		else $archived_cond = "`archived_by_id` = 0 AND";
+		
+		$conditions = "`trashed_by_id` = 0 AND $archived_cond $messageConditions $tagstr  $permissions";
 		$page = (integer) ($start / $limit) + 1;
 		$order = "$order_crit $order_dir";
 

@@ -67,7 +67,7 @@ og.WorkspaceChooserTree = function(config) {
 		var ids = this.wsField.value.split(",");
 		for (var i=0; i < ids.length; i++) {
 			var n = ids[i].trim();
-			var node = this.getNodeById('ws' + n);
+			var node = this.getNodeById(this.nodeId(n));
 			if (node) {
 				node.ensureVisible();
 				node.suspendEvents();
@@ -95,7 +95,7 @@ og.WorkspaceChooserTree = function(config) {
 
 Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 	removeWS: function(ws) {
-		var node = this.getNodeById('ws' + ws.id);
+		var node = this.getNodeById(this.nodeId(ws.id));
 		if (node) {
 			if (node.isSelected()) {
 				this.workspaces.select();
@@ -112,7 +112,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 	},
 
 	addWS : function(ws) {
-		var exists = this.getNodeById('ws' + ws.id);
+		var exists = this.getNodeById(this.nodeId(ws.id));
 		if (exists) {
 			exists.setText(ws.n);
 			if (ws.p != exists.ws.p) {
@@ -129,7 +129,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		var config = {
 			cls: 'x-tree-noicon',
 			text: og.clean(ws.n),
-			id: 'ws' + ws.id,
+			id: this.nodeId(ws.id),
 			checked: false,
 			listeners: {
 				click: function() {
@@ -163,7 +163,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		var node = new Ext.tree.TreeNode(config);
 		node.ws = ws;
 		node.ws.checked = false;
-		var parent = this.getNodeById('ws' + ws.p);
+		var parent = this.getNodeById(this.nodeId(ws.p));
 		if (!parent) parent = this.workspaces;
 		var iter = parent.firstChild;
 		while (iter && node.text.toLowerCase() > iter.text.toLowerCase()) {
@@ -173,6 +173,16 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		return node;
 	},
 	
+	uncheckAll: function(node) {
+		if (!node) node = this.root;
+		var child = node.firstChild;
+		if (node.ui.isChecked()) node.ui.toggleCheck(false);
+		while (child) {
+			this.uncheckAll(child);
+			child = child.nextSibling;
+		}
+	},
+	
 	getActiveWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
 		if (s) {
@@ -180,6 +190,14 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		} else {
 			return {id: 0, name: 'all'};
 		}
+	},
+	
+	getSelected: function() {
+		return this.getActiveWorkspace();
+	},
+	
+	nodeId: function(id) {
+		return 'ws' + id;
 	},
 	
 	addWorkspaces: function(workspaces) {
@@ -219,7 +237,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 			this.workspaces.ensureVisible();
 			this.workspaces.select();
 		} else {
-			var node = this.getNodeById('ws' + id);
+			var node = this.getNodeById(this.nodeId(id));
 			if (node) {
 				node.ensureVisible();
 				node.select();
@@ -231,7 +249,7 @@ Ext.extend(og.WorkspaceChooserTree, Ext.tree.TreePanel, {
 		if (!id) {
 			return this.workspaces;
 		} else {
-			var node = this.getNodeById('ws' + id);
+			var node = this.getNodeById(this.nodeId(id));
 			if (node) {
 				return node;
 			}

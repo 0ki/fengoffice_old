@@ -6,7 +6,7 @@ if($user->canUpdateProfile(logged_user())) {
 	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture', null, null, true);
 	add_page_action(lang('change password'), $user->getEditPasswordUrl(), 'ico-password', null, null, true);
 	$contact = $user->getContact();
-	if (can_manage_contacts(logged_user())) {
+	if (can_manage_contacts(logged_user()) && !$contact instanceof Contact) {
 		add_page_action(lang('create contact from user'), "javascript:if(confirm('" . lang('confirm create contact from user') . "')) og.openLink('" . $user->getCreateContactFromUserUrl() ."');", 'ico-add');
 	}
 } // if

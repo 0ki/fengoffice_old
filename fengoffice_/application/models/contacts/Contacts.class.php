@@ -134,20 +134,20 @@ class Contacts extends BaseContacts {
 		$from->beginningOfDay();
 		$to = new DateTimeValue($to->getTimestamp());
 		$to->endOfDay();
-		
-		$contacts = array();
-		$allowed = $this->getAllowedContacts();
-		foreach($allowed as $c) {
-			if ($c->getOBirthday() instanceof DateTimeValue) {
-				$date = new DateTimeValue($c->getOBirthday()->getTimestamp());
-				$date->setYear($from->getYear());
-				if ($date->getTimestamp() >= $from->getTimestamp() && $date->getTimestamp() <= $to->getTimestamp()) {
-					$contacts[] = $c;
-				}
-			}
+		$month1 = $from->getMonth();
+		$month2 = $to->getMonth();
+		if ($month1 == $month2) {
+			$condition = 'DAYOFMONTH(`o_birthday`) >= ' . DB::escape($from->getDay()) .
+					' AND DAYOFMONTH(`o_birthday`) <= ' . DB::escape($to->getDay()) .
+					' AND MONTH(`o_birthday`) = ' . DB::escape($month1);
+		} else {
+			$condition = 'DAYOFMONTH(`o_birthday`) >= ' . DB::escape($from->getDay()) .
+					' AND MONTH(`o_birthday`) = ' . DB::escape($month1) .
+					' OR DAYOFMONTH(`o_birthday`) <= ' . DB::escape($to->getDay()) .
+					' AND MONTH(`o_birthday`) = ' . DB::escape($month2);
 		}
-
-		return $contacts;
+		
+		return $this->getAllowedContacts($condition);
 	}
 
 	static function getContactFieldNames() {
@@ -197,6 +197,18 @@ class Contacts extends BaseContacts {
 			'contact[middlename]' => lang('middle name'), 
 			'contact[notes]' => lang('notes') 
 		);
+	}
+	
+	/**
+	 * Returns an array of: (firstname, lastname, email, email2, email3)
+	 * from contacts that the logged user can access. 
+	 * @return array
+	 */
+	function getContactEmailAddresses() {
+		$permissions = permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user());
+		$sql = "SELECT `firstname`, `lastname`, `email`, `email2`, `email3` FROM `" . TABLE_PREFIX . "contacts` WHERE " .
+			"`trashed_by_id` = 0 AND $permissions AND (`email` <> '' OR `email2` <> '' OR `email3` <> '')";
+		return DB::executeAll($sql);
 	}
 } // Contacts
 

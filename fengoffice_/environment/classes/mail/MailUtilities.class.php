@@ -5,6 +5,7 @@ require_once "Net/POP3.php";
 class MailUtilities {
 
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived, $maxPerAccount = 0) {
+		Env::useHelper('permissions');
 		if (is_null($accounts)) {
 			$accounts = MailAccounts::findAll();
 		}
@@ -21,6 +22,7 @@ class MailUtilities {
 
 		if (isset($accounts)) {
 			foreach($accounts as $account) {
+				if (!$account->getServer()) continue;
 				try {
 					DB::beginWork();
 					$lastChecked = $account->getLastChecked();
@@ -106,7 +108,24 @@ class MailUtilities {
 		}
 		return $address;
 	}
-
+	
+	private function getHeaderValueFromContent($content, $headerName) {
+		if (stripos($content, $headerName) !== FALSE && stripos($content, $headerName) == 0) {
+			$ini = 0;
+		} else {
+			$ini = stripos($content, "\n$headerName");
+			if ($ini === FALSE) return "";
+		}
+				
+		$ini = stripos($content, ":", $ini);
+		if ($ini === FALSE) return "";
+		$ini++;
+		$end = stripos($content, "\n", $ini);
+		$res = trim(substr($content, $ini, $end - $ini));
+		
+		return $res;
+	}
+	
 	private function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
@@ -114,6 +133,26 @@ class MailUtilities {
 		$enc_conv = EncodingConverter::instance();
 		$to_addresses = self::getAddresses(array_var($parsedMail, "To"));
 		$from = self::getAddresses(array_var($parsedMail, "From"));
+		
+		$message_id = self::getHeaderValueFromContent($content, "Message-ID");
+		$in_reply_to_id = self::getHeaderValueFromContent($content, "In-Reply-To");
+		
+		$uid = trim($uidl);
+		if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
+			$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
+		}
+		if ($uid == '') {
+			$uid = trim($message_id);
+			if ($uid == '') {
+				$uid = array_var($parsedMail, 'Subject', 'MISSING UID');
+			}
+			if (str_starts_with($uid, '<') && str_ends_with($uid, '>')) {
+				$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
+			}
+			if (MailContents::mailRecordExists($account->getId(), $uid, $imap_folder_name == '' ? null : $imap_folder_name)) {
+				return;
+			}
+		}
 		
 		if (!$from) {
 			$parsedMail["From"] = self::getFromAddressFromContent($content);
@@ -125,6 +164,15 @@ class MailUtilities {
 				if (strpos($to_addresses, $from) !== FALSE) $state = 5; //Show in inbox and sent folders
 				else $state = 1; //Show only in sent folder
 			}
+		}
+		
+		$from_spam_junk_folder = strpos(strtolower($imap_folder_name), 'spam') !== FALSE 
+			|| strpos(strtolower($imap_folder_name), 'junk')  !== FALSE || strpos(strtolower($imap_folder_name), 'trash') !== FALSE;
+		$max_spam_level = user_config_option('max_spam_level');
+		if ($max_spam_level < 0) $max_spam_level = 0;
+		$mail_spam_level = strlen(trim( array_var($decoded[0]['Headers'], 'x-spam-level:', '') ));
+		if ($mail_spam_level > $max_spam_level || $from_spam_junk_folder) {
+			$state = 4; // send to Junk folder
 		}
 
 		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
@@ -138,8 +186,17 @@ class MailUtilities {
 		$from_name = trim(array_var(array_var(array_var($parsedMail, 'From'), 0), 'name'));
 		if ($from_name == '') $from_name = $from;
 		if (array_key_exists('Encoding', $parsedMail)){
-			$mail->setFromName($enc_conv->convert($encoding, 'UTF-8//IGNORE', $from_name));
-			$mail->setSubject($enc_conv->convert($encoding, 'UTF-8//IGNORE', $parsedMail['Subject']));
+			$utf8_from = $enc_conv->convert($encoding, 'UTF-8', $from_name);
+			if ($enc_conv->hasError()) {
+				$utf8_from = utf8_encode($from_name);
+			}
+			$mail->setFromName($utf8_from);
+			
+			$utf8_subject = $enc_conv->convert($encoding, 'UTF-8', $parsedMail['Subject']);
+			if ($enc_conv->hasError()) {
+				$utf8_subject = utf8_encode($parsedMail['Subject']);
+			}
+			$mail->setSubject($utf8_subject);
 		} else {
 			$mail->setFromName($from_name);
 			$mail->setSubject($parsedMail['Subject']);
@@ -155,42 +212,92 @@ class MailUtilities {
 		$mail->setCreatedOn(new DateTimeValue(time()));
 		$mail->setCreatedById($account->getUserId());
 		$mail->setAccountEmail($account->getEmail());
+		
+		$mail->setMessageId($message_id);
+		$mail->setInReplyToId($in_reply_to_id);
 
-		$uid = trim($uidl);
-		if ($uid[0]== '<') {
-			$uid = utf8_substr($uid, 1, utf8_strlen($uid, $encoding) - 2, $encoding);
-		}
 		$mail->setUid($uid);
-
 		$type = array_var($parsedMail, 'Type', 'text');
 		
 		switch($type) {
-			case 'html': $mail->setBodyHtml($enc_conv->convert($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
-			case 'text': $mail->setBodyPlain($enc_conv->convert($encoding, 'UTF-8//IGNORE', isset($parsedMail['Data']) ? $parsedMail['Data'] : '')); break;
-			case 'delivery-status': $mail->setBodyPlain($enc_conv->convert($encoding, 'UTF-8//IGNORE', $parsedMail['Response'])); break;
+			case 'html':
+				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
+				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+				$mail->setBodyHtml($utf8_body);
+				break;
+			case 'text': 
+				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Data', ''));
+				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Data', ''));
+				$mail->setBodyPlain($utf8_body);
+				break;
+			case 'delivery-status': 
+				$utf8_body = $enc_conv->convert($encoding, 'UTF-8', array_var($parsedMail, 'Response', ''));
+				if ($enc_conv->hasError()) $utf8_body = utf8_encode(array_var($parsedMail, 'Response', ''));
+				$mail->setBodyPlain($utf8_body);
+				break;
+			default: break;
 		}
 			
 		if (isset($parsedMail['Alternative'])) {
-			$body = $enc_conv->convert(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', ''));
-			if ($parsedMail['Alternative'][0]['Type'] == 'html') {
-				$mail->setBodyHtml($body);
-			} else {
-				$mail->setBodyPlain($body);
+			foreach ($parsedMail['Alternative'] as $alt) {
+				if ($alt['Type'] == 'html' || $alt['Type'] == 'text') {
+					$body = $enc_conv->convert(array_var($alt,'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($alt, 'Data', ''));
+					if ($enc_conv->hasError()) $body = utf8_encode(array_var($alt, 'Data', ''));
+					
+					// remove large white spaces
+					$exploded = preg_split("/[\s]+/", $body, -1, PREG_SPLIT_NO_EMPTY);
+					$body = implode(" ", $exploded);
+					// remove html comments
+					$body = preg_replace('/<!--.*-->/i', '', $body);
+				}
+				
+				if ($alt['Type'] == 'html') {
+					$mail->setBodyHtml($body);
+				} else if ($alt['Type'] == 'text') {
+					$mail->setBodyPlain($body);
+				}
+				// other alternative parts (like images) are not saved in database.
 			}
 		}
 
 		$repository_id = self::SaveContentToFilesystem($mail->getUid(), $content);
 		$mail->setContentFileId($repository_id);
-
+		
+		
 		try {
 			DB::beginWork();
+			
+			if ($in_reply_to_id != "") {
+				if ($message_id != "")
+					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id' OR `in_reply_to_id` = '$message_id'"));
+				else
+					$conv_mail = MailContents::findOne(array("conditions" => "`message_id` = '$in_reply_to_id'"));
+				
+				if ($conv_mail) {
+					$mail->setConversationId($conv_mail->getConversationId());
+				} else {
+					$conv_id = MailContents::getNextConversationId($account->getId());
+					$mail->setConversationId($conv_id);
+				}
+			} else {
+				$conv_id = MailContents::getNextConversationId($account->getId());
+				$mail->setConversationId($conv_id);
+			}
+			
 			$mail->save();
+
+			// CLASSIFY MAILS IF THE ACCOUNT HAVE A WORKSPACE
+			if ($account->getColumnValue('workspace',0) != 0) {
+				$workspace = Projects::findById($account->getColumnValue('workspace',0));
+				if ($workspace && $workspace instanceof Project) {
+					$mail->addToWorkspace($workspace);
+			 	}
+			}
+			//END CLASSIFY
+		
 			$user = Users::findById($account->getUserId());
 			if ($user instanceof User) {
 				$mail->subscribeUser($user);
-			}
-			if ($state == 1 || $state == 5) {
-				$mail->setIsRead(1, $account->getUserId());
 			}
 			DB::commit();
 		} catch(Exception $e) {
@@ -199,7 +306,7 @@ class MailUtilities {
 		}
 		unset($parsedMail);
 	}
-
+	
 	function parseMail(&$message, &$decoded, &$results, &$warnings) {
 		$mime = new mime_parser_class;
 		$mime->mbox = 0;
@@ -253,7 +360,7 @@ class MailUtilities {
 		// fetch newer mails first
 		$mailsToGet = array_reverse($mailsToGet, true);
 		foreach ($mailsToGet as $idx) {
-			if ($toGet < $received) break;
+			if ($toGet <= $received) break;
 			$content = $pop3->getMsg($idx+1); // message index is 1..N
 			if ($content != '') {
 				$uid = $summary[$idx]['uidl'];
@@ -267,15 +374,25 @@ class MailUtilities {
 		return $received;
 	}
 
-	public function displayMultipleAddresses($addresses, $clean = true) {
-		$list = explode(',', $addresses);
+	public function displayMultipleAddresses($addresses, $clean = true, $add_contact_link = true) {
+		$addresses = self::parse_to(html_entity_decode($addresses));
+		$list = self::parse_to(explode(',', $addresses));
 		$result = "";
-		foreach($list as $address){
-			$address = trim($address);
-			$link = self::getPersonLinkFromEmailAddress($address, $clean);
-			if ($result != "")
-			$result .= ', ';
-			$result .= $link;
+		
+		foreach($list as $addr){
+			if (count($addr) > 0) {
+				$name = "";
+				if (count($addr) > 1) {
+					$address = trim($addr[1]);
+					$name = $address != trim($addr[0]) ? trim($addr[0]) : "";
+				} else {
+					$address = trim($addr[0]);
+				}
+				$link = self::getPersonLinkFromEmailAddress($address, $name, $clean, $add_contact_link);
+				if ($result != "")
+				$result .= ', ';
+				$result .= $link;
+			}
 		}
 		return $result;
 	}
@@ -306,7 +423,7 @@ class MailUtilities {
 		RETURN $Str_Encrypted_Message;
 	} //end function
 
-	private static function getPersonLinkFromEmailAddress($email, $clean = true) {
+	private static function getPersonLinkFromEmailAddress($email, $addr_name, $clean = true, $add_contact_link = true) {
 		$name = $email;
 		$url = "";
 
@@ -329,19 +446,18 @@ class MailUtilities {
 				return $email;
 			} else {
 				$url = get_url('contact', 'add', array('ce' => $email));
-				return $email . '&nbsp;<a class="internalLink link-ico ico-add" style="padding-left:16px;" href="'.$url.'" title="'.lang('add contact').'"></a>';
+				$to_show = $addr_name == '' ? $email : $addr_name." &lt;$email&gt;";
+				return $to_show . ($add_contact_link ? '&nbsp;<a class="internalLink link-ico ico-add" style="padding-left:12px;" href="'.$url.'" title="'.lang('add contact').'">&nbsp;</a>' : '');
 			}
 		}
 	}
 
 
-	//function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
-	function sendMail($smtp_server, $to, $from, $subject, $body, $cc, $bcc, $attachments=null, $smtp_port=25, $smtp_username = null, $smtp_password ='', $type='text/plain', $transport=0) {
+	function sendMail($smtp_server, $to, $from, $subject, $body, $cc, $bcc, $attachments=null, $smtp_port=25, $smtp_username = null, $smtp_password ='', $type='text/plain', $transport=0, $message_id=null, $in_reply_to=null, $inline_images = null, &$complete_mail) {
 		//Load in the files we'll need
 		Env::useLibrary('swift');
 		// Load SMTP config
 		$smtp_authenticate = $smtp_username != null;
-
 		switch ($transport) {
 			case 'ssl': $transport = SWIFT_SSL; break;
 			case 'tls': $transport = SWIFT_TLS; break;
@@ -350,18 +466,22 @@ class MailUtilities {
 
 		//Start Swift
 		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
-
+		$mailer->loadPlugin(new SwiftLogger());
 		if(!$mailer->isConnected()) {
-			return false;
+			Logger::log($mailer->lastError);
+			throw new Exception($mailer->lastError);
 		} // if
 		$mailer->setCharset('UTF-8');
 		if($smtp_authenticate) {
 			if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
-				return false;
+				Logger::log($mailer->lastError);
+				throw new Exception($mailer->lastError);
 			} // if
 		}
-		if(! $mailer->isConnected() )  return false;
-		
+		if(! $mailer->isConnected() )  {
+			Logger::log($mailer->lastError);
+			throw new Exception($mailer->lastError);
+		}
 		// Send Swift mail
 		foreach ($to as $k => $v) {
 			if (is_array($v)) {
@@ -369,7 +489,7 @@ class MailUtilities {
 			} 
 			else if (trim($v) == '') unset($to[$k]);
 		}
-
+		
 		$ccArr = explode(",", $cc);
 		foreach ($ccArr as $k => $v) {
 			if (trim($v) == '') unset($ccArr[$k]);
@@ -381,18 +501,39 @@ class MailUtilities {
 		}
 		if(count($bccArr)>0) $mailer->addBcc($bccArr);
 		
+		if ($message_id) $mailer->setMessageId($message_id);
+		if ($in_reply_to) $mailer->setInReplyToId($in_reply_to);
+		
+		// add inline images
+ 		if (is_array($inline_images)) {
+ 			foreach ($inline_images as $image_url => $image_path) {
+ 				$cid = $mailer->addImage($image_path);
+ 				$body = str_replace($image_url, $cid, $body);
+ 			}
+ 		}
+ 		
+ 		if (is_array($inline_images) || is_array($attachments)){
+ 			self::adjustBody($mailer, $type, $body);
+	 		$mailer->addPart($body, $type); // real body
+	 		$body = false; // multipart
+ 		}
+ 		
 		// add attachments
  		if (is_array($attachments)) {
- 			self::adjustBody($mailer, $type, $body);
- 			$mailer->addPart($body, $type); // real body
          	foreach ($attachments as $att) {
- 				$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+         		if (substr($att['name'], -4) == '.eml') {
+ 					$mailer->addAttachment($att["data"], $att["name"], $att["type"], '7bit', 'attachment');
+         		} else {
+         			$mailer->addAttachment($att["data"], $att["name"], $att["type"]);
+         		}
  			}
- 			$body = false; // multipart
  		}
-		// add linked attachments
- 		$ok = $mailer->send($to, $from, $subject, $body, $type);
-		$mailer->close();
+ 		$mailer->useExactCopy();
+ 		$ok = $mailer->send($to, $from, $subject, $body, $type, false, $complete_mail);
+ 		$mailer->close();
+ 		
+ 		if (!$ok) throw new Exception($mailer->lastError);
+		
 		return $ok;
 	}
 	
@@ -445,6 +586,7 @@ class MailUtilities {
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
+				if ($max > 0 && $received >= $max) break;
 				if ($box->getCheckFolder()) {
 					if ($imap->selectMailbox(utf8_decode($box->getFolderName()))) {
 						$oldUids = $account->getUids($box->getFolderName());
@@ -481,11 +623,9 @@ class MailUtilities {
 								} 
 							}
 						}
-						
-						if ($max == 0) $max = $numMessages;
 
 						// get mails since last received (last received is not included)
-						for ($i = $lastReceived; $received < $max && $i < $numMessages; $i++) {
+						for ($i = $lastReceived; ($max == 0 || $received < $max) && $i < $numMessages; $i++) {
 							$index = $i+1;
 							$summary = $imap->getSummary($index);
 							if (PEAR::isError($summary)) {
@@ -520,7 +660,7 @@ class MailUtilities {
 			$imap = new Net_IMAP($ret, "ssl://" . $account->getServer(), $account->getIncomingSslPort());
 		} else {
 			$imap = new Net_IMAP($ret, "tcp://" . $account->getServer());
-		}		
+		}
 		if (PEAR::isError($ret)) {
 			Logger::log($ret->getMessage());
 			throw new Exception($ret->getMessage());
@@ -666,6 +806,48 @@ class MailUtilities {
 	public function saveContent($content)
 	{
 		return $this->saveContentToFilesystem("UID".rand(), $content);
+	}
+	
+	public function removeQuotedText($text) {
+		//TODO: remove lines starting with '>'
+		$lines = explode("\n", $text);
+		$result = array('unquoted' => '', 'quoted' => '');
+		foreach ($lines as $line) {
+			if (!str_starts_with($line, ">")) {
+				$result['unquoted'] .= $line . "\n";
+			} else {
+				$result['quoted'] .= $line . "\n";
+			}
+		}
+		return $result;
+	}
+	
+	public function removeQuotedBlocks($html) {
+		$result = array();
+		
+		$start = stripos($html, "<blockquote");
+		if ($start !== FALSE) {
+			$end = strripos($html, "</blockquote>");
+			if ($end === FALSE) $end = $start;
+			else $end += strlen("</blockquote>");
+			
+			$result['quoted'] = substr($html, $start, $end - $start);
+			$result['unquoted'] = substr($html, 0, $start) . substr($html, $end);
+		} else {
+			$result['unquoted'] = $html;
+		}
+		
+		return $result;
+	}
+	
+	public function getUnquotedInfo($mail) {
+		if (!$mail instanceof MailContent ) return '';
+		if ($mail->getBodyHtml() != '') {
+			$res = self::removeQuotedBlocks($mail->getBodyHtml());
+		} else {
+			$res = self::removeQuotedText($mail->getBodyPlain());
+		}
+		return array_var($res, 'unquoted', '');
 	}
 }
 ?>

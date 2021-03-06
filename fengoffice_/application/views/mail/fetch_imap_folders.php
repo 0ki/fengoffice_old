@@ -1,4 +1,5 @@
 <?php if (!is_array($imap_folders)) $imap_folders = array(); ?>
+<?php $base_tabindex = 71 ?>
 <table style="min-width: 400px; margin-top: 10px;">
 	<tr>
 		<th><?php echo lang('folders to check') ?></th>
@@ -25,7 +26,7 @@
 			});
 		};
 		</script>
-			<a class="link-ico ico-refresh" href="javascript:og.fetchImapFolders('<?php echo $genid ?>')">
+			<a class="link-ico ico-refresh" tabindex="<?php echo $base_tabindex?>" href="javascript:og.fetchImapFolders('<?php echo $genid ?>')">
 			<?php echo lang("fetch imap folders")?>
 			</a>  
 		</th>
@@ -34,7 +35,7 @@
 	foreach($imap_folders as $folder) { ?>
 	<tr <?php echo ($isAlt ? ' class="altRow"': '') ?>>
 		<td style="padding-left: 10px;"><?php echo $folder->getFolderName() ?></td>
-		<td style="padding-left: 30px;"><?php echo checkbox_field('check['.str_replace(array('[',']'), array('¡','!'), $folder->getFolderName()).']', $folder->getCheckFolder(), array('tabindex'=>170 + $i++)) ?></td>
+		<td style="padding-left: 30px;"><?php echo checkbox_field('check['.str_replace(array('[',']'), array('¡','!'), $folder->getFolderName()).']', $folder->getCheckFolder(), array('tabindex'=>$base_tabindex + $i++)) ?></td>
 	</tr>
 	<?php $isAlt = !$isAlt;
 	} ?>

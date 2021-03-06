@@ -93,6 +93,11 @@
       return $handler->render($control_name);
     } // render
     
+    function save(){
+    	parent::save();
+    	ConfigOptions::instance()->updateConfigOptionCache($this);
+    }
+    
   } // ConfigOption 
 
 ?>

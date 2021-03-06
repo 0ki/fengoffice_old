@@ -15,9 +15,15 @@
     */
   	function getMailAccountsByUser(User $user)
   	{
-  		return MailAccounts::findAll(array(
-        'conditions' => '`user_id` = ' . DB::escape($user->getId())
-      )); // findAll
+  		$accounts = array();
+  		$accountUsers = MailAccountUsers::getByUser($user);
+  		foreach ($accountUsers as $au) {
+  			$account = $au->getAccount();
+  			if ($account instanceof MailAccount) {
+  				$accounts[] = $account;
+  			}
+  		}
+  		return $accounts;
   	}
   } // MailAccounts 
 

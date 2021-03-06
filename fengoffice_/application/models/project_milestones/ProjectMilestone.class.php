@@ -555,6 +555,42 @@ class ProjectMilestone extends BaseProjectMilestone {
 
 	} // trash
 	
+	
+	/**
+	 * Moves the tasks that do not comply with the following rule: Tasks of a milestone must belong to its workspace or any of its subworkspaces.
+	 * 
+	 * @param Project $newWorkspace The new workspace
+	 * @return unknown_type
+	 */
+	function move_inconsistent_tasks(Project $newWorkspace){
+		$oldWorkspace = $this->getProject();
+		$nwCSV = explode(',', $newWorkspace->getAllSubWorkspacesCSV(true));
+		$owCSV = explode(',', $oldWorkspace->getAllSubWorkspacesCSV(true));
+		
+		$inconsistentWs = array();
+		
+		foreach ($owCSV as $ow){
+			$found = false;
+			foreach ($nwCSV as $nw){
+				if ($ow == $nw){
+					$found = true;
+					break;
+				}
+			}
+			if (!$found)
+				$inconsistentWs[] = $ow;
+		}
+		if (count($inconsistentWs) > 0){
+			try {
+				DB::execute('UPDATE ' . WorkspaceObjects::instance()->getTableName(true) . ' SET workspace_id = ' . $newWorkspace->getId() . 
+					' WHERE object_manager = \'ProjectTasks\' and object_id in (SELECT id from ' . ProjectTasks::instance()->getTableName(true) . 
+					' WHERE milestone_id = ' . $this->getId() . ') and workspace_id in (' . implode(',',$inconsistentWs) . ')');
+			} catch(Exception $e) {
+				throw $e;
+			} // try
+		}
+	}
+	
 	// ---------------------------------------------------
 	//  ApplicationDataObject implementation
 	// ---------------------------------------------------

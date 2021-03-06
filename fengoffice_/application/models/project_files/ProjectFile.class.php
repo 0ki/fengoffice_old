@@ -175,7 +175,7 @@ class ProjectFile extends BaseProjectFile {
 	 * Checck out file
 	 *
 	 * @param bool $autoCheckOut Is true when the file was automatically checked out on edit
-	 * @param User $user If null, loged user is used
+	 * @param User $user If null, logged user is used
 	 * @return boolean
 	 */
 	function checkOut($autoCheckOut = false, $user = null){
@@ -362,9 +362,16 @@ class ProjectFile extends BaseProjectFile {
 		$revision->setRepositoryId($repository_id);
 		$revision->deleteThumb(false);
 		$revision->setFilesize($uploaded_file['size']);
-		$revision->setTypeString($uploaded_file['type']);
-
-		$extension = get_file_extension(basename($uploaded_file['name']));
+		if (config_option('detect_mime_type_from_extension')) {
+			$type = Mime_Types::instance()->get_type($extension);
+			if ($type) 
+				$revision->setTypeString($type);
+			else 
+				$revision->setTypeString($uploaded_file['type']);
+		} else { 
+			$revision->setTypeString($uploaded_file['type']);
+		}
+		
 		if(trim($extension)) {
 			$file_type = FileTypes::getByExtension($extension);
 			if($file_type instanceof Filetype) {
@@ -407,6 +414,30 @@ class ProjectFile extends BaseProjectFile {
 	
 	function isMP3() {
 		return $this->getTypeString() == 'audio/mpeg' || $this->getTypeString() == 'audio/mp3';	
+	}
+	
+	function getFileContentWithRealUrls() {
+		$content = $this->getFileContent();
+		if ($this->getTypeString() == 'text/html') {
+			// Search for images
+			preg_match_all("/<img[^>]*src=[\"ProjectFiles:']([^\"']*)[\"']/", $content, $matches);
+			$file_ids = array_var($matches, 1);
+			if (is_array($file_ids)) {
+				foreach ($file_ids as $file_id) {
+					$exp = explode(":", $file_id);
+					if (count($exp) < 2) continue;
+					$img_file = ProjectFiles::findById($exp[1]);
+					if (!$img_file) continue;
+					
+					$tmp_fname = $img_file->getId()."_".$img_file->getRevisionNumber()."_" . $img_file->getFilename();
+					if (!is_file(ROOT . "/tmp/$tmp_fname")) {
+						file_put_contents(ROOT . "/tmp/$tmp_fname", $img_file->getFileContent());
+					}
+					$content = str_replace($file_id, ROOT_URL . "/tmp/$tmp_fname", $content);
+				}
+			}
+		}
+		return $content;
 	}
 	
 	// ---------------------------------------------------
@@ -729,11 +760,6 @@ class ProjectFile extends BaseProjectFile {
 		$this->clearObjectRelations();
 		return parent::delete();
 	} // delete
-
-	
-	function save(){
-		return parent::save();
-	}
 	
 	/**
 	 * Remove all revisions associate with this file
@@ -779,8 +805,8 @@ class ProjectFile extends BaseProjectFile {
 			} // if
 
 			$content = $this->getFileContent();
-			if(strlen($content) < MAX_SEARCHABLE_FILE_SIZE) {
-				return $content;
+			if(strlen($content) <= MAX_SEARCHABLE_FILE_SIZE) {
+				return strip_tags($content);
 			} // if
 		} else {
 			return parent::getSearchableColumnContent($column_name);
@@ -828,6 +854,8 @@ class ProjectFile extends BaseProjectFile {
 		$ret["mimeType"] = $this->getTypeString();
 		return $ret;
 	}
+	
+
 } // ProjectFile
 
 ?>

@@ -17,5 +17,14 @@ function do_textile($text, $lite = false, $encode = false, $noimage = false, $st
 	return '<div class="textile-rewrite">' . $textile->TextileThis($text, $lite, $encode, $noimage, $strict, $rel) . '</div>';
 } // do_textile
 
-
+/**
+ * Converts HTML to plain text
+ * @param $html
+ * @return string
+ */
+function html_to_text($html) {
+	include_once "library/html2text/class.html2text.inc";
+	$h2t = new html2text($html);
+	return $h2t->get_text(); 
+}
 ?>

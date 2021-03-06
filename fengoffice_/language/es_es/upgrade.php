@@ -2,6 +2,7 @@
 	'upgrade' => 'Actualizar',
 	'upgrade from' => 'Actualizar de',
 	'upgrade to' => 'Actualizar a',
+	'upgrade from to' => 'Actualizar de {0} a {1}',
 	'already upgraded' => 'Ha actualizado a la última versión posible.',
 	'back to opengoo' => 'Volver a OpenGoo',
 	'all rights reserved' => 'Todos los derechos reservados',

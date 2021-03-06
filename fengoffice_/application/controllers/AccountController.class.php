@@ -18,7 +18,9 @@ class AccountController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		prepare_company_website_controller($this, 'website');
-		ajx_set_panel("account");
+		if (array_var($_GET, 'current') != 'administration') {
+			ajx_set_panel("account");
+		}
 	} // __construct
 
 	/**
@@ -114,18 +116,31 @@ class AccountController extends ApplicationController {
 				$user->setTitle(array_var($user_data,'title'));
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				if (logged_user()->isAdministrator()){
-					$user->setCompanyId(array_var($user_data,'company_id'));
+					if ($user->getId() != 1) { // System admin cannot change it's company
+						$user->setCompanyId(array_var($user_data,'company_id'));
+					}
 					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
 					$user->setUsername(array_var($user_data,'username'));
 				}
 
 				$user->save();
 				
+				$autotimezone = array_var($_POST, 'autodetect_time_zone', null);
+				if ($autotimezone !== null) {
+					set_user_config_option('autodetect_time_zone', $autotimezone, $user->getId());
+				}
+				
 				$object_controller = new ObjectController();
 			  	$object_controller->add_custom_properties($user);
 			  
-				if ($user->getId() != 1) //System admin cannot change its own admin status
-					$user->setAsAdministrator(array_var($user_data, 'is_admin'));
+				if ($user->getId() != 1) { //System admin cannot change its own admin status
+					if ($user->getCompanyId() != 1) {
+						// only users from owner company can be administrators
+						$user->setAsAdministrator(false);
+					} else {
+						$user->setAsAdministrator(array_var($user_data, 'is_admin'));
+					}
+				}
 				
 				DB::commit();
 
@@ -270,6 +285,7 @@ class AccountController extends ApplicationController {
 			  'can_manage_templates' => $user->getCanManageTemplates(),
 			  'can_manage_reports' => $user->getCanManageReports(),
 			  'can_manage_time' => $user->getCanManageTime(),
+			  'can_add_mail_accounts' => $user->getCanAddMailAccounts(),
 			); // array			
 		} // if
 
@@ -323,6 +339,7 @@ class AccountController extends ApplicationController {
 				$user->setCanManageTemplates(false);
 				$user->setCanManageReports(false);
 				$user->setCanManageTime(false);
+				$user->setCanAddMailAccounts(false);
 				$user->setFromAttributes($user_data);
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();

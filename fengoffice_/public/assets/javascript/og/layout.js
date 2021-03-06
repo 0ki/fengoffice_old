@@ -12,7 +12,7 @@ Ext.onReady(function(){
 			text.item(0).dom.select();
 	});
 
-	if (og.rememberGUIState) {
+	if (og.preferences['rememberGUIState']) {
 		Ext.state.Manager.setProvider(new og.HttpProvider({
 			saveUrl: og.getUrl('gui', 'save_state'),
 			readUrl: og.getUrl('gui', 'read_state'),
@@ -54,7 +54,7 @@ Ext.onReady(function(){
 		og.panels.email = new og.ContentPanel({
 			title: lang('email tab'),
 			id: 'mails-panel',
-			iconCls: 'ico-email',
+			iconCls: 'ico-emails',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
 				type: 'url',
@@ -115,7 +115,7 @@ Ext.onReady(function(){
 		og.panels.time = new og.ContentPanel({
 			title: lang('time'),
 			id: 'time-panel',
-			iconCls: 'ico-time',
+			iconCls: 'ico-time-layout',
 			refreshOnWorkspaceChange: true,
 			defaultContent: {
 				type: "url",
@@ -142,88 +142,45 @@ Ext.onReady(function(){
 		listeners: {
 			'render': function() {
 				// hide disabled modules
-				if (!og.enableNotesModule) Ext.get('tabs-panel__messages-panel').setDisplayed(false);
-				if (!og.enableEmailModule) Ext.get('tabs-panel__mails-panel').setDisplayed(false);
-				if (!og.enableContactsModule) Ext.get('tabs-panel__contacts-panel').setDisplayed(false);
-				if (!og.enableCalendarModule) Ext.get('tabs-panel__calendar-panel').setDisplayed(false);
-				if (!og.enableDocumentsModule) Ext.get('tabs-panel__documents-panel').setDisplayed(false);
-				if (!og.enableTasksModule) Ext.get('tabs-panel__tasks-panel').setDisplayed(false);
-				if (!og.enableWeblinksModule) Ext.get('tabs-panel__webpages-panel').setDisplayed(false);
-				if (!og.enableTimeModule) Ext.get('tabs-panel__time-panel').setDisplayed(false);
-				if (!og.enableReportingModule) Ext.get('tabs-panel__reporting-panel').setDisplayed(false);
+				if (!og.config['enable_notes_module']) Ext.get('tabs-panel__messages-panel').setDisplayed(false);
+				if (!og.config['enable_email_module']) Ext.get('tabs-panel__mails-panel').setDisplayed(false);
+				if (!og.config['enable_contacts_module']) Ext.get('tabs-panel__contacts-panel').setDisplayed(false);
+				if (!og.config['enable_calendar_module']) Ext.get('tabs-panel__calendar-panel').setDisplayed(false);
+				if (!og.config['enable_documents_module']) Ext.get('tabs-panel__documents-panel').setDisplayed(false);
+				if (!og.config['enable_tasks_module']) Ext.get('tabs-panel__tasks-panel').setDisplayed(false);
+				if (!og.config['enable_weblinks_module']) Ext.get('tabs-panel__webpages-panel').setDisplayed(false);
+				if (!og.config['enable_time_module']) Ext.get('tabs-panel__time-panel').setDisplayed(false);
+				if (!og.config['enable_reporting_module']) Ext.get('tabs-panel__reporting-panel').setDisplayed(false);
 			}
 		}
 	});
 
-	// ENABLE / DISABLE MODULES	
-	og.eventManager.addListener('config enable_notes_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__messages-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__messages-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_email_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__mails-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__mails-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_contacts_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__contacts-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__contacts-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_calendar_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__calendar-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__calendar-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_documents_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__documents-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__documents-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_tasks_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__tasks-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__tasks-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_weblinks_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__webpages-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__webpages-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_time_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__time-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__time-panel').setDisplayed(false);
-		}
-	});
-	og.eventManager.addListener('config enable_reporting_module changed', function(val) {
-		if (val == 1) {
-			Ext.get('tabs-panel__reporting-panel').setDisplayed(true);
-		} else {
-			Ext.get('tabs-panel__reporting-panel').setDisplayed(false);
+	// ENABLE / DISABLE MODULES
+	var module_tabs = {
+		'notes': ['tabs-panel__messages-panel'],
+		'email': ['tabs-panel__mails-panel'],
+		'contacts': ['tabs-panel__contacts-panel'],
+		'calendar': ['tabs-panel__calendar-panel'],
+		'documents': ['tabs-panel__documents-panel'],
+		'tasks': ['tabs-panel__tasks-panel'],
+		'weblinks': ['tabs-panel__webpages-panel'],
+		'time': ['tabs-panel__time-panel'],
+		'reporting': ['tabs-panel__reporting-panel']
+	};
+	og.eventManager.addListener('config option changed', function(option) {
+		if (option.name.substring(0, 7) == 'enable_' && option.name.substring(option.name.length - 7) == '_module') {
+			var module = option.name.substring(7, option.name.length - 7);
+			var tabs = module_tabs[module] || [];
+			for (var i=0; i < tabs.length; i++) {
+				Ext.get(tabs[i]).setDisplayed(option.value);
+			}
 		}
 	});
 	
 	// BUILD VIEWPORT
 	var viewport = new Ext.Viewport({
 		layout: 'border',
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		items: [
 			new Ext.BoxComponent({
 				region: 'north',
@@ -258,7 +215,7 @@ Ext.onReady(function(){
 				collapsible: true,
 				margins: '0 0 0 0',
 				layout: 'border',
-				stateful: og.rememberGUIState,
+				stateful: og.preferences['rememberGUIState'],
 				items: [{
 					id: 'workspaces-tree',
 					xtype: 'wspanel',
@@ -295,6 +252,22 @@ Ext.onReady(function(){
 	
     og.captureLinks();
 
+    if (og.preferences['email_polling'] > 0) {
+    	function updateUnreadCount() {
+    		og.openLink(og.getUrl('mail', 'get_unread_count'), {
+    			onSuccess: function(d) {
+    				if (typeof d.unreadCount != 'undefined') {
+    					og.updateUnreadEmail(d.unreadCount);
+    				}
+    			},
+    			hideLoading: true,
+    			hideErrors: true,
+    			preventPanelLoad: true
+    		});
+    	}
+    	updateUnreadCount();
+    	setInterval(updateUnreadCount, Math.max(og.preferences['email_polling'], 5000));
+    }
     
     if (og.hasNewVersions) {
     	og.msg(lang('new version notification title'), og.hasNewVersions, 0);

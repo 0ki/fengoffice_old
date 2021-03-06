@@ -1,13 +1,27 @@
 <?php
 $genid = gen_id();
 set_page_title($mailAccount->isNew() ? lang('add mail account') : lang('edit mail account'));
-if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user()))
-add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount(".$mailAccount->getId().");", 'ico-delete');
+if (!$mailAccount->isNew() && $mailAccount->canDelete(logged_user())) {
+	add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount(".$mailAccount->getId().");", 'ico-delete');
+}
+$logged_user_settings = MailAccountUsers::getByAccountAndUser($mailAccount, logged_user());
+if (!$logged_user_settings instanceof MailAccountUser) {
+	$logged_user_can_edit = $mailAccount->isNew();
+	$user_settings = array();
+} else {
+	$logged_user_can_edit = $logged_user_settings->getCanEdit();
+	$user_settings = array(
+		'is_default' => $logged_user_settings->getIsDefault(),
+		'sender_name' => $logged_user_settings->getSenderName(),
+		'signature' => $logged_user_settings->getSignature(),
+	);
+}
 ?>
 
 <form style="height: 100%; background-color: white" class="internalForm"
 	action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>"
 	method="post">
+<input type="hidden" name="submitted" value="true" />
 
 <div class="adminAddMailAccount">
 <div class="adminHeader">
@@ -17,7 +31,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 			<tr>
 				<td><?php echo $mailAccount->isNew() ? lang('new mail account') : lang('edit mail account') ?></td>
 				<td style="text-align: right">
-					<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), '',  array('style'=>'margin-top:0px;margin-left:10px', 'tabindex'=>'301')) ?>
+					<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), '',  array('style'=>'margin-top:0px;margin-left:10px', 'tabindex'=>'1301')) ?>
 				</td>
 			</tr>
 		</table>
@@ -25,28 +39,45 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 	</div>
 
 	<div class="mail-account-item">
-		<label for='mailAccountFormName'><?php echo lang('mail account name')?>
+		<label for='<?php echo $genid ?>mailAccountFormName'><?php echo lang('mail account name')?>
 			<span class="label_required">*</span>
 			<span class="desc"><?php echo lang('mail account name description') ?></span>
 		</label>
-		<?php echo text_field('mailAccount[name]', array_var($mailAccount_data, 'name'), array('class' => 'title', 'tabindex'=>'10', 'id' => 'mailAccountFormName')) ?>
+		<?php if ($logged_user_can_edit) {
+			echo text_field('mailAccount[name]', array_var($mailAccount_data, 'name'), array('class' => 'title', 'tabindex'=>'10', 'id' => $genid.'mailAccountFormName'));
+		} else {
+			echo text_field('', array_var($mailAccount_data, 'name'), array('class' => 'title', 'tabindex'=>'10', 'id' => $genid.'mailAccountFormName', 'disabled' => 'disabled'));
+		} ?>
 	</div>
 
 	<div class="mail-account-item">
 		<label for="mailAccountFormEmail"><?php echo lang('mail address')?>
 			<span class="label_required">*</span> <span class="desc"><?php echo lang('mail address description') ?></span>
 		</label>
-		<?php echo text_field('mailAccount[email_addr]', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20')) ?>
+		<?php if ($logged_user_can_edit) {
+			echo text_field('mailAccount[email_addr]', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20','onchange'=> 'og.autofillmailaccountinfo(this.value,\''.$genid.'\')'));
+		} else {
+			echo text_field('', array_var($mailAccount_data, 'email_addr'), array('id' => 'mailAccountFormEmail', 'tabindex'=>'20', 'disabled' => 'disabled'));
+		} ?>
+		<div style="color:#e22;" id="<?php echo $genid ?>autoconfigmessage"> </div>
+		
 	</div>
 
 	<div style="padding-top:5px">
-		<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>incoming_settings_div', this)"><?php echo lang('incoming settings') ?></a> -
-		<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>smtp_settings_div', this)"><?php echo lang('smtp settings') ?></a> - 
-		<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>other_settings_div',this)"><?php echo lang('other settings') ?></a>
+		<?php if ($logged_user_can_edit) { ?>
+			<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>incoming_settings_div', this)"><?php echo lang('incoming settings') ?></a> -
+			<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>smtp_settings_div', this)"><?php echo lang('smtp settings') ?></a> - 
+		<?php } ?>
+		<a href="#" class="option" style="font-weight: bold" onclick="og.toggleAndBolden('<?php echo $genid ?>other_settings_div',this)"><?php echo lang('personal settings') ?></a>
+		<?php if ($logged_user_can_edit) { ?>
+			- <a href="#" class="option" style="font-weight: normal" onclick="og.toggleAndBolden('<?php echo $genid ?>account_permissions_div',this)"><?php echo lang('mail account permissions') ?></a>
+		<?php } ?>
 	</div>
 </div>
 <div class="adminSeparator"></div>
 <div class="adminMainBlock">
+
+<?php if ($logged_user_can_edit) { ?>
 
 	<fieldset id="<?php echo $genid ?>incoming_settings_div">
 		<legend><?php echo lang('incoming settings'); ?></legend>
@@ -98,7 +129,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 
 		<div class="mail-account-item" id="<?php echo $genid ?>sslportdiv" <?php if (!array_var($mailAccount_data, 'incoming_ssl')) echo 'style="display:none"'; ?>>
 			<?php echo label_tag(lang('incoming ssl port'), 'mailAccountFormIncomingSslPort') ?>
-			<?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port', 995), array('id' => $genid.'sslport', 'tabindex'=>'80')) ?>
+			<?php echo text_field('mailAccount[incoming_ssl_port]', array_var($mailAccount_data, 'incoming_ssl_port', 995), array('id' => $genid.'sslport', 'tabindex'=>'120')) ?>
 		</div>
 
 		<div class="mail-account-item" id="<?php echo $genid ?>folders" style="padding:5px;<?php if (!array_var($mailAccount_data, 'is_imap', false)) echo 'display:none'; ?>">
@@ -109,6 +140,29 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				tpl_display(get_template_path("fetch_imap_folders", "mail")) ?>
 			</div>
 		</div>
+		
+		<div>
+			<label for="mailAccountDelMailFromServer">
+				<?php echo lang('delete mails from server')?>
+				<span class="desc"><?php echo lang('mail account delete mails from server description') ?></span>
+			</label>
+			<?php $del_from_server = array_var($mailAccount_data, 'del_from_server', 0) ?>
+			<?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server > 0, lang('yes'), lang('no'), 130) ?>
+			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>
+			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 0 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'140', 'style'=>'width:25px')) ?>
+			<?php echo lang('days'); ?>
+		</div>
+		
+		<div>
+			<label>
+				<?php echo lang ('classify mails on workspace') ?>
+				<span class="desc"><?php echo lang ('classify mails on workspace desc') ?> </span>
+			</label>
+				<?php
+					echo select_project2('mailAccount[workspace]', $mailAccount_data['workspace']?$mailAccount_data['workspace']:0,$genid, true,null);
+				?>
+		</div>
+		
 	</fieldset>
 
 	<fieldset id="<?php echo $genid ?>smtp_settings_div">
@@ -118,7 +172,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				<?php echo lang('smtp server')?> <span class="label_required">*</span>
 				<span class="desc"><?php echo lang('mail account smtp server description') ?></span>
 			</label>
-			<?php echo text_field('mailAccount[smtp_server]', array_var($mailAccount_data, 'smtp_server'), array('id' => 'mailSmtpServer', 'tabindex'=>'90')) ?>
+			<?php echo text_field('mailAccount[smtp_server]', array_var($mailAccount_data, 'smtp_server'), array('id' => 'mailSmtpServer', 'tabindex'=>'150')) ?>
 		</div>
 
 		<div class="mail-account-item">
@@ -126,7 +180,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				<?php echo lang('smtp port')?> <span class="label_required">*</span>
 				<span class="desc"><?php echo lang('mail account smtp port description') ?></span>
 			</label>
-			<?php echo text_field('mailAccount[smtp_port]', array_var($mailAccount_data, 'smtp_port',25), array('id' => 'mailSmtpPort', 'tabindex'=>'100')) ?>
+			<?php echo text_field('mailAccount[smtp_port]', array_var($mailAccount_data, 'smtp_port',25), array('id' => 'mailSmtpPort', 'tabindex'=>'160')) ?>
 		</div>
 
 		<div class="mail-account-item">
@@ -141,7 +195,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				option_tag(lang('smtp specific'), 2, ($use_auth==2)?array('selected' => 'selected'):null)
 			);
 			echo select_box('mailAccount[smtp_use_auth]', $options, array(
-				'id' => 'mailSmtpUseAuth', 'tabindex'=>'110',
+				'id' => 'mailSmtpUseAuth', 'tabindex'=>'170',
 				'onchange' => "if(document.getElementById('mailSmtpUseAuth').selectedIndex ==2) document.getElementById('smtp_specific_auth').style.display = 'block'; else document.getElementById('smtp_specific_auth').style.display = 'none';"
 			)); ?>
 		</div>
@@ -151,7 +205,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				<label for="mailSmtpUsername"><?php echo lang('smtp username')?> <span class="label_required"></span>
 					<span class="desc"><?php echo lang('mail account smtp username description') ?></span>
 				</label>
-				<?php echo text_field('mailAccount[smtp_username]', array_var($mailAccount_data, 'smtp_username'), array('id' => 'mailSmtpUsername', 'tabindex'=>'120')) ?>
+				<?php echo text_field('mailAccount[smtp_username]', array_var($mailAccount_data, 'smtp_username'), array('id' => 'mailSmtpUsername', 'tabindex'=>'180')) ?>
 			</div>
 
 			<div class="mail-account-item">
@@ -159,7 +213,7 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 					<?php echo lang('smtp password')?> <span class="label_required"></span>
 					<span class="desc"><?php echo lang('mail account smtp password description') ?></span>
 				</label>
-				<?php echo password_field('mailAccount[smtp_password]', array_var($mailAccount_data, 'smtp_password'), array('id' => 'mailSmtpPassword', 'tabindex'=>'130')) ?>
+				<?php echo password_field('mailAccount[smtp_password]', array_var($mailAccount_data, 'smtp_password'), array('id' => 'mailSmtpPassword', 'tabindex'=>'190')) ?>
 			</div>
 		</div>
 
@@ -175,31 +229,30 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 				option_tag('TLS', 'tls', ($ottype=='tls')?array('selected' => 'selected'):null)
 			);
 			echo select_box('mailAccount[outgoing_transport_type]', $t_options,
-			array('id' => 'mailOutgoingTransportType', 'tabindex'=>'140', 'onchange' => ""));
+			array('id' => 'mailOutgoingTransportType', 'tabindex'=>'200', 'onchange' => ""));
 			?>
 		</div>
 	</fieldset>
-
+	
+<?php } ?>
+	
 	<fieldset id="<?php echo $genid ?>other_settings_div">
-		<legend><?php echo lang('other settings')?></legend>
+		<legend><?php echo lang('personal settings')?></legend>
+		<div class="desc"><?php echo lang('personal settings desc') ?></div>
+		<div class="mail-account-item">
+			<label for="<?php echo $genid?>sender_name">
+				<?php echo lang('mail account sender name') ?>
+				<span class="desc"><?php echo lang('mail account sender name description') ?></span>
+			</label>
+			<?php echo input_field('sender_name', array_var($user_settings, 'sender_name', ''), array('id' => $genid."sender_name", 'tabindex' => 1210)) ?>
+		</div>
+		
 		<div class="mail-account-item">
 			<label for="<?php echo $genid ?>is_default">
 				<?php echo lang('default account')?>
 				<span class="desc"><?php echo lang('default account description') ?></span>
 			</label>
-			<?php echo yes_no_widget('mailAccount[is_default]', $genid.'is_default', array_var($mailAccount_data, 'is_default', 0) > 0, lang('yes'), lang('no'), 143) ?>
-		</div>
-
-		<div>
-			<label for="mailAccountDelMailFromServer">
-				<?php echo lang('delete mails from server')?>
-				<span class="desc"><?php echo lang('mail account delete mails from server description') ?></span>
-			</label>
-			<?php $del_from_server = array_var($mailAccount_data, 'del_from_server', 0) ?>
-			<?php echo yes_no_widget('mailAccount[del_mails_from_server]', 'mailAccountDelMailFromServer', $del_from_server > 0, lang('yes'), lang('no'), 146) ?>
-			<?php echo '<span style="margin-left: 10px">' . lang('after') . '</span>'?>
-			<?php echo text_field('mailAccount[del_from_server]', $del_from_server <= 0 ? 0 : $del_from_server, array('id' => 'mailAccountDelFromServer', 'tabindex'=>'150', 'style'=>'width:25px')) ?>
-			<?php echo lang('days'); ?>
+			<?php echo yes_no_widget('is_default', $genid.'is_default', array_var($user_settings, 'is_default', 0) > 0, lang('yes'), lang('no'), 1220) ?>
 		</div>
 		
 		<div>
@@ -207,45 +260,204 @@ add_page_action(lang('delete mail account'),  "javascript:og.promptDeleteAccount
 		    	<?php echo lang('signature')?>
 		    	<span class="desc"><?php echo lang('signature description') ?></span>
 		    </label>
-		    <?php echo textarea_field('mailAccount[signature]', array_var($mailAccount_data, 'signature'), array('id' => 'signature', 'tabindex'=>'160', 'style' => 'width:100%;max-width:500px;height:100px;')) ?>
+		    <?php echo textarea_field('signature', array_var($user_settings, 'signature', ''), array('id' => $genid.'signature', 'tabindex'=>'1230', 'style' => 'width:100%;max-width:500px;height:100px;')) ?>
 		</div>
 	</fieldset>
 	
-<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'170')) ?>
+<?php if ($logged_user_can_edit) { ?>
+	<fieldset id="<?php echo $genid ?>account_permissions_div" style="display:none;">
+		<legend><?php echo lang('mail account permissions')?></legend>
+		<div class="desc"><?php echo lang('mail account permissions desc')?></div>
+		<?php
+		$account_users = logged_user()->getCompany()->getUsers();
+		$account_user_ids = is_array($mailAccountUsers) ? array_keys($mailAccountUsers) : array();
+		$num = 0;
+		$alt = true;
+		foreach ($account_users as $user) {
+			$num++;
+			$alt = !$alt; ?>
+			<div class="account_permissions_user<?php if ($alt) echo " odd"; ?>">
+				<div class="user_picture cardIcon"><img src="<?php echo $user->getAvatarUrl();?>"></img></div>
+				<div class="user_name">
+					<?php echo clean($user->getDisplayName()) ?>
+				</div> <?php
+				if (in_array($user->getId(), $account_user_ids)) {
+					if (array_var($mailAccountUsers[$user->getId()], 'can_edit')) {
+						$access = 'write';
+					} else {
+						$access = 'read';
+					} 
+				} else {
+					$access = 'none';
+				} ?>
+				<div class="user_access">
+					<select name="user_access[<?php echo $user->getId() ?>]" tabindex="<?php echo 200 + $num ?>">
+						<option value="none" <?php if ($access == 'none') echo 'selected="selected"'; ?>><?php echo lang('cannot access account')?></option>
+						<option value="read" <?php if ($access == 'read') echo 'selected="selected"'; ?>><?php echo lang('can view account emails')?></option>
+						<option value="write" <?php if ($access == 'write') echo 'selected="selected"'; ?>><?php echo lang('can view account emails and edit')?></option>
+					</select>
+				</div>
+				<div class="separator"></div>
+			</div> <?php
+		} ?>
+	</fieldset>
+<?php } ?>
+	
+<?php echo submit_button($mailAccount->isNew() ? lang('add mail account') : lang('save changes'), 's', array('tabindex'=>'1240')) ?>
 
 </div>
 </div>
 </form>
 
 <script>
-	Ext.get('mailAccountFormName').focus();
-	
-	account_id = 0;
-	
-	og.promptDeleteAccount = function(account_id) {
-		var check_id = Ext.id();
-		var config = {
-			genid: Ext.id(),
-			title: lang('confirm delete mail account'),
-			height: 150,
-			width: 250,
-			labelWidth: 150,
-			ok_fn: function() {
-				var checked = Ext.getCmp(check_id).getValue();
-				og.openLink(og.getUrl('mail', 'delete_account', {
-					id: account_id,
-					deleteMails: checked ? 1 : 0
-				}));
-				og.ExtendedDialog.hide();
-			},
-			dialogItems: {
-				xtype: 'checkbox',
-				fieldLabel: lang('delete account emails'),
-				id: check_id,
-				value: false
+	og.autofillmailaccountinfo = function (addres , genid)
+	{
+		atIndex = addres.indexOf("@");
+		var autoconf = false;
+		if (atIndex != -1){
+			domain = addres.substring(atIndex+1);
+			domainName = domain.substring(0,domain.indexOf('.'));
+			messageDiv = document.getElementById(genid+'autoconfigmessage');
+			messageDiv.innerHTML = "";
+			switch (domainName.toLowerCase())
+			{
+				case 'hotmail':
+					autoconf = true;					
+				serverAddres = document.getElementById(genid+'server');
+					serverAddres.value = 'pop3.live.com';
+				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer.value = 'smtp.live.com';
+				email = document.getElementById(genid+'email');
+					email.value = addres;
+				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort.value = '25';
+				method = document.getElementById(genid+'method');
+					method[1].selected = 'selected';
+					method[0].selected = '';
+				useSsl = document.getElementById(genid+'ssl');
+					useSsl.checked = 'checked';
+				ssl = document.getElementById(genid + 'sslport');
+				ssl.value = '995';
+				divSsl = document.getElementById(genid + 'sslportdiv');
+					divSsl.style.display = 'block';
+				connectionType = document.getElementById('mailOutgoingTransportType');
+				connectionType[1].selected = 'selected';
+				connectionType[0].selected = '';
+				connectionType[2].selected = '';
+				break;
+
+				case 'gmail': 
+					autoconf = true;
+					serverAddres = document.getElementById(genid+'server');
+						serverAddres.value = 'imap.gmail.com';
+					smtpServer = document.getElementById('mailSmtpServer');
+						smtpServer.value = 'smtp.gmail.com';
+					email = document.getElementById(genid+'email');
+						email.value = addres;
+					smtpPort = document.getElementById('mailSmtpPort');
+						smtpPort.value = '465';
+					method = document.getElementById(genid+'method');
+						method[0].selected = 'selected';
+						method[1].selected = '';
+					ssl = document.getElementById(genid + 'sslport');
+					folders = document.getElementById(genid + 'folders');
+						folders.style.display = 'block';
+						ssl.value = '993';
+					useSsl = document.getElementById(genid+'ssl');
+						useSsl.checked = 'checked';
+					divSsl = document.getElementById(genid + 'sslportdiv');
+						divSsl.style.display = 'block';
+					//Ext.get(genid+'password').on('onchange',og.fetchImapFolders(genid));
+					passInput = document.getElementById(genid+'password');
+					var fun = 'og.fetchImapFolders(\''+genid+'\')';
+					passInput.setAttribute('onchange',fun);
+					connectionType = document.getElementById('mailOutgoingTransportType');
+					connectionType[1].selected = 'selected';
+					connectionType[0].selected = '';
+					connectionType[2].selected = '';
+
+				break;				
+				case 'yahoo':
+					autoconf = true;
+					serverAddres = document.getElementById(genid+'server');
+					serverAddres.value = 'plus.pop.mail.yahoo.com';
+				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer.value = 'plus.smtp.mail.yahoo.com';
+				email = document.getElementById(genid+'email');
+					email.value = addres.substring(0,addres.indexOf('@'));
+				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort.value = '465';
+				method = document.getElementById(genid+'method');
+					method[1].selected = 'selected';
+					method[0].selected = '';
+				useSsl = document.getElementById(genid+'ssl');
+					useSsl.checked = 'checked';
+				divSsl = document.getElementById(genid + 'sslportdiv');
+				divSsl.style.display = 'block';
+				connectionType = document.getElementById('mailOutgoingTransportType');
+				connectionType[1].selected = 'selected';
+				connectionType[0].selected = '';
+				connectionType[2].selected = '';
+				break;
+				case 'rocketmail':
+					autoconf = true;
+					serverAddres = document.getElementById(genid+'server');
+					serverAddres.value = 'plus.pop.mail.yahoo.com';
+				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer.value = 'plus.smtp.mail.yahoo.com';
+				email = document.getElementById(genid+'email');
+					email.value = addres.substring(0,addres.indexOf('@'));
+				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort.value = '465';
+				method = document.getElementById(genid+'method');
+					method[1].selected = 'selected';
+					method[0].selected = '';
+				useSsl = document.getElementById(genid+'ssl');
+					useSsl.checked = 'checked';
+				divSsl = document.getElementById(genid + 'sslportdiv');
+				divSsl.style.display = 'block';
+				connectionType = document.getElementById('mailOutgoingTransportType');
+				connectionType[1].selected = 'selected';
+				connectionType[0].selected = '';
+				connectionType[2].selected = '';
+				break;
+				case 'ymail':
+					autoconf = true;
+					serverAddres = document.getElementById(genid+'server');
+					serverAddres.value = 'plus.pop.mail.yahoo.com';
+				smtpServer = document.getElementById('mailSmtpServer');
+					smtpServer.value = 'plus.smtp.mail.yahoo.com';
+				email = document.getElementById(genid+'email');
+					email.value = addres.substring(0,addres.indexOf('@'));
+				smtpPort = document.getElementById('mailSmtpPort');
+					smtpPort.value = '465';
+				method = document.getElementById(genid+'method');
+					method[1].selected = 'selected';
+					method[0].selected = '';
+				useSsl = document.getElementById(genid+'ssl');
+					useSsl.checked = 'checked';
+				divSsl = document.getElementById(genid + 'sslportdiv');
+				divSsl.style.display = 'block';
+				connectionType = document.getElementById('mailOutgoingTransportType');
+				connectionType[1].selected = 'selected';
+				connectionType[0].selected = '';
+				connectionType[2].selected = '';
+				break;
+				default:
+					return;
+				break;
 			}
-		};
-		og.ExtendedDialog.show(config);
-	}
+			if (autoconf){
+				messageDiv.innerHTML = lang('autoconfig ' + domainName.toLowerCase() + ' message');
+			}
+		}
+		return;
+	};
+
+	<?php if ($logged_user_can_edit) { ?>
+		Ext.get('<?php echo $genid ?>mailAccountFormName').focus();
+	<?php } else { ?>
+		Ext.get('<?php echo $genid ?>sender_name').focus();
+	<?php } ?>
 </script>
 

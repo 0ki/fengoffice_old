@@ -37,6 +37,8 @@ abstract class BaseProjectFiles extends ProjectDataObjects {
 		'type' => DATA_TYPE_INTEGER,
 		'url' => DATA_TYPE_STRING,
 		'mail_id' => DATA_TYPE_INTEGER,
+    	'archived_on' => DATA_TYPE_DATETIME,
+    	'archived_by_id' => DATA_TYPE_INTEGER,
 	);
 
 	/**

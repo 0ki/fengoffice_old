@@ -56,59 +56,12 @@ og.reportObjectTypeChanged = function(genid, order_by, order_by_asc, cols){
 		}
 		
 		document.getElementById('report[object_type]').value = type;
-		og.openLink(og.getUrl('reporting', 'get_object_fields', {object_type: type}), {
-			callback: function(success, data) {
-				if (success) {
-					var columnFields = document.getElementById('tdFields');
-					var columnCPs = document.getElementById('tdCPs');
-					var colArray = cols.split(',');
-					if(data.fields.length > 0){
-						var options = {}; 
-						var orderByOptions = document.getElementById('report[order_by]').options;
-						if(order_by_asc){
-							document.getElementById('report[order_by_asc]').options[0].selected = 'selected';
-						}else{
-							document.getElementById('report[order_by_asc]').options[1].selected = 'selected';
-						}
-						
-						var fields = '';							
-						var CPs = '';
-						for(var i=0; i < data.fields.length; i++){
-							var field = data.fields[i];
-							orderByOptions[i] = new Option(field.name, field.id, false, (field.id == order_by));
-							var checked = '';
-							if(cols == ""){
-								checked = 'checked';
-							}else{
-								for(var j=0; j < colArray.length; j++){
-									if(colArray[j] == field.id) checked = 'checked';
-								}
-							}
-							if(og.isReportFieldNumeric(field.id)){
-								if(!field.multiple){
-									CPs += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
-								}
-							}else{
-								fields += '<br/><input style="width:auto;margin: 0 5px 0 35px;" type="checkbox" name="columns[]" id="columns[]" value="' + field.id + '" ' + checked + ' />&nbsp;<label for="columns['+i+']" style="display:inline;">' + og.clean(field.name) + '</label>';
-							} 		
-						}
-						orderByOptions.length = i;
-						document.getElementById('report[order_by]').style.display = '';
-						document.getElementById('report[order_by_asc]').style.display = '';
-						document.getElementById('orderByLbl').style.display = '';
-						columnFields.innerHTML = fields;
-						columnCPs.innerHTML = CPs;
-					}else{
-						document.getElementById('report[order_by]').style.display = 'none';
-						document.getElementById('report[order_by_asc]').style.display = 'none';
-						document.getElementById('orderByLbl').style.display = 'none';
-						columnFields.innerHTML = '';
-						columnCPs.innerHTML = '';
-					}			
-				}
-			},
-			scope: this
+		
+		Ext.get('columnListContainer').load({
+			url: og.getUrl('reporting', 'get_object_column_list', {object_type: type, columns:cols, orderby:order_by, orderbyasc:order_by_asc, genid:genid}),
+			scripts: true
 		});
+
 		document.getElementById(genid + 'MainDiv').style.display = '';
 	}
 };
@@ -134,7 +87,7 @@ og.addCondition = function(genid, id, cpId, fieldName, condition, value, is_para
 	'<td ' + style + ' id="tdValue' + count + '"><b>' + lang('value') + '</b>:<br/>' +
 	'<input type="text" style="width:100px;" id="conditions[' + count + '][value]" name="conditions[' + count + '][value]" name="conditions[' + count + '][value]" value="{1}" ></td>' +
 	'<td ' + style + '><b>' + lang('parametrizable') + '</b>:<br/>' + 
-	'<input type="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>' +
+	'<input type="checkbox" class="checkbox" onclick="og.changeParametrizable(' + count + ')" id="conditions[' + count + '][is_parametrizable]" name="conditions[' + count + '][is_parametrizable]" {2}></td>' +
 	'<td style="padding-left:20px;"><div style="display:none;" id="delete' + count + '" class="clico ico-delete" onclick="og.deleteCondition(' + count + ',\'' + genid + '\')"></div></td>' +
 	'<td id="tdDelete' + count + '" style="display:none;"><b>' + lang('condition deleted') +
 	'</b><a class="internalLink" href="javascript:og.undoDeleteCondition(' + count + ',\'' + genid + '\')">&nbsp;(' + lang('undo') + ')</a></td>' +
@@ -267,7 +220,7 @@ og.fieldChanged = function(id, condition, value){
 				renderTo:'containerConditions[' + id + '][value]',
 				name: 'conditions[' + id + '][value]',
 				id: 'conditions[' + id + '][value]',
-				value: Ext.util.Format.date(value, og.date_format)
+				value: Ext.util.Format.date(value, og.preferences['date_format'])
 			});
 		}else if(fieldType == "list"){
 			var valuesList = fieldValues[id][selField].split(',');
@@ -342,13 +295,17 @@ og.validateReport = function(genid){
 			}
 		}
 	}
-	var columns = document.getElementsByName('columns[]');
+
+	var columns = document.getElementsByTagName('input');
 	var colSelected = false;
 	for(var j=0; j < columns.length; j++){
 		var item = columns[j];
-		if(item.checked == true){
-			colSelected = true;
-			break;
+		if (item.type == 'hidden' && item.name.indexOf('columns') == 0) {
+			var item = columns[j];
+			if(item.value == 1){
+				colSelected = true;
+				break;
+			}
 		}
 	}
 	if(!colSelected){

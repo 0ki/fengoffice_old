@@ -3,7 +3,7 @@
  *
  */
 og.MessageManager = function() {
-	var actions, moreActions;
+	var actions, moreActions, markactions;
 	this.accountId = 0;
 	this.doNotRemove = true;
 	this.needRefresh = false;
@@ -19,7 +19,7 @@ og.MessageManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'title', 'text', 'date', 'is_today',
-					'wsIds', 'userId', 'userName', 'updaterId', 'updaterName', 'tags', 'workspaceColors', 'ix'
+					'wsIds', 'userId', 'userName', 'updaterId', 'updaterName', 'tags', 'workspaceColors', 'ix','isRead'
 				]
 			}),
 			remoteSort: true,
@@ -34,10 +34,13 @@ og.MessageManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("messages"), ws));
 						}
+					} else if (d.messages.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("messages")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					Ext.getCmp('message-manager').getView().focusRow(og.lastSelectedRow.messages+1);
 				}
 			}
 		});
@@ -47,13 +50,17 @@ og.MessageManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'message-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'message-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
 	function renderName(value, p, r) {
 		var name = '';
+		
+		var bold = 'normal';
+		if (!r.data.isRead) {bold = 'bold';}
+		
 		name = String.format(
-				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+				'<a style="font-size:120%; font-weight:'+ bold+';" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text));
 	
 		var wsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
@@ -67,10 +74,19 @@ og.MessageManager = function() {
 		return wsString + name + text;
 	}
 
-		
+	function renderIsRead(value, p, r){
+		if (value){
+			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'message-manager\').load({action: 'markasunread',ids:'" + r.data.object_id + "',types:'message'});Ext.getCmp(\'message-manager\').getSelectionModel().clearSelections(); \" />";
+		}else{			
+			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('message-manager').load({action: 'markasread',ids:'" + r.data.object_id + "',types:'message'});Ext.getCmp('message-manager').getSelectionModel().clearSelections(); \" />";
+		}
+		return div;
+	}	
 	function renderFrom(value, p, r){
+		var bold = 'normal';
+		if (!r.data.isRead) {bold = 'bold';}
 		name = String.format(
-				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+				'<a style="font-size:120%; font-weight:'+ bold+';" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text));
 		return name;
 	}
@@ -84,7 +100,7 @@ og.MessageManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(r.data.updaterName), og.getUrl('user', 'card', {id: r.data.updaterId}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(r.data.updaterName), og.getUrl('user', 'card', {id: r.data.updaterId}));
 	
 		if (!r.data.is_today) {
 			return lang('last updated by on', userString, value);
@@ -101,7 +117,8 @@ og.MessageManager = function() {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.object_id;
-			}	
+			}
+			og.lastSelectedRow.messages = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -131,14 +148,37 @@ og.MessageManager = function() {
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
 		function() {
+			var allUnread = true, allRead = true;
+			var selections = sm.getSelections()
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.isRead){
+					allUnread = false;
+				} else {
+					allRead = false;
+				}
+			}
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.edit.setDisabled(true);
+				markactions.markAsRead.setDisabled(true);
+				markactions.markAsUnread.setDisabled(true);
+				actions.archive.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.edit.setDisabled(false);
+				if (allUnread) {
+					markactions.markAsUnread.setDisabled(true);
+				} else {
+					markactions.markAsUnread.setDisabled(false);
+				}
+				if (allRead) {
+					markactions.markAsRead.setDisabled(true);
+				} else {
+					markactions.markAsRead.setDisabled(false);
+				}
+				actions.archive.setDisabled(false);
 			}
 		});
 	
@@ -158,6 +198,16 @@ og.MessageManager = function() {
 			dataIndex: 'type',
 			width: 28,
         	renderer: renderIcon,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
+			id: 'isRead',
+			header: '&nbsp;',
+			dataIndex: 'isRead',
+			width: 16,
+        	renderer: renderIsRead,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -186,13 +236,46 @@ og.MessageManager = function() {
 			dataIndex: 'date',
 			width: 50,
 			sortable: true,
-			renderer: renderDate,
-			sortable:true
+			renderer: renderDate
         }]);
 	cm.defaultSortable = false;
 
 	moreActions = {};
 
+	markactions = {
+		markAsRead: new Ext.Action({
+			text: lang('mark as read'),
+		    tooltip: lang('mark as read desc'),
+		    iconCls: 'ico-mark-as-read',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasread',
+					ids: getSelectedIds(),
+					types: getSelectedTypes()
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		}),
+		
+		markAsUnread: new Ext.Action({
+			text: lang('mark as unread'),
+            tooltip: lang('mark as unread desc'),
+            iconCls: 'ico-mark-as-unread',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasunread',
+					ids: getSelectedIds(),
+					types: getSelectedTypes()
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		})
+	};
+	
 	actions = {
 		newCO: new Ext.Action({
 			text: lang('new'),
@@ -213,6 +296,12 @@ og.MessageManager = function() {
 					'tagselect': {
 						fn: function(tag) {
 							this.tagObjects(tag);
+						},
+						scope: this
+					},
+					'tagdelete': {
+						fn: function(tag){
+							this.untagObjects(tag);
 						},
 						scope: this
 					}
@@ -246,6 +335,31 @@ og.MessageManager = function() {
 				og.openLink(url, null);
 			},
 			scope: this
+		}),
+		markAs: new Ext.Action({
+			text: lang('mark as'),
+			tooltip: lang('mark as desc'),
+			menu: [
+				markactions.markAsRead,
+				markactions.markAsUnread
+			]
+		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
+					this.getSelectionModel().clearSelections();
+				}
+			},
+			scope: this
 		})
     };
 	this.actionRep = actions;
@@ -255,14 +369,14 @@ og.MessageManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		ddGroup: 'WorkspaceDD',
 		id: 'message-manager',
 		stripeRows: true,
 		closable: true,
 		loadMask: false,
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -276,9 +390,13 @@ og.MessageManager = function() {
 		tbar:[
 			actions.newCO,
 			'-',
+			actions.edit,
 			actions.tag,
 			actions.del,
-			actions.edit
+			actions.archive,
+			'-',
+			actions.markAs
+
 		],
 		listeners: {
 			'render': {
@@ -316,7 +434,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		if (!params) params = {};
 		var start;
 		if (typeof params.start == 'undefined') {
-			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			start = 0;
 		}
@@ -328,7 +446,7 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.pageSize				
+				limit: og.config['files_per_page']				
 			})
 		});
 	},
@@ -376,12 +494,39 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 		}
 	},
 	
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes()
+		});
+	},
+	
 	tagObjects: function(tag) {
 		this.load({
 			action: 'tag',
 			ids: this.getSelectedIds(),
 			types: this.getSelectedTypes(),
 			tagTag: tag
+		});
+	},
+	untagObjects: function(tag) {
+		this.load({
+			action: 'untag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes(),
+			tagTag: tag.text
 		});
 	}
 });

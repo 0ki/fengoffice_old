@@ -45,7 +45,11 @@ class Trash {
 							try {
 								DB::beginWork();
 								$ws = $o->getWorkspaces();
-								$o->delete();
+								if ($manager_class == 'MailContents') {
+									$o->mark_as_deleted();
+								} else {
+									$o->delete();
+								}
 								ApplicationLogs::createLog($o, $ws, ApplicationLogs::ACTION_DELETE);
 								DB::commit();
 								$count++;

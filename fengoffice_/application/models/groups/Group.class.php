@@ -54,6 +54,7 @@
     	$this->setCanManageTemplates($value);
     	$this->setCanManageReports($value);
     	$this->setCanManageTime($value);
+    	$this->setCanAddMailAccounts($value);
     }
     
   function getAllPermissions($user_permissions = null) {
@@ -83,6 +84,33 @@
     	
     	return $result;
     }
+    
+    function getProjectPermission(Project $project, $permission, $default = false) {
+		static $valid_permissions = null;
+		if(is_null($valid_permissions)) {
+			$valid_permissions = ProjectUsers::getPermissionColumns();
+		} // if
+
+		if(!in_array($permission, $valid_permissions)) {
+			return $default;
+		} // if
+
+		$project_user = ProjectUsers::findById(array(
+			'project_id' => $project->getId(),
+			'user_id' => $this->getId()
+		)); // findById
+
+
+		if(!($project_user instanceof ProjectUser)) {
+			return $default;
+		} // if
+		$getter = 'get' . Inflector::camelize($permission);
+		//if($project_user->getColumnValue('can_manage_events')) echo 'asd '  ;
+		//else echo 'zxc ' . $project_user->getColumnValue('can_manage_events');
+		//echo 'p';
+		return $project_user->$getter();
+	} // getProjectPermission
+	
 //    /**
 //    * Return array of group users on specific project
 //    *

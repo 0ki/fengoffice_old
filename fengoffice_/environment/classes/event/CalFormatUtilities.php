@@ -150,6 +150,23 @@ class CalFormatUtilities {
 				
 				if ($rrule_ok) $rrule = "RRULE:$freq$interval$count$until\r\n";
 			}
+			if ($event->getRepeatH() > 0) {
+				"RRULE:FREQ=MONTHLY;INTERVAL=1;BYDAY=1TU";
+				$interval = "INTERVAL=".$event->getRepeatMjump();
+				switch ($event->getRepeatDow()) {
+					case 1: $day = "SU"; break;
+					case 2: $day = "MO"; break;
+					case 3: $day = "TU"; break;
+					case 4: $day = "WE"; break;
+					case 5: $day = "TH"; break;
+					case 6: $day = "FR"; break;
+					case 7: $day = "SA"; break;
+					default: $day = "MO"; break;
+				}
+				$byday = "BYDAY=" . $event->getRepeatWnum() . $day;
+				
+				$rrule = "RRULE:FREQ=MONTHLY;$interval;$byday\r\n";
+			}
 		    $ical_info .= $rrule;
 		    
 		    $ical_info .= "END:VEVENT\r\n";

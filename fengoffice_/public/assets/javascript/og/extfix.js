@@ -21,16 +21,31 @@ Ext.tree.DefaultSelectionModel.override({
 // Uncomment this to support drag and drop in grids
 // Also uncomment enableDrag on grids, enableDrop on workspacepanel and ddGroup on both
 Ext.grid.CheckboxSelectionModel.override({
-    handleMouseDown : Ext.emptyFn   
+    handleMouseDown: Ext.emptyFn   
+});
+Ext.grid.GridView.override({
+	focusCell : function(row, col, hscroll){
+		this.syncFocusEl(this.ensureVisible(row, col, hscroll));
+		this.focusEl.focus.defer(1, this.focusEl);
+	},
+
+    syncFocusEl : function(row, col, hscroll){
+        var xy = row;
+        if(!Ext.isArray(xy)){
+            row = Math.min(row, Math.max(0, this.getRows().length-1));
+            //xy = this.getResolvedXY(this.resolveCell(row, col, hscroll));
+        }
+        this.focusEl.setXY(xy||this.scroller.getXY());
+    }
 });
 Ext.grid.RowSelectionModel.override({
     initEvents : function() {
-        if(!this.grid.enableDragDrop && !this.grid.enableDrag){
+        if (!this.grid.enableDragDrop && !this.grid.enableDrag) {
             this.grid.on("rowmousedown", this.handleMouseDown, this);
-        }else{ // allow click to work like normal
+        } else { // allow click to work like normal
             this.grid.on("rowclick", function(grid, rowIndex, e) {
                 var target = e.getTarget();                
-                if(target.className !== 'x-grid3-row-checker' && e.button === 0 && !e.shiftKey && !e.ctrlKey) {
+                if (target.className !== 'x-grid3-row-checker' && e.button === 0 && !e.shiftKey && !e.ctrlKey) {
                     this.selectRow(rowIndex, false);
                     grid.view.focusRow(rowIndex);
                 }

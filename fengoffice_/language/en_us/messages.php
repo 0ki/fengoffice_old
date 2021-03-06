@@ -10,6 +10,7 @@
   return array(
   
     // Empty, dnx et
+    'object dnx' => 'The object does not exist',
     'no mail accounts set' => 'There are no email accounts through which to send an email, please create an email account first',
     'no mail accounts set for check' => 'You have no email accounts, please create an email account first',
     'email dnx' => 'Requested email does not exist',
@@ -179,10 +180,10 @@
     'success trash file revision' => 'File revision has been trashed',
     
     'success link objects' => '{0} object(s) has been successfully linked',
-    'success unlink object' => 'Object has been successfully unlinked',
+    'success unlink object' => 'Objects have been successfully unlinked',
     
     'success update config category' => '{0} configuration values have been updated',
-    'success forgot password' => 'Your password has been emailed to you',
+    'success forgot password' => 'Intructions have been emailed to you',
     
     'success test mail settings' => 'Test mail has been successfully sent',
     'success massmail' => 'Email has been sent',
@@ -212,6 +213,8 @@
     'success delete email' => 'Email has been deleted',
   	'success unclassify email' => 'Email unclassified successfully',
   	'error unclassify email' => 'Failed to unclassify email',
+	'success unclassify emails' => "{0} Emails unclassified successfully",
+	'error unclassify emails' => "Failed to unclassify {0} emails",
   
     'success delete mail account' => 'Email account has been deleted successfully',
     'success add mail account' => 'Email account has been created successfully',
@@ -227,6 +230,12 @@
 	'error tag objects' => 'Failed to tag {0} object(s)',
 	'success move objects' => '{0} Object(s) moved successfully',
 	'error move objects' => 'Failed to move {0} object(s)',
+	'success untag objects' => "Tags were removed from {0} object(s)",
+	'error untag objects' => "Failed to remove tags from {0} object(s)",
+	'success archive objects' => "{0} Object(s) archived successfully",
+	'error archive objects' => "Failed to archive {0} object(s)",
+	'success unarchive objects' => "{0} Object(s) unarchived successfully",
+	'error unarchive objects' => "Failed to unarchive {0} object(s)",
   
     'success checkout file' => 'File checked out successfully',
     'success checkin file' => 'File checked in successfully',
@@ -238,6 +247,7 @@
 	'success delete billing category' => 'Billing category deleted successfully',
 	'success edit billing category' => 'Billing category updated successfully',
   	'success assign user billing categories' => 'Billing categories were successfully assigned to users',
+  	'success update billing values' => 'Timeslot billing values updated succesfully: {0} entries modified.',
     
     // Failures
     'error edit timeslot' => 'Failed to save timeslot',
@@ -307,6 +317,7 @@
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
   	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to workspace \'{1}\' due to access permissions',
   	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels or circular reference',
+  	'error cannot link object to self' => 'You cannot link an object to itself',
   
     
     // Access or data errors
@@ -580,8 +591,8 @@
   	'log trash timeslots' => '\'{0}\' moved to trash',
   	'log untrash timeslots' => '\'{0}\' restored from trash',
   
-  	'log login users data' => 'user {0} loged from IP: {1}',
-  	'log login users' => 'user {0} loged',
+  	'log login users data' => 'user {0} logged from IP: {1}',
+  	'log login users' => 'user {0} logged',
     'log edit users' => 'user {0} edited',
   	'log delete users' => 'user {0} deleted',
   	'log add users' => 'user {0} added',
@@ -600,6 +611,10 @@
   	'error untrash object' => 'Failed to restore object from trash',
   	'success trash objects' => '{0} objects moved to trash successfully',
   	'error trash objects' => 'Failed to move {0} objects to trash',
+  	'success markasread objects' => '{0} objects marked as read successfully',
+  	'error markasread objects' => 'Failed to mark {0} objects as read',
+  	'success markasunread objects' => '{0} objects marked as unread successfully',
+  	'error markasunread objects' => 'Failed to mark {0} objects as unread',
 	'success untrash objects' => '{0} objects restored from trash successfully',
   	'error untrash objects' => 'Failed to restore {0} objects from trash',
 	'success delete object' => 'Object deleted successfully',
@@ -607,6 +622,8 @@
   	
 
   	'recipient must be specified' => 'Email recipient must be specified',
+	'mail is being sent' => 'Email is being sent...',
+
   	'copied from file' => 'Copied from file {0} ({1})',
 
 	'check file name advice' => 'After file name is changed press TAB to perform the file name check, and save button will be enabled.',
@@ -617,11 +634,17 @@
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to write contacts on these workspaces: {0}',
   
   	'weblink dnx' => 'Requested weblink doesn\'t exist.',
-  	'some objects could not be linked' => '{0} object(s) could not be linked due to permission restrictions',
+  
+  	'success markasread files' => 'Marked as read',
+  	'success markasunread files' => 'Marked as unread',
+  	'error markasread files' => 'Failed to marked as read',
+  	'error markasunread files' => 'Failed to marked as unread',
+  
+	'some objects could not be linked' => '{0} object(s) could not be linked due to permission restrictions',
   	'user cannot link objects' => 'You don\'t have enough permissions to link objects to this object',
   	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
   
-  	'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
+    'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
   ); // array
 
 ?>

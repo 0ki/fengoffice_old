@@ -26,8 +26,7 @@ try {
 			VersionChecker::check(true);
 		}
 	}
-	$locale = user_config_option("localization");
-	if (!$locale) $locale = DEFAULT_LOCALIZATION;
+	$locale = get_locale();
 	Localization::instance()->loadSettings($locale, ROOT . '/language');
 
 	if(config_option('file_storage_adapter', 'mysql') == FILE_STORAGE_FILE_SYSTEM) {

@@ -191,17 +191,17 @@
 			$pm = (isset($parsed_date['a']) && $parsed_date['a'] = 'pm') || (isset($parsed_date['A']) && $parsed_date['A'] = 'PM');
 			$hour = $parsed_date['g'] + ($pm ? 12 : 0);
 		}
-		else $hour = 0;
+		else $hour = "0";
 		
 		// get minute
 		if (isset($parsed_date['i'])) $minute = $parsed_date['i'];
-		else $minute = 0;
+		else $minute = "0";
 		
 		// get second
 		if (isset($parsed_date['s'])) $second = $parsed_date['s'];
-		else $second = 0;
-		
-		return self::make($hour, $minute, $second, $month, $day, $year);
+		else $second = "0";
+
+		return self::make(trim($hour), trim($minute), trim($second), trim($month), trim($day), trim($year));
 	}
 
     

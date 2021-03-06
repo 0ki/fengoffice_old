@@ -482,6 +482,116 @@
     function setTrashedById($value) {
       return $this->setColumnValue('trashed_by_id', $value);
     } // setTrashedById()
+
+    /**
+    * Return value of 'archived_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getArchivedById() {
+      return $this->getColumnValue('archived_by_id');
+    } // getArchivedById()
+    
+    /**
+    * Set value of 'archived_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setArchivedById($value) {
+      return $this->setColumnValue('archived_by_id', $value);
+    } // setArchivedById()
+    
+    /** Return value of 'archived_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getArchivedOn() {
+      return $this->getColumnValue('archived_on');
+    } // getArchivedOn()
+    
+    /**
+    * Set value of 'archived_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setArchivedOn($value) {
+      return $this->setColumnValue('archived_on', $value);
+    } // setArchivedOn() 
+
+    /**
+    * Return value of 'repeat_dow' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getRepeatDow() {
+      return $this->getColumnValue('repeat_dow');
+    } // getRepeatDow()
+    
+    /**
+    * Set value of 'repeat_dow' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setRepeatDow($value) {
+      return $this->setColumnValue('repeat_dow', $value);
+    } // setRepeatDow()
+    
+        /**
+    * Return value of 'repeat_wnum' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getRepeatWnum() {
+      return $this->getColumnValue('repeat_wnum');
+    } // getRepeatWnum()
+    
+    /**
+    * Set value of 'repeat_wnum' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setRepeatWnum($value) {
+      return $this->setColumnValue('repeat_wnum', $value);
+    } // setRepeatWnum()
+    
+        /**
+    * Return value of 'repeat_mjump' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getRepeatMjump() {
+      return $this->getColumnValue('repeat_mjump');
+    } // getRepeatMjump()
+    
+    /**
+    * Set value of 'repeat_mjump' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setRepeatMjump($value) {
+      return $this->setColumnValue('repeat_mjump', $value);
+    } // setRepeatMjump()
+    
     
     /**
     * Return manager instance

@@ -175,7 +175,7 @@
   
   	'date format' => 'Y/m/d',
   	'date format description' => '(yyyy/mm/dd)',
-  	'confirm move to trash' => '你是否确认你想移动选择的对象到垃圾箱?',
+  	'confirm move to trash' => '你是否确认你想移动选择的对象到垃圾箱?'
 
   ); // array
 

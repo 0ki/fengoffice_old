@@ -606,5 +606,9 @@ addLangs({
 	'apply workspace to subtasks': 'Arbeitsbereich zu Unteraufgabe zuordnen',
 	'edit selected event': 'Ausgewähltes Ereignis ändern',
 	'click here to download the csv file': 'Zum Herunterladen der CSV-Datei hier klicken.',
-	'confirm inherit permissions': 'Sollen alle Rechte vom übergeordneten Arbeitsbereich übernommen werden?'
+	'confirm inherit permissions': 'Sollen alle Rechte vom übergeordneten Arbeitsbereich übernommen werden?',
+	'classify mail attachments': 'Email-Anhänge klassifizieren',
+	'do you want to classify the unclassified emails attachments': 'Sollen die Email-Anhänge als Dokumente zum Arbeitsbereich hinzufügt werden?',
+	'task milestone does not belong to workspace': 'Der Meilenstein dieser Aufgabe gehört nicht zum Zielarbeitsbereich. Beim Fortfahren wird der Meilenstein aus dem bisherigen Arbeitsbereich entfernt. Wirklich fortfahren?',
+	'task milestone workspace inconsistency': 'HINWEIS: Diese Aktion setzt den Arbeitsbereich der Aufgabe zum Arbeitsbereich des gewählten Meilensteines. Wirklich fortfahren?'
 });

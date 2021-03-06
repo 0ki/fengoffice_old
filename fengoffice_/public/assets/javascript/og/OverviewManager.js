@@ -35,10 +35,13 @@ og.OverviewManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
 						}
+					} else if (d.objects.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					Ext.getCmp('overview-manager').getView().focusRow(og.lastSelectedRow.overview+1);
 				}
 			}
 		});
@@ -48,7 +51,7 @@ og.OverviewManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'overview-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'overview-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
 	function renderName(value, p, r) {
@@ -70,7 +73,7 @@ og.OverviewManager = function() {
 		} else {
 			var cleanvalue = og.clean(value);
 		}
-		var name = String.format('<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')">{0}</a>', cleanvalue, viewUrl);
+		var name = String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
 		
 		return projectsString + name + actions;
 	}
@@ -95,7 +98,7 @@ og.OverviewManager = function() {
 
 	function renderUser(value, p, r) {
 		if (r.data.updatedById) {
-			return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
+			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
 		} else {
 			return lang("n/a");
 		}
@@ -103,7 +106,7 @@ og.OverviewManager = function() {
 
 	function renderAuthor(value, p, r) {
 		if (r.data.createdById) {
-			return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+			return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
 		} else {
 			return lang("n/a");
 		}
@@ -124,7 +127,8 @@ og.OverviewManager = function() {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
-			}	
+			}
+			og.lastSelectedRow.overview = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -145,10 +149,12 @@ og.OverviewManager = function() {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
+				actions.archive.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.more.setDisabled(false);
+				actions.archive.setDisabled(false);
 				if (sm.getSelected().data.mimeType == 'prsn') {
 					moreActions.slideshow.setDisabled(false);
 				} else {
@@ -301,6 +307,22 @@ og.OverviewManager = function() {
 			},
 			scope: this
 		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						objects: getSelectedIds()
+					});
+					this.getSelectionModel().clearSelections();
+				}
+			},
+			scope: this
+		}),
 		more: new Ext.Action({
 			text: lang('more'),
             tooltip: lang('more actions on first selected object'),
@@ -339,12 +361,12 @@ og.OverviewManager = function() {
 		layout: 'fit',
 		autoExpandColumn: 'name',
 		cm: cm,
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		stripeRows: true,
 		closable: true,
 		id: 'overview-manager',
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -359,10 +381,9 @@ og.OverviewManager = function() {
 			'-',
 			actions.tag,
 			actions.del,
-			actions.more,
+			actions.archive,
 			'-',
-			/*actions.refresh,
-			'-',*/
+			actions.more,
 			'->',
 			actions.showAsDashboard
 		],
@@ -400,7 +421,7 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -411,7 +432,7 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			})
 		});
 		this.needRefresh = false;
@@ -427,29 +448,72 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		this.load({start:0});
 	},
 	
+	moveObjectsToAllWs: function() {
+		this.load({
+			action: 'unclassify',
+			objects: this.getSelectedIds()
+		});
+	},
+	
 	moveObjects: function(ws) {
-		var selections = this.getSelectionModel().getSelections();
-		var allItemsAreTasksOrMilestones = true;
-		for (i=0; i<selections.length; i++) {
-			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
-				allItemsAreTasksOrMilestones = false;
-				break;
+		if (ws == 0) {
+			var selections = this.getSelectionModel().getSelections();
+			var amail = false;
+			for (i=0; i<selections.length; i++) {
+				if (selections[i].data.manager == 'MailContents') {
+					amail = true;
+					break;
+				}
 			}
-		}
-		// Tasks and events does not keep ws, only move
-		if (allItemsAreTasksOrMilestones) {
-			this.moveObjectsToWsOrMantainWs(false, ws);
+			if (amail) {
+				og.confirmMoveToAllWs(this.id, lang('confirm unclassify emails'));
+			}
 		} else {
-			og.moveToWsOrMantainWs(this.id, ws);
+			var selections = this.getSelectionModel().getSelections();
+			var allItemsAreTasksOrMilestones = true;
+			for (i=0; i<selections.length; i++) {
+				if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
+					allItemsAreTasksOrMilestones = false;
+					break;
+				}
+			}
+			// Tasks and events does not keep ws, only move
+			if (allItemsAreTasksOrMilestones) {
+				this.moveObjectsToWsOrMantainWs(false, ws);
+			} else {
+				og.moveToWsOrMantainWs(this.id, ws);
+			}
 		}
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		var selections = this.getSelectionModel().getSelections();
+		var amail = false;
+		for (i=0; i<selections.length; i++) {
+			if (selections[i].data.manager == 'MailContents') {
+				amail = true;
+				break;
+			}
+		}
+		if (amail) {
+			og.askToClassifyUnclassifiedAttachs(this.id, mantain, ws);
+		} else {
+			this.load({
+				action: 'move',
+				objects: this.getSelectedIds(),
+				moveTo: ws,
+				mantainWs: mantain
+			});
+		}
+	},
+	
+	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
 		this.load({
 			action: 'move',
 			objects: this.getSelectedIds(),
 			moveTo: ws,
-			mantainWs: mantain
+			mantainWs: mantain,
+			classify_atts: classifyatts
 		});
 	},
 	
@@ -457,6 +521,16 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		if (confirm(lang('confirm move to trash'))) {
 			this.load({
 				action: 'delete',
+				objects: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+	
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
 				objects: this.getSelectedIds()
 			});
 			this.getSelectionModel().clearSelections();
@@ -471,6 +545,13 @@ Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 		});
 	},
 	
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			objects: this.getSelectedIds()
+		});
+	},
+
 	showMessage: function(text) {
 		if (this.innerMessage) {
 			this.innerMessage.innerHTML = text;

@@ -92,7 +92,7 @@ else
 </td></tr>
 <?php } ?>
 <tr><td colspan=2>
-<?php if (user_config_option('show calendar widget') && config_option('enable_calendar_module')) {
+<?php if (user_config_option('show calendar widget') && module_enabled('calendar')) {
 	
 	tpl_assign("widgetClass", 'dashCalendar');
 	tpl_assign("widgetTitle",lang('upcoming events milestones and tasks'));
@@ -154,7 +154,7 @@ if ($hasDocuments) {
 <td style="<?php echo ($hasPendingTasks || $hasLate || $hasToday || $hasDocuments)? 'width:38%;min-width:330px' : 'width:100%' ?>">
 <?php 
 
-if ($hasEmails && (config_option('enable_email_module', defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0))) {
+if ($hasEmails && (module_enabled('email', defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0))) {
 	tpl_assign("widgetClass", 'dashUnreadEmails');
 	tpl_assign("widgetTitle", $unread_emails?lang('unread emails'):lang('workspace emails'));
 	tpl_assign("widgetTemplate", 'emails');

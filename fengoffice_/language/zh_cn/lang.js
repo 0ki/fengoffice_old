@@ -165,7 +165,7 @@ addLangs({
 	/* contact manager*/
 	'company': '公司',
 	'email': '电子邮件',
-	'email tab': '电子邮件 (BETA)',
+	'email tab': '电子邮件',
 	'add new contact': '添加一个新的联系人',
 	'displaying contacts of': '显示联系人{0} 到 {1} 总计 {2}',
 	'no contacts to display': '没有联系人显示',

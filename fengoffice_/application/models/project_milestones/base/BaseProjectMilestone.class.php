@@ -399,7 +399,50 @@
     function setTrashedById($value) {
       return $this->setColumnValue('trashed_by_id', $value);
     } // setTrashedById()
-	
+
+    /**
+    * Return value of 'archived_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getArchivedById() {
+      return $this->getColumnValue('archived_by_id');
+    } // getArchivedById()
+    
+    /**
+    * Set value of 'archived_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setArchivedById($value) {
+      return $this->setColumnValue('archived_by_id', $value);
+    } // setArchivedById()
+    
+    /** Return value of 'archived_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getArchivedOn() {
+      return $this->getColumnValue('archived_on');
+    } // getArchivedOn()
+    
+    /**
+    * Set value of 'archived_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setArchivedOn($value) {
+      return $this->setColumnValue('archived_on', $value);
+    } // setArchivedOn() 
+    
   } // BaseProjectMilestone 
 
 ?>

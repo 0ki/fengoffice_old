@@ -17,11 +17,14 @@ class ApplicationLogs extends BaseApplicationLogs {
 	const ACTION_SUBSCRIBE   = 'subscribe';
 	const ACTION_UNSUBSCRIBE = 'unsubscribe';
 	const ACTION_TAG         = 'tag';
+	const ACTION_UNTAG       = 'untag';
 	const ACTION_COMMENT     = 'comment';
 	const ACTION_LINK     	 = 'link';
 	const ACTION_UNLINK      = 'unlink';
 	const ACTION_LOGIN       = 'login';
-
+	const ACTION_ARCHIVE     = 'archive';
+	const ACTION_UNARCHIVE   = 'unarchive';
+	
 	public static function getWorkspaceString($ids = '?') {
 		if (is_array($ids)) $ids = implode(",", $ids);
 		return " `id` IN (SELECT `object_id` FROM `" . TABLE_PREFIX . "workspace_objects` WHERE `object_manager` = 'ApplicationLogs' AND `workspace_id` IN ($ids))";
@@ -248,7 +251,9 @@ class ApplicationLogs extends BaseApplicationLogs {
 			self::ACTION_COMMENT,
 			self::ACTION_LINK,
 			self::ACTION_UNLINK,
-			self::ACTION_LOGIN
+			self::ACTION_LOGIN,
+			self::ACTION_ARCHIVE,
+			self::ACTION_UNARCHIVE
 			); // array
 		} // if
 

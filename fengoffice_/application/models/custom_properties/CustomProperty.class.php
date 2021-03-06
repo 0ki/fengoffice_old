@@ -34,6 +34,12 @@
 		}
 		return $type;
 	}
+	
+	function delete() {
+		ReportColumns::delete('`custom_property_id` = ' . $this->getId());
+		ReportConditions::delete('`custom_property_id` = ' . $this->getId());
+		return parent::delete();
+	}
     
     
   } // ObjectProperty

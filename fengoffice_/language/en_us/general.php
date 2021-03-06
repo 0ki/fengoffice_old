@@ -146,6 +146,12 @@
   	'saturday short' => 'Sat',
   	'sunday short' => 'Sun',
   
+  	'1st' => '1st',
+  	'2nd' => '2nd',
+  	'3rd' => '3rd',
+  	'4th' => '4th',
+  	'5th' => '5th',
+  
   	'copy of' => 'Copy of {0}',
   	'task templates' => 'Task Templates',
   	'add task template' => 'Add Task Template',
@@ -161,7 +167,7 @@
   	'confirm create contact from user' => 'Are you sure you want to create a contact with user data?',
   	'create contact from user desc' => 'If yes is selected, the user will be stored in the system as a contact',
   	'use previous personal workspace' =>'Use an existing workspace as user\'s personal workspace?',
-  	'use previous personal workspace desc' =>'If yes is selected you can determine which workspace assing as personal for this user',
+  	'use previous personal workspace desc' =>'You can choose an existing workspace as the user\'s personal workspace or choose to create a new one',
   	'select personal workspace' => 'Select a Workspace',
     'create personal workspace' => 'Create a new one',
     'use an existing workspace' => 'Use an existing Workspace',
@@ -209,6 +215,16 @@
   	'new task repetition generated' => 'New task repetition successfully generated',
 
 	'reminders will not apply to repeating events' => 'Warning: reminders will not apply to repeating events',
+  
+	'move all to right' => 'Move all to the right',
+	'move to right' => 'Move to the right',
+	'move to left' => 'Move to the left',
+	'move all to left' => 'Move all to the left',
+	'move up' => 'Move up',
+	'move down' => 'Move down',
+  
+	'this file is included in document' => "This file is included in document: {0}",
+
   ); // array
 
 ?>

@@ -102,9 +102,27 @@
 						<input type="hidden" id="<?php echo $genid ?>tsUser" name="timeslot[user_id]" value="<?php echo logged_user()->getId() ?>"/>				
 			</td><?php } ?>
 			<td style="padding-right: 10px; width:140px;">
+			<script type="text/javascript">
+			//submit the form when the user press enter
+			og.checkEnterPress = function (e,genid)
+			{
+				var characterCode;
+				if(e && e.which){
+					characterCode = e.which;
+				}
+				else{
+					e = event;
+					characterCode = e.keyCode;
+				}
+				if(characterCode == 13){
+					ogTimeManager.SubmitNewTimeslot(genid);
+					return false;
+				}
+			}
+			</script>
 				<?php echo label_tag(lang('time')) ?>
 				<?php echo text_field('timeslot[hours]', 0, 
-		    		array('style' => 'width:28px', 'tabindex' => '100', 'id' => $genid . 'tsHours')) ?>
+		    		array('style' => 'width:28px', 'tabindex' => '100', 'id' => $genid . 'tsHours','onkeypress'=>'og.checkEnterPress(event,\''.$genid.'\')')) ?>
 		    		<br/><span class="desc" style="font-style:normal;font-size:80%">(<?php echo lang('hours') ?>)</span>
 			</td>
 			<td style="padding-right: 10px; width:95%; margin-top: 0px;">

@@ -95,6 +95,8 @@ og.WorkspaceTree = function(config) {
 			if (e.data.grid) {
 				if (e.target.id == 'trash') {
 					e.data.grid.trashObjects();
+				} else if (e.target.id == 'archived') {
+					e.data.grid.archiveObjects();
 				} else {
 					e.data.grid.moveObjects(e.target.ws.id);
 				}
@@ -126,15 +128,7 @@ og.WorkspaceTree = function(config) {
 		this.getSelectionModel().on({
 			'selectionchange' : function(sm, node) {
 				if (node && !this.pauseEvents) {
-					if (node.id != 'trash'){
-						this.fireEvent("workspaceselect", node.ws);
-						var tf = this.getTopToolbar().items.get(this.id + 'filter');
-						tf.setValue("");
-						this.clearFilter();
-						node.expand();
-						node.ensureVisible();
-						this.previousNode = node;
-					} else {
+					if (node.id == 'trash'){
 						this.pauseEvents = true;
 						this.previousNode.select();
 						this.pauseEvents = false;
@@ -156,6 +150,36 @@ og.WorkspaceTree = function(config) {
 							tp.add(cp);
 						}
 						tp.setActiveTab(cp);
+					} else if (node.id == 'archived') {
+						this.pauseEvents = true;
+						this.previousNode.select();
+						this.pauseEvents = false;
+						var cp = Ext.getCmp('archivedobjs-panel');
+						var tp = Ext.getCmp('tabs-panel');
+						if (!cp){
+							cp = new og.ContentPanel({
+								closable: true,
+								title: lang('archived objects'),
+								id: 'archivedobjs-panel',
+								iconCls: 'ico-archive-obj',
+								refreshOnWorkspaceChange: true,
+								refreshOnTagChange: true,
+								defaultContent: {
+									type: "url",
+									data: og.getUrl('object', 'init_archivedobjs')
+								}
+							});
+							tp.add(cp);
+						}
+						tp.setActiveTab(cp);
+					} else {
+						this.fireEvent("workspaceselect", node.ws);
+						var tf = this.getTopToolbar().items.get(this.id + 'filter');
+						tf.setValue("");
+						this.clearFilter();
+						node.expand();
+						node.ensureVisible();
+						this.previousNode = node;
 					}
 				}
 			},
@@ -303,9 +327,33 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		return node;
 	},
 	
+	addArchived: function(){
+		var exists = this.getNodeById('archived');
+		if (exists)	return;
+		var config = {
+			iconCls: 'ico-archive-obj',
+			text: lang('archived objects'),
+			id: 'archived',
+			listeners: {
+				click: function() {
+					this.unselect();
+					this.select();
+				}
+			}
+		};
+		var node = new Ext.tree.TreeNode(config);
+		var parent = this.workspaces;
+		var iter = parent.firstChild;
+		while (iter) {
+			iter = iter.nextSibling;
+		}
+		parent.insertBefore(node, iter);
+		return node;
+	},
+	
 	getActiveWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
-		if (s && s.id != 'trash') {
+		if (s && s.id != 'trash' && s.id != 'archived') {
 			return this.getSelectionModel().getSelectedNode().ws;
 		} else {
 			return {id: 0, name: 'all'};
@@ -314,7 +362,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	
 	getActiveOrPersonalWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
-		if (s && s.id != 'trash' && s.ws.id != 0) {
+		if (s && s.id != 'trash' && s.id != 'archived' && s.ws.id != 0) {
 			return s.ws;
 		} else {
 			if (this.personalNode)
@@ -404,6 +452,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 							og.updateWsCrumbs(this.getActiveWorkspace());
 						}
 						this.addTrash();
+						this.addArchived();
 					}
 				},
 				scope: this
@@ -521,7 +570,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 		var list = [];
 		start.cascade(function (list){
-			if (this.id != 'trash' && (!noRoot || this.ws.id != wsId)) {
+			if (this.id != 'trash' && this.id != 'archived' && (!noRoot || this.ws.id != wsId)) {
 				list[list.length] = this.ws;
 			}
 		}, null, [list]);

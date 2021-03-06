@@ -43,12 +43,12 @@ og.addObjectToTemplate = function(before, obj) {
 	}
 	var div = document.createElement('div');
 	div.className = "og-add-template-object ico-" + obj.type;
-	div.onmouseover = og.templateObjectMouseOver;
-	div.onmouseout = og.templateObjectMouseOut;
+	/*div.onmouseover = og.templateObjectMouseOver;
+	div.onmouseout = og.templateObjectMouseOut;*/
 	div.innerHTML =
 		'<input class="objectID" type="hidden" name="objects[' + count + ']" value="' + obj.manager + ":" + obj.object_id + '" />' +
 		'<span class="name">' + og.clean(obj.name) + '</span>' +
-		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ',\'' + obj.manager + '\')" class="removeDiv" style="display: none;">'+lang('remove')+'</a>';
+		'<a href="#" onclick="og.removeObjectFromTemplate(this.parentNode, ' + obj.object_id + ',\'' + obj.manager + '\')" class="removeDiv">'+lang('remove')+'</a>';
 	var editPropDiv = document.createElement('div');
 	editPropDiv.id = 'propDiv' + count;
 	editPropDiv.style.paddingLeft = '30px';
@@ -287,6 +287,38 @@ og.objectPropertyChanged = function(obj_id, manager, count, value){
 					dateProp.value = value; 
 				}
 			}
+		}else if(prop.className == 'USER'){
+			propValueTD.innerHTML = '<select id="integerPropType[' + manager + ':' + obj_id + '][' + count + ']" onchange="og.integerPropertyTypeSel(' + count + ',\'' + obj_id + '\',\'' + manager + '\')">'
+				+ '<option value="-1">Select type</option><option value="0">' + lang('fixed user') + '</option><option value="1">' + lang('parametric user') + '</option></select>';
+			var newTD = document.createElement('td');
+			newTD.id = 'integerPropTD[' + manager + ':' + obj_id + '][' + count + ']';
+			newTD.style.paddingLeft = '10px';
+			propValueTD.parentNode.appendChild(newTD);
+			if(value != ''){
+				var integerPropTypeSel = document.getElementById('integerPropType[' + manager + ':' + obj_id + '][' + count + ']');
+				if (value.indexOf("{") != -1) {
+					integerPropTypeSel.selectedIndex = 2;
+					og.integerPropertyTypeSel(count, obj_id, manager);
+					var paramSel = document.getElementById('propValueParam[' + manager + ':' + obj_id + '][' + prop.value + ']');
+					for(var i=0; i < paramSel.length; i++){
+						var paramName = '{' + paramSel.options[i].value + '}';
+						if (paramName == value) {
+							paramSel.selectedIndex = i;
+						}
+					}
+				} else {
+					integerPropTypeSel.selectedIndex = 1;
+					og.integerPropertyTypeSel(count, obj_id, manager, function() {
+						var propSel = document.getElementById('propValues[' + manager + ':' + obj_id + '][' + prop.value + ']');
+						for(var i=0; i < propSel.length; i++){
+							var propVal = propSel.options[i].value;
+							if (propVal == value) {
+								propSel.selectedIndex = i;
+							}
+						}
+					});
+				}
+			}
 		}else{
 			propValueTD.innerHTML = '';
 		}
@@ -333,6 +365,72 @@ og.datePropertyTypeSel = function(count, obj_id, manager){
 		}
 	}
 };
+
+og.integerPropertyTypeSel = function(count, obj_id, manager, callback){
+	var integerPropTD = document.getElementById('integerPropTD[' + manager + ':' + obj_id + '][' + count + ']');
+	var integerPropTypeSel = document.getElementById('integerPropType[' + manager + ':' + obj_id + '][' + count + ']');
+	var selectedPropTypeIndex = integerPropTypeSel.selectedIndex;
+	integerPropTD.innerHTML = '';
+	if(selectedPropTypeIndex != -1){
+		var propertySel = document.getElementById('objectProperties[' + manager + ':' + obj_id + '][' + count + ']');
+		var prop = propertySel[propertySel.selectedIndex].value;
+		var type = integerPropTypeSel[selectedPropTypeIndex].value;		
+		if(type == 0){
+			
+			og.openLink(og.getUrl('user', 'list_users'), {
+				callback: function(success, data) {
+					var users = data.users;
+					var integerPropTD = document.getElementById('integerPropTD[' + manager + ':' + obj_id + '][' + count + ']');
+					var html = "";
+					html += '<select name="propValues[' + manager + ':' + obj_id + '][' + prop + ']" id="propValues[' + manager + ':' + obj_id + '][' + prop + ']">';
+					if (users.length > 0){
+						for(i=0;i < users.length ;i++){
+							var usu = users[i];
+							html += '<option value="'+ usu.id+'" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']">'+ usu.name + '</option>';
+						}
+					}else{
+						html += '<option value="0" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']">'+ lang ('no users to display') + '</option>';
+					}
+					html += '</select>';
+					integerPropTD.innerHTML = html;
+					if (typeof callback == 'function') callback();
+				}
+			});		
+			
+			
+		}else if(type == 1){
+			var selectParam = '';
+			if(og.templateParameters.length > 0){
+				selectParam = '<input type="hidden" name="propValues[' + manager + ':' + obj_id + '][' + prop + ']" id="propValues[' + manager + ':' + obj_id + '][' + prop + ']" value="" />'
+				selectParam += '<select name="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']" id="propValueParam[' + manager + ':' + obj_id + '][' + prop + ']" onChange="og.changeIntegerParam(this)" />';
+				for(var j=0; j < og.templateParameters.length; j++){
+					var item = og.templateParameters[j];
+					if(item.type == "user"){
+						// value="{'+ item['name'] +'}" name="propValue[' + manager + ':' + obj_id + '][' + prop + ']"
+						selectParam += '<option>' + item['name'] + '</option>';
+					}
+				}
+				selectParam += '</select>';
+				integerPropTD.innerHTML = selectParam;
+			}
+			if(selectParam == ''){
+				alert(lang('no parameters in template'));
+				integerPropTypeSel.selectedIndex = 0;
+			}
+		}
+	}
+};
+
+og.changeIntegerParam = function(select){
+	alert('asdasda');
+	var id = select.id();
+	id = id.repace("propValueParam","propValues");
+	hidd = document.getElementById(id);
+	if (hidd){
+		hidd.value = select.value;
+	}
+	
+}
 
 og.editStringTemplateObjectProperty = function(obj_id, prop, manager){
 	var params = [];
@@ -464,7 +562,7 @@ og.promptAddParameter = function(before, edit, pos) {
 		    	value: loadType,
 		    	store: new Ext.data.SimpleStore({
 					fields: ['id', 'name'],
-					data : [['string', lang('string')],['date', lang('date')]]
+					data : [['string', lang('string')],['date', lang('date')],['user', lang('user')]]
 				})
 		    }
 		]

@@ -126,28 +126,33 @@ var rx__TasksDrag = {
 	idGroup: 'ogTasksPanelGroupCont', // 'ogTasksPanelGroup',
 	classTask: 'ogTasksTaskTable',
 	idTask: 'ogTasksPanelTaskTable',
-
+	ddGroup: 'WorkspaceDD', // group
+	dzClass: 'rx__hasDZ',
+	
+	initialize: function() {
+		this.haveExtDD = {};
+	},
 	prepareExt: function(t,g,id) {
 		if(this.haveExtDD[id]) return;
-		Ext.get(id).dd = new rx__TasksD(id, 'group', { scope: this, dragData: {i_t:t, i_g: g} });
-		new Ext.dd.DropZone(id, {ddGroup: 'group'});
+		Ext.get(id).dd = new rx__TasksD(id, rx__TasksDrag.ddGroup, { scope: this, dragData: {i_t:t, i_g: g} });
+		new Ext.dd.DropZone(id, {ddGroup: rx__TasksDrag.ddGroup});
 		this.haveExtDD[id] = t; // true
 		this.prepareDrops();
 	},
 	prepareDrops: function() {
 		Ext.select('.'+rx__TasksDrag.classGroup).each( function(el) {
-			if(el.hasClass('rx__hasDZ')) return;
-			el.addClass('rx__hasDZ');
+			if(el.hasClass(rx__TasksDrag.dzClass)) return;
+			el.addClass(rx__TasksDrag.dzClass);
 			id = el.dom.id;
-			new Ext.dd.DropZone(id, {ddGroup: 'group'});
+			new Ext.dd.DropZone(id, {ddGroup: rx__TasksDrag.ddGroup});
 			d = id.substr(rx__TasksDrag.idGroup.length, 66);
 			rx__TasksDrag.haveExtDD[id] = d;
 		} );
 		Ext.select('.'+rx__TasksDrag.classTask).each( function(el) {
-			if(el.hasClass('rx__hasDZ')) return;
-			el.addClass('rx__hasDZ');
+			if(el.hasClass(rx__TasksDrag.dzClass)) return;
+			el.addClass(rx__TasksDrag.dzClass);
 			id = el.dom.id;
-			new Ext.dd.DropZone(id, {ddGroup: 'group'});
+			new Ext.dd.DropZone(id, {ddGroup: rx__TasksDrag.ddGroup});
 			d = new String( id.substr(rx__TasksDrag.idTask.length, 66) );
 			d = d.substr(1,d.indexOf('G')-1); // format: T{task_id}G{group_id}
 			rx__TasksDrag.haveExtDD[id] = d;
@@ -155,7 +160,7 @@ var rx__TasksDrag = {
 	},
 	prepareDrop: function(d,id) {
 		if(this.haveExtDD[id]) return;
-		/*Ext.get(id).dd =*/ new Ext.dd.DropZone(id, {ddGroup: 'group'});
+		/*Ext.get(id).dd =*/ new Ext.dd.DropZone(id, {ddGroup: rx__TasksDrag.ddGroup});
 		this.haveExtDD[id] = d;
 	},
 	parametersFromTask: function(task) {
@@ -176,6 +181,18 @@ var rx__TasksDrag = {
 		parameters["project_id"] = task.workspaceIds;
 		parameters["tags"] = task.tags;
 		
+		// add dates to parameters
+		if (task.dueDate) {
+			var d1 = new Date();
+			d1.setTime(task.dueDate * 1000);
+			parameters["task_due_date"] = d1.format(og.preferences['date_format']);
+		}
+		if (task.startDate) {
+			var d2 = new Date();
+			d2.setTime(task.startDate * 1000);
+			parameters["task_start_date"] = d2.format(og.preferences['date_format']);
+		}
+		
 		return parameters;
 	},
 	quickEdit: function(task_id, parameters) {
@@ -190,7 +207,7 @@ var rx__TasksDrag = {
 			var milestone = ogTasks.getMilestone(parameters['milestone_id']);
 			var task = ogTasks.getTask(task_id);
 			
-			if (milestone.id != task.milestoneId){//Milestone changed
+			if (this.displayCriteria.group_by == 'milestone' && milestone.id != task.milestoneId){//Milestone changed
 				if (milestone.workspaceIds != task.workspaceIds)
 					if(!og.IsWorkspaceParentOf(milestone.workspaceIds, task.workspaceIds)){
 						if (!confirm(lang('task milestone workspace inconsistency')))
@@ -199,7 +216,7 @@ var rx__TasksDrag = {
 			}
 			
 			// Workspace changed -> milestone control
-			if (milestone.workspaceIds != parameters['project_id'] && 
+			if (this.displayCriteria.group_by == 'workspace' && milestone.workspaceIds != parameters['project_id'] && 
 				!og.IsWorkspaceParentOf(milestone.workspaceIds, parameters['project_id'])) {
 					if (!confirm(lang('task milestone does not belong to workspace'))) {
 						return;
@@ -208,9 +225,10 @@ var rx__TasksDrag = {
 					}
 			}
 		}
+
 		
 		parameters = params2;
-		var url = og.getUrl('task', 'quick_edit_task', {id:task_id});
+		var url = og.getUrl('task', 'quick_edit_task', {id:task_id, dont_mark_as_read:1});
 	
 		og.openLink(url, {
 			method: 'POST',
@@ -238,6 +256,10 @@ var rx__TasksDrag = {
 							parent.subtasks[parent.subtasks.length] = task;
 						}
 					}
+					
+					if (data.subtasks && data.subtasks.length > 0)
+						ogTasks.setSubtasksFromData(task, data.subtasks);
+					
 					if(!rx__TasksDrag.full_redraw) ogTasks.redrawGroups = false;
 					else rx__TasksDrag.full_redraw = true;
 					ogTasks.draw();
@@ -308,6 +330,8 @@ var rx__TasksDrag = {
 		}
 
 		parameters['parent_id'] = this.p?this.p:0;
+		parameters['apply_ws_subtasks'] = "checked";
+		parameters['apply_milestone_subtasks'] = "checked";
 	
 		var group = ogTasks.getGroup(this.d);
 		var group_not_empty = group && group.group_tasks && group.group_tasks.length>0;
@@ -349,7 +373,7 @@ var rx__TasksDrag = {
 		
 	},
 	onDragStart: function(t,g,id) {
-		return false;
+		//return false;
 		if(this.state!='no') return false;
 		this.t=t;
 		this.g=g;
@@ -400,8 +424,9 @@ ogTasks.draw = function(){
 		this.Tasks[i].divInfo = [];
 
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
-	var drawOptions = bottomToolbar.getDrawOptions();
+	var drawOptions = topToolbar.getDrawOptions();
 	this.Groups = this.groupTasks(displayCriteria, this.Tasks);
 	for (var i = 0; i < this.Groups.length; i++){
 		this.Groups[i].group_tasks = this.orderTasks(displayCriteria, this.Groups[i].group_tasks);
@@ -616,8 +641,9 @@ ogTasks.expandGroup = function(group_id){
 		group.isExpanded = true;
 		var html = '';
 		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+		var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 		var displayCriteria = bottomToolbar.getDisplayCriteria();
-		var drawOptions = bottomToolbar.getDrawOptions();
+		var drawOptions = topToolbar.getDrawOptions();
 		for (var i = og.noOfTasks; i < group.group_tasks.length; i++)
 			html += this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1);
 		div.innerHTML = html;
@@ -699,6 +725,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	}else{
 		sb.append("<td width='16px'><div id='ogTasksPanelExpander" + tgId + "' style='visibility:hidden' class='og-task-expander ico-add ogTasksIcon' onClick='ogTasks.drawAddNewTaskForm(\"" + group_id + "\", " + task.id + "," + level +")' title='" + lang('add subtask') + "'></div></td>");
 	}
+
+	if (task.isRead){
+		sb.append("<td style=\"width:16px\" id=\"ogTasksPanelMarkasTd" + task.id + "\"><div title=\"" + lang('mark as unread') + "\" id=\"readunreadtask" + task.id + "\" class=\"db-ico ico-read\" onclick=\"ogTasks.readTask(" + task.id + ","+task.isRead+")\" /></td>");		
+	}else {
+		sb.append("<td style=\"width:16px\" id=\"ogTasksPanelMarkasTd" + task.id + "\"><div title=\"" + lang('mark as read') + "\" id=\"readunreadtask" + task.id + "\" class=\"db-ico ico-unread\" onclick=\"ogTasks.readTask(" + task.id + ","+task.isRead+")\" /> </td>");
+	}
 	
 	//Center td
 	sb.append('<td align=left>');
@@ -734,11 +766,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 		}
 		taskName = "<span style='text-decoration:line-through' title='" + tooltip + "'>" + taskName + "</span>";
 	}
-	sb.append('<a class="internalLink" href="#" onclick="og.openLink(\'' + og.getUrl('task', 'view_task', {id: task.id}) + '\')" id="rx__dd'+(++rx__dd)+'">' + taskName + '</a>');
+	var viewUrl = og.getUrl('task', 'view_task', {id: task.id});
+	sb.append('<a class="internalLink" href="' + viewUrl + '" onclick="og.openLink(\'' + viewUrl + '\');return false;" id="rx__dd'+(++rx__dd)+'">' + taskName + '</a>');
 	
 	//Draw repeat icon (if repetitive)
 	if (task.repetitive > 0){
-		sb.append('<span style="margin: 0px 8px; padding: 0px 0px 2px 15px;" class="ico-recurrent" title="'+ lang('repetitive task') +'"></span>');
+		sb.append('<span style="margin: 0px 8px; padding: 0px 0px 2px 12px;" class="ico-recurrent" title="'+ lang('repetitive task') +'">&nbsp;</span>');
 	}
 	//Draw tags
 	if (drawOptions.show_tags)
@@ -888,6 +921,36 @@ ogTasks.ToggleCompleteStatus = function(task_id, status){
 		},
 		scope: this
 	});
+}
+ogTasks.readTask = function(task_id,isUnRead){
+	var task = ogTasks.getTask(task_id);
+	if (!isUnRead){
+		og.openLink(
+			og.getUrl('task','multi_task_action'),
+			{ method:'POST' ,	post:{ids:task_id, action:'markasread'},callback:function(success, data){
+					if (!success || data.errorCode) {
+					} else {
+						var td = document.getElementById('ogTasksPanelMarkasTd' + task_id);
+						td.innerHTML = "<div title=\"" + lang('mark as unread') + "\" id=\"readunreadtask" + task_id + "\" class=\"db-ico ico-read\" onclick=\"ogTasks.readTask(" + task_id + ",true)\" />";
+						task.isRead = true;
+					}
+				}
+			}
+		);
+	}else{
+		og.openLink(
+			og.getUrl('task','multi_task_action'),
+			{ method:'POST' ,	post:{ids:task_id, action:'markasunread'},callback:function(success, data){
+					if (!success || data.errorCode) {
+					} else {								
+						var td = document.getElementById('ogTasksPanelMarkasTd' + task_id);
+						td.innerHTML = "<div title=\"" + lang('mark as read') + "\" id=\"readunreadtask" + task_id + "\" class=\"db-ico ico-unread\" onclick=\"ogTasks.readTask(" + task_id + ",false)\" />";
+						task.isRead = false;
+					}
+				}
+			}
+		);
+	}
 }
 
 ogTasks.UpdateTask = function(task_id){

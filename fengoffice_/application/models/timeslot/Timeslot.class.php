@@ -176,7 +176,7 @@ class Timeslot extends BaseTimeslot {
 			$this->setBillingId($billing_category_id);
 			$hourly_billing = $project->getBillingAmount($billing_category_id);
 			$this->setHourlyBilling($hourly_billing);
-			$this->setFixedBilling($hourly_billing * $hours);
+			$this->setFixedBilling(round($hourly_billing * $hours, 2));
 			$this->setIsFixedBilling(false);
 		}
 		

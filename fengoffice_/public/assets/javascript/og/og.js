@@ -12,7 +12,6 @@ og.eventTimeouts = [];
 og.otherData = [];
 
 // default config (to be overridden by server)
-og.pageSize = 10;
 og.hostName = '';
 og.maxFileSize = 1024 * 1024;
 
@@ -26,12 +25,13 @@ og.msg =  function(title, text, timeout, classname, sound) {
 	var click_to_remove_msg = ''; // only show this message if message doesn't vanish by itself
 	if (timeout == 0)
 		click_to_remove_msg = '<div style="text-align:center; font-size:small; font-style:italic"><a>' + lang('click to remove') + '</a></div>';
-			
+
 	var box = ['<div class="' + classname + '" title="' + lang('click to remove') + '">',
 			'<div class="og-box-tl"><div class="og-box-tr"><div class="og-box-tc"></div></div></div>',
 			'<div class="og-box-ml"><div class="og-box-mr"><div class="og-box-mc"><h3>{0}:</h3><p>{1}</p>',
 			//click_to_remove_msg,
 			'</div></div></div>',
+			'<input type="hidden" value="' + new Date().getTime() + '" />',
 			'<div class="og-box-bl"><div class="og-box-br"><div class="og-box-bc"></div></div></div>',
 			'</div>'].join('');
 	
@@ -47,6 +47,7 @@ og.msg =  function(title, text, timeout, classname, sound) {
 			this.remove();
 		}
 	});
+	m.timeout = 'aaaaa';
 	if (timeout > 0) {
 		m.slideIn('t').pause(timeout).ghost("t", {remove:true});
 	} else {
@@ -99,6 +100,22 @@ og.err = function(text) {
 		Ext.fly(errors[i]).remove();
 	}
 	og.msg(lang("error"), text, 0, "err");
+};
+
+og.clearErrors = function(timeout) {
+	var errors = Ext.query("div.err");
+	for (var i=0; i < errors.length; i++) {
+		if (timeout) {
+			var inputs = Ext.fly(errors[i]).query('input');
+			var ts = inputs[0].value;
+			if (new Date().getTime() - ts > timeout*1000) {
+				// clear error only if timeout seconds have ellapsed
+				Ext.fly(errors[i]).remove();
+			}
+		} else {
+			Ext.fly(errors[i]).remove();
+		}
+	}
 };
 
 og.hideAndShow = function(itemToHide, itemToDisplay){
@@ -248,6 +265,32 @@ og.toggleAndBolden = function(id, btn) {
 	}
 };
 
+og.toggleSimpleTab = function(id, contentContainer, tabContainer, tab) {
+	var tc = Ext.getDom(tabContainer);
+	var child = tc.firstChild;
+	while (child) {
+		if (child.style) {
+			child.style.fontWeight = 'normal';
+		}
+		child = child.nextSibling;
+	}
+	if (tab) {
+		tab.style.fontWeight = 'bold';
+		tab.blur();
+	}
+
+	var cc = Ext.getDom(contentContainer);
+	var child = cc.firstChild;
+	while (child) {
+		if (child.style) {
+			child.style.display = 'none';
+		}
+		child = child.nextSibling;
+	}
+	var obj = Ext.get(id);
+	obj.dom.style.display = 'block';
+};
+
 og.showAndHide = function(idToShow, idsToHide, displayType){
 	if (!displayType)
 		displayType = 'block';
@@ -276,7 +319,17 @@ og.toggleAndHide = function(id, btn) {
 
 
 og.getUrl = function(controller, action, args) {
-	var url = og.hostName + "/";
+	var url = og.hostName + "/index.php";
+	url += "?c=" + controller;
+	url += "&a=" + action;
+	for (var key in args) {
+		url += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(args[key]);
+	}
+	return url;
+};
+
+og.getSandboxUrl = function(controller, action, args) {
+	var url = (og.sandboxName || og.hostName) + "/index.php";
 	url += "?c=" + controller;
 	url += "&a=" + action;
 	for (var key in args) {
@@ -390,8 +443,8 @@ og.captureLinks = function(id, caller) {
 	var links = element.getElementsByTagName("a");
 	for (var i=0; i < links.length; i++) {
 		var link = links[i];
-		if (!link.href || link.href == link.baseURI || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
-		if (link.target == '_blank' || link.target == '_self') continue;
+		if (!link.href || Ext.isGecko && link.href == link.baseURI || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
+		if (link.target == '_blank' || link.target == '_self' || link.target == '_download') continue;
 		if (caller && !link.target) {
 			link.target = caller.id;
 		}
@@ -414,16 +467,13 @@ og.captureLinks = function(id, caller) {
 	forms = element.getElementsByTagName("form");
 	for (var i=0; i < forms.length; i++) {
 		var form = forms[i];
-		if (form.target == '_blank' || form.target == '_self') continue;
+		if (form.target == '_blank' || form.target == '_self' || form.target == '_download') continue;
 		var onsubmit = form.onsubmit;
 		form.onsubmit = function() {
 			if (onsubmit && !onsubmit()) {
 				return false;
 			} else {
-				var params = Ext.Ajax.serializeForm(this);
-				var options = {};
-				options[this.method.toLowerCase()] = params;
-				og.openLink(this.getAttribute('action'), options);
+				og.ajaxSubmit(this);
 			}
 			return false;
 		}
@@ -447,8 +497,11 @@ og.openLink = function(url, options) {
 			if (active) options.caller = active.id;
 		}
 	}
-	if (!options.hideLoading) {
+	if (!options.hideLoading && !options.silent) {
 		og.loading();
+	}
+	if (!options.hideLoading && !options.hideErrors && !options.silent) {
+		og.clearErrors(5);
 	}
 	var params = options.get || {};
 	if (typeof params == 'string' && params.indexOf('current=') < 0) {
@@ -470,7 +523,7 @@ og.openLink = function(url, options) {
 		url: url,
 		params: options.post,
 		callback: function(options, success, response) {
-			if (!options.options.hideLoading) {
+			if (!options.options.hideLoading && !options.silent) {
 				og.hideLoading();
 			}
 			if (success) {
@@ -482,7 +535,7 @@ og.openLink = function(url, options) {
 						var data = Ext.util.JSON.decode(response.responseText);
 					} catch (e) {
 						// response isn't valid JSON, display it on the caller panel or new tab
-						if (!options.preventPanelLoad) {
+						if (!options.preventPanelLoad && !options.options.silent) {
 							var p = Ext.getCmp(options.caller);
 							if (p) {
 								p.load(response.responseText);
@@ -496,18 +549,19 @@ og.openLink = function(url, options) {
 					og.err(e.message);
 				}
 				var ok = typeof data == 'object' && data.errorCode == 0;
-				if (options.postProcess) options.postProcess.call(options.scope || this, ok, data || response.responseText, options.options);
+				if (typeof options.postProcess == 'function') options.postProcess.call(options.scope || this, ok, data || response.responseText, options.options);
 				if (ok) {
-					if (options.onSuccess) options.onSuccess.call(options.scope || this, data || response.responseText, options.options);
+					if (typeof options.onSuccess == 'function') options.onSuccess.call(options.scope || this, data || response.responseText, options.options);
 				} else {
-					if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
+					if (typeof options.onError == 'function') options.onError.call(options.scope || this, data || response.responseText, options.options);
 				}
 			} else {
-				if (!options.options.hideErrors && response.status > 0) {
+				if (!options.options.hideErrors && !options.options.silent && response.status > 0) {
 					og.err(lang("http error", response.status, response.statusText));
+					og.httpErrLog = response.responseText;
 				}
-				if (options.postProcess) options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
-				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
+				if (typeof options.postProcess == 'function') options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
+				if (typeof options.onError == 'function') options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}
 			var endTime = new Date().getTime();
 			//og.log(url + ": " + (endTime - startTime) + " ms");
@@ -527,8 +581,8 @@ og.openLink = function(url, options) {
 
 /**
  *  This function allows to submit a form containing a file upload without
- *  refreshing the whole page by using an iframe. Any content generated by
- *  the server will be put into the iframe and ignored. You can specify in
+ *  refreshing the whole page by using an iframe. The request will behave
+ *  as an ajax request (openLink function). You can specify in
  *  the options parameter a callback property saying what to do after the
  *  upload. If the callback property is of type function, then the function
  *  is invoked passing it the options parameter; if it is of type string it
@@ -537,8 +591,6 @@ og.openLink = function(url, options) {
  *  og.ContentPanel.load()).
  *  Contents and URLs will be loaded in the panel specified in the panel property of
  *  the options parameter or, if missing, the currently active panel.
- *  Unlike the function og.openLink, this function doesn't send a ajax=true
- *  parameter.
  */
 og.submit = function(form, options) {
 	if (!options) options = {};
@@ -548,39 +600,51 @@ og.submit = function(form, options) {
 	frame.id = id;
 	frame.name = id;
 	frame.className = 'x-hidden';
-	if(Ext.isIE){
-	    frame.src = Ext.SSL_SECURE_URL;
-	}
 	document.body.appendChild(frame);
+	frame.src = Ext.SSL_SECURE_URL;
+
 	if(Ext.isIE){
 	   document.frames[id].name = id;
 	}
 	options.panel = options.panel || Ext.getCmp('tabs-panel').getActiveTab().id;
-	function endSubmit() {
-		og.hideLoading();
-		
-		if (typeof options.callback == 'function') {
-			options.callback(options);
-		} else if (typeof options.callback == 'string') {
-			og.openLink(options.callback, {caller: options.panel});
-		} else if (typeof options.callback == 'object') {
-			Ext.getCmp(options.panel).load(options.callback);
-		}
-		setTimeout(function(){Ext.removeNode(frame);}, 100);
-	}
+	
+	var origUrl = form.getAttribute('action');
+	var origTarget = form.getAttribute('target');
+	
 	Ext.EventManager.on(frame, 'load', function() {
 			if (frame.submitted) {
-				endSubmit();
+				form.setAttribute('action', origUrl);
+				form.setAttribute('target', origTarget);
+				
+				if (typeof options.forcedCallback == 'function') {
+					options.forcedCallback();
+				}
+				
+				og.hideLoading();
+				setTimeout(function(){Ext.removeNode(frame);}, 100);
 			}
 		}, frame
 	);
 	
-	form.target = frame.name;
-	var url = og.makeAjaxUrl(form.getAttribute('action')).replace(/ajax\=true/g, "upload=true");
+	og.submit[id] = options;
+	form.setAttribute('target', frame.name);
+	var url = og.makeAjaxUrl(origUrl) + "&upload=true&current=" + options.panel + "&request_id=" + id;
 	form.setAttribute('action', url);
 	og.loading();
-	frame.submitted = true;
+	frame.submitted = 1;
 	form.submit();
+	return false;
+};
+
+/**
+ * Submits a form through an open link by serializing it.
+ * Doesn't work with file uploads. Use og.submit for that purpose.
+ */
+og.ajaxSubmit = function(form, options) {
+	if (!options) options = {};
+	var params = Ext.Ajax.serializeForm(form);
+	options[form.getAttribute('method').toLowerCase()] = params;
+	og.openLink(form.getAttribute('action'), options);
 	return false;
 };
 
@@ -592,7 +656,7 @@ og.processResponse = function(data, options, url) {
 		callback: function() {
 			if (options) var caller = options.caller;
 			
-			if (data.errorCode == 2009) {
+			if (data.errorCode == 2009 || data.u != og.loggedUser.id) {
 				if (options) {
 					og.LoginDialog.show(options.url, options.options);
 				} else {
@@ -609,7 +673,7 @@ og.processResponse = function(data, options, url) {
 			}
 			
 			//Load data
-			if (!options || !options.preventPanelLoad){
+			if (!options || !options.preventPanelLoad && (!options.options || !options.options.silent)){
 				//Load data into more than one panel
 				if (data.contents) {
 					for (var k in data.contents) {
@@ -647,7 +711,7 @@ og.processResponse = function(data, options, url) {
 				}
 			}
 			//Show messages if any
-			if (data.errorCode != 0 && !options.options.hideErrors) {
+			if (data.errorCode != 0 && (!options.options || !options.options.hideErrors && !options.options.silent)) {
 				og.err(data.errorMessage);
 			} else if (data.errorMessage) {
 				og.msg(lang("success"), data.errorMessage);
@@ -884,9 +948,9 @@ og.PagingToolbar	=	function (config) {
 
 Ext.extend (og.PagingToolbar, Ext.PagingToolbar, {
 	// override the private function 'getPageData' so that Ext.PagingToolbar 
-        // will read the 'start' parameter returned from server, 
+	// will read the 'start' parameter returned from server, 
 	// and set the specified page number, while presume the default behavior 
-        // when the server doesn't return the 'start' parameter.
+	// when the server doesn't return the 'start' parameter.
 	// (JSON example).
 	getPageData : function(){
  		var total = this.store.getTotalCount();
@@ -1298,17 +1362,117 @@ og.subscribeCompany = function (div){
 	
 };
 
-og.moveToWsOrMantainWs = function(manager, ws) {
+og.confirmRemoveTags = function(manager) {
+	var man = Ext.getCmp(manager);
+	
+	var removeAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+		man.removeTags();
+	};
+	
+	var cancelAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+	};
+	
+	var config = {
+		title: lang('remove tags'),
+		y :50,
+		id :'removeTags',
+		modal :true,
+		height :125,
+		width :300,
+		resizable :false,
+		closeAction :'hide',
+		iconCls :'op-ico',
+		border :false,
+		buttons : [ {
+			text :lang('yes'),
+			handler :removeAction,
+			id :'yes_button',
+			scope :this
+		}, {
+			text :lang('no'),
+			handler :cancelAction,
+			id :'no_button',
+			scope :this
+		} ],
+		dialogItems : [ {
+			xtype :'label',
+			name :'moveadd_label',
+			id :'moveadd',
+			hideLabel :true,
+			style: 'font-size:100%;',
+			text: lang('confirm remove tags')
+		} ]
+	};
+	og.ExtendedDialog.show(config);
+}
+
+og.confirmMoveToAllWs = function(manager, text) {
 	var man = Ext.getCmp(manager);
 	
 	var moveAction = function() {
 		og.ExtendedDialog.dialog.destroy();
+		man.moveObjectsToAllWs();
+	};
+	
+	var cancelAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+	};
+	
+	var config = {
+		title: '',
+		y :50,
+		id :'moveToAllWs',
+		modal :true,
+		height :125,
+		width :300,
+		resizable :false,
+		closeAction :'hide',
+		iconCls :'op-ico',
+		border :false,
+		buttons : [ {
+			text :lang('yes'),
+			handler :moveAction,
+			id :'yes_button',
+			scope :this
+		}, {
+			text :lang('no'),
+			handler :cancelAction,
+			id :'no_button',
+			scope :this
+		} ],
+		dialogItems : [ {
+			xtype :'label',
+			name :'moveadd_label',
+			id :'moveadd',
+			hideLabel :true,
+			style: 'font-size:100%;',
+			text: text
+		} ]
+	};
+	og.ExtendedDialog.show(config);
+}
+
+og.moveToWsOrMantainWs = function(manager, ws) {
+	var man = Ext.getCmp(manager);
+	
+	var moveAction = function() {
+		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
 		man.moveObjectsToWsOrMantainWs(0, ws);
 	};
 	var mantainAction = function() {
-		og.ExtendedDialog.dialog.destroy();
+		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
 		man.moveObjectsToWsOrMantainWs(1, ws);
 	};
+	
+	if (og.preferences['drag_drop_prompt'] == 'move') {
+		moveAction();
+		return;
+	} else if (og.preferences['drag_drop_prompt'] == 'keep') {
+		mantainAction();
+		return;
+	}
 
 	var config = {
 		title :lang('move to workspace or keep old ones'),
@@ -1348,16 +1512,24 @@ og.askToClassifyUnclassifiedAttachs = function(manager, mantain, ws) {
 	var man = Ext.getCmp(manager);
 	
 	var classifyAction = function() {
-		og.ExtendedDialog.dialog.destroy();
+		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
 		man.moveObjectsClassifyingEmails(mantain, ws, 1);
 	};
 	var leaveAction = function() {
-		og.ExtendedDialog.dialog.destroy();
+		if (og.ExtendedDialog.dialog) og.ExtendedDialog.dialog.destroy();
 		man.moveObjectsClassifyingEmails(mantain, ws, 0);
 	};
+	
+	if (og.preferences['mail_drag_drop_prompt'] == 'classify') {
+		classifyAction();
+		return;
+	} else if (og.preferences['mail_drag_drop_prompt'] == 'dont') {
+		leaveAction();
+		return;
+	}
 
 	var config = {
-		title :'classify mail attachments',
+		title :lang('classify mail attachments'),
 		y :50,
 		id :'classifyAttachs',
 		modal :true,
@@ -1410,6 +1582,106 @@ og.showHide = function(itemId) {
 	}
 };
 
+og.calculate_time_zone = function() {
+	var rightNow = new Date();
+	var jan1 = new Date(rightNow.getFullYear(), 0, 1, 0, 0, 0, 0);  // jan 1st
+	var june1 = new Date(rightNow.getFullYear(), 6, 1, 0, 0, 0, 0); // june 1st
+	var temp = jan1.toGMTString();
+	var jan2 = new Date(temp.substring(0, temp.lastIndexOf(" ")-1));
+	temp = june1.toGMTString();
+	var june2 = new Date(temp.substring(0, temp.lastIndexOf(" ")-1));
+	var std_time_offset = (jan1 - jan2) / (1000 * 60 * 60);
+	var daylight_time_offset = (june1 - june2) / (1000 * 60 * 60);
+	var dst;
+	if (std_time_offset == daylight_time_offset) {
+		dst = "0"; // daylight savings time is NOT observed
+	} else {
+		// positive is southern, negative is northern hemisphere
+		var hemisphere = std_time_offset - daylight_time_offset;
+		if (hemisphere >= 0)
+			std_time_offset = daylight_time_offset;
+		dst = "1"; // daylight savings time is observed
+	}
+	var i;
+	return std_time_offset;
+	// check just to avoid error messages
+	/*
+	if (document.getElementById('timezone')) {
+		for (i = 0; i < document.getElementById('timezone').options.length; i++) {
+			if (document.getElementById('timezone').options[i].value == og.convert_time_zone(std_time_offset)+","+dst) {
+				document.getElementById('timezone').selectedIndex = i;
+				break;
+			}
+		}
+	}*/
+};
+
+og.redrawLinkedObjects = function(id, manager) {
+	var div = Ext.get("linked_objects_in_prop_panel");
+	if (div) {
+		div.load({url: og.getUrl('object', 'redraw_linked_object_list', {id:id, man:manager}), scripts: true});
+	}
+}
+
+og.redrawSubscribers = function(id, manager) {
+	var div = Ext.get("subscribers_in_prop_panel");
+	if (div) {
+		div.load({url: og.getUrl('object', 'redraw_subscribers_list', {id:id, man:manager}), scripts: true});
+	}
+}
+
+/*
+ * Adds the listener to manage concurrency while editing objects.
+ * it shows a yes or no dialog, if the answer is yes re-send the form data
+ * and set "merge-changes" attribute to true so that the object list view is shown.
+ *  If no is choosen it sent the form and overwrite the submited data. 
+ */
+og.eventManager.addListener('handle edit concurrence', 
+	function (data) {
+		var genid = data['genid'];
+		var elem = document.getElementById( genid + 'merge-changes-hidden');
+		elem.value = '';
+		var hidden = document.getElementById(genid + "updated-on-hidden");
+ 		if (hidden) {
+ 			hidden.value = data['updatedon'];
+ 		}
+		var dialog = '<div style="padding:10px;">';
+		dialog += '<h1>' + lang('allready updated object') + '</h1><br />';
+		dialog += '<div>' + lang('allready updated object desc') + '</div></div>';
+		og.ExtendedDialog.show({
+    		html: dialog,
+    		height: 250,
+    		width: 350,
+    		YESNO: true,
+    		ok_fn: function() {
+    			og.ExtendedDialog.hide();
+    			elem.value = 'true';
+    			var form = document.getElementById(genid + "submit-edit-form");
+    			form.onsubmit();
+    			elem.value = '';
+			}
+    	});
+	}
+);
+
+og.getCkEditorInstance = function(name) {
+	var editor = null;
+	for (instName in CKEDITOR.instances) {
+		if (instName == name) {
+			editor = CKEDITOR.instances[instName];
+			break;
+		}
+	}
+	return editor;
+};
+
+og.adjustCkEditorArea = function(genid) {
+	document.getElementById('cke_' + genid + 'ckeditor').style.padding = '0px';
+	document.getElementById('cke_contents_' + genid + 'ckeditor').style.padding = '0px';
+	document.getElementById('cke_contents_' + genid + 'ckeditor').style.border = '0px none';
+	document.getElementById('cke_bottom_' + genid + 'ckeditor').style.display = 'none';
+};
+
 og.hideFlashObjects = function() {
 	var flash = document.getElementsByTagName('embed');
 	for (var i=0; i < flash.length; i++) {
@@ -1424,4 +1696,106 @@ og.restoreFlashObjects = function() {
 		if (flash[i].hiddenFlashObject) flash[i].style.visibility = 'visible';
 		flash[i].hiddenFlashObject = false;
 	}
+};
+
+og.promptDeleteAccount = function(account_id, reload) {
+	var check_id = Ext.id();
+	var config = {
+		genid: Ext.id(),
+		title: lang('confirm delete mail account'),
+		height: 150,
+		width: 250,
+		labelWidth: 150,
+		ok_fn: function() {
+			var checked = Ext.getCmp(check_id).getValue();
+			og.openLink(og.getUrl('mail', 'delete_account', {
+				id: account_id,
+				deleteMails: checked ? 1 : 0,
+				reload: reload ? 1 : 0
+			}));
+			og.ExtendedDialog.hide();
+		},
+		dialogItems: {
+			xtype: 'checkbox',
+			fieldLabel: lang('delete account emails'),
+			id: check_id,
+			value: false
+		}
+	};
+	og.ExtendedDialog.show(config);
+};
+
+og.htmlToText = function(html) {
+	// remove line breaks
+	html = html.replace(/[\n\r]\s*/g, "");
+	// change several white spaces for one
+	html = html.replace(/[ \t][ \t]+|&nbsp;/g, " ");
+	// insert line breaks were they belong
+	html = html.replace(/(<\/table>|<\/tr>|<\/div>|<br *\/?>|<\/p>)/g, "$1\n");
+	// insert tabs on tables
+	html = html.replace(/(<\/td>)/g, "$1\t");
+	// strip tags
+	html = html.replace(/<[^>]*>/g, "");
+
+	return html;
+};
+
+og.updateUnreadEmail = function(unread) {
+	if (og.preferences['show_unread_on_title']) {
+		var title = document.title;
+		if (title.charAt(0) == '(' && title.indexOf(')') > 0) {
+			title = title.substring(title.indexOf(')') + 2);
+		}
+		if (unread > 0) {
+			document.title = "(" + unread  + ") " + title;
+		} else {
+			document.title = title;
+		}
+	}
+	var panel = Ext.getCmp('mails-panel');
+	if (panel) {
+		if (unread > 0) {
+			panel.setTitle(lang('email tab') + " (" + unread  + ")");
+		} else {
+			panel.setTitle(lang('email tab'));
+		}
+	} else {
+		var tab = Ext.select("#tabs-panel__mails-panel span.x-tab-strip-text");
+		tab.each(function() {
+			if (unread > 0) {
+				this.innerHTML = lang('email tab') + " (" + unread + ")";
+			} else {
+				this.innerHTML = lang('email tab');
+			}
+		});
+	}
+};
+
+og.onChangeObjectCoType = function(genid, manager, id, new_cotype) {
+	og.openLink(og.getUrl('object', 're_render_custom_properties', {id:id, manager:manager, req:1, co_type:new_cotype}), 
+		{callback: function(success, data) {
+			if (success) {
+				var div = Ext.get(genid + 'required_custom_properties');
+				if (div) div.remove();
+				var container = Ext.get(genid + 'required_custom_properties_container');
+				if (container) {
+					container.insertHtml('beforeEnd', '<div id="'+genid+'required_custom_properties">'+data.html+'</div>');
+					eval(data.scripts);
+				}
+			}
+		}}
+	);
+	og.openLink(og.getUrl('object', 're_render_custom_properties', {id:id, manager:manager, req:0, co_type:new_cotype}), 
+		{callback: function(success, data) {
+			if (success) {
+				var div = Ext.get(genid + 'not_required_custom_properties');
+				if (div) div.remove();
+				var container = Ext.get(genid + 'not_required_custom_properties_container');
+				if (container) {
+					container.insertHtml('beforeEnd', '<div id="'+genid+'not_required_custom_properties">'+data.html+'</div>');
+					eval(data.scripts);
+				}
+			}
+		}}
+	);
 };

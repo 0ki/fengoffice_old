@@ -9,7 +9,7 @@
  * @author    Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>
  * @copyright 1997-2003 The PHP Group
  * @license   PHP license
- * @version   CVS: $Id: IMAPProtocol.php,v 1.2.4.1 2009/07/24 19:46:31 alvarotm01 Exp $
+ * @version   CVS: $Id: IMAPProtocol.php,v 1.3 2009/07/24 21:01:02 alvarotm01 Exp $
  * @link      http://pear.php.net/package/Net_IMAP
  */
 

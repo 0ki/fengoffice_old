@@ -58,7 +58,7 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-	
+	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $milestone->isNew() ? '' : $milestone->getUpdatedOn()->getTimestamp() ?>">
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_milestone_context_help', true, logged_user()->getId()))) {?>
@@ -81,6 +81,9 @@
 			</div>
 		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
+		<?php if (!$milestone->isNew()) {?>
+			<div class="desc" style="margin-bottom:5px"><?php echo lang('add milestone change workspace warning')?></div>
+		<?php } ?>
 		<?php echo select_project2('milestone[project_id]', $milestone->getProjectId(), $genid) ?>
 	</fieldset>
 	</div>

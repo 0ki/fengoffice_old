@@ -104,7 +104,7 @@
     * @return array
     */
     function getSystemColumns() {
-      return array('id', 'is_private', 'created_by_id', 'updated_by_id', 'trashed_on', 'trashed_by_id');
+      return array('id', 'is_private', 'created_by_id', 'updated_by_id', 'trashed_on', 'trashed_by_id', 'archived_by_id');
     } // getSystemColumns
     
     /**
@@ -234,9 +234,18 @@
     */
     function find($arguments = null) {
       
+      if (isset($arguments['conditions'])) {
+      	$conditions = $arguments['conditions'];
+      } else if (isset($arguments['condition'])) {
+      	$conditions = $arguments['condition'];
+      } else {
+      	$conditions = '';
+      }
+    	
       // Collect attributes...
       $one        = (boolean) array_var($arguments, 'one', false);
-      $conditions = $this->prepareConditions( array_var($arguments, 'conditions', '') );
+      $id         = (boolean) array_var($arguments, 'id', false);
+      $conditions = $this->prepareConditions( $conditions );
       $order_by   = array_var($arguments, 'order', '');
       $offset     = (integer) array_var($arguments, 'offset', 0);
       $limit      = (integer) array_var($arguments, 'limit', 0);
@@ -247,13 +256,22 @@
       $limit_string = $limit > 0 ? "LIMIT $offset, $limit" : '';
       
       // Prepare SQL
-      $sql = "SELECT * FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
+      $sql = "SELECT " . ($id ? '`id`' : '*') . " FROM " . $this->getTableName(true) . " $where_string $order_by_string $limit_string";
 
       // Run!
       $rows = DB::executeAll($sql);
 
       // Empty?
       if(!is_array($rows) || (count($rows) < 1)) return null;
+      
+      // return only ids?
+      if ($id) {
+      	$ids = array();
+      	foreach ($rows as $row) {
+      		$ids[] = $row['id'];
+      	}
+      	return $ids;
+      }
       
       // If we have one load it, else loop and load many
       if($one) {
@@ -356,10 +374,11 @@
     * @param integer $current_page Current page number
     * @return array
     */
-    function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
+    function paginate($arguments = null, $items_per_page = 10, $current_page = 1, $count = null) {
       if(!is_array($arguments)) $arguments = array();
       $conditions = array_var($arguments, 'conditions');
-      $pagination = new DataPagination($this->count($conditions), $items_per_page, $current_page);
+      if (defined('INFINITE_PAGING') && INFINITE_PAGING) $count = 10000000;
+      $pagination = new DataPagination($count ? $count : $this->count($conditions), $items_per_page, $current_page);
       
       $arguments['offset'] = $pagination->getLimitStart();
       $arguments['limit'] = $pagination->getItemsPerPage();

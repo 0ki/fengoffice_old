@@ -1,4 +1,5 @@
-<?php	
+<?php 
+	$extra_header = isset($mail_conversation_block) && $mail_conversation_block != '';
 	Hook::fire("render_page_actions", $object, $ret = 0);
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))
@@ -15,7 +16,7 @@
 ?>
 <table style="width:100%" id="<?php echo $genid ?>-co"><tr>
 <td>
-	<table style="width:100%;border-collapse:collapse;">
+	<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
 		
 		<tr>
 			<td class="coViewIcon" colspan=2 rowspan=2>
@@ -24,11 +25,11 @@
 				<?php } ?>
 			</td>
 			
-			<td class="coViewHeader" rowspan="2">
+			<td class="coViewHeader" rowspan=2>
 				<div class="coViewTitleContainer">
 					<div class="coViewTitle">
 						<table><tr><td>
-						<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
+						<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName());?>
 						</td>
 						
 						</tr></table>
@@ -45,7 +46,14 @@
 			
 			<td class="coViewTopRight" style="width:12px"></td>
 		</tr>
-		<tr><td class="coViewRight" rowspan=2 style="width:12px"></td></tr>
+		<tr><td class="coViewRight" rowspan=3 style="width:12px"></td></tr>
+		<tr><td class="coViewHeader coViewSubHeader" style="padding:10px" colspan=3>
+			<?php if (isset($mail_conversation_block) && $mail_conversation_block != '') echo $mail_conversation_block;
+						
+				if($object->isLinkableObject() && !$object->isTrashed())
+					echo render_object_links_main($object, $object->canEdit(logged_user()));
+				  ?>
+		</td></tr>
 		
 		<tr>
 			<td class="coViewBody" colspan=3>
@@ -71,7 +79,7 @@
 			
 			if ($object instanceof ProjectDataObject && $object->allowsTimeslots() && can_manage_time(logged_user()))
 				echo render_object_timeslots($object, $object->getViewUrl());
-			
+				
 			if ($object instanceof ProjectDataObject && $object->isCommentable())
 				echo render_object_comments($object, $object->getViewUrl());
 			?>
@@ -199,10 +207,10 @@
 		</div>
 	<?php } // if ?>
 	
-	<?php if($object->isLinkableObject() && !$object->isTrashed()) {?>
-	
-		<div class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
+	<?php if(false && $object->isLinkableObject() && !$object->isTrashed()) {?>
+		<div id="linked_objects_in_prop_panel" class="prop-col-div" style="width:200;"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
 	<?php } ?>
+	
     <?php if ($object instanceof ProjectDataObject) { ?>
     	<?php if ($object->canEdit(logged_user())) { ?>
     	<script>
@@ -219,7 +227,7 @@
 	                		ok_fn: function() {
 	                			formy = document.getElementById(genid + "add-User-Form");
 	                			var params = Ext.Ajax.serializeForm(formy);
-	            				var options = {};
+	            				var options = {callback: function(){og.redrawSubscribers(id, manager)}};
 	            				options[formy.method.toLowerCase()] = params;
 	            				og.openLink(formy.getAttribute('action'), options);
 	            				og.ExtendedDialog.hide();        			
@@ -232,7 +240,9 @@
     	<?php } ?>
     	</script>
 	<div class="prop-col-div" style="width:200;">
-		<?php echo render_object_subscribers($object)?>
+		<div id="subscribers_in_prop_panel">
+			<?php echo render_object_subscribers($object)?>
+		</div>
 		<?php if ($object->canEdit(logged_user())) {
 			if (count($object->getUserWorkspaces()) > 0)
 				$onclick_fn = "og.show_hide_subscribers_list2('". get_class($object->manager()) ."', '". $object->getId() ."', '". $genid ."');";

@@ -23,15 +23,25 @@ if ($linked_objects_object->isNew()){
 			if (!can_read(logged_user(), $linked_object ) )  //check permissions on other COs
 					continue; 
 		}
+		$object_title = $linked_object->getObjectName();
+		if (strlen($object_title) > 28){
+			$object_title = clean(utf8_substr($object_title,0,26)) . "&hellip;";	
+		} else {
+			$object_title = clean($object_title);
+		}
+		$icon_class = $linked_object->getObjectTypeName();
+		if ($linked_object instanceof ProjectFile)
+			$icon_class = 'file ico-' . str_replace(".", "_", str_replace("/", "-", $linked_object->getTypeString()));
 		$counter++;?>
 		
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 		<td rowspan=2 style="padding-left:1px;vertical-align:middle;width:22px">
 		<?php $attr = 'class="internalLink"'; ?>
-		<a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>">
-		<div class="db-ico unknown ico-<?php echo clean($linked_object->getObjectTypeName()) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
-		</a></td><td><b><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>">
-		<span><?php echo clean($linked_object->getObjectName()) ?></span> </a></b> </td></tr>
+		<a href="<?php echo $linked_object->getObjectUrl() ?>">
+		<div class="db-ico unknown ico-<?php echo clean($icon_class) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
+		
+		</a></td><td><b><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>" title="<?php echo $linked_object->getObjectName() ?>">
+		<span><?php echo $object_title ?></span> </a></b> </td></tr>
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>"><td>
 		<?php if ($linked_object instanceof ProjectFile){ ?>
 			<a target="_self" href="<?php echo $linked_object->getDownloadUrl() ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
@@ -40,7 +50,8 @@ if ($linked_objects_object->isNew()){
 			<a target="_blank" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |
 		<?php }
 		if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 
-			echo '<a class="internalLink" href="' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm unlink object')) . '\')" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';
+			$action = 'og.openLink(\'' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '&dont_reload=1\', {callback: function(){ og.redrawLinkedObjects('. $linked_objects_object->getId() .', \''. get_class($linked_objects_object->manager()) . '\')}});';
+			echo '<a class="internalLink" href="#"' . '" onclick="if (confirm(\'' . escape_single_quotes(lang('confirm unlink object')) . '\')){'.$action.'}" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';
 		} ?>
 		</td></tr>
 		

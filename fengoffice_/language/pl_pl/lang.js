@@ -150,7 +150,7 @@ addLangs({
 	'ok': 'OK',
 	'cancel': 'Anuluj',
 	'email': 'E-mail',
-	'email tab': 'Email (BETA)',
+	'email tab': 'Email',
 	'add new contact': 'Dodaj nowy kontakt',
 	'displaying contacts of': 'Wyświetlane kontakty {0} do {1} z {2}',
 	'no contacts to display': 'Brak kontaktów do wyświetlenia',
@@ -603,5 +603,10 @@ addLangs({
 	'edit selected event': 'Edytuj wybrane zdarzenia',
 	'apply milestone to subtasks': 'Przypisz zadania podrzędne do etapu',
 	'apply workspace to subtasks': 'Przypisz zadania podrzędne do projektu',
-	'click here to download the csv file': 'Kliknij tutaj aby pobrać plik csv'
+	'click here to download the csv file': 'Kliknij tutaj aby pobrać plik csv',
+	'confirm inherit permissions': 'Czy chcesz odziedziczyć wszystkie uprawnienia z projektu nadrzędnego?',
+	'classify mail attachments': 'Klasyfikuj załączniki poczty',
+	'do you want to classify the unclassified emails attachments': 'Czy chcesz dodać nowy dokument dla każdego załącznika tych niesklasyfikowanych wiadomości?',
+	'task milestone does not belong to workspace': 'Etap zadania nie należy do projektu docelowego, jeśli chcesz kontynuować pamiętaj, że zadanie zostanie oddzielone od swojego etapu. Czy na pewno chcesz kontynuować?',
+	'task milestone workspace inconsistency': 'UWAGA: ta operacja ustawi projekt zadania na ten, do którego należy wybrany etap. Czy na pewno chcesz kontynuować?'
 });

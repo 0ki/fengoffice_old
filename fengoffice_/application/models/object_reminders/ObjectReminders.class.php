@@ -33,6 +33,19 @@ class ObjectReminders extends BaseObjectReminders {
 		return $reminders;
 	}
 	
+	/**
+	 * Returns reminders for an object
+	 * @param $object
+	 * @return unknown_type
+	 */
+	function getByObject($object) {
+		return self::findAll(array(
+			'conditions' => array("`object_id` = ? AND `object_manager` = ?",
+				$object->getId(),
+				get_class($object->manager())
+		)));
+	}
+	
 	function getDueReminders($type = null) {
 		if (isset($type)) {
 			$extra = ' AND `type` = ' . DB::escape($type);
@@ -40,7 +53,7 @@ class ObjectReminders extends BaseObjectReminders {
 			$extra = "";
 		}
 		return ObjectReminders::findAll(array('conditions' => array(
-			'`date` < ?' . $extra, DateTimeValueLib::now()
+			"`date` > '0000-00-00 00:00:00' AND `date` < ?" . $extra, DateTimeValueLib::now()
 		)));
 	}
 	

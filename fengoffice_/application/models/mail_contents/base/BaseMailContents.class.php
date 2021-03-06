@@ -40,7 +40,12 @@ abstract class BaseMailContents extends ProjectDataObjects {
     'trashed_by_id' => DATA_TYPE_INTEGER,
 	'imap_folder_name' => DATA_TYPE_STRING,
 	'account_email' => DATA_TYPE_STRING,
-	'content_file_id' => DATA_TYPE_STRING
+	'content_file_id' => DATA_TYPE_STRING,
+    'archived_on' => DATA_TYPE_DATETIME,
+    'archived_by_id' => DATA_TYPE_INTEGER,
+	'message_id' => DATA_TYPE_STRING,
+	'conversation_id' => DATA_TYPE_STRING,
+	'in_reply_to_id' => DATA_TYPE_STRING,
 	);
 
 	/**
@@ -114,7 +119,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
 	 */
 	function getSystemColumns() {
 		return array_merge(parent::getSystemColumns(), array(
-      	'account_id', 'uid', 'content_file_id')
+      	'message_id', 'conversation_id', 'in_reply_to_id', 'account_id', 'uid', 'content_file_id')
 		);
 	} // getSystemColumns
 	
@@ -281,11 +286,11 @@ abstract class BaseMailContents extends ProjectDataObjects {
 	 * @param integer $current_page Current page number
 	 * @return array
 	 */
-	function paginate($arguments = null, $items_per_page = 10, $current_page = 1) {
+	function paginate($arguments = null, $items_per_page = 10, $current_page = 1, $count = null) {
 		if(isset($this) && instance_of($this, 'MailContents')) {
-			return parent::paginate($arguments, $items_per_page, $current_page);
+			return parent::paginate($arguments, $items_per_page, $current_page, $count);
 		} else {
-			return MailContents::instance()->paginate($arguments, $items_per_page, $current_page);
+			return MailContents::instance()->paginate($arguments, $items_per_page, $current_page, $count);
 			//$instance =& MailContents::instance();
 			//return $instance->paginate($arguments, $items_per_page, $current_page);
 		} // if

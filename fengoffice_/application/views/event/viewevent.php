@@ -22,6 +22,11 @@ if (isset($event) && $event instanceof ProjectEvent) {
 	if (!$event->isTrashed()){
 		if ($event->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $event->getEditUrl()."&view=$view&user_id=$user_id", 'ico-edit', null, null, true);
+			
+			if (!$event->isArchived())
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $event->getArchiveUrl() ."');", 'ico-archive-obj');
+			else
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $event->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
 		}
 	}
 		

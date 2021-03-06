@@ -6,6 +6,7 @@ return array(
 		'og/extfix.js',
 		'og/Helpers.js',
 		'og/og.js',
+		'og/InfinitePagingToolbar.js',
 		'og/HttpProvider.js',
 		'og/GooProxy.js',
 		'og/QuickAdd.js',

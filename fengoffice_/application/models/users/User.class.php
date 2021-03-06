@@ -14,6 +14,13 @@ class User extends BaseUser {
 	 * @var boolean
 	 */
 	protected $is_searchable = true;
+	
+	/**
+	 * Users are not linkable
+	 *
+	 * @var boolean
+	 */
+	protected $is_linkable_object = false;
 
 	/**
     * This project object is taggable
@@ -186,7 +193,17 @@ class User extends BaseUser {
    		}
         parent::save();
     }
-
+    
+    /**
+    * Returns true if user has at least one email account.
+    *
+    * @access public
+    * @return boolean
+    */
+    function hasEmailAccounts() {
+    	$accounts = MailAccounts::find(array('conditions' => '`user_id` = '.$this->getId()));
+    	return is_array($accounts) && count($accounts) > 0;
+    } // hasEmailAccounts
 
 	/**
 	 * Construct user object
@@ -471,13 +488,9 @@ class User extends BaseUser {
 	 */
 	function getActiveProjectIdsCSV() {
 		if (is_null($this->active_projects_ids)) {
-			$active_proj = $this->getWorkspaces();
-			if (!is_null($active_proj)) {
-				$list = array();
-				foreach ($active_proj as $p) {
-					$list[] = $p->getId();
-				}
-				$this->active_projects_ids = implode(',', $list);
+			$ids = ProjectUsers::getProjectIdsByUser($this);
+			if (count($ids) > 0) {
+				$this->active_projects_ids = implode(',', $ids);
 			} else { 
 				$this->active_projects_ids = "0";
 			}
@@ -490,6 +503,7 @@ class User extends BaseUser {
 	 * @return string
 	 */
 	function getWorkspacesQuery() {
+		//return $this->getActiveProjectIdsCSV();
 		$project_users_table =  ProjectUsers::instance()->getTableName(true);
 		$group_users_table = GroupUsers::instance()->getTableName(true);
 		
@@ -671,10 +685,22 @@ class User extends BaseUser {
 			Env::useLibrary('simplegd');
 
 			$image = new SimpleGdImage($source);
-			$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
-			$thumb->saveAs($temp_file, IMAGETYPE_PNG);
+	        if ($image->getImageType() == IMAGETYPE_PNG) {
+	        	if ($image->getHeight() > 128 || $image->getWidth() > 128) {
+		        	//	resize images if are png bigger than 128 px
+	        		$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
+	        		$thumb->saveAs($temp_file, IMAGETYPE_PNG);
+	        		$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
+	        	}else{
+	        		//keep the png as it is.
+	        		$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
+	        	}
+	        } else {
+	        	$thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
+	        	$thumb->saveAs($temp_file, IMAGETYPE_PNG);
+	        	$public_fileId = FileRepository::addFile($temp_file, array('type' => 'image/png', 'public' => true));
+	        }
 			
-			$public_fileId = FileRepository::addFile($temp_file,array('type'=>$fileType));
 			if($public_fileId) {
 				$this->setAvatarFile($public_fileId);
 				if($save) {
@@ -1287,6 +1313,7 @@ class User extends BaseUser {
 
 		$this->deleteAvatar();
 		//$this->deletePersonalProject();
+		MailAccountUsers::deleteByUser($this);
 		GroupUsers::clearByUser($this);
 		Contacts::updateUserIdOnUserDelete($this->getId());
 		ProjectUsers::clearByUser($this);
@@ -1359,7 +1386,21 @@ class User extends BaseUser {
 			return true;
 		}//if
 		return false;
-	} // canView	    
+	} // canView
+
+	/**
+	 * Array of email accounts
+	 *
+	 * @var array
+	 */
+	protected $mail_accounts;
+	
+	function hasMailAccounts(){
+		if(is_null($this->mail_accounts))
+			$this->mail_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		return is_array($this->mail_accounts) && count($this->mail_accounts) > 0;
+	}
+	
 } // User
 
 ?>

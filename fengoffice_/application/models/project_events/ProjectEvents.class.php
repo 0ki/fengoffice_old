@@ -23,7 +23,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null, $user = -1, $inv_state = '-1'){
+	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null, $user = -1, $inv_state = '-1', $archived = false){
 		$day = $date->getDay();
 		$month = $date->getMonth();
 		$year = $date->getYear();
@@ -60,21 +60,34 @@ class ProjectEvents extends BaseProjectEvents {
 		} else {
 			$tag_str = "";
 		}
+		
+		$first_d = $day;
+		while($first_d > 7) $first_d -= 7;
+		$week_of_first_day = date("W", mktime(0,0,0, $month, $first_d, $year));
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		$conditions = "	(
 				-- 
 				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
 				-- 
 				(
-					`duration` > `start` AND `start` >= '$start_date_str' AND `duration` <= '$nextday_date_str'
-					OR 
-					`type_id` = 2 AND `start` >= '$start_date_str' AND `start` < '$nextday_date_str'
+					`repeat_h` = 0 
+					AND
+					(
+						`duration` > `start` AND (`start` >= '$start_date_str' AND `start` < '$nextday_date_str' OR `duration` <= '$nextday_date_str' AND `duration` > '$start_date_str' OR `start` < '$start_date_str' AND `duration` > '$nextday_date_str')
+						OR 
+						`type_id` = 2 AND `start` >= '$start_date_str' AND `start` < '$nextday_date_str'
+					)
 				) 
 				-- 
 				-- THIS RETURNS REGULAR REPEATING EVENTS - DAILY, WEEKLY, MONTHLY, OR YEARLY.
 				-- 
 				OR 
 				(
+					`repeat_h` = 0 
+					AND
 					DATE(`start`) <= '$start_date_str' 
 					AND
 					(
@@ -120,46 +133,24 @@ class ProjectEvents extends BaseProjectEvents {
 					)		
 				)
 				-- 
-				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK OF THE MONTH NUMBERED 1-4
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK EVERY CERTAIN AMOUNT OF MONTHS
 				-- 
 				OR
 				(
-					repeat_h = 1
+					DATE(`start`) <= '$start_date_str'
 					AND
-					`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 MONTH)
-					AND 
-					(
-						(
-							DAYOFWEEK('$year-$month-01') <= DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )
-							AND 
-							( DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) - (DAYOFWEEK('$year-$month-01') - 1) + ( FLOOR((DAY( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )-1)/7) * 7) ) = $day
-						)
-						OR
-						(
-							DAYOFWEEK('$year-$month-01') > DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )
-							AND 
-							( ( 7 - ( DAYOFWEEK('$year-$month-01') - 1 ) + DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) ) + ( FLOOR((DAY( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )-1)/7) * 7 ) ) = $day
-						)
-					)			
-				)
-				-- 
-				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN THE LAST WEEK OF THE MONTH.
-				-- 
-				OR
-				(
-					repeat_h = 2
+					`repeat_h` = 1 
 					AND
-					`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 MONTH)
-					AND 
-					DAY('$year-$month-$day') > (DAY(LAST_DAY('$year-$month-$day')) - 7) 
-					AND 
-					DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) = DAYOFWEEK('$year-$month-$day')
+					`repeat_dow` = DAYOFWEEK('$start_date_str') 
+					AND
+					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
+					AND
+					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
 				)
 			)
 			$limitation
 			$permissions
-			$tag_str ";
-
+			$tag_str $archived_cond";
 
 			$result_events = self::findAll(array(
 				'conditions' => $conditions,
@@ -204,7 +195,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getRangeProjectEvents(DateTimeValue $start_date, DateTimeValue $end_date,  $tags = '', $project = null){
+	static function getRangeProjectEvents(DateTimeValue $start_date, DateTimeValue $end_date,  $tags = '', $project = null, $archived = false){
 
 		$start_year = date("Y",mktime(0,0,1,$start_date->getMonth(), $start_date->getDay(), $start_date->getYear()));
 		$start_month = date("m",mktime(0,0,1,$start_date->getMonth(), $start_date->getDay(), $start_date->getYear()));
@@ -234,6 +225,9 @@ class ProjectEvents extends BaseProjectEvents {
 		} else {
 			$tag_str= "";
 		}
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		$tz_hm = "'" . floor(logged_user()->getTimezone()) . ":" . (abs(logged_user()->getTimezone()) % 1)*60 . "'";
 
@@ -243,13 +237,18 @@ class ProjectEvents extends BaseProjectEvents {
 
 		$start_date_str = $s_date->format("Y-m-d H:i:s");
 		$end_date_str = $e_date->format("Y-m-d H:i:s");
+		
+		$first_d = $start_day;
+		while($first_d > 7) $first_d -= 7;
+		$week_of_first_day = date("W", mktime(0,0,0, $start_month, $first_d, $start_year));
 
 		$conditions = "	((
 				-- 
 				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
 				-- 
 				(
-					duration >= '$start_date_str' 
+					`repeat_h` = 0 
+					AND `duration` >= '$start_date_str' 
 					AND `start` < '$end_date_str' 
 				) 
 				-- 
@@ -257,6 +256,8 @@ class ProjectEvents extends BaseProjectEvents {
 				-- 
 				OR 
 				(
+					`repeat_h` = 0 
+					AND
 					DATE(`start`) < '$end_date_str'
 					AND
 					(							
@@ -286,55 +287,34 @@ class ProjectEvents extends BaseProjectEvents {
 					)		
 				)
 				-- 
-				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK OF THE MONTH NUMBERED 1-4
+				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN A CERTAIN WEEK EVERY CERTAIN AMOUNT OF MONTHS
 				-- 
 				OR
 				(
-					repeat_h = 1
+					DATE(`start`) <= '$start_date_str'
 					AND
-					`start` >= '$start_date_str' AND `start` < ADDDATE('$start_date_str', INTERVAL 1 MONTH)
-					AND 
-					(
-						(
-							DAYOFWEEK('$start_year-$start_month-01') <= DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )
-							AND 
-							( DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) - (DAYOFWEEK('$start_year-$start_month-01') - 1) + ( FLOOR((DAY( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )-1)/7) * 7) ) = $start_day
-						)
-						OR
-						(
-							DAYOFWEEK('$start_year-$start_month-01') > DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )
-							AND 
-							( ( 7 - ( DAYOFWEEK('$start_year-$start_month-01') - 1 ) + DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) ) + ( FLOOR((DAY( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) )-1)/7) * 7 ) ) = $start_day
-						)
-					)			
-				)
-				-- 
-				-- THIS RETURNS EVENTS SET TO BE A CERTAIN DAY OF THE WEEK IN THE LAST WEEK OF THE MONTH.
-				-- 
-				OR
-				(
-					repeat_h = 2
+					`repeat_h` = 1 
 					AND
-					MONTH(`start`) = $start_month 
-					AND 
-					DAY('$start_year-$start_month-$start_day') > (DAY(LAST_DAY('$start_year-$start_month-$start_day')) - 7) 
-					AND 
-					DAYOFWEEK( ADDDATE(`start`, INTERVAL $tz_hm HOUR_MINUTE) ) = DAYOFWEEK('$start_year-$start_month-$start_day')
+					`repeat_dow` = DAYOFWEEK('$start_date_str') 
+					AND
+					`repeat_wnum` + $week_of_first_day - 1 = WEEK('$start_date_str', 3) 
+					AND
+					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
 				)				
-				)
-				$limitation
-				$permissions
-				$tag_str )";
+			)
+			$limitation
+			$permissions
+			$tag_str $archived_cond )";
 
-				$result_events = self::findAll(array(
-					'conditions' => $conditions,
-					'order' => '`start`',
-				));
+		$result_events = self::findAll(array(
+			'conditions' => $conditions,
+			'order' => '`start`',
+		));
 
-				// Find invitations for events and logged user
-				ProjectEvents::addInvitations($result_events);
+		// Find invitations for events and logged user
+		ProjectEvents::addInvitations($result_events);
 
-				return $result_events;
+		return $result_events;
 	}
 
 	static function addInvitations($result_events, $user_id = -1) {
@@ -355,13 +335,17 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getAllEventsByProject($project = null) {
+	static function getAllEventsByProject($project = null, $archived = false) {
 		if ($project instanceof Project) {
 			$pids = $project->getAllSubWorkspacesQuery(true, logged_user());
 		} else {
 			$pids = logged_user()->getWorkspacesQuery();
 		}
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		
 		$cond_str = self::getWorkspaceString($pids);
+		$cond_str .= $archived_cond;
 		$result_events = self::findAll(array(
 			'conditions' => array($cond_str)
 		)); // findAll

@@ -453,6 +453,45 @@ abstract class BaseMailAccount extends DataObject {
 	function setSignature($value) {
 		return $this->setColumnValue('signature', $value);
 	} // setSignature()
+
+	/**
+	 * Return value of 'workspace' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getWorkspaceId() {
+		return $this->getColumnValue('workspace');
+	} // getWorkspaceId()
+
+	/**
+	 * Set value of 'workspace' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setWorkspaceId($value) {
+		return $this->setColumnValue('workspace', $value);
+	} // setWorkspaceId()
+	
+	/**
+	 * Return value of 'sender_name' field
+	 * @return string
+	 */
+	function getSenderName() {
+		return $this->getColumnValue('sender_name');
+	}
+	
+	/**
+	 * Set value of 'sender_name' field
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setSenderName($value) {
+		return $this->setColumnValue('sender_name', $value);
+	}
 	
 	/**
 	 * Return manager instance

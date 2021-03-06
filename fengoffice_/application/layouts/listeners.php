@@ -52,17 +52,20 @@ og.eventManager.addListener('popup',
 	}
 );
 
-og.eventManager.addListener('user config localization changed',
-	function(val) {
-		og.loadScripts([og.getUrl('access', 'get_javascript_translation')], {
-			callback: function() {
-				var spans = document.getElementsByName('og-lang');
-				for (var i=0; i < spans.length; i++) {
-					var key = spans[i].id.substring(8);
-					spans[i].innerHTML = lang(key);
+og.eventManager.addListener('user preference changed',
+	function(option) {
+		// experimental (not developed): dynamically change localization
+		if (option.name == 'localization') {
+			og.loadScripts([og.getUrl('access', 'get_javascript_translation')], {
+				callback: function() {
+					var spans = document.getElementsByName('og-lang');
+					for (var i=0; i < spans.length; i++) {
+						var key = spans[i].id.substring(8);
+						spans[i].innerHTML = lang(key);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 );
 
@@ -76,13 +79,15 @@ og.eventManager.addListener('download document',
 	}
 );
 
-og.eventManager.addListener('config checkout_notification_dialog changed',
-	function(val) {
-		if (val == "true") {
-			og.showCheckoutNotification = true;
-		} else {
-			og.showCheckoutNotification = false;
-		}
+og.eventManager.addListener('config option changed',
+	function(option) {
+		og.config[option.name] = option.value;
+	}
+);
+
+og.eventManager.addListener('user preference changed',
+	function(option) {
+		og.preferences[option.name] = option.value;
 	}
 );
 </script>

@@ -267,3 +267,10 @@ span.required {
 	width: 100px;
 	margin-right: 10px;
 }
+
+#reset_password_new {
+	margin-top: 20px;
+}
+#reset_password_repeat {
+	margin-bottom: 20px;
+}

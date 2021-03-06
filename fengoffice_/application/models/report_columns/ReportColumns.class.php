@@ -30,7 +30,7 @@ class ReportColumns extends BaseReportColumns {
 		$colNames = array();
 		$columns = self::findAll(array(
 			'conditions' => array("`report_id` = ? AND `field_name` != '' AND `custom_property_id` = 0", $report_id),
-			'order' => '`field_name` asc'
+			'order' => '`id` asc'
 		)); // findAll
 		foreach($columns as $col){
 			$colNames[] = $col->getFieldName();

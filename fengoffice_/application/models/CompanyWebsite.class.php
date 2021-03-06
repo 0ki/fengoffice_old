@@ -117,8 +117,11 @@ final class CompanyWebsite {
 			return false; // failed to validate token
 		} // if
 
-		$session_expires = $user->getLastActivity()->advance(SESSION_LIFETIME, false);
-		if(DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
+		$last_act = $user->getLastActivity();
+		if ($last_act) {
+			$session_expires = $last_act->advance(SESSION_LIFETIME, false);
+		}
+		if(!$last_act || DateTimeValueLib::now()->getTimestamp() < $session_expires->getTimestamp()) {
 			$this->setLoggedUser($user, $remember, true);
 		} else {
 			$this->logUserIn($user, $remember);

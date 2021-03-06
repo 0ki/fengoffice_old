@@ -240,4 +240,6 @@
 	'edit default user preferences' => 'Edycja domyślnych ustawień użytkownika',
 	'default user preferences' => 'Domyślne ustawienia użytkownika',
 	'default user preferences desc' => 'Wybierz domyślne ustawienia użytkownika. Zostaną one użyte dla opcji/funkcji których użytkownik nie ustawił jeszcze samodzielnie.',
+	'config option name smtp_address' => 'Adres SMTP',
+	'config option desc smtp_address' => 'Opcjonalne. Niektóre serwery wymagają użycia adresu e-mail konta znajdującego się na danym serwerze aby można było wysyłać pocztę. Pozostaw puste aby użyć adresu e-mail użytkownika.',
 ); ?>

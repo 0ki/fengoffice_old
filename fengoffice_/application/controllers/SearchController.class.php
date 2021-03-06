@@ -38,10 +38,15 @@ class SearchController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
+			$search_results = $this->searchWorkspaces($search_for,$search_results,5);
+			$search_results = $this->searchUsers($search_for,$search_results,5);
+			$search_results = $this->searchContacts($search_for,$search_results,5);
+			
 			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesQuery(true, logged_user());
-			} else { 
-				$projects = logged_user()->getWorkspacesQuery();
+				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+			} else {
+				$projects = logged_user()->getActiveProjectIdsCSV();
+				//$projects = logged_user()->getWorkspacesQuery();
 			}
 			
 			$c = 0;
@@ -59,9 +64,6 @@ class SearchController extends ApplicationController {
 				}
 				$c++;
 			}
-			$search_results = $this->searchContacts($search_for,$search_results,5);
-			$search_results = $this->searchWorkspaces($search_for,$search_results,5);
-			$search_results = $this->searchUsers($search_for,$search_results,5);
 		} // if
 		$timeEnd = microtime(true);
 		
@@ -77,9 +79,10 @@ class SearchController extends ApplicationController {
 			$search_results = array();
 		
 		if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-			$projects = active_project()->getAllSubWorkspacesQuery(true,logged_user());
+			$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 		} else {
-			$projects = logged_user()->getWorkspacesQuery();
+			$projects = logged_user()->getActiveProjectIdsCSV();
+			//$projects = logged_user()->getWorkspacesQuery();
 		}
 			
 		$results = SearchableObjects::searchByType($search_term, $projects, 'Contacts', true, $row_count);
@@ -178,13 +181,15 @@ class SearchController extends ApplicationController {
 			$pagination = null;
 		} else {
 			if (array_var($_GET, 'search_all_projects') != "true" && active_project() instanceof Project) {
-				$projects = active_project()->getAllSubWorkspacesQuery(true,logged_user());
-			} else { 
-				$projects = logged_user()->getWorkspacesQuery();
+				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
+			} else {
+				$projects = logged_user()->getActiveProjectIdsCSV();
+				//$projects = logged_user()->getWorkspacesQuery();
 			}
 				
 			switch($manager) {
 				case 'Contacts':
+				case 'Companies':
 					$search_results = $this->searchContacts($search_for, array(), 20);
 					break;
 				case 'Projects':

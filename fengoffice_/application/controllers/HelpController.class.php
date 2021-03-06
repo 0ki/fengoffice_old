@@ -19,6 +19,10 @@ class HelpController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 	
+	function index() {
+		
+	}
+	
 	function view_message(){
 		
 	}

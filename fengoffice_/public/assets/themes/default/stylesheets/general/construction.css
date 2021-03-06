@@ -120,43 +120,10 @@
 	width: 120px;
 }
 
-#searchboxSearch button {
-	width: 60px;
-	height: 20px;
-	border: 1px solid #666;
-	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
-}
-
 .ico-quick-add {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -599px !important;
 }
-.quickAddButton {
-	width: 60px;
-	height: 18px;
-	border: 1px solid #666;
-	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -43px !important;
-}
 
-.quickAddButton .x-btn-left{
-	background: transparent !important;
-	height:19px;
-}
-.quickAddButton .x-btn-center{
-	background: transparent !important;
-}
-.quickAddButton .x-btn-center button{
-	padding-left:18px;
-	background-image: url(../../images/16x16/add.png) !important;
-	background-repeat: no-repeat;
-}
-.quickAddButton .x-btn-right{
-	background: transparent !important;
-	height:19px;
-}
-
-#searchboxSearch button:hover {
-	border: 1px solid deepskyblue;
-}
 
 #userboxWrapper {
 	position: absolute;
@@ -389,6 +356,9 @@ div.card {
 div.card div.cardIcon {
 	float: left;
 	width: 50px;
+}
+.cardIcon img{
+	max-width: 50px;
 }
 
 div.card div.cardData {

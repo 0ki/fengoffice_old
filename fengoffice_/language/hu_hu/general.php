@@ -175,7 +175,7 @@
 	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Biztosan a kukába dobja a kiválasztott elemeket?',
 	
-	'remove' => 'Eltávolít',
+	'remove' => 'Eltávolít'
 
 	
 ); ?>

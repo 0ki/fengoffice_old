@@ -56,10 +56,8 @@ class TimeController extends ApplicationController {
 		
 		//Active tasks view
 		$tasks = ProjectTasks::getOpenTimeslotTasks($tasksUser,logged_user());
+		ProjectTasks::populateData($tasks);
 		$tasks_array = array();
-		if ($tasks && count($tasks) > 0){
-			ProjectTasks::populateTimeslots($tasks);
-		}
 		
 		//Timeslots view
 		switch ($showTimeType){

@@ -64,7 +64,7 @@ class ConfigController extends ApplicationController {
 
 				$option->setValue($new_value);
 				$option->save();
-				evt_add("config ".$option->getName()." changed", $option->getValue());
+				evt_add("config option changed", array('name' => $option->getName(), 'value' => $option->getValue()));
 			} // foreach
 			flash_success(lang('success update config category', $category->getDisplayName()));
 			ajx_current("back");
@@ -113,6 +113,9 @@ class ConfigController extends ApplicationController {
 
 					$option->setValue($new_value);
 					$option->save();
+					if (!user_has_config_option($option->getName())) {
+						evt_add('user preference changed', array('name' => $option->getName(), 'value' => $new_value));
+					}
 				} // foreach
 				DB::commit();
 				flash_success(lang('success update config value', $category->getDisplayName()));

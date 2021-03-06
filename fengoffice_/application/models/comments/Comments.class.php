@@ -30,6 +30,27 @@
     } // getCommentsByObject
     
     /**
+    * Return object comments for objects sharing the same manager type
+    *
+    * @param ProjectDataObject $object
+    * @param boolean $exclude_private Exclude private comments
+    * @return array
+    */
+    static function getCommentsByObjectIds($object_ids, $object_manager, $exclude_private = false) {
+      if($exclude_private) {
+        return self::findAll(array(
+          'conditions' => array('`rel_object_id` IN(' . $object_ids . ') AND `rel_object_manager` = ? AND `is_private` = ?', $object_manager, 0),
+          'order' => '`created_on`'
+        )); // array
+      } else {
+        return self::findAll(array(
+          'conditions' => array('`rel_object_id` IN(' . $object_ids . ') AND `rel_object_manager` = ?', $object_manager),
+          'order' => '`created_on`'
+        )); // array
+      } // if
+    } // getCommentsByObject
+    
+    /**
     * Return number of comments for specific object
     *
     * @param ProjectDataObject $object

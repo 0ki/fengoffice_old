@@ -2,7 +2,7 @@ og.DateField = function(config) {
 	if (!config) config = {};
 	
 	Ext.apply(this, config, {
-		format: og.date_format,
+		format: og.preferences['date_format'],
 		altFormats: lang('date format alternatives'),
 		width: 120
 	});
@@ -38,7 +38,7 @@ Ext.extend(og.DateField, Ext.form.DateField,{
             showToday : this.showToday,
             minText : String.format(this.minText, this.formatDate(this.minValue)),
             maxText : String.format(this.maxText, this.formatDate(this.maxValue)),
-            startDay: og.calendar_start_day
+            startDay: og.preferences['start_monday']
         });
         this.menu.on(Ext.apply({}, this.menuListeners, {
             scope:this

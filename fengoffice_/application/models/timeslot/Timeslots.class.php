@@ -121,7 +121,7 @@ class Timeslots extends BaseTimeslots {
 		switch($timeslot_type){
 			case 0: //Task timeslots
 				$from = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX . "project_tasks` AS `pt`, `" . TABLE_PREFIX ."projects` AS `pr`, `" . TABLE_PREFIX ."workspace_objects` AS `wo`";
-				$conditions = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
+				$conditions = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `pt`.`archived_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
 				$conditions .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
 				
@@ -138,7 +138,7 @@ class Timeslots extends BaseTimeslots {
 				$from1 = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX . "project_tasks` AS `pt`, `" . TABLE_PREFIX ."projects` AS `pr`, `" . TABLE_PREFIX ."workspace_objects` AS `wo`";
 				$from2 = "`" . TABLE_PREFIX . "timeslots` AS `ts`, `" . TABLE_PREFIX ."projects` AS `pr`";
 				
-				$conditions1 = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
+				$conditions1 = " WHERE `ts`.`object_manager` = 'ProjectTasks'  AND `pt`.`id` = `ts`.`object_id` AND `pt`.`trashed_by_id` = 0 AND `pt`.`archived_by_id` = 0 AND `wo`.`object_manager` = 'ProjectTasks' AND `wo`.`object_id` = `ts`.`object_id` AND `wo`.`workspace_id` = `pr`.`id`";
 				//Project condition
 				$conditions1 .= $workspacesCSV ? ' AND `pr`.`id` IN (' . $workspacesCSV . ')' : '';
 				
@@ -198,6 +198,64 @@ class Timeslots extends BaseTimeslots {
 		} // if
 		
     	return count($timeslots) ? $timeslots : null;
+	}
+	
+	/**
+	 * This function sets the selected billing values for all timeslots which lack any type of billing values (value set to 0). 
+	 * This function is used when users start to use billing in the system.
+	 * 
+	 * @return unknown_type
+	 */
+	static function updateBillingValues(){
+		$timeslots = Timeslots::findAll(array('conditions' => '`end_time` > 0 AND billing_id = 0 AND is_fixed_billing = 0 AND (object_manager = \'ProjectTasks\' OR object_manager = \'Projects\')', 
+			'limit' => 500));
+		
+		$users = Users::findAll();
+		$usArray = array();
+		foreach ($users as $u){
+			$usArray[$u->getId()] = $u;
+		}
+		$pbidCache = array();
+		$count = 0;
+		foreach ($timeslots as $ts){
+		    $user = $usArray[$ts->getUserId()];
+		    if (isset($user) && $user){
+				$billing_category_id = $user->getDefaultBillingId();
+				if ($billing_category_id > 0){
+					$object = $ts->getObject();
+					//Set billing info
+					if (($object instanceof ProjectDataObject && $object->getProject() instanceof Project) || ($object instanceof Project)){
+						$hours = $ts->getMinutes() / 60;
+						if ($object instanceof Project)
+							$project = $object;
+						else
+							$project = $object->getProject();
+						
+						$ts->setBillingId($billing_category_id);
+						if (!isset($pbidCache[$project->getId()]))
+							$pbidCache[$project->getId()] = array();
+							
+						if (isset($pbidCache[$project->getId()][$billing_category_id]))
+							$hourly_billing = $pbidCache[$project->getId()][$billing_category_id];
+						else{
+							$hourly_billing = $project->getBillingAmount($billing_category_id);
+							$pbidCache[$project->getId()][$billing_category_id] = $hourly_billing;
+						}
+						
+						$ts->setHourlyBilling($hourly_billing);
+						$ts->setFixedBilling(round($hourly_billing * $hours,2));
+						$ts->setIsFixedBilling(false);
+						
+						$ts->save();
+						$count ++;
+					}
+				}
+			} else {
+				$ts->setIsFixedBilling(true);
+				$ts->save();
+			}
+		}
+		return $count;
 	}
 	
 	static function getTimeslotsByUserWorkspacesAndDate(DateTimeValue $start_date, DateTimeValue $end_date, $object_manager, $user = null, $workspacesCSV = null, $object_id = 0){

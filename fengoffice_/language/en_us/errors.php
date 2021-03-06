@@ -177,9 +177,12 @@
   	'no files to compress' => 'No files to compress',
   
   	//Subscribers
+  	
   	'cant modify subscribers' => 'Cannot modify subscribers',
   	'this object must belong to a ws to modify its subscribers' => 'This object must belong to a workspace to modify its subscribers.',
-    
+
+  	'mailAccount dnx' => 'Email account does not exist',
+  	'error add contact from user' => 'Could not add contact from user.',
   ); // array
 
 ?>

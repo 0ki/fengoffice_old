@@ -338,6 +338,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 	
 	if(connection_status() != 0) return false; // check connection
 
+	/*
 	if($force_download) {
 		header("Cache-Control: public");
 	} else {
@@ -345,6 +346,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 		header("Cache-Control: post-check=0, pre-check=0", false);
 		header("Pragma: no-cache");
 	} // if
+	*/
 	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 	header("Content-Type: $type");
@@ -372,6 +374,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 function download_contents($content, $type, $name, $size, $force_download = false) {
 	if(connection_status() != 0) return false; // check connection
 
+	/*
 	if($force_download) {
 		header("Cache-Control: public");
 	} else {
@@ -379,6 +382,7 @@ function download_contents($content, $type, $name, $size, $force_download = fals
 		header("Cache-Control: post-check=0, pre-check=0", false);
 		header("Pragma: no-cache");
 	} // if
+	*/
 	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 	header("Content-Type: $type");
@@ -392,6 +396,28 @@ function download_contents($content, $type, $name, $size, $force_download = fals
 
 	return((connection_status() == 0) && !connection_aborted());
 } // download_contents
+
+/**
+ * Download a file from the file repository.
+ * 
+ * @param string $id
+ * @param string $type
+ * @param string $name
+ * @param boolean $force_download
+ * @return boolean
+ */
+function download_from_repository($id, $type, $name, $force_download = false) {
+	if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
+		$path = FileRepository::getBackend()->getFilePath($id);
+		if (is_file($path)) {
+			// this method allows downloading big files without exhausting php's memory
+			return download_file($path, $type, $name, $force_download);
+		}
+	} else {
+		$content = FileRepository::getBackend()->getFileContent($id);
+		return download_contents($content, $type, $name, strlen($content), $force_download);
+	}
+}
 
 /**
  * This function is used for sorting list of files.

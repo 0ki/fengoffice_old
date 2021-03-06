@@ -189,4 +189,11 @@
 	'field Projects completed_by_id' => 'Zakończony przez',
 	'field MailContents cc' => 'Kopia dla:',
 	'field MailContents bcc' => 'Ukryta kopia dla:',
+	'field ProjectTasks repeat_by' => 'Powtarzaj wg',
+	'field ProjectTasks repeat_end' => 'Koniec powtarzania',
+	'field ProjectTasks repeat_num' => 'Ilość powtórzeń',
+	'field ProjectTasks repeat_forever' => 'Powtarzaj ciągle',
+	'field ProjectTasks repeat_d' => 'Dzień powtórzenia',
+	'field ProjectTasks repeat_m' => 'Miesiąc powtórzenia',
+	'field ProjectTasks repeat_y' => 'Rok powtórzenia',
 ); ?>

@@ -14,6 +14,13 @@
 <?php
 $installed_version = installed_version();
 $product_version = include ROOT . '/version.php';
+if (!is_array($form_data)) {
+	$form_data = array(
+		'upgrade_from' => $installed_version,
+		'upgrade_to' => $product_version,
+	);
+}
+if (array_var($form_data, 'upgrade_from') == 'unknown') $form_data['upgrade_from'] = '1.1';
 $scripts = $upgrader->getScriptsSince($installed_version);
 if (count($scripts) > 0) {
 ?>
@@ -29,7 +36,7 @@ if (count($scripts) > 0) {
             <td>
               <select name="form_data[upgrade_from]" id="upgradeFormFrom">
 	<?php foreach($scripts as $script) { ?>
-                <option <?php if ($script->getVersionFrom() == "1.1") echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
+                <option <?php if ($script->getVersionFrom() == array_var($form_data, 'upgrade_from', '1.1')) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionFrom()) ?>">OpenGoo <?php echo clean($script->getVersionFrom()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>
@@ -47,7 +54,7 @@ if (count($scripts) > 0) {
             <td>
               <select name="form_data[upgrade_to]" id="upgradeFormTo">
 	<?php foreach($scripts as $script) { ?>
-                <option <?php if ($script->getVersionTo() == $product_version) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionTo()) ?>"><?php echo PRODUCT_NAME?> <?php echo clean($script->getVersionTo()) ?></option>
+                <option <?php if ($script->getVersionTo() == array_var($form_data, 'upgrade_to', $product_version)) echo 'selected="selected"'; ?> value="<?php echo clean($script->getVersionTo()) ?>"><?php echo PRODUCT_NAME?> <?php echo clean($script->getVersionTo()) ?></option>
 	<?php } // foreach ?>
               </select>
             </td>

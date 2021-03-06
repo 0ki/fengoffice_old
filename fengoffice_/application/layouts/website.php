@@ -44,12 +44,15 @@
 	if ($ext_lang_file)	{
 		echo add_javascript_to_page("extjs/locale/$ext_lang_file");
 	}
+	echo add_javascript_to_page("ckeditor/ckeditor.js");
 	?>
 	<?php if (config_option("show_feed_links")) { ?>
 		<link rel="alternate" type="application/rss+xml" title="<?php echo clean(owner_company()->getName()) ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
 	<?php } ?>
 </head>
 <body id="body" <?php echo render_body_events() ?>>
+
+<iframe name="_download" style="display:none"></iframe>
 
 <div id="loading">
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
@@ -80,7 +83,7 @@
 		</td></tr></table>
 		<div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
 		<div id="searchbox">
-			<form class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get">
+			<form name='search_form' class="internalForm" action="<?php echo ROOT_URL . '/index.php' ?>" method="get">
 				<table><tr><td>
 				<?php
 				$search_field_default_value = lang('search') . '...';
@@ -88,13 +91,19 @@
 				'onfocus' => 'if (value == \'' . $search_field_default_value . '\') value = \'\'',
 				'onblur' => 'if (value == \'\') value = \'' . $search_field_default_value . '\''); ?>
 				<?php echo input_field('search_for', $search_field_default_value, $search_field_attrs) ?>
-				</td><td id="searchboxSearch">
-				<button type="submit"><?php echo lang('search button caption') ?></button>
-				</td><td style="padding-left:10px"><div id="quickAdd" style="padding-top:1px"></div></td></tr></table>
-				<input type="hidden" name="c" value="search" />
-				<input type="hidden" name="a" value="search" />
-				<input type="hidden" name="current" value="search" />
-				<input type="hidden" id="hfVars" name="vars" value="dashboard" />
+				</td>
+				<td id="searchboxSearch">
+					<div id="searchboxButton"></div>
+					<input style="display:none" id="searchButtonReal" type="submit" />
+					<input type="hidden" name="c" value="search" />
+					<input type="hidden" name="a" value="search" />
+					<input type="hidden" name="current" value="search" />
+					<input type="hidden" id="hfVars" name="vars" value="dashboard" />
+				</td>
+				<td style="padding-left:10px">
+					<div id="quickAdd"></div>
+				</td>
+				</tr></table>
 			</form>
 		</div>
 		<?php Hook::fire('render_page_header', null, $ret) ?>
@@ -111,31 +120,33 @@
 			<?php echo lang('footer copy without homepage', date('Y'), clean(owner_company()->getName())) ?>
 		<?php } // if ?>
 	</div>
+	<?php Hook::fire('render_page_footer', null, $ret) ?>
 	<div id="productSignature"><?php echo product_signature() ?></div>
 </div>
 <!-- /footer -->
 
 <script>
+		
+	
 // OG config options
-og.pageSize = <?php echo config_option('files_per_page', 10)?>;
-og.timeFormat24 = <?php echo config_option('time_format_use_24', 0) ? 1 : 0 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
+og.sandboxName = <?php echo defined('SANDBOX_URL') ? "'".SANDBOX_URL."'" : 'false'; ?>;
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
-og.rememberGUIState = <?php echo user_config_option("rememberGUIState") ? 1 : 0 ?>;
-<?php if (user_config_option("rememberGUIState")) { ?>
-og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
-<?php } ?>
 <?php $initialWS = user_config_option('initialWorkspace');
 if ($initialWS === "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);
 }
 ?>
-<?php if (user_config_option('show_unread_on_title')) { ?>
-og.showUnreadEmailsOnTitle = true;
-<?php } ?>
-og.pollForEmail = <?php echo user_config_option('email_polling', '0') ?>;
 og.initialWorkspace = '<?php echo $initialWS ?>';
 og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER['QUERY_STRING'] ?>';
+<?php if (user_config_option("rememberGUIState")) { ?>
+og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
+<?php } ?>
+<?php if (user_config_option("autodetect_time_zone", 0)) { ?>
+og.usertimezone = og.calculate_time_zone();
+og.initialURL += '&utz=' + og.usertimezone;
+<?php } ?>
+og.CurrentPagingToolbar = <?php echo defined('INFINITE_PAGING') && INFINITE_PAGING ? 'og.InfinitePagingToolbar' : 'og.PagingToolbar' ?>;
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
@@ -149,22 +160,38 @@ og.hasNewVersions = <?php
 		echo "false";
 	}
 ?>;
-og.enableNotesModule = <?php echo config_option("enable_notes_module", 1) ? 1 : 0 ?>;
-og.enableEmailModule = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
-og.enableContactsModule = <?php echo config_option("enable_contacts_module", 1) ? 1 : 0 ?>;
-og.enableCalendarModule = <?php echo config_option("enable_calendar_module", 1) ? 1 : 0 ?>;
-og.enableDocumentsModule = <?php echo config_option("enable_documents_module", 1) ? 1 : 0 ?>;
-og.enableTasksModule = <?php echo config_option("enable_tasks_module", 1) ? 1 : 0 ?>;
-og.enableWeblinksModule = <?php echo config_option("enable_weblinks_module", 1) ? 1 : 0 ?>;
-og.enableTimeModule = <?php echo config_option("enable_time_module", 1) && can_manage_time(logged_user(), true) ? 1 : 0 ?>;
-og.enableReportingModule = <?php echo config_option("enable_reporting_module", 1) ? 1 : 0 ?>;
-og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
-og.showCheckoutNotification  = <?php echo config_option('checkout_notification_dialog', 0) ? 1 : 0 ?>;
+og.config = {
+	'files_per_page': <?php echo json_encode(config_option('files_per_page', 10)) ?>,
+	'time_format_use_24': <?php echo json_encode(config_option('time_format_use_24', 0)) ?>,
+	'days_on_trash': <?php echo json_encode(config_option("days_on_trash", 0)) ?>,
+	'checkout_notification_dialog': <?php echo json_encode(config_option('checkout_notification_dialog', 0)) ?>,
+	'enable_notes_module': <?php echo json_encode(module_enabled("notes")) ?>,
+	'enable_email_module': <?php echo json_encode(module_enabled("email", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB)) ?>,
+	'enable_contacts_module': <?php echo json_encode(module_enabled("contacts")) ?>,
+	'enable_calendar_module': <?php echo json_encode(module_enabled("calendar")) ?>,
+	'enable_documents_module': <?php echo json_encode(module_enabled("documents")) ?>,
+	'enable_tasks_module': <?php echo json_encode(module_enabled("tasks")) ?>,
+	'enable_weblinks_module': <?php echo json_encode(module_enabled('weblinks')) ?>,
+	'enable_time_module': <?php echo json_encode(module_enabled("time") && can_manage_time(logged_user(), true)) ?>,
+	'enable_reporting_module': <?php echo json_encode(module_enabled("reporting")) ?>
+};
+og.preferences = {
+	'rememberGUIState': <?php echo user_config_option('rememberGUIState') ? '1' : '0' ?>,
+	'show_unread_on_title': <?php echo user_config_option('show_unread_on_title') ? '1' : '0' ?>,
+	'email_polling': <?php echo json_encode(user_config_option('email_polling', 0)) ?> ,
+	'date_format': <?php echo json_encode(user_config_option('date_format')) ?>,
+	'start_monday': <?php echo user_config_option('start_monday') ? '1' : '0' ?>,
+	'draft_autosave_timeout': <?php echo json_encode(user_config_option('draft_autosave_timeout')) ?>,
+	'drag_drop_prompt': <?php echo json_encode(user_config_option('drag_drop_prompt')) ?>,
+	'mail_drag_drop_prompt': <?php echo json_encode(user_config_option('mail_drag_drop_prompt')) ?>
+};
+
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin to PHP's timeout ?>;
 og.musicSound = new Sound();
 og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
+var searchbutton = new Ext.Button({renderTo:'searchboxButton', text: lang('search'), type:'submit', handler:function(){document.getElementById('searchButtonReal').click()} });
 
 <?php if (!defined('DISABLE_JS_POLLING') || !DISABLE_JS_POLLING) { ?>
 setInterval(function() {
@@ -176,12 +203,21 @@ setInterval(function() {
 }, 60000);
 <?php } ?>
 
-og.date_format = '<?php echo user_config_option('date_format') ?>';
-og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
-og.draftAutosaveTimeout = <?php echo user_config_option('draft_autosave_timeout') ?> * 1000;
-
 og.loadEmailAccounts('view');
 og.loadEmailAccounts('edit');
+og.loggedUserHasEmailAccounts = <?php echo logged_user()->hasEmailAccounts() ? 'true' : 'false' ?>;
+og.emailFilters = {};
+og.emailFilters.classif = '<?php echo user_config_option('mails classification filter') ?>';
+og.emailFilters.read = '<?php echo user_config_option('mails read filter') ?>';
+og.emailFilters.account = '<?php echo user_config_option('mails account filter') ?>';
+if (og.emailFilters.account != 0 && og.emailFilters.account != '') {
+	og.emailFilters.accountName = '<?php
+		$acc_id = user_config_option('mails account filter');
+		$acc = $acc_id > 0 ? MailAccounts::findById($acc_id) : null; 
+		echo ($acc instanceof MailAccount ? $acc->getName() : ''); 
+	?>';
+} else og.emailFilters.accountName = '';
+og.lastSelectedRow = {messages:0, mails:0, contacts:0, documents:0, weblinks:0, overview:0, linkedobjs:0, archived:0};
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

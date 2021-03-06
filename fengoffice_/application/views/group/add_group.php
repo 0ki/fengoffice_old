@@ -1,6 +1,7 @@
 <?php
     set_page_title($group->isNew() ? lang('add group') : lang('edit group'));
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
+    $genid = gen_id();
 ?>
 
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->isNew() ? get_url('group', 'add_group') : $group->getEditUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
@@ -59,24 +60,28 @@
       <?php echo checkbox_field('group[can_manage_time]', array_var($group_data,'can_manage_time'), array('id' => 'group[can_manage_time]' )) ?> 
       <label for="<?php echo 'group[can_manage_time]' ?>" class="checkbox"><?php echo lang('can manage time') ?></label>
     </div>
+    <div>
+      <?php echo checkbox_field('group[can_add_mail_accounts]', array_var($group_data,'can_add_mail_accounts'), array('id' => 'group[can_add_mail_accounts]' )) ?> 
+      <label for="<?php echo 'group[can_add_mail_accounts]' ?>" class="checkbox"><?php echo lang('can add mail accounts') ?></label>
+    </div>
   </fieldset>
-  
-  <fieldset>
-    <legend><?php echo lang('group users') ?></legend>  
-    <?php foreach (Users::getAll() as $user) { 
-    	$ctrl_name ='user['.$user->getId().']'; ?>
-    	
-		<?php if ($group->isAdministratorGroup() && $user->isAccountOwner()) { ?>
-				<img src="<?php echo icon_url('ok.gif') ?>" title="<?php echo lang('admin cannot be removed from admin group') ?>" alt="" /> <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
-				<input type="hidden" name="<?php echo $ctrl_name  ?>" value="checked" id="<?php echo $ctrl_name ?>" />
-		<?php } else if (!$group->isAdministratorGroup() || $user->isMemberOfOwnerCompany()) { ?>    	
-	    <div>
-	      <?php echo checkbox_field($ctrl_name , array_var($group_data, $ctrl_name), array('id' => $ctrl_name  )) ?> 
-	      <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getUsername()) ?></label>
-	    </div>  
-	    <?php }//if ?>
-    <?php } // for ?>
-  </fieldset>
+
+   <fieldset class="">
+	 <legend><?php echo lang('group users') ?></legend>
+		<?php 
+			$allUsers = Users::getAll();
+			$groupUserIds = array();
+			foreach ($allUsers as $user) {
+				if (array_var($group_data, 'user['.$user->getId().']')) {
+					$groupUserIds[] = $user->getId();
+				}
+			}
+			tpl_assign('genid', $genid);
+			tpl_assign('$users', $allUsers);
+			tpl_assign('groupUserIds', $groupUserIds);
+			$this->includeTemplate(get_template_path('group_users_control', 'group'));
+		?>
+   </fieldset>
   
    <fieldset class="">
 	 <legend><?php echo lang("project permissions") ?></legend>

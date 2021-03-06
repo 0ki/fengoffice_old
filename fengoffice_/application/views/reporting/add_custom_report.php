@@ -1,6 +1,7 @@
 <?php
 require_javascript("og/DateField.js");
 require_javascript("og/ReportingFunctions.js");
+require_javascript('og/modules/doubleListSelCtrl.js');
 $genid = gen_id();
 ?>
 <form style='height: 100%; background-color: white' class="internalForm"
@@ -100,24 +101,7 @@ array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$gen
 </fieldset>
 
 <fieldset><legend><?php echo lang('columns and order') ?></legend>
-<div><?php echo label_tag(lang('order by'), $genid . 'reportFormOrderBy', true, array('id' => 'orderByLbl', 'style' => 'display:none;')) ?>
-<?php echo select_box('report[order_by]', array(),
-array('id' => 'report[order_by]', 'style' => 'width:200px;display:none;'));
-$asc = option_tag(lang('ascending'), 'asc');
-$desc = option_tag(lang('descending'), 'desc');
-echo select_box('report[order_by_asc]', array($asc, $desc),
-array('id' => 'report[order_by_asc]', 'style' => 'width:200px;display:none;')) ?>
-<br /><br />
-<a href="#" onclick="og.toggleColumnSelection()"><?php echo lang('select unselect all')?></a>
-<div id="columnList">
-	<table>
-		<tr>
-			<td id="tdFields" style="padding-right:10px;"></td>
-			<td id="tdCPs"></td>
-		</tr>
-	</table>
-</div>
-</div>
+	<div id="columnListContainer"></div>
 </fieldset>
 <?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')))?>
 
@@ -127,9 +111,8 @@ array('id' => 'report[order_by_asc]', 'style' => 'width:200px;display:none;')) ?
 
 <script>
 	og.loadReportingFlags();
-	og.reportObjectTypeChanged("<?php echo $genid ?>", "", 1, "");
+	og.reportObjectTypeChanged('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');
 	<?php if(isset($conditions)){ ?>
-		og.reportObjectTypeChanged('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '<?php echo (isset($columns) ? implode(',', $columns) : '') ?>');
 		<?php foreach($conditions as $condition){ ?>
 		<?php if ( $condition->getFieldName()  != 'workspace' && $condition->getFieldName()  != 'tag'){ ?>		
 		    og.addCondition('<?php echo $genid?>',<?php echo $condition->getId() ?>, <?php echo $condition->getCustomPropertyId() ?> , '<?php echo $condition->getFieldName() ?>', '<?php echo $condition->getCondition() ?>', '<?php echo $condition->getValue() ?>', '<?php echo $condition->getIsParametrizable() ?>');		

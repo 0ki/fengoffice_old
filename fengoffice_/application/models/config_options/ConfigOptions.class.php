@@ -8,6 +8,22 @@
   */
   class ConfigOptions extends BaseConfigOptions {
   	
+  	protected $config_options = array();
+  	
+  	function loadConfigOptionsCache(){
+  		$options = self::findAll();
+  		foreach ($options as $option)
+  			$this->config_options[$option->getName()] = $option; 
+  	}
+  	
+	function resetConfigOptionsCache(){
+  		$this->config_options = array();
+  	}
+  	
+  	function updateConfigOptionCache($config_option){
+  		$this->config_options[$config_option->getName()] = $config_option;
+  	}
+  	
     /**
     * Return all options in specific category
     *
@@ -50,10 +66,17 @@
     * @return null
     */
     static function getOptionValue($name, $default = null) {      
-      $option = self::getByName($name);
+      $option = self::instance()->getByNameFromCache($name);
       return $option instanceof ConfigOption ? $option->getValue() : $default;
     } // getOptionValue
   
+    function getByNameFromCache($name){
+    	if (!array_key_exists($name, $this->config_options)){
+    		$this->config_options[$name] = self::getByName($name);
+    	}
+    	return $this->config_options[$name];
+    }
+    
     /**
     * Return config option by name
     *

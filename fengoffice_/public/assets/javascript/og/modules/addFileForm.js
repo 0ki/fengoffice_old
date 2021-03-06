@@ -45,12 +45,15 @@ og.fileCheckSubmit = function(genid) {
 				}
 			}
 		}, 100);
+		return false;
 	} else {
-		og.fileSubmitMe(genid);
+		return og.fileSubmitMe(genid);
 	}
 }
 
 og.fileSubmitMe = function(genid) {
+	var form = document.getElementById(genid + 'addfile');
+	if (form.submitted) return true;
 	var newRevision = (!Ext.get(genid + "fileFormUpdateFile") || Ext.getDom(genid + "fileFormUpdateFile").checked);
 	if (newRevision){
 		var comment = document.getElementById(genid + 'fileFormRevisionComment').value;
@@ -63,10 +66,13 @@ og.fileSubmitMe = function(genid) {
 	}
 	og.doFileUpload(genid, {
 		callback: function() {
-			form = document.getElementById(genid + 'addfile');
+			var form = document.getElementById(genid + 'addfile');
+			form.submitted = true;
 			form.onsubmit();
+			form.submitted = false;
 		}
 	});
+	return false;
 }
 
 og.doFileUpload = function(genid, config) {
@@ -81,6 +87,7 @@ og.doFileUpload = function(genid, config) {
 	form.style.display = 'none';
 	form.appendChild(fileInput);
 	document.body.appendChild(form);
+
 	og.submit(form, {
 		callback: function() {
 			form.removeChild(fileInput);
@@ -111,7 +118,16 @@ og.checkFileName = function(genid) {
 	  	if (!fileIsNew){
 	 		eid = Ext.get(genid + 'hfFileId').getValue();
 	  	}
-	  	var ws = Ext.getCmp(genid + "ws_ids").getValue();
+	  	comp = Ext.getCmp(genid + "ws_ids");
+	  	var ws = 0;
+	  	if (comp)
+	  	{
+	  		ws = comp.getValue();
+	  	}else{
+	  		//if it is from the quick add view the ws is on a hidden tag	  		
+	  		elem = document.getElementById(genid + "ws_ids")
+	  		ws = elem.value;
+	  	}
 	 	
 	    og.openLink(og.getUrl('files', 'check_filename', {
 			wsid: ws,
@@ -256,13 +272,16 @@ og.updateFileName = function(genid, name) {
 //*************************************************
 
 og.showAddDocumentDialog = function(genid){
-	var form = Ext.getDom("fck" + genid);
+	var form = Ext.getDom(genid + 'form');
 	var commentsRequired = Ext.getDom(genid + "commentsRequired").value == 1;
 	var config = {};
 	
 	config.ok_fn = function(){
-		var form = Ext.getDom("fck" + genid);
-		form['fileContent'].value = FCKeditorAPI.GetInstance("fck" + genid).GetHTML();
+		var editor = og.getCkEditorInstance(genid + 'ckeditor');
+		if (editor) form['fileContent'].value = editor.getData();
+		else form['fileContent'].value = "";
+		
+		//form['fileContent'].value = document.getElementById('cke_'+genid+'ckeditor').getData();
 		if (Ext.getCmp(genid + 'title')){
 			var filename = Ext.getCmp(genid + 'title').getValue();
 			if (filename.length < 5 || filename.substring(filename.length - 5) != '.html')
@@ -279,6 +298,7 @@ og.showAddDocumentDialog = function(genid){
 			og.ExtendedDialog.hide();
 			form.ready = true;
 			form.onsubmit();
+			form.new_revision_document.value = "";
 		}
 		if (commentsRequired && form['file[comment]'].value == '') {
 			Ext.Msg.show({
@@ -301,7 +321,16 @@ og.showAddDocumentDialog = function(genid){
 
 	config.dialogItems = [];
 	if (form.rename || !form['file[id]'].value){
-		config.dialogItems.push({xtype: 'textfield', name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false, blankText: lang('this field is required')});
+		config.dialogItems.push({xtype: 'textfield',
+			listeners:{
+			specialkey:function(elem,evnt){
+				if(evnt.getKey()== 13){
+					config.ok_fn();
+				}
+			},
+			scope: this
+		},
+		name: 'title', value: form['file[name]'].value, id: genid + 'title', fieldLabel: lang('choose a filename'), allowBlank:false, blankText: lang('this field is required')});
 		config.height += 40;
 	}
 	config.dialogItems.push({xtype: 'textarea', height:80, width:250, name: 'comment', id: genid + 'comment', fieldLabel: lang('comment'), allowBlank: (commentsRequired?'false':'true'), blankText: lang('this field is required')});
@@ -324,7 +353,7 @@ og.showAddDocumentDialog = function(genid){
 }
 
 og.addDocumentSubmit = function(genid){
-	var form = Ext.getDom("fck" + genid);
+	var form = Ext.getDom(genid + 'form');
 	if (form.ready){
 		form.ready = false;
 		return true;

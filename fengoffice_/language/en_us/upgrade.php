@@ -3,6 +3,7 @@
 		'upgrade' => 'Upgrade',
 		'upgrade from' => 'Upgrade from',
 		'upgrade to' => 'Upgrade to',
+		'upgrade from to' => 'Upgrade from {0} to {1}',
 		'already upgraded' => 'You already have upgraded to the latest possible version.',
 		'back to opengoo' => 'Back to OpenGoo',
 		'all rights reserved' => 'All rights reserved',

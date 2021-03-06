@@ -47,7 +47,7 @@ class DashboardController extends ApplicationController {
 
 		$activity_log = ApplicationLogs::getOverallLogs($include_private, $include_silent, $wscsv, config_option('dashboard_logs_count', 15));
 
-		if (user_config_option('show charts widget') && config_option('enable_reporting_module')) {
+		if (user_config_option('show charts widget') && module_enabled('reporting')) {
 			$charts = ProjectCharts::findAll(array(
 				'conditions' => "(" . ProjectCharts::getWorkspaceString($wscsv) . ' AND show_in_parents = 1)' 
 					. (active_project() instanceof Project ? ' OR (' . ProjectCharts::getWorkspaceString(active_project()->getId()) . ' AND show_in_project = 1)' : '')
@@ -59,7 +59,7 @@ class DashboardController extends ApplicationController {
 				tpl_assign('billing_chart_data', active_project()->getBillingTotalByUsers(logged_user()));
 			}
 		}
-		if (user_config_option('show messages widget') && config_option('enable_notes_module')) {
+		if (user_config_option('show messages widget') && module_enabled('notes')) {
 			$messages = ProjectMessages::findAll(array(
 				'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
 					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMessages')"):'')
@@ -71,7 +71,7 @@ class DashboardController extends ApplicationController {
 			$comments = Comments::getSubscriberComments(active_project(), $tag);
 			tpl_assign('comments', $comments);
 		}
-		if (user_config_option('show documents widget') && config_option('enable_documents_module')) {
+		if (user_config_option('show documents widget') && module_enabled('documents')) {
 			$documents = ProjectFiles::findAll(array(
 				'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
 					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectFiles')"):'')
@@ -81,7 +81,7 @@ class DashboardController extends ApplicationController {
 			tpl_assign('documents', $documents);
 		}
 		
-		if (user_config_option('show emails widget') && config_option('enable_email_module')) {
+		if (user_config_option('show emails widget') && module_enabled('email')) {
 			$activeWs = active_project() instanceof Project ? active_project() : null;
 			list($unread_emails, $pagination) = MailContents::getEmails($tag, null, 'received', 'unread', '', $activeWs, 0, 10);
 
@@ -95,9 +95,9 @@ class DashboardController extends ApplicationController {
 		}
 		
 		//Tasks widgets
-		$show_pending = user_config_option('show pending tasks widget')  && config_option('enable_tasks_module');
-		$show_in_progress = user_config_option('show tasks in progress widget') && config_option('enable_tasks_module');
-		$show_late = user_config_option('show late tasks and milestones widget') && config_option('enable_tasks_module');
+		$show_pending = user_config_option('show pending tasks widget')  && module_enabled('tasks');
+		$show_in_progress = user_config_option('show tasks in progress widget') && module_enabled('tasks');
+		$show_late = user_config_option('show late tasks and milestones widget') && module_enabled('tasks');
 		if ($show_pending || $show_in_progress || $show_late) {
 			$assigned_to = explode(':', user_config_option('pending tasks widget assigned to filter'));
 			$to_company = array_var($assigned_to, 0,0);

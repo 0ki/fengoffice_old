@@ -148,7 +148,8 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canView(User $user) {
-		return true;
+		$accountUser = MailAccountUsers::getByAccountAndUser($this, $user);
+		return $accountUser instanceof MailAccountUser;
 	} // canView
 
 	/**
@@ -160,7 +161,7 @@ class MailAccount extends BaseMailAccount {
 	 * @return booelean
 	 */
 	function canAdd(User $user) {
-		return true;
+		return can_add_mail_accounts($user);
 	} // canAdd
 
 	/**
@@ -171,7 +172,7 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canEdit(User $user) {
-		return true;
+		return $this->canView($user);
 	} // canEdit
 
 	/**
@@ -182,7 +183,8 @@ class MailAccount extends BaseMailAccount {
 	 * @return boolean
 	 */
 	function canDelete(User $user) {
-		return true;
+		$accountUser = MailAccountUsers::getByAccountAndUser($this, $user);
+		return $accountUser instanceof MailAccountUser && $accountUser->getCanEdit() || can_manage_security(logged_user());
 	} // canDelete
 
 	// ---------------------------------------------------
@@ -223,18 +225,34 @@ class MailAccount extends BaseMailAccount {
 
 	
 	function delete($deleteMails = false){
+		MailAccountUsers::deleteByAccount($this);
 		if ($deleteMails) {
+			session_commit();
+			
 			LinkedObjects::delete(array("(`object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `object_manager` = 'MailContents') 
 				or (`rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") and `rel_object_manager` = 'MailContents')")); 
 			
       		SearchableObjects::delete(array("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") "));
 			ReadObjects::delete("`rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `id` FROM `".TABLE_PREFIX."mail_contents` WHERE `account_id` = " . DB::escape($this->getId()).") ");
-			MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
+			
+			$account_emails = MailContents::findAll(array('conditions' => '`account_id` = ' . DB::escape($this->getId())));
+			foreach ($account_emails as $email) {
+				$email->delete();
+			}
+			//MailContents::delete('`account_id` = ' . DB::escape($this->getId()));
 		}
 		if ($this->getIsImap()) {
 			MailAccountImapFolders::delete('account_id = ' . $this->getId());
 		}
 		parent::delete();
+	}
+	
+	/**
+	 * Return the workspace associated to this mail account
+	 * @return Project
+	 */
+	function getWorkspace() {
+		return Projects::findById($this->getWorkspaceId());
 	}
 	
 	
@@ -271,6 +289,17 @@ class MailAccount extends BaseMailAccount {
 		}
 		else if ($auth_level == 2)	{
 			return $this->getSmtpPassword();
+		}
+	}
+	
+	function getFromName() {
+		$user_settings = MailAccountUsers::getByAccountAndUser($this, logged_user());
+		if ($user_settings instanceof MailAccountUser && $user_settings->getSenderName()) {
+			return $user_settings->getSenderName();
+		} else if ($this->getSenderName()) {
+			return $this->getSenderName();
+		} else {
+			return logged_user()->getDisplayName();
 		}
 	}
 }

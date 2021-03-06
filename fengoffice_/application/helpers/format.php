@@ -24,12 +24,12 @@
         while(str_ends_with($formated_number, '0')) $formated_number = substr($formated_number, 0, strlen($formated_number) - 1); // remove zeros from the end
         if(str_ends_with($formated_number, '.')) $formated_number = substr($formated_number, 0, strlen($formated_number) - 1); // remove dot from the end
         
-        return $formated_number . $current_unit;
+        return $formated_number . ' ' . $current_unit;
       } // if
     } // foreach
     
     // Bytes?
-    return $in_bytes . 'bytes';
+    return $in_bytes . ' bytes';
     
   } // format_filesize
   

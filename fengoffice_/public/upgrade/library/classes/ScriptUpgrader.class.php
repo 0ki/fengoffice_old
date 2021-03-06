@@ -61,7 +61,7 @@ final class ScriptUpgrader {
 	} // __construct
 
 	/**
-	 * Execute upgrade script that is responsible for upgrade process from installed version to targe version
+	 * Execute upgrade script that is responsible for upgrade process from installed version to target version
 	 *
 	 * @param string $version_from
 	 * @param string $to_version
@@ -91,7 +91,7 @@ final class ScriptUpgrader {
 			// include config file
 			$config_is_set = @include_once INSTALLATION_PATH . '/config/config.php';
 			if (!$config_is_set) {
-				$this->printMessage('Valid config files was not found!', true);
+				$this->printMessage('Valid config file was not found!', true);
 				return false;
 			} else {
 				$this->printMessage('Config file found and loaded.');
@@ -201,6 +201,8 @@ final class ScriptUpgrader {
 						break;
 					}
 					$last_correct_version = $script->getVersionTo();
+					tpl_assign('version', $last_correct_version);
+					file_put_contents(INSTALLATION_PATH . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version')));
 				} // if
 			} // foreach
 			if (isset($last_correct_version)) {

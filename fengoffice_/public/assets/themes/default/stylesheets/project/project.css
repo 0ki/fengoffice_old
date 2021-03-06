@@ -780,3 +780,27 @@ div.taskList .taskListTags span {
 .mail-account-item {
 	padding: 5px 0;
 }
+
+.account_permissions_user .user_picture {
+	float: left;
+	margin: 3px;
+}
+
+.account_permissions_user .user-picture img {
+	vertical-align: middle;
+}
+
+.account_permissions_user .user_name {
+	float: left;
+	margin-left: 20px;
+	width: 120px;
+	padding-top: 20px;
+}
+
+.account_permissions_user .user_access {
+	margin-left: 200px;
+	padding-top: 15px;
+}
+
+.account_permissions_user .separator {
+	clear: both;

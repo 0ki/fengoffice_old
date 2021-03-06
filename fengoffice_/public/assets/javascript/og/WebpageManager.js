@@ -2,7 +2,7 @@
  *  WebpageManager
  */
 og.WebpageManager = function() {
-	var actions;
+	var actions, markactions;
 	this.doNotRemove = true;
 	this.needRefresh = false;
 	
@@ -17,7 +17,7 @@ og.WebpageManager = function() {
 	            id: 'id',
 	            fields: [
 	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
-	                'updatedOn', 'updatedOn_today', 'ix'
+	                'updatedOn', 'updatedOn_today', 'ix','isRead'
 	            ]
 	        }),
 	        remoteSort: true,
@@ -32,10 +32,13 @@ og.WebpageManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("web pages"), ws));
 						}
+					} else if (d.webpages.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("web pages")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					Ext.getCmp('webpage-manager').getView().focusRow(og.lastSelectedRow.webpages+1);
 				}
 			}
 	    });
@@ -48,16 +51,18 @@ og.WebpageManager = function() {
     //--------------------------------------------
 
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'webpage-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'webpage-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
     
     function renderName(value, p, r) {
+    	var bold = 'normal';
+		if (!r.data.isRead) {bold = 'bold';}
 		var name = String.format(
-			'<a style="font-size:120%" title="{2}" href="#" onclick="og.openLink(\'{1}\')">{0}</a>',
+			'<a style="font-size:120%; font-weight:'+ bold +';" title="{2}" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>',
 			og.clean(value), og.getUrl('webpage', 'view', {id: r.id}), lang('view weblink'));
 		
 		var actions = '';
-		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:16px;background-repeat:no-repeat;" '; 
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
 		actions += String.format('<a class="list-action ico-open-link" href="{0}" target="_blank" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 			r.data.url.replace(/\"/g, escape("\"")).replace(/\'/g, escape("'")), lang('open link in new window', og.clean(value)));
 		actions = '<span>' + actions + '</span>';
@@ -72,13 +77,23 @@ og.WebpageManager = function() {
 	    
 		return projectsString + name + actions + text;
 	}
-	
+    function renderIcon(value, p, r) {
+		return '<div class="db-ico ico-webpage"></div>';
+	}
+    function renderIsRead(value, p, r){
+		if (value){
+			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'webpage-manager\').load({action: 'markasunread',ids:" + r.id + "});Ext.getCmp(\'webpage-manager\').getSelectionModel().clearSelections(); \" />";
+		}else{
+			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('webpage-manager').load({action: 'markasread',ids:" + r.id + "});Ext.getCmp('webpage-manager').getSelectionModel().clearSelections(); \" />";
+		}
+		return div;
+	}
 	function renderDateUpdated(value, p, r) {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
-	
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+
 		var now = new Date();
 		var dateString = '';
 		if (!r.data.updatedOn_today) {
@@ -96,7 +111,8 @@ og.WebpageManager = function() {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].id;
-			}	
+			}
+			og.lastSelectedRow.webpages = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -112,22 +128,67 @@ og.WebpageManager = function() {
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
 		function() {
+			var allUnread = true, allRead = true;
+			var selections = sm.getSelections();
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.isRead){
+					allUnread = false;
+				} else {
+					allRead = false;
+				}
+			}
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.delWebpage.setDisabled(true);
 				actions.editWebpage.setDisabled(true);
+				markactions.markAsRead.setDisabled(true);
+				markactions.markAsUnread.setDisabled(true);
+				actions.archive.setDisabled(true);
 			} else {
 				actions.editWebpage.setDisabled(sm.getCount() != 1);
 				actions.tag.setDisabled(false);
 				actions.delWebpage.setDisabled(false);
+				if (allUnread) {
+					markactions.markAsUnread.setDisabled(true);
+				} else {
+					markactions.markAsUnread.setDisabled(false);
+				}
+				if (allRead) {
+					markactions.markAsRead.setDisabled(true);
+				} else {
+					markactions.markAsRead.setDisabled(false);
+				}
+				actions.archive.setDisabled(false);
+						
 			}
 		});
+
     var cm = new Ext.grid.ColumnModel([
 		sm,{
 			id: 'draghandle',
 			header: '&nbsp;',
 			width: 18,
         	renderer: renderDragHandle,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
+			id: 'icon',
+			header: '&nbsp;',
+			dataIndex: 'type',
+			width: 28,
+        	renderer: renderIcon,
+        	fixed: true,
+        	resizable: false,
+        	hideable:true,
+        	menuDisabled: true
+		},{
+			id: 'isRead',
+			header: '&nbsp;',
+			dataIndex: 'isRead',
+			width: 16,
+        	renderer: renderIsRead,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -153,12 +214,43 @@ og.WebpageManager = function() {
 			sortable: true
         }]);
     cm.defaultSortable = false;
+    
+    markactions = {
+		markAsRead: new Ext.Action({
+			text: lang('mark as read'),
+            tooltip: lang('mark as read desc'),
+            iconCls: 'ico-mark-as-read',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasread',
+					ids: getSelectedIds()				
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		}),
+		markAsUnread: new Ext.Action({
+			text: lang('mark as unread'),
+            tooltip: lang('mark as unread desc'),
+            iconCls: 'ico-mark-as-unread',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasunread',
+					ids: getSelectedIds()				
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		})
+    };
 	
 	actions = {
 		newWebpage: new Ext.Action({
 			text: lang('new'),
             tooltip: lang('add new webpage'),
-            iconCls: 'ico-webpages',
+            iconCls: 'ico-new',
             handler: function() {
 				var url = og.getUrl('webpage', 'add');
 				og.openLink(url, null);
@@ -182,11 +274,27 @@ og.WebpageManager = function() {
 		editWebpage: new Ext.Action({
 			text: lang('edit'),
             tooltip: lang('edit selected webpage'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
 				var url = og.getUrl('webpage', 'edit', {id:getFirstSelectedId()});
 				og.openLink(url, null);
+			},
+			scope: this
+		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						webpages: getSelectedIds()
+					});
+					this.getSelectionModel().clearSelections();
+				}
 			},
 			scope: this
 		}),
@@ -215,9 +323,27 @@ og.WebpageManager = function() {
 							});
 						},
 						scope: this
-					}
+					},
+					'tagdelete': {
+							fn: function(tag) {
+								this.load({
+									action: 'untag',
+									webpages: getSelectedIds(),									
+									tagTag: tag.text
+								});
+							},
+							scope: this
+						}
 				}
 			})
+		}),
+		markAs: new Ext.Action({
+			text: lang('mark as'),
+			tooltip: lang('mark as desc'),
+			menu: [
+				markactions.markAsRead,
+				markactions.markAsUnread
+			]
 		})
     };
     
@@ -226,13 +352,13 @@ og.WebpageManager = function() {
 		layout: 'fit',
         cm: cm,
 		enableDrag: true,
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		ddGroup: 'WorkspaceDD',
         closable: true,
 		stripeRows: true,
 		id: 'webpage-manager',
-        bbar: new og.PagingToolbar({
-            pageSize: og.pageSize,
+        bbar: new og.CurrentPagingToolbar({
+            pageSize: og.config['files_per_page'],
             store: this.store,
             displayInfo: true,
             displayMsg: lang('displaying webpages of'),
@@ -245,11 +371,12 @@ og.WebpageManager = function() {
 		tbar:[
 			actions.newWebpage,
 			'-',
+			actions.editWebpage,
 			actions.tag,
 			actions.delWebpage,
-			actions.editWebpage/*,
+			actions.archive,
 			'-',
-			actions.refresh*/
+			actions.markAs
         ],
 		listeners: {
 			'render': {
@@ -285,7 +412,7 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -296,7 +423,7 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.apply(params, {
 				start: 0,
-				limit: og.pageSize,
+				limit: og.config['files_per_page'],
 				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})
@@ -331,11 +458,28 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 		});
 	},
 	
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				webpages: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+	
 	tagObjects: function(tag) {
 		this.load({
 			action: 'tag',
 			webpages: this.getSelectedIds(),
 			tagTag: tag
+		});
+	},
+	
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			webpages: this.getSelectedIds()
 		});
 	},
 	

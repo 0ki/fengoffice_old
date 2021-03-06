@@ -179,6 +179,10 @@ class ProjectTask extends BaseProjectTask {
 			return lang("anyone");
 		} // if
 	} // getAssignedTo
+	
+	function isAssigned() {
+		return $this->getAssignedToCompanyId() > 0 || $this->getAssignedToUserId() > 0;
+	} // getAssignedTo
 
 	/**
 	 * Return owner comapny
@@ -513,10 +517,18 @@ class ProjectTask extends BaseProjectTask {
 				$new_task->linkObject($lo);
 			}
 		}
+		
 		$sub_tasks = $this->getAllSubTasks();
 		foreach ($sub_tasks as $st) {
-			$new_st = $st->cloneTask($copy_status);
-			$new_task->attachTask($new_st);
+			if ($st->getParentId() == $this->getId()) {
+				$new_st = $st->cloneTask($copy_status);
+				if ($copy_status) {
+					$new_st->setCompletedById($st->getCompletedById());
+					$new_st->setCompletedOn($st->getCompletedOn());
+					$new_st->save();
+				}
+				$new_task->attachTask($new_st);
+			}
 		}
 		foreach ($this->getAllComments() as $com) {
 			$new_com = new Comment();
@@ -563,19 +575,23 @@ class ProjectTask extends BaseProjectTask {
 			}
 		}
 		
-		$reminders = ObjectReminders::find(array('conditions' => "`object_id` = ".$this->getId()." AND `object_manager` = 'ProjectTasks'"));
-		$rem_cols = ObjectReminders::getColumns();
+		$reminders = ObjectReminders::getByObject($this);
 		foreach($reminders as $reminder) {
-			$new_rem = new ObjectReminder();
-			foreach ($rem_cols as $col) {
-				$new_rem->setColumnValue($col, $reminder->getColumnValue($col));
+			$copy_reminder = new ObjectReminder();
+			$copy_reminder->setContext($reminder->getContext());
+			$reminder_date = $new_task->getColumnValue($reminder->getContext());
+			if ($reminder_date instanceof DateTimeValue) {
+				$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
+				$reminder_date->add('m', -$reminder->getMinutesBefore());
 			}
-			$new_rem->setId(null);
-			$new_rem->setObjectId($new_task->getId());
-			$new_rem->save();
+			$copy_reminder->setDate($reminder_date);
+			$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+			$copy_reminder->setObject($new_task);
+			$copy_reminder->setType($reminder->getType());
+			$copy_reminder->setUserId($reminder->getUserId());
+			$copy_reminder->save();
 		}
 		
-
 		return $new_task;
 	}
 	
@@ -1100,6 +1116,17 @@ class ProjectTask extends BaseProjectTask {
 		}
 		return parent::trash($trashDate);
 	} // delete
+	
+	function archive($archive_children = true, $archiveDate = null) {
+		if (is_null($archiveDate))
+			$archiveDate = DateTimeValueLib::now();
+		if($archive_children)  {
+			$children = $this->getAllSubTasks();
+			foreach($children as $child)
+				$child->archive(true,$archiveDate);
+		}
+		return parent::archive($archiveDate);
+	} // delete
 
 	/**
 	 * Save this list
@@ -1120,9 +1147,23 @@ class ProjectTask extends BaseProjectTask {
 			$this->setAssignedOn(DateTimeValueLib::now());
 		}
 		
+		$due_date_changed = false;
+		if (!$this->isNew()) {
+			$old_due_date = $old_me->getDueDate();
+			$due_date = $this->getDueDate();
+			if ($due_date instanceof DateTimeValue) {
+				if (!$old_due_date instanceof DateTimeValue || $old_due_date->getTimestamp() != $due_date->getTimestamp()) {
+					$due_date_changed = true;
+				}
+			} else {
+				if ($old_due_date instanceof DateTimeValue) {
+					$due_date_changed = true;
+				}
+			}
+		}
 		parent::save();
 		
-		if ($this->getDueDate() instanceof DateTimeValue) {
+		if ($due_date_changed) {
 			$id = $this->getId();
 			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
 				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_tasks` WHERE `id` = $id),
@@ -1145,6 +1186,17 @@ class ProjectTask extends BaseProjectTask {
 
 		return true;
 	} // save
+
+	function unarchive($unarchive_children = true){
+		$archiveTime = $this->getArchivedOn();
+		parent::unarchive();
+		if ($unarchive_children){
+			$children = $this->getAllSubTasks();
+			foreach($children as $child)
+				if ($child->isArchived() && $child->getArchivedOn()->getTimestamp() == $archiveTime->getTimestamp())
+					$child->unarchive(false);
+		}
+	}
 
 	function untrash($untrash_children = true){
 		$deleteTime = $this->getTrashedOn();
@@ -1242,7 +1294,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return unknown
 	 */
 	function getDashboardObject(){
-    	if($this->getUpdatedBy()){
+    	if($this->getUpdatedById() > 0 && $this->getUpdatedBy() instanceof User){
     		$updated_by_id = $this->getUpdatedBy()->getObjectId();
     		$updated_by_name = $this->getUpdatedByDisplayName();
 			$updated_on = $this->getObjectUpdateTime() instanceof DateTimeValue ? ($this->getObjectUpdateTime()->isToday() ? format_time($this->getObjectUpdateTime()) : format_datetime($this->getObjectUpdateTime())) : lang('n/a');	
@@ -1260,11 +1312,21 @@ class ProjectTask extends BaseProjectTask {
     		$parent_id = $this->getId();
    	
 		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
-		$deletedBy = Users::findById($this->getTrashedById());
-    	if ($deletedBy instanceof User) {
+		if ($this->getTrashedById() > 0)
+			$deletedBy = Users::findById($this->getTrashedById());
+    	if (isset($deletedBy) && $deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
     		$deletedBy = lang("n/a");
+    	}
+    	
+		$archivedOn = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn(), 'M j')) : lang('n/a');
+		if ($this->getArchivedById() > 0)
+			$archivedBy = Users::findById($this->getArchivedById());
+    	if (isset($archivedBy) && $archivedBy instanceof User) {
+    		$archivedBy = $archivedBy->getDisplayName();
+    	} else {
+    		$archivedBy = lang("n/a");
     	}
     		
     	return array(
@@ -1286,7 +1348,10 @@ class ProjectTask extends BaseProjectTask {
 				"manager" => get_class($this->manager()),
     			"deletedById" => $this->getTrashedById(),
     			"deletedBy" => $deletedBy,
-    			"dateDeleted" => $deletedOn
+    			"dateDeleted" => $deletedOn,
+    			"archivedById" => $this->getArchivedById(),
+    			"archivedBy" => $archivedBy,
+    			"dateArchived" => $archivedOn
 			);
     }
 
@@ -1322,7 +1387,10 @@ class ProjectTask extends BaseProjectTask {
 			't' => $this->getTitle(),
 			'wsid' => $this->getWorkspacesIdsCSV(),
 			'c' => $this->getCreatedOn() instanceof DateTimeValue ? $this->getCreatedOn()->getTimestamp() : 0,
-			'cid' => $this->getCreatedById());
+			'cid' => $this->getCreatedById(),
+			'isread' => $this->getIsRead(logged_user()->getId()),
+			'otype' => $this->getObjectSubtype()
+			);
 		
 		if ($this->isCompleted())
 			$result['s'] = 1;
@@ -1349,6 +1417,8 @@ class ProjectTask extends BaseProjectTask {
 			
 		if ($this->getStartDate())
 			$result['sd'] = $this->getStartDate()->getTimestamp();
+		
+		$result['tz'] = logged_user()->getTimezone() * 3600;
 		
 		$ot = $this->getOpenTimeslots();
 		
@@ -1411,7 +1481,7 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	function unsubscribeUser($user) {
 		parent::unsubscribeUser($user);
-		ObjectReminders::clearByObject($this);
+		//ObjectReminders::clearByObject($this);
 	}
 	
 	/**

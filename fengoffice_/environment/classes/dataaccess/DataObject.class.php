@@ -141,15 +141,17 @@
   	  if(is_array($attributes)) {
   	    foreach($attributes as $k => &$v) {
   	      if(is_array($this->attr_protected) && in_array($k, $this->attr_protected)) {
-  	        continue; // protected attribute
+  	      	continue; // protected attribute
   	      } // if
   	      if(is_array($this->attr_acceptable) && !in_array($k, $this->attr_acceptable)) {
-  	        continue; // not acceptable
+  	      	continue; // not acceptable
   	      } // if
+  	      
   	      if($this->columnExists($k)) {
   	      	$this->setColumnValue($k, $attributes[$k]); // column exists, set
   	      } // if
   	    } // foreach
+  	    
   	  } // if
   	} // setFromAttributes
   	
@@ -692,7 +694,7 @@
   		
   		// Loop fields
   		foreach ($this->getColumns() as $column) {
-  			
+  			  
   			// Is this field modified?
   			if($this->isColumnModified($column)) {
   			  $columns[] = sprintf('%s = %s', DB::escapeField($column), DB::escape($this->phpToRaw($this->getColumnValue($column), $this->getColumnType($column))));

@@ -48,7 +48,7 @@
 	'can manage workspaces' => 'Permitir editar configurações da Area de Trabalho',
 	'can manage configuration' => 'Permitir editar configurações',
 	'can manage contacts' => 'Permitir editar contatos',
-	'group users' => 'Agrupar usuarios',
+	'group users' => 'Usuarios do grupo',
 	'user ws config category name dashboard' => 'Opções do Painel Principal',
 	'user ws config category name task panel' => 'Opções do Painel de tarefas',
 	'user ws config option name show pending tasks widget' => 'Mostrar quadro de tarefas pendentes',

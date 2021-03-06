@@ -3,6 +3,7 @@ require_javascript('og/modules/addMessageForm.js');
 $genid = gen_id(); 
 ?>
 <script>
+	var genid = '<?php echo $genid ?>';
 
 	og.cal_hide = function(id) {
 		document.getElementById(id).style.display = "none";
@@ -56,6 +57,46 @@ $genid = gen_id();
 			return confirm(lang('confirm repeating event edition'));
 		}
 		return true;
+	}
+	
+	og.updateEventStartDate = function() {
+		var picker = Ext.getCmp(genid + 'event[start_value]Cmp');
+		var old_date = picker.getValue();
+		var r_dow = Ext.get(genid + 'event[repeat_dow]').getValue();
+		var r_wnum = Ext.get(genid + 'event[repeat_wnum]').getValue();
+		
+		var date = new Date();
+		date.setMonth(old_date.getMonth());
+		date.setFullYear(old_date.getFullYear());
+		for (i=1; i<=7; i++) {
+			date.setDate(i);
+			if (date.getDay() + 1 == r_dow) break;
+		}
+		for (i = 1; i < r_wnum; i++) date.setDate(date.getDate() + 7);
+		picker.setValue(date);
+	}
+	
+	og.updateRepeatHParams = function() {
+		var picker = Ext.getCmp(genid + 'event[start_value]Cmp');
+		var orig_date = picker.getValue();
+		var r_dow = document.getElementById(genid + 'event[repeat_dow]');
+		var r_wnum = document.getElementById(genid + 'event[repeat_wnum]');
+		if (r_dow && r_wnum) {
+			var date = new Date();
+			date.setMonth(orig_date.getMonth());
+			date.setFullYear(orig_date.getFullYear());
+			date.setDate(1);
+			var first_dow = date.getDay();
+			var wnum = date.getDay() == 0 ? -1 : 0;
+			for (i=1; i<=orig_date.getDate(); i++) {
+				date.setDate(i);
+				if (date.getDay() == first_dow) wnum++;
+			}
+			if (wnum > 4) wnum = 4;
+			
+			r_dow.selectedIndex = orig_date.getDay();
+			r_wnum.selectedIndex = wnum - 1;
+		}
 	}
 	
 </script>
@@ -121,9 +162,9 @@ $use_24_hours = user_config_option('time_format_use_24');
 	?>
 
 	<?php if($event->isNew()) { ?>
-	<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('event', 'add')."&view=". array_var($_GET, 'view','month'); ?>" method="post">
+	<form id="<?php echo $genid ?>submit-edit-form" style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('event', 'add')."&view=". array_var($_GET, 'view','month'); ?>" method="post">
 	<?php } else { ?>
-	<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $event->getEditUrl()."&view=". array_var($_GET, 'view','month'); ?>" method="post">
+	<form id="<?php echo $genid ?>submit-edit-form" style="height:100%;background-color:white" class="internalForm" action="<?php echo $event->getEditUrl()."&view=". array_var($_GET, 'view','month'); ?>" method="post">
 	<?php } // if ?>
 
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
@@ -137,7 +178,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 					<?php echo $event->isNew() ? lang('new event') : lang('edit event') ?></td>
 					<td style="text-align:right">
 					<?php
-						$is_repetitive = ($event->getRepeatD() > 0 || $event->getRepeatM() > 0 || $event->getRepeatY() > 0 || $event->getRepeatH() > 0) ? 'true' : 'false'; 
+						$is_repetitive = $event->isRepetitive() ? 'true' : 'false'; 
 						echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 200, 'onclick' => (!$event->isNew() ? "javascript:if(!og.confirmEditRepEvent('".$event->getId()."',$is_repetitive)) return false;" : '')));
 					?>
 					</td>
@@ -171,7 +212,9 @@ $use_24_hours = user_config_option('time_format_use_24');
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
-		
+			<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $event->isNew() ? '' : $event->getUpdatedOn()->getTimestamp() ?>">
+			<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
+			<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >	
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_event_context_help', true, logged_user()->getId())) {?>
@@ -272,7 +315,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 											<option value="3" id="weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
 											<option value="4" id="monthly"<?php if(isset($occ) && $occ == 4) echo ' selected="selected"'?>><?php echo lang('CAL_MONTHLY_EVENT') ?></option>
 											<option value="5" id="yearly"<?php if(isset($occ) && $occ == 5) echo  ' selected="selected"'?>><?php echo lang('CAL_YEARLY_EVENT') ?></option>
-											<!-- option value="6" id="holiday"<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>><?php echo lang('CAL_HOLIDAY_EVENT') ?></option -->
+											<option value="6" id="holiday"<?php if(isset($occ) && $occ == 6)  echo ' selected="selected"'?>><?php echo lang('CAL_HOLIDAY_EVENT') ?></option>
 										</select>
 									<?php if (isset($occ) && $occ > 1 && $occ < 6){ ?>
 									<script>
@@ -305,34 +348,34 @@ $use_24_hours = user_config_option('time_format_use_24');
 								</td></tr>
 							</table>
 						</div>
-						<div id="cal_extra3" style="width: 300px; align: center; text-align: left; <?php echo $hide2 ?>'">
+						<div id="cal_extra3" style="width: 400px; align: center; text-align: left; <?php echo $hide2 ?>'">
 							<?php
-							// get the week number
-							$tmp = 1;
-							$week = 0;
-							while($week < 5 AND $tmp <= $day){
-								$week++;
-								$tmp += 7;
-							}
-							// get days in month and day name
-							$daysinmonth = date("t",mktime(0,0,1,$month,$day,$year));
-							$dayname = date("l",mktime(0,0,1,$month,$day,$year));
-							$dayname = "CAL_" .strtoupper  ($dayname);
-							// use week number, and days in month to calculate if it's on the last week.
-							if($day > $daysinmonth - 7) $lastweek = true;
-							else $lastweek = false;
-							// calculate the correct number endings
-							if($week==1) $weekname = "1st";
-							elseif($week==2) $weekname = "2nd";
-							elseif($week==3) $weekname = "3rd";
-							else $weekname = $week."th";
-							// print out the data for holiday repeating
-					
-							echo lang('CAL_HOLIDAY_EXPLAIN'). $weekname." ". lang($dayname) ." ".lang('CAL_DURING')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
-					
-							if($lastweek){// if it's the last week, add option to have event repeat on LAST week every month (holiday repeating only)
-								echo "<br/><br/>". checkbox_field('event[cal_holiday_lastweek]',$setlastweek, array('value' => '1', 'id' => 'cal_holiday_lastweek', 'maxlength' => '10')) .lang('CAL_HOLIDAY_EXTRAOPTION') ." " . lang($dayname)." ".lang('CAL_IN')." ".cal_month_name($month)." ".lang('CAL_EVERY_YEAR');
-							}
+								echo lang('CAL_REPEAT') . "&nbsp;";
+								$options = array(
+									option_tag(lang('1st'), 1, array_var($event_data, 'repeat_wnum') == 1 ? array("selected" => "selected") : null),
+									option_tag(lang('2nd'), 2, array_var($event_data, 'repeat_wnum') == 2 ? array("selected" => "selected") : null),
+									option_tag(lang('3rd'), 3, array_var($event_data, 'repeat_wnum') == 3 ? array("selected" => "selected") : null),
+									option_tag(lang('4th'), 4, array_var($event_data, 'repeat_wnum') == 4 ? array("selected" => "selected") : null),
+								);
+								echo select_box('event[repeat_wnum]', $options, array("id" => $genid."event[repeat_wnum]", "onchange" => "og.updateEventStartDate();"));
+								
+								$options = array(
+									option_tag(lang('sunday'), 1, array_var($event_data, 'repeat_dow') == 1 ? array("selected" => "selected") : null),
+									option_tag(lang('monday'), 2, array_var($event_data, 'repeat_dow') == 2 ? array("selected" => "selected") : null),
+									option_tag(lang('tuesday'), 3, array_var($event_data, 'repeat_dow') == 3 ? array("selected" => "selected") : null),
+									option_tag(lang('wednesday'), 4, array_var($event_data, 'repeat_dow') == 4 ? array("selected" => "selected") : null),
+									option_tag(lang('thursday'), 5, array_var($event_data, 'repeat_dow') == 5 ? array("selected" => "selected") : null),
+									option_tag(lang('friday'), 6, array_var($event_data, 'repeat_dow') == 6 ? array("selected" => "selected") : null),
+									option_tag(lang('saturday'), 7, array_var($event_data, 'repeat_dow') == 7 ? array("selected" => "selected") : null),
+								);
+								echo select_box('event[repeat_dow]', $options, array("id" => $genid."event[repeat_dow]", "onchange" => "og.updateEventStartDate();"));
+								echo "&nbsp;" . lang('every') . "&nbsp;";
+								$options = array();
+								for ($i=1; $i<=12; $i++) {
+									$options[] = option_tag("$i", $i, array_var($event_data, 'repeat_mjump') == $i ? array("selected" => "selected") : null);
+								}
+								echo select_box('event[repeat_mjump]', $options, array("id" => $genid."event[repeat_mjump]"));
+								echo "&nbsp;" . lang('months');
 							?>
 						</div>
 					</td>
@@ -395,6 +438,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<script>
 	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 	wsch.on("wschecked", function(arguments) {
+		if (!this.getValue().trim()) return;
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
 			url: og.getUrl('object', 'render_add_subscribers', {
@@ -632,6 +676,7 @@ og.redrawUserList = function(wsVal){
 	}
 };
 wsch.on("wschecked", function() {
+	if (!this.getValue().trim()) return;
 	og.redrawUserList(this.getValue());
 }, wsch);
 <?php if ($object->isNew()) {
@@ -645,6 +690,10 @@ wsch.on("wschecked", function() {
 }
 ?>
 og.redrawUserList('<?php echo $ws_ids ?>');
+
+Ext.getCmp(genid + 'event[start_value]Cmp').on({
+	change: og.updateRepeatHParams
+});
 
 Ext.get('eventSubject').focus();
 <?php if (array_var($event_data, 'typeofevent') == 2) echo 'og.toggleDiv(\''.$genid.'event[start_time]\'); og.toggleDiv(\''.$genid.'ev_duration_div\');'; ?>

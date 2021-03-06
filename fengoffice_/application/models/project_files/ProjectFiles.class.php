@@ -49,7 +49,7 @@ class ProjectFiles extends BaseProjectFiles {
 	* @return array
 	* 
 	*/
-	static function getProjectFiles($project = null, $folderId = null, $hide_private = false, $order = null, $orderdir = 'ASC', $page = null, $files_per_page = null, $group_by_order = false, $tag = null, $type_string = null, $userId = null) {
+	static function getProjectFiles($project = null, $folderId = null, $hide_private = false, $order = null, $orderdir = 'ASC', $page = null, $files_per_page = null, $group_by_order = false, $tag = null, $type_string = null, $userId = null, $archived = false) {
 		if ($order == self::ORDER_BY_POSTTIME) {
 			$order_by = '`created_on` ' . $orderdir;
 		} else if ($order == self::ORDER_BY_MODIFYTIME) {
@@ -82,10 +82,20 @@ class ProjectFiles extends BaseProjectFiles {
 		if ($type_string == '' || $type_string == null) {
 			$typestr = "";
 		} else {
-			$type_string .= '%';
+			$types = explode(',',$type_string);
+			$typessql = '( ';
+			$cant = count($types);
+			$n=0;
+			foreach ($types as $type){
+				$type .= '%';				
+				$typessql .= ' ' . TABLE_PREFIX . "project_file_revisions.type_string LIKE ".DB::escape($type);
+				$n++;
+				$n != $cant? $typessql .= ' OR ': $typessql .= ' )';
+			}			
 			$typestr = " AND  (select count(*) from " . TABLE_PREFIX . "project_file_revisions where " .
-				TABLE_PREFIX . "project_file_revisions.type_string LIKE ".DB::escape($type_string)." AND " . TABLE_PREFIX .
-				"project_files.id = " . TABLE_PREFIX . "project_file_revisions.file_id)";
+				$typessql ." AND " . TABLE_PREFIX .	"project_files.id = " .
+				TABLE_PREFIX . "project_file_revisions.file_id)";
+			
 		}
 		if ($userId == null || $userId == 0) {
 			$userstr = "";
@@ -94,7 +104,10 @@ class ProjectFiles extends BaseProjectFiles {
 		}
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()) . ') ';
 		
-		$otherConditions = $projectstr . $tagstr . $typestr . $userstr . $permissionstr;
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		
+		$otherConditions = $projectstr . $tagstr . $typestr . $userstr . $permissionstr . $archived_cond;
 		
 		if ($hide_private) {
 			$conditions = array('`is_visible` = ?' . $otherConditions,  true);
@@ -115,7 +128,7 @@ class ProjectFiles extends BaseProjectFiles {
 	 *
 	 * @param unknown_type $condition
 	 */
-	function getUserFiles($user = null, $workspace = null, $tag = null, $type_string = null, $order = null, $orderdir = 'ASC', $offset = 0, $limit = 0, $include_sub_workspaces = true) {
+	function getUserFiles($user = null, $workspace = null, $tag = null, $type_string = null, $order = null, $orderdir = 'ASC', $offset = 0, $limit = 0, $include_sub_workspaces = true, $archived = false) {
 		if (!$user instanceof User) $user = logged_user();
 
 		if ($workspace instanceof Project){
@@ -140,14 +153,28 @@ class ProjectFiles extends BaseProjectFiles {
 		if ($type_string == '' || $type_string == null) {
 			$typecond = "";
 		} else {
-			$typecond = " AND  (SELECT count(*) FROM `" . TABLE_PREFIX . "project_file_revisions` WHERE `" .
-				TABLE_PREFIX . "project_file_revisions`.`type_string` LIKE ".DB::escape($type_string)." AND `" . TABLE_PREFIX .
-				"project_files`.`id` = `" . TABLE_PREFIX . "project_file_revisions`.`file_id`)";
+			$types = explode(',',$type_string);
+			$typessql = '(';
+			$cant = count($types);
+			$n=0;
+			foreach ($types as $type){
+				$type .= '%';
+				$typessql .= ' ' . TABLE_PREFIX . "project_file_revisions.type_string LIKE ".DB::escape($type);
+				$n++;
+				$n != $cant? $typessql .= ' OR ': $typessql .= ' )';
+			}
+			
+				$typecond = " AND  (SELECT count(*) FROM " . TABLE_PREFIX . "project_file_revisions WHERE " .
+				$typessql ." AND " . TABLE_PREFIX ."project_files.id = " . TABLE_PREFIX . "project_file_revisions.file_id)";				
+				
 		}
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(), ACCESS_LEVEL_READ, $user) . ') ';
 		
-		$conditions = $wscond . $tagcond . $typecond . $permissions;
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		
+		$conditions = $wscond . $tagcond . $typecond . $permissions . $archived_cond;
 		
 		if ($order == self::ORDER_BY_POSTTIME) {
 			$order_by = '`created_on` ' . $orderdir;
@@ -171,13 +198,19 @@ class ProjectFiles extends BaseProjectFiles {
 	* @param boolean $show_private
 	* @return null
 	*/
-	static function getOrphanedFilesByProject(Project $project, $show_private = false) {
+	static function getOrphanedFilesByProject(Project $project, $show_private = false, $archived = false) {
 		$condstr = self::getWorkspaceString();
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		
 		if ($show_private) {
 			$conditions = array($condstr, $project->getId());
 		} else {
 			$conditions = array($condstr . ' AND `is_private` = ?', $project->getId(), false);
 		} // if
+		
+		$conditions .= $archived_cond;
 		
 		return self::findAll(array(
 			'conditions' => $conditions,
@@ -191,8 +224,11 @@ class ProjectFiles extends BaseProjectFiles {
 	* @param Project $project
 	* @return array
 	*/
-	static function getAllFilesByProject(Project $project) {
+	static function getAllFilesByProject(Project $project, $archived = false) {
 		$condstr = self::getWorkspaceString();
+		if ($archived) $condstr .= " AND `archived_by_id` <> 0";
+		else $condstr .= " AND `archived_by_id` = 0";
+		
 		return self::findAll(array(
 			'conditions' => array($condstr, $project->getId())
 		)); // findAll
@@ -238,11 +274,12 @@ class ProjectFiles extends BaseProjectFiles {
 	* @param $filename
 	* @return array
 	*/
-	static function getByFilename($filename) {
+	static function getByFilename($filename, $order = '`id` DESC') {
 		$conditions = array('`filename` = ?', $filename);
 		
 		return self::findOne(array(
-			'conditions' => $conditions
+			'conditions' => $conditions,
+			'order' => $order,
 		));
 	} // getByFilename
 	
@@ -257,7 +294,7 @@ class ProjectFiles extends BaseProjectFiles {
 		return self::findAll(array(
 			'conditions' => $conditions
 		));
-	} // getByFilename
+	} // getAllByFilename
 	
 	/**
 	* Return files index page
@@ -290,13 +327,16 @@ class ProjectFiles extends BaseProjectFiles {
 	* @param boolean $include_private
 	* @return array
 	*/
-	static function getImportantProjectFiles(Project $project, $include_private = false) {
+	static function getImportantProjectFiles(Project $project, $include_private = false, $archived = false) {
 		$condstr = self::getWorkspaceString();
 		if ($include_private) {
 			$conditions = array($condstr . ' AND `is_important` = ?', $project->getId(), true);
 		} else {
 			$conditions = array($condstr . ' AND `is_important` = ? AND `is_private` = ?', $project->getId(), true, false);
 		} // if
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		$conditions .= $archived_cond;
 		
 		return self::findAll(array(
 			'conditions' => $conditions,

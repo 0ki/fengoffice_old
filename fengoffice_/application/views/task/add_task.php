@@ -7,12 +7,24 @@
 	$object = $task;
 	if ($task->isNew()) {
 		$project = Projects::findById(array_var($task_data, 'project_id'));
+		if (isset($from_email) && $from_email instanceof MailContent) {
+			$email_workspaces = $from_email->getWorkspaces();
+			// pick the most specific workspace
+			$email_max = 0;
+			foreach ($email_workspaces as $email_workspace) {
+				if ($email_workspace->getDepth() >= $email_max) {
+					$email_max = $email_workspace->getDepth();
+					$project = $email_workspace;
+				}
+			}
+		}
 	} else {
 		$project = $task->getProject();
 	}
+	$co_type = array_var($task_data, 'object_subtype');
 ?>
 
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
 
 <div class="task">
 <div class="coInputHeader">
@@ -64,7 +76,9 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-
+	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo $task->isNew() ? '': $task->getUpdatedOn()->getTimestamp() ?>">
+	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
+	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close' && user_config_option('show_add_task_context_help', true, logged_user()->getId()))) {?>
@@ -84,7 +98,18 @@
 			</div>
 		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
+		<?php if (isset($email_workspaces) && is_array($email_workspaces)) { ?>
+		<div>
+			<label><?php echo lang('suggested workspaces')?>:</label>
+			<ul>
+			<?php foreach ($email_workspaces as $email_workspace) { ?>
+				<li><a href="#" class="link-ico ico-color<?php echo $email_workspace->getColor() ?>" onclick="og.WorkspaceSelected('<?php echo $genid ?>wsSel', {id:'<?php echo $email_workspace->getId()?>',color:'<?php echo $email_workspace->getColor()?>',name:'<?php echo $email_workspace->getName()?>'})"><?php echo $email_workspace->getPath() ?></a></li>
+			<?php } ?>
+			</ul>
+			<br />
+		</div>
+		<?php } ?>
+		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project->getId(), $genid) .'</div>'?>
 
 		<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>
@@ -227,6 +252,15 @@
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('task priority')) ?>
 		<?php echo select_task_priority('task[priority]', array_var($task_data, 'priority', ProjectTasks::PRIORITY_NORMAL), array('tabindex' => '90')) ?>
+		</div>
+		
+		<div style="padding-top:4px">
+		<?php $task_types = ProjectCoTypes::getObjectTypesByManager('ProjectTasks');
+			if (count($task_types) > 0) {
+				echo label_tag(lang('object type'));
+				echo select_object_type('task[object_subtype]', $task_types, array_var($task_data, 'object_subtype', config_option('default task co type')), array('tabindex' => '95', 'onchange' => "og.onChangeObjectCoType('$genid', 'ProjectTasks', ".($object->isNew() ? "0" : $object->getId()).", this.value)"));
+			}
+		?>
 		</div>
   	</fieldset>
   	</div>
@@ -383,7 +417,11 @@
 			</div>
 		<?php }?>
     <legend><?php echo lang('custom properties') ?></legend>
-      <?php echo render_object_custom_properties($object, 'ProjectTasks', false) ?><br/><br/>
+    	<div id="<?php echo $genid ?>not_required_custom_properties_container">
+	    	<div id="<?php echo $genid ?>not_required_custom_properties">
+	      	<?php echo render_object_custom_properties($object, 'ProjectTasks', false, $co_type) ?><br/><br/>
+	      	</div><br />
+	    </div>
       <?php echo render_add_custom_properties($object); ?>
   	</fieldset>
  	</div>
@@ -443,14 +481,26 @@
 			</div>
 		<?php }?>
 		<legend><?php echo lang('linked objects') ?></legend>
-		<?php echo render_object_link_form($object) ?>
+		<?php
+			$pre_linked_objects = null;
+			if (isset($from_email) && $from_email instanceof MailContent) {
+				$pre_linked_objects = array($from_email);
+				$attachments = $from_email->getLinkedObjects();
+				foreach ($attachments as $att) {
+					if ($att instanceof ProjectFile) {
+						$pre_linked_objects[] = $att;
+					}
+				}
+			}
+			echo render_object_link_form($object, $pre_linked_objects)
+		?>
 	</fieldset>	
 	</div>
 	<?php } // if ?>
 		
    	
 	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'long', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
+	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'huge', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>
 
 	<?php foreach ($categories as $category) { ?>
@@ -478,9 +528,12 @@
 		
 	</div>
 	
-	<div>
-		<?php echo render_object_custom_properties($object, 'ProjectTasks', true) ?>
-	</div><br/>
+	<div id="<?php echo $genid ?>required_custom_properties_container">
+		<div id="<?php echo $genid ?>required_custom_properties">
+			<?php tpl_assign('startTi', 15000) ?>
+			<?php echo render_object_custom_properties($object, 'ProjectTasks', true, $co_type) ?>
+		</div><br/>
+	</div>
 	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
   <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '170')) ?>
 </div>

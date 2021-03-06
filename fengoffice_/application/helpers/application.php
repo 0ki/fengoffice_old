@@ -17,9 +17,27 @@
 function render_user_box(User $user) {
 	tpl_assign('_userbox_user', $user);
 	tpl_assign('_userbox_projects', $user->getActiveProjects());
-	$extraCrumbs = array();
-	Hook::fire('render_userbox_crumbs', null, $extraCrumbs);
-	tpl_assign('_userbox_extra_crumbs', $extraCrumbs);
+	$crumbs = array();
+	$crumbs[] = array(
+		'url' => help_link(),
+		'target' => '_blank',
+		'text' => lang('help'),
+	);
+	$crumbs[] = array(
+		'url' => logged_user()->getAccountUrl(),
+		'target' => 'account',
+		'text' => lang('account'),
+	);
+	if (logged_user()->isMemberOfOwnerCompany() && logged_user()->isAdministrator()) {
+		$crumbs[] = array(
+			'url' => get_url('administration', 'index'),
+			'target' => 'administration',
+			'text' => lang('administration'),
+		);
+	}
+	Hook::fire('render_userbox_crumbs', null, $crumbs);
+	$crumbs = array_reverse($crumbs);
+	tpl_assign('_userbox_crumbs', $crumbs);
 	return tpl_fetch(get_template_path('user_box', 'application'));
 } // render_user_box
  
@@ -86,9 +104,13 @@ function render_system_notices(User $user) {
  * @param array $attributes Additional attributes
  * @return string
  */
-function select_company($name, $selected = null, $attributes = null) {
+function select_company($name, $selected = null, $attributes = null, $allow_none = true) {
 	$companies = Companies::findAll(array('order' => 'client_of_id ASC, name ASC'));
-	$options = array(option_tag(lang('none'), 0));
+	if ($allow_none) {
+		$options = array(option_tag(lang('none'), 0));
+	} else {
+		$options = array();
+	}
 	if(is_array($companies)) {
 		foreach($companies as $company) {
 			$option_attributes = $company->getId() == $selected ? array('selected' => 'selected') : null;
@@ -214,6 +236,81 @@ function select_workspaces($name = "", $workspaces = null, $selected = null, $id
 	";
 	return $output;
 } // select_workspaces
+
+/**
+ * Returns a control to select multiple users or groups
+ *
+ * @param string $name
+ * 		Name for the control
+ * @param array $workspaces
+ * 		Array of workspaces to choose from. If null the workspaces from the WorkspacePanel will be loaded.
+ * @param array $selected
+ * 		Array of workspaces selected by default
+ * @return string
+ * 		HTML for the control
+ */
+function select_users_or_groups($name = "", $users = null, $selected = null, $id = null) {
+	require_javascript('og/UserGroupPicker.js');
+	
+	if (!isset($id)) $id = gen_id();
+		
+	$selectedCSV = "";
+	if (is_array($selected)) {
+		foreach ($selected as $s) {
+			if ($s instanceof Project) {
+				if ($selectedCSV != "") $selectedCSV .= ",";
+				$selectedCSV .= $s->getId();
+			}
+		}
+	}
+	
+	$json = array();
+	$companies = Companies::findAll(array('order' => 'name ASC'));
+	foreach ($companies as $company) {
+		$company_users = $company->getUsers();
+		if (count($company_users) > 0) {
+			$json[] = array(
+				'p' => 'users',
+				't' => 'company',
+				'id' => 'c' . $company->getId(),
+				'n' => $company->getName(),
+			);
+			foreach ($company_users as $u) {
+				$json[] = array(
+					'p' => 'c' . $company->getId(),
+					't' => 'user',
+					'id' => $u->getId(),
+					'n' => $u->getDisplayName(),
+				);	
+			}
+		}
+	}
+	$groups = Groups::findAll(array('order' => 'name ASC'));
+	foreach ($groups as $group) {
+		$json[] = array(
+			'p' => 'groups',
+			't' => 'group',
+			'id' => $group->getId(),
+			'n' => $group->getName(),
+		);
+	}
+	$jsonUsers = json_encode($json);
+	
+	$output = "<div id=\"$id-user-picker\"></div>
+			<input id=\"$id-field\" type=\"hidden\" value=\"$selectedCSV\" name=\"$name\"></input>
+		<script>
+		var userPicker = new og.UserPicker({
+			renderTo: '$id-user-picker',
+			field: '$id-field',
+			id: '$id',
+			users: $jsonUsers,
+			height: 320,
+			width: 210
+		});
+		</script>
+	";
+	return $output;
+} // select_users_or_groups
 
 function intersectCSVs($csv1, $csv2){
 	$arr1 = explode(',', $csv1);
@@ -731,10 +828,11 @@ function render_object_comments_for_print(ProjectDataObject $object) {
  * @param ProjectDataObject $object Show custom properties of this object
  * @return null
  */
-function render_object_custom_properties($object, $type, $required) {
+function render_object_custom_properties($object, $type, $required, $co_type=null) {
 	tpl_assign('_custom_properties_object', $object);
 	tpl_assign('required', $required);
 	tpl_assign('type', $type);
+	tpl_assign('co_type', $co_type);
 	return tpl_fetch(get_template_path('object_custom_properties', 'custom_properties'));
 } // render_object_custom_properties
 
@@ -832,9 +930,28 @@ function render_object_links(ApplicationDataObject $object, $can_remove = false,
 	return tpl_fetch(get_template_path('list_linked_objects', 'object'));
 } // render_object_links
 
-function render_object_link_form(ApplicationDataObject $object) {
+/**
+ * List all fields attached to specific object, and renders them in the main view
+ *
+ * @param ProjectDataObject $object
+ * @param boolean $can_remove Logged user can remove linked objects
+ * @return string
+ */
+function render_object_links_main(ApplicationDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
+	tpl_assign('linked_objects_object', $object);
+	tpl_assign('shortDisplay', $shortDisplay);
+	tpl_assign('enableAdding', $enableAdding);
+	tpl_assign('linked_objects', $object->getLinkedObjects());
+	return tpl_fetch(get_template_path('list_linked_objects_main', 'object'));
+} // render_object_links
+
+function render_object_link_form(ApplicationDataObject $object, $extra_objects = null) {
 	require_javascript("og/ObjectPicker.js");
-	tpl_assign('objects', $object->getLinkedObjects());
+	$objects = $object->getLinkedObjects();
+	if (is_array($extra_objects)) {
+		$objects = array_merge($objects, $extra_objects);
+	}
+	tpl_assign('objects', $objects);
 	return tpl_fetch(get_template_path('linked_objects', 'object'));
 } // render_object_link_form
 
@@ -920,12 +1037,13 @@ function render_add_subscribers_select(ProjectDataObject $object, $genid = null,
  *
  * @param ProjectDataObject $object
  */
-function render_link_to_object($object, $text=null){
+function render_link_to_object($object, $text=null, $reload=false){
 	require_javascript("og/ObjectPicker.js");
 	
 	$id = $object->getId();
 	$manager = get_class($object->manager());
 	if ($text == null) $text = lang('link object');
+	$reload_param = $reload ? '&reload=1' : ''; 
 	$result = '';
 	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data) {' .
 			'if (data) {' .
@@ -935,7 +1053,8 @@ function render_link_to_object($object, $text=null){
 					'objects += data[i].data.manager + \':\' + data[i].data.object_id;' .
 				'}' .
 				' og.openLink(\'' . get_url("object", "link_object") .
-						'&object_id=' . $id . '&manager=' . $manager. '&objects=\' + objects);' .
+						'&object_id=' . $id . '&manager=' . $manager. $reload_param . '&objects=\' + objects' . 
+						($reload ? ',{callback: function(){og.redrawLinkedObjects('. $object->getId() .', \''. get_class($object->manager()) .'\')}}' : '') . ');' .
 			'}' .
 		'})" id="object_linker">';
 	$result .= $text;
@@ -1042,6 +1161,8 @@ function autocomplete_textfield($name, $value, $options, $emptyText, $attributes
 
 	$id = array_var($attributes, "id", gen_id());
 	$attributes["id"] = $id;
+	$attributes["autocomplete"] = "off";
+	$attributes["onkeypress"] = "if (event.keyCode == 13) return false;";
 
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
 		<script>
@@ -1091,6 +1212,8 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 
 	$id = array_var($attributes, "id", gen_id());
 	$attributes["id"] = $id;
+	$attributes["autocomplete"] = "off";
+	$attributes["onkeypress"] = "if (event.keyCode == 13) return false;";
 
 	$html = '<div class="og-csvcombo-container">' . text_field($name, $value, $attributes) . '</div>
 		<script>
@@ -1117,7 +1240,12 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 	require_javascript("og/CSVCombo.js");
 	if (!isset($id)) $id = gen_id();
-	$attributes = array("class" => "long", "id" => $id);
+	$attributes = array(
+		"class" => "long",
+		"id" => $id,
+		"autocomplete" => "off",
+		"onkeypress" => "if (event.keyCode == 13) return false;",
+	);
 	if (isset($tabindex)) $attributes['tabindex'] = $tabindex;
 
 	if (trim($value) != "") $value .= ", ";
@@ -1220,24 +1348,28 @@ function render_add_custom_properties(ProjectDataObject $object) {
 			<th>' . lang('value') . '</th>
 			<th class="actions"></th>
 			</tr></tbody></table>
-			<a href="#" onclick="og.addObjectCustomProperty(this.parentNode, \'\', \'\');return false;">' . lang("add custom property") . '</a>
+			<a href="#" onclick="og.addObjectCustomProperty(this.parentNode, \'\', \'\', true);return false;">' . lang("add custom property") . '</a>
 		</div>
 		<script>
-		og.addObjectCustomProperty = function(parent, name, value) {
+		var ti = 30000;
+		og.addObjectCustomProperty = function(parent, name, value, focus) {
 			var count = parent.getElementsByTagName("tr").length - 1;
 			var tbody = parent.getElementsByTagName("tbody")[0];
 			var tr = document.createElement("tr");
 			var td = document.createElement("td");
-			td.innerHTML = \'<input class="name" type="text" name="custom_prop_names[\' + count + \']" value="\' + name + \'">\';;
+			td.innerHTML = \'<input class="name" type="text" name="custom_prop_names[\' + count + \']" value="\' + name + \'" tabindex=\' + ti + \'>\';;
+			if (td.children) var input = td.children[0];
 			tr.appendChild(td);
 			var td = document.createElement("td");
-			td.innerHTML = \'<input class="value" type="text" name="custom_prop_values[\' + count + \']" value="\' + value + \'">\';;
+			td.innerHTML = \'<input class="value" type="text" name="custom_prop_values[\' + count + \']" value="\' + value + \'" tabindex=\' + (ti + 1) + \'>\';;
 			tr.appendChild(td);
 			var td = document.createElement("td");
 			td.innerHTML = \'<div class="ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
 			tr.appendChild(td);
 			tbody.appendChild(tr);
-			
+			if (input && focus)
+				input.focus();
+			ti += 2;
 		}
 		og.removeCustomProperty = function(tr) {
 			var parent = tr.parentNode;
@@ -1267,7 +1399,6 @@ function render_add_custom_properties(ProjectDataObject $object) {
 	if (is_array($properties)) {
 		foreach($properties as $property) {
 			$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");</script>';
-			
 		} // for
 	} // if
 	$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");</script>';
@@ -1322,6 +1453,14 @@ function select_task_priority($name, $selected = null, $attributes = null) {
 		option_tag(lang('normal priority'), ProjectTasks::PRIORITY_NORMAL, ($selected > ProjectTasks::PRIORITY_LOW && $selected < ProjectTasks::PRIORITY_HIGH)?array('selected' => 'selected'):null),
 		option_tag(lang('low priority'), ProjectTasks::PRIORITY_LOW, ($selected <= ProjectTasks::PRIORITY_LOW)?array('selected' => 'selected'):null),
 	);
+	return select_box($name, $options, $attributes);
+} // select_task_priority
+
+function select_object_type($name, $types, $selected = null, $attributes = null) {
+	$options = array();
+	foreach ($types as $type) {
+		$options[] = option_tag($type->getName(), $type->getId(), ($selected == $type->getId())?array('selected' => 'selected'):null);
+	}
 	return select_box($name, $options, $attributes);
 } // select_task_priority
 

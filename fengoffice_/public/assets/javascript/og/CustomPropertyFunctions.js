@@ -38,13 +38,22 @@ og.objectTypeChanged = function(genid){
 		}
 		var type = objectTypeSel[selectedObjTypeIndex].value;
 		if(type != ''){
-			og.openLink(og.getUrl('property', 'get_custom_properties', {object_type: type}), {
+			og.openLink(og.getUrl('object', 'get_co_types', {object_type: type}), {
 				callback: function(success, data) {
 					if (success) {
-						for(var i=0; i < data.custom_properties.length; i++){
-							var property = data.custom_properties[i];
-							og.addCustomProperty(genid, property);
-						}							
+						og.coTypes = data.co_types;
+						
+						og.openLink(og.getUrl('property', 'get_custom_properties', {object_type: type}), {
+							callback: function(success, data) {
+								if (success) {
+									for(var i=0; i < data.custom_properties.length; i++){
+										var property = data.custom_properties[i];
+										og.addCustomProperty(genid, property);
+									}							
+								}
+							},
+							scope: this
+						});
 					}
 				},
 				scope: this
@@ -72,6 +81,7 @@ og.addCustomProperty = function(genid, property){
 		'<option value="list"' + (property != null && property.type == 'list' ? 'selected' : '') + '>' + lang('list') + '</option>' +
 		'<option value="date"' + (property != null && property.type == 'date' ? 'selected' : '') + '>' + lang('date') + '</option>' +
 		'<option value="memo"' + (property != null && property.type == 'memo' ? 'selected' : '') + '>' + lang('memo') + '</option>' +
+		'<option value="table"' + (property != null && property.type == 'table' ? 'selected' : '') + '>' + lang('table') + '</option>' +
 		'</select>';
 	var style = 'style="width:auto;padding-right:10px;"';
 	var styleHidden = 'style="width:100px;padding-right:10px;display:none;"';
@@ -80,8 +90,9 @@ og.addCustomProperty = function(genid, property){
 		'<input id="custom_properties[' + count + '][deleted]" name="custom_properties[' + count + '][deleted]" type="hidden" value="0"/></td>' +
   		'<td ' + style + '><b>' + lang('name') + '</b>:<br/><input type="text" id="custom_properties[' + count + '][name]" name="custom_properties[' + count + '][name]" value="{1}"/></td>' +
 		'<td ' + style + '><b>' + lang('type') + '</b>:<br/>' + types + '</td>' +
-		'<td ' + (property != null && property.type == 'list' && property.values != null ? style : styleHidden) + ' id="tdValues' + count + '">' + 
-		'<b>' + lang('values comma separated') + 
+		'<td ' + (property != null && (property.type == 'list' || property.type == 'table') && property.values != null ? style : styleHidden) + ' id="tdValues' + count + '">' + 
+		
+		'<b><span id="tdValues' + count + '_label">' + (property != null && property.type == 'table' ? lang('columns comma separated') : lang('values comma separated')) + '</span>' + 
 		'</b>:<br/><input type="text" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][values]" name="custom_properties[' + count + '][values]" value="{2}"/></td>' +
 		'<td ' + style + '><b>' + lang('description') + 
 		'</b>:<br/><input type="text" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][description]" name="custom_properties[' + count + '][description]" value="{3}"/></td>' +
@@ -91,8 +102,9 @@ og.addCustomProperty = function(genid, property){
 		'</b>:<br/><input type="checkbox" class="checkbox" onchange="javascript:og.fieldValueChanged()" id="custom_properties[' + count + '][default_value_boolean]" name="custom_properties[' + count + '][default_value_boolean]" {4}/>&nbsp;' + lang('checked') + '</td>' +
 		'<td ' + style + '><b>' + lang('required') + 
 		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][required]" name="custom_properties[' + count + '][required]" {5}/></td>' +
+		
 		'<td ' + style + ' id="tdMultipleValues' + count + '"><b>' + lang('multiple values') + 
-		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][multiple_values]" name="custom_properties[' + count + '][multiple_values]" {6}/></td>' +
+		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged();og.checkMValChecked(' + count + ');" type="checkbox" id="custom_properties[' + count + '][multiple_values]" name="custom_properties[' + count + '][multiple_values]" {6}/></td>' +
 		
 		'<td ' + style + ' id="tdVisibleByDefault' + count + '"><b>' + lang('visible by default') + 
   		'</b>:<br/><input class="checkbox" onchange="javascript:og.fieldValueChanged()" type="checkbox" id="custom_properties[' + count + '][visible_by_default]" name="custom_properties[' + count + '][visible_by_default]" {7}/></td>' +
@@ -103,6 +115,35 @@ og.addCustomProperty = function(genid, property){
 		'<tr id="trDelete' + count + '" style="display:none;"><td colspan="6"><b>' + lang('custom property deleted') +
 		'</b><a class="internalLink" href="javascript:og.undoDeleteCustomProperty(' + count + ',\'' + genid + '\')">&nbsp;(' + lang('undo') + ')</a></td></tr>' +
   		'</tr></table>';
+  	
+  	// CO Types
+  	if (og.coTypes && og.coTypes.length > 0) {
+	  	table += '<div style="margin:4px 0 3px"><b>' + lang('applies to') + '</b>&nbsp;';
+	  	var coTypeNames = '';
+	  	for (i=0; i<og.coTypes.length; i++) {
+	  		var value = 'false';
+	  		if(property != null && property.co_types != '') {
+	  			var splitted = property.co_types.split(',');
+	  			for (k=0; k<splitted.length; k++) {
+	  				if (splitted[k] == og.coTypes[i].id) {
+	  					value = true;
+	  					coTypeNames += (coTypeNames == '' ? '' : ', ') + og.coTypes[i].name;
+	  					break;
+	  				}
+	  			}
+	  		} else if (property == null) { //by default all types are selected
+	  			value = true;
+	  			coTypeNames += (coTypeNames == '' ? '' : ', ') + og.coTypes[i].name;
+	  		}
+	  		var t = og.coTypes[i];
+	  		table = table + '<input type="hidden" value="'+value+'" name="custom_properties[' + count + '][applyto]['+t.id+']" id="custom_properties[' + count + '][applyto]['+t.id+']">';
+	  	}
+	  	if (coTypeNames == '') coTypeNames = lang('none');
+	  	table += '<span class="desc" id="custom_properties[' + count + '][applyto_names]">' + coTypeNames + '</span>';
+	  	table += '<a class="ico-edit" style="padding:5px 0 0 16px;margin-left:20px;" href="#" onclick="og.showCoTypeSelector('+count+')">'+lang('edit')+'</a>';
+	  	table += '</div>';
+  	}
+  	
   	if(property != null){
   	  	var defaultValue = (property.type != 'boolean' ? property.default_value : (property.default_value ? 'checked' : ''));
   		table = String.format(table, property.id, property.name, (property.values ? property.values : ''), property.description, defaultValue, property.required == true ? 'checked="checked"' : '', property.multiple_values == true ? 'checked="checked"' : '', property.visible_by_default == true ? 'checked="checked"' : '');
@@ -122,20 +163,139 @@ og.addCustomProperty = function(genid, property){
   			document.getElementById('tdDefaultValueCheck' + count).style.display = '';
   			document.getElementById('tdDefaultValueText' + count).style.display = 'none';
 			document.getElementById('tdMultipleValues' + count).style.display = 'none';
+  		} else if(property.type == 'table'){
+  			var multipleValues = document.getElementById('custom_properties[' + count + '][multiple_values]');
+  			multipleValues.checked = true;
   		}
 	}
 };
+
+og.showCoTypeSelector = function(id) {
+	var oldValues = new Array();
+	for (i=0; i<og.coTypes.length; i++) {
+		var el = document.getElementById('custom_properties[' + id + '][applyto][' + og.coTypes[i].id + ']');
+		if (el) {
+			oldValues.push({id:og.coTypes[i].id, val:el.value});
+		}
+	}
+	
+	var applyAction = function() {
+		var str = '';
+		for (i=0; i<og.coTypes.length; i++) {
+			var el = document.getElementById('custom_properties[' + id + '][applyto][' + og.coTypes[i].id + ']');
+			if (el && el.value == 'true') str += (str == '' ? '' : ', ') + og.coTypes[i].name;
+		}
+		var el = document.getElementById('custom_properties[' + id + '][applyto_names]');
+		if (str == '') str = lang('none');
+		if (el) el.innerHTML = str;
+		og.ExtendedDialog.dialog.destroy();
+	};
+	
+	var cancelAction = function() {
+		for (i=0; i<og.coTypes.length; i++) {
+			for (j=0; j<oldValues.length; j++) {
+				if (og.coTypes[i].id == oldValues[j].id) {
+					var el = document.getElementById('custom_properties[' + id + '][applyto][' + oldValues[j].id + ']');
+					if (el) el.value = oldValues[j].val;
+					break;
+				}
+			}
+		}
+		og.ExtendedDialog.dialog.destroy();
+	};
+	
+	var allChecked = true;
+	for (i=0; i<og.coTypes.length && allChecked; i++) {
+		allChecked = document.getElementById('custom_properties[' + id + '][applyto][' + og.coTypes[i].id + ']').value == 'true';
+	}
+	var dlgItems = [{
+		xtype :'checkbox',
+		name :'co_type_all',
+		id : 'all',
+		boxLabel: lang('all'),
+		hideLabel: true,
+		checked: allChecked,
+		handler: function(checkbox, checked) {
+			for (i=0; i<og.coTypes.length; i++) {
+				var cotype = og.coTypes[i];
+				var el = Ext.getCmp('co_type_' + cotype.id);
+				if (el) {
+					el.setValue(checked);
+					el.setDisabled(checked);
+				}
+				var domel = document.getElementById('custom_properties[' + id + '][applyto][' + cotype.id + ']');
+				if (domel) domel.value = checked;
+			}
+		}
+	}];
+	for (i=0; i<og.coTypes.length; i++) {
+		var cotype = og.coTypes[i];
+		var item = {
+			xtype :'checkbox',
+			name : cotype.id,
+			id : 'co_type_' + cotype.id,
+			boxLabel: cotype.name,
+			hideLabel: true,
+			disabled: allChecked,
+			checked: document.getElementById('custom_properties[' + id + '][applyto][' + cotype.id + ']').value == 'true',
+			handler: function(checkbox, checked) {
+				var el = document.getElementById('custom_properties[' + id + '][applyto][' + checkbox.getName() + ']');
+				if (el) el.value = checked;
+			}
+		};
+		dlgItems.push(item);
+	}
+	
+	var config = {
+		title: lang('select co types to apply'),
+		y :50,
+		id :'co_type_selector',
+		modal :true,
+		height : 110 + dlgItems.length * 26,
+		width : 250,
+		resizable :false,
+		closeAction :'hide',
+		closable: false,
+		iconCls :'op-ico',
+		border :false,
+		buttons : [ {
+			text :lang('ok'),
+			handler :applyAction,
+			id :'yes_button',
+			scope :this
+		}, {
+			text :lang('cancel'),
+			handler :cancelAction,
+			id :'no_button',
+			scope :this
+		} ],
+		dialogItems : dlgItems
+	};
+	og.ExtendedDialog.show(config);
+}
+
+og.checkMValChecked = function(id) {
+	var fieldTypeSel = document.getElementById('custom_properties[' + id + '][type]');
+	if(fieldTypeSel.selectedIndex != -1){
+		var type = fieldTypeSel[fieldTypeSel.selectedIndex].value;
+		if (type == 'table') {
+			var multipleValues = document.getElementById('custom_properties[' + id + '][multiple_values]');
+			multipleValues.checked = true;
+		}
+	}
+}
 
 og.fieldTypeChanged = function(id){
 	var fieldTypeSel = document.getElementById('custom_properties[' + id + '][type]');
 	if(fieldTypeSel.selectedIndex != -1){
 		var type = fieldTypeSel[fieldTypeSel.selectedIndex].value;
 		var valuesField = document.getElementById('tdValues' + id);
+		var valuesLabel = document.getElementById('tdValues' + id + '_label');
 		var defaultValueCheck = document.getElementById('tdDefaultValueCheck' + id);
 		var defaultValueText = document.getElementById('tdDefaultValueText' + id);
 		var tdMultipleValues = document.getElementById('tdMultipleValues' + id);
 		var multipleValues = document.getElementById('custom_properties[' + id + '][multiple_values]');
-		if(type == 'list'){
+		if(type == 'list' || type == 'table'){
 			valuesField.style.display = '';
 		}else{
 			valuesField.style.display = 'none';
@@ -150,6 +310,12 @@ og.fieldTypeChanged = function(id){
 			defaultValueCheck.style.display = 'none';
 			defaultValueText.style.display = '';
 			tdMultipleValues.style.display = '';
+			if (type == 'table') {
+				multipleValues.checked = true;
+				valuesLabel.innerHTML = lang('columns comma separated');
+			} else {
+				valuesLabel.innerHTML = lang('values comma separated');
+			}
 		}
 	}
 	cpModified = true;
@@ -210,6 +376,21 @@ og.swapCPs = function(first, second, genid){
 	vis_default1.checked = vis_default2.checked;
 	vis_default2.checked = checkedVisDef;
 	
+	var applyto_names1 = document.getElementById('custom_properties[' + first + '][applyto_names]');
+	var applyto_names2 = document.getElementById('custom_properties[' + second + '][applyto_names]');
+	var tmp = applyto_names1.innerHTML;
+	applyto_names1.innerHTML = applyto_names2.innerHTML;
+	applyto_names2.innerHTML = tmp;
+	if (og.coTypes) {
+		for (k=0; k<og.coTypes.length; k++) {
+			var applyto1 = document.getElementById('custom_properties[' + first + '][applyto]['+ og.coTypes[k].id +']');
+			var applyto2 = document.getElementById('custom_properties[' + second + '][applyto]['+ og.coTypes[k].id +']');
+			var tmp = applyto1.value;
+			applyto1.value = applyto2.value;
+			applyto2.value = tmp;
+		}
+	}
+
 	firstCP = document.getElementById('CP' + first);
 	secondCP = document.getElementById('CP' + second);
 	var parent = firstCP.parentNode;
@@ -285,6 +466,7 @@ og.validateCustomProperties = function(genid){
 				var valuesArray = values.split(',');
 				var defaultValueOK = false;
 				for(var j=0; j < valuesArray.length; j++){
+					valuesArray[j] = valuesArray[j].trim();
 					if(valuesArray[j] == defaultValue){
 						defaultValueOK = true;
 					}

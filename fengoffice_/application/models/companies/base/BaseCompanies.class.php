@@ -38,6 +38,8 @@
     	'updated_by_id' => DATA_TYPE_INTEGER,
     	'trashed_on' => DATA_TYPE_DATETIME,
     	'trashed_by_id' => DATA_TYPE_INTEGER,
+    	'archived_on' => DATA_TYPE_DATETIME,
+    	'archived_by_id' => DATA_TYPE_INTEGER,
     );
   
     /**

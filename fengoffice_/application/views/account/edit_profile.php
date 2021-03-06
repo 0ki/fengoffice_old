@@ -56,32 +56,35 @@
       
       <div>
         <?php echo label_tag(lang('company'), 'userFormCompany', true) ?>
-        <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
-        array('id' => 'userFormCompany', 'tabindex' => '2100')) ?>
+        <?php $attributes = array(
+        	'id' => 'userFormCompany',
+        	'tabindex' => '2100',
+        	'onchange' => "var d = document.getElementById('" . $genid . "options'); var n = document.getElementById('" . $genid . "userFormIsAdminNo'); if (this.value == '1') { if (d) d.style.display = 'block'; if (n) n.checked = true; } else { if (d) d.style.display = 'none'; if(n) n.checked = false; }"
+		);
+		if ($user->getId() == 1) {
+			$attributes['disabled'] = 'disabled';
+		}
+		?>
+        <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'),  $attributes, false) ?>
       </div>
       
-<?php if($company->isOwner()) { ?>
-     <?php if($user->getId() != 1) /* System admin cannot change admin status */ {?>
-      <fieldset>
-        <legend><?php echo lang('options') ?></legend>
-        
-	        <div>
-	          <?php echo label_tag(lang('is administrator'), null, true) ?>
-	          <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no'), '2200') ?>
-	        </div>     
-	         </fieldset>
-        <?php } ?>
-        
-        <!-- div>
-          <?php echo label_tag(lang('is auto assign'), null, true) ?>
-          <?php echo yes_no_widget('user[auto_assign]', 'userFormAutoAssign', array_var($user_data, 'auto_assign'), lang('yes'), lang('no'), '2300') ?>
-        </div -->
 
-<?php } else { ?>
-      <input type="hidden" name="user[is_admin]" value="0" />
-      <input type="hidden" name="user[auto_assign]" value="0" />
-<?php } // if ?>
+	<div <?php if (!$company->isOwner()) echo 'style="display:none"'; ?> id="<?php echo $genid ?>options">
+	<fieldset>
+		<legend><?php echo lang('options') ?></legend>
+		<div>
+			<?php echo label_tag(lang('is administrator'), null, true) ?>
+			<?php $attributes = array();
+			if ($user->getId() == 1) $attributes['disabled'] = 'disabled';
+			?>
+			<?php echo yes_no_widget('user[is_admin]', $genid . 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no'), '2200', $attributes) ?>
+		</div>
+    </fieldset>
     </div>
+
+	<input type="hidden" name="user[auto_assign]" value="0" />
+    </div>
+    
     </fieldset>
   </div>
 <?php } else { ?>
@@ -110,9 +113,32 @@
 
    
   <div id="<?php echo $genid ?>update_profile_timezone" style="display:none">
+  
   <fieldset>
-  	<legend><?php echo lang('timezone')?></legend>
-   	<?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), array('id' => 'profileFormTimezone', 'class' => 'title', 'tabindex' => '2500')) ?>
+    <legend><?php echo lang('timezone') ?></legend>
+    <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
+    <div id ="<?php echo $genid?>detectTimeZone">
+    <?php echo yes_no_widget('autodetect_time_zone', 'userFormAutoDetectTimezone', user_config_option('autodetect_time_zone', false, $user->getId()), lang('yes'), lang('no'), null, array('onclick' => "og.showSelectTimezone('$genid')")) ?>
+    </div>
+    <div id="<?php echo $genid?>selecttzdiv" <?php if (user_config_option('autodetect_time_zone', false, $user->getId())) echo 'style="display:none"'; ?>>
+    <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
+    	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600' )) ?>
+    </div>
+  
+	  <script type="text/javascript">
+	  
+		og.showSelectTimezone = function(genid)	{
+			check = document.getElementById("userFormAutoDetectTimezoneYes");
+			div = document.getElementById(genid + "selecttzdiv");
+			if (check.checked){
+				div.style.display= "none";
+			}else{
+				div.style.display= "";
+			}
+			
+		  };
+		  
+	  </script>
   </fieldset>
   </div>
   
@@ -138,7 +164,7 @@
     	array('id' => 'profileFormTitle', 'tabindex' => '2800')) ?>
   </div>
   
-  	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
+  	<div id='<?php echo $genid ?>add_custom_properties_div' style="">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($user, 'Users', false) ?>

@@ -197,7 +197,7 @@ class ReportingController extends ApplicationController {
 		$project_str = " AND " . ProjectCharts::getWorkspaceString($pids);
 
 		list($charts, $pagination) = ProjectCharts::paginate(
-		array("conditions" => '`trashed_by_id` = 0 AND ' . $tagstr . $permission_str . $project_str ,
+		array("conditions" => '`trashed_by_id` = 0 AND `archived_by_id` = 0 AND ' . $tagstr . $permission_str . $project_str ,
 	        		'order' => '`title` ASC'),
 		config_option('files_per_page', 10),
 		$page
@@ -526,20 +526,18 @@ class ReportingController extends ApplicationController {
 							}
 						}
 					}
-
-					foreach($columns as $column){
-						foreach ($allowed_columns as $ac){
-							if ($column == $ac['id']){
-								$newColumn = new ReportColumn();
-								$newColumn->setReportId($newReport->getId());
-								if(is_numeric($column)){
-									$newColumn->setCustomPropertyId($column);
-								}else{
-									$newColumn->setFieldName($column);
-								}
-								$newColumn->save();
-								break;
+					
+					asort($columns); //sort the array by column order
+					foreach($columns as $column => $order){
+						if ($order > 0) {
+							$newColumn = new ReportColumn();
+							$newColumn->setReportId($newReport->getId());
+							if(is_numeric($column)){
+								$newColumn->setCustomPropertyId($column);
+							}else{
+								$newColumn->setFieldName($column);
 							}
+							$newColumn->save();
 						}
 					}
 					DB::commit();
@@ -554,20 +552,21 @@ class ReportingController extends ApplicationController {
 		}
 		$selected_type = array_var($_GET, 'type', '');
 		$types = array(
-		array("", lang("select one")),
-		array("Companies", lang("companies")),
-		array("Contacts", lang("contacts")),
-		array("MailContents", lang("email type")),
-		array("ProjectEvents", lang("events")),
-		array("ProjectFiles", lang("file")),
-		array("ProjectMilestones", lang("milestone")),
-		array("ProjectMessages", lang("message")),
-		array("ProjectTasks", lang("task")),
-		array("Users", lang("user")),
-		array("ProjectWebpages", lang("webpage")),
-		array("Projects", lang("workspace")),
+			array("", lang("select one")),
+			array("Companies", lang("companies")),
+			array("Contacts", lang("contacts")),
+			array("MailContents", lang("email type")),
+			array("ProjectEvents", lang("events")),
+			array("ProjectFiles", lang("file")),
+			array("ProjectMilestones", lang("milestone")),
+			array("ProjectMessages", lang("message")),
+			array("ProjectTasks", lang("task")),
+			array("Users", lang("user")),
+			array("ProjectWebpages", lang("webpage")),
+			array("Projects", lang("workspace")),
 		);
-		
+		if ($selected_type != '')
+			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
 		
 		tpl_assign('object_types', $types);
 		tpl_assign('selected_type', $selected_type);
@@ -695,15 +694,19 @@ class ReportingController extends ApplicationController {
 				}
 				ReportColumns::delete('report_id = ' . $report_id);
 				$columns = array_var($_POST, 'columns');
-				foreach($columns as $column){
-					$newColumn = new ReportColumn();
-					$newColumn->setReportId($report_id);
-					if(is_numeric($column)){
-						$newColumn->setCustomPropertyId($column);
-					}else{
-						$newColumn->setFieldName($column);
+				
+				asort($columns); //sort the array by column order
+				foreach($columns as $column => $order){
+					if ($order > 0) {
+						$newColumn = new ReportColumn();
+						$newColumn->setReportId($report_id);
+						if(is_numeric($column)){
+							$newColumn->setCustomPropertyId($column);
+						}else{
+							$newColumn->setFieldName($column);
+						}
+						$newColumn->save();
 					}
-					$newColumn->save();
 				}
 				DB::commit();
 				flash_success(lang('custom report updated'));
@@ -744,21 +747,23 @@ class ReportingController extends ApplicationController {
 
 			$selected_type = $report->getObjectType();
 			$types = array(
-			array("", lang("select one")),
-			array("Companies", lang("companies")),
-			array("Contacts", lang("contacts")),
-			array("MailContents", lang("email type")),
-			array("ProjectEvents", lang("events")),
-			array("ProjectFiles", lang("file")),
-			array("ProjectMilestones", lang("milestone")),
-			array("ProjectMessages", lang("message")),
-			array("ProjectTasks", lang("task")),
-			array("Users", lang("user")),
-			array("ProjectWebpages", lang("webpage")),
-			array("Projects", lang("workspace")),
+				array("", lang("select one")),
+				array("Companies", lang("companies")),
+				array("Contacts", lang("contacts")),
+				array("MailContents", lang("email type")),
+				array("ProjectEvents", lang("events")),
+				array("ProjectFiles", lang("file")),
+				array("ProjectMilestones", lang("milestone")),
+				array("ProjectMessages", lang("message")),
+				array("ProjectTasks", lang("task")),
+				array("Users", lang("user")),
+				array("ProjectWebpages", lang("webpage")),
+				array("Projects", lang("workspace")),
 			);
 			tpl_assign('object_types', $types);
 			tpl_assign('selected_type', $selected_type);
+			
+			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
 		}
 	}
 
@@ -833,6 +838,7 @@ class ReportingController extends ApplicationController {
 		$conditions = ReportConditions::getAllReportConditions($report_id);
 		tpl_assign('conditions', $conditions);
 		tpl_assign('parameters', $params);
+		tpl_assign('id', $report_id);
 		$this->setTemplate('report_printer');
 	}
 
@@ -863,6 +869,19 @@ class ReportingController extends ApplicationController {
 
 		ajx_current("empty");
 		ajx_extra_data(array('fields' => $fields));
+	}
+	
+	function get_object_column_list(){
+		$allowed_columns = $this->get_allowed_columns(array_var($_GET, 'object_type'));
+
+		tpl_assign('allowed_columns', $allowed_columns);
+		tpl_assign('columns', explode(',', array_var($_GET, 'columns', array())));
+		tpl_assign('order_by', array_var($_GET, 'orderby'));
+		tpl_assign('order_by_asc', array_var($_GET, 'orderbyasc'));
+		tpl_assign('genid', array_var($_GET, 'genid'));
+		
+		$this->setLayout("html");
+		$this->setTemplate("column_list");
 	}
 
 	function get_external_field_values(){

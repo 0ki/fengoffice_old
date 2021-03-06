@@ -30,7 +30,7 @@ UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET
 
 ALTER TABLE `<?php echo $table_prefix ?>application_logs` MODIFY COLUMN `action` enum('upload','open','close','delete','edit','add','trash','untrash','subscribe','unsubscribe','tag','comment','link','unlink','login') <?php echo $default_collation ?> default NULL;
 
-CREATE TABLE `<?php echo $table_prefix ?>template_parameters` (
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_parameters` (
 `id` INT( 10 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 `template_id` INT( 10 ) NOT NULL ,
 `name` VARCHAR( 255 ) NOT NULL ,
@@ -51,15 +51,15 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD COLUMN `bcc` TEXT NOT
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents` DROP COLUMN `date`;
 ALTER TABLE `<?php echo $table_prefix ?>mail_contents` ADD INDEX `uid`(`uid`);
 
-ALTER TABLE  `<?php echo $table_prefix ?>gs_fontStyles` MODIFY COLUMN `FontColor` varchar(7) <?php echo $default_collation ?> NOT NULL default '';
-ALTER TABLE  `<?php echo $table_prefix ?>gs_fontStyles` ADD COLUMN `FontVAlign` int(11) NOT NULL default '0';
-ALTER TABLE  `<?php echo $table_prefix ?>gs_fontStyles` ADD COLUMN `FontHAlign` int(11) NOT NULL default '0';
+ALTER TABLE  `<?php echo $table_prefix ?>gs_fontstyles` MODIFY COLUMN `FontColor` varchar(7) <?php echo $default_collation ?> NOT NULL default '';
+ALTER TABLE  `<?php echo $table_prefix ?>gs_fontstyles` ADD COLUMN `FontVAlign` int(11) NOT NULL default '0';
+ALTER TABLE  `<?php echo $table_prefix ?>gs_fontstyles` ADD COLUMN `FontHAlign` int(11) NOT NULL default '0';
 
 ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` MODIFY COLUMN `object_id` INT(10) NOT NULL DEFAULT 0;
 ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` DROP PRIMARY KEY;
 ALTER TABLE `<?php echo $table_prefix ?>custom_property_values` ADD COLUMN `id` int(10) NOT NULL AUTO_INCREMENT PRIMARY KEY;
 
-CREATE TABLE  `<?php echo $table_prefix ?>gs_borderstyles` (
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>gs_borderstyles` (
   `BorderStyleId` int(11) NOT NULL auto_increment,
   `BorderColor` varchar(7) <?php echo $default_collation ?>  default NULL,
   `BorderWidth` int(11) NOT NULL DEFAULT 0,
@@ -68,7 +68,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>gs_borderstyles` (
   PRIMARY KEY  (`BorderStyleId`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>gs_layoutstyles` (                          
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>gs_layoutstyles` (                          
   `LayoutStyleId` int(11) NOT NULL AUTO_INCREMENT,        
   `BorderLeftStyleId` int(11) DEFAULT NULL,               
   `BackgroundColor` varchar(7) <?php echo $default_collation ?> DEFAULT NULL,              
@@ -93,8 +93,8 @@ ALTER TABLE `<?php echo $table_prefix ?>mail_accounts`
 UPDATE `<?php echo $table_prefix ?>mail_accounts` SET `del_from_server` = -1 where `del_from_server` = 0;
 
 ALTER TABLE `<?php echo $table_prefix ?>reports`
- ADD COLUMN `workspace` INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER `is_order_by_asc`,
- ADD COLUMN `tags` VARCHAR(45) NOT NULL AFTER `workspace`;
+ ADD COLUMN `workspace` INTEGER UNSIGNED NOT NULL DEFAULT 0,
+ ADD COLUMN `tags` VARCHAR(45) NOT NULL;
 
 -- migrate weblinks to multiple workspaces
 INSERT INTO `<?php echo $table_prefix ?>workspace_objects`

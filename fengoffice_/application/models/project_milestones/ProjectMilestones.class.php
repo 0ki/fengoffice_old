@@ -22,7 +22,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param void
 	 * @return array
 	 */
-	function getLateMilestonesByCompany(Company $company) {
+	function getLateMilestonesByCompany(Company $company, $archived = false) {
 		$due_date = DateTimeValueLib::now()->beginningOfDay();
 
 		$projects = $company->getActiveProjects();
@@ -33,8 +33,11 @@ class ProjectMilestones extends BaseProjectMilestones {
 			$project_ids[] = $project->getId();
 		} // foreach
 
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		return self::findAll(array(
-	        'conditions' => array('`is_template` = false AND due_date` < ? AND `completed_on` = ? AND ' . self::getWorkspaceString($project_ids), $due_date, EMPTY_DATETIME),
+	        'conditions' => array('`is_template` = false AND due_date` < ? AND `completed_on` = ? AND ' . $archived_cond . self::getWorkspaceString($project_ids), $due_date, EMPTY_DATETIME),
     	    'order' => '`due_date`',
 		)); // findAll
 	} // getLateMilestonesByCompany
@@ -45,7 +48,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param Company $company
 	 * @return array
 	 */
-	function getTodayMilestonesByCompany(Company $company) {
+	function getTodayMilestonesByCompany(Company $company, $archived = false) {
 		$from_date = DateTimeValueLib::now()->beginningOfDay();
 		$to_date = DateTimeValueLib::now()->endOfDay();
 
@@ -56,9 +59,12 @@ class ProjectMilestones extends BaseProjectMilestones {
 		foreach($projects as $project) {
 			$project_ids[] = $project->getId();
 		} // foreach
+		
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
 
 		return self::findAll(array(
-        	'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids), EMPTY_DATETIME, $from_date, $to_date),
+        	'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids), EMPTY_DATETIME, $from_date, $to_date),
         	'order' => '`due_date`'
         )); // findAll
 	} // getTodayMilestonesByCompany
@@ -69,7 +75,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param User $user
 	 * @return array
 	 */
-	static function getActiveMilestonesByUser(User $user) {
+	static function getActiveMilestonesByUser(User $user, $archived = false) {
 		$projects = $user->getActiveProjects();
 		if(!is_array($projects) || !count($projects)) {
 			return null;
@@ -80,8 +86,11 @@ class ProjectMilestones extends BaseProjectMilestones {
 			$project_ids[] = $project->getId();
 		} // foreach
 
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		return self::findAll(array(
-        	'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND ' . self::getWorkspaceString($project_ids) . ' AND `completed_on` = ?', $user->getId(), 0, 0, EMPTY_DATETIME),
+        	'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . ' AND `completed_on` = ?', $user->getId(), 0, 0, EMPTY_DATETIME),
         	'order' => '`due_date`'
         )); // findAll
 	} // getActiveMilestonesByUser
@@ -93,9 +102,12 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getActiveMilestonesByUserAndProject(User $user, Project $project) {
+	static function getActiveMilestonesByUserAndProject(User $user, Project $project, $archived = false) {
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		return self::findAll(array(
-        	'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND ' . self::getWorkspaceString($project->getId()) . ' AND `completed_on` = ?', $user->getId(), 0, 0, EMPTY_DATETIME),
+        	'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND ' . $archived_cond . self::getWorkspaceString($project->getId()) . ' AND `completed_on` = ?', $user->getId(), 0, 0, EMPTY_DATETIME),
         	'order' => '`due_date`'
         )); // findAll
 	} // getActiveMilestonesByUserAndProject
@@ -106,7 +118,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param User $user
 	 * @return array
 	 */
-	function getLateMilestonesByUser(User $user, $project = null, $tag = null,$limit = null) {
+	function getLateMilestonesByUser(User $user, $project = null, $tag = null,$limit = null, $archived = false) {
 		$due_date = DateTimeValueLib::now()->beginningOfDay();
 
 		if ($project instanceof Project) {
@@ -114,18 +126,21 @@ class ProjectMilestones extends BaseProjectMilestones {
 		} else {
 			$project_ids = $user->getWorkspacesQuery();
 		}
+		
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectMilestones')"):'';
 		if ($limit) {
 			return self::findAll(array(
-				'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
+				'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
 				'order' => '`due_date`',
 				'limit' => $limit
 			)); // findAll
 		} else {
 			return self::findAll(array(
-          'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
+          'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
           'order' => '`due_date`'
           )); // findAll
 		}
@@ -138,7 +153,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param void
 	 * @return array
 	 */
-	function getTodayMilestonesByUser(User $user, $project = null, $tag = null, $limit = null) {
+	function getTodayMilestonesByUser(User $user, $project = null, $tag = null, $limit = null, $archived = false) {
 		$from_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->beginningOfDay();
 		$to_date = DateTimeValueLib::now()->add('h', logged_user()->getTimezone())->endOfDay();
 
@@ -147,17 +162,20 @@ class ProjectMilestones extends BaseProjectMilestones {
 		} else {
 			$project_ids = $user->getWorkspacesQuery();
 		}
+		
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager = 'ProjectMilestones')"):'';
 		if ($limit) {
 			return self::findAll(array(
-				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date),
+				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date),
 				'limit' => $limit
 			)); // findAll
 		}else {
 			return self::findAll(array(
-				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids) . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+				'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $permissions, EMPTY_DATETIME, $from_date, $to_date)
 			)); // findAll
 		}
 	} // getTodayMilestonesByUser
@@ -169,7 +187,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param void
 	 * @return array
 	 */
-	function getDayMilestonesByUser(DateTimeValue $date,User $user) {
+	function getDayMilestonesByUser(DateTimeValue $date,User $user, $archived = false) {
 		//      $date = new DateTimeValue($date->getTimestamp());
 
 		$date = $date->add('h', logged_user()->getTimezone());
@@ -180,13 +198,16 @@ class ProjectMilestones extends BaseProjectMilestones {
 		 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0 ";
+		else $archived_cond = "AND `archived_by_id` = 0 ";
+		
 		$result = self::findAll(array(
-			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond . $permissions, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 		return $result;
 	} // getDayMilestonesByUser
 
-	function getDayMilestonesByUserAndProject(DateTimeValue $date,User $user, $project = null) {
+	function getDayMilestonesByUserAndProject(DateTimeValue $date,User $user, $project = null, $archived = false) {
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery();
 		} else {
@@ -197,11 +218,14 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$from_date = $from_date->beginningOfDay();
 		$to_date =  (new DateTimeValue($date->getTimestamp()));
 		$to_date = $to_date->endOfDay();
-		 
+		
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, $user, 'project_id') .')';
 
 		$result = self::findAll(array(
-			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids) . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $permissions, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 		return $result;
 	} // getDayMilestonesByUser
@@ -214,7 +238,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser = null, $tags = '', $project = null){
+	function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser = null, $tags = '', $project = null, $archived = false){
 
 		$from_date = new DateTimeValue($date_start->getTimestamp());
 		$from_date = $from_date->beginningOfDay();
@@ -240,10 +264,13 @@ class ProjectMilestones extends BaseProjectMilestones {
 			$assignedFilter = ' AND (`assigned_to_user_id` = '.$assignedUser->getId().' OR 
 				(`id` IN (SELECT milestone_id FROM '.TABLE_PREFIX.'project_tasks WHERE `trashed_by_id` = 0 AND `milestone_id` > 0 AND `assigned_to_user_id` = ' . $assignedUser->getId() . ') OR 
 				(`assigned_to_user_id` = 0 AND (`assigned_to_company_id` = '. $assignedUser->getCompanyId().' OR `assigned_to_company_id` = 0))))';
-		}
+					}
+		
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0 ";
+		else $archived_cond = "AND `archived_by_id` = 0 ";
 
 		$result = self::findAll(array(
-			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
+			'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $archived_cond . $assignedFilter . $permissions . $limitation . $tag_str, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 
 		return $result;
@@ -261,7 +288,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 		$pendingstr = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " ";
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
 		
-		$conditions = array(' `is_template` = ' . DB::escape(false) . "$projectstr $pendingstr $permissionstr");
+		$conditions = array(' `is_template` = ' . DB::escape(false) . " AND `archived_by_id` = 0 $projectstr $pendingstr $permissionstr");
 		$milestones = ProjectMilestones::find(array(
 				'conditions' => $conditions,
 		));
@@ -269,7 +296,7 @@ class ProjectMilestones extends BaseProjectMilestones {
 		return $milestones;
 	}
 	
-	static function getProjectMilestones($project = null, $order = null, $orderdir = 'DESC', $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $is_template = false) {
+	static function getProjectMilestones($project = null, $order = null, $orderdir = 'DESC', $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $is_template = false, $archived = false) {
 		// default
 		$order_by = '`due_date` ASC';
 
@@ -312,10 +339,13 @@ class ProjectMilestones extends BaseProjectMilestones {
 		} else {
 			$pendingstr = "";
 		}
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
 
-		$otherConditions = $projectstr . $tagstr . $assignedToStr . $assignedByStr . $permissionstr . $pendingstr;
+		$otherConditions = $projectstr . $tagstr . $assignedToStr . $assignedByStr . $permissionstr . $pendingstr . $archived_cond;
 
 		$conditions = array(' `is_template` = ' . DB::escape($is_template) . $otherConditions);
 

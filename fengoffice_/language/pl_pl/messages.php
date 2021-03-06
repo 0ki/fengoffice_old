@@ -525,4 +525,9 @@
 	'log edit users' => 'użytkownik {0} wyedytował',
 	'log delete users' => 'użytkownik {0} usunął',
 	'log add users' => 'użytkownik {0} dodał',
+	'recipient must be specified' => 'Należy podać adresata',
+	'some objects could not be linked' => '{0} obiekt(ów) nie mogło zostać dowiązanych z powodu niewłaściwych uprawnień',
+	'user cannot link objects' => 'Nie masz dostatecznych uprawnień by dowiązywać obiekty w tym miejscu',
+	'ie browser outdated' => 'Twoja przeglądarka nie jest na liście oficjalnie obsługiwanych. By móc wykorzystać wszystkie funkcje użyj innej przeglądarki.',
+	'short search query warning' => 'Twoje zapytanie jest zbyt krótkie. Możesz spróbować zapytania "<b>{0}*</b>" by odnaleźć słowa zaczynające się od "<b>{0}</b>".',
 ); ?>

@@ -72,11 +72,11 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 
 <br/><br/>
 <?php if ($user instanceof User) { ?>
-	<span style="font-weight:bold"><?php echo lang('user')?></span>:&nbsp;<?php echo clean($user->getDisplayName()); ?>
+	<span style="font-weight:bold"><?php echo lang('reporting user')?></span>:&nbsp;<?php echo clean($user->getDisplayName()); ?>
 	<br/><br/>
 <?php }	?>
 <?php if ($workspace instanceof Project) { ?>
-	<span style="font-weight:bold"><?php echo lang('workspace')?></span>:&nbsp;<?php echo clean($workspace->getName()); ?>
+	<span style="font-weight:bold"><?php echo lang('reporting workspace')?></span>:&nbsp;<?php echo clean($workspace->getName()); ?>
 	<br/><br/>
 <?php }	?>
 

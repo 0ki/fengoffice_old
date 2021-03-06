@@ -1,22 +1,22 @@
 <?php
 
-  /**
-  * Dashboard interface langs
-  *
-  * @version 1.0
-  * @author Ilija Studen <ilija.studen@gmail.com>
-  */
-  
-  // Return langs
-  return array(
+/**
+ * Dashboard interface langs
+ *
+ * @version 1.0
+ * @author Ilija Studen <ilija.studen@gmail.com>
+ */
+
+// Return langs
+return array(
     'new OpenGoo version available' => 'New version of OpenGoo is available. <a class="internalLink" href="{0}" onclick="{1}">More details</a>.',
-    
+
     'my tasks' => 'My tasks',
     'welcome back' => 'Welcome back <strong>{0}</strong>',
-    
+
     'online users' => 'Online users',
     'online users desc' => 'Users who were active in last 15 minutes:',
-    
+
   	'charts' => 'Charts',
     'contacts' => 'Contacts',
     'dashboard' => 'Dashboard',
@@ -26,26 +26,26 @@
 	'documents' => 'Documents',
     'my projects' => 'My workspaces',
     'my projects archive desc' => 'List of closed (archived) workspace. All actions for these workspace are locked, but you can still browse them.',
-    
+
     'company online' => 'Company online',
-    
+
     'enable javascript' => 'Enable JavaScript in your browser to use this feature',
-    
+
     'user password generate' => 'Generate random password',
     'user password specify' => 'Specify password',
     'is administrator' => 'Administrator',
     'is auto assign' => 'Auto assign to new workspaces?',
     'auto assign' => 'Auto assign',
     'administrator update profile notice' => 'Administration options (available only to administrators!)',
-    
+
     'project completed on by' => 'Completed on {0} by {1}',
-    
+
     'im service' => 'Service',
     'primary im service' => 'Primary IM',
     'primary im description' => 'All IM addresses that you enter will be listed on your card page. Only the primary IM will be shown on other pages (like the people page of the workspace).',
     'contact online' => 'Contact online',
     'contact offline' => 'Contact offline',
-    
+
     'avatar' => 'Avatar',
     'current avatar' => 'Current avatar',
     'current logo' => 'Current logo',
@@ -53,96 +53,99 @@
     'new logo' => 'New logo',
     'new avatar notice' => 'Note that the current avatar will be deleted and replaced with new one!',
     'new logo notice' => 'Current logo will be deleted and replaced with new one!',
-    
+
     'days late' => '{0} days late',
     'days left' => '{0} days left',
-    
+
     'user card of' => 'User card of {0}',
     'company card of' => 'Company card of {0}',
-    
-    // Upgrade
+
+// Upgrade
     'upgrade is not available' => 'There are no new versions of OpenGoo available for download',
     'check for upgrade now' => 'Check now',
-    
-    // Forgot password
+
+// Forgot password
     'forgot password' => 'Forgot password',
     'email me my password' => 'Send password',
-    
-    // Complete installation
+
+// Complete installation
     'complete installation' => 'Complete the installation',
     'complete installation desc' => 'This is the final step of the installation process that will let you create administrator account and provide brief info about your company',
-    
-    // Administration
+
+// Administration
     'welcome to administration' => 'Welcome',
     'welcome to administration info' => 'Welcome to the administration panel. Using this tool you can manage your company data, members, clients and workspaces you are involved in.',
-    
+
     'send new account notification' => 'Send email notification',
     'send new account notification desc' => 'If you select "Yes" the user will receive an email with a welcome message and login parameters (including the password).',
-    
-    // Tools
+
+// Tools
     'administration tools' => 'Tools',
-    
+
     'test mail recepient' => 'Test recepient',
     'test mail message' => 'Test message',
     'test mail message subject' => 'Test subject',
-    
+
     'massmailer subject' => 'Subject',
     'massmailer message' => 'Message',
     'massmailer recipients' => 'Recipients',
-    
-    // Dashboard
+
+// Dashboard
 
   	'welcome to new account' => '{0}, Welcome to your new account',
     'welcome to new account info' => 'From now on you can access your account on {0} ( We recommend you bookmark this link ).<br/> Start using Feng Office by following these steps:',
-  
+
+  	'new account step1' => 'Step 1: Create your own company profile ',
+  	'new account step1 info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
+
   	'new account step1 owner' => 'Step 1: Create your own company profile',
     'new account step1 owner info' => 'To enter your company data and the members you work with click on the Administration link located at the top right of the page.',
-  
+
   	'new account step update account' => 'Step {0}: Update your personal account ',
     'new account step update account info' => 'Update your personal information and change your password by clicking the Account link at the top right of the page.',
-  
+
    	'new account step add members' => 'Step {0}: Add team members',
     'new account step add members info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team. Every member will get their username and password which they can use to access the system',
-  
+
     'new account step start workspace' => 'Step {0}: Start organizing your information: create a workspace',
     'new account step start workspace info' => 'A workspace is where you keep and organize all your company\'s information.<br/>
     											Workspaces can be divided by clients, projects, company departments or any other division in the classification system you use.<br/>
     											Click on {0} located on the left panel to create a new workspace.<br/>
     											The system automatically creates a personal workspace for every user ({1}). All the information in this workspace is only visible to its owner by default.',
-    
+
   	'new account step configuration' => 'Step {0}: Configuration',
   	'new account step configuration info' => '<a class="internalLink" href="{0}">Manage</a> opengoo general settings, mailing configuration, enable/disable modules, among other options',
-	
+
   	'new account step profile' => 'Step {0}: Update profile',
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
   	'getting started' => 'Getting Started',
-  	
+ 
   	'new account step actions' => 'Step {0}: Start managing your online office',
   	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
 										Click on the workspace you want to work with and <b>Add a new:</b><br/>',
-  
+
    	'getting started' => 'Getting Started',
-  	
-    // Application log
+ 
+// Application log
     'application log details column name' => 'Details',
     'application log project column name' => 'Workspace',
     'application log taken on column name' => 'Taken on, by',
-    
-    // RSS
+
+// RSS
     'rss feeds' => 'RSS feeds',
     'recent activities feed' => 'Recent activities',
     'recent project activities feed' => 'Recent activities on workspace \'{0}\'',
-    
-    // Update company permissions
+
+// Update company permissions
     'update company permissions hint' => 'Check workspace to give access permissions for this company. Note that you\'ll also need to specify access permissions for company members that you want to be able to access and manage selected workspaces (you can do that through workspace People page or through user profiles).',
-    
+
     'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. All rights reserved.',
     'footer copy without homepage' => '&copy; {0} by {1}. All rights reserved',
     'footer powered' => 'Powered by <a target="_blank" href="{0}">{1}</a>',
-	
-	// Menu
+
+// Menu
 	'all documents' => 'All documents',
 	'created by me' => 'Created by me',
 	'by project' => 'By workspace',
@@ -152,10 +155,10 @@
 	'current project' => 'Current workspace',
 	'show hide menu' => 'Show/Hide Menu',
 	'help' => 'Help',
-  
+
   	'confirm leave page' => 'If you leave or reload the page you will lose unsubmitted data.',
-  
-  	//Contacts
+
+//Contacts
   	'add contact' => 'Add Contact',
   	'edit contact' => 'Edit Contact',
     'update contact' => 'Update Contact',
@@ -186,7 +189,7 @@
     'personal information' => 'Personal information',
     'home information' => 'Home information',
     'other information' => 'Other information',
-  
+
     'email and instant messaging' => 'Email and instant messaging',
     'no contacts in project' => 'There are no contacts in this workspace',
   	'picture' => 'Avatar',
@@ -195,7 +198,7 @@
     'confirm delete current picture' => 'Are you sure you want to delete the current picture?',
     'new picture' => 'New picture',
     'new picture notice' => 'Note that the current picture will be deleted and replaced with new one!',
-    
+
   	'assign to project' => 'Assign to workspace',
   	'role' => 'Role',
     'contact projects' => 'Contact workspaces',
@@ -205,8 +208,8 @@
     'all contacts' => 'All contacts',
     'project contacts' => 'Contacts in {0}', 
     'select' => 'Select',
-  
- 	// Contact import
+
+// Contact import
  	'import contacts from csv' => 'Import contacts from .csv file',
 	'import' => 'Import',
  	'file not exists' => 'The file does not exists',
@@ -221,23 +224,29 @@
 	'contacts import fail' => 'Import failed for contacts',
 	'contacts import fail help' => 'Import process may have failed due to existing data in the database, like name or email address, etc.',
 	'import fail reason' => 'Fail reason',
-	'select a file in order to load its data' => 'Select a csv file in order to load its data for import',
+	'select a file in order to load its data' => 'Select a csv file in order to load its data for import.',
+ 
+	'import contacts from vcard' => 'Import contacts from a VCard file',
+	'select a vcard file to load its data' => 'Select a VCard file (.vcf) to run the import.',
+	'you can tag the contacts before running the import' => 'You can tag the contacts before running the import.',
+	'you must select the contacts from the grid' => 'You must select the contacts you want to export.',
+	'vcard successfully created' => 'VCard successfully created, {0} contacts exported.',
 
-  	// Contact export
+// Contact export
   	'export contacts to csv' => 'Export contacts to .csv file',
 	'export' => 'Export',
 	'fields to export' => 'Information to export',
 	'success export contacts' => 'Contacts successfully exported',
 
-	// Company import/export
+// Company import/export
 	'import companies from csv' => 'Import companies from .csv file',
 	'company fields' => 'Company Fields',
 	'companies succesfully imported' => 'Companies succesfully imported',
 	'companies import fail' => 'Import failed for companies',
 	'export companies to csv' => 'Export companies to .csv file',
 	'success export companies' => 'Companies succesfully exported',
-  
-  //Webpages
+
+//Webpages
   'add webpage' => 'Add web link',
   'delete webpage' => 'Delete web link',
   'webpages' => 'Web links',
@@ -249,8 +258,8 @@
   'webpage' => 'Web link',
   'webpage title required' => 'A web link title is required',
   'webpage url required' => 'A web link URL is required',
-    
-  //Email
+
+//Email
   'emails' => 'Emails',
   'add mail account' => 'Add Email account',
   'new mail account' => 'New Email account',
@@ -295,11 +304,13 @@
   'mail add contacts' => 'Add new contacts',
   'no contacts to add' => 'No contacts to add.',
   'linked attachments' => 'Linked attachments',
-  
-  //Checkout
+  'conversation x mails' => 'Conversation ({0} emails)',
+  'show quoted text' => 'Show quoted text',
+
+//Checkout
   'checkout file' => 'Checkout file',
   'checkin file' => 'Checkin file',
-  
+
   'new filename' => 'New filename',
   'new weblink' => 'New weblink',
   'add as revision' => 'Add as revision',
@@ -310,7 +321,7 @@
   'check' => 'Check',
   'add file check in' => 'Check in as new version of this file',
   'filters' => 'Filters',
-  
+
   'permissions for user' => 'Permissions for user {0}',
   'can read messages' => 'Can read messages',
   'can write messages' => 'Can write messages',
@@ -330,7 +341,7 @@
   'can write files' => 'Can write files',
   'can read events' => 'Can read events',
   'can write events' => 'Can write events',
-  
+
   'new mail account' => 'New mail account',
   'new company' => 'New company',
   'add a new company' => 'Add a new company',
@@ -345,13 +356,13 @@
   'add tags' => 'Add tags',
   'save changes' => 'Save changes',
   'administrator options' => 'Administrator options',
-  
+
   'system permissions' => 'System permissions',
   'project permissions' => 'Workspace permissions',
-  
-  
-  /* Search */
-  
+
+
+/* Search */
+
   'actions' => 'Actions',
   'edit properties' => 'Edit properties',
   'you' => 'You',
@@ -368,8 +379,8 @@
   'modified by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
   'time used in search' => 'Search performed in {0} seconds',
   'more results' => 'There are {0} more results...',
-  
-  
+
+
   'parent workspace' => 'Parent Workspace',
   'close' => 'Close',
   'all projects' => 'All workspaces',
@@ -385,7 +396,7 @@
   'due in x days' => 'Due in {0} days',
   'overdue by x days' => 'Overdue by {0} days',
   'due today' => 'Due today',
-  
+
   'x years' => '{0} years',
   'x months' => '{0} months',
   'x weeks' => '{0} weeks',
@@ -400,9 +411,9 @@
   '1 hour' => '1 hour',
   '1 minute' => '1 minute',
   '1 second' => '1 second',
-  
+
   'x ago' => '{0} ago',
-  
+
   'object time slots' => 'Object time slots',
   'start work' => 'Start work',
   'end work' => 'End work',
@@ -427,15 +438,15 @@
   'start time' => 'Start time',
   'end date' => 'End date',
   'end time' => 'End time',
-  
+
   'tasks in progress' => 'Tasks in progress',
   'upcoming events milestones and tasks' => 'Upcoming events, milestones and tasks',
-  
+
   'undo checkout' => 'Undo file checkout',
-  
+
   'search for in project' => 'Search results for \'<i>{0}</i>\' in workspace \'{1}\'',
   'search for' => 'Search results for \'{0}\' in all workspaces',
-  
+
   'workspace permamanent delete' =>  'When a Workspace is deleted the following <b>content is lost permanently</b>',
 	'workspace permamanent delete messages'  => ' All notes in the workspace',
  'workspace permamanent delete tasks' => ' All tasks in the workspace',
@@ -451,7 +462,7 @@
   'user personal workspace' => 'Also delete the Personal Workspace <b> {0} </b> and all its content',
   'other user personal workspace' => 'Other users have assigned <b>{0}</b> as personal Workspace, it can not be deleted',
   'latest user activity' => 'Latest user activity',
-  
+
   'hours' => 'Hours',
   'minutes' => 'Minutes',
   'seconds' => 'Seconds',
@@ -459,9 +470,9 @@
   'time estimate' => 'Time estimate',
   'work in progress' => 'Work in progress',
   'total time' => 'Total time',
-  
+
   'upload anyway' => 'Upload anyway',
-  
+
   'print view' => 'Print view',
   'activity' => 'Activity',
   'statistics' => 'Statistics',
@@ -478,14 +489,14 @@
   'this month' => 'This month',
   'last month' => 'Last month',
   'select dates...' => 'Select dates...',
-  
+
   'task time report description' => 'This report displays the total executed time for a list of tasks, specified by date, user (optional) and workspace (optional).',
   'no data to display' => 'No data to display',
-  
+
   'new company name' => 'New company name',
   'checking' => 'Checking',
   'country' => 'Country',
-  
+
   'email addresses' => 'Email addresses',
   'instant messaging' => 'Instant messaging',
   'phone' => 'Phone',
@@ -495,64 +506,64 @@
   'callback' => 'Callback',
   'mobile' => 'Mobile',
   'pager' => 'Pager',
-  
+
   'roles' => 'Roles',  
   'last updated by on' => '{0}, on {1}',
   'updated' => 'Updated',
   'group by' => 'Group by',
   'last updated by' => 'Last updated by',
-  
+
   'total' => 'Total',
   'enter tags desc' => 'Enter comma separated tag names...',
-  
+
   'user subscribed to object' => 'You are subscribed to this object.',
   'user not subscribed to object' => 'You are not subscribed to this object.',
-  
+
   'tasks updated' => 'Task(s) updated successfully',
   'too many tasks to display' => 'There are too many tasks to display, only the most recent 500 tasks are being displayed. To show tasks correctly and remove this warning, please filter tasks by workspace, tags, task filters or status.',
-  
-  
+
+
   'show image in new page' => 'Show image in new page',
   'no tasks to display' => 'There are no tasks to display',
   'do complete' => 'Complete',
-  
+
   'task data' => 'Task data',
   'search in all workspaces' => 'Search in all workspaces',
-  
+
   'paused time' => 'Paused time',
   'total pause time' => 'Total pause time',
   'pause time cannot be negative' => 'Pause time cannot be negative',
   'pause time cannot exceed timeslot time' => 'Pause time cannot exceed timeslot time',
   'timeslots' => 'Timeslots',
-  
+
   'task timeslots' => 'Task timeslots',
   'time timeslots' => 'General timeslots',
   'all timeslots' => 'Task and general timeslots',
-  
+
   'print report' => 'Print report',
-  
+
   'all active tasks' => 'All active tasks',
-  
+
   'unique id' => 'Unique Id',
-  
+
   'my pending tasks' => 'My pending tasks',
   'pending tasks for' => 'Pending tasks for {0}',
   'my late milestones and tasks' => 'My late milestones and tasks',
   'late milestones and tasks for' => 'Late milestones and tasks for {0}',
   'my tasks in progress' => 'My tasks in progress',
   'tasks in progress for' => 'Tasks in progress for {0}',
-  
+
   'time has to be greater than 0' => 'Time has to be greater than 0',
-  
+
   'release notes' => 'Release notes',
-  
+
   'remember last' => 'Remember last',
   'auto' => 'Auto',
   'print all groups' => 'Print all groups',
   'shared with' => 'Shared with',
-  
-  
-  // Object Sharing
+
+
+// Object Sharing
   'share object desc' => 'An email will be sent inviting each person to view this object',
   'share with' => 'Share with',
   'allow people edit object' => 'Allow people to edit object',
@@ -561,7 +572,7 @@
   'share this' => 'Share this',
   'success sharing object' => 'Object shared successfully',
   'actually sharing with' => 'Actually sharing with',
-  
+
   'share notification message desc' => '{1} invited you to view/edit this note: {0}',
   'share notification event desc' => '{1} invited you to view/edit this event: {0}',
   'share notification task desc' => '{1} invited you to view/edit this task: {0}',
@@ -573,7 +584,7 @@
   'share notification file desc' => '{1} invited you to view/edit this file: {0}',
   'share notification milestone desc' => '{1} invited you to view/edit this milestone: {0}',
   'share notification weblink desc' => '{1} invited you to view/edit this web link: {0}',
-  
+
   'new share notification message' => 'Note \'{0}\' has been shared',
   'new share notification event' => 'Event \'{0}\' has been shared',
   'new share notification task' => 'Task \'{0}\' has been shared',
@@ -585,7 +596,7 @@
   'new share notification file' => 'File \'{0}\' has been shared',
   'new share notification milestone' => 'Milestone \'{0}\' has been shared',
   'new share notification weblink' => 'Web link \'{0}\' has been shared',
-  
+
   'billing' => 'Billing',
   'category' => 'Category',
   'hourly rates' => 'Hourly rates',
@@ -611,7 +622,7 @@
   'total billing by user' => 'Total billing by user',
   'assign billing categories to users' => 'Assign billing categories to users',
   'new version notification title' => 'New version',
-  
+
   'workspace contacts' => 'Contacts',
   'search contact' => 'Search contact',
   'add new contact' => 'Add new contact',
@@ -620,20 +631,33 @@
   'workspace description' => 'Workspace description for \'{0}\'',
   'show all amount' => 'Show all ({0})',
   'searching' => 'Searching',
-  
+
   'weblink' => 'Weblink',
-  
+
   'add value' => 'Add value',
   'remove value' => 'Remove value',
-  
+
   'hide options' => 'Hide options',
-  
+
   'personal workspace name' => '{0} Personal',
   'personal workspace description' => 'Personal workspace',
-  
+
   'wiki help link' => 'http://wiki.opengoo.org',
   'last language' => 'Last',
-  
-  ); // array
+
+  'reset password expired' => 'Reset password request has expired. Please issue a new one by clicking on "{0}"',
+  'invalid parameters' => 'Invalid parameters',
+  'reset password' => 'Reset password',
+  'reset password form desc' => '<b>{0}</b>, please enter your new password twice:',
+  'success reset password' => 'Your new password has been saved',
+
+  'auto detect user timezone' => 'Auto-detect user timezone from browser',
+  'confirm discard email' => 'Are you sure you wish to discard this email?',
+  'download email' => 'Download email',
+  'instantiate' => 'Instantiate',
+  'template parameters' => 'Template parameters',
+  'add image' => 'Add image',
+  'update image' => 'Update image',
+); // array
 
 ?>

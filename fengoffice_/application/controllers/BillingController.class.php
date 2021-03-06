@@ -151,6 +151,26 @@ class BillingController extends ApplicationController {
 		tpl_assign('users_by_company', Users::getGroupedByCompany());
 		tpl_assign('billing_categories', BillingCategories::findAll());
 	}
+	
+	
+	function update_unset_billing_values(){
+		ajx_current("empty");
+		
+		if (!logged_user()->isAdministrator()) {
+			flash_error(lang("no access permissions"));
+			return;
+		}
+		try{
+			DB::beginWork();
+			$count = Timeslots::updateBillingValues();
+			DB::commit();
+			
+			flash_success(lang("success update billing values", $count));
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+		}
+	}
 }
 
 ?>

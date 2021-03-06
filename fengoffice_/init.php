@@ -161,7 +161,7 @@ try {
 if (Env::isDebuggingTime()) {
 	TimeIt::stop();
 	$report = TimeIt::getTimeReportByType();
-	Logger::log($_SERVER['QUERY_STRING']."\n$report");
+	Logger::log(array_var($_SERVER, 'QUERY_STRING', 'No query string')."\n$report");
 	$report = "\n";
 	/*foreach (TimeIt::$timeslots as $t) {
 		$report .= $t["type"] . ": (" . $t["start"] . ", " . $t["end"] . ")\n";

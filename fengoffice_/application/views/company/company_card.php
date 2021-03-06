@@ -6,7 +6,7 @@
     <h2><?php echo clean($company->getName()) ?></h2>
     
     <div class="cardBlock">
-      <div><span><?php echo lang('email address') ?>:</span> <a target="_self" href="mailto:<?php echo $company->getEmail() ?>"><?php echo $company->getEmail() ?></a></div>
+      <div><span><?php echo lang('email address') ?>:</span> <a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($company->getEmail()))) . '"' : 'target="_self" href="mailto:' . clean($company->getEmail()) . '"' ?>><?php echo $company->getEmail() ?></a></div>
       <div><span><?php echo lang('phone number') ?>:</span> <?php echo $company->getPhoneNumber() ? clean(clean($company->getPhoneNumber())) : lang('n/a') ?></div>
       <div><span><?php echo lang('fax number') ?>:</span> <?php echo $company->getFaxNumber() ? clean($company->getFaxNumber()) : lang('n/a') ?></div>
 <?php if($company->hasHomepage()) { ?>

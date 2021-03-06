@@ -149,6 +149,21 @@ require_javascript('og/EventPopUp.js');
 						<?php	
 							$top=0;
 							foreach ($alldayevents as $event){	
+							$tags = $event->getTags();
+							$eventTagString = '';
+							if (is_array($tags) && count($tags)>0){
+								$eventTagString = '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
+								$c= 0;
+								foreach ($tags as $t){
+									$eventTagString .= $t;
+									$c++;
+									count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';
+								}
+							}
+								$bold = "bold";
+								if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
+									$bold = "normal";
+								}
 								$tipBody = '';
 								$divtype = '';
 								$div_prefix = '';
@@ -217,7 +232,7 @@ require_javascript('og/EventPopUp.js');
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>; border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 									<table style="width:100%"><tr><td>
-									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="og.disableEventPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="font-weight:<?php echo $bold?>; color:<?php echo $txt_color ?>!important"><?php echo $subject . $eventTagString ?></span></a></nobr>
 									<?php if ($event instanceof ProjectEvent) { ?>
 									</td><td align="right">
 									<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 2px 0 0;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);og.disableEventPropagation(event);"></input>
@@ -299,9 +314,9 @@ require_javascript('og/EventPopUp.js');
 												$cells[$i][1] = 0;
 											}
 											foreach ($result as $event){
-												$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-												$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											
+
+												getEventLimits($event, $dtv, $event_start, $event_duration, $end_modified);
+
 												$event_duration->add('s', -1);
 												if ($event_start->getMinute() < 30) {
 													$cells[$event_start->getHour()][0]++;
@@ -320,10 +335,20 @@ require_javascript('og/EventPopUp.js');
 											}
 											$occup = array(); //keys: hora - pos
 											foreach ($result as $event){
+												$tags = $event->getTags();
+												$eventTagString = '';
+												if (is_array($tags) && count($tags)>0){
+													$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
+													$c= 0;
+													foreach ($tags as $t){
+														$eventTagString .= $t;
+														$c++;
+														count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
+													}													
+												}
 												
-												$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-												$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											
+												getEventLimits($event, $dtv, $event_start, $event_duration, $end_modified);
+
 												$event_id = $event->getId();
 												$subject = clean($event->getSubject());
 												$dws = $event->getWorkspaces();
@@ -334,11 +359,6 @@ require_javascript('og/EventPopUp.js');
 												}	
 												
 												cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);
-												
-												if($use_24_hours) $timeformat = 'G:i';
-												else $timeformat = 'g:i A';
-												$start_time = date($timeformat, $event_start->getTimestamp());
-												$end_time = date($timeformat, $event_duration->getTimestamp());
 												
 												$hr_start = $event_start->getHour();
 												$min_start = $event_start->getMinute();
@@ -423,10 +443,15 @@ require_javascript('og/EventPopUp.js');
 												$procesados[$hr_start]++;
 												
 												$event_duration->add('s', 1);
-												$end_time = date($timeformat, $event_duration->getTimestamp());
 												$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp()); 
 
-												$tipBody = $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+												$real_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+												$real_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+												
+												$pre_tf = $real_start->getDay() == $real_duration->getDay() ? '' : 'D j, ';
+												$ev_hour_text = format_date($real_start, $pre_tf.$timeformat, 0) . " - " . format_date($real_duration, $pre_tf.$timeformat, 0);
+												
+												$tipBody = $ev_hour_text . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 												$tipBody = str_replace(array("\r", "\n"), array(' ', '<br>'), $tipBody);
 												if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 										?>
@@ -445,11 +470,11 @@ require_javascript('og/EventPopUp.js');
 														<table style="width:100%;"><tr><td>
 															<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin-top:2px 0 0 2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);"></input>
 															<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="og.disableEventPropagation(event);" >
-															<span name="d_ev_div_<?php echo $event->getId()?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
+															<span name="d_ev_div_<?php echo $event->getId()?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $ev_hour_text; ?></span>
 															</a>
 															<?php
 															if ($ev_duration['hours'] == 0) { ?>
-																-<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
+																-<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-weight: <?php echo $bold ?>;"><?php echo $subject . $eventTagString?></span> </a> 
 															<?php } //if ?>
 														</td><td align="right">
 														<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -473,7 +498,7 @@ require_javascript('og/EventPopUp.js');
 														<tr><td>
 															<div><a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter?>'
 																onclick="og.disableEventPropagation(event);"
-																class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></span></a>
+																class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%; font-weight: <?php echo $bold ?>;"><?php echo $subject.$eventTagString;?></span></a>
 															</div>
 														</td></tr>
 														<tr style="height:100%;">
@@ -486,8 +511,11 @@ require_javascript('og/EventPopUp.js');
 													<div class="b1 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 2px 0px 2px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"> </div>
 												</div>
 												<script>
+													<?php if (!$end_modified) { ?>
 													og.setResizableEvent('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>'); //Resize
-													og.createEventDrag('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', 'event', false, 'ev_dropzone'); // Drag													
+													<?php } ?>
+													<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
+													og.createEventDrag('d_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event', false, 'ev_dropzone'); // Drag													
 												</script>
 										<?php
 											}

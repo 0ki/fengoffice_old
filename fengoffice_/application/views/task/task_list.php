@@ -38,17 +38,29 @@ $task_list = $object;
 						<?php render_context_help($this, 'chelp task card','list_task'); ?>
 					</div>
 		<?php }?>
-
+		
+<?php if ($task_list->getObjectSubtype() > 0) { 
+		$subType = ProjectCoTypes::findById($task_list->getObjectSubtype());
+		if ($subType instanceOf ProjectCoType ) {
+			echo "<div><b>" . lang('object type') . "</b>: " . $subType->getName() . "</div>";
+		}
+	 ?>
+<?php } ?>
 <?php if($task_list->getText()) { ?>
   <fieldset><legend><?php echo lang('description') ?></legend>
   	<?php echo escape_html_whitespace(convert_to_links(clean($task_list->getText())))?>
   </fieldset>
-<?php } // if ?>
+<?php } // if 
 
 
-  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("view open tasks") ?></th></tr><tr><td style="padding-left:10px;">
+$showOpenSubtasksDiv = is_array($task_list->getOpenSubTasks()) && count($task_list->getOpenSubTasks()) > 0;
+$showCompletedSubtasksDiv = is_array($task_list->getCompletedSubTasks()) && count($task_list->getCompletedSubTasks()) > 0;
+
+if($showOpenSubtasksDiv) { ?>
+<table style="border:1px solid #717FA1;width:100%; padding-left:10px;">
+<tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("view open tasks") ?></th></tr>
+<tr><td style="padding-left:10px;">
   <div class="openTasks">
-<?php if(is_array($task_list->getOpenSubTasks())) { ?>
     <table class="blank">
 <?php foreach($task_list->getOpenSubTasks() as $task) { ?>
       <tr>
@@ -78,12 +90,8 @@ $task_list = $object;
       </tr>
 <?php } // foreach ?>
    </table>
-<?php } else { ?>
-  <?php echo lang('no open task in task list') ?>
-<?php } // if ?></div>
+<?php } // if?>
   
-  
-    
   <div class="addTask">
 <?php if($task_list->canAddSubTask(logged_user()) && !$task_list->isTrashed()) { ?>
     <div id="addTaskForm<?php echo $task_list->getId() ?>ShowLink"><a class="internalLink" href="<?php echo $task_list->getAddTaskUrl(false) ?>" onclick="App.modules.addTaskForm.showAddTaskForm(<?php echo $task_list->getId() ?>); return false"><?php echo lang('add sub task') ?></a></div>
@@ -106,23 +114,18 @@ $task_list = $object;
         <?php echo submit_button(lang('add sub task'), 's', array('id' => 'addTaskSubmit' . $task_list->getId(), 'fromTaskView' => 'true')) ?> <?php echo lang('or') ?> <a href="#" onclick="App.modules.addTaskForm.hideAddTaskForm(<?php echo $task_list->getId() ?>); return false;"><?php echo lang('cancel') ?></a>
       </form>
     </div>
-<?php } else { ?>
-	<?php if($on_list_page) { ?>
-	<?php echo lang('completed tasks') ?>:
-	<?php } else { ?>
-	<?php echo lang('recently completed tasks') ?>:
-	<?php } // if ?>
 <?php } // if ?>
   </div>
-</td></tr></table>
+  <?php if(is_array($task_list->getOpenSubTasks()) && count($task_list->getOpenSubTasks()) > 0) { ?>
+</div></td></tr></table>
+<?php } // if
 
+
+if($showCompletedSubtasksDiv) { ?>
 <br/>
-
-
-  
-<?php if(is_array($task_list->getCompletedSubTasks())) { ?>
-  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("completed tasks") ?></th></tr><tr><td style="padding-left:10px;">
-  
+  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;">
+  <tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("completed tasks") ?></th></tr>
+  <tr><td style="padding-left:10px;">
   <div class="completedTasks">
     <table class="blank">
 <?php $counter = 0; ?>
@@ -164,14 +167,13 @@ $task_list = $object;
     </table>
   </div>
 </td></tr></table>
-<?php } // if ?>
+<?php } // if 
 
 
-<?php
-	$time_estimate = $task_list->getTimeEstimate();
-	$total_minutes = $task_list->getTotalMinutes();
+$time_estimate = $task_list->getTimeEstimate();
+$total_minutes = $task_list->getTotalMinutes();
 
-	if ($time_estimate > 0 || $total_minutes > 0){?>
+if ($time_estimate > 0 || $total_minutes > 0){?>
 <br/>
 <table>
 <?php if ($time_estimate > 0) {?>

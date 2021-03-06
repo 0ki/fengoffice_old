@@ -20,7 +20,7 @@ $object = $file;
 $comments_required = config_option('file_revision_comments_required');
 ?>
 
-<form class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" method="post">
+<form class="internalForm" style="height: 100%; background-color: white" id="<?php echo $genid ?>addfile" name="<?php echo $genid ?>addfile" action="<?php echo $submit_url ?>" onsubmit="return og.fileCheckSubmit('<?php echo $genid ?>');" method="post">
 	<input id="<?php echo $genid ?>hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
 	<input id="<?php echo $genid ?>hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
 	<input id="<?php echo $genid ?>hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
@@ -39,7 +39,7 @@ $comments_required = config_option('file_revision_comments_required');
 		<td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('edit file properties')) ?>
 		</td>
 		<td style="text-align: right">
-			<?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'og.fileCheckSubmit(\'' . $genid .'\'); return false;', 'style'=>'margin-top:0px;margin-left:10px','id' => $genid.'add_file_submit1', 'tabindex' => '210')) ?>
+			<?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'add_file_submit1', 'tabindex' => '210')) ?>
 		</td>
 	</tr>
 </table>
@@ -338,6 +338,7 @@ $comments_required = config_option('file_revision_comments_required');
 	<script>
 		var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 		wsch.on("wschecked", function(arguments) {
+			if (!this.getValue().trim()) return;
 			var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
 				url: og.getUrl('object', 'render_add_subscribers', {
@@ -385,12 +386,12 @@ $comments_required = config_option('file_revision_comments_required');
 		<?php
 			if (!$file->isNew()) { //Edit file
 				if (isset($checkin) && $checkin) {
-					echo submit_button(lang('checkin file'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\'); return false;'));
+					echo submit_button(lang('checkin file'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200'));
 				} else {
-					echo submit_button(lang('save changes'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\'); return false;'));
+					echo submit_button(lang('save changes'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200'));
 				}
 			} else { //New file
-				echo submit_button(lang('add file'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200', "onclick" => 'og.fileCheckSubmit(\'' . $genid .'\'); return false;'));
+				echo submit_button(lang('add file'),'s',array("id" => $genid.'add_file_submit2', 'tabindex' => '200'));
 			}
 		?>
 	</div>

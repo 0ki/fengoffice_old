@@ -112,7 +112,7 @@
 	foreach ($reportPages as $pageTitle => $pageInfo) {?>
 <tr><td class="report_<?php echo $pageTitle == $selectedPage ? '' : 'un'?>selected_menu">
 <a href="#" onclick="javascript:og.selectReportingMenuItem(this, '<?php echo $genid . $pageTitle?>', '<?php echo $pageTitle ?>')">
-	<div class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:90px;padding-bottom:2px"><?php echo lang($pageTitle) ?></div>
+	<div class="coViewAction ico-<?php echo $pageTitle; ?>" style="width:130px;padding-bottom:2px"><?php echo lang($pageTitle) ?></div>
 </a>
 </td><td class="coViewRight"></td>
 </tr>

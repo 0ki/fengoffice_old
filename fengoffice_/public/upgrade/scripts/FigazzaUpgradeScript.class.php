@@ -1,14 +1,16 @@
 <?php
 
-class Env {
-	function isDebugging() {
-		return false;
-	}
-	function isDebuggingDB() {
-		return false;
-	}
-	function isDebuggingTime() {
-		return false;
+if (!class_exists('Env', false)) {
+	class Env {
+		function isDebugging() {
+			return false;
+		}
+		function isDebuggingDB() {
+			return false;
+		}
+		function isDebuggingTime() {
+			return false;
+		}
 	}
 }
 
@@ -70,21 +72,6 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 	 * @return boolean
 	 */
 	function execute() {
-		// ---------------------------------------------------
-		//  Connect to database
-		// ---------------------------------------------------
-
-		if($this->database_connection = mysql_connect(DB_HOST, DB_USER, DB_PASS)) {
-			if(mysql_select_db(DB_NAME, $this->database_connection)) {
-				$this->printMessage('Upgrade script has connected to the database.');
-			} else {
-				$this->printMessage('Failed to select database ' . DB_NAME);
-				return false;
-			} // if
-		} else {
-			$this->printMessage('Failed to connect to database');
-			return false;
-		} // if
 
 		// ---------------------------------------------------
 		//  Check MySQL version
@@ -106,27 +93,6 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 		tpl_assign('engine', DB_ENGINE);
 		else
 		tpl_assign('engine', 'InnoDB');
-
-		// ---------------------------------------------------
-		//  Check test query
-		// ---------------------------------------------------
-
-		$test_table_name = TABLE_PREFIX . 'test_table';
-		$test_table_sql = "CREATE TABLE `$test_table_name` (
-		`id` int(10) unsigned NOT NULL auto_increment,
-		`name` varchar(50) $default_collation NOT NULL default '',
-		PRIMARY KEY  (`id`)
-		) ENGINE=InnoDB $default_charset;";
-
-		if(@mysql_query($test_table_sql, $this->database_connection)) {
-			$this->printMessage('Test query has been executed. Its safe to proceed with database migration.');
-			@mysql_query("DROP TABLE `$test_table_name`", $this->database_connection);
-		} else {
-			$this->printMessage('Failed to executed test query. MySQL said: ' . mysql_error($this->database_connection), true);
-			return false;
-		} // if
-
-		//return ;
 
 		// ---------------------------------------------------
 		//  Execute migration
@@ -191,6 +157,18 @@ class FigazzaUpgradeScript extends ScriptUpgraderScript {
 				ALTER TABLE `".TABLE_PREFIX."reports` ADD COLUMN `is_order_by_asc` TINYINT(1) $default_collation NOT NULL DEFAULT 1;
 				$upgrade_script
 			";
+		}
+		
+		// rename gelsheet tables before upgrading if name is wrong and if engine is case sensitive
+		if ($this->checkTableExists(TABLE_PREFIX.'gs_fontStyles', $this->database_connection) && !$this->checkTableExists(TABLE_PREFIX.'gs_fontstyles', $this->database_connection)) {
+			$upgrade_script = "
+				RENAME TABLE `" . TABLE_PREFIX . "gs_fontStyles` TO `" . TABLE_PREFIX . "gs_fontstyles`;
+			" . $upgrade_script;
+		}
+		if ($this->checkTableExists(TABLE_PREFIX.'gs_mergedCells', $this->database_connection) && !$this->checkTableExists(TABLE_PREFIX.'gs_mergedcells', $this->database_connection)) {
+			$upgrade_script = "
+				RENAME TABLE `" . TABLE_PREFIX . "gs_mergedCells` TO `" . TABLE_PREFIX . "gs_mergedcells`;
+			" . $upgrade_script;
 		}
 
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

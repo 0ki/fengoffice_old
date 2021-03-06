@@ -55,7 +55,7 @@
 <?php if($user->hasTitle()) { ?>
               <div class="projectUserTitle"><?php echo clean($user->getTitle()) ?></div>
 <?php } // if ?>
-              <div class="projectUserEmail"><a target="_self" href="mailto:<?php echo $user->getEmail() ?>"><?php echo $user->getEmail() ?></a></div>
+              <div class="projectUserEmail"><a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($user->getEmail()))) . '"' : 'target="_self" href="mailto:' . clean($user->getEmail()) . '"' ?>><?php echo $user->getEmail() ?></a></div>
             </td>
 <?php if(active_project()->canRemoveUserFromProject(logged_user(), $user)) { ?>
             <td><a class="internalLink" href="<?php echo active_project()->getRemoveUserUrl($user) ?>" onclick="return confirm('<?php echo escape_single_quotes(lang('confirm remove user from project')) ?>')"><?php echo lang('remove user from project') ?></a></td>

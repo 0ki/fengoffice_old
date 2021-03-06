@@ -36,26 +36,45 @@ class COTemplate extends BaseCOTemplate {
 			// the object isn't a template but can be, create a template copy
 			$copy = $object->copy();
 			$copy->setColumnValue('is_template', true);
-			if ($copy instanceof ProjectTask) $copy->setMilestoneId(0);
+			if ($copy instanceof ProjectTask) {
+				// don't copy milestone and parent task
+				$copy->setMilestoneId(0);
+				$copy->setParentId(0);
+			}
 			$copy->save();
+			// copy subtasks
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, true);
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, true);
 			}
+			// copy tags
 			$tags = implode(',',$object->getTagNames());
-			$copy->setTagsFromCSV($tags);			
+			$copy->setTagsFromCSV($tags);
+			// copy custom properties			
 			$copy->copyCustomPropertiesFrom($object);
-			
+			// copy linked objects
 			$linked_objects = $object->getAllLinkedObjects();
 			if (is_array($linked_objects)) {
 				foreach ($linked_objects as $lo) {
 					$copy->linkObject($lo);
 				}
 			}
+			// copy reminders
+			$reminders = ObjectReminders::getByObject($object);
+			foreach ($reminders as $reminder) {
+				$copy_reminder = new ObjectReminder();
+				$copy_reminder->setContext($reminder->getContext());
+				$copy_reminder->setDate(EMPTY_DATETIME);
+				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+				$copy_reminder->setObject($copy);
+				$copy_reminder->setType($reminder->getType());
+				$copy_reminder->setUserId($reminder->getUserId());
+				$copy_reminder->save();
+			}
 			$template = $copy;
 		} else {
-			// the object is a template or can't be one, use it as it is
+			// the object is already a template or can't be one, use it as it is
 			$template = $object;
 		}
 		$to = new TemplateObject();

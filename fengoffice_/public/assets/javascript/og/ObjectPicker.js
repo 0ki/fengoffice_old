@@ -121,8 +121,8 @@ og.ObjectPicker = function(config) {
 	        cm: cm,
 	        stripeRows: true,
 	        loadMask: true,
-	        bbar: new og.PagingToolbar({
-	            pageSize: og.pageSize,
+	        bbar: new og.CurrentPagingToolbar({
+	            pageSize: og.config['files_per_page'],
 	            store: this.store,
 	            displayInfo: true,
 	            displayMsg: lang('displaying objects of'),
@@ -156,7 +156,7 @@ og.ObjectPicker = function(config) {
 		load: function(params) {
 			Ext.apply(params, {
 				start: 0,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			});
 			this.store.load({
 				params: params
@@ -361,12 +361,79 @@ og.ObjectPicker = function(config) {
 							}}
 						]}
 					},*/{
+						text: lang('upload'),
+			            tooltip: lang('quick upload desc'),
+			            iconCls: 'ico-upload',
+			            handler: function() {
+							var tagf = this.findById('tagFilter');
+							var seltag = tagf.getSelectedTag().name;
+							
+							var wsf = this.findById('wsFilter');
+							var selws = wsf.getActiveWorkspace().id;
+							var quickId = Ext.id();
+							var picker = this;
+							og.openLink(og.getUrl('files', 'quick_add_files', {workspace: selws, tag: seltag, genid: quickId}), {
+			        			preventPanelLoad: true,
+								onSuccess: function(data) {								
+				        			og.ExtendedDialog.show({				
+				                		html: data.current.data,
+				                		height: 300,
+				                		width: 600,
+				                		ok_fn: function() {
+					        				og.doFileUpload(quickId, {
+					        					callback: function() {
+					        						form = document.getElementById(quickId + 'quickaddfile');
+					        						og.ajaxSubmit(form, {
+						    							callback: function(success, data) {
+					        								if (success) {
+					        									picker.grid.store.reload();
+					        								}
+						    							}
+						    						});
+					        					}
+					        				});
+					                		og.ExtendedDialog.hide();
+				            			}
+				                	});					        			
+				                	return;
+			        			}
+			        		});						
+						},
+						scope: this
+					},
+					{
 						text: lang('refresh'),
 			            tooltip: lang('refresh desc'),
 			            iconCls: 'op-ico-refresh',
 						handler: function() {
 							this.loadFilters();
 							this.grid.store.reload();
+						},
+						scope: this
+					},
+					"-",
+					{
+						xtype : 'label',						
+						text: lang('filter') + ': ',
+			            iconCls: 'ico-search',
+						scope: this
+					},					
+					{
+						xtype: 'textfield',
+						id: 'txtFilreByObjectName',
+						fieldLabel: lang('name'),
+						tooltip: lang('filtre name desc'),
+						listeners:{
+							render: {
+								fn: function(f){
+									f.el.on('keyup', function(e) {
+										this.filterName(e.target.value);
+										this.grid.store.reload();
+									},
+									this, {buffer: 350});
+								},
+								scope: this
+							}
 						},
 						scope: this
 					}
@@ -454,6 +521,7 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	},
 	
 	loadFilters: function(config) {
+		if (!config) config = {};
 		delete this.grid.store.baseParams.type;
 		delete this.grid.store.baseParams.tag;
 		delete this.grid.store.baseParams.active_project;
@@ -465,7 +533,9 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		typef.loadFilters(config.types);
 		this.grid.store.baseParams.type = typef.filters.filter.type;
 	},
-	
+	filterName: function(value) {
+		this.grid.store.baseParams.name = value;
+	},
 	load: function() {
 		this.grid.load();
 	}

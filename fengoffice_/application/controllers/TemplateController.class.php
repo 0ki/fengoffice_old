@@ -352,26 +352,35 @@ class TemplateController extends ApplicationController {
 		$objects = $template->getObjects();
 		foreach ($objects as $object) {
 			if (!$object instanceof ProjectDataObject) continue;
+			// copy object
 			$copy = $object->copy();
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
 			if ($copy instanceof ProjectTask) {
+				// don't copy parent task and milestone
 				$copy->setMilestoneId(0);
 				$copy->setParentId(0);
 			}
 			$copy->save();
 			$wsId = array_var($_POST, 'project_id', active_or_personal_project()->getId());
-			$copy->addToWorkspace(Projects::findById($wsId));
+			// if specified, set workspace
+			$workspace = Projects::findById($wsId);
+			if (!$workspace instanceof Project) {
+				$workspace = active_or_personal_project();
+			}
+			$copy->addToWorkspace($workspace);
+			// ad object tags and specified tags
 			$tags = implode(',', $object->getTagNames());
 			$copy->setTagsFromCSV($tags . "," . array_var($_POST, 'tags'));
+			// copy linked objects
 			$linked_objects = $object->getAllLinkedObjects();
 			if (is_array($linked_objects)) {
 				foreach ($linked_objects as $lo) {
 					$copy->linkObject($lo);
 				}
 			}
-			$copy->setProject(active_or_personal_project());
+			// copy subtasks if applicable
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
 				$manager = new ProjectTask();
@@ -379,25 +388,26 @@ class TemplateController extends ApplicationController {
 				ProjectMilestones::copyTasks($object, $copy, false);
 				$manager = new ProjectMilestone();
 			}
+			// copy custom properties
 			$copy->copyCustomPropertiesFrom($object);
+			// set property values as defined in template
 			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
-			foreach($objProp as $property){
+			foreach($objProp as $property) {
 				$propName = $property->getProperty();
 				$value = $property->getValue();
-				if($manager->getColumnType($propName) == DATA_TYPE_STRING){
+				if ($manager->getColumnType($propName) == DATA_TYPE_STRING) {
 					if(is_array($parameterValues)){
 						foreach($parameterValues as $param => $val){
 							$value = str_replace('{'.$param.'}', $val, $value);
 						}
 					}
-				}else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME){
-					Logger::log($value);
+				} else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME) {
 					$operator = '+';
-					if(strpos($value, '+') === false){
+					if (strpos($value, '+') === false) {
 						$operator = '-';
 					}
 					$opPos = strpos($value, $operator);
-					if($opPos !== false){
+					if ($opPos !== false) {
 						$dateParam = substr($value, 1, strpos($value, '}') - 1);
 						$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
 						if($dateUnit == 'm') {
@@ -409,11 +419,34 @@ class TemplateController extends ApplicationController {
 						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $date);
 						$value = $date->add($dateUnit, $dateNum);
 					}
+				} else if ($manager->getColumnType($propName) == DATA_TYPE_INTEGER) {
+					if (is_array($parameterValues)) {
+							foreach($parameterValues as $param => $val){
+								$value = str_replace('{'.$param.'}', $val, $value);
+							}							
+					}
 				}
-				if($value != ''){
+				if($value != '') {
 					$copy->setColumnValue($propName, $value);
 					$copy->save();
 				}
+			}
+			// copy reminders
+			$reminders = ObjectReminders::getByObject($object);
+			foreach ($reminders as $reminder) {
+				$copy_reminder = new ObjectReminder();
+				$copy_reminder->setContext($reminder->getContext());
+				$reminder_date = $copy->getColumnValue($reminder->getContext());
+				if ($reminder_date instanceof DateTimeValue) {
+					$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
+					$reminder_date->add('m', -$reminder->getMinutesBefore());
+				}
+				$copy_reminder->setDate($reminder_date);
+				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+				$copy_reminder->setObject($copy);
+				$copy_reminder->setType($reminder->getType());
+				$copy_reminder->setUserId($reminder->getUserId());
+				$copy_reminder->save();
 			}
 		}
 		if (is_array($parameters) && count($parameters) > 0){
@@ -472,8 +505,8 @@ class TemplateController extends ApplicationController {
 				DB::commit();
 				flash_success(lang('success assign workspaces'));
 				ajx_current("back");
-			}
-			catch (Exception $exc){
+			} catch (Exception $exc){
+				DB::rollback();
 				flash_error(lang('error assign workspace') . $exc->getMessage());
 				ajx_current("empty");
 			}

@@ -12,7 +12,6 @@
 }
 /** /loading indicator **/
 
-
 /** autoCompleter **/
 .autoCompleter .selected {
 	background-color: #8888FF;
@@ -42,6 +41,28 @@
 	width:10px;
 	height:14px;
 	cursor: move;
+}
+
+.ico-arrowleft {
+	background-image: url(../../images/16x16/arrowleft.png) !important;
+}
+.ico-2arrowleft {
+	background-image: url(../../images/16x16/2arrowleft.png) !important;
+}
+.ico-arrowright {
+	background-image: url(../../images/16x16/arrowright.png) !important;
+}
+.ico-2arrowright {
+	background-image: url(../../images/16x16/2arrowright.png) !important;
+}
+
+.ico-archive-obj {
+	background: transparent url(../../images/16x16/archive_obj.png) no-repeat !important;
+}
+
+.ico-unarchive-obj {
+	background: transparent url(../../images/16x16/unarchive_obj.png) no-repeat !important;
+	padding-top:1px !important;
 }
 
 .ico-reporting {
@@ -140,7 +161,7 @@
 	background-image: url(../../images/16x16/mail_receive.png) !important;
 }
 .ico-reply-all {
-	background-image: url(../../images/16x16/mail_replayall.png) !important;
+	background-image: url(../../images/16x16/mail_replyall.png) !important;
 }
 .ico-forward {
 	background-image: url(../../images/16x16/mail_forward.png) !important;
@@ -151,7 +172,12 @@
 .ico-mail-mark-read {
 	background-image: url(../../images/16x16/mail_mark_read.png) !important;
 }
-
+.ico-mark-as-read {
+	background-image: url(../../images/16x16/mail_mark_read.png) !important;
+}
+.ico-mark-as-unread {
+	background-image: url(../../images/16x16/mail_mark_unread.png) !important;
+}
 .ico-email_menu {
 	background-image: url(../../images/16x16/email.png) !important;
 }
@@ -219,7 +245,7 @@
 	background-image: url(../../images/16x16/more.png) !important;
 }
 .ico-new {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -378px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -600px !important;
 }
 .ico-copy {
 	background-image: url(../../images/16x16/copy.png) !important;
@@ -273,7 +299,10 @@
 	background-image: url(../../images/16x16/task-low.png) !important;
 }
 .ico-time {
-	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -158px !important;
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -160px !important;
+}
+.ico-time-layout {
+	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -157px !important;
 }
 .ico-time-pause {
 	background-image: url(../../images/16x16/time_pause.png) !important;
@@ -308,7 +337,7 @@
 .ico-warning32 {
 	background-image: url(../../images/32x32/warning.png) !important; 
 }
-.ico-workspace {
+.ico-project, .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
 }
 .ico-workspaces-expand {
@@ -812,4 +841,44 @@ select.select_milestone, select.select_task_list, select.select_message {
 }
 .contextHelpStyle .contextualHelp{
 	margin: 15px;
+}
+.ico-read{
+	background: transparent url("../../images/16x16/read.png") no-repeat scroll 0px 5px;
+	cursor: pointer;
+}
+.ico-unread{
+	background: transparent url("../../images/16x16/unread.png") no-repeat scroll 0px 5px;
+	cursor: pointer;
+}
+.outter-quick-add-file {
+	width: 100%;
+	height: 100%;
+	background-color: #eef;
+	overflow: auto;
+}
+.inner-quick-add-file {
+	margin: 15px;
+}
+.pagination-user{
+	height:20px;
+	 width:20px;
+	 float:left;
+	 padding-left:5px;
+	 
+}
+.pagination-user-active{
+	height:20px;
+	 width:20px;
+	 float:left;
+	 padding-left:5px;
+	 background: transparent url(../../images/16x16/user_pagination_active.png) no-repeat scroll 0px 8px ;
+	 font-weight:bold;
+}
+
+.og-double-list-sel {
+	width: 200px;
+}
+
+.og-double-list-sel-btns {
+	vertical-align: middle;
 }

@@ -80,7 +80,7 @@ class EventController extends ApplicationController {
 	            $invitation->setUserId($id);
 	            $invitation->setInvitationState($assist);
 	            $invitation->save();
-				if (is_array($_POST['subscribers'])) {
+	            if (is_array(array_var($_POST, 'subscribers'))) {
 	            	$_POST['subscribers']['user_' . $id] = 'checked';
 	            }
             }
@@ -155,14 +155,12 @@ class EventController extends ApplicationController {
 			}
 			if (array_var($event_data, 'type_id') == 2 && $hour == 24) $hour = 23;
 			
-			$gmt_time = mktime($hour, $minute, 0, $month, $day, $year);
-			$dt_start = new DateTimeValue($gmt_time - logged_user()->getTimezone() * 3600);
-			
 			// repeat defaults
 			$repeat_d = 0;
 			$repeat_m = 0;
 			$repeat_y = 0;
 			$repeat_h = 0;
+			$repeat_h_params = array('dow' => 0, 'wnum' => 0, 'mjump' => 0);
 			$rend = '';		
 			// get the options
 			$forever = 0;
@@ -217,7 +215,12 @@ class EventController extends ApplicationController {
 					break;
 				case "6":
 					$repeat_h = 1;
-					if(array_var($event_data, 'cal_holiday_lastweek')) $repeat_h = 2;
+					$repeat_h_params = array(
+						'dow' => array_var($event_data, 'repeat_dow'), 
+						'wnum' => array_var($event_data, 'repeat_wnum'),
+						'mjump' => array_var($event_data, 'repeat_mjump'),
+					);
+					//if(array_var($event_data, 'cal_holiday_lastweek')) $repeat_h = 2;
 					break;
 			}
 			$repeat_number = $rnum;
@@ -235,20 +238,18 @@ class EventController extends ApplicationController {
 			}
 				
 			// calculate timestamp and durationstamp
-			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
+			$dt_start = new DateTimeValue(mktime($hour, $minute, 0, $month, $day, $year) - logged_user()->getTimezone() * 3600);
 			$timestamp = $dt_start->format('Y-m-d H:i:s');
-			if ($hour + $durationhour > 24) {
-				$dt_duration = DateTimeValueLib::make(0, 0, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
-				$dt_duration->add('d', 1);
-				$dt_duration->add('m', -1 * logged_user()->getTimezone() * 60);
-			} else
-				$dt_duration = DateTimeValueLib::make($dt_start->getHour() + $durationhour, $dt_start->getMinute() + $durationmin, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
+			$dt_duration = DateTimeValueLib::make($dt_start->getHour() + $durationhour, $dt_start->getMinute() + $durationmin, 0, $dt_start->getMonth(), $dt_start->getDay(), $dt_start->getYear());
 			$durationstamp = $dt_duration->format('Y-m-d H:i:s');
 			
 			// organize the data expected by the query function
 			$data = array();
 			$data['repeat_num'] = $rnum;
 			$data['repeat_h'] = $repeat_h;
+			$data['repeat_dow'] = $repeat_h_params['dow'];
+			$data['repeat_wnum'] = $repeat_h_params['wnum'];
+			$data['repeat_mjump'] = $repeat_h_params['mjump'];
 			$data['repeat_d'] = $repeat_d;
 			$data['repeat_m'] = $repeat_m;
 			$data['repeat_y'] = $repeat_y;
@@ -468,6 +469,57 @@ class EventController extends ApplicationController {
 		} // try
 	}
 	
+	function archive(){
+		//check auth
+		$event = ProjectEvents::findById(get_id());
+		if ($event != null) {
+		    if(!$event->canDelete(logged_user())){	    	
+				flash_error(lang('no access permissions'));
+				//$this->redirectTo('event');
+				ajx_current("empty");
+				return ;
+		    }
+		    $events = array($event);
+		} else {
+			$ev_ids = explode(',', array_var($_GET, 'ids', ''));
+			if (!is_array($ev_ids) || count($ev_ids) == 0) {
+				flash_error(lang('no objects selected'));
+				ajx_current("empty");
+				return ;
+			}
+			$events = array();
+			foreach($ev_ids as $id) {
+				$e = ProjectEvents::findById($id);
+				if ($e instanceof ProjectEvent) $events[] = $e;
+			}
+		}
+	    
+	    $this->getUserPreferences($view_type, $user_filter, $status_filter);
+		$this->setTemplate($view_type);
+		
+		$tag = active_tag();
+		tpl_assign('tags',$tag);
+		try {
+			$succ = 0;
+			foreach ($events as $event) {
+				DB::beginWork();
+				$event->archive();
+				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+				DB::commit();
+				$succ++;
+			}
+			flash_success(lang('success archive objects', $succ));
+			ajx_current("reload");			
+          	ajx_add("overview-panel", "reload");
+			          	
+		} catch(Exception $e) {
+			DB::rollback();
+			Logger::log($e->getTraceAsString());
+			flash_error(lang('error archive objects'));
+			ajx_current("empty");
+		} // try
+	}
+	
 	function viewdate($view_type = null, $user_filter = null, $status_filter = null){
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
@@ -571,6 +623,14 @@ class EventController extends ApplicationController {
 				$this->redirectTo('event');
 				return ;
 		    }
+
+		 	//read object for this user
+			$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+			 $event->getId() . ' AND rel_object_manager = \'ProjectEvents\''));
+			if (count($ro) == 0)
+			{	
+				$event->setIsRead(logged_user()->getId(),true);		    	
+			}
 			$this->setTemplate('viewevent');
 			$tag = active_tag();
 			tpl_assign('tags',$tag);	
@@ -602,7 +662,6 @@ class EventController extends ApplicationController {
 		if ($inv != null) {
 			$event->addInvitation($inv);
 		}
-		$event->addInvitation($inv);
 		
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
@@ -614,7 +673,6 @@ class EventController extends ApplicationController {
 	    
 		$event_data = array_var($_POST, 'event');
 		if(!is_array($event_data)) {
-				
 			$tag_names = $event->getTagNames();
 			$setlastweek = false;
 			$rsel1=false;$rsel2=false; $rsel3=false;
@@ -674,7 +732,10 @@ class EventController extends ApplicationController {
 			  'durationhour' => ($durtime / 3600) % 24,
 			  'durday' => floor($durtime / 86400),
 			  'pm' => isset($pm) ? $pm : 0,
-	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : ''
+	          'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
+			  'repeat_dow' => $event->getRepeatDow(),
+			  'repeat_wnum' => $event->getRepeatWnum(),
+			  'repeat_mjump' => $event->getRepeatMjump(),
 			); // array
 		} // if
 	
@@ -682,11 +743,35 @@ class EventController extends ApplicationController {
 		tpl_assign('event', $event);
 
 		if(is_array(array_var($_POST, 'event'))) {
+			
+			//	MANAGE CONCURRENCE WHILE EDITING			
+			$upd = array_var($_POST, 'updatedon');
+			if ($upd && $event->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
+			{
+				ajx_current('empty');
+				evt_add("handle edit concurrence", array(
+					"updatedon" => $event->getUpdatedOn()->getTimestamp(),
+					"genid" => array_var($_POST,'genid')
+				));
+				return;
+			}
+			if (array_var($_POST,'merge-changes') == 'true')
+			{					
+				$this->setTemplate('view_event');
+				$editedEvent = ProjectEvents::findById($event->getId());
+				$this->viewevent();
+				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
+				ajx_extra_data(array("title" => $editedEvent->getTitle(), 'icon'=>'ico-event'));
+				ajx_set_no_toolbar(true);
+				ajx_set_panel(lang ('tab name',array('name'=>$editedEvent->getTitle())));
+				return;
+			}
+			
 			try {
 				$data = $this->getData($event_data);
-				// run the query to set the event data 
-			    $event->setFromAttributes($data); 
-			    
+				// run the query to set the event data
+			    $event->setFromAttributes($data);
+
 			    $this->registerInvitations($data, $event);
 				if (isset($data['confirmAttendance'])) {
 	            	$this->change_invitation_state($data['confirmAttendance'], $event->getId(), $user_filter);
@@ -715,6 +800,16 @@ class EventController extends ApplicationController {
 				$object_controller->add_custom_properties($event);
 				$object_controller->add_reminders($event);
 			 	
+				$ro = ReadObjects::findAll(array('conditions' => '`rel_object_id` = ' . $event->getId() . 
+					' AND `rel_object_manager` = \'' . get_class($event->manager()) . '\' AND `user_id` <> ' . logged_user()->getId()));
+				if (is_array($ro) && count($ro) > 0){
+					foreach ($ro as $r){
+						if ($r instanceof ReadObject){							
+							$r->delete();
+						}
+					}
+				}
+				
 	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
 	          	flash_success(lang('success edit event', $event->getObjectName()));
@@ -740,11 +835,28 @@ class EventController extends ApplicationController {
 			$event = ProjectEvents::findById($id);
 			if ($event instanceof ProjectEvent && $event->canEdit(logged_user())) {
 				$tags_csv = implode(',', $event->getTagNames()) .",". array_var($_GET, 'tags');
-				$event->setTagsFromCSV($tags_csv);
+				$event->setTagsFromCSV($tags_csv);				
 			}
 		}
 		flash_success(lang("success tag objects", ''));
-		ajx_current("empty");
+		ajx_current("reload");
+	}
+	
+	function untag_events() {
+		$ids = explode(',', array_var($_GET, 'ids', ''));
+		$tag = array_var($_GET,'tags');
+		foreach ($ids as $id) {
+			$event = ProjectEvents::findById($id);
+			if ($event instanceof ProjectEvent && $event->canEdit(logged_user())) {
+				if ($tag != ''){
+					Tags::deleteObjectTag($tag, $event->getId(),get_class($event->manager()));				
+				}else{
+					$event->clearTags();	
+				}
+			}
+		}
+		flash_success(lang("success untag objects", ''));
+		ajx_current("reload");
 	}
 	
 	/**
@@ -959,7 +1071,7 @@ class EventController extends ApplicationController {
 	    	return;
 	    }
 	    
-	    $duration = new DateTimeValue($event->getStart()->getTimestamp());
+	    $duration = new DateTimeValue($event->getDuration()->getTimestamp());
 	    $duration->add('h', $hours);
 	    $duration->add('m', $mins);
 	    
@@ -969,7 +1081,8 @@ class EventController extends ApplicationController {
 	    DB::commit();
 	    
 	    ajx_extra_data($this->get_updated_event_data($event));
-	    ajx_current("empty");
+	    if ($event->isRepetitive()) ajx_current("reload");
+	    else ajx_current("empty");
 	}
 	
 	function move_event() {
@@ -979,39 +1092,65 @@ class EventController extends ApplicationController {
 			ajx_current("empty");
 			return ;
 	    }
-	    
+	    $is_read = $event->getIsRead(logged_user()->getId());
+		
 	    $year = array_var($_GET, 'year', $event->getStart()->getYear());
 	    $month = array_var($_GET, 'month', $event->getStart()->getMonth());
 	    $day = array_var($_GET, 'day', $event->getStart()->getDay());
 	    $hour = array_var($_GET, 'hour', 0);
 	    $min = array_var($_GET, 'min', 0);
 	    
-	    if ($hour == -1) $hour = $event->getStart()->getHour();
-	    if ($min == -1) $min = $event->getStart()->getMinute();
+	    if ($hour == -1) $hour = format_date($event->getStart(), 'H', logged_user()->getTimezone() );
+	    if ($min == -1) $min = format_date($event->getStart(), 'i', logged_user()->getTimezone() );
 	    
+		if ($event->isRepetitive()) {
+			$orig_date = DateTimeValueLib::dateFromFormatAndString('Y-m-d H:i:s', array_var($_GET, 'orig_date'));
+			$diff = DateTimeValueLib::get_time_difference($orig_date->getTimestamp(), mktime($hour, $min, 0, $month, $day, $year));
+		    $new_start = new DateTimeValue($event->getStart()->getTimestamp());
+		    $new_start->add('d', $diff['days']);
+		    $new_start->add('h', $diff['hours']);
+		    $new_start->add('m', $diff['minutes']);
+		    
+		    if ($event->getRepeatH()) {
+		    	$event->setRepeatDow(date("w", mktime($hour, $min, 0, $month, $day, $year))+1);
+		    	$wnum = 0;
+		    	$tmp_day = $new_start->getDay();
+		    	while ($tmp_day > 0) {
+		    		$tmp_day -= 7;
+		    		$wnum++;
+		    	}
+		    	$event->setRepeatWnum($wnum);
+		    }
+	    } else {
+		    $new_start = new DateTimeValue(mktime($hour, $min, 0, $month, $day, $year) - logged_user()->getTimezone() * 3600);
+	    }
+
 	    $diff = DateTimeValueLib::get_time_difference($event->getStart()->getTimestamp(), $event->getDuration()->getTimestamp());
-	    $new_start = new DateTimeValue(mktime($hour, $min, 0, $month, $day, $year) - logged_user()->getTimezone() * 3600);
 	    $new_duration = new DateTimeValue($new_start->getTimestamp());
+	    $new_duration->add('d', $diff['days']);
 	    $new_duration->add('h', $diff['hours']);
 	    $new_duration->add('m', $diff['minutes']);
-
-	    // veify that event is placed only in one day
-	    $st = new DateTimeValue(mktime($hour, $min, 0, $month, $day, $year));
-	    $dur = new DateTimeValue($st->getTimestamp());
-	    $dur->add('h', $diff['hours']);
-	    $dur->add('m', $diff['minutes']); 
-	    if ($dur->beginningOfDay()->getTimestamp() > $st->endOfDay()->getTimestamp()) {
-	    	$new_duration = new DateTimeValue(mktime(0, 0, 0, $month, $day+1, $year) - logged_user()->getTimezone() * 3600);
-	    }
+	    
+	    // see if we have to reload
+		$os = format_date($event->getStart(), 'd', logged_user()->getTimezone() );
+		$od = format_date($event->getDuration(), 'd', logged_user()->getTimezone() );
+		$ohm = format_date($event->getDuration(), 'H:i', logged_user()->getTimezone() );
+		$nd = format_date($new_duration, 'd', logged_user()->getTimezone() );
+		$nhm = format_date($new_duration, 'H:i', logged_user()->getTimezone() );
+		$different_days = ($os != $od && $ohm != '00:00') || ($day != $nd && $nhm != '00:00');
 	    
         DB::beginWork();
 	    $event->setStart($new_start->format("Y-m-d H:i:s"));
 	    $event->setDuration($new_duration->format("Y-m-d H:i:s"));
 	    $event->save();
+		if (!$is_read) {
+			ReadObjects::delete(array("conditions" => "`rel_object_manager` = 'ProjectEvents' AND `rel_object_id` = " . $event->getId() . " AND `user_id` = " . logged_user()->getId()));
+		}
 	    DB::commit();
     
 	    ajx_extra_data($this->get_updated_event_data($event));
-	    ajx_current("empty");
+	    if ($different_days || $event->isRepetitive()) ajx_current("reload");
+	    else ajx_current("empty");
 	}
 	
 	private function get_updated_event_data($event) {
@@ -1025,6 +1164,54 @@ class EventController extends ApplicationController {
 	    return array("ev_data" => $ev_data);
 	}
 	
+	public function markasread(){
+			$ev_ids = explode(',', array_var($_GET, 'ids', ''));
+			if (!is_array($ev_ids) || count($ev_ids) == 0){
+				flash_error(lang('no objects selected'));
+				ajx_current("empty");
+				return ;
+			}
+			$events = array();
+			foreach($ev_ids as $id) {
+				$event = ProjectEvents::findById($id);
+				//read object for this user
+				
+				$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+				 $id . ' AND rel_object_manager = \'ProjectEvents\' ' . 
+				' AND ' . 'user_id = ' . logged_user()->getId()));
+				 
+				if (count($ro) == 0)
+				{
+					$event->setIsRead(logged_user()->getId(),true);
+				}
+			}
+			ajx_current("reload");
+	}
+	
+	public function markasunread(){
+			$ev_ids = explode(',', array_var($_GET, 'ids', ''));
+			if (!is_array($ev_ids) || count($ev_ids) == 0){
+				flash_error(lang('no objects selected'));
+				ajx_current("empty");
+				return ;
+			}
+			$events = array();
+			foreach($ev_ids as $id) {
+				$event = ProjectEvents::findById($id);
+				//read object for this user
+				
+				$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+				 $id . ' AND rel_object_manager = \'ProjectEvents\' ' . 
+				' AND ' . 'user_id = ' . logged_user()->getId()));
+				 
+				if (count($ro) != 0)
+				{
+					$event->setIsRead(logged_user()->getId(),false);
+				}
+			}
+			ajx_current("reload");
+	}
+	
 } // EventController
 
 /***************************************************************************
@@ -1034,7 +1221,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94.2.9 2009/08/31 19:17:52 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.104 2009/10/20 20:37:26 alvarotm01 Exp $
  *
  ***************************************************************************/
 

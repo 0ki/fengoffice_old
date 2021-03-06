@@ -119,3 +119,12 @@
 .configCategory, .userWsConfigCategory {
 	margin: 5px 0;
 }
+
+.adminListing {
+	width: 100%;
+}
+
+.adminListing td, .adminListing th {
+	text-align: center;
+	padding: 2px 10px;
+}

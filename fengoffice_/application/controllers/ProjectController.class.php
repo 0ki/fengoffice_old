@@ -226,31 +226,16 @@ class ProjectController extends ApplicationController {
 	} // permissions
 	
 	function get_ws_permissions() {
+		ajx_current("empty");
 		$id = array_var($_GET, "ws_id");
 		if (!$id) {
-			ajx_current("empty");
 			return;
 		}
 		$project = Projects::findById($id);
 		if (!$project instanceof Project) {
-			ajx_current("empty");
 			return;
 		}
-
-		$permissions = ProjectUsers::getNameTextArray();
-		
-		$companies = array(owner_company());
-		$clients = owner_company()->getClientCompanies();
-		if (is_array($clients)) {
-			$companies = array_merge($companies, $clients);
-		} // if
-		
-		tpl_assign('genid', array_var($_GET, "genid"));
-		tpl_assign('project', $project);
-		tpl_assign('permissions', $permissions);
-		tpl_assign('companies', $companies);
-		$this->setLayout("html");
-		$this->setTemplate("add_ws_permissions");
+		ajx_extra_data(array('permissions' => $project->getAllPermissions()));
 	}
 
 	/**
@@ -283,30 +268,10 @@ class ProjectController extends ApplicationController {
 		tpl_assign('project_data', $project_data);
 		tpl_assign('billing_amounts', $billing_amounts);
 		
-		/* <permissions> */
-		if ($project->canChangePermissions(logged_user())) {
-			if (!$project->isNew()){
-				tpl_assign('project_users', $project->getUsers(false));
-				tpl_assign('project_companies', $project->getCompanies());
-			}
-			tpl_assign('user_projects', logged_user()->getProjects());
-
-			$permissions = ProjectUsers::getNameTextArray();
-			tpl_assign('permissions', $permissions);
-
-			$companies = array(owner_company());
-			$clients = owner_company()->getClientCompanies();
-			if (is_array($clients)) {
-				$companies = array_merge($companies, $clients);
-			} // if
-			tpl_assign('companies', $companies);
-		} // if
-		/* </permissions> */
-
 		// Submited...
 		if(is_array($project_data)) {
 			$project->setFromAttributes($project_data);
-
+			
 			try {
 				DB::beginWork();
 				$project->save(); //Save to get the id, then update the project path info
@@ -358,7 +323,6 @@ class ProjectController extends ApplicationController {
 					}
 				}
 
-				$permission_columns = ProjectUsers::getPermissionColumns();
 				$auto_assign_users = owner_company()->getAutoAssignUsers();
 
 				// We are getting the list of auto assign users. If current user is not in the list
@@ -373,74 +337,37 @@ class ProjectController extends ApplicationController {
 					$auto_assign_users[] = logged_user();
 				} // if
 
-				$project->clearUsers();
-				foreach($auto_assign_users as $user) {
+				/* <permissions> */
+				$permissionsString = array_var($_POST, 'permissions');
+				if ($permissionsString && $permissionsString != '') {
+					$permissions = json_decode($permissionsString);
+				}
+			  	if(is_array($permissions) && count($permissions) > 0) {
+			  		//Add new permissions
+			  		//TODO - Make batch update of these permissions
+			  		foreach ($permissions as $perm) {
+			  			if (ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)) {			  				
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($project->getId());
+					  		$relation->setUserId($perm->wsid);
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			} //endif
+			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
+			  		} //end foreach
+				} // if
+				/* </permissions> */
+				
+				foreach ($auto_assign_users as $user) {
+					ProjectUsers::clearByProjectAndUser($project, $user);
 					$project_user = new ProjectUser();
 					$project_user->setProjectId($project->getId());
 					$project_user->setUserId($user->getId());
-					if(is_array($permission_columns)) {
-						foreach($permission_columns as $permission) $project_user->setColumnValue($permission, true);
-					} // if
+					$project_user->setAllPermissions(true);
 					$project_user->save();
 				} // foreach
-
-				/* <permissions> */
-				$project->clearCompanies();
-
-				$companies = array(owner_company());
-				$client_companies = owner_company()->getClientCompanies();
-				if(is_array($client_companies)) {
-					$companies = array_merge($companies, $client_companies);
-				} // if
-
-				foreach($companies as $company) {
-
-					// Company is selected!
-					if(array_var($_POST, 'project_company_' . $company->getId()) == 'checked') {
-
-						// Owner company is automaticly included so it does not need to be in project_companies table
-						if(!$company->isOwner()) {
-							$project_company = new ProjectCompany();
-							$project_company->setProjectId($project->getId());
-							$project_company->setCompanyId($company->getId());
-							$project_company->save();
-						} // if
-
-						$users = $company->getUsers();
-						if(is_array($users)) {
-							$counter = 0;
-							foreach($users as $user) {
-								$continue = true;
-								foreach ($auto_assign_users as $already_added_user){
-									if($user->getId() == $already_added_user->getId()){
-										$continue= false; //if the user was auto-assigned we do not want to add him again.
-									}
-								}
-								if($continue){
-									$user_id = $user->getId();
-									$counter++;
-									if(array_var($_POST, "project_user_$user_id") == 'checked') {
-	
-										$project_user = new ProjectUser();
-										$project_user->setProjectId($project->getId());
-										$project_user->setUserId($user_id);
-	
-										foreach($permissions as $permission => $permission_text) {
-											// Account owner member has all permissions
-											$permission_value = $user->isAccountOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == "checked";
-											
-											$setter = 'set' . Inflector::camelize($permission);
-											$project_user->$setter($permission_value);
-	
-										} // if	
-										$project_user->save();	
-									} // if
-								}
-							} // foreach
-						} // if
-					} // if
-				} // foreach
-				/* </permissions> */
 				
 				$object_controller = new ObjectController();
 				$object_controller->add_custom_properties($project);
@@ -508,24 +435,6 @@ class ProjectController extends ApplicationController {
 		tpl_assign('billing_amounts', $project->getBillingAmounts());
 		tpl_assign('subject_matter_experts', ProjectContacts::getContactsByProject($project));
 		
-		/* <permissions> */
-		if ($project->canChangePermissions(logged_user())) {
-			tpl_assign('project_users', $project->getUsers(false));
-			tpl_assign('project_companies', $project->getCompanies());
-			tpl_assign('user_projects', logged_user()->getProjects());
-
-			$permissions = ProjectUsers::getNameTextArray();
-			tpl_assign('permissions', $permissions);
-
-			$companies = array(owner_company());
-			$clients = owner_company()->getClientCompanies();
-			if (is_array($clients)) {
-				$companies = array_merge($companies, $clients);
-			} // if
-			tpl_assign('companies', $companies);
-		} // if
-		/* </permissions> */
-
 		if(is_array(array_var($_POST, 'project'))) {
 			if (array_var($project_data, 'parent_id') == $project->getId()) {
 				flash_error(lang("workspace own parent error"));
@@ -597,69 +506,33 @@ class ProjectController extends ApplicationController {
 				
 				
 				/* <permissions> */
-				if ($project->canChangePermissions(logged_user())) {
-					$project->clearCompanies();
-					$project->clearUsers();
-	
-					$companies = array(owner_company());
-					$client_companies = owner_company()->getClientCompanies();
-					if(is_array($client_companies)) {
-						$companies = array_merge($companies, $client_companies);
-					} // if
-	
-					foreach($companies as $company) {
-	
-						// Company is selected!
-						if(array_var($_POST, 'project_company_' . $company->getId()) == 'checked') {
-	
-							// Owner company is automaticly included so it does not need to be in project_companies table
-							if(!$company->isOwner()) {
-								$project_company = new ProjectCompany();
-								$project_company->setProjectId($project->getId());
-								$project_company->setCompanyId($company->getId());
-								$project_company->save();
-							} // if
-	
-							$users = $company->getUsers();
-							if(is_array($users)) {
-								$counter = 0;
-								foreach($users as $user) {
-									$user_id = $user->getId();
-									$counter++;
-									if(array_var($_POST, "project_user_$user_id") == 'checked') {
-	
-										$project_user = ProjectUsers::find(array("conditions" => "`project_id` = ".$project->getId()." and `user_id` = ".$user_id));
-										if (!$project_user) {
-											$project_user = new ProjectUser();
-											$project_user->setProjectId($project->getId());
-											$project_user->setUserId($user_id);
-										}
-	
-										foreach($permissions as $permission => $permission_text) {
-	
-											// Account owner member has all permissions
-											$permission_value = $user->isAccountOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == "checked";
-	
-											$setter = 'set' . Inflector::camelize($permission);
-											$project_user->$setter($permission_value);
-	
-										} // if
-	
-										$project_user->save();
-	
-									} // if
-	
-								} // foreach
-							} // if
-						} else {
-							// remove company users from workspace
-							$users = $company->getUsers();
-							foreach ($users as $user) {
-								$user->removeFromWorkspace($project);
-							}
-						}
-					} // foreach
+				$permissionsString = array_var($_POST, 'permissions');
+				if ($permissionsString && $permissionsString != '') {
+					$permissions = json_decode($permissionsString);
 				}
+			  	if(is_array($permissions) && count($permissions) > 0) {
+			  		//Clear old modified permissions
+			  		$ids = array();
+			  		foreach($permissions as $perm) {
+			  			$ids[] = $perm->wsid;
+			  		}
+			  		ProjectUsers::clearByProject($project, implode(',', $ids));
+			  		
+			  		//Add new permissions
+			  		//TODO - Make batch update of these permissions
+			  		foreach ($permissions as $perm) {
+			  			if (ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)) {			  				
+				  			$relation = new ProjectUser();
+					  		$relation->setProjectId($project->getId());
+					  		$relation->setUserId($perm->wsid);
+				  			
+					  		$relation->setCheckboxPermissions($perm->pc);
+					  		$relation->setRadioPermissions($perm->pr);
+					  		$relation->save();
+			  			} //endif
+			  			//else if the user has no permissions at all, he is not a project_user. ProjectUser is not created
+			  		} //end foreach
+				} // if
 				/* </permissions> */				
 				
 				$object_controller = new ObjectController();
@@ -761,30 +634,8 @@ class ProjectController extends ApplicationController {
 			return;
 		} // if
 
-		if(!$project->canChangeStatus(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		try {
-
-			$project->setCompletedOn(DateTimeValueLib::now());
-			$project->setCompletedById(logged_user()->getId());
-
-			DB::beginWork();
-			$project->save();
-			ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_CLOSE);
-			DB::commit();
-
-			flash_success(lang('success complete project', $project->getName()));
-			ajx_current("reload");
-		} catch(Exception $e) {
-			DB::rollback();
-			flash_error(lang('error complete project'));
-			ajx_current("empty");
-		} // try
-
+		$project->complete();
+		ajx_current("back");
 	} // complete
 
 	/**
@@ -801,31 +652,8 @@ class ProjectController extends ApplicationController {
 			return;
 		} // if
 
-		if(!$project->canChangeStatus(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		try {
-
-			$project->setCompletedOn(null);
-			$project->setCompletedById(0);
-
-			DB::beginWork();
-			$project->save();
-			ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_OPEN);
-			DB::commit();
-
-			flash_success(lang('success open project', $project->getName()));
-			ajx_current("reload");
-
-		} catch(Exception $e) {
-			DB::rollback();
-			flash_error(lang('error open project'));
-			ajx_current("empty");
-		} // try
-
+		$project->open();
+		ajx_current("back");
 	} // open
 
 	/**

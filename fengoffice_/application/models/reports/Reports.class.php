@@ -222,8 +222,8 @@ class Reports extends BaseReports {
 
 					$skip_condition = false;
 					$dateFormat = 'm/d/Y';
-					if(isset($params[$cp->getName()])){
-						$value = $params[$cp->getName()];
+					if(isset($params[$condCp->getId()."_".$cp->getName()])){
+						$value = $params[$condCp->getId()."_".$cp->getName()];
 						if ($cp->getType() == 'date')
 						$dateFormat = user_config_option('date_format');
 					}else{
@@ -269,6 +269,9 @@ class Reports extends BaseReports {
 			{
 				$allConditions .= ' AND t.id IN (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
 			}
+			if ($manager != 'Projects') {
+				$allConditions .= ' AND t.trashed_by_id = 0 ';
+			}
 
 			$sql .= $allConditions;
 					
@@ -284,36 +287,37 @@ class Reports extends BaseReports {
 				$selectCols .= ', t.'.$title.' as "titleCol'.$num.'"';
 			}
 
-			$columnsFields = ReportColumns::getAllReportColumnNamesForFields($id);
-			if(count($columnsFields) > 0){
-				$first = true;
-				foreach($columnsFields as $field){
-					if ($managerInstance->columnExists($field)) {
-						$selectCols .= ', t.'.$field;
-						$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
-						$first = false;
-					}
-				}
-			}
 			$selectFROM = TABLE_PREFIX.$table.' t ';
 			$selectWHERE = "WHERE $allConditions";
-
-			$columnsCp = ReportColumns::getAllReportColumnsForCustomProperties($id);
-			$first = true;
-			$openPar = '';
-			foreach($columnsCp as $id => $colCp){
-				$cp = CustomProperties::getCustomProperty($colCp);
-				if ($cp instanceof CustomProperty) {
-					$selectCols .= ', cpv'.$id.'.value as "'.$cp->getName().'"';
-					$results['columns'][] = $cp->getName();
-					$openPar .= '(';
-					$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$id.' ON (t.id = cpv'.$id.'.object_id AND cpv'.$id.'.custom_property_id = '.$colCp .'))';
-					$first = false;
-					if($report->getOrderBy() == $colCp){
-						if($cp->getType() == 'date'){
-							$order_by = 'ORDER BY STR_TO_DATE(cpv'.$id.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
-						}else{
-							$order_by = 'ORDER BY cpv'.$id.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+			
+			$allColumns = ReportColumns::getAllReportColumns($id);
+			if(is_array($allColumns) && count($allColumns) > 0){
+				$first = true;
+				$openPar = '';
+				foreach($allColumns as $column){
+					if ($column->getCustomPropertyId() == 0) {
+						$field = $column->getFieldName();
+						if ($managerInstance->columnExists($field)) {
+							$selectCols .= ', t.'.$field;
+							$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
+							$first = false;
+						}
+					} else {
+						$colCp = $column->getCustomPropertyId();
+						$cp = CustomProperties::getCustomProperty($colCp);
+						if ($cp instanceof CustomProperty) {
+							$selectCols .= ', cpv'.$colCp.'.value as "'.$cp->getName().'"';
+							$results['columns'][] = $cp->getName();
+							$openPar .= '(';
+							$selectFROM .= ' LEFT OUTER JOIN '.TABLE_PREFIX.'custom_property_values cpv'.$colCp.' ON (t.id = cpv'.$colCp.'.object_id AND cpv'.$colCp.'.custom_property_id = '.$colCp .'))';
+							$first = false;
+							if($report->getOrderBy() == $colCp){
+								if($cp->getType() == 'date'){
+									$order_by = 'ORDER BY STR_TO_DATE(cpv'.$colCp.'.value, "%Y-%m-%d %H:%i:%s") '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+								}else{
+									$order_by = 'ORDER BY cpv'.$colCp.'.value '.($report->getIsOrderByAsc() ? 'asc' : 'desc');
+								}
+							}
 						}
 					}
 				}
@@ -352,7 +356,11 @@ class Reports extends BaseReports {
 				}
 				$row = str_replace('|', ',', $row);
 			}
-			array_unshift($results['columns'], '');
+			if (is_array($results['columns'])) {
+				array_unshift($results['columns'], '');
+			} else {
+				$results['columns'] = array('');
+			}
 			$results['rows'] = $rows;
 		}
 

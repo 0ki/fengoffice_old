@@ -33,6 +33,8 @@ og.ReportingManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("charts"), ws));
 						}
+					} else if (d.charts.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("charts")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -206,10 +208,10 @@ og.ReportingManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
         style: "padding:7px",
-        bbar: new og.PagingToolbar({
-            pageSize: og.pageSize,
+        bbar: new og.CurrentPagingToolbar({
+            pageSize: og.config['files_per_page'],
             store: this.store,
             displayInfo: true,
             displayMsg: lang('displaying charts of'),
@@ -262,14 +264,14 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.pageSize,
+				limit: og.config['files_per_page'],
 				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 			})

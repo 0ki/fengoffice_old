@@ -131,6 +131,7 @@
 	<script>
 	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 	wsch.on("wschecked", function(arguments) {
+		if (!this.getValue().trim()) return;
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
 			url: og.getUrl('object', 'render_add_subscribers', {

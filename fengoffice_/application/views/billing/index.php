@@ -64,6 +64,9 @@ foreach($billing_categories as $billing) {
 <div style="margin-top:10px">
 	<a class="internalLink coViewAction ico-user" href="<?php echo get_url('billing', 'assign_users') ?>"><?php echo lang('assign billing categories to users') ?></a>
 </div>
+<div style="margin-top:10px">
+	<a class="internalLink coViewAction ico-db" onclick="return confirm('<?php echo escape_single_quotes(lang('update unset billing values desc'))?>')" href="<?php echo get_url('billing', 'update_unset_billing_values') ?>"><?php echo lang('update unset billing values') ?></a>
+</div>
 <?php } ?>
 </div>
 </div>

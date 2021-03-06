@@ -12,6 +12,10 @@
 }
 
 /*--- tabs.css ---*/
+.x-tab-strip .x-tab-with-icon span.x-tab-strip-text {
+	height:14px;
+}
+
 .x-tab-panel-header, .x-tab-panel-footer {
 	border: 0px;
 }

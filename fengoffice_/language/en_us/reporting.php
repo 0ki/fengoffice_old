@@ -25,6 +25,10 @@
   	'ascending' => 'Ascending',
   	'descending' => 'Descending',
     'parametrizable'=> 'Paramenter?',
+  	'columns to print' => 'Columns to print',
+  	'columns to print desc' => 'Move the columns you want to print to the box in the right.',
+  	'reporting workspace' => 'Workspace',
+  	'reporting user' => 'User',
   );
   
 ?>

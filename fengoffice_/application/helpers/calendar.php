@@ -1,5 +1,27 @@
 <?php
 
+function getEventLimits($event, $date, &$event_start, &$event_duration, &$end_modified) {
+	$end_modified = false;
+	$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+	$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+	
+	$tomorrow = new DateTimeValue($date->getTimestamp());
+	$tomorrow->add('d', 1);
+	if ($event_duration->getTimestamp() > $tomorrow->getTimestamp()) {
+		$event_duration = new DateTimeValue($tomorrow->getTimestamp());
+		$end_modified = true;
+	}
+	if ($event_start->getTimestamp() < $date->getTimestamp()) {
+		if (!$event->isRepetitive())
+			$event_start = new DateTimeValue($date->getTimestamp());
+		else {
+			$event_start->setDay($date->getDay());
+			$event_start->setMonth($date->getMonth());
+			$event_start->setYear($date->getYear());
+		}
+	}
+}
+
 function cal_get_ws_color($ws_color, &$ws_style, &$ws_class, &$txt_color, &$border_color){
 	$txt_color = '#fff';
 	if ($ws_color>0 && $ws_color<=12){

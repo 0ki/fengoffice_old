@@ -134,7 +134,11 @@ og.TagTree = function(config) {
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
 			if (e.data.grid) {
-				e.data.grid.tagObjects(e.target.tag.name);
+				if (e.target.tag.name == '') {
+					og.confirmRemoveTags(e.data.grid.id);
+				} else {
+					e.data.grid.tagObjects(e.target.tag.name);
+				}
 			}
 			return false;
 		}

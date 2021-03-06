@@ -135,6 +135,44 @@ function get_url($controller_name = null, $action_name = null, $params = null, $
 	return with_slash(ROOT_URL) . 'index.php?' . implode('&', $url_params) . $anchor;
 } // get_url
 
+function get_sandbox_url($controller_name = null, $action_name = null, $params = null, $anchor = null, $include_project_id = false) {
+	$controller = trim($controller_name) ? $controller_name : DEFAULT_CONTROLLER;
+	$action = trim($action_name) ? $action_name : DEFAULT_ACTION;
+	if(!is_array($params) && !is_null($params)) {
+		$params = array('id' => $params);
+	} // if
+
+	$url_params = array('c=' . $controller, 'a=' . $action);
+
+	if($include_project_id) {
+		if(function_exists('active_project') && (active_project() instanceof Project)) {
+			if(!(is_array($params) && isset($params['active_project']))) {
+				$url_params[] = 'active_project=' . active_project()->getId();
+			} // if
+		} // if
+	} // if
+
+	if(is_array($params)) {
+		foreach($params as $param_name => $param_value) {
+			if(is_bool($param_value)) {
+				$url_params[] = $param_name . '=1';
+			} else {
+				$url_params[] = $param_name . '=' . urlencode($param_value);
+			} // if
+		} // foreach
+	} // if
+
+	if(trim($anchor) <> '') {
+		$anchor = '#' . $anchor;
+	} // if
+
+	if (defined('SANDBOX_URL')) {
+		return with_slash(SANDBOX_URL) . 'index.php?' . implode('&', $url_params) . $anchor;
+	} else {
+		return with_slash(ROOT_URL) . 'index.php?' . implode('&', $url_params) . $anchor;
+	}
+} // get_sandbox_url
+
 // ---------------------------------------------------
 //  Product
 // ---------------------------------------------------
@@ -167,13 +205,19 @@ function product_version() {
  * @return string
  */
 function installed_version() {
-	$version = @include ROOT . '/config/installed_version.php';
-	if ($version) {
-		return $version;
+	$installed_version = config_option('installed_version');
+	if ($installed_version) {
+		return $installed_version;
 	} else {
-		return "unknown";
+		$version = @include ROOT . '/config/installed_version.php';
+		if ($version) {
+			return $version;
+		} else {
+			return "unknown";
+		}
 	}
 } // installed_version
+
 
 /**
  * Returns product signature (name and version). If user is not logged in and
@@ -249,7 +293,7 @@ function prepare_company_website_controller(PageController $controller, $layout 
 	} // if
 
 	$controller->setLayout($layout);
-	$controller->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website');
+	$controller->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website', 'textile');
 } // prepare_company_website_controller
 
 // ---------------------------------------------------
@@ -399,6 +443,35 @@ function user_config_option($option, $default = null, $user_id = null) {
 		}
 	}
 	return UserWsConfigOptions::getOptionValue($option, $user_id, $default);
+} // user_config_option
+
+function user_has_config_option($option_name, $user_id = 0, $workspace_id = 0) {
+	if (!$user_id && logged_user() instanceof User) {
+		$user_id = logged_user()->getId();
+	} else {
+		return false;
+	}
+	$option = UserWsConfigOptions::getByName($option);
+	if (!$option instanceof UserWsConfigOption) return false;
+	$value = UserWsConfigOptionValues::findById(array(
+		'option_id' => $option->getId(),
+		'user_id' => $user_id,
+		'workspace_id' => $workspace_id));
+	return $value instanceof UserWsConfigOptionValue;
+}
+
+
+/**
+ * Return user config option value
+ *
+ * @access public
+ * @param string $name Option name
+ * @param mixed $default Default value that is returned in case of any error
+ * @param int $user_id User Id, if null logged user is taken
+ * @return mixed
+ */
+function load_user_config_options_by_category_name($category_name) {
+	UserWsConfigOptions::getOptionsByCategoryName($category_name, true);
 } // config_option
 
 /**
@@ -582,6 +655,10 @@ function get_language_name($loc) {
 		'zh_tw' => '中文 (臺灣)',
 	);
 	return array_var($names, $loc, $loc);
+}
+
+function module_enabled($module, $default = null) {
+	return config_option("enable_".$module."_module", $default);
 }
 
 ?>

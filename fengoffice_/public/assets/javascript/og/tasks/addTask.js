@@ -11,10 +11,10 @@
 
 ogTasks.drawAddNewTaskForm = function(group_id,parent_id, level){
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
-	var filters = topToolbar.getFilters();
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+	var filters = bottomToolbar.getFilters();
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
-	var drawOptions = bottomToolbar.getDrawOptions();
+	var drawOptions = topToolbar.getDrawOptions();
 	
 	if (parent_id > 0)
 		var parentTask = ogTasks.getTask(parent_id);
@@ -103,20 +103,36 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 			assignedTo: task.assignedToId,
 			taskId: task.id,
 			isEdit: true,
-			tags: task.tags
+			tags: task.tags,
+			otype: task.otype
 		});
 	}
 }
 
 
-
+//submit the form when the user press enter
+ogTasks.checkEnterPress = function (e,id)
+{
+	var characterCode;
+	if(e && e.which){
+		characterCode = e.which;
+	}
+	else{
+		e = event;
+		characterCode = e.keyCode;
+	}
+	if(characterCode == 13){
+		ogTasks.SubmitNewTask(id);
+		return false;
+	}
+}
 
 ogTasks.drawTaskForm = function(container_id, data){
 	this.hideAddNewTaskForm();
 
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
-	var drawOptions = bottomToolbar.getDrawOptions();
+	var drawOptions = topToolbar.getDrawOptions();
 	var padding = (15/* * level*/) - 1;
 	
 	var html = "<div style='margin-left:" + padding + "px' class='ogTasksAddTaskForm'>";
@@ -126,7 +142,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		html += "<input type='hidden' id='ogTasksPanelATParentId' value='" + data.parentId + "'>";
 	}
 	html += "<b>" + lang('title') + ":</b><br/>";
-	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000 value=''/>";
+	html += "<input id='ogTasksPanelATTitle' type='text' class='title' name='task[title]' tabIndex=1000 value='' onkeypress='ogTasks.checkEnterPress(event,"+ data.taskId +")' />";
 	
 	
 	//First column
@@ -150,6 +166,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	if (data.isEdit) html += "<td style=\"padding-left:15px\"><label for=\"ogTasksPanelApplyMI\"><input style=\"width:14px;\" type=\"checkbox\" name=\"task[apply_milestone_subtasks]\" id=\"ogTasksPanelApplyMI\" />&nbsp;" + lang('apply milestone to subtasks') + "</label></td>";
 	html += "</tr></table></div>";
 	html += "<div id='ogTasksPanelATTags' style='padding-top:5px;" + (data.isEdit? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('tags') + ":&nbsp;</b></td><td><input id='ogTasksPanelTagsSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.tags?data.tags + ',':'') + "' name='task[tags]'/></td></tr></table></div>";
+	html += "<div id='ogTasksPanelATObjectType' style='padding-top:5px;" + (data.isEdit && ogTasks.ObjectSubtypes.length > 0 ? '': 'display:none') + "'><table><tr><td style='width:120px;'><b>" + lang('object type') + ":&nbsp;</b></td><td><input id='ogTasksPanelObjectTypeSelector' style='min-width:120px;max-width:300px' type='text' value='" + (data.otype ? data.otype : og.defaultTaskType) + "' name='task[object_subtype]'/></td></tr></table></div>";
 	
 	
 	//Second column
@@ -193,8 +210,30 @@ ogTasks.drawTaskForm = function(container_id, data){
 	else
 		container.appendChild(div);
 	
-	
 	//Create Ext components
+	var object_subtypes = ogTasks.ObjectSubtypes;
+	var co_types = [];
+	for (var i=0; i < object_subtypes.length; i++) {
+		co_types.push([object_subtypes[i].id, og.clean(object_subtypes[i].name)]);
+	}
+	new Ext.form.ComboBox({
+		store: new Ext.data.SimpleStore({
+       		fields: ["value", "text"],
+       		data: co_types
+		}),
+		id: 'ogTasksPanelObjectTypeSelector',
+		valueField: 'value',
+		displayField:'text',
+        typeAhead: true,
+        mode: 'local',
+        triggerAction: 'all',
+        selectOnFocus:true,
+        width:140,        
+        //emptyText: (lang('select object type') + '...'),
+        valueNotFoundText: '',
+       	applyTo: "ogTasksPanelObjectTypeSelector"
+   	});
+	
 	var tags = Ext.getCmp("tag-panel").getTags();
 	var arr = [];
 	for (var i=0; i < tags.length; i++) {
@@ -215,7 +254,7 @@ ogTasks.drawTaskForm = function(container_id, data){
        	applyTo: "ogTasksPanelTagsSelector"
    	});
    	
-   	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
+   	var milestoneCombo = bottomToolbar.filterMilestonesCombo.cloneConfig({
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
 		id: 'ogTasksPanelATMilestoneCombo',
@@ -239,7 +278,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	if (data.startDate){
 		var date = new Date(data.startDate * 1000);
-		var sd = date.dateFormat(og.date_format);
+		var sd = date.dateFormat(og.preferences['date_format']);
 	} else sd = '';
 	var DtStart = new og.DateField({
 		renderTo:'ogTasksPanelATStartDate',
@@ -260,7 +299,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	});
 	if (data.dueDate){
 		var date = new Date(data.dueDate * 1000);
-		var dd = date.dateFormat(og.date_format);
+		var dd = date.dateFormat(og.preferences['date_format']);
 	} else dd = '';
 	var DtDue = new og.DateField({
 		renderTo:'ogTasksPanelATDueDate',
@@ -280,7 +319,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		}
 	});
 
-	var priorityCombo = topToolbar.filterPriorityCombo.cloneConfig({
+	var priorityCombo = bottomToolbar.filterPriorityCombo.cloneConfig({
 		name: 'task[priority]',
 		renderTo: 'ogTasksPanelATPriorityCont',
 		id: 'ogTasksPanelATPriorityCombo',
@@ -307,6 +346,7 @@ ogTasks.addNewTaskShowMore = function(){
 	document.getElementById('ogTasksPanelATWorkspace').style.display = 'block';
 	document.getElementById('ogTasksPanelATMilestone').style.display = 'block';
 	document.getElementById('ogTasksPanelATTags').style.display = 'block';
+	document.getElementById('ogTasksPanelATObjectType').style.display = 'block';
 	
 	document.getElementById('ogTasksPanelATDesc').focus();
 }
@@ -339,11 +379,11 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	
 	var startPanel = Ext.getCmp('ogTasksPanelATStartDateCmp');
 	if (startPanel && startPanel.getValue() != '')
-		parameters["task_start_date"] = startPanel.getValue().format(og.date_format);
+		parameters["task_start_date"] = startPanel.getValue().format(og.preferences['date_format']);
 	
 	var duePanel = Ext.getCmp('ogTasksPanelATDueDateCmp');
 	if (duePanel && duePanel.getValue() != '')
-		parameters["task_due_date"] = duePanel.getValue().format(og.date_format);
+		parameters["task_due_date"] = duePanel.getValue().format(og.preferences['date_format']);
 		
 	var notify = document.getElementById('ogTasksPanelATNotify');
 	if (notify && notify.style.display != 'none' && notify.checked)
@@ -368,6 +408,7 @@ ogTasks.GetNewTaskParameters = function(wrapWithTask){
 	parameters["title"] = document.getElementById('ogTasksPanelATTitle').value;
 	parameters["project_id"] = document.getElementById('ogTasksPanelWsSelectorValue').value;
 	parameters["tags"] = document.getElementById('ogTasksPanelTagsSelector').value;
+	parameters["object_subtype"] = Ext.getCmp('ogTasksPanelObjectTypeSelector').getValue();
 	
 	if (wrapWithTask){
 		var params2 = [];
@@ -407,6 +448,15 @@ ogTasks.SubmitNewTask = function(task_id){
 					}
 				} else {
 					task.setFromTdata(data.task);
+				}
+				
+				if (data.subtasks) {
+					for (i=0; i<data.subtasks.length; i++) {
+						var subtask = this.getTask(data.subtasks[i].id);
+						if (subtask) {
+							subtask.setFromTdata(data.subtasks[i]);
+						}
+					}
 				}
 				this.redrawGroups = false;
 				this.draw();
@@ -506,7 +556,7 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 }
 
 ogTasks.drawMilestonesCombo = function(success, data) {
-	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
 	mStore = ogTasks.buildMilestonesComboStore(data.milestones);
 	prev_combo = Ext.get('ogTasksPanelATMilestoneCombo');
 	if (prev_combo) {
@@ -523,7 +573,7 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 		prev_combo.remove();
 	}
 	
-	var milestoneCombo = topToolbar.filterMilestonesCombo.cloneConfig({
+	var milestoneCombo = bottomToolbar.filterMilestonesCombo.cloneConfig({
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
 		id: 'ogTasksPanelATMilestoneCombo',

@@ -74,4 +74,55 @@
     //return "<a class=\"checkboxLink\" href=\"$link\" $title_attribute onclick=\"og.openLink(this.href);\"><img src=\"$icon_url\" alt=\"\" /></a>";
   } // checkbox_link
 
+  /**
+  * Returns an array with urls as keys and file contents as values
+  *
+  * @access public
+  * @param string $source html with image urls
+  * @return array
+  */
+  function get_image_contents($source) {
+		preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $source, $matches);
+		$urls = array_var($matches, 1);
+		$images = array();
+		if (is_array($urls)) {
+			foreach ($urls as $url) {
+				$cache_name = preg_replace("/[^a-zA-Z0-9]/", "_", $url);
+				$cache_path = "cache/$cache_name.cache";
+				if (!is_file($cache_path)) {
+					$content = file_get_contents($url);
+					file_put_contents($cache_path, $content);
+				} else {
+					$content = file_get_contents($cache_path);
+				}
+				$images[$url] = $content;
+			}
+		}
+		return $images;
+	}
+	
+	/**
+  * Returns an array with urls as keys and file contents as values
+  *
+  * @access public
+  * @param string $source html with image urls
+  * @return array
+  */
+  function get_image_paths($source) {
+		preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $source, $matches);
+		$urls = array_var($matches, 1);
+		$images = array();
+		if (is_array($urls)) {
+			foreach ($urls as $url) {
+				$cache_name = preg_replace("/[^a-zA-Z0-9]/", "_", $url);
+				$cache_path = "cache/$cache_name.cache";
+				if (!is_file($cache_path)) {
+					$content = file_get_contents($url);
+					file_put_contents($cache_path, $content);
+				} 
+				$images[$url] = $cache_path;
+			}
+		}
+		return $images;
+	}
 ?>

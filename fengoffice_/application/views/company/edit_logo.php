@@ -17,7 +17,7 @@
   } // if
 
 ?>
-<form target="_blank" style='height:100%;background-color:white' action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
 
 <div class="avatar">
 <div class="coInputSeparator"></div>

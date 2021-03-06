@@ -320,6 +320,7 @@ class MilestoneController extends ApplicationController {
 					ajx_current("empty");
 					return;
 				} // if
+				$milestone->move_inconsistent_tasks($newProject);
 			}
 			
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
@@ -587,12 +588,15 @@ class MilestoneController extends ApplicationController {
 	    $year = array_var($_GET, 'year', $milestone->getDueDate()->getYear());
 	    $month = array_var($_GET, 'month', $milestone->getDueDate()->getMonth());
 	    $day = array_var($_GET, 'day', $milestone->getDueDate()->getDay());
-	    
-	    $milestone->setDueDate(new DateTimeValue(mktime(0, 0, 0, $month, $day, $year)));
-	    DB::beginWork();
-	    $milestone->save();
-	    DB::commit();
-	    
+	    try {
+	    	DB::beginWork();
+	    	$milestone->setDueDate(new DateTimeValue(mktime(0, 0, 0, $month, $day, $year)));
+	    	$milestone->save();
+	    	DB::commit();
+		} catch(Exception $e) {
+			DB::rollback();
+			flash_error(lang('error change due date milestone'));
+		} // try
 	    ajx_current("empty");
 	}
 	
@@ -606,12 +610,16 @@ class MilestoneController extends ApplicationController {
 		$this->setTemplate("add_select_milestone");	
 	}
 	
+	/**
+	 * Returns the milestones included in the present workspace and all of its parents. This is because tasks from a particular workspace
+	 * can only be assigned to milestones from that workspace and from any of its parents.
+	 */
 	function get_workspace_milestones() {
 		ajx_current("empty");
 		$ws_id = array_var($_GET, 'ws_id');
 		$workspace = Projects::findById($ws_id);
 		if ($workspace instanceof Project) {
-			$milestones = ProjectMilestones::getMilestonesRelevantToWorkspace($workspace);
+			$milestones = $workspace->getOpenMilestones();
 			$ms = array();
 			foreach ($milestones as $milestone) {
 				$ms[] = array(

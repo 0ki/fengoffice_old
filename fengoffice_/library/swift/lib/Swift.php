@@ -372,6 +372,9 @@ class Swift
 	 */
 	private $headerEncoding = 'B';
 	
+	private $message_id = null;
+	private $in_reply_to_id = null;
+	
 	/**
 	 * Swift Constructor
 	 * @param  object  Swift_IConnection
@@ -507,6 +510,15 @@ class Swift
 			$this->headerEncoding = 'B';
 		}
 	}
+	
+	public function setMessageId($id) {
+		$this->message_id = $id;
+	}
+	
+	public function setInReplyToId($id) {
+		$this->in_reply_to_id = $id;
+	}
+	
 	/**
 	 * Set the return path address (Bounce detection)
 	 * @param string address
@@ -766,6 +778,18 @@ class Swift
 		{
 			$this->logError('The MTA doesn\'t support any of Swift\'s loaded authentication mechanisms', 0);
 			return false;
+		}
+		$forced_authenticator = defined('SWIFT_AUTHENTICATOR') ? SWIFT_AUTHENTICATOR : false;
+		if ($forced_authenticator) {
+			if (in_array($forced_authenticator, $this->authTypes))
+			{
+				if ($this->authenticators[$forced_authenticator]->run($username, $password))
+				{
+					$this->triggerEventHandler('onAuthenticate');
+					return true;
+				}
+				else return false;
+			}
 		}
 		foreach ($this->authenticators as $name => $object)
 		{
@@ -1063,6 +1087,8 @@ class Swift
 						//Some addresses may still work...
 						if (++$this->subFailCount >= $this->numAddresses)
 						{
+							$this->logError('Send Error: Bad response (' . $this->responseCode . ')');
+							return false;
 							//Sending failed, just RSET and don't send data to this recipient
 							$this->reset();
 							//So we can still cache the mail body in send()
@@ -1102,7 +1128,7 @@ class Swift
 	 * @param  string  content-transfer-encoding, optional
 	 * @return  void
 	 */
-	public function addPart($string, $type='text/plain', $encoding=false)
+	public function addPart($string, $type='text/plain', $encoding=false, $generate_cid = false)
 	{
 		if (!$this->userCharset && (strtoupper($this->charset) != 'UTF-8') && $this->detectUTF8($string)) $this->charset = 'UTF-8';
 		
@@ -1111,12 +1137,17 @@ class Swift
 		
 		$body_string = $this->encode($string, $encoding);
 		if ($this->autoCompliance && $encoding != 'binary') $body_string = $this->chunkSplitLines($body_string);
-		$ret = "Content-Type: $type; charset=\"{$this->charset}\"; format=flowed\r\n".
-				"Content-Transfer-Encoding: $encoding\r\n\r\n".
-				$body_string;
+		if ($generate_cid) $cid = gen_id() . "@fengoffice.com";
+		$ret = "";
+		$ret .= "Content-Type: $type; charset=\"{$this->charset}\"; format=flowed\r\n";
+		if ($generate_cid) $ret .= "Content-ID: <$cid>\r\n";
+		$ret .= "Content-Transfer-Encoding: $encoding\r\n"; 
+		$ret .= "\r\n" . $body_string;
 		
 		if (strtolower($type) == 'text/html') $this->parts[] = $this->makeSafe($ret);
 		else $this->parts = array_merge((array) $this->makeSafe($ret), $this->parts);
+		
+		if ($generate_cid) return $cid;
 	}
 	/**
 	 * Get the current number of parts in the email
@@ -1134,15 +1165,21 @@ class Swift
 	 * @param  string  content-type
 	 * @return  void
 	 */
-	public function addAttachment($data, $filename, $type='application/octet-stream')
+	public function addAttachment($data, $filename, $type='application/octet-stream', $encoding = 'base64', $disposition = 'attachment')
 	{
-		$this->attachments[] = "Content-Type: $type; ".
-				"name=\"$filename\";\r\n".
-				"Content-Transfer-Encoding: base64\r\n".
-				"Content-Description: $filename\r\n".
-				"Content-Disposition: attachment; ".
-				"filename=\"$filename\"\r\n\r\n".
-				chunk_split($this->encode($data, 'base64'));
+		$data = str_replace(array("\r\n.\r\n", "\n.\n"), "\r\n", $data); // remove dot-only lines
+		$headers = "Content-Type: $type; ".
+				"\r\n name=\"$filename\";\r\n".
+				"Content-Transfer-Encoding: $encoding\r\n".
+				//"Content-Description: $filename\r\n".
+				"Content-Disposition: $disposition; ".
+				"\r\n filename=\"$filename\"\r\n\r\n";
+		if ($encoding == 'base64') {
+			$headers .= chunk_split($this->encode($data, $encoding));
+		} else {
+			$headers .= $this->encode($data, $encoding);
+		}
+		$this->attachments[] = $headers;
 	}
 	/**
 	 * Get the current number of attachments in the mail
@@ -1470,7 +1507,7 @@ class Swift
 	 * @param  string  content-transfer-encoding,optional
 	 * @return  bool  successful
 	 */
-	public function send($to, $from, $subject, $body=false, $type='text/plain', $encoding=false)
+	public function send($to, $from, $subject, $body=false, $type='text/plain', $encoding=false, &$complete_mail)
 	{
 		if ((strtoupper($this->charset) != 'UTF-8') && $body && $this->detectUTF8($body) && !$this->userCharset) $this->charset = 'UTF-8';
 		if ((strtoupper($this->charset) != 'UTF-8') && $this->detectUTF8($subject) && !$this->userCharset) $this->charset = 'UTF-8';
@@ -1485,7 +1522,7 @@ class Swift
 		//In these cases we just send the one email
 		if ($this->useExactCopy || !empty($this->Cc) || !empty($this->Bcc))
 		{
-			$this->currentMail = $this->buildMail(false, $from, $subject, $body, $type, $encoding, 1);
+			$this->currentMail = $this->buildMail(false, $from, $subject, $body, $type, $encoding, 1, $complete_mail);
 			$this->triggerEventHandler('onBeforeSend');
 			foreach ($this->currentMail as $command)
 			{
@@ -1518,7 +1555,7 @@ class Swift
 			$cached_body = '';
 			foreach ($this->to as $address)
 			{
-				$this->currentMail = $this->buildMail($address, $from, $subject, $body, $type, $encoding, $get_body);
+				$this->currentMail = $this->buildMail($address, $from, $subject, $body, $type, $encoding, $get_body, $complete_mail);
 				//If we have a cached version
 				if (!$get_body) $this->currentMail[] = $this->makeRecipientHeaders($address).$cached_body;
 				$this->triggerEventHandler('onBeforeSend');
@@ -1536,14 +1573,16 @@ class Swift
 						{
 							if (!$this->command($c))
 							{
-								$this->logError('Sending failed on command: '.$c, 0);
+								$lastError = $this->lastError;
+								$this->logError('Sending failed on command: ' . $c . "\n " . $lastError, 0);
 								return false;
 							}
 						}
 					}
 					else if (!$this->command($command))
 					{
-						$this->logError('Sending failed on command: '.$command, 0);
+						$lastError = $this->lastError;
+						$this->logError('Sending failed on command: '.$command . "\n " . $lastError, 0);
 						return false;
 					}
 				}
@@ -1572,9 +1611,10 @@ class Swift
 	 * @return  array  commands
 	 * @private
 	 */
-	private function buildMail($to, $from, $subject, $body, $type='text/plain', $encoding='8bit', $return_data_part=true)
+	public function buildMail($to, $from, $subject, $body, $type='text/plain', $encoding='8bit', $return_data_part=true, &$complete_mail)
 	{
-		$msg_id = "<" . gen_id() . substr($from, strpos($from, '@')) . (str_ends_with($from, ">")?'':">");
+		$msg_id = $this->message_id ? $this->message_id : "<" . gen_id() . substr($from, strpos($from, '@')) . (str_ends_with($from, ">")?'':">");
+		
 		$date = date('r'); //RFC 2822 date
 		$return_path = $this->returnPath ? $this->returnPath : $this->getAddress($from);
 		$ret = array("MAIL FROM: ".$return_path."\r\n"); //Always
@@ -1586,12 +1626,14 @@ class Swift
 			"Reply-To: ".$this->safeEncodeHeader($reply_to)."\r\n".
 			"Subject: ".$this->safeEncodeHeader($subject)."\r\n".
 			"Date: $date\r\n".
-			"Message-ID: $msg_id\r\n";
+			"Message-ID: $msg_id\r\n".
+			($this->in_reply_to_id ? "In-Reply-To: " . $this->in_reply_to_id . "\r\n" : "");
+
 		if ($this->readReceipt) $data .= "Disposition-Notification-To: ".$this->safeEncodeHeader($from)."\r\n";
 		
 		if (!$to) //Only need one mail if no address was given
 		{ //We'll collate the addresses from the class properties
-			$data .= $this->getMimeBody($body, $type, $encoding)."\r\n.\r\n";
+			$data .= $this->getMimeBody($body, $type, $encoding);
 			$headers = $this->makeRecipientHeaders();
 			//Rcpt can be run several times
 			$rcpt = array();
@@ -1599,14 +1641,15 @@ class Swift
 			foreach ($this->Cc as $address) $rcpt[] = "RCPT TO: ".$this->getAddress($address)."\r\n";
 			$ret[] = $rcpt;
 			$ret[] = "DATA\r\n";
-			$ret[] = $headers.$this->headers.$data;
+			$complete_mail = $headers.$this->headers.$data;
+			$ret[] = $complete_mail."\r\n.\r\n";
 			//Bcc recipients get to see their own Bcc header but nobody else's
 			foreach ($this->Bcc as $address)
 			{
 				$ret[] = "MAIL FROM: ".$this->getAddress($from)."\r\n";
 				$ret[] = "RCPT TO: ".$this->getAddress($address)."\r\n";
 				$ret[] = "DATA\r\n";
-				$ret[] = $headers."Bcc: ".$this->safeEncodeHeader($address)."\r\n".$this->headers.$data;
+				$ret[] = $headers."Bcc: ".$this->safeEncodeHeader($address)."\r\n".$this->headers.$data."\r\n.\r\n";
 			}
 		}
 		else //Just make this individual email
@@ -1614,7 +1657,10 @@ class Swift
 			if ($return_data_part) $mail_body = $this->getMimeBody($body, $type, $encoding);
 			$ret[] = "RCPT TO: ".$this->getAddress($to)."\r\n";
 			$ret[] = "DATA\r\n";
-			if ($return_data_part) $ret[] = $data.$this->headers.$mail_body."\r\n.\r\n";
+			if ($return_data_part) {
+				$complete_mail = $this->makeRecipientHeaders().$data.$this->headers.$mail_body;
+				$ret[] = $complete_mail."\r\n.\r\n";
+			}
 		}
 		return $ret;
 	}

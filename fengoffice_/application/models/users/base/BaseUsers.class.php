@@ -43,6 +43,7 @@ abstract class BaseUsers extends DataManager {
     	'can_manage_templates'=>DATA_TYPE_BOOLEAN,
     	'can_manage_reports'=>DATA_TYPE_BOOLEAN,
 		'can_manage_time'=>DATA_TYPE_BOOLEAN,
+		'can_add_mail_accounts'=>DATA_TYPE_BOOLEAN,
     	'default_billing_id' => DATA_TYPE_INTEGER, 
 	);
 

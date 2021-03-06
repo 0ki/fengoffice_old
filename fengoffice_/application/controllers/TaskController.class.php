@@ -87,7 +87,7 @@ class TaskController extends ApplicationController {
 	}
 
 	function quick_add_task() {
-		ajx_current("empty");		
+		ajx_current("empty");
 		$task = new ProjectTask();
 		$task_data = array_var($_POST, 'task');
 		$parent_id = array_var($task_data, 'parent_id', 0);
@@ -242,10 +242,16 @@ class TaskController extends ApplicationController {
 				$task->setCompletedOn(DateTimeValueLib::now());
 				$task->setCompletedById(logged_user()->getId());
 				}*/
-				
+			if (array_var($_GET, 'dont_mark_as_read')) {
+				$is_read = $task->getIsRead(logged_user()->getId());
+			}
 			try {
 				DB::beginWork();
 				$task->save();
+				
+				if (array_var($_GET, 'dont_mark_as_read') && !$is_read) {
+					ReadObjects::delete(array("conditions" => "`rel_object_manager` = 'ProjectTasks' AND `rel_object_id` = " . $task->getId() . " AND `user_id` = " . logged_user()->getId()));
+				}					
 				
 				if ($project instanceof Project && $task->canAdd(logged_user(),$project)) {
 					$task->setProject($project);
@@ -256,7 +262,7 @@ class TaskController extends ApplicationController {
 				$subtasks = $task->getAllSubTasks();
 				$project = $task->getProject();
 				$milestone_id = $task->getMilestoneId();
-
+				
 				//Check for milestone workspace restrictions, update the task's workspace if milestone changed
 				if ($milestone_id > 0 && $old_milestone_id != $milestone_id){
 					$milestone = ProjectMilestones::findById($milestone_id);
@@ -270,21 +276,27 @@ class TaskController extends ApplicationController {
 						}
 					}
 				}
-
+				
 				$apply_ws = array_var($task_data, 'apply_ws_subtasks', '') == "checked";
 				$apply_ms = array_var($task_data, 'apply_milestone_subtasks', '') == "checked";
+				$modified_subtasks = array();
 				foreach ($subtasks as $sub) {
+					$add_current = false;
 					if (!$sub->getAssignedTo() instanceof ApplicationDataObject) {
 						$sub->setAssignedToCompanyId($company_id);
 						$sub->setAssignedToUserId($user_id);
+						$add_current = true;
 					}
 					if ($apply_ws) {
 						$sub->setProject($project);
+						$add_current = true;
 					}
 					if ($apply_ms) {
 						$sub->setMilestoneId($milestone_id);
 						$sub->save();
+						$add_current = true;
 					}
+					if ($add_current) $modified_subtasks[] = $sub;
 				}
 
 				//Add new work timeslot for this task
@@ -321,7 +333,11 @@ class TaskController extends ApplicationController {
 					} // try
 				}
 				$task->getTagNames(true); //Forces reload of task tags to update changes
-				ajx_extra_data(array("task" => $task->getArrayInfo()));
+				$subt_info = array();
+				foreach ($modified_subtasks as $sub) {
+					$subt_info[] = $sub->getArrayInfo();
+				}
+				ajx_extra_data(array("task" => $task->getArrayInfo(), 'subtasks' => $subt_info));
 				flash_success(lang('success edit task', $task->getTitle()));
 			} catch(Exception $e) {
 				DB::rollback();
@@ -346,13 +362,25 @@ class TaskController extends ApplicationController {
 		$showSuccessMessage = true;
 		try{
 			DB::beginWork();
-			foreach($tasks as $task){
+			foreach($tasks as $k=>$task){
 				switch ($action){
 					case 'tag':
 						if ($task->canEdit(logged_user())){
 							$tag = $options;
 							Tags::addObjectTag($tag, $task);
 							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
+							$tasksToReturn[] = $task->getArrayInfo();
+						}
+						break;
+					case 'untag':
+						if ($task->canEdit(logged_user())){
+							$tag = $options;
+							if ($tag != ''){
+								Tags::deleteObjectTag($tag, $task->getId(),get_class($task->manager()));
+							}else{
+								$task->clearTags();
+							}
+							//ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
 						break;
@@ -367,6 +395,13 @@ class TaskController extends ApplicationController {
 							$tasksToReturn[] = array('id' => $task->getId());
 							$task->trash();
 							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_TRASH);
+						}
+						break;
+					case 'archive':
+						if ($task->canEdit(logged_user())){
+							$tasksToReturn[] = $task->getArrayInfo();
+							$task->archive();
+							ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
 						}
 						break;
 					case 'start_work':
@@ -401,6 +436,16 @@ class TaskController extends ApplicationController {
 							$showSuccessMessage = false;
 						}
 						break;
+					case 'markasread':
+						$task->setIsRead(logged_user()->getId(),true);
+						$tasksToReturn[] = $task->getArrayInfo();
+						$showSuccessMessage = false;
+						break;
+					case 'markasunread':
+						$task->setIsRead(logged_user()->getId(),false);
+						$tasksToReturn[] = $task->getArrayInfo();
+						$showSuccessMessage = false;
+						break;
 					default:
 						DB::rollback();
 						flash_error(lang('invalid action'));
@@ -423,6 +468,9 @@ class TaskController extends ApplicationController {
 	}
 
 	function new_list_tasks(){
+		//load config options into cache for better performance
+		load_user_config_options_by_category_name('task panel');
+		 
 		// get query parameters, save user preferences if necessary
 		$status = array_var($_GET,'status',null);
 		if (is_null($status) || $status == '') {
@@ -534,15 +582,15 @@ class TaskController extends ApplicationController {
 			TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectTasks' ) > 0 ";
 		}
 
-		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr . " AND `trashed_by_id` = 0";
+		$conditions = $template_condition . $task_filter_condition . $task_status_condition . $tagstr . $projectstr . " AND `trashed_by_id` = 0 AND `archived_by_id` = 0";
 
 		//Now get the tasks
 		$tasks = ProjectTasks::findAll(array('conditions' => $conditions, 'order' => 'created_on DESC', 'limit' => '501'));
-		ProjectTasks::populateTimeslots($tasks);
-		ProjectTasks::populateTags($tasks);
+		ProjectTasks::populateData($tasks);
 		//Find all internal milestones for these tasks
 		$internalMilestones = ProjectMilestones::getProjectMilestones($project, null, 'DESC', $tag, null, null, null, ($status == 0), false);
-
+		ProjectMilestones::populateData($internalMilestones);
+		
 		//Find all external milestones for these tasks
 		$milestone_ids = array();
 		if($tasks){
@@ -591,6 +639,7 @@ class TaskController extends ApplicationController {
 				}
 			}
 		}
+		ProjectMilestones::populateData($externalMilestones);
 
 		//Get Users Info
 		if (logged_user()->isMemberOfOwnerCompany()) {
@@ -620,6 +669,7 @@ class TaskController extends ApplicationController {
 				tpl_assign('displayTooManyTasks', true);
 			}
 				
+			tpl_assign('object_subtypes', ProjectCoTypes::getObjectTypesByManager('ProjectTasks'));
 			tpl_assign('internalMilestones', $internalMilestones);
 			tpl_assign('externalMilestones', $externalMilestones);
 			tpl_assign('users', $users);
@@ -665,6 +715,16 @@ class TaskController extends ApplicationController {
 			return;
 		} // if
 
+	//read object for this user
+		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+		 $task_list->getId() . ' AND rel_object_manager = \'ProjectTasks\'' .
+		 ' AND user_id = ' . logged_user()->getId()));
+
+		if (count($ro) == 0)
+		{	
+			$task_list->setIsRead(logged_user()->getId(),true);	    	
+		}
+		
 		tpl_assign('task_list', $task_list);
 
 		/*if(active_project()){
@@ -733,9 +793,22 @@ class TaskController extends ApplicationController {
 				'due_date' => getDateValue(array_var($_POST, 'task_due_date', '')),
 				'is_template' => array_var($_POST, "is_template", array_var($_GET, "is_template", false)),
 				'tags' => array_var($_POST, "tags", ''),
+				'object_subtype' => array_var($_POST, "object_subtype", config_option('default task co type')),
 				'send_notification' => array_var($_POST, 'notify') && array_var($_POST, 'notify') == 'true'
 			); // array
+			$from_email = array_var($_GET, 'from_email');
+			$email = MailContents::findById($from_email);
+			if ($email instanceof MailContent) {
+				$task_data['title'] = $email->getSubject();
+				$task_data['text'] = lang('create task from email description', $email->getSubject(), $email->getFrom(), $email->getTextBody());
+				$task_data['tags'] = implode(", ", $email->getTagNames());
+				tpl_assign('from_email', $email);
+			}
 		} // if
+		
+		if (array_var($_GET, 'replace')) {
+			ajx_replace(true);
+		}
 
 		tpl_assign('task_data', $task_data);
 		tpl_assign('task', $task);
@@ -828,7 +901,7 @@ class TaskController extends ApplicationController {
 						ProjectTasks::copySubTasks($toCopy, $task, array_var($task_data, 'is_template', false));
 					}
 				}
-
+				
 				//Link objects
 				$object_controller = new ObjectController();
 				$object_controller->link_to_new_object($task);
@@ -968,6 +1041,7 @@ class TaskController extends ApplicationController {
 				'rsel3' => $rsel3,
 				'occ' => $occ,
 				'repeat_by' => $task->getRepeatBy(),
+				'object_subtype' => array_var($_POST, "object_subtype", ($task->getObjectSubtype() != 0 ? $task->getObjectSubtype() : config_option('default task co type'))),
 			); // array
 			$handins = ObjectHandins::getAllHandinsByObject($task);
 			$id = 0;
@@ -987,6 +1061,28 @@ class TaskController extends ApplicationController {
 		tpl_assign('task_data', $task_data);
 
 		if(is_array(array_var($_POST, 'task'))) {
+			
+			//MANAGE CONCURRENCE WHILE EDITING
+			$upd = array_var($_POST, 'updatedon');
+			if ($upd && $task->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
+			{
+				ajx_current('empty');
+				evt_add("handle edit concurrence", array(
+					"updatedon" => $task->getUpdatedOn()->getTimestamp(),
+					"genid" => array_var($_POST,'genid')
+				));
+				return;
+			}
+			if (array_var($_POST,'merge-changes') == 'true'){					
+				$this->setTemplate('view_list');
+				$edited_task = ProjectTasks::findById($task->getId());
+				ajx_set_no_toolbar(true);
+				ajx_set_panel(lang ('tab name',array('name'=>$edited_task->getTitle())));
+				tpl_assign('task_list', $edited_task);
+				ajx_extra_data(array("title" => $edited_task->getTitle(), 'icon'=>'ico-task'));				
+				return;
+			}
+			
 			$old_owner = $task->getAssignedTo();
 			if (array_var($task_data, 'parent_id') == $task->getId()) {
 				flash_error(lang("task own parent error"));
@@ -1092,6 +1188,19 @@ class TaskController extends ApplicationController {
 				$object_controller->add_custom_properties($task);
 				$object_controller->add_reminders($task);
 
+				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
+																$task->getId().
+																' AND rel_object_manager = \'' .
+																 get_class($task->manager()) . 
+																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
+				if (is_array($ro) && count($ro) > 0){
+					foreach ($ro as $r){
+						if ($r instanceof ReadObject){							
+							$r->delete();
+						}
+					}
+				}
+				
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 				DB::commit();
@@ -1247,8 +1356,8 @@ class TaskController extends ApplicationController {
 			flash_success(lang("new task repetition generated"));
 			ajx_current("reload");
 		} catch (Exception $e) {
-			flash_error($e->getMessage());
 			DB::rollback();
+			flash_error($e->getMessage());
 		}
 	}
 
@@ -1301,7 +1410,7 @@ class TaskController extends ApplicationController {
 					if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
 					if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
 
-					foreach ($task->getSubTasks() as $subt) {
+					foreach ($task->getAllSubTasks() as $subt) {
 						$subt->setCompletedById(0);
 						$subt->setCompletedOn(EMPTY_DATETIME);
 						$subt->save();
@@ -1450,7 +1559,7 @@ class TaskController extends ApplicationController {
 			} //if($id && $manager)
 		}//foreach
 		return $objects;
-	} //getDashboardobjects
+	} //getTasksAndMilestones
 
 	/**
 	 * Counts dashboard objects
@@ -1598,11 +1707,15 @@ class TaskController extends ApplicationController {
 			$new_date = new DateTimeValue(mktime(0, 0, 0, $month, $day, $year));
 			$task->setStartDate($new_date);
 		}
-	  
-		DB::beginWork();
-		$task->save();
-		DB::commit();
-	  
+		
+		try {
+			DB::beginWork();
+			$task->save();
+			DB::commit();
+	  	} catch(Exception $e) {
+			DB::rollback();
+			flash_error(lang('error change date'));
+		} // try
 		ajx_current("empty");
 	}
 
@@ -1654,11 +1767,11 @@ class TaskController extends ApplicationController {
 		elseif(array_var($task_data, 'repeat_option') == 2) $rnum = array_var($task_data, 'repeat_num');
 		elseif(array_var($task_data, 'repeat_option') == 3) $rend = getDateValue(array_var($task_data, 'repeat_end'));
 		// verify the options above are valid
-		if(isset($rnum) && $rnum) {
+		if (isset($rnum) && $rnum) {
 			if(!is_numeric($rnum) || $rnum < 1 || $rnum > 1000) throw new Exception(lang('repeat x times must be a valid number between 1 and 1000'));
 		} else $rnum = 0;
 
-		if(isset($jump) && $jump) {
+		if (isset($jump) && $jump) {
 			if(!is_numeric($jump) || $jump < 1 || $jump > 1000) throw new Exception(lang('repeat period must be a valid number between 1 and 1000'));
 		} else {
 			$occurrance = array_var($task_data, 'occurance');

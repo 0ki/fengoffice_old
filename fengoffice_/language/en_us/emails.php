@@ -13,9 +13,9 @@ return array(
 // Interface
     'hi john doe' => 'Hi {0}',
  
-    'user password reseted desc' => 'Your password has been reset. You can now login to {0} at {1} with the following credentials:',
+    'user password reseted desc' => 'You have requested to reset your password. If you want to reset your password follow the next link. If you have not requested to reset your password simply ignore this email.',
 	'user password reseted username' => 'Username: {0}',
-	'user password reseted password' => 'Password: {0}',
+	'user password reseted password' => 'Your New password is {0} (we recomend you to change it as soon as login)',
 
 	'password expiration reminder' => 'Password expiration reminder',
 	'password expires days' => 'Your password will expire in {0} days',
@@ -72,7 +72,6 @@ return array(
     'mail format options' => 'Format',
     'forward mail' => 'Forward',
     'reply to all mail' => 'Reply to All',
-    'switch format warn' => 'Switching to text will discard all HTML formatting. Continue?',
     'success mark objects' => 'Mail updated',
     'error mark email' => 'Error updating email state',
     'draft' => 'Draft',
@@ -180,8 +179,8 @@ return array(
 	'closed notification milestone desc' => 'Milestone \'{0}\' has been completed by {1}.',
 	'mail attachments' => 'Attachments',
 	'select attachment' => 'Select and upload attachment',
-	'attach from workspace' => 'Select attachment from workspace',
-    
+	'attach from workspace' => 'Attach from workspace',
+    'attach from file system' => 'Attach from computer',
 	); // array
 
     ?>

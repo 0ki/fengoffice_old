@@ -63,6 +63,7 @@
 
 #usersList div.userAvatar img {
   border: 1px solid #ccc;
+  max-width: 50px;
 }
 
 #usersList div.userDetails {

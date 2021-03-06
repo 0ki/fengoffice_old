@@ -28,8 +28,11 @@ addLangs({
   	'checkout and download' : 'Checkout & Download',
   	'download only' : 'Download only',
   	'checkout recommendation' : 'Are you planning on editing this document? If so, it is recommended that you checkout the document when downloading',
-	'confirm inherit permissions': 'Do you want to inherit all permissions from parent workspace?',
-	
+  	'mark as read': 'Mark as read',
+  	'mark as unread': 'Mark as unread',
+  	'mark as read desc': 'Mark the selected objects as read.',
+  	'confirm inherit permissions': 'Do you want to inherit all permissions from parent workspace?',
+
 	/* file manager */
 	'by': 'by',
 	'name': 'Name',
@@ -83,6 +86,9 @@ addLangs({
 	'refresh desc': 'Refresh the view',
 	'templates desc': 'Manage templates',
 	'templates': 'Templates',
+	'no users to display' : 'No users to to display',
+	'fixed user':'Fixed user',
+	'parametric user':'Parametric user',
 	'string': 'String',
 	'add parameter': 'Add parameter',
 	'edit workspace': 'Edit the selected workspace',
@@ -205,6 +211,10 @@ addLangs({
 	'import/export': 'Import / Export',
 	'import - export': 'Contacts import and export',
 	'not csv file continue': 'Selected file is not a csv file.\nAre you sure you want to continue?',
+	'from csv': 'From csv',
+	'from vcard': 'From VCard',
+	'to csv': 'To csv',
+	'to vcard': 'To VCard',
 	
 	/* webpage manager*/
 	'description': 'Description',
@@ -259,6 +269,11 @@ addLangs({
 	'view by state' : 'By State',
 	'view by account' : 'By Account', 
 	'view by classification' : 'By Classification',
+	'outbox' : 'Outbox',
+	'mail sent msg' : 'Email has been sent.',
+	'send outbox' : 'Send outbox',
+	'send outbox title' : 'Send mails in outbox folder',
+	'sending outbox mails' : 'Sending mails from outbox folder...', 
 	
 	'filter workspaces': 'Filter workspaces...',
 	'filter tags': 'Filter tags...',
@@ -269,6 +284,7 @@ addLangs({
 	'sort desc': 'Sort the view',
 	
 	'no objects message': 'There are no \'{0}\' in \'{1}\'',
+	'no more objects message': 'There are no more \'{0}\' to display',
 	'no objects with tag message': 'There are no {0} tagged as \'{2}\' in \'{1}\'',
 	'objects': 'Objects',
 	
@@ -282,6 +298,7 @@ addLangs({
 	'write' : 'Write',
 	'write new mail' : 'Write E-Mail',
 	'email': 'Email',
+	'attach contents' : 'Attach Contents',
 	'email tab': 'Email',
 	'weblink': 'Web link',
 	'webpage': 'Web link',
@@ -400,6 +417,10 @@ addLangs({
 	'inbox':'Inbox',
 	'sent':'Sent',
 	'unread': 'Unread',
+	'confirm unclassify emails': 'Are you sure you want to unclassify the selected emails?',
+	
+	'confirm remove tags': 'Are you sure you want to remove all tags from the selected objects?',
+	'remove tags': 'Remove tags',
 	
 	'more options': 'More options',
 	'login': 'Login',
@@ -558,7 +579,7 @@ addLangs({
     'confirm delete permanently': 'Are you sure you want to delete this object?',
     'no items selected' : 'No items selected',
     'error adding timeslot' : 'An error occurred while adding the timeslot',
-    'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces and its attachments will not appear in Documents tab.',
+    'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces ant its attachments will not appear in Documents tab.',
     
     'no due date': 'No due date',
     'no start date': 'No start date',
@@ -606,7 +627,9 @@ addLangs({
     'numeric' : 'Numeric',
     'boolean' : 'Boolean',
     'list' : 'List',
+    'table' : 'Table',
     'values comma separated': 'Values (comma separated)',
+    'columns comma separated': 'Columns (comma separated)',
     'default value' : 'Default value',
     'checked': 'Checked?',
     'required' : 'Required?',
@@ -655,6 +678,7 @@ addLangs({
   	
   	'value is already in the list' : 'The value is already on the list',
   	'click to drag task': 'Click and hold to drag this task',
+  	'click to drag': 'Click and hold to drag',
   	
   	'parameter name empty': 'Parameter name cannot be empty',
   	'parameter name exists': 'There is another parameter with the entered name',
@@ -684,15 +708,62 @@ addLangs({
     'move to workspace or keep old ones': 'Move to or keep old ones and add',
     'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?',
     'classify mail attachments': 'Classify mail attachments',
-    'do you want to classify the unclassified emails attachments': 'Do you want to add a new document for each attachment of these unclassified emails?',
-
+    'do you want to classify the unclassified emails attachments': 'Do you want to classify the attachments?',
+    
     'tag selected events': 'Tag selected events',
     'edit selected event': 'Edit selected event',
     'apply milestone to subtasks': 'Apply Milestone to Subtasks',
   	'apply workspace to subtasks': 'Apply Workspace to Subtasks',
   	
+	'click here to download the csv file': 'Click here to download the csv file.',
+	
+	'junk': 'Junk',
+	'you must select the contacts from the grid': 'You must select the contacts you want to export.',
+	'reply mail': 'Reply',
+	'reply to all mail': 'Reply to all',
+	'forward mail': 'Forward',
+  	
+  	'archive': 'Archive',
+  	'unarchive': 'Unarchive',
+  	'archived objects': 'Archived Objects',
+  	'archive selected object': 'Archives the selected objects',
+  	'unarchive selected objects': 'Unarchives the selected objects',
+  	'confirm archive selected objects': 'Are you sure you want to archive the selected objects?',
+  	'confirm unarchive selected objects': 'Are you sure you want to unarchive the selected objects?',
+  	'confirm archive object': 'Are you sure you want to archive this object?',
+  	'confirm unarchive object': 'Are you sure you want to unarchive this object?',
+  	'archived on': 'Archived on',
+  	'archived by': 'Archived by',
+  	'is archived': 'Is Archived',
+	'no archived objects message': 'There are no archived {0} in \'{1}\'',
+	'no archived objects with tag message': 'There are no archived {0} tagged as \'{2}\' in \'{1}\'',
+  	
   	'task milestone does not belong to workspace' : 'Task\'s milestone does not belongs to destination workspace, if you continue task will be removed from its milestone. Are you sure you wish to continue?',
   	'task milestone workspace inconsistency' : 'NOTICE: this action will set the task\'s workspace to that of the selected milestone. Are you sure you wish to continue?',
+
+  	'autoconfig gmail message' : 'Gmail autoconfiguration detected. <br> Remember you have to enable IMAP service for your gmail account. More information <a href="http://mail.google.com/support/bin/answer.py?answer=77695" class="internallink" target="_blank">here</a>',
+  	'autoconfig hotmail message' : 'Hotmail autoconfiguration detected',
+  	'autoconfig ymail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
+  	'autoconfig rocketmail message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
+  	'autoconfig yahoo message' : 'Yahoo Mail autoconfiguration detected. <br> In order to be able to use POP3 services you must own a Yahoo Plus account. More information <a href="http://overview.mail.yahoo.com/enhancements/mailplus" class="internallink" target="_blank">here</a>',
+  		
+  	//concurrence
+  	'allready updated object' : 'Someone has updated this object while you were editing it.',
+  	'allready updated object desc' : 'Do you want to merge the changes? <br><br> Choose <strong>Yes</strong> to see the object on a new tab to compare it with your current changes.<br><br> Choose <strong>No</strong> to close this window and overwrite the changes.',
   	
-  	'click here to download the csv file': 'Click here to download the csv file.'
+  	'updated on' : 'Updated on',
+  	'delete all tag': 'Delete all tags',
+  	'mark as': 'Mark as ...',
+  	'mark as desc': 'Mark selected items as Read/Unread',
+  	
+  	'filter users and groups': 'Filter users and groups...',
+  	'users': 'Users',
+  	'groups': 'Groups',
+  	'no recipient': 'No recipient',
+  	'object type' : 'Object type',
+  	'applies to' : 'Applies to:',
+  	'select co types to apply' : 'Select the object types you wish to apply the property',
+  	'write an email to contact': 'Write an email to {0}',
+  	'quick upload desc': 'Link a new file from your computer',
+  	'switch format warn': 'Switching to text will discard all HTML formatting. Continue?'
 });

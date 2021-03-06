@@ -55,7 +55,7 @@ class FilesController extends ApplicationController {
 	 */
 	function file_details() {
 		$this->addHelper('textile');
-			
+		
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
@@ -76,6 +76,15 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 
+		//read object for this user
+		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' . 
+		$file->getId() . ' AND rel_object_manager = \'ProjectFiles\'' .
+		 ' AND user_id = ' . logged_user()->getId()));
+		if (count($ro) == 0)
+		{	
+			$file->setIsRead(logged_user()->getId(),true);	    	
+		}
+		
 		tpl_assign('file', $file);
 		tpl_assign('last_revision', $file->getLastRevision());
 		tpl_assign('revisions', $revisions);
@@ -114,18 +123,18 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function download_file() {
+		ajx_current("empty");
+
 		$inline = (boolean) array_var($_GET, 'inline', false);
-			
+		
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			//ajx_current("empty");
 			return;
 		} // if
 			
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
-			//ajx_current("empty");
 			return;
 		} // if
 
@@ -146,43 +155,23 @@ class FilesController extends ApplicationController {
 			return;
 		}
 
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-			$path = FileRepository::getBackend()->getFilePath($file->getLastRevision()->getRepositoryId());
-			if (is_file($path)) {
-				// this method allows downloading big files without exhausting php's memory
-				download_file($path, $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
-				die();
-			}
-		}
-		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
+		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
 		die();
 	} // download_file
 	
 	/**
-	 * |||||||||||||||||||||||||| get a public file
+	 * get a public file
 	 * @param $id the repository id of the file
 	 * @return file url
 	 */
 	function get_public_file(){
-			$id = array_var($_GET,'id',0);
-			if (FileRepository::isInRepository($id)){
-				if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-					$path = FileRepository::getBackend()->getFilePath($id);
-					if (is_file($path)) {
-						$size = filesize($path);
-						header("Content-Type:" . FileRepository::getFileAttribute($id,'type'));
-						header("Content-Length: " . (string) $size);
-						readfile($path);
-						die();
-					}
-			} else {
-				$content = FileRepository::getFileContent($id); 
-				header("Content-Type: " . FileRepository::getFileAttribute($id,'type'));
-				header("Content-Length: " . strlen($content));
-				print $content;
-				die();
-			}
-		} // if	
+		$id = array_var($_GET, 'id', 0);
+		if (FileRepository::isInRepository($id) && FileRepository::getFileAttribute($id, 'public', false)) {
+			$type = FileRepository::getFileAttribute($id,'type');
+			download_from_repository($id, $type, $id, false);
+			die();
+		} // if
+		die(lang('file dnx'));
 	}// get_public_file
 	
 	function download_image() {
@@ -201,15 +190,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 		session_commit();
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-			$path = FileRepository::getBackend()->getFilePath($file->getLastRevision()->getRepositoryId());
-			if (is_file($path)) {
-				// this method allows downloading big files without exhausting php's memory
-				download_file($path, $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
-				die();
-			}
-		}
-		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
+		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
 		die();
 	} // download_file
 
@@ -298,15 +279,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 		session_commit();
-		if (FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem) {
-			$path = FileRepository::getBackend()->getFilePath($revision->getRepositoryId());
-			if (is_file($path)) {
-				// this method allows downloading big files without exhausting php's memory
-				download_file($path, $revision->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
-				die();
-			}
-		}
-		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
+		download_from_repository($revision->getRepositoryId(),$revision->getTypeString(), $file->getFilename(), !$inline);
 		die();
 	} // download_revision
 
@@ -402,8 +375,12 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
 				DB::commit();
+
+				$ajx_file =  array();
+				$ajx_file["file"][]= get_class($file->manager()) . ':' . $file->getId();
+
 				//flash_success(array_var($file_data, 'add_type'));
-				
+
 				flash_success(lang('success add file', $file->getFilename()));
 	          	if (array_var($_POST, 'popup', false)) {
 					ajx_current("reload");
@@ -411,7 +388,8 @@ class FilesController extends ApplicationController {
 	          		ajx_current("back");
 	          	}
 	          	ajx_add("overview-panel", "reload");
-			
+	          	ajx_extra_data($ajx_file);
+
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -424,8 +402,82 @@ class FilesController extends ApplicationController {
 			} // try
 		} // if
 	} // add_file
+	
+	function quick_add_files() {
+		$file_data = array_var($_POST, 'file');
 
+		$file = new ProjectFile();
+			
+		tpl_assign('file', $file);
+		tpl_assign('file_data', $file_data);
+		tpl_assign('tag', array_var($_GET,'tag'));
+		tpl_assign('workspace',  array_var($_GET,'workspace'));
+		tpl_assign('genid', array_var($_GET, 'genid'));
+			
+		if (is_array(array_var($_POST, 'file'))) {
+			//$this->setLayout("html");
+			$upload_option = array_var($file_data, 'upload_option');
+			$skipSettings = false;
+			try {
+				DB::beginWork();
+				
+					$type = array_var($file_data, 'type');
+					$file->setType($type);
+					$file->setFilename(array_var($file_data, 'name'));
+					$file->setFromAttributes($file_data);
+					$file->setIsPrivate(false);
+	
+					if(!logged_user()->isMemberOfOwnerCompany()) {
+						$file->setIsImportant(false);
+						$file->setCommentsEnabled(true);
+						$file->setAnonymousCommentsEnabled(false);
+					} // if
+					$file->setIsVisible(true);
+				
+				
+				$file->save();
+				if($file->getType() == ProjectFiles::TYPE_DOCUMENT){
+					// handle uploaded file
+					$upload_id = array_var($file_data, 'upload_id');
+					$uploaded_file = array_var($_SESSION, $upload_id, array());
+					$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
+					@unlink($uploaded_file['tmp_name']);
+					unset($_SESSION[$upload_id]);
+				}
+				
+				$object_controller = new ObjectController();
+
+				//Add properties
+				if (!$skipSettings){
+					$file->setTagsFromCSV(array_var($file_data, 'tags'));
+					$object_controller->add_to_workspaces($file);
+				}
+				
+				DB::commit();
+				
+				ajx_extra_data(array("file_id" => $file->getId()));
+				ajx_extra_data(array("file_name" => $file->getFilename()));
+
+				if (!array_var($_POST, 'no_msg')) {
+					flash_success(lang('success add file', $file->getFilename()));
+				}
+				ajx_current("empty");
+				
+			} catch(Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+
+				// If we uploaded the file remove it from repository
+				if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+					FileRepository::deleteFile($revision->getRepositoryId());
+				} // if
+			} // try
+		} // if
+	} // quick_add_files
+	
 	function temp_file_upload() {
+		ajx_current("empty");
 		$id = array_var($_GET, 'id');
 		$uploaded_file = array_var($_FILES, 'file_file');
 		$fname = ROOT . "/tmp/$id";
@@ -437,6 +489,46 @@ class FilesController extends ApplicationController {
 			'tmp_name' => $fname,
 			'error' => $uploaded_file['error']
 		);
+	}
+	
+	private function upload_document_image($url, $filename, $img_num, $tags = '') {
+		$file_dt = array();
+		$file_content = file_get_contents($url);
+		$extension = get_file_extension($url);
+		$name = $filename . "-img-$img_num.$extension";
+		$description = lang("this file is included in document", $filename);
+		
+		$tmp_name = ROOT . "/tmp/" . gen_id() . $extension;
+		file_put_contents($tmp_name, $file_content);
+		
+		$file_dt['name'] = $name;
+		$file_dt['size'] = strlen($file_content);
+		$file_dt['type'] = Mime_Types::instance()->get_type($extension);
+		$file_dt['tmp_name'] = $tmp_name;
+		
+		$file = ProjectFiles::getByFilename($name);
+		if (!$file) {
+			$file = new ProjectFile();
+			$file->setIsVisible(true);
+			$file->setIsPrivate(false);
+			$file->setIsImportant(false);
+			$file->setCommentsEnabled(true);
+			$file->setAnonymousCommentsEnabled(false);
+			$file->setFilename($name);
+			$file->setDescription($description);
+			$file->setArchivedById(logged_user()->getId());
+			$file->setArchivedOn(DateTimeValueLib::now());
+			$file->save();
+		}
+		$file->setTagsFromCSV($tags);
+		$file->handleUploadedFile($file_dt, true, $description);
+		
+		$file->addToWorkspace(active_or_personal_project());
+		$ws = $file->getWorkspaces();
+		ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
+		
+		unlink($tmp_name);
+		return $file->getId();
 	}
 	
 	function save_document() {
@@ -457,8 +549,18 @@ class FilesController extends ApplicationController {
 				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
 				$revision_comment = array_var($postFile, 'comment');
 
-				$file_dt['name'] = $file->getFilename();
 				$file_content = array_var($_POST, 'fileContent');
+				preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
+				$urls = array_var($matches, 1);
+				if (is_array($urls)) {
+					$img_num = 1;
+					foreach ($urls as $url) {
+						$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+						$file_content = str_replace($url, "ProjectFiles:$img_file_id", $file_content);
+					}
+				}
+				
+				$file_dt['name'] = $file->getFilename();
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
 				$file_dt['tmp_name'] = './tmp/' . rand () ;
@@ -488,7 +590,9 @@ class FilesController extends ApplicationController {
 				ajx_add("overview-panel", "reload");
 			} catch(Exception $e) {
 				DB::rollback();
-				unlink($file_dt['tmp_name']);
+				if (array_var($file_dt, 'tmp_name') && is_file(array_var($file_dt, 'tmp_name'))) {
+					unlink(array_var($file_dt, 'tmp_name'));
+				}
 				flash_error(lang('error while saving'), $e->getMessage());
 				//$this->redirectToReferer(get_url('files'));
 			} // try
@@ -513,6 +617,16 @@ class FilesController extends ApplicationController {
 
 			//seteo esto para despues setear atributos
 			$file_content = array_var($_POST, 'fileContent');
+			preg_match_all("/<img[^>]*src=[\"']([^\"']*)[\"']/", $file_content, $matches);
+			$urls = array_var($matches, 1);
+			if (is_array($urls)) {
+				$img_num = 1;
+				foreach ($urls as $url) {
+					$img_file_id = self::upload_document_image($url, $file->getFilename(), $img_num++, array_var($file_data, 'tags'));
+					$file_content = str_replace($url, "ProjectFiles:$img_file_id", $file_content);
+				}
+			}
+			
 			$file_dt['name'] = array_var($postFile,'name');
 			$file_dt['size'] = strlen($file_content);
 			$file_dt['type'] = array_var($_POST, 'fileMIME', 'text/html');
@@ -527,6 +641,7 @@ class FilesController extends ApplicationController {
 
 				$revision_comment = array_var($postFile, 'comment');
 				$file->save();
+				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
 				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true, $revision_comment);
@@ -641,6 +756,7 @@ class FilesController extends ApplicationController {
 				fclose($handler);
 
 				$file->save();
+				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
 				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true);
@@ -752,6 +868,7 @@ class FilesController extends ApplicationController {
 				DB::beginWork();
 
 				$file->save();
+				$file->subscribeUser(logged_user());
 				$file->addToWorkspace(active_or_personal_project());
 				$file->setTagsFromCSV('');
 				$revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
@@ -1047,7 +1164,8 @@ class FilesController extends ApplicationController {
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$tagTag = array_var($_GET, 'tagTag');
-			
+			$tagged = 0;
+			$not_tagged = 0;
 			foreach ($ids as $id) {
 				$file = ProjectFiles::findById($id);
 				if (isset($file) && $file->canEdit(logged_user())) {
@@ -1055,18 +1173,87 @@ class FilesController extends ApplicationController {
 					if (!array_search($tagTag, $arr_tags)) {
 						$arr_tags[] = $tagTag;
 						$file->setTagsFromCSV(implode(',', $arr_tags));
+						$tagged++;
 					}
-				} else flash_error(lang('no access permissions'));
+				} else {
+					$not_tagged++;
+				}
 			}
-/*
-			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids,'ProjectFiles');
-			if ($err > 0) {
-				flash_error(lang('error tag objects', $err));
+			if ($tagged > 0) {
+				flash_success(lang("success tag objects", $tagged));
 			} else {
-				flash_success(lang('success tag objects', $succ));
+				flash_error(lang("error tag objects", $not_tagged));
 			}
-*/
-		} else if (array_var($_GET, 'action') == 'zip_add') {
+		} else if (array_var($_GET, 'action') == 'untag') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$tagTag = array_var($_GET, 'tagTag');
+			$untagged = 0;
+			$not_untagged = 0;
+			foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+				if (isset($file) && $file->canEdit(logged_user())) {
+					if ($tagTag != ''){
+						Tags::deleteObjectTag($tagTag, $file->getId(),get_class($file->manager()));
+					}else{
+						$file->clearTags();
+					}
+					$untagged++;
+				} else {
+					flash_error(lang('no access permissions'));
+					$not_untagged++;
+				}
+			}
+			if ($untagged > 0) {
+				flash_success(lang("success untag objects", $untagged));
+			} else {
+				flash_error(lang("error untag objects", $not_untagged));
+			}
+		} else if (array_var($_GET, 'action') == 'markasread') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$succ = 0; $err = 0;
+				foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+					try {
+						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+						 $file->getId() . ' AND rel_object_manager = \''.$file->manager().'\' AND user_id = ' .
+						  logged_user()->getId()));
+						if (count($ro) == 0)
+						{
+							$file->setIsRead(logged_user()->getId(),true);
+						}
+						$succ++;
+						
+					} catch(Exception $e) {
+						$err ++;
+					} // try
+				}//for
+			if ($succ <= 0) {
+				flash_error(lang("error markasread files", $err));
+			}
+		}else if (array_var($_GET, 'action') == 'markasunread') {
+			$ids = explode(',', array_var($_GET, 'objects'));
+			$succ = 0; $err = 0;
+				foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+					try {
+						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+						 $file->getId() . ' AND rel_object_manager = \''.get_class($file->manager()).'\' AND user_id = ' .
+						  logged_user()->getId() ));
+						if (count($ro) != 0)
+						{
+							$file->setIsRead(logged_user()->getId(),false);
+						}
+						$succ++;
+
+					} catch(Exception $e) {
+						$err ++;
+					} // try
+				}//for
+			if ($succ <= 0) {
+				flash_error(lang("error markasunread files", $err));
+			}
+		}
+		 else if (array_var($_GET, 'action') == 'zip_add') {
 			$this->zip_add();
 		} else if (array_var($_GET, 'action') == 'move') {
 			$wsid = array_var($_GET, "moveTo");
@@ -1106,6 +1293,32 @@ class FilesController extends ApplicationController {
 				$resultMessage = lang("success move objects", $count);
 				$resultCode = 0;
 			}
+		} else if (array_var($_GET, 'action') == 'archive') {
+			$ids = explode(',', array_var($_GET, 'ids'));
+			$succ = 0; $err = 0;
+			foreach ($ids as $id) {
+				$file = ProjectFiles::findById($id);
+				if (isset($file) && $file->canEdit(logged_user())) {
+					try{
+						DB::beginWork();
+						$file->archive();
+						ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+						DB::commit();
+						$succ++;
+					} catch(Exception $e){
+						DB::rollback();
+						Logger::log($e->getMessage());
+						$err++;
+					}
+				} else {
+					$err++;
+				}
+			}
+			if ($succ > 0) {
+				flash_success(lang("success archive files", $succ));
+			} else {
+				flash_error(lang("error archive files", $err));
+			}
 		}
 		
 		Hook::fire('classify_action', null, $ret);		
@@ -1113,6 +1326,7 @@ class FilesController extends ApplicationController {
 		$project = Projects::findById($project_id);
 		/* perform query */
 		$result = ProjectFiles::getProjectFiles($project, null, $hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, $user);
+		ProjectFiles::populateData($result[0]);
 		$objects = null;
 		$pagination = null;
 		if (is_array($result)) {
@@ -1186,7 +1400,8 @@ class FilesController extends ApplicationController {
 					"modifyUrl" => $o->getModifyUrl(),
 					"songInfo" => $songInfo,
 					"ftype" => $o->getType(),
-					"url" => $o->getUrl()
+					"url" => $o->getUrl(),
+					"isRead"=> $o->getIsRead(logged_user()->getId()),
 				);
 				if ($o->isMP3()) {
 					$values['isMP3'] = true;
@@ -1341,6 +1556,19 @@ class FilesController extends ApplicationController {
 				$object_controller->add_subscribers($file);
 				$object_controller->add_custom_properties($file);
 
+				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
+																$file->getId().
+																' AND rel_object_manager = \'' .
+																 get_class($file->manager()) . 
+																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
+				if (is_array($ro) && count($ro) > 0){
+					foreach ($ro as $r){
+						if ($r instanceof ReadObject){							
+							$r->delete();
+						}
+					}
+				}
+				
 				ApplicationLogs::createLog($file, $file->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 
 				DB::commit();
@@ -1498,6 +1726,7 @@ class FilesController extends ApplicationController {
 			}
 			ajx_add("overview-panel", "reload");
 		} catch(Exception $e) {
+			DB::rollback();
 			flash_error(lang('error delete file'));
 			ajx_current("empty");
 		} // try
@@ -1614,8 +1843,8 @@ class FilesController extends ApplicationController {
 				flash_success(lang('success edit file revision'));
 				ajx_current("back");
 			} catch(Exception $e) {
-				flash_error($e->getMessage());
 				DB::rollback();
+				flash_error($e->getMessage());
 				ajx_current("empty");
 			} // try
 		} // if
@@ -1781,6 +2010,8 @@ class FilesController extends ApplicationController {
 			$handle = fopen($filepath, 'wb');
 			fwrite($handle, $content);
 			fclose($handle);
+			
+			$encoder = EncodingConverter::instance();
 
 			$file_count = 0;
 			$zip = new ZipArchive();
@@ -1788,10 +2019,10 @@ class FilesController extends ApplicationController {
 				$tmp_dir = ROOT.'/tmp/'.rand().'/';
 				$zip->extractTo($tmp_dir);
 				$i=0;
+				$workspaces = $file->getWorkspaces();
 				while ($e_name = $zip->getNameIndex($i++)) {
 					$tmp_path = $tmp_dir.$e_name;
 					if (!is_dir($tmp_path)) {
-						$workspaces = $file->getWorkspaces();
 						$this->upload_file(null, $e_name, $tmp_path, $workspaces);
 						$file_count++;
 					}
@@ -1889,6 +2120,7 @@ class FilesController extends ApplicationController {
 				fclose($handle);
 			}
 			$zip->addFile($file_to_add_path, $file_to_add->getFilename());
+			
 		}
 		$zip->close();
 		delete_dir($tmp_dir);
@@ -1902,6 +2134,7 @@ class FilesController extends ApplicationController {
 	}
 	
 	function display_content() {
+		
 		$file = ProjectFiles::findById(get_id());
 		if (!$file instanceof ProjectFile) {
 			die(lang("file dnx"));
@@ -1910,18 +2143,129 @@ class FilesController extends ApplicationController {
 			die(lang("no access permissions"));
 		}
 		
-		$content = $file->getFileContent();
-		$encoding = detect_encoding($content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
+		if (defined('SANDBOX_URL')) {
+			$html_content = $file->getFileContentWithRealUrls();
+		} else {
+			$html_content = purify_html($file->getFileContentWithRealUrls());
+		}
+		$encoding = detect_encoding($html_content, array('UTF-8', 'ISO-8859-1', 'WINDOWS-1252'));
 		
 		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 		header("Content-Type: " . $file->getTypeString() . ";charset=".$encoding);
 		header("Content-Length: " . (string) $file->getFileSize());
 		
-		if ($file->getTypeString() == 'text/html') $content = purify_html($content);
+		if ($file->getTypeString() == 'text/html') {
+			// Include stylesheet from FCK Editor
+			$css = '<style type="text/css">';
+			$css .= file_get_contents(ROOT.'/public/assets/javascript/ckeditor/contents.css');
+			$css .= '</style>';
+			$html_content = $css.$html_content;
+		}
 
-		print($content);
+		print($html_content);
 		die();
+	}
+	
+	function fckimagesbrowser(){
+		/* get query parameters */
+		$this->setLayout('html');
+		ajx_current("empty");
+		$start = array_var($_GET,'start');
+		$limit = array_var($_GET,'limit');
+		if (! $start) {
+			$start = 0;
+		}
+		if (! $limit) {
+			$limit = config_option('files_per_page');
+		}
+		$order = array_var($_GET,'sort');
+		$orderdir = array_var($_GET,'dir');
+		$page = (integer) ($start / $limit)+1;
+		$hide_private = !logged_user()->isMemberOfOwnerCompany();
+		$project_id = array_var($_GET, 'active_project', 0);
+		$project = Projects::findByCSVIds($project_id);
+		$tag = array_var($_GET,'tag');
+		$type = '%image/';
+		$paginatedImages = ProjectFiles::getProjectFiles($project, null, $hide_private, $order, $orderdir, $page, $limit, false, $tag, $type, logged_user()->getId());
+		tpl_assign('start',$start);
+		tpl_assign('limit',$limit);
+		tpl_assign('paginatedImages',$paginatedImages);
+		
+	}
+	
+	function fckimagesupload(){
+		
+		
+	try {
+			if ( isset( $_FILES['NewFile'] ) && !is_null( $_FILES['NewFile']['tmp_name'] ) )
+			{
+				$oFile = $_FILES['NewFile'] ;
+			}else{
+				$sErrorNumber = '202';
+				echo $this->SendUploadResults( $sErrorNumber ) ;	
+				return;
+			}
+			$sErrorNumber = '0' ;
+			$sFileName = $oFile['name'] ;
+			
+			$file = new ProjectFile();
+			$file->setFilename($sFileName);
+						
+			$file->setIsVisible(true);
+			$file->setIsPrivate(false);
+			$file->setIsImportant(false);
+			$file->setCommentsEnabled(true);
+			$file->setAnonymousCommentsEnabled(false);
+			$file->setCreatedOn(new DateTimeValue(time()));		
+
+	
+			DB::beginWork();
+			$file->save();
+			$workspaces = array(personal_project());
+			if (is_array($workspaces)) {
+				foreach ($workspaces as $ws) {
+					$file->addToWorkspace($ws);
+				}
+			}
+			$revision = $file->handleUploadedFile($oFile, true, '');
+			ApplicationLogs::createLog($file, $workspaces, ApplicationLogs::ACTION_ADD);
+			DB::commit();
+			echo $this->SendUploadResults( $sErrorNumber, $file->getDownloadUrl() , $file->getFilename() ) ;
+		} catch (Exception $e) {
+			DB::rollback();			
+			$sErrorNumber = '202';
+			echo $this->SendUploadResults( $sErrorNumber ) ;
+		}
+		
+	}
+	
+	private function SendUploadResults( $errorNumber, $fileUrl = '', $fileName = '', $customMsg = '' )
+	{
+		// Minified version of the document.domain automatic fix script (#1919).
+		// The original script can be found at _dev/domain_fix_template.js
+		$ret = "
+		<script type=\"text/javascript\">
+		(function(){
+			var d=document.domain;
+			while (true){
+				try{
+					var A=window.parent.document.domain;break;
+				}catch(e) {};
+				d=d.replace(/.*?(?:\.|$)/,'');
+				if (d.length==0) 
+					break;try{document.domain=d;
+				}catch (e){
+					break;
+				}
+			}
+		})();
+		";
+	
+		$rpl = array( '\\' => '\\\\', '"' => '\\"' ) ;
+		$ret .= 'window.parent.OnUploadCompleted(' . $errorNumber . ',"' . strtr( $fileUrl, $rpl ) . '","' . strtr( $fileName, $rpl ) . '", "' . strtr( $customMsg, $rpl ) . '") ;' ;
+		$ret .= '</script>' ;
+		return $ret;
 	}
 
 } // FilesController

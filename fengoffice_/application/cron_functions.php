@@ -28,6 +28,7 @@ function check_upgrade() {
 
 function send_reminders() {
 	_log("Sending reminders...");
+	Env::useHelper('permissions');
 	$sent = 0;
 	$ors = ObjectReminders::getDueReminders();
 	foreach ($ors as $or) {

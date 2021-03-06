@@ -1,6 +1,6 @@
 <?php
 @set_time_limit(0);
-define('ROOT', '../..');
+define('ROOT', dirname(__FILE__) . '/../..');
 define('PRODUCT_NAME', 'OpenGoo');
 define('PRODUCT_URL', 'http://www.opengoo.org');
 
@@ -11,7 +11,7 @@ require_once dirname(__FILE__) . '/include.php';
 $upgrader = new ScriptUpgrader(new Output_Html(), lang('upgrade opengoo'), lang('upgrade your opengoo installation'));
 $form_data = array_var($_POST, 'form_data');
 $upgrade_to = array_var($_GET, 'upgrade_to');
-if (isset($upgrade_to)) {
+if (!is_array($form_data) && isset($upgrade_to)) {
 	$form_data = array(
 		'upgrade_from' => installed_version(),
 		'upgrade_to' => $upgrade_to

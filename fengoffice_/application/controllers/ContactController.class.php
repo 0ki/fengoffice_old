@@ -113,6 +113,7 @@ class ContactController extends ApplicationController {
 		} else {
 			$union = array();
 		}
+		ProjectDataObjects::populateData($union);
 
 		// Prepare response object
 		$object = $this->newPrepareObject($union, $count, $start, $attributes);
@@ -122,7 +123,7 @@ class ContactController extends ApplicationController {
 	}
 	
 	
-	private static function getContactQueries($project = null, $tag = null, $count = false, $order = null) {
+	private static function getContactQueries($project = null, $tag = null, $count = false, $order = null, $archived = false) {
 		switch ($order){
 			case 'updatedOn':
 				$order_crit_companies = 'updated_on';
@@ -131,6 +132,12 @@ class ContactController extends ApplicationController {
 			case 'createdOn':
 				$order_crit_companies = 'created_on';
 				$order_crit_contacts = 'created_on';
+				break;
+			case 'email':
+			case 'email2':
+			case 'email3':
+				$order_crit_contacts = $order;
+				$order_crit_companies = $order == 'email' ? 'email' : "' '";
 				break;
 			default:
 				$order_crit_contacts = "TRIM(CONCAT(' ', `lastname`, `firstname`, `middlename`))";
@@ -158,19 +165,22 @@ class ContactController extends ApplicationController {
     	}
     	$res = array();
     	
+    	if ($archived) $archived_cond = "`archived_by_id` <> 0 AND";
+		else $archived_cond = "`archived_by_id` = 0 AND";
+    	
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
 		$res['Companies'] = "SELECT  $order_crit_companies AS `order_value`, 'Companies' AS `object_manager_value`, `id` as `oid` FROM `" . 
-					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
+					TABLE_PREFIX . "companies` `co` WHERE `trashed_by_id` = 0 AND $archived_cond " .$proj_cond_companies . str_replace('= `object_manager_value`', "= 'Companies'", $tag_str) . $permissions;
 					
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') . ')';
 		if (isset($project)) {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND EXISTS (SELECT * FROM `" . 
+					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 AND $archived_cond EXISTS (SELECT * FROM `" . 
 					TABLE_PREFIX . "project_contacts` `pc` WHERE `pc`.`contact_id` = `co`.`id` AND ".$proj_cond_contacts. ")" .
 					str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		} else {
 			$res['Contacts'] = "SELECT $order_crit_contacts AS `order_value`, 'Contacts' AS `object_manager_value`, `id` AS `oid` FROM `" . 
-					TABLE_PREFIX . "contacts` `co` WHERE `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
+					TABLE_PREFIX . "contacts` `co` WHERE $archived_cond `trashed_by_id` = 0 " . str_replace('= `object_manager_value`', "= 'Contacts'", $tag_str) . $permissions;
 		}
 		
 		if ($count) {
@@ -360,6 +370,42 @@ class ContactController extends ApplicationController {
 				}; // for
 				break;
 				
+			case "untag":
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "contact":
+							$contact = Contacts::findById($id);
+							if (isset($contact) && $contact->canEdit(logged_user())){
+								$tag = $attributes['tagstoremove'];
+								if ($tag != ''){
+									Tags::deleteObjectTag($tag, $contact->getId(),get_class($contact->manager()));
+								}else{
+									$contact->clearTags();
+								}								
+								ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_EDIT, false, null, true);
+								$resultMessage = lang("success untag objects", '');
+							};
+							break;
+
+						case "company":
+							$company = Companies::findById($id);
+							if (isset($company) && $company->canEdit(logged_user())){
+								$company->clearTags();
+								ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_EDIT, false, null, true);
+								$resultMessage = lang("success tag objects", '');
+							};
+							break;
+
+						default:
+							$resultMessage = lang("unimplemented type" .": '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+				
 			case "move":
 				$wsid = $attributes["moveTo"];
 				$destination = Projects::findById($wsid);
@@ -410,7 +456,63 @@ class ContactController extends ApplicationController {
 					$resultCode = 0;
 				}
 				break;
-
+			case "archive":
+				$succ = 0; $err = 0;
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "contact":
+							$contact = Contacts::findById($id);
+							if (isset($contact) && $contact->canEdit(logged_user())){
+								try{
+									DB::beginWork();
+									$contact->archive();
+									DB::commit();
+									ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+									$succ++;
+								} catch(Exception $e){
+									DB::rollback();
+									$err++;
+								}
+							} else {
+								$err++;
+							}
+							break;
+							
+						case "company":
+							$company = Companies::findById($id);
+							if (isset($company)) {
+								if ($company->canEdit(logged_user())) {
+									try{
+										DB::beginWork();
+										$company->archive();									
+										DB::commit();
+										ApplicationLogs::createLog($company, $company->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+										$succ++;
+									} catch(Exception $e){
+										DB::rollback();
+										$err++;
+									}
+								} else {
+									$err++;
+								}
+							};
+							break;
+							
+						default:
+							$err++;
+							break;
+					}; // switch
+				}; // for
+				if ($err > 0) {
+					$resultCode = 2;
+					$resultMessage = lang("error archive objects", $err) . "<br />" . ($succ > 0 ? lang("success archive objects", $succ) : "");
+				} else {
+					$resultMessage = lang("success archive objects", $succ);
+				}
+				break;
 			default:
 				$resultMessage = lang("unimplemented action" . ": '" . $action . "'");// if 
 				$resultCode = 2;	
@@ -419,7 +521,7 @@ class ContactController extends ApplicationController {
 		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
 	}
 	
-	function addProjectContact($id, $destination, $mantainWs = true) {
+	function addProjectContact($id, $destination, $mantainWs = true, $role = "") {
 		$contact = Contacts::findById($id);
 		$pc = ProjectContacts::getRole($contact, $destination);
 		if (!ProjectContact::canAdd(logged_user(), $destination)) return 0;
@@ -712,9 +814,7 @@ class ContactController extends ApplicationController {
 					$pc->setProjectId(active_project()->getId());
 					$pc->setRole(array_var($contact_data,'role'));
 					
-					DB::beginWork();
 					$pc->save();
-					DB::commit();
 				}
 
 				ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
@@ -846,6 +946,29 @@ class ContactController extends ApplicationController {
 		tpl_assign('im_types', $im_types);
 
 		if(is_array(array_var($_POST, 'contact'))) {
+
+			//	MANAGE CONCURRENCE WHILE EDITING			
+			$upd = array_var($_POST, 'updatedon');
+			if ($upd && $contact->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
+			{
+				ajx_current('empty');
+				evt_add("handle edit concurrence", array(
+					"updatedon" => $contact->getUpdatedOn()->getTimestamp(),
+					"genid" => array_var($_POST,'genid')
+				));
+				return;
+			}
+			if (array_var($_POST,'merge-changes') == 'true')
+			{					
+				$this->setTemplate('card');
+				$new_contact = Contacts::findById($contact->getId());
+				ajx_set_panel(lang ('tab name',array('name'=>$new_contact->getDisplayName())));
+				ajx_extra_data(array("title" => $new_contact->getDisplayName(), 'icon'=>'ico-contact'));
+				ajx_set_no_toolbar(true);
+				//ajx_set_panel(lang ('tab name',array('name'=>$new_contact->getDisplayName())));
+				return;
+			}
+			
 			try {
 				DB::beginWork();
 				
@@ -921,7 +1044,7 @@ class ContactController extends ApplicationController {
 					}
 					$pc->setRole(array_var($contact_data,'role'));
 					$pc->save();
-//					ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+					//ApplicationLogs::createLog($contact, $contact->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 
 				}
 
@@ -1184,8 +1307,8 @@ class ContactController extends ApplicationController {
 					ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_EDIT );
 					ajx_current("back");
 				} else {
-					flash_error(lang('failed to assign contact due to permissions', implode(", ", $workspaces)));
 					DB::rollback();
+					flash_error(lang('failed to assign contact due to permissions', implode(", ", $workspaces)));
 					ajx_current("empty");
 				}
 			} catch(Exception $e) {
@@ -1353,8 +1476,8 @@ class ContactController extends ApplicationController {
 						DB::commit();						
 						
 					} catch (Exception $e) {
-						$contact_data['fail_message'] = substr_utf($e->getMessage(), strpos_utf($e->getMessage(), "\r\n"));
 						DB::rollback();
+						$contact_data['fail_message'] = substr_utf($e->getMessage(), strpos_utf($e->getMessage(), "\r\n"));
 						$import_result['import_fail'][] = $contact_data;
 					}		
 					$i++;
@@ -1555,6 +1678,7 @@ class ContactController extends ApplicationController {
 		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Contacts') ";
 
 		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
+		    	$conditions .= "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
 				$contacts = Contacts::instance()->getAllowedContacts($conditions);
 				foreach ($contacts as $contact) {
 					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
@@ -1566,6 +1690,7 @@ class ContactController extends ApplicationController {
 		    		$tag_str = " EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = ".DB::escape($tag)." AND `".TABLE_PREFIX . "companies`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = 'Companies') ";
 					
 		    	$conditions = $wsConditions ? ($wsConditions . ($tag_str ? " AND $tag_str" : '')) : $tag_str;
+		    	$conditions .= "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
 				$companies = Companies::getVisibleCompanies(logged_user(), $conditions);
 				foreach ($companies as $company) {
 					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
@@ -1588,7 +1713,12 @@ class ContactController extends ApplicationController {
 			$path = ROOT.'/tmp/'.$filename;
 			$size = filesize($path);
 			
-			$name = (array_var($_SESSION, 'import_type', 'contact') == 'contact' ? 'contacts.csv' : 'companies.csv');
+			if (isset($_SESSION['fname'])) {
+				$name = $_SESSION['fname'];
+				unset($_SESSION['fname']);
+			}
+			else $name = (array_var($_SESSION, 'import_type', 'contact') == 'contact' ? 'contacts.csv' : 'companies.csv');
+			
 			unset($_SESSION['contact_export_filename']);
 			unset($_SESSION['import_type']);
 			download_file($path, 'text/csv', $name, $size, false);
@@ -1694,7 +1824,8 @@ class ContactController extends ApplicationController {
 		
 		$search_for = array_var($_POST,'search_for',false);
 		if ($search_for){
-			$projects = logged_user()->getWorkspacesQuery();
+			$projects = logged_user()->getActiveProjectIdsCSV();
+			//$projects = logged_user()->getWorkspacesQuery();
 			
 			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Contacts', true, 50);
 			$contacts = $search_results[0];
@@ -1714,6 +1845,334 @@ class ContactController extends ApplicationController {
 			}
 		}
 	}
+	
+	function import_from_vcard() {
+		@set_time_limit(0);
+		ini_set('auto_detect_line_endings', '1');
+		
+		if (isset($_GET['from_menu']) && $_GET['from_menu'] == 1) unset($_SESSION['go_back']);
+		if (isset($_SESSION['go_back'])) {
+			unset($_SESSION['go_back']);
+			ajx_current("start");
+		}
+		
+		tpl_assign('import_type', 'contact');
+		if(!Contact::canAdd(logged_user(), active_or_personal_project())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
+		$this->setTemplate('vcard_import');
+		
+		$filedata = array_var($_FILES, 'vcard_file');
+		if (is_array($filedata) && !array_var($_GET, 'step2')) {
+			
+			$filename = ROOT.'/tmp/'.logged_user()->getId().'temp.vcf';
+			copy($filedata['tmp_name'], $filename);
+
+			//ajx_current("empty");
+			
+		} else if (array_var($_GET, 'step2')) {
+			$filename = ROOT.'/tmp/'.logged_user()->getId().'temp.vcf';
+			$result = $this->read_vcard_file($filename);
+			unlink($filename);
+			
+			$import_result = array('import_ok' => array(), 'import_fail' => array());
+			
+			foreach ($result as $contact_data) {
+				try {
+					DB::beginWork();
+					if (isset($contact_data['photo_tmp_filename'])) {
+						$file_id = FileRepository::addFile($contact_data['photo_tmp_filename'], array('public' => true));
+						$contact_data['picture_file'] = $file_id;
+						unlink($contact_data['photo_tmp_filename']);
+						unset($contact_data['photo_tmp_filename']);
+					}
+					if (isset($contact_data['company_name'])) {
+						$company = Companies::findOne(array("conditions" => "`name` = '".mysql_real_escape_string($contact_data['company_name'])."'"));
+						if ($company == null) {
+							$company = new Company();
+							$company->setName($contact_data['company_name']);
+							$company->setClientOfId(logged_user()->getCompanyId());
+							$company->save();
+							ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
+						}
+						$contact_data['company_id'] = $company->getId();
+						unset($contact_data['company_name']);
+					}
+					
+					$contact_data['import_status'] = '('.lang('updated').')';
+					$fname = mysql_real_escape_string(array_var($contact_data, "firstname"));
+					$lname = mysql_real_escape_string(array_var($contact_data, "lastname"));
+					$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' OR email = '".array_var($contact_data, "email")."'"));
+					$log_action = ApplicationLogs::ACTION_EDIT;
+					if (!$contact) {
+						$contact = new Contact();
+						$contact_data['import_status'] = '('.lang('new').')';
+						$log_action = ApplicationLogs::ACTION_ADD;
+					}
+					
+					$contact->setFromAttributes($contact_data);
+					$contact->save();
+					ApplicationLogs::createLog($contact, null, $log_action);
+					$contact->setTagsFromCSV(array_var($_GET, 'tags'));
+					if(active_project() instanceof Project) {
+						$pc = ProjectContacts::findOne(array("conditions" => "contact_id = ".$contact->getId()." AND project_id = ".active_project()->getId()));
+						if (!$pc) {
+							$pc = new ProjectContact();
+							$pc->setContactId($contact->getId());
+							$pc->setProjectId(active_project()->getId());
+							$pc->setRole(array_var($contact_data,'role'));
+							$pc->save();
+						}
+					}
+					$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
+					
+					DB::commit();					
+				} catch (Exception $e) {
+					DB::rollback();
+					flash_error($e->getMessage());
+					$import_result['import_ok'][] = array('firstname' => $fname, 'lastname' => $lname, 'email' => $contact_data['email'], 'import_status' => $contact_data['import_status']);
+				}
+			}
+			$_SESSION['go_back'] = true;
+			tpl_assign('import_result', $import_result);
+		}
+	}
+
+	private function read_vcard_file($filename, $only_first_record = false) {
+		$handle = fopen($filename, 'rb');
+        if (! $handle) {
+            flash_error(lang('file not exists'));
+            ajx_current("empty");
+            return;
+        }
+
+        // parse VCard blocks
+        $in_block = true;
+        $results = array();
+        while (($line = fgets($handle)) !== false) {
+            if (ereg('^BEGIN:VCARD', $line)) {
+                // START OF CONTACT
+                $in_block = true;
+                $block_data = array();
+            } else if (ereg('^END:VCARD', $line)) {
+                // END OF CONTACT
+                $in_block = false;
+				if (isset($photo_data))
+		            if (isset($photo_data)) {
+			        	$filename = ROOT."/tmp/".rand().".$photo_type";
+				        $f_handle = fopen($filename, "wb");
+				        fwrite($f_handle, base64_decode($photo_data));
+				        fclose($f_handle);
+				        $block_data['photo_tmp_filename'] = $filename;
+					}
+				unset($photo_data);
+			    unset($photo_enc);
+			    unset($photo_type);
+				
+                $results[] = $block_data;
+                if ($only_first_record && count($results) > 0) return $results;
+            } else if (eregi('^N(:|;charset=[-a-zA-Z0-9.]+:)([^;]*);([^;]*)', $line, $matches)) {
+            	// NAME
+                $block_data["firstname"] = trim($matches[count($matches)-1]);
+                $block_data["lastname"] = trim($matches[count($matches)-2]);
+            } else if (eregi('^ORG(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)', $line, $matches)) {
+            	// ORGANIZATION
+                $block_data["company_name"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
+            } else if (eregi('^NOTE(:|;charset=[-a-zA-Z0-9.]+:)([^;]*)', $line, $matches)) {
+            	// NOTES
+                $block_data["notes"] = trim($matches[count($matches)-1]);
+            } else if (eregi('EMAIL;type=(PREF,)?INTERNET(,PREF)?(;type=(HOME|WORK))?:([-a-zA-Z0-9_.]+@[-a-zA-Z0-9.]+)', $line, $matches)) {
+            	// EMAIL
+                $email = trim($matches[count($matches)-1]);
+                if (!isset($block_data["email"])) 
+                	$block_data["email"] = $email;
+                else if (!isset($block_data["email2"])) 
+                	$block_data["email2"] = $email;
+                else if (!isset($block_data["email3"])) 
+                	$block_data["email3"] = $email;
+                
+            } else if (eregi('URL(;type=(HOME|WORK))?.*:(.+)', $line, $matches)) {
+            	// WEB URL
+                $url = trim($matches[3]);
+                $url = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $url);
+                if ($matches[2] == "HOME") {
+                	$block_data['h_web_page'] = $url;
+                } else if ($matches[2] == "WORK") {
+                	$block_data['w_web_page'] = $url;
+                } else {
+                	$block_data['o_web_page'] = $url;
+                }
+            } else if (eregi('TEL(;type=(HOME|WORK|CELL|FAX)[,A-Z]*)?.*:(.+)', $line, $matches)) {
+            	// PHONE
+                $phone = trim($matches[3]);
+                $phone = str_replace(array("\r\n", "\n", "\r", "\t"), " ", $phone);
+                if ($matches[2] == "HOME") {
+                    $block_data["h_phone_number"] = $phone;
+                } else if ($matches[2] == "CELL") {
+                    $block_data["h_mobile_number"] = $phone;
+                } else if ($matches[2] == "WORK") {
+                    $block_data["w_phone_number"] = $phone;
+                } else if ($matches[2] == "FAX") {
+                    $block_data["w_fax_number"] = $phone;
+                } else {
+                    $block_data["o_phone_number"] = $phone;
+                }
+            } else if (eregi('ADR;type=(HOME|WORK)[,A-Z]*;(charset=[-a-zA-Z0-9.]+|type=pref):;;([^;]*);([^;]*);([^;]*);([^;]*);([^;]*)', $line, $matches)) {
+            	// ADDRESS
+                // $matches is
+                // [1] <-- street
+                // [2] <-- city
+                // [3] <-- state
+                // [4] <-- zip
+                // [5] <-- country
+                $addr = array_slice($matches, count($matches)-5);
+                foreach ($addr as $k=>$v) $addr[$k] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($v));
+                if ($matches[1] == "HOME") {
+                    $block_data["h_address"] = $addr[0];
+                    $block_data["h_city"] = $addr[1];
+                    $block_data["h_state"] = $addr[2];
+                    $block_data["h_zipcode"] = $addr[3];
+                    $block_data["h_country"] = CountryCodes::getCountryCodeByName($addr[4]);
+                } else if ($matches[1] == "WORK") {
+                    $block_data["w_address"] = $addr[0];
+                    $block_data["w_city"] = $addr[1];
+                    $block_data["w_state"] = $addr[2];
+                    $block_data["w_zipcode"] = $addr[3];
+                    $block_data["w_country"] = CountryCodes::getCountryCodeByName($addr[4]);
+                } else {
+                    $block_data["o_address"] = $addr[0];
+                    $block_data["o_city"] = $addr[1];
+                    $block_data["o_state"] = $addr[2];
+                    $block_data["o_zipcode"] = $addr[3];
+                    $block_data["o_country"] = CountryCodes::getCountryCodeByName($addr[4]);
+                }
+            } else if (eregi('^BDAY[;value=date]*:([0-9]+)-([0-9]+)-([0-9]+)', $line, $matches)) {
+                // BIRTHDAY
+                // $matches[1]  <-- year     $matches[2]  <-- month    $matches[3]  <-- day
+                $block_data["o_birthday"] = $matches[1] . '-' . $matches[2] . '-' . $matches[3] . "00:00:00";
+                
+            } else if (eregi('TITLE(:|;charset=[-a-zA-Z0-9.]+:)(.*)', $line, $matches)) {
+            	// JOB TITLE
+                $block_data["job_title"] = str_replace(array("\r\n", "\n", "\r", "\t"), " ", trim($matches[2]));
+                
+            } else if (eregi('PHOTO(;ENCODING=(b|BASE64)?(;TYPE=([-a-zA-Z.]+))|;VALUE=uri):(.*)', $line, $matches)) {
+            	
+            	foreach ($matches as $k => $v) {
+            		if (str_starts_with(strtoupper($v), ";ENCODING")) $enc_idx = $k+1;
+            		if (str_starts_with(strtoupper($v), ";TYPE")) $type_idx = $k+1;
+            		if (str_starts_with(strtoupper($v), ";VALUE=uri")) $uri_idx = $k+1;
+            	}
+            	if (isset($enc_idx) && isset($type_idx)) {
+            		$photo_enc = $matches[$enc_idx];
+            		$photo_type = $matches[$type_idx];
+            		$photo_data = str_replace(array("\r\n", "\n", "\r", "\t"), "", trim($matches[count($matches)-1]));
+            	} else if (isset($uri_idx)) {
+            		$uri = trim($matches[count($matches)-1]);            		
+            		$photo_type = substr($uri, strrpos($uri, "."));
+            		$data = file_get_contents(urldecode($uri));
+            		$filename = ROOT."/tmp/".rand().".$photo_type";
+			        $f_handle = fopen($filename, "wb");
+			        fwrite($f_handle, $data);
+			        fclose($f_handle);
+			        $block_data['photo_tmp_filename'] = $filename;
+            	}
+            } else {
+            	if (isset($photo_data) && isset($enc_idx) && isset($type_idx)) {
+            		$photo_data .= str_replace(array("\r\n", "\n", "\r", "\t"), "", trim($line));
+            	}
+                // unknown / ignored VCard field
+            }
+            
+            unset($matches);
+        }
+        fclose($handle);
+        
+        return $results;
+    } // read_vcard_file
+    
+    private function build_vcard($contacts) {
+    	$charset = ";CHARSET=UTF-8";
+    	$vcard = "";
+
+    	foreach($contacts as $contact) {
+    		$vcard .= "BEGIN:VCARD\nVERSION:3.0\n";
+    		
+    		$vcard .= "N$charset:" . $contact->getLastname() . ";" . $contact->getFirstname() . "\n";
+    		$vcard .= "FN$charset:" . $contact->getFirstname() . " " . $contact->getLastname() . "\n";
+    		if ($contact->getCompany() instanceof Company)
+    			$vcard .= "ORG$charset:" . $contact->getCompany()->getName() . "\n";
+    		if ($contact->getJobTitle())
+    			$vcard .= "TITLE$charset:" . $contact->getJobTitle() . "\n";
+    		if ($contact->getOBirthday() instanceof DateTimeValue)
+    			$vcard .= "BDAY:" . $contact->getOBirthday()->format("Y-m-d") . "\n";
+    		if ($contact->getHAddress())
+    			$vcard .= "ADR;TYPE=HOME$charset:;;" . $contact->getHAddress() .",". $contact->getHCity() .",". $contact->getHState() .",". $contact->getHZipcode() .",". $contact->getHCountryName() . "\n";
+    		if ($contact->getWAddress())
+    			$vcard .= "ADR;TYPE=WORK$charset:;;" . $contact->getWAddress() .",". $contact->getWCity() .",". $contact->getWState() .",". $contact->getWZipcode() .",". $contact->getWCountryName() . "\n";
+    		if ($contact->getOAddress())
+    			$vcard .= "ADR;TYPE=INTL$charset:;;" . $contact->getOAddress() .",". $contact->getOCity() .",". $contact->getOState() .",". $contact->getOZipcode() .",". $contact->getOCountryName() . "\n";
+    		if ($contact->getHPhoneNumber())
+    			$vcard .= "TEL;TYPE=HOME,VOICE$charset:" . $contact->getHPhoneNumber() . "\n";
+    		if ($contact->getWPhoneNumber())
+    			$vcard .= "TEL;TYPE=WORK,VOICE$charset:" . $contact->getWPhoneNumber() . "\n";
+    		if ($contact->getOPhoneNumber())
+    			$vcard .= "TEL;TYPE=VOICE$charset:" . $contact->getOPhoneNumber() . "\n";
+    		if ($contact->getHFaxNumber())
+    			$vcard .= "TEL;TYPE=HOME,FAX$charset:" . $contact->getHFaxNumber() . "\n";
+    		if ($contact->getWFaxNumber())
+    			$vcard .= "TEL;TYPE=WORK,FAX$charset:" . $contact->getWFaxNumber() . "\n";
+    		if ($contact->getOFaxNumber())
+    			$vcard .= "TEL;TYPE=FAX$charset:" . $contact->getOFaxNumber() . "\n";
+    		if ($contact->getHMobileNumber())
+    			$vcard .= "TEL;TYPE=CELL,VOICE$charset:" . $contact->getHMobileNumber() . "\n";
+    		if ($contact->getHWebPage())
+    			$vcard .= "URL;TYPE=HOME:" . $contact->getHWebPage() . "\n";
+    		if ($contact->getWWebPage())
+    			$vcard .= "URL;TYPE=WORK:" . $contact->getWWebPage() . "\n";
+    		if ($contact->getOWebPage())
+    			$vcard .= "URL:" . $contact->getOWebPage() . "\n";
+    		if ($contact->getEmail())
+    			$vcard .= "EMAIL;TYPE=PREF,INTERNET:" . $contact->getEmail() . "\n";
+    		if ($contact->getEmail2())
+    			$vcard .= "EMAIL;TYPE=INTERNET:" . $contact->getEmail2() . "\n";
+    		if ($contact->getEmail3())
+    			$vcard .= "EMAIL;TYPE=INTERNET:" . $contact->getEmail3() . "\n";
+			if ($contact->getNotes())
+    			$vcard .= "NOTE$charset:" . $contact->getNotes() . "\n";
+    		if ($contact->hasPicture()) {
+    			$data = FileRepository::getFileContent($contact->getPictureFile());
+    			$enc_data = chunk_split(base64_encode($data));
+    			$vcard .= "PHOTO;ENCODING=BASE64;TYPE=PNG:" . $enc_data . "\n";
+    		}
+
+			$vcard .= "END:VCARD\n";
+    	}
+    	return $vcard;
+    }
+    
+    function export_to_vcard() {
+    	$ids = array_var($_GET, 'ids');
+    	$contacts = array();
+   		$ids = explode(",", $ids);
+   		$allowed = Contacts::instance()->getAllowedContacts();
+		foreach ($allowed as $c) {
+			if (in_array($c->getId(), $ids)) $contacts[] = $c;
+		}
+    	if (count($contacts) == 0) {
+			flash_error(lang("you must select the contacts from the grid"));
+			ajx_current("empty");
+			return;
+		}
+		
+    	$data = self::build_vcard($contacts);
+    	$name = (count($contacts) == 1 ? $contacts[0]->getDisplayName() : "contacts") . ".vcf";
+
+    	download_contents($data, 'text/x-vcard', $name, strlen($data), true);
+    	die();
+    }
 } // ContactController
 
 ?>

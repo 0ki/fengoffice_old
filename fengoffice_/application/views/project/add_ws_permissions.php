@@ -1,6 +1,6 @@
 
 	<!-- permissions -->
-
+		<?php $field_tab = 30; ?>
 		<?php if (isset($companies) && is_array($companies) && count($companies)) { ?>
 			<div id="projectCompaniesContainer"><div id="projectCompanies">
 			<?php foreach ($companies as $company) { ?>

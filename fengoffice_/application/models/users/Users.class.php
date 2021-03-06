@@ -190,6 +190,14 @@ class Users extends BaseUsers {
 		return $users;
 	}//getByPersonalProject
 	
+	function getExternalUsers() {
+		return Users::findAll(array('conditions' => '`company_id` IN (SELECT `id` FROM `' . TABLE_PREFIX . 'companies` WHERE `client_of_id` <> 0)'));
+	}
+	
+	function countExternalUsers() {
+		return Users::count('`company_id` IN (SELECT `id` FROM `' . TABLE_PREFIX . 'companies` WHERE `client_of_id` <> 0)');
+	}
+	
 	function getUserDisplayName($user_id) {
 		$user = Users::findById($user_id);
 		if ($user) {

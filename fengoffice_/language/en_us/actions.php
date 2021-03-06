@@ -176,7 +176,7 @@
     
     'link object' => 'Link Object',
     'link objects' => 'Link Objects',
-    'show all linked objects' => 'Show all Linked Objects({0})',
+    'show all linked objects' => 'Show all ({0})',
   	'link more objects' => 'Link more objects',
     'unlink' => 'Unlink',
     'unlink object' => 'Unlink Object',
@@ -205,6 +205,13 @@
   	'delete permanently' => 'Delete permanently',
   	'copy file' => 'Copy this file',
   	'open weblink' => 'Open web link',
+  
+	'archive' => 'Archive',
+ 	'unarchive' => 'Unarchive',
+  	'confirm archive selected objects' => 'Are you sure you want to archive the selected objects?',
+	'confirm archive object' => 'Are you sure you want to archive this object?',
+	'confirm unarchive object' => 'Are you sure you want to unarchive this object?',
+  
   ); // array
 
 ?>

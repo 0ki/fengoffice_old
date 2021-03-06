@@ -162,6 +162,7 @@ class AdministrationController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
+		tpl_assign('isMemberList' , true);
 		tpl_assign('company', owner_company());
 		tpl_assign('users_by_company', Users::getGroupedByCompany());
 	} // members
@@ -255,7 +256,17 @@ class AdministrationController extends ApplicationController {
 					$new_cp->setName($data['name']);
 					$new_cp->setType($data['type']);
 					$new_cp->setDescription($data['description']);
-					$new_cp->setValues($data['values']);
+					if ($data['type'] == 'list') {
+						$values = array();
+						$list = explode(",", $data['values']);
+						foreach ($list as $l) {
+							$values[] = trim($l);
+						}
+						$value = implode(",", $values);
+						$new_cp->setValues($value);
+					} else {
+						$new_cp->setValues($data['values']);
+					}
 					if($data['type'] == 'boolean'){
 						$new_cp->setDefaultValue(isset($data['default_value_boolean']));
 					}else{
@@ -266,6 +277,23 @@ class AdministrationController extends ApplicationController {
 					$new_cp->setOrder($id);
 					$new_cp->setVisibleByDefault(isset($data['visible_by_default']));
 					$new_cp->save();
+					
+					if (is_array(array_var($data, 'applyto'))) {
+						$applyto = array_var($data, 'applyto');
+						foreach ($applyto as $co_type => $value) {
+							if ($value == 'true') {
+								if (!CustomPropertiesByCoType::findById(array('co_type_id' => $co_type, 'cp_id' => $new_cp->getId()))) {
+									$obj = new CustomPropertyByCoType();
+									$obj->setCoTypeId($co_type);
+									$obj->setCpId($new_cp->getId());
+									$obj->save();
+								}
+							} else {
+								$obj = CustomPropertiesByCoType::findById(array('co_type_id' => $co_type, 'cp_id' => $new_cp->getId()));
+								if ($obj) $obj->delete();
+							}
+						}
+					}
 				}
 				DB::commit();
 				flash_success(lang('custom properties updated'));
@@ -339,6 +367,8 @@ class AdministrationController extends ApplicationController {
 		tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
 	} // tools
 
+
+
 	/**
 	 * Show upgrade page
 	 *
@@ -361,7 +391,7 @@ class AdministrationController extends ApplicationController {
 
 		tpl_assign('versions_feed', $version_feed);
 	} // upgrade
-	
+
 	function auto_upgrade() {
 		$this->setLayout("dialog");
 		//$this->setTemplate(get_template_path("empty", ""));
@@ -428,7 +458,8 @@ class AdministrationController extends ApplicationController {
 		}
 		$this->redirectToUrl("public/upgrade/index.php?upgrade_to=" . urlencode($version_number));
 	}
-
+	
+	
 	// ---------------------------------------------------
 	//  Tool implementations
 	// ---------------------------------------------------
@@ -624,6 +655,19 @@ class AdministrationController extends ApplicationController {
 				$hour = 0;
 			}
 		}
+	}
+	
+	
+	function mail_accounts() {
+		if (!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$my_accounts = MailAccounts::getMailAccountsByUser(logged_user());
+		$all_accounts = MailAccounts::findAll();
+		tpl_assign('my_accounts', $my_accounts);
+		tpl_assign('all_accounts', $all_accounts);
 	}
 
 

@@ -3,7 +3,7 @@
  *
  */
 og.FileManager = function() {
-	var actions;
+	var actions, markactions;
 
 	this.doNotRemove = true;
 	this.needRefresh = false;
@@ -15,7 +15,7 @@ og.FileManager = function() {
 		'dateUpdated', 'dateUpdated_today',
 		'icon', 'wsIds', 'manager', 'checkedOutById',
 		'checkedOutByName', 'mimeType', 'isModifiable',
-		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix', 'isMP3'
+		'modifyUrl', 'songInfo', 'ftype', 'url', 'ix','isRead', 'isMP3'
 	];
 
 	og.eventManager.fireEvent('hook_document_classification', this.fields);	
@@ -43,10 +43,13 @@ og.FileManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("documents"), ws));
 						}
+					} else if (d.files.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("documents")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					Ext.getCmp('file-manager').getView().focusRow(og.lastSelectedRow.documents+1);
 				}
 			}
 		});
@@ -56,17 +59,27 @@ og.FileManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 	
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'file-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'file-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
 	function renderName(value, p, r) {
 		var result = '';
+		var bold = 'normal';
+		if (!r.data.isRead) {bold = 'bold';}
 		var name = String.format(
-			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
+			'<a style="font-size:120%; font-weight:'+ bold+';" href="{2}" onclick="og.openLink(\'{2}\');return false;">{0}</a>',
 			og.clean(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
 		
 		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
 	}
+	function renderIsRead(value, p, r){
+		if (value){
+			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'file-manager\').load({action: 'markasunread',objects:" + r.id + "});Ext.getCmp(\'file-manager\').getSelectionModel().clearSelections(); \" />";
+		}else{
+			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('file-manager').load({action: 'markasread',objects:" + r.id + "});Ext.getCmp('file-manager').getSelectionModel().clearSelections(); \" />";			
+		}
+		return div;
+	}	
 
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
@@ -93,7 +106,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -108,7 +121,7 @@ og.FileManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -146,7 +159,7 @@ og.FileManager = function() {
 		var actionStyle= ' style="font-size:105%;padding-top:2px;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
 		
 		if(r.data.ftype == 0){
-			if(og.showCheckoutNotification == 0){
+			if(og.config['checkout_notification_dialog'] == 0){
 				actions += String.format('<a class="list-action ico-download" href="{0}" target="_self" title="{1}" ' + actionStyle + '>&nbsp;</a>',
 					og.getUrl('files', 'download_file', {id: r.id}),lang('download'));
 			}else{
@@ -200,7 +213,8 @@ og.FileManager = function() {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.object_id;
-			}	
+			}
+			og.lastSelectedRow.documents = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -230,24 +244,48 @@ og.FileManager = function() {
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
 		function() {
+			var allUnread = true, allRead = true;
+			var selections = sm.getSelections();
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.isRead){
+					allUnread = false;
+				} else {
+					allRead = false;
+				}
+			}
+		
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.properties.setDisabled(true);
 				actions.zip_add.setDisabled(true);
 				actions.del.setDisabled(true);
+				markactions.markAsRead.setDisabled(true);
+				markactions.markAsUnread.setDisabled(true);
+				actions.archive.setDisabled(true);
 			} else {
 				actions.tag.setDisabled(false);
 				actions.properties.setDisabled(sm.getCount() != 1);
 				actions.zip_add.setDisabled(false);
 				actions.del.setDisabled(false);
+				if (allUnread) {
+					markactions.markAsUnread.setDisabled(true);
+				} else {
+					markactions.markAsUnread.setDisabled(false);
+				}
+				if (allRead) {
+					markactions.markAsRead.setDisabled(true);
+				} else {
+					markactions.markAsRead.setDisabled(false);
+				}
+				actions.archive.setDisabled(false);
 			}
 			
 			args = {};
 			args.sm = sm;
 			args.actions = actions;
 			og.eventManager.fireEvent('hook_classification_enable', args);		
-			
 	});
+
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
 			id: 'draghandle',
@@ -269,6 +307,16 @@ og.FileManager = function() {
         	hideable:false,
         	menuDisabled: true
         },{
+			id: 'isRead',
+			header: '&nbsp;',
+			dataIndex: 'isRead',
+			width: 16,
+        	renderer: renderIsRead,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
 			id: 'name',
 			header: lang("name"),
 			dataIndex: 'name',
@@ -319,6 +367,37 @@ og.FileManager = function() {
 
 	og.eventManager.fireEvent('hook_filemanager_columns', cm.config);
 	
+	markactions = {
+		markAsRead: new Ext.Action({
+			text: lang('mark as read'),
+            tooltip: lang('mark as read desc'),
+            iconCls: 'ico-mark-as-read',
+			disabled: true,
+			handler: function() {
+				this.load({
+					action: 'markasread',
+					objects: getSelectedIds()
+				});
+				this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		}),
+		markAsUnread: new Ext.Action({
+			text: lang('mark as unread'),
+            tooltip: lang('mark as read desc'),
+            iconCls: 'ico-mark-as-unread',
+			disabled: true,
+			handler: function() {
+			this.load({
+				action: 'markasunread',
+				objects: getSelectedIds()				
+			});
+			this.getSelectionModel().clearSelections();
+			},
+			scope: this
+		})
+	};
+	
 	actions = {
 		newCO: new Ext.Action({
 			text: lang('new'),
@@ -356,6 +435,16 @@ og.FileManager = function() {
 								action: 'tag',
 								objects: getSelectedIds(),
 								tagTag: tag
+							});
+						},
+						scope: this
+					},
+					'tagdelete': {
+						fn: function(tag) {
+							this.load({
+								action: 'untag',
+								objects: getSelectedIds(),
+								tagTag: tag.text
 							});
 						},
 						scope: this
@@ -408,6 +497,22 @@ og.FileManager = function() {
 			},
 			scope: this
 		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						ids: getSelectedIds()
+					});
+					this.getSelectionModel().clearSelections();
+				}
+			},
+			scope: this
+		}),
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
@@ -416,6 +521,14 @@ og.FileManager = function() {
 				this.store.reload();
 			},
 			scope: this
+		}),
+		markAs: new Ext.Action({
+			text: lang('mark as'),
+			tooltip: lang('mark as desc'),
+			menu: [
+				markactions.markAsRead,
+				markactions.markAsUnread
+			]
 		})
     };
     
@@ -424,13 +537,13 @@ og.FileManager = function() {
 		layout: 'fit',
 		cm: cm,
 		enableDrag: true,
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		ddGroup: 'WorkspaceDD',
 		stripeRows: true,
 		closable: true,
 		id: 'file-manager',
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -443,12 +556,13 @@ og.FileManager = function() {
 		tbar:[
 			actions.newCO,
 			'-',
-			actions.tag,
 			actions.properties,
+			actions.tag,
 			actions.zip_add,
-			actions.del/*,
+			actions.del,
+			actions.archive,
 			'-',
-			actions.refresh*/
+			actions.markAs
 		],
 		listeners: {
 			'render': {
@@ -490,7 +604,7 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -501,7 +615,7 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			})
 		});
 		this.needRefresh = false;
@@ -536,13 +650,30 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 		});
 	},
 	
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				ids: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+	
 	tagObjects: function(tag) {
 		this.load({
 			action: 'tag',
 			objects: this.getSelectedIds(),
 			tagTag: tag
 		});
-	},	
+	},
+	
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			objects: this.getSelectedIds()
+		});
+	},
 	
 	trashObjects: function() {
 		if (confirm(lang('confirm move to trash'))) {

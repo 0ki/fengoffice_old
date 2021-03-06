@@ -295,7 +295,7 @@ class ProjectMessage extends BaseProjectMessage {
 	function getObjectUrl() {
 		return $this->getViewUrl();
 	} // getObjectUrl
-
+	
 } // ProjectMessage
 
 ?>

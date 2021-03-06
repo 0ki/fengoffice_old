@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.5.3
-    ===================
+    About OpenGoo 1.6 beta
+    ======================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -54,27 +54,18 @@
     
     WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
-    This can be solved by setting "memory_limit=32" in php.ini.
-    
-    
-    Debugging
-    =========
-    
-    If you encounter an error in OpenGoo (or a white page) you can generally get more information
-    about what caused it by enabling DEBUG mode. This can be done by setting the "DEBUG" constant
-    to true in file 'config/config.php' (this file is created during installation). You can report
-    the bug to http://bugs.opengoo.org 
+    This can be solved by setting "memory_limit=32" in php.ini.    
 
 
     Upgrade instructions
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5.3 - http://www.opengoo.org/
+    2. Download OpenGoo 1.6 beta - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5.3
+    	from your current version to 1.6 beta
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -96,275 +87,72 @@
 	Changelog
 	=========
 	
-	Since 1.5.2
+	Since 1.5.3
 	-----------
-	- bugfix: Cannot create companies with normal user without the "Can manage contacts" permission
-	- bugfix: Auto-upgrade feedback fixed.
-	- bugfix: Fixed a problem when classifying email (attachments were added as new versions of existing files).
-	- bugfix: Allow email addresses with single quote
-	- bugfix: Changed several "substr" for "utf8_substr" to avoid errors like "null" on dashboard.
-	- bugfix: Added a default address when sending email reminders. Fixes problems when sending reminders.
-	- bugfix: Fixed some display issues with the "Close" button in objects' view.
-	- bugfix: Fixed a problem that would cause the Overview to be loaded on every tab when clicking the "All" workspace.
-	- bugfix: Custom properties were not being kept when editing an object.
-	- bugfix: If a user is subscribed to an object and loses permissions to it it will not receive notifications any more.
-	- bugfix: Error 500 when deleting a user.
-	- bugfix: Email body was not shown for html emails when ROOT_URL was relative.
-	- bugfix: Create user from contact was not allowed if user was linked to a trashed contact, fix: contact is restored.
-	- bugfix: Task drag & drop does not allow drag from a workspace to another.
-	- bugfix: Saving workspace while rendering permissions was allowed, and no permissions were saved.
-	- bugfix: When creating new workspace, user checkboxes did not check/uncheck all permissions.
-	- bugfix: Internal server error when deleting user with its personal workspace.
-	- bugfix: Instantianting template without parameters was going back instead of reloading.
-	- bugfix: Calendar views was not showing milestones assigned to everybody when filtering by "my calendar".
-	- bugfix: In IE when expanding subtask list, the tasks below them did non move aside.
-	- bugfix: Some mail contents were not included in reply or forward body.
-	- bugfix: Instantiating repeating tasks with subtasks did not put correct status to some subtasks.
-	- bugfix: isToday function was not returning the correct value sometimes.
-	- bugfix: Csv export: when a field contains "," export is wrong, field must be enclosed with quotes.
-	- bugfix: Importing more than one contact with no email address overwrites the previous one.
-	- bugfix: Contacts are not linked to companies when importing from csv.
-	- bugfix: Subscribers and invitation lists were not showing users who have group permissions but no individual permissions.
-	- bugfix: If an error occurs when sending a queued email the email is now not deleted.
-	- bugfix: Mindmap viewer overlaps object linker.
-	- bugfix: The "include subworkspaces" checkbox for the iCal feed was being ignored.
-	- usability: The user is warned when searching for short strings.
-	
-	Since 1.5.1
-	-----------
-	- bugfix: Tags permissions rollbacked. It caused errors in some mysql settings.
-	- bugfix: Document editor toolbar not shown correctly.
-	- bugfix: Invited users to an event weren't being shown when editing the event.
-	- bugfix: When subscribing users to an object through the object's view, the users were not being notified.
-	- bugfix: When editing an object, selected subscribers were reset after changing the object's workspace.
-	- bugfix: When instantiating a milestone template it's subtasks were not added to the same workspace.
-	- bugfix: Fixed performance issues when changing a workspace's parent on the GUI.
-	- bugfix: Notes listing showed creator as last updater.
-	- bugfix: Cron events view wasn't converting times to user's timezone.
-	- bugfix: When filtering email by tag some extra email was shown.
-	- bugfix: Creating a template in IE wouldn't let you edit it's properties.
-	- bugfix: Dragging a task in the calendar would throw an error. 
-	- bugfix: "Can't open file" error when classifying email.
-	- bugfix: Linked objects listing was missing the drag handle.
-	- bugfix: Workspaces for classfied Emails were not being shown on dashboard viewed as list.
-	- bugfix: Error when deleting trashed emails from cron.
-	- bugfix: Error when instantiating templates with parameters assigned to a project.
-	- bugfix: Instantiated template objects were not assigned to the current workspace. 
-	- langs: Added missing langs for tasks report fields.
-	- langs: Updated langs.
-	
-	Since 1.5
-	---------
-	- bugfix: Tags permissions. Now a user can only see tags applied to objects he/she can view.
-	- bugfix: Milestones in wrong workspaces.
-	- bugfix: Custom properties are now searchable.
-	- bugfix: Fixed the permissions control when editing a workspace's permissions.
-	- bugfix: Fixed a small rendering problem with invited users in event edition.
-	- bugfix: Fixed error when sending emails to empty recipients.
-	- bugfix: Fixed default user preferences' rendered value.
-	- bugfix: Fixed a rendering problem in comments and descriptions that would eat a character before an email addres or link.
-	- bugfix: Tags query was using a hardcoded 'og_' table prefix.
-	- bugfix: Memory exhausted error when rendering repetitive tasks in the calendar.
-	- bugfix: Fatal error when copying a milestone.
-	- bugfix: Fatal error "undefined function saveFileAttributes" when uploading a file.
-	- bugfix: Translate OpenGoo tool now includes subfolders of language folders. Checklang also improved.
-	- bugfix: Files of type audio/mp3 now are correctly identified as MP3.
-	- langs: Updated langs.
-	
-	Since 1.5 RC
-	------------
-	- usability: Email autocomplete didn't show company emails.
-	- usability: When selecting a task's milestone, milestones from the parent workspaces are also shown.
-	- usability: Ctrl + S to save documents.
-	
-	- bugfix: Calendar's current-time bar went too fast.
-	- bugfix: Deleting a user didn't delete it from the group.
-	- bugfix: Email autocomplete did not filter by email.
-	- bugfix: Dashboard didn't show unread classified emails when filtering by workspace.
-	- bugfix: Error importing contacts with an apostrophe in the name.
-	- bugfix: Some emails lost the last three characters.
-	- bugfix: Filtering by tag was not working on the Email module.
-	- bugfix: POP3 email checking missed some emails.
-	- bugfix: Default value for date format and some other user configurations was being ignored.
-	- bugfix: Could not download email attachments.
-	- bugfix: Added SMTP "from" address config option for system email.
-	- bugfix: Fixed filtering by email account when "show deleted emails" was enabled.
-	- bugfix: Could not subscribe user to contact unless it had the "Can manage all contacts" permission.
-	- bugfix: Slimey didn't show bullets in bullet lists (not fixed for IE6)
-	- bugfix: Could not add images to a presentation
-	- bugfix: Now you need "Can manage time" permission to view a task's timeslots.
-	- bugfix: Fixed issues with GooPlayer: could not load playlist and could not queue tracks.
-	- bugfix: Fixed problem while fetching IMAP folders without SSL.
-	- bugfix: Now the language name is shown instead of the language code when choosing localization.
-	- bugfix: All default value for user preferences are now respected (e.g. date format).
-	
-	- system: Backup is no longer included by default with OpenGoo. It is available as a separate plugin.
 
+	feature: Archive objects and workspaces.
+	feature: Mark as read/unread for all objects
+	feature: Share mail accounts among several users.
+	feature: Assign a workspace to a mail account to automatically classify email to that workspace
+	feature: Group emails into conversations.
+	feature: Email attachments from file system.
+	feature: Email Junk folder (mail classified as spam by your mail server is sent to a "Junk" folder)
+	feature: Emails are sent asynchronously (you can continue working on OpenGoo while an email is being sent)
+	feature: Send emails as attachments from OpenGoo
+	feature: Create a task from an email.
+	feature: Insert images into OpenGoo documents and emails
+	feature: Allow events to span more than one day and support drag and drop for these events and repeating events.
+	feature: Upgraded document editor to CKEditor 3.0
+	feature: Editing Concurrency: warn user if object being edited was edited by someone else.
+	feature: Improved password recovery procedure.
+	feature: Config option to detect mime type from extension
+	feature: Option to autodetect timezone
+	feature: New toolbar menu to remove tags
+	feature: New type of parameter "User" for Templates.	
+	feature: VCard Import
+	
+	usability: Improved workspace permissions edition
+	usability: Display tags on events in the calendar
+	usability: Don't shrink avatars and logos if the size is not too big. Let the browser shrink it.
+	usability: Email listing: new "actions" column (reply, reply all and forward)	
+	usability: Rearranged toolbar icons
+	usability: Linked objects are now displayed the object's body.
+	usability: Filter the Object Picker* by text (*control used to pick objects when linking)
+	usability: "mailto" (email address) links open opengoo's "add mail" dialog instead of the default mail client (if the user has an email account).
+	usability: Email filters are noew remembered.
+	usability: Reporting: New control to select report columns, allow user to change column order.
+	usability: Sent emails are now marked as read automatically
+	usability: When changing subscribers or linked objects, do not reload the whole object view, only reload the object/user list that changed.	
+	usability: When dragging objects to 'All' tag, remove all tags from the object (ask for confirmation first)
+	usability: People invited to an event are subscribed.
+	usability: Allow submitting form by pressing enter when saving a doc, quick adding a task, adding a timeslot
+	usability: Paginated user listing in "Administration" / "Users".
+	usability: Pre-configurations for known emails (GMail, Hotmail, Yahoo) when setting up an email account
+	usability: Groups' user selection improved.	
 
-	Since 1.5-beta3
-	---------------
-	
-	- bugfix: Filtering the ObjectPicker by web links was not working.
-	- bugfix: Opening a weblink through a linked object was not working.
-	- bugfix: Editing a message through the dashboard would return to the message's edit view.
-	- bugfix: Permissions weren't removed from client company users when the company was unchecked in the workspace's edit view.
-	- bugfix: IMAP email check skipped first email.
-	- bugfix: System email through SMTP uses the SMTP username as "from" address, but if it doesn't have a domain part some servers complain.
-	- bugfix: Contact export did not prompt to download the file in IE.
-	- bugfix: Event export was not filtering by WS and tags.
-	- bugfix: Export contacts had two problems: 1) Ignored workspace filter 2) Ignored user's permissions.
-	- bugfix: Ical event export did not work fine with events whose description had line breaks, only the first line was taken from the client.
-	- bugfix: ICal-Import incorect specialchars.
-	- bugfix: MySQL Error: Primary key too long.
-	- bugfix: Task quick-add did not work, button 'Add task' did nothing.
-	- bugfix: When quick editing a task, milestones combobox is now reloaded to show only valid milestones.
-	- bugfix: Time bar in calendar didn't respect timezone and was hidden by events.
-	- bugfix: When full-editing a task, the parent task wasn't displayed.
-	 
-
-	Since 1.5-beta2
-	---------------
-	
-	- feature: Show current hour line at week and daily view
-	- feature: Permission to access Time module (can_manage_time).
-	- feature: Link objects to an email when attaching object links
-	- feature: Added a checkbox, to tasks workspace and milestone selection, to apply it to all subtasks
-	
-	- usability: Added a drag and drop icon for listings
-	- usability: To drag a row from a grid to a ws, you had to select it first.
-	- usability: ObjectPicker now sorts by lastUpdate by default
-	- usability: Tasks and events added through quickadd should have the default reminder and the default reminder should apply to all subscribers
-	
-	- bugfix: Fixed delete from server after X days (only delete fetched emails older than x days)
-	- bugfix: Fixed error when downloading revisions
-	- bugfix: Contact's workspaces were not being shown
-	- bugfix: Custom properties on users were not being shown when updating a user's profile.
-	- bugfix: Dashboard - view as list drag and drop allowed events and tasks to have more than one workspace
-	- bugfix: Dashboard - view as list was not listing documents
-	- bugfix: Dashboard _ view as list wasn't showing email user
-	- bugfix: Sometimes 'Modify subscribers' showed no users to subscribe.
-	- bugfix: Email sender was sometimes not being displayed
-	- bugfix: Errors when using PDO Backend
-	- bugfix: Event email reminders are not being sent
-	- bugfix: Events that end at or after midnight are not drew correctly (week and day view)
-	- bugfix: Javascript error when viewing all linked objecs of an object whose name has quotes
-	- bugfix: "Modify subscribers" link shouldn't be shown when user has no write permission over the object
-	- bugfix: Filtering Object Picker and Dashboard list view by workspace showed incorrect contacts
-	- bugfix: Problems with group permissions (workspaces didn't load and object listings didn't list files in group workspaces)
-	- bugfix: Reports weren't being sorted correctly
-	- bugfix: Reports only printed first page
-	- bugfix: Search wasn't opening on a new panel
-	- bugfix: When editing an object with a list-type custom property with multiple values selected, not all were being shown as selected.
-	- bugfix: When viewing all linked objects of an email, the email icon at toolbar was not being shown.
-	
-	- lang: Added ext language files
-	- lang: Link to OpenGoo wiki can be localized in translation files (to point to another language if available)
-
-	Since 1.5-beta
-	--------------
-	
-	- bugfix: Checking email on a new email account would delete emails from server (the delete emails from server was being stored incorrectly)
-	- bugfix: Cannot send email on new 1.5 beta installations. `content` column was missing in `mail_contents` table.
-	- bugfix: Error when executing the "Total task execution time" report.
-	- langs: Updated french, portuguese and spanish and added a missing key in Slimey. 
-
-	Since 1.4.2
-	-----------
-	
-	- feature: Email improved.
-		- Email attachments as links or in case of files optionally attach the content.
-		- Email text signature.
-		- Email checking improved.
-		- Autosave email drafts
-		- When replying or forwarding an email use the same account as the 'To' address. If the 'To' is not a user account use the default account chosen by the user.
-		- Allow to see emails from deleted accounts.
-		- Classify mail attachments generates a new revision if filename already exists.
-		- Config option to block images on emails enabled by default. When images are blocked allow to choose to show them temporarily for that email.
-		- Toolbar improved (selection menu, filters)
-	- feature: Drag and drop
-		- Move objects to other workspaces by dragging it from a listing into a workspace.
-		- Apply tags to an object by dragging an object into a tag.
-		- Change an event, task or milestone dates by dragging it in the calendar.
-		- Change the duration of an event by dragging its bottom edge.
-		- Sort emails by title and date.
-	- feature: Multiple workspaces for Events and Weblinks.
-	- feature: Calendar toolbar improved (tag, edit and trash actions).
-	- feature: Event selection by checking a checkbox in events' box.
-	- feature: Recurrent tasks.
-		- Define periodic tasks based on start or due date.
-		- Once you complete a task the next task is shown.
-		- You can instantiate an occurrence of the recurrent task to edit it individually.
-	- feature: Filter custom reports by workspace and tag.
-	- feature: Templates improved.
-		- Define parameters for a template that you can fill in when creating the objects.
-		- Parameters can be text or dates.
-		- This allows you to define templates with tasks or milestones whose dates depend on each others'.
-	- feature: Set default values for user config options.
-	- feature: Action to empty trash can.
-	- feature: Config option to ask for password when accessing the admin panel (disabled by default).
-	- feature: log user login with IP on the application log and show in user history	
-	- feature: Choose a personal workspace when for a user when creating it.
-	- feature: Allow setting workspace permissions for groups. This permissions apply to all users in the group.
-	
-	- usability: Now you can select events and perform actions on the selected events like on all other modules.
-	- usability: Tasks on the calendar are shown one time for the start time and one time for the due date.
-	- usability: Popup messages are now smaller.
-	- usability: Change the user's language in the login interface.
-	- usability: Only show most common actions on object's view and show the rest when pressing More...
-	- usability: Choose parent task with an ObjectPicker that shows only tasks in a task's view.
-	- usability: Confirm dialog when editing repeating events (warn user that all past and future events will be edited).
-	- usability: Show a Save button on top on all edition screens.
-	- usability: Improved user selection interfaces to select subscribers.
-	- usability: Subscribe users on object's view (without going to the edit view).
-	- usability: Sort users alphabetically when selecting subscribers, event invititions, milestone assign to.
-	- usability: Add 'Confirm' and 'Reject' links to event invitation mails.
-	- usability: Custom property fields are longer when viewing an object.
-	- usability: Dashboard: Config option to show a two week calendar.
-	- usability: Dashboard: Late milestones and tasks are sorted by due date.
-	- usability: Limited amount of information displayed in the dashboard to improve loading time.
-	- usability: Changed action 'Properties' or 'Edit file properties' in files for 'Update file'.
-	- usability: Links in mail are opened in a new window or tab.
-	- usability: Only a configurable amount of linked objects are shown and the rest can be seen in a 'View all linked objects' link.
-	- usability: Removed padding from context help containers and put margin to its children.
-	- usability: Removed workspace crumbs from name in contacts tab, add a new column with the workspaces.
-	- usability: Set user as administrator option is no longer shown when its company is not the owner company.
-	- usability: Timeslots now clearly show how much of the time is pause time, how much is active time, and dates of start and finish.
-	- usability: Timeslots now show last edition time and user.
-	- usability: The workspaces popup that showed when hovering the workspace name on the top left is now only shown when clicking it.
-	- usability: Improved display of workspaces on Administration -> Workspaces.
-	- usability: Adding work hours now accepts the format 'Hours:Minutes'.
-	- usability: Improved 'create user from contact' functionality.
-	
-	- system: Add PHPUTF8 lib to OpenGoo to handle UTF8 when mbstring module is not available.
-	- system: Country codes updated for Zaire and East Timor
-	- system: Fixed a performance issue when there are too many workspaces.
-	- system: Image spriting is now used to load initial images.
-	- system: Public files are now saved using the file repository (database or filesystem depending on configuration).
-	- system: Updated FCKEditor to latest version.
-	
-	- bugfix: Error when adding a workspace with a custom property.
-	- bugfix: IE error in task drag and drop: scrolling did not scroll task rows.
-	- bugfix: When editing events of last day of month the date shown was the first day of that month.
-	- bugfix: 'Set number of tasks shown as default' config option was not working
-	- bugfix: Bug with boolean custom properties.
-	- bugfix: CC was not shown when viewing mail content.
-	- bugfix: Checking email through imap sometimes saved emails with no subject, sender or body.
-	- bugfix: Download a document failed in IE, when 'Checkout notification dialog for documents' was enabled.
-	- bugfix: Event import did not import first event in file.
-	- bugfix: Problem with timezone when exporting events to Ical.
-	- bugfix: Image Transparency patch added for avatars, logos and pictures.
-	- bugfix: Couldn't delete reports by clicking the delete button.
-	- bugfix: Now you can only assign to a task milestones on the same workspace as the task.
-	- bugfix: Latest comments widget context help was always being shown.
-	- bugfix: Milestones completed tasks bar counted trashed tasks, and did not always refresh.
-	- bugfix: Problem with permissions in tasks with non admin users.
-	- bugfix: Reminders showed up inmediately after adding an event in Chrome.
-	- bugfix: Some reporting errors.
-	- bugfix: Task drag & drop did not work in IE.
-	- bugfix: Task list did not scroll properly in IE.
-	- bugfix: Time panel, button add was over description field.
-	- bugfix: View task displayed start date equal to due date.
-	- bugfix: When updating an image the image preview wasn't being updated.
-	- bugfix: In IE the Tasks toolbar buttons were enabled/disabled when the checkboxes lost focus, and not when they were checked/unchecked.
-	
-	- security: Don't allow a non-admin user to edit another user's comments
+	bugfix: File upload fails on Opera 10.
+	bugfix: Fixed events "Holiday" repeating.
+	bugfix: Forwarded emails are being truncated and attachments are being dropped.
+	bugfix: Attachments were not saved in drafts.
+	bugfix: Cannot send emails to addresses with apostrophes.
+	bugfix: Fixed some issues about reminders in repetitive tasks and templates.
+	bugfix: If I'm logged in as a user on one tab and login as another user on another tab, the first tab will show me as the first user but behave as if logged as the second user regarding permissions.
+	bugfix: Repetitive tasks didn't behave correctly with subtasks' subtasks.
+	bugfix: Received emails with account's email address as "From" were marked as read before being read.
+	bugfix: Custom Properties: when a CP is deleted, it is not deleted from report columns and report conditions.
+	bugfix: Don't show or send notifications to subscribers that don't have permissions.
+	bugfix: In IE 7, the repetitive task icon and the add contact icon ('+' in mail view) are not shown.
+	bugfix: Opera: Pressing enter on email autocomplete sends email.
+	bugfix: Reporting: Company report with date condition = 30/07/09 shows correct results, but shows wrong condition 28/07/09 (Verision 1.4.2).
+	bugfix: Reports does not works if there are 2 parametrizable conditions over the same custom property (e.g. Num > X and Num < Y)
+	bugfix: Show email sent by me to me also in the Inbox.
+	bugfix: Trashed objects are being shown in reports.
+	bugfix: When selecting Milestone and checking 'Apply to subtasks' in quick edit view, the milestone is not updated for the subtasks, you have to refresh.
+	bugfix: Removed Cache-Control and Pragma headers when downloading a file which caused errors on some configurations.
+	bugfix: Unified nomenclature for companies for spanish.
+	bugfix: User custom properties can't be edited, unless they are 'visible by default' or 'required'.
+	bugfix: Weblink created yesterday 21:30, when viewing it today, it says 'created on: today at 21:30'.
+	bugfix: When an administrator is removed from the owner company it should be removed from the 'administrators' group.
+	bugfix: Background images are not blocked when viewing emails (background attibute must be removed from tags, in the same way as img tags).
+	bugfix: Spaces should be ignored when setting values for a list-type custom property.
+	bugfix: Custom properties of type "Memo" don't respect line breaks when shown.

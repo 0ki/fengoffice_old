@@ -125,7 +125,72 @@ class MessageController extends ApplicationController {
 					$resultMessage = lang("success delete objects", $succ);
 				}
 				break;
-						
+			case "markasread":
+				$succ = 0; $err = 0;
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "message":
+							$message = ProjectMessages::findById($id);
+							try {
+								
+								$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+								 $message->getId() . ' AND rel_object_manager = \''.$message->manager().'\''));		 
+								if (count($ro) == 0)
+								{	
+									$message->setIsRead(logged_user()->getId(),true);	    	
+								}						
+								$succ++;
+								
+							} catch(Exception $e) {
+								$err ++;
+							} // try
+							break;							
+						default: 
+							$err++;
+							break;
+					}; // switch
+				}; // for
+				if ($err > 0) {
+					$resultCode = 2;
+					$resultMessage = lang("error markasread objects", $err) . "<br />" . ($succ > 0 ? lang("success markasread objects", $succ) : "");
+				}
+				break;
+				case "markasunread":
+				$succ = 0; $err = 0;
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "message":
+							$message = ProjectMessages::findById($id);
+							try {
+								
+								$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+								 $message->getId() . ' AND rel_object_manager = \''.$message->manager().'\''));		 
+								if (count($ro) == 0)
+								{	
+									$message->setIsRead(logged_user()->getId(),false);	    	
+								}						
+								$succ++;
+								
+							} catch(Exception $e) {
+								$err ++;
+							} // try
+							break;							
+						default: 
+							$err++;
+							break;
+					}; // switch
+				}; // for
+				if ($err > 0) {
+					$resultCode = 2;
+					$resultMessage = lang("error markasunread objects", $err) . "<br />" . ($succ > 0 ? lang("success markasunread objects", $succ) : "");
+				}
+				break;
 			case "tag":
 				$tag = $attributes["tag"];
 				for($i = 0; $i < count($attributes["ids"]); $i++){
@@ -138,6 +203,33 @@ class MessageController extends ApplicationController {
 								Tags::addObjectTag($tag, $message);
 								ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
 								$resultMessage = lang("success tag objects", '');
+							};
+							break;
+
+						default:
+							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+				
+				case "untag":
+				$tag = $attributes["tag"];
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "message":
+							$message = ProjectMessages::findById($id);
+							if (isset($message) && $message->canEdit(logged_user())){
+								if ($tag != ''){
+								Tags::deleteObjectTag($tag, $message->getId(),get_class($message->manager()));
+								//ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_TAG,false,null,true,$tag);
+								}else{
+									$message->clearTags();
+								}
+								$resultMessage = lang("success untag objects", '');
 							};
 							break;
 
@@ -197,7 +289,43 @@ class MessageController extends ApplicationController {
 					$resultCode = 0;
 				}
 				break;
-				
+			case "archive":
+				$succ = 0; $err = 0;
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "message":
+							$message = ProjectMessages::findById($id);
+							if (isset($message) && $message->canEdit(logged_user())){
+								try{
+									DB::beginWork();
+									$message->archive();
+									ApplicationLogs::createLog($message, $ws, ApplicationLogs::ACTION_ARCHIVE);
+									DB::commit();
+									$succ++;
+								} catch(Exception $e){
+									DB::rollback();
+									$err++;
+								}
+							} else {
+								$err++;
+							}
+							break;
+							
+						default: 
+							$err++;
+							break;
+					}; // switch
+				}; // for
+				if ($err > 0) {
+					$resultCode = 2;
+					$resultMessage = lang("error archive objects", $err) . "<br />" . ($succ > 0 ? lang("success archive objects", $succ) : "");
+				} else {
+					$resultMessage = lang("success archive objects", $succ);
+				}
+				break;
 			default:
 				$resultMessage = lang("Unimplemented action: '" . $action . "'");// if 
 				$resultCode = 2;	
@@ -238,9 +366,10 @@ class MessageController extends ApplicationController {
 						"wsIds" => $msg->getUserWorkspacesIdsCSV(logged_user()),
 						"userId" => $msg->getCreatedById(),
 						"userName" => $msg->getCreatedByDisplayName(),
-						"tags" => project_object_tags($msg),
 						"updaterId" => $msg->getUpdatedById() ? $msg->getUpdatedById() : $msg->getCreatedById(),
 						"updaterName" => $msg->getUpdatedById() ? $msg->getUpdatedByDisplayName() : $msg->getCreatedByDisplayName(),
+						"tags" => project_object_tags($msg),
+						"isRead" => $msg->getIsRead(logged_user()->getId()),						
 					);
     			}
 			}
@@ -278,6 +407,15 @@ class MessageController extends ApplicationController {
 
 		//$this->setHelp("view_message");
 		
+		//read object for this user
+		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+		 $message->getId() . ' AND rel_object_manager = \'ProjectMessages\'' . 
+		 ' AND user_id = ' . logged_user()->getId() 
+		 ));		 
+		if (count($ro) == 0)
+		{	
+			$message->setIsRead(logged_user()->getId(),true);	    	
+		}
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
 		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
@@ -395,7 +533,7 @@ class MessageController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-
+		
 		$message_data = array_var($_POST, 'message');
 		if(!is_array($message_data)) {
 			$tag_names = $message->getTagNames();
@@ -411,12 +549,36 @@ class MessageController extends ApplicationController {
 				'anonymous_comments_enabled' => $message->getAnonymousCommentsEnabled(),
 			); // array
 		} // if
-
+		
 		tpl_assign('message', $message);
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
 			try {
+				
+				//MANAGE CONCURRENCE WHILE EDITING
+				$upd = array_var($_POST, 'updatedon');
+				if ($upd && $message->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
+				{
+					ajx_current('empty');
+					evt_add("handle edit concurrence", array(
+						"updatedon" => $message->getUpdatedOn()->getTimestamp(),
+						"genid" => array_var($_POST,'genid')
+					));
+					return;
+				}
+				if (array_var($_POST,'merge-changes') == 'true')
+				{
+					$this->setTemplate('view');
+					$edited_note = ProjectMessages::findById($message->getId());
+					tpl_assign('message', $edited_note);
+					tpl_assign('subscribers', $edited_note->getSubscribers());
+					ajx_extra_data(array("title" => $edited_note->getTitle(), 'icon'=>'ico-message'));
+					ajx_set_no_toolbar(true);
+					ajx_set_panel(lang ('tab name',array('name'=>$edited_note->getTitle())));					
+					return;
+				}
+				
 				$old_is_private = $message->isPrivate();
 				$old_is_important = $message->getIsImportant();
 				$old_comments_enabled = $message->getCommentsEnabled();
@@ -441,6 +603,19 @@ class MessageController extends ApplicationController {
 			    $object_controller->link_to_new_object($message);
 				$object_controller->add_subscribers($message);
 				$object_controller->add_custom_properties($message);
+				
+				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
+																$message->getId().
+																' AND rel_object_manager = \'' .
+																 get_class($message->manager()) . 
+																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
+				if (is_array($ro) && count($ro) > 0){
+					foreach ($ro as $r){
+						if ($r instanceof ReadObject){							
+							$r->delete();
+						}
+					}
+				}
 				
 				ApplicationLogs::createLog($message, $message->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 			    

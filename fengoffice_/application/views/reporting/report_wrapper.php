@@ -8,34 +8,36 @@ $genid = gen_id();
 
 <div class="report" style="padding:7px">
 <table style="min-width:600px">
-<col width=12/>
+
 <tr>
-	<td colspan=2 rowspan=2 class="coViewIcon">
+	<td  class="coViewIcon" width="36px">
 		<div id="iconDiv" class="coViewIconImage ico-large-report"></div>
 	</td>
-	<td rowspan=2 class="coViewHeader">
+	<td rowspan=2 colspan="1" class="coViewHeader" style="width:auto;">
 		<div class="coViewTitleContainer">
 			<div class="coViewTitle"><?php echo $title ?></div>
 			<input type="submit" value="<?php echo lang('print view') ?>" style="width:120px; margin-top:10px;"/>
 		</div>
 	</td>
 	
-	<td class="coViewTopRight"></td>
+	<td class="coViewTopRight" width="10px"></td>
 </tr>
 <tr>
-	<td class="coViewRight" rowspan=2></td>
+	<td class="coViewRight" rowspan=1></td>
 </tr>
 <tr>
-	<td colspan=3 class="coViewBody" style="padding-left:12px">
+	<td colspan=2 class="coViewBody" style="padding-left:12px">
 		<?php $this->includeTemplate(get_template_path($template_name, 'reporting'));?>
 	</td>
+		<td class="coViewRight"/>
 </tr>
 <tr>
 	<td class="coViewBottomLeft"></td>
 	<td class="coViewBottom" ></td>
-	<td class="coViewBottom" ></td>
+	
 	<td class="coViewBottomRight"></td>
-</tr></table>
+</tr>
+</table>
 
 </div>
 

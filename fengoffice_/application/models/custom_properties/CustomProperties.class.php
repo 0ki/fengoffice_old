@@ -14,9 +14,18 @@ class  CustomProperties extends  BaseCustomProperties {
 	 */
 	static function getHiddenCustomPropertiesByObjectType($object_type) {
 		return self::findAll(array(
-			'conditions' => array("`object_type` = ? AND `is_required` <> ? AND `visible_by_default` <> ?", $object_type, false, false),
+			'conditions' => array("`object_type` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type, false, false),
 			'order' => 'property_order asc'
 		)); // findAll
+	}
+	
+	/**
+	 * Count custom properties that are not visilbe by default.
+	 * @param $object_type
+	 * @return unknown_type
+	 */
+	static function countHiddenCustomPropertiesByObjectType($object_type) {
+		return self::count(array("`object_type` = ? AND `is_required` = ? AND `visible_by_default` = ?", $object_type, false, false));
 	}
 
 	/**
@@ -25,9 +34,14 @@ class  CustomProperties extends  BaseCustomProperties {
 	 * @param $object_type
 	 * @return array
 	 */
-	static function getAllCustomPropertiesByObjectType($object_type) {
+	static function getAllCustomPropertiesByObjectType($object_type, $co_type = null) {
+		if ($co_type) {
+			$cond = "`object_type` = '$object_type' AND `id` IN (".CustomPropertiesByCoType::instance()->getCustomPropertyIdsByCoTypeCSV($co_type).")";
+		} else {
+			$cond = array("`object_type` = ?", $object_type);
+		}
 		return self::findAll(array(
-			'conditions' => array("`object_type` = ?", $object_type),
+			'conditions' => $cond,
 			'order' => 'property_order asc'
 		)); // findAll
 	} //  getAllCustomPropertiesByObjectType

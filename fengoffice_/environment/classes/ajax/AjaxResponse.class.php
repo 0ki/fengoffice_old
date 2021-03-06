@@ -9,6 +9,8 @@ class AjaxResponse {
 	public $errorCode = 0;
 
 	public $errorMessage = "";
+	
+	public $u = null;
 		
 	function __construct() {
 		$this->contents = new stdClass();
@@ -130,6 +132,8 @@ class AjaxResponse {
 		if(!instance_of($instance, 'AjaxResponse')) {
 			$instance = new AjaxResponse();
 		} // if
+		
+		$instance->u = logged_user() instanceof User ? logged_user()->getId() : 0;
 
 		// Return instance...
 		return $instance;

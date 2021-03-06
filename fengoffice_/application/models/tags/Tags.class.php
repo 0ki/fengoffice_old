@@ -9,6 +9,27 @@
 class Tags extends BaseTags {
 
 	/**
+	 * Returns a list of ids of objects which have tags. Works as a performance boost when most objects don't have tags.
+	 *
+	 * @access public
+	 * @param ApplicationDataObject $object
+	 * @param string $manager_class
+	 * @return array
+	 */
+	function getObjectsWithTags($object_ids, $manager_class) {
+		$tags = self::findAll(array(
+        'conditions' => array('`rel_object_id` IN (' . implode(',', $object_ids) . ') AND `rel_object_manager` = ?', $manager_class)
+        )); // findAll
+        $result = array();
+        if (is_array($tags) && count($tags) > 0){
+        	foreach ($tags as $tag){
+        		$result[$tag->getRelObjectId()] = true;
+        	}
+        }
+        return $result;
+	} // getTagsByObject
+
+	/**
 	 * Return tags for specific object
 	 *
 	 * @access public
@@ -32,7 +53,40 @@ class Tags extends BaseTags {
 	 * @return array
 	 */
 	function getTagNamesByObject(ApplicationDataObject $object) {
-		$rows = DB::executeAll('SELECT `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` = ? ORDER BY `tag`', $object->getId(), get_class($object->manager()));
+		$rows = DB::executeAll('SELECT distinct `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` = ? AND `rel_object_manager` = ? ORDER BY `tag`', $object->getId(), get_class($object->manager()));
+
+		if(!is_array($rows)) return array();
+
+		$tags = array();
+		foreach($rows as $row) $tags[] = $row['tag'];
+		return $tags;
+	} // getTagNamesByObject
+	
+	/**
+	 * Return tags for specific object
+	 *
+	 * @access public
+	 * @param ApplicationDataObject $object
+	 * @param string $manager_class
+	 * @return array
+	 */
+	function getTagsByObjectIds($object_ids, $object_manager) {
+		return self::findAll(array(
+        'conditions' => array('`rel_object_id` IN (' . $object_ids . ') AND `rel_object_manager` = ?', $object_manager),
+        'order' => '`tag` ASC'
+        )); // findAll
+	} // getTagsByObject
+
+	/**
+	 * Return tag names as array for specific object
+	 *
+	 * @access public
+	 * @param ApplicationDataObject $object
+	 * @param string $manager_class
+	 * @return array
+	 */
+	function getTagNamesByObjectIds($object_ids, $object_manager) {
+		$rows = DB::executeAll('SELECT distinct `tag` FROM ' .  self::instance()->getTableName(true) . ' WHERE `rel_object_id` IN (' . $object_ids . ') AND `rel_object_manager` = ? ORDER BY `tag`', $object_manager);
 
 		if(!is_array($rows)) return array();
 
@@ -60,13 +114,8 @@ class Tags extends BaseTags {
 			default:
 				throw new Exception('Invalid tag sort criteria');
 		}
-		
-		
 		$rows = DB::executeAll($query);
-		
-
 		if(!is_array($rows)) return array();
-
 		return $rows;
 	} // getTagNames
 
@@ -115,8 +164,9 @@ class Tags extends BaseTags {
 	function deleteObjectTag($tag_name, $object_id, $manager_class) {
 		if (!(isset($object_id) && $object_id))
 		return true;
-		$file=ProjectFiles::findById($object_id);
-		$prevTags=Tags::getTagsByObject($file,$manager_class);
+		$obj = get_object_by_manager_and_id($object_id,$manager_class);
+		//$file=ProjectFiles::findById($object_id);
+		$prevTags=Tags::getTagsByObject($obj,$manager_class);
 		foreach($prevTags as $tag_iter) {
 			if(strcmp($tag_name,$tag_iter->getTag())==0)
 			{

@@ -14,6 +14,7 @@ class ProjectTasks extends BaseProjectTasks {
 	const PRIORITY_HIGH = 300;
 	const PRIORITY_NORMAL = 200;
 	const PRIORITY_LOW = 100;
+	
 
 	public static function getWorkspaceString($ids = '?', $table_alias = '') {
 		if ($table_alias) $table_alias .= ".";
@@ -26,12 +27,15 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getPendingTasks(User $user, $project, $tag = null) {
+	static function getPendingTasks(User $user, $project, $tag = null, $archived = false) {
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery();
 		} else {
 			$project_ids = $user->getWorkspacesQuery();
 		}
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectTasks')"):'';
@@ -43,7 +47,7 @@ class ProjectTasks extends BaseProjectTasks {
 					' AND `completed_on` = ? AND parent_id = ? AND (due_date > DATE(CURRENT_TIMESTAMP) OR due_date = \'00:00:00 00-00-0000\')' .
 					' AND `is_template` = false ' .
 					' AND ' . self::getWorkspaceString($project_ids) .
-					$permissions . $tagStr, $user->getId(), $user->getCompanyId(),
+					$archived_cond . $permissions . $tagStr, $user->getId(), $user->getCompanyId(),
 					0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME,0, EMPTY_DATETIME),
         			'order' => 'priority DESC, `created_on` DESC'
         			));
@@ -57,7 +61,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param Project $project
 	 * @return array
 	 */
-	static function getOpenTimeslotTasks(User $user, User $logged_user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null) {
+	static function getOpenTimeslotTasks(User $user, User $logged_user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $archived = false) {
 		if ($project)
 			$project_ids = $project->getAllSubWorkspacesQuery(false, $logged_user);
 		else{
@@ -83,8 +87,11 @@ class ProjectTasks extends BaseProjectTasks {
 			$assignedToStr .= " AND `assigned_to_user_id` = " . DB::escape($assigned_to_user) . " ";
 		}
 		
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		$objects = self::findAll(array(
-  				'conditions' => array('`is_template` = false AND ' . self::getWorkspaceString($project_ids) . $permissions . $tagStr . $assignedToStr . $openTimeslot),
+  				'conditions' => array('`is_template` = false AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $permissions . $tagStr . $assignedToStr . $openTimeslot),
         			'order' => 'due_date ASC, `created_on` DESC'
         			));
         			return $objects;
@@ -119,7 +126,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getDayTasksByUser(DateTimeValue $date, User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null) {
+	function getDayTasksByUser(DateTimeValue $date, User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null, $archived = false) {
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery();
 		} else {
@@ -145,15 +152,18 @@ class ProjectTasks extends BaseProjectTasks {
 		}
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectTasks')"):'';
 		if ($limit) {
 		  $result = self::findAll(array(
-            'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $from_date, $to_date),
+            'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $from_date, $to_date),
     		'limit' => $limit
 	    	)); // findAll
 		} else {
 			$result = self::findAll(array(
-        	  'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $from_date, $to_date)
+        	  'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $from_date, $to_date)
     		)); // findAll
 		}
 		return $result;
@@ -166,7 +176,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getLateTasksByUser(User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null) {
+	function getLateTasksByUser(User $user, $project = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $limit = null, $archived = false) {
 		if ($project instanceof Project) {
 			$project_ids = $project->getAllSubWorkspacesQuery();
 		} else {
@@ -189,17 +199,20 @@ class ProjectTasks extends BaseProjectTasks {
 			
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 
+		if ($archived) $archived_cond = "`archived_by_id` <> 0 AND ";
+		else $archived_cond = "`archived_by_id` = 0 AND ";
+		
 		$tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectTasks')"):'';
 		if ($limit) {
 			
 			$result = self::findAll(array(
-	        'conditions' => array('`is_template` = false AND `completed_on` = ? AND `due_date` > \'00:00:00 00-00-0000\' AND `due_date` < ? AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $to_date),
+	        'conditions' => array('`is_template` = false AND `completed_on` = ? AND `due_date` > \'00:00:00 00-00-0000\' AND `due_date` < ? AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $to_date),
 	      	'order' => '`due_date` ASC',
 	      	'limit' => $limit
 	       )); // findAll
 		} else {
 			$result = self::findAll(array(
-	        'conditions' => array('`is_template` = false AND `completed_on` = ? AND `due_date` > \'00:00:00 00-00-0000\' AND `due_date` < ? AND ' . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $to_date),
+	        'conditions' => array('`is_template` = false AND `completed_on` = ? AND `due_date` > \'00:00:00 00-00-0000\' AND `due_date` < ? AND ' . $archived_cond . self::getWorkspaceString($project_ids) . $tagStr . $permissions . $assignedToStr, EMPTY_DATETIME, $to_date),
 	      	'order' => '`due_date` ASC'
 	        )); // findAll
 		}
@@ -210,8 +223,11 @@ class ProjectTasks extends BaseProjectTasks {
 	 * Returns all task templates
 	 *
 	 */
-	static function getAllTaskTemplates($only_parent_task_templates = false){
-		$conditions = " `is_template` = true " ;
+	static function getAllTaskTemplates($only_parent_task_templates = false, $archived = false){
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
+		else $archived_cond = "AND `archived_by_id` = 0";
+		
+		$conditions = " `is_template` = true $archived_cond" ;
 		if($only_parent_task_templates)
 			$conditions .= "  and `parent_id` = 0  ";
 		$order_by = "`title` ASC";
@@ -227,10 +243,12 @@ class ProjectTasks extends BaseProjectTasks {
 	 * Returns workspace task templates
 	 *
 	 */
-	static function getWorkspaceTaskTemplates($workspace_id){		
+	static function getWorkspaceTaskTemplates($workspace_id, $archived = false){
 		$table_name = new WorkspaceTemplate();
 		$table_name = $table_name->getTableName(true);
-		$conditions = " `is_template` = true AND `id` in (select `template_id` from " .  $table_name  . " where `workspace_id` = $workspace_id)";
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
+		else $archived_cond = "AND `archived_by_id` = 0";
+		$conditions = " `is_template` = true AND `id` in (select `template_id` from " .  $table_name  . " where `workspace_id` = $workspace_id) $archived_cond";
 		$order_by = "`title` ASC";
 		$tasks = ProjectTasks::find(array(
 				'conditions' => $conditions,
@@ -241,7 +259,7 @@ class ProjectTasks extends BaseProjectTasks {
 //		return ProjectTasks::getProjectTasks($workspace_id, null, 'ASC', 0, 0, null, null, null, null, null, null,true);
 	}
 	
-	static function getProjectTasks($project = null, $order = null, $orderdir = 'ASC', $parent_id = null, $milestone_id = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $priority = "all", $is_template = false, $is_today = false, $is_late = false, $limit = null) {
+	static function getProjectTasks($project = null, $order = null, $orderdir = 'ASC', $parent_id = null, $milestone_id = null, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $priority = "all", $is_template = false, $is_today = false, $is_late = false, $limit = null, $archived = false) {
 		if ($order == self::ORDER_BY_STARTDATE) {
 			$order_by = '`start_date` ' . $orderdir;
 		} else if ($order == self::ORDER_BY_DUEDATE) {
@@ -307,10 +325,13 @@ class ProjectTasks extends BaseProjectTasks {
 		} else {
 			$priostr = "";
 		}
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
 
-		$otherConditions = $milestonestr . $parentstr . $projectstr . $tagstr . $assignedToStr . $assignedByStr . $pendingstr . $priostr . $permissionstr ;
+		$otherConditions = $milestonestr . $parentstr . $projectstr . $tagstr . $assignedToStr . $assignedByStr . $pendingstr . $priostr . $permissionstr . $archived_cond;
 
 		$conditions = array(' `is_template` = ' . DB::escape($is_template) . $otherConditions);
 
@@ -323,7 +344,7 @@ class ProjectTasks extends BaseProjectTasks {
 		return $tasks;
 	} // getProjectTasks
 
-	static function paginateProjectTasks($project = null, $order = null, $orderdir = 'ASC', $page = null, $tasks_per_page = null, $group_by_order = false, $parent_id = 0, $milestone_id = -1, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false) {
+	static function paginateProjectTasks($project = null, $order = null, $orderdir = 'ASC', $page = null, $tasks_per_page = null, $group_by_order = false, $parent_id = 0, $milestone_id = -1, $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $archived = false) {
 		if ($order == self::ORDER_BY_STARTDATE) {
 			$order_by = '`start_date` ' . $orderdir;
 		} else if ($order == self::ORDER_BY_DUEDATE) {
@@ -381,10 +402,13 @@ class ProjectTasks extends BaseProjectTasks {
 		} else {
 			$pendingstr = "";
 		}
+		
+		if ($archived) $archived_cond = "AND `archived_by_id` <> 0";
+		else $archived_cond = "AND `archived_by_id` = 0";
 
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(), ACCESS_LEVEL_READ, logged_user()) . ') ';
 
-		$otherConditions = $milestonestr . $parentstr . $projectstr . $tagstr . $assignedToStr . $assignedByStr . $pendingstr . $permissionstr;
+		$otherConditions = $milestonestr . $parentstr . $projectstr . $tagstr . $assignedToStr . $assignedByStr . $pendingstr . $permissionstr . $archived_cond;
 
 		$conditions = array(' `is_template` = false ' . $otherConditions);
 
@@ -397,7 +421,7 @@ class ProjectTasks extends BaseProjectTasks {
 	} // paginateProjectTasks
 
 	function maxOrder($parentId = null, $milestoneId = null) {
-		$condition = "`trashed_by_id` = 0 AND `is_template` = false";
+		$condition = "`trashed_by_id` = 0 AND `is_template` = false AND `archived_by_id` = 0";
 		if (is_numeric($parentId)) {
 			$condition .= " AND ";
 			$condition .= " `parent_id` = " . DB::escape($parentId);
@@ -423,7 +447,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $tags = '', $project = null) {
+	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $tags = '', $project = null, $archived = false) {
 
 		$from_date = new DateTimeValue($date_start->getTimestamp());
 		$from_date = $from_date->beginningOfDay();
@@ -449,9 +473,12 @@ class ProjectTasks extends BaseProjectTasks {
 			$assignedFilter = ' AND (`assigned_to_user_id` = ' . $assignedUser->getId() . ' OR (`assigned_to_user_id` = 0 AND `assigned_to_company_id` = '. $assignedUser->getCompanyId() .')) ';
 		
 		$rep_condition = " (`repeat_forever` = 1 OR `repeat_num` > 0 OR (`repeat_end` > 0 AND `repeat_end` >= '".$from_date->toMySQL()."')) ";
-			
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
+		
 		$result = self::findAll(array(
-        'conditions' => array('`is_template` = false AND `completed_on` = ? AND ((`due_date` >= ? AND `due_date` < ?) OR (`start_date` >= ? AND `start_date` < ?) OR '.$rep_condition.') ' . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND ((`due_date` >= ? AND `due_date` < ?) OR (`start_date` >= ? AND `start_date` < ?) OR '.$rep_condition.') ' . $archived_cond . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date, $from_date, $to_date)
 		)); // findAll
 		
 		return $result;
@@ -503,47 +530,6 @@ class ProjectTasks extends BaseProjectTasks {
 			$new->copyCustomPropertiesFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
-		}
-	}
-
-	function populateTimeslots($tasks_list){
-		if (is_array($tasks_list) && count($tasks_list) > 0){
-			$ids = array();
-			$tasks = array();
-			for ($i = 0; $i < count($tasks_list); $i++){
-				$ids[] = $tasks_list[$i]->getId();
-				$tasks[$tasks_list[$i]->getId()] = $tasks_list[$i];
-				$tasks_list[$i]->timeslots = array();
-				$tasks_list[$i]->timeslots_count = 0;
-			}
-			if (count($ids > 0)){
-				$timeslots = Timeslots::findAll(array('conditions' => 'object_manager = \'ProjectTasks\' AND object_id in (' . implode(',', $ids) . ')'));
-				for ($i = 0; $i < count($timeslots); $i++){
-					$task = $tasks[$timeslots[$i]->getObjectId()];
-					$task->timeslots[] = $timeslots[$i];
-					$task->timeslots_count = count($task->timeslots);
-				}
-			}
-		}
-	}
-
-
-	function populateTags($tasks_list){
-		if (is_array($tasks_list) && count($tasks_list) > 0){
-			$ids = array();
-			$tasks = array();
-			for ($i = 0; $i < count($tasks_list); $i++){
-				$ids[] = $tasks_list[$i]->getId();
-				$tasks[$tasks_list[$i]->getId()] = $tasks_list[$i];
-				$tasks_list[$i]->tags = array();
-			}
-			if (count($ids > 0)){
-				$tags = Tags::findAll(array('conditions' => 'rel_object_manager = \'ProjectTasks\' AND rel_object_id in (' . implode(',', $ids) . ')', 'order' => 'tag ASC'));
-				for ($i = 0; $i < count($tags); $i++){
-					$task = $tasks[$tags[$i]->getRelObjectId()];
-					$task->tags[] = $tags[$i];
-				}
-			}
 		}
 	}
 } // ProjectTasks

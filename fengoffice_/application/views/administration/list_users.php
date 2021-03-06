@@ -1,10 +1,21 @@
 
-
-<?php if(isset($users) && is_array($users) && count($users)) { ?>
+<?php
+ 
+$cantUsers = count($users);
+$cantPages = round($cantUsers/5);
+$page = 1;
+$newPage = true;
+isset($isMemberList) && $isMemberList == true ? $isUsersList = true : $isUsersList = false;
+if(isset($users) && is_array($users) && $cantUsers) { ?>
 <div id="usersList">
 <?php $counter = 0; 
   foreach($users as $user) {
 	$counter++; ?>
+	<?php if ($newPage && $isUsersList ) {
+		$newPage = false;
+		?>
+		<div id="<?php echo $page . '-' . $user->getCompanyId()?>userspage" style="display: <?php echo $counter != 1? 'none':'block' ?>" >		
+	<?php }//newpage??>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">
@@ -35,7 +46,14 @@
       <div class="userOptions"><?php echo implode(' | ', $options) ?></div>
       <div class="clear"></div>
     </div>
-  </div>  
+  </div>
+ <?php if (($counter % 5 == 0 || ($cantPages > 0 && $counter == $cantUsers)) && $isUsersList ){?> 
+  	</div>
+  <?php 
+  	$newPage = true;
+  	$page ++;
+	}//if counter
+	?>
 <?php } // foreach ?>
 </div>
 
@@ -43,5 +61,35 @@
 <p><?php echo lang('no users in company') ; ?></p>
 <?php } // if 
  	if(isset($company) && $company){
+		
 		echo  "<div style='padding:10px'><a href='" . $company->getAddUserUrl() . "' class='internalLink coViewAction ico-add'>" . lang('add user') . "</a></div>";
+		if ($cantPages > 0){
+			?>
+			<script type="text/javascript">
+					og.paginate = function (cantPages,compId){
+						var html ="";
+						var op = "";
+						html += '<div style="height:15px;">';
+						for (i=1;i<=cantPages + 1 ;i++){
+								if (i==1){
+										op = "-active";
+									}else{
+										op = "";
+									}
+								html += '<div class="pagination-user'+ op + '">';
+								html += "<a id='userpaginationnumberlink" + compId + i + "' style='font-size:10px;' class='internalLink' href='#' onclick='og.userListPagination(" + i + "," + compId + "," + (cantPages + 1) + ",this.parentNode)' >" +
+								 i + "</a>";
+								html += '</div>';								
+							}
+						html += '</div>';
+						paginateDiv = document.getElementById("companypagination"+compId);
+						if (paginateDiv){
+							paginateDiv.innerHTML += html;
+						}
+					};
+					og.paginate(<?php echo $cantPages; ?>,<?php echo $company->getId();?>);
+			 </script>			 
+ 		<?php
+ 		}
+		
  	} ?>

@@ -128,6 +128,28 @@ class WebpageController extends ApplicationController {
 		} // if
 
 		if(is_array(array_var($_POST, 'webpage'))) {
+			
+			//MANAGE CONCURRENCE WHILE EDITING
+			$upd = array_var($_POST, 'updatedon');
+			if ($upd && $webpage->getUpdatedOn()->getTimestamp() > $upd && !array_var($_POST,'merge-changes') == 'true')
+			{
+				ajx_current('empty');
+				evt_add("handle edit concurrence", array(
+					"updatedon" => $webpage->getUpdatedOn()->getTimestamp(),
+					"genid" => array_var($_POST,'genid')
+				));
+				return;
+			}
+			if (array_var($_POST,'merge-changes') == 'true'){					
+				$this->setTemplate('view');
+				$edited_wp = ProjectWebpages::findById($webpage->getId());
+				ajx_set_no_toolbar(true);
+				ajx_set_panel(lang ('tab name',array('name'=>$edited_wp->getTitle())));
+				tpl_assign('object', $edited_wp);
+				ajx_extra_data(array("title" => $edited_wp->getTitle(), 'icon'=>'ico-webpage'));				
+				return;
+			}
+			
 			try {
 				$old_is_private = $webpage->isPrivate();
 				$webpage->setFromAttributes($webpage_data);
@@ -138,6 +160,7 @@ class WebpageController extends ApplicationController {
 				} // if
 
 				DB::beginWork();
+				
 				$webpage->save();
 				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
 
@@ -148,7 +171,20 @@ class WebpageController extends ApplicationController {
 				$object_controller->add_custom_properties($webpage);
 				  
 				ApplicationLogs::createLog($webpage, $webpage->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
-				  
+
+				$ro = ReadObjects::findAll(array('conditions' => 'rel_object_id = '.
+																$webpage->getId().
+																' AND rel_object_manager = \'' .
+																 get_class($webpage->manager()) . 
+																 '\' AND ' . 'user_id <> ' . logged_user()->getId()));
+				if (is_array($ro) && count($ro) > 0){
+					foreach ($ro as $r){
+						if ($r instanceof ReadObject){							
+							$r->delete();
+						}
+					}
+				}
+				
 				DB::commit();
 				
 				flash_success(lang('success edit webpage', $webpage->getTitle()));
@@ -254,6 +290,8 @@ class WebpageController extends ApplicationController {
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'webpages'));
 			$tagTag = array_var($_GET, 'tagTag');
+			$tagged = 0;
+			$not_tagged = 0;
 			foreach ($ids as $id) {
 				$web_page = ProjectWebpages::findById($id);
 				if (isset($web_page) && $web_page->canEdit(logged_user())) {
@@ -266,17 +304,81 @@ class WebpageController extends ApplicationController {
 						$arr[] = $tagTag;
 						$web_page->setTagsFromCSV(implode(',', $arr));
 					}
-						
-				} else flash_error(lang('no access permissions'));
-			}
-			/*
-			 list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids, 'ProjectWebpages');
-			 if ($err > 0) {
-				flash_error(lang('error tag objects', $err));
+					$tagged++;
 				} else {
-				flash_success(lang('success tag objects', $succ));
+					$not_tagged++;
 				}
-				*/
+			}
+			if ($tagged > 0) {
+				flash_success(lang("success tag objects", $tagged));
+			} else {
+				flash_success(lang("error tag objects", $not_tagged));
+			}
+		} else if (array_var($_GET, 'action') == 'untag') {
+			$ids = explode(',', array_var($_GET, 'webpages'));
+			$tagTag = array_var($_GET, 'tagTag');
+			$untagged = 0;
+			$not_untagged = 0;
+			foreach ($ids as $id) {
+				$web_page = ProjectWebpages::findById($id);
+				if (isset($web_page) && $web_page->canEdit(logged_user())) {
+					if ($tagTag != ''){
+						Tags::deleteObjectTag($tagTag, $web_page->getId(),get_class($web_page->manager()));								
+					}else{
+						$web_page->clearTags();
+					}
+					$untagged++;
+				} else {
+					$not_untagged++;
+				}
+			}
+			if ($untagged > 0) {
+				flash_success(lang("success untag objects", $untagged));
+			} else {
+				flash_success(lang("error untag objects", $not_untagged));
+			}
+		} else if (array_var($_GET, 'action') == 'markasread') {
+			$ids = explode(',', array_var($_GET, 'ids'));
+			$succ = 0; $err = 0;
+				foreach ($ids as $id) {
+				$webpage = ProjectWebpages::findById($id);
+					try {
+						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+						 $webpage->getId() . ' AND rel_object_manager = \''.$webpage->manager().'\''));
+						if (count($ro) == 0)
+						{
+							$webpage->setIsRead(logged_user()->getId(),true);
+						}
+						$succ++;
+						
+					} catch(Exception $e) {						
+						$err ++;
+					} // try
+				}//for
+			if ($succ <= 0) {
+				flash_error(lang("error markasread files", $err));
+			}
+		} else if (array_var($_GET, 'action') == 'markasunread') {
+			$ids = explode(',', array_var($_GET, 'ids'));
+			$succ = 0; $err = 0;
+				foreach ($ids as $id) {
+				$webpage = ProjectWebpages::findById($id);
+					try {
+						$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+						 $webpage->getId() . ' AND rel_object_manager = \''.$webpage->manager().'\''));
+						if (count($ro) == 0)
+						{
+							$webpage->setIsRead(logged_user()->getId(),false);
+						}
+						$succ++;
+						
+					} catch(Exception $e) {						
+						$err ++;
+					} // try
+				}//for
+			if ($succ <= 0) {
+				flash_error(lang("error markasunread files", $err));
+			}
 		} else if (array_var($_GET, 'action') == 'move') {
 			$wsid = array_var($_GET, "moveTo");
 			$destination = Projects::findById($wsid);
@@ -314,6 +416,32 @@ class WebpageController extends ApplicationController {
 				}; // for
 				$resultMessage = lang("success move objects", $count);
 				$resultCode = 0;
+			}
+		} else if (array_var($_GET,'action') == 'archive') {
+			$ids = explode(',', array_var($_GET, 'webpages'));
+			$succ = 0; $err = 0;
+			foreach ($ids as $id) {
+				$web_page = ProjectWebpages::findById($id);
+				if (isset($web_page) && $web_page->canEdit(logged_user())) {
+					try{
+						DB::beginWork();
+						$web_page->archive();
+						ApplicationLogs::createLog($web_page, $web_page->getWorkspaces(), ApplicationLogs::ACTION_ARCHIVE);
+						DB::commit();
+						$succ++;
+					} catch(Exception $e){
+						DB::rollback();
+						$err++;
+					}
+				} else {
+					$err++;
+				}
+			}
+			if ($succ > 0) {
+				flash_success(lang("success archive objects", $succ));
+			}
+			if ($err > 0) {
+				flash_error(lang("error archive objects", $err));
 			}
 		}
 
@@ -372,6 +500,7 @@ class WebpageController extends ApplicationController {
 					"updatedOn_today" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->isToday() : 0,
 					"updatedBy" => $w->getUpdatedByDisplayName(),
 					"updatedById" => $w->getUpdatedById(),
+					"isRead" => $w->getIsRead(logged_user()->getId()),
 				);
 			}
 		}
@@ -394,6 +523,16 @@ class WebpageController extends ApplicationController {
 			return;
 		} // if
 		
+		//read object for this user
+		$ro = ReadObjects::findOne(array('conditions' => 'rel_object_id = ' .
+		 $weblink->getId() . ' AND rel_object_manager = \'ProjectWebpages\'' .
+		 ' AND user_id = ' . logged_user()->getId())
+		 );
+		if (count($ro) == 0)
+		{	
+			$weblink->setIsRead(logged_user()->getId(),true);
+		}
+
 		tpl_assign('object', $weblink);
 		tpl_assign('subscribers', $weblink->getSubscribers());
 		ajx_extra_data(array("title" => $weblink->getTitle(), 'icon'=>'ico-weblink'));

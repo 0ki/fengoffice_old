@@ -529,4 +529,5 @@
 	'ie browser outdated' => 'Der verwendete Internet-Browser wird nicht unterstützt. Bitte den Browser aktualisieren.',
 	'some objects could not be linked' => '{0} Objekt(e) konnten wegen fehlender Rechte nicht verlinkt werden.',
 	'user cannot link objects' => 'Rechte zum Verlinken nicht vorhanden.',
+	'short search query warning' => 'Die Suchanfrage ist zu kurz. Suche nach "<b>{0}*</b>", um alle Wörter zu finden, die mit "<b>{0}</b>" beginnen.',
 ); ?>

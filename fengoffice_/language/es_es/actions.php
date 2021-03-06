@@ -4,8 +4,8 @@
 	'logout' => 'Desconexión',
 	'hide welcome info' => '» Ocultar información de forma permanente',
 	'add company' => 'Añadir empresa',
-	'edit company' => 'Editar datos de la compañía',
-	'delete company' => 'Eliminar compañía',
+	'edit company' => 'Editar datos de la empresa',
+	'delete company' => 'Eliminar empresa',
 	'edit company logo' => 'Guardar logo',
 	'delete company logo' => 'Eliminar logo',
 	'add client' => 'Añadir cliente',
@@ -75,18 +75,18 @@
     'week' => 'Semana',
     
     //Groups
-    'can edit company data' => 'Permitir la edición de los datos de la compañía',
+    'can edit company data' => 'Permitir la edición de los datos de la empresa',
     'can manage security' => 'Permitir la modificación de las configuraciones de seguridad',
     'can manage workspaces' => 'Permitir la modificación de las configuraciones de áreas de trabajo',
     'can manage configuration' => 'Permitir la modificación de las configuraciones',
     'can manage contacts' => 'Permitirl la modificación de las configuraciones de todos los contactos',
-    'group users' => 'Agrupar usuarios',
+    'group users' => 'Usuarios del grupo',
     
     
     // People
-    'update people' => 'Poner al día',
+    'update people' => 'Modificar',
     'remove user from project' => 'Eliminar usuario de esta área de trabajo',
-    'remove company from project' => 'Eliminar compañía de esta área de trabajo',
+    'remove company from project' => 'Eliminar empresa de esta área de trabajo',
     
     // Password
     'update profile' => 'Editar datos de mi cuenta',
@@ -151,7 +151,7 @@
     'link object' => 'Vincular este objecto',
     'link objects' => 'Vincular estos objectos',
     'link more objects' => 'Vincular a más objectos',
-    'show all linked objects' => 'Mostrar todos los Objetos Vinculados ({0})',
+    'show all linked objects' => 'Mostrar todos ({0})',
     'unlink' => 'Eliminar vínculo',
     'unlink object' => 'Eliminar vínculo con este objecto',
     'unlink objects' => 'Eliminar vínculo con estos objectos',
@@ -176,4 +176,11 @@
 	'delete permanently' => 'Eliminar permanentemente',
 	'copy file' => 'Copiar este archivo',
 	'open weblink' => 'Abrir enlace web',
+
+	'archive' => 'Archivar',
+ 	'unarchive' => 'Desarchivar',
+  	'confirm archive selected objects' => '¿Está seguro que desea archivar los objetos seleccionados?',
+	'confirm archive object' => '¿Está seguro que desea archivar este objeto?',
+	'confirm unarchive object' => '¿Está seguro que desea desarchivar este objeto?',
+
 ); ?>

@@ -1,24 +1,24 @@
-<?php
-
-  // Reporting
-  return array(
-  
-  	'custom' => 'Custom',
-    'custom reports' => 'Custom reports',
-  	'no custom reports' => 'There are no custom reports',
-  	'add custom report' => 'Add a custom report',
-  	'edit custom report' => 'Edit custom report',
-  	'new custom report' => 'New custom report',
-  	'add report' => 'Add report',
-  	'object type' => 'Object Type',
-  	'add condition' => 'Add condition',
-  	'custom report created' => 'Custom report created',
-  	'custom report updated' => 'Custom report updated',
-  	'conditions' => 'Conditions',
-  	'columns and order' => 'Columns & Order',
-  	'true' => 'True',
-  	'false' => 'False',
-  	
-  );
-  
-?>
+<?php return array(
+	'custom' => 'Vlastní',
+	'custom reports' => 'Vlastní hlášení',
+	'no custom reports' => 'Nejsou žádná vlastní hlášení',
+	'add custom report' => 'Přidat vlastní hlášení',
+	'edit custom report' => 'Upravit vlastní hlášení',
+	'new custom report' => 'Nové vlastní hlášení',
+	'add report' => 'Přidat hlášení',
+	'object type' => 'Tp objektu',
+	'add condition' => 'Přidat podmínku',
+	'custom report created' => 'Vlastní hlášení bylo vytvořeno',
+	'custom report updated' => 'Vlastní hlášení bylo aktualizováno',
+	'conditions' => 'Podmínky',
+	'columns and order' => 'Sloupce & Pořadí',
+	'true' => 'Pravda',
+	'false' => 'Nepravda',
+	'field' => 'Pole',
+	'condition' => 'Podmínka',
+	'ends with' => 'končí',
+	'select unselect all' => 'Vybrat/Nevybrat vše',
+	'ascending' => 'Vzestupně',
+	'descending' => 'Sestupně',
+	'parametrizable' => 'Parametr?',
+); ?>

@@ -399,8 +399,6 @@ class CompanyController extends ApplicationController {
 
 		$logo = array_var($_FILES, 'new_logo');
 		if(is_array($logo)) {
-			$this->setLayout("html");
-			$this->setTemplate(get_template_path("json"));
 			try {
 				if(!isset($logo['name']) || !isset($logo['type']) || !isset($logo['size']) || !isset($logo['tmp_name']) || !is_readable($logo['tmp_name'])) {
 					throw new InvalidUploadError($logo, lang('error upload file'));
@@ -430,15 +428,6 @@ class CompanyController extends ApplicationController {
 					@unlink($old_file);
 				} // uf
 
-				$object = array(
-					"errorCode" => 0,
-					"errorMessage" => lang('success edit company logo'),
-					"current" => array(
-						"type" => "url",
-						"data" => $company->getEditLogoUrl()
-					)
-				);
-				tpl_assign("object", $object);
 				flash_success(lang('success edit company logo'));
 				ajx_current("back");
 			} catch(Exception $e) {
@@ -553,6 +542,33 @@ class CompanyController extends ApplicationController {
 		}
 	}
 	
+	function search(){
+		ajx_current('empty');
+		if (!can_manage_contacts(logged_user())) {
+			flash_error(lang("no access permissions"));
+			return;
+		}
+		
+		$search_for = array_var($_POST,'search_for',false);
+		if ($search_for){
+			$projects = logged_user()->getActiveProjectIdsCSV();
+			//$projects = logged_user()->getWorkspacesQuery();
+			
+			$search_results = SearchableObjects::searchByType($search_for, $projects, 'Companies', true, 50);
+			$companies = $search_results[0];
+			if ($companies && count($companies) > 0){
+				$result = array();
+				foreach ($companies as $companyResult){
+					$company = $companyResult['object'];
+					$result[] = array(
+						'company_name' => $company->getName(),
+						'company_id' => $company->getId()
+					);
+				}
+				ajx_extra_data(array("results" => $result));
+			}
+		}
+	}
 	
 } // CompanyController
 

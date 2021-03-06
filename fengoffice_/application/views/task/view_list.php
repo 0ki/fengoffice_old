@@ -16,6 +16,10 @@ if (isset($task_list) && $task_list instanceof ProjectTask) {
 
 		if($task_list->canEdit(logged_user())) {
 			add_page_action(lang('edit'), $task_list->getEditListUrl(), 'ico-edit', null, null, true);
+			if (!$task_list->isArchived())
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $task_list->getArchiveUrl() ."');", 'ico-archive-obj');
+			else
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $task_list->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
 		} // if
 	}
 

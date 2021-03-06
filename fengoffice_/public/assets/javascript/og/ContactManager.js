@@ -34,11 +34,14 @@ og.ContactManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ws));
 						}
+					} else if (d.contacts.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("contacts")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
 					cm.setHidden(cm.getIndexById('role'), Ext.getCmp('workspace-panel').getActiveWorkspace().id == 0);
+					Ext.getCmp('contact-manager').getView().focusRow(og.lastSelectedRow.contacts+1);
 				}
 			}
 	    });
@@ -52,40 +55,53 @@ og.ContactManager = function() {
     //--------------------------------------------
 
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'contact-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'contact-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
     function renderContactName(value, p, r) {
 		if (r.data.type == 'company'){
 			name = String.format(
-					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 					og.clean(value), og.getUrl('company', 'view_client', {id: r.data.object_id}), og.clean(r.data.name));
 		}
 		else{
 			name = String.format(
-					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					'<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 					og.clean(value), og.getUrl('contact', 'card', {id: r.data.object_id}), og.clean(r.data.name));
 			
 			if(r.data.companyId != null && r.data.companyId != 0 && r.data.companyName.trim()!=''){
 				name += String.format(
-					' (<a style="font-size:80%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>)',
+					' (<a style="font-size:80%" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>)',
 					og.clean(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}// end else
 		return name;
     }
+    
     function renderWsCrumbs(value, p, r) {
     	return String.format('<span class="project-replace">{0}</span>&nbsp;', value);
     }
+    
     function renderCompany(value, p, r) {
-    	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
+    	return String.format('<a href="{1}" onclick="og.openLink(\'{1}\', null);return false;">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));
     }
+    
     function renderEmail(value, p, r) {
-    	return String.format('<a target="_self" href="mailto:{0}">{0}</a>', og.clean(value));
+    	if (!value || value == '') {
+    		return "";
+    	}
+		if (og.loggedUserHasEmailAccounts) {
+    		var url = og.getUrl('mail', 'add_mail', {to: og.clean(r.data.name.replace("'","")) + ' <' + escape(og.clean(value)) + '>'});
+    		return String.format('<a href="#" title="' + lang('write an email to contact', r.data.name) + '" onclick="og.openLink(\'' + url + '\');">{0}</a>', og.clean(value));
+    	} else {
+    		return String.format('<a target="_self" href="mailto:{0}">{0}</a>', og.clean(value));
+	    }
     }
+    
     function renderWebsite(value, p, r) {
     	return String.format('<a href="" onclick="window.open(\'{0}\'); return false">{0}</a>', og.clean(value));
-    }	
+    }
+    	
 	function renderIcon(value, p, r) {
 		var classes = "db-ico ico-unknown ico-" + r.data.type;
 		if (r.data.mimeType) {
@@ -104,7 +120,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -119,7 +135,7 @@ og.ContactManager = function() {
 		if (!value) {
 			return "";
 		}
-		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
+		var userString = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
 	
 		var now = new Date();
 		var dateString = '';
@@ -139,7 +155,8 @@ og.ContactManager = function() {
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.object_id;
 //				ret += "," + selections[i].id;
-			}	
+			}
+			og.lastSelectedRow.contacts = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -180,12 +197,14 @@ og.ContactManager = function() {
 				actions.delContact.setDisabled(true);
 				actions.editContact.setDisabled(true);
 				actions.assignContact.setDisabled(true);
+				actions.archive.setDisabled(true);
 			} else {
 				actions.editContact.setDisabled(sm.getCount() != 1);
 				if(getFirstSelectedType() == 'contact')
 					actions.assignContact.setDisabled(sm.getCount() != 1);
 				actions.tag.setDisabled(false);
 				actions.delContact.setDisabled(false);
+				actions.archive.setDisabled(false);
 			}
 		});
     var cm = new Ext.grid.ColumnModel([
@@ -236,7 +255,8 @@ og.ContactManager = function() {
 			header: lang("email"),
 			dataIndex: 'email',
 			width: 120,
-			renderer: renderEmail
+			renderer: renderEmail,
+			sortable:true
 		},{
 			id: 'tags',
 			header: lang("tags"),
@@ -256,14 +276,16 @@ og.ContactManager = function() {
 			dataIndex: 'email2',
 			width: 120,
 			hidden: true,
-			renderer: renderEmail
+			renderer: renderEmail,
+			sortable:true
         },{
 			id: 'email3',
 			header: lang("email3"),
 			dataIndex: 'email3',
 			width: 120,
 			hidden: true,
-			renderer: renderEmail
+			renderer: renderEmail,
+			sortable:true
         },{
 			id: 'workWebsite',
 			header: lang("workWebsite"),
@@ -386,6 +408,7 @@ og.ContactManager = function() {
 				}},
 				{text: lang('company'), iconCls: 'ico-company', handler: function() {
 					var url = og.getUrl('company', 'add_client');
+					//var url = og.getUrl('contact', 'generate_client_from_wsname');
 					og.openLink(url);
 				}}				
 			]}
@@ -410,7 +433,7 @@ og.ContactManager = function() {
 		editContact: new Ext.Action({
 			text: lang('edit'),
             tooltip: lang('edit selected object'),
-            iconCls: 'ico-new',
+            iconCls: 'ico-edit',
 			disabled: true,
 			handler: function() {
 				var url = '';
@@ -419,6 +442,23 @@ og.ContactManager = function() {
 				else
 					url = og.getUrl('company', 'edit_client', {id:getFirstSelectedId()});
 				og.openLink(url, null);
+			},
+			scope: this
+		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
+					this.getSelectionModel().clearSelections();
+				}
 			},
 			scope: this
 		}),
@@ -470,7 +510,17 @@ og.ContactManager = function() {
 							});
 						},
 						scope: this
-					}
+					},'tagdelete': {
+						fn: function(tag) {
+						this.load({
+							action: 'untag',
+							ids: getSelectedIds(),
+							types: getSelectedTypes(),
+							tagTag: tag
+						});
+					},
+					scope: this
+				}
 				}
 			})
 		}),
@@ -482,14 +532,41 @@ og.ContactManager = function() {
 		            text: lang('contacts'),
 		            iconCls: 'ico-contact',
 		            menu: { items: [
-						{ text: lang('import'), iconCls: 'ico-upload', handler: function() {
-							var url = og.getUrl('contact', 'import_from_csv_file', {type:'contact', from_menu:1});
-							og.openLink(url);
-						}},
-						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
-							var url = og.getUrl('contact', 'export_to_csv_file', {type:'contact'});
-							og.openLink(url);
-						}}
+		            	new Ext.Action({
+		            		text: lang('import'), 
+		            		iconCls: 'ico-upload', 
+		            		menu: { items: [
+		            			{ text: lang('from csv'), iconCls: 'ico-text', handler: function() {
+										var url = og.getUrl('contact', 'import_from_csv_file', {type:'contact', from_menu:1});
+										og.openLink(url);
+									}
+								},
+								{ text: lang('from vcard'), iconCls: 'ico-account', handler: function() {
+										var url = og.getUrl('contact', 'import_from_vcard', {type:'contact', from_menu:1});
+										og.openLink(url);
+									}
+								}
+							]}
+		            	}),
+		            	new Ext.Action({
+		            		text: lang('export'),
+		            		iconCls: 'ico-download',
+		            		menu: { items: [
+		            			{ text: lang('to csv'), iconCls: 'ico-text', handler: function() {
+										var url = og.getUrl('contact', 'export_to_csv_file', {type:'contact'});
+										og.openLink(url);
+									}
+								},
+								{ text: lang('to vcard'), iconCls: 'ico-account', handler: function() {
+										var ids = getSelectedIds();
+										if (ids != '') {
+											var url = og.getUrl('contact', 'export_to_vcard', {ids:getSelectedIds(), types:getSelectedTypes()});
+											location.href = url;
+										} else og.err(lang("you must select the contacts from the grid"));
+									}
+								}
+		            		]}
+		            	})
 					]}
 				}),
 				new Ext.Action({
@@ -516,12 +593,12 @@ og.ContactManager = function() {
         cm: cm,
         enableDrag: true,
 		ddGroup: 'WorkspaceDD',
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
         closable: true,
 		stripeRows: true,
 		id: 'contact-manager',
-        bbar: new og.PagingToolbar({
-            pageSize: og.pageSize,
+        bbar: new og.CurrentPagingToolbar({
+            pageSize: og.config['files_per_page'],
             store: this.store,
             displayInfo: true,
             displayMsg: lang('displaying objects of'),
@@ -534,14 +611,16 @@ og.ContactManager = function() {
 		tbar:[
 			actions.newContact,
 			'-',
+			actions.editContact,
 			actions.tag,
 			actions.delContact,
-			actions.editContact,
+			actions.archive,
+			'-',
 			actions.assignContact,
 			actions.view,
 			'-',
 			actions.imp_exp
-        ],
+		],
 		listeners: {
 			'render': {
 				fn: function() {
@@ -576,7 +655,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -588,7 +667,7 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			})
 		});
 		this.needRefresh = false;
@@ -633,6 +712,25 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 		}
 	},
 
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes()
+		});
+	},
+	
 	tagObjects: function(tag) {
 		this.load({
 			action: 'tag',

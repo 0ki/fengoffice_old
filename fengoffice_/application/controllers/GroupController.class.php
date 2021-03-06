@@ -166,6 +166,7 @@ class GroupController extends ApplicationController {
 			  'can_manage_templates' => $group->getCanManageTemplates(),
 			  'can_manage_reports' => $group->getCanManageReports(),
 			  'can_manage_time' => $group->getCanManageTime(),
+			  'can_add_mail_accounts' => $group->getCanAddMailAccounts(),
 			); // array			
 		} // if
 		$users = GroupUsers::getUsersByGroup($group->getId());
@@ -187,6 +188,7 @@ class GroupController extends ApplicationController {
 			if(array_var($group_data, "can_manage_templates") != 'checked') $group->setCanManageTemplates(false);
 			if(array_var($group_data, "can_manage_reports") != 'checked') $group->setCanManageReports(false);
 			if(array_var($group_data, "can_manage_time") != 'checked') $group->setCanManageTime(false);
+			if(array_var($group_data, "can_add_mail_accounts") != 'checked') $group->setCanAddMailAccounts(false);
 			try {
 				DB::beginWork();
 				//set permissions
@@ -222,7 +224,7 @@ class GroupController extends ApplicationController {
 				$gus = array();
 				if(array_var($_POST, 'user') != ''){
 					foreach (array_var($_POST, 'user') as $user_id => $val){
-						if($val='checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)){
+						if($val == 'checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)){
 							$gu= new GroupUser();
 							$gu->setGroupId($group->getId());
 							$gu->setUserId($user_id);

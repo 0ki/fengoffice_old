@@ -1,35 +1,27 @@
 <?php
 	require_javascript("og/modules/addFileForm.js");
-	include("public/assets/javascript/fckeditor/fckeditor.php");
 	$genid = gen_id();
 	$comments_required = config_option('file_revision_comments_required');
-	$instanceName = "fck" . $genid;
 ?>
 
-<form class="internalForm" style="height:100%; overflow:hidden;" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og.addDocumentSubmit('<?php echo $genid ?>');">
-<input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
+<form class="internalForm" style="height:100%; overflow:hidden;" id="<?php echo $genid ?>form" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return og.addDocumentSubmit('<?php echo $genid ?>');">
+<input type="hidden" name="instanceName" value="<?php echo $genid ?>" />
 <input type="hidden" id="<?php echo $genid ?>commentsRequired" value="<?php echo config_option('file_revision_comments_required')? '1':'0'?>"/>
+
 <?php
 	tpl_display(get_template_path('form_errors'));
-	$oFCKeditor = new FCKeditor($instanceName);
-	$oFCKeditor->BasePath = 'public/assets/javascript/fckeditor/';
-	$oFCKeditor->Width = '100%';
-	$oFCKeditor->Height = '100%';
-	$oFCKeditor->Config['SkinPath'] = get_theme_url('fckeditor/');
 	if($file->isNew()) {
-		$oFCKeditor->Value = '';
+		$ckEditorContent = '';
 	} else {
-		$oFCKeditor->Value = $file->getFileContent();
+		$ckEditorContent = $file->getFileContentWithRealUrls();
 	}
-	$oFCKeditor->Create();
-	
 	if (config_option('checkout_for_editing_online')) {
 		ajx_on_leave("og.openLink('" . get_url('files', 'release_file', array('id' => $file->getId())) . "')");
-		add_page_action(lang("checkin file"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.checkin.value = '1'; form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "ico-checkin");
+		add_page_action(lang("checkin file"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.checkin.value = '1'; form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "ico-checkin");
 	}
 
-	add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save");
-	add_page_action(lang("save as"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as");
+	add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save");
+	add_page_action(lang("save as"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as");
 ?>
 
  	<div>
@@ -37,30 +29,87 @@
 		<input type="hidden" id="fileid" name="file[id]" value="<?php if (!$file->isNew()) echo $file->getId(); ?>" />
 		<input type="hidden" id="filename" name="file[name]" value="<?php if (!$file->isNew()) echo clean($file->getFilename()); ?>" />
 		<input type="hidden" id ="<?php echo $genid ?>comment" name="file[comment]" value="" />
-		<input type="hidden" name="new_revision_document" value="" />
+		<input type="hidden" name="new_revision_document" value="checked" />
 		<input type="hidden" name="checkin" value="" />
+	</div>
+	
+
+	<div id="<?php echo $genid ?>ckcontainer" style="height: 100%">
+		<textarea style="display:none;" cols="80" id="<?php echo $genid ?>ckeditor" name="editor" rows="10">
+			<?php echo $ckEditorContent ?>
+		</textarea>
 	</div>
 </form>
 
 <script>
-function FCKeditor_OnComplete(fck) {
-	fck.ResetIsDirty();
-	fck.Events.AttachEvent('OnSelectionChange', function(fck) {
-		var p = og.getParentContentPanel(Ext.get(fck.Name));
-		Ext.getCmp(p.id).setPreventClose(fck.IsDirty());
-	});
-}
+
+var h = document.getElementById("<?php echo $genid ?>ckcontainer").offsetHeight;
+var editor = CKEDITOR.replace('<?php echo $genid ?>ckeditor', {
+	uiColor: '#BBCCEA',
+	height: (h-60) + 'px',
+	enterMode: CKEDITOR.ENTER_P,
+	shiftEnterMode: CKEDITOR.ENTER_BR,
+	customConfig: '',
+	toolbar: [
+				['Source','-','PasteText','PasteFromWord','-','Print', 'SpellChecker', 'Scayt','-',
+				'Undo','Redo','-','Find','Replace','-','SelectAll', '-',
+				'Format','Font','FontSize'],
+				'/',
+				['Bold','Italic','Underline','Strike','-','Subscript','Superscript','-',
+				'NumberedList','BulletedList','-','Outdent','Indent','Blockquote','-',
+				'JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-',
+				'Link','Unlink','-','Maximize','-',
+				'Image','Table','HorizontalRule','Smiley','SpecialChar','PageBreak','-', 
+				'TextColor','BGColor','RemoveFormat']
+			],
+	skin: 'office2003',
+	keystrokes: [
+		[ CKEDITOR.ALT + 121 /*F10*/, 'toolbarFocus' ],
+		[ CKEDITOR.ALT + 122 /*F11*/, 'elementsPathFocus' ],
+
+		[ CKEDITOR.SHIFT + 121 /*F10*/, 'contextMenu' ],
+
+		[ CKEDITOR.CTRL + 90 /*Z*/, 'undo' ],
+		[ CKEDITOR.CTRL + 89 /*Y*/, 'redo' ],
+		[ CKEDITOR.CTRL + CKEDITOR.SHIFT + 90 /*Z*/, 'redo' ],
+
+		[ CKEDITOR.CTRL + 76 /*L*/, 'link' ],
+
+		[ CKEDITOR.CTRL + 66 /*B*/, 'bold' ],
+		[ CKEDITOR.CTRL + 73 /*I*/, 'italic' ],
+		[ CKEDITOR.CTRL + 85 /*U*/, 'underline' ],
+
+		[ CKEDITOR.CTRL + 83 /*S*/, 'save' ],
+
+		[ CKEDITOR.ALT + 109 /*-*/, 'toolbarCollapse' ]
+	],
+	filebrowserImageUploadUrl : '<?php echo ROOT_URL ?>/public/assets/javascript/ckeditor/ck_upload_handler.php',
+	on: {
+		instanceReady: function(ev) {
+			og.adjustCkEditorArea('<?php echo $genid ?>');
+			editor.resetDirty();
+		},
+		selectionChange: function(ev) {
+			var p = og.getParentContentPanel(Ext.get('<?php echo $genid ?>ckeditor'));
+			Ext.getCmp(p.id).setPreventClose(editor.checkDirty());
+		}
+	}
+});
+
 
 og.eventManager.addListener("document saved", function(obj) {
-	var form = Ext.getDom(obj.instance);
+	var form = Ext.getDom(obj.instance + 'form');
 	if (!form) return;
 	form['file[id]'].value = obj.id;
 	form['file[comment]'].value = '';
-	var fck = FCKeditorAPI.GetInstance(obj.instance);
-	if (fck) {
-		fck.ResetIsDirty();
-		var p = og.getParentContentPanel(Ext.get(fck.Name));
+
+	var instName = obj.instance + 'ckeditor';
+	var editor = og.getCkEditorInstance(instName);
+	if (editor) {
+		if (editor.checkDirty()) editor.resetDirty();
+		var p = og.getParentContentPanel(Ext.get(obj.instance + 'form'));
 		Ext.getCmp(p.id).setPreventClose(false);
 	}
 }, null, {replace:true});
+
 </script>

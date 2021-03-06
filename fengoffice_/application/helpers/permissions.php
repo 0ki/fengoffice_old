@@ -74,6 +74,29 @@
   		return false;
   	}
   	
+  	/**
+  	 * Returns whether a user can add mail accounts.
+  	 * If groups are checked, one true permission makes the function return true.
+  	 *
+  	 * @param User $user
+  	 * @param boolean $include_groups states whether groups should be checked for permissions
+  	 * @return boolean
+  	 */
+  	function can_add_mail_accounts(User $user, $include_groups = true){
+  		if ($user->getCanAddMailAccounts()){
+  			return true;
+  		}
+  		if ($include_groups){
+  			$user_ids = $user->getId();  			
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+			if($group_ids!=''){
+	  			$gr = Groups::findOne(array('conditions' => array('id in ('.$group_ids.') AND `can_add_mail_accounts` = true ')));
+	  			return $gr instanceof Group ;
+			}
+  		}
+  		return false;
+  	}
+  	
   	function can_manage_templates(User $user, $include_groups = true) {
   		if ($user->getCanManageTemplates()) {
   			return true;
@@ -298,7 +321,7 @@
 		if ($manager instanceof Contacts) {
 			if (!can_manage_contacts($user)){
 				$pcTableName = "`" . TABLE_PREFIX . 'project_contacts`';
-				return "$table_alias.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = $table_alias.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), $access_level, $user, '`project_id`', '`pc`') .'))';
+				return "$object_table_name.`id` IN ( SELECT `contact_id` FROM $pcTableName `pc` WHERE `pc`.`contact_id` = $object_table_name.`id` AND (" . permissions_sql_for_listings(ProjectContacts::instance(), $access_level, $user, '`project_id`', '`pc`') .'))';
 			} else {
 				return 'true';
 			}
@@ -310,12 +333,12 @@
 		// permissions for projects
 		if ($manager instanceof Projects) {
 			$pcTableName = "`" . TABLE_PREFIX . 'project_users`';
-			return "$table_alias.`id` IN (SELECT `project_id` FROM $pcTableName `pc` WHERE `user_id` = $user_id)";
+			return "$object_table_name.`id` IN (SELECT `project_id` FROM $pcTableName `pc` WHERE `user_id` = $user_id)";
 		}
 		// permissions for users
 		if ($manager instanceof Users) {
 			if (logged_user()->isMemberOfOwnerCompany()) return "true";
-			else return "$table_alias.`company_id` = ".owner_company()->getId() ." OR $table_alias.`company_id` = ". logged_user()->getCompanyId();
+			else return "$object_table_name.`company_id` = ".owner_company()->getId() ." OR $object_table_name.`company_id` = ". logged_user()->getCompanyId();
 		}
 		
 		$can_manage_object = manager_class_field_name($object_manager, $access_level);

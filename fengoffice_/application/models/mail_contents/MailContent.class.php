@@ -46,6 +46,9 @@ class MailContent extends BaseMailContent {
 	 */
 	protected $is_commentable = true;
 	
+	protected $mail_conversation_mail_ids;
+	protected $mail_conversation_mail_ids_w_permissions;
+	
 	/**
 	 * Return Project
 	 *
@@ -56,6 +59,20 @@ class MailContent extends BaseMailContent {
 	function getProject()
 	{
 		return null;
+	}
+	
+	function getConversationMailIds($check_permissions = false){
+		if ($check_permissions) {
+			if (is_null($this->mail_conversation_mail_ids_w_permissions)) {
+				$this->mail_conversation_mail_ids_w_permissions = MailContents::getMailIdsFromConversation($this, true);
+			}
+			return $this->mail_conversation_mail_ids_w_permissions;
+		} else {
+			if (is_null($this->mail_conversation_mail_ids)) {
+				$this->mail_conversation_mail_ids = MailContents::getMailIdsFromConversation($this);
+			}
+			return $this->mail_conversation_mail_ids;
+		} 
 	}
 	 
 	/**
@@ -95,13 +112,13 @@ class MailContent extends BaseMailContent {
 				Logger::log($e->getMessage());
 			}
 		}
-		DB::beginWork();
+
+		return parent::delete();
+	}
+	
+	function mark_as_deleted(){
 		$this->setIsDeleted(true);
-		$ok = $this->save();
-		DB::commit();
-		
-		return $ok; 
-		//return parent::delete();
+		return $this->save();
 	}
 
 	function deleteContents()
@@ -183,18 +200,6 @@ class MailContent extends BaseMailContent {
 	} // getIsSent()
 	
 	
-	
-	/**
-	 * Returns if the mail is read by the user
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function getIsRead($user_id) {
-		return ReadObjects::userHasRead($user_id,$this);
-	} // getIsClassified()
-	
 	/**
 	 * Mark the mail as read/unread
 	 *
@@ -202,13 +207,20 @@ class MailContent extends BaseMailContent {
 	 * @param void
 	 * @return boolean
 	 */
-	function setIsRead($is_read, $user_id) {
-		try{
+	function setIsRead($is_read, $user_id = null) {
+		try {
+			if ($user_id == null) {
+				if (logged_user() instanceof User) {
+					$user_id = logged_user()->getId();
+				} else {
+					return;
+				}
+			}
 			$readobj = ReadObjects::findOne(array(
 						        'conditions' => array('`user_id` = ? and `rel_object_id` = ? AND `rel_object_manager` = ?', $user_id, $this->getId(), get_class($this->manager()))
 						      )); // findOne
-			if ($is_read){
-				if ($readobj!=null){
+			if ($is_read) {
+				if ($readobj instanceof ReadObject) {
 					$readobj->setIsRead(1);
 					$readobj->save();
 				} else {
@@ -240,7 +252,24 @@ class MailContent extends BaseMailContent {
 	 * @return string
 	 */
 	function getViewUrl() {
-		return get_url('mail', 'view', $this->getId());
+		if ($this->getState() == 2)
+			return $this->getEditUrl(); // For drafts only
+		else
+			return get_url('mail', 'view', $this->getId());
+	} // getAccountUrl
+	
+	/**
+	 * Return edit mail URL of this mail
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getEditUrl() {
+		if ($this->getState() == 2)
+			return get_url('mail', 'edit_mail', $this->getId()); // For drafts only
+		else
+			return get_url('mail', 'view', $this->getId());
 	} // getAccountUrl
 	
 	function getShowContentsUrl() {
@@ -303,12 +332,27 @@ class MailContent extends BaseMailContent {
 	} // getReplyMailUrl
 	
 	
-	
+	/**
+	 * Return forward mail URL
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
 	function getForwardMailUrl() {
 		return get_url('mail', 'forward_mail', array( 'id' => $this->getId(), 'type' => 'email'));
-	} // getReplyMailUrl
+	} // getForwardMailUrl
 	
-	
+	/**
+	 * Return print mail URL
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getPrintUrl() {
+		return get_url('mail', 'print_mail', array( 'id' => $this->getId()));
+	} // getPrintUrl
 	
 	// ---------------------------------------------------
 	//  Permissions
@@ -369,10 +413,17 @@ class MailContent extends BaseMailContent {
     	if ($wasNew)
     		$columns_to_drop = $this->getSearchableColumns();
     	else {
-	    	foreach ($this->getSearchableColumns() as $column_name){
-	    		if ($this->isColumnModified($column_name))
-	    			$columns_to_drop[] = $column_name;
-	    	}
+			foreach ($this->getSearchableColumns() as $column_name){
+				if (isset($this->searchable_composite_columns[$column_name])){
+					foreach ($this->searchable_composite_columns[$column_name] as $colName){
+						if ($this->isColumnModified($colName)){
+							$columns_to_drop[] = $column_name;
+							break;
+						}
+					}
+				} else if ($this->isColumnModified($column_name))
+					$columns_to_drop[] = $column_name;
+			}
     	}
     	
     	if (count($columns_to_drop) > 0){
@@ -381,6 +432,7 @@ class MailContent extends BaseMailContent {
 	        foreach($columns_to_drop as $column_name) {
 	          $content = $this->getSearchableColumnContent($column_name);
 	          if(trim($content) <> '') {
+
 	            $searchable_object = new SearchableObject();
 	            
 	            $searchable_object->setRelObjectManager(get_class($this->manager()));
@@ -396,39 +448,6 @@ class MailContent extends BaseMailContent {
 	        } // foreach
     	} // if
     	
-		// Add custom properties
-		$pids = CustomProperties::getCustomPropertyIdsByObjectType(get_class($this->manager()));
-		foreach($pids as $id) {
-			$custom_property = CustomProperties::findById($id);
-			$name = $custom_property->getName();
-			$values = CustomPropertyValues::getCustomPropertyValues($this->getObjectId(), $id);
-			if ($custom_property->getIsRequired() && (!is_array($values) || count($values) == 0)) {
-				$v = new CustomPropertyValue();
-				$v->setValue($custom_property->getDefaultValue());
-				$values = array($v);
-			}
-			$cpval_index = 0;
-			foreach ($values as $cpval) {
-				$value = $cpval->getValue();
-				if(trim($value) <> '') {
-					$searchable_object = SearchableObjects::findOne(array("conditions" => "`rel_object_manager` = '".get_class($this->manager())."' AND `rel_object_id` = ".$this->getId()." AND `column_name` = '$name'"));
-					if (!$searchable_object)
-						$searchable_object = new SearchableObject();
-					 
-					$searchable_object->setRelObjectManager(get_class($this->manager()));
-					$searchable_object->setRelObjectId($this->getId());
-					$searchable_object->setColumnName($name.($cpval_index > 0 ? $cpval_index : ''));
-					$searchable_object->setContent($value);
-					$searchable_object->setProjectId(0);
-					$searchable_object->setIsPrivate(false);
-					$searchable_object->setUserId($this->getAccount()->getUserId());
-					
-					$searchable_object->save();
-					$cpval_index++;
-				}
-			}
-		}
-		
     	if ($wasNew){
         	SearchableObjects::dropContentByObjectColumns($this,array('uid'));
         	$searchable_object = new SearchableObject();
@@ -505,24 +524,38 @@ class MailContent extends BaseMailContent {
     	}
     	$tags = project_object_tags($this);
     	
-  		$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
-    	$deletedBy = Users::findById($this->getTrashedById());
-    	if ($deletedBy instanceof User) {
+    	$deletedOn = $this->getTrashedOn() instanceof DateTimeValue ? ($this->getTrashedOn()->isToday() ? format_time($this->getTrashedOn()) : format_datetime($this->getTrashedOn(), 'M j')) : lang('n/a');
+		if ($this->getTrashedById() > 0)
+			$deletedBy = Users::findById($this->getTrashedById());
+    	if (isset($deletedBy) && $deletedBy instanceof User) {
     		$deletedBy = $deletedBy->getDisplayName();
     	} else {
     		$deletedBy = lang("n/a");
     	}
+		
     	$owner_id = $this->getAccount() instanceof MailAccount ? $this->getAccount()->getUserId() : 0;
-		$createdBy = Users::findById($owner_id);
-    	if ($createdBy instanceof User) {
+    	if ($owner_id > 0)
+			$createdBy = Users::findById($owner_id);
+    	if (isset($createdBy) && $createdBy instanceof User) {
     		$createdById = $createdBy->getId();
     		$createdBy = $createdBy->getDisplayName();
     	} else {
     		$createdById = 0;
     		$createdBy = lang("n/a");
     	}
+    	
+  		$archivedOn = $this->getArchivedOn() instanceof DateTimeValue ? ($this->getArchivedOn()->isToday() ? format_time($this->getArchivedOn()) : format_datetime($this->getArchivedOn(), 'M j')) : lang('n/a');
+  		if ($this->getArchivedById() > 0)
+			$archivedBy = Users::findById($this->getArchivedById());
+    	if (isset($archivedBy) &&  $archivedBy instanceof User) {
+    		$archivedBy = $archivedBy->getDisplayName();
+    	} else {
+    		$archivedBy = lang("n/a");
+    	}
+    	
     	$sentTimestamp = $this->getSentDate() instanceof DateTimeValue ? ($this->getSentDate()->isToday() ? format_time($this->getSentDate()) : format_datetime($this->getSentDate())) : lang('n/a');
-    	return array(
+    	
+		return array(
 				"id" => $this->getObjectTypeName() . $this->getId(),
 				"object_id" => $this->getId(),
 				"name" => $this->getObjectName() != "" ? $this->getObjectName():lang('no subject'),
@@ -534,18 +567,121 @@ class MailContent extends BaseMailContent {
 				"updatedBy" => $createdBy,
 				"updatedById" => $createdById,
 				"dateUpdated" => $sentTimestamp,
-				"project" => $this->getWorkspacesNamesCSV(logged_user()->getWorkspacesQuery()),//$project,
-				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
-    			"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getWorkspacesQuery()),
-				"url" => $this->getObjectUrl(),
+				"wsIds" => $this->getWorkspacesIdsCSV(logged_user()->getWorkspacesQuery()),
+    			"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager()),
     			"deletedById" => $this->getTrashedById(),
     			"deletedBy" => $deletedBy,
-    			"dateDeleted" => $deletedOn
+    			"dateDeleted" => $deletedOn,
+    			"archivedById" => $this->getArchivedById(),
+    			"archivedBy" => $archivedBy,
+    			"dateArchived" => $archivedOn
 		);
 	}
 	
+	/**
+	 * Returns a plain text version of the email
+	 * @return string
+	 */
+	function getTextBody() {
+		if ($this->getBodyHtml()) {
+			return html_to_text($this->getBodyHtml());
+		} else {
+			return $this->getBodyPlain();
+		}
+	}
 	
+	
+	function getFromContact(){
+		$contacts = Contacts::findAll(array('conditions' => " email = '" . clean($this->getFrom()) . "' OR email2 = '" . clean($this->getFrom()) . "' OR email3 = '" . clean($this->getFrom()) . "' "));
+		if (is_array($contacts)){
+			$best_level = 4;
+			$best_contact = null;
+			if (count($contacts) > 1){
+				foreach ($contacts as $contact){
+					if ($best_level > 3 && $contact->getEmail3() == $this->getFrom()){
+						$best_level = 3;
+						$best_contact = $contact;
+					} else if ($best_level > 2 && $contact->getEmail2() == $this->getFrom()){
+						$best_level = 2;
+						$best_contact = $contact;
+					} else if ($best_level > 1 && $contact->getEmail() == $this->getFrom()){
+						$best_level = 1;
+						$best_contact = $contact;
+					}
+				}
+				return $best_contact;
+			}
+			return $contacts[0];
+		}
+		return null;
+	}
+	
+	function getLinkedObjects() {
+		$conv_emails = MailContents::getMailsFromConversation($this);
+		$objects = array();
+		foreach ($conv_emails as $mail){
+			if(logged_user()->isMemberOfOwnerCompany()) {
+				$mail_objects = $mail->getAllLinkedObjects();
+			} else {
+				if (is_null($mail->linked_objects)) {
+					$mail->linked_objects = LinkedObjects::getLinkedObjectsByObject($this, true);
+				}
+				$mail_objects = $mail->linked_objects;
+			}
+			if (is_array($mail_objects)){
+				foreach ($mail_objects as $mo){
+					$objects[] = $mo;
+				}
+			}
+		}
+		
+		if ($this->isTrashed()) {
+			$include_trashed = true;
+		} else {
+			$include_trashed = false;
+		}
+		
+		if ($include_trashed) {
+			return $objects;
+		} else {
+			$ret = array();
+			if (is_array($objects) && count($objects)) {
+				foreach ($objects as $o) {
+					if (!$o instanceof ProjectDataObject || !$o->isTrashed()) {
+						$ret[] = $o;
+					}
+				}
+			}
+			return $ret;
+		}
+	}
+	
+
+	/**
+	 * Return object comments, filter private comments if user is not member of owner company
+	 *
+	 * @param void
+	 * @return array
+	 */
+	function getComments() {
+		return Comments::getCommentsByObjectIds(implode(',',$this->getConversationMailIds(true)), 'MailContents');
+	} // getComments
+	
+	
+
+	/**
+	 * Return tag names for this object
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getTagNames() {
+		if (user_config_option('show_emails_as_conversations',true,logged_user()->getId()))
+			return Tags::getTagNamesByObjectIds(implode(',',$this->getConversationMailIds(true)), 'MailContents');
+		else
+			return parent::getTagNames();
+	} // getTagNames
 }
 ?>

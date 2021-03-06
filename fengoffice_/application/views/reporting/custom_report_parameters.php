@@ -24,11 +24,14 @@
 		</tr>
 		
 		<?php foreach($conditions as $condition){
+			if($condition->getCustomPropertyId() > 0){
+				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
+				if (!$cp) continue;
+			}
 			$tiCount ++;
 			?>
 			<tr style='height:30px;'>
 			<?php if($condition->getCustomPropertyId() > 0){
-					$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
 					$name = clean($cp->getName());
 				  }else{
 				  	if ($condition->getFieldName()!= 'workspace' && $condition->getFieldName()!= 'tag'){
@@ -46,20 +49,20 @@
 			<?php if(isset($cp)){ ?>
 				<td align='left'>
 					<?php if($cp->getType() == 'text' || $cp->getType() == 'numeric'){ ?>
-						<input type="text" id="<?php echo $condId; ?>" name="params[<?php echo clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>/>
+						<input type="text" id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId()."_".clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>/>
 					<?php }else if($cp->getType() == 'boolean'){  ?>
-						<select id="<?php echo $condId; ?>" name="params[<?php echo clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>>
+						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId()."_".clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>>
 							<option value="1" > <?php echo lang('true') ?>  </option>
 							<option value="0" > <?php echo lang('false') ?> </option>
 						</select>
 					<?php }else if($cp->getType() == 'list'){  ?>
-						<select id="<?php echo $condId; ?>" name="params[<?php echo clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>>
+						<select id="<?php echo $condId; ?>" name="params[<?php echo $condition->getId()."_".clean($cp->getName()) ?>]" tabindex=<?php echo $tiCount?>>
 						<?php foreach(explode(',', $cp->getValues()) as $value){ ?>
 							<option value="<?php echo $value ?>"> <?php echo $value ?>  </option>
 						<?php }//foreach ?>
 						</select>
 					<?php }else if($cp->getType() == 'date'){  ?>
-						<?php echo pick_date_widget2("params[".clean($cp->getName())."]",$genid,$tiCount)?>
+						<?php echo pick_date_widget2("params[".$condition->getId()."_".clean($cp->getName())."]",$genid,$tiCount)?>
 					<?php }?>
 				</td>
 			<?php }else{ ?>

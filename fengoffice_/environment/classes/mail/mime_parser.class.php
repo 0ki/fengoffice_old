@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.7.4.2 2009/09/02 15:49:27 idesoto Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.10 2009/10/07 13:44:16 idesoto Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.7.4.2 2009/09/02 15:49:27 idesoto Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.10 2009/10/07 13:44:16 idesoto Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -2012,7 +2012,19 @@ class mime_parser_class
 					case 'mixed':
 						$results = $parts[0];
 						for($p = 1; $p < $lp; ++$p) {
-							if (isset($parts[$p]['FileName'])) $results['Attachments'][] = $parts[$p];
+							if (isset($parts[$p]['FileName'])) {
+								$results['Attachments'][] = $parts[$p];
+							} else if (isset($parts[$p]['content-type']) && $parts[$p]['content-type'] == 'message/rfc822') {
+								$attach_subject_pos = strpos($parts[$p]['Data'], "\nSubject:");
+								$attach_subject = "";
+								if ($attach_subject_pos >= 0) {
+									$attach_subject = substr($parts[$p]['Data'], $attach_subject_pos + 9);
+									$attach_subject = trim(substr($attach_subject, 0, strpos($attach_subject, "\n")));
+								}
+								if ($attach_subject == "") $attach_subject = 'attachment';
+								$parts[$p]['FileName'] = $attach_subject.'.eml';
+								$results['Attachments'][] = $parts[$p];
+							}
 						}
 						break;
 

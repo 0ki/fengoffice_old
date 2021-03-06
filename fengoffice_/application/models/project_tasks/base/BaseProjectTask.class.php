@@ -800,6 +800,71 @@ abstract class BaseProjectTask extends ProjectDataObject {
 		return $this->setColumnValue('repeat_by', $value);
 	} // setRepeatBy()
 
+    /**
+    * Return value of 'archived_by_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getArchivedById() {
+      return $this->getColumnValue('archived_by_id');
+    } // getArchivedById()
+    
+    /**
+    * Set value of 'archived_by_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setArchivedById($value) {
+      return $this->setColumnValue('archived_by_id', $value);
+    } // setArchivedById()
+	
+    /** Return value of 'archived_on' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getArchivedOn() {
+      return $this->getColumnValue('archived_on');
+    } // getArchivedOn()
+    
+    /**
+    * Set value of 'archived_on' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setArchivedOn($value) {
+      return $this->setColumnValue('archived_on', $value);
+    } // setArchivedOn() 
+    
+    /**
+    * Return value of 'object_subtype' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getObjectSubtype() {
+      return $this->getColumnValue('object_subtype');
+    } // getObjectSubtype()
+    
+    /**
+    * Set value of 'object_subtype' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setObjectSubtype($value) {
+      return $this->setColumnValue('object_subtype', $value);
+    } // setObjectSubtype()
+    
 } // BaseProjectTask
 
 

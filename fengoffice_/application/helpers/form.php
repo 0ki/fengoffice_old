@@ -487,12 +487,18 @@
   * @param string $no_lang
   * @return null
   */
-  function yes_no_widget($name, $id_base, $value, $yes_lang, $no_lang, $tabindex = null) {
+  function yes_no_widget($name, $id_base, $value, $yes_lang, $no_lang, $tabindex = null, $attributes = null) {
   	$yes_attributes = array('id' => $id_base . 'Yes', 'class' => 'yes_no', 'value' => 1);
   	$no_attributes = array('id' => $id_base . 'No', 'class' => 'yes_no', 'value' => 0);
   	if ($tabindex != null) {
   		$yes_attributes['tabindex'] = $tabindex;
   		$no_attributes['tabindex'] = $tabindex;
+  	}
+  	if (is_array($attributes)) {
+  		foreach ($attributes as $attr_name => $attr_value) {
+  			$yes_attributes[$attr_name] = $attr_value;
+  			$no_attributes[$attr_name] = $attr_value;
+  		}
   	}
   	
     $yes_input = radio_field($name, $value, $yes_attributes);
@@ -583,6 +589,57 @@
     }
     return '#'. $darkerColor;
   } // darkerHtmlColor
-  
+
+  function doubleListSelect($name, $values, $attributes = null) {
+  	if (is_array($attributes)) {
+		if (!array_var($attributes, "size")) $attributes['size'] = "15";
+	} else {
+		$attributes = array("size" => 15);
+	}
+	if (!array_var($attributes, "class")) $attributes['class'] = "og-double-list-sel";
+	
+	$id = array_var($attributes, 'id');
+	if (!$id) $id = "list_values";
+	 
+	$options1 = array();
+	$options2 = array();
+	$hfields = "";
+	$order = 1;
+	foreach ($values as $val) {
+		$sel = array_var($val, 'selected');
+		if (!$sel)
+			$options1[] = option_tag(array_var($val, 'text'), array_var($val, 'id'));
+		else
+			$options2[] = option_tag(array_var($val, 'text'), array_var($val, 'id'));
+		
+		$hfields .= '<input id="'.$id.'['.array_var($val, 'id').']" name="'.$name.'['.array_var($val, 'id').']" type="hidden" value="'.($sel ? $order++ : '0').'" />'; 
+	}
+	
+	// 1st box
+	$attributes['id'] = $id . "_box1";
+	$html = "<table><tr><td>" . select_box($name."_box1", $options1, $attributes) . "</td>";
+	
+	// buttons
+	$btn_style = 'border:1px solid #bbb; width:35px; margin:2px;';
+	$html .= "<td align='center' class='og-double-list-sel-btns'>";
+	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to right')."'><a href='#' class='ico-2arrowright' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.selectAll('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 5px 10px 15px;' title='".lang('move to right')."'><a href='#' class='ico-arrowright' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.selectOne('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 15px 10px 5px;' title='".lang('move to left')."'><a href='#' class='ico-arrowleft' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.deselectOne('$id')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 5px 10px;' title='".lang('move all to left')."'><a href='#' class='ico-2arrowleft' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.deselectAll('$id')\">&nbsp;</a></div>";
+	$html .= "</td>";
+	
+	// 2nd box
+	$attributes['id'] = $id . "_box2";
+	$html .= "<td>" . select_box($name."_box2", $options2, $attributes) . "</td>";
+	
+	$html .= "<td>";
+	$html .= "<div style='margin: 2px;' title='".lang('move up')."'><a href='#' class='ico-upload' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.moveUp('$id', '_box2')\">&nbsp;</a></div>";
+	$html .= "<div style='margin: 2px;' title='".lang('move down')."'><a href='#' class='ico-download' style='padding: 0 0 3px 12px;' onclick=\"og.doubleListSelCtrl.moveDown('$id', '_box2')\">&nbsp;</a></div>";
+	$html .= "</td></tr></table>";
+	
+	// hidden fields containing the selection
+	$html .= $hfields;
+	return $html;
+  }
 
 ?>

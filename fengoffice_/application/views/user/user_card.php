@@ -27,7 +27,7 @@
     	<div><span><?php echo lang('username') ?>: <?php echo clean($user->getUsername()) ?></span></div>
     	<div><span><?php echo lang('user title') ?>:</span> <?php echo $user->getTitle() ? clean($user->getTitle()) : lang('n/a') ?></div>
 		<div><span><?php echo lang('company') ?>:</span> <a class="internalLink" href="<?php echo $user->getCompany()->getCardUrl() ?>"><?php echo clean($user->getCompany()->getName()) ?></a></div>
-      <div><span><?php echo lang('email address') ?>:</span> <a target="_self" href="mailto:<?php echo clean($user->getEmail()) ?>"><?php echo clean($user->getEmail()) ?></a></div>
+      <div><span><?php echo lang('email address') ?>:</span> <a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($user->getEmail()))) . '"' : 'target="_self" href="mailto:' . clean($user->getEmail()) . '"' ?>><?php echo clean($user->getEmail()) ?></a></div>
     </div>
   </div>
 </div>
@@ -58,10 +58,3 @@
 	</fieldset><br/>
 <?php } //if ?>
 <?php } // if ?>
-
-
-
-
-
-
-

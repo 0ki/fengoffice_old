@@ -154,7 +154,12 @@ final class ZipImport {
 					if (!in_array($ws_parent_id, $ws_parent_ids)) {
 						$ws_parent_ids[] = $ws_parent_id;
 					}
-					$ws_id = $this->createWorkspace($workspace_name, $ws_parent_ids);					
+					$actual_ws = Projects::getByName($workspace_name);
+					if (!$actual_ws instanceof Project) {
+						$ws_id = $this->createWorkspace($workspace_name, $ws_parent_ids);					
+					} else {
+						$ws_id = $actual_ws->getId();
+					}
 					
 					if ($dh = opendir($path . $node)) {
 						$this->createWorkSpaces($path . $node . DIRECTORY_SEPARATOR, $dh, $ws_parent_ids, $ws_id);
@@ -246,17 +251,27 @@ final class ZipImport {
 	/********************************************************************************************************************/
 
 	function uploadDocument($doc_name, $ws_id, $path) {
+		if (str_starts_with($doc_name, "~")) {
+			return;
+		}
 		try {
+			DB::beginWork();
 			$project = Projects::findById($ws_id);
 
-			$file = new ProjectFile();
-			$file->setFilename($doc_name);
-			$file->setIsVisible(true);
-			$file->setIsPrivate(false);
-			$file->setIsImportant(false);
-			$file->setCommentsEnabled(true);
-			$file->setAnonymousCommentsEnabled(false);
-			//$file->setCreatedOn(new DateTimeValue(time()) );
+			//$file = ProjectFiles::findOne(array("conditions" => "`filename` = '$doc_name'"));
+			$files = ProjectFiles::getAllByFilename($doc_name, $ws_id);
+			if (is_array($files) && count($files) > 0) $file = $files[0];
+			else $file = null;
+			if (!$file instanceof ProjectFile ) {
+				$file = new ProjectFile();
+				$file->setFilename($doc_name);
+				$file->setIsVisible(true);
+				$file->setIsPrivate(false);
+				$file->setIsImportant(false);
+				$file->setCommentsEnabled(true);
+				$file->setAnonymousCommentsEnabled(false);
+				//$file->setCreatedOn(new DateTimeValue(time()) );
+			}
 			
 			$sourcePath = $path . $doc_name;
 
@@ -270,25 +285,42 @@ final class ZipImport {
 			$file_dt['tmp_name'] = $sourcePath; //TEMP_PATH . DIRECTORY_SEPARATOR . rand() ;
 			$extension = trim(get_file_extension($sourcePath));
 			
-			$file->setCreatedOn(new DateTimeValue(filemtime($sourcePath)));
-			$file->setUpdatedOn(new DateTimeValue(filemtime($sourcePath)));
-			
 			$file_dt['type'] = Mime_Types::instance()->get_type($extension);
 			if(!trim($file_dt['type'])) {
 				$file_dt['type'] = 'text/html';
 			}
-						
-			$file->save();
-			$file->addToWorkspace($project);
-			$revision = $file->handleUploadedFile($file_dt, true, '');
 
+			$file->save();
+			$file->removeFromAllWorkspaces();
+			$file->addToWorkspace($project);
+			
+			$old_revs = $file->getRevisions();
+			foreach ($old_revs as $rev) {
+				$rev->delete();
+			}
+			
+			$revision = $file->handleUploadedFile($file_dt, true, '');
+			
+			$file_date = new DateTimeValue(filemtime($sourcePath));
+
+			$revision->setCreatedOn($file_date);
+			$revision->setUpdatedOn($file_date);
+			$revision->save();
+			
+			$file->setCreatedOn($file_date);
+			$file->setUpdatedOn($file_date);
+			
+			$file->save();
+			
 			$ws = $file->getWorkspaces();
 			ApplicationLogs::createLog($file, $ws, ApplicationLogs::ACTION_ADD);
 			
 			ImportLogger::instance()->log("   File: $doc_name [$ws_id]");
 			print "   File: $doc_name [$ws_id]\r\n";
 			
+			DB::commit();
 		} catch (Exception $e) {
+			DB::rollback();
 			ImportLogger::instance()->logError("$e\r\n**************************************************");
 			print "\r\n\r\nERROR: $e\r\n";
 		}

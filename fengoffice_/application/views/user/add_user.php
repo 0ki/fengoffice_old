@@ -18,9 +18,9 @@
   	</div>
   	
   <div>
-  <?php echo label_tag(lang('username'), 'userFormName', true) ?>
+  <?php echo label_tag(lang('username'), $genid.'userFormName', true) ?>
     <?php echo text_field('user[username]', array_var($user_data, 'username'), 
-    	array('class' => 'medium', 'id' => 'userFormName', 'tabindex' => '100','onchange'=>'og.determinePersonalwsName(this, \'' . escape_single_quotes(new_personal_project_name()) .'\')')) ?>
+    	array('class' => 'medium', 'id' => $genid.'userFormName', 'tabindex' => '100','onchange'=>'og.determinePersonalwsName(this, \'' . escape_single_quotes(new_personal_project_name()) .'\')')) ?>
   </div>
   	
   <div>
@@ -66,9 +66,9 @@
    	<a href="<?php echo get_url("company", "add_client") ?>" target="company" class="internalLink coViewAction ico-add" title="<?php echo lang('add a new company')?>"><?php echo lang('add company') . '...' ?></a></div>
 
   	<?php $categories = array(); Hook::fire('object_add_categories', $object, $categories); ?>
-  	<?php $cps = CustomProperties::getHiddenCustomPropertiesByObjectType('Users'); ?>
+  	<?php $cps = CustomProperties::countHiddenCustomPropertiesByObjectType('Users'); ?>
   	<br/>
-  	<?php if (count($cps) > 0) { ?>
+  	<?php if ($cps > 0) { ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 	<?php } ?>
 	<?php foreach ($categories as $category) { ?>
@@ -89,12 +89,32 @@
   </div>
   
   
-  <div>
+  <div onclick="og.showSelectTimezone('<?php echo $genid ?>')" >
     <?php echo label_tag(lang('timezone'), 'userFormTimezone', false)?>
+    <span class="desc"><?php echo lang('auto detect user timezone') ?></span>
+    <div id ="<?php echo $genid?>detectTimeZone">
+    <?php echo yes_no_widget('autodetect_time_zone', 'userFormAutoDetectTimezone', user_config_option('autodetect_timezone',false,$user->getId()), lang('yes'), lang('no')) ?>
+    <div id="<?php echo $genid?>selecttzdiv">
     <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
     	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '600')) ?>
-  </div>
+    </div>
+  	</div>
   
+  <script type="text/javascript">
+  
+	og.showSelectTimezone = function(genid)	{
+		check = document.getElementById("userFormAutoDetectTimezoneYes");
+		div = document.getElementById(genid + "selecttzdiv");
+		if (check.checked == true){
+			div.style.display= "none";
+		}else{
+			div.style.display= "";
+		}
+		
+	  };
+	  
+  </script>
+  </div>
 <?php if($user->isNew() || logged_user()->isAdministrator()) { ?>
   <fieldset>
     <legend><?php echo lang('password') ?></legend>
@@ -165,26 +185,24 @@
       	<?php echo select_project2('user[personal_project]',($user->getPersonalProject())? $user->getPersonalProject()->getId():0,$genid) ?>
 	</div>
   <script>
-   og.determinePersonalwsName = function (input, template)
-	{
+	og.determinePersonalwsName = function (input, template) {
 		div = document.getElementById("newWsName");
 		div.innerHTML = template.replace('{0}', input.value);
-		
-		
 	};
 	
-  	og.showSelectPersonalWS= function(genid){
+	og.showSelectPersonalWS = function(genid) {
 		check = document.getElementById("user[createPersonalProject]Yes");
 		div = document.getElementById(genid + "selectPersonalProject");
 		div2 = document.getElementById("newWsName");
-		if (check.checked == true){
-			div.style.display= "";
-			div2.style.display= "none";
-			}else{
-				div.style.display= "none";
-				div2.style.display= "";
+		if (check.checked == true) {
+			div.style.display = "";
+			div2.style.display = "none";
+			} else {
+				div.style.display = "none";
+				div2.style.display = "";
 			}
-	  };
+	};
+	og.determinePersonalwsName(Ext.getDom('<?php echo $genid ?>userFormName'), <?php echo json_encode(new_personal_project_name()) ?>);
   </script>
   </div>
   
@@ -242,7 +260,7 @@
 </form>
 
 <script>
-Ext.get('userFormName').focus();
+Ext.get('<?php echo $genid ?>userFormName').focus();
 
 og.eventManager.addListener("company added", function(company) {
 	var id = '<?php echo $genid.'userFormCompany' ?>';

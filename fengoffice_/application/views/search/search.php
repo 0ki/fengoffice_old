@@ -1,31 +1,27 @@
 <?php
   set_page_title(lang('search results'));
-  $showContext = false; //TODO Implement context support before setting this to true
   $genid = gen_id();
   $search_all_projects = array_var($_GET, 'search_all_projects', 'false');
   $has_search_results = isset($search_results) && is_array($search_results) && count($search_results);
+  
+  //TODO implement jumping to a specific item if it is the only one returned in the search? possibly just check for UID.
+  //if ($has_search_results && count($search_results) == 1 && count($search_results[0]) == 1){
+  //}
 ?>
 <div id="<?php echo $genid; ?>Search" style='height:100%;background-color:white'>
 <div style='background-color:white'>
 <div id="searchForm">
-  <form class="internalForm" action="<?php echo get_url('search','search') ?>" method="get">
-    <?php echo input_field('search_for', array_var($_GET, 'search_for')) ?>
-    <input type="hidden" name="c" value="search" />
-    <input type="hidden" name="a" value="search" />
-    <?php echo submit_button(lang('search')) ?>
-  </form>
-</div>
-
-<div id="headerDiv" class="searchDescription">
+  
+  <div id="headerDiv" class="searchDescription">
 <?php if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) 
 		echo lang("search for in project", clean($search_string), clean(active_project()->getName()));
 	else
 		echo lang("search for", clean($search_string)); 
-	if ($has_search_results && array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
+	if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
 	<br/><a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true" )) ?>"><?php echo lang('search in all workspaces') ?></a>
 <?php } //if ?>
 </div>
-
+</div>
 
 
 
@@ -33,7 +29,7 @@
 
 if($has_search_results) {
 	foreach($search_results as $search_result) { 
-		$alt = true;
+		$alt = false;
 		$pagination = $search_result["pagination"];?>
 	<div class="searchGroup">
 	<table width="100%"><tr><td align=center>
@@ -61,32 +57,74 @@ if($has_search_results) {
 	<table style="width:100%">
 	<?php foreach($search_result['result'] as $srrow) {
 		$alt = !$alt;
-		$result = $srrow['object'];?>
+		$object = $srrow['object'];?>
 		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">
-			<td style="padding:6px" rowspan=<?php echo $showContext ? 2 : 1 ?> width=36>
+			<td style="padding:6px" width=36>
 		<?php if ($search_result["manager"] == 'ProjectFiles' || $search_result["manager"] == 'ProjectFileRevisions') {?>
-			<img style="width:36px" src="<?php echo $result->getTypeIconUrl() ?>"/>
+			<img style="width:36px" src="<?php echo $object->getTypeIconUrl() ?>"/>
 		<?php } ?>
 		<?php if ($search_result["manager"] == 'Contacts') {?>
-			<img style="width:36px" src="<?php echo $result->getPictureUrl() ?>"/>
+			<img style="width:36px" src="<?php echo $object->getPictureUrl() ?>"/>
 		<?php } ?>
 		<?php if ($search_result["manager"] == 'Users') {?>
-			<img style="width:36px" src="<?php echo $result->getAvatarUrl() ?>"/>
+			<img style="width:36px" src="<?php echo $object->getAvatarUrl() ?>"/>
 		<?php } ?></td>
-		<td style="padding:6px;vertical-align:middle"><?php if ($result instanceof ProjectDataObject){
-			$dws = $result->getWorkspaces();
+		<td style="padding:6px;vertical-align:middle"><?php if ($object instanceof ProjectDataObject){
+			$dws = $object->getWorkspaces();
 			$projectLinks = array();
 			foreach ($dws as $ws) {
 				$projectLinks[] = $ws->getId();
 			echo '<span style="padding-right:5px"><span class="project-replace">' . implode(',',$projectLinks)  . '</span></span>';
 		}}?><?php if ($search_result["manager"] == 'Projects') {?>
-			<span class="project-replace" onclick="Ext.getCmp('tabs-panel').setActiveTab('overview-panel')"><?php echo $result->getId() ?></span>
-		<?php } else { ?>
-			<a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a>
+			<span class="project-replace" onclick="Ext.getCmp('tabs-panel').setActiveTab('overview-panel')"><?php echo $object->getId() ?></span>
+		<?php } else { 
+			$object_name = $object->getObjectName();
+			$context_on_name = SearchableObjects::getContext($object_name,$search_string);
+			if ($context_on_name != '')
+				$object_name = $context_on_name;
+			else
+				$object_name = clean($object_name);
+			?>
+			<a class="internalLink" href="<?php echo $object->getObjectUrl() ?>" style="font-size:120%;"><?php echo $object_name ?></a>
 		<?php } // if ?>
 		</td>
-		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $result->getUpdatedByCardUrl(), ($result->getUpdatedBy() instanceof User ? clean($result->getUpdatedByDisplayName()) : clean($result->getCreatedByDisplayName())), format_descriptive_date($result->getObjectUpdateTime())) ?></td>
+		<td style="padding:6px;vertical-align:middle" align=right><?php echo lang("modified by on short", $object->getUpdatedByCardUrl(), ($object->getUpdatedBy() instanceof User ? clean($object->getUpdatedByDisplayName()) : clean($object->getCreatedByDisplayName())), format_descriptive_date($object->getObjectUpdateTime())) ?></td>
 		</tr>
+		<?php foreach ($srrow['context'] as $context) {  // Draw context
+			if ($context['context'] != '' 
+				&& $context['column_name'] != 'title' 
+				&& $context['column_name'] != 'name' 
+				&& $context['column_name'] != 'firstname' 
+				&& $context['column_name'] != 'lastname' 
+				&& $context['column_name'] != 'subject' 
+				&& $context['column_name'] != 'filename') {?>
+		<tr style="vertical-align:middle" class="<?php echo $alt? "searchAltRow" : 'searchRow' ?>">
+		<td></td><td colspan=2 style="padding:6px;padding-top:0px">
+			<b><?php 
+				$colname = $context['column_name'];
+				
+				//Check for custom properties
+				if (substr($colname,0,8) == 'property'){
+					$property_id = trim(substr($colname,8));
+					if (is_numeric($property_id)){
+						$prop = ObjectProperties::findById($property_id);
+						if ($prop instanceof ObjectProperty)
+							echo $prop->getPropertyName();
+						else
+							break;
+					} else
+						break;
+				} else {
+					if (Localization::instance()->lang_exists('field ' . $object->getObjectManagerName() . ' ' . $context['column_name']))
+						echo lang('field ' . $object->getObjectManagerName() . ' ' . $context['column_name']);
+					else
+						echo clean($context['column_name']);
+				}
+				?>: </b>
+			<span class='desc'><?php echo $context['context'] ?></span></td>
+		</tr>
+		<?php } // if
+		} // foreach context ?>
 	<?php } // foreach row ?>
 	</table>
 	</div>
@@ -97,11 +135,6 @@ if($has_search_results) {
 <?php } else { ?>
 <div id="noResultsFoundDiv" class="searchDescription" style="font-weight:normal;font-size:140%;padding-top:30px; padding-bottom:30px">
 <?php echo lang('no search result for', clean($search_string)) ?>
-<?php if (strlen($search_string) < 4 && strpos($search_string, '*') === false) echo "<br/>" . lang('short search query warning', $search_string) ?>
-<?php if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
-<br/>
-<a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true" )) ?>"><?php echo lang('search in all workspaces') ?></a>
-<?php } //if ?>
 </div>
 <?php } // if ?>
 

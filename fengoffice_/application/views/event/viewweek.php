@@ -62,7 +62,7 @@ require_javascript('og/EventPopUp.js');
 	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end);
-	
+
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
 		$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $date_start, $date_end));
@@ -250,7 +250,8 @@ require_javascript('og/EventPopUp.js');
 				$p = get_url('event', 'viewdate', array(
 					'day' => $dtv_temp->getDay(),
 					'month' => $dtv_temp->getMonth(),
-					'year' => $dtv_temp->getYear()
+					'year' => $dtv_temp->getYear(),
+					'view_type' => 'viewdate'
 				));
 				$t = get_url('event', 'add', array(
 					'day' => $dtv_temp->getDay(),
@@ -369,7 +370,8 @@ require_javascript('og/EventPopUp.js');
 					<script>
 						addTip('<?php echo $div_prefix . $event->getId() ?>', <?php echo json_encode($divtype . $subject) ?>, <?php echo json_encode($tipBody) ?>);
 						<?php if (!($event instanceof Contact || (isset($is_repe_task) && $is_repe_task))) { ?>
-						og.createEventDrag('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $event->getId()?>', '<?php echo $objType ?>', true, 'ev_dropzone_allday');
+						<?php $is_repetitive = $event instanceof ProjectEvent && $event->isRepetitive() ? 'true' : 'false'; ?>
+						og.createEventDrag('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $dates[$day_of_week]->format('Y-m-d')." 00:00:00" ?>', '<?php echo $objType ?>', true, 'ev_dropzone_allday');
 						<?php } ?>
 					</script>
 					<?php
@@ -464,9 +466,8 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 										}
 										foreach ($results[$day_of_week] as $event){
 											
-											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											
+											getEventLimits($event, $dates[$day_of_week], $event_start, $event_duration, $end_modified);
+
 											$event_duration->add('s', -1);
 											if ($event_start->getMinute() < 30) {
 												$cells[$event_start->getHour()][0]++;
@@ -486,8 +487,19 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 										$occup = array(); //keys: hora - pos
 										foreach ($results[$day_of_week] as $event){
 											
-											$event_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
-											$event_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											getEventLimits($event, $dates[$day_of_week], $event_start, $event_duration, $end_modified);
+											
+											$tags = $event->getTags();
+											$eventTagString = '';
+											if (is_array($tags) && count($tags)>0){
+												$eventTagString .= '<span class="ico-tags ogTasksIcon" style="padding-left: 18px; padding-top: 4px; padding-bottom: 2px; font-size: 10px; margin-left: 10px;">';
+												$c= 0;
+												foreach ($tags as $t){
+													$eventTagString .= $t;
+													$c++;
+													count($tags)!=$c? $eventTagString .= ',':$eventTagString .= '</span>';														
+												}													
+											}
 											
 											$event_id = $event->getId();
 											$subject = clean($event->getSubject());
@@ -498,11 +510,6 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											}	
 											
 											cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color, $border_color);	
-											
-											if($use_24_hours) $timeformat = 'G:i';
-											else $timeformat = 'g:i A';
-											$start_time = date($timeformat, $event_start->getTimestamp());
-											$end_time = date($timeformat, $event_duration->getTimestamp());
 											
 											$hr_start = $event_start->getHour();
 											$min_start = $event_start->getMinute();
@@ -583,30 +590,40 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 													$occup[$event_duration->getHour()][1][$posHoriz] = true;
 												}
 											}
-											
 											$event_duration->add('s', 1);
-											$end_time = date($timeformat, $event_duration->getTimestamp());
-											//if ($posHoriz + 1 == $evs_same_time) $width = $width - 0.5;
 											
-											$tipBody = $event_start->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event_duration->format($use_24_hours ? 'G:i' : 'g:i A') . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
+											$real_start = new DateTimeValue($event->getStart()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											$real_duration = new DateTimeValue($event->getDuration()->getTimestamp() + 3600 * logged_user()->getTimezone());
+											
+											$pre_tf = $real_start->getDay() == $real_duration->getDay() ? '' : 'D j, ';
+											$ev_hour_text = (!$event->isRepetitive() && $real_start->getDay() != $event_start->getDay()) ? "... ".format_date($real_duration, $timeformat, 0) : format_date($real_start, $timeformat, 0);
+											
+											$tipBody = format_date($real_start, $pre_tf.$timeformat, 0) .' - '. format_date($real_duration, $pre_tf.$timeformat, 0) . (trim(clean($event->getDescription())) != '' ? '<br><br>' . clean($event->getDescription()) : '');
 											$tipBody = str_replace("\r", '', $tipBody);
 											$tipBody = str_replace("\n", '<br>', $tipBody);
 											if (strlen_utf($tipBody) > 200) $tipBody = substr_utf($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
 											
-											$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp()); 
+											$ev_duration = DateTimeValueLib::get_time_difference($event_start->getTimestamp(), $event_duration->getTimestamp());
+											$id_suffix = "_$day_of_week"; 
 ?>
 											<script>
 												if (<?php echo $top; ?> < scroll_to || scroll_to == -1) {
 													scroll_to = <?php echo $top;?>;
 												}
-												addTip('w_ev_div_' + <?php echo $event->getId() ?>, <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
+												addTip('w_ev_div_' + '<?php echo $event->getId() . $id_suffix ?>', <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($tipBody);?>);
 											</script>
+<?php
+											$bold = "bold";
+											if ($event instanceof Contact || $event->getIsRead(logged_user()->getId())){
+												$bold = "normal";
+											}
+?>
 
 
-						<div id="w_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;height:<?php echo $height ?>px;z-index:120;" onclick="og.disableEventPropagation(event)" onmouseup="og.clearPaintedCells()">
+						<div id="w_ev_div_<?php echo $event->getId() . $id_suffix?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;height:<?php echo $height ?>px;z-index:120;" onclick="og.disableEventPropagation(event)" onmouseup="og.clearPaintedCells()">
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
-						<div id="inner_w_ev_div_<?php echo $event->getId()?>" class="chipbody edit og-wsname-color-<?php echo $ws_color?>" style="height:<?php echo $height ?>px;">
+						<div id="inner_w_ev_div_<?php echo $event->getId() . $id_suffix?>" class="chipbody edit og-wsname-color-<?php echo $ws_color?>" style="height:<?php echo $height ?>px;">
 						<div style="height:100%;border-left: 1px solid;border-right: 1px solid;border-color:<?php echo $border_color ?>;">
 							<table style="width:100%;"><tr><td>
 								<input type="checkbox" style="width:13px;height:13px;vertical-align:top;margin:2px 0 0 2px;border-color: <?php echo $border_color ?>;" id="sel_<?php echo $event->getId()?>" name="obj_selector" onclick="og.eventSelected(this.checked);"></input>
@@ -617,7 +634,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 									)); ?>'
 								onclick="og.disableEventPropagation(event);"
 								class='internalLink'>
-									<span name="w_ev_div_<?php echo $event->getId()?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></span>																				
+									<span name="w_ev_div_<?php echo $event->getId() . $id_suffix?>_info" style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight:"<?php echo $bold ?>";"><?php echo "$ev_hour_text"?></span>																				
 								</a>
 							</td><td align="right">
 								<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -645,7 +662,7 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 							<tr><td>
 								<div><a href='<?php echo get_url('event', 'viewevent', array('view' => 'week', 'id' => $event->getId(), 'user_id' => $user_filter)); ?>'
 									onclick="og.disableEventPropagation(event);"
-									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></span></a>
+									class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;font-weight: <?php echo $bold;?>"><?php echo $subject . $eventTagString ;?></span></a>
 								</div>
 							</td></tr>
 							<tr style="height:100%;">
@@ -659,8 +676,11 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 						</div>
 						
 						<script>
-							og.setResizableEvent('w_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>'); // Resize
-							og.createEventDrag('w_ev_div_<?php echo $event->getId()?>', '<?php echo $event->getId()?>', 'event', false, 'ev_dropzone'); // Drag
+							<?php if (!$end_modified) { ?>
+							og.setResizableEvent('w_ev_div_<?php echo $event->getId() . $id_suffix?>', '<?php echo $event->getId()?>'); // Resize
+							<?php } ?>
+							<?php $is_repetitive = $event->isRepetitive() ? 'true' : 'false'; ?>
+							og.createEventDrag('w_ev_div_<?php echo $event->getId() . $id_suffix?>', '<?php echo $event->getId()?>', <?php echo $is_repetitive ?>, '<?php echo $event_start->format('Y-m-d H:i:s') ?>', 'event', false, 'ev_dropzone'); // Drag
 						</script>
 
 <?php												}//foreach ?>
@@ -737,10 +757,10 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 	}
 	
 <?php if ($drawHourLine) { ?>
-	og.calendar_start_day = <?php echo user_config_option('start_monday') ? '1' : '0' ?>;
+	og.preferences['start_monday'] = <?php echo json_encode(user_config_option('start_monday')) ?>;
 	og.startLocaleTime = new Date('<?php echo $today->format('m/d/Y H:i:s') ?>');
 	og.startLineTime = null;
-	if (og.calendar_start_day == 1) {
+	if (og.preferences['start_monday'] == 1) {
 		var today_d = og.startLocaleTime.format('N') - 1;
 	} else {
 		var today_d = og.startLocaleTime.format('w');

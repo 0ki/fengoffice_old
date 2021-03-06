@@ -12,6 +12,10 @@
 			if (!$company->isOwner()) {
 				add_page_action(lang('permissions'), $company->getUpdatePermissionsUrl(), 'ico-permissions', null, null, true);
 			} // if
+			if (!$company->isArchived())
+				add_page_action(lang('archive'), "javascript:if(confirm(lang('confirm archive object'))) og.openLink('" . $company->getArchiveUrl() ."');", 'ico-archive-obj');
+			else
+				add_page_action(lang('unarchive'), "javascript:if(confirm(lang('confirm unarchive object'))) og.openLink('" . $company->getUnarchiveUrl() ."');", 'ico-unarchive-obj');
 		} // if
 	}
 

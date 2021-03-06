@@ -20,6 +20,8 @@ return array(
 	'field Companies updated_on' => 'Updated on',
 	'field Companies created_by_id' => 'Created by',
 	'field Companies updated_by_id' => 'Updated by',
+	'field Companies archived_on' => 'Archived on',
+	'field Companies archived_by_id' => 'Archived by',
 
 	// Contact fields
 	'field Contacts company_id' => 'Company',
@@ -70,6 +72,8 @@ return array(
 	'field Contacts updated_on' => 'Updated on',
 	'field Contacts created_by_id' => 'Created by',
 	'field Contacts updated_by_id' => 'Updated by',
+	'field Contacts archived_on' => 'Archived on',
+	'field Contacts archived_by_id' => 'Archived by',
 
 	// Email fields
     'field MailContents from' => 'From',
@@ -93,6 +97,8 @@ return array(
 	'field MailContents updated_by_id' => 'Updated by',
 	'field MailContents cc' => 'CC',
 	'field MailContents bcc' => 'BCC',
+	'field MailContents archived_on' => 'Archived on',
+	'field MailContents archived_by_id' => 'Archived by',
 
 	// Event fields
     'field ProjectEvents duration' => 'Duration',
@@ -111,6 +117,11 @@ return array(
 	'field ProjectEvents updated_on' => 'Updated on',
 	'field ProjectEvents created_by_id' => 'Created by',
 	'field ProjectEvents updated_by_id' => 'Updated by',
+	'field ProjectEvents archived_on' => 'Archived on',
+	'field ProjectEvents archived_by_id' => 'Archived by',
+	'field ProjectEvents repeat_dow' => 'Repeat day of week',
+	'field ProjectEvents repeat_mjump' => 'Repeat month jump',
+	'field ProjectEvents repeat_wnum' => 'Repeat week number',
 
 	// File fields
 	'field ProjectFiles filename' => 'Filename', 
@@ -127,6 +138,8 @@ return array(
 	'field ProjectFiles checked_out_on' => 'Checked out on',
 	'field ProjectFiles created_by_id' => 'Created by',
 	'field ProjectFiles updated_by_id' => 'Updated by',
+	'field ProjectFiles archived_on' => 'Archived on',
+	'field ProjectFiles archived_by_id' => 'Archived by',
 
 	// Milestone fields
     'field ProjectMilestones name' => 'Name',
@@ -140,6 +153,8 @@ return array(
 	'field ProjectMilestones updated_by_id' => 'Updated by',
 	'field ProjectMilestones assigned_to_company_id' => 'Assigned to company',		
 	'field ProjectMilestones assigned_to_user_id' => 'Assigned to user',
+	'field ProjectMilestones archived_on' => 'Archived on',
+	'field ProjectMilestones archived_by_id' => 'Archived by',
 
 	// Message fields
 	'field ProjectMessages title' => 'Title', 
@@ -153,6 +168,8 @@ return array(
 	'field ProjectMessages created_by_id' => 'Created by',
 	'field ProjectMessages updated_by_id' => 'Updated by',
 	'field ProjectMessages milestone_id' => 'Milestone',
+	'field ProjectMessages archived_on' => 'Archived on',
+	'field ProjectMessages archived_by_id' => 'Archived by',
 
 	// Task fields
 	'field ProjectTasks text' => 'Text',
@@ -174,6 +191,8 @@ return array(
 	'field ProjectTasks assigned_to_company_id' => 'Assigned to company',		
 	'field ProjectTasks assigned_to_user_id' => 'Assigned to user',
 	'field ProjectTasks completed_by_id' => 'Completed by',
+	'field ProjectTasks archived_on' => 'Archived on',
+	'field ProjectTasks archived_by_id' => 'Archived by',
 	'field ProjectTasks repeat_by' => 'Repeat by',
 	'field ProjectTasks repeat_end' => 'Repeat end',
     'field ProjectTasks repeat_num' => 'Repeat number',
@@ -200,9 +219,13 @@ return array(
     'field Users can_manage_contacts' => 'Can manage all contacts',
     'field Users can_manage_templates' => 'Can manage templates',
 	'field Users can_manage_reports'=> 'Can manage reports',
+	'field Users can_manage_time'=> 'Can manage time',
+	'field Users can_add_mail_accounts'=> 'Can add email accounts',
 	'field Users created_by_id' => 'Created by',
 	'field Users updated_by_id' => 'Updated by',
 	'field Users company_id' => 'Company',
+	'field Users archived_on' => 'Archived on',
+	'field Users archived_by_id' => 'Archived by',
 
 	// Webpage fields
     'field ProjectWebpages url' => 'Url', 
@@ -212,6 +235,8 @@ return array(
     'field ProjectWebpages updated_on' => 'Updated on',
 	'field ProjectWebpages created_by_id' => 'Created by',
 	'field ProjectWebpages updated_by_id' => 'Updated by',
+	'field ProjectWebpages archived_on' => 'Archived on',
+	'field ProjectWebpages archived_by_id' => 'Archived by',
 
 	// Project fields
 	'field Projects name' => 'Name', 
@@ -222,7 +247,9 @@ return array(
     'field Projects updated_on' => 'Updated on',
 	'field Projects created_by_id' => 'Created by', 
     'field Projects updated_by_id' => 'Updated by',
-	'field Projects completed_by_id' => 'Completed by'  
+	'field Projects completed_by_id' => 'Completed by',
+	'field Projects archived_on' => 'Archived on',
+	'field Projects archived_by_id' => 'Archived by',
 );
 
 ?>

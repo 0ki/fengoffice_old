@@ -5,8 +5,7 @@
 	$genid = gen_id();
 	$object = $message;
 ?>
-<form style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
-
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' action="<?php echo $message->isNew() ? get_url('message', 'add') : $message->getEditUrl() ?>" method="post" enctype="multipart/form-data">
 <div class="message">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
@@ -45,12 +44,15 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
-
+	
+	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
+	<input id="<?php echo $genid?>genid"                type="hidden" name="genid"         value="<?php echo $genid ?>" >
+	<input id="<?php echo $genid?>updated-on-hidden"    type="hidden" name="updatedon"     value="<?php echo !$message->isNew() ? $message->getUpdatedOn()->getTimestamp() : '' ?>">
+	
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_note_context_help', true, logged_user()->getId())) {?>
 			<div id="addNotesPanelContextHelp" class="contextHelpStyle">
-			
 				<?php render_context_help($this, 'chelp add note','add_note'); ?>
 			</div>
 		<?php }?>
@@ -154,6 +156,7 @@
 	<script>
 	var wsch = Ext.getCmp('<?php echo $genid ?>ws_ids');
 	wsch.on("wschecked", function(arguments) {
+		if (!this.getValue().trim()) return;
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
 		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
 			url: og.getUrl('object', 'render_add_subscribers', {
@@ -217,5 +220,5 @@
 </form>
 
 <script>
-	Ext.get('<?php echo $genid ?>messageFormTitle').focus();
+	Ext.get('<?php echo $genid ?>messageFormTitle').focus();	
 </script>

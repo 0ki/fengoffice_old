@@ -34,7 +34,9 @@
     'outgoing_transport_type' => DATA_TYPE_STRING,
     'last_checked' => DATA_TYPE_DATETIME,
 	'is_default' => DATA_TYPE_BOOLEAN,
-    'signature' => DATA_TYPE_STRING
+    'signature' => DATA_TYPE_STRING,
+    'workspace' => DATA_TYPE_INTEGER,
+    'sender_name' => DATA_TYPE_STRING,
 );
   
     /**

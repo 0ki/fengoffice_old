@@ -63,8 +63,9 @@ ogTasks.printGroupTasks = function(group, printWindow){
 	sb.append("<table style='width:100%;max-width:1000px'>");
 	
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	var displayCriteria = bottomToolbar.getDisplayCriteria();
-	var drawOptions = bottomToolbar.getDrawOptions();
+	var drawOptions = topToolbar.getDrawOptions();
 	
 
 	var tasks = this.flattenTasks(group.group_tasks);

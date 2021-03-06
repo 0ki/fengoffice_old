@@ -35,12 +35,12 @@ class AccessController extends ApplicationController {
 		}
 		$this->addHelper('form');
 
-		if (function_exists('logged_user') && (logged_user() instanceof User)) {
+		if(function_exists('logged_user') && (logged_user() instanceof User)) {
 			$ref_controller = null;
 			$ref_action = null;
 			$ref_params = array();
-			foreach ($_GET as $k => $v) {
-				if (str_starts_with($k, 'ref_')) {
+			foreach($_GET as $k => $v) {
+				if(str_starts_with($k, 'ref_')) {
 					$ref_var_name = trim(substr($k, 4, strlen($k)));
 					switch ($ref_var_name) {
 						case 'c':
@@ -60,37 +60,37 @@ class AccessController extends ApplicationController {
 		$login_data = array_var($_POST, 'login');
 		$localization = array_var($_POST, 'configOptionSelect');
 		
-		if (!is_array($login_data)) {
+		if(!is_array($login_data)) {
 			$login_data = array();
-			foreach ($_GET as $k => $v) {
-				if (str_starts_with($k, 'ref_')) $login_data[$k] = $v;
+			foreach($_GET as $k => $v) {
+				if(str_starts_with($k, 'ref_')) $login_data[$k] = $v;
 			} // foreach
 		} // if
 
 		tpl_assign('login_data', $login_data);
 
-		if (is_array(array_var($_POST, 'login'))) {
+		if(is_array(array_var($_POST, 'login'))) {
 			$username = array_var($login_data, 'username');
 			$password = array_var($login_data, 'password');
 			$remember = array_var($login_data, 'remember') == 'checked';
 
-			if (trim($username == '')) {
+			if(trim($username == '')) {
 				tpl_assign('error', new Error(lang('username value missing')));
 				$this->render();
 			} // if
 
-			if (trim($password) == '') {
+			if(trim($password) == '') {
 				tpl_assign('error', new Error(lang('password value missing')));
 				$this->render();
 			} // if
 			
 			$user = Users::getByUsername($username, owner_company());
-			if (!($user instanceof User)) {
+			if(!($user instanceof User)) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
 
-			if (!$user->isValidPassword($password)) {
+			if(!$user->isValidPassword($password)) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // if
@@ -103,8 +103,8 @@ class AccessController extends ApplicationController {
 			$ref_action = null;
 			$ref_params = array();
 
-			foreach ($login_data as $k => $v) {
-				if (str_starts_with($k, 'ref_')) {
+			foreach($login_data as $k => $v) {
+				if(str_starts_with($k, 'ref_')) {
 					$ref_var_name = trim(substr($k, 4, strlen($k)));
 					switch ($ref_var_name) {
 						case 'c':
@@ -118,19 +118,19 @@ class AccessController extends ApplicationController {
 					} // switch
 				} // if
 			} // if
-			if (!count($ref_params)) $ref_params = null;
+			if(!count($ref_params)) $ref_params = null;
 						
-			if (UserPasswords::validatePassword($password)) {
+			if(UserPasswords::validatePassword($password)){
 				$newest_password = UserPasswords::getNewestUserPassword($user->getId());
-				if (!$newest_password instanceof UserPassword) {
+				if(!$newest_password instanceof UserPassword){
 					$user_password = new UserPassword();
 					$user_password->setUserId($user->getId());
 					$user_password->setPassword(sha1($password));
 					$user_password->password_temp = $password;
 					$user_password->setPasswordDate(DateTimeValueLib::now());
 					$user_password->save();
-				} else {
-					if (UserPasswords::isUserPasswordExpired($user->getId())) {
+				}else{
+					if(UserPasswords::isUserPasswordExpired($user->getId())){
 						$this->redirectTo('access', 'change_password', 
 						array('id' => $user->getId(),
 							'msg' => 'expired',
@@ -139,7 +139,7 @@ class AccessController extends ApplicationController {
 							$ref_params));
 					}
 				}
-			} else {
+			}else{
 				$this->redirectTo('access', 'change_password', 
 						array('id' => $user->getId(),
 							'msg' => 'invalid',
@@ -148,16 +148,17 @@ class AccessController extends ApplicationController {
 							$ref_params));
 			}
 			
+			
 			try {
 				CompanyWebsite::instance()->logUserIn($user, $remember);
 				$ip  = get_ip_address();
-				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_LOGIN, false, false, true, $ip);
+				ApplicationLogs::createLog($user,null,ApplicationLogs::ACTION_LOGIN,false,false,true,$ip);
 			} catch(Exception $e) {
 				tpl_assign('error', new Error(lang('invalid login data')));
 				$this->render();
 			} // try
 
-			if ($ref_controller && $ref_action) {
+			if($ref_controller && $ref_action) {
 				$this->redirectTo($ref_controller, $ref_action, $ref_params);
 			} else {
 				$this->redirectTo('access', 'index');
@@ -173,6 +174,14 @@ class AccessController extends ApplicationController {
 		}
 		if (is_ajax_request()) {
 			$active_proj = array_var($_GET,'active_project', 0);
+			$timezone =  array_var($_GET,'utz');
+			if ($timezone && $timezone != ''){
+				$usu = logged_user();
+				if ($usu instanceof User){
+					$usu->setTimezone($timezone);
+					$usu->save();
+				}
+			}
 			$this->redirectTo('dashboard', 'index', array('active_project' => $active_proj));
 		} else {
 			if (!logged_user() instanceof User) {
@@ -321,10 +330,6 @@ class AccessController extends ApplicationController {
 	*/
 	function relogin() {
 		ajx_current("empty");
-		if (function_exists('logged_user') && (logged_user() instanceof User)) {
-			flash_success(lang("already logged in"));
-			return;
-		} // if
 
 		$login_data = array_var($_POST, 'login');
 		if (!is_array($login_data)) {
@@ -333,6 +338,10 @@ class AccessController extends ApplicationController {
 		$username = array_var($login_data, 'username');
 		$password = array_var($login_data, 'password');
 		$remember = array_var($login_data, 'remember', '') != '';
+		if (function_exists('logged_user') && (logged_user() instanceof User) && logged_user()->getUsername() == $username) {
+			flash_error(lang("already logged in"));
+			return;
+		} // if
 
 		if (trim($username == '')) {
 			flash_error(lang("username value missing"));
@@ -398,9 +407,13 @@ class AccessController extends ApplicationController {
 				$this->redirectTo('access', 'forgot_password');
 			} // if
 
+			$token = sha1(gen_id() . defined('SEED') ? SEED : '');
+			$timestamp = time() + 60*60*24;
+			set_user_config_option('reset_password', $token . ";" . $timestamp, $user->getId());
+			
 			try {
 				DB::beginWork();
-				Notifier::forgotPassword($user);
+				Notifier::forgotPassword($user, $token);
 				flash_success(lang('success forgot password'));
 				DB::commit();
 			} catch(Exception $e) {
@@ -459,6 +472,7 @@ class AccessController extends ApplicationController {
 				$administrator->setCanManageTemplates(true);
 				$administrator->setCanManageReports(true);
 				$administrator->setCanManageTime(true);
+				$administrator->setCanAddMailAccounts(true);
 				$administrator->setAutoAssign(false);
 				$administrator->setPersonalProjectId(1);
 
@@ -468,32 +482,32 @@ class AccessController extends ApplicationController {
 				$group->setName('administrators');
 				$group->setAllPermissions(true);
 				$group->setId(Group::CONST_ADMIN_GROUP_ID );
-				
+			
 				$group->save();
-				
+
 				$group_user = new GroupUser();
 				$group_user->setGroupId(Group::CONST_ADMIN_GROUP_ID);
 				$group_user->setUserId($administrator->getId());
-				
+
 				$group_user->save();
-				
+
 				$project = new Project();
 				$project->setId(1);
 				$project->setP1(1);
 				$project->setName($administrator->getUsername().'_personal');
 				$project->setDescription(lang('files'));
 				$project->setCreatedById($administrator->getId());
-		
+
 				$project->save();
-		
+
 				$project_user = new ProjectUser();
 				$project_user->setProjectId($project->getId());
 				$project_user->setUserId($administrator->getId());
 				$project_user->setCreatedById($administrator->getId());
 				$project_user->setAllPermissions(true);
-		
+
 				$project_user->save();
-		
+
 				// Create a company
 				$company = new Company();
 				$company->setId(1);
@@ -545,6 +559,60 @@ class AccessController extends ApplicationController {
 		$this->renderText($content, true);
 	}
 	
+	function reset_password() {
+		$tok = array_var($_GET,'t');
+		$uid = array_var($_GET,'uid');
+		
+		if (!$tok || !$uid) {
+			flash_error(lang('invalid parameters'));
+			$this->redirectTo('access', 'login');
+		}
+		$user = Users::findById($uid);
+		if (!$user instanceof User ) {
+			flash_error(lang('user dnx'));
+			$this->redirectTo('access', 'login');
+		}
+		$stok = user_config_option('reset_password', null, $user->getId());
+		if (!$stok) {
+			flash_error(lang('reset password expired', lang('forgot password')));
+			$this->redirectTo('access', 'login');
+		}
+		$split = explode(";", $stok);
+		if (count($split) < 2) {
+			flash_error(lang('reset password expired', lang('forgot password')));
+			$this->redirectTo('access', 'login');
+		}
+		$token = $split[0];
+		$timestamp = $split[1];
+		if ($timestamp < time()) {
+			set_user_config_option('reset_password', '', $user->getId());
+			flash_error(lang('reset password expired', lang('forgot password')));
+			$this->redirectTo('access', 'login');
+		}
+		if ($token != $tok) {
+			flash_error(lang('reset password expired', lang('forgot password')));
+			$this->redirectTo('access', 'login');
+		}
+		tpl_assign('token', $token);
+		tpl_assign('user', $user);
+		$new_password = array_var($_POST, 'new_password');
+		if ($new_password) {
+			$repeat_password = array_var($_POST, 'repeat_password');
+			if ($new_password != $repeat_password) {
+				flash_error('passwords dont match');
+				return;
+			}
+			$user->setPassword($new_password);
+			$user->save();
+			set_user_config_option('reset_password', '', $user->getId());
+			flash_success(lang('success reset password'));
+			$this->redirectTo('access', 'login');
+		}
+	}
+	
+	function view_help_manual() {
+		$this->redirectToUrl(help_link());
+	}
 } // AccessController
 
 ?>

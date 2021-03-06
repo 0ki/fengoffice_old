@@ -94,6 +94,16 @@ class Notifier {
 			$text = str_replace("\n", "\r\n>", $text);
 			$properties['description'] = $text;
 		}
+		if ($object instanceof ProjectFile) {
+			$revision = $object->getLastRevision();
+			if (trim($revision->getComment())) {
+				$text = "\r\n" . $revision->getComment();
+				$text = str_replace("\r\n", "\n", $text);
+				$text = str_replace("\r", "\n", $text);
+				$text = str_replace("\n", "\r\n>", $text);
+				$properties['revision comment'] = $text;
+			}
+		}
 				
 		tpl_assign('object', $object);
 		tpl_assign('properties', $properties);
@@ -142,7 +152,7 @@ class Notifier {
 				$subscribers[] = $subscriber;
 			} // of
 		} // foreach
-		self::objectNotification($comment, $subscribers, logged_user(), 'new', "new comment posted", array($object->getObjectName()), $properties);
+		self::objectNotification($comment, $subscribers, logged_user(), 'new', "new comment posted", array($object->getObjectName()));
 	} // newObjectComment
 	
 	/**
@@ -152,13 +162,13 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function forgotPassword(User $user) {
+	static function forgotPassword(User $user, $token = null) {
 		$administrator = owner_company()->getCreatedBy();
 
-		$new_password = $user->resetPassword(true);
+		//$new_password = $user->resetPassword(true);
 		tpl_assign('user', $user);
-		tpl_assign('new_password', $new_password);
-		
+		//tpl_assign('new_password', $new_password);
+		tpl_assign('token',$token);
 		if (! $administrator instanceof User) return;
 
 		// send email in user's language
@@ -168,7 +178,7 @@ class Notifier {
 		self::queueEmail(
 			self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
 			self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
-			lang('your password'),
+			lang('reset password'),
 			tpl_fetch(get_template_path('forgot_password', 'notifier'))
 		); // send
 		$locale = logged_user() instanceof User ? logged_user()->getLocale() : DEFAULT_LOCALIZATION;
@@ -291,6 +301,9 @@ class Notifier {
 				$workspaces = implode(", ", $object->getUserWorkspaceNames($user));
 				$properties['workspace'] = $workspaces;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
+				if ($object->getTypeId() != 2) {
+					$properties['time'] = Localization::instance()->formatTime($object->getStart(), $user->getTimezone());
+				}
 		
 				$properties['accept or reject invitation help, click on one of the links below'] = '';
 				$properties['accept invitation'] = get_url('event', 'change_invitation_state', array('at' => 1, 'e' => $object->getId(), 'u' => $user->getId()));
@@ -583,7 +596,11 @@ class Notifier {
 		// Emulate mail() - use NativeMail
 		if($mail_transport_config == self::MAIL_TRANSPORT_MAIL) {
 			$mailer = new Swift(new Swift_Connection_NativeMail());
-			return $mailer->isConnected() ? $mailer : null;
+			if(!$mailer->isConnected()) {
+				Logger::log($mailer->lastError);
+				throw new Exception($mailer->lastError);
+			} // if
+			return $mailer;
 
 			// Use SMTP server
 		} elseif($mail_transport_config == self::MAIL_TRANSPORT_SMTP) {
@@ -610,8 +627,10 @@ class Notifier {
 			} // switch
 
 			$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
+			$mailer->loadPlugin(new SwiftLogger());
 			if(!$mailer->isConnected()) {
-				return null;
+				Logger::log($mailer->lastError);
+				throw new Exception($mailer->lastError);
 			} // if
 
 			$mailer->setCharset('UTF-8');
@@ -620,7 +639,8 @@ class Notifier {
 				if($mailer->authenticate($smtp_username, $smtp_password)) {
 					return $mailer;
 				} else {
-					return null;
+					Logger::log($mailer->lastError);
+					throw new Exception($mailer->lastError);
 				} // if
 			} else {
 				return $mailer;

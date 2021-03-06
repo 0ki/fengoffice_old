@@ -29,7 +29,7 @@ class ProjectWebpages extends BaseProjectWebpages {
 		));
 	}
 
-	function getWebpages($project_ids, $tag = '', $page = 1, $webpages_per_page = 10, $orderBy = 'title', $orderDir = 'ASC') {
+	function getWebpages($project_ids, $tag = '', $page = 1, $webpages_per_page = 10, $orderBy = 'title', $orderDir = 'ASC', $archived = false) {
 		$orderDir = strtoupper($orderDir);
 		if ($orderDir != "ASC" && $orderDir != "DESC") $orderDir = "ASC";
 		if($page < 0) $page = 1;
@@ -48,9 +48,12 @@ class ProjectWebpages extends BaseProjectWebpages {
 				')';
 		
 		$project_str = " AND " . self::getWorkspaceString($project_ids);
+		
+		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
+		else $archived_cond = " AND `archived_by_id` = 0";
 
 		return ProjectWebpages::paginate(
-			array("conditions" => $tagstr . $permission_str . $project_str ,
+			array("conditions" => $tagstr . $permission_str . $project_str . $archived_cond,
 	        		'order' => DB::escapeField($orderBy)." $orderDir"),
 				config_option('files_per_page', 10),
 				$page

@@ -5,8 +5,8 @@ var tbar_datemenu = new Ext.menu.DateMenu({
     	dp.setValue(date);
     	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
     },
-    format: og.date_format,
-    startDay: og.calendar_start_day,
+    format: og.preferences['date_format'],
+    startDay: og.preferences['start_monday'],
 	altFormats: lang('date format alternatives')
 });
 og.calToolbarDateMenu = tbar_datemenu;
@@ -65,6 +65,27 @@ og.getSelectedEventsCsv = function() {
 	}
 	return ids;
 }
+
+var markactions = {
+	markAsRead: new Ext.Action({
+		text: lang('mark as read'),
+        tooltip: lang('mark as read desc'),
+        iconCls: 'ico-mark-as-read',
+        disabled: true,
+		handler: function() {
+			og.openLink(og.getUrl('event', 'markasread', {ids: og.getSelectedEventsCsv()}));		
+		}
+	}),
+	markAsUnread: new Ext.Action({
+		text: lang('mark as unread'),
+        tooltip: lang('mark as unread desc'),
+        iconCls: 'ico-mark-as-unread',
+        disabled: true,
+		handler: function() {
+			og.openLink(og.getUrl('event', 'markasunread', {ids: og.getSelectedEventsCsv()}));		
+		}
+	})
+};
 
 // Toolbar Items
 var topToolbarItems = { 
@@ -165,6 +186,13 @@ var topToolbarItems = {
 						og.openLink(og.getUrl('event', 'tag_events', {ids: ids, tags: tag}));
 					},
 					scope: this
+				},
+				'tagdelete': {
+					fn: function(tag) {
+						ids = og.getSelectedEventsCsv();
+						og.openLink(og.getUrl('event', 'untag_events', {ids: ids, tags: tag.text}));
+				},
+				scope: this
 				}
 			}
 		})
@@ -184,7 +212,7 @@ var topToolbarItems = {
 	edit: new Ext.Action({
 		text: lang('edit'),
         tooltip: lang('edit selected event'),
-        iconCls: 'ico-new',
+        iconCls: 'ico-edit',
 		disabled: true,
 		handler: function() {
 			ev_id = og.getSelectedEventsCsv();
@@ -199,6 +227,26 @@ var topToolbarItems = {
 				}
 			}
 		}
+	}),
+	markAs: new Ext.Action({
+		text: lang('mark as'),
+		tooltip: lang('mark as desc'),
+		menu: [
+			markactions.markAsRead,
+			markactions.markAsUnread
+		]
+	}),
+	archive: new Ext.Action({
+		text: lang('archive'),
+           tooltip: lang('archive selected object'),
+           iconCls: 'ico-archive-obj',
+		disabled: true,
+		handler: function() {
+			if (confirm(lang('confirm archive selected objects'))) {
+				og.openLink(og.getUrl('event', 'archive', {ids: og.getSelectedEventsCsv()}));
+			}
+		},
+		scope: this
 	})
 };
 
@@ -217,24 +265,37 @@ og.CalendarTopToolbar = function(config) {
 	
 	this.add(topToolbarItems.add);
 	this.addSeparator();
+	this.add(topToolbarItems.edit);
 	this.add(topToolbarItems.tag);
 	this.add(topToolbarItems.del);
-	this.add(topToolbarItems.edit);
+	this.add(topToolbarItems.archive);
+	this.addSeparator();
+	this.add(topToolbarItems.markAs);
 	this.addSeparator();
 	this.add(topToolbarItems.imp_exp);
 }
 
 Ext.extend(og.CalendarTopToolbar, Ext.Toolbar, {
 	updateCheckedStatus : function(eventsSelected){
+		var allunread = true;
 		if (eventsSelected > 0) {
 			topToolbarItems.del.enable();
 			topToolbarItems.tag.enable();
+			if (allunread){
+				markactions.markAsRead.enable();
+				
+			}
+			markactions.markAsUnread.enable();
+			topToolbarItems.archive.enable();
 			if (eventsSelected == 1) topToolbarItems.edit.enable();
 			else topToolbarItems.edit.disable();
 		} else {
 			topToolbarItems.del.disable();
 			topToolbarItems.tag.disable();
 			topToolbarItems.edit.disable();
+			markactions.markAsRead.disable();
+			markactions.markAsUnread.disable();
+			topToolbarItems.archive.disable();
 		}
 	}
 });

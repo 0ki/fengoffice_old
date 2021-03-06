@@ -89,28 +89,34 @@ og.ogPermission.prototype.hasAllPermissions = og.ogPermHasAllPermissions;
  
 //	Loads the permission info from a hidden field. 
 //	The name of the hidden field must be of the form <genid> + 'hfPerms'
-og.ogLoadPermissions = function(genid){
-	var permarray = [];
-	
+og.ogLoadPermissions = function(genid, isNew){
 	var hf = document.getElementById(genid + 'hfPerms');
 	if (hf && hf.value != ''){
-	 	var dec = Ext.util.JSON.decode(hf.value);
-		var tree = Ext.getCmp('workspace-chooser' + genid);
-		
-	 	
-	 	for (var i = 0; i < dec.length; i++){
-	 		var perm = new og.ogPermission(dec[i].wsid, dec[i].pr, dec[i].pc);
-	 		permarray[dec[i].wsid] = perm;
-	 		var node = tree.getNodeById('ws' + dec[i].wsid);
-	 		if (node){
-				node.suspendEvents();
-				node.ui.toggleCheck(perm.hasAnyPermission());
-				node.attributes.checked = perm.hasAnyPermission();
-				node.resumeEvents();
-			}
-	 	}
+	 	var dec = Ext.util.JSON.decode(hf.value);	
+	 	og.ogLoadPermissionsFromArray(genid, dec, isNew);
+	} else {
+		permissionsList[genid] = [];
 	}
-	permissionsList[genid] = permarray;
+}
+
+og.ogLoadPermissionsFromArray = function(genid, dec, isNew) {
+	var tree = Ext.getCmp('workspace-chooser' + genid);
+	tree.uncheckAll();
+ 	
+	var permarray = [];
+ 	for (var i = 0; i < dec.length; i++){
+ 		var perm = new og.ogPermission(dec[i].wsid, dec[i].pr, dec[i].pc);
+ 		if (isNew) perm.isModified = true;
+ 		permarray[dec[i].wsid] = perm;
+ 		var node = tree.getNodeById(tree.nodeId(dec[i].wsid));
+ 		if (node){
+			node.suspendEvents();
+			node.ui.toggleCheck(perm.hasAnyPermission());
+			node.attributes.checked = perm.hasAnyPermission();
+			node.resumeEvents();
+		}
+ 	}
+ 	permissionsList[genid] = permarray;
 }
 
 
@@ -126,8 +132,9 @@ og.ogPermPrepareSendData = function(genid){
 	}
 	
 	var hf = document.getElementById(genid + 'hfPermsSend');
-	if (hf)
+	if (hf) {
 		hf.value = Ext.util.JSON.encode(result);
+	}
 		
 	return true;
 }
@@ -144,7 +151,7 @@ og.ogPermApplyToSubworkspaces = function(genid){
 		permissionsList[genid][ws.id] = permission;
 	}
 	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById('ws' + ws.id);
+	var node = tree.getNodeById(tree.nodeId(ws.id));
 	var ids = og.ogPermGetSubWsIdsFromNode(node);
 	
 	// holds the nodes that that were expanded once, to avoid expanding again the same node.
@@ -161,7 +168,7 @@ og.ogPermApplyToSubworkspaces = function(genid){
 		 	permissionsList[genid][ids[i]] = permissionCopy;
 		 	
 		 	//update the treenode 'checked' attribute
-		 	var node2 = tree.getNodeById('ws' + ids[i]);
+		 	var node2 = tree.getNodeById(tree.nodeId(ids[i]));
 			if (node2){
 			
 				var parent_expanded = false;
@@ -169,7 +176,7 @@ og.ogPermApplyToSubworkspaces = function(genid){
 					parent_expanded = already_expanded_once[i] == node2.ws.p;
 				// if parent was expanded before then dont do anything, otherwise expand it and add it to 'once expanded nodes' array.
 				if (!parent_expanded) {
-					var parent = tree.getNodeById('ws' + node2.ws.p);
+					var parent = tree.getNodeById(tree.nodeId(node2.ws.p));
 					if (parent && !parent.expanded) {
 						parent.expand();
 						parent.collapse();
@@ -199,7 +206,7 @@ og.ogPermValueChanged = function(genid){
 	
 	//Update the tree checkbox if there are any permissions
 	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById('ws' + ws.id);
+	var node = tree.getNodeById(tree.nodeId(ws.id));
 	if (node){
 		node.suspendEvents();
 		node.ui.toggleCheck(permission.hasAnyPermission());
@@ -247,7 +254,7 @@ og.ogPermAllChecked = function(genid,value,wsid){
 		og.ogPopulatePermissions(genid,permission);
 		
 	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById('ws' + wsid);
+	var node = tree.getNodeById(tree.nodeId(wsid));
 	node.suspendEvents();
 	node.ui.toggleCheck(value);
 	node.resumeEvents();
@@ -273,7 +280,7 @@ og.ogPermGetSubWsIdsFromNode = function(node){
 //	Returns the selected workspace from the tree control
 og.ogPermGetSelectedWs = function(genid){
 	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var ws = tree.getActiveWorkspace();
+	var ws = tree.getSelected();
 	return ws;
 }
 
@@ -291,7 +298,7 @@ og.ogPermSetLevel = function(genid,level){
 	og.ogPopulatePermissions(genid,permission);
 	
 	var tree = Ext.getCmp('workspace-chooser' + genid);
-	var node = tree.getNodeById('ws' + ws.id);
+	var node = tree.getNodeById(tree.nodeId(ws.id));
 	node.suspendEvents();
 	node.ui.toggleCheck(permission.hasAnyPermission());
 	node.resumeEvents();

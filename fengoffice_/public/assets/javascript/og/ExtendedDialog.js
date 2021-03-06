@@ -13,14 +13,16 @@ og.ExtendedDialog = function(config) {
 			bodyBorder: false,
 			items: config.dialogItems
 		});
-	}
+	}	
+	config.stateful = false;
+	if (!config.genid) config.genid = Ext.id();
 	og.ExtendedDialog.superclass.constructor.call(this, Ext.applyIf(config, {
 		y: 50,
 		id: config.genid + 'dialog',
 		layout: 'fit',
 		modal: true,
-		height:300,
-		width:450,
+		height: 300,
+		width: 450,
 		resizable: false,
 		closeAction: 'hide',
 		iconCls: 'op-ico',
@@ -33,6 +35,7 @@ og.ExtendedDialog = function(config) {
 		},{
 			text: (config.YESNO ? lang('no') : lang('cancel')),
 			handler: this.cancel,
+			id: config.genid + 'cancel_button',
 			scope: this
 		}],
 		items: [
@@ -57,6 +60,9 @@ og.ExtendedDialog.show = function(config) {
 	
 	if (config.ok_fn) {
 		Ext.getCmp(config.genid + 'ok_button').setHandler(config.ok_fn);
+	}
+	if (config.cancel_fn) {
+		Ext.getCmp(config.genid + 'cancel_button').setHandler(config.cancel_fn);
 	}
 	
 	this.dialog.purgeListeners();

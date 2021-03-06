@@ -44,9 +44,11 @@ ogTasksTask = function(){
 	this.pauseTime;
 	this.tags;
 	this.isAdditional = false;
+	this.isRead = true;
 	this.completedById;
 	this.completedOn;
 	this.repetitive = false;
+	this.otype;
 	
 	this.createdByName;
 	this.assignedToName;
@@ -85,8 +87,8 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.pr) this.priority = tdata.pr; else this.priority = 200;
 	if (tdata.mid) this.milestoneId = tdata.mid; else this.milestoneId = null;
 	if (tdata.atid) this.assignedToId = tdata.atid; else this.assignedToId = null;
-	if (tdata.dd) this.dueDate = tdata.dd - secondsToSubtract; else this.dueDate = null;
-	if (tdata.sd) this.startDate = tdata.sd - secondsToSubtract; else this.startDate = null;
+	if (tdata.dd) this.dueDate = tdata.dd - tdata.tz; else this.dueDate = null;
+	if (tdata.sd) this.startDate = tdata.sd - tdata.tz; else this.startDate = null;
 	if (tdata.wid) this.workingOnIds = tdata.wid; else this.workingOnIds = null;
 	if (tdata.wt) this.workingOnTimes = tdata.wt; else this.workingOnTimes = null;
 	if (tdata.wp) this.workingOnPauses = tdata.wp; else this.workingOnPauses = null;
@@ -95,6 +97,8 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	if (tdata.cbid) this.completedById = tdata.cbid; else this.completedById = null;
 	if (tdata.con) this.completedOn = tdata.con; else this.completedOn = null;
 	if (tdata.rep) this.repetitive = true;
+	if (tdata.isread) this.isRead = true; else this.isRead = false;
+	if (tdata.otype) this.otype = tdata.otype; else this.otype = null;
 }
 
 ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, completedTasks, isInternal){
@@ -125,6 +129,10 @@ ogTasksUser = function(id, name, companyId){
 	this.companyId = companyId;
 }
 
+ogTasksObjectSubtype = function(id, name){
+	this.id = id;
+	this.name = name;
+}
 
 
 //************************************
@@ -140,6 +148,7 @@ ogTasks.loadDataFromHF = function(){
 	result['users'] = Ext.util.JSON.decode(document.getElementById('hfUsers').value);
 	result['allUsers'] = Ext.util.JSON.decode(document.getElementById('hfAllUsers').value);
 	result['companies'] = Ext.util.JSON.decode(document.getElementById('hfCompanies').value);
+	result['objectSubtypes'] = Ext.util.JSON.decode(document.getElementById('hfObjectSubtypes').value);
 	
 	return ogTasks.loadData(result);
 }
@@ -220,6 +229,15 @@ ogTasks.loadData = function(data){
 			if (mdata.compId) milestone.completedById = mdata.compId;
 			if (mdata.compOn) milestone.completedOn = mdata.compOn;
 			this.Milestones[ogTasks.Milestones.length] = milestone;
+		}
+	}
+	
+	this.ObjectSubtypes = [];
+	for (i in data['objectSubtypes']){
+		var otdata = data['objectSubtypes'][i];
+		if (otdata.id){
+			var ot =  new ogTasksObjectSubtype(otdata.id,otdata.name);
+			this.ObjectSubtypes[ogTasks.ObjectSubtypes.length] = ot;
 		}
 	}
 }
@@ -430,8 +448,8 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	}
 	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
 	
-		var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
-		var filters = topToolbar.getFilters();
+		var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+		var filters = bottomToolbar.getFilters();
 		
 		for(var i = 0; i < this.Milestones.length; i++)
 			if (groups.indexOf(this.Milestones[i].id) < 0){
@@ -624,7 +642,7 @@ ogTasks.executeAction = function(actionName, ids, options){
 			if (success && ! data.errorCode) {
 				for (var i = 0; i < data.tasks.length; i++){
 					var tdata = data.tasks[i];
-					if (actionName == 'delete'){
+					if (actionName == 'delete' || actionName == 'archive'){
 						var task = this.getTask(tdata.id);
 						if (task){
 							var tasksToRemove = task.flatten();
@@ -643,6 +661,8 @@ ogTasks.executeAction = function(actionName, ids, options){
 				this.redrawGroups = false;
 				this.draw();
 				this.redrawGroups = true;
+				var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+				topToolbar.updateCheckedStatus();
 			} else {
 			
 			}
@@ -725,7 +745,21 @@ ogTasks.removeTask = function(id){
 		}
 	return false;
 }
-
+ogTasks.redrawTask = function(id){
+	for (var i = 0; i < this.Tasks.length; i++)
+		if (this.Tasks[i].id == id){
+			if (this.Tasks[i].milestoneId > 0) {
+				var mstone = ogTasks.getMilestone(this.Tasks[i].milestoneId);
+				if (mstone && !this.Tasks[i].isCreatedClientSide) {
+					mstone.totalTasks -= 1;
+					mstone.completedTasks -= (this.Tasks[i].status == 0 && (this.Tasks[i].statusOnCreate == 1))? 1:0 ? 1 : 0;
+				}
+			}
+			this.Tasks.splice(i,1);
+			return true;
+		}
+	return false;
+}
 ogTasks.getMilestone = function(id){
 	for (var i = 0; i < this.Milestones.length; i++)
 		if (this.Milestones[i].id == id)
@@ -758,6 +792,19 @@ ogTasks.getGroup = function(id){
 		if (this.Groups[i].group_id == id)
 			return this.Groups[i];
 	return null;
+}
+
+ogTasks.setSubtasksFromData = function(task, subtdata){
+	for (var j = 0; j < task.subtasks.length; j++) {
+		var subt = task.subtasks[j];
+		for (var k = 0; k < subtdata.length; k++) {
+			if (subtdata[k].id == subt.id) {
+				subt.setFromTdata(subtdata[k]);
+				break;
+			}
+		}
+		ogTasks.setSubtasksFromData(subt, subtdata);
+	}
 }
 
 /*

@@ -164,6 +164,22 @@ abstract class ScriptUpgraderScript {
 		return false;
 	} // checkColumnExists
 	
+	/**
+	 * Checks if a table exists
+	 *
+	 *  This function returns true if the table exists
+	 *
+	 * @param string $table_name Name of the table
+	 * @return boolean
+	 */
+	function checkTableExists($table_name, $connection) {
+		$res = mysql_query("SHOW TABLES", $connection);
+		while ($row = mysql_fetch_array($res)) {
+			if ($row[0] == $table_name) return true;
+		}
+		return false;
+	}
+	
 	// ---------------------------------------------------
 	//  Getters and setters
 	// ---------------------------------------------------

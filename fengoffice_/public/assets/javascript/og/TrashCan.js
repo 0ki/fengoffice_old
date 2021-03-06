@@ -38,6 +38,8 @@ og.TrashCan = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no deleted objects message", lang("objects"), ws));
 						}
+					} else if (d.objects.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
@@ -293,12 +295,12 @@ og.TrashCan = function() {
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		cm: cm,
 		stripeRows: true,
 		closable: true,
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -316,7 +318,7 @@ og.TrashCan = function() {
 			'->', {
 				xtype: 'label',
 				id: 'trash_warning',
-				text: og.daysOnTrash ? lang('trash emptied periodically', og.daysOnTrash) : ''
+				text: og.config['days_on_trash'] ? lang('trash emptied periodically', og.config['days_on_trash']) : ''
 			}
 		,'-',actions.emptycan
 		],
@@ -348,19 +350,20 @@ og.TrashCan = function() {
     		this.needRefresh = true;
     	}
 	}, this);
-	og.eventManager.addListener('config days_on_trash changed', this.updateTrashWarning, this);
+	og.eventManager.addListener('config option changed', this.updateTrashWarning, this);
 };
 
 Ext.extend(og.TrashCan, Ext.grid.GridPanel, {
-	updateTrashWarning: function(days) {
-		og.daysOnTrash = days;
-		this.getTopToolbar().items.get('trash_warning').setText(og.daysOnTrash ? lang('trash emptied periodically', og.daysOnTrash) : '');
+	updateTrashWarning: function(option) {
+		if (option.name == 'days_on_trash') {			
+			this.getTopToolbar().items.get('trash_warning').setText(option.value ? lang('trash emptied periodically', option.value) : '');
+		}
 	},
 	
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -371,7 +374,7 @@ Ext.extend(og.TrashCan, Ext.grid.GridPanel, {
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			})
 		});
 		this.needRefresh = false;

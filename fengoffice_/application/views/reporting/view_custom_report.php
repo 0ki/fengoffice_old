@@ -1,5 +1,5 @@
 <?php
-	function format_value_to_print($value, $type, $textWrapper='') {
+	function format_value_to_print($value, $type, $textWrapper='', $dateformat='Y-m-d') {
 		switch ($type) {
 			case DATA_TYPE_STRING: $formatted = $textWrapper . clean($value) . $textWrapper;
 				break;
@@ -9,15 +9,14 @@
 				break;
 			case DATA_TYPE_DATE:
 				if ($value != 0) { 
-					$format = 'Y-m-d';
-					if (str_ends_with($value, "00:00:00")) $format .= " H:i:s";
-					$dtVal = DateTimeValueLib::dateFromFormatAndString($format, $value);
+					if (str_ends_with($value, "00:00:00")) $dateformat .= " H:i:s";
+					$dtVal = DateTimeValueLib::dateFromFormatAndString($dateformat, $value);
 					$formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';
 				break;
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
-					$dtVal = DateTimeValueLib::dateFromFormatAndString('Y-m-d H:i:s', $value);
+					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
 					if (str_ends_with($value, "00:00:00")) $formatted = format_date($dtVal, null, 0);
 					else $formatted = format_datetime($dtVal);
 				} else $formatted = '';
@@ -36,7 +35,7 @@
 			if($condition->getCustomPropertyId() > 0){
 				$cp = CustomProperties::getCustomProperty($condition->getCustomPropertyId());
 				$name = clean($cp->getName());
-				$paramName = $cp->getName();
+				$paramName = $condition->getId()."_".$cp->getName();
 				$coltype = $cp->getOgType();
 			}else{
 				if ($condition->getFieldName()!= 'workspace' && $condition->getFieldName()!= 'tag'){
@@ -56,7 +55,7 @@
 				$value = clean(Reports::getExternalColumnValue($condition->getFieldName(), $value));
 			}
 			if ($value != '')
-				$conditionHtml .= '- ' . $name . ' ' . ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) . ' ' . format_value_to_print($value, $coltype, '"') . '<br/>';
+				$conditionHtml .= '- ' . $name . ' ' . ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) . ' ' . format_value_to_print($value, $coltype, '"', user_config_option('date_format')) . '<br/>';
 		}
 	}
 	

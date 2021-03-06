@@ -3,11 +3,12 @@
  *
  */
 og.MailManager = function() {
-	var actions, moreActions, selectActions, accountActions, emailActions;
-	this.accountId = 0;
+
+	var actions, moreActions, selectActions, accountActions, markactions;
+	this.accountId = og.emailFilters.account;
+	this.readType = og.emailFilters.read;
+	this.classifType = og.emailFilters.classif;
 	this.viewType = "all";
-	this.readType = "all";
-	this.classifType = "all";
 	this.stateType = "received";
 	this.doNotRemove = true;
 	this.needRefresh = false;
@@ -24,7 +25,8 @@ og.MailManager = function() {
 				id: 'id',
 				fields: [
 					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'subject', 'text', 'date',
-					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from','from_email','isDraft','isSent','folder','to', 'ix'
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead','from',
+					'from_email','isDraft','isSent','folder','to', 'ix', 'conv_total', 'conv_unread'
 				]
 			}),
 			remoteSort: true,
@@ -39,38 +41,15 @@ og.MailManager = function() {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("emails"), ws));
 						}
+					} else if (d.messages.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("emails")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
-					var unread = 0;
-					for (var i=0; i < rs.length; i++) {
-						if (!rs[i].data.isRead) {
-							unread++;
-						}
-					}
-					if (og.showUnreadEmailsOnTitle) {
-						var title = document.title;
-						if (title.charAt(0) == '(' && title.indexOf(')') > 0) {
-							title = title.substring(title.indexOf(')') + 2);
-						}
-						if (unread > 0) {
-							document.title = "(" + unread  + ") " + title;
-						} else {
-							document.title = title;
-						}
-						var panel = Ext.getCmp('mails-panel');
-						if (panel) {
-							var title = panel.title;
-							if (title.indexOf('(') > 0) {
-								title = title.substring(0, title.indexOf('(') - 1);
-							}
-							if (unread > 0) {
-								panel.setTitle(title + " (" + unread  + ")");
-							} else {
-								panel.setTitle(title);
-							}
-						}
+					//Ext.getCmp('mails-manager').getView().focusRow(og.lastSelectedRow.mails+1);
+					if (typeof d.unreadCount != 'undefined') {
+						og.updateUnreadEmail(d.unreadCount);
 					}
 				}
 			}
@@ -93,10 +72,11 @@ og.MailManager = function() {
 		else { strDraft = ''; }
 		
 		var subject = og.clean(value.trim()) || '<i>' + lang("no subject") + '</i>';
+		var conv_str = r.data.conv_total > 1 ? " <span class='db-ico ico-comment' style='margin-left:3px;padding-left: 18px;'><span style='font-size:80%'>(" + (r.data.conv_unread > 0 ? '<b style="font-size:130%">' + r.data.conv_unread + '</b>/' : '') + r.data.conv_total + ")</span></span>" : "";
 		
 		name = String.format(
-				'{4}<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-				subject, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
+				'{4}<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				subject + conv_str, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.text),bold,strDraft);
 				
 		if (r.data.isSent) {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
@@ -113,7 +93,6 @@ og.MailManager = function() {
 		return projectstring + name + text;
 	}
 
-		
 	function renderFrom(value, p, r){
 		var bold = 'font-weight:normal;';
 		var strAction = 'view';
@@ -122,15 +101,15 @@ og.MailManager = function() {
 		if (!r.data.isRead) bold = 'font-weight:bold;';
 		
 		var sender = og.clean(value.trim()) || '<i>' + lang("no sender") + '</i>';
-		
+
 		name = String.format(
-				'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+				'<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
 				sender, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(r.data.from_email),bold);
 		return name;
 	}
 	
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'mails-manager\').getSelectionModel().selectRow('+r.id+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+r.data.ix+')) sm.clearSelections();sm.selectRow('+r.data.ix+', true);"></div>';
 	}
 	
 	function renderIcon(value, p, r) {
@@ -146,13 +125,33 @@ og.MailManager = function() {
 		else
 			return '';
 	}
+	
+	function renderIsRead(value, p, r){
+		if (value) {
+			div = "<div title=\"" + lang('mark as unread') + "\" class=\"db-ico ico-read\" onclick=\"javascript:Ext.getCmp(\'mails-manager\').load({action: 'markAsUnRead',ids:'" + r.data.object_id + "',types:'email'});Ext.getCmp(\'message-manager\').getSelectionModel().clearSelections(); \" />";
+		} else {
+			div = "<div title=\"" + lang('mark as read') + "\" class=\"db-ico ico-unread\" onclick=\"javascript:Ext.getCmp('mails-manager').load({action: 'markAsRead',ids:'" + r.data.object_id + "',types:'email'});Ext.getCmp('message-manager').getSelectionModel().clearSelections(); \" />";
+		}
+		return div;
+	}
 
 	function renderAccount(value, p, r) {
-		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account selected\',\'{1}\')">{0}</a>', og.clean(value), r.data.accountId);
+		return String.format('<a href="#" onclick="og.eventManager.fireEvent(\'mail account select\',[\'{1}\', \'{0}\'])">{0}</a>', og.clean(value), r.data.accountId);
 	}
 	
 	function renderTo(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')" title="{0}">{0}</a>', og.clean(value), og.getUrl('mail', 'add_mail', {}));
+		var bold = 'font-weight:normal;';
+		var strAction = 'view';
+		
+		if (r.data.isDraft) strAction = 'edit_mail';
+		if (!r.data.isRead) bold = 'font-weight:bold;';
+		
+		var receiver = og.clean(value.trim()) || '<i>' + lang("no recipient") + '</i>';
+
+		name = String.format(
+				'<a style="font-size:120%;{3}" href="{1}" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
+				receiver, og.getUrl('mail', strAction, {id: r.data.object_id}), og.clean(value), bold);
+		return name;
 	}
 	
 	function renderFolder(value, p, r) {
@@ -168,6 +167,28 @@ og.MailManager = function() {
 		}
 		return value;
 	}
+	
+	function renderActions(value, p, r) {
+		var actions = '';
+		var actionStyle= ' style="font-size:105%;padding-top:2px;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
+		
+		actions += String.format(
+			'<a class="list-action ico-reply" href="#" onclick="og.openLink(og.getUrl(\'mail\', \'reply_mail\', {id:{0}}))" title="{1}" ' + actionStyle + '>&nbsp;</a>',
+			r.data.object_id, lang('reply mail'));
+
+		actions += String.format(
+			'<a class="list-action ico-reply-all" href="#" onclick="og.openLink(og.getUrl(\'mail\', \'reply_mail\', {id:{0}, all:1}))" title="{1}" ' + actionStyle + '>&nbsp;</a>',
+			r.data.object_id, lang('reply to all mail'));
+
+		actions += String.format(
+			'<a class="list-action ico-forward" href="#" onclick="og.openLink(og.getUrl(\'mail\', \'forward_mail\', {id:{0}}))" title="{1}" ' + actionStyle + '>&nbsp;</a>',
+			r.data.object_id, lang('forward mail'));
+		
+		if (actions != '')
+			actions = '<span>' + actions + '</span>';
+			
+		return actions;
+	}
 
 	function getSelectedIds() {
 		var selections = sm.getSelections();
@@ -177,11 +198,25 @@ og.MailManager = function() {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.object_id;
-			}	
+			}
+			og.lastSelectedRow.mails = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
 	this.getSelectedIds = getSelectedIds;
+	
+	function selectionHasAttachments() {
+		var selections = sm.getSelections();
+		if (selections.length <= 0) {
+			return false;
+		} else {
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.hasAttachment) return true;
+			}	
+			return false;
+		}
+	}
+	this.selectionHasAttachments = selectionHasAttachments;
 	
 	function getSelectedReadTypes() {
 		var selections = sm.getSelections();
@@ -227,23 +262,25 @@ og.MailManager = function() {
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
-				emailActions.markAsRead.setDisabled(true);				
-				emailActions.markAsUnRead.setDisabled(true);				
+				actions.archive.setDisabled(true);
+				markactions.markAsRead.setDisabled(true);				
+				markactions.markAsUnread.setDisabled(true);				
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
+				actions.archive.setDisabled(false);
 				
 				var selTypes = getSelectedTypes();
 				if (/message/.test(selTypes)){
-					emailActions.markAsRead.setDisabled(true);
-					emailActions.markAsUnRead.setDisabled(true);
+					markactions.markAsRead.setDisabled(true);
+					markactions.markAsUnread.setDisabled(true);
 				}else {								
-					emailActions.markAsRead.setDisabled(false);
-					emailActions.markAsUnRead.setDisabled(false);				
+					markactions.markAsRead.setDisabled(false);
+					markactions.markAsUnread.setDisabled(false);				
 					var selReadTypes = getSelectedReadTypes();
 					
-					if (selReadTypes == 'read') emailActions.markAsRead.setDisabled(true);
-					else if (selReadTypes == 'unread') emailActions.markAsUnRead.setDisabled(true);	
+					if (selReadTypes == 'read') markactions.markAsRead.setDisabled(true);
+					else if (selReadTypes == 'unread') markactions.markAsUnread.setDisabled(true);	
 				}
 				
 			}
@@ -270,6 +307,16 @@ og.MailManager = function() {
         	hideable:false,
         	menuDisabled: true
 		},{
+			id: 'isRead',
+			header: '&nbsp;',
+			dataIndex: 'isRead',
+			width: 16,
+        	renderer: renderIsRead,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+		},{
 			id: 'hasAttachment',
 			header: '&nbsp;',
 			dataIndex: 'hasAttachment',
@@ -286,6 +333,13 @@ og.MailManager = function() {
 			width: 120,
 			renderer: renderFrom
         },{
+			id: 'to',
+			header: lang("to"),
+			dataIndex: 'to',
+			width: 200,
+			hidden: true,
+			renderer: renderTo
+        },{
 			id: 'subject',
 			header: lang("subject"),
 			dataIndex: 'subject',
@@ -298,17 +352,11 @@ og.MailManager = function() {
 			width: 60,
 			renderer: renderAccount
         },{
-			id: 'to',
-			header: lang("to"),
-			dataIndex: 'to',
-			width: 100,
-			hidden: true,
-			renderer: renderTo
-        },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
 			sortable: false,
+			hidden: true,
 			width: 60
         },{
 			id: 'date',
@@ -324,7 +372,13 @@ og.MailManager = function() {
 			sortable: true,
 			hidden: true,
 			renderer: renderFolder
-        }]);
+        },{
+			id: 'actions',
+			header: lang("actions"),
+			width: 60,
+			renderer: renderActions,
+			sortable: false
+		}]);
 	cm.defaultSortable = true;
 
 	moreActions = {};
@@ -385,7 +439,7 @@ og.MailManager = function() {
 	
 	filterAccounts = {};
 	
-	emailActions = {
+	markactions = {
 		markAsRead: new Ext.Action({
 			text: lang('mark read'),
             tooltip: lang('mark read'),
@@ -400,7 +454,7 @@ og.MailManager = function() {
 			},
 			scope: this
 		}),
-		markAsUnRead: new Ext.Action({
+		markAsUnread: new Ext.Action({
 			text: lang('mark unread'),
             tooltip: lang('mark unread'),
             iconCls: 'ico-mail-mark-unread',
@@ -415,7 +469,7 @@ og.MailManager = function() {
 			scope: this
 		})
 	};
-	
+		
 	accountActions = {
 		addAccount: new Ext.Action({
 			text: lang('add mail account'),
@@ -492,7 +546,7 @@ og.MailManager = function() {
 				var selections = sm.getSelections();
 				for (var i=0; i < selections.length; i++) {
 					if (selections[i].data.projectId.length > 0) sm.deselectRow(i, false);
-				}	
+				}
 			}
 		})
 	};
@@ -504,7 +558,7 @@ og.MailManager = function() {
             iconCls: 'ico-new',
             handler: function() {
             	var url = og.getUrl('mail', 'add_mail');
-            	og.openLink(url, null);
+            	og.openLink(url);
             }
 		}),
 		accounts: new Ext.Action({
@@ -534,6 +588,17 @@ og.MailManager = function() {
 							});
 						},
 						scope: this
+					},
+					'tagdelete': {
+						fn: function(tag) {
+							this.load({
+								action: 'untag',
+								ids: getSelectedIds(),
+								types: getSelectedTypes(),
+								tagTag: tag.text
+							});
+						},
+						scope: this
 					}
 				}
 			})
@@ -550,10 +615,35 @@ og.MailManager = function() {
 						ids: getSelectedIds(),
 						types: getSelectedTypes()
 					});
+					//this.getSelectionModel().clearSelections();
+				}
+			},
+			scope: this
+		}),
+		archive: new Ext.Action({
+			text: lang('archive'),
+            tooltip: lang('archive selected object'),
+            iconCls: 'ico-archive-obj',
+			disabled: true,
+			handler: function() {
+				if (confirm(lang('confirm archive selected objects'))) {
+					this.load({
+						action: 'archive',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
 					this.getSelectionModel().clearSelections();
 				}
 			},
 			scope: this
+		}),
+		markAs: new Ext.Action({
+			text: lang('mark as'),
+			tooltip: lang('mark as desc'),
+			menu: [
+				markactions.markAsRead,
+				markactions.markAsUnread
+			]
 		}),
 		checkMails: new Ext.Action({
 			text: lang('check mails'),
@@ -562,20 +652,40 @@ og.MailManager = function() {
 				this.load({
 					action: "checkmail"
 				});
-				this.action = "";
 			},
 			scope: this
 		}),
+		sendOutbox: new Ext.Action({
+			text: lang('send outbox'),
+			tooltip: lang('send outbox title'),
+			iconCls: 'ico-sent',
+			handler: function() {
+				og.msg(lang('success'), lang('sending outbox mails'));
+				og.openLink(og.getUrl('mail', 'send_outbox_mails', {}), {hideLoading:1});
+			},
+			id: 'send_outbox_btn',
+			hidden: true,
+			scope: this
+		}), 
 		inbox_email: new Ext.Action({
 	        text: lang('inbox'),
 	        toggleGroup : 'filter_option',
 	        enableToggle: true,
 	        pressed: true,
 	        id: 'inbox_btn',
+	        handler: function(item, event) {
+        		if(!item.pressed){
+        			item.toggle(true,true);
+        		}
+			},
 	        toggleHandler: function(item, pressed) {
        			if(pressed){
-					this.stateType = "received";	
+					this.store.removeAll();
+       				this.stateType = "received";	
 					this.viewType = "all";
+					Ext.getCmp('send_outbox_btn').hide();
+        			cm.setHidden(cm.getIndexById('from'), false);
+					cm.setHidden(cm.getIndexById('to'), true);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -596,10 +706,19 @@ og.MailManager = function() {
 	        enableToggle: true,
 	        pressed: false,
 	        id: 'sent_btn',
+	        handler: function(item, event) {
+        		if(!item.pressed){
+        			item.toggle(true,true);
+        		}
+			},
 	        toggleHandler: function(item, pressed) {
         		if(pressed){
+					this.store.removeAll();
 					this.stateType = "sent";
 					this.viewType = "all";
+					Ext.getCmp('send_outbox_btn').hide();
+					cm.setHidden(cm.getIndexById('from'), true);
+					cm.setHidden(cm.getIndexById('to'), false);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -610,7 +729,7 @@ og.MailManager = function() {
 						  account_id: this.accountId
 					    };
 					this.load();
-        		} 
+        		}
 			},
 			scope: this
     	}),
@@ -621,10 +740,19 @@ og.MailManager = function() {
 	        enableToggle: true,
 	        pressed: false,
 	        id: 'draft_btn',
+	        handler: function(item, event) {
+        		if(!item.pressed){
+        			item.toggle(true,true);
+        		}
+			},
 			toggleHandler: function(item, pressed) {
 				if(pressed){
+					this.store.removeAll();
 					this.stateType = "draft";
 					this.viewType = "all";
+					Ext.getCmp('send_outbox_btn').hide();
+        			cm.setHidden(cm.getIndexById('from'), true);
+					cm.setHidden(cm.getIndexById('to'), false);
         			this.store.baseParams = {
 					      read_type: this.readType,
 					      view_type: this.viewType,
@@ -640,6 +768,74 @@ og.MailManager = function() {
 			scope: this
     	}),
 	
+		junk_email: new Ext.Action({
+	        text: lang('junk'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+	        id: 'junk_btn',
+	        handler: function(item, event) {
+        		if(!item.pressed){
+        			item.toggle(true,true);
+        		}
+			},
+			toggleHandler: function(item, pressed) {
+				if(pressed){
+					this.store.removeAll();
+					this.stateType = "junk";
+					this.viewType = "all";
+					Ext.getCmp('send_outbox_btn').hide();
+        			cm.setHidden(cm.getIndexById('from'), false);
+					cm.setHidden(cm.getIndexById('to'), true);
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      classif_type: this.classifType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		} 
+			},
+			scope: this
+    	}),
+	
+		out_email: new Ext.Action({
+	        text: lang('outbox'),
+	        toggleGroup : 'filter_option',
+	        enableToggle: true,
+	        pressed: false,
+	        id: 'outbox_btn',
+	        handler: function(item, event) {
+        		if(!item.pressed){
+        			item.toggle(true,true);
+        		}
+			},
+			toggleHandler: function(item, pressed) {
+				if(pressed){
+					this.store.removeAll();
+					this.stateType = "outbox";
+					this.viewType = "all";
+					Ext.getCmp('send_outbox_btn').show();
+        			cm.setHidden(cm.getIndexById('from'), true);
+					cm.setHidden(cm.getIndexById('to'), false);
+        			this.store.baseParams = {
+					      read_type: this.readType,
+					      view_type: this.viewType,
+					      state_type : this.stateType,
+					      classif_type: this.classifType,
+					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+						  account_id: this.accountId
+					    };
+					this.load();
+        		}
+			},
+			scope: this
+    	}),
+	
 		refresh: new Ext.Action({
 			text: lang('refresh'),
             tooltip: lang('refresh desc'),
@@ -650,7 +846,7 @@ og.MailManager = function() {
 			scope: this
 		}),
 		viewReadUnread: new Ext.Action({
-			text: lang('view by state'),
+			text: this.readType == 'read' ? lang('read') : (this.readType == 'unread' ? lang('unread') : lang('view by state')),
             iconCls: 'ico-mail-mark-read',
 			disabled: false,
 			id: 'tb-item-read-unread',
@@ -662,7 +858,7 @@ og.MailManager = function() {
 			]}
 		}),
 		viewByAccount: new Ext.Action({
-			text: lang('view by account'),
+			text: this.accountId == 0 ? lang('view by account') : og.emailFilters.accountName,
             iconCls: 'ico-account',
 			disabled: false,
 			id: 'tb-item-byaccount',
@@ -683,7 +879,7 @@ og.MailManager = function() {
 			},[{name: lang('view all'), email:'', id: '', separator:true}],"view")
 		}),
 		viewByClassification: new Ext.Action({
-			text: lang('view by classification'),
+			text: this.classifType == 'classified' ? lang('classified') : (this.classifType == 'unclassified' ? lang('unclassified') : lang('view by classification')),
             iconCls: 'ico-classify',
 			disabled: false,
 			id: 'tb-item-classification',
@@ -692,7 +888,7 @@ og.MailManager = function() {
 				'-',
 				filterClassification.classified,
 				filterClassification.unclassified
-			]}
+			]}			
 		}),
 		select: new Ext.Action({
 			text: lang('select'),
@@ -711,6 +907,13 @@ og.MailManager = function() {
 			]}
 		})
     };
+	
+	var mas = og.eventManager.addListener("mail account select", function(account) {
+		this.accountId = account[0];
+		this.load();
+		Ext.getCmp('mails-manager').getTopToolbar().items.get('tb-item-byaccount').setText(account[1]);
+	}, this);
+	
 	this.actionRep = actions;
 
 	this.topTbar1 = new Ext.Toolbar({
@@ -720,12 +923,13 @@ og.MailManager = function() {
 			'-',
 			actions.tag,
 			actions.del,
+			actions.archive,
 			'-',
-			emailActions.markAsRead,
-			emailActions.markAsUnRead,
+			actions.markAs,
 			'-',
 			actions.checkMails,
-			actions.accounts
+			actions.accounts,
+			actions.sendOutbox
 		]
 	});
 	
@@ -737,6 +941,8 @@ og.MailManager = function() {
 			actions.inbox_email,
 			actions.sent_email,
 			actions.draft_email,
+			actions.junk_email,
+			actions.out_email,
 			'-',
 			lang('filter')+': ',
 			actions.viewReadUnread,
@@ -751,15 +957,15 @@ og.MailManager = function() {
 		cm: cm,
 		enableDrag: true,
 		ddGroup: 'WorkspaceDD',
-		stateful: og.rememberGUIState,
+		stateful: og.preferences['rememberGUIState'],
 		border: false,
 		bodyBorder: false,
 		stripeRows: true,
 		closable: true,
 		loadMask: false,
 		id: 'mails-manager',
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -805,14 +1011,24 @@ og.MailManager = function() {
     	}
 	}, this);
 	
-	if (og.pollForEmail) {
-		var me = this;
-		this.interval = setInterval(function() {
-			//if (Ext.getCmp('tabs-panel').getActiveTab().id == 'mails-panel') {
-				me.load();
-			//}
-		}, og.pollForEmail);
-	}
+	// Send emails in background
+	var send_ev = og.eventManager.addListener("must send mails", function(data) {
+		og.openLink(og.getUrl('mail', 'send_outbox_mails', {acc_id: data.account}), {hideLoading:1});
+	}, this);
+	
+	var new_mailsent_ev = og.eventManager.addListener("mail sent", function(data) {
+		if (this.stateType == "outbox") {
+			var view = Ext.getCmp('mails-manager').getView();
+	        var sto = og.MailManager.store;
+	        var idx = sto.indexOfId(data.mail_id);
+	        if (idx == -1) return;
+	        var sto_row = sto.getAt(idx);
+	        if (sto_row) {
+	        	sto.remove(sto_row);
+	        }
+		}
+		og.msg(lang('success'), lang('mail sent msg'), 2);
+	}, this);
 };
 
 
@@ -821,25 +1037,26 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		if (!params) params = {};
 		var start;
 		if (typeof params.start == 'undefined') {
-			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			start = 0;
 		}
 		this.store.baseParams = {
-					      read_type: this.readType,
-					      view_type: this.viewType,
-					      state_type : this.stateType,
-					      classif_type: this.classifType,
-					      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-						  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
-						  account_id: this.accountId
-					    };
+	      read_type: this.readType,
+	      view_type: this.viewType,
+	      state_type : this.stateType,
+	      classif_type: this.classifType,
+	      tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+		  active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
+		  account_id: this.accountId
+	    };
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
-				limit: og.pageSize				
+				limit: og.config['files_per_page']				
 			})
 		});
+		this.store.baseParams.action = "";
 	},
 	
 	activate: function() {
@@ -856,12 +1073,24 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		this.innerMessage.innerHTML = text;
 	},
 	
+	moveObjectsToAllWs: function() {
+		this.load({
+			action: 'unclassify',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes()
+		});
+	},
+	
 	moveObjects: function(ws) {
 		og.moveToWsOrMantainWs(this.id, ws);
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		og.askToClassifyUnclassifiedAttachs('mails-manager', mantain, ws);
+		if (this.selectionHasAttachments()) {
+			og.askToClassifyUnclassifiedAttachs('mails-manager', mantain, ws);
+		} else {
+			this.moveObjectsClassifyingEmails(mantain, ws, 0);
+		}
 	},
 	
 	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
@@ -886,12 +1115,31 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		}
 	},
 
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				ids: this.getSelectedIds(),
+				types: this.getSelectedTypes()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},
+
 	tagObjects: function(tag) {
 		this.load({
 			action: 'tag',
 			ids: this.getSelectedIds(),
 			types: this.getSelectedTypes(),
 			tagTag: tag
+		});
+	},
+
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			ids: this.getSelectedIds(),
+			types: this.getSelectedTypes()
 		});
 	},
 	

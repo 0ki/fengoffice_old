@@ -13,7 +13,7 @@
 	'documents' => 'Documentos',
 	'my projects' => 'Mis áreas de trabajo',
 	'my projects archive desc' => 'Listado de áreas de trabajo cerradas. Todas las acciones de estas áreas de trabajo han sido bloqueadas, de todas formas podrá verlos.',
-	'company online' => 'Compañía en línea',
+	'company online' => 'Empresa en línea',
 	'enable javascript' => 'Habilite JavaScript en su navegador para poder usar esta caracteristica',
 	'user password generate' => 'Generar contraseña aleatoria',
 	'user password specify' => 'Especifique contraseña',
@@ -55,47 +55,35 @@
 	'massmailer subject' => 'Asunto',
 	'massmailer message' => 'Nota',
 	'massmailer recipients' => 'Destinatarios',
-
-//Dashboard
-
 	'welcome to new account' => '{0}, Bienvenido a su nueva cuenta',
 	'welcome to new account info' => 'A partir de ahora podrá acceder a su cuenta desde {0} (le recomendamos agregar este vínculo a marcadores).<br/> 
 									Comience a utilizar Feng Office a través de las siguientes acciones:',
-    
 	'new account step1 owner' => 'Paso 1: Cree el perfil de su propia Empresa',
 	'new account step1 owner info' => 'Ingrese los datos de su Empresa y agregue a sus miembros como usuarios desde la opción Administración que se encuentra arriba a la derecha de la pantalla.',
-	
 	'new account step update account' => 'Paso {0}: Actualice su cuenta personal y cambie su contraseña ',
-    'new account step update account info' => 'Le recomendamos que cambie su contraseña. Para modificar sus datos siga la opción Cuenta ubicada arriba a la derecha junto a la de Administración.',
-    
-    'new account step add members' => 'Paso {0}: Agregar miembros del equipo',
+	'new account step update account info' => 'Le recomendamos que cambie su contraseña. Para modificar sus datos siga la opción Cuenta ubicada arriba a la derecha junto a la de Administración.',
+	'new account step add members' => 'Paso {0}: Agregar miembros del equipo',
 	'new account step add members info' => 'Puedes <a class="internalLink" href="{0}">crear cuentas de usuario</a> para los miembros de tu equipo. Cada miembro obtendrá su nombre de usuario y contraseña, que podrán utilizar para acceder al sistema',
-	
 	'new account step start workspace' => 'Paso {0}: Comience a organizar su información; Cree un Espacio de trabajo',
 	'new account step start workspace info' => 'Espacio de trabajo es el lugar donde se guarda y organiza toda la información de su empresa. Pueden estar divididos por Clientes, Proyectos, Departamentos de la empresa o cualquier otra forma de organizar la información.
 												Siga {0} en el panel izquierdo para crear un nuevo espacio de trabajo.<br/>
 												Automáticamente se crea un espacio personal para cada usuario ({1}_personal). Este espacio solo será visto por su dueño.
 											',
-	
 	'new account step configuration' => 'Paso {0}: Configuración',
 	'new account step configuration info' => '<a class="internalLink" href="{0}">Maneje</a> la configuración general de opengoo, configuración de correo, habilite/deshabilite módulos, entre otras opciones',
-	
 	'new account step profile' => 'Paso {0}: Actualizar perfil',
 	'new account step profile info' => 'Actualice su <a class="internalLink" href="{0}">perfil de usuario</a>',
-	
 	'new account step preferences' => 'Paso {0}: Actualice preferencias de usuario',
 	'new account step preferences info' => 'Actualice sus <a class="internalLink" href="{0}">preferencias de usuario</a> tales como preferencias generales, opciones de panel principal y tareas',
-	
 	'new account step actions' => 'Paso {0}: Comience a gestionar su oficina online',
 	'new account step actions info' => 'Seleccione el espacio de trabajo en el que quiera comenzar a trabajar y <b>Agregue</b>:<br/>',
-
 	'application log details column name' => 'Detalles',
 	'application log project column name' => 'Área de trabajo',
 	'application log taken on column name' => 'Adoptadado en relación con',
 	'rss feeds' => 'Suministro RSS',
 	'recent activities feed' => 'Actividades recientes',
 	'recent project activities feed' => 'Actividades recientes en el área de trabajo {0}',
-	'update company permissions hint' => 'Marcar área de trabajo para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la compañía que desea que tengan acceso al control de algunas áreas de trabajo (esto puede ser realizado a través de la página de usuarios en el área de trabajo, o a través de los perfiles).',
+	'update company permissions hint' => 'Marcar área de trabajo para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la empresa que desea que tengan acceso al control de algunas áreas de trabajo (esto puede ser realizado a través de la página de usuarios en el área de trabajo, o a través de los perfiles).',
 	'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. Todos los derechos reservados.',
 	'footer copy without homepage' => '&copy; {0} by {1}. Todos los derechos reservados',
 	'footer powered' => 'Impulsado por <a target="_blank" href="{0}">{1}</a>',
@@ -236,6 +224,8 @@
 	'mail add contacts' => 'Nuevos contactos',
 	'no contacts to add' => 'No hay nuevos contactos para agregar.',
 	'linked attachments' => 'Objetos adjuntos',
+	'conversation x mails' => 'Conversación ({0} correos)',
+	'show quoted text' => 'Mostrar texto citado',
 	'checkout file' => 'Bloquear archivo',
 	'checkin file' => 'Liberar archivo',
 	'new filename' => 'Nuevo nombre de archivo',
@@ -364,7 +354,7 @@
 	'multiples workspace object permanent delete' => 'Aquellos objetos contenidos en más de un área de trabajo no serán eliminados.',
 	'cancel permanent delete' => 'Para cancelar la eliminación presione "Volver", o cierre esta ventana.',
 	'confirm permanent delete workspace' => 'Por favor, confirme su deseo de eliminar esta área de trabajo <b>{0}</b>',
-    'confirm permanent delete user' => 'Por favor, confirme su deseo de eliminar',
+	'confirm permanent delete user' => 'Por favor, confirme su deseo de eliminar',
 	'user personal workspace' => 'Eliminar también el Espacio de Trabajo <b> {0} </b> y todo su contenido',
 	'other user personal workspace' => 'Otros usuarios tienen asignado el espacio personal <b>{0}</b>, éste no puede ser eliminado',
 	'latest user activity' => 'Última actividad del usuario',
@@ -395,10 +385,10 @@
 	'no data to display' => 'No hay datos para desplegar',
 	'last updated by on' => '{0}, en {1}',
 	'updated' => 'Actualizado',
-	'add a new company' => 'Añadir una nueva compañía',
+	'add a new company' => 'Añadir una nueva empresa',
 	'my pending tasks' => 'Mis tareas pendientes',
 	'success create timeslot' => 'Tiempo de trabajo creado en forma satisfactoria',
-	'new company name' => 'Nuevo nombre de compañía',
+	'new company name' => 'Nuevo nombre de empresa',
 	'checking' => 'Verificando',
 	'country' => 'País',
 	'email addresses' => 'Dirección de correo electrónico',
@@ -503,8 +493,6 @@
 	'new share notification milestone' => 'El hito \'{0}\' ha sido compartido.',
 	'new share notification weblink' => 'El enlace web \'{0}\' ha sido compartido.',
 	'new version notification title' => 'Nueva versión',
-	
-
 	'getting started' => 'Comenzando',
 	'checked out by' => 'Bloqueado por',
 	'workspace contacts' => 'Contactos',
@@ -519,8 +507,27 @@
 	'add value' => 'Añadir valor',
 	'remove value' => 'Quitar valor',
 	'hide options' => 'Ocultar opciones',
-    'personal workspace name' => '{0} Personal',
-    'personal workspace description' => 'Espacio personal',
+	'personal workspace name' => '{0} Personal',
+	'personal workspace description' => 'Espacio personal',
 	'wiki help link' => 'http://wiki.opengoo.org/doku.php/es:home',
 	'last language' => 'Anterior',
+	'reset password expired' => 'Ha expirado la solicitud para reestablecer su contraseña. Por favor genere una nueva pinchando en "{0}"',
+	'invalid parameters' => 'Parámetros inválidos',
+	'reset password' => 'Reestablecer contraseña',
+	'reset password form desc' => '<b>{0}</b>, Por favor ingrese su nueva contraseña dos veces:',
+	'success reset password' => 'Su nueva contraseña ha sido almacenada',
+	'new account step1' => 'Paso 1: Cree el perfil de su empresa',
+	'new account step1 info' => 'Para ingresar la información de su empresa y miembros con los que trabaja pinche en el vínculo "Administración" ubicado en el borde superior derecho de la página.',
+	'import contacts from vcard' => 'Importar contactos desde un archivo VCard',
+	'select a vcard file to load its data' => 'Escoja un archivo VCard (.vcf) para realizar la importación.',
+	'you can tag the contacts before running the import' => 'Puede etiquetar contactos antes de realizar la importación.',
+	'you must select the contacts from the grid' => 'Debe seleccionar los contactos que desea exportar.',
+	'vcard successfully created' => 'VCard creado exitosamente, {0} contactos exportados.',
+	'confirm discard email' => '¿Confirma que desea descartar el correo?',
+	'auto detect user timezone' => 'Autodetectar zona horaria del usuario desde el navegador',
+	'download email' => 'Descargar correo',
+	'instantiate' => 'Instanciar',
+	'template parameters' => 'Parámetros de plantilla',
+	'add image' => 'Agregar imagen',
+	'update image' => 'Actualizar imagen',
 ); ?>

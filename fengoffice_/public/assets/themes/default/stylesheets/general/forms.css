@@ -85,8 +85,13 @@ legend label.checkbox {
 }
 
 textarea, textarea.long {
+  width: 67%; /* 99% */
+  height: 60px;
+}
+
+textarea, textarea.huge {
   width: 97%; /* 99% */
-  height: 150px;
+  height: 180px;
 }
 
 textarea.short {

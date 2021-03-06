@@ -2,7 +2,7 @@
 
 // Array of langs
 return array(
-    'upcoming milestones in next 30 days' => 'Upcoming milestones (in next 30 days)',
+    'upcoming milestones in next 30 days' => 'Upcoming milestones (in the next 30 days)',
     'show all upcoming milestones' => 'Show all upcoming milestones (total {0})',
 
     'recent activities' => 'Recent activities',
@@ -72,10 +72,10 @@ return array(
 	'assign milestone task list desc' => 'The task can be assigned to an existing milestone',
 	
     'link existing object' => 'Link existing object (from Files section)',
-    'upload and link' => 'Upload new file and attach it to object',
+    'upload and link' => 'Upload a new file and attach it to the object',
     'file permissions description' => 'Select users from Combo or write their name on the Text Box. Then press Add user to visualize them on the grid. <br>When you see them, select the appropriate permissions in the grid.<br>Note: the Combo Box will only display users you are currently sharing files with.',
 
-    'subscribers desc' => 'Subscribers will receive an email notification whenever someone (except themselves) posts a comment on this object',
+    'subscribers desc' => 'Subscribers will receive an email notification whenever someone posts a comment on this object',
     'admins can post comments on locked objects desc' => '<strong>Comments are locked</strong>, but you as administrator still have the permissions to post comments. Note that if you expect replies from your clients and non-admin users you need to unlock comments for this object <i>(set "Enable comments" option to "Yes")</i>.',
 
     'all permissions' => 'All',
@@ -84,7 +84,7 @@ return array(
     'can manage milestones' => 'Manage milestones',
     'can upload files' => 'Upload files',
     'can manage files' => 'Manage files',
-    'can assign to owners' => 'Assign tasks to members of owner company',
+    'can assign to owners' => 'Assign tasks to members of the owner company',
     'can assign to other' => 'Assign tasks to members of other clients',
     'can manage properties'  => 'Manage properties',
     'can manage events'  => 'Manage events',
@@ -99,7 +99,7 @@ return array(
 
     'project description' => 'Description',
     'project status' => 'Workspace status',
-    'show project desciption in overview' => 'Show description on workspace overview page?',
+    'show project desciption in overview' => 'Show description on the workspace overview page?',
 
     'new file' => 'New file',
     'existing file' => 'Existing file',
@@ -112,7 +112,7 @@ return array(
     'order by filename' => 'filename (a-z)',
     'order by posttime' => 'date and time',
     'all files' => 'All files',
-    'upload file desc' => 'You can upload files of any type. Max filesize you are allowed to upload is {0}',
+    'upload file desc' => 'You can upload files of any type. The maximum file size you are allowed to upload is {0}',
     'file revision info short' => 'Revision #{0} <span>(created on {1})</span>',
     'file revision info long' => 'Revision #{0} <span>(by <a class="internalLink" href="{1}">{2}</a> on {3})</span>',
     'file revision title short' => 'Created on {0}</span>',
@@ -120,7 +120,7 @@ return array(
     'file checkout info short' => '<span>Checked out on {0}</span>',
     'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
     'update file' => 'Update file',
-    'version file change' => 'Remember this change (old file will be saved for the reference)',
+    'version file change' => 'Remember this change (old file will be saved for future reference)',
     'last revision' => 'Last revision',
     'revision comment' => 'Revision comment',
     'edit revision comment' => 'Edit revision comment',
@@ -135,12 +135,12 @@ return array(
     'select object' => 'Select an object',
 
 
-    'admin notice comments disabled' => 'Comments are disabled for this object, but you as administrator still can comment. If you expect replies from other, non-admin users you should set value of Enable comments option to Yes.',
+    'admin notice comments disabled' => 'Comments are disabled for this object, but you as administrator can still comment. If you expect replies from other, non-admin users you should set value of Enable comments option to Yes.',
 
 // iCal
     'icalendar' => 'iCalendar',
     'icalendar subscribe' => 'iCalendar',
-    'icalendar subscribe desc' => 'Use this link to bring milestone data to your favorite calendar application.',
+    'icalendar subscribe desc' => 'Use this link to import milestone data into your favorite calendar application.',
     'icalendar password change notice' => '<strong>Note:</strong> if you change your password the link to the calendar data will also change! You\'ll need to resubscribe.',
 
 // Add project form
@@ -276,11 +276,55 @@ return array(
 	'other settings' => 'Other settings',
 	'incoming settings' => 'Incoming settings',
 	'default account' => 'Default account',
-	'default account description' => 'The default account is the one used by default when you compose an email.',
+	'default account description' => 'The default account is the one used by default when composing an email.',
 	'signature' => 'Signature',
-	'signature description' => 'The signature will be appended to every mail you send from this account.',
+	'signature description' => 'The signature will be appended to every email you send from this account.',
 	'attach contents' => 'Attach contents',
 	'set parent task' => 'Set parent task',
+
+	'add milestone change workspace warning' => 'WARNING! This milestone\'s tasks must belong to the same workspace as the milestone, or to one of its sub-workspaces. If the workspace is changed, any tasks that do not comply with this rule will be moved to the selected workspace.',
+	'update unset billing values' => 'Update timeslots with unset billing values',
+	'update unset billing values desc' => 'NOTICE: This action will apply the new billing values to all timeslots without values. Are you sure you wish to proceed?',
+
+	'field title' => 'Title',
+	'field text' => 'Text',
+	'field email' => 'Email',
+	'field from' => 'From',
+	'field to' => 'To',
+	'field subject' => 'Subject',
+	'field comment' => 'Comment',
+	'field email2' => 'Secondary email',
+	'field body_plain' => 'Body',
+	'field from_name' => 'From',
+	'field firstname' => 'Name',
+	'field lastname' => 'Last name',
+	'field filecontent' => 'Content',
+	'field uid' => 'Unique ID',
+	'field h_address' => 'Home address',
+	'field w_address' => 'Work address',
+	'field o_address' => 'Other address',
+
+	'create task from email' => 'Create a task from this email',
+	'create task from email description' => 'From:      {1}
+Subject:   {0}
+
+{2}',
+	'suggested workspaces' => 'Suggested workspaces',
+
+	'mail account sender name' => 'Sender name',
+	'mail account sender name description' => 'Name to use as "From" field when sending email. If left blank the user\'s display name will be used.',
+	'classify mails on workspace' => 'Autoclassify to workspace',
+	'classify mails on workspace desc' => 'If selected, all email sent to or from this account will be automatically classified to the selected workspace.',
+	'signature' => 'Signature',
+	'signature description' => 'This signature will be appended to every email you send from this account.',
+
+	'mail account permissions' => 'Account permissions',
+	'mail account permissions desc' => 'Choose who will be able to read/write emails from this account, who will be able to edit general account information and who will have no access to the account.<br/><b>Note</b>: Email classified on a workspace will always be readable by all users that can read email on that workspace, regardless of these permissions. ',
+	'cannot access account' => 'No access',
+	'can view account emails' => 'Can read/write emails',
+	'can view account emails and edit' => 'Can read/write emails and edit account', 
+	'personal settings' => 'Personal settings',
+	'personal settings desc' => 'These settings are specific to your user and don\'t affect other users with access to this account.',
 ); // array
 
 ?>

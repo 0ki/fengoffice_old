@@ -51,11 +51,14 @@ og.ContentPanel = function(config) {
 	this.on('render', function() {
 		var tab = Ext.get("tabs-panel__" + this.id);
 		if (tab) {
+			og._activeTab = this.id;
 			tab.on('click', function() { 
+				og._activeTab = this.id;
+			}, this);
+			tab.on('dblclick', function() { 
 				if (this.id == og._activeTab) {
 					this.reset();
 				}
-				og._activeTab = this.id;
 			}, this);
 		}
 		if (this.ownerCt) {
@@ -168,9 +171,94 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.reload();
 			return false;
 		}
-	
+		
+		/*if (!og.addLocation) {
+			og.activeLocation = "";
+			og.addLocation = function(info) {
+				var type = info.content.type == 'html' ? 'url' : info.content.type;
+				var data = info.content.type == 'html' ? info.content.url : info.content.data;
+				if (type == 'url') {
+					if (data.indexOf('?')) {
+						var newargs = [];
+						var args = data.substring(data.indexOf('?') + 1);
+						args = args.split("&");
+						for (var i=0; i < args.length; i++) {
+							var arg = args[i].split("=");
+							if (arg[0] == 'active_project' ||
+									arg[0] == 'active_tag' ||
+									arg[0] == 'ajax' ||
+									arg[0] == 'current' ||
+									arg[0] == '_dc') continue
+							newargs.push(args[i]);
+						}
+						data = "index.php?" + newargs.join("&");
+					}
+				}
+				var loc = encodeURIComponent(info.ws) + "&" +
+					encodeURIComponent(info.tag) + "&" +
+					encodeURIComponent(info.tab) + "&" +
+					encodeURIComponent(type) + "&" +
+					encodeURIComponent(data);
+				//alert(loc);
+				if (og.activeLocation == loc) return;
+				og.activeLocation = loc;
+				location.href = "#" + loc;
+			};
+			setInterval(function() {
+				var newLocation = location.href;
+				var i = newLocation.indexOf('#');
+				if (i >= 0) {
+					newLocation = newLocation.substring(i + 1);
+					if (newLocation != og.activeLocation) {
+						og.activeLocation = newLocation;
+						var parts = newLocation.split("&");
+						var tagp = Ext.getCmp('tag-panel');
+						var wsp = Ext.getCmp('workspace-panel');
+						var ws = decodeURIComponent(parts[0]);
+						var tag = decodeURIComponent(parts[1]);
+						var tab = decodeURIComponent(parts[2]);
+						var type = decodeURIComponent(parts[3]);
+						var data = decodeURIComponent(parts[4]);
+						wsp.select(ws);
+						tagp.select(tag);
+						var tabp = Ext.getCmp(tab);
+						var tabsp = Ext.getCmp('tabs-panel');
+						tabsp.setActiveTab(tabp);
+						tabp.load({
+							type: type,
+							data: data
+						}, true);
+					}
+				}
+			}, 100);
+		}
+		var tag = Ext.getCmp('tag-panel'); if (tag) tag=tag.getSelectedTag();if(tag)tag=tag.name;
+		var ws = Ext.getCmp('workspace-panel'); if (ws) ws=ws.getActiveWorkspace();if(ws)ws=ws.id;
+		var tab = Ext.getCmp('tabs-panel'); if (tab) tab=tab.getActiveTab();if(tab)tab=tab.id;
+		og.addLocation({
+			ws: ws,
+			tag: tag,
+			tab: tab,
+			content: content
+		});*/
+		
 		if (this.content && !isBack && this.content.type != 'url' && !content.replace) {
-			this.history.push(this.content);
+			var skip = false;
+			if (this.content.type == 'html' && (content.type == 'url' || content.type == 'html')) {
+				// avoid open twice the same content (open it twice but don't add it to the history stack)
+				var url1 = this.content.url;
+				var url2 = content.url || content.data;
+				if (url1 && url2) {
+					url1 = url1.replace(/_dc=[^&]*/g, "");
+					url2 = url2.replace(/_dc=[^&]*/g, "");
+					if (url1 == url2) {
+						skip = true;
+					}
+				}
+			}
+			if (!skip) {
+				this.history.push(this.content);
+			}
 		}
 		if (typeof content == 'string') {
 			content = {
@@ -306,7 +394,7 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			}
 			if (isReset) {
 				content.panel.reset();
-			} else {//if (isReload) {
+			} else {//if (!isBack) {//if (isReload) {
 				content.panel.load();
 			}
 

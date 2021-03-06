@@ -15,6 +15,11 @@
     private $config_handler;
     
     /**
+     * @var array Cached values for the option. Order: USER / WORKSPACE / Config option value
+     */
+    protected $option_values_cache = array();
+    
+    /**
     * Return display name
     *
     * @param void
@@ -64,48 +69,104 @@
      *
      */
     function getUserValue($user_id = 0, $workspace_id = 0, $default = null){
-    	$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => $workspace_id));
-    	if (is_null($val)){
-    		if ($user_id == 0 || $workspace_id == 0){
-    			//Return default settings
-    			if (!is_null($default))
-    				return $default;
-    			else
-    				return $this->getDefaultValue();
-    		} else {
-    			//Search user global preferences
-    			$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => 0));
-    			if (!$val){
-    				//Search workspace global preferences
-    				$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>0,'workspace_id' => $workspace_id));
-    				if (!$val){
-    					//Return default settings
-    					if (!is_null($default))
-    						return $default;
-    					else
-    						return $this->getDefaultValue();
-    				} // if
-    			} // if
-    		} // if
-    	} // if
-		return $val->getValue();
+    	//Return value if found
+    	if (!is_null($this->getUserValueCached($user_id, $workspace_id))) 
+    		return $this->getUserValueCached($user_id, $workspace_id);
+    	else {
+    		if (!$this->getUserValueNotFoundCache($user_id, $workspace_id)){
+	    		$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => $workspace_id));
+	    		if ($val instanceof UserWsConfigOptionValue){
+					$this->updateUserValueCache($user_id,$workspace_id,$val->getValue());
+	    			return $val->getValue();
+	    		} else $this->updateUserValueCache($user_id, $workspace_id, null);
+    		}
+    	}
+    	
+    	//Value not found, return default if searching for default user or workspace
+    	if ($user_id == 0 || $workspace_id == 0){
+    		//Return default settings
+    		if (!is_null($default))
+    			return $default;
+    		else
+    			return $this->getDefaultValue();
+    	} 
+    	
+    	//Search user global preferences
+    	if (!is_null($this->getUserValueCached($user_id, 0))) 
+    		return $this->getUserValueCached($user_id, 0);
+    	else {
+    		if (!$this->getUserValueNotFoundCache($user_id, 0)){
+	    		$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=>$user_id,'workspace_id' => 0));
+	    		if ($val instanceof UserWsConfigOptionValue){
+					$this->updateUserValueCache($user_id,0,$val->getValue());
+	    			return $val->getValue();
+	    		} else $this->updateUserValueCache($user_id, 0, null);
+    		}
+    	}
+    	
+    	//Search workspace global preferences
+    	if (!is_null($this->getUserValueCached(0, $workspace_id))) 
+    		return $this->getUserValueCached(0, $workspace_id);
+    	else {
+    		if (!$this->getUserValueNotFoundCache(0, $workspace_id)){
+	    		$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id'=> 0,'workspace_id' => $workspace_id));
+	    		if ($val instanceof UserWsConfigOptionValue){
+					$this->updateUserValueCache(0,$workspace_id,$val->getValue());
+	    			return $val->getValue();
+	    		} else $this->updateUserValueCache(0, $workspace_id, null);
+    		}
+    	}
+    	
+    	//Nothing found, return default settings
+    	if (!is_null($default))
+    		return $default;
+    	else
+    		return $this->getDefaultValue();
+    }
+    
+    private function updateUserValueCache($user_id, $workspace_id, $value){
+    	if (!array_key_exists($user_id, $this->option_values_cache))
+    		$this->option_values_cache[$user_id] = array();
+    	$this->option_values_cache[$user_id][$workspace_id] = $value;
+    }
+    
+    function getUserValueCached($user_id = 0, $workspace_id = 0){
+    	if (array_key_exists($user_id, $this->option_values_cache))
+    		if (array_key_exists($workspace_id, $this->option_values_cache[$user_id]))
+    			return $this->option_values_cache[$user_id][$workspace_id];
+    	return null;
+    }
+    
+    /**
+     * Returns true if the value was already searched in the database but not found.
+     * 
+     * @param $user_id
+     * @param $workspace_id
+     * @return unknown_type
+     */
+    function getUserValueNotFoundCache($user_id = 0, $workspace_id = 0){
+    	if (array_key_exists($user_id, $this->option_values_cache))
+    		if (array_key_exists($workspace_id, $this->option_values_cache[$user_id]))
+    			return true;
+    	return false;
     }
     
     /**
      * Set value  
      *
      */
-    function setUserValue($new_value, $user_id = 0, $workpace_id = 0){
-    	$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id' => $user_id, 'workspace_id' => $workpace_id));
+    function setUserValue($new_value, $user_id = 0, $workspace_id = 0){
+    	$val = UserWsConfigOptionValues::findById(array('option_id' => $this->getId(), 'user_id' => $user_id, 'workspace_id' => $workspace_id));
 		if(!$val){
 			// if value was not found, create it
 			$val = new UserWsConfigOptionValue();
 			$val->setOptionId($this->getId());
 			$val->setUserId($user_id);
-			$val->setWorkspaceId($workpace_id);
+			$val->setWorkspaceId($workspace_id);
 		}
 		$val->setValue($new_value);
 		$val->save();
+		$this->updateUserValueCache($user_id,$workspace_id, $val->getValue());
     }
     
     /**
@@ -144,6 +205,11 @@
       $handler = $this->getConfigHandler();
       return $handler->render($control_name);
     } // render
+    
+    function save(){
+    	parent::save();
+    	UserWsConfigOptions::instance()->updateConfigOptionCache($this);
+    }
     
   } // UserWsConfigOption 
 

@@ -108,7 +108,8 @@
 				$p = get_url('event', 'viewdate', array(
 					'day' => $day_of_month,
 					'month' => $month,
-					'year' => $year
+					'year' => $year,
+					'view_type' => 'viewdate'
 				));
 				$t = get_url('event', 'add', array(
 					'day' => $day_of_month,
@@ -121,7 +122,8 @@
 				$p = get_url('event', 'viewdate', array(
 					'day' => $day_of_month,
 					'month' => $month,
-					'year' => $year
+					'year' => $year,
+					'view_type' => 'viewdate'
 				));
 				$t = get_url('event', 'day', array(
 					'day' => $day_of_month,
@@ -142,7 +144,8 @@
 				$p = get_url('event', 'viewdate', array(
 					'day' => $day_of_month - $lastday,
 					'month' => $month,
-					'year' => $year
+					'year' => $year,
+					'view_type' => 'viewdate'
 				));
 				$t = get_url('event', 'add', array(
 					'day' => $day_of_month - $lastday,

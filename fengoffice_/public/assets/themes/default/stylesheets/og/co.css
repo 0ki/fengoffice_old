@@ -20,14 +20,16 @@
 }
 
 .coViewIcon{
-	padding:12px;
-	width:48px;	
+	padding:0;
+	width:72px;	
+	max-width: 72px;
   	border-bottom: 1px solid;
 }
 
 .coViewIconImage{
 	height: 48px;
 	width: 48px;
+	margin: 12px;
 }
 
 .coViewHeader {
@@ -142,13 +144,23 @@
 
 .message .coViewHeader {
   	background: #FFE966;
-  	border-color: #CCB633;
+  	border-color: #FFE966;
   	color: #736617;
+}
+
+.message .coViewSubHeader {
+  	background: #FFED8C;
+  	border:0px;
+  	color: #736617;
+}
+
+.message .coViewSubHeader .odd {
+  	background: #FFF8CC;
 }
 
 .message .coViewIcon {
   	background: #FFF8CC;
-  	border-color: #F2DF6D;
+  	border-color: #FFF8CC;
 }
 
 .message .coViewHeader .coViewTitle {
@@ -206,6 +218,12 @@
   	color: #404566;
 }
 
+.email .coViewSubHeader {
+  	background: #D2CEEF;
+  	border:0px;
+  	color: #404566;
+}
+
 .email .coViewIcon {
   	background: #DBE0FF;
   	border-color: #BABFD9;
@@ -260,13 +278,23 @@
 
 .contact .coViewHeader {
   	background: #F2D7AA;
-  	border-color: #CCA970;
+  	border-color: #F2D7AA;
   	color: #735D39;
+}
+
+.contact .coViewSubHeader {
+  	background: #F2E3C9;
+  	border:0px;
+  	color: #444;
+}
+
+.contact .coViewSubHeader .odd {
+  	background: #F2EBE0;
 }
 
 .contact .coViewIcon {
   	background: #F2E0C2;
-  	border-color: #F2D7AA;
+  	border-color: #F2E0C2;
 }
 
 .contact .coViewHeader .coViewTitle {
@@ -349,13 +377,23 @@
 
 .files .coViewHeader {
   	background: #C9D9C3;
-  	border-color: #B1BFAC;
+  	border-color: #C9D9C3;
   	color: #3F4D39;
+}
+
+.files .coViewSubHeader {
+  	background: #D0D9CC;
+  	border:0px;
+  	color: #3F4D39;
+}
+
+.files .coViewSubHeader .odd {
+  	background: #EDFFE6;
 }
 
 .files .coViewIcon {
   	background: #EDFFE6;
-  	border-color: #C9D9C3;
+  	border-color: #EDFFE6;
 }
 
 .files .coViewHeader .coViewTitle {
@@ -380,13 +418,19 @@
 
 .tasks .coViewHeader {
   	background: #717FA1;
-  	border-color: #455678;
+  	border-color: #717FA1;
   	color: #FFFFFF;
+}
+
+.tasks .coViewSubHeader {
+  	background: #ACB5CF;
+  	border:0px;
+  	color: #444;
 }
 
 .tasks .coViewIcon {
   	background: #E8EDF7;
-  	border-color: #455678;
+  	border-color: #E8EDF7;
 }
 
 .tasks .coViewHeader .coViewTitle {
@@ -411,13 +455,19 @@
 
 .milestone .coViewHeader {
   	background: #717FA1;
-  	border-color: #455678;
+  	border-color: #717FA1;
   	color: #FFFFFF;
+}
+
+.milestone .coViewSubHeader {
+  	background: #ACB5CF;
+  	border:0px;
+  	color: #444;
 }
 
 .milestone .coViewIcon {
   	background: #E8EDF7;
-  	border-color: #455678;
+  	border-color: #E8EDF7;
 }
 
 .milestone .coViewHeader .coViewTitle {
@@ -441,13 +491,19 @@
 
 .event .coViewHeader {
   	background: #717FA1;
-  	border-color: #455678;
+  	border-color: #717FA1;
   	color: #FFFFFF;
+}
+
+.event .coViewSubHeader {
+  	background: #ACB5CF;
+  	border:0px;
+  	color: #444;
 }
 
 .event .coViewIcon {
   	background: #E8EDF7;
-  	border-color: #455678;
+  	border-color: #E8EDF7;
 }
 
 .event .coViewHeader .coViewTitle {
@@ -472,13 +528,19 @@
 
 .calendar .coViewHeader {
   	background: #717FA1;
-  	border-color: #455678;
+  	border-color: #717FA1;
   	color: #FFFFFF;
+}
+
+.calendar .coViewSubHeader {
+  	background: #ACB5CF;
+  	border:0px;
+  	color: #444;
 }
 
 .calendar .coViewIcon {
   	background: #717FA1;
-  	border-color: #455678;
+  	border-color: #717FA1;
 }
 
 .calendar .coViewHeader .coViewTitle {
@@ -503,6 +565,12 @@
   	background: #717FA1;
   	border-color: #455678;
   	color: #FFFFFF;
+}
+
+.report .coViewSubHeader {
+  	background: #ACB5CF;
+  	border:0px;
+  	color: #444;
 }
 
 .report .coViewIcon {

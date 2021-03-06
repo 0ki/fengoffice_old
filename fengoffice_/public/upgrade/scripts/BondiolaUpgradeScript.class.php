@@ -59,21 +59,6 @@ class BondiolaUpgradeScript extends ScriptUpgraderScript {
 	 * @return boolean
 	 */
 	function execute() {
-		// ---------------------------------------------------
-		//  Connect to database
-		// ---------------------------------------------------
-
-		if($this->database_connection = mysql_connect(DB_HOST, DB_USER, DB_PASS)) {
-			if(mysql_select_db(DB_NAME, $this->database_connection)) {
-				$this->printMessage('Upgrade script has connected to the database.');
-			} else {
-				$this->printMessage('Failed to select database ' . DB_NAME);
-				return false;
-			} // if
-		} else {
-			$this->printMessage('Failed to connect to database');
-			return false;
-		} // if
 
 		// ---------------------------------------------------
 		//  Check MySQL version
@@ -95,27 +80,6 @@ class BondiolaUpgradeScript extends ScriptUpgraderScript {
 		tpl_assign('engine', DB_ENGINE);
 		else
 		tpl_assign('engine', 'InnoDB');
-
-		// ---------------------------------------------------
-		//  Check test query
-		// ---------------------------------------------------
-
-		$test_table_name = TABLE_PREFIX . 'test_table';
-		$test_table_sql = "CREATE TABLE `$test_table_name` (
-		`id` int(10) unsigned NOT NULL auto_increment,
-		`name` varchar(50) $default_collation NOT NULL default '',
-		PRIMARY KEY  (`id`)
-		) ENGINE=InnoDB $default_charset;";
-
-		if(@mysql_query($test_table_sql, $this->database_connection)) {
-			$this->printMessage('Test query has been executed. Its safe to proceed with database migration.');
-			@mysql_query("DROP TABLE `$test_table_name`", $this->database_connection);
-		} else {
-			$this->printMessage('Failed to executed test query. MySQL said: ' . mysql_error($this->database_connection), true);
-			return false;
-		} // if
-
-		//return ;
 
 		// ---------------------------------------------------
 		//  Execute migration

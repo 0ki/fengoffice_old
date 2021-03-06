@@ -3,9 +3,9 @@
  *
  */
 og.LinkedObjectManager = function(config) {
-	
+	if (!config.filter_manager)
+		config.filter_manager = '';
 	Ext.apply(this, config);
-	//this.newConfig(config);
 	
 	var actions, moreActions;
 	
@@ -49,10 +49,13 @@ og.LinkedObjectManager = function(config) {
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
 						}
+					} else if (d.objects.length == 0) {
+						this.fireEvent('messageToShow', lang("no more objects message", lang("objects")));
 					} else {
 						this.fireEvent('messageToShow', "");
 					}
 					og.showWsPaths();
+					Ext.getCmp('linked-objects-manager').getView().focusRow(og.lastSelectedRow.linkedobjs+1);
 				}
 			}
 		});
@@ -62,7 +65,7 @@ og.LinkedObjectManager = function(config) {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderDragHandle(value, p, r) {
-		return '<div class="img-grid-drag" onmousedown="Ext.getCmp(\'linked-objects-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
+		return '<div class="img-grid-drag" title="' + lang('click to drag') + '" onmousedown="Ext.getCmp(\'linked-objects-manager\').getSelectionModel().selectRow('+r.data.ix+', true);"></div>';
 	}
 
 	function renderName(value, p, r) {
@@ -84,7 +87,7 @@ og.LinkedObjectManager = function(config) {
 		} else {
 			var cleanvalue = og.clean(value);
 		}
-		var name = String.format('<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')">{0}</a>', cleanvalue, viewUrl);
+		var name = String.format('<a style="font-size:120%" href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl);
 		
 		return projectsString + name + actions;
 	}
@@ -107,11 +110,11 @@ og.LinkedObjectManager = function(config) {
 		return String.format('<div class="{0}" title="{1}"/>', classes, lang(r.data.type));
 	}
 	function renderUser(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
+		return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.updatedById}));
 	}
 
 	function renderAuthor(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
+		return String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), og.getUrl('user', 'card', {id: r.data.createdById}));
 	}
 
 	function renderDate(value, p, r) {
@@ -129,7 +132,8 @@ og.LinkedObjectManager = function(config) {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
 				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
-			}	
+			}
+			og.lastSelectedRow.linkedobjs = selections[selections.length-1].data.ix;
 			return ret.substring(1);
 		}
 	}
@@ -148,11 +152,8 @@ og.LinkedObjectManager = function(config) {
 		function() {
 			if (sm.getCount() <= 0) {
 				actions.unlink.setDisabled(true);
-				
-				
 			} else {
 				actions.unlink.setDisabled(false);
-									
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
@@ -229,8 +230,6 @@ og.LinkedObjectManager = function(config) {
 		}]);
 	cm.defaultSortable = false;
 
-	moreActions 
-	
 	actions = {
 		parent: new Ext.Action({
 			id: 'parent',
@@ -287,7 +286,7 @@ og.LinkedObjectManager = function(config) {
 			},
 			scope: this
 		}),
-			
+
 		unlink: new Ext.Action({
 			text: lang('unlink'),
 			iconCls: 'ico-delete',
@@ -297,15 +296,16 @@ og.LinkedObjectManager = function(config) {
 				if (confirm(lang('confirm unlink objects'))) {
 					var selections = sm.getSelections();
 					if (selections.length > 0) {
-						for (var i=0; i < selections.length; i++) {
-							og.openLink(og.getUrl('object','unlink_from_object',{manager:this.linked_manager,object_id:this.linked_object,rel_object_id:selections[i].data.object_id,rel_object_manager:selections[i].data.manager}));
-						}					
+						og.openLink(og.getUrl('object', 'unlink_from_object', {
+							manager: this.linked_manager,
+							object_id: this.linked_object,
+							rel_objects: getSelectedIds()
+						}));
 					}
 					this.getSelectionModel().clearSelections();
 				}
 			},
 			scope: this
-			
 		}),
 		link: new Ext.Action({
 			text: lang('link'),
@@ -322,19 +322,15 @@ og.LinkedObjectManager = function(config) {
 							if (objects != '') objects += ',';
 							objects += data[i].data.manager + ':' + data[i].data.object_id;
 						}
-						
-						og.openLink(og.getUrl('object','link_object',{object_id:lo,manager:lm,objects:objects}));
-					
-						}
-					});
-				
-				},
+						og.openLink(og.getUrl('object','link_object',{object_id:lo,manager:lm,objects:objects, reload:1}));
+					}
+				});
+			},
 			scope: this
 		})
     };
     
 	og.LinkedObjectManager.superclass.constructor.call(this, {
-		//enableDragDrop: true, //(breaks the checkbox selection)
 		enableDrag: true,
 		ddGroup : 'WorkspaceDD',
 		store: this.store,
@@ -344,8 +340,8 @@ og.LinkedObjectManager = function(config) {
 		stripeRows: true,
 		closable: true,
 		id: 'linked-objects-manager',
-		bbar: new og.PagingToolbar({
-			pageSize: og.pageSize,
+		bbar: new og.CurrentPagingToolbar({
+			pageSize: og.config['files_per_page'],
 			store: this.store,
 			displayInfo: true,
 			displayMsg: lang('displaying objects of'),
@@ -359,13 +355,7 @@ og.LinkedObjectManager = function(config) {
 		    actions.parent,
 			'-',
 			actions.unlink,
-			actions.link,
-			
-			'-'
-			/*actions.refresh,
-			'-',*/
-			
-			
+			actions.link
 		],
 		listeners: {
 			'render': {
@@ -413,7 +403,7 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
 		if (typeof params.start == 'undefined') {
-			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.config['files_per_page'];
 		} else {
 			var start = 0;
 		}
@@ -421,13 +411,13 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 			linkedobject: this.linked_object,
-			linkedmanager: this.linked_manager
+			linkedmanager: this.linked_manager,
+			filtermanager: this.filter_manager
 		});
-		 
 		this.store.load({
 			params: Ext.applyIf(params, {
 				start: start,
-				limit: og.pageSize
+				limit: og.config['files_per_page']
 			})
 		});
 		this.needRefresh = false;
@@ -444,28 +434,64 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjects: function(ws) {
-		var selections = this.getSelectionModel().getSelections();
-		var allItemsAreTasksOrMilestones = true;
-		for (i=0; i<selections.length; i++) {
-			if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
-				allItemsAreTasksOrMilestones = false;
-				break;
+		if (ws == 0) {
+			var selections = this.getSelectionModel().getSelections();
+			var amail = false;
+			for (i=0; i<selections.length; i++) {
+				if (selections[i].data.manager == 'MailContents') {
+					amail = true;
+					break;
+				}
 			}
-		}
-		// Tasks and events does not keep ws, only move
-		if (allItemsAreTasksOrMilestones) {
-			this.moveObjectsToWsOrMantainWs(false, ws);
+			if (amail) {
+				og.confirmMoveToAllWs(this.id, lang('confirm unclassify emails'));
+			}
 		} else {
-			og.moveToWsOrMantainWs(this.id, ws);
+			var selections = this.getSelectionModel().getSelections();
+			var allItemsAreTasksOrMilestones = true;
+			for (i=0; i<selections.length; i++) {
+				if (selections[i].data.manager != 'ProjectTasks' && selections[i].data.manager != 'ProjectMilestones') {
+					allItemsAreTasksOrMilestones = false;
+					break;
+				}
+			}
+			// Tasks and events does not keep ws, only move
+			if (allItemsAreTasksOrMilestones) {
+				this.moveObjectsToWsOrMantainWs(false, ws);
+			} else {
+				og.moveToWsOrMantainWs(this.id, ws);
+			}
 		}
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		var selections = this.getSelectionModel().getSelections();
+		var amail = false;
+		for (i=0; i<selections.length; i++) {
+			if (selections[i].data.manager == 'MailContents') {
+				amail = true;
+				break;
+			}
+		}
+		if (amail) {
+			og.askToClassifyUnclassifiedAttachs(this.id, mantain, ws);
+		} else {
+			this.load({
+				action: 'move',
+				objects: this.getSelectedIds(),
+				moveTo: ws,
+				mantainWs: mantain
+			});
+		}
+	},
+	
+	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
 		this.load({
 			action: 'move',
 			objects: this.getSelectedIds(),
 			moveTo: ws,
-			mantainWs: mantain
+			mantainWs: mantain,
+			classify_atts: classifyatts
 		});
 	},
 	
@@ -474,6 +500,13 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 			action: 'tag',
 			objects: this.getSelectedIds(),
 			tagTag: tag
+		});
+	},
+	
+	removeTags: function() {
+		this.load({
+			action: 'untag',
+			objects: this.getSelectedIds()
 		});
 	},
 	
@@ -486,6 +519,16 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 			this.getSelectionModel().clearSelections();
 		}
 	},
+	
+	archiveObjects: function() {
+		if (confirm(lang('confirm archive selected objects'))) {
+			this.load({
+				action: 'archive',
+				objects: this.getSelectedIds()
+			});
+			this.getSelectionModel().clearSelections();
+		}
+	},	
 	
 	showMessage: function(text) {
 		if (this.innerMessage) {
@@ -501,10 +544,9 @@ Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {
 		if (oName.length > 20){
 			oName = oName.substring(0,17) + "...";
 		}
+
 		parent.setText(oName);
-		
 		parent.setIconClass(config.linked_object_ico);
-						
 	}
 });
 

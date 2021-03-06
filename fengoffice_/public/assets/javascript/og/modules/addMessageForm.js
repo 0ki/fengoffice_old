@@ -110,8 +110,9 @@ App.modules.addMessageForm = {
   					};
   				}
   			}
-  			return ret;
+  			return ret;  		
   	}
+    return ids;
   } // emailNotifyClickCompany
   
 };

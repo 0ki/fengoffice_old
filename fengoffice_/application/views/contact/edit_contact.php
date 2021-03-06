@@ -4,8 +4,7 @@
 	$object = $contact;
 ?>
 
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
-
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $contact->isNew() ? $contact->getAddUrl() : $contact->getEditUrl() ?>" method="post">
 <input id="<?php echo $genid ?>hfIsNewCompany" type="hidden" name="contact[isNewCompany]" value=""/>
 
 <div class="contact">
@@ -17,8 +16,8 @@
 	</div>
 	
 	</div>
-	<input type="hidden" name="contact[new_contact_from_mail_div_id]" value="<?php echo array_var($contact_data, 'new_contact_from_mail_div_id', 0) ?>"/>
-	<input type="hidden" name="contact[hf_contacts]" value="<?php echo array_var($contact_data, 'hf_contacts', "") ?>"/>
+	<input type="hidden" name="contact[new_contact_from_mail_div_id]" value="<?php echo array_var($contact_data, 'new_contact_from_mail_div_id', '') ?>"/>
+	<input type="hidden" name="contact[hf_contacts]" value="<?php echo array_var($contact_data, 'hf_contacts') ?>"/>
 	<table><tr><td>
 		<div>
 			<?php echo label_tag(lang('first name'), $genid . 'profileFormFirstName') ?>
@@ -57,6 +56,10 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">
+	<input id="<?php echo $genid?>updated-on-hidden" type="hidden" name="updatedon" value="<?php echo !$contact->isNew() ?  $contact->getUpdatedOn()->getTimestamp() : '' ?>">
+	<input id="<?php echo $genid?>merge-changes-hidden" type="hidden" name="merge-changes" value="" >
+	<input id="<?php echo $genid?>genid" type="hidden" name="genid" value="<?php echo $genid ?>" >
+	
 		<?php 
 			$show_help_option = user_config_option('show_context_help'); 
 			if ($show_help_option == 'always' || ($show_help_option == 'until_close')&& user_config_option('show_add_contact_context_help', true, logged_user()->getId())) {?>
