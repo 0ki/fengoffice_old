@@ -7,4 +7,6 @@
 	'add a new member in feng_persons' => 'Ajouter une nouvelle personne',
 	'do you want to remove permissions for all submembers too' => 'Voulez-vous enlever les permissions pour tous les {0} sous \'{1}\'?',
 	'apply to all submembers' => 'Appliquer les permissions à tous les {0} sous-jacents à \'{1}\'',
+	'contracted_services' => 'Services contractuels',
+	'apply to all members' => 'Appliquer les permissions à tous {0}',
 ); ?>

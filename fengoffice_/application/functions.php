@@ -1037,14 +1037,31 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 	$active_context = active_context();
 	$sel_members = array();
 	if (is_array($active_context)) {
+		$tmp_perms = array();
+		if ($_POST['permissions'] != "") {
+			$tmp_perms = json_decode($_POST['permissions']);
+		}
 		foreach ($active_context as $selection) {
 			if ($selection instanceof Member) {
 				$sel_members[] = $selection;
 				$has_project_permissions = ContactMemberPermissions::instance()->count("permission_group_id = '".$contact->getPermissionGroupId()."' AND member_id = ".$selection->getId()) > 0;
 				if (!$has_project_permissions) {
-					RoleObjectTypePermissions::createDefaultUserPermissions($contact, $selection);
+					$new_cmps = RoleObjectTypePermissions::createDefaultUserPermissions($contact, $selection);
+					
+					foreach ($new_cmps as $new_cmp) {
+						$perm = new stdClass();
+						$perm->m = $new_cmp->getMemberId();
+						$perm->r= 1;
+						$perm->w= $new_cmp->getCanWrite();
+						$perm->d= $new_cmp->getCanDelete();
+						$perm->o= $new_cmp->getObjectTypeId();
+						$tmp_perms[] = $perm;
+					}
 				}
 			}
+		}
+		if (count($tmp_perms) > 0) {
+			$_POST['permissions'] = json_encode($tmp_perms);
 		}
 	}
 	//save_permissions($contact->getPermissionGroupId(), $contact->isGuest());

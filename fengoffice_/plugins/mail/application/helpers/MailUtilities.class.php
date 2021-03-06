@@ -485,6 +485,9 @@ class MailUtilities {
 				}
 			}
 			
+			foreach ($member_ids as $k => &$mem_id) {
+				if ($mem_id == "") unset($member_ids[$k]);
+			}
 			if (count($member_ids) > 0) {
 				$members = Members::instance()->findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
 				$mail->addToMembers($members, true);

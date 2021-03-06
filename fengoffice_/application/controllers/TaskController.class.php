@@ -899,10 +899,10 @@ class TaskController extends ApplicationController {
 						foreach($subs_rows as $row) $subs[] = $row['object_id'];
 						unset($res20, $subs_rows, $row);
 						if(count($subs) > 0){
-							$task_filter_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',', $subs) . ")";
+							$task_filter_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `o`.`id` IN(" . implode(',', $subs) . ")";
 						}
 					}else{
-						$task_filter_condition = " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` = -1";
+						$task_filter_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `o`.`id` = -1";
 					}
 				}
 				break;
@@ -945,7 +945,7 @@ class TaskController extends ApplicationController {
 				$subs_rows = $res20->fetchAll($res20);
 				foreach($subs_rows as $row) $subs[] = $row['object_id'];
 				unset($res20, $subs_rows, $row);
-				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `id` IN(" . implode(',', $subs) . ")";
+				$task_status_condition = " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " AND `o`.`id` IN(" . implode(',', $subs) . ")";
 				break;
 			case 2: // All tasks
 				break;
@@ -1833,7 +1833,7 @@ class TaskController extends ApplicationController {
 				
 		$tasks = array();
 		
-		$pendingstr = $status == 0 ? " AND `completed_on` = " . DB::escape(EMPTY_DATETIME) . " " : "";
+		$pendingstr = $status == 0 ? " AND `e`.`completed_on` = " . DB::escape(EMPTY_DATETIME) . " " : "";
 		$milestone_conditions = " AND `is_template` = false " . $pendingstr;
 		
 		//Find all internal milestones for these tasks
@@ -2324,7 +2324,8 @@ class TaskController extends ApplicationController {
 				}else{
 					$object_controller->add_to_members($task, $member_ids);
 				}				
-				$object_controller->add_subscribers($task);
+				$is_template = $task instanceof TemplateTask;
+				$object_controller->add_subscribers($task,null,!$is_template);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
 				
@@ -2910,8 +2911,9 @@ class TaskController extends ApplicationController {
 					$object_controller->add_to_members($task, $member_ids, null, false);
 				}else{
 					$object_controller->add_to_members($task, $member_ids);
-				}				
-				$object_controller->add_subscribers($task);
+				}
+				$is_template = $task instanceof TemplateTask;
+				$object_controller->add_subscribers($task,null,!$is_template);
 				$object_controller->link_to_new_object($task);
 				$object_controller->add_custom_properties($task);
 				

@@ -263,7 +263,7 @@ sig.actualHtmlSignature = '';
     if (!$draft_edit) {
     	$body = array_var($mail_data, 'body');
     	$idx = stripos($body, '<body');
-    	if ($idx !== FALSE) {
+    	if (false) {
     		$end_tag = strpos($body, '>', $idx) + 1;
     		$html_body = utf8_substr($body, 0, $end_tag) . "<br />--<br />$orig_htmlsignature" . utf8_substr($body, $end_tag); 
     	} else {
@@ -351,7 +351,7 @@ var editor = CKEDITOR.replace(genid+'ckeditor', {
 			Ext.getCmp(p.id).setPreventClose(ev.editor.checkDirty());
 		}
 	},
-	removePlugins: 'scayt',
+	removePlugins: 'scayt,liststyle,tabletools,contextmenu',
 	entities_additional : '#39,#336,#337,#368,#369'
 });
 } catch (e) {

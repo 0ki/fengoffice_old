@@ -647,7 +647,7 @@ class DimensionController extends ApplicationController {
 			}
 			if ( !empty($dot_array[$dimension->getId()]) || ($dot_array[$dimension->getId()][$m->getObjectTypeId()]) instanceof DimensionObjectType ) {
 				$dot =  $dot_array[$dimension->getId()][$m->getObjectTypeId()];
-				$memberOptions = $dot->getOptions(true);
+				if ($dot) $memberOptions = $dot->getOptions(true);
 			}
 			
 			if ($return_only_name) {

@@ -681,6 +681,8 @@ class TemplateController extends ApplicationController {
 					}
 				}
 			}
+			$obj_controller = new ObjectController();
+			$obj_controller->add_subscribers($copy);
 			
 			// copy reminders
 			$reminders = ObjectReminders::getByObject($object);

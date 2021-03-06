@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.1-beta
+ * Mondongo upgrade script will upgrade FengOffice 2.7.1.1 to FengOffice 3.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.7.1.1');
-		$this->setVersionTo('3.1-beta');
+		$this->setVersionTo('3.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -291,10 +291,16 @@ class MondongoUpgradeScript extends ScriptUpgraderScript {
 		}
 		
 		if (version_compare($installed_version, '3.0.8') < 0) {
-			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."object_types` ADD COLUMN `uses_order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
-				ALTER TABLE `".$t_prefix."members` ADD COLUMN `order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
-			";
+			if (!$this->checkColumnExists($t_prefix."object_types", "uses_order", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."object_types` ADD COLUMN `uses_order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
+				";
+			}
+			if (!$this->checkColumnExists($t_prefix."members", "order", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."members` ADD COLUMN `order` INTEGER UNSIGNED NOT NULL DEFAULT 0;
+				";
+			}
 		}
 		
 		

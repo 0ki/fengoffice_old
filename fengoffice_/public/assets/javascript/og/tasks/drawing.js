@@ -1445,7 +1445,7 @@ ogTasks.UpdateTask = function(task_id, from_server){
 					
 				} else {
 					//Set task data
-					ogTasks.drawTaskRowAfterEdit(data.task);							
+					ogTasks.drawTaskRowAfterEdit(data);							
 				}
 			},
 			scope: this

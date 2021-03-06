@@ -1240,6 +1240,50 @@ class MemberController extends ApplicationController {
 	}
 	
 	
+	/**
+	 * After drag and drop
+	 */
+	function add_default_permissions() {
+		ajx_current("empty");
+		
+		$mem_id = array_var($_REQUEST, 'member_id');
+		$user_ids = explode(',', array_var($_REQUEST, 'user_ids'));
+		foreach ($user_ids as $k => &$uid) if (!is_numeric($uid)) unset($user_ids[$k]);
+		
+		if (can_manage_security(logged_user()) && is_numeric($mem_id)) {
+			$member = Members::findById($mem_id);
+			$users = Contacts::findAll(array('conditions' => 'id IN ('.implode(',', $user_ids).')'));
+			
+			if ($member instanceof Member &&  is_array($users) && count($users) > 0) {
+				$permissions_decoded = array();
+				foreach ($users as $user) {
+					$role_perms = RoleObjectTypePermissions::findAll(array('conditions' => array("role_id=?", $user->getUserType())));
+					foreach ($role_perms as $role_perm) {
+						$pg_obj = new stdClass();
+						$pg_obj->pg = $user->getPermissionGroupId();
+						$pg_obj->o = $role_perm->getObjectTypeId();
+						$pg_obj->d = $role_perm->getCanDelete();
+						$pg_obj->w = $role_perm->getCanWrite();
+						$pg_obj->r = 1;
+						$permissions_decoded[] = $pg_obj;
+					}
+				}
+				$permissions = json_encode($permissions_decoded);
+				
+				Env::useHelper('permissions');
+				try {
+					DB::beginWork();
+					
+					save_member_permissions_background(logged_user(), $member, $permissions);
+					
+					DB::commit();
+				} catch (Exception $e) {
+					DB::rollback();
+					flash_error($e->getMessage());
+				}
+			}
+		}
+	}
 	
 	/**
 	 * Used for Drag & Drop, adds objects to a member
@@ -1258,7 +1302,7 @@ class MemberController extends ApplicationController {
 			DB::beginWork();
 		  if ($mem_id) {
 		  	
-			
+		  	$user_ids = array();
 			$member = Members::findById($mem_id);
 			
 			$objects = array();
@@ -1313,9 +1357,19 @@ class MemberController extends ApplicationController {
 							}
 						}
 					}
+					
+					// if object is contact ask to add default permissions in member
+					if ($obj instanceof Contact && $obj->isUser() && can_manage_security(logged_user())) {
+						$user_ids[] = $obj->getId();
+					}
 				} else {
 					throw new Exception(lang('you dont have permissions to classify object in member', $obj->getName(), $member->getName()));
 				}
+			}
+			
+			// if object is contact ask to add default permissions in member
+			if (can_manage_security(logged_user()) && count($user_ids) > 0 && $member->getDimension()->getDefinesPermissions()) {
+				evt_add('ask to assign default permissions', array('user_ids' => $user_ids, 'member' => array('id' => $member->getId(), 'name' => clean($member->getName())), ''));
 			}
 			
 			Hook::fire('after_dragdrop_classify', $objects, $member);

@@ -31,7 +31,7 @@ class ObjectController extends ApplicationController {
 		$this->setLayout("html");
 	}
 	
-	function add_subscribers(ContentDataObject $object, $subscribers = null) {
+	function add_subscribers(ContentDataObject $object, $subscribers = null, $check_permissions = true) {
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -95,11 +95,13 @@ class ObjectController extends ApplicationController {
 			}			
 		}
 		
-		// remove subscribers without permissions
-		$subscribed_users = $object->getSubscribers();
-		foreach ($subscribed_users as $user) {
-			if (!can_read_sharing_table($user, $object->getId())) {
-				$object->unsubscribeUser($user);
+		if($check_permissions){
+			// remove subscribers without permissions
+			$subscribed_users = $object->getSubscribers();
+			foreach ($subscribed_users as $user) {
+				if (!can_read_sharing_table($user, $object->getId())) {
+					$object->unsubscribeUser($user);
+				}
 			}
 		}
 		

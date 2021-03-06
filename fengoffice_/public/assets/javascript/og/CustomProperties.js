@@ -171,7 +171,7 @@ og.cp_list_remove = function(remove_link, genid, cp_id) {
 }
 
 og.cp_list_selected = function(combo, genid, name, cp_id, is_multiple) {
-try {
+
 	var rem = document.getElementById(genid+'_remove_cp_'+cp_id);
 	if (rem) rem.value = 0;
 	var i = og.cp_list_selected_index[cp_id][genid];
@@ -207,7 +207,5 @@ try {
 		genid: genid,
 		values: og.cp_list_selected_values[cp_id][genid]
 	}]);
-} catch (e) {
-	console.log(e);
-}
+
 }

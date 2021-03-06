@@ -1011,6 +1011,7 @@
 		}
 		
 		try {
+			
 			if (isset($permissions) && !is_null($permissions) && is_array($permissions)) {
 				if ($update_sharing_table) {
 					try {
@@ -1034,7 +1035,7 @@
 						}
 						$users = $group->getUsers();
 						$users_ids_checked = array();
-						
+						Logger::log_r("Cant users: ".count($users));
 						foreach ($users as $us) {
 							$users_ids_checked[] = $us->getId();
 							$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
@@ -1070,10 +1071,12 @@
 		$user = Contacts::findOne(array('conditions' => 'permission_group_id='.$pg_id));
 		if ($user instanceof Contact) {
 			$to_remove = array();
-			foreach ($all_perm_deleted as $m_id => $must_remove) {
-				if ($must_remove) $to_remove[] = $m_id;
+			if (is_array($all_perm_deleted)) {
+				foreach ($all_perm_deleted as $m_id => $must_remove) {
+					if ($must_remove) $to_remove[] = $m_id;
+				}
+				ObjectMembers::removeObjectFromMembers($user, logged_user(), null, $to_remove);
 			}
-			ObjectMembers::removeObjectFromMembers($user, logged_user(), null, $to_remove);
 		}
 	}
 	

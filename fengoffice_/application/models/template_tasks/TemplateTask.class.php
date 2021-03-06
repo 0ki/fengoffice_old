@@ -577,12 +577,12 @@ class TemplateTask extends BaseTemplateTask {
 	
 		$_POST['subscribers'] = array();
 		foreach ($this->getSubscribers() as $sub) {
-			$_POST['subscribers']["user_" . $sub->getId()] = "checked";
+			$_POST['subscribers']["user_" . $sub->getId()] = "1";
 		}
 	
-		$obj_controller = new ObjectController();
+		//$obj_controller = new ObjectController();
 		//$obj_controller->add_to_members($new_task, $this->getMemberIds());
-		$obj_controller->add_subscribers($new_task);
+		//$obj_controller->add_subscribers($new_task);
 	
 		foreach($this->getCustomProperties() as $prop) {
 			$new_prop = new ObjectProperty();

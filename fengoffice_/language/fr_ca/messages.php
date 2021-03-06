@@ -664,4 +664,6 @@
 	'objects removed from' => 'Vous avez supprimé avec succès {0} parmi les objets sélectionnés',
 	'object removed from' => 'Vous avez supprimé avec succès {0} parmi l\'objet sélectionné',
 	'and xx more' => 'et {0} de plus.',
+	'confirm restore user' => 'L\'usager sera activé, continuer ?',
+	'permissions successfully saved' => 'Permissions sauvegardées avec succès',
 ); ?>

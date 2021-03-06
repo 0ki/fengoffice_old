@@ -51,7 +51,7 @@ og.getMemberFromOgDimensions = function(mem_id, include_parents, func_callback, 
 					return members;
 				}else{
 					//get all parents
-					while(member.parent && member.parent > 0) {
+					while(member && member.parent && member.parent > 0) {
 						member = og.dimensions[did][member.parent];
 						if (member){
 							members.push(member);

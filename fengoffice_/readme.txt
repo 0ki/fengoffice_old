@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1-beta
+	About Feng Office 3.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,10 +105,24 @@
 	Changelog
 	=========
 	
+	Since 3.1-beta
+	----------------	
+	bugfix: Template tasks subscribers were not copied when instantiating the tasks.
+	bugfix: Remove contextmenu from the email editor.
+	bugfix: Autoclassifying email fix in query.
+	bugfix: Refresh the task row after adding timeslots to tasks.
+	bugfix: Sql query malformed on tasks list.
+	bugfix: Duplicate signature sometimes when replying emails.
+	bugfix: When creating collaborators positioned in a workspace, the workspace is not added to the member cache, permissions are fine.
+	bugfix: Javascript eerror "member is undefined" in member cache js file.
+	
+	
 	Since 3.0.8
 	----------------
 	feature: hierarchy filter on documents tab.
-	feature: in custom reports if object name is printed now it is a link to the object
+	feature: in custom reports if object name is printed now it is a link to the object.
+	feature: when classifying users using drag and drop the system asks if you want to add the default permissions for the users in the workspace where they are being classified.
+	feature: add tags selector in user add/edit form.
 	
 	performance: tree node asks for childrens to the server twice after click .
 	

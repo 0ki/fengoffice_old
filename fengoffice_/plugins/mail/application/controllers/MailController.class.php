@@ -667,6 +667,9 @@ class MailController extends ApplicationController {
 				}
 				
 				$object_controller = new ObjectController();
+				foreach ($member_ids as $k => &$mem_id) {
+					if ($mem_id == "") unset($member_ids[$k]);
+				}
 				if (count($member_ids) > 0) {
 					//$object_controller->add_to_members($mail, $member_ids);
 					$members = Members::instance()->findAll(array('conditions' => 'id IN ('.implode(',', $member_ids).')'));
@@ -1572,6 +1575,9 @@ class MailController extends ApplicationController {
 				for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
 					$classification_data["att_".$j] = true;
 				}
+			}
+			foreach ($members as $k => &$mem_id) {
+				if ($mem_id == "") unset($members[$k]);
 			}
 			
 			$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);

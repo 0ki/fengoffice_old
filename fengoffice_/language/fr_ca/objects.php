@@ -170,4 +170,5 @@
 	'the timeslot activity' => 'l\'intervalle de temps {0}',
 	'activity upload' => '{1} téléchargé une nouvelle version de {0} {2}',
 	'log download file' => 'L\'utilisateur a téléchargé le document',
+	'the weblink activity' => 'le lien{0} ',
 ); ?>

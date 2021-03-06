@@ -293,4 +293,6 @@ Objet:   {0}
 	'add a new milestone to this template' => 'Ajouter une nouvelle étape à ce modèle',
 	'linked weblink tab' => 'Lien Web',
 	'attachment from email' => 'Attaché au courriel "{0}"',
+	'send email notification' => 'Envoyer une notification par messagerie',
+	'undo remove subtasks' => 'Restaurer les sous-tâches supprimées',
 ); ?>

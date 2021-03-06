@@ -212,7 +212,7 @@
 	'deleted notification weblink desc' => 'corbeille envoyé le lien web:',
 	'deleted notification comment' => 'Envoyé à la poubelle le commentaire sur {1} {2}: {0}',
 	'deleted notification comment desc' => 'Envoyé à la poubelle le commentaire par {3} sur {2}',
-	'view object and comments' => 'Voir {0} et tous les Commentaires sur Intranet',
+	'view object and comments' => 'Voir {0} et tous les Commentaires dans Feng Office',
 	'open notification task' => 'Tache ouverte {0}',
 	'open notification task desc' => 'la tache a été ouverte par {1}:',
 	'attach from fengoffice' => 'Attacher depuis Intranet',

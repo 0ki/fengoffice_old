@@ -420,4 +420,19 @@ og.eventManager.addListener('new user added',
  		}
  	}
 );
+
+
+og.eventManager.addListener('ask to assign default permissions', 
+	function (data){
+		if (data && data.user_ids.length > 0) {
+			var user_names = []; 
+			for (var i=0; i<data.user_ids.length; i++) {
+				user_names.push(og.allUsers[data.user_ids[i]].name);
+			}
+			if (confirm(lang('do you want to add default permissions in member for users', data.member.name, user_names.join(', ')))) {
+				og.openLink(og.getUrl('member', 'add_default_permissions', {member_id:data.member.id, user_ids:data.user_ids}));
+			}
+		}
+	}
+);
 </script>
