@@ -833,7 +833,7 @@ class ReportingController extends ApplicationController {
 		$filename = str_replace(' ', '_',$report->getName()).date('_YmdHis');
 		$pageLayout = $_POST['pdfPageLayout'];
 		$fontSize = $_POST['pdfFontSize'];
-		include_once('fpdf.php');
+		include_once(LIBRARY_PATH . '/pdf/fpdf.php');
 		$pdf = new FPDF($pageLayout);
 		$pdf->setTitle($report->getName());
 		$pdf->AddPage();
@@ -843,7 +843,7 @@ class ReportingController extends ApplicationController {
     	$pdf->Ln(20);
     	$colSizes = array();
     	$maxValue = array();
-    	foreach($results['rows'] as $row) {
+		foreach($results['rows'] as $row) {
 			$i = 0;			
 			foreach($row as $k => $value){	
 				if(!isset($maxValue[$i])) $maxValue[$i] = '';
@@ -887,14 +887,10 @@ class ReportingController extends ApplicationController {
 			}
 			$pdf->Ln();
 		}
-		//echo mb_internal_encoding();die();
-		header('Expires: 0');
-		header('Cache-control: private');
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/pdf');
-		header('Content-disposition: attachment; filename='.$filename.'.pdf');
-		echo $pdf->output();
+		$filename = ROOT."/tmp/".gen_id().".pdf";
+		$pdf->Output($filename, "F");
+		download_file($filename, "application/pdf", $report->getName(), true);
+		unlink($filename);
 		die();
 	}
 	

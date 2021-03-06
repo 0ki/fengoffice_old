@@ -311,7 +311,6 @@ class Notifier {
 					$css = get_workspace_css_properties($w->getColor());
 					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
 				}
-				Logger::log("count: ".count($workspaces)." ws: [$ws]");
 				$properties['workspace'] = $ws;
 				$properties['date'] = Localization::instance()->formatDescriptiveDate($object->getStart(), $user->getTimezone());
 				if ($object->getTypeId() != 2) {

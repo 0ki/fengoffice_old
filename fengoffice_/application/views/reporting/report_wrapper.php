@@ -1,5 +1,5 @@
 <?php
-$genid = gen_id();
+//$genid = gen_id();
 if (!isset($allow_export)) $allow_export = true;
   	/*add_page_action(lang('print view'), '#', "ico-print", "_blank", array('onclick' => 'this.form' . $genid . '.submit'));*/
 ?>

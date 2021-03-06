@@ -351,7 +351,7 @@ function download_file($path, $type = 'application/octet-stream', $name = '', $f
 		header("Pragma: no-cache");
 	} // if
 	*/
-	ob_clean();
+	if (ob_get_length()) ob_clean();
 	header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 	header("Content-Type: $type");

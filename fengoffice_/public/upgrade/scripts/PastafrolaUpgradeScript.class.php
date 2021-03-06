@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7-rc3
+ * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6.2');
-		$this->setVersionTo('1.7-rc3');
+		$this->setVersionTo('1.7');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -110,7 +110,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 					ON DUPLICATE KEY UPDATE id=id;
 				";
 			}
-			if (version_compare($installed_version, '1.7-rc') <= 0) {
+			if (version_compare($installed_version, '1.7-rc2') <= 0) {
 				$upgrade_script .= "
 					ALTER TABLE `" . TABLE_PREFIX . "administration_tools` ADD COLUMN `visible` BOOLEAN NOT NULL DEFAULT 1;
 					UPDATE `" . TABLE_PREFIX . "administration_tools` SET `visible`=0 WHERE `name`='mass_mailer';
@@ -119,7 +119,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 			
 			if (!$this->checkTableExists(TABLE_PREFIX.'administration_logs', $this->database_connection)) {
 				$upgrade_script .= "
-					CREATE TABLE  `<?php echo $table_prefix ?>administration_logs` (
+					CREATE TABLE  `" . TABLE_PREFIX . "administration_logs` (
 					  `id` int(10) unsigned NOT NULL auto_increment,
 					  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
 					  `title` varchar(50) NOT NULL default '',

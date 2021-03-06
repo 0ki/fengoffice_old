@@ -498,6 +498,7 @@ ogTasks.toggleSubtasks = function(taskId, groupId){
 ogTasks.drawMilestoneCompleteBar = function(group){
 	var html = '';
 	var milestone = this.getMilestone(group.group_id);
+	if (!milestone) return html;
 	var complete = 0;
 	var completedTasks = milestone.completedTasks;
 	var totalTasks =  milestone.totalTasks;

@@ -304,9 +304,12 @@ class Reports extends BaseReports {
 			$order = $order_by_col != '' ? $order_by_col : $report->getOrderBy();
 			$order_asc = $order_by_col != '' ? $order_by_asc : $report->getIsOrderByAsc();
 			$allColumns = ReportColumns::getAllReportColumns($id);
+			$print_ws_idx = -1;
+			$print_tags_idx = -1;
 			if(is_array($allColumns) && count($allColumns) > 0){
 				$first = true;
 				$openPar = '';
+				$index = 0;
 				foreach($allColumns as $column){
 					if ($column->getCustomPropertyId() == 0) {
 						$field = $column->getFieldName();
@@ -315,6 +318,9 @@ class Reports extends BaseReports {
 							$results['columns'][] = lang('field '.$report->getObjectType().' '.$field);
 							$results['db_columns'][lang('field '.$report->getObjectType().' '.$field)] = $field;
 							$first = false;
+						} else {
+							if ($field === 'workspace') $print_ws_idx = $index;
+							else if ($field === 'tag') $print_tags_idx = $index;
 						}
 					} else {
 						$colCp = $column->getCustomPropertyId();
@@ -336,6 +342,7 @@ class Reports extends BaseReports {
 							}
 						}
 					}
+					$index++;
 				}
 			}
 			if($order_by == '') {
@@ -386,8 +393,23 @@ class Reports extends BaseReports {
 						}
 					}
 				}
+				if ($print_tags_idx > -1) {
+					$row['tags'] = implode(", ", Tags::getTagNamesByObjectIds($id, $report->getObjectType()));
+				}
+				if ($print_ws_idx > -1) {
+					$row['workspace'] = "";
+					$workspaces = WorkspaceObjects::getWorkspacesByObject($report->getObjectType(), $id, logged_user()->getWorkspacesQuery());
+					foreach ($workspaces as $workspace) {
+						$row['workspace'] .= ($row['workspace'] == ""?"":", ") . $workspace->getName();
+					}
+				}
+				// TODO: reorder columns
 				$row = str_replace('|', ',', $row);
 			}
+			// TODO: reorder column titles
+			if ($print_tags_idx > -1) $results['columns'][] = lang('tags');
+			if ($print_ws_idx > -1)$results['columns'][] = lang('workspaces');
+			
 			if (!$to_print) {
 				if (is_array($results['columns'])) {
 					array_unshift($results['columns'], '');

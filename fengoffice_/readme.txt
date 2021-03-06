@@ -1,5 +1,5 @@
 
-    About Feng Office 1.7 rc3
+    About Feng Office 1.7
     =====================
 
     Feng Office is a free and open source Web Office, project management
@@ -91,6 +91,11 @@
 	Changelog
 	=========
 	
+	Since 1.7-rc3
+	------------
+	bugfix: Cannot generate pdf from reports.
+	bugfix: Upgrade script fixed.
+
 	Since 1.7-rc2
 	------------
 	bugfix: Double refresh necessary to view mail inbox

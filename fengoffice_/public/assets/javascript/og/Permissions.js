@@ -312,6 +312,7 @@ og.ogPermSetLevel = function(genid,level){
 		permission = new og.ogPermission(ws.id, [x,x,x,x,level,x,x,x,x], [0,0]);
 	} else {
 		permission.pr = [x,x,x,x,level,x,x,x,x];
+		permission.isModified = true;
 	}
 	
 	permissionsList[genid][ws.id] = permission;

@@ -123,18 +123,18 @@
 <?php foreach($columns as $col) { 
 	$sorted = false;
 	$asc = false;
-	if($col != '' && $db_columns[$col] == $order_by) {
+	if($col != '' && array_var($db_columns, $col) == $order_by) {
 		$sorted = true;
 		$asc = $order_by_asc;
 	}	?>
 	<td style="padding-right:10px;border-bottom:1px solid #666"><b>
-	<?php if($to_print){ 	
+	<?php if($to_print || $col === lang('tags') || $col === lang('workspaces')){ 	
 			echo clean($col);
 		  }else if($col != ''){ ?>
 		<a href="<?php echo get_url('reporting', 'view_custom_report', array('id' => $id, 'order_by' => $db_columns[$col], 'order_by_asc' => $asc ? 0 : 1)).$parameterURL; ?>"><?php echo clean($col) ?></a>
 	<?php } ?>
 	</b>
-	<?php if(!$to_print && $sorted){ ?>
+	<?php if(!($to_print || $col === lang('tags') || $col === lang('workspaces')) && $sorted){ ?>
 		<img src="<?php echo icon_url($asc ? 'asc.png' : 'desc.png') ?>" />
 	<?php } //if ?>
 	</td>
@@ -150,7 +150,7 @@
 		<?php foreach($row as $k => $value) {
 				$db_col = isset($db_columns[$columns[$i]]) ? $db_columns[$columns[$i]] : '';
 			?>
-			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':$types[$k]), $model) ?></td>
+			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), $model) ?></td>
 		<?php
 			$i++; 
 			}//foreach ?>
