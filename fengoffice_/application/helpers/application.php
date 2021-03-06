@@ -30,7 +30,7 @@
     if(!$user->isAdministrator()) return;
     
     $system_notices = array();
-    if(config_option('upgrade_check_enabled', false) && config_option('upgrade_last_check_new_version', false)) $system_notices[] = lang('new activecollab version available', get_url('administration', 'upgrade'));
+    if(config_option('upgrade_check_enabled', false) && config_option('upgrade_last_check_new_version', false)) $system_notices[] = lang('new OpenGoo version available', get_url('administration', 'upgrade'));
     
     if(count($system_notices)) {
       tpl_assign('_system_notices', $system_notices);

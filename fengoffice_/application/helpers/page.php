@@ -224,7 +224,14 @@
     *
     * @var string
     */
-    private $title;
+    private $title; 
+       
+    /**
+    * Body Events
+    *
+    * @var string
+    */
+    private $body_events = array();
     
     /**
     * Array of page metadata
@@ -283,6 +290,39 @@
       $this->title = $value;
     } // setTitle
     
+    /**
+  	* Add body event
+  	*
+  	* @access public
+  	* @param string $event_name
+  	* @param string $event_handler
+  	* @return null
+  	*/
+  	function addBodyEvent($event_name,$event_handler) {
+  	  
+  	  // Do we have an event handler for this event
+  	  foreach($this->body_events as $event) if(array_var($event, 'name') == $event_name) return;
+  	  
+  	  // Prepare ...
+  	  $event= array(
+  	    'name' =>$event_name,
+  	    'handler' => $event_handler
+  	  ); // array  	 
+  	  $arr=array(
+  	  	$event
+  	  );
+  	  if(is_array($this->body_events) && count($this->body_events)) 
+  	  	$this->body_events= array_merge($this->body_events, $arr); 
+  	  else
+  	    $this->body_events = $arr;
+  	  
+  	} // add body event
+         
+  	function get_BodyEvents()
+  	{
+  		return $this->body_events;
+  	}
+  	
     /**
     * Get meta
     *
@@ -502,6 +542,20 @@
   } // set_page_title
   
   /**
+  * Add body event to page
+  *
+  * @access public
+  * @param string $name
+  * @param string $handler
+  * @return null
+  */
+  function add_body_event_to_page($name, $handler) {
+    if($name=='' && $handler=='') return ;
+    $page = PageDescription::instance();
+    $page->addBodyEvent($name,$handler);
+  } // add_stylesheet_to_page
+    
+  /**
   * Add external stylesheet file to page
   *
   * @access public
@@ -557,6 +611,24 @@
     $page->addInlineCSS($content, $condition);
   } // add_inline_css_to_page
   
+  	/**
+	* Render body event
+	*
+	* @access public
+	* @return string
+	*/
+	function render_body_events()
+	{
+		$page = PageDescription::instance();
+		$ret = '';
+		$events=$page ->get_BodyEvents();
+		foreach( $events as $event)
+		{
+			$ret = $ret . ' ' . array_var($event, 'name') . ' = "' . array_var($event, 'handler') .'"';
+		}
+		return $ret;
+	}
+	
   /**
   * Return generated page meta code
   *
@@ -729,6 +801,8 @@
     
   } // render_page_inline_js
   
+
+  	
   /**
   * Render page head...
   *

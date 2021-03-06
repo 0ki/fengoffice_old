@@ -1,3 +1,4 @@
+<!--
 <?php if(isset($folders) && is_array($folders) && count($folders)) { ?>
 <div class="sidebarBlock">
   <h2><?php echo lang('folders') ?></h2>
@@ -37,3 +38,4 @@
   </div>
 </div>
 <?php } // if ?>
+-->

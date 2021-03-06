@@ -7,7 +7,7 @@
     // ---------------------------------------------------
     
     'administration tool name test_mail_settings' => 'Test mail settings',
-    'administration tool desc test_mail_settings' => 'Use this simple tool to send test emails to check if activeCollab mailer is well configured',
+    'administration tool desc test_mail_settings' => 'Use this simple tool to send test emails to check if OpenGoo mailer is well configured',
     'administration tool name mass_mailer' => 'Mass mailer',
     'administration tool desc mass_mailer' => 'Simple tool that let you send plain text messages to any group of users registered to the system',
   
@@ -29,9 +29,9 @@
     
     // Categories
     'config category name general' => 'General',
-    'config category desc general' => 'General activeCollab settings',
+    'config category desc general' => 'General OpenGoo settings',
     'config category name mailing' => 'Mailing',
-    'config category desc mailing' => 'Use this set of settings to set up how activeCollab should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server',
+    'config category desc mailing' => 'Use this set of settings to set up how OpenGoo should handle email sending. You can use configuration options provided in your php.ini or set it so it uses any other SMTP server',
     
     // ---------------------------------------------------
     //  Options
@@ -45,11 +45,11 @@
     'config option name default_project_folders' => 'Default folders',
     'config option desc default_project_folders' => 'Folders that will be created when project is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
     'config option name theme' => 'Theme',
-    'config option desc theme' => 'Using themes you can change the default look and feel of activeCollab',
+    'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo',
     
-    // activeCollab.com
+    // OpenGoo.org
     'config option name upgrade_check_enabled' => 'Enable upgrade check',
-    'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of activeCollab available for download',
+    'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of OpenGoo available for download',
     
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',

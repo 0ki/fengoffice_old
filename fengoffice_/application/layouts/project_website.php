@@ -17,7 +17,7 @@
 <?php echo use_widget('UserBoxMenu') ?>
 <?php echo render_page_head() ?>
   </head>
-  <body>
+  <body <?php echo render_body_events() ?> >
 <?php echo render_system_notices(logged_user()) ?>
     <div id="wrapper">
     

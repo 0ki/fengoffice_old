@@ -228,8 +228,8 @@
     'confirm reset form' => 'Are you sure that you want to reset this form?',
     
     // Errors...
-    'system error message' => 'We are sorry, but a fatal error prevented activeCollab from executing your request. An Error Report has been sent to the administrator.',
-    'execute action error message' => 'We are sorry, but activeCollab is not currently able to execute your request. An Error Report has been sent to the administrator.',
+    'system error message' => 'We are sorry, but a fatal error prevented OpenGoo from executing your request. An Error Report has been sent to the administrator.',
+    'execute action error message' => 'We are sorry, but OpenGoo is not currently able to execute your request. An Error Report has been sent to the administrator.',
     
     // Log
     'log add projectmessages' => '\'%s\' added',

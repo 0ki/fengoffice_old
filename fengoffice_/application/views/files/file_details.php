@@ -6,24 +6,31 @@
   $files_crumbs = array(
     0 => array(lang('files'), get_url('files'))
   ); // array
-  if($folder instanceof ProjectFolder) {
+/*  if($folder instanceof ProjectFolder) {
     $files_crumbs[] = array($folder->getName(), $folder->getBrowseUrl());
-  } // if
+  } // if*/
   $files_crumbs[] = lang('file details');
   
   project_crumbs($files_crumbs);
   
   if(ProjectFile::canAdd(logged_user(), active_project())) {
     if($folder instanceof ProjectFolder) {
-      add_page_action(lang('add file'), $folder->getAddFileUrl());
+      add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
+      add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
+      add_page_action(lang('add presentation'), $current_folder->getAddFileUrl());
+      add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
     } else {
-      add_page_action(lang('add file'), get_url('files', 'add_file'));
+
+      add_page_action(lang('add document'), get_url('files', 'add_document'));
+      add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
+      add_page_action(lang('add presentation'), get_url('files', 'add_file'));
+      add_page_action(lang('upload file'), get_url('files', 'add_file'));
     } // if
   } // if
-  if(ProjectFolder::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
-  } // if
-  
+//  if(ProjectFolder::canAdd(logged_user(), active_project())) {
+//    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
+//  } // if
+//  
   add_stylesheet_to_page('project/files.css');
 
 ?>
@@ -38,10 +45,11 @@
 <?php if(($file->getDescription())) { ?>
       <div id="fileDescription"><?php echo do_textile($file->getDescription()) ?></div>
 <?php } // if ?>
+<!--
 <?php if($folder instanceof ProjectFolder) { ?>
       <div id="fileFolder"><span class="propertyName"><?php echo lang('folder') ?>:</span> <a href="<?php echo $folder->getBrowseUrl() ?>"><?php echo clean($folder->getName()) ?></a></div>
 <?php } // if ?>
-
+-->
 <?php if($last_revision instanceof ProjectFileRevision) { ?>
       <div id="fileLastRevision"><span class="propertyName"><?php echo lang('last revision') ?>:</span> 
 <?php if($last_revision->getCreatedBy() instanceof User) { ?>
@@ -56,8 +64,12 @@
 <?php
 $options = array();
 if($file->canDownload(logged_user())) $options[] = '<a href="' . $file->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($file->getFilesize()) . ')</span></a>';
-if($file->canEdit(logged_user())) $options[] = '<a href="' . $file->getEditUrl() . '">' . lang('edit') . '</a>';
-if($file->canDelete(logged_user())) $options[] = '<a href="' . $file->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete file') . '\')">' . lang('delete') . '</a>'
+if($file->canEdit(logged_user())) $options[] = '<a href="' . $file->getEditUrl() . '">' . lang('file properties') . '</a>';
+if($file->canDelete(logged_user())) $options[] = '<a href="' . $file->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete file') . '\')">' . lang('delete') . '</a>';
+if(strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 ) 
+$options[] = '<a href="' . 	$file->getModifyUrl()	. '">' . lang('edit') . '</a>';
+if(strcmp($file->getTypeString(),'prsn')==0 ) 
+$options[] = '<a href="' . 	$file->getSlideshowUrl()	. '">' . lang('Slideshow') . '</a>';
 ?>
 <?php if(count($options)) { ?>
         <div id="fileOptions"><?php echo implode(' | ', $options) ?></div>

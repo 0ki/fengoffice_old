@@ -20,12 +20,12 @@
     if($current_folder instanceof ProjectFolder) {
       add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
       add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
-      add_page_action(lang('add presentation'), $current_folder->getAddFileUrl());
+      add_page_action(lang('add presentation'), $current_folder->getAddPresentationUrl());
       add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
     } else {
       add_page_action(lang('add document'), get_url('files', 'add_document'));
       add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
-      add_page_action(lang('add presentation'), get_url('files', 'add_file'));
+      add_page_action(lang('add presentation'), get_url('files', 'add_presentation'));
       add_page_action(lang('upload file'), get_url('files', 'add_file'));
     } // if
   } // if
@@ -60,15 +60,15 @@
 <?php } // if ?>
 
 
-    <div class="stub_check" style="float:left;">//chck</div>
-    <div class="stub_important" style="float:left;">//!!</div>
+ <!--   <div class="stub_check" style="float:left;">//chck</div>
+    <div class="stub_important" style="float:left;">//!!</div> -->
 
 
-    <div class="fileIcon"><img src="<?php echo $file->getTypeIconUrl() ?>" alt="<?php echo $file->getFilename() ?>" /></div>
+    <div class="fileIcon"><img height="30" src="<?php echo $file->getTypeIconUrl() ?>" alt="<?php echo $file->getFilename() ?>" /></div>
 
 
-    <div class="fileInfo">
-      <div class="fileName"><a href="<?php echo $file->getDetailsUrl() ?>" title="<?php echo lang('view file details') ?>"><?php echo clean($file->getFilename()) ?></a></div>
+    <div class="fileInfo" >
+      <div class="fileName" ><a href="<?php echo $file->getDetailsUrl() ?>" title="<?php echo lang('view file details') ?>"><?php echo clean($file->getFilename()) ?></a></div>
       
 <?php if(($last_revision = $file->getLastRevision()) instanceof ProjectFileRevision) { ?>
       <div class="fileLastRevision">

@@ -2,7 +2,7 @@
 
   // PHP5?
   if(!version_compare(phpversion(), '5.0', '>=')) {
-    die('<strong>Upgrade error:</strong> in order to run activeCollab you need PHP5. Your current PHP version is: ' . phpversion());
+    die('<strong>Upgrade error:</strong> in order to run OpenGoo you need PHP5. Your current PHP version is: ' . phpversion());
   } // if
 
   session_start();
@@ -13,7 +13,7 @@
   } // if
   
   define('UPGRADER_PATH', dirname(__FILE__)); // upgrader is here
-  define('INSTALLATION_PATH', realpath(UPGRADER_PATH . '/../../')); // activeCollab installation that we need to upgrade is here
+  define('INSTALLATION_PATH', realpath(UPGRADER_PATH . '/../../')); // OpenGoo installation that we need to upgrade is here
   
   require UPGRADER_PATH . '/library/functions.php';
   require UPGRADER_PATH . '/library/classes/ScriptUpgrader.class.php';

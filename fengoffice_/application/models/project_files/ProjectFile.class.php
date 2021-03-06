@@ -227,7 +227,8 @@
     function getFileContent() {
       $revision = $this->getLastRevision();
       return $revision instanceof ProjectFileRevision ? $revision->getFileContent() : null;
-    } // getFileContent
+    } // getFileContent    
+    
     
     // ---------------------------------------------------
     //  Util functions
@@ -260,13 +261,16 @@
       $revision->deleteThumb(false); // remove thumb
       
       // We have a file to handle!
-      if(!is_array($uploaded_file) || !isset($uploaded_file['name']) || !isset($uploaded_file['size']) || !isset($uploaded_file['type']) || !isset($uploaded_file['tmp_name']) || !is_readable($uploaded_file['tmp_name'])) {
-        throw new InvalidUploadError($uploaded_file);
-      } // if
-      if(isset($uploaded_file['error']) && ($uploaded_file['error'] > UPLOAD_ERR_OK)) {
-        throw new InvalidUploadError($uploaded_file);
-      } // if
-      
+
+ //executes only while uploading files
+	      if(!is_array($uploaded_file) || !isset($uploaded_file['name']) || !isset($uploaded_file['size']) || !isset($uploaded_file['type']) || (!isset($uploaded_file['tmp_name']) || !is_readable($uploaded_file['tmp_name']) )) {
+	      	throw new InvalidUploadError($uploaded_file);
+	      } // if
+	
+	      if(isset($uploaded_file['error']) && ($uploaded_file['error'] > UPLOAD_ERR_OK)) {
+	        throw new InvalidUploadError($uploaded_file);
+	      } // if
+	  
       $repository_id = FileRepository::addFile($uploaded_file['tmp_name'], array('name' => $uploaded_file['name'], 'type' => $uploaded_file['type'], 'size' => $uploaded_file['size']));
       
       $revision->setRepositoryId($repository_id);
@@ -304,6 +308,44 @@
     // ---------------------------------------------------
     //  URLs
     // ---------------------------------------------------
+    
+    /**
+    * Return file modification URL
+    *
+    * @param void
+    * @return string
+    */
+    function getModifyUrl() {
+    	if(0==strcmp('sprd',$this->getTypeString()))
+      		return get_url('files', 'add_spreadsheet', array(
+	        'id' => $this->getId(), 
+	        'active_project' => $this->getProjectId())
+      		); // get_url
+    	else if(0==strcmp('txt',$this->getTypeString()))
+      		return get_url('files', 'add_document', array(
+	        'id' => $this->getId(), 
+	        'active_project' => $this->getProjectId())
+      		); // get_url
+    	else if(0==strcmp('prsn',$this->getTypeString()))
+      		return get_url('files', 'add_presentation', array(
+	        'id' => $this->getId(), 
+	        'active_project' => $this->getProjectId())
+      		); // get_url
+    } // getModifyUrl 
+       
+    /**
+    * Return slideshow URL
+    *
+    * @param void
+    * @return string
+    */
+    function getSlideshowUrl() {
+		if(0==strcmp('prsn',$this->getTypeString()))
+      		return get_url('files', 'slideshow', array(
+	        'id' => $this->getId(), 
+	        'active_project' => $this->getProjectId())
+      		); // get_url
+    } // getModifyUrl
     
     /**
     * Return file details URL

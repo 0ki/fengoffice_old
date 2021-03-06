@@ -18,7 +18,7 @@
     private $check_is_writable = null;
     
     /**
-    * Array of extensions that need to be present for activeCollab to be installed
+    * Array of extensions that need to be present for OpenGoo to be installed
     *
     * @var array
     */

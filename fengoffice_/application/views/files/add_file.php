@@ -6,11 +6,21 @@
     array($file->isNew() ? lang('add file') : lang('edit file'))
   ));
   if(ProjectFile::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add file'), get_url('files', 'add_file'));
+    if($current_folder instanceof ProjectFolder) {
+      add_page_action(lang('add document'), $current_folder->getAddDocumentUrl());
+      add_page_action(lang('add spreadsheet'), $current_folder->getAddSpreadsheetUrl());
+      add_page_action(lang('add presentation'), $current_folder->getAddPresentationUrl());
+      add_page_action(lang('upload file'), $current_folder->getAddFileUrl());
+    } else {
+      add_page_action(lang('add document'), get_url('files', 'add_document'));
+      add_page_action(lang('add spreadsheet'), get_url('files', 'add_spreadsheet'));
+      add_page_action(lang('add presentation'), get_url('files', 'add_presentation'));
+      add_page_action(lang('upload file'), get_url('files', 'add_file'));
+    } // if
   } // if
-  if(ProjectFolder::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
-  } // if
+//  if(ProjectFolder::canAdd(logged_user(), active_project())) {
+//    add_page_action(lang('add folder'), get_url('files', 'add_folder'));
+//  } // if
   
   add_stylesheet_to_page('project/files.css');
 ?>
@@ -30,10 +40,10 @@
         <?php echo label_tag(lang('file'), 'fileFormFile', true) ?>
         <?php echo file_field('file_file', null, array('id' => 'fileFormFile')) ?>
       </div>
-      <div id="selectFolderControl">
+<!--      <div id="selectFolderControl">
         <?php echo label_tag(lang('folder'), 'fileFormFolder') ?>
         <?php echo select_project_folder('file[folder_id]', active_project(), array_var($file_data, 'folder_id'), array('id' => 'fileFormFolder')) ?>
-      </div>
+      </div> -->
       <p><?php echo lang('upload file desc', format_filesize(get_max_upload_size())) ?></p>
     </div>
   </div>
@@ -73,10 +83,11 @@
 <?php } // if ?>
 
 <?php if(!$file->isNew()) { ?>
-  <div>
+<!--  <div>
     <?php echo label_tag(lang('folder'), 'fileFormFolder', true) ?>
     <?php echo select_project_folder('file[folder_id]', active_project(), array_var($file_data, 'folder_id'), array('id' => 'fileFormFolder')) ?>
   </div>
+  -->
 <?php } // if ?>
 
   <fieldset>

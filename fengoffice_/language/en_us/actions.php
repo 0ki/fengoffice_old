@@ -83,15 +83,21 @@
     
     // Files
     'add file' => 'Add file',
+    'file properties' => 'File Properties',
     'upload file' => 'Upload file',
+    'create new revision' => 'Create new Revision',
 
     'add document' => 'Add document',
+    'save document' => 'Save document',
     'add spreadsheet' => 'Add spreadsheet',
     'add presentation' => 'Add presentation',
 
     'New document' => 'New document',
     'New spreadsheet' => 'New spreadsheet',
+    'New presentation' => 'New presentation',
 
+    'Slideshow' => 'Slideshow',
+    
     'Save' => 'Save',
 
     'edit file' => 'Edit file',

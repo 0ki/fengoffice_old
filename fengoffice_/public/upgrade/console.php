@@ -18,7 +18,7 @@
   } // if
 
   // Construct the upgrader and load the scripts
-  $upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade activeCollab', 'Upgrade your activeCollab installation');
+  $upgrader = new ScriptUpgrader(new Output_Console(), 'Upgrade OpenGoo', 'Upgrade your OpenGoo installation');
   $upgrader->upgrade($from_version, $to_version);
 
 ?>

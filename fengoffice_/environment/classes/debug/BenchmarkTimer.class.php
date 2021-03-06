@@ -12,7 +12,7 @@
   // | license@php.net so we can mail you a copy immediately.                 |
   // +------------------------------------------------------------------------+
   //
-  // $Id: Timer.php,v 1.13 2005/05/24 13:42:06 toggg Exp $
+  // $Id: BenchmarkTimer.class.php,v 1.1.1.1 2007/08/29 02:56:23 msaiz Exp $
   //
 
   /**

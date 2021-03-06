@@ -2,12 +2,12 @@
 
   // PHP5?
   if(!version_compare(phpversion(), '5.0', '>=')) {
-    die('<strong>Installation error:</strong> in order to run activeCollab you need PHP5. Your current PHP version is: ' . phpversion());
+    die('<strong>Installation error:</strong> in order to run OpenGoo you need PHP5. Your current PHP version is: ' . phpversion());
   } // if
   
   $compatibility = strtolower(ini_get('zend.ze1_compatibility_mode'));
   if($compatibility == 'on' || $compatibility == '1') {
-    die('<strong>Installation error:</strong> activeCollab will not run on PHP installations that have <strong>zend.ze1_compatibility_mode</strong> set to On. <strong>Please turn it off</strong> (in your php.ini file) in order to continue.');
+    die('<strong>Installation error:</strong> OpenGoo will not run on PHP installations that have <strong>zend.ze1_compatibility_mode</strong> set to On. <strong>Please turn it off</strong> (in your php.ini file) in order to continue.');
   } // if
 
   session_start();
@@ -23,7 +23,7 @@
   // Check the config
   $config_is_set = require_once INSTALLATION_PATH . '/config/config.php';
   if($config_is_set) {
-    die('<strong>Installation error:</strong> activeCollab is already installed');
+    die('<strong>Installation error:</strong> OpenGoo is already installed');
   } // if
   
   // Include library

@@ -16,7 +16,7 @@
   require_once INSTALLER_PATH . '/installation/steps/FinishStep.class.php';
   
   // Construct installer
-  $installer = new ScriptInstaller('activeCollab installation', 'This wizard will guide you through the activeCollab installation process');
+  $installer = new ScriptInstaller('OpenGoo installation', 'This wizard will guide you through the OpenGoo installation process');
   
   // Add steps
   define('ACI_WELCOME', $installer->addStep(new WelcomeStep()));

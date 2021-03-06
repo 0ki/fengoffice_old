@@ -37,7 +37,7 @@
 	} // __autoload
 	
 	/**
-	* activeCollab shutdown function
+	* OpenGoo shutdown function
 	*
 	* @param void
 	* @return null
@@ -162,7 +162,7 @@
   */
   function product_signature() {
     if(function_exists('logged_user') && (logged_user() instanceof User) && logged_user()->isMemberOfOwnerCompany()) {
-      $result = lang('footer powered', 'http://www.activecollab.com/', clean(product_name()) . ' ' . product_version());
+      $result = lang('footer powered', 'http://www.OpenGoo.org/', clean(product_name()) . ' ' . product_version());
       if(Env::isDebugging()) {
         ob_start();
         benchmark_timer_display(false);
@@ -173,7 +173,7 @@
       } // if
       return $result;
     } else {
-      return  lang('footer powered', 'http://www.activecollab.com/', clean(product_name()));
+      return  lang('footer powered', 'http://www.OpenGoo.org/', clean(product_name()));
     } // if
   } // product_signature
   

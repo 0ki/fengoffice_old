@@ -45,7 +45,7 @@
   // If script is not installed config.php will return false. Othervise it will
   // return NULL. If we get false redirect to install folder
   if(!include_once(ROOT . '/config/config.php')) {
-    print "activeCollab is not installed. Please redirect your browser to <b>" . PUBLIC_FOLDER . "/install</b> folder and follow installation procedure";
+    print "OpenGoo is not installed. Please redirect your browser to <a href=\"" . PUBLIC_FOLDER . "/install\">" . PUBLIC_FOLDER . "/install</a> folder and follow installation procedure";
     die();
   } // if
   
@@ -53,9 +53,9 @@
   //  config.php + extended config
   // ---------------------------------------------------
   
-  define('PRODUCT_NAME', 'activeCollab');
+  define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.6');
+    define('PRODUCT_VERSION', '0.2');
   } // if
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file

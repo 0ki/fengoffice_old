@@ -1,7 +1,7 @@
 <?php
 
   /**
-  * Last step of activeCollab installation - prepare the database, insert initial data and create company and administrator account
+  * Last step of OpenGoo installation - prepare the database, insert initial data and create company and administrator account
   *
   * @package ScriptInstaller
   * @subpackage installation

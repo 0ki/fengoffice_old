@@ -2,7 +2,7 @@
 
   require_once dirname(__FILE__) . '/include.php';
   
-  $upgrader = new ScriptUpgrader(new Output_Html(), 'Upgrade activeCollab', 'Upgrade your activeCollab installation');
+  $upgrader = new ScriptUpgrader(new Output_Html(), 'Upgrade OpenGoo', 'Upgrade your OpenGoo installation');
   $form_data = array_var($_POST, 'form_data');
       
   tpl_assign('upgrader', $upgrader);

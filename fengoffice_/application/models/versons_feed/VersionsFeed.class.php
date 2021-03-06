@@ -1,9 +1,9 @@
 <?php
 
   /**
-  * Model class that provides interface to activeCollab update feed:
+  * Model class that provides interface to OpenGoo update feed:
   * 
-  * http://www.activecollab.com/versions.xml
+  * http://www.OpenGoo.org/versions.xml
   *
   * @version 1.0
   * @author Ilija Studen <ilija.studen@gmail.com>
@@ -29,7 +29,7 @@
     *
     * @var string
     */
-    private $feed_url = 'http://www.activecollab.com/versions.xml';
+    private $feed_url = 'http://www.opengoo.org/versions.xml';
     
     /**
     * Feed format - version

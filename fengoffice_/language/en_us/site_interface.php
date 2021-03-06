@@ -9,7 +9,7 @@
   
   // Return langs
   return array(
-    'new activecollab version available' => 'New version of activeCollab is available. <a href="%s">More details</a>.',
+    'new OpenGoo version available' => 'New version of OpenGoo is available. <a href="%s">More details</a>.',
     
     'my tasks' => 'My tasks',
     'welcome back' => 'Welcome back <strong>%s</strong>',
@@ -58,7 +58,7 @@
     'company card of' => 'Company card of %s',
     
     // Upgrade
-    'upgrade is not available' => 'There are no new versions of activeCollab available for download',
+    'upgrade is not available' => 'There are no new versions of OpenGoo available for download',
     'check for upgrade now' => 'Check now',
     
     // Forgot password

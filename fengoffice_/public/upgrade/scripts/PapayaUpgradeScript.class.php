@@ -23,8 +23,8 @@
     */
     function __construct(Output $output) {
       parent::__construct($output);
-      $this->setVersionFrom('0.7');
-      $this->setVersionTo('0.7.1');
+      $this->setVersionFrom('0.1');
+      $this->setVersionTo('0.2');
     } // __construct
     
     /**
@@ -48,13 +48,13 @@
         $this->printMessage('Config file found and loaded.');
       } // if
       
-      if(PRODUCT_VERSION == '0.7.1') {
-        $this->printMessage('You are already running activeCollab 0.7.1');
+      if(PRODUCT_VERSION == '0.2') {
+        $this->printMessage('You are already running OpenGoo 0.2');
         return true;
       } // if
       
-      if(substr(PRODUCT_VERSION, 0, 3) !== '0.7') {
-        $this->printMessage('This upgrade script can be used only to upgrade 0.7 to 0.7.1', true);
+      if(substr(PRODUCT_VERSION, 0, 3) !== '0.1') {
+        $this->printMessage('This upgrade script can be used only to upgrade 0.1 to 0.2', true);
         return false;
       } // if
       
@@ -135,7 +135,7 @@
       } // if
       
       if(mysql_query('COMMIT')) {
-        $this->printMessage('activeCollab has been upgraded. You are now running activeCollab 0.7.1. Enjoy!');
+        $this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo 0.2. Enjoy!');
         return true;
       } else {
         $this->printMessage('Failed to commit updates. Upgrade process failed!', true);

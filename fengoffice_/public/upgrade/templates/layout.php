@@ -41,7 +41,7 @@
       </div>
       <input type="hidden" name="submited" value="submited" />
     </form>
-    <div id="footer">&copy; <?php echo date('Y') ?> <a href="http://www.activecollab.com/">activeCollab</a>. All rights reserved.</div>
+    <div id="footer">&copy; <?php echo date('Y') ?> <a href="http://www.OpenGoo.org/">OpenGoo</a>. All rights reserved.</div>
   </div>
 
 </body>

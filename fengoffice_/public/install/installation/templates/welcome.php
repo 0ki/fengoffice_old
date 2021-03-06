@@ -1,5 +1,5 @@
 <h1 class="pageTitle"><span>Step <?php echo $current_step->getStepNumber() ?>:</span> Welcome</h1>
-<p>activeCollab is a free collaboration and project management system. activeCollab is:</p>
+<p>OpenGoo is a free collaboration and project management system which includes a web office. OpenGoo is:</p>
 <ul>
   <li><strong>Easy to use</strong> - basic set of tools that just work</li>
   <li><strong>Easy to install</strong> - here you are, just follow the instructions</li>

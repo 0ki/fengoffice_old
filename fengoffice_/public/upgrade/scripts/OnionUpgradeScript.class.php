@@ -1,7 +1,7 @@
 <?php
 
   /**
-  * Onion upgrade script will upgrade alpha1 or activeCollab 0.6 to activeCollab 0.7
+  * Onion upgrade script will upgrade alpha1 or OpenGoo 0.6 to OpenGoo 0.7
   *
   * @package ScriptUpgrader.scripts
   * @version 1.0
@@ -187,7 +187,7 @@
       $this->cleanApplicationLogs();
       $this->fixConfigFile();
       
-      $this->printMessage('activeCollab has been upgraded. You are now running activeCollab 0.7. Enjoy!');
+      $this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo 0.7. Enjoy!');
     } // execute
     
     /**

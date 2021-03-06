@@ -1,7 +1,7 @@
 <?php
 
   /**
-  * Third step of activeCollab installation -> user is required to enter 
+  * Third step of OpenGoo installation -> user is required to enter 
   * database connection settings. Script tries the connection params and 
   * if correct saves them in /config/config.php file
   *

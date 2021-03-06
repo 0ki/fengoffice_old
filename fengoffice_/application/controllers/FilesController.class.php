@@ -42,7 +42,7 @@
         list($files, $pagination) = $result;
       } else {
         $files = null;
-        $pagination = null;
+        $pagination = null; 
       } // if
       
       tpl_assign('current_folder', null);
@@ -270,6 +270,16 @@
       $this->setSidebar(get_template_path('index_sidebar', 'files'));
     } // file_details
     
+    function slideshow()
+    {
+	     $file = ProjectFiles::findById(get_id());
+	     $_SESSION["s5content"]= $file->getFileContent();
+
+	      //header('location: ');
+		$this->redirectToUrl('slime/slideshow.php');
+    }//slideshow
+    
+    
     /**
     * Download specific file
     *
@@ -333,11 +343,9 @@
       if(!ProjectFile::canAdd(logged_user(), active_project())) {
         flash_error(lang('no access permissions'));
         $this->redirectToReferer(get_url('files'));
-      } // if
-      
+      } // if      
       $file = new ProjectFile();
-      $file_data = array_var($_POST, 'file');
-      
+      $file_data = array_var($_POST, 'file');      
       $folder = null;
       $folder_id = get_id('folder_id');
       if($folder_id) {
@@ -391,62 +399,591 @@
       } // if
     } // add_file
 
+    
+    
+	function save_document()
+	{
+		if(get_id()>0)
+		{ //edit document
+		  //if(is_array(array_var($_POST, 'file'))) {
+		  
+	        try {
+	          $file = ProjectFiles::findById(get_id());
+//	          $old_is_private = $file->isPrivate();
+//	          $old_is_important = $file->getIsImportant();
+//	          $old_comments_enabled = $file->getCommentsEnabled();
+//	          $old_anonymous_comments_enabled = $file->getAnonymousCommentsEnabled();
+	          DB::beginWork();
+	          $post_revision      = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
+//	          $post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
+//	          $revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
+	          //$post_revision = true;
+	          $revision_comment = '';
+	          //$file->setFromAttributes($file_data);
+	          
+	         // if(!logged_user()->isMemberOfOwnerCompany()) {
+//	            $file->setIsPrivate($old_is_private);
+//	            $file->setIsImportant($old_is_important);
+//	            $file->setCommentsEnabled($old_comments_enabled);
+//	            $file->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
+	        //  } // if
+   		      $file_dt['name']=$file->getFilename();
+		      $file_content=array_var($_POST, 'FCKeditor1');
+		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='txt';
+	          $file_dt['tmp_name'] =     './tmp/' . rand () ;
+			  $handler=fopen($file_dt['tmp_name'], 'w');
+			  fputs($handler,$file_content);
+			  fclose($handler);
+	          $file->save();
+	          //$file->setTagsFromCSV(array_var($file_data, 'tags'));
+//	          if($handle_file) {
+	          $file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
+//	          } // if
+	          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_EDIT);
+	          DB::commit();
+		      unlink($file_dt['tmp_name']);
+	          
+	          flash_success(lang('success add file', $file->getFilename()));
+	          $this->redirectToUrl($file->getDetailsUrl());
+	        } catch(Exception $e) {
+	          //@unlink($file->getFilePath());
+	          DB::rollback();
+		      unlink($file_dt['tmp_name']);
+	          tpl_assign('error', $e);
+	        } // try
+    	  //} // if
+		}
+		else 
+		{ //new document
+		      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		      } // if
+		      
+		      //armo el objeto file
+		      $file = new ProjectFile();
+		      $postFile=array_var($_POST,'file');      
+		      $file->setFilename(array_var($postFile,'name'));      
+		      $file->setProjectId(active_project()->getId());
+		      $file->setIsVisible(true);
+		      
+		    //  if(!logged_user()->isMemberOfOwnerCompany()) {
+		      		$file->setIsPrivate(false);
+		            $file->setIsImportant(false);
+		            $file->setCommentsEnabled(true);
+		            $file->setAnonymousCommentsEnabled(false);
+		      //} // if      
+		      
+		      
+		      /*Busco la carpeta destino*/    
+		      $folder = null;
+		      $folder_id = get_id('file[folder_id]'); //este parametro tendira que venir por GET
+		      if($folder_id) {
+		        $folder = ProjectFolders::findById($folder_id);
+		      } // if
+		      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+		        $file_data = array(
+		          'folder_id' => $folder->getId()
+		        ); // array
+		      } // if
+		      
+		     
+		      //seteo esto para despues setear atributos
+		      $file_content=array_var($_POST, 'FCKeditor1');
+		      $file_dt['name']=array_var($postFile,'name');
+		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='txt';
+		     // $file_dt['content']=$file_content;
+		      
+		      
+		      
+		      $file->setCreatedOn(new DateTimeValue(time()) );
+		      tpl_assign('file', $file);
+		      tpl_assign('file_data', $file_data);
+		 	  try {
+		          DB::beginWork();
+				$file_dt['tmp_name'] =     './tmp/' . array_var($postFile,'name');
+				$handler=fopen($file_dt['tmp_name'], 'w');
+				fputs($handler,array_var($_POST,'FCKeditor1'));
+				fclose($handler);
+		          //$uploaded_file = stripslashes( $_POST['FCKeditor1'] ); //array_var($_FILES, 'file_file');
+		          
+		          //$file->setFromAttributes($file_data);
+		          $file->save();
+		          $file->setTagsFromCSV('');//         TODO: $file->setTagsFromCSV(array_var($file_data, 'tags'));
+		          $revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
+		          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_ADD);
+		          DB::commit();
+		          flash_success(lang('success add file', $file->getFilename()));
+					unlink($file_dt['tmp_name']);
+		          $this->redirectToUrl($file->getDetailsUrl());
+		        } catch(Exception $e) {
+		          DB::rollback();
+		
+		          tpl_assign('error', $e);
+		          tpl_assign('file', new ProjectFile()); // reset file
+		          unlink($file_dt['tmp_name']);
+		          // If we uploaded the file remove it from repository
+		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+		            FileRepository::deleteFile($revision->getRepositoryId());
+		          } // if
+		        } // try
+		      //} // if
+		   //  else echo "MALLLL no es array!!";
+		}
+	}
+		
+	function save_spreadsheet()
+	{
+		if(get_id()>0)
+		{ //edit spreadsheet
+		  //if(is_array(array_var($_POST, 'file'))) {
+		  
+	        try {
+	          $file = ProjectFiles::findById(get_id());
+//	          $old_is_private = $file->isPrivate();
+//	          $old_is_important = $file->getIsImportant();
+//	          $old_comments_enabled = $file->getCommentsEnabled();
+//	          $old_anonymous_comments_enabled = $file->getAnonymousCommentsEnabled();
+	          DB::beginWork();
+	          $post_revision      = array_var($_POST, 'new_revision_spreadsheet') == 'checked'; // change file?
+//	          $post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
+//	          $revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
+	          //$post_revision = true;
+	          $revision_comment = '';
+	          //$file->setFromAttributes($file_data);
+	          
+	         // if(!logged_user()->isMemberOfOwnerCompany()) {
+//	            $file->setIsPrivate($old_is_private);
+//	            $file->setIsImportant($old_is_important);
+//	            $file->setCommentsEnabled($old_comments_enabled);
+//	            $file->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
+	        //  } // if
+   		      $file_dt['name']=$file->getFilename();
+		      $file_content=array_var($_POST,"TrimSpreadsheet");
+		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='sprd';
+	          $file_dt['tmp_name'] =     './tmp/' . rand () ;
+			  $handler=fopen($file_dt['tmp_name'], 'w');
+			  fputs($handler,$file_content);
+			  fclose($handler);
+	          $file->save();
+	          //$file->setTagsFromCSV(array_var($file_data, 'tags'));
+//	          if($handle_file) {
+	          $file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
+//	          } // if
+	          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_EDIT);
+	          DB::commit();
+		      unlink($file_dt['tmp_name']);
+	          
+	          flash_success(lang('success add file', $file->getFilename()));
+	          $this->redirectToUrl($file->getDetailsUrl());
+	        } catch(Exception $e) {
+	          //@unlink($file->getFilePath());
+	          DB::rollback();
+		      unlink($file_dt['tmp_name']);
+	          tpl_assign('error', $e);
+	        } // try
+    	  //} // if
+		}
+		else 
+		{ //new spreadsheet
+		      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		      } // if
+		      
+		      //armo el objeto file
+		      $file = new ProjectFile();
+		      $postFile=array_var($_POST,'file');      
+		      $file->setFilename(array_var($postFile,'name'));      
+		      $file->setProjectId(active_project()->getId());
+		      $file->setIsVisible(true);
+		      
+		      //if(!logged_user()->isMemberOfOwnerCompany()) {
+		      		$file->setIsPrivate(false);
+		            $file->setIsImportant(false);
+		            $file->setCommentsEnabled(true);
+		            $file->setAnonymousCommentsEnabled(false);
+		     // } // if      
+		      
+		      
+		      /*Busco la carpeta destino*/    
+		      $folder = null;
+		      $folder_id = get_id('file[folder_id]'); //este parametro tendira que venir por GET
+		      if($folder_id) {
+		        $folder = ProjectFolders::findById($folder_id);
+		      } // if
+		      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+		        $file_data = array(
+		          'folder_id' => $folder->getId()
+		        ); // array
+		      } // if
+		      
+		     
+		      //seteo esto para despues setear atributos
+		      $file_content=array_var($_POST,"TrimSpreadsheet");
+		      $file_dt['name']=array_var($postFile,'name');
+		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='sprd';
+		     // $file_dt['content']=$file_content;
+		      
+		      
+		      
+		      $file->setCreatedOn(new DateTimeValue(time()) );
+		      tpl_assign('file', $file);
+		      //tpl_assign('file_data', $file_data);
+		 	  try {
+		          DB::beginWork();
+				$file_dt['tmp_name'] =     './tmp/' . array_var($postFile,'name');
+				$handler=fopen($file_dt['tmp_name'], 'w');
+				fputs($handler,array_var($_POST,"TrimSpreadsheet"));
+				fclose($handler);
+		          //$uploaded_file = stripslashes( $_POST['FCKeditor1'] ); //array_var($_FILES, 'file_file');
+		          
+		          //$file->setFromAttributes($file_data);
+		          $file->save();
+		          $file->setTagsFromCSV('');//          $file->setTagsFromCSV(array_var($file_data, 'tags'));
+		          $revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
+		          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_ADD);
+		          DB::commit();
+		          unlink($file_dt['tmp_name']);
+		          flash_success(lang('success add file', $file->getFilename()));		
+		          $this->redirectToUrl($file->getDetailsUrl());
+		        } catch(Exception $e) {
+		          DB::rollback();
+		
+		          tpl_assign('error', $e);
+		          tpl_assign('file', new ProjectFile()); // reset file
+		          unlink($file_dt['tmp_name']);
+		          // If we uploaded the file remove it from repository
+		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+		            FileRepository::deleteFile($revision->getRepositoryId());
+		          } // if
+		        } // try
+		      //} // if
+			}//new spreadsheet
+		}
+		
+	function save_presentation()
+	{
+		if(get_id() > 0)
+		{ //edit presentation
+		  //if(is_array(array_var($_POST, 'file'))) {
+		  
+	        try {
+	          $file = ProjectFiles::findById(get_id());
+//	          $old_is_private = $file->isPrivate();
+//	          $old_is_important = $file->getIsImportant();
+//	          $old_comments_enabled = $file->getCommentsEnabled();
+//	          $old_anonymous_comments_enabled = $file->getAnonymousCommentsEnabled();
+	          DB::beginWork();
+	          $post_revision      = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
+//	          $post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
+//	          $revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
+	          //$post_revision = true;
+	          $revision_comment = '';
+	          //$file->setFromAttributes($file_data);
+	          
+	         // if(!logged_user()->isMemberOfOwnerCompany()) {
+//	            $file->setIsPrivate($old_is_private);
+//	            $file->setIsImportant($old_is_important);
+//	            $file->setCommentsEnabled($old_comments_enabled);
+//	            $file->setAnonymousCommentsEnabled($old_anonymous_comments_enabled);
+	        //  } // if
+   		      $file_dt['name']=$file->getFilename();
+		      $file_content = unescapeS5(array_var($_POST, 's5content'));
+   		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='prsn';
+	          $file_dt['tmp_name'] =     './tmp/' . rand () ;
+			  $handler=fopen($file_dt['tmp_name'], 'w');
+			  fputs($handler,$file_content);
+			  fclose($handler);
+	          $file->save();
+	          //$file->setTagsFromCSV(array_var($file_data, 'tags'));
+//	          if($handle_file) {
+	          $file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
+//	          } // if
+	          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_EDIT);
+	          DB::commit();
+		      unlink($file_dt['tmp_name']);
+	          
+	          flash_success(lang('success add file', $file->getFilename()));
+	          $this->redirectToUrl($file->getDetailsUrl());
+	        } catch(Exception $e) {
+	          //@unlink($file->getFilePath());
+	          DB::rollback();
+		      unlink($file_dt['tmp_name']);
+	          tpl_assign('error', $e);
+	        } // try
+    	  //} // if
+		}
+		else 
+		{ //new presentation
+		      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		      } // if
+		      
+		      //armo el objeto file
+		      $file = new ProjectFile();
+		      $postFile=array_var($_POST,'file');      
+		      $file->setFilename(array_var($postFile,'name'));      
+		      $file->setProjectId(active_project()->getId());
+		      $file->setIsVisible(true);
+		      
+		    //  if(!logged_user()->isMemberOfOwnerCompany()) {
+		      		$file->setIsPrivate(false);
+		            $file->setIsImportant(false);
+		            $file->setCommentsEnabled(true);
+		            $file->setAnonymousCommentsEnabled(false);
+		      //} // if      
+		      
+		      
+		      /*Busco la carpeta destino*/    
+		      $folder = null;
+		      $folder_id = get_id('file[folder_id]'); //este parametro tendira que venir por GET
+		      if($folder_id) {
+		        $folder = ProjectFolders::findById($folder_id);
+		      } // if
+		      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+		        $file_data = array(
+		          'folder_id' => $folder->getId()
+		        ); // array
+		      } // if
+		      
+		     
+		      //seteo esto para despues setear atributos
+		      $file_content=array_var($_POST, 's5content');
+		      $file_dt['name']=array_var($postFile,'name');
+		      $file_dt['size']=strlen($file_content);
+		      $file_dt['type']='prsn';
+		     // $file_dt['content']=$file_content;
+		      
+		      
+		      
+		      $file->setCreatedOn(new DateTimeValue(time()) );
+		      tpl_assign('file', $file);
+		      tpl_assign('file_data', $file_data);
+		 	  try {
+		          DB::beginWork();
+				$file_dt['tmp_name'] =     './tmp/' . array_var($postFile,'name');
+				$handler=fopen($file_dt['tmp_name'], 'w');
+				fputs($handler,$file_content);
+				fclose($handler);
+		          //$uploaded_file = stripslashes( $_POST['FCKeditor1'] ); //array_var($_FILES, 'file_file');
+		          
+		          //$file->setFromAttributes($file_data);
+		          $file->save();
+		          $file->setTagsFromCSV('');//         TODO: $file->setTagsFromCSV(array_var($file_data, 'tags'));
+		          $revision = $file->handleUploadedFile($file_dt, true); // handle uploaded file
+		          ApplicationLogs::createLog($file, active_project(), ApplicationLogs::ACTION_ADD);
+		          DB::commit();
+		          flash_success(lang('success add file', $file->getFilename()));
+					unlink($file_dt['tmp_name']);
+		          $this->redirectToUrl($file->getDetailsUrl());
+		        } catch(Exception $e) {
+		          DB::rollback();
+		
+		          tpl_assign('error', $e);
+		          tpl_assign('file', new ProjectFile()); // reset file
+		          unlink($file_dt['tmp_name']);
+		          // If we uploaded the file remove it from repository
+		          if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
+		            FileRepository::deleteFile($revision->getRepositoryId());
+		          } // if
+		        } // try
+		      //} // if
+		   //  else echo "MALLLL no es array!!";
+		}
+	}
+		
 
     function add_document() {
-      if(!ProjectFile::canAdd(logged_user(), active_project())) {
-        flash_error(lang('no access permissions'));
-        $this->redirectToReferer(get_url('files'));
-      } // if
-      
-      $file = new ProjectFile();
-      $file_data = array_var($_POST, 'file');
+      if(get_id()>0)
+      {//open a document
 
-	$folder = null;
-      $folder_id = get_id('folder_id');
-      if($folder_id) {
-        $folder = ProjectFolders::findById($folder_id);
-      } // if
-      
-      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
-        $file_data = array(
-          'folder_id' => $folder->getId()
-        ); // array
-      } // if
-      
-      tpl_assign('file', $file);
-      tpl_assign('file_data', $file_data);
-
+	      	      $this->setTemplate('add_document');
+	      
+	      $file = ProjectFiles::findById(get_id());
+	      if(!($file instanceof ProjectFile)) {
+	        flash_error(lang('file dnx'));
+	        $this->redirectToReferer(get_url('files'));
+	      } // if
+	      
+	      if(!$file->canEdit(logged_user())) {
+	        flash_error(lang('no access permissions'));
+	        $this->redirectToReferer(get_url('files'));
+	      } // if
+	      
+	      $file_data = array_var($_POST, 'file');
+	      if(!is_array($file_data)) {
+	        $tag_names = $file->getTagNames();
+	        $file_data = array(
+	          'folder_id' => $file->getFolderId(),
+	          'description' => $file->getDescription(),
+	          'is_private' => $file->getIsPrivate(),
+	          'is_important' => $file->getIsImportant(),
+	          'comments_enabled' => $file->getCommentsEnabled(),
+	          'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
+	          'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
+	        ); // array
+	      } // if
+	      
+	      tpl_assign('file', $file);
+	      tpl_assign('file_data', $file_data);
+	      
+      }//end open document
+      else 
+      {//new document
+	      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+	        flash_error(lang('no access permissions'));
+	        $this->redirectToReferer(get_url('files'));
+	      } // if
+	      
+	      $file = new ProjectFile();
+	      $file_data = array_var($_POST, 'file');
+	
+		  $folder = null;
+	      $folder_id = get_id('folder_id');
+	      if($folder_id) {
+	        $folder = ProjectFolders::findById($folder_id);
+	      } // if
+	      
+	      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+	        $file_data = array(
+	          'folder_id' => $folder->getId()
+	        ); // array
+	      } // if
+	      
+	      tpl_assign('file', $file);
+	      tpl_assign('file_data', $file_data);
+      }//end new document
     } // add_document
 
+    
     function add_spreadsheet() {
-      if(!ProjectFile::canAdd(logged_user(), active_project())) {
-        flash_error(lang('no access permissions'));
-        $this->redirectToReferer(get_url('files'));
-      } // if
-      
-      $file = new ProjectFile();
-      $file_data = array_var($_POST, 'file');
-
-	$folder = null;
-      $folder_id = get_id('folder_id');
-      if($folder_id) {
-        $folder = ProjectFolders::findById($folder_id);
-      } // if
-      
-      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
-        $file_data = array(
-          'folder_id' => $folder->getId()
-        ); // array
-      } // if
-      
-      tpl_assign('file', $file);
-      tpl_assign('file_data', $file_data);
-
+    	if(get_id()>0)
+  		{//open a spreadsheet
+      	    $this->setTemplate('add_spreadsheet');	      
+      		$file = ProjectFiles::findById(get_id());
+      		
+	      	 if(!($file instanceof ProjectFile)) {
+		        flash_error(lang('file dnx'));
+		        $this->redirectToReferer(get_url('files'));
+		     } // if
+		      
+		     if(!$file->canEdit(logged_user())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		     } // if
+		      
+		     $file_data = array_var($_POST, 'file');
+		     if(!is_array($file_data)) {
+		        $tag_names = $file->getTagNames();
+		        $file_data = array(
+		          'folder_id' => $file->getFolderId(),
+		          'description' => $file->getDescription(),
+		          'is_private' => $file->getIsPrivate(),
+		          'is_important' => $file->getIsImportant(),
+		          'comments_enabled' => $file->getCommentsEnabled(),
+		          'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
+		          'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
+		        ); // array
+		     } // if
+		     tpl_assign('file', $file);
+		     tpl_assign('file_data', $file_data);
+  		}
+		else 
+		{	// edit a spreadsheet
+		      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		      } // if
+		      
+		      $file = new ProjectFile();
+		      $file_data = array_var($_POST, 'file');
+		
+			$folder = null;
+		      $folder_id = get_id('folder_id');
+		      if($folder_id) {
+		        $folder = ProjectFolders::findById($folder_id);
+		      } // if
+		      
+		      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+		        $file_data = array(
+		          'folder_id' => $folder->getId()
+		        ); // array
+		      } // if
+		      
+		      tpl_assign('file', $file);
+		      tpl_assign('file_data', $file_data);
+		}
     } // add_spreadsheet
 
-    
+    function add_presentation() {
+    	if(get_id()>0)
+    	{ //open presentation
+      	    $this->setTemplate('add_presentation');	      
+      		$file = ProjectFiles::findById(get_id());
+      		
+	      	 if(!($file instanceof ProjectFile)) {
+		        flash_error(lang('file dnx'));
+		        $this->redirectToReferer(get_url('files'));
+		     } // if
+		      
+		     if(!$file->canEdit(logged_user())) {
+		        flash_error(lang('no access permissions'));
+		        $this->redirectToReferer(get_url('files'));
+		     } // if
+		      
+		     $file_data = array_var($_POST, 'file');
+		     if(!is_array($file_data)) {
+		        $tag_names = $file->getTagNames();
+		        $file_data = array(
+		          'folder_id' => $file->getFolderId(),
+		          'description' => $file->getDescription(),
+		          'is_private' => $file->getIsPrivate(),
+		          'is_important' => $file->getIsImportant(),
+		          'comments_enabled' => $file->getCommentsEnabled(),
+		          'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
+		          'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
+		        ); // array
+		     } // if
+		     tpl_assign('file', $file);
+		     tpl_assign('file_data', $file_data);
+    	}
+    	else 
+    	{ //new presentation    		
+	      if(!ProjectFile::canAdd(logged_user(), active_project())) {
+	        flash_error(lang('no access permissions'));
+	        $this->redirectToReferer(get_url('files'));
+	      } // if
+	      
+	      $file = new ProjectFile();
+	      $file_data = array_var($_POST, 'file');
+	
+		 $folder = null;
+	      $folder_id = get_id('folder_id');
+	      if($folder_id) {
+	        $folder = ProjectFolders::findById($folder_id);
+	      } // if
+	      
+	      if(($folder instanceof ProjectFolder) && !is_array($file_data)) {
+	        $file_data = array(
+	          'folder_id' => $folder->getId()
+	        ); // array
+	      } // if
+	      
+	      tpl_assign('file', $file);
+	      tpl_assign('file_data', $file_data);
+    	}
+    }
+        
+        
     /**
-    * Edit file
+    * Edit file properties
     *
     * @access public
     * @param void

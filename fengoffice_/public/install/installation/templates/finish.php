@@ -10,6 +10,6 @@
 
 <?php if(isset($all_ok) && $all_ok) { ?>
 <h1>Success!</h1>
-<p>You have installed activeCollab <strong>successfully</strong>. Go to <a href="<?php echo $absolute_url ?>" onclick="window.open('<?php echo $absolute_url ?>'); return false;"><?php echo clean($absolute_url) ?></a> and start managing your projects (activeCollab will ask you to create administrator user and provide some details about your company first).</p>
-<p><strong>Visit <a href="http://www.activecollab.com/">www.activecollab.com</a> for news, updates and support</strong>. Don't forget to visit <a href="http://forum.activecollab.com/">activeCollab forum</a> and join the growing community of activeCollab users. Thank you!</p>
+<p>You have installed OpenGoo <strong>successfully</strong>. Go to <a href="<?php echo $absolute_url ?>" onclick="window.open('<?php echo $absolute_url ?>'); return false;"><?php echo clean($absolute_url) ?></a> and start managing your projects (OpenGoo will ask you to create administrator user and provide some details about your company first).</p>
+<p><strong>Visit <a href="http://www.OpenGoo.org/">www.OpenGoo.org</a> for news, updates and support</strong>. Don't forget to visit <a href="http://forum.OpenGoo.org/">OpenGoo forum</a> and join the growing community of OpenGoo users. Thank you!</p>
 <?php } // if ?>
