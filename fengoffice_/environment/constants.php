@@ -13,6 +13,10 @@
   define('DATA_TYPE_RESOURCE', 'RESOURCE');
   define('DATA_TYPE_OBJECT',   'OBJECT');
   
+  define('EMPTY_IMAGE', 's.gif');
+  
+  define('LUCENE_SEARCH', false);
+  
   // Some nice to have regexps
   define('EMAIL_FORMAT', "/^([a-z0-9+_]|\\-|\\.)+@(([a-z0-9_]|\\-)+\\.)+[a-z]{2,6}\$/i");
   //define('URL_FORMAT', "/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}((:[0-9]{1,5})?\/.*)?$/i");

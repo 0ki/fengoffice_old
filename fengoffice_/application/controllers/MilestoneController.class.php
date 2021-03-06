@@ -101,7 +101,7 @@ class MilestoneController extends ApplicationController {
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
 
-			$milestone->setProjectId(active_or_personal_project()->getId());
+			$milestone->setProjectId(array_var($milestone_data, 'project_id'));
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
@@ -110,9 +110,11 @@ class MilestoneController extends ApplicationController {
 
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
-				ApplicationLogs::createLog($milestone, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
-
+				
 				DB::commit();
+				
+				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_ADD);
+				
 
 				// Send notification
 				try {
@@ -183,7 +185,7 @@ class MilestoneController extends ApplicationController {
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate($old_is_private);
 
-			$milestone->setProjectId(active_or_personal_project()->getId());
+			$milestone->setProjectId(array_var($milestone_data, 'project_id'));
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 

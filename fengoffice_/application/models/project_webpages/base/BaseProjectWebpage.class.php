@@ -154,6 +154,10 @@
 	function getCreatedById() {
 		return $this->getColumnValue('created_by_id');
 	} // getCreatedById()
+	
+	function getUpdatedById() {
+		return $this->getColumnValue('created_by_id');
+	} // getUpdatedById()
 
 	/**
 	 * Set value of 'created_by_id' field

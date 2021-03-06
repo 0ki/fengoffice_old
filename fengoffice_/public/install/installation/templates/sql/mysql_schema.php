@@ -347,6 +347,8 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `project_id` INTEGER UNSIGNED NOT NULL,
   `title` TEXT <?php echo $default_collation ?>,
   `text` text <?php echo $default_collation ?>,
+  `due_date` datetime NOT NULL default '0000-00-00 00:00:00',
+  `start_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `assigned_to_company_id` smallint(5) unsigned default NULL,
   `assigned_to_user_id` int(10) unsigned default NULL,
   `completed_on` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -409,6 +411,7 @@ CREATE TABLE `<?php echo $table_prefix ?>projects` (
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `updated_by_id` int(10) unsigned default NULL,
   `color` int(10) unsigned default 0,
+  `parent_id` int(10) unsigned NOT NULL default 0,
   PRIMARY KEY  (`id`),
   KEY `completed_on` (`completed_on`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;

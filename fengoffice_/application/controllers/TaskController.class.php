@@ -78,17 +78,21 @@ class TaskController extends ApplicationController {
 		$result = null;
 
 		/* perform queries according to type*/
-		$result = $this->getTasksAndMilestones($page, config_option('files_per_page'), $tag, null, null, $type);
+		$project_id = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($project_id);
+		$result = $this->getTasksAndMilestones($page, config_option('files_per_page'), $tag, null, null,null, $project);
 		if (!$result) $result = array();
-		$total_items = $this->countTasksAndMilestones($tag, $type);
-
+		$total_items = $this->countTasksAndMilestones($tag, $type, $project);
+	
 		/* prepare response object */
 		$object = array(
-			"totalCount" => $total_items,
-			"objects" => $result
-		);
+ 			"totalCount" => $total_items,
+ 			"objects" => $result
+ 		);
 		ajx_extra_data($object);
-		tpl_assign("listing", $object);
+		$this->setTemplate(get_template_path("json"));
+		$this->setLayout("json");
+		tpl_assign("object", $object);
 	}
 
 	/**
@@ -125,9 +129,11 @@ class TaskController extends ApplicationController {
 				$comp[] = $p->getCompletedTasks();
 			}
 		}
+		$this->addHelper('textile');
 		// Sidebar
 		tpl_assign('open_task_lists', $open);
 		tpl_assign('completed_task_lists', $comp);
+		ajx_extra_data(array("title" => $task_list->getTitle(), 'icon'=>'ico-task'));
 		$this->setSidebar(get_template_path('index_sidebar', 'task'));
 	} // view_list
 
@@ -158,17 +164,26 @@ class TaskController extends ApplicationController {
 		tpl_assign('task_list', $task_list);
 
 		if(is_array(array_var($_POST, 'task_list'))) {
-
+			if(array_var($_POST, 'use_due_date'))
+				$task_list_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_due_date_month', 1), array_var($_POST, 'task_due_date_day', 1), array_var($_POST, 'task_due_date_year', 1970));
+			if(array_var($_POST, 'use_start_date'))
+				$task_list_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));
 			$task_list->setFromAttributes($task_list_data);
+			$task_list->setProjectId(array_var($task_list_data, 'project_id'));
+			// Set assigned to
+			$assigned_to = explode(':', array_var($task_list_data, 'assigned_to', ''));
+			$task_list->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+			$task_list->setAssignedToUserId(array_var($assigned_to, 1, 0));
+			// project id and is private
 			$task_list->setProjectId($project->getId());
 			if(!logged_user()->isMemberOfOwnerCompany()) $task_list->setIsPrivate(false);
 			//Add tasks
 			$tasks = array();
 			for($i = 0; $i < 6; $i++) {
-				if(isset($task_list_data["task$i"]) && is_array($task_list_data["task$i"]) && (trim(array_var($task_list_data["task$i"], 'text')) <> '')) {
+				if(isset($task_list_data["task$i"]) && is_array($task_list_data["task$i"]) && (trim(array_var($task_list_data["task$i"], 'title')) <> '')) {
 					$assigned_to = explode(':', array_var($task_list_data["task$i"], 'assigned_to', ''));
 					$tasks[] = array(
-              'text' => array_var($task_list_data["task$i"], 'text'),
+              'title' => array_var($task_list_data["task$i"], 'title'),
               'assigned_to_company_id' => array_var($assigned_to, 0, 0),
               'assigned_to_user_id' => array_var($assigned_to, 1, 0)
 					); // array
@@ -196,7 +211,7 @@ class TaskController extends ApplicationController {
 				foreach($tasks as $task_data) {
 					$task = new ProjectTask();
 					$task->setFromAttributes($task_data);
-					$task->setProjectId($project->getId());
+					$task->setProjectId(array_var($task_list_data, 'project_id'));
 					$task_list->attachTask($task);
 					$task->save();
 				} // foreach
@@ -254,8 +269,14 @@ class TaskController extends ApplicationController {
           'title' => $task_list->getTitle(),
           'text' => $task_list->getText(),
           'milestone_id' => $task_list->getMilestoneId(),
+          'use_due_date' => ($task_list->getDueDate()==EMPTY_DATETIME)?1:false,
+          'due_date' => $task_list->getDueDate(),
+          'use_start_date' => ($task_list->getStartDate()==EMPTY_DATETIME)?1:false,
+          'start_date' => $task_list->getStartDate(),
+          'parent_id' => $task_list->getParentId(),
           'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
           'is_private' => $task_list->isPrivate(),
+          'assigned_to' => $task_list->getAssignedToCompanyId() . ':' . $task_list->getAssignedToUserId()
 			); // array
 			$handins = ObjectHandins::getAllHandinsByObject($task_list);
 			$id = 0;
@@ -277,7 +298,19 @@ class TaskController extends ApplicationController {
 		if(is_array(array_var($_POST, 'task_list'))) {
 			$old_is_private = $task_list->isPrivate();
 			$old_project_id = $task_list->getProjectId();
+			if(array_var($_POST, 'use_start_date'))
+				$task_list_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));			
+			elseif ($task_list->getStartDate() != EMPTY_DATETIME)
+				$task_list_data['start_date'] = EMPTY_DATETIME;
+			if(array_var($_POST, 'use_due_date'))
+				$task_list_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_due_date_month', 1), array_var($_POST, 'task_due_date_day', 1), array_var($_POST, 'task_due_date_year', 1970));			
+			elseif ($task_list->getDueDate() != EMPTY_DATETIME)
+				$task_list_data['due_date'] = EMPTY_DATETIME;
 			$task_list->setFromAttributes($task_list_data);
+			// Set assigned to
+			$assigned_to = explode(':', array_var($task_list_data, 'assigned_to', ''));
+			$task_list->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
+			$task_list->setAssignedToUserId(array_var($assigned_to, 1, 0));
 			if(!logged_user()->isMemberOfOwnerCompany()) $task_list->setIsPrivate($old_is_private);
 			//Add handins
 			$handins = array();
@@ -296,7 +329,7 @@ class TaskController extends ApplicationController {
 				if($task_list_data['project_id'] && $task_list_data['project_id'] != $old_project_id){
 					//update projectid for child tasks
 					foreach ($task_list->getSubTasks() as $subtask){
-						$subtask->setProjectId($task_list_data['project_id']);
+						$subtask->setProjectId(array_var($task_list_data, 'project_id'));
 						$subtask->save();
 					}
 				}
@@ -443,6 +476,9 @@ class TaskController extends ApplicationController {
 
 		// Form is submited
 		if(is_array($task_data)) {
+			if(array_var($_POST, 'use_due_date'))
+				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_due_date_month', 1), array_var($_POST, 'task_due_date_day', 1), array_var($_POST, 'task_due_date_year', 1970));			
+			
 			$task->setFromAttributes($task_data);
 
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -513,6 +549,8 @@ class TaskController extends ApplicationController {
 			$task_data = array(
           'title' => $task->getTitle(),
           'text' => $task->getText(),
+          'use_due_date' => ($task->getDueDate()==EMPTY_DATETIME)?1:false,
+          'due_date' => $task->getDueDate(),
           'task_list_id' => $task->getParentId(),          
 		  'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
           'assigned_to' => $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId()
@@ -524,6 +562,9 @@ class TaskController extends ApplicationController {
 		tpl_assign('task_data', $task_data);
 
 		if(is_array(array_var($_POST, 'task'))) {
+			if(array_var($_POST, 'use_due_date'))
+				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_due_date_month', 1), array_var($_POST, 'task_due_date_day', 1), array_var($_POST, 'task_due_date_year', 1970));			
+			
 			$task->setFromAttributes($task_data);
 			$task->setParentId($task_list->getId()); // keep old task list id
 
@@ -705,16 +746,13 @@ class TaskController extends ApplicationController {
 		} // try
 	} // open_task
 
-	private function getTasksAndMilestones($page, $objects_per_page, $tag=null, $order=null, $order_dir=null){
-		///TODO: this method is horrible on performance and should not be here!!!!
-		if (active_project()) {
-			$proj_ids = active_project()->getId();
-		} else {
-			$proj_ids = logged_user()->getActiveProjectIdsCSV();
-		}
-		$proj_ids = ' (' . $proj_ids . ') ';
-		$queries = ObjectController::getDashboardObjectQueries($proj_ids,$tag);
-		$query = $queries['Tasks'] . " UNION " . $queries['Milestones'];
+	private function getTasksAndMilestones($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $parent_task_id = null, $project = null){
+//		$parent_string ='';
+		if(!$parent_task_id || !is_numeric($parent_task_id))
+			$parent_task_id = 0;
+		$parent_string = " AND parent_id = $parent_task_id ";
+		$queries = ObjectController::getDashboardObjectQueries($project, $tag);
+		$query = $queries['Tasks'] . $parent_string . " UNION " . $queries['Milestones'];
 		if ($order) {
 			$query .= " order by " . $order . " ";
 			if ($order_dir) {
@@ -756,14 +794,8 @@ class TaskController extends ApplicationController {
 	 *
 	 * @return unknown
 	 */
-	private function countTasksAndMilestones($tag=null, $type) {
-		if (active_project()) {
-			$proj_ids = active_project()->getId();
-		} else {
-			$proj_ids = logged_user()->getActiveProjectIdsCSV();
-		}
-		$proj_ids = ' (' . $proj_ids . ') ';
-		$queries = ObjectController::getDashboardObjectQueries($proj_ids,$tag,true);
+	private function countTasksAndMilestones($tag=null, $type=null, $project=null) {
+		$queries = ObjectController::getDashboardObjectQueries($project,$tag,true);
 		$query = $queries['Tasks'] . " UNION " . $queries['Milestones'];
 		$ret = 0;
 		$res1 = DB::execute($query);

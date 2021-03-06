@@ -419,14 +419,19 @@ class ObjectController extends ApplicationController {
      * @param string $tag
      * @param boolean $count if false the query will return objects, if true it will return object count
      */
-	static function getDashboardObjectQueries($proj_ids, $tag = null, $count = false){
-    	
+	static function getDashboardObjectQueries($project = null, $tag = null, $count = false){
+		if (isset($project)) {
+    		$proj_ids = $project->getAllSubWorkspacesCSV(true, logged_user());
+    	} else {
+    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
+    	}
+    	$proj_cond = ' project_id in (' . $proj_ids . ')';
     	if(isset($tag) && $tag && $tag!='')
     		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND oid=t.rel_object_id AND t.rel_object_manager=object_manager) ";
     	else
     		$tag_str= ' ';
     	$unclassifiedMails = "";
-    	if (!active_project()){
+    	if (!isset($project)){
     		$accountIds = logged_user()->getMailAccountIdsCSV();
     		if ($accountIds != "")
     			$unclassifiedMails = " union SELECT 'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . TABLE_PREFIX . "mail_contents co WHERE account_id in (" . $accountIds . ") " . $tag_str;
@@ -434,39 +439,38 @@ class ObjectController extends ApplicationController {
     	$res = array();
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMessages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Messages']  = "SELECT  'ProjectMessages' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_messages co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_messages co WHERE " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Calendar'] = "SELECT  'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_events co WHERE  " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Documents'] = "SELECT  'ProjectFiles' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_files co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_files co WHERE " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Tasks'] = "SELECT  'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_tasks co WHERE parent_id=0 AND " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Milestones'] = "SELECT  'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_milestones co WHERE " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Web Pages'] = "SELECT  'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . 
-					TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str . $permissions;
+					TABLE_PREFIX . "project_webpages co WHERE " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
 		$res['Emails'] = "SELECT  'MailContents' as object_manager, id as oid, sent_date as last_update FROM " . 
-					TABLE_PREFIX . "mail_contents co WHERE project_id in " . $proj_ids . $tag_str . $permissions . $unclassifiedMails;
+					TABLE_PREFIX . "mail_contents co WHERE " . $proj_cond . $tag_str . $permissions . $unclassifiedMails;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(Contacts::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id','co') .')';
-		if (active_project()){
+		if (isset($project)) {
 			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
 					TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . 
-					TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" .
-					str_replace('object_manager)',"'ProjectContacts')",$tag_str) . $permissions;
-		}
-		else{
+					TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and ". $proj_cond.	")" .
+					str_replace('=object_manager',"='ProjectContacts'",$tag_str) . $permissions;
+		} else{
 			$res['Contacts'] = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
-						TABLE_PREFIX . "contacts co WHERE '1' = '1' " . str_replace('object_manager)',"'ProjectContacts')",$tag_str) . $permissions;
+						TABLE_PREFIX . "contacts co WHERE '1' = '1' " . str_replace('=object_manager',"='Contacts'",$tag_str) . $permissions;
 		}
 		if($count){
 			foreach ($res as $p => $q){
-				$res[$p] ="SELECT count(*) as quantity FROM ( $q ) table_alias";
+				$res[$p] ="SELECT count(*) as quantity, '$p' as objectName FROM ( $q ) table_alias";
 			}
 		}
 		return $res;
@@ -481,15 +485,9 @@ class ObjectController extends ApplicationController {
      * @param string $order 
      * @param string $order_dir can be asc or desc
      */
-    function getDashboardObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $type = null){
+    function getDashboardObjects($page, $objects_per_page, $tag=null, $order=null, $order_dir=null, $type = null, $project = null){
     	///TODO: this method is horrible on performance and should not be here!!!!
-    	if(active_project())
-    		$proj_ids = active_project()->getId();
-    	else{
-    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
-    	}
-    	$proj_ids = ' (' . $proj_ids . ') ';    	
-    	$queries = $this->getDashboardObjectQueries($proj_ids, $tag,false);
+    	$queries = $this->getDashboardObjectQueries($project, $tag, false);
 		if(isset($type) && $type){
 			$query = $queries[$type];
 		} //if $type
@@ -546,15 +544,9 @@ class ObjectController extends ApplicationController {
      *
      * @return unknown
      */
-	function countDashboardObjects($tag=null,$type){
+	function countDashboardObjects($tag = null, $type = null, $project = null){
 		  ///TODO: this method is also horrible in performance and should not be here!!!!
-      	if(active_project())
-    		$proj_ids = active_project()->getId();
-    	else{
-    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
-    	}
-    	$proj_ids = ' (' . $proj_ids . ') ';    	
-    	$queries = $this->getDashboardObjectQueries($proj_ids, $tag, true);
+    	$queries = $this->getDashboardObjectQueries($project, $tag, true);
 		if(isset($type) && $type){
 			$query = $queries[$type];
 		} //if $type
@@ -568,10 +560,10 @@ class ObjectController extends ApplicationController {
 			}
 		}
 		$ret = 0;
-		$res = DB::execute($query);		
+		$res = DB::execute($query);	
     	if(!$res)  return $ret;
     	$rows=$res->fetchAll();
-		if(!$rows) return  $ret;
+		if(!$rows) return  $ret;	
     	foreach ($rows as $row){
     		if(isset($row['quantity']))
     			$ret += $row['quantity'];
@@ -623,10 +615,12 @@ class ObjectController extends ApplicationController {
 		
 		/* perform queries according to type*/
 		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
-		$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, null, null, $type);
+		$project_id = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($project_id);
+		$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, null, null, $type, $project);
 		if(!$result)
 			$result = array();
-		$total_items=$this->countDashboardObjects($tag, $type);
+		$total_items=$this->countDashboardObjects($tag, $type, $project);
 				
 		/* prepare response object */
 		$listing = array(
@@ -650,6 +644,9 @@ class ObjectController extends ApplicationController {
 						$split=explode(":",$id);
 						$obj = get_object_by_manager_and_id($split[1],$split[0]);
 						Tags::addObjectTag($tag, $obj, $obj->getProject());
+					}
+					if ($obj instanceof ProjectDataObject && $obj->isSearchable()){
+						$obj->addTagsToSearchableObject();
 					}
 					$succ++;
 				} catch (Exception $e) {
@@ -695,7 +692,7 @@ class ObjectController extends ApplicationController {
 						$obj->delete();
 						ApplicationLogs::createLog($obj, $obj->getProject(), ApplicationLogs::ACTION_DELETE);
 					}
-					$succ ++;
+					$succ++;
 				}
 			} catch(Exception $e) {
 				$err ++;

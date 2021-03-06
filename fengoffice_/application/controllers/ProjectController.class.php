@@ -69,6 +69,7 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function search() {
+		$timeBegin = microtime(true);
 		if(active_project() && !logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -89,11 +90,13 @@ class ProjectController extends ApplicationController {
 				$projects = logged_user()->getActiveProjectIdsCSV();
 			list($search_results, $pagination) = SearchableObjects::searchPaginated($search_for, $projects, logged_user()->isMemberOfOwnerCompany());
 		} // if
+		$timeEnd = microtime(true);
 
 		tpl_assign('search_string', $search_for);
 		tpl_assign('current_page', $page);
 		tpl_assign('search_results', $search_results);
 		tpl_assign('pagination', $pagination);
+		tpl_assign('time', $timeEnd - $timeBegin);
 
 //		tpl_assign('tag_names', active_project()->getTagNames());
 //		$this->setSidebar(get_template_path('search_sidebar', 'project'));
@@ -245,9 +248,11 @@ class ProjectController extends ApplicationController {
 		} // if
 
 		$project = new Project();
-
 		$project_data = array_var($_POST, 'project');
+		$projects = logged_user()->getActiveProjects();
+		
 		tpl_assign('project', $project);
+		tpl_assign('projects', $projects);
 		tpl_assign('project_data', $project_data);
 		
 		/* <permissions> */
@@ -367,7 +372,8 @@ class ProjectController extends ApplicationController {
 				evt_add("workspace added", array(
 					"id" => $project->getId(),
 					"name" => $project->getName(),
-					"color" => $project->getColor()
+					"color" => $project->getColor(),
+					"parent" => $project->getParentId()
 				));
 
 				flash_success(lang('success add project', $project->getName()));
@@ -413,8 +419,10 @@ class ProjectController extends ApplicationController {
 				'color' => 0
 			); // array
 		} // if
-
+		$projects = logged_user()->getActiveProjects();
+		
 		tpl_assign('project', $project);
+		tpl_assign('projects', $projects);
 		tpl_assign('project_data', $project_data);
 		
 		/* <permissions> */
@@ -503,7 +511,8 @@ class ProjectController extends ApplicationController {
 				evt_add("workspace edited", array(
 					"id" => $project->getId(),
 					"name" => $project->getName(),
-					"color" => $project->getColor()
+					"color" => $project->getColor(),
+					"parent" => $project->getParentId()
 				));
 				
 				flash_success(lang('success edit project', $project->getName()));
@@ -767,22 +776,48 @@ class ProjectController extends ApplicationController {
 	 *
 	 */
 	function list_projects() {
-		$this->setTemplate(get_template_path('json'));
-		$this->setLayout("json");
+		ajx_current("empty");
+		//$this->setLayout("json");
+		//$this->setTemplate(get_template_path("json"));
+		
 		$ps = array();
 		$all_projects=array();
-//		if(logged_user()->isAdministrator())
-//			$all_projects = Projects::getAll();
-//		else 
-		$all_projects = logged_user()->getActiveProjects();
-		foreach ($all_projects as $p) {
-			$ps[] = array(
-				"id" => $p->getId(),
-				"name" => $p->getName(),
-				"color" => $p->getColor()
-			);
+		$parent = array_var($_GET, 'parent', 0);
+		$all_projects = logged_user()->getWorkspaces(true, $parent);
+		if (isset($all_projects)) {
+			foreach ($all_projects as $p) {
+				$ps[] = array(
+					"id" => $p->getId(),
+					"name" => $p->getName(),
+					"color" => $p->getColor(),
+					"parent" => $p->getParentId()
+				);
+			}
 		}
-		tpl_assign("object", $ps);
+		
+		//tpl_assign('object', $ps);
+		ajx_extra_data(array('workspaces' => $ps));
+	}
+	
+	function move() {
+		ajx_current("empty");
+		$id = get_id();
+		$to = array_var($_GET, 'to', 0);
+		// TODO: check permissions
+		$ws = Projects::findById($id);
+		$parent = Projects::findById($to);
+		if (isset($ws)) {
+			if ($to == 0 || isset($parent)) {
+				$ws->setParentId($to);
+				$ws->save();
+				evt_add('workspace_edited', array(
+					"is" => $ws->getId(),
+					"name" => $ws->getId(),
+					"color" => $ws->getId(),
+					"parent" => $ws->getParentId()
+				));
+			}
+		}
 	}
 } // ProjectController
 

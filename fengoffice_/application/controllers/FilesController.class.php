@@ -101,7 +101,6 @@ class FilesController extends ApplicationController {
 		tpl_assign('content', $content);
 	}//slideshow
 
-
 	/**
 	 * Download specific file
 	 *
@@ -127,7 +126,6 @@ class FilesController extends ApplicationController {
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
-
 
 	function checkout_file()
 	{
@@ -190,7 +188,6 @@ class FilesController extends ApplicationController {
 		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize());
 		die();
 	} // download_revision
-
 
 	/**
 	 * Add file
@@ -291,7 +288,6 @@ class FilesController extends ApplicationController {
 		} // if
 	} // add_file
 
-
 	function save_document() {
 		ajx_current("empty");
 		$postFile = array_var($_POST, 'file');
@@ -331,7 +327,7 @@ class FilesController extends ApplicationController {
 			} catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
-				flash_error(lang('error while saving'));
+				flash_error(lang('error while saving'), $e->getMessage());
 				//$this->redirectToReferer(get_url('files'));
 			} // try
 		} else  {
@@ -725,7 +721,6 @@ class FilesController extends ApplicationController {
 		}//end new document
 	} // add_document
 
-
 	function add_spreadsheet() {
 		if (get_id() > 0) {
 			//open a spreadsheet
@@ -864,7 +859,7 @@ class FilesController extends ApplicationController {
 		$orderdir = array_var($_GET,'dir');
 		$page = (integer) ($start / $limit) + 1;
 		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-		$project = array_var($_GET,'active_project');
+		$project_id = array_var($_GET, 'active_project', 0);
 		$tag = array_var($_GET,'tag');
 		$type = array_var($_GET,'type');
 		$user = array_var($_GET,'user');
@@ -889,6 +884,7 @@ class FilesController extends ApplicationController {
 			}
 		}
 
+		$project = Projects::findById($project_id);
 		/* perform query */
 		$result = ProjectFiles::getProjectFiles($project, null ,
 		$hide_private, $order, $orderdir, $page, config_option('files_per_page'), false, $tag, $type, $user);
@@ -963,7 +959,6 @@ class FilesController extends ApplicationController {
 		}
 	}
 
-
 	/**
 	 * Tag file
 	 *
@@ -1004,7 +999,6 @@ class FilesController extends ApplicationController {
 		}
 		return array($succ, $err);
 	}
-
 
 	/**
 	 * Edit file properties
@@ -1297,12 +1291,11 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findOne(array('conditions' => "filename = '$filename' AND project_id = " . $projectId));
 		return $file instanceof ProjectFile;
 	}
-
-
+	
 	// ---------------------------------------------------
 	//  Revisions
 	// ---------------------------------------------------
-
+	
 	/**
 	 * Update file revision (comment)
 	 *

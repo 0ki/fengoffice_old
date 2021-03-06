@@ -40,6 +40,15 @@
     } // getActiveProjects
     
     /**
+     * Returns the workspaces that have no parent.
+     * @return array
+     *
+     */
+    static function getTopWorkspaces() {
+    	return Projects::findAll(array('conditions' => array('parent_id = ?', 0))); 
+    }
+    
+    /**
     * Return finished projects
     *
     * @param string $order_by

@@ -29,7 +29,9 @@ class ContactController extends ApplicationController {
 	{
 		ajx_current("empty");
 		
-		$isProjectView = (active_project() instanceof Project);
+		$pid = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($pid);
+		$isProjectView = ($project instanceof Project);
 		 
 		$start = array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
@@ -77,26 +79,21 @@ class ContactController extends ApplicationController {
 		}
 		$permission_str = ' AND (' . permissions_sql_for_listings(Contacts::instance(),ACCESS_LEVEL_READ, logged_user()->getId(),'project_id') . ')';
 
-		if ($isProjectView)
-		{
-			list($contacts, $pagination) = Contacts::instance()->getByProject(active_project(),
-			array("conditions" => $tagstr . $permission_str,
-			'order' => 'UPPER(`lastname`) ASC, UPPER(`firstname`) ASC'),
+		if ($isProjectView) {
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$pc_tbl = ProjectContacts::instance()->getTableName(true);
+			$project_str = " AND `id` IN (SELECT `contact_id` FROM $pc_tbl pc WHERE pc.`project_id` IN ($pids))";
+		} else {
+			$project_str = "";
+		}
+		list($contacts, $pagination) = Contacts::paginate(
+			array(
+				'conditions' => $tagstr . $permission_str . $project_str,
+				'order' => 'UPPER(`lastname`) ASC, UPPER(`firstname`) ASC'
+			),
 			config_option('files_per_page', 10),
 			$page
-			); // paginate
-		}
-		else
-		{
-			list($contacts, $pagination) = Contacts::paginate(
-			array(
-          'conditions' => $tagstr . $permission_str ,
-          'order' => 'UPPER(`lastname`) ASC, UPPER(`firstname`) ASC'
-          ),
-          config_option('files_per_page', 10),
-          $page
-          ); // paginate
-		}
+		); // paginate
 
 		tpl_assign('totalCount', $pagination->getTotalItems());
 		tpl_assign('contacts', $contacts);
@@ -112,11 +109,12 @@ class ContactController extends ApplicationController {
 			foreach ($contacts as $c) {
 				$roleName = "";
 				$roleTags = "";
-				if ($isProjectView)
-				{
-					$role = $c->getRole(active_project());
-					$roleName = $role->getRole();
-				} 
+				if ($isProjectView) {
+					$role = $c->getRole($project);
+					if ($role instanceof ProjectContact) {
+						$roleName = $role->getRole();
+					}
+				}
 				$company = $c->getCompany();
 				$companyName = '';
 				if (!is_null($company))
@@ -588,7 +586,8 @@ class ContactController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-		$projects = Projects::getActiveProjects();
+		
+		$projects = active_projects();
 		$contactRoles = ProjectContacts::getRolesByContact($contact);
 
 		if(!$contact->canEdit(logged_user())) {
@@ -598,71 +597,54 @@ class ContactController extends ApplicationController {
 		} // if
 
 		$contact_data = array_var($_POST, 'contact');
-		$wasntarray = false;
+		$enterData = true;
 		if(!is_array($contact_data)) {
-			$wasntarray = true;
-			foreach($projects as $project)
-			{
+			$enterData = false;
+			foreach($projects as $project){
 				$contact_data['pid_'.$project->getId()] = false;
 				$contact_data['role_pid_'.$project->getId()] = '';
 				 
-				if($contactRoles)
-				{
-					foreach($contactRoles as $cr)
-					{
-						if ($project->getId() == $cr->getProjectId())
-						{
+				if($contactRoles){
+					foreach($contactRoles as $cr){
+						if ($project->getId() == $cr->getProjectId()){
 							$contact_data['pid_'.$project->getId()] = true;
 							$contact_data['role_pid_'.$project->getId()] = $cr->getRole();
-						}
-					}
-				}
-			}
+						} // if
+					} // foreach
+				} // if
+			} // foreach
 		} // if
 
-		tpl_assign('contact', $contact);
-		tpl_assign('contact_data', $contact_data);
-		tpl_assign('projects', $projects);
-
-		if(!$wasntarray)
-		{
-			try
-			{
+		if($enterData){
+			try {
 				DB::beginWork();
-				foreach($projects as $project)
-				{	
+				foreach($projects as $project){	
 					if(!$contact->canAdd(logged_user(),$project)) {
+						DB::rollback();
 						flash_error(lang('no access permissions'));
 						ajx_current("empty");
 						return;
 					} // if
-					if(!isset($contact_data['pid_'.$project->getId()]))
-					{
+					if(!isset($contact_data['pid_'.$project->getId()])){
 						ProjectContacts::deleteRole($contact,$project);
-					}
-					else
-					{
+					} else {
 						$role = $contact_data['role_pid_'.$project->getId()];
 						$pc = ProjectContacts::getRole($contact,$project);
-						if ($pc)
-						{
-							if ($pc->getRole() != $role)
-							{
+						if ($pc){
+							if ($pc->getRole() != $role){
 								$pc->setRole($role);
 								$pc->save();
 
 								ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_EDIT);
-							}
-						}
-						else
-						{
+							} //if
+						} else {
 							$pc = new ProjectContact();
 							$pc->setProjectId($project->getId());
 							$pc->setContactId($contact->getId());
 							$pc->setRole($role);
 							$pc->save();
 							ApplicationLogs::createLog($contact, $project, ApplicationLogs::ACTION_ADD);
-						}
+						}//if else
 					}//if else
 				}//foreach
 				DB::commit();
@@ -675,7 +657,11 @@ class ContactController extends ApplicationController {
 				ajx_current("empty");
 			} // try
 		} // if
-	}
+
+		tpl_assign('contact', $contact);
+		tpl_assign('contact_data', $contact_data);
+		tpl_assign('projects', $projects);
+	} // assign_to_project
 
 } // ContactController
 

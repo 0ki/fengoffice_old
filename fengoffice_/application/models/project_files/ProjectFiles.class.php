@@ -39,7 +39,7 @@ class ProjectFiles extends BaseProjectFiles {
 	* @return array
 	* 
 	*/
-	static function getProjectFiles($projectId = null, $folderId = null, $hide_private = false, $order = null, $orderdir = 'ASC', $page = null, $files_per_page = null, $group_by_order = false, $tag = null, $type_string = null, $userId = null) {
+	static function getProjectFiles($project = null, $folderId = null, $hide_private = false, $order = null, $orderdir = 'ASC', $page = null, $files_per_page = null, $group_by_order = false, $tag = null, $type_string = null, $userId = null) {
 		if ($order == self::ORDER_BY_POSTTIME) {
 			$order_by = '`created_on` ' . $orderdir;
 		} else if ($order == self::ORDER_BY_MODIFYTIME) {
@@ -55,75 +55,46 @@ class ProjectFiles extends BaseProjectFiles {
 			$files_per_page = 10;
 		} // if		
 		
-		if ($projectId == null || $projectId == 0) {
-			$projectId = '1';
-			$projectstr = " AND '1' = ? "; // this would generate a dummy condition
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
 		} else {
-			$projectstr = " AND `project_id` = ? ";
+			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
+		$projectstr = " AND `project_id` IN ($pids) ";
 		if ($tag == '' || $tag == null) {
-			$tag = '1';
-			$tagstr = " AND '1' = ? "; // dummy condition
+			$tagstr = "";
 		} else {
 			$tagstr = " AND (select count(*) from " . TABLE_PREFIX . "tags where " .
 				TABLE_PREFIX . "project_files.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-				TABLE_PREFIX . "tags.tag = ? and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectFiles' ) > 0 ";
+				TABLE_PREFIX . "tags.tag = ".DB::escape($tag)." and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectFiles' ) > 0 ";
 		}
 		if ($type_string == '' || $type_string == null) {
-			$type_string = '1';
-			$typestr = " AND '1' = ? "; // dummy condition
+			$typestr = "";
 		} else {
 			$type_string .= '%';
 			$typestr = " AND  (select count(*) from " . TABLE_PREFIX . "project_file_revisions where " .
-				TABLE_PREFIX . "project_file_revisions.type_string LIKE ? AND " . TABLE_PREFIX .
+				TABLE_PREFIX . "project_file_revisions.type_string LIKE ".DB::escape($type_string)." AND " . TABLE_PREFIX .
 				"project_files.id = " . TABLE_PREFIX . "project_file_revisions.file_id)";
 		}
 		if ($userId == null || $userId == 0) {
-			$userId = '1';
-			$userstr = " AND '1' = ?"; // dummy condition
+			$userstr = "";
 		} else {
-			$userstr = " AND `created_by_id` = ? ";
+			$userstr = " AND `created_by_id` = ".DB::escape($userId)." ";
 		}
 		$permissionstr = ' AND ( ' . permissions_sql_for_listings(ProjectFiles::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) . ') ';
 		
 		$otherConditions = $projectstr . $tagstr . $typestr . $userstr . $permissionstr;
 		
 		if ($hide_private) {
-			$conditions = array('`is_visible` = ?' . $otherConditions,  true, $projectId, $tag, $type_string, $userId);
+			$conditions = array('`is_visible` = ?' . $otherConditions,  true);
 		} else {
-			$conditions = array(' true ' . $otherConditions,  $projectId, $tag, $type_string, $userId);
+			$conditions = array(' true ' . $otherConditions);
 		}
 		
 		list($files, $pagination) = ProjectFiles::paginate(array(
 				'conditions' => $conditions,
 				'order' => $order_by
 			), $files_per_page, $page);
-		
-		if ($group_by_order) {
-			$grouped_files = array();
-			if (is_array($files) && count($files)) {
-				$today = DateTimeValueLib::now();
-				foreach ($files as $file) {
-					$group_by_str = '';
-					if ($order == self::ORDER_BY_POSTTIME) {
-						$created_on = $file->getCreatedOn();
-						if($created_on->getYear() == $today->getYear()) {
-							$group_by_str = format_descriptive_date($created_on);
-						} else {
-							$group_by_str = format_date($created_on);
-						} // if
-					} else {
-						$group_by_str = strtoupper(substr_utf($file->getFilename(), 0, 1));
-					} // if
-
-					if (!isset($grouped_files[$group_by_str]) || !is_array($grouped_files[$group_by_str])) {
-						$grouped_files[$group_by_str] = array();
-					}
-					$grouped_files[$group_by_str][] = $file;
-				} // foreach
-			} // if
-			$files = is_array($grouped_files) ? $grouped_files : null;
-		} // if
 		
 		return array($files, $pagination);
 	} // getProjectFiles

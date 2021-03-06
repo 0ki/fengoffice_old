@@ -1,56 +1,56 @@
 <?php
-
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
-  if($company->isOwner()) {
-    administration_tabbed_navigation(ADMINISTRATION_TAB_COMPANY);
-    administration_crumbs(array(
-      array(lang('company'), $company->getViewUrl()),
-      array($user->isNew() ? lang('add user') : lang('edit user'))
-    ));
-  } else {
-    administration_tabbed_navigation(ADMINISTRATION_TAB_CLIENTS);
-    administration_crumbs(array(
-      array(lang('clients'), get_url('administration', 'clients')),
-      array($company->getName(), $company->getViewUrl()),
-      array($user->isNew() ? lang('add user') : lang('edit user'))
-    ));
-  } // if
-  
-  //add_stylesheet_to_page('admin/user_permissions.css');
-
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>
 <form class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" method="post">
 
-<?php tpl_display(get_template_path('form_errors')) ?>
-
+<div class="adminAddUser">
+  <div class="adminHeader">
+  	<div class="adminHeaderUpperRow">
+  		<div class="adminTitle"><table style="width:535px"><tr><td>
+  			<?php echo $user->isNew() ? lang('new user') : lang('edit user') ?>
+  		</td><td style="text-align:right">
+  			<?php echo submit_button($user->isNew() ? lang('add user') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
+  		</td></tr></table></div>
+  	</div>
+  	
   <div>
     <?php echo label_tag(lang('username'), 'userFormName', true) ?>
-    <?php echo text_field('user[username]', array_var($user_data, 'username'), array('class' => 'medium', 'id' => 'userFormName')) ?>
+    <?php echo text_field('user[username]', array_var($user_data, 'username'), 
+    	array('class' => 'medium', 'id' => 'userFormName', 'tabindex' => '1')) ?>
+  </div>
+  	
+  <div>
+    <?php echo label_tag(lang('email address'), 'userFormEmail', true) ?>
+    <?php echo text_field('user[email]', array_var($user_data, 'email'), 
+    	array('class' => 'title', 'id' => 'userFormEmail', 'tabindex' => '2')) ?>
   </div>
   
-<?php if(!$user->isNew() && logged_user()->isAdministrator()) { ?>
+  	<?php if(!$user->isNew() && logged_user()->isAdministrator()) { ?>
   <div>
     <?php echo label_tag(lang('company'), 'userFormCompany', true) ?>
-    <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), array('id' => 'userFormCompany')) ?>
+    <?php echo select_company('user[company_id]', array_var($user_data, 'company_id'), 
+    	array('id' => 'userFormCompany', 'tabindex' => '3')) ?>
   </div>
 <?php } else { ?>
   <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
 <?php } // if ?>
+  	
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
   
   <div>
     <?php echo label_tag(lang('display name'), 'userFormDisplayName') ?>
-    <?php echo text_field('user[display_name]', array_var($user_data, 'display_name'), array('class' => 'medium', 'id' => 'userFormDisplayName')) ?>
+    <?php echo text_field('user[display_name]', array_var($user_data, 'display_name'), 
+    	array('class' => 'medium', 'id' => 'userFormDisplayName', 'tabindex' => '4')) ?>
   </div>
   
-  <div>
-    <?php echo label_tag(lang('email address'), 'userFormEmail', true) ?>
-    <?php echo text_field('user[email]', array_var($user_data, 'email'), array('class' => 'long', 'id' => 'userFormEmail')) ?>
-  </div>
   
   <div>
-    <?php echo label_tag(lang('timezone'), 'userFormTimezone', true)?>
-    <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), array('id' => 'userFormTimezone', 'class' => 'long')) ?>
+    <?php echo label_tag(lang('timezone'), 'userFormTimezone', false)?>
+    <?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), 
+    	array('id' => 'userFormTimezone', 'class' => 'long', 'tabindex' => '5')) ?>
   </div>
   
 <?php if($user->isNew() || logged_user()->isAdministrator()) { ?>
@@ -155,5 +155,11 @@
 <?php } // if ?>
 <?php } // if ?>
 
-  <?php echo submit_button($user->isNew() ? lang('add user') : lang('edit user')) ?>
+  <?php echo submit_button($user->isNew() ? lang('add user') : lang('save changes'), 's', array('tabindex' => '10')) ?>
+  </div>
+  </div>
 </form>
+
+<script type="text/javascript">
+	Ext.get('userFormName').focus();
+</script>

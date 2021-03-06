@@ -71,6 +71,32 @@ og.toggle = function(id, btn) {
 	}
 }
 
+og.toggleAndBolden = function(id, btn) {
+	var obj = Ext.getDom(id);
+	if (obj.style.display == 'block') {
+		obj.style.display = 'none';
+		if (btn) 
+			btn.style.fontWeight = 'normal';
+	} else {
+		obj.style.display = 'block';
+		if (btn) 
+			btn.style.fontWeight = 'bold';
+	}
+}
+
+og.toggleAndHide = function(id, btn) {
+	var obj = Ext.getDom(id);
+	if (obj.style.display == 'block') {
+		obj.style.display = 'none';
+		if (btn) 
+			btn.style.display = 'none';
+	} else {
+		obj.style.display = 'block';
+		if (btn) 
+			btn.style.display = 'none';
+	}
+}
+
 
 og.getUrl = function(controller, action, args) {
 	var url = og.hostname;
@@ -303,7 +329,11 @@ og.openLink = function(url, options) {
 		options.caller = options.caller.id;
 	}
 	if (!options.caller) {
-		options.caller = Ext.getCmp('tabs-panel').getActiveTab().id;
+		var tabs = Ext.getCmp('tabs-panel');
+		if (tabs) {
+			var active = tabs.getActiveTab();
+			if (active) options.caller = active.id;
+		}
 	}
 	og.loading();
 	var params = options.get || {};
@@ -318,28 +348,29 @@ og.openLink = function(url, options) {
 		method: 'POST',
 		params: options.post,
 		callback: function(options, success, response) {
+			og.hideLoading();
 			if (success) {
 				try {
 					var data = Ext.util.JSON.decode(response.responseText);
 					og.processResponse(data, options.caller);
-					if (options.postProcess) options.postProcess(true, data);
 				} catch (e) {
+					// response isn't valid JSON, display it on the caller panel or new tab
 					var p = Ext.getCmp(options.caller);
 					if (p) {
 						p.load(response.responseText);
 					} else {
 						og.newTab(response.responseText);
 					}
-					if (options.postProcess) options.postProcess(true, options.responseText, e);
 				}
+				if (options.postProcess) options.postProcess.call(this, true, data || response.responseText);
 			} else {
 				og.msg(lang("error"), lang("server could not be reached"));
-				if (options.postProcess) options.postProcess(false);
+				if (options.postProcess) options.postProcess.call(this, false);
 			}
-			og.hideLoading();
 		},
 		caller: options.caller,
-		postProcess: options.callback
+		postProcess: options.callback || options.postProcess,
+		scope: options.scope
 	});
 }
 

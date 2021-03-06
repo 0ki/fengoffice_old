@@ -1,9 +1,10 @@
-<?php //add_stylesheet_to_page('admin/user_list.css') ?>
+
+
 <?php if(isset($users) && is_array($users) && count($users)) { ?>
 <div id="usersList">
-<?php $counter = 0; ?>
-<?php foreach($users as $user) { ?>
-<?php $counter++; ?>
+<?php $counter = 0; 
+  foreach($users as $user) {
+	$counter++; ?>
   <div class="listedUser <?php echo $counter % 2 ? 'even' : 'odd' ?>">
     <div class="userAvatar"><img src="<?php echo $user->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
     <div class="userDetails">

@@ -84,6 +84,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return null
 	 */
 	function onAddComment(Comment $comment) {
+		parent::onAddComment($comment);
 		try {
 			Notifier::newMessageComment($comment);
 		} catch(Exception $e) {
@@ -386,7 +387,7 @@ class ProjectMessage extends BaseProjectMessage {
 		} else {
 			$errors[] = lang('message title required');
 		} // if
-		if(!$this->validatePresenceOf('text')) $errors[] = lang('message text required');
+		//if(!$this->validatePresenceOf('text')) $errors[] = lang('message text required');
 	} // validate
 
 	// ---------------------------------------------------

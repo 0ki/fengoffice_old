@@ -1,15 +1,16 @@
 <?php 
-
-  // Set page title and set crumbs to index
   set_page_title(lang('administration'));
-  administration_tabbed_navigation();
-  administration_crumbs(lang('index'));
 
 ?>
-<div class="hint">
-  <div class="header"><?php echo lang('welcome to administration') ?></div>
-  <div class="content">
+<div class="adminIndex">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('administration') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
     <?php echo lang('welcome to administration info') ?>
+    <br/>
+    <br/>
     <ul>
 <?php if(can_edit_company_data(logged_user())){ ?>
       <li><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>

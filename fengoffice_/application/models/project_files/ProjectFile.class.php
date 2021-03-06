@@ -359,6 +359,13 @@ class ProjectFile extends BaseProjectFile {
 		return $last_revision instanceof ProjectFileRevision ? $last_revision->getRevisionNumber() + 1 : 1;
 	} // getNextRevisionNumber
 
+	function isModifiable(){
+		return strcmp($this->getTypeString(),'txt')==0 
+			|| strcmp($this->getTypeString(),'sprd')==0 
+			|| strcmp($this->getTypeString(),'prsn')==0 
+			|| substr($this->getTypeString(), 0, 4) == "text";
+	}
+	
 	// ---------------------------------------------------
 	//  URLs
 	// ---------------------------------------------------
@@ -664,6 +671,11 @@ class ProjectFile extends BaseProjectFile {
 		return parent::delete();
 	} // delete
 
+	
+	function save(){
+		return parent::save();
+	}
+	
 	/**
 	 * Remove all revisions associate with this file
 	 *

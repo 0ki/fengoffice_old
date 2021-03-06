@@ -178,8 +178,8 @@ og.ObjectPicker = function(config) {
 		}
 	});
 	
-	var Filter = function(type, config) {
-		Filter.superclass.constructor.call(this, Ext.apply(config, {
+	var TypeFilter = function(config) {
+		TypeFilter.superclass.constructor.call(this, Ext.apply(config, {
 			rootVisible: false,
 			lines: false,
 			root: new Ext.tree.TreeNode(lang('filter')),
@@ -188,11 +188,11 @@ og.ObjectPicker = function(config) {
 	
 		this.filters = this.root.appendChild(
 			new Ext.tree.TreeNode({
-				text: lang('all ' + type),
+				text: lang('all'),
 				expanded: true
 			})
 		);
-		this.filters.filter = {filter: type, id: 0, name: ''};		
+		this.filters.filter = {filter: 'type', id: 0, name: ''};		
 		this.getSelectionModel().on({
 			'selectionchange' : function(sm, node) {
 				if (node && !this.pauseEvents) {
@@ -202,168 +202,25 @@ og.ObjectPicker = function(config) {
 			scope:this
 		});
 		this.addEvents({filterselect: true});
-		//this.loadFilters();
 	};
-	Ext.extend(Filter, Ext.tree.TreePanel, {
+	Ext.extend(TypeFilter, Ext.tree.TreePanel, {
 		addFilter: function(filter, config) {
 			if (!config) config = {};
 			var exists = this.getNodeById(filter.filter + (filter.id?filter.id:filter.name));
 			if (exists) {
 				return;
 			}
-			if (filter.filter == 'ws') {
-				var iconCls = 'ico-color' + (filter.color || 0);
-			} else {
-				var iconCls = config.iconCls || 'ico-' + filter.filter;
-			} 
 			var config = Ext.apply(config, {
-				iconCls: iconCls,
+				iconCls: config.iconCls || 'ico-' + filter.filter,
 				leaf: true,
-				cls: 'item-' + filter.type,
 				text: filter.name,
-				id: filter.type + (filter.id?filter.id:filter.name)
+				id: filter.filter + (filter.id?filter.id:filter.name)
 			});
 			var node = new Ext.tree.TreeNode(config);
 			node.filter = filter;
 			this.filters.appendChild(node);
 			return node;
 		},
-		
-		loadFilters: function() {
-		},
-		
-		removeAll: function() {
-			var node = this.filters.firstChild;
-			while (node) {
-				var aux = node;
-				node = node.nextSibling;
-				aux.remove();
-			}
-		}
-	});
-	
-	var TagFilter = function(config) {
-		// tree filter
-		var tree = this;
-		var filter = new Ext.tree.TreeFilter(this, {
-			clearBlank: true,
-			autoClear: true
-		});
-		function filterTree(e) {
-			var text = e.target.value;
-			if(!text){
-				filter.clear();
-				return;
-			}
-			tree.expandAll();
-			
-			var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
-			filter.filterBy(function(n){
-				return n == tree.filters || re.test(n.text.toLowerCase());
-			});
-		}
-		config.tbar = [new Ext.form.TextField({
-			width: 200,
-			emptyText:lang('filter tags'),
-			listeners:{
-				render: function(f){
-					f.el.on('keyup', filterTree, f, {buffer: 350});
-				}
-			}
-		})];
-		TagFilter.superclass.constructor.call(this, "tag", config);
-	}
-	Ext.extend(TagFilter, Filter, {
-		loadFilters: function() {
-			this.removeAll();
-			// load tags
-			Ext.Ajax.request({
-				url: og.getUrl('tag', 'list_tags'),
-				callback: function(options, success, response) {
-					if (success) {
-						var tags = Ext.util.JSON.decode(response.responseText);
-						for (var i=0; i < tags.length; i++) {
-							tags[i].filter = 'tag';
-							this.addFilter(tags[i]);
-						}
-						
-						this.pauseEvents = true;
-						this.filters.select();
-						this.pauseEvents = false;
-					} else {
-						og.msg(lang("error"), lang("server could not be reached"));
-					}
-				},
-				scope: this
-			});
-			
-			this.filters.expand();
-		}
-	});
-	
-	var WSFilter = function(config) {
-		// tree filter
-		var tree = this;
-		var filter = new Ext.tree.TreeFilter(this, {
-			clearBlank: true,
-			autoClear: true
-		});
-		function filterTree(e) {
-			var text = e.target.value;
-			if(!text){
-				filter.clear();
-				return;
-			}
-			tree.expandAll();
-			
-			var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
-			filter.filterBy(function(n){
-				return n == tree.filters || re.test(n.text.toLowerCase());
-			});
-		}
-		config.tbar = [new Ext.form.TextField({
-			width: 200,
-			emptyText:lang('filter workspaces'),
-			listeners:{
-				render: function(f){
-					f.el.on('keyup', filterTree, f, {buffer: 350});
-				}
-			}
-		})];
-		WSFilter.superclass.constructor.call(this, "ws", config);
-	}
-	Ext.extend(WSFilter, Filter, {
-		loadFilters: function() {
-			this.removeAll();
-			// load workspaces
-			Ext.Ajax.request({
-				url: og.getUrl('project', 'list_projects'),
-				callback: function(options, success, response) {
-					if (success) {
-						var wss = Ext.util.JSON.decode(response.responseText);
-						for (var i=0; i < wss.length; i++) {
-							wss[i].filter = 'ws';
-							this.addFilter(wss[i]);
-						}
-						
-						this.pauseEvents = true;
-						this.filters.select();
-						this.pauseEvents = false;
-					} else {
-						og.msg(lang("error"), lang("server could not be reached"));
-					}
-				},
-				scope: this
-			});
-			
-			this.filters.expand();
-		}
-	});
-	
-	var TypeFilter = function(config) {
-		TypeFilter.superclass.constructor.call(this, "type", config);
-	}
-	Ext.extend(TypeFilter, Filter, {
 		loadFilters: function() {
 			this.removeAll();
 			// load types
@@ -403,12 +260,19 @@ og.ObjectPicker = function(config) {
 			this.pauseEvents = true;
 			this.filters.select();
 			this.pauseEvents = false;
+		},
+		
+		removeAll: function() {
+			var node = this.filters.firstChild;
+			while (node) {
+				var aux = node;
+				node = node.nextSibling;
+				aux.remove();
+			}
 		}
 	});
 	
-	Ext.reg('tagfilter', TagFilter);
 	Ext.reg('typefilter', TypeFilter);
-	Ext.reg('wsfilter', WSFilter);
 	
 	og.ObjectPicker.superclass.constructor.call(this, Ext.apply(config, {
 		y: 50,
@@ -452,9 +316,9 @@ og.ObjectPicker = function(config) {
 			            iconCls: 'op-ico-refresh',
 						handler: function() {
 							this.grid.store.reload();
-							this.tagFilter.loadFilters();
+							this.tagFilter.loadTags();
 							this.typeFilter.loadFilters();
-							this.wsFilter.loadFilters();
+							this.wsFilter.loadWorkspaces();
 						},
 						scope: this
 					}
@@ -470,7 +334,7 @@ og.ObjectPicker = function(config) {
 				width: 200,
 				region: 'west',
 				items: [{
-						xtype: 'wsfilter',
+						xtype: 'wstree',
 						id: 'wsFilter',
 						region: 'north',
 						autoScroll: true,
@@ -478,8 +342,14 @@ og.ObjectPicker = function(config) {
 						title: lang('filter'),
 						height: 120,
 						listeners: {
-							filterselect: {
-								fn: this.grid.filterSelect,
+							workspaceselect: {
+								fn: function(ws) {
+									this.filterSelect({
+										filter: 'ws',
+										name: ws.name,
+										id: ws.id
+									});
+								},
 								scope: this.grid
 							}
 						}
@@ -495,15 +365,20 @@ og.ObjectPicker = function(config) {
 							}
 						}
 					},{
-						xtype: 'tagfilter',
+						xtype: 'tagtree',
 						id: 'tagFilter',
 						region: 'south',
 						autoScroll: true,
 						split: true,
 						height: 120,
 						listeners: {
-							filterselect: {
-								fn: this.grid.filterSelect,
+							tagselect: {
+								fn: function(tag) {
+									this.filterSelect({
+										filter: 'tag',
+										name: tag.name
+									});
+								},
 								scope: this.grid
 							}
 						}
@@ -528,8 +403,8 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 	},
 	
 	loadFilters: function() {
-		this.findById('wsFilter').loadFilters();
-		this.findById('tagFilter').loadFilters();
+		this.findById('wsFilter').loadWorkspaces();
+		this.findById('tagFilter').loadTags();
 		this.findById('typeFilter').loadFilters();
 	}
 });
@@ -538,8 +413,13 @@ og.ObjectPicker.show = function(callback, scope) {
 	if (!this.dialog) {
 		this.dialog = new og.ObjectPicker();
 	}
+
 	this.dialog.loadFilters();
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});
 	this.dialog.show();
+	var pos = this.dialog.getPosition();
+	if (pos[0] < 0) pos[0] = 0;
+	if (pos[1] < 0) pos[1] = 0;
+	this.dialog.setPosition(pos[0], pos[1]);
 }

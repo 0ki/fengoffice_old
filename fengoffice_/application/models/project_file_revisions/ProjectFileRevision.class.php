@@ -337,6 +337,28 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	//  System
 	// ---------------------------------------------------
 
+	function save(){
+		parent::save();
+		
+		if ($this->getFile()->isModifiable()){
+			$project = $this->getFile()->getProject();
+			
+			if (!$this->isNew())
+	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
+	    	
+		    $searchable_object = new SearchableObject();
+		          
+		    $searchable_object->setRelObjectManager(get_class($this->manager()));
+		    $searchable_object->setRelObjectId($this->getObjectId());
+		    $searchable_object->setColumnName('filecontent');
+		    $searchable_object->setContent($this->getFileContent());
+	        if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+		    $searchable_object->setIsPrivate($this->isPrivate());
+		            
+		    $searchable_object->save();
+		}
+	}
+	
 	/**
 	 * Validate before save. This one is used to keep the data in sync. Users
 	 * can't create revisions directly...

@@ -52,6 +52,10 @@ fieldset {
   border: 1px solid #ccc;
 }
 
+fieldset .inputfs{
+  width: 530px;
+}
+
 fieldset legend {
   font-size: 120%;
   font-weight: bolder;
@@ -86,6 +90,11 @@ textarea, textarea.long {
 textarea.short {
   width: 400px;
   height: 70px;
+}
+
+textarea.shortTags {
+  width: 200px;
+  height: 16px;
 }
 
 textarea.comment {

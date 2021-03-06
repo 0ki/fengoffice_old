@@ -1,80 +1,53 @@
-<div style="padding:20px">
-<?php 
-
-	if($project->isNew()) {
-		echo "<h1>".lang('add workspace')."</h1>";
-		administration_tabbed_navigation(ADMINISTRATION_TAB_PROJECTS);
-		administration_crumbs(array(
-			array(lang('workspaces'), get_url('administration', 'projects')),
-			array(lang('add project'))
-		));
-	} else {
-		echo "<h1>".lang('edit workspace')." - ".$project->getName()."</h1>";
-		administration_tabbed_navigation(ADMINISTRATION_TAB_PROJECTS);
-		administration_crumbs(array(
-			array(lang('workspaces'), get_url('administration', 'projects')),
-			array(lang('edit project'))
-		));
-	} // if
-	
-?>
 <?php if($project->isNew()) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
 <?php } else { ?>
 <form class="internalForm" action="<?php echo $project->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
-<?php tpl_display(get_template_path('form_errors')) ?>
 
-	<fieldset>
-	<legend class="toggle_expanded" onclick="og.toggle('workspace_name', this)"><b><?php echo lang('name') ?></b></legend>
-	<div id="workspace_name">
-		<span class="error"><b>*</b></span> <?php echo text_field('project[name]', array_var($project_data, 'name'), array('class' => 'long', 'id' => 'projectFormName')) ?>
-		<?php echo label_tag(lang('workspace color')) ?>
-		<input type="hidden" id="workspace_color" name="project[color]" value="<?php echo $project->isNew()?0:$project->getColor() ?>" />
-		<div>
-			<script type="text/javascript">
-			function wsColorChoose(obj, color) {
-				var p = obj.parentNode.firstChild;
-				while (p) {
-					if (p.className) {
-						if (p.className.indexOf('ico-color'+color) >= 0) {
-							p.className = 'ico-color' + color + ' ws-color-chooser-selected';
-							document.getElementById('workspace_color').value = color;
-						} else {
-							p.className = p.className.replace(/ws-color-chooser-selected/ig, 'ws-color-chooser');
-						}
-					}
-					p = p.nextSibling;
-				}
-			}
-			</script>
-			<?php for ($i=0; $i < 8; $i++) {
-				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
-				echo "<img src=\"http://www.extjs.com/s.gif\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
-			} ?>
-		</div>
+<div class="adminAddProject">
+  <div class="adminHeader">
+  	<div class="adminHeaderUpperRow">
+  		<div class="adminTitle"><table style="width:535px"><tr><td>
+  			<?php echo $project->isNew() ? lang('new workspace') : lang('edit workspace') ?>
+  		</td><td style="text-align:right">
+  			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
+  		</td></tr></table></div>
+  	</div>
+  	
+  	<div>
+    <?php echo label_tag(lang('name'), 'projectFormName', true) ?>
+    <?php echo text_field('project[name]', array_var($project_data, 'name'), 
+    	array('class' => 'title', 'id' => 'projectFormName', 'tabindex' => '1')) ?>
+    </div>
+  
+  
+  	<div style="padding-top:5px">
+		<a href="#" class="option" onclick="og.toggleAndBolden('workspace_description',this)"><?php echo lang('description') ?></a> - 
+		<?php if ($project->canChangePermissions(logged_user())) { ?>
+			<a href="#" class="option" onclick="og.toggleAndBolden('workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+		<?php } ?>
 	</div>
-	</fieldset>
+  
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
 
-	<fieldset>	
-	<legend class="toggle_collapsed" onclick="og.toggle('workspace_description', this)"><b><?php echo lang('description') ?></b></legend>
 	<div id="workspace_description" style="display:none">
+	<fieldset>	
+	<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription')) ?>
-	
 		<?php echo label_tag(lang('show project desciption in overview')) ?>
 		<?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview'), lang('yes'), lang('no')) ?>
-	</div>
 	</fieldset>
+	</div>
 
 	<!-- permissions -->
 	<?php if ($project->canChangePermissions(logged_user())) { ?>
-		<script type="text/javascript">
-		</script>
-		
-		<fieldset>
-		<legend class="toggle_collapsed" onclick="og.toggle('workspace_permissions', this)"><b><?php echo lang('edit permissions') ?></b></legend>
 		<div id="workspace_permissions" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('edit permissions') ?></legend>
+		
 		<label><k><?php echo lang('edit permissions explanation') ?></k></label>
 		<?php if (isset($companies) && is_array($companies) && count($companies)) { ?>
 			<div id="projectCompanies">
@@ -150,11 +123,48 @@
 			<?php } // foreach ?>
 			</div>
 		<?php } // if ?>
-		</div>
 		</fieldset>
+		</div>
 	<?php } // if ?>
 	<!-- /permissions -->
 		
-	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('edit workspace')) ?>
-</form>
+	<?php if (isset ($projects) && count($projects) > 0) { ?>
+	<fieldset>
+	<legend><?php echo lang('parent workspace') ?></legend>
+		<?php echo select_project('project[parent_id]', $projects, $project->isNew()?active_project()?active_project()->getId():0:$project->getParentId(), null, true) ?>
+	</fieldset>
+	<?php } ?>
+    
+    <?php echo label_tag(lang('workspace color')) ?>
+		<input type="hidden" id="workspace_color" name="project[color]" value="<?php echo $project->isNew()?0:$project->getColor() ?>" />
+		<div>
+			<script type="text/javascript">
+			function wsColorChoose(obj, color) {
+				var p = obj.parentNode.firstChild;
+				while (p) {
+					if (p.className) {
+						if (p.className.indexOf('ico-color'+color) >= 0) {
+							p.className = 'ico-color' + color + ' ws-color-chooser-selected';
+							document.getElementById('workspace_color').value = color;
+						} else {
+							p.className = p.className.replace(/ws-color-chooser-selected/ig, 'ws-color-chooser');
+						}
+					}
+					p = p.nextSibling;
+				}
+			}
+			</script>
+			<?php for ($i=0; $i < 8; $i++) {
+				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
+				echo "<img src=\"".EMPTY_IMAGE."\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
+			} ?>
+		</div>
+		
+	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '2')) ?>
 </div>
+</div>
+</form>
+
+<script type="text/javascript">
+	Ext.get('projectFormName').focus();
+</script>

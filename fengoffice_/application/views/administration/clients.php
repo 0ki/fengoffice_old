@@ -8,6 +8,15 @@
   } // if
 
 ?>
+
+
+<div class="adminClients">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('clients') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+
 <?php if(isset($clients) && is_array($clients) && count($clients)) { ?>
 <table>
   <tr>
@@ -41,3 +50,5 @@
 <?php } else { ?>
 <?php echo lang('no clients in company') ?>
 <?php } // if ?>
+</div>
+</div>

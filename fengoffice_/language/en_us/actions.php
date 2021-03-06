@@ -89,6 +89,14 @@
     'back to calendar' => 'Back to calendar',
     'back to day' => 'Back to day',
     
+    //Groups
+    'can edit company data' => 'Can edit company data',
+    'can manage security' => 'Can manage security',
+    'can manage workspaces' => 'Can manage workspaces',
+    'can manage configuration' => 'Can manage configuration',
+    'can manage contacts' => 'Can manage contacts',
+    'group users' => 'Group users',
+    
     
     // People
     'update people' => 'Update',
@@ -168,7 +176,7 @@
     'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
   
   	'save as new revision' => 'Save as new revision',
-	'save as' => 'Save as...'
+	'save as' => 'Rename'
     
   ); // array
 

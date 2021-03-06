@@ -173,14 +173,14 @@
 	      		while(isset($classification_data["att_".$c])){
 	      			if ($classification_data["att_".$c]){
 	      				$att = $parsedEmail["Attachments"][$c];
-	
-	      				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$att["FileName"];
+						$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
+	      				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$fName;
 	      				$fh = fopen($tempFileName, 'w') or die("Can't open file");
 	      				fwrite($fh, $att["Data"]);
 	      				fclose($fh);
 	
 	      				$file = new ProjectFile();
-	      				$file->setFilename($att["FileName"]);
+	      				$file->setFilename($fName);
 						$file->setIsVisible(true);
 	      				$file->setProjectId($project->getId());
 	      				$file->setIsPrivate(false);
@@ -195,9 +195,9 @@
 	      					DB::commit();
 	
 	      					$file->setTagsFromCSV($csv);
-	      					$ext = substr($att["FileName"],strrpos($att["FileName"],'.')+1);
+	      					$ext = substr($fName,strrpos($fName,'.')+1);
 	      					$fileToSave = array(
-	      					"name" => $att["FileName"], 
+	      					"name" => $fName, 
 	      					"type" => Mime_Types::instance()->get_type($ext), 
 	      					"tmp_name" => $tempFileName,
 	      					"error" => 0,
@@ -248,7 +248,8 @@
     		if ($classification_data["att_".$c])
     		{
     			$att = $parsedEmail["Attachments"][$c];
-    			$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$att["FileName"];
+				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
+    			$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$fName;
     			$fh = fopen($tempFileName, 'w');
     			if (!$fh){
     				return false;

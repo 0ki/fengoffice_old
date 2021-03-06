@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.6.4
+    About OpenGoo beta 0.6.6
     =========================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -68,3 +68,35 @@
 
     You should be finished in a matter of minutes.
     
+    
+    Upgrade from 0.6.4
+    ==================
+    
+    1. Download OpenGoo 0.6.6 - http://www.opengoo.org/
+    2. Unpack and remove the following folders:
+    	- cache
+    	- config
+    	- public/files
+    	- tmp
+    	- upload
+    3. Move remaining files and folders to your OpenGoo installation, replacing all files.
+    4. Direct your browser to the public/upgrade directory and follow the instructions.
+    
+    
+	Changelog
+	=========
+	
+	* Workspace hierarchy added
+	* Search updated:
+		- Added CO emails to the search
+		- Added more fields such as tags and comments to the search
+		- Updated the search results display, grouping results by object type
+		- Added text search on opengoo-created documents
+	* Upgrading shall henceforth be supported
+	* Added due date and start date to tasks
+	* Changed look and feel and organization of edition interfaces for all content objects
+	* Solved bug that throwed Syntax Errors on PHP 5.1 and lower,
+		by providning a default implementation for json_encode and json_decode functions
+	* Changes in the group interface, missing translations and 'can manage contacts' bug
+	* Unification of task edit and task list edit interfaces
+	* Only parent tasks shown in overview and task listings

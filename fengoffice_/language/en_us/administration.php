@@ -62,6 +62,13 @@
     'config option name smtp_username' => 'SMTP username',
     'config option name smtp_password' => 'SMTP password',
     'config option name smtp_secure_connection' => 'Use secure SMTP connection',
+  
+ 	'can edit company data' => 'Can edit company data',
+  	'can manage security' => 'Can manage security',
+  	'can manage workspaces' => 'Can manage workspaces',
+  	'can manage configuration' => 'Can manage configuration',
+  	'can manage contacts' => 'Can manage contacts',
+  	'group users' => 'Group users',
     
   ); // array
 

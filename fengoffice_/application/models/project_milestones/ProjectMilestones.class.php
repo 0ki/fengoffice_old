@@ -140,6 +140,29 @@
       )); // findAll
     } // getTodayMilestonesByUser
     
+    /**
+    * Return Day milestones from active projects this user have access on
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getDayMilestonesByUser(DateTimeValue $date,User $user) {
+//      $date = new DateTimeValue($date->getTimestamp());
+		
+      $from_date =   (new DateTimeValue($date->getTimestamp()));
+      $from_date = $from_date->beginningOfDay();
+      $to_date =  (new DateTimeValue($date->getTimestamp()));
+      $to_date = $to_date->endOfDay();
+     
+      $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
+		
+       $result = self::findAll(array(
+        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+      )); // findAll
+      return $result;
+    } // getDayMilestonesByUser
+    
   } // ProjectMilestones 
 
 ?>

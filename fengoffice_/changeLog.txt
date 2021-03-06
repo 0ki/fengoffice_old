@@ -1,0 +1,15 @@
+since 0.6.4
+- changes in the group interface, missing translations and can manage contacts bug.MSz
+- solved bug that throwed Syntax Errors on PHP 5.1 and lower, by providning a default implementation for json_encode and json_decode. IdS
+- added due date and start date to tasks.MSz
+- change look and feel and organization of edition interfaces for all content objects. CP
+- unification of task edit and task list edit interfaces. MSz
+- only parent tasks shown in overview and task listings. MSz
+- Search updated: CP
+	- Added CO emails to the search
+	- Added more fields such as tags and comments to the search
+	- Updated the search results display, grouping results by object type
+	- Added text search on opengoo-created documents
+	- Added support for Lucene/PHP based search. CP (currently not working after certain updates to the search)
+- Workspace hierarchy added
+- Upgrading shall henceforth be supported

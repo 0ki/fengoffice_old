@@ -271,7 +271,9 @@ class User extends BaseUser {
 	} // getCompany
 
 	/**
-	 * Return all projects that this user is member of
+	 * Return all projects that this user is member of.
+	 * If active is true only active projects are returned.
+	 * If top is true only top projects are returned.
 	 *
 	 * @access public
 	 * @param void
@@ -284,6 +286,15 @@ class User extends BaseUser {
 		return $this->projects;
 	} // getProjects
 
+	function getWorkspaces($active = false, $parent = 0) {
+		$conditions = '';
+		if ($active) {
+			$conditions .= '`completed_on` = ' . DB::escape(EMPTY_DATETIME);
+		}
+		if ($conditions != '') $conditions .= " AND ";
+		$conditions .= '`parent_id` = ' . DB::escape($parent);
+		return ProjectUsers::getProjectsByUser($this, $conditions);
+	}
 	/**
 	 * Return array of active projects that this user have access
 	 *

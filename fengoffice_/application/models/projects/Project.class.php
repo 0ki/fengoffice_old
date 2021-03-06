@@ -264,6 +264,58 @@ class Project extends BaseProject {
 	private $orphaned_files;
 
 	// ---------------------------------------------------
+	//  Workspace Hierarchy
+	// ---------------------------------------------------
+	
+	/**
+	 * Returns true if the workspace has a Parent workspace
+	 *
+	 * @return boolean
+	 */
+	function hasParentWorkspace() {
+		return $this->getParentId() != 0;
+	}
+	
+	/**
+	 * Returns the parent workspace or null if there isn't one
+	 * @return Project
+	 */
+	function getParentWorkspace() {
+		if ($this->getParentId() == 0) return null;
+		return Projects::findById($this->getParentId());
+	}
+	
+	/**
+	 * Returns all workspaces that have this Workspace as their parent
+	 * @return array
+	 */
+	function getSubWorkspaces($active = false, $user = null) {
+		$conditions = array("`parent_id` = ?", $this->getId());
+		if ($active) {
+			$conditions[0] .= ' AND `completed_on` = ? ';
+			$conditions[] = EMPTY_DATETIME;
+		}
+		if ($user instanceof User) {
+			$pu_tbl = ProjectUsers::instance()->getTableName(true);
+			$conditions[0] .= " AND `id` IN (SELECT `project_id` FROM $pu_tbl WHERE `user_id` = ?)";
+			$conditions[] = $user->getId();
+		}
+		return Projects::findAll(array('conditions' => $conditions));
+	}
+	
+	function getAllSubWorkspacesCSV($active = false, $user = null) {
+		$csv = "".$this->getId();
+		$subs = $this->getSubWorkspaces($active, $user);
+		if (isset($subs)) {
+			foreach ($subs as $ws) {
+				$subcsv = $ws->getAllSubWorkspacesCSV($active, $user);
+				$csv .= "," . $subcsv;
+			}
+		}
+		return $csv;
+	}
+	
+	// ---------------------------------------------------
 	//  Messages
 	// ---------------------------------------------------
 

@@ -33,15 +33,20 @@
     * @return DAOValidationError
     */
     function __construct($object, $errors, $message = null) {
-      if(is_null($message)) {
-        $message = 'Failed to save object because some of its properties are not valid';
-      } // if
-      
-      parent::__construct($message);
-      
       $this->setObject($object);
       $this->setErrors($errors);
+      
+      if(is_null($message)) {
+        $message = 'Failed to save object because some of its properties are not valid:';
+      } // if
+      
+      foreach ($errors as $error)
+      	$message .= "\r\n" . $error ;
+      	
+      parent::__construct($message);
+      
     } // __construct
+    
     
     /**
     * Return errors specific params...

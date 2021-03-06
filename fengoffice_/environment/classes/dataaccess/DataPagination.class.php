@@ -183,7 +183,7 @@
       $page = (integer) $page;
       if($page < 1) $page = 1;
       
-      if(($page + 1) * $this->getItemsPerPage() > $this->getTotalItems()) {
+      if($page * $this->getItemsPerPage() > $this->getTotalItems()) {
         return $this->getTotalItems() - (($page - 1) * $this->getItemsPerPage());
       } else {
         return $this->getItemsPerPage();
@@ -278,6 +278,13 @@
       $this->current_page = (integer) $value > 0 ? (integer) $value : 1;
     } // setCurrentPage
   
+    function getStartItemNumber(){
+    	return (($this->getCurrentPage() -1) * $this->getItemsPerPage()) + 1;
+    }
+    
+    function getEndItemNumber(){
+    	return min(array($this->getCurrentPage() * $this->getItemsPerPage(), $this->getTotalItems()));
+    }
   } // DataPagination
 
 ?>

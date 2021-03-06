@@ -85,9 +85,6 @@ final class CompanyWebsite {
 			$this->setProject(null);
 		} else {
 			$project = Projects::findById($project_id);
-			if(!($project instanceof Project)) {
-				$project = $this->logged_user->getPersonalProject();
-			} // if
 			$this->setProject($project);
 		} // if
 	} // initActiveProject

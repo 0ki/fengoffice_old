@@ -764,7 +764,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @return null
 	 */
 	function validate(&$errors) {
-		if(!$this->validatePresenceOf('text')) $errors[] = lang('task text required');
+		if(!$this->validatePresenceOf('title')) $errors[] = lang('task title required');
 	} // validate
 
 	 
@@ -881,6 +881,50 @@ class ProjectTask extends BaseProjectTask {
 	function getObjectUrl() {
 		return $this->getViewUrl();
 	} // getObjectUrl
+	
+	/**
+	 * Return object for task listing
+	 *
+	 * @return unknown
+	 */
+	function getDashboardObject(){
+    	if($this->getUpdatedBy()){
+    		$updated_by_id = $this->getUpdatedBy()->getObjectId();
+    		$updated_by_name = $this->getUpdatedByDisplayName();
+    		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
+    	}else {
+    		if($this->getCreatedBy())
+    			$updated_by_id = $this->getCreatedBy()->getId();
+    		else
+    			$updated_by_id = lang('n/a');
+    		$updated_by_name = $this->getCreatedByDisplayName();
+    		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+    	}
+    	if ($this instanceof ProjectTask)
+    		$parent_id = $this->getParentId();
+    	else 
+    		$parent_id = $this->getId();
+   	
+    	return array(
+				"id" => $this->getObjectTypeName() . $this->getId(),
+				"object_id" => $this->getId(),
+				"name" => $this->getObjectName(),
+				"type" => $this->getObjectTypeName(),
+				"tags" => project_object_tags($this),
+				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
+				"createdById" => $this->getCreatedBy()->getId(),
+				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+				"updatedBy" => $updated_by_name,
+				"updatedById" => $updated_by_id,
+				"dateUpdated" => $updated_on,
+				"project" => $this->getProject()->getName(),
+				"projectId" => $this->getProjectId(),
+				"url" => $this->getObjectUrl(),
+				"parentId" => $parent_id,
+				"status" => "Pending",
+				"manager" => get_class($this->manager())
+			);
+    }
 
 } // ProjectTask
 

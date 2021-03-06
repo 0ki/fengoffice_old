@@ -329,7 +329,7 @@
   *   year + 10
   * @return null
   */
-  function pick_date_widget($name, $value = null, $year_from = null, $year_to = null) {
+  function pick_date_widget($name, $value = null, $year_from = null, $year_to = null, $attributes = null) {
   	$oldValue = $value;
     if(!($value instanceof DateTimeValue)) $value = new DateTimeValue($value);
     
@@ -362,9 +362,9 @@
     } // if
     if (strpos($name, "]")) {
     	$preName = substr($name,0,strpos($name,"]"));
-    	return select_box($preName . '_month]', $month_options) . select_box($preName.'_day]', $day_options) . select_box($preName . '_year]', $year_options);
+    	return select_box($preName . '_month]', $month_options, $attributes) . select_box($preName.'_day]', $day_options, $attributes) . select_box($preName . '_year]', $year_options, $attributes);
     } else
-    	return select_box($name . '_month', $month_options) . select_box($name . '_day', $day_options) . select_box($name . '_year', $year_options);
+    	return select_box($name . '_month', $month_options, $attributes) . select_box($name . '_day', $day_options, $attributes) . select_box($name . '_year', $year_options, $attributes );
   } // pick_date_widget
   
   /**

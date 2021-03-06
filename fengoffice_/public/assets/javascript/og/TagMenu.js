@@ -75,12 +75,12 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 	loadTags: function() {
 		og.loading();
 		Ext.Ajax.request({
-			url: og.getUrl('tag', 'list_tags'),
+			url: og.getUrl('tag', 'list_tags', {ajax: true}),
 			callback: function(options, success, response) {
 				if (success) {
 					try {
 						var tags = Ext.util.JSON.decode(response.responseText);
-						this.addTags(tags);
+						this.addTags(tags.tags);
 					} catch (e) {
 						//og.msg(lang("error"), e.message);
 						throw e;

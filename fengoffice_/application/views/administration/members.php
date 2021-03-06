@@ -6,4 +6,15 @@
   } // if
 
 ?>
-<?php $this->includeTemplate(get_template_path('list_users', 'administration')) ?>
+
+<div class="adminUsersList">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('users') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
+  <?php $this->includeTemplate(get_template_path('list_users', 'administration')); ?>
+  
+  </div>
+ </div>

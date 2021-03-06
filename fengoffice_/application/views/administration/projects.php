@@ -1,13 +1,20 @@
 <?php 
-
-  // Set page title and set crumbs to index
   set_page_title(lang('projects'));
   
   if(Project::canAdd(logged_user())) {
     add_page_action(lang('add project'), get_url('project', 'add'), 'ico-add');
   } // if
-
 ?>
+
+
+
+<div class="adminProjects">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('projects') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <?php if(isset($projects) && is_array($projects) && count($projects)) { ?>
 <table id="projects">
   <tr>
@@ -38,3 +45,5 @@
 <?php } else { ?>
 <?php echo lang('no projects owned by company') ?>
 <?php } // if ?>
+</div>
+</div>

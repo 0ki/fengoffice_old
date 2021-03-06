@@ -14,7 +14,15 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER,'parent_id' => DATA_TYPE_INTEGER, 'text' => DATA_TYPE_STRING, 'assigned_to_user_id' => DATA_TYPE_INTEGER, 'assigned_to_company_id' => DATA_TYPE_INTEGER,  'completed_on' => DATA_TYPE_DATETIME, 'completed_by_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER, 'order' => DATA_TYPE_INTEGER, 'milestone_id' => DATA_TYPE_INTEGER, 'title' => DATA_TYPE_STRING, 'is_private' => DATA_TYPE_BOOLEAN, 'started_on' => DATA_TYPE_DATETIME, 'priority' => DATA_TYPE_INTEGER, 'state' => DATA_TYPE_INTEGER,'project_id' => DATA_TYPE_INTEGER, 'started_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array('id' => DATA_TYPE_INTEGER,'parent_id' => DATA_TYPE_INTEGER, 
+		    'text' => DATA_TYPE_STRING, 'assigned_to_user_id' => DATA_TYPE_INTEGER, 
+		    'assigned_to_company_id' => DATA_TYPE_INTEGER,  'completed_on' => DATA_TYPE_DATETIME, 
+		    'due_date' => DATA_TYPE_DATETIME, 'start_date' => DATA_TYPE_DATETIME, 'completed_by_id' => DATA_TYPE_INTEGER, 
+		    'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 
+		    'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER, 
+		    'order' => DATA_TYPE_INTEGER, 'milestone_id' => DATA_TYPE_INTEGER, 'title' => DATA_TYPE_STRING, 
+		    'is_private' => DATA_TYPE_BOOLEAN, 'started_on' => DATA_TYPE_DATETIME, 'priority' => DATA_TYPE_INTEGER, 
+		    'state' => DATA_TYPE_INTEGER,'project_id' => DATA_TYPE_INTEGER, 'started_by_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

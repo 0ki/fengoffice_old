@@ -1,0 +1,44 @@
+.searchGroup {
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.searchTopLeft {
+	margin-left:1px;
+	background-position: top left;
+	background-image: url('../../images/layout/search/search_ul.png');
+	background-repeat: no-repeat;
+	height:18px;
+	padding-left:18px;
+	padding-top:9px;
+}
+
+.searchTopRight {
+	background-position: top right;
+	background-image: url('../../images/layout/search/search_ur.png');
+	background-repeat: no-repeat;
+	height:18px;
+	padding-right:20px;
+	padding-top:9px;
+	text-align:right;
+}
+
+.searchBottomLeft {
+	background-position: bottom left;
+	background-image: url('../../images/layout/search/search_bl.png');
+	background-repeat: no-repeat;
+	padding-left:18px;
+	padding-top:2px;
+	padding-bottom:34px;
+}
+
+.searchBottomRight {
+	background-position: bottom right;
+	background-image: url('../../images/layout/search/search_br.png');
+	background-repeat: no-repeat;
+	height:100%;
+	padding-right:20px;
+	padding-top:2px;
+	padding-bottom:9px;
+	text-align:right;
+}

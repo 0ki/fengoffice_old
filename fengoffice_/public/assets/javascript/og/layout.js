@@ -132,10 +132,25 @@ Ext.onReady(function(){
 				collapsible: true,
 				margins: '0 0 0 0',
 				layout: 'border',
-				items: [
-					new og.WorkspacePanel(),
-					new og.TagPanel()
-				]
+				items: [{
+					xtype: 'wspanel',
+					wstree: {
+						listeners: {
+							workspaceselect: function(ws) {
+								og.eventManager.fireEvent('workspace changed', ws);
+							}
+						}
+					}
+				},{
+					xtype: 'tagpanel',
+					tagtree: {
+						listeners: {
+							tagselect: function(tag) {
+								og.eventManager.fireEvent('tag changed', tag);
+							}
+						}
+					}
+				}]
 			},
 			Ext.getCmp('tabs-panel')
 		 ]

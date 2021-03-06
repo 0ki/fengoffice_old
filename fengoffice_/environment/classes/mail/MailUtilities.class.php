@@ -70,7 +70,7 @@ class MailUtilities
 		$mail->setContent($content);
 		$mail->setFrom(self::getAddresses($parsedMail["From"]));
 		$mail->setTo(self::getAddresses($parsedMail["To"]));
-		$mail->setSubject($parsedMail["Subject"]);
+		$mail->setSubject(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Subject']));
 		$mail->setSentDate(new DateTimeValue(strtotime($parsedMail["Date"])));
 		$mail->setSize(strlen($content));
 		$mail->setHasAttachments(!empty($parsedMail["Attachments"]));

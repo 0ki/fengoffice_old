@@ -44,7 +44,7 @@ echo  cal_top();
 	// get the events for the date from the database
 
 	$date = new DateTimeValue(mktime(0,0,0,$month,$day,$year)); 
-	$result = ProjectEvents::getDayProjectEvents($date, $tags); //	$result = cal_query_get_eventlist($day, $month, $year, $tags);
+	$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project()); //	$result = cal_query_get_eventlist($day, $month, $year, $tags);
 			
     // print this if there are no events
   	if( count($result) < 1 || $result == NULL){

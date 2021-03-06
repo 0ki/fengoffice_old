@@ -200,6 +200,7 @@
   //Email
   'emails' => 'Emails',
   'add mail account' => 'Add Email account',
+  'new mail account' => 'New Email account',
   'no emails in this account' => 'No emails in this account',
   'server address' => 'Server address',
   'mail account id' => 'Account ID',
@@ -265,6 +266,29 @@
   'can write files' => 'Can write files',
   'can read events' => 'Can read events',
   'can write events' => 'Can write events',
+  
+  'new mail account' => 'New mail account',
+  'new company' => 'New company',
+  'new workspace' => 'New workspace',
+  'new task list' => 'New task',
+  'new webpage' => 'New weblink',
+  'new milestone' => 'New milestone',
+  'new message' => 'New message',
+  'new group' => 'New group',
+  'new user' => 'New user',
+  'add tags' => 'Add tags',
+  'save changes' => 'Save changes',
+  'administrator options' => 'Administrator options',
+  
+  /* Search */
+  
+  'created by on' => 'Created by <a class="internalLink" href="{0}">{1}</a> on {2}',
+  'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
+  'time used in search' => 'Search performed in {0} seconds',
+  'more results' => 'There are {0} more results...',
+  
+  
+  'parent workspace' => 'Parent Workspace',
   ); // array
 
 ?>

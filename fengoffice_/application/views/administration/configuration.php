@@ -1,9 +1,14 @@
 <?php
   set_page_title(lang('configuration'));
-  administration_tabbed_navigation(ADMINISTRATION_TAB_CONFIGURATION);
-  administration_crumbs(lang('configuration'));
 ?>
-<div id="configuration">
+
+<div class="adminConfiguration">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('configuration') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
+  
 <?php if(isset($config_categories) && is_array($config_categories) && count($config_categories)) { ?>
 <?php foreach($config_categories as $config_category) { ?>
 <?php if(!$config_category->isEmpty()) { ?>
@@ -18,4 +23,5 @@
 <?php } // if ?>
 <?php } // foreach ?>
 <?php } // if ?>
+</div>
 </div>

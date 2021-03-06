@@ -41,12 +41,15 @@ _lang = {
 	"delete": "Delete",
 	"delete selected objects": "Delete selected objects",
 	"confirm delete object": "Are you sure you want to delete the selected objects?",
+	"confirm delete workspace": "Are you sure you want to delete workspace '{0}'?",
 	"more": "More",
 	"more actions": "More actions",
 	"more actions on first selected object": "More actions on first selected object",
 	"displaying files of": "Displaying files {0} to {1} of {2}",
 	"no files to display": "No files to display",
 	"refresh desc": "Refresh the view",
+	"templates desc": "Manage templates",
+	"templates": "Templates",
 	"edit workspace": "Edit the selected workspace",
 	"company": "Company",
 	"email": "E-mail",
@@ -197,5 +200,12 @@ _lang = {
 	'contact': 'Contact',
 	'event': 'Event',
 	
-	'debug': 'Debug'
+	'debug': 'Debug',
+	'incomplete': 'Incomplete',
+	'complete': 'Complete',
+	'late': 'Late',
+	'status': 'Status',
+	
+	'open link in new window' : "Open '{0}' in new window" 
+
 }

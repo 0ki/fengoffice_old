@@ -14,6 +14,12 @@
   
   set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH);
   
+  set_include_path('library/zend' . PATH_SEPARATOR . get_include_path());
+  
+  if (LUCENE_SEARCH) {
+  	require_once('Zend/Search/Lucene.php');
+  }
+  
   // ---------------------------------------------------
   //  Fix some $_SERVER vars (taken from wordpress code)
   // ---------------------------------------------------
@@ -55,8 +61,9 @@
   
   define('PRODUCT_NAME', 'OpenGoo');
   if(!defined('PRODUCT_VERSION')) {
-    define('PRODUCT_VERSION', '0.6.4');
+    define('PRODUCT_VERSION', '0.6.6');
   } // if
+  define('INSTALLED_VERSION', include 'version.php');
   
   define('MAX_SEARCHABLE_FILE_SIZE', 1048576); // if file type is searchable script will load its content into search index. Using this constant you can set the max filesize of the file that will be imported. Noone wants 500MB in search index for single file
   define('SESSION_LIFETIME', 3600);
@@ -81,6 +88,8 @@
   include_once 'environment/environment.php';
   
   include_once 'library/cal/index.php';
+  
+  include_once 'library/json/json.php';
   
   // Lets prepare everything for autoloader
   require APPLICATION_PATH . '/functions.php'; // __autoload() function is defined here...
@@ -128,6 +137,7 @@
   // data collected by the matched route
   require_once APPLICATION_PATH . '/application.php';
   
+  
   // Set handle request timer...
   if(Env::isDebugging()) {
     benchmark_timer_set_marker('Handle request');
@@ -144,5 +154,4 @@
       redirect_to(get_url('error', 'execute_action'));
     } // if
   } // try
-  
 ?>

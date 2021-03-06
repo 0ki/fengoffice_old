@@ -83,7 +83,7 @@
 				?>
 				<?php echo input_field('search_for', $search_field_default_value, $search_field_attrs) ?>
 				<button type="submit"><?php echo lang('search button caption') ?></button>
-				<input type="hidden" name="c" value="project" />
+				<input type="hidden" name="c" value="search" />
 				<input type="hidden" name="a" value="search" />
 				<input type="hidden" name="current" value="search" />
 			</form>

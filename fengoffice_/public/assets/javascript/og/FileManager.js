@@ -55,6 +55,8 @@ og.FileManager = function() {
 			},
 			'loadexception': function() {
 				og.hideLoading();
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
 	});
@@ -64,7 +66,7 @@ og.FileManager = function() {
 	function renderName(value, p, r) {
 		return String.format(
 			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
-			value, r.data.name, og.getUrl('files', 'open_file', {id: r.data.object_id}));
+			value, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
 	}
 
 	function renderIcon(value, p, r) {

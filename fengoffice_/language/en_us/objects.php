@@ -71,6 +71,7 @@
     'important messages' => 'Important messages',
     'important file'     => 'Important file',
     'important files'    => 'Important files',
+    'parent task'    => 'Parent Task',
     
     'private message' => 'Private message',
     'private milestone' => 'Private milestone',

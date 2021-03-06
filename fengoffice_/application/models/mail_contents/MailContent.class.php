@@ -23,6 +23,20 @@ class MailContent extends BaseMailContent {
 	 * @var boolean
 	 */
 	protected $is_taggable = true;
+	
+	/**
+	 * Mail contents are searchable
+	 *
+	 * @var boolean
+	 */
+	protected $is_searchable = true;
+
+	/**
+	 * Array of searchable columns
+	 *
+	 * @var array
+	 */
+	protected $searchable_columns = array('from', 'to', 'subject', 'body_plain', );
 	 
 	/**
 	 * Return Project

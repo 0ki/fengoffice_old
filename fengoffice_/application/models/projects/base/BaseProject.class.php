@@ -253,6 +253,26 @@
     	$this->setColumnValue('color', $value);
     }
     
+  /* Return value of 'parent_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getParentId() {
+    	return $this->getColumnValue('parent_id');
+    }
+    
+    /**
+    * Set value of 'parent_id' field
+    *
+    * @access public   
+    * @param integer $value
+    */
+    function setParentId($value) {
+    	$this->setColumnValue('parent_id', $value);
+    }
+    
     /**
     * Return manager instance
     *

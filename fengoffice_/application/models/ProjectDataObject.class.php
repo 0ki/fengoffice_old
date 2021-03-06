@@ -117,6 +117,13 @@
       return $this->project;
     } // getProject
     
+    function getWorkspaces() {
+    	if ($this->isNew()) {
+    		return array(active_or_personal_project());
+    	} else {
+    		return WorkspaceObjects::getWorkspacesByObject($this->getObjectTypeName(), $this->getObjectId());
+    	}
+    }
     // ---------------------------------------------------
     //  Permissions
     // ---------------------------------------------------
@@ -282,6 +289,7 @@
       if(!$this->isTaggable()) throw new Error('Object not taggable');
       $args = array_flat(func_get_args());
       return Tags::setObjectTags($args, $this, get_class($this->manager()), $this->getProject());
+	  $this->addTagsToSearchableObject();
     } // setTags
     
     /**
@@ -399,7 +407,7 @@
     * @return array
     */
     function getComments() {
-      if(logged_user()->isMemberOfOwnerCompany()) {
+      if(logged_user() && logged_user()->isMemberOfOwnerCompany()) {
         return $this->getAllComments();
       } // if
       if(is_null($this->comments)) {
@@ -482,7 +490,18 @@
     * @return boolean
     */
     function onAddComment(Comment $comment) {
-      return true;
+        $project = $this->getProject();
+        $searchable_object = new SearchableObject();
+		            
+		$searchable_object->setRelObjectManager(get_class($this->manager()));
+		$searchable_object->setRelObjectId($this->getObjectId());
+		$searchable_object->setColumnName('comment' . $comment->getId());
+		$searchable_object->setContent($comment->getText());
+		if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+		     $searchable_object->setIsPrivate($this->isPrivate());
+		            
+		$searchable_object->save();
+		return true;
     } // onAddComment
     
     /**
@@ -492,7 +511,19 @@
     * @return boolean
     */
     function onEditComment(Comment $comment) {
-      return true;
+        SearchableObjects::dropContentByObjectColumn($this,'comment' . $comment->getId());
+        $project = $this->getProject();
+        $searchable_object = new SearchableObject();
+		            
+		$searchable_object->setRelObjectManager(get_class($this->manager()));
+		$searchable_object->setRelObjectId($this->getObjectId());
+		$searchable_object->setColumnName('comment' . $comment->getId());
+		$searchable_object->setContent($comment->getText());
+		if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+		     $searchable_object->setIsPrivate($this->isPrivate());
+		            
+		$searchable_object->save();
+		return true;
     } // onEditComment
     
     /**
@@ -502,7 +533,8 @@
     * @return boolean
     */
     function onDeleteComment(Comment $comment) {
-      return true;
+		if ($this->isSearchable())
+			SearchableObjects::dropContentByObjectColumn($this,'comment' . $comment->getId());
     } // onDeleteComment
     
     /**
@@ -589,10 +621,16 @@
     */
     function save() {
       $result = parent::save();
-      
       // If searchable refresh content in search table
       if($this->isSearchable()) {
-        SearchableObjects::dropContentByObject($this);
+      	$this->addToSearchableObjects();
+      } // if
+      
+      return $result;
+    } // save
+    
+    function addToSearchableObjects(){
+    	SearchableObjects::dropContentByObject($this);
         $project = $this->getProject();
         
         foreach($this->getSearchableColumns() as $column_name) {
@@ -609,12 +647,51 @@
             
             $searchable_object->save();
           } // if
-        } // if
+        } // foreach
         
-      } // if
-      
-      return $result;
-    } // save
+        if ($this->is_taggable){
+	        $this->addTagsToSearchableObject();
+        }
+        
+        if($this->is_commentable)
+        {
+	        $comments = $this->getComments();
+	        if (is_array($comments)){
+	        	foreach($comments as $comment){
+		        	$searchable_object = new SearchableObject();
+		            
+		            $searchable_object->setRelObjectManager(get_class($this->manager()));
+		            $searchable_object->setRelObjectId($this->getObjectId());
+		            $searchable_object->setColumnName('comment' . $comment->getId());
+		            $searchable_object->setContent($comment->getText());
+		            if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+		            $searchable_object->setIsPrivate($this->isPrivate());
+		            
+		            $searchable_object->save();
+	        	}
+	        }
+        }
+    }
+    
+    function addTagsToSearchableObject(){
+        $project = $this->getProject();
+    	$tag_names = $this->getTagNames();
+	    if (is_array($tag_names)){
+			if (!$this->isNew())
+    			SearchableObjects::dropContentByObjectColumn($this,'tags');
+    		
+	       	$searchable_object = new SearchableObject();
+	           
+	        $searchable_object->setRelObjectManager(get_class($this->manager()));
+	        $searchable_object->setRelObjectId($this->getObjectId());
+	        $searchable_object->setColumnName('tags');
+	        $searchable_object->setContent(implode(' ', $tag_names));
+            if($project instanceof Project) $searchable_object->setProjectId($project->getId());
+	        $searchable_object->setIsPrivate($this->isPrivate());
+	            
+	        $searchable_object->save();
+	    }
+    }
     
     function clearObjectProperties(){
     	ObjectProperties::deleteAllByObject($this);
@@ -644,14 +721,14 @@
       return parent::delete();
     } // delete
     
-    function getDashboardObject(){
-    	if($this->getUpdatedBy()){
-    		$updated_by_id = $this->getUpdatedBy()->getObjectId();
+  function getDashboardObject(){
+    	if($this->getUpdatedById()){
+    		$updated_by_id = $this->getUpdatedById();
     		$updated_by_name = $this->getUpdatedByDisplayName();
     		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
     	}else {
-    		if($this->getCreatedBy())
-    			$updated_by_id = $this->getCreatedBy()->getId();
+    		if($this->getCreatedById())
+    			$updated_by_id = $this->getCreatedById();
     		else
     			$updated_by_id = lang('n/a');
     		$updated_by_name = $this->getCreatedByDisplayName();
@@ -665,7 +742,7 @@
 				"type" => $this->getObjectTypeName(),
 				"tags" => project_object_tags($this),
 				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
-				"createdById" => $this->getCreatedBy()->getId(),
+				"createdById" => $this->getCreatedById(),
 				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,

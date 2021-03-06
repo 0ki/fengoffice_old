@@ -48,6 +48,8 @@ og.WebpageManager = function() {
 			},
 			'loadexception': function() {
 				og.hideLoading();
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
     });
@@ -59,7 +61,7 @@ og.WebpageManager = function() {
     //--------------------------------------------
 
     function renderName(value, p, r) {
-    	return String.format('<a href="" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
+    	return String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' + lang('open link in new window', value) + '">{0}</a>', value, r.data.url);
     }
 
 	function renderProject(value, p, r) {

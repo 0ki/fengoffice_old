@@ -1,7 +1,8 @@
-og.TagPanel = function(tags) {
-	this.tree = new og.TagTree(tags);
+og.TagPanel = function(config) {
+	if (!config) config = {};
+	this.tree = new og.TagTree(config.tagtree);
 	
-	og.TagPanel.superclass.constructor.call(this, {
+	Ext.applyIf(config, {
 		split: true,
 		height: 200,
 		iconCls: 'ico-tags',
@@ -18,12 +19,15 @@ og.TagPanel = function(tags) {
 			scope: this.tree
 		}]
 	});
-	
+	og.TagPanel.superclass.constructor.call(this, config);
 };
 
 Ext.extend(og.TagPanel, Ext.Panel, {});
 
-og.TagTree = function(tags) {
+og.TagTree = function(config) {
+	if (!config) config = {};
+	var tags = config.tags;
+	delete config.tags;
 
 	// tree filter
 	var tree = this;
@@ -45,7 +49,7 @@ og.TagTree = function(tags) {
 		});
 	}
 
-	og.TagTree.superclass.constructor.call(this, {
+	Ext.applyIf(config, {
 		id: 'tag-panel',
 		autoScroll: true,
 		rootVisible: false,
@@ -62,6 +66,7 @@ og.TagTree = function(tags) {
 			}
 		})]
 	});
+	og.TagTree.superclass.constructor.call(this, config);
 
 	this.tags = this.root.appendChild(
 		new Ext.tree.TreeNode({
@@ -78,7 +83,7 @@ og.TagTree = function(tags) {
 	this.getSelectionModel().on({
 		'selectionchange' : function(sm, node) {
 			if (node && !this.pauseEvents) {
-				og.eventManager.fireEvent('tag changed', node.tag);
+				this.fireEvent('tagselect', node.tag);
 			}
 		},
 		scope:this
@@ -152,27 +157,18 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	},
 	
 	loadTags: function() {
-		og.loading();
-		Ext.Ajax.request({
-			url: og.getUrl('tag', 'list_tags'),
-			callback: function(options, success, response) {
-				if (success) {
-					try {
-						var tags = Ext.util.JSON.decode(response.responseText);
-						this.addTags(tags);
-						
-						this.pauseEvents = true;
-						this.tags.select();
-						this.pauseEvents = false;
-					} catch (e) {
-						og.msg(lang("error"), e.message);
-					}
-				} else {
-					og.msg(lang("error"), lang("server could not be reached"));
-				}
-				og.hideLoading();
+		og.openLink(og.getUrl('tag', 'list_tags'), {
+			callback: function(success, data) {
+				this.addTags(data.tags);
+				
+				this.pauseEvents = true;
+				this.tags.select();
+				this.pauseEvents = false;
 			},
 			scope: this
 		});
 	}
 });
+
+Ext.reg('tagpanel', og.TagPanel);
+Ext.reg('tagtree', og.TagTree);

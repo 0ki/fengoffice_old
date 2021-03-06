@@ -19,7 +19,7 @@ class ProjectEvents extends BaseProjectEvents {
 	 * @param String $tags
 	 * @return unknown
 	 */
-	static function getDayProjectEvents(DateTimeValue $date, $tags = ''){
+	static function getDayProjectEvents(DateTimeValue $date, $tags = '', $project = null){
 		$day = $date->getDay();
 		$month = $date->getMonth();
 		$year = $date->getYear();
@@ -36,13 +36,17 @@ class ProjectEvents extends BaseProjectEvents {
 
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectEvents::instance(),ACCESS_LEVEL_READ, logged_user()->getId()) .')';
 
-		if(active_project() instanceof Project ){
-			$limitation = "AND  ( project_id=" . active_project()->getId() ." )";
+		if ($project instanceof Project ){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
-		if(isset($tag) && $tag && $tag!='')
+		$limitation = " AND (`project_id` IN ($pids))";
+		if (isset($tag) && $tag && $tag!='') {
 	    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
-		else
+		} else {
 			$tag_str= "";
+		}
 		// build the query
 //		$q = "SELECT UNIX_TIMESTAMP(`start`) as start_since_epoch,
 //			UNIX_TIMESTAMP(duration) as end_since_epoch, private, created_by_id, subject,
@@ -284,9 +288,15 @@ class ProjectEvents extends BaseProjectEvents {
 	* @param Project $project
 	* @return array
 	*/
-	static function getAllEventsByProject(Project $project) {
+	static function getAllEventsByProject(Project $project = null) {
+		if ($project instanceof Project) {
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
+		}
+		$cond_str = "`project_id` IN ($pids)";
 		return self::findAll(array(
-			'conditions' => array('project_id', $project->getId())
+			'conditions' => array($cond_str)
 		)); // findAll
 	} // getAllEventsByProject
 	

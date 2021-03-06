@@ -8,6 +8,7 @@ return array(
     'recent activities' => 'Recent activities',
     'search button caption' => 'Go',
     'search result description' => 'Displaying <strong>{0} of {1}</strong> objects that match <strong>"{2}"</strong>',
+    'search result description short' => '<strong>{0} to {1} of {2}</strong>',
 
 // Options and descriptions
     'important message desc' => 'Important messages are listed in the "Important messages" sidebar on the workspace messages page',
@@ -165,6 +166,7 @@ return array(
 	'cannot delete personal project' => 'The personal workspace can\'t be deleted',
 
 	'workspace color' => 'Workspace color',
+	'workspace template' => 'Workspace template',
 	'color1' => 'Red',
 	'color2' => 'Green',
 	'color3' => 'Blue',
@@ -174,6 +176,30 @@ return array(
 	'color7' => 'Cyan',
 	'color8' => 'Violet',
 	'choose a color' => 'Choose a color',
+
+//Contacts
+
+	'new contact' => 'New contact',
+	'work' => 'Work',
+	'home' => 'Home',
+	'other' => 'Other',
+
+
+/*Charting*/
+	'chart' => 'Chart',
+	'new chart' => 'New chart',
+	'add chart' => 'Add chart',
+	'edit chart' => 'Edit chart',
+	'ObjectTypeCount' => 'Object quantities by type',
+	'TasksByDueDate' => 'Personal tasks sorted by due date',
+	'bars chart' => 'Bars',
+	'pie chart' => 'Pie',
+	'lines chart' => 'Lines',
+	'draw chart' => 'Draw',
+	'chart display' => 'Display',
+	'bar sketch' => 'Sketch bars',
+	'bar 3d' => '3d bars',
+	'bar glass' => 'Glass bars',
 ); // array
 
 ?>

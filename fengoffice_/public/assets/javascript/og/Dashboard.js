@@ -55,6 +55,8 @@ og.Dashboard = function() {
 			},
 			'loadexception': function() {
 				og.hideLoading();
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
 	});

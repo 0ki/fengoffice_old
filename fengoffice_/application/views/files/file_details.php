@@ -18,7 +18,7 @@ $options = array();
 	if($file->canDelete(logged_user())) 
 		add_page_action(lang('delete'), $file->getDeleteUrl(), 'ico-delete');
 	
-	if (strcmp($file->getTypeString(),'txt')==0 || strcmp($file->getTypeString(),'sprd')==0 || strcmp($file->getTypeString(),'prsn')==0 || substr($file->getTypeString(), 0, 4) == "text") 
+	if ($file->isModifiable()) 
 		add_page_action(lang('edit'), $file->getModifyUrl(), 'ico-edit');
 		
 	if (strcmp($file->getTypeString(), 'prsn')==0) {

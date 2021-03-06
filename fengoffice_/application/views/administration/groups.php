@@ -1,15 +1,17 @@
 <?php 
-
-  // Set page title and set crumbs to index
   set_page_title(lang('groups'));
-  administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
-  administration_crumbs(lang('groups'));
   
   if(owner_company()->canAddGroup(logged_user())) {
     add_page_action(lang('add group'), get_url('group', 'add_group'));
   } // if
-
 ?>
+
+<div class="adminGroups">
+  <div class="adminHeader">
+  	<div class="adminTitle"><?php echo lang('groups') ?></div>
+  </div>
+  <div class="adminSeparator"></div>
+  <div class="adminMainBlock">
 <?php if(isset($groups) && is_array($groups) && count($groups)) { ?>
 <table>
   <tr>
@@ -23,9 +25,9 @@
     <td style="text-align: center"><?php echo $group->countUsers() ?></td>
 <?php 
   $options = array(); 
-  if($group->canAddUser(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $group->getAddUserUrl() . '">' . lang('add user') . '</a>';
-  } // if
+//  if($group->canAddUser(logged_user())) {
+//    $options[] = '<a class="internalLink" href="' . $group->getAddUserUrl() . '">' . lang('add user') . '</a>';
+//  } // if
 //  if($group->canUpdatePermissions(logged_user())) {
 //    $options[] = '<a class="internalLink" href="' . $group->getUpdatePermissionsUrl() . '">' . lang('permissions') . '</a>';
 //  } // if
@@ -43,3 +45,5 @@
 <?php } else { ?>
 <?php echo lang('no groups in company') ?>
 <?php } // if ?>
+</div>
+</div>

@@ -8,6 +8,16 @@
   */
   class SearchableObject extends BaseSearchableObject {
   
+  	
+  	public function save()
+  	{
+  		if (!LUCENE_SEARCH)
+  			return parent::save();
+  		else {
+  			LuceneDB::AddToIndex($this);
+  			parent::save();
+  		}
+  	}
   } // SearchableObject 
 
 ?>

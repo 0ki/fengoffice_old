@@ -35,12 +35,13 @@ if($email->canDelete(logged_user())) {
 		<div id="mv_attachments" style="display:none">
 		<table>
 		<?php 
-		    foreach($parsedEmail["Attachments"] as $att)
-			{?>
+		    foreach($parsedEmail["Attachments"] as $att) {
+				$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
+				?>
 				<tr>
 				<td style="padding-right: 10px">
 					<?php 
-      					$ext = substr($att["FileName"],strrpos($att["FileName"],'.') + 1);
+      					$ext = substr($fName,strrpos($fName,'.') + 1);
 						$fileType = FileTypes::getByExtension($ext);
 						if (isset($fileType))
 							$icon = $fileType->getIcon();
@@ -50,7 +51,7 @@ if($email->canDelete(logged_user())) {
       					<img src="<?php echo get_image_url("filetypes/".$icon) ?>">
 				</td>
 				<td><a href="<?php echo get_url('mail', 'download_attachment', array('email_id' => $email->getId(), 'attachment_id' => $c)) ?>">
-				<?php echo clean($att["FileName"]) ?></a></td>
+				<?php echo clean($fName) ?></a></td>
 				</tr><?php 	$c++;
 			}?>
 		</table>

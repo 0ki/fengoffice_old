@@ -35,3 +35,5 @@
 <?php } else { ?>
 <p><?php echo lang('no search result for', $search_string) ?></p>
 <?php } // if ?>
+
+<p><?php echo $time ?></p>

@@ -72,8 +72,8 @@ class TagController extends ApplicationController {
 	 *
 	 */
 	function list_tags() {
-		$this->setLayout("json");
-		$this->setTemplate(get_template_path('json'));
+		$this->setTemplate(get_template_path("json"));
+		ajx_current("empty");
 		$ts = array();
 		$tags = Tags::getTagNames();
 		if ($tags) {
@@ -83,7 +83,9 @@ class TagController extends ApplicationController {
 				);
 			}
 		}
-		tpl_assign("object", $ts);
+		$extra = array();
+		$extra['tags'] = $ts;
+		ajx_extra_data($extra);
 	}
 } // TagController
 

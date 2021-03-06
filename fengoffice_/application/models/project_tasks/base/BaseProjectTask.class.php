@@ -188,6 +188,51 @@
     } // setCompletedById() 
     
     /**
+    * Return value of 'due_date' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getDueDate() {
+      return $this->getColumnValue('due_date');
+    } // getDueDate()
+    
+    /**
+    * Set value of 'due_date' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setDueDate($value) {
+      return $this->setColumnValue('due_date', $value);
+    } // setDueDate() 
+    
+    
+    /**
+    * Return value of 'start_date' field
+    *
+    * @access public
+    * @param void
+    * @return DateTimeValue 
+    */
+    function getStartDate() {
+      return $this->getColumnValue('start_date');
+    } // getStartDate()
+    
+    /**
+    * Set value of 'start_date' field
+    *
+    * @access public   
+    * @param DateTimeValue $value
+    * @return boolean
+    */
+    function setStartDate($value) {
+      return $this->setColumnValue('start_date', $value);
+    } // setStartDate() 
+    
+    /**
     * Return value of 'created_on' field
     *
     * @access public
@@ -208,7 +253,7 @@
     function setCreatedOn($value) {
       return $this->setColumnValue('created_on', $value);
     } // setCreatedOn() 
-    
+        
     /**
     * Return value of 'created_by_id' field
     *

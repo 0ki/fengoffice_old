@@ -232,8 +232,10 @@ class WebpageController extends ApplicationController {
 	function list_all()
 	{
 		ajx_current("empty");
-		 
-		$isProjectView = (active_project() instanceof Project);
+
+		$pid = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($pid);
+		$isProjectView = ($project instanceof Project);
 		 
 		$start = array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
@@ -253,9 +255,9 @@ class WebpageController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'webpages'));
 			list($succ, $err) = ObjectController::do_delete_objects($ids, 'ProjectWebpages');
 			if ($err > 0) {
-				flash_error(lang('error delete objects'), '');
+				flash_error(lang('error delete objects'), $err);
 			} else {
-				flash_success(lang('success delete objects'), '');
+				flash_success(lang('success delete objects'), $succ);
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'webpages'));
@@ -282,27 +284,19 @@ class WebpageController extends ApplicationController {
 							ACCESS_LEVEL_READ, 
 							logged_user()->getId()) . ')';
 
-		if ($isProjectView)
-		{
-			 
-			list($webpages, $pagination) = ProjectWebpages::paginate(
-				array("conditions" => "project_id = " . active_project()->getId() ." AND " . $tagstr . $permission_str ,
-		        		'order' => '`title` ASC'),
-				config_option('files_per_page', 10),
-				$page
-			); // paginate
+		if ($isProjectView) {
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
-		else
-		{
-			list($webpages, $pagination) = ProjectWebpages::paginate(
-			array(
-      	  "conditions" => $tagstr . $permission_str,
-          'order' => '`title` ASC'
-          ),
-          config_option('files_per_page', 10),
-          $page
-          ); // paginate
-		}
+		$project_str = " AND `project_id` IN ($pids) ";
+		
+		list($webpages, $pagination) = ProjectWebpages::paginate(
+			array("conditions" => $tagstr . $permission_str . $project_str ,
+	        		'order' => '`title` ASC'),
+			config_option('files_per_page', 10),
+			$page
+		); // paginate
 
 		tpl_assign('totalCount', $pagination->getTotalItems());
 		tpl_assign('webpages', $webpages);

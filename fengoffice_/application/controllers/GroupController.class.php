@@ -118,6 +118,7 @@ class GroupController extends ApplicationController {
 	          'can_manage_security' => $group->getCanManageSecurity(),
 	          'can_manage_workspaces' => $group->getCanManageWorkspaces(),
 	          'can_manage_configuration' => $group->getCanManageConfiguration(),
+	          'can_manage_contacts' => $group->getCanManageContacts(),
 			); // array			
 		} // if
 		$users = GroupUsers::getUsersByGroup($group->getId());

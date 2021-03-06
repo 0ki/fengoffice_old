@@ -438,7 +438,7 @@
 					if ($access_level == ACCESS_LEVEL_WRITE)
 						return $proj_perm->getCanWriteWeblinks();
 					else if ($access_level == ACCESS_LEVEL_READ)
-						return $proj_perm->getCanWeblinks();
+						return $proj_perm->getCanReadWeblinks();
 					else return false;
 					break;
 				case 'MailContents' :  

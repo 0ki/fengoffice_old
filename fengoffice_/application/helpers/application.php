@@ -104,8 +104,11 @@ function select_company($name, $selected = null, $attributes = null) {
  * @param array $attributes Additional attributes
  * @return string
  */
-function select_project($name, $projects, $selected = null, $attributes = null) {
+function select_project($name, $projects, $selected = null, $attributes = null, $allow_none = null) {
 	$options = array();
+	if($allow_none) {
+		$options[] = option_tag(lang('none'), 0);
+	}
 	if(is_array($projects)) {
 		foreach($projects as $project) {
 			$option_attributes = $project->getId() == $selected ? array('selected' => 'selected') : null;

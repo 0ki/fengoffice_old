@@ -7,6 +7,9 @@
 @import 'page_actions.css';
 @import '../reesecal/default.css';
 @import 'og/co.css';
+@import 'og/search.css';
+@import 'og/coInput.css';
+@import 'og/administration.css';
 
 @import '../slimey/slimey.css';
 @import 'og/imageChooser.css';

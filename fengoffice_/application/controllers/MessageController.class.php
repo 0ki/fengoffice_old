@@ -40,8 +40,10 @@ class MessageController extends ApplicationController {
 		} 
 		
 		// Get all emails and messages to display
-		$emails = $this->getEmails($action, $tag, $attributes);
-		$messages = $this->getMessages($action, $tag, $attributes);
+		$pid = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($pid);
+		$emails = $this->getEmails($action, $tag, $attributes, $project);
+		$messages = $this->getMessages($action, $tag, $attributes, $project);
 		$totMsg = $this->addMessagesAndEmails($messages, $emails);
 		
 		// Prepare response object
@@ -200,7 +202,7 @@ class MessageController extends ApplicationController {
 	 * @param integer $accountId
 	 * @return array
 	 */
-	private function getEmails($action, $tag, $attributes)
+	private function getEmails($action, $tag, $attributes, $project = null)
 	{
 		// Return if no emails should be displayed
 		if (isset($attributes["viewType"]) && 
@@ -249,24 +251,24 @@ class MessageController extends ApplicationController {
 		
 		
 		//Check for projects (uses accountConditions
-		if (active_project() instanceof Project){
-			$pid = active_project()->getId();
+		if ($project instanceof Project){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
 			
 			if ($singleAccount)
-				$projectConditions = "($accountConditions AND `project_id` = $pid)";
+				$projectConditions = "($accountConditions AND `project_id` IN ($pids))";
 			else
 				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
-					"`project_id` = $pid":
-					"(($accountConditions AND `project_id` = $pid) OR (`project_id` = $pid AND is_private = 0))";
+					"`project_id` IN ($pids)":
+					"(($accountConditions AND `project_id` IN ($pids)) OR (`project_id` IN ($pids) AND is_private = 0))";
 		} else {
-    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
+    		$pids = logged_user()->getActiveProjectIdsCSV();
     		
     		if ($singleAccount)
     			$projectConditions = $accountConditions;
     		else
 				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
-					"($accountConditions OR `project_id` in ($proj_ids))":
-					"($accountConditions OR (`project_id` in ($proj_ids) AND is_private = 0))";
+					"($accountConditions OR `project_id` in ($pids))":
+					"($accountConditions OR (`project_id` in ($pids) AND is_private = 0))";
 		}
 		
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user()->getId(), 'project_id') .')';
@@ -282,19 +284,17 @@ class MessageController extends ApplicationController {
 	 * @param string $action
 	 * @return array
 	 */
-	private function getMessages($action, $tag, $attributes)
-	{
+	private function getMessages($action, $tag, $attributes, $project = null) {
 		if (isset($attributes["viewType"]) && 
 			($attributes["viewType"] != "all" && $attributes["viewType"] != "messages"))
 			return null;
 		
-		if (active_project() instanceof Project){
-			$pid = active_project()->getId();
-			$messageConditions = "`project_id` = $pid";
+		if ($project instanceof Project){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+			$messageConditions = "`project_id` IN ($pids)";
 		} else {
-			$messageConditions = " '1'='1' ";
-//			$proj_ids = logged_user()->getActiveProjectIdsCSV();
-//			$messageConditions = "`project_id` in ($proj_ids)" ;
+			$proj_ids = logged_user()->getActiveProjectIdsCSV();
+			$messageConditions = "`project_id` in ($proj_ids)" ;
 		}
 
 		if (!isset($tag) || $tag == '' || $tag == null) {

@@ -211,7 +211,7 @@ function cal_navbar($year, $month, $day, $tags){
 			if (is_numeric($w)){ //if it is a day after the first of the month
 				$day_tmp = is_numeric($w) ? $w : 0;
 				$date = new DateTimeValue(mktime(0,0,0,$month,$day_tmp,$year)); 
-				$result = ProjectEvents::getDayProjectEvents($date, $tags); 
+				$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project()); 
 				if(count($result)<1) $output .= "&nbsp;";
 				else
 				foreach ($result as $event){ 
@@ -266,7 +266,7 @@ function cal_navbar($year, $month, $day, $tags){
 						$output .= '</span>';
 						$output .= "</div>";
 					}
-				} // end event writing loop
+				} // end foreach event writing loop
 				$output .= '</td>';
 			} //if is_numeric($w) 
 		} // end weekly loop

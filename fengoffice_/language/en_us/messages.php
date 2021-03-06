@@ -187,6 +187,11 @@
     'success add webpage' => 'Web link has been added',
     'success edit webpage' => 'Web link has been updated',
     'success deleted webpage' => 'Web link has been deleted',
+
+    'success add chart' => 'Chart has been added',
+    'success edit chart' => 'Chart has been updated',
+    'success delete chart' => 'Chart has been deleted',
+    'success delete charts' => 'The selected charts have been deleted successfully',
   
     'success delete contacts' => 'The selected contacts have been deleted successfully',
   
