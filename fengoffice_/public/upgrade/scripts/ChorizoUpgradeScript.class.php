@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3
+ * Chorizo upgrade script will upgrade FengOffice 2.2.4.1 to FengOffice 2.3.1-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.2.4.1');
-		$this->setVersionTo('2.3');
+		$this->setVersionTo('2.3.1-beta');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -132,6 +132,43 @@ class ChorizoUpgradeScript extends ScriptUpgraderScript {
 					ON DUPLICATE KEY UPDATE name=name;
 					UPDATE `".$t_prefix."config_options` SET `value` = if ((SELECT count(*) FROM ".$t_prefix."object_properties)>0, 1, 0) WHERE `name`='use_object_properties';
 					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `name`='can_assign_tasks_to_companies';
+				";
+			}
+			
+			if (version_compare($installed_version, '2.3.1-beta') < 0) {
+				$upgrade_script .= "
+					INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						SELECT contact_id, CONCAT('email_adress', id), email_address , '0' FROM ".$t_prefix."contact_emails
+					ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
+					INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						SELECT contact_id, CONCAT('phone_number', id), number, '0' FROM ".$t_prefix."contact_telephones
+					ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
+					INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						SELECT contact_id, CONCAT('web_url', id), url , '0' FROM ".$t_prefix."contact_web_pages
+					ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
+					INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						SELECT contact_id, CONCAT('im_value', id), value , '0' FROM ".$t_prefix."contact_im_values
+					ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
+					INSERT INTO ".$t_prefix."searchable_objects (rel_object_id, column_name, content, contact_id)
+						SELECT contact_id, CONCAT('address', id), CONCAT(street,' ',city,' ',state,' ',country,' ',zip_code) , '0' FROM ".$t_prefix."contact_addresses
+					ON DUPLICATE KEY UPDATE rel_object_id=rel_object_id;
+					INSERT INTO `fo_contact_config_options`(`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES ('task panel','tasksDateStart','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'date from to filter out task list'),
+('task panel','tasksDateEnd','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'the date up to filter the list of tasks')
+					ON DUPLICATE KEY UPDATE id=id;
+											
+					update ".$t_prefix."contacts set company_id=0 where company_id is null;
+					update ".$t_prefix."contacts set display_name='' where display_name is null;
+					update ".$t_prefix."contacts set avatar_file='' where avatar_file is null;
+					update ".$t_prefix."contacts set last_login='0000-00-00 00:00:00' where last_login is null;
+					update ".$t_prefix."contacts set last_visit='0000-00-00 00:00:00' where last_visit is null;
+					update ".$t_prefix."contacts set personal_member_id=0 where personal_member_id is null;
+					UPDATE `".$t_prefix."config_options` SET `is_system` = '1' WHERE `name`='viewUsersChecked';
+
+					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`)
+					VALUES ('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others')ON DUPLICATE KEY UPDATE name=name;
+							
+					ALTER TABLE ".$t_prefix."event_invitations ADD synced int(1) DEFAULT '0';
+					ALTER TABLE ".$t_prefix."event_invitations ADD  special_id text CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL;
 				";
 			}
 		}

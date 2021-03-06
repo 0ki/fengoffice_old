@@ -1,6 +1,6 @@
 <div class="widget-persons widget">
 
-	<div class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
+	<div style="overflow: hidden;" class="widget-header" onclick="og.dashExpand('<?php echo $genid?>');">
 		<?php echo (isset($widget_title)) ? $widget_title : lang("people");?>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>

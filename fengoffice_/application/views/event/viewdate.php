@@ -55,10 +55,10 @@ $genid = gen_id();
 	
 	$alldayevents = array();
 	$milestones = ProjectMilestones::getRangeMilestones($today, $today);
-        if($task_filter != "hide"){
-            $tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
-        }
-        // FIXME
+	if($task_filter != "hide"){
+		$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
+	}
+	// FIXME
 	$birthdays = array(); //Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv);
 	
 	foreach ($result as $key => $event){
@@ -68,9 +68,9 @@ $genid = gen_id();
 		}
 	}
 	
-	if($milestones)
+	if($milestones) {
 		$alldayevents = array_merge($alldayevents,$milestones);
-        
+	}
 	if(isset($tasks)) {
 		$tmp_tasks = array();
 		$dtv_end = new DateTimeValue($dtv->getTimestamp() + 60*60*24);
@@ -78,49 +78,53 @@ $genid = gen_id();
 			$tmp_tasks = array_merge($tmp_tasks, replicateRepetitiveTaskForCalendar($task, $dtv, $dtv_end));
 		}
 		foreach ($tmp_tasks as $task) {
-			$added = false;                        
-                        if($task->getDueDate() instanceof DateTimeValue){
-                            $due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-                            if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
-                                    if ($task->getUseDueTime() && ($task->getStartDate() instanceof DateTimeValue || $task->getTimeEstimate() > 0)) {
-                                            $result[] = $task;
-                                    } else {
-                                            $alldayevents[] = $task;
-                                    }
-                                    $added = true;
-                            }
-                        }
-                        if($task->getStartDate() instanceof DateTimeValue){
-                            $start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + logged_user()->getTimezone() * 3600);
-                            if (!$added && $dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
-                                    if ($task->getUseStartTime() && ($task->getDueDate() instanceof DateTimeValue|| $task->getTimeEstimate() > 0)) {
-                                            $result[] = $task;
-                                    } else {
-                                            $alldayevents[] = $task;
-                                    }
-                                    $added = true;
-                            }
-                        }
+			$added = false;
+			if($task->getDueDate() instanceof DateTimeValue){
+				$due_date = new DateTimeValue($task->getDueDate()->getTimestamp() + ($task->getUseDueTime() ? logged_user()->getTimezone() * 3600 : 0));
+				if ($dtv->getTimestamp() == mktime(0,0,0, $due_date->getMonth(), $due_date->getDay(), $due_date->getYear())) {
+					if ($task->getUseDueTime() && ($task->getStartDate() instanceof DateTimeValue || $task->getTimeEstimate() > 0)) {
+						$result[] = $task;
+					} else {
+						$alldayevents[$task->getId()] = $task;
+					}
+					$added = true;
+				}
+			}
+			if($task->getStartDate() instanceof DateTimeValue){
+				$start_date = new DateTimeValue($task->getStartDate()->getTimestamp() + ($task->getUseStartTime() ? logged_user()->getTimezone() * 3600 : 0));
+				if (!$added && $dtv->getTimestamp() == mktime(0,0,0, $start_date->getMonth(), $start_date->getDay(), $start_date->getYear())) {
+					if ($task->getUseStartTime() && ($task->getDueDate() instanceof DateTimeValue|| $task->getTimeEstimate() > 0)) {
+						$result[] = $task;
+					} else {
+						$alldayevents[$task->getId()] = $task;
+					}
+					$added = true;
+				}
+			}
+			if (!$added) $alldayevents[$task->getId()] = $task;
 		}
 	}
-	if (is_array($birthdays))
-		$alldayevents = array_merge($alldayevents,$birthdays);
 	
+	if (is_array($birthdays)) {
+		$alldayevents = array_merge($alldayevents,$birthdays);
+	}
 	$alldaygridHeight = count($alldayevents)*PX_HEIGHT/2 + PX_HEIGHT/3;
-        if($alldaygridHeight > 150){
-            $alldaygridHeight = 150;
-        }
-        
+	if($alldaygridHeight > 150){
+		$alldaygridHeight = 150;
+	}
+	
 	$loc = new Localization();
-	$loc->setDateFormat(lang('view date title'));
+	$loc->setDateFormat(lang('view date title',$date_format));
 	$view_title = $loc->formatDate($dtv);// lang(strtolower(date('l', $dtv))) . date(' j, ', $dtv) . lang('month ' . date('n', $dtv)) . date(' Y', $dtv);
-
+	
 	$users_array = array();
 	$companies_array = array();
-	foreach($users as $u)
+	foreach($users as $u) {
 		$users_array[] = $u->getArrayInfo();
-	foreach($companies as $company)
-		$companies_array[] = $company->getArrayInfo();	
+	}
+	foreach($companies as $company) {
+		$companies_array[] = $company->getArrayInfo();
+	}
 ?>
 <div id="calHiddenFields">
 	<input type="hidden" id="hfCalUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>

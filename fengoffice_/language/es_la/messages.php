@@ -610,6 +610,7 @@
 	'log read mailcontent' => 'Vió \'{0}\'',
 	'log read company' => 'Vió \'{0}\'',
 	'log read contact' => 'Vió \'{0}\'',
+	'log read contact' => 'Vió \'{0}\'',
 	'log read event' => 'Vió \'{0}\'',
 	'log read task' => 'Vió \'{0}\'',
 	'log read milestone' => 'Vió \'{0}\'',

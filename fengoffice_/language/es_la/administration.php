@@ -6,6 +6,7 @@
 	'configuration' => 'Configuración',
 	'mail transport mail()' => 'Configuración de PHP',
 	'mail transport smtp' => 'Servidor SMTP',
+	'owned by' => 'Asignado a',
 	'secure smtp connection no' => 'No',
 	'secure smtp connection ssl' => 'Si, use SSL',
 	'secure smtp connection tls' => 'Si, use TLS',
@@ -113,8 +114,8 @@
 	'user config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
 	'user config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del espacio y sus subespacios',
 	'user config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
-	'user ws config option name can notify from quick add' => 'Notificar al asignado a la tarea',
-	'user ws config option desc can notify from quick add' => 'Esta opción permite notificar a los usuarios asignados a una tarea, luego de añadir o modificar una',
+	'user ws config option name can notify from quick add' => 'Notificar a la persona asignada a la tarea',
+	'user ws config option desc can notify from quick add' => 'Al crear o editar una tarea, si tiene esta opción habilitada, por defecto se le avisará al usuario asignado y los suscriptos acerca de la creación de la tarea o modificación de la misma',	
 	'user config option name date_format' => 'Formato de fecha',
 	'user config option desc date_format' => 'Formato en que se muestran las fechas. Códigos: d = Día (2 dígitos, con ceros), D = Nombre del día (tres letras), j = Día, l = Nombre del día completo, m = Mes (con ceros), M = Nombre del mes (tres letras), n = Mes, F = Nombre del mes completo, Y = Año (4 dígitos), y = Año (2 dígitos). Debe recargar la página para aplicar los cambios.',
 	'user config option name descriptive_date_format' => 'Formato de fecha descriptivo',
@@ -181,6 +182,10 @@
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
 	'user config option desc access_member_after_add_remember' => 'Habilitar esta opción le permite saltear la pregunta de que hacer luego de crear un espacio de trabajo, cliente, etc.',
 
+	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
+	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
+		
+		
     'config option name days_on_trash' => 'Días en la papelera',
 	'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automáticamente. Si es cero, los objetos no ser borrar automaticamente.',
 	'templates' => 'Plantillas',
@@ -341,7 +346,7 @@
 
 	'user config option name show_file_revisions_search' => 'Ver contenidos del documentos al realizar búsquedas',	
 	'sync' => 'Sincronizar',
-        'user config option name close timeslot open' => 'Cerrar tiempos de trabajo abiertos',
+    'user config option name close timeslot open' => 'Finalizar los tiempos de trabajo en ejecución al completar una tarea',
   	'mails on imap acc already sync' => 'No hay más emails para sincronizar en esta cuenta',
   	'cant sync account' => 'Esta cuenta no puede ser sincronizada. Revise ajustes de IMAP',
 	'config option name sent_mails_sync' => 'Sincronización vía IMAP al enviar correos electrónicos desde Feng Office',

@@ -126,7 +126,7 @@
 	'no mailAccount error' => 'La acción no está disponible. Debe agregar su cuenta de correo.',
 	'content too long not loaded' => 'El contenido anterior del correo es muy extenso y no se ha cargado en el editor, igualmente será enviado al enviar este correo.',
 	'you must select a valid object type' => 'Debe seleccionar un tipo de objeto válido.',
-	'there are no changes' => 'No hay cambios realizados',
+	'there are no changes'=> 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
 		
 	'name required' => 'Debe ingresar un nombre.',
 	'member name already exists' => 'Ya existe un miembro de nombre \'{0}\' con el mismo miembro padre.',

@@ -133,7 +133,7 @@
 	'success export calendar' => '{0} událostí bylo exportováno.',
 	'calendar name desc' => 'Název pro export kalendáře',
 	'calendar will be exported in icalendar format' => 'Kalendář bude exportován ve formátu iCalendar.',
-	'view date title' => 'l, m/d/Y',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Zkopírováním této url adresy v klientském softwaru spravující vaše kalendáře dojde k importování událostí z tohoto kalendáře',
 	'import events from third party software' => 'Importování událostí ze softwaru třetích stran',
 	'subws' => 'Sub Ws.',

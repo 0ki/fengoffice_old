@@ -428,6 +428,77 @@ og.TasksBottomToolbar = function(config) {
         	}
         }
     });
+    // DatePicker Menu  
+    this.dateFieldStart = new og.DateField({
+    	displayField:'text',
+     	emptyText: og.preferences['date_format_tip'],
+    	name: 'ogTasksDateFieldStart',
+		id: 'ogTasksDateFieldStart',		
+		allowBlank:true,
+		value: '',	
+		listeners: {
+    		'change':function( A, newValue, oldValue ){
+		    	  this.setValue('');
+		    	  var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+		    	  toolbar.load({resetDateStart : oldValue});	
+		      	}
+		},
+		menuListeners:
+		   {
+		      select:function(A,B)
+		      {
+		         this.setValue(B);         
+		         from_date=B.format(og.preferences['date_format']);		         
+		         to_date = null;		         
+		         var dateFieldEnd = Ext.getCmp('ogTasksDateFieldEnd');
+		         var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+		         if (dateFieldEnd.getValue() != '') {	 							
+	 				to_date = dateFieldEnd.getValue().format(og.preferences['date_format']);
+	 				toolbar.load({from_date : from_date , to_date : to_date});
+	 			}else{
+	 				toolbar.load({from_date : from_date});		 			
+	 			}
+		        this.setValue(B);
+		      } 
+		   }
+	});    
+    
+    this.dateFieldEnd = new og.DateField({
+    	emptyText: og.preferences['date_format_tip'],
+    	name: 'ogTasksDateFieldEnd',
+		id: 'ogTasksDateFieldEnd',
+		value: '',
+		listeners: {
+    		'change':function( A, newValue, oldValue ){
+		    	  this.setValue('');
+		    	  var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+		    	  toolbar.load({resetDateEnd : oldValue});	
+		      	}
+		},
+		menuListeners:
+		   {
+		      select:function(A,B)
+		      {
+		    	  this.setValue(B);         
+			         to_date=B.format(og.preferences['date_format']);			         
+			         from_date = null;
+			         
+			         var dateFieldStart = Ext.getCmp('ogTasksDateFieldStart');
+			         var toolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
+			         if (dateFieldStart.getValue() != '') {
+		 				
+			        	 from_date = dateFieldStart.getValue().format(og.preferences['date_format']);
+		 				toolbar.load({from_date : from_date, to_date : to_date});
+		 			}else{
+		 				toolbar.load({to_date : to_date});		 			
+		 			}	
+			         this.setValue(B);
+		      }
+		      
+		   }
+	});      
+    this.dateFieldEnd.setValue(ogTasks.userPreferences.dateEnd); 	
+    this.dateFieldStart.setValue(ogTasks.userPreferences.dateStart);
     this.statusCombo.setValue(ogTasks.userPreferences.status);
     this.add(lang('filter') + ':');
     this.add(this.filtercombo);
@@ -443,6 +514,10 @@ og.TasksBottomToolbar = function(config) {
     this.add(this.groupcombo);
     this.add('&nbsp;&nbsp;&nbsp;' + lang('order by') + ':');
     this.add(this.ordercombo);
+    this.add('&nbsp;&nbsp;&nbsp;' + lang('from date') + ':');
+    this.add(this.dateFieldStart);
+    this.add('&nbsp;&nbsp;&nbsp;' + lang('to date') + ':');
+    this.add(this.dateFieldEnd);
     
     if (ogTasks.extraBottomToolbarItems) {
     	for (i=0; i<ogTasks.extraTopToolbarItems.length; i++) {

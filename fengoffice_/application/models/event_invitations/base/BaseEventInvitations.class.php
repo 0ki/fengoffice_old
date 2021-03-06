@@ -14,7 +14,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('event_id' => DATA_TYPE_INTEGER, 'contact_id' => DATA_TYPE_INTEGER, 'invitation_state' => DATA_TYPE_INTEGER);
+    static private $columns = array('event_id' => DATA_TYPE_INTEGER, 'contact_id' => DATA_TYPE_INTEGER, 'invitation_state' => DATA_TYPE_INTEGER, 'synced' => DATA_TYPE_INTEGER,'special_id' => DATA_TYPE_STRING);
   
     /**
     * Construct

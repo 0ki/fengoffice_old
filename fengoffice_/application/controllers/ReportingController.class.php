@@ -546,7 +546,7 @@ class ReportingController extends ApplicationController {
 					if($condition['field_type'] == 'boolean'){
 						$newCondition->setValue(isset($condition['value']) && $condition['value']);
 					}else if($condition['field_type'] == 'date'){
-						if ($condition['value'] == '') $newCondition->setValue('');
+						if (array_var($condition, 'value') == '') $newCondition->setValue('');
 						else {
 							$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condition['value']);
 							$newCondition->setValue(date("m/d/Y", $dtFromWidget->getTimestamp()));
@@ -1180,7 +1180,17 @@ class ReportingController extends ApplicationController {
 				
 				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
 			}
-			
+			//if Object type is person
+			$objType = ObjectTypes::findByName('contact');
+			if ($objType instanceof ObjectType){
+				if($object_type == $objType->getId()){
+					$fields[] = array('id' => 'email_address', 'name' => lang('email address'), 'type' => 'text');
+					//$fields[] = array('id' => 'phone_number', 'name' => lang('phone number'), 'type' => 'text');
+					//$fields[] = array('id' => 'web_url', 'name' => lang('web pages'), 'type' => 'text');
+					//$fields[] = array('id' => 'im_value', 'name' => lang('instant messengers'), 'type' => 'text');
+					//$fields[] = array('id' => 'address', 'name' => lang('address'), 'type' => 'text');
+				}
+			}
 			if (!array_var($_REQUEST, 'noaddcol')) {
 				Hook::fire('custom_reports_additional_columns', null, $fields);
 			}

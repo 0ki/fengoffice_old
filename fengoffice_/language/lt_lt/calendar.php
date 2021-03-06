@@ -138,7 +138,7 @@
 	'success export calendar' => '(0) įvykių eksportuota.',
 	'calendar name desc' => 'Pavadinimas eksportuojamam kalendoriui',
 	'calendar will be exported in icalendar format' => 'Kalendorius bus eksportuotas iCalendar formatu.',
-	'view date title' => 'l, Y-m-d',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Kad importuotumėt įvykius iš šio kalendoriaus, nukopijuokit į kalendoriaus programą šią nuorodą',
 	'import events from third party software' => 'Importuoti įvykius iš kitų programų',
 	'subws' => 'Sub Ws.',

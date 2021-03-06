@@ -45,12 +45,13 @@ member_selector.add_relation = function(dimension_id, genid) {
 	var alt_cls = last==null || last.hasClass('alt-row') ? "" : " alt-row";
 	
 	var html = '<div class="selected-member-div'+alt_cls+'" id="'+genid+'selected-member'+member.id+'">';
-	html += '<span class="coViewAction '+member.ico+'"></span>';
+	html += '<span class="coViewAction '+member.ico+'">&nbsp;</span>';
 	if (member.path != '') {
 		html += '<span class="path">'+member.path+'/ </span>';
 	}
 	html += '<span class="bold">'+member.name+'</span>';
-	html += '<div class="selected-member-actions"><a class="coViewAction ico-delete" onclick="member_selector.remove_relation('+dimension_id+',\''+genid+'\', '+member.id+')" href="#">'+lang('remove')+'</a></div>';
+	html += '<div class="selected-member-actions"' + (Ext.isIE ? 'style="display:inline;margin-left:40px;float:none;"' : '') + '>';
+	html += '<a class="coViewAction ico-delete" onclick="member_selector.remove_relation('+dimension_id+',\''+genid+'\', '+member.id+')" href="#">'+lang('remove')+'</a></div>';
 	html += '</div><div class="separator"></div>';
 
 	var sep = sel_members_div.select('div.separator').elements;

@@ -170,9 +170,7 @@ og.eventManager.addListener('logo changed',
 );
 og.eventManager.addListener('expand menu panel',
 	function(options) {
-		var animate = options.animate ? options.animate : true;
-		if (options.expand) Ext.getCmp('menu-panel').expand(animate);
-		else if (options.collapse) Ext.getCmp('menu-panel').collapse(animate);
+		og.expandMenuPanel(options);
 	}
 );
 
@@ -253,6 +251,8 @@ og.eventManager.addListener('ask to select member',
 				Ext.MessageBox.buttonText.yes = old_yes_text;
 				Ext.MessageBox.buttonText.no = old_no_text;			
 			}
+
+			og.expandMenuPanel({expand: true});
 	}
 );
 

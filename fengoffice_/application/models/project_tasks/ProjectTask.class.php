@@ -389,7 +389,7 @@ class ProjectTask extends BaseProjectTask {
 		// check if all previuos tasks are completed
                 $log_info = "";
 		if (config_option('use tasks dependencies')) {
-			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. get_id()));
+			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. $this->getId()));
 			foreach ($saved_ptasks as $pdep) {
 				$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());
 				if ($ptask instanceof ProjectTask && !$ptask->isCompleted()) {
@@ -400,12 +400,12 @@ class ProjectTask extends BaseProjectTask {
 			}
                         //Seeking the subscribers of the completed task not to repeat in the notifications
                         $contact_notification = array();
-                        $task = ProjectTasks::findById(get_id());
+                        $task = ProjectTasks::findById($this->getId());
                         foreach ($task->getSubscribers() as $task_sub){
                             $contact_notification[] = $task_sub->getId();
                         }
                         //Send notification to subscribers of the task_dependency on the task completed
-                        $next_dependency = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. get_id()));
+                        $next_dependency = ProjectTaskDependencies::findAll(array('conditions' => 'previous_task_id = '. $this->getId()));
 			foreach ($next_dependency as $ndep) {
 				$ntask = ProjectTasks::findById($ndep->getTaskId());
 				if ($ntask instanceof ProjectTask) {
@@ -1219,7 +1219,7 @@ class ProjectTask extends BaseProjectTask {
 		if ($due_date_changed) {
 			$id = $this->getId();
 			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
-				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_tasks` WHERE `id` = $id),
+				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_tasks` WHERE `object_id` = $id),
 					interval `minutes_before` minute) WHERE `object_id` = $id;";
 			DB::execute($sql);
 		}

@@ -138,7 +138,7 @@
 	'success export calendar' => 'Экспортировано событий: {0}.',
 	'calendar name desc' => 'Имя календаря для экспортирования',
 	'calendar will be exported in icalendar format' => 'Календарь будет экспортирован в формате iCalendar.',
-	'view date title' => 'l, d/m/y',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Скопируйте этот URL в вашем календаре, для того чтобы импортировать мероприятия из этого календаря',
 	'import events from third party software' => 'Импорт мероприятий из сторонних программных',
 	'subws' => 'доп.проект',

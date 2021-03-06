@@ -848,7 +848,9 @@ function create_user($user_data, $permissionsString) {
 	}
 	$contact->save();
 	if (is_valid_email(array_var($user_data, 'email'))) {
-		$contact->addEmail(array_var($user_data, 'email'), 'personal', true);
+		$user = Contacts::getByEmail(array_var($user_data, 'email'));
+		if(!$user)
+			$contact->addEmail(array_var($user_data, 'email'), 'personal', true);
 	}
 	
 	

@@ -1,5 +1,5 @@
 <?php
-	$submit_url = get_url('contact', 'export_to_csv_file',array('ids'=>array_var($_GET, 'ids')));
+	$submit_url = get_url('contact', 'export_to_csv_file',array('ids'=>array_var($_GET, 'ids'),'allIds'=>array_var($_GET, 'allIds')));
 	$genid = gen_id();
 ?>
 <script>

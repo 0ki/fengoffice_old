@@ -10,6 +10,10 @@ class ExternalCalendarUsers extends BaseExternalCalendarUsers {
             return ExternalCalendarUsers::findOne(array('conditions' => array('`contact_id` = ?', logged_user()->getId())));
     }
     
+    function findByGivenContactId($value) {
+    	return ExternalCalendarUsers::findOne(array('conditions' => array('`contact_id` = ?', $value)));
+    }
+    
     function findByEmail($email) {
             return ExternalCalendarUsers::findOne(array('conditions' => array('`auth_user` = ? AND `contact_id` <> ?', $email, logged_user()->getId())));
     }

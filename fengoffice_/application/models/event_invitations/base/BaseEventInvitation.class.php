@@ -77,6 +77,39 @@
       return $this->setColumnValue('invitation_state', $value);
     } // setInvitationState() 
     
+    /**
+     * Set value of 'synced' field
+     *
+     * @access public
+     * @param Date $value
+     * @return boolean
+     */
+    function setUpdateSync() {
+    	return $this->setColumnValue('synced', 1);
+    } // setUpdateSync() 
+    
+    function setUpdateSyncFalse() {
+    	return $this->setColumnValue('synced', 0);
+    } // setUpdateSync()
+    
+    /**
+     * Return value of 'synced' field
+     *
+     * @access public
+     * @return Date
+     */
+    function getUpdateSync() {
+    	return $this->getColumnValue('synced');
+    } // getUpdateSync()
+    
+    function setSpecialId($value) {
+    	return $this->setColumnValue('special_id', $value);
+    } // setSpecialId()
+   
+     function getSpecialId() {
+     return $this->getColumnValue('special_id');
+    } // getSpecialId()
+        
     
     /**
     * Return manager instance

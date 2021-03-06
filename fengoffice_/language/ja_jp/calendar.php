@@ -161,7 +161,7 @@ return array(
 	'success export calendar' => '{0}個のイベントをエクスポートしました',
 	'calendar name desc' => 'カレンダーをエクスポートする名前',
 	'calendar will be exported in icalendar format' => 'カレンダーはiCalendar形式でエクスポートされます。',
-	'view date title' => 'Y年n月j日(l)',
+	'view date title' => '{0} (l)',
 
 	'copy this url in your calendar client software' => 'このカレンダーからイベントをインポートするには、このURLをカレンダーのクライアント・ソフトウェアにコピーしてください。',
 	'import events from third party software' => '第三者のソフトウェアからイベントをインポート',

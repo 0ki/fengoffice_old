@@ -283,6 +283,7 @@ class MailController extends ApplicationController {
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
 		
+		Hook::fire('send_to', array_var($_GET, 'ids'),array_var($_GET, 'me'));		
 
 		// Form is submited
 		if (is_array($mail_data)) {
@@ -1979,22 +1980,23 @@ class MailController extends ApplicationController {
 			try {
 				$user_changed = false;
 				$selected_user = array_var($_POST, 'users_select_box');					
-				if (!$is_admin){
-					$mail_account_user = Contacts::findById($mailAccount->getContactId());
+				if(!$is_admin){
+					$selected_user = $mailAccount->getContactId();
 				}
-				else{
-					$mail_account_user = Contacts::findById($selected_user);
-					$old_user_id = $mailAccount->getContactId();					
+				
+				$mail_account_user = Contacts::findById($selected_user);
+				if($mail_account_user instanceof Contact){
+					$old_user_id = $mailAccount->getContactId();
 					if ($old_user_id != $mail_account_user->getId())
 						$user_changed = true;
+					$mailAccount_data['user_id'] = $mail_account_user->getId();					
 				}
-				$mailAccount_data['user_id'] = $mail_account_user->getId();
 				$mailAccount_data['sync_ssl'] = array_var($mailAccount_data, 'sync_ssl') == "checked";
 				
 				DB::beginWork();
 				$logged_user_settings = MailAccountContacts::getByAccountAndContact($mailAccount, logged_user());
-				$logged_user_can_edit = $logged_user_settings instanceof MailAccountContact && $logged_user_settings->getCanEdit() || $mailAccount->getContactId() == logged_user()->getId();
-				if ($logged_user_can_edit) {
+				$logged_user_can_edit = $logged_user_settings instanceof MailAccountContact && $logged_user_settings->getCanEdit() || $mailAccount->getContactId() == logged_user()->getId() || logged_user()->isAdministrator();
+				if ($logged_user_can_edit || $is_admin) {
 					if (!array_var($mailAccount_data, 'del_mails_from_server', false)) $mailAccount_data['del_from_server'] = 0;
 					$mailAccount->setFromAttributes($mailAccount_data);
 					$mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
@@ -2007,13 +2009,14 @@ class MailController extends ApplicationController {
 					
 					
 					//in case there is a new owner of the email account
-					if ($user_changed){						
+					if ($user_changed && $mail_account_user instanceof Contact){						
 						$conditions = array("conditions" => "`created_by_id` = '$old_user_id' AND `account_id` = ".$mailAccount->getId()."");
 						$all_emails = MailContents::findAll($conditions);					
 						foreach ($all_emails as $e){							
 							$e->setCreatedById($mail_account_user->getId());
 							$e->save();
-						}						
+						}		
+						$mailAccount->setContactId($mail_account_user->getId());
 					}
 					
 					//If imap, save folders to check
@@ -2052,7 +2055,7 @@ class MailController extends ApplicationController {
 						$user_id = $account_user->getId();
 						$access = array_var($user_access, $user_id, 'none');
 						$account_user = MailAccountContacts::getByAccountAndContact($mailAccount, $account_user);
-						if ($access != 'none' || $user_id == $mail_account_user->getId()) {
+						if ($mail_account_user instanceof Contact && ($access != 'none' || $user_id == $mail_account_user->getId())) {
 							if (!$account_user instanceof MailAccountContact) {
 								$account_user = new MailAccountContact();
 								$account_user->setAccountId($mailAccount->getId());
@@ -2686,7 +2689,7 @@ class MailController extends ApplicationController {
 					switch ($type){
 						case "email":
 							$email = MailContents::findById($id);
-							if (isset($email) && $email->canDelete(logged_user())) {
+							if ($email instanceof MailContent && $email->canDelete(logged_user())) {
 								if ($email->getState() == 2) {
 									// we are deleting a draft email
 									$emails_in_conversation = array($email);

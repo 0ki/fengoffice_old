@@ -133,7 +133,7 @@
 
     'config option name infinite_paging' => 'Paging',
     'config option desc infinite_paging' => 'Enables or disables the paging. When enabled, a little performance can be noticed when loading lists.',
-  
+  	'owned by' => 'Owned by',
     // Passwords
     'config option name min_password_length' => 'Minimum password length',
     'config option desc min_password_length' => 'Minimum number of characters required for the password',
@@ -208,9 +208,7 @@
     'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
     'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
     'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
-
-    'user ws config option name can notify from quick add' => 'Automatically notify the assignee',
-    'user ws config option desc can notify from quick add' => 'This option enables notifying assigned users after a task is added or updated - unless it is you -',
+    
     'user ws config option name show_tasks_context_help' => 'Show context help for tasks',
     'user ws config option desc show_tasks_context_help' => 'If enabled, a context help box will be displayed on the tasks panel',
     'user ws config option name start_monday' => 'Start week on monday',
@@ -250,6 +248,10 @@
 
     'user config option name reminders_events' =>'Event Reminders',
     'user config option desc reminders_events' =>'Default value for event reminders',
+  		
+  	'user config option name updateOnLinkedObjects' => 'Update objects when linking others:',
+  	'user config option desc updateOnLinkedObjects' => 'If this option is enabled, whenever you link or unlink an object with another, both their Updated On fields will be modified.',
+  		 
   
   	'user config option name reminders_tasks' =>'Task Reminders',
     'user config option desc reminders_tasks' =>'Default value for task reminders',  
@@ -457,8 +459,9 @@
   	
   	//task options
   	
-  	'user config option name can notify from quick add' => 'Can notify from quick add',
-        'user config option name close timeslot open' => 'Close timeslot open',
+  	'user config option name can notify from quick add' => 'Notify the assignee and subscribers',
+    'user config option desc can notify from quick add' => 'This option enables notifying assigned users, and subscribed ones, after a task has been added or updated',  
+    'user config option name close timeslot open' => 'Close the timeslots that are still running when completing a task',  
   	'user config option name noOfTasks' => 'Number Of Tasks',
   	'user config option name task_display_limit' => 'Maximum number of tasks to display',
   	'user config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit',
@@ -658,8 +661,7 @@
 
     //task options
 
-    'user config option name can notify from quick add' => 'Can notify from quick add',
-    'user config option name close timeslot open' => 'Close timeslot open',
+      
     'user config option name noOfTasks' => 'Number Of Tasks',
     'user config option name task_display_limit' => 'Maximum number of tasks to display',
     'user config option desc task_display_limit' => 'For performance reasons, this number should not be too big. Use 0 for no limit',

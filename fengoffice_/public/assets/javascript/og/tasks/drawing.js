@@ -437,7 +437,24 @@ ogTasks.toggleSubtasks = function(taskId, groupId){
 	}
 }
 
-
+ogTasks.loadAllDescriptions = function(task_ids) {
+	ogTasks.all_descriptions_loaded = false;
+	og.openLink(og.getUrl('task', 'get_task_descriptions'), {
+		hideLoading: true,
+		scope: this,
+		method: 'POST',
+		post: {ids: task_ids.join(',')},
+		callback: function(success, data) {
+			for (i=0; i<ogTasks.Tasks.length; i++) {
+				var task = ogTasks.Tasks[i];
+				if (data.descriptions['t'+task.id]) {
+					task.description = data.descriptions['t'+task.id];
+				}
+			}
+			ogTasks.all_descriptions_loaded = true;
+		}
+	});
+}
 
 //************************************
 //*		Draw group

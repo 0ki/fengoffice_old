@@ -2,9 +2,9 @@
 	require_javascript("og/ReportingFunctions.js");
 	$genid = gen_id();
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
-	if (!array_var($report_data, 'timeslot_type')) {
+	//if (!array_var($report_data, 'timeslot_type')) {
 		$report_data['timeslot_type'] = 2;
-	}
+	//}
 	if (count($report_data) == 0) {
 		$report_data['show_billing'] = $has_billing;
 	}

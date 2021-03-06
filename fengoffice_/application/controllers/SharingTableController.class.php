@@ -12,10 +12,14 @@ class  SharingTableController extends ApplicationController {
 	 * @throws Exception
 	 */
 	function afterPermissionChanged($group, $permissions) {
-		//make_post_async(get_url('sharing_table', 'after_permission_changed'), array('group' => $group, 'permissions' => json_encode($permissions)));
-		// FIXME: ver de hacer un request asincronico a after_permission_changed() que funcione...
 		$this->after_permission_changed($group, $permissions);
-		return;
+		/*
+		// Make async request to save permissions
+		$url = get_url('sharing_table', 'after_permission_changed');
+		$parameters = array('group' => $group, 'permissions' => json_encode($permissions));
+		
+		$result = HttpRequest($url, 'POST', $parameters, '', true, true);
+		*/
 	}
 	
 	
@@ -73,7 +77,6 @@ class  SharingTableController extends ApplicationController {
 			$st_insert_sql =  "INSERT INTO ".TABLE_PREFIX."sharing_table(group_id, object_id) $st_new_rows ";
 			DB::execute($st_insert_sql);
 		}
-		
 		if ($die) die();
 	}
 }

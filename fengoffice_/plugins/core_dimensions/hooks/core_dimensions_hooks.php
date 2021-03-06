@@ -209,8 +209,10 @@ function core_dimensions_after_save_member_permissions($member, &$ignored) {
 	$permission_group_ids = array();
 	
 	$cmp_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id = '".$member->getId()."' AND permission_group_id IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type IN ('permission_groups','user_groups'))");
-	foreach ($cmp_rows as $row) {
-		$permission_group_ids[$row['permission_group_id']] = $row['permission_group_id'];
+	if (is_array($cmp_rows)) {
+		foreach ($cmp_rows as $row) {
+			$permission_group_ids[$row['permission_group_id']] = $row['permission_group_id'];
+		}
 	}
 	
 	$contacts = array();

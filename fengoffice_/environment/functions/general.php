@@ -707,7 +707,7 @@ function plugin_sort($a, $b) {
  * @param string $additional_headers
  * @param bool $followRedirects
  */
-function HttpRequest( $url, $method = 'GET', $data = NULL, $additional_headers = NULL, $followRedirects = true )
+function HttpRequest( $url, $method = 'GET', $data = NULL, $additional_headers = NULL, $followRedirects = true, $async = false )
 {
 	$original_data = $data;
 	$header = '';
@@ -750,30 +750,38 @@ function HttpRequest( $url, $method = 'GET', $data = NULL, $additional_headers =
 	}
 	fwrite($fp, $out);
 	
-	$result = ''; 
-	while(!feof($fp)) {
-		// receive the results of the request
-		$result .= fgets($fp, 128);
-	}
-    fclose($fp);
-    
-    // split the result header from the content
-    $result = explode("\r\n\r\n", $result, 2);
- 
-    $header = isset($result[0]) ? $result[0] : '';
-    $body = isset($result[1]) ? $result[1] : '';
-    
-    $headers = explode("\r\n", $header);
-    $status = $headers[0];
-	
-	if ($followRedirects) {
-		foreach ($headers as $hline) {
-			if (str_starts_with($hline, "Location:")) {
-				$url = trim(str_replace("Location:", "", $hline));
-				return HttpRequest($url, $method, $original_data, $additional_headers, $followRedirects);
+	if ($async) {
+		// don't read from the socket connection if the request is asynchronic
+		fclose($fp);
+		return;
+		
+	} else {
+		
+		$result = ''; 
+		while(!feof($fp)) {
+			// receive the results of the request
+			$result .= fgets($fp, 128);
+		}
+	    fclose($fp);
+	    
+	    // split the result header from the content
+	    $result = explode("\r\n\r\n", $result, 2);
+	 
+	    $header = isset($result[0]) ? $result[0] : '';
+	    $body = isset($result[1]) ? $result[1] : '';
+	    
+	    $headers = explode("\r\n", $header);
+	    $status = $headers[0];
+		
+		if ($followRedirects) {
+			foreach ($headers as $hline) {
+				if (str_starts_with($hline, "Location:")) {
+					$url = trim(str_replace("Location:", "", $hline));
+					return HttpRequest($url, $method, $original_data, $additional_headers, $followRedirects);
+				}
 			}
 		}
+		
 	}
-	
     return array('head' => trim($header), 'body' => trim($body), 'status' => $status);
 }

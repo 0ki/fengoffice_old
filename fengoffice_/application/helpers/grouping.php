@@ -1,31 +1,34 @@
 <?php
 
 
-	function getGroup($groups, $member_id) {
+	function getGroup($groups, $member_id, $group_type, $all_pgroup_ids) {
 		if (!$member_id) return null;
 
-		if (array_key_exists($member_id, $groups)) {
+		if (count($all_pgroup_ids) > 0) {
+			$pg_id = array_shift($all_pgroup_ids);
+			return getGroup($groups[$pg_id]['subgroups'], $member_id, $group_type, $all_pgroup_ids);
+		}
+		
+		if (array_key_exists($member_id, $groups) && $groups[$member_id]['group']['group_type'] == $group_type) {
 			return $groups[$member_id];
 		}
-		$res = null;
-		foreach ($groups as $g) {
-			$res = getGroup($g['subgroups'], $member_id);
-			if (!is_null($res)) break;
-		}
-		return $res;
+		
+		return null;
 	}
 	
-	function setGroup(&$groups, $member_id, $group) {
-		if (array_key_exists($member_id, $groups)) {
+	function setGroup(&$groups, $member_id, $group, $group_type, $all_pgroup_ids) {
+		
+		if (count($all_pgroup_ids) > 0) {
+			$pg_id = array_shift($all_pgroup_ids);
+			return setGroup($groups[$pg_id]['subgroups'], $member_id, $group, $group_type, $all_pgroup_ids);
+		}
+		
+		if (array_key_exists($member_id, $groups) && $groups[$member_id]['group']['group_type'] == $group_type) {
 			$groups[$member_id] = $group;
 			return true;
 		}
-		$res = false;
-		foreach ($groups as &$g) {
-			$res = setGroup($g['subgroups'], $member_id, $group);
-			if ($res) break;
-		}
-		return $res;
+		
+		return false;
 	}
 	
 	
@@ -58,7 +61,8 @@
 				foreach ($all_parents as $p_member) {
 					$all_p_keys .= ($all_p_keys == "" ? "" : "_") . $p_member->getId();
 					
-					$new_group = array('group' => array('id' => $p_member->getId(), 'name' => $p_member->getName(), 'pid' => $p_member->getParentMemberId(), 'type' => $p_member->getObjectTypeId(), 'obj' => $p_member->getObjectId()), 'subgroups' => array());
+					$new_group = array('group' => array('id' => $p_member->getId(), 'name' => $p_member->getName(), 'pid' => $p_member->getParentMemberId(), 
+						'type' => $p_member->getObjectTypeId(), 'obj' => $p_member->getObjectId(), 'group_type' => 'dimension'), 'subgroups' => array());
 					
 					$level = $p_member->getDepth();
 					$max_level = $level > $max_level ? $level : $max_level;
@@ -82,7 +86,7 @@
 				}
 			} else {
 				if (!isset($groups[1])) $groups[1] = array();
-				if (!isset($groups[1][0])) $groups[1][0] = array('group' => array('id' => 0, 'name' => lang('unclassified'), 'pid' => 0, 'type' => 0, 'obj' => 0), 'subgroups' => array());
+				if (!isset($groups[1][0])) $groups[1][0] = array('group' => array('id' => 0, 'name' => lang('unclassified'), 'pid' => 0, 'type' => 0, 'obj' => 0, 'group_type' => 'dimension'), 'subgroups' => array());
 				
 				if (!isset($grouped_objects[0])) $grouped_objects[0] = array();
 				$grouped_objects[0][] = $object;
@@ -137,12 +141,18 @@
 					
 					$member_id = strrpos($key, "_") === FALSE ? $key : substr($key, strrpos($key, "_")+1);
 					
-					$parent_group = getGroup($grouped['groups'], $member_id);
+					$all_pgroup_ids = (explode("_", $key));
+					array_pop($all_pgroup_ids);
+					
+					$group_type = $group_by[$gb_index-1]['type'];
+					
+					$parent_group = getGroup($grouped['groups'], $member_id, $group_type, $all_pgroup_ids);
 					
 					$grouped_tmp = makeGroups($gobjects, $group_by[$gb_index], $parent_group);
 					
-					if ($parent_group)
-						setGroup($grouped['groups'], $member_id, $parent_group);
+					if ($parent_group) {
+						setGroup($grouped['groups'], $member_id, $parent_group, $group_type, $all_pgroup_ids);
+					}
 					
 					if (count($grouped_tmp['grouped_objects']) > 0) {
 						foreach ($grouped_tmp['grouped_objects'] as $m => $objs) {
@@ -203,11 +213,16 @@
 			if (is_null($group)) {
 				/* @var $obj ContentDataObject */
 				if (in_array($column, $obj->manager()->getExternalColumns())) {
-					$name = Objects::findObject($obj->getColumnValue($column))->getObjectName();
+					$related_object = Objects::findObject($obj->getColumnValue($column));
+					if ($related_object instanceof ContentDataObject) {
+						$name = $related_object->getObjectName();
+					} else {
+						$name = lang('unclassified');
+					}
 				} else {
 					$name = lang($gb_val);
 				}
-				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0), 'subgroups' => array());
+				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0, 'group_type' => 'column'), 'subgroups' => array());
 				$groups[$gb_val] = $group;
 			}
 			
@@ -243,12 +258,17 @@
 			}
 			if (is_null($group)) {
 				if ($gb_val != 'unclassified' && in_array($column, $rel_obj->manager()->getExternalColumns())) {
-					$name = Objects::findObject($rel_obj->getColumnValue($column))->getObjectName();
+					$related_object = Objects::findObject($obj->getColumnValue($column));
+					if ($related_object instanceof ContentDataObject) {
+						$name = $related_object->getObjectName();
+					} else {
+						$name = lang('unclassified');
+					}
 				} else {
 					$name = lang("$column $gb_val");
 				}
 				
-				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0), 'subgroups' => array());
+				$group = array('group' => array('id' => $gb_val, 'name' => $name, 'pid' => 0, 'group_type' => 'assoc_obj'), 'subgroups' => array());
 				$groups[$gb_val] = $group;
 			}
 			

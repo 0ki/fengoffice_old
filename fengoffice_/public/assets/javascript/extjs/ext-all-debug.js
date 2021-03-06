@@ -2888,12 +2888,16 @@ El.prototype = {
 
     
     setWidth : function(width, animate){
-        width = this.adjustWidth(width);
-        if(!animate || !A){
-            this.dom.style.width = this.addUnits(width);
-        }else{
-            this.anim({width: {to: width}}, this.preanim(arguments, 1));
-        }
+    	try {
+	        width = this.adjustWidth(width);
+	        if(!animate || !A){
+	            this.dom.style.width = this.addUnits(width);
+	        }else{
+	            this.anim({width: {to: width}}, this.preanim(arguments, 1));
+	        }
+		} catch (ex) {
+			// IE throws an exception and breaks all execution only for setting a width, so with this empty try-catch the execution continues;
+		}
         return this;
     },
 

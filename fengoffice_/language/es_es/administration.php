@@ -113,8 +113,8 @@
 	'user ws config option name my tasks is default view' => 'La vista por defecto muestra sólo las tareas asignadas a mi',
 	'user ws config option desc my tasks is default view' => 'Si se selecciona no, se mostrarán todas las tareas del área de trabajo y sus subáreas',
 	'user ws config option name show tasks in progress widget' => 'Mostrar widget de tareas en progreso',
-	'user ws config option name can notify from quick add' => 'Notificar al asignado a la tarea',
-	'user ws config option desc can notify from quick add' => 'Esta opción permite notificar a los usuarios asignados a una tarea, luego de añadir o modificar una',
+	'user ws config option name can notify from quick add' => 'Notificar a la persona asignada a la tarea',
+	'user ws config option desc can notify from quick add' => 'Al crear o editar una tarea, si tiene esta opción habilitada, por defecto se le avisará al usuario asignado y los suscriptos acerca de la creación de la tarea o modificación de la misma',
 	'user ws config option name date_format' => 'Formato de fecha',
 	'user ws config option desc date_format' => 'Formato en que se muestran las fechas. Códigos: d = Día (2 dígitos, con ceros), D = Nombre del día (tres letras), j = Día, l = Nombre del día completo, m = Mes (con ceros), M = Nombre del mes (tres letras), n = Mes, F = Nombre del mes completo, Y = Año (4 dígitos), y = Año (2 dígitos). Debe recargar la página para aplicar los cambios.',
 	'user ws config option name descriptive_date_format' => 'Formato de fecha descriptivo',
@@ -243,6 +243,7 @@
 	'cron event desc send_notifications_through_cron' => 'Si este evento está habilitado notificaciones de correo serán enviadas a través del cron y no al ser generadas por Feng Office.',
 	'select object type' => 'Seleccione un tipo de objeto',
 	'select one' => 'Seleccione',
+	'owned by' => 'Asignado a',
 	'email type' => 'Correo electrónico',
 	'custom properties updated' => 'Propiedades personalizadas actualizadas',
 	'config option name show_feed_links' => 'Mostrar enlaces a subscripciones',
@@ -305,7 +306,7 @@
 	'user ws config option name mail_account_err_check_interval' => 'Intervalo de tiempo entre cada chequeo de errores en las cuentas de correo',
 	'user ws config option desc mail_account_err_check_interval' => 'Cantidad de segundos entre cada chequeo de errores en las cuentas de correo (0 para deshabilitar)',
 	'user ws config option name show_file_revisions_search' => 'Ver contenidos de los documentos al realizar búsquedas',
-	'user config option name close timeslot open' => 'Cerrar tiempos de trabajo',
+	'user config option name close timeslot open' => 'Finalizar los tiempos de trabajo en ejecución al completar una tarea',
 	'user config option name reminders_events' => 'Recordatorios de eventos',
 	'user config option desc reminders_events' => '',
 	'sync' => 'Sincronizar',
@@ -476,7 +477,10 @@
 
 	'user config option name reminders_tasks' =>'Recordatorio de tareas',
     'user config option desc reminders_tasks' =>'Valor por defecto para los recordatorios de tareas',
-	
+		
+	'user config option name updateOnLinkedObjects' => 'Actualiza los objetos que son vinculados:',
+	'user config option desc updateOnLinkedObjects' => 'Si esta opción esta habilitada, cuando se vincule o desvincule un objeto con otro, ambos actualizaran sus fechas de molificación.',
+		 	
 	'user config option name add_event_autoreminder' =>'Crear recordatorios automáticamente',
     'user config option desc add_event_autoreminder' =>'Habilite esta opción si desea crear recordatorios automáticamente si edita un evento que no tiene más recordatorios',
 	'uncheck all' => 'Desmarcar todos',

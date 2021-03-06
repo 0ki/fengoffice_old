@@ -24,17 +24,23 @@ class ProjectEvents extends BaseProjectEvents {
         function findByExtCalId($ext_cal_id) {
                 return ProjectEvents::findAll(array('conditions' => array('`ext_cal_id` = ?', $ext_cal_id)));
         }
-        
+        function findById($id) {
+        	return ProjectEvents::findOne(array('conditions' => array('`object_id` = ?', $id)));
+        }
         function findNoSync($contact_id) {
                 return ProjectEvents::findAll(array(
-                    'conditions' => array('`special_id` = "" AND trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND contact_id = '.$contact_id),
-                    'join' => array(
+                    'conditions' => array('special_id = "" AND trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND update_sync  =\''.EMPTY_DATETIME.'\' AND created_by_id = '.$contact_id)));
+        }
+        function findNoSyncInvitations($contact_id) {
+        	return ProjectEvents::findAll(array(
+        			'conditions' => array(' trashed_by_id = 0 AND created_by_id <> '.$contact_id.' AND trashed_on =\''.EMPTY_DATETIME.'\' AND synced = 0 AND contact_id = '.$contact_id),
+        			 'join' => array(
                             'table' => EventInvitations::instance()->getTableName(),
                             'jt_field' => 'event_id',
                             'e_field' => 'object_id',
-                    )));
+        			)));
+        
         }
-
 	/**
 	 * Returns all events for the given date, tag and considers the active project
 	 *
@@ -348,6 +354,7 @@ class ProjectEvents extends BaseProjectEvents {
         function import_google_calendar() {
                 $users_cal = ExternalCalendarUsers::findAll(); 
                 if(count($users_cal) > 0){
+                	$event_controller = new EventController();
                     foreach ($users_cal as $users){
                         $contact = Contacts::findById($users->getContactId());
                         $calendars = ExternalCalendars::findByExtCalUserId($users->getId());
@@ -413,8 +420,15 @@ class ProjectEvents extends BaseProjectEvents {
                                                 $event_name = $event->title->text;
                                             }
                                             $array_events_google[] = $special_id;
+                                            file_put_contents("log.txt", "\r\n"."el la id especial: ".$special_id."\r\n"."el evento: ".$event_name, FILE_APPEND);
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
-                                            if($new_event){
+                                            $is_invitation = EventInvitations::findBySpecialId($special_id);                                            
+                                           
+                                            if($new_event || $is_invitation){
+                                            	if($is_invitation){
+                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            		
+                                            	}
                                                 if($new_event->getUpdateSync() instanceof DateTimeValue && strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){                                                	
                                                     $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
                                                     $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
@@ -440,10 +454,14 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $new_event->setObjectName($event_name);
                                                     $new_event->setDescription($event->content->text);
                                                     $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
-                                                    $new_event->setExtCalId($calendar->getId());
+                                                    if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
                                                     $new_event->save();
+                                                    
+                                                    $event_controller->sync_calendar_extern($new_event);
                                                 }                                                
                                             }else{
+                                            	if(!$is_invitation){
+                                            		
                                                 $new_event = new ProjectEvent();
 
                                                 $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
@@ -526,22 +544,44 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $object_controller = new ObjectController();
                                                     $object_controller->add_to_members($new_event, $member_ids, $contact); 
                                                 }                                                
-                                            }           
+                                            }
+                                            }          
                                         }// foreach event list 
 
                                         //check the deleted events
-                                        $events_delete = ProjectEvents::findByExtCalId($calendar->getId());
+                                     	$events_delete = ProjectEvents::findAll(array(
+                                        		'conditions' => array('trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND ext_cal_id = '.$calendar->getId().' AND update_sync <> "1970-01-01 00:00:00"')));
                                         if($events_delete){
                                             foreach($events_delete as $event_delete){  
                                                 if(!in_array($event_delete->getSpecialID(), $array_events_google)){
-                                                    $event_delete->trash();
+                                                	$is_invitation = EventInvitations::findBySpecialId($special_id);
+                                                	if($is_invitation){
+                                                		
+                                                	$event_controller->delete_event_calendar_extern($event_delete);
+                                                	$event_delete->trash();
 
                                                     $event_delete->setSpecialID("");
                                                     $event_delete->setExtCalId(0);
                                                     $event_delete->save();    
-                                                }                                        
+                                                }   }                                     
                                             }  
-                                        }
+                                        } 
+                                        $inv_delete = EventInvitations::findSyncById($users->getContactId());
+                                        if($inv_delete){
+                                        	foreach($inv_delete as $invs_delete){
+                                        		if(!in_array($invs_delete->getSpecialID(), $array_events_google)){
+                                        			file_put_contents("log.txt", "\r\n"."el evento: ".print_r($array_events_google,1)."\r\n"."el usurario: ".$invs_delete->getSpecialID(), FILE_APPEND);
+                                        			$event_delete = ProjectEvents::findById($invs_delete->getEventId());
+                                        			$event_controller->delete_event_calendar_extern($event_delete);
+                                        			$event_delete->trash();
+                                        
+                                        			$event_delete->setSpecialID("");
+                                        			$event_delete->setExtCalId(0);
+                                        			$event_delete->save();
+                                        			//**
+                                        		}
+                                        	}
+                                        }                                       
                                     }else{
                                         $events = ProjectEvents::findByExtCalId($calendar->getId());
                                         if($calendar->delete()){
@@ -573,10 +613,12 @@ class ProjectEvents extends BaseProjectEvents {
                         if($users->getSync() == 1){
                             $contact = Contacts::findById($users->getContactId());
                             $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                    WHERE ec.calendar_feng = 1 AND ecu.contact_id = ".$contact->getId();
+                                    WHERE ec.ext_cal_user_id = ecu.id AND ec.calendar_feng = 1 AND ecu.contact_id = ".$contact->getId();
                             $calendar_feng = DB::executeOne($sql);
                             $events = ProjectEvents::findNoSync($contact->getId());
                             
+                         $events_inv = ProjectEvents::findNoSyncInvitations($contact->getId());
+
                             require_once 'Zend/Loader.php';
 
                             Zend_Loader::loadClass('Zend_Gdata');
@@ -587,7 +629,6 @@ class ProjectEvents extends BaseProjectEvents {
                             $user = $users->getAuthUser();
                             $pass = $users->getAuthPass();
                             $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
                             try
                             {
                                     $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);  
@@ -625,7 +666,50 @@ class ProjectEvents extends BaseProjectEvents {
                                             $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                             $event->setExtCalId($calendar_feng['id']);
                                             $event->save();
-                                        }                             
+                                       		$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                        }
+                                        foreach ($events_inv as $event){
+                                        	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
+                                        
+                                        	$newEvent = $gdataCal->newEventEntry();
+                                        	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                        	$newEvent->content = $gdataCal->newContent($event->getDescription());
+                                        
+                                        	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                        	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+                                        
+                                        	if($event->getTypeId() == 2){
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0];
+                                        		$when->endTime = $end_time[0];
+                                        		$newEvent->when = array($when);
+                                        	}else{
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                        		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                        		$newEvent->when = array($when);
+                                        	}
+                                        
+                                        	// insert event
+                                        	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+                                        
+                                        	$event_id = explode("/",$createdEvent->id->text);
+                                        	$special_id = end($event_id);
+                                        	 
+                                        	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                        	
+                                        	
+                                        }                        
                                     }else{
                                         $appCalUrl = '';
                                         $calFeed = $gdataCal->getCalendarListFeed();        
@@ -667,7 +751,7 @@ class ProjectEvents extends BaseProjectEvents {
                                         $calendar->save();
 
                                         foreach ($events as $event){
-                                            $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
+                                        	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
 
                                             $newEvent = $gdataCal->newEventEntry();
 
@@ -698,7 +782,48 @@ class ProjectEvents extends BaseProjectEvents {
                                             $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                             $event->setExtCalId($calendar->getId());
                                             $event->save();
+                                            $invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
+                                            if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
                                         } 
+                                        foreach ($events_inv as $event){
+                                        	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
+                                        
+                                        	$newEvent = $gdataCal->newEventEntry();
+                                        	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                        	$newEvent->content = $gdataCal->newContent($event->getDescription());
+                                        
+                                        	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                        	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+                                        
+                                        	if($event->getTypeId() == 2){
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0];
+                                        		$when->endTime = $end_time[0];
+                                        		$newEvent->when = array($when);
+                                        	}else{
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                        		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                        		$newEvent->when = array($when);
+                                        	}
+                                        
+                                        	// insert event
+                                        	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+                                        
+                                        	$event_id = explode("/",$createdEvent->id->text);
+                                        	$special_id = end($event_id);
+                                        	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                        	 
+                                        }
                                     }
                             }
                             catch(Exception $e)
@@ -742,6 +867,8 @@ class ProjectEvents extends BaseProjectEvents {
         function findByEventAndRelated($event_id,$original_event_id) {
                 return ProjectEvents::findAll(array('conditions' => array('(`original_event_id` = ? OR `object_id` = ?) AND `object_id` <> ?', $original_event_id,$original_event_id,$event_id)));
         }
+        
+        
 
 } // ProjectEvents
 

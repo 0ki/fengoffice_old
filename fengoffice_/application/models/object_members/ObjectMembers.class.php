@@ -22,7 +22,7 @@
   			}
   			
   			foreach ($members_array as $member){
-  				$parents = $member->getAllParentMembersInHierarchy();
+  				$parents = $member->getAllParentMembersInHierarchy(false, false);
   				$stop = false;
   				foreach ($parents as $parent){
   					if (!$stop){

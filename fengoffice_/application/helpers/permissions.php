@@ -887,7 +887,7 @@
 				}
 				
 				$perm->m = $member->getId();
-				$changed_pgs[] = $perm->pg;
+				$changed_pgs[$perm->pg] = $perm->pg;
 			}
 			
 			foreach ($changed_pgs as $pg_id) {

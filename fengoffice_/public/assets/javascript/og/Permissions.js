@@ -475,13 +475,13 @@ og.userPermissions.ogPermAllChecked = function(genid, value){
 	og.userPermissions.ogPermSetLevel(genid, level);
 }
 
-og.userPermissions.ogPermPrepareSendData = function(genid){
+og.userPermissions.ogPermPrepareSendData = function(genid, send_all){
 	var result = new Array();
 	var permissions = og.userPermissions.permissionInfo[genid].permissions;
 	for (i in permissions){
 		for (var j = 0; j < permissions[i].length; j++){
 			var p = permissions[i][j];
-			if (p && p.modified) {
+			if (p && (p.modified || send_all)) {
 				result[result.length] = {'pg':i, 'o':p.o, 'd':p.d, 'w':p.w, 'r':p.r};
 			}
 		}

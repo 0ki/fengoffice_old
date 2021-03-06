@@ -131,7 +131,7 @@
 	'success export calendar' => '{0} évènements ont été importés',
 	'calendar name desc' => 'Nom pour le calendrier à exporter',
 	'calendar will be exported in icalendar format' => 'Le calendrier sera exporté au format iCal',
-	'view date title' => 'l, d/m/Y',
+	'view date title' => 'l, {0}',
 	'event invitation response' => 'Réponse d\'invitation à un évènement',
 	'user will attend to event' => '{0} participera à cet évènement.',
 	'user will not attend to event' => '{0} ne participera pas à cet évènement.',

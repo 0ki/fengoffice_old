@@ -212,7 +212,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 		$members = active_context_members(false); // Context Members Ids
 		$options = explode(",",user_config_option("filters_dashboard",null,null,true));
 
-		$extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' ";
+		$extra_conditions = "action <> 'login' AND action <> 'logout' AND action <> 'subscribe' AND created_by_id > '0'";
 		if($options[1] == 0){//do not show timeslots
 			$extra_conditions .= "AND action <> 'open' AND action <> 'close' AND ((action <> 'add' OR action <> 'edit' OR action <> 'delete') AND object_name NOT LIKE 'Time%')";
 		}

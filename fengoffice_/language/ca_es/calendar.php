@@ -138,7 +138,7 @@
 	'success export calendar' => 'S\'han exportat {0} esdeveniments.',
 	'calendar name desc' => 'Nom del calendari a exportar',
 	'calendar will be exported in icalendar format' => 'El calendari serà exportat en format iCalendar.',
-	'view date title' => 'l, d/m/Y',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Copieu aquesta URL a la vostra aplicació de calendari, per tal d\'importar els esdeveniments d\'aquest calendari',
 	'import events from third party software' => 'Importa esdeveniments des d\'altres aplicacions ',
 	'subws' => 'Sub Et.',

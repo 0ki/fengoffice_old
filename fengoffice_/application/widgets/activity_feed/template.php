@@ -9,7 +9,7 @@ if($current_member){
 <div class="widget-activity widget dashTableActivity">
 
 	<div class="widget-header dashHeader">
-            <div style="float: left; width: 90%;" onclick="og.dashExpand('<?php echo $genid?>');"><?php echo (isset($widget_title)) ? $widget_title : lang("activity");?></div>                
+            <div style="overflow:hidden; float: left; width: 90%;" onclick="og.dashExpand('<?php echo $genid?>');"><?php echo (isset($widget_title)) ? $widget_title : lang("activity");?></div>                
 			<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander" onclick="og.dashExpand('<?php echo $genid?>');"></div>
             <div style="z-index:1; width:16px; float: right; margin-right: 5px; margin-top: 1px;" id="<?php echo $genid; ?>configFilters" onclick="og.quickForm({ type: 'configFilter', genid: '<?php echo $genid; ?>', members:'<?php echo $member ?>'});">
             	<img src="public/assets/themes/default/images/16x16/administration.png"/>
@@ -24,7 +24,7 @@ if($current_member){
             foreach ($acts['data'] as $k => $activity):
             $c++;
             $user = $acts['created_by'][$k];
-            if ($activity instanceof Contact && $activity->isUser() || $member_deleted) {
+            if ($activity instanceof Contact && $activity->isUser() || (isset($member_deleted) && $member_deleted)) {
             	$crumbOptions = "";
             } else {
             	$crumbOptions = json_encode($activity->getMembersToDisplayPath());

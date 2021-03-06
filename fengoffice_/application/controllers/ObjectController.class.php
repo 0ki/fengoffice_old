@@ -304,10 +304,6 @@ class ObjectController extends ApplicationController {
 								$val = $str_val;
 							}
 							if($val != ''){
-								if(strpos($val, ',')) {
-									$val = str_replace(',', '|', $val);
-								}
-								
 								$custom_property_value = new CustomPropertyValue();
 								$custom_property_value->setObjectId($object->getId());
 								$custom_property_value->setCustomPropertyId($id);
@@ -500,6 +496,10 @@ class ObjectController extends ApplicationController {
 				} // if
 				try {
 					$object->linkObject($rel_object);
+					if (user_config_option('updateOnLinkedObjects')){
+						$object->save();
+						$rel_object->save();
+					}
 					if ($object instanceof ContentDataObject) {
 						ApplicationLogs::createLog($object, ApplicationLogs::ACTION_LINK, false, null, true, $objid);
 					}
@@ -634,7 +634,10 @@ class ObjectController extends ApplicationController {
 				} // if
 				
 				$linked_object->delete();
-	
+				if (user_config_option('updateOnLinkedObjects')){
+					$object1->save();
+					$object2->save();
+				}
 				if ($object1 instanceof ContentDataObject)
 					ApplicationLogs::createLog($object1, ApplicationLogs::ACTION_UNLINK, false, null, true, $object2->getId());
 				if ($object2 instanceof ContentDataObject)
@@ -1013,7 +1016,7 @@ class ObjectController extends ApplicationController {
 			$extra_conditions[] = "name LIKE '%$name_filter%'" ;
 		}
 		if ($id_no_select != "undefined") {
-			$extra_conditions[] = "id <> $id_no_select" ;
+			$extra_conditions[] = "id <> '$id_no_select'" ;
 		}
 		if($object_ids_filter != ""){
 			$extra_conditions[] = "id in ($object_ids_filter)";

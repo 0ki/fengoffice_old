@@ -166,31 +166,28 @@ class AsadoUpgradeScript extends ScriptUpgraderScript {
 				} else {
 					PublicFiles::setRepositoryUrl(with_slash(ROOT_URL) . 'public/files');
 				}
-				
-				$members = Members::findAll(array("conditions" => "`depth` > 1"));
-				$sql = "";
-				$first_row = true;
+
+
+				$member_parents = array();
+				$members = Members::findAll();
 				foreach ($members as $member) {
-					$parents = $member->getAllParentMembersInHierarchy(false, false);
-					$obj_members = ObjectMembers::findAll(array("conditions" => "`is_optimization` = 0 AND `member_id` = ".$member->getId()));
-					$sql = "";
-					$first_row = true;
-					foreach ($obj_members as $om) {
-						foreach ($parents as $parent) {
-							if ($sql == "") $sql = "INSERT INTO ".$t_prefix."object_members (`object_id`, `member_id`, `is_optimization`) VALUES ";
-							$sql .= ($first_row ? "" : ", ") . "(".$om->getObjectId().", ".$parent->getId().", 1)";
-							$first_row = false;
+					$member_parents[$member->getId()] = $member->getAllParentMembersInHierarchy(false, false);
+				}
+
+				$object_members = ObjectMembers::findAll(array('conditions' => 'is_optimization=0 and not exists (SELECT x.object_id FROM fo_object_members x where x.object_id=fo_object_members.object_id and x.is_optimization=1)'));
+				foreach ($object_members as $om) {
+					$parents = $member_parents[$om->getMemberId()];
+					if (count($parents) > 0) {
+						$sql_values = "";
+						foreach ($parents as $p) {
+							$sql_values .= ($sql_values == "" ? "" : ",") . "(".$om->getObjectId().",".$p->getId().",1)";
 						}
-					}
-					if ($sql != "") {
-						$sql .= " ON DUPLICATE KEY UPDATE `object_id`=`object_id`";
-						DB::execute($sql);
-						$sql = "";
-					}
+						$sql = "INSERT INTO fo_object_members (object_id, member_id, is_optimization) VALUES $sql_values ON DUPLICATE KEY UPDATE is_optimization=1;";
+                		DB::execute($sql);
+        			}
 				}
 				$this->printMessage("Finished generating Object Members");
 				
-				$members = Members::findAll(array("conditions" => "`depth` > 1", "order" => "depth ASC"));
 				foreach ($members as $m) {
 					if ($m->getParentMember() instanceof Member && $m->getDimensionId() != $m->getParentMember()->getDimensionId()) {
 						$m->setDimensionId($m->getParentMember()->getDimensionId());

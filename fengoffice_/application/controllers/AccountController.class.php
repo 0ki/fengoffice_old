@@ -277,6 +277,9 @@ class AccountController extends ApplicationController {
 			
 			tpl_assign('module_permissions_info', $module_permissions_info);
 			tpl_assign('all_modules_info', $all_modules_info);
+			if (!$system_permissions instanceof SystemPermission) {
+				$system_permissions = new SystemPermission();				
+			}
 			tpl_assign('system_permissions', $system_permissions);
 			
 			tpl_assign('permission_parameters', $parameters);

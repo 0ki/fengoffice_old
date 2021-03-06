@@ -1206,3 +1206,11 @@ update fo_objects set updated_by_id=0 where updated_by_id is null;
 update fo_comments set fo_comments.rel_object_id = (select o.id from fo_objects o inner join fo_contacts co on co.object_id=o.id where o.object_type_id=16 and co.is_company=1 and o.f1_id=(
   select ogc.rel_object_id FROM og_comments ogc where ogc.rel_object_manager='Companies' AND ogc.`text`=fo_comments.`text` limit 1
 )) where fo_comments.rel_object_id=0;
+
+-- fix null contact fields
+update fo_contacts set company_id=0 where company_id is null;
+update fo_contacts set display_name='' where display_name is null;
+update fo_contacts set avatar_file='' where avatar_file is null;
+update fo_contacts set last_login='0000-00-00 00:00:00' where last_login is null;
+update fo_contacts set last_visit='0000-00-00 00:00:00' where last_visit is null;
+update fo_contacts set personal_member_id=0 where personal_member_id is null;

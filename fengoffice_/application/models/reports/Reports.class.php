@@ -131,6 +131,10 @@ class Reports extends BaseReports {
 					}
 					if ($value == '' && $condField->getIsParametrizable()) $skip_condition = true;
 					if (!$skip_condition) {
+						$field_name = $condField->getFieldName();
+						if (in_array($condField->getFieldName(), Objects::getColumns())) {
+							$field_name = 'o`.`'.$condField->getFieldName();
+						}
 						if($condField->getCondition() == 'like' || $condField->getCondition() == 'not like'){
 							$value = '%'.$value.'%';
 						}
@@ -140,13 +144,13 @@ class Reports extends BaseReports {
 						}
 						if($condField->getCondition() != '%'){
 							if ($col_type == DATA_TYPE_INTEGER || $col_type == DATA_TYPE_FLOAT) {
-								$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
+								$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
 							} else {
 								if ($condField->getCondition()=='=' || $condField->getCondition()=='<=' || $condField->getCondition()=='>='){
 									if ($col_type == DATA_TYPE_DATETIME || $col_type == DATA_TYPE_DATE) {
-										$equal = 'datediff('.DB::escape($value).', `'.$condField->getFieldName().'`)=0';
+										$equal = 'datediff('.DB::escape($value).', `'.$field_name.'`)=0';
 									} else {
-										$equal = '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
+										$equal = '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
 									}
 									switch($condField->getCondition()){
 										case '=':
@@ -154,15 +158,15 @@ class Reports extends BaseReports {
 											break;
 										case '<=':
 										case '>=':
-											$allConditions .= '(`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
+											$allConditions .= '(`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value).' OR '.$equal.') ';
 											break;																
 									}										
 								} else {
-									$allConditions .= '`'.$condField->getFieldName().'` '.$condField->getCondition().' '.DB::escape($value);
+									$allConditions .= '`'.$field_name.'` '.$condField->getCondition().' '.DB::escape($value);
 								}									
 							}
 						} else {
-							$allConditions .= '`'.$condField->getFieldName().'` like '.DB::escape("%$value");
+							$allConditions .= '`'.$field_name.'` like '.DB::escape("%$value");
 						}
 					} else $allConditions .= ' true';
 					
@@ -243,8 +247,10 @@ class Reports extends BaseReports {
 			if ($ot->getName() == 'task' && !SystemPermissions::userHasSystemPermission(logged_user(), 'can_see_assigned_to_other_tasks')) {
 				$allConditions .= " AND assigned_to_contact_id = ".logged_user()->getId();
 			}
-			
 			if ($managerInstance) {
+				if ($order_by_col == "order"){
+					$order_by_col = "`$order_by_col`";
+				};
 				$result = $managerInstance->listing(array(
 					"select_columns" => $select_columns,
 					"order" => "$order_by_col",
@@ -281,10 +287,21 @@ class Reports extends BaseReports {
 							if (is_null($column_name)) $column_name = lang('field Objects '.$field);
 							$results['columns'][$field] = $column_name;
 							$results['db_columns'][$column_name] = $field;
+						}else{
+								if($ot->getHandlerClass() == 'Contacts'){
+									if($managerInstance instanceof Contacts){										
+										if ($field = "email_address"){
+											$results['columns'][$field] = lang($field);	
+											$results['db_columns'][$field] = $field;
+										}
+									}
+								}
+							
 						}
 					}
+					
 				} else {
-					$results['columns'][$column->getCustomPropertyId()] = $column->getCustomPropertyId();
+					$results['columns'][$column->getCustomPropertyId()] = $column->getCustomPropertyId();					
 				}
 			}
 			
@@ -346,7 +363,17 @@ class Reports extends BaseReports {
 								}
 							}	
 							$row_values[$field] = $value;
-						}
+							
+							if($ot->getHandlerClass() == 'Contacts'){
+								if($managerInstance instanceof Contacts){
+									$conta = Contacts::findOne(array("conditions" => "object_id = ".$object->getId()));
+									if ($field = "email_address"){									
+										$row_values[$field] = $conta->getEmailAddress();
+									}
+									
+								}
+							}
+						}						
 					} else {
 						
 						$colCp = $column->getCustomPropertyId();
@@ -363,8 +390,9 @@ class Reports extends BaseReports {
 					}
 				}
 				
-
+				
 				Hook::fire("report_row", $object, $row_values);
+				
 				$report_rows[] = $row_values;
 			}
 			
@@ -378,7 +406,7 @@ class Reports extends BaseReports {
 			}
 			$results['rows'] = $report_rows;
 		}
-
+		
 		return $results;
 	} //  executeReport
 	

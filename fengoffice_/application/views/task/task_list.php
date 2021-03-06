@@ -290,7 +290,7 @@ if ($time_estimate >= 0 || $total_minutes >=0){?>
 		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
 <?php } ?>
 
-<?php if ($total_minutes > 0 && can_manage_time(logged_user())) {?>
+<?php if ($total_minutes > 0) {?>
 	<tr><td><div style="font-weight:bold"><?php echo lang('total time worked'). ':&nbsp;' ?></div></td><td>
 		<span style="font-size:120%;font-weight:bold;<?php echo ($time_estimate > 0 && $total_minutes > $time_estimate) ? 'color:#FF0000':'' ?>">
 			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>

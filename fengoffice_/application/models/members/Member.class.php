@@ -388,10 +388,12 @@ class Member extends BaseMember {
 				
 		$rows = DB::executeAll($sql);
 		$res = array();
-		foreach ($rows as $row) {
-			$res[$row['dimension_name']][] = $row ;		
+		if (is_array($rows)) {
+			foreach ($rows as $row) {
+				$res[$row['dimension_name']][] = $row;
+			}
 		}
-		return $res  ;
+		return $res;
 	}
 	
 	/**

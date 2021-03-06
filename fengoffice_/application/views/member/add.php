@@ -36,7 +36,7 @@
 	method="post" enctype="multipart/form-data"  
 	action="<?php echo $member == null || $member->isNew() ? get_url('member', 'add') : get_url('member', 'edit', array("id" => $member->getId())) ?>"
 <?php if ( $current_dimension instanceof Dimension && $current_dimension->getDefinesPermissions()):?>
-	onsubmit="if (og.userPermissions) og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>'); return true"
+	onsubmit="if (og.userPermissions) og.userPermissions.ogPermPrepareSendData('<?php echo $genid ?>', <?php echo $member->isNew() ? 'true' : 'false';?>); return true"
 <?php endif;?>
 >
 

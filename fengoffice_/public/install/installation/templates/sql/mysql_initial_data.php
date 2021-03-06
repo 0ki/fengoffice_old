@@ -138,6 +138,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 	('listing preferences', 0, 0, 10);
 	
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+ ('task panel','tasksDateStart','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'date from to filter out task list'),
+ ('task panel','tasksDateEnd','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'the date up to filter the list of tasks'),
  ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
  ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -266,8 +268,9 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'access_member_after_add_remember', '0', 'BoolConfigHandler', '0', '1301', NULL),
  ('general', 'sendEmailNotification', '1', 'BoolConfigHandler', '1', '0', 'Send email notification to new user'),
  ('general', 'viewContactsChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view contacts checked'),
- ('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '0', '0', 'in people panel is view users checked'),
+ ('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
+ ('general', 'updateOnLinkedObjects', '1', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
  ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL);
  
 

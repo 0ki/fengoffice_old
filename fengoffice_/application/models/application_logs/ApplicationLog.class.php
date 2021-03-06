@@ -296,7 +296,7 @@ class ApplicationLog extends BaseApplicationLog {
         
 	function getActivityDataView($user,$object,$made_several_changes = false) {
 		if (!$user) return false;
-		
+		$userName = "<b>".$user->getObjectName()."</b>";
 		$icon_class = "";
 		if ($object instanceof ProjectFile) {
 			$path = explode("-", str_replace(".", "_", str_replace("/", "-", $object->getTypeString())));
@@ -323,7 +323,7 @@ class ApplicationLog extends BaseApplicationLog {
 			}
 		} else {
 			$object_link = clean($this->getObjectName()).'&nbsp;'.lang('object is deleted');
-			return lang('activity ' . $this->getAction(), "", $user->getObjectName(), $object_link);
+			return lang('activity ' . $this->getAction(), "", $userName , $object_link);
 		}
 		if($made_several_changes){
 			$this->setAction(ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES);
@@ -332,7 +332,7 @@ class ApplicationLog extends BaseApplicationLog {
             case ApplicationLogs::ACTION_MADE_SEVERAL_CHANGES :
             	$object_history = '<a style="font-weight:bold" href="' . $object->getViewHistoryUrl() . '">&nbsp;'.
 				'<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-history"/>'.lang('view history').'</a>';
-            	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $user->getObjectName()," -" .$object_history);
+            	return lang('activity ' . $this->getAction(), lang('the ' .$type. ' activity', $object_link), $userName," -" .$object_history);
 			case ApplicationLogs::ACTION_EDIT :
 			case ApplicationLogs::ACTION_ADD :
 			case ApplicationLogs::ACTION_DELETE :
@@ -347,7 +347,7 @@ class ApplicationLog extends BaseApplicationLog {
 			case ApplicationLogs::ACTION_CHECKIN :
 			case ApplicationLogs::ACTION_CHECKOUT :
 				if ($object instanceof ContentDataObject) {
-					return lang('activity ' . $this->getAction(), lang('the '.$type," "), $user->getObjectName(), $object_link);
+					return lang('activity ' . $this->getAction(), lang('the '.$type," "), $userName, $object_link);
 				}
 			case ApplicationLogs::ACTION_SUBSCRIBE :
 			case ApplicationLogs::ACTION_UNSUBSCRIBE :
@@ -369,7 +369,7 @@ class ApplicationLog extends BaseApplicationLog {
 					$users_text = lang('x users', count($user_ids), "");
 				}
 				if ($object instanceof ContentDataObject) {
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $users_text);
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $userName , $object_link, $users_text);
 				}
 			case ApplicationLogs::ACTION_COMMENT :
 				if ($object instanceof ContentDataObject) {
@@ -379,7 +379,9 @@ class ApplicationLog extends BaseApplicationLog {
 						$commented_object = $rel_object->getRelObject();
 					}
 					$obj_type_name = $commented_object instanceof ContentDataObject ? $commented_object->getObjectTypeName() : $rel_object->getObjectTypeName();
-					return lang('activity ' . $this->getAction(), lang('the '.$obj_type_name," "), $user->getObjectName(), $object_link, $this->getLogData());
+					$comentText = $this->getLogData();
+					return lang('activity ' . $this->getAction(), lang('the '.$obj_type_name," "), $userName, $object_link, $comentText);
+					
 				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :
@@ -399,11 +401,11 @@ class ApplicationLog extends BaseApplicationLog {
 					$linked_object_link = '<a style="font-weight:bold" href="' . $linked_object->getObjectUrl() . '">&nbsp;<span style="padding: 1px 0 3px 18px;" class="db-ico ico-unknown ico-'.$linked_object->getObjectTypeName() . $icon_class . '"/>'.clean($linked_object->getObjectName()).'</a>';
 				}
 				if ($object instanceof ContentDataObject) {
-					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $user->getObjectName(), $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
+					return lang('activity ' . $this->getAction(), lang('the '.$object->getObjectTypeName()," "), $userName, $object_link, $linked_object instanceof ApplicationDataObject ? lang('the '.$linked_object->getObjectTypeName()) : '', $linked_object_link);
 				}
 			case ApplicationLogs::ACTION_LOGIN :
 			case ApplicationLogs::ACTION_LOGOUT :
-				return lang('activity ' . $this->getAction(), $user->getObjectName());
+				return lang('activity ' . $this->getAction(), $userName);
 			case ApplicationLogs::ACTION_COPY :				
 				$to_str = "";
 				$to_str_member = "";
@@ -423,11 +425,11 @@ class ApplicationLog extends BaseApplicationLog {
 				}
 				if($object instanceof ContentDataObject){
 					if ($to_str != "") {
-						return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $user->getObjectName(), $object_link, $to_str);
+						return lang('activity ' . $this->getAction() . ' to', lang('the '.$object->getObjectTypeName()), $userName, $object_link, $to_str);
 					} 
 				}else{
 					if ($to_str != "") {
-						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $user->getObjectName(), $object_link, $to_str);
+						return lang('activity ' . $this->getAction() . ' to', lang('the '.$this->getRelObjectManager()), $userName, $object_link, $to_str);
 					}
 				}
 			default: return false;

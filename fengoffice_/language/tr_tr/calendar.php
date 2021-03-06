@@ -138,7 +138,7 @@
 	'success export calendar' => '{0} etkinlik dışa aktarıldı',
 	'calendar name desc' => 'Takvim dışa aktarılırken verilecek isim',
 	'calendar will be exported in icalendar format' => 'Takvim iCalendar formatında dışa aktarılacaktır.',
-	'view date title' => 'l, d/m/Y',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Bu takvimden etkinlikleri içe aktarmak için bu url\'yi kopyalayın',
 	'import events from third party software' => 'Üçüncü parti yazılımdan etkinlikleri içe aktar',
 	'subws' => 'Alt Ç.A.',

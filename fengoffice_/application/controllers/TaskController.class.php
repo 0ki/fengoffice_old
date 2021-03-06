@@ -471,6 +471,38 @@ class TaskController extends ApplicationController {
 			} // try
 		} // if
 	}
+	
+	
+	function get_task_data() {
+		ajx_current("empty");
+		$id = get_id();
+		$task = ProjectTasks::findById($id);
+		if ($task instanceof ProjectTask && $task->canView(logged_user())) {
+			$data = array('id' => $id);
+			if (array_var($_REQUEST, 'desc')) {
+				$desc = $task->getText();
+				$data['desc'] = $desc;
+			}
+		}
+		ajx_extra_data($data);
+	}
+	
+	function get_task_descriptions() {
+		ajx_current("empty");
+		$ids = explode(',', $_REQUEST['ids']);
+		foreach ($ids as $k => &$id) {
+			if (!is_numeric($id)) $id=0;
+		}
+		
+		$data = array();
+		if (is_array($ids) && count($ids) > 0) {
+			$rows = DB::executeAll("SELECT object_id, `text` FROM ".TABLE_PREFIX."project_tasks WHERE object_id IN (".implode(',',$ids).")");
+			foreach ($rows as $row) {
+				$data['t'.$row['object_id']] = $row['text'];
+			}
+		}
+		ajx_extra_data(array('descriptions' => $data));
+	}
 
 	function multi_task_action(){
 		ajx_current("empty");
@@ -485,6 +517,7 @@ class TaskController extends ApplicationController {
 
 		$count_tasks = ProjectTasks::count('object_id in (' . implode(',',$ids) . ')');
 		$tasksToReturn = array();
+		$subt_info = array();
 		$showSuccessMessage = true;
 		try{
 			DB::beginWork();
@@ -523,7 +556,9 @@ class TaskController extends ApplicationController {
 									$reload_view = true;
 								}
 							}
-
+							foreach($task->getAllSubTasks() as $sub){
+								$tasksToReturn[]=$sub->getArrayInfo();
+							}
 							$tasksToReturn[] = $task->getArrayInfo();
 						}
 						break;
@@ -609,8 +644,11 @@ class TaskController extends ApplicationController {
 			} else if ($showSuccessMessage) {
 				flash_success(lang('tasks updated'));
 			}
-
-			ajx_extra_data(array('tasks' => $tasksToReturn));
+			if(count($subt_info) > 0){
+				ajx_extra_data(array("tasks" => $tasksToReturn,'subtasks' => $subt_info));
+			}else{
+				ajx_extra_data(array('tasks' => $tasksToReturn));
+			}
 		} catch(Exception $e){
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -632,6 +670,54 @@ class TaskController extends ApplicationController {
 		}
 
 		$previous_filter = user_config_option('task panel filter', 'no_filter');
+
+		$filter_from_date =getDateValue(array_var($_GET, 'from_date'));
+		if ($filter_from_date instanceof DateTimeValue) {
+			$copFromDate = $filter_from_date;
+			$filter_from_date = $filter_from_date->toMySQL();
+		}
+		
+		$tasks_from_date = '';
+		
+		$filter_to_date =getDateValue(array_var($_GET, 'to_date'));		
+		if ($filter_to_date instanceof DateTimeValue) {
+			$copToDate = $filter_to_date;
+			$filter_to_date->setHour(23);
+			$filter_to_date->setMinute(59);
+			$filter_to_date->setSecond(59);
+			$filter_to_date = $filter_to_date->toMySQL();
+		}		
+		$tasks_to_date = '';
+		if (user_config_option('tasksDateStart') != $filter_from_date){
+			if($filter_from_date != '0000-00-00 00:00:00' || array_var($_GET, 'resetDateStart')){
+				set_user_config_option('tasksDateStart', $copFromDate , logged_user()->getId());
+			}else{
+				$filter_from_date = user_config_option('tasksDateStart');
+			}
+		}
+		
+		if (user_config_option('tasksDateEnd') != $filter_to_date) {
+			if( $filter_to_date != '0000-00-00 00:00:00'|| array_var($_GET, 'resetDateEnd')){
+				set_user_config_option('tasksDateEnd', $copToDate , logged_user()->getId());
+			}else{
+				$filter_to_date = user_config_option('tasksDateEnd');
+			}
+		}		
+		if ((($filter_from_date != '0000-00-00 00:00:00')) || (($filter_to_date != '0000-00-00 00:00:00'))){
+			if((($filter_from_date != '0000-00-00 00:00:00')) && (($filter_to_date != '0000-00-00 00:00:00'))){
+				
+				$tasks_from_date = " AND ((`start_date` BETWEEN '" . $filter_from_date ."' AND '".$filter_to_date."') AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`due_date` BETWEEN '" . $filter_from_date ."' AND '".$filter_to_date."') AND `due_date` != ". DB::escape(EMPTY_DATETIME) .")";
+			}elseif (($filter_from_date != '0000-00-00 00:00:00')){
+				
+			$tasks_from_date = " AND (`start_date` > '" . $filter_from_date ."' OR `due_date` > '" . $filter_from_date."') ";
+			}else{
+			
+				$tasks_from_date = "AND ((`start_date` < '".$filter_to_date."' AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`due_date` < '".$filter_to_date."' AND `due_date` != ".DB::escape(EMPTY_DATETIME)."))";
+		
+			}
+		}else{
+				$tasks_from_date = "";
+		}
 		$filter = array_var($_GET, 'filter');
 		if (is_null($filter) || $filter == '') {
 			$filter = $previous_filter;
@@ -763,12 +849,12 @@ class TaskController extends ApplicationController {
 			$task_assignment_conditions = " AND assigned_to_contact_id = ".logged_user()->getId();
 		}
 		
-		$conditions = "AND $template_condition $task_filter_condition $task_status_condition $task_assignment_conditions";                
+		$conditions = "AND $template_condition $task_filter_condition $task_status_condition $task_assignment_conditions $tasks_from_date";
 		//Now get the tasks
 		$tasks = ProjectTasks::instance()->listing(array(
 			"extra_conditions" => $conditions,
 			"start" => 0,
-			"limit" => user_config_option('task_display_limit', 501),
+			"limit" => user_config_option('task_display_limit', 999),
 			"count_results" => false,
 			"raw_data" => true,
 		))->objects;
@@ -862,13 +948,25 @@ class TaskController extends ApplicationController {
 			tpl_assign('users', $users);
 			tpl_assign('allUsers', $allUsers);
 			tpl_assign('companies', $companies);
-
+			if (strtotime(user_config_option('tasksDateStart'))){//this return null if date is 0000-00-00 00:00:00
+				$dateStart = new DateTime('@'.strtotime(user_config_option('tasksDateStart')));
+				$dateStart = $dateStart->format(user_config_option('date_format'));
+			}else{
+				$dateStart = '';
+			}
+			if (strtotime(user_config_option('tasksDateEnd'))){//this return null if date is 0000-00-00 00:00:00
+				$dateEnd = new DateTime('@'.strtotime(user_config_option('tasksDateEnd')));
+				$dateEnd = $dateEnd->format(user_config_option('date_format'));
+			}else{
+				$dateEnd = '';
+				}
 			$userPref = array();
 			$userPref = array(
 				'filterValue' => isset($filter_value) ? $filter_value : '',
 				'filter' => $filter,
+				'dateStart' => $dateStart,
+				'dateEnd' => $dateEnd,
 				'status' => $status,
-				'showWorkspaces' => user_config_option('tasksShowWorkspaces',1),
 				'showTime' => user_config_option('tasksShowTime'),
 				'showDates' => user_config_option('tasksShowDates'),
 				'showTags' => user_config_option('tasksShowTags',0),
@@ -1561,9 +1659,10 @@ class TaskController extends ApplicationController {
 						$object_controller = new ObjectController();
 						$object_controller->add_reminders($task); //adding the new reminders, if any						
 						$object_controller->update_reminders($task, $old_reminders); //updating the old ones	
-					}else if ( (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedTo()->getId()) //if the user is going to set up reminders for tasks assigned to its colleagues
-					 		  || (user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedTo()->getId()) //if the user is going to set up reminders for his own tasks
-					 		  || $task->getAssignedTo() == null ){ //if there is no asignee, but it still has subscribers
+					}else if (logged_user() instanceof Contact 
+							  && (user_config_option("add_task_autoreminder") && logged_user()->getId() != $task->getAssignedToContactId() //if the user is going to set up reminders for tasks assigned to its colleagues
+					 		  || user_config_option("add_self_task_autoreminder") && logged_user()->getId() == $task->getAssignedToContactId() //if the user is going to set up reminders for his own tasks
+					 		  || $task->getAssignedTo() == null )){ //if there is no asignee, but it still has subscribers
 						$reminder = new ObjectReminder();
 						$def = explode(",",user_config_option("reminders_tasks"));          			
 						$minutes = $def[2] * $def[1];

@@ -126,8 +126,8 @@ function friendly_date(DateTimeValue $date, $timezone = null) {
 	}
 	
 	//TODO: 7 days before: "Dom at 13:43", older: "Oct, 06 at 15:20"
-	
-	if ($date->isToday()) {
+	$dateControl = new DateTimeValue($date->getTimestamp()+$timezone*3600);	
+	if ($dateControl->isToday()) {
 		$now = DateTimeValueLib::now();
 		$diff = DateTimeValueLib::get_time_difference($date->getTimestamp(), $now->getTimestamp());
 		if ($diff['hours'] == 0) {
@@ -140,17 +140,17 @@ function friendly_date(DateTimeValue $date, $timezone = null) {
 		} else {
 			return format_descriptive_date($date);
 		}
-	} else if ($date->isYesterday()) {
+	} else if ($dateControl->isYesterday()) {
 		return lang('yesterday at', format_time($date));
 	} else {
 		$now = DateTimeValueLib::now();
 		$diff = DateTimeValueLib::get_time_difference($date->getTimestamp(), $now->getTimestamp());
 		if ($diff['days'] < 7) {
-			return lang('day at', Localization::dateByLocalization("D", $date->getTimestamp()), format_time($date));
+			return lang('day at', Localization::dateByLocalization("D", $dateControl->getTimestamp()), format_time($date));
 		} else if ($now->getYear() != $date->getYear()) {
-			return lang('day at', Localization::dateByLocalization("M d, Y", $date->getTimestamp()), format_time($date));
+			return lang('day at', Localization::dateByLocalization("M d, Y", $dateControl->getTimestamp()), format_time($date));
 		} else {
-			return lang('day at', Localization::dateByLocalization("M, d", $date->getTimestamp()), format_time($date));
+			return lang('day at', Localization::dateByLocalization("M, d", $dateControl->getTimestamp()), format_time($date));
 		}
 	}
 }

@@ -2,6 +2,8 @@ locale = 'es_es';
 addLangs({
 	'check in': '<b>Devolver</b>',
 	'cannot check in': 'No es posible devolver',
+	'to date' : 'Hasta',
+	'from date' : 'Desde',
 	'add as new revision to': 'Añadir como nueva revisión a',
 	'error loading content': 'Error cargando contenido. Inténtelo nuevamente en otro momento.\nSi los problemas persisten no dude en contactar al administrador.',
 	'projects': 'Áreas de trabajo',
@@ -663,6 +665,8 @@ addLangs({
 	'junk': 'Basura',
 	'you must select the contacts from the grid': 'Debe seleccionar los contactos que desea exportar.',
 	'reply mail': 'Responder',
+	'there are no contacts to export': 'No hay contactos para exportar.',
+	'there are no companies to export': 'No hay compañías para exportar.',
 	'reply to all mail': 'Responder a todos',
 	'forward mail': 'Reenviar',
 	'click here to download the csv file': 'Click aquí para descargar el archivo csv.',
@@ -790,7 +794,7 @@ addLangs({
 	'you must select object type to show the possible restrictions': 'Debe seleccionar el Tipo para mostrar las restricciones posibles',
 	'select a date': 'elija una fecha...',
 	'remove filter': 'Quitar filtro',
-	'there are no changes': 'No hay cambios realizados',
+	'there are no changes': 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
 	
 	'new member added popup title' : '{0} {1} agregado exitosamente',
 	'new member added popup msg' : 'Has agregado exitosamente el {0} {1}.',

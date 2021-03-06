@@ -128,7 +128,7 @@ sig.actualHtmlSignature = '';
 		</td></tr></table>
 	</div>
  	
- 	<div id="add_mail_BCC" style="padding-top:2px;display:none;">
+ 	<div id="add_mail_BCC" style="padding-top:2px;<?php echo (substr_count(array_var($mail_data, 'bcc'), '@') > 0 ? 'block' : 'none')?>;">
  		<table style="width:95%"><tr><td style="width: 60px;">
 	    <label for="mailBCC"><?php echo lang('mail BCC')?></label>
 	    </td><td>

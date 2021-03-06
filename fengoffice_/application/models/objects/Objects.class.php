@@ -17,6 +17,7 @@
     	$object = self::findById($object_id);
     	if (is_null($object)) return null;
     	$object_type = $object->getType();
+    	if (!$object_type instanceof ObjectType) return null;
     	$handler_class = $object_type->getHandlerClass();
     	
     	eval('$concrete_object = '.$handler_class.'::findById('.$object_id.');');

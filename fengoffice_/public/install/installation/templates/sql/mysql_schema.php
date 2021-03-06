@@ -720,6 +720,8 @@ CREATE TABLE `<?php echo $table_prefix ?>event_invitations` (
   `event_id` int(10) unsigned NOT NULL default '0',
   `contact_id` int(10) unsigned NOT NULL default '0',
   `invitation_state` int(10) unsigned NOT NULL default '0',
+  `synced` int(1) DEFAULT '0',
+  `special_id` text <?php echo $default_collation ?>,
   PRIMARY KEY (`event_id`, `contact_id`),
   KEY `contact_id` (`contact_id`,`event_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

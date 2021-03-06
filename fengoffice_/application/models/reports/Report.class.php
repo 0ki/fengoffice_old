@@ -6,6 +6,9 @@
   * 
   */
   class Report extends BaseReport {
+  	
+  	protected $is_searchable = false;
+  	protected $is_commentable = false;
       
     /**
     * Construct the object

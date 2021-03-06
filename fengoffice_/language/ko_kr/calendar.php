@@ -127,7 +127,7 @@
 	'CAL_TIME' => '시간',
 	'CAL_ADDING_TO' => '다음에지정',
 	'pending response' => '대기중인 응담',
-	'view date title' => 'l, m/d/Y',
+	'view date title' => 'l, {0}',
 	'CAL_HOLIDAY_EXPLAIN' => '다음에 행사 반복을 생성합니다',
 	'CAL_HOLIDAY_EXTRAOPTION' => '아니면, ',
 	'event invitation response' => '행사 초대 반응',

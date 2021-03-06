@@ -362,19 +362,9 @@ class Timeslot extends BaseTimeslot {
 	 */
 	function getObjectName() {
 		$object = $this->getRelObject();
-		return $object instanceof ContentDataObject ? 
-			lang('timeslot on object', $object->getObjectName()) : $this->getObjectTypeName();
+		return $object instanceof ContentDataObject ? lang('timeslot on object', $object->getObjectName()) : lang($this->getObjectTypeName());
 	}
-
-	/**
-	 * Return object type name
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getObjectTypeName() {
-		return lang('timeslot');
-	}
+	
 
 	/**
 	 * Return view tag URL

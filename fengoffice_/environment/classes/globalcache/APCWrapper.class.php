@@ -12,7 +12,8 @@ define('APC_TTL', 60 * 15); // 15 minutes
 class APCWrapper {
 	
 	static function isAvailable() {
-		return function_exists('apc_sma_info');
+		$dont_use_apc = defined('DONT_USE_EXTERNAL_CACHE') && DONT_USE_EXTERNAL_CACHE;
+		return function_exists('apc_sma_info') && !$dont_use_apc;
 	}
 	
 	static function add($key, $value, $ttl = null) {

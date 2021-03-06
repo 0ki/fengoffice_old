@@ -391,17 +391,20 @@ class ProjectTasks extends BaseProjectTasks {
 	
 	
 	static function getArrayInfo($raw_data, $full = false){
-		if(config_option("wysiwyg_tasks")){
-			if($raw_data['type_content'] == "text"){
-				$desc = nl2br(htmlspecialchars($raw_data['text']));
+		$desc = "";
+		if ($full) {
+			if(config_option("wysiwyg_tasks")){
+				if($raw_data['type_content'] == "text"){
+					$desc = nl2br(htmlspecialchars($raw_data['text']));
+				}else{
+					$desc = purify_html(nl2br($raw_data['text']));
+				}
 			}else{
-				$desc = purify_html(nl2br($raw_data['text']));
-			}
-		}else{
-			if($raw_data['type_content'] == "text"){
-				$desc = htmlspecialchars($raw_data['text']);
-			}else{
-				$desc = html_to_text(html_entity_decode(nl2br($raw_data['text']), null, "UTF-8"));
+				if($raw_data['type_content'] == "text"){
+					$desc = htmlspecialchars($raw_data['text']);
+				}else{
+					$desc = html_to_text(html_entity_decode(nl2br($raw_data['text']), null, "UTF-8"));
+				}
 			}
 		}
 
@@ -422,10 +425,6 @@ class ProjectTasks extends BaseProjectTasks {
 			'pc' => (int)$raw_data['percent_completed'],
 			'memPath' => str_replace('"',"'", str_replace("'", "\'", json_encode($tmp_task->getMembersToDisplayPath($member_ids))))
 		);
-
-		if ($full) {
-			$result['description'] = $raw_data['text'];
-		}
 
 		$result['mas'] = (int)array_var($raw_data, 'multi_assignment');
 			

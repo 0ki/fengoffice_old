@@ -19,7 +19,7 @@ $genid = gen_id();
 	<tr>
 		<th><?php echo lang('name') ?></th>
 		<th><?php echo lang('email address') ?></th>
-		<th><?php echo lang('created by') ?></th>
+		<th><?php echo lang('owned by') ?></th>
 		<th><?php echo lang('incoming server') ?></th>
 		<th><?php echo lang('outgoing server') ?></th>
 		<th><?php echo lang('users') ?></th>

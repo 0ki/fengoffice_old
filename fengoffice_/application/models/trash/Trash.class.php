@@ -8,8 +8,14 @@ class Trash {
 		if ($days > 0) {
 			$date = DateTimeValueLib::now()->add("d", -$days);
 			
-			$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o LEFT JOIN ".TABLE_PREFIX."mail_contents mc ON mc.object_id=o.id WHERE
-			trashed_by_id > 0 AND trashed_on < '".$date->toMySQL()."' AND NOT COALESCE(mc.is_deleted, false) LIMIT 1000";
+			$mail_join = "";
+			$mail_cond = "";
+			if (Plugins::instance()->isActivePlugin('mail')) {
+				$mail_join = "LEFT JOIN ".TABLE_PREFIX."mail_contents mc ON mc.object_id=o.id";
+				$mail_cond = "AND NOT COALESCE(mc.is_deleted, false)";
+			}
+			
+			$sql = "SELECT o.id FROM ".TABLE_PREFIX."objects o $mail_join WHERE	trashed_by_id > 0 AND trashed_on < '".$date->toMySQL()."' $mail_cond LIMIT 1000";
 			
 			$objects = array_flat(DB::executeAll($sql));
 			

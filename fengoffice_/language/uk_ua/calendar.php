@@ -163,7 +163,7 @@ return array(
 	'success export calendar' => 'Експортовано подій: {0}.',
 	'calendar name desc' => 'Назва календаря для експортування',
 	'calendar will be exported in icalendar format' => 'Календар буде експортовано у форматі iCalendar',
-	'view date title' => 'l, ММ/ДД/РР',
+	'view date title' => 'l, {0}',
   	'copy this url in your calendar client software' => 'Скопіюйте цей URL у вашому календарі, щоб імпортувати заходи із цього календаря',
 	'import events from third party software' => 'Імпорт заходів із інших програм',
 	'subws' => 'дод. проект',

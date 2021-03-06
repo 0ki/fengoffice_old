@@ -130,7 +130,7 @@
 	'success export calendar' => '{0} gebeurtenissen zijn geëxporteerd',
 	'calendar name desc' => 'Naam voor de te exporteren kalender ',
 	'calendar will be exported in icalendar format' => 'De kalender zal worden geëxporteerd in iCal formaat',
-	'view date title' => 'l, m/d/Y',
+	'view date title' => 'l, {0}',
 	'0' => 'CAL_NO_WRITE',
 	'event invitation response' => 'Respons op de uitnodigingen',
 	'user will attend to event' => '{0} bij deze gebeurtenis aanwezig',

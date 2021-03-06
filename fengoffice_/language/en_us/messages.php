@@ -660,6 +660,7 @@
   	'log read mailcontents' => 'Viewed \'{0}\'',
   	'log read companies' => 'Viewed \'{0}\'',
   	'log read contacts' => 'Viewed \'{0}\'',
+  	'log read contact' => 'Viewed \'{0}\'',
   	'log read projectevents' => 'Viewed \'{0}\'',
   	'log read projecttasks' => 'Viewed \'{0}\'',
   	'log read projectmilestones' => 'Viewed \'{0}\'',

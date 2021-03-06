@@ -79,22 +79,36 @@ ogTasks.drawEditTaskForm = function(task_id, group_id){
 	var task = this.getTask(task_id);
 	var containerName = 'ogTasksPanelTask' + task.id + 'G' + group_id;
 	if (task){
-		this.drawTaskForm(containerName, {
-			title: task.title,
-			description: task.description,
-			priority: task.priority,
-			members: task.members,
-			dueDate: task.dueDate,
-			startDate: task.startDate,
-			assignedTo: task.assignedToId,
-			taskId: task_id,
-			time_estimated: task.TimeEstimate,
-			multiAssignment: task.multiAssignment,
-			isEdit: true
-		});
-		if(og.config.wysiwyg_tasks){
-			loadCKeditor(task_id);
+		// if description not loaded yet then load description before drawing form
+		if ((!task.description || task.description == '') && !ogTasks.all_descriptions_loaded) {
+			og.openLink(og.getUrl('task', 'get_task_data', {id:task_id, desc:1}), {callback: function(success, data) {
+				
+				task.description = data.desc;
+				this.performDrawEditTaskForm(containerName, task);
+				
+			}, scope: this});
+		} else {
+			this.performDrawEditTaskForm(containerName, task);
 		}
+	}
+}
+
+ogTasks.performDrawEditTaskForm = function(containerName, task) {
+	this.drawTaskForm(containerName, {
+		title: task.title,
+		description: task.description,
+		priority: task.priority,
+		members: task.members,
+		dueDate: task.dueDate,
+		startDate: task.startDate,
+		assignedTo: task.assignedToId,
+		taskId: task.id,
+		time_estimated: task.TimeEstimate,
+		multiAssignment: task.multiAssignment,
+		isEdit: true
+	});
+	if(og.config.wysiwyg_tasks){
+		loadCKeditor(task.id);
 	}
 }
 

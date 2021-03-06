@@ -166,7 +166,7 @@
 	'success export calendar' => '{0} Events were exported.',
 	'calendar name desc' => 'Name for the calendar to export',
 	'calendar will be exported in icalendar format' => 'Calendar will be exported in iCalendar format.',
-	'view date title' => 'l, m/d/Y',
+	'view date title' => 'l, {0}',
 
   	'copy this url in your calendar client software' => 'Copy this url in your calendar client software, in order to import events from this calendar',
 	'import events from third party software' => 'Import events from third party software',

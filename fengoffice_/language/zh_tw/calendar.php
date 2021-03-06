@@ -131,5 +131,5 @@
  "success export calendar" => "已匯出 {0} 個事件。",
  "calendar name desc" => "匯出行事曆名稱",
  "calendar will be exported in icalendar format" => "行事曆將以iCalendar格式匯出。",
- "view date title" => "l, m/d/Y ",
+ 'view date title' => 'l, {0}',
 ); ?>

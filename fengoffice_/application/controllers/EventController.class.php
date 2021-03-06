@@ -895,7 +895,6 @@ class EventController extends ApplicationController {
 				    
                                 DB::beginWork();
                                 $event->save();  
-
                                 if($event->getSpecialID() != ""){
                                     $this->sync_calendar_extern($event);
                                 }
@@ -1433,7 +1432,7 @@ class EventController extends ApplicationController {
                             $calendar_user = end($cal_src);
 
                             $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                    WHERE ec.calendar_user = '".$calendar_user."' AND ecu.contact_id = ".logged_user()->getId()."";
+                                    WHERE ec.calendar_user = '".$calendar_user."' AND ecu.contact_id = ".logged_user()->getId()."  AND ec.ext_cal_user_id = ecu.id ";
                             $calendar_feng = DB::executeOne($sql);
                             $sel = 0;
                             if($calendar_feng){
@@ -1685,94 +1684,149 @@ class EventController extends ApplicationController {
                 } 
 	}
         
-        function sync_calendar_extern($event){
-            require_once 'Zend/Loader.php';
+	function sync_calendar_extern($event){
+		require_once 'Zend/Loader.php';
 
-            Zend_Loader::loadClass('Zend_Gdata');
-            Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-            Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-            Zend_Loader::loadClass('Zend_Gdata_Calendar');
+		Zend_Loader::loadClass('Zend_Gdata');
+		Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+		Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+		Zend_Loader::loadClass('Zend_Gdata_Calendar');
 
-            $users = ExternalCalendarUsers::findByContactId();
-            if (!$users instanceof ExternalCalendarUser) return;
-            $calendar = ExternalCalendars::findById($event->getExtCalId());
-            if (!$calendar instanceof ExternalCalendar) return;
+		$users = ExternalCalendarUsers::findByContactId();
+		if (!$users instanceof ExternalCalendarUser) return;
+		$calendar = ExternalCalendars::findById($event->getExtCalId());
+		if (!$calendar instanceof ExternalCalendar) return;
+		if($calendar->getCalendarUser() != logged_user()->getId()){
+			 
+			$event_inv = EventInvitations::findSyncByEvent($event->getId());
+			foreach ($event_inv as $invitation){
 
-            $user = $users->getAuthUser();
-            $pass = $users->getAuthPass();
-            $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-			
-            try
-            {
-	            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-	
-	            $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
-	
-	            $gcal = new Zend_Gdata_Calendar($client);
-	
-	            $edit_event = $gcal->getCalendarEventEntry($event_id);
-	            $edit_event->title = $gcal->newTitle($event->getObjectName()); 
-	            $edit_event->content = $gcal->newContent($event->getDescription());
-	
-	            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-	            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-	
-	            if($event->getTypeId() == 2){
-	                $when = $gcal->newWhen();
-	                $when->startTime = $star_time[0];
-	                $when->endTime = $end_time[0];
-	                $edit_event->when = array($when);
-	            }else{                                    
-	                $when = $gcal->newWhen();
-	                $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-	                $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-	                $edit_event->when = array($when);
-	            }
-	
-	            $edit_event->save(); 
-	        }
-	        catch(Exception $e)
-	        {
-	           	flash_error($e->getMessage());
-	            ajx_current("empty");
-	        } 
-        }
+				$calendarUser = ExternalCalendarUsers::findByGivenContactId($invitation->getContactId());
+
+				$calendar = ExternalCalendars::findByExtCalUserIdValue($calendarUser->getId());
+
+				$user = $calendarUser->getAuthUser();
+				$pass = $calendarUser->getAuthPass();
+				$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+				try
+				{
+					$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+
+					$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$invitation->getSpecialId();
+
+					$gcal = new Zend_Gdata_Calendar($client);
+					// ver lo que esta mal 
+					$edit_event = $gcal->getCalendarEventEntry($event_id);
+					$edit_event->title = $gcal->newTitle($event->getObjectName());
+					$edit_event->content = $gcal->newContent($event->getDescription());
+
+					$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+					$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+					
+					if($event->getTypeId() == 2){
+						$when = $gcal->newWhen();
+						$when->startTime = $star_time[0];
+						$when->endTime = $end_time[0];
+						$edit_event->when = array($when);
+					}else{
+						$when = $gcal->newWhen();
+						$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+						$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+						$edit_event->when = array($when);
+					}
+
+					$edit_event->save();
+				}
+				catch(Exception $e)
+				{
+					flash_error($e->getMessage());
+					ajx_current("empty");
+				}
+			}
+
+		}else{
+			$user = $users->getAuthUser();
+			$pass = $users->getAuthPass();
+			$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+
+			try
+			{
+				$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+				 
+				$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
+				 
+				$gcal = new Zend_Gdata_Calendar($client);
+				 
+				$edit_event = $gcal->getCalendarEventEntry($event_id);
+				$edit_event->title = $gcal->newTitle($event->getObjectName());
+				$edit_event->content = $gcal->newContent($event->getDescription());
+				 
+				$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+				$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+				 
+				if($event->getTypeId() == 2){
+					$when = $gcal->newWhen();
+					$when->startTime = $star_time[0];
+					$when->endTime = $end_time[0];
+					$edit_event->when = array($when);
+				}else{
+					$when = $gcal->newWhen();
+					$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+					$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+					$edit_event->when = array($when);
+				}
+				 
+				$edit_event->save();
+			}
+			catch(Exception $e)
+			{
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
+		}
+
+	}
         
-        function delete_event_calendar_extern($event){
-            ajx_current("empty");
-            if($event->getExtCalId() > 0){
-                require_once 'Zend/Loader.php';
+	function delete_event_calendar_extern($event){
+		ajx_current("empty");
+		if($event->getExtCalId() > 0){
+			require_once 'Zend/Loader.php';
 
-                Zend_Loader::loadClass('Zend_Gdata');
-                Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-                Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-                Zend_Loader::loadClass('Zend_Gdata_Calendar');
+			Zend_Loader::loadClass('Zend_Gdata');
+			Zend_Loader::loadClass('Zend_Gdata_AuthSub');
+			Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
+			Zend_Loader::loadClass('Zend_Gdata_Calendar');
 
-                $users = ExternalCalendarUsers::findByContactId();
-                $calendar = ExternalCalendars::findById($event->getExtCalId());
+				$event_inv = EventInvitations::findSyncByEvent($event->getId());
+				foreach ($event_inv as $invitation){
 
-                $user = $users->getAuthUser();
-                $pass = $users->getAuthPass();
-                $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-				
-                try
-                {
-	                $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-	
-	                $event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$event->getSpecialID();
-	
-	                $gcal = new Zend_Gdata_Calendar($client);
-	
-	                $edit_event = $gcal->getCalendarEventEntry($event_id);
-	                $edit_event->delete(); 
-	            }
-	            catch(Exception $e)
-	            {
-	                flash_error($e->getMessage());
-	                ajx_current("empty");
-	            }
-            }            
-        }
+					$calendarUser = ExternalCalendarUsers::findByGivenContactId($invitation->getContactId());
+
+					$calendar = ExternalCalendars::findByExtCalUserIdValue($calendarUser->getId());
+
+					$user = $calendarUser->getAuthUser();
+					$pass = $calendarUser->getAuthPass();
+					$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
+					try
+					{
+						$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
+
+						$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$invitation->getSpecialId();
+
+						$gcal = new Zend_Gdata_Calendar($client);
+
+						$edit_event = $gcal->getCalendarEventEntry($event_id);
+						$edit_event->delete();
+					}
+					catch(Exception $e)
+					{
+						flash_error($e->getMessage());
+						ajx_current("empty");
+					}
+				}
+
+		}
+	}
         
         function import_calendars(){
             ajx_current("empty");
@@ -1874,7 +1928,11 @@ class EventController extends ApplicationController {
                                         }
                                         $array_events_google[] = $special_id;
                                         $new_event = ProjectEvents::findBySpecialId($special_id);
-                                        if($new_event){
+                                        $is_invitation = EventInvitations::findBySpecialId($special_id);
+                                        if($new_event|| $is_invitation){
+                                            	if($is_invitation){
+                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
+                                            	}
                                             if(strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){
                                                 $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
                                                 $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
@@ -1900,10 +1958,12 @@ class EventController extends ApplicationController {
                                                 $new_event->setObjectName($event_name);
                                                 $new_event->setDescription($event->content->text);
                                                 $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
-                                                $new_event->setExtCalId($calendar->getId());
+                                                if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
                                                 $new_event->save(); 
+                                               $this->sync_calendar_extern($new_event);
                                             }
                                         }else{
+                                        	if(!$is_invitation){
                                             $new_event = new ProjectEvent();
                                             
                                             $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
@@ -1969,23 +2029,41 @@ class EventController extends ApplicationController {
                                                 }		        
                                                 $object_controller = new ObjectController();
                                                 $object_controller->add_to_members($new_event, $member_ids); 
-                                            }                                            
+                                            }  
+                                        }                                           
                                         }           
                                     }// foreach event list 
 
                                     //check the deleted events
-                                    $events_delete = ProjectEvents::findByExtCalId($calendar->getId());
+                                    $events_delete = ProjectEvents::findAll(array(
+                                    'conditions' => array('trashed_by_id = 0 AND trashed_on =\''.EMPTY_DATETIME.'\' AND ext_cal_id = '.$calendar->getId().' AND update_sync <> "1970-01-01 00:00:00"')));
                                     if($events_delete){
                                         foreach($events_delete as $event_delete){  
-                                            if(!in_array($event_delete->getSpecialID(), $array_events_google)){
-                                                $event_delete->trash();
-
+                                        	if(!in_array($event_delete->getSpecialID(), $array_events_google)){
+												 $this->delete_event_calendar_extern($event_delete);
+                                        		$event_delete->trash();
+                                                
                                                 $event_delete->setSpecialID("");
                                                 $event_delete->setExtCalId(0);
                                                 $event_delete->save();    
                                             }                                        
                                         }  
                                     }
+                                    $inv_delete = EventInvitations::findSyncById($users->getId());
+                                    if($inv_delete){
+                                    	foreach($inv_delete as $invs_delete){
+                                    		if(!in_array($invs_delete->getSpecialID(), $array_events_google)){
+                                    			$event_delete = ProjectEvents::findById($invs_delete->getEventId());
+                                    			$this->delete_event_calendar_extern($event_delete);
+                                    			$event_delete->trash();
+                                    
+                                    			$event_delete->setSpecialID("");
+                                    			$event_delete->setExtCalId(0);
+                                    			$event_delete->save();
+                                    		}
+                                    	}
+                                    }
+                                    
                                 }else{                
                                     $events = ProjectEvents::findByExtCalId($calendar->getId());
                                     if($calendar->delete()){
@@ -2025,10 +2103,10 @@ class EventController extends ApplicationController {
                 if($users){
                     if($users->getSync() == 1){
                         $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                WHERE ec.calendar_feng = 1 AND ecu.contact_id = ".logged_user()->getId();
+                                WHERE ec.ext_cal_user_id = ecu.id AND ec.calendar_feng = 1 AND ecu.contact_id = ".logged_user()->getId();
                         $calendar_feng = DB::executeOne($sql);
-                        $events = ProjectEvents::findNoSync();
-
+                        $events = ProjectEvents::findNoSync(logged_user()->getId());
+                        $events_inv = ProjectEvents::findNoSyncInvitations(logged_user()->getId());
                         $user = $users->getAuthUser();
                         $pass = $users->getAuthPass();
                         $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
@@ -2070,7 +2148,50 @@ class EventController extends ApplicationController {
                                         $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                         $event->setExtCalId($calendar_feng['id']);
                                         $event->save();
-                                    }                             
+                                    $invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                    }
+                                    foreach ($events_inv as $event){
+                                        	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
+                                        
+                                        	$newEvent = $gdataCal->newEventEntry();
+                                        	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                        	$newEvent->content = $gdataCal->newContent($event->getDescription());
+                                        
+                                        	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                        	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+                                        
+                                        	if($event->getTypeId() == 2){
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0];
+                                        		$when->endTime = $end_time[0];
+                                        		$newEvent->when = array($when);
+                                        	}else{
+                                        		$when = $gdataCal->newWhen();
+                                        		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                        		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                        		$newEvent->when = array($when);
+                                        	}
+                                        
+                                        	// insert event
+                                        	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+                                        
+                                        	$event_id = explode("/",$createdEvent->id->text);
+                                        	$special_id = end($event_id);
+                                        	 
+                                        	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                        	
+                                        	
+                                        }                       
                                 }else{
                                     $appCalUrl = '';
                                     $calFeed = $gdataCal->getCalendarListFeed();        
@@ -2143,6 +2264,47 @@ class EventController extends ApplicationController {
                                         $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
                                         $event->setExtCalId($calendar->getId());
                                         $event->save();
+                                    	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
+                                        	if($invitation){
+                                        		$invitation->setUpdateSync();
+                                        		$invitation->setSpecialId($special_id);
+                                        		$invitation->save();
+                                        	}
+                                    }
+                                    foreach ($events_inv as $event){
+                                    	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
+                                    
+                                    	$newEvent = $gdataCal->newEventEntry();
+                                    	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
+                                    	$newEvent->content = $gdataCal->newContent($event->getDescription());
+                                    
+                                    	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
+                                    	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
+                                    
+                                    	if($event->getTypeId() == 2){
+                                    		$when = $gdataCal->newWhen();
+                                    		$when->startTime = $star_time[0];
+                                    		$when->endTime = $end_time[0];
+                                    		$newEvent->when = array($when);
+                                    	}else{
+                                    		$when = $gdataCal->newWhen();
+                                    		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
+                                    		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
+                                    		$newEvent->when = array($when);
+                                    	}
+                                    
+                                    	// insert event
+                                    	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
+                                    
+                                    	$event_id = explode("/",$createdEvent->id->text);
+                                    	$special_id = end($event_id);
+                                    	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
+                                    	if($invitation){
+                                    		$invitation->setUpdateSync();
+                                    		$invitation->setSpecialId($special_id);
+                                    		$invitation->save();
+                                    	}
+                                    
                                     } 
                                 }
                                 flash_success(lang('success add sync'));

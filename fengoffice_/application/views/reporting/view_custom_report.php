@@ -15,21 +15,24 @@
 					
 				$coltype = array_key_exists($condition->getFieldName(), $types)? $types[$condition->getFieldName()]:'';
 				$paramName = $condition->getFieldName();
+				if (str_starts_with($coltype, 'DATE') && !$condition->getIsParametrizable()) {
+					$cond_value = DateTimeValueLib::dateFromFormatAndString('m/d/Y', $condition->getValue())->format(user_config_option('date_format'));
+					$condition->setValue($cond_value);
+				}
 			}
 			$paramValue = isset($parameters[$paramName]) ? $parameters[$paramName] : '';
-			$value = $condition->getIsParametrizable()? clean($paramValue) : clean($condition->getValue());
+			$value = $condition->getIsParametrizable() ? clean($paramValue) : clean($condition->getValue());
 			
 			eval('$managerInstance = ' . $model . "::instance();");
 			$externalCols = $managerInstance->getExternalColumns();
 			if(in_array($condition->getFieldName(), $externalCols)){
 				$value = clean(Reports::instance()->getExternalColumnValue($condition->getFieldName(), $value, $managerInstance));
 			}
-			
-			if ($value != '')
+			if ($value != '') {
 				$conditionHtml .= '- ' . $name . ' ' . ($condition->getCondition() != '%' ? $condition->getCondition() : lang('ends with') ) . ' ' . format_value_to_print($condition->getFieldName(), $value, $coltype, '', '"', user_config_option('date_format')) . '<br/>';
+			}
 		}
 	}
-	
 	?>
 	
 <div id="pdfOptions" style="display:none;">
@@ -120,7 +123,7 @@
 				if ($k == 'object_type_id') continue;
 				$db_col = array_var($db_columns, array_var($columns, $k), '');
 			?>
-			<td style="padding-right:10px;"><?php echo format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format')) ?></td>
+			<td style="padding-right:10px;"><?php echo (($k == 'link'?'':array_var($types, $k)) == 'DATETIME')? $value:format_value_to_print($db_col, $value, ($k == 'link'?'':array_var($types, $k)), array_var($row, 'object_type_id'), '', is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format')) ?></td>
 		<?php
 				$i++; 
 			} ?>

@@ -418,8 +418,19 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 	}
 	
 	for (var i = 0; i < tasksContainer.length; i++){
+		var taskIn = true;
 		var task = tasksContainer[i];
-		if (!task.parent){
+		task.subtasks = [];		
+		if(task.parent){
+			if(displayCriteria.group_by == "assigned_to" || displayCriteria.group_by == "created_by" || displayCriteria.group_by == "priority" || displayCriteria.group_by == "completed_by" || displayCriteria.group_by == "status"){
+				taskIn = true;
+			}else{
+				taskIn = false;
+				var parent = this.getTask(task.parentId);
+				parent.subtasks.push(task);	
+			}
+		}		
+		if (taskIn){
 			var this_task_groups = [];
 			var group = null;
 			switch(displayCriteria.group_by){
@@ -472,6 +483,33 @@ ogTasks.groupTasks = function(displayCriteria, tasksContainer){
 				}
 			}
 		}
+		if (task.parentId > 0 && this.getTask(task.parentId) != null){
+			var parent = this.getTask(task.parentId);
+			var cond1;
+			var cond2;
+			var cond3 = true;
+			switch(displayCriteria.group_by){
+			case 'priority' : cond1 = task.priority; cond2 = parent.priority; break;
+			case 'assigned_to' : cond1 = task.assignedToId; cond2 = parent.assignedToId; break;
+			case 'created_by' : cond1 = task.createdBy; cond2 = parent.createdBy; break;
+			case 'status' : cond1 = task.status; cond2 = parent.status; break;
+			case 'completed_by' : cond1 = task.completedById; cond2 = parent.completedById; break;
+			default:
+				cond3 = false;
+			}
+			if(cond3){
+				if(cond1 == cond2){
+					parent.subtasks.push(task);					
+					if(cond1 != null){
+						var groupT = tasks[groups.indexOf(cond1)];
+						groupT.splice(groupT.indexOf(task), 1);
+					}else{
+						var groupT = tasks[0];
+						groupT.splice(groupT.indexOf(task), 1);
+					}					
+				}				
+			}	
+		}	
 	}
 	if (displayCriteria.group_by == 'milestone'){ 			//Show all milestones
 	

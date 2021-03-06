@@ -2,6 +2,8 @@ locale = 'es_la';
 addLangs({
 	'check in': '<b>Devolver</b>',
 	'cannot check in': 'No es posible devolver',
+	'to date' : 'Hasta',
+	'from date' : 'Desde',
 	'add as new revision to': 'Agregar como nueva revisión a',
 	'error loading content': 'Error cargando contenido. Inténtelo nuevamente en otro momento.\nSi los problemas persisten no dude en contactar al administrador.',
 	'administration': 'Administración',
@@ -696,6 +698,8 @@ addLangs({
 	'groups': 'Grupos',
 	'object type': 'Tipo de objeto',
 	'applies to': 'Aplica a:',
+	'there are no contacts to export': 'No hay contactos para exportar.',
+	'there are no companies to export': 'No hay compañías para exportar.',
 	'select co types to apply': 'Seleccione los tipos de objeto a los que desea aplicar la propiedad',
 	'no more objects message': 'No hay más \'{0}\' para mostrar',
 	'write an email to contact': 'Escribir correo a {0}',
@@ -786,7 +790,7 @@ addLangs({
 	'and number more': 'y {0} más.',
 	'filters': 'Filtros',
 	'project': 'Espacio de Trabajo',
-	'there are no changes' : 'No hay cambios realizados',
+	'there are no changes': 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
 	
 	'new member added popup title' : '{0} {1} agregado exitosamente',
 	'new member added popup msg' : 'Has agregado exitosamente el {0} {1}.',

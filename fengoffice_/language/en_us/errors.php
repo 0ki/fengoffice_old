@@ -119,7 +119,7 @@
     'file revision filename required' => 'Filename required',
     'file revision type_string required' => 'Unknown file type',
     'file revision comment required' => 'Revision comment required',
-    'there are no changes' => 'There are no changes',
+    'there are no changes' => 'No changes were made. The document has not been overwritten.',
     
     // Test mail settings
     'test mail recipient required' => 'Recipient address is required',

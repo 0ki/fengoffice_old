@@ -44,7 +44,103 @@ class Contact extends BaseContact {
 	 * @var array
 	 */
 	protected $mail_accounts;
-	
+	function save(){
+	   		parent::save();
+	   		$sql = "DELETE FROM ".TABLE_PREFIX."searchable_objects
+					WHERE rel_object_id = '".$this->getId()."' AND (column_name LIKE 'phone_number%'  OR column_name LIKE 'email_addres%' OR column_name LIKE 'web_url%' OR column_name LIKE 'im_value%' OR column_name LIKE 'address%')";
+	   		DB::execute($sql);
+	   		//save telephones on searchable_objects
+	   		$telephones = $this->getAllPhones();
+	   		$lengthTel = count($telephones);
+	   		for ($i = 0; $i < $lengthTel; $i++) {
+	   			$j=strval($i);
+	   			$telephone = array_var($telephones, $j);
+	   			if ($telephone instanceof ContactTelephone){
+	   				$telephone =$telephone->getNumber();
+	   			}else{
+	   				continue;
+	   			}
+	   			$searchable_object = new SearchableObject();
+	   			$searchable_object->setRelObjectId($this->getId());
+	   			$searchable_object->setColumnName("phone_number".$j);
+	   			$searchable_object->setContent($telephone);
+	   			$searchable_object->save();	   			
+	   		}
+	   		//save emails on searchable_objects
+	   		$emails = $this->getAllEmails();	   			   		
+	   		$lengthEm = count($emails);
+	   		for ($i = 0; $i < $lengthEm; $i++) {
+	   			$j=strval($i);
+	   			$email = array_var($emails, $j);
+	   			if ($email instanceof ContactEmail){
+	   				$email =$email->getEmailAddress();
+	   			}else{
+	   				continue;
+	   			}
+	   			if($email != ''){
+		   			$searchable_object = new SearchableObject();
+		   			$searchable_object->setRelObjectId($this->getId());
+		   			$searchable_object->setColumnName("email_addres".$j);
+		   			$searchable_object->setContent($email);
+		   			$searchable_object->save();		   			
+	   			}
+	   		}
+	   		//save web_pages on searchable_objects
+	   		$web_pages = $this->getAllWebpages();
+	   		$lengthWeb = count($web_pages);	   		
+	   		for ($i = 0; $i < $lengthWeb; $i++) {
+	   			$j=strval($i);
+	   			$web_page = array_var($web_pages, $j);
+	   			if ($web_page instanceof ContactWebpage){
+	   				$web_page =$web_page->getUrl();
+	   			}else{
+	   				continue;
+	   			}
+	   			$searchable_object = new SearchableObject();
+	   			$searchable_object->setRelObjectId($this->getId());
+	   			$searchable_object->setColumnName("web_url".$j);
+	   			$searchable_object->setContent($web_page);
+	   			$searchable_object->save();	   			
+	   		}  		
+	   		//save im_values on searchable_objects
+	   		$im_values = $this->getImValues();
+	   		$lengthIm = count($im_values);
+	   		for ($i = 0; $i < $lengthIm; $i++) {
+	   			$j=strval($i);
+	   			$im_value = array_var($im_values, $j);
+	   			if ($im_value instanceof ContactImValue){
+	   				$im_value =$im_value->getValue();
+	   			}else{
+	   				continue;
+	   			}
+	   			$searchable_object = new SearchableObject();
+	   			$searchable_object->setRelObjectId($this->getId());
+	   			$searchable_object->setColumnName("im_value".$j);
+	   			$searchable_object->setContent($im_value);
+	   			$searchable_object->save();	   			   			
+	   		}
+	   		//save addresses on searchable_objects
+	   		$addresses = $this->getAllAddresses();
+	   		$lengthAd = count($addresses);
+	   		for ($i = 0; $i < $lengthAd; $i++) {
+	   			$j=strval($i);
+	   			$address = array_var($addresses, $j);
+	   			if (!$address instanceof ContactAddress){	   				
+	   				continue;
+	   			}
+	   			$address = strval(array_var($addresses, $j)->getStreet())." ";
+	   			$address .= strval(array_var($addresses, $j)->getCity())." ";
+	   			$address .= strval(array_var($addresses, $j)->getState())." ";
+	   			$address .= strval(array_var($addresses, $j)->getCountry())." ";
+	   			$address .= strval(array_var($addresses, $j)->getZipCode());
+	   			$searchable_object = new SearchableObject();
+	   			$searchable_object->setRelObjectId($this->getId());
+	   			$searchable_object->setColumnName("address".$j);
+	   			$searchable_object->setContent($address);
+	   			$searchable_object->save();	   			
+	   		}
+	   		return true;
+	}
 	
 	function hasMailAccounts(){
 		if (Plugins::instance()->isActivePlugin('mail')) {
@@ -373,7 +469,7 @@ class Contact extends BaseContact {
 	 
 
 	/**
-	 * Return  phone for this contact.
+	 * Return  Address for this contact.
 	 *
 	 * @access public
 	 * @param $typeId
@@ -427,7 +523,23 @@ class Contact extends BaseContact {
 		`telephone_type_id` = ?", $this->getId(), $telephone_type_id)));
 	} // getFaxPhone	
 	
+	function getAllPhones() {
+		return ContactTelephones::findAll(array('conditions' => array("`contact_id` = ?" ,$this->getId())));
+		
+	} // getAllPhones
 	
+	function getAllEmails() {
+		return ContactEmails::findAll(array('conditions' => array("`contact_id` = ?" ,$this->getId())));
+	
+	} // getAllEmails
+	
+	function getAllWebpages() {		
+		return ContactWebpages::findAll(array('conditions' => array("`contact_id` = ?",	$this->getId())));
+	} // getAllWebpages
+	
+	function getAllAddresses() {
+		return ContactAddresses::findAll(array('conditions' => array("`contact_id` = ?", $this->getId())));
+	} // getAllAddress
 	/**
 	 * Return personal fax phone for this contact.
 	 *
@@ -1166,7 +1278,7 @@ class Contact extends BaseContact {
     
     /**
      * @author pepe
-     * 
+     * Returns true when user is super administrator
      */
     function isAdministrator() {
     	$type = parent::getUserType();

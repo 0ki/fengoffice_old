@@ -130,7 +130,7 @@
 	'success export calendar' => '{0} 事件已被导出。',
 	'calendar name desc' => '导出的日历名称',
 	'calendar will be exported in icalendar format' => '日历将被导出为iCalendar格式。',
-	'view date title' => 'Y/m/d',
+	'view date title' => 'l, {0}',
 	'event invitation response' => '事件邀请回复',
 	'user will attend to event' => '{0}将参加此次事件',
 	'user will not attend to event' => '{0}将<strong>不</strong>参加此次事件',

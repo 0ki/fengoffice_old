@@ -134,7 +134,7 @@
 	'activity tag' => '{1} etiquetó {0} {2} con las etiquetas {3}',
 	'activity untag' => '{1} desetiquetó {0} {2}',
 	//'activity comment' => '{1} comentó {0} {2}:<br>    "{3}"',
-        'activity comment' => "{1} comentó {0} {2}",
+    'activity comment' => "{1} comentó {0} {2} <p>{3}</p>",
 	'activity link' => '{1} vinculó {0} {2} con {3} {4}',
 	'activity unlink' => '{1} desvinculó {0} {2} de {3} {4}',
 	'activity login' => '{0} inició sesión',

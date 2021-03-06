@@ -2,7 +2,7 @@
 
 <div class="widget-documents widget dashDocuments">
 
-	<div class="widget-header dashHeader" onclick="og.dashExpand('<?php echo $genid?>');">
+	<div style="overflow: hidden;" class="widget-header dashHeader" onclick="og.dashExpand('<?php echo $genid?>');">
 		<?php echo (isset($widget_title)) ? $widget_title : lang("documents");?>
 		<div class="dash-expander ico-dash-expanded" id="<?php echo $genid; ?>expander"></div>
 	</div>

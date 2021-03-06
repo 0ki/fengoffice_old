@@ -81,7 +81,7 @@
 	'view event' => 'Vis arrangement',
 	'all users' => 'Alle brukere',
 	'range of events' => 'Kalendereksport',
-	'view date title' => '1, d/m/Y',
+	'view date title' => 'l, {0}',
 	'CAL_EVERY_YEAR' => 'Årlig',
 	'CAL_DAILY_EVENT' => 'Gjenta daglig',
 	'CAL_WEEKLY_EVENT' => 'Gjenta ukentlig',

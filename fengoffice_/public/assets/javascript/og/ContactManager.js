@@ -160,6 +160,51 @@ og.ContactManager = function() {
 	}
 	this.getSelectedIds = getSelectedIds;
 	
+	function getAllIds() {
+		var cmp = Ext.getCmp('contact-manager');
+		if (cmp) {
+			var am = cmp.getSelectionModel();
+			am.selectAll();
+		}
+		
+		var selections = am.getSelections();
+		if (selections.length <= 0) {
+			return '';
+		} else {
+			var ret = '';
+			for (var i=0; i < selections.length; i++) {
+				if(selections[i].data.type == "contact")
+					ret += "," + selections[i].data.object_id;
+			}
+			return ret.substring(1);
+		}
+	}
+	this.getAllIds = getAllIds;
+	
+	function getAllIdsCompanys() {
+		var cmp = Ext.getCmp('contact-manager');
+		if (cmp) {
+			var am = cmp.getSelectionModel();
+			am.selectAll();
+		
+		
+		var selections = am.getSelections();
+		if (selections.length <= 0) {
+			return '';
+		} else {
+			var ret = '';
+			for (var i=0; i < selections.length; i++) {
+				if(selections[i].data.type == "company")
+					ret += "," + selections[i].data.object_id;
+			}
+			am.clearSelections();
+			return ret.substring(1);
+		}
+		
+		}
+	}
+	this.getAllIdsCompanys = getAllIdsCompanys;
+	
 	//Only retunrs the ids of deletable contacts
 	//In case of being userts returns 2 and in case of being companies with contacts 3
 	function getSelectedIdsDeleteContacts() {
@@ -209,17 +254,25 @@ og.ContactManager = function() {
 
 	var sm = new Ext.grid.CheckboxSelectionModel();
 	sm.on('selectionchange',
-		function() {
-			if (sm.getCount() <= 0) {
-				actions.delContact.setDisabled(true);
-				actions.editContact.setDisabled(true);
-				actions.archive.setDisabled(true);
-			} else {
-				actions.editContact.setDisabled(sm.getCount() != 1);
-				actions.delContact.setDisabled(false);
-				actions.archive.setDisabled(false);
+			function() {
+		if (sm.getCount() <= 0) {
+			actions.delContact.setDisabled(true);
+			actions.editContact.setDisabled(true);
+			actions.archive.setDisabled(true);
+			if (og.additional_group_mailer_send) {
+				og.additional_group_mailer_send[0].setDisabled(true);
+				og.additional_group_mailer_send_selection = sm;
 			}
-		});
+		} else {
+			actions.editContact.setDisabled(sm.getCount() != 1);
+			actions.delContact.setDisabled(false);
+			actions.archive.setDisabled(false);
+			if (og.additional_group_mailer_send) {
+				og.additional_group_mailer_send[0].setDisabled(false);
+				og.additional_group_mailer_send_selection = sm;
+			}
+		}
+	});
 	var cm_info = [
 		sm,
 		{
@@ -365,7 +418,7 @@ og.ContactManager = function() {
 			id: 'cp_' + cps[i].id,
 			header: cps[i].name,
 			dataIndex: 'cp_' + cps[i].id,
-			sortable: false,
+			sortable: true,
 			renderer: og.clean
 		});
 	}
@@ -451,6 +504,12 @@ og.ContactManager = function() {
 				scope: this
 			})
 	}	
+	var sendItems = [];
+	if (og.additional_group_mailer_send) {
+		for ( i=0; i<og.additional_group_mailer_send.length; i++) {
+			sendItems.push(og.additional_group_mailer_send[i]);
+		}
+	}
 	actions = {
 		newContact: new Ext.Action({
 			text: lang('new'),
@@ -570,11 +629,17 @@ og.ContactManager = function() {
 		            		iconCls: 'ico-download',
 		            		menu: { items: [
 		            			{ text: lang('to csv'), iconCls: 'ico-text', handler: function() {
-                                                                var ids = getSelectedIds();
-//                                                                if (ids != '') {
-                                                                    var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds()});
-                                                                    og.openLink(url);
-//                                                                } else og.err(lang("you must select the contacts from the grid"));
+		            								var ids = getSelectedIds();
+		            								if (ids != '') {
+		            											var url = og.getUrl('contact', 'export_to_csv_file', {ids:getSelectedIds()});
+		            											og.openLink(url);
+		            									}else{
+		            										var idsAll = getAllIds();
+		            										if (idsAll != '') {
+		            											var url = og.getUrl('contact', 'export_to_csv_file', {allIds:getAllIds()});
+		            											og.openLink(url);
+		            										}else og.err(lang("there are no contacts to export"));
+		            									}
                                                         }
                                                 },
                                                 { text: lang('to vcard'), iconCls: 'ico-account', handler: function() {
@@ -603,8 +668,11 @@ og.ContactManager = function() {
 							og.openLink(url);
 						}},
 						{ text: lang('export'), iconCls: 'ico-download', handler: function() {
-							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company'});
+							var idsAll = getAllIdsCompanys();
+							if (idsAll != ''){
+							var url = og.getUrl('contact', 'export_to_csv_file', {type:'company',allIds:getAllIdsCompanys()});
 							og.openLink(url);
+						} else og.err(lang("there are no companies to export")); 
 						}}
 					]}
 				})
@@ -625,6 +693,9 @@ og.ContactManager = function() {
 	if (!og.loggedUser.isGuest) {
 		tbar.push('-');
 		tbar.push(actions.imp_exp);
+		if (og.additional_group_mailer_send) {
+			tbar.push(sendItems);
+		}
 	}
 	
 	og.ContactManager.superclass.constructor.call(this, {

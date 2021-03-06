@@ -1267,8 +1267,8 @@ class FilesController extends ApplicationController {
 				if (isset($file) && $file->canDelete(logged_user())) {
 					try{
 						DB::beginWork();
-						$file->trash();
 						ApplicationLogs::createLog($file, ApplicationLogs::ACTION_TRASH);
+						$file->trash();
 						DB::commit();
 						$succ++;
 					} catch(Exception $e){
@@ -1349,7 +1349,10 @@ class FilesController extends ApplicationController {
 		
 		Hook::fire('classify_action', null, $ret);		
 		$join_params = null;
-		
+		if (strpos($order, 'p_') == 1 ){
+			$cpId = substr($order, 3);
+			$order = 'customProp';
+		}
 		if ($order == ProjectFiles::ORDER_BY_POSTTIME) {
 			$order = '`created_on`';
 		} else if ($order == ProjectFiles::ORDER_BY_MODIFYTIME) {
@@ -1361,6 +1364,17 @@ class FilesController extends ApplicationController {
 				'jt_field' => 'object_id',
 				'j_sub_q' => "SELECT max(`x`.`object_id`) FROM ".ProjectFileRevisions::instance()->getTableName()." `x` WHERE `x`.`file_id` = `e`.`object_id`"
 			);
+		}else if ($order == 'customProp') {
+			$order = 'IF(ISNULL(jt.value),1,0),jt.value';
+			$join_params['join_type'] = "LEFT ";
+			$join_params['table'] = "fo_custom_property_values";
+			$join_params['jt_field'] = "object_id";
+			$join_params['e_field'] = "object_id";
+			$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
+			$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
+			$select_columns[0] = "DISTINCT o.*";
+			$select_columns[1] = "e.*";
+			
 		} else {
 			$order = '`name`';
 		} // if
@@ -1374,7 +1388,8 @@ class FilesController extends ApplicationController {
 			"extra_conditions"=> $extra_conditions,
 			"join_params"=> $join_params,
 			"start"=> $start,
-			"limit"=> $limit
+			"limit"=> $limit,
+			"select_columns"=> $select_columns
 		));
 		
 		
@@ -1455,8 +1470,15 @@ class FilesController extends ApplicationController {
 				Hook::fire('add_classification_value', $o, $values);
 				
 				foreach ($custom_properties as $cp) {
-					$cp_value = CustomPropertyValues::getCustomPropertyValue($o->getId(), $cp->getId());
-					$values['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+					$cp_value = CustomPropertyValues::getCustomPropertyValues($o->getId(), $cp->getId());
+					for ($j = 0; $j < count($cp_value); $j++){
+						if ($j == 0){
+							$values['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
+						}else{
+							$values['cp_'.$cp->getId()] .= "; ";
+							$values['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
+						}
+					}
 				}
 				
 				$listing["files"][] = $values;
@@ -1749,7 +1771,7 @@ class FilesController extends ApplicationController {
 			$files_array = array();
 
 			foreach ($files as $file){
-				if ($file->getId() != array_var($_GET, 'id')){
+				if ($file->getId() != array_var($_GET, 'id') && $file->canView(logged_user())){
 					$files_array[] = array(
 						"id" => $file->getId(),
 						"name" => $file->getFilename(),
@@ -2013,7 +2035,8 @@ class FilesController extends ApplicationController {
                         tpl_assign('page', null);
                         ajx_extra_data(array("title" => $copy->getFilename(), 'icon'=>'ico-file'));
                         ajx_set_no_toolbar(true);
-
+                        tpl_assign('object_id', $copy->getId());
+                        tpl_assign('id', $copy->getId());
                         //read object for this user
                         $copy->setIsRead(logged_user()->getId(),true);
                         ApplicationReadLogs::createLog($copy, ApplicationReadLogs::ACTION_READ);

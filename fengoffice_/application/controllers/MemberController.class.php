@@ -608,6 +608,10 @@ class MemberController extends ApplicationController {
 			return;
 		}
 		$member = Members::findById(get_id());
+		if (!$member instanceof Member) {
+			ajx_current("empty");
+			return;
+		}
 		try {
 			
 			DB::beginWork();
@@ -1277,7 +1281,8 @@ class MemberController extends ApplicationController {
 			$count = $member->archive($user);
 			
 			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
-			ajx_current("back");
+			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
+			else ajx_current("back");
 		} catch (Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());
@@ -1314,7 +1319,8 @@ class MemberController extends ApplicationController {
 			
 			evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
 			
-			ajx_current("back");
+			if (array_var($_REQUEST, 'dont_back')) ajx_current("empty");
+			else ajx_current("back");
 			flash_success(lang('success unarchive member', $member->getName(), $count));
 			
 			DB::commit();

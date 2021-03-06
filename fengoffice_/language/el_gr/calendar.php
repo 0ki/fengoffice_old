@@ -138,7 +138,7 @@
 	'success export calendar' => '{0} Τα γεγονότα έχουν εξαχθεί.',
 	'calendar name desc' => 'Ονομασία ημερολογίου που θα εξαχθεί',
 	'calendar will be exported in icalendar format' => 'Το αρχείο θα εξαχθεί σε μορφή iCalendar',
-	'view date title' => 'l, μ/η/ε',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Για να εισάγετε γεγονότα από αυτό το ημερολόγιο, αντιγράψτε αυτό το url στο λογισμικό του ημερολογίου του πελάτη σας',
 	'import events from third party software' => 'Εισαγωγή γεγονότων από λογισμικό τρίτων',
 	'subws' => 'Υπο.Περ.Εργ.',

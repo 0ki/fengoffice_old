@@ -401,6 +401,10 @@ class ContactController extends ApplicationController {
 		}
 		$extra_conditions.= " AND disabled = 0 " ;
 		
+		if (strpos($order, 'p_') == 1 ){
+			$cpId = substr($order, 3);
+			$order = 'customProp';
+		}
 		switch ($order){
 			case 'updatedOn':
 				$order = '`updated_on`';
@@ -410,6 +414,17 @@ class ContactController extends ApplicationController {
 				break;
 			case 'name':
 				$order = ' concat(surname, first_name) ';
+				break;
+			case 'customProp':
+				$order = 'IF(ISNULL(jt.value),1,0),jt.value';
+				$join_params['join_type'] = "LEFT ";
+				$join_params['table'] = "fo_custom_property_values";
+				$join_params['jt_field'] = "object_id";
+				$join_params['e_field'] = "object_id";
+				$join_params['on_extra'] = "AND custom_property_id = ".$cpId;
+				$extra_conditions.= " AND ( custom_property_id = ".$cpId. " OR custom_property_id IS NULL)";
+				$select_columns[0] = "DISTINCT o.*";
+				$select_columns[1] = "e.*";
 				break;
 			default:
 				$order = '`name`';
@@ -427,7 +442,9 @@ class ContactController extends ApplicationController {
 			"order_dir" => $order_dir,
 			"extra_conditions" => $extra_conditions,
 			"start" =>$start,
-			"limit" => $limit
+			"limit" => $limit,
+			"join_params"=> $join_params,
+			"select_columns"=> $select_columns
 		));
 		
 		
@@ -629,8 +646,16 @@ class ContactController extends ApplicationController {
 				}
 				
 				foreach ($custom_properties as $cp) {
-					$cp_value = CustomPropertyValues::getCustomPropertyValue($c->getId(), $cp->getId());
-					$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
+					$cp_value = CustomPropertyValues::getCustomPropertyValues($c->getId(), $cp->getId());
+					for ($j = 0; $j < count($cp_value); $j++){
+						if ($j == 0){
+							$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
+						}else{
+							$object["contacts"][$i]['cp_'.$cp->getId()] .= "; ";
+							$object["contacts"][$i]['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
+						}
+					}
+										
 				}
     		}
 		}
@@ -873,7 +898,7 @@ class ContactController extends ApplicationController {
 					
 				//Home form
 				if($contact_data['h_address'] != "")
-                                    $contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+					$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
 				if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
 				if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
 				if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
@@ -883,7 +908,7 @@ class ContactController extends ApplicationController {
 				
 				//Work form
 				if($contact_data['w_address'] != "")
-                                    $contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+					$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
 				if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
 				if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
 				if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
@@ -893,7 +918,7 @@ class ContactController extends ApplicationController {
 				
 				//Other form
 				if($contact_data['o_address'] != "")
-                                    $contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+					$contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
 				if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
 				if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
 				//if($contact_data['o_fax_number'] != "") $contact->addPhone($contact_data['o_fax_number'], 'fax');
@@ -903,7 +928,7 @@ class ContactController extends ApplicationController {
 				if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
 				if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
 				if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');
-				
+				$contact->save();
 				//link it!
 				$object_controller = new ObjectController();
 				
@@ -1815,16 +1840,17 @@ class ContactController extends ApplicationController {
 	
 	
 	function export_to_csv_file() {
-		$this->setTemplate('csv_export');
 		$ids = array_var($_GET, 'ids');
-		$type = array_var($_GET, 'type', array_var($_SESSION, 'import_type', 'contact')); //type of import (contact - company)		
+		$idsall = array_var($_GET, 'allIds');		
+		$this->setTemplate('csv_export');
+	    $type = array_var($_GET, 'type', array_var($_SESSION, 'import_type', 'contact')); //type of import (contact - company)		
 		tpl_assign('import_type', $type);
 		if (!isset($_SESSION['import_type']) || ($type != $_SESSION['import_type'] && $type != '')){
 			$_SESSION['import_type'] = $type;
 		}
                 
 		$checked_fields = ($type == 'contact') ? array_var($_POST, 'check_contact') : array_var($_POST, 'check_company');
-		if (is_array($checked_fields)) {
+		if (is_array($checked_fields) && $ids) {
 			$titles = '';
 			$imp_type = array_var($_SESSION, 'import_type', 'contact');
 			if ($imp_type == 'contact') {
@@ -1870,9 +1896,54 @@ class ContactController extends ApplicationController {
 
 			$_SESSION['contact_export_filename'] = $filename;
 			flash_success(($imp_type == 'contact' ? lang('success export contacts') : lang('success export companies')));
-		} else {
-			unset($_SESSION['contact_export_filename']);
-			return;
+		} else {if ($idsall) {
+			$titles = '';
+			$imp_type = array_var($_SESSION, 'import_type', 'contact');
+			if ($imp_type == 'contact') {
+				$field_names = Contacts::getContactFieldNames();
+			
+				foreach($checked_fields as $k => $v) {
+					if (isset($field_names["contact[$k]"]) && $v == 'checked')
+						$titles .= $field_names["contact[$k]"] . ',';
+				}
+				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
+			}else{
+				$field_names = Contacts::getCompanyFieldNames();
+			
+				foreach($checked_fields as $k => $v) {
+					if (isset($field_names["company[$k]"]) && $v == 'checked')
+						$titles .= $field_names["company[$k]"] . ',';
+				}
+				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
+			}
+			
+			$filename = rand().'.tmp';
+			$handle = fopen(ROOT.'/tmp/'.$filename, 'wb');
+			fwrite($handle, $titles);
+			$conditions = '';
+			$ids_sql = ($idsall)? " AND id IN (".$idsall.") " : "";
+			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
+				$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+				$conditions .= $ids_sql;
+				$contacts = Contacts::instance()->getAllowedContacts($conditions);
+				foreach ($contacts as $contact) {
+					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields) . "\n");
+				}
+			}else{
+				$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
+				$conditions .=$ids_sql;
+				$companies = Contacts::getVisibleCompanies(logged_user(), $conditions);
+				foreach ($companies as $company) {
+					fwrite($handle, $this->build_csv_from_company($company, $checked_fields) . "\n");
+				}
+			}
+				
+			fclose($handle);
+			
+			$_SESSION['contact_export_filename'] = $filename;
+						
+			//unset($_SESSION['contact_export_filename']);
+			}
 		}
 	}
 	
@@ -3065,8 +3136,10 @@ class ContactController extends ApplicationController {
 		$email = trim(array_var(array_var($_POST, 'contact'),'email')) ;
 		$member = array_var($_POST, 'member');
 		$name = array_var($member, 'name');
-		$firstName = trim(array_var(array_var($_POST, 'contact'),'first_name'));
-		$surname = trim(array_var(array_var($_POST, 'contact'),'surname'));
+		$nameArray = explode(" ", $name);
+		$firstName = $nameArray[0];
+		unset($nameArray[0]);
+		$surname = implode(" ",$nameArray);
 		$parentMemberId = array_var($member, 'parent_member_id');
 		$objectType = ObjectTypes::findById(array_var($member, 'object_type_id'))->getName(); // 'person', 'company'
 		$dimensionId =  array_var($member, 'dimension_id'); 		

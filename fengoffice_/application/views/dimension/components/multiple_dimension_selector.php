@@ -4,6 +4,8 @@
 
 <?php
 
+	$is_ie = isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false);
+
 	$members_dimension = array();
 	$sel_mem_ids = array();
 	foreach ($dimensions as $dimension) :
@@ -42,7 +44,7 @@
 		$expgenid = gen_id();
 ?>
 	
-	<div id="<?php echo $genid; ?>member-seleector-dim<?php echo $dimension_id?>" class="single-dimension-selector">
+	<div id="<?php echo $genid; ?>member-seleector-dim<?php echo $dimension_id?>" class="single-dimension-selector" <?php echo $is_ie ? 'style="max-width:350px;"' : ''?>>
 		<div class="header x-accordion-hd" onclick="og.dashExpand('<?php echo $expgenid?>', 'selector-body-dim<?php echo $dimension_id ?>');">
 			<?php echo $dimension_name?>
 			<div id="<?php echo $expgenid; ?>expander" class="dash-expander ico-dash-expanded"></div>
@@ -60,11 +62,11 @@
 				$dimension_has_selection = true;
 				?>
 				<div class="selected-member-div <?php echo $alt_cls?>" id="<?php echo $genid?>selected-member<?php echo $selected_member->getId()?>">
-					<span class="coViewAction <?php echo $selected_member->getIconClass()?>"></span><?php
+					<span class="coViewAction <?php echo $selected_member->getIconClass()?>">&nbsp;</span><?php
 						$complete_path = $selected_member->getPath();
 						$complete_path = ($complete_path == "" ? "" : '<span class="path">'.$complete_path.'/</span>') . '<span class="bold">' . $selected_member->getName() . '</span>';
 						echo $complete_path;
-					?><div class="selected-member-actions">
+					?><div class="selected-member-actions" <?php echo $is_ie ? 'style="display:inline;margin-left:40px;float:none;"' : ''?>>
 						<a href="#" class="coViewAction ico-delete" title="<?php echo lang('remove relation')?>" onclick="member_selector.remove_relation(<?php echo $dimension_id?>,'<?php echo $genid?>', <?php echo $selected_member->getId()?>)"><?php echo lang('remove')?></a>
 					</div>
 				</div>

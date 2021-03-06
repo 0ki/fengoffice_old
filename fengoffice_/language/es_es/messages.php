@@ -600,6 +600,7 @@
 	'log read mailcontents' => 'Vió \'{0}\'',
 	'log read companies' => 'Vió \'{0}\'',
 	'log read contacts' => 'Vió \'{0}\'',
+	'log read contact' => 'Vió \'{0}\'',
 	'log read projectevents' => 'Vió \'{0}\'',
 	'log read projecttasks' => 'Vió \'{0}\'',
 	'log read projectmilestones' => 'Vió \'{0}\'',

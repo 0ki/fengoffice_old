@@ -134,7 +134,7 @@
 	'success export calendar' => '{0} esemény exportálva.',
 	'calendar name desc' => 'Az exportálandó naptár neve',
 	'calendar will be exported in icalendar format' => 'A naptár iCalendar formátumban lesz exportálva.',
-	'view date title' => 'l, Y. m. d.',
+	'view date title' => 'l, {0}',
 	'copy this url in your calendar client software' => 'Ha eseményeket akar átvinni naptárszoftverébe, másolja át kliensébe a következő hivatkozást',
 	'import events from third party software' => 'Események importálása külső szoftverből',
 	'subws' => 'Alproj.',

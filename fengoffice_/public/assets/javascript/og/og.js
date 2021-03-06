@@ -2618,3 +2618,9 @@ og.renderDimCol = function(value, p, r) {
 	}
 	return text;
 }
+
+og.expandMenuPanel = function(options) {
+	var animate = options.animate ? options.animate : true;
+	if (options.expand) Ext.getCmp('menu-panel').expand(animate);
+	else if (options.collapse) Ext.getCmp('menu-panel').collapse(animate);
+}

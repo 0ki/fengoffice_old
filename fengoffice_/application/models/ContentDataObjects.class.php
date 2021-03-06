@@ -348,10 +348,7 @@ abstract class ContentDataObjects extends DataManager {
 	 *  	 
 	 */
 	public function listing($args = array()) {
-		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
-			$start_time = microtime(1);
-		}
-		$result = new stdClass ;
+		$result = new stdClass;
 		$result->objects =array();
 		$result->total =array();
 		$type_id  = self::getObjectTypeId();
@@ -414,13 +411,11 @@ abstract class ContentDataObjects extends DataManager {
 			}
 		}
 		
-		$uid = logged_user()->getId() ;
-
 		// Order statement
     	$SQL_ORDER = self::prepareOrderConditions(array_var($args,'order'), array_var($args,'order_dir'));
 		
 		// Prepare Limit SQL 
-		if (is_numeric(array_var($args,'limit')) && is_numeric(array_var($args,'start')) && array_var($args,'limit')>0){
+		if (is_numeric(array_var($args,'limit')) && array_var($args,'limit')>0){
 			$SQL_LIMIT = "LIMIT ".array_var($args,'start',0)." , ".array_var($args,'limit');
 		}else{
 			$SQL_LIMIT = '' ;
@@ -463,56 +458,58 @@ abstract class ContentDataObjects extends DataManager {
 		
 		$SQL_COLUMNS = implode(',', $select_columns);
 		
-		// Build Main SQL
-	    $sql = "
-	    	SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
-			$SQL_BASE_JOIN
-	    	$SQL_EXTRA_JOINS 
-	    	
-	    	WHERE 
-	    		o.id IN ( 
-	    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
-	    			WHERE group_id  IN (
-		     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
-					)
-				) 
-				AND	$SQL_CONTEXT_CONDITION
-				AND $SQL_TYPE_CONDITION
-				AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
-			$SQL_ORDER 
-	    	$SQL_LIMIT";
-
-
-		// Execute query and build the resultset
-    	$rows = DB::executeAll($sql);
-    	if ($return_raw_data) {
-    		$result->objects = $rows;
-    	} else {
-    		if($rows && is_array($rows)) {
-    			foreach ($rows as $row) {
-    				if ($handler_class) {
-    					$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
-    					eval($phpCode);
-    				}
-    				if ( $co ) {
-    					$result->objects[] = $co ;
-    				}
-    			}
-    		}
-    	}
-		if ($count_results) {
-			$total = DB::executeOne("SELECT FOUND_ROWS() as total");
-			$result->total = $total['total'];	
-		}else{
-			if  ( count($result->objects) == $limit ) {
-				$result->total = 10000000;
+		if (logged_user() instanceof Contact) {
+			$uid = logged_user()->getId();
+			// Build Main SQL
+		    $sql = "
+		    	SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o
+				$SQL_BASE_JOIN
+		    	$SQL_EXTRA_JOINS 
+		    	
+		    	WHERE 
+		    		o.id IN ( 
+		    			SELECT object_id FROM ".TABLE_PREFIX."sharing_table
+		    			WHERE group_id  IN (
+			     			SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups WHERE contact_id = $uid
+						)
+					) 
+					AND	$SQL_CONTEXT_CONDITION
+					AND $SQL_TYPE_CONDITION
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS 
+				$SQL_ORDER 
+		    	$SQL_LIMIT";
+	
+	
+			// Execute query and build the resultset
+	    	$rows = DB::executeAll($sql);
+	    	if ($return_raw_data) {
+	    		$result->objects = $rows;
+	    	} else {
+	    		if($rows && is_array($rows)) {
+	    			foreach ($rows as $row) {
+	    				if ($handler_class) {
+	    					$phpCode = '$co = '.$handler_class.'::instance()->loadFromRow($row);';
+	    					eval($phpCode);
+	    				}
+	    				if ( $co ) {
+	    					$result->objects[] = $co ;
+	    				}
+	    			}
+	    		}
+	    	}
+			if ($count_results) {
+				$total = DB::executeOne("SELECT FOUND_ROWS() as total");
+				$result->total = $total['total'];	
 			}else{
-				$result->total = $start + count($result->objects) ;
+				if  ( count($result->objects) == $limit ) {
+					$result->total = 10000000;
+				}else{
+					$result->total = $start + count($result->objects) ;
+				}
 			}
-		}
-		
-		if ( defined('DEBUG_TIME') && DEBUG_TIME ) {
-			Logger::log("Query time: ". (microtime(1) - $start_time) ) ;
+		} else {
+			$result->objects = array();
+			$result->total = 0;
 		}
 		
 		return $result;
@@ -618,6 +615,9 @@ abstract class ContentDataObjects extends DataManager {
 	    	
     		if (array_var($join_params, 'e_field')) {
 	      		$on_cond = "`e`.`".$join_params['e_field']."` = `jt`.`".$join_params['jt_field']."`";
+	      		if (array_var($join_params, 'on_extra')) {
+	      			$on_cond = "`jt`.`".$join_params['e_field']."` = `e`.`".$join_params['jt_field']."` ".$join_params['on_extra'];
+	      		}
 	      	} else if (array_var($join_params, 'j_sub_q')) {
 	      		$on_cond = "`jt`.`".$join_params['jt_field']."` = (" . array_var($join_params, 'j_sub_q') . ")";
 	      	}

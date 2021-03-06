@@ -210,14 +210,31 @@ class SearchController extends ApplicationController {
 					}
 				}else{
 					$value = mysql_real_escape_string($condValue, DB::connection()->getLink());
-				}				
+				}			
 				$condition_condition = mysql_real_escape_string(array_var($condition, 'condition'), DB::connection()->getLink());
 				$condition_field_name = mysql_real_escape_string(array_var($condition, 'field_name'), DB::connection()->getLink());
 				$conditionLocal = "like";
 				tpl_assign('type_object', $type_object);
+				//CREO QUE ESTO ESTA MAL
 				if (isset($condition['custom_property_id']) and is_numeric($condition['custom_property_id'])){
 					$condition_field_name = 'value';
-					$joincp = 'JOIN  fo_custom_property_values cp ON cp.object_id = so.rel_object_id';
+					$joincp = 'JOIN  '.TABLE_PREFIX.'custom_property_values cp ON cp.object_id = so.rel_object_id';
+				};
+				if (($condition['custom_property_id'] == 'phone_number') ){
+					$condition_field_name = 'number';
+					$joincp = 'JOIN  '.TABLE_PREFIX.'contact_telephones ct ON ct.contact_id = so.rel_object_id';
+				};				
+				if (($condition['custom_property_id'] == 'email_address') ){
+					$condition_field_name = 'email_address';
+					$joincp = 'JOIN  '.TABLE_PREFIX.'contact_emails ce ON ce.contact_id = so.rel_object_id';
+				};
+				if (($condition['custom_property_id'] == 'web_url') ){
+					$condition_field_name = 'url';
+					$joincp = 'JOIN  '.TABLE_PREFIX.'contact_web_pages cw ON cw.contact_id = so.rel_object_id';
+				};
+				if (($condition['custom_property_id'] == 'im_value') ){
+					$condition_field_name = 'value';
+					$joincp = 'JOIN  '.TABLE_PREFIX.'contact_im_values cim ON cim.contact_id = so.rel_object_id';
 				};
 				
 				if ($condition_condition == "=" or $condition_condition == ">" or $condition_condition == "<" or $condition_condition == "<>" or $condition_condition == ">=" or $condition_condition == "<="){
@@ -226,18 +243,32 @@ class SearchController extends ApplicationController {
 				if($condition_field_name == "id"){
 					$condition_field_name = "o`.`id" ;
 				};			
+				
 				if($condition_condition == "like"){
 					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '%" . $value . "%' ";
+					$con = "like '%" . $value . "%' ";
 				}else if($condition_condition == "ends with"){
 					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '%" . $value . "' ";
+					$con = "like '%" . $value . "' ";
 				}else if($condition_condition == "start with"){
 					$where_condiition .= " AND `" . $condition_field_name . "` " . "like" . " '" . $value . "%' ";
+					$con = "like '" . $value . "%' ";
 				}else if($condition_condition == "not like"){
 					$where_condiition .= " AND `" . $condition_field_name . "` " . "not like" . " '%" . $value . "%' ";
+					$con = "not like '%" . $value . "%' ";
 				}else{					
 					$where_condiition .= " AND `" . $condition_field_name . "` " . $conditionLocal . " '" . $value . "' ";
+					$con = $conditionLocal . " '" . $value . "' ";
 				}
-								
+				if (($condition['custom_property_id'] == 'address') ){
+					$addressCondiition .= " AND (street ".$con;
+					$addressCondiition .= " OR city " .$con;
+					$addressCondiition .= " OR state ".$con;
+					$addressCondiition .= " OR country ".$con;
+					$addressCondiition .= " OR zip_code ".$con. ")";
+					$where_condiition = $addressCondiition;
+					$joincp = 'JOIN  '.TABLE_PREFIX.'contact_addresses ca ON ca.contact_id = so.rel_object_id';
+				};
 				$conditions_view[$cont]['id'] = $condition['id'];
 				$conditions_view[$cont]['custom_property_id'] = $custom_prop_id;
 				$conditions_view[$cont]['field_name'] = $condition['field_name'];
@@ -253,7 +284,7 @@ class SearchController extends ApplicationController {
 			}
 
 			$sql = "
-			SELECT  distinct(so.rel_object_id) AS id
+			SELECT so.rel_object_id AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			".$joincp."
 			INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
@@ -267,13 +298,13 @@ class SearchController extends ApplicationController {
 			 		)
 			 	)
 			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
-			LIMIT $start, $limitTest ";			
+			LIMIT $start, $limitTest";
 		} else {
 			
 			$type_object = '';
 			
 			$sql = "	
-			SELECT  distinct(so.rel_object_id) AS id
+			SELECT so.rel_object_id AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
 			WHERE (
@@ -295,7 +326,7 @@ class SearchController extends ApplicationController {
 			)" . (($useLike) ? "AND	so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . " 
 			AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . "
 			ORDER by o.updated_on DESC
-			LIMIT $start, $limitTest ";
+			LIMIT $start, $limitTest";
 		}
 		tpl_assign('type_object', $type_object);
 		$db_search_results = array();
@@ -305,7 +336,7 @@ class SearchController extends ApplicationController {
 		$timeEnd = time();
 		
 		while ($row = $res->fetchRow() ) {
-			$search_results_ids[] = $row['id'] ;
+			$search_results_ids[$row['id']] = $row['id'];
 		}
 		// Prepare results for view to avoid processing at presentation layer 
 		$search_results = $this->prepareResults($search_results_ids, $null, $limit);
@@ -658,6 +689,17 @@ class SearchController extends ApplicationController {
 				
 				$fields[] = array('id' => $extField, 'name' => $field_name, 'type' => 'external', 'multiple' => 0);
 			}
+			//if Object type is person
+			$objType = ObjectTypes::findByName('contact');
+			if ($objType instanceof ObjectType){
+				if($object_type == $objType->getId()){
+					$fields[] = array('id' => 'email_address', 'name' => lang('email address'), 'type' => 'text');
+					$fields[] = array('id' => 'phone_number', 'name' => lang('phone number'), 'type' => 'text');
+					$fields[] = array('id' => 'web_url', 'name' => lang('web pages'), 'type' => 'text');
+					$fields[] = array('id' => 'im_value', 'name' => lang('instant messengers'), 'type' => 'text');
+					$fields[] = array('id' => 'address', 'name' => lang('address'), 'type' => 'text');	
+				}
+			}		
 		}
 		usort($fields, array(&$this, 'compare_FieldName'));
 		return $fields;

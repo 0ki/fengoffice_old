@@ -18,12 +18,12 @@ if (!$logged_user_settings instanceof MailAccountContact) {
 }
 
 /* @var $mailAccount MailAccount */
-if ($mailAccount->getContactId() == logged_user()->getId()) {
-	// the creator of the account can always edit it
+if ($mailAccount->getContactId() == logged_user()->getId() || logged_user()->isAdministrator()) {
+	// the creator of the account and superadmins can always edit it
 	$logged_user_can_edit = true;
 }
 
-if (!$mailAccount->isNew()){	
+if (!$mailAccount->isNew()){
 	$mail_acc_id = $mailAccount->getId();	
 }
 
@@ -178,7 +178,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 						
 					} else {
 						render_member_selectors(MailContents::instance()->getObjectTypeId(), $genid, $mailAccount->getMemberIds()); 
-					} 				
+					}
 				?>
 		</div>
 		
@@ -335,7 +335,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 			</label>
 			<?php			
 			$select_box_attrib = array('id'=>$genid.'users_select_box');
-			echo user_select_box('users_select_box', logged_user()->getId(),$select_box_attrib);			
+			echo user_select_box('users_select_box', $mailAccount->getContactId(),$select_box_attrib);
 		?>
 							
 		</div>
@@ -416,7 +416,7 @@ if (strlen($loc) > 2) $loc = substr($loc, 0, 2);
 		<div class="desc"><?php echo lang('mail account permissions desc')?></div>
 		<?php
 		$account_users = array();
-		if(logged_user() && logged_user()->getCompany()) {
+		if(logged_user()/* && logged_user()->getCompany()*/) {
 			$account_users = Contacts::findAll(array('conditions' => '`user_type` <> 0 AND `disabled` = 0'));
 		}
 		$account_user_ids = is_array($mailAccountUsers) ? array_keys($mailAccountUsers) : array();

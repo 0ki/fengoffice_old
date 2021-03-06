@@ -404,7 +404,7 @@ class MailContent extends BaseMailContent {
 	 */
 	function canView(Contact $user) {
 		$account = $this->getAccount();
-		if ($account) {
+		if ($account instanceof MailAccount) {
 			return ($account->getContactId() == logged_user()->getId() || can_read_sharing_table($user, $this->getId()));
 		}else{
 			return can_read_sharing_table($user, $this->getId());
@@ -418,15 +418,31 @@ class MailContent extends BaseMailContent {
 	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canEdit(Contact $user) {	
+	function canEdit(Contact $user) {
 		$account = $this->getAccount();
-		if ($account) {
-			return ( 
-				$account->getContactId() == logged_user()->getId() || 
-				can_write($user, $this->getMembers(), $this->getObjectTypeId())
-			);	
+		$members = $this->getMembers();
+		
+		$persons_dim = Dimensions::findByCode('feng_persons');
+		$tmp = array();
+		foreach ($members as $m) {
+			if (!$persons_dim instanceof Dimension || $m->getDimensionId() != $persons_dim->getId()) $tmp[] = $m;
+		}
+		$members = $tmp;
+		
+		if ($account instanceof MailAccount) {
+			// if classified
+			if (count($members) > 0) {
+				return $account->getContactId() == logged_user()->getId() || can_write($user, $members, $this->getObjectTypeId());
+			} else {
+				$macs = MailAccountContacts::instance()->count(array('`account_id` = ? AND `contact_id` = ? AND `can_edit` = 1', $account->getId(), $user->getId()));
+				return $account->getContactId() == logged_user()->getId() || $macs > 0;
+			}
 		}else{
-			return can_write($user, $this->getMembers(), $this->getObjectTypeId());
+			if (count($members) > 0) {
+				return can_write($user, $members, $this->getObjectTypeId());
+			} else {
+				return false;
+			}
 		}
 	} 
 
@@ -450,13 +466,30 @@ class MailContent extends BaseMailContent {
 	 */
 	function canDelete(Contact $user) {
 		$account = $this->getAccount();
-		if ($account) {
-			return ( 
-				$account->getContactId() == logged_user()->getId() || 
-				can_delete($user,$this->getMembers(), $this->getObjectTypeId())
-			);	
+		$members = $this->getMembers();
+		
+		$persons_dim = Dimensions::findByCode('feng_persons');
+		$tmp = array();
+		foreach ($members as $m) {
+			if (!$persons_dim instanceof Dimension || $m->getDimensionId() != $persons_dim->getId()) $tmp[] = $m;
+		}
+		$members = $tmp;
+		
+		if ($account instanceof MailAccount) {
+			// if classified
+			if (count($members) > 0) {
+				return $account->getContactId() == logged_user()->getId() || can_delete($user, $members, $this->getObjectTypeId());
+			} else {
+				$macs = MailAccountContacts::instance()->count(array('`account_id` = ? AND `contact_id` = ? AND `can_edit` = 1', $account->getId(), $user->getId()));
+				return $account->getContactId() == logged_user()->getId() || $macs > 0;
+			}
 		}else{
-			return can_delete($user, $this->getMembers(), $this->getObjectTypeId());
+			// if classified
+			if (count($members) > 0) {
+				return can_delete($user, $members, $this->getObjectTypeId());
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -504,13 +537,15 @@ class MailContent extends BaseMailContent {
 	          $content = $this->getSearchableColumnContent($column_name);
 	          if(trim($content) <> '') {
 
-	            $searchable_object = new SearchableObject();
+	          	$searchable_object = SearchableObjects::findById(array('rel_object_id' => $this->getObjectId(), 'colummn_name' => $column_name));
+	          	if (!$searchable_object instanceof SearchableObject) {
+	            	$searchable_object = new SearchableObject();
+	            	$searchable_object->setRelObjectId($this->getObjectId());
+	            	$searchable_object->setColumnName($column_name);
+	          	}
 	            
-	            $searchable_object->setRelObjectId($this->getObjectId());
-	            $searchable_object->setColumnName($column_name);
 	            $searchable_object->setContent($content);
 	            $searchable_object->setContactId($this->getAccount() instanceof MailAccount ? $this->getAccount()->getContactId() : 0);
-	            //$searchable_object->setProjectId(0); TODO Feng 2 setDefault Member
 	            $searchable_object->save();
 	          } // if
 	        } // foreach
