@@ -8,31 +8,32 @@ ext=.zip
 
 mkdir -p $file
 
-baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
-versionlist1="$(echo "$baselist1" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
+if [ -f "versions.list" ]; then
+ baselist1="$(curl https://sourceforge.net/projects/opengoo/rss?path=/opengoo | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+ versionlist1="$(echo "$baselist1" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
 
 
-baselist="$baselist1"
-versionlist="$versionlist1"
+ baselist="$baselist1"
+ versionlist="$versionlist1"
 
-preversionlist2=$(curl "$listurl" | grep "<span class=\"name\">" | striptags | sed -E 's/^\s+//g;s/\s+$//g' | tac)
+ preversionlist2=$(curl "$listurl" | grep "<span class=\"name\">" | striptags | sed -E 's/^\s+//g;s/\s+$//g' | tac)
 
-for v in $preversionlist2; do 
- baselist_t="$(curl -s "https://sourceforge.net/projects/opengoo/rss?path=/fengoffice/$v" | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
- versionlist_t="$(echo "$baselist_t" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
- baselist="$baselist $baselist_t"
- versionlist="$versionlist $versionlist_t"
- echo added "$versionlist_t" to list
-done
+ for v in $preversionlist2; do 
+  baselist_t="$(curl -s "https://sourceforge.net/projects/opengoo/rss?path=/fengoffice/$v" | grep "download</link>"|striptags | grep -Ei "/(opengoo|fengoffice)[^/]+/download$" | grep -vi upgrade | grep -vi patch | sed -E 's/^\s+//g;s/\s+$//g' |tac)"
+  versionlist_t="$(echo "$baselist_t" | rev | cut -d / -f 2 |rev | sed 's/'"$(echo $ext | sed 's/\./\\./g')"'$//i')"
+  baselist="$baselist $baselist_t"
+  versionlist="$versionlist $versionlist_t"
+  echo added "$versionlist_t" to list
+ done
 
-echo Versions: $versionlist
+ echo Versions: $versionlist
 
-versionlist=($versionlist)
-baselist=($baselist)
-for i in "${!versionlist[@]}"; do
+ versionlist=($versionlist)
+ baselist=($baselist)
+ for i in "${!versionlist[@]}"; do
     echo "${versionlist[i]}#${baselist[i]}"
-done > versions.list
-
+ done > versions.list
+fi
 
 while IFS= read -r line; do
  version="$(echo $line |cut -d \# -f 1)"
