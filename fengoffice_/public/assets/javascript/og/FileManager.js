@@ -23,7 +23,7 @@ og.FileManager = function() {
 				'updatedBy', 'updatedById',
 				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
 				'icon', 'project', 'projectId', 'manager', 'checkedOutById',
-				'checkedOutByName', 'mimeType'
+				'checkedOutByName', 'mimeType', 'workspaceColors', 'isModifiable'
 			]
 		}),
 		remoteSort: true,
@@ -63,10 +63,35 @@ og.FileManager = function() {
 	this.store.setDefaultSort('dateUpdated', 'desc');
 	this.store.manager = this;
 
+	
 	function renderName(value, p, r) {
-		return String.format(
-			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
+		var result = '';
+		var name = String.format(
+			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
 			value, r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
+					
+		var ids = String(r.data.projectId).split(',');
+		var names = r.data.project.split(',');
+		var colors = String(r.data.workspaceColors).split(',');
+		var projectstring = '<span class="og-wsname">';
+		for(var i = 0; i < ids.length; i++){
+			projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
+		}
+		projectstring += '</span>';
+		
+		var actions = '';
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
+		
+		if (r.data.isModifiable) {
+			actions += String.format(
+			'<a class="ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>' + lang('edit') + '</a>',
+			og.getUrl('files', 'add_document', {id: r.data.object_id}),lang('edit this document'));
+		}
+		
+		if (actions != '')
+			actions = '<span style="padding-left:15px">-&nbsp;' + actions + '</span>';
+		
+		return projectstring + name + actions;
 	}
 
 	function renderIcon(value, p, r) {
@@ -83,27 +108,33 @@ og.FileManager = function() {
 		return String.format('<div class="{0}" />', classes);
 	}
 
-	function renderUser(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.updatedById}));
-	}
-
-	function renderAuthor(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.createdById}));
-	}
-
-	function renderProject(value, p, r) {
-		return String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', value, r.data.projectId);
-	}
-
-	function renderDate(value, p, r) {
+	function renderDateUpdated(value, p, r) {
 		if (!value) {
 			return "";
 		}
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+	
 		var now = new Date();
+		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat('M j');
+			return lang('last updated by on', userString, value.dateFormat('M j'));
 		} else {
-			return value.dateFormat('h:i a');
+			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+		}
+	}
+	
+	function renderDateCreated(value, p, r) {
+		if (!value) {
+			return "";
+		}
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.createdBy, og.getUrl('user', 'card', {id: r.data.createdById}));
+	
+		var now = new Date();
+		var dateString = '';
+		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
+			return lang('last updated by on', userString, value.dateFormat('M j'));
+		} else {
+			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
 	}
 
@@ -182,20 +213,6 @@ og.FileManager = function() {
 			width: 300,
 			renderer: renderName
         },{
-			id: 'project',
-			header: lang("project"),
-			dataIndex: 'project',
-			width: 120,
-			renderer: renderProject,
-			sortable: false
-        },{
-        	id: 'user',
-        	header: lang('updated by'),
-        	dataIndex: 'updatedBy',
-        	width: 120,
-        	renderer: renderUser,
-        	sortable: false
-        },{
 			id: 'type',
 			header: lang('type'),
 			dataIndex: 'type',
@@ -210,26 +227,19 @@ og.FileManager = function() {
 			hidden: true,
 			sortable: false
         },{
-			id: 'last',
-			header: lang("last update"),
+			id: 'updated',
+			header: lang("last updated by"),
 			dataIndex: 'dateUpdated',
-			width: 80,
-			renderer: renderDate
-        },{
-			id: 'created',
-			header: lang("created on"),
-			dataIndex: 'dateCreated',
-			width: 80,
-			hidden: true,
-			renderer: renderDate
-		},{
-			id: 'author',
-			header: lang("created by"),
-			dataIndex: 'createdBy',
 			width: 120,
 			sortable: false,
-			renderer: renderAuthor,
-			hidden: true
+			renderer: renderDateUpdated
+        },{
+			id: 'created',
+			header: lang("created by"),
+			dataIndex: 'dateCreated',
+			width: 120,
+			hidden: true,
+			renderer: renderDateCreated
 		},{
 			id: 'status',
 			header: lang("status"),

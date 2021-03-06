@@ -122,7 +122,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 
-		download_contents($file->getFileContent(), $type, $name, $file->getFileSize(), !$inline);
+		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_file
 
@@ -202,6 +202,7 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function download_revision() {
+		$inline = (boolean) array_var($_GET, 'inline', false);
 		$revision = ProjectFileRevisions::findById(get_id());
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
@@ -216,13 +217,13 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 			
-		if(!($revision->canDownload(logged_user()))) {
+		if(!($file->canDownload(logged_user()))) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
 		} // if
 			
-		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize());
+		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
 		die();
 	} // download_revision
 
@@ -315,6 +316,9 @@ class FilesController extends ApplicationController {
 				foreach ($validWS as $w) {
 					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
 				}
+				//Add links
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($file);
 				DB::commit();
 				//flash_success(array_var($file_data, 'add_type'));
 
@@ -1003,20 +1007,22 @@ class FilesController extends ApplicationController {
 					"type" => $o->getObjectTypeName(),
 					"mimeType" => $o->getTypeString(),
 					"tags" => project_object_tags($o),
-					"createdBy" => Users::findById($o->getCreatedById())->getUsername(),
+					"createdBy" => Users::findById($o->getCreatedById())->getDisplayName(),
 					"createdById" => $o->getCreatedById(),
 					"dateCreated" => $o->getCreatedOn()->getTimestamp(),
-					"updatedBy" => Users::findById($o->getUpdatedById())->getUsername(),
+					"updatedBy" => Users::findById($o->getUpdatedById())->getDisplayName(),
 					"updatedById" => $o->getUpdatedById(),
 					"dateUpdated" => $o->getUpdatedOn()->getTimestamp(),
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
 					"project" => $o->getWorkspacesNamesCSV(),
 					"projectId" => $o->getWorkspacesIdsCSV(),
+					"workspaceColors" => $o->getWorkspaceColorsCSV(),
 					"url" => $o->getOpenUrl(),
 					"manager" => get_class($o->manager()),
 					"checkedOutByName" => $coName,
-					"checkedOutById" => $coId
+					"checkedOutById" => $coId,
+					"isModifiable" => $o->isModifiable() && $o->canEdit(logged_user())
 				);
 			}
 		}
@@ -1368,7 +1374,7 @@ class FilesController extends ApplicationController {
 	function check_filename(){
 		ajx_current("empty");
 		$filename = array_var($_GET, 'filename');
-		$file = ProjectFiles::findOne(array('conditions' => "filename = '" . $filename . "'"));
+		$file = ProjectFiles::getByFilename($filename);
 
 		if ($file instanceof ProjectFile && $file->getId() != array_var($_GET, 'id')){
 			$c = 1;
@@ -1401,7 +1407,7 @@ class FilesController extends ApplicationController {
 	}
 
 	function filenameExists($filename){
-		$file = ProjectFiles::findOne(array('conditions' => "filename = '$filename'"));
+		$file = ProjectFiles::getByFilename($filename);
 		return $file instanceof ProjectFile;
 	}
 	
@@ -1432,7 +1438,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 			
-		if(!$revision->canDelete(logged_user())) {
+		if(!$file->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -1498,7 +1504,7 @@ class FilesController extends ApplicationController {
 			return;
 		} // if
 			
-		if(!$revision->canDelete(logged_user())) {
+		if(!$file->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

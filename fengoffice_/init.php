@@ -90,6 +90,7 @@
   include_once 'environment/environment.php';
   
   include_once 'library/cal/index.php';
+  include_once 'library/minicalendar/OGCalendar.php';
   
   include_once 'library/json/json.php';
   

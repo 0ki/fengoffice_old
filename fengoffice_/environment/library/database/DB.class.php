@@ -143,7 +143,7 @@
       
       if (defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
-      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }
       
       return $result;
@@ -169,7 +169,7 @@
       
       if (defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
-      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }
       
       return $result;
@@ -191,13 +191,11 @@
       if (defined('DEBUG_DB') && DEBUG_DB)
       	$start = microtime(true);
       
-      if (defined('DEBUG_DB') && DEBUG_DB)
-      	Logger::log($sql);
       $result = self::connection()->executeAll($sql, $arguments);
     
       if (defined('DEBUG_DB') && DEBUG_DB){
       	$end = microtime(true);
-      	Logger::log(($end - $start) . " - " .  DB::prepareString($sql, $arguments));
+      	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
       }
       
       return $result;

@@ -11,6 +11,8 @@ return array(
     'search result description short' => '<strong>{0} to {1} of {2}</strong>',
 
 // Options and descriptions
+	'edit this file' => 'Edit this file',
+
     'important message desc' => 'Important messages are listed in the "Important messages" sidebar on the workspace messages page',
     'important file desc' => 'Important files are listed in the sidebar of files section in "Important files" block',
     'enable comments' => 'Enable comments',
@@ -41,6 +43,7 @@ return array(
     'started on by' => '{0} | <a class="internalLink" href="{1}">{2}</a>',
     'posted on by' => '{0} | <a class="internalLink" href="{1}">{2}</a>',
     'milestone assigned to' => 'Assigned to {0}',
+    'assigned to' => 'Assigned to',
     'project started on' => 'Started on',
 
     'send milestone assigned to notification' => 'Send email notification to user',
@@ -108,8 +111,8 @@ return array(
     'upload file desc' => 'You can upload files of any type. Max filesize you are allowed to upload is {0}',
     'file revision info short' => 'Revision #{0} <span>(created on {1})</span>',
     'file revision info long' => 'Revision #{0} <span>(by <a class="internalLink" href="{1}">{2}</a> on {3})</span>',
-    'file revision title short' => '<a target="_blank" href="{0}">Revision #{1}</a> <span>(created on {2})</span>',
-    'file revision title long' => '<a target="_blank" href="{0}">Revision #{1}</a> <span>(by <a class="internalLink" href="{2}">{3}</a> on {4})</span>',
+    'file revision title short' => '<a href="{0}">Revision #{1}</a> <span>(created on {2})</span>',
+    'file revision title long' => '<a href="{0}">Revision #{1}</a> <span>(by <a class="internalLink" href="{2}">{3}</a> on {4})</span>',
     'file checkout info short' => '<span>Checked out on {0}</span>',
     'file checkout info long' => '<span>Checked out by </span> <a class="internalLink" href="{0}">{1}</a> <span> on {2}</span>',
     'update file' => 'Update file',

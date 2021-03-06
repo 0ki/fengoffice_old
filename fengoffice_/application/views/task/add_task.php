@@ -44,15 +44,13 @@
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_tags_div', this)"><?php echo lang('tags') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_milestone_div', this)"><?php echo lang('milestone') ?></a> - 
 		<?php if($task->isNew()) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_tasks_div', this)"><?php echo lang('subtasks') ?></a> - 
 		<?php } ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_handins_div', this)"><?php echo lang('handins') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_options_div', this)"><?php echo lang('options') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_properties_div', this)"><?php echo lang('properties') ?></a> -
-		<?php if(!$task->isNew() && $project instanceof Project && $task->canLinkObject(logged_user(), $project)) { ?>  
+		<?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>  
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_linked_objects_div', this)"><?php echo lang('linked objects') ?></a> -
 		<?php } ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_list_dates_div', this)"><?php echo lang('dates') ?></a>
@@ -77,12 +75,6 @@
 	</fieldset>
 	</div>
 
-	<div id="<?php echo $genid ?>add_list_description_div" style="display:none">
-	<fieldset>
-	<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription')) ?>
-	</fieldset>
-	</div>
 	
 	<div id="<?php echo $genid ?>add_list_milestone_div" style="display:none">
   	<fieldset>
@@ -144,15 +136,6 @@
 	</fieldset>
   	</div>
   
-<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
-	<div id="<?php echo $genid ?>add_list_options_div" style="display:none">
-  	<fieldset>
-    <legend><?php echo lang('options') ?></legend>
-	    <label><?php echo lang('private task list') ?>: <span class="desc">(<?php echo lang('private task list desc') ?>)</span></label>
-	    <?php echo yes_no_widget('task[is_private]', $genid . 'taskListFormIsPrivate', array_var($task_data, 'is_private'), lang('yes'), lang('no')) ?>
-	</fieldset>
-   	</div>
-<?php } // if ?>
 	
 	<div id='<?php echo $genid ?>add_list_properties_div' style="display:none">
 	<fieldset>
@@ -161,14 +144,21 @@
   	</fieldset>
  	</div>
   
-    <?php if(!$task->isNew() && $task->canLinkObject(logged_user(), $projects)) { ?>
+    <?php if($task->isNew() || $task->canLinkObject(logged_user())) { ?>
     <div style="display:none" id="<?php echo $genid ?>add_task_linked_objects_div">
 	<fieldset>
+	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
     <legend><?php echo lang('linked objects') ?></legend>
     	<?php echo render_object_links($task) ?>
 	</fieldset>
 	</div>
 	<?php } // if ?>
+	
+	
+	
+	
 	<div id="<?php echo $genid ?>add_list_dates_div" style="display:none">
  	<fieldset>
     <legend><?php echo lang('dates') ?></legend>
@@ -205,7 +195,10 @@
 		</div>
  	</fieldset>
    	</div>	
-	
+   	
+	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
+	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription')) ?>
+	</div>
 	
 	<div><?php echo label_tag(lang('parent task'), $genid . 'addTaskTaskList') ?>
 	<?php echo select_task_list('task[parent_id]', active_project(), array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList')) ?>

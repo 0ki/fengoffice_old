@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.2 2008/05/16 17:53:37 chonwil Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.3 2008/08/04 14:18:47 chonwil Exp $
  *
  */
 
@@ -30,8 +30,8 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.2 2008/05/16 17:53:37 chonwil Exp $</version>
-	<copyright>Copyright © (C) Manuel Lemos 2006</copyright>
+	<version>@(#) $Id: mime_parser.class.php,v 1.3 2008/08/04 14:18:47 chonwil Exp $</version>
+	<copyright>Copyright © (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
 	<authoraddress>mlemos-at-acm.org</authoraddress>
@@ -223,6 +223,22 @@ class mime_parser_class
 /*
 {metadocument}
 	<variable>
+		<name>message_buffer_length</name>
+		<type>INTEGER</type>
+		<value>8000</value>
+		<documentation>
+			<purpose>Maximum length of the chunks of message data that the class
+				parse at one time.</purpose>
+			<usage>Adjust this value according to the available memory.</usage>
+		</documentation>
+	</variable>
+{/metadocument}
+*/
+	var $message_buffer_length = 8000;
+
+/*
+{metadocument}
+	<variable>
 		<name>ignore_syntax_errors</name>
 		<type>BOOLEAN</type>
 		<value>1</value>
@@ -371,11 +387,21 @@ class mime_parser_class
 		while(strlen($p))
 		{
 			$parameter = trim(strtolower($this->Tokenize($p, '=')));
-			$value = trim($this->Tokenize(';'));
-			if(!strcmp($value[0], '"')
-			&& !strcmp($value[strlen($value) - 1], '"'))
-				$value = substr($value, 1, strlen($value) - 2);
-			$p = trim($this->Tokenize(''));
+			$remaining = trim($this->Tokenize(''));
+			if(!strcmp($remaining[0], '"')
+			&& (GetType($quote = strpos($remaining, '"', 1)) == 'integer'))
+			{
+				$value = substr($remaining, 1, $quote - 1);
+				$p = trim(substr($remaining, $quote + 1));
+				if(strlen($p) > 0
+				&& !strcmp($p[0], ';'))
+					$p = substr($p, 1);
+			}
+			else
+			{
+				$value = trim($this->Tokenize($remaining, ';'));
+				$p = trim($this->Tokenize(''));
+			}
 			if(($l=strlen($parameter))
 			&& !strcmp($parameter[$l - 1],'*'))
 			{
@@ -398,6 +424,15 @@ class mime_parser_class
 	{
 		if(GetType($line_break=strpos($string, $break="\n", $position))=='integer')
 		{
+			if(GetType($new_line_break=strpos($string, "\n", $position))=='integer')
+			{
+				if($new_line_break < $line_break)
+				{
+					$break = "\n";
+					$line_break = $new_line_break;
+					return(1);
+				}
+			}
 			if($line_break>$position
 			&& $string[$line_break-1]=="\r")
 			{
@@ -413,6 +448,15 @@ class mime_parser_class
 	{
 		if(GetType($line_break=strpos($this->buffer, $break="\r", $position))=='integer')
 		{
+			if(GetType($new_line_break=strpos($this->buffer, "\n", $position))=='integer')
+			{
+				if($new_line_break < $line_break)
+				{
+					$break = "\n";
+					$line_break = $new_line_break;
+					return(1);
+				}
+			}
 			if(($n = $line_break + 1) < strlen($this->buffer)
 			&& $this->buffer[$n]=="\n")
 				$break="\r\n";
@@ -425,6 +469,15 @@ class mime_parser_class
 	{
 		if(GetType($line_break=strpos($this->body_buffer, $break="\r", $position))=='integer')
 		{
+			if(GetType($new_line_break=strpos($this->body_buffer, "\n", $position))=='integer')
+			{
+				if($new_line_break < $line_break)
+				{
+					$break = "\n";
+					$line_break = $new_line_break;
+					return(1);
+				}
+			}
 			if(($n = $line_break + 1) < strlen($this->body_buffer)
 			&& $this->body_buffer[$n]=="\n")
 				$break="\r\n";
@@ -549,7 +602,7 @@ class mime_parser_class
 							|| !strcmp($character, "\t"))
 							{
 								$value .= $line;
-								$position = $next;
+								$position = $next + 1;
 							}
 							else
 							{
@@ -741,9 +794,11 @@ class mime_parser_class
 		{
 			$parameter = trim(strtolower(strtok($values, '=')));
 			$value = trim(strtok(';'));
-			if(!strcmp($value[0], '"')
-			&& !strcmp($value[strlen($value) - 1], '"'))
-				$value = substr($value, 1, strlen($value) - 2);
+			$l = strlen($value);
+			if($l > 1
+			&& !strcmp($value[0], '"')
+			&& !strcmp($value[$l - 1], '"'))
+				$value = substr($value, 1, $l - 2);
 			$parameters[$parameter] = $value;
 			if(!strcmp($parameter, $return))
 				$return_value = $value;
@@ -984,7 +1039,12 @@ class mime_parser_class
 				if($this->decode_bodies
 				&& IsSet($this->headers['Multipart'])
 				&& $this->body_parser_state != MIME_PARSER_BODY_DONE)
-					return($this->SetPositionedError('incomplete message body part', $part['Position']));
+				{
+					if($this->body_parser_state != MIME_PARSER_BODY_DATA)
+						return($this->SetPositionedError('incomplete message body part', $part['Position']));
+					if(!$this->SetPositionedWarning('truncated message body part', $part['Position']))
+						return(0);
+				}
 				break;
 			case 'BodyData':
 				if($this->decode_bodies)
@@ -1007,7 +1067,7 @@ class mime_parser_class
 									if(!$this->FindBodyLineBreak($position, $break, $line_break))
 										return(1);
 									$next = $line_break + strlen($break);
-									if(!strcmp(substr($this->body_buffer, $position, $line_break - $position), $boundary))
+									if(!strcmp(rtrim(substr($this->body_buffer, $position, $line_break - $position)), $boundary))
 									{
 										$part=array(
 											'Type'=>'StartPart',
@@ -1048,7 +1108,7 @@ class mime_parser_class
 									}
 									$next = $line_break + strlen($break);
 									$line = substr($this->body_buffer, $position, $line_break - $position);
-									if(!strcmp($line, $boundary))
+									if(!strcmp(rtrim($line), $boundary))
 									{
 										if(!$this->body_parser->Parse(substr($this->body_buffer, 0, $position), 1))
 											return($this->SetError($this->body_parser->error));
@@ -1077,7 +1137,7 @@ class mime_parser_class
 										$position=0;
 										continue;
 									}
-									elseif(!strcmp($line, $boundary.'--'))
+									elseif(!strcmp($r = rtrim($line), $boundary.'--'))
 									{
 										if(!$this->body_parser->Parse(substr($this->body_buffer, 0, $position), 1))
 											return($this->SetError($this->body_parser->error));
@@ -1196,7 +1256,7 @@ class mime_parser_class
 					$end_of_data = feof($this->file);
 					if($end_of_data)
 						break;
-					$data = @fread($this->file, 8000);
+					$data = @fread($this->file, $this->message_buffer_length);
 					if(GetType($data)!='string')
 						return($this->SetPHPError('could not read the message file', $php_errormsg));
 					$end_of_data = feof($this->file);
@@ -1206,9 +1266,9 @@ class mime_parser_class
 					$end_of_data=($this->position>=strlen($parameters['Data']));
 					if($end_of_data)
 						break;
-					$data = substr($parameters['Data'], $this->position);
-					$end_of_data = 1;
-					$this->position = strlen($parameters['Data']);
+					$data = substr($parameters['Data'], $this->position, $this->message_buffer_length);
+					$this->position += strlen($data);
+					$end_of_data = ($this->position >= strlen($parameters['Data']));
 				}
 				if(!$this->Parse($data, $end_of_data))
 					return(0);
@@ -1432,7 +1492,7 @@ class mime_parser_class
 			return($this->SetPHPError('Could not open the file '.$file, $php_errormsg));
 		for($end = 0;!$end;)
 		{
-			if(!($data = @fread($stream, 8000)))
+			if(!($data = @fread($stream, $this->message_buffer_length)))
 			{
 				$this->SetPHPError('Could not open the file '.$file, $php_errormsg);
 				fclose($stream);
@@ -1738,7 +1798,7 @@ class mime_parser_class
 				return($this->SetPHPError('could not open the message body file '.$path, $php_errormsg));
 			for($body = '', $end = 0;!$end;)
 			{
-				if(!($data = @fread($file, 8000)))
+				if(!($data = @fread($file, $this->message_buffer_length)))
 				{
 					$this->SetPHPError('Could not open the message body file '.$path, $php_errormsg);
 					fclose($stream);
@@ -1897,7 +1957,22 @@ class mime_parser_class
 	Function Analyze($message, &$results)
 	{
 		$results = array();
-		$content_type = (IsSet($message['Headers']['content-type:']) ? $message['Headers']['content-type:'] : 'text/plain');
+		if(!IsSet($message['Headers']['content-type:']))
+			$content_type = 'text/plain';
+		elseif(count($message['Headers']['content-type:']) == 1)
+			$content_type = $message['Headers']['content-type:'];
+		else
+		{
+			if(!$this->SetPositionedWarning('message contains multiple content-type headers', 0))
+				return(0);
+			$content_type = $message['Headers']['content-type:'][0];
+		}
+		if ($content_type){
+			$split = split(';',$content_type);
+			if (is_array($split) && count($split) > 0)
+				$results["content-type"] = $split[0];
+		}
+		
 		$disposition = $this->ParseParameters($content_type, $content_type, $parameters, 'disposition');
 		$type = $this->Tokenize($content_type, '/');
 		$sub_type = $this->Tokenize(';');

@@ -6,6 +6,7 @@ og.MilestoneItem = function(config) {
 		assignedTo: '',
 		workspaces: '',
 		workspaceids: '',
+		workspacecolors: '',
 		expanded: false,
 		completed: false,
 		completedBy: '',
@@ -100,31 +101,56 @@ og.MilestoneItem = function(config) {
 		
 		var td = document.createElement('td');
 		td.className = 'td-name';
+		
+		if (this.workspaceids != ''){
+			var ids = String(this.workspaceids).split(',');
+			var names = this.workspaces.split(',');
+			var colors = String(this.workspacecolors).split(',');
+			for (var idi = 0; idi < ids.length; idi++){
+			
+				var tda2 = document.createElement('a');
+				tda2.href = "#";
+				tda2.innerHTML = names[idi];
+				tda2.miid = ids[idi];
+				tda2.onclick = function(){
+					Ext.getCmp('workspace-panel').select(this.miid);
+				};
+				tda2.className="og-wsname og-wsname-color-" + colors[idi];
+				tda2.title = names[idi];
+				td.appendChild(tda2);
+				td.appendChild(document.createTextNode(' '));
+			}
+		}
+		
 		var tda = document.createElement('a');
 		this.doms.title = tda;
 		tda.href = '#';
 		tda.className = 'og-milestone-name';
-		tda.innerHTML = this.title;
+		var linkText = this.title;
+		if (this.assignedTo != '') {
+			linkText = '<span style="font-weight:bold">' + this.assignedTo + ':</span>&nbsp;' + linkText;
+		}
+		tda.innerHTML = linkText;
 		tda.onclick = this.viewMilestone.createDelegate(this);
 		tda.title = lang('milestone view tip', this.title);
 		td.appendChild(tda);
 		tr.appendChild(td);
 		
-		var td = document.createElement('td');
+		/*var td = document.createElement('td');
 		this.doms.workspace = td;
 		td.className = 'td-workspace';
 		td.innerHTML = String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', this.workspaces, this.workspaceids);
 		td.title = this.workspaces;
-		tr.appendChild(td);
+		tr.appendChild(td);*/
 		
-		var td = document.createElement('td');
+		/*var td = document.createElement('td');
 		this.doms.workspace = td;
 		td.className = 'td-assigned-to';
 		if (this.assignedTo != '') {
 			td.innerHTML = lang('assigned to') + ": " + this.assignedTo;
 			td.title  = lang('assigned to') + ": " + this.assignedTo;
 		}
-		tr.appendChild(td);
+		tr.appendChild(td);*/
 		
 		var td = document.createElement('td');
 		this.doms.workspace = td;

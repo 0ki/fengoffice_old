@@ -47,7 +47,7 @@ cal_load_options();
 // include the language file (suppress possible errors for security)
 @include('library/cal/languages/'.cal_option("language").".php");
 // if user is logging in, check the password etc
-if(array_var($_POST,'user')!="") cal_check_user();
+//if(array_var($_POST,'user')!="") cal_check_user();
 // set the permissions for the user
 	
 		

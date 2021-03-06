@@ -34,6 +34,7 @@
 			'og/ContentPanel.js',
 			'og/HelpPanel.js',
 			'og/layout.js',
+			'og/EventPopUp.js',
 			'modules/addTaskForm.js',
 			'modules/addMessageForm.js',
 			'modules/addFileForm.js',
@@ -57,8 +58,14 @@
 			'modules/overlib.js',
 			'og/TaskItem.js',
 			'og/MilestoneItem.js',
-			'og/DatePicker.js'
+			'og/DatePicker.js',
+			'jquery/jquery.min.js',
+			'jquery/jquery.dimensions.js',
+			'jquery/jquery.hoverIntent.js',
+			'jquery/jquery.cluetip.js'
 		);
+	
+		
 	if(USE_JS_CACHE){
 		echo add_javascript_to_page(implode(',',$jss));
 	}
@@ -67,6 +74,7 @@
 			echo add_javascript_to_page($onejs);
 		}
 	}
+	
 	?>
 	<?php echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
 	<?php echo add_javascript_to_page(with_slash(ROOT_URL) .  'help/help.js') ?>
@@ -78,6 +86,7 @@
 	<!--[if IE]>
 	<style type="text/css">.viewAsList { visibility: hidden; }</style>
 	<![endif]-->
+	
 </head>
 <body id="body" <?php echo render_body_events() ?>>
 

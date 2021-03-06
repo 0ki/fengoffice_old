@@ -189,6 +189,10 @@ function is_upload_request() {
 	return array_var($_GET, 'upload') == 'true';
 } // is_upload_request
 
+function is_download_request() {
+	return array_var($_GET, 'a') == 'download_revision'; //TODO generalize
+} // is_upload_request
+
 /**
  * Flattens the array. This function does not preserve keys, it just returns
  * array indexed form 0 .. count - 1

@@ -86,7 +86,7 @@ class WebpageController extends ApplicationController {
 				if(substr($webpage_data['url'],0,7) != 'http://')
 				$webpage_data['url'] = 'http://' . $webpage_data['url'];
 				$webpage->setFromAttributes($webpage_data);
-
+	
 				$project_id = $webpage_data["project_id"];
 				$webpage->setProjectId($project_id);
 				$webpage->setIsPrivate(false);
@@ -94,18 +94,20 @@ class WebpageController extends ApplicationController {
 				if(!logged_user()->isMemberOfOwnerCompany()) {
 					$webpage->setIsPrivate(false);
 				} // if
-
+	
 				DB::beginWork();
 				$webpage->save();
 				$webpage->setTagsFromCSV(array_var($webpage_data, 'tags'));
-		  $webpage->save_properties($webpage_data);
-		  DB::commit();
-
-		  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_ADD);
-
-		  flash_success(lang('success add webpage', $webpage->getTitle()));
-		  ajx_current("start");
-		  // Error...
+			  $webpage->save_properties($webpage_data);
+  			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($webpage);
+			  DB::commit();
+	
+			  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_ADD);
+	
+			  flash_success(lang('success add webpage', $webpage->getTitle()));
+			  ajx_current("start");
+			  // Error...
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());

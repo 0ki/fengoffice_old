@@ -1,8 +1,7 @@
 <?php 
   set_page_title(lang('administration'));
-
 ?>
-<div class="adminIndex">
+<div class="adminIndex" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('administration') ?></div>
   </div>

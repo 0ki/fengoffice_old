@@ -258,6 +258,10 @@ class ContactController extends ApplicationController {
 
 				DB::beginWork();
 				$contact->save();
+				//link it!
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($contact);
+
 				DB::commit();
 
 				flash_success(lang('success add contact', $contact->getDisplayName()));

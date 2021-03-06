@@ -10,7 +10,7 @@
 ?>
 
 
-<div class="adminClients">
+<div class="adminClients" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('clients') ?></div>
   </div>

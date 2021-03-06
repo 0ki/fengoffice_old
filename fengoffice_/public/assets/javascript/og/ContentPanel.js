@@ -23,6 +23,7 @@ og.ContentPanel = function(config) {
 	og.ContentPanel.superclass.constructor.call(this, config);
 	
 	this.history = [];
+	this.contentLoaded = false;
 	
 	if (config.refreshOnWorkspaceChange) {
 		og.eventManager.addListener('workspace changed', this.reset, this);
@@ -156,6 +157,8 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		} else if (content.type == 'url') {
 			og.openLink(content.data, {caller: this});
 			//og.captureLinks(this.id, this);
+		} else if (content.type == 'urlonshow') {
+			this.contentLoaded = false;
 		} else if (content.type == 'overview') {
 			this.add(og.Overview.getInstance());
 			og.Overview.getInstance().load({start:0});
@@ -206,6 +209,11 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (content.type != 'url') {
 			this.loaded = true;
 		}
+	},
+	
+	loadContentUrl: function() {
+		og.openLink(this.content.data, {caller: this});
+		this.contentLoaded = true;
 	},
 	
 	back: function() {

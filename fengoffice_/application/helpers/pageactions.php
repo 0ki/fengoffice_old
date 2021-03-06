@@ -48,9 +48,10 @@
       $url = array_var($args, 1);
       $name = array_var($args, 2);
       $target = array_var($args, 3);
+      $attributes = array_var($args, 4);
       
       if(!empty($title) && !empty($url)) {
-        PageActions::instance()->addAction( new PageAction($title, $url, $name, $target) );
+        PageActions::instance()->addAction( new PageAction($title, $url, $name, $target, $attributes) );
       } // if
       
     } // if
@@ -87,6 +88,8 @@
     public $name;
     
     public $target;
+    
+    public $attributes = array();
   
     /**
     * Construct the PageAction
@@ -95,11 +98,12 @@
     * @param void
     * @return PageAction
     */
-    function __construct($title, $url, $name, $target = null) {
+    function __construct($title, $url, $name, $target = null, $attributes = null) {
       $this->setTitle($title);
       $this->setURL($url);
       $this->setName($name);
       $this->setTarget($target);
+      $this->setAttributes($attributes);
     } // __construct
     
     // ---------------------------------------------------
@@ -191,6 +195,27 @@
       $this->target = $value;
     } // setTarget
   
+    /**
+    * Get attributes
+    *
+    * @access public
+    * @param null
+    * @return array
+    */
+    function getAttributes() {
+      return $this->attributes;
+    } // getAttributes
+    
+    /**
+    * Set attributes value
+    *
+    * @access public
+    * @param array $value
+    * @return null
+    */
+    function setAttributes($value) {
+      $this->attributes = $value;
+    } // setAttributes
   } // PageAction
   
   /**

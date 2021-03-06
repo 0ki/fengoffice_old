@@ -1,5 +1,5 @@
 App.modules.updatePermissionsForm = {
-  owner_company_id: 0,
+  owner_company_id: 1,
   project_permissions: [],
   
   /**
@@ -24,6 +24,7 @@ App.modules.updatePermissionsForm = {
     } // if
     var new_display_value = $('project_user_' + user_id).checked ? 'block' : 'none';
     $('user_' + user_id + '_permissions').style.display = new_display_value;
+    return;
   }, // userCheckboxClick
   
   /**

@@ -255,7 +255,7 @@ between the cells of the main calendar.  */
 #calendar {
   background-color: white;
   color: white;
-  width: 90%;
+  width: 99%;
   text-align: center;
   font-size: 10pt;
   table-layout: fixed;

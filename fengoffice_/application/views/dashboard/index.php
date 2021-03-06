@@ -69,12 +69,10 @@ else
 </div>
 <?php } // if ?>
 
-<table style="width:100%"><tr><td>
-
-
-<div class="dashCalendar">
 <table style="width:100%">
-	<col width=12/><col /><col width=12/><tr><tr>
+<tr><td colspan=2><div class="dashCalendar">
+<table style="width:100%">
+	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle">Upcoming events, milestones and tasks</div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2 colspan=2 ></td></tr>
@@ -135,7 +133,24 @@ else
 	// Loop to render the calendar
 	
 	$can_add_event = !active_project() || ProjectEvent::canAdd(logged_user(),active_project());	
-	for ($week_index = 0;$week_index<2; $week_index++) {
+					$output .= "<tr>";
+					
+					if(!cal_option("start_monday")) {
+						$output .= "    <th width='15%' align='center'>" .  CAL_SUNDAY . '</th>' . "\n";
+					}
+					$output .= '
+					<th width="14%">' . CAL_MONDAY . '</th>
+					<th width="14%">' . CAL_TUESDAY . '</th>
+					<th width="14%">' . CAL_WEDNESDAY . '</th>
+					<th width="14%">' . CAL_THURSDAY . '</th>
+					<th width="14%">' . CAL_FRIDAY . '</th>
+					<th width="15%">' . CAL_SATURDAY . '</th>';
+					
+					if(cal_option("start_monday")) {
+						$output .= '<th width="15%">' . CAL_SATURDAY . '</th>';
+					}
+					$output .= '</tr>';
+	for ($week_index = 0;$week_index<1; $week_index++) {
 		$output .= '  <tr>' . "\n";
 		for ($day_of_week = 0; $day_of_week < 7; $day_of_week++) {
 			$i = $week_index * 7 + $day_of_week;
@@ -350,12 +365,18 @@ echo $output . '</table>';
 	</table>
 </div>
  
- <br>
+ </td></tr>
+<tr><td>
 
-<?php if((isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
-			|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones)) 
-			|| (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
-			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))) { 
+
+
+
+<?php 
+	$hasToday = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
+			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks));
+	$hasLate = (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
+		|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
+	if($hasToday || $hasLate) { 
 ?>
 <div class="dashLate">
 <table style="width:100%">
@@ -366,8 +387,7 @@ echo $output . '</table>';
 	
 		<tr><td style="background:white"></td><td class="coViewBody" style="padding-left:0px;">
 		
-<?php if((isset($late_milestones) && is_array($late_milestones) && count($late_milestones)) ||
-		(isset($late_tasks) && is_array($late_tasks) && count($late_tasks))) { 
+<?php if($hasLate) { 
 	$c = 0;
 	?>
 <div>
@@ -378,12 +398,24 @@ echo $output . '</table>';
 	$c++;
 	?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
+    <td style="padding-left:5px;padding-bottom:2px">
+    <?php 
+		$dws = $milestone->getWorkspaces();
+		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+			
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+			}
+			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+		}?>
+    <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>">
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td>
+    <span style="font-weight:bold"> <?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($milestone->getName()) ?>
 <?php } else { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td>
+    <?php echo clean($milestone->getName()) ?>
 <?php } // if ?>
-    <td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $milestone->getProjectId()?>)"><?php echo clean($milestone->getProject()->getName()) ?></a></td>
+	</a></td>
     <td style="text-align:right"><?php echo lang('days late', $milestone->getLateInDays()) ?></td>
 	</tr>
 <?php } // foreach ?>
@@ -393,21 +425,33 @@ echo $output . '</table>';
 	$c++;
 	?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
+    <td style="padding-left:5px;padding-bottom:2px">
+    <?php 
+		$dws = $task->getWorkspaces();
+		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+			
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+			}
+			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+		}?>
+	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td>
+    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
 <?php } else { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td>
+    <?php echo clean($task->getTitle()) ?>
 <?php } // if ?>
-    <td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
+	</a></td>
     <td style="text-align:right"><?php echo lang('days late', $task->getLateInDays()) ?></td>
 	</tr>
 <?php } // foreach ?>
   </table></div>
 <?php } // if ?>
 
-<?php if((isset($today_milestones) && is_array($today_milestones) && count($today_milestones))
-			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))) { $c = 1; ?>
-  <div class="dashSubtitle"><?php echo lang('today') ?></div>
+<?php if($hasToday) { 
+	$c = 1; ?>
+  <div class="dashSubtitle" style="<?php echo $hasLate ? '': 'padding-top:0px' ?>"><?php echo lang('today') ?></div>
   <div>
   <table style="width:100%">
 <?php 
@@ -415,26 +459,48 @@ echo $output . '</table>';
 	foreach($today_milestones as $milestone) { 
 	$c++;?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
+    <td style="padding-left:5px;padding-bottom:2px">
+    <?php 
+		$dws = $milestone->getWorkspaces();
+		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+			
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+			}
+			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+		}?>
+    <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>">
 <?php if($milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a> </td>
+    <span style="font-weight:bold"> <?php echo clean($milestone->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($milestone->getName()) ?>
 <?php } else { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $milestone->getViewUrl() ?>"><?php echo clean($milestone->getName()) ?></a></td> 
+    <?php echo clean($milestone->getName()) ?>
 <?php } // if ?>
-	<td style="text-align:right"><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $milestone->getProjectId()?>)"><?php echo clean($milestone->getProject()->getName()) ?></a></td>
-    </tr>
+	</a></td></tr>
 <?php } // foreach ?>
 <?php 
 	if (isset($today_tasks) && is_array($today_tasks) && count($today_tasks))
 	foreach($today_tasks as $task) { 
 	$c++;?>
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
+    <td style="padding-left:5px;padding-bottom:2px">
+    <?php 
+		$dws = $task->getWorkspaces();
+		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+			
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+			}
+			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+		}?>
+	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><?php echo clean($task->getAssignedTo()->getObjectName()) ?>: <a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a> </td>
+    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean($task->getTitle()) ?>
 <?php } else { ?>
-    <td style="padding-left:5px;padding-bottom:2px"><a class="internalLink" href="<?php echo $task->getViewUrl() ?>"><?php echo clean($task->getTitle()) ?></a></td> 
+    <?php echo clean($task->getTitle()) ?>
 <?php } // if ?>
-	<td style="text-align:right"><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
-    </tr>
+	</a></td></tr>
 <?php } // foreach ?>
   </table></div>
 <?php } // if ?>
@@ -445,8 +511,8 @@ echo $output . '</table>';
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
-<?php } // if ?>
 <br>
+<?php } // if ?>
  
  
 <?php if (isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0) { ?>
@@ -470,8 +536,17 @@ echo $output . '</table>';
 				$text = substr($text,0,100) . " ...";
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
+			<?php 
+			$dws = $task->getWorkspaces();
+			if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+				
+				$projectLinks = array();
+				foreach ($dws as $ws) {
+					$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+				}
+				echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+			}?>
 			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo $task->getTitle()?><?php echo $text ?></a></td>
-			<td><a href="#" onclick="Ext.getCmp('workspace-panel').select(<?php echo $task->getProjectId()?>)"><?php echo clean($task->getProject()->getName()) ?></a></td>
 			<td><?php if ($stCount > 0) echo "(" . lang('subtask count all open', $stCount, $task->countOpenSubTasks()) . ')'?></td>
 			<td><?php if (!is_null($task->getDueDate())){
 				if ($task->getRemainingDays() >= 0)
@@ -502,9 +577,9 @@ echo $output . '</table>';
 
 </td>
 <?php if ($hasMessages || $hasDocuments || $hasCharts){ ?>
-<td style="width:280px">
+<td style="width:330px">
 
-<?php if (isset($messages) && is_array($messages) && count($messages) > 0) { ?>
+<?php if ($hasMessages) { ?>
 <div class="dashMessages">
 <table style="width:100%">
 	<col width=12/><col width=226/><col width=12/><tr>
@@ -519,11 +594,27 @@ echo $output . '</table>';
 			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMMC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
 			<td class="db-ico ico-message"></td>
 			<td style="padding-left:5px">
+			<?php 
+				$mws = $message->getWorkspaces();
+				if (!(active_project() instanceof Project && count($mws) == 1 && $mws[0]->getId() == active_project()->getId())){
+					
+					$projectLinks = array();
+					foreach ($mws as $ws) {
+						$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+					}
+					echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+				}?>
+			
 			<a class="internalLink" href="<?php echo get_url('message','view', array('id' => $message->getId()))?>"
 				title="<?php echo lang('message posted on by linktitle', format_datetime($message->getCreatedOn()), $message->getCreatedByDisplayName()) ?>">
-			<?php echo $message->getTitle()?>
+			<?php echo $message->getTitle() ?>
 			</a></td></tr>
 		<?php } // foreach?>
+			<?php if ($c >= 10) {?>
+				<tr class="dashSMMC" style="display:none"><td></td>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('messages-panel');">Show all...</a>
+				</td></tr>
+			<?php } ?>
 		</table>
 		<?php if ($c > 5) { ?>
 		<div id="dashSMMT" style="width:100%;text-align:right">
@@ -540,7 +631,7 @@ echo $output . '</table>';
 <?php } ?>
 
 
-<?php if (isset($charts) && is_array($charts) && count($charts) > 0) {
+<?php if ($hasCharts) {
 	$pcf = new ProjectChartFactory();?>
 	
 <div class="dashChart">
@@ -592,6 +683,16 @@ echo $output . '</table>';
 			<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMDC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>">
 			<td class="db-ico ico-unknown ico-<?php echo str_replace("/", "-", $document->getTypeString())?>"></td>
 			<td style="padding-left:5px">
+			<?php 
+				$dws = $document->getWorkspaces();
+				if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+					
+					$projectLinks = array();
+					foreach ($dws as $ws) {
+						$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+					}
+					echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+				}?>
 			<a class="internalLink" href="<?php echo get_url('files','file_details', array('id' => $document->getId()))?>"
 				title="<?php echo lang('message posted on by linktitle', format_datetime($document->getCreatedOn()), $document->getCreatedByDisplayName()) ?>">
 			<?php echo $document->getFilename()?>
@@ -601,6 +702,11 @@ echo $output . '</table>';
 				<a class="internalLink"  href="<?php echo $document->getModifyUrl()?>"><?php echo lang('edit') ?></a>
 			<?php } ?></td></tr>
 		<?php } // foreach ?>
+			<?php if ($c >= 10) {?>
+				<tr class="dashSMDC" style="display:none"><td></td>
+				<td style="text-align:right"><a href="#" onclick="Ext.getCmp('tabs-panel').activate('documents-panel');">Show all...</a>
+				</td></tr>
+			<?php } ?>
 		</table>
 		<?php if ($c > 5) { ?>
 		<div id="dashSMDT" style="width:100%; text-align:right">

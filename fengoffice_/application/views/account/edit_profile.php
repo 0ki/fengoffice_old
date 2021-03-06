@@ -10,6 +10,7 @@
   	add_page_action(lang('permissions'), $user->getUpdatePermissionsUrl(), 'ico-permissions');
   } // if
 
+  $genid = gen_id();
 ?>
 <form class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
 
@@ -32,13 +33,13 @@
   
   	<div style="padding-top:5px">
 		<?php if(logged_user()->isAdministrator()) { ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
+			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
 		<?php } // if ?>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('update_profile_phone_numbers',this)"><?php echo lang('phone numbers') ?></a> - 
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_phone_numbers',this)"><?php echo lang('phone numbers') ?></a> - 
 		<?php if(is_array($im_types) && count($im_types)) { ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('update_profile_im',this)"><?php echo lang('instant messengers') ?></a> - 
+			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_im',this)"><?php echo lang('instant messengers') ?></a> - 
 		<?php } ?>
-		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
 	</div>
   
   </div>
@@ -47,7 +48,7 @@
 
 <?php if(logged_user()->isAdministrator()) { ?>
 
-  <div id="update_profile_administrator_options" style="display:none">
+  <div id="<?php echo $genid ?>update_profile_administrator_options" style="display:none">
   <fieldset>
     <legend><?php echo lang('administrator update profile notice') ?></legend>
     <div class="content">
@@ -67,10 +68,12 @@
       <fieldset>
         <legend><?php echo lang('options') ?></legend>
         
-        <div>
-          <?php echo label_tag(lang('is administrator'), null, true) ?>
-          <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no')) ?>
-        </div>
+        <?php if($user->getId() != 1) /* System admin cannot change admin status */ {?>
+	        <div>
+	          <?php echo label_tag(lang('is administrator'), null, true) ?>
+	          <?php echo yes_no_widget('user[is_admin]', 'userFormIsAdmin', array_var($user_data, 'is_admin'), lang('yes'), lang('no')) ?>
+	        </div>
+        <?php } ?>
         
         <!-- div>
           <?php echo label_tag(lang('is auto assign'), null, true) ?>
@@ -94,7 +97,7 @@
 
 
   
-  <div id="update_profile_phone_numbers" style="display:none">
+  <div id="<?php echo $genid ?>update_profile_phone_numbers" style="display:none">
   <fieldset>
     <legend><?php echo lang('phone numbers') ?></legend>
     
@@ -122,7 +125,7 @@
   </div>
     
 <?php if(is_array($im_types) && count($im_types)) { ?>
-<div id="update_profile_im" style="display:none">
+<div id="<?php echo $genid ?>update_profile_im" style="display:none">
   <fieldset>
     <legend><?php echo lang('instant messengers') ?></legend>
     <table class="blank">
@@ -145,7 +148,7 @@
 </div>
 <?php } // if ?>
 
-  <div id="update_profile_timezone" style="display:none">
+  <div id="<?php echo $genid ?>update_profile_timezone" style="display:none">
   <fieldset>
   	<legend><?php echo lang('timezone')?></legend>
    	<?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), array('id' => 'profileFormTimezone', 'class' => 'title')) ?>

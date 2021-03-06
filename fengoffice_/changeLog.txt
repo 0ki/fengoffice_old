@@ -46,3 +46,7 @@ since 0.6.6
 - Bugfix: Documents in OpenGoo now have an HTML extension. Documents downloaded from OpenGoo can now be viewed on any browser. Documents uploaded back to OpenGoo can now be edited in OpenGoo. 
 - SQL Logging added: the line define('DEBUG_DB', false); in config/config.php can be added manually to log all sql queries
 
+----------> 0.7 released
+
+since 0.7
+- events can be linked while adding any content object (except contact, yet)

@@ -112,10 +112,9 @@ class AccountController extends ApplicationController {
 				$user->save();
 
 				$user->clearImValues();
-
-				if (array_var($user_data, 'is_admin')) {
-					$user->setAsAdministrator();
-				}
+				if ($user->getId() != 1) //System admin cannot change its own admin status
+					$user->setAsAdministrator(array_var($user_data, 'is_admin'));
+				
 				foreach($im_types as $im_type) {
 					$value = trim(array_var($user_data, 'im_' . $im_type->getId()));
 					if($value <> '') {

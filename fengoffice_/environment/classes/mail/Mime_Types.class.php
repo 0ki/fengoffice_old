@@ -50,11 +50,6 @@ class Mime_Types
     /**
     * MIME Types
     * Initially we start with the more popular ones.
-    *  ["txt"]  => "text/plain",
-    *  ["gif"]  => "image/gif",
-    *  ["jpg"]  => "image/jpeg",
-    *  ["html"] => "text/html",
-    *  ["htm"]  => "text/html"
     * @var array
     * @access private
     */
@@ -62,8 +57,21 @@ class Mime_Types
         'txt'   => 'text/plain',
         'gif'   => 'image/gif',
         'jpg'   => 'image/jpeg',
+        'bmp'   => 'image/bmp',
         'html'  => 'text/html',
-        'htm'   => 'text/html');
+        'htm'   => 'text/html',
+    	'qt'	=> 'video/quicktime',
+    	'mov'	=> 'video/quicktime',
+    	'mp3'	=> 'audio/mpeg',
+    	'mp2'	=> 'audio/mpeg',
+    	'mpgq'	=> 'audio/mpeg',
+    	'aif'	=> 'audio/x-aiff',
+    	'aiff'	=> 'audio/x-aiff',
+    	'zip'	=> 'application/zip',
+    	'doc'	=> 'application/msword',
+    	'ppt'	=> 'application/vnd.ms-powerpoint',
+    	'xls'	=> 'application/vnd.ms-excel',
+    	'pdf'	=> 'application/pdf');
     
     /**
     * Path to file command - empty string disables the use of the file command

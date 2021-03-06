@@ -43,14 +43,27 @@
   		tpl_assign('description', $description);
 	}
 	
+	$status = '<div class="taskStatus" style="font-weight:normal;font-size:77%"><table><tr><td>';
+	if($task_list->isCompleted()) 
+		$status .= '<div class="db-ico ico-complete"></div></td><td style="padding-left:4px">' . lang('complete');
+	else 
+		$status .= '<div class="db-ico ico-delete"></div></td><td style="padding-left:4px">' . lang('incomplete');
+	$status.= '</td></tr></table></div>';
+	if ($task_list->getAssignedTo()){
+		$description .= '<span style="font-weight:bold">' . lang("assigned to") . ': </span>' . $task_list->getAssignedToName();
+	}
+	
+	
 	$variables = array();
 	//$variables['on_list_page'] = $on_list_page;
 	
+	tpl_assign("description", $description);
 	tpl_assign("variables", $variables);
 	tpl_assign("content_template", array('task_list', 'task'));
 	tpl_assign('object', $task_list);
-	tpl_assign('title', $title);
+	tpl_assign('title', '<table><tr><td>'.$title . '</td><td style="padding-left:20px;">' . $status . '</td></tr></table>');
 	tpl_assign('iconclass', 'ico-large-tasks');
+	
 
 	$this->includeTemplate(get_template_path('view', 'co'));
 ?>

@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.7
+    About OpenGoo beta 0.7.1
     ======================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -69,10 +69,10 @@
     You should be finished in a matter of minutes.
     
     
-    Upgrade from 0.6.6
+    Upgrade from 0.7
     ==================
     
-    1. Download OpenGoo 0.7 - http://www.opengoo.org/
+    1. Download OpenGoo 0.7.1 - http://www.opengoo.org/
     2. Unpack and remove the following folders:
     	- cache
     	- config
@@ -86,31 +86,8 @@
 	Changelog
 	=========
 
-	* Added Dashboard.
-	* New tasks GUI.
-	* Email can be sent.
-	* Email can be replied.
-	* Faster loading times achieved by compressing javascript with USE_JS_CACHE option.
-	* Updated the display for content objects.
-	* Messages can reside in multiple workspaces.
-	* Documents can reside in multiple workspaces.
-	* Added search by tags.
-	* Added search in contacts.
-	* Added search by object properties.
-	* File upload window design updated.
-	* Workspace crumbs added in header.
-	* Header layout modified.
-	* Overall CSS design slightly updated (amount of lines & borders reduced and tabs updated).
-	* Added "undo checkout" option.
-	* "Checkout" column updated in documents panel.
-	* 'Classify email' display updated.
-	* Alt text for edit weblink corrected.
-	* Minor changes in add_task.php: Subtasks are now labeled Subtasks instead of Tasks; Milestone assignment has a little help text.
-	* Added reporting tab & charts support (not available yet).
-	* Bugfix: Installation impossible with versions of MySql previous than 5.0.3. url field was VARCHAR (500), changed to text.
-	* Bugfix: Object properties were displayed twice for webpages.
-	* Bugfix: in email view where HTML emails were not displayed correctly.
-	* Bugfix: If a user has permissions on a workspace that is child of a workspace that the user can't access, it will now be displayed as a child of its first ancestor that the user can access.
-	* Bugfix: Documents in OpenGoo now have an HTML extension. Documents downloaded from OpenGoo can now be viewed on any browser. Documents uploaded back to OpenGoo can now be edited in OpenGoo. 
-	* SQL Logging added: the line define('DEBUG_DB', false); in config/config.php can be added manually to log all sql queries
-
+	* Fixed a bug that named downloaded documents as index.php.
+	* Fixed a critical bug that would delete some wrong documents and messages when deleting a workspace.
+	* The tasks view has been further enhanced.
+	* Fixed links to workspaces on listings when there's more than one workspace.
+	* And other small bug fixes.

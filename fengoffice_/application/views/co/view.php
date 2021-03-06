@@ -16,9 +16,6 @@
 		<td class="coViewHeader" rowspan=2>
 			<div class="coViewTitle">
 				<table><tr><td>
-				<?php if($object instanceof ProjectDataObject && $object->isPrivate()) { ?>
-    				<div class="private" title="<?php echo lang('private ' . $object->getObjectTypeName()) ?>"><span><?php echo lang('private message') ?></span></div>
-				<?php } // if ?>
 				<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . $object->getObjectName() ?>
 				</td>
 				
@@ -28,7 +25,7 @@
 				<?php if (isset($description)) echo $description ;?>
 			</div>
 			
-			<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose">x</div></a>
+			<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
 		</td>
 		
 		<td class="coViewTopRight"></td></tr>
@@ -81,7 +78,7 @@
 					?>
 					<a style="display:block" class="coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>" target="<?php echo $action->getTarget()?>">
 					<?php } else { ?>
-					<a style="display:block" class="internalLink coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>">
+					<a style="display:block" class="<?php $attribs = $action->getAttributes(); echo $attribs["download"] ? '':'internalLink' ?> coViewAction <?php echo $action->getName()?>" href="<?php echo $action->getURL()?>">
 				<?php } echo $action->getTitle() ?></a>
 			<?php } ?>
 			</div>
@@ -103,15 +100,32 @@
 		
 	<tr><td class="coViewRight" rowspan=2></td></tr>
 	<tr><td class="coViewBody" colspan=2>
-	<?php if ($object instanceof ProjectDataObject && $object->getProject() instanceof Project) { ?>
+	<?php if ($object instanceof ProjectDataObject && (is_array($object->getWorkspaces()) && count($object->getWorkspaces()) > 0)) { ?>
 		<div class="prop-col-div"><span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
-			<?php echo $object->getProject()->getName()?>
+			<?php
+				$wsl = $object->getWorkspaces();
+				if (is_array($wsl) && count($wsl) > 0){
+					$linkList = array();
+					foreach ($wsl as $ws) {
+						$linkList[] = '<a href="#" onclick="Ext.getCmp(\'tabs-panel\').activate(\'overview-panel\');Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() .
+						');">' . $ws->getName() . '</a>';
+					}
+					echo implode(', ', $linkList);
+				}
+				?>
+				
+		<?php if ($object->isTaggable()) {
+			$tags = project_object_tags($object);
+			if ($tags != '--'){
+			?>
+		<br/>
+		<table><tr><td class="ico-db ico-tag" style="height:16px; width:16px;"></td><td>: <?php echo $tags ?></td></tr></table>
+		<?php }} ?>
+	
 		</div>
 	<?php } ?>
 	
-	<?php if ($object->isTaggable()) {?>
-		<div class="prop-col-div"><span style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($object) ?></div>
-	<?php } ?>
+	
 	
 	<?php if($object->isLinkableObject()) { ?>
 		<div class="prop-col-div"><?php echo render_object_links($object, $object->canEdit(logged_user()))?></div>
@@ -121,7 +135,7 @@
     	<?php if($object->getCreatedBy() instanceof User) { ?>
     		<span style="color:#333333;font-weight:bolder;">
     			<?php echo lang('created by') ?>:
-			</span><br/>
+			</span><br/><div style="padding-left:10px">
 			<?php 
 				if ($object->getObjectCreationTime() && $object->getCreatedOn()->isToday())
 					$datetime = format_time($object->getCreatedOn());
@@ -132,13 +146,13 @@
 					$username = lang('you');
 				else
 					$username = clean($object->getCreatedBy()->getDisplayName());
-			echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime) ?><br/>
+			echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName()) ?></div>
     	<?php } // if ?>
     	
     	<?php if($object->getObjectUpdateTime() && $object->getUpdatedBy() instanceof User && $object->getCreatedOn() != $object->getUpdatedOn()) { ?>
     		<span style="color:#333333;font-weight:bolder;">
     			<?php echo lang('modified by') ?>:
-			</span><br/>
+			</span><br/><div style="padding-left:10px">
 			<?php 
 				if ($object->getUpdatedOn()->isToday())
 					$datetime = format_time($object->getUpdatedOn());
@@ -149,7 +163,7 @@
 					$username = lang('you');
 				else
 					$username = clean($object->getUpdatedBy()->getDisplayName());
-			echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime) ?><br/>
+			echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName()) ?></div>
 		<?php } // if ?>
 	</div>
 	</td></tr>

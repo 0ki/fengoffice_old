@@ -274,7 +274,6 @@
 	      				$file = new ProjectFile();
 	      				$file->setFilename($fName);
 						$file->setIsVisible(true);
-	      				$file->setProjectId($project->getId());
 	      				$file->setIsPrivate(false);
       					$file->setIsImportant(false);
       					$file->setCommentsEnabled(true);
@@ -284,13 +283,21 @@
 	      				{
 	      					DB::beginWork();
 	      					$file->save();
+							$file->addToWorkspace($project);
 	      					DB::commit();
 	
 	      					$file->setTagsFromCSV($csv);
 	      					$ext = substr($fName,strrpos($fName,'.')+1);
+	      					
+	      					$mime_type = '';
+	      					if (Mime_Types::instance()->has_type($att["content-type"]))
+	      						$mime_type = $att["content-type"]; //mime type is listed & valid
+	      					else
+	      						$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
+	      					
 	      					$fileToSave = array(
 	      					"name" => $fName, 
-	      					"type" => Mime_Types::instance()->get_type($ext), 
+	      					"type" => $mime_type, 
 	      					"tmp_name" => $tempFileName,
 	      					"error" => 0,
 	      					"size" => filesize($tempFileName));
@@ -361,13 +368,18 @@
     		"conditions" => "`user_id` = " . logged_user()->getId()
     	));
     	
-    	MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
-    	
-        $errMessage = lang('success check mail', $mailsReceived);
-    	if ($err > 0){
-    		foreach($errAccounts as $error) {
-        		$errMessage .= '<br/><br/>' . lang('error check mail', $error["accountName"], $error["message"]);
-    		}
+    	if ($accounts && count($accounts) > 0){
+	    	MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
+	    	
+	        $errMessage = lang('success check mail', $mailsReceived);
+	    	if ($err > 0){
+	    		foreach($errAccounts as $error) {
+	        		$errMessage .= '<br/><br/>' . lang('error check mail', $error["accountName"], $error["message"]);
+	    		}
+	    	}
+    	} else {
+    		$err = 1;
+    		$errMessage = lang('no mail accounts set for check');
     	}
     	
     	return array($err, $errMessage);

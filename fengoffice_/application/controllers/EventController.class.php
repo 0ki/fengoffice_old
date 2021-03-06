@@ -46,7 +46,55 @@ class EventController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('dashboard');
 	    }		
-		//$can_add = ProjectEvent::canAdd(logged_user(), active_project());
+		ajx_set_no_toolbar(true);
+		
+		if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())) {
+					 add_page_action(lang('add event'), get_url('event','add',
+					 		array("year"=> date("Y"),
+					 			 "month" => date("m"),
+					 			 "day" => date('d')
+					 			 )
+					 		), 'ico-event'
+					 );// cal_getlink('index.php?'.$today) );
+				 }
+
+				 
+		  $month = isset($_GET['month'])?$_GET['month']:date('n');
+		  $year = isset($_GET['year'])?$_GET['year']:date('Y');
+		  $day = isset($_GET['day'])?$_GET['day']:date('n');
+		  
+		  $pm = $month - 1;
+		  $py = $year;
+		  if($pm==0){
+		  	$pm = 12;
+			$py--;
+		  }
+		  $nm = $month + 1;
+		  $ny = $year;
+		  if($nm==13){
+		  	$nm = 1;
+			$ny++;
+		  } 
+		add_page_action(lang('today'), get_url('event','index',
+		 		array("year"=> date("Y"),
+		 			 "month" => date("m"),
+		 			 "day" => date('d')
+		 			 )
+		 		), 'ico-today'
+		 );// cal_getlink('index.php?'.$today) );
+		 add_page_action(lang('previous month'), get_url('event','index',
+		 		array("year"=> $py,
+		 			 "month" => $pm
+		 			 )
+		 		), 'ico-prevmonth'
+		 );// add_page_action(lang('previous month'), cal_getlink("index.php?year=$py&month=$pm"));
+		 add_page_action(lang('next month'), get_url('event','index',
+		 		array("year"=> $ny,
+		 			 "month" => $nm
+		 			 )
+		 		), 'ico-nextmonth'
+		 );
+		 
 	    $tag = active_tag();
 		tpl_assign('tags',$tag);
 		$this->setTemplate('calendar');
@@ -168,6 +216,7 @@ class EventController extends ApplicationController {
 	    $this->setTemplate('event');
 		$event = new ProjectEvent();		
 		$event_data = array_var($_POST, 'event');
+		$event_subject = array_var($_GET, 'subject'); //if sent from pupup
 		
 		$event->setStart(DateTimeValueLib::make(12,0,0,isset($_GET['month'])?$_GET['month']:date('n'),isset($_GET['day'])?$_GET['day']:date('n'),isset($_GET['year'])?$_GET['year']:date('Y')));
 		if(!is_array($event_data)) {
@@ -175,13 +224,15 @@ class EventController extends ApplicationController {
 				'month' => isset($_GET['month'])?$_GET['month']:date('n'),
 				'year' => isset($_GET['year'])?$_GET['year']:date('Y'),
 				'day' => isset($_GET['day'])?$_GET['day']:date('n'),
-				'typeofevent' => 1				
+				'typeofevent' => 1,
+				'subject' => $event_subject
 			); // array
 		} // if
 		
 		
 		tpl_assign('event',$event);
 		tpl_assign('event_data',$event_data);
+		tpl_assign('active_projects',logged_user()->getActiveProjects());
 
 		if (is_array(array_var($_POST, 'event'))) {
 			try {
@@ -199,11 +250,11 @@ class EventController extends ApplicationController {
 			    
 			    
 			    if(!logged_user()->isMemberOfOwnerCompany()) $event->setIsPrivate(false);  
-			
+		
 			    DB::beginWork();
 	          	$event->save();
 	          	$event->setTagsFromCSV(array_var($event_data, 'tags'));   
-	        //  $event->save_properties(array_var($event_data,'event'));
+	            $event->save_properties(array_var($event_data,'event'));
 			    
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($event);
@@ -211,7 +262,11 @@ class EventController extends ApplicationController {
 	          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
 	          	
 	          	flash_success(lang('success add event', $event->getObjectName()));
-	          	ajx_current("start");
+	          	if(array_var($_GET, 'popup')=='true'){	 
+	          		ajx_current("empty");
+	          	}else {
+	          		ajx_current("start");
+	          	}
 	          
 	        } catch(Exception $e) {
 	          	DB::rollback();
@@ -277,6 +332,7 @@ class EventController extends ApplicationController {
 		tpl_assign('tags',$tag);	
 		tpl_assign('event',$event);
 		tpl_assign('cal_action','viewevent');	
+		tpl_assign('active_projects',logged_user()->getActiveProjects());
 		ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 	}
 	/*function search(){
@@ -298,6 +354,7 @@ class EventController extends ApplicationController {
 			$this->redirectTo('event');
 	    }
 	    
+		tpl_assign('active_projects',logged_user()->getActiveProjects());
 	    
 		$event_data = array_var($_POST, 'event');
 		if(!is_array($event_data)) {
@@ -415,7 +472,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.22 2008/07/21 20:59:03 chonwil Exp $
+ *   $Id: EventController.class.php,v 1.27 2008/07/30 20:37:07 nicomede Exp $
  *
  ***************************************************************************/
 

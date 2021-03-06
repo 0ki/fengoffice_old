@@ -8,6 +8,22 @@
  */
 class MessageController extends ApplicationController {
 
+	/**
+	 * Construct the MessageController
+	 *
+	 * @access public
+	 * @param void
+	 * @return MessageController
+	 */
+	function __construct() {
+		parent::__construct();
+		prepare_company_website_controller($this, 'website');
+	} // __construct
+	
+	// ---------------------------------------------------
+	//  Index
+	// ---------------------------------------------------
+	
 	function list_all()
 	{
 		ajx_current("empty");
@@ -153,7 +169,6 @@ class MessageController extends ApplicationController {
 		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
 	}
 
-	
 	/**
 	 * Adds the messages and emails arrays
 	 *
@@ -344,10 +359,6 @@ class MessageController extends ApplicationController {
     				$msg=get_object_by_manager_and_id($id,$manager);  
 					
 					if ($msg instanceof MailContent){
-						$projectName = "";
-						if ($msg->getProject() instanceof Project){
-							$projectName = $msg->getProject()->getName();
-						}
 						$text = $msg->getBodyPlain();
 						if (strlen($text) > 300)
 							$text = substr($text,0,300) . "...";
@@ -363,6 +374,7 @@ class MessageController extends ApplicationController {
 							"date" => $msg->getSentDate()->getTimestamp(),
 							"projectId" => $msg->getWorkspacesIdsCSV(),
 							"projectName" => $msg->getWorkspacesNamesCSV(),
+    						"workspaceColors" => $msg->getWorkspaceColorsCSV(),
 							"userId" => $msg->getAccount()->getOwner()->getId(),
 							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
 							"tags" => project_object_tags($msg)
@@ -383,6 +395,7 @@ class MessageController extends ApplicationController {
 							"date" => $msg->getUpdatedOn()->getTimestamp(),
 							"projectId" => $msg->getWorkspacesIdsCSV(),
 							"projectName" => $msg->getWorkspacesNamesCSV(),
+    						"workspaceColors" => $msg->getWorkspaceColorsCSV(),
 							"userId" => $msg->getCreatedById(),
 							"userName" => $msg->getCreatedBy()->getDisplayName(),
 							"tags" => project_object_tags($msg)
@@ -394,74 +407,11 @@ class MessageController extends ApplicationController {
 		return $object;
 	}
 	
-	
-	
-	/**
-	 * Construct the MessageController
-	 *
-	 * @access public
-	 * @param void
-	 * @return MessageController
-	 */
-	function __construct() {
-		parent::__construct();
-		prepare_company_website_controller($this, 'website');
-	} // __construct
 
-//	/**
-//	 * Return project messages
-//	 *
-//	 * @access public
-//	 * @param void
-//	 * @return array
-//	 */
-//	function index() {
-//		$this->addHelper('textile');
-//
-//		$page = (integer) array_var($_GET, 'page', 1);
-//		if($page < 0) $page = 1;
-//		if(active_project()){
-//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-//			array('`project_id` = ?', active_project()->getId()) :
-//			array('`project_id` = ? AND `is_private` = ?', active_project()->getId(), 0);
-//		}
-//		else{ // all projects selected
-//			$ids=logged_user()->getActiveProjectIdsCSV();
-//			$ids='('.$ids.')';
-//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-//			array('`project_id` in ' . $ids) :
-//			array('`project_id` in ' . $ids . ' AND `is_private` = ?', 0);
-//		}
-//
-//		list($messages, $pagination) = ProjectMessages::paginate(
-//		array(
-//          'conditions' => $conditions,
-//          'order' => '`created_on` DESC'
-//          ),
-//          config_option('messages_per_page', 10),
-//          $page
-//          ); // paginate
-//
-//		if(active_project()){
-//			$important=active_project()->getImportantMessages();
-//		}
-//		else{
-//			$empty = true;
-//			$projs = logged_user()->getActiveProjects();
-//			foreach ($projs as $proj){
-//				if($empty)				
-//					$important = $proj->getImportantMessages();
-//				else
-//					$important [] = $proj->getImportantMessages();
-//			}
-//		}
-//		tpl_assign('messages', $messages);
-//		tpl_assign('messages_pagination', $pagination);
-//		tpl_assign('important_messages', $important);
-//
-//          $this->setSidebar(get_template_path('index_sidebar', 'message'));
-//	} // index
-
+	// ---------------------------------------------------
+	//  Messages
+	// ---------------------------------------------------
+	
 	/**
 	 * View single message
 	 *
@@ -485,9 +435,11 @@ class MessageController extends ApplicationController {
 			return;
 		} // if
 
-		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
+		$this->setHelp("view_message");
+		
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());
+		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
 		ajx_set_no_toolbar(true);
 
 //		$this->setSidebar(get_template_path('view_sidebar', 'message'));
@@ -549,7 +501,10 @@ class MessageController extends ApplicationController {
 				$message->save_properties($message_data);
 				foreach ($validWS as $w) {
 					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_ADD);
-				}
+				}			    
+				$object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($message);
+
 				DB::commit();
 
 				// Try to send notifications but don't break submission in case of an error

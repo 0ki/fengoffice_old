@@ -39,6 +39,7 @@ class TaskController extends ApplicationController {
 		ajx_unset_current();
 		tpl_assign('assignedTo', array_var($_GET, "assigned_to", null));
 		tpl_assign('status', array_var($_GET, "status", null));
+		ajx_set_no_toolbar(true);
 	} // index
 	
 	function view_tasks() {
@@ -114,8 +115,10 @@ class TaskController extends ApplicationController {
 			"title" => $task->getObjectName(),
 			"parent" => $task->getParentId(),
 			"milestone" => $task->getMilestoneId(),
-			"assignedTo" => $task->getAssignedToName(),
-			"workspaces" => $task->getProject()->getName(),
+			"assignedTo" => $task->getAssignedTo()? $task->getAssignedToName():'',
+			"workspaces" => $task->getWorkspacesNamesCSV(),
+			"workspaceids" => $task->getWorkspacesIdsCSV(),
+			"workspacecolors" => $task->getWorkspaceColorsCSV(),
 			"completed" => $task->isCompleted(),
 			"completedBy" => $task->getCompletedByName(),
 			"isLate" => $task->isLate(),
@@ -255,6 +258,8 @@ class TaskController extends ApplicationController {
 	 */
 	function view_task() {
 		$task_list = ProjectTasks::findById(get_id());
+		$this->addHelper('textile');
+		
 		if(!($task_list instanceof ProjectTask)) {
 			flash_error(lang('task list dnx'));
 			ajx_current("empty");
@@ -285,8 +290,8 @@ class TaskController extends ApplicationController {
 		/*tpl_assign('open_task_lists', $open);
 		tpl_assign('completed_task_lists', $comp);*/
 		ajx_extra_data(array("title" => $task_list->getTitle(), 'icon'=>'ico-task'));
-		$this->setSidebar(get_template_path('index_sidebar', 'task'));
 		ajx_set_no_toolbar(true);
+		$this->setSidebar(get_template_path('index_sidebar', 'task'));
 		$this->setTemplate('view_list');
 	} // view_task
 
@@ -330,7 +335,7 @@ class TaskController extends ApplicationController {
 				$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));
 			}
 			$task->setFromAttributes($task_data);
-			$task->setIsPrivate(true); // Not used, but defined as not null.
+			$task->setIsPrivate(false); // Not used, but defined as not null.
 			$task->setProjectId(array_var($task_data, 'project_id'));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -392,6 +397,9 @@ class TaskController extends ApplicationController {
 
 				$task->save_properties($task_data);
 				ApplicationLogs::createLog($task, $project, ApplicationLogs::ACTION_ADD);
+				//Link objects
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($task);
 				DB::commit();
 
 				flash_success(lang('success add task list', $task->getTitle()));
@@ -685,7 +693,9 @@ class TaskController extends ApplicationController {
 			if ($redirect_to) {
 				ajx_current("url", $redirect_to);
 			}
-			
+			else {
+				ajx_current("url", $task->getObjectUrl());				
+			}
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error($e->getMessage());

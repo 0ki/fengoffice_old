@@ -25,34 +25,6 @@ function cal_error($s){
 }
 
 
-/* ##################################################################
-  cal_submenu()
-   returns the menu of links to other parts of the calendar
-   such as the admin page or search page, as well as login/logout
-   (these are the links at the bottom of the page)
-###################################################################*/
-function cal_submenu($year, $month, $day){
-/*	$day = $_SESSION['cal_day'];
-	$month = $_SESSION['cal_month'];
-	$year = $_SESSION['cal_year'];
-	$today = "year=".date('Y')."&month=".date("n")."&day=".date("d");
-	// start output
-	$output="";
-	$output.= "<div id='navbar'>";
-	$action = $_SESSION['cal_action'];
-	// start the buttons
-	if(!cal_anon()) $output .= " <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=logout")."\">" . CAL_SUBM_LOGOUT. "</a> | ";
-	else $output .= " <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=login")."\">" .CAL_SUBM_LOGIN. "</a> | ";
-	if(cal_admin()) $output .= " <a class='internalLink'  href=\"".cal_getlink("index.php?c=event&action=admin")."\">" .CAL_SUBM_ADMINPAGE. "</a> | ";
-	$output .= " <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=search")."\">" .CAL_SUBM_SEARCH. "</a>";
-	if($_SESSION['cal_action']!="" AND $_SESSION['cal_action']!="calendar" AND $_SESSION['cal_action']!="logout") $output .= " | <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=calendar&month=$month&year=$year")."\">" .  CAL_SUBM_BACK_CALENDAR . '</a>';
-	if($action!="viewdate") $output .= " | <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=viewdate&".$today)."\">" . CAL_SUBM_VIEW_TODAY. "</a>";
-	if($action=="viewdate" AND cal_permission("write")) $output .= " | <a  class='internalLink' href=\"".cal_getlink("index.php?c=event&action=add&day=$day&month=$month&year=$year")."\">" .CAL_SUBM_ADD. "</a></div>";
-	return $output;*/
-return "";
-
-}
-
 
 
 /* ##################################################################
@@ -274,21 +246,6 @@ function cal_top(){
 
 
 
-
-/* ##################################################################
-  cal_bottom()
-   ends the html file.
-###################################################################*/
-function cal_bottom(){
-	// get date stuff
-	$day = $_SESSION['cal_day'];
-	$month = $_SESSION['cal_month'];
-	$year = $_SESSION['cal_year'];
-	// start output
-	$output = cal_submenu($year, $month, $day);
-	//$output .= '<br></td></tr></table></td></tr></table>';
-	return $output;
-}
 
 
 /* ##################################################################

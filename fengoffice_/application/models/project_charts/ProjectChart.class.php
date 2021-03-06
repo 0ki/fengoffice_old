@@ -81,7 +81,7 @@
   			$g2->set_height(180);
   		else
     		$g2->set_height(240);
-    	$g2->set_width(240);
+    	$g2->set_width(290);
     	$g2->set_x_label_style(6);
     	$g2->set_y_label_style(6);
     	return $g2->render();

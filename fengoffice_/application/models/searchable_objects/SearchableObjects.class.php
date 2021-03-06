@@ -49,10 +49,10 @@
         $remaining = 0;
     	if (LUCENE_SEARCH) {
         	throw new Exception("Not implemented");
-      		$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
+      		/*$conditions = SearchableObjects::getLuceneSearchConditions($search_for, $project_csvs, $include_private);
       		$hits = LuceneDB::findClean($conditions);
       		$pagination = new DataPagination(count($hits), $items_per_page, $current_page);
-      		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());
+      		$items = SearchableObjects::doLuceneSearch($hits, $pagination->getItemsPerPage(), $pagination->getLimitStart());*/
         } else {
 		    $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, true, $object_type, $columns_csv);
 		    $count = SearchableObjects::countUniqueObjects($conditions);
@@ -86,16 +86,22 @@
     function getSearchConditions($search_for, $project_csvs, $include_private = false, $object_type = '', $columns_csv = null) {
     	$otSearch = '';
     	$columnsSearch = '';
+    	$wsSearch = '';
     	if (!is_null($columns_csv))
     		$columnsSearch = " AND `column_name` in (" . $columns_csv . ")";
     		
     	if ($object_type != '')
     		$otSearch = " AND `rel_object_manager` = '$object_type'";
+    		
+    	if ($object_type=="ProjectMessages" || $object_type == "ProjectFiles")
+    		$wsSearch = " AND `rel_object_id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = '$object_type' && `workspace_id` IN ($project_csvs))";
+    	else
+    		$wsSearch =  "AND `project_id` in ($project_csvs)";
     
     	if($include_private) {
-    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND (`project_id` in (' . $project_csvs . ') OR project_id = null)' . $otSearch . $columnsSearch, array($search_for));
+    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE)' .$wsSearch . $otSearch . $columnsSearch, array($search_for));
     	} else {
-    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ? AND (`project_id` in (' . $project_csvs . ') or `project_id` = null)' . $otSearch . $columnsSearch, array($search_for,  false));
+    		return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ?' .$wsSearch . $otSearch . $columnsSearch, array($search_for,  false));
     	} // if
     } // getSearchConditions
     
@@ -168,7 +174,7 @@
       $where = '';
       if(trim($conditions) <> '') $where = "WHERE $conditions";
       
-      $sql = "SELECT distinct `rel_object_manager`, `rel_object_id` FROM $table_name $where ORDER BY `rel_object_id` DESC $limit_string";
+      $sql = "SELECT `rel_object_manager`, `rel_object_id`, `column_name` FROM $table_name $where ORDER BY `rel_object_id` DESC $limit_string";
       $result = DB::executeAll($sql);
       if(!is_array($result)) return null;
       
@@ -184,7 +190,7 @@
             $object = get_object_by_manager_and_id($object_id, $manager_class);
             if($object instanceof ApplicationDataObject) {
               $loaded[$manager_class . '-' . $object_id] = true;
-              $objects[] = $object;
+              $objects[] = array('object' => $object, 'column_name' => array_var($row, 'column_name'));
             } // if
           } // if
         } // if

@@ -36,6 +36,8 @@
 /*@import 'project/spreadsheet.css';*/
 /*@import 'project/spreadsheet_grey.css';*/
 @import 'project/task_list.css';
+@import 'og/MiniCalendar.css';
+@import '../jquery/jquery.cluetip.css';
 
 select.select_milestone, select.select_task_list, select.select_message {
   width: 250px;

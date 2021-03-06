@@ -24,7 +24,7 @@
 		$content = '<div class="dueDate"><span>' . lang('due date') . ':</span> ' . format_descriptive_date($milestone->getDueDate(), 0) . '</div>';
 	} // if 
 	if ($milestone->getDescription())
-		$content .= '<div class="description">' . do_textile($milestone->getDescription()) . '</div>';
+		$content .= '<pre class="description">' . $milestone->getDescription() . '</pre>';
 
 	if ($milestone->hasTasks()) { 
 		$content .= '<p>' . lang('task lists') . ':</p><ul>';

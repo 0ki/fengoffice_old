@@ -15,9 +15,6 @@
 	height: 50px;
 }
 .og-milestone-name {
-	padding-left: 20px;
-	background-image: url(../../images/16x16/milestone.png) !important;
-	background-repeat: no-repeat;
 	line-height: 16px;
 }
 .og-milestone-delete {
@@ -34,7 +31,7 @@
 }
 .og-milestone-late .og-milestone-name, .og-milestone-late .td-duedate {
 	color: #FF0000;
-	font-weight: bold;
+	/*font-weight: bold;*/
 }
 .og-milestone-completed .og-milestone-name, .og-milestone-completed .td-duedate {
 	text-decoration: line-through;
@@ -42,8 +39,11 @@
 	color: inherit;
 }
 .og-milestone .td-name {
-	width: 200px;
-	max-width: 200px;
+	padding-left: 20px;
+	background-image: url(../../images/16x16/milestone.png) !important;
+	background-repeat: no-repeat;
+	width: 500px;
+	max-width: 500px;
 	overflow: hidden;
 	white-space: nowrap;
 }

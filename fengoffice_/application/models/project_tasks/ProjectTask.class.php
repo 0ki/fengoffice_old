@@ -1018,6 +1018,7 @@ class ProjectTask extends BaseProjectTask {
 				"dateUpdated" => $updated_on,
 				"project" => $this->getProject()->getName(),
 				"projectId" => $this->getProjectId(),
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
 				"url" => $this->getObjectUrl(),
 				"parentId" => $parent_id,
 				"status" => "Pending",

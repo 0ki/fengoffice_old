@@ -32,7 +32,7 @@
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $file->isNew() ? lang('upload file') : (isset($checkin) ? lang('checkin file') : lang('file properties')) ?>
-	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)', 'style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($file->isNew() ? lang('add file') : (isset($checkin) ? lang('checkin file') : lang('save changes')),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)', 'style'=>'margin-top:0px;margin-left:10px','id' => 'add_file_submit1')) ?></td></tr></table>
 	</div>
 	</div>
 	<?php if ($enableUpload) { 
@@ -62,7 +62,7 @@
 			<a href="#" class="option" onclick="og.toggleAndBolden('add_file_options_div',this)"><?php echo lang('options') ?></a> -
 		<?php } ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_file_properties_div',this)"><?php echo lang('properties') ?></a>
-  		<?php if(!$file->isNew() && $file->canLinkObject(logged_user())) { ?> -
+  		<?php if($file->isNew() || $file->canLinkObject(logged_user())) { ?> -
 			<a href="#" class="option" onclick="og.toggleAndBolden('add_file_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
@@ -243,10 +243,13 @@
   </fieldset>
   </div>
   
-  <?php if(!$file->isNew() && $file->canLinkObject(logged_user())) { ?>
+  <?php if($file->isNew() || $file->canLinkObject(logged_user())) { ?>
   <div style="display:none" id="add_file_linked_objects_div">
   <fieldset>
     <legend><?php echo lang('linked objects') ?></legend>
+  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
       <?php echo render_object_links($file, $file->canEdit(logged_user())) ?>
   </fieldset>
   </div>

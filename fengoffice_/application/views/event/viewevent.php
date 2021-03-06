@@ -90,8 +90,8 @@ if($event->canEdit(logged_user())) {
 
 <?php
 	
-
-	$title = $event->getSubject();
+	$dtv = $event->getStart();
+	$title = date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())). " - ".$event->getSubject();
 	
 	$description = CAL_STARTING_TIME.": $time";
   	tpl_assign('description', $description);

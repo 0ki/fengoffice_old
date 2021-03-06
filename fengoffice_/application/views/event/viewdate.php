@@ -201,5 +201,4 @@ echo  cal_top();
 	} //if there are events
   	echo $output . "</table><br><br></td></tr></table>";
 //} // end function
-echo cal_bottom();
 ?>

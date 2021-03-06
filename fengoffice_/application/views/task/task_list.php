@@ -17,16 +17,8 @@
   } // if
 </script>
   
-<div class="taskStatus" style="padding-bottom:6px;font-size:120%"><table><tr><td><b><?php echo lang("status") ?></b>:</td><td style="padding-left:5px">
-<?php if($task_list->isCompleted()) {?>
-	<div class="db-ico ico-complete"></div></td><td style="padding-left:4px"><?php echo lang('complete')?>
-<?php } else { ?>
-	<div class="db-ico ico-incomplete"></div></td><td style="padding-left:4px"><?php echo lang('incomplete')?>
-<?php } // if ?></td></tr></table>
-</div>
-  
 <?php if($task_list->getText()) { ?>
-  <div class="desc" style="padding-bottom:6px"><?php echo clean($task_list->getText()) ?></div>
+  <pre style="padding-bottom:15px;color:#666666"><?php echo $task_list->getText() ?></pre>
 <?php } // if ?>
 
 

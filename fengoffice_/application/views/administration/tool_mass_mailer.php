@@ -5,7 +5,6 @@
     array(lang('administration tools'), get_url('administration', 'tools')),
     array($tool->getDisplayName())
   ));
-  //add_stylesheet_to_page('admin/massmailer.css');
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/massmailerForm.js') ?>"></script>
 <div id="massMailer">

@@ -88,6 +88,7 @@
     'next day' => 'Next day',
     'back to calendar' => 'Back to calendar',
     'back to day' => 'Back to day',
+    'pick a date' => 'Pick a date',
     
     //Groups
     'can edit company data' => 'Can edit company data',

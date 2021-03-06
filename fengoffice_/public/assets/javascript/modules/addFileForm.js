@@ -61,6 +61,9 @@ updateFileName = function() {
 }
 
 checkFileName = function(name) {
+	Ext.get('add_file_submit1').dom.disabled = true;
+	Ext.get('addFileButton').dom.disabled = true;
+	
     Ext.get("addFileFilenameExists").setDisplayed(false);
     Ext.get("addFileFilenameCheck").setDisplayed(true);
 	var eid = 0;
@@ -94,6 +97,8 @@ checkFileName = function(name) {
     	callback: function(success, data) {
     		if (success) {
     			checkFileNameReturn(data);
+    				Ext.get('add_file_submit1').dom.disabled = false;
+					Ext.get('addFileButton').dom.disabled = false;
     		}
     	}
     });

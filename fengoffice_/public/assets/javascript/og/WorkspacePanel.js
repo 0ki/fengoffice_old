@@ -209,7 +209,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 				exists.remove();
 				var parent = this.getNodeById('ws' + ws.parent);
 				if (parent) {
-					parent.add(exists);
+//					parent.add(exists);
 					exists.ws.parent = parent.ws.id;
 				}
 			}

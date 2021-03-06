@@ -37,12 +37,12 @@ class SearchController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			if(active_project())
-				$projects = active_project()->getId();
+			if(active_project() instanceof Project)
+				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();
 			
-				$c = 0;
+			$c = 0;
 			foreach ($objectManagers as $om){
 				$results = SearchableObjects::searchByType($search_for, $projects, $om, true, 5);
 				if (count($results[0]) > 0){
@@ -119,8 +119,8 @@ class SearchController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			if(active_project())
-				$projects = active_project()->getId();
+			if(active_project() instanceof Project)
+				$projects = active_project()->getAllSubWorkspacesCSV(true,logged_user());
 			else 
 				$projects = logged_user()->getActiveProjectIdsCSV();
 			

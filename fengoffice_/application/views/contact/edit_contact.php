@@ -43,6 +43,9 @@ if (!$contact->isNew())
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_home', this)"><?php echo lang('home') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_other', this)"><?php echo lang('other') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a>
+		<?php if($contact->isNew() || $contact->canLinkObject(logged_user())) { ?>
+			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>edit_contact_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
+		<?php } //	if($contact->isNew() || $contact->canLinkObject(logged_user())) ?>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
@@ -236,6 +239,18 @@ if (!$contact->isNew())
 	    </div>
 	</fieldset>
 	</div>
+	
+		<?php if($contact->isNew() || $contact->canLinkObject(logged_user())) { ?>
+	<div style="display:none" id="<?php echo $genid ?>edit_contact_linked_objects_div">
+	<fieldset>
+		<legend><?php echo lang('linked objects') ?></legend>
+	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
+		<?php echo render_object_links($contact, $contact->canEdit(logged_user())) ?>
+	</fieldset>	
+	</div>
+	<?php } // if ?>
 	
 	<?php if (isset($isAddProject) && $isAddProject)
 	{

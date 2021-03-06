@@ -1421,8 +1421,10 @@ class Project extends BaseProject {
 	 */
 	function delete() {
 		$ws = $this->getSubWorkspaces();
-		foreach ($ws as $w) {
-			$w->delete();
+		if(isset($ws) && !is_null($ws)){
+			foreach ($ws as $w) {
+				$w->delete();
+			}
 		}
 		$this->clearMessages();
 		$this->clearTasks();

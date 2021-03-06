@@ -53,7 +53,7 @@
 					<td style="vertical-align:top;width:60px"><div class="commentUserAvatar"><img src="<?php echo $comment->getCreatedBy()->getAvatarUrl() ?>" alt="<?php echo clean($comment->getCreatedBy()->getDisplayName()) ?>" /></div></td>
 		<?php } // if ?>
 					<td style="text-align:left">
-						<div class="commentText"><?php echo do_textile($comment->getText()) ?></div>
+						<pre class="commentText"><?php echo $comment->getText() ?></pre>
 					</td><td style="width:173px">
 						<?php echo render_object_links($comment, $comment->canEdit(logged_user()), true, false) ?>
 					</td></tr></table>

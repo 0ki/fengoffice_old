@@ -21,7 +21,7 @@ og.MessageManager = function() {
 			id: 'id',
 			fields: [
 				'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-				'projectId', 'projectName', 'userId', 'userName', 'tags'
+				'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors'
 			]
 		}),
 		remoteSort: true,
@@ -62,14 +62,38 @@ og.MessageManager = function() {
 	this.store.manager = this;
 
 	function renderName(value, p, r) {
+		var result = '';
+		var name = '';
 		if (r.data.type == 'message')
-			return String.format(
-					'<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+			name = String.format(
+					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
 		else
-			return String.format(
-					'<a href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+			name = String.format(
+					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.text));
+			
+		var projectstring = '';		
+	    if (r.data.projectId != ''){
+			var ids = String(r.data.projectId).split(',');
+			var names = r.data.projectName.split(',');
+			var colors = String(r.data.workspaceColors).split(',');
+			projectstring = '<span class="og-wsname">';
+			for(var i = 0; i < ids.length; i++){
+				projectstring += String.format('<a href="#" class="og-wsname og-wsname-color-' + colors[i].trim() +  '" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i].trim(), ids[i].trim()) + "&nbsp";
+			}
+			projectstring += '</span>';
+		}
+		
+		var text = '';
+		if (r.data.text != ''){
+			text = '&nbsp;-&nbsp;<span style="color:#888888;white-space:nowrap">';
+			text += r.data.text + "</span></i>";
+			
+		}
+		
+		return projectstring + name + text;
+		
 	}
 
 	function renderIcon(value, p, r) {
@@ -82,28 +106,12 @@ og.MessageManager = function() {
 		else
 			return String.format('<div class="db-ico ico-message"></div>');
 	}
-	
-	function renderType(value, p, r){
-		return String.format('<i>' + lang(value) + '</i>')
-	}
 
 	function renderAttachment(value, p, r){
 		if (value)
 			return String.format('<div class="db-ico ico-attachment"></div>');
 		else
 			return '';
-	}
-	
-	function renderUser(value, p, r) {
-		return String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', value, og.getUrl('user', 'card', {id: r.data.userId}));
-	}
-
-	function renderProject(value, p, r) {
-		return String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', value, r.data.projectId);
-	}
-	
-	function renderText(value, p, r) {
-		return String.format('<div id="message-text-{1}" style="cursor:pointer" onclick="javascript:document.getElementById(\'message-text-{1}\').style.whiteSpace = document.getElementById(\'message-text-{1}\').style.whiteSpace == \'nowrap\' ? \'pre\':\'nowrap\'; return false;">{0}</div>', value, r.id);
 	}
 
 	function renderAccount(value, p, r) {
@@ -114,11 +122,14 @@ og.MessageManager = function() {
 		if (!value) {
 			return "";
 		}
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.userName, og.getUrl('user', 'card', {id: r.data.userId}));
+	
 		var now = new Date();
+		var dateString = '';
 		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
-			return value.dateFormat('M j');
+			return lang('last updated by on', userString, value.dateFormat('M j'));
 		} else {
-			return value.dateFormat('h:i a');
+			return lang('last updated by at', userString, value.dateFormat('h:i a'));
 		}
 	}
 
@@ -191,31 +202,12 @@ og.MessageManager = function() {
         	hideable:false,
         	menuDisabled: true
 		},{
-			id: 'type',
-			header: lang('type'),
-			dataIndex: 'type',
-			width: 80,
-        	renderer: renderType,
-        	sortable: false,
-        	fixed:false,
-        	resizable: true,
-        	hideable:true,
-        	menuDisabled: true
-		},{
 			id: 'title',
 			header: lang("title"),
 			dataIndex: 'title',
 			width: 250,
 			sortable: false,
 			renderer: renderName
-        },{
-			id: 'text',
-			header: lang("text"),
-			dataIndex: 'text',
-			renderer: renderText,
-			sortable: false,
-			hidden: true,
-			width: 250
         },{
 			id: 'account',
 			header: lang("account"),
@@ -224,20 +216,6 @@ og.MessageManager = function() {
 			renderer: renderAccount,
 			sortable: false
         },{
-			id: 'project',
-			header: lang("project"),
-			dataIndex: 'projectName',
-			width: 60,
-			renderer: renderProject,
-			sortable: false
-        },{
-        	id: 'user',
-        	header: lang('user'),
-        	dataIndex: 'userName',
-        	width: 60,
-        	renderer: renderUser,
-        	sortable: false
-        },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
@@ -245,7 +223,7 @@ og.MessageManager = function() {
 			sortable: false
         },{
 			id: 'date',
-			header: lang("date"),
+			header: lang("last updated by"),
 			dataIndex: 'date',
 			width: 50,
 			sortable: false,

@@ -106,8 +106,14 @@
     function getWorkspaces() {
     	if ($this->isNew()) {
     		return array(active_or_personal_project());
-    	} else {
+    	} else if ($this instanceof ProjectFile || $this instanceof ProjectMessage) {
     		return WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    	} else {
+    		$project = $this->getProject();
+    		if ($project)
+    			return array($project);
+    		else
+    			return null;
     	}
     }
     
@@ -123,6 +129,8 @@
     		//TODO Begin Remove for multiple workspaces
     		if ($this->getProject() instanceof Project)
     			return $this->getProject()->getName();
+    		if ($this instanceof MailContent)
+    			return '';
     		//End todo
     		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
     		$names = array();
@@ -140,11 +148,32 @@
     		//TODO Begin Remove for multiple workspaces
     		if ($this->getProject() instanceof Project)
     			return $this->getProject()->getId();
+    		if ($this instanceof MailContent)
+    			return '';
     		//End todo
     		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
     		$ids = array();
     		foreach ($ws as $w) {
     			$ids[] = $w->getId();
+    		}
+    		return join(", ", $ids);
+    	}
+    }
+  
+  	function getWorkspaceColorsCSV() {
+    	if ($this->isNew()) {
+    		return active_or_personal_project()->getColor();
+    	} else {
+    		//TODO Begin Remove for multiple workspaces
+    		if ($this->getProject() instanceof Project)
+    			return $this->getProject()->getColor();
+    		if ($this instanceof MailContent)
+    			return '';
+    		//End todo
+    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		$ids = array();
+    		foreach ($ws as $w) {
+    			$ids[] = $w->getColor();
     		}
     		return join(", ", $ids);
     	}
@@ -803,6 +832,7 @@
 				"dateUpdated" => $updated_on,
 				"project" => $this->getWorkspacesNamesCSV(),
 				"projectId" => $this->getWorkspacesIdsCSV(),
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 			);

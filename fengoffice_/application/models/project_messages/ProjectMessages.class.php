@@ -8,13 +8,12 @@
  */
 class ProjectMessages extends BaseProjectMessages {
 
-	private static $workspace_string;
-	 
 	function __construct() {
 		parent::__construct();
-		if (!self::$workspace_string) {
-			self::$workspace_string = '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND workspace_id` = ?)';
-		}
+	}
+
+	private static function getWorkspaceString(){
+		return '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND `workspace_id` = ?)';
 	}
 	 
 	/**
@@ -25,7 +24,10 @@ class ProjectMessages extends BaseProjectMessages {
 	 * @return array
 	 */
 	static function getProjectMessages(Project $project, $include_private = false) {
-		$condstr = self::$workspace_string;
+		$condstr = self::getWorkspaceString();
+		if (is_null($condstr) || $condstr == '')
+			$condstr = '`id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'ProjectMessages\' AND `workspace_id` = ?)';
+		
 		if ($include_private) {
 			$conditions = array($condstr, $project->getId());
 		} else {
@@ -46,7 +48,7 @@ class ProjectMessages extends BaseProjectMessages {
 	 * @return array
 	 */
 	static function getImportantProjectMessages(Project $project, $include_private = false) {
-		$condstr = self::$workspace_string;
+		$condstr = self::getWorkspaceString();
 		if($include_private) {
 			$conditions = array($condstr . ' AND `is_important` = ?', $project->getId(), true);
 		} else {

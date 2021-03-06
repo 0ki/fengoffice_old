@@ -292,7 +292,7 @@
   'you' => 'You',
   'created by' => 'Created by',
   'modified by' => 'Modified by',
-  'user date' => '<a class="internalLink" href="{0}">{1}</a>, on {2}',
+  'user date' => '<a class="internalLink" href="{0}" title="View {3}\'s profile">{1}</a>, on {2}',
   'created by on' => 'Created by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'modified by on' => 'Modified by <a class="internalLink" href="{0}">{1}</a> on {2}',
   'created by on short' => '<a class="internalLink" href="{0}">{1}</a>, {2}',
@@ -315,7 +315,10 @@
   'due today' => 'Due today',
   
   
-  'undo checkout' => 'Undo file checkout'
+  'undo checkout' => 'Undo file checkout',
+  
+  'search for in project' => 'Search results for \'<i>{0}</i>\' in workspace \'{1}\'',
+  'search for' => 'Search results for \'{0}\' in all workspaces'
   ); // array
 
 ?>

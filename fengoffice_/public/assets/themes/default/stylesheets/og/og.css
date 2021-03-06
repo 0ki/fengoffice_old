@@ -203,6 +203,46 @@
 	font-weight: bold;
 }
 
+.og-wsname {
+	color: #FFFFFF;
+	font-size: 9px;
+	padding-left:1px;
+	padding-right:1px;
+}
+
+.og-wsname-color-0 {
+	color: #777777;
+}
+
+.og-wsname-color-1 {
+	background-color: rgb(147,7,7);
+}
+
+.og-wsname-color-2 {
+	background-color: rgb(20,208,38);
+}
+
+.og-wsname-color-3 {
+	background-color: rgb(14,91,207);
+}
+
+.og-wsname-color-4 {
+	background-color: rgb(255,204,0);
+	color: rgb(91,73,0);
+}
+
+.og-wsname-color-5 {
+	background-color: rgb(255,126,0);
+}
+
+.og-wsname-color-6 {
+	background-color: rgb(255,0,180);
+}
+
+.og-wsname-color-7 {
+	background-color: rgb(0,214,227);
+}
+
 /** wschooser **/
 .og-wschooser th {
 	background-color: transparent;

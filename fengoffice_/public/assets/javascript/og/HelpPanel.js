@@ -4,7 +4,17 @@ og.HelpPanel = function(config) {
 			type: 'url',
 			data: 'help/index.html'
 		},
-		active: true
+		active: true,
+		listeners: {
+			'expand': {
+				fn: function() {
+					alert('pepe');
+					if (!this.contentLoaded)
+						this.loadContentUrl();
+				},
+				scope: this
+			}
+		}
 	}));
 };
 

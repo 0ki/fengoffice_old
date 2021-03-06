@@ -16,7 +16,7 @@
     /**
     * Create new log entry and return it
     * 
-    * Delete actions are automaticly marked as silent if $is_silent value is not provided (not NULL)
+    * Delete actions are automatically marked as silent if $is_silent value is not provided (not NULL)
     *
     * @param ApplicationDataObject $object
     * @param Project $project

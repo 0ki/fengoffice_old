@@ -48,7 +48,7 @@ var allTags = [<?php
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_mail_notif_div',this)"><?php echo lang('email notification') ?></a>
 		<?php } ?> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_properties_div',this)"><?php echo lang('properties') ?></a>
-		<?php if(!$message->isNew() && $project instanceof Project && $message->canLinkObject(logged_user(), $project)) { ?> - 
+		<?php if($message->isNew() || $message->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
@@ -158,10 +158,13 @@ var allTags = [<?php
 	</fieldset>
 	</div>
 
-	<?php if(!$message->isNew() && $project instanceof Project && $message->canLinkObject(logged_user(), $project)) { ?>
+	<?php if($message->isNew() || $message->canLinkObject(logged_user(), $project)) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_message_linked_objects_div">
 	<fieldset>
 		<legend><?php echo lang('linked objects') ?></legend>
+	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
 		<?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
 	</fieldset>	
 	</div>

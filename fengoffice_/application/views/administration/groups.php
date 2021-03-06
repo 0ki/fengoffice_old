@@ -4,9 +4,11 @@
   if(owner_company()->canAddGroup(logged_user())) {
     add_page_action(lang('add group'), get_url('group', 'add_group'), 'ico-add');
   } // if
+  
+  $genid = gen_id();
 ?>
 
-<div class="adminGroups">
+<div id="<?php echo $genid ?>adminContainer" class="adminGroups">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('groups') ?></div>
   </div>
@@ -47,3 +49,9 @@
 <?php } // if ?>
 </div>
 </div>
+
+
+<script type="text/javascript">
+	var div = document.getElementById('<?php echo $genid ?>adminContainer');
+	div.parentNode.style.backgroundColor = '#FFFFFF'; 
+</script>

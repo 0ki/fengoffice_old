@@ -5,6 +5,8 @@
   		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete project'))) og.openLink('" . $project->getDeleteUrl() ."');", 'ico-delete');
   	} // if
   	
+  	$genid = gen_id();
+  	
 if($project->isNew()) { ?>
 <form class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
 <?php } else { ?>
@@ -30,9 +32,9 @@ if($project->isNew()) { ?>
   
   
   	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('workspace_description',this)"><?php echo lang('description') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a> - 
 		<?php if ($project->canChangePermissions(logged_user())) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
 		<?php } ?>
 	</div>
   
@@ -40,7 +42,7 @@ if($project->isNew()) { ?>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
 
-	<div id="workspace_description" style="display:none">
+	<div id="<?php echo $genid ?>workspace_description" style="display:none">
 	<fieldset>	
 	<legend><?php echo lang('description') ?></legend>
 		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription')) ?>
@@ -51,7 +53,7 @@ if($project->isNew()) { ?>
 
 	<!-- permissions -->
 	<?php if ($project->canChangePermissions(logged_user())) { ?>
-		<div id="workspace_permissions" style="display:none">
+		<div id="<?php echo $genid ?>workspace_permissions" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('edit permissions') ?></legend>
 		

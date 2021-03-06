@@ -4,7 +4,7 @@ class MailUtilities
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived)
 	{
 		if ($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]);
-		if (!isset($accounts) || is_null($accounts));
+		if (is_null($accounts))
 			$accounts = MailAccounts::findAll();
 			
 		$err = 0;

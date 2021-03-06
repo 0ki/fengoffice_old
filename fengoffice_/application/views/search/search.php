@@ -17,7 +17,14 @@
 <?php foreach($search_results as $search_result) { 
 	$pagination = $search_result["pagination"];?>
 <br/>
-	<table style="width:100%"><tr>
+	<table style="width:100%">
+	<tr><td colspan=2 style="text-align:center; font-size:120%; font-weight:bolder"><?php
+		if (active_project() instanceof Project) 
+			echo lang("search for in project", $search_string, active_project()->getName());
+		else
+			echo lang("search for", $search_string); ?></td></tr>
+	
+	<tr>
 		<td><div class="searchTopLeft">
 			<table><tr><td><div class="db-ico ico-<?php echo $search_result["icontype"]?>"></div></td>
 			<td style="padding-left:5px">
@@ -39,14 +46,25 @@
 	<tr><td><div class="searchBottomLeft">
 	
 	<ul>
-	<?php foreach($search_result['result'] as $result) { ?>
-		 <li><a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a></li>
+	<?php foreach($search_result['result'] as $srrow) { 
+		$result = $srrow['object'];?>
+		 <li><?php if ($result instanceof ProjectDataObject){
+		$dws = $result->getWorkspaces();
+		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+			
+			$projectLinks = array();
+			foreach ($dws as $ws) {
+				$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+			}
+			echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+		}}?><a class="internalLink" href="<?php echo $result->getObjectUrl() ?>"><?php echo clean($result->getObjectName()) ?></a></li>
 	<?php } // foreach ?>
 	</ul>
 	</div>
 	</td><td><div class="searchBottomRight">
 		<ul>
-		<?php foreach($search_result['result'] as $result) { ?>
+		<?php foreach($search_result['result'] as $srrow) { 
+		$result = $srrow['object'];?>
 		 <li><?php echo lang("created by on short", $result->getCreatedByCardUrl(), $result->getCreatedByDisplayName(), format_descriptive_date($result->getObjectCreationTime())) ?></li>
 		<?php } // foreach ?>
 		</ul>

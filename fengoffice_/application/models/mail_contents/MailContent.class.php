@@ -47,6 +47,9 @@ class MailContent extends BaseMailContent {
 	 */
 	function getProject()
 	{
+		if ($this->getProjectId() == 0)
+			return null;
+		
 		if(!isset($this->project)) {
 			$this->project = Projects::findById($this->getProjectId());
 		} // if
@@ -260,7 +263,6 @@ class MailContent extends BaseMailContent {
 	} // getObjectUrl
 
 
-
 	/**
 	 * Return value of 'subject' field
 	 *
@@ -298,6 +300,7 @@ class MailContent extends BaseMailContent {
 				"dateUpdated" => $this->getSentDate()->getTimestamp(),
 				"project" => $project,
 				"projectId" => $projectId,
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 		);

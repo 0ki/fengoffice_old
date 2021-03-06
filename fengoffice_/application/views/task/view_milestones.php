@@ -14,11 +14,12 @@ if ($first) {
 ?>
 {
 	id: <?php echo $milestone->getId() ?>,
-	title: '<?php echo str_replace("'", "\\'", $milestone->getName()) ?>',
+	title: '<?php echo str_replace("\n"," ",str_replace("'", "\\'", $milestone->getName())) ?>',
 	subtasks: [],
 	assignedTo: '<?php echo str_replace("'", "\\'", $milestone->getAssignedTo() == null ? '' : $milestone->getAssignedToName()) ?>',
 	workspaces: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getProject()->getName()) ?>',
 	workspaceids: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getProject()->getId()) ?>',
+	workspacecolors: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $milestone->getProject()->getId() == active_project()->getId()) ? '' : $milestone->getWorkspaceColorsCSV()) ?>',
 	expanded: false,
 	completed: <?php echo $milestone->isCompleted()?"true":"false" ?>,
 	completedBy: '<?php echo str_replace("'", "\\'", $milestone->getCompletedByName()) ?>',

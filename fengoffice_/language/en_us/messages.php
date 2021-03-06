@@ -11,6 +11,7 @@
   
     // Empty, dnx et
     'no mail accounts set' => 'There are no email accounts through which to send an email, please create an email account first',
+    'no mail accounts set for check' => 'You have no email accounts, please create an email account first',
     'email dnx' => 'Requested email does not exist',
   	'email dnx deleted' => 'Requested email was deleted from database',
     'project dnx' => 'Requested workspace does not exist in database',
@@ -111,6 +112,7 @@
     'success complete task' => 'Selected task has been completed',
     'success open task' => 'Selected task has been reopened',
     'success n tasks updated' => '{0} tasks updated',
+	'success add mail' => 'Email sent successfully',
     
     'success add client' => 'Client company {0} has been added',
     'success edit client' => 'Client company {0} has been updated',

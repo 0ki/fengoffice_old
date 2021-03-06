@@ -184,7 +184,7 @@ class MilestoneController extends ApplicationController {
 			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', $now->getMonth()), array_var($_POST, 'milestone_due_date_day', $now->getDay()), array_var($_POST, 'milestone_due_date_year', $now->getYear()));
 
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
-			$milestone->setIsPrivate(true); //Mandatory to set
+			$milestone->setIsPrivate(false); //Mandatory to set
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
 
@@ -197,7 +197,9 @@ class MilestoneController extends ApplicationController {
 
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
-				
+			    $object_controller = new ObjectController();
+			    $object_controller->link_to_new_object($milestone);
+
 				DB::commit();
 				
 				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_ADD);

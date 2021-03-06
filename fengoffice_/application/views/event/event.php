@@ -16,7 +16,7 @@
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
 */
-$active_projects = logged_user()->getActiveProjects();
+//$active_projects = logged_user()->getActiveProjects();
 $project = active_or_personal_project();
 
 $day =  array_var($event_data, 'day');
@@ -78,7 +78,6 @@ $year =  array_var($event_data, 'year');
 			
 		
 		$username = '';
-		$subject = '';
 		$desc = '';
 		
 		// if adding event to today, make the time current time.  Else just make it 6PM (you can change that)
@@ -409,7 +408,6 @@ $year =  array_var($event_data, 'year');
 		<fieldset>
 	    <legend><?php echo lang('linked objects') ?></legend>
 	    	<div class="objectFiles">
-			</div>
 			<table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
 		   	<tbody></tbody>
 			</table>

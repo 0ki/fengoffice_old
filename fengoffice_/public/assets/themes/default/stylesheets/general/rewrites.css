@@ -38,7 +38,7 @@ q:before, q:after {
 body {
   font-family: verdana, arial, helvetica, sans-serif;
   font-size: 11px;
-  color: black;
+  color: #333333;
   background: white;
   line-height: 150%;
 }
@@ -114,11 +114,12 @@ code {
 }
 
 pre {
-  border: 1px solid #003562;
+  /*border: 1px solid #003562;
   padding: 10px;
   font-size: 1.2em;
-  background: #e8e8e8;
+  background: #e8e8e8;*/
   overflow: auto;
+  font-family:verdana,arial,helvetica,sans-serif;
 }
 
 acronym {

@@ -44,7 +44,7 @@
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_properties_div', this)"><?php echo lang('properties') ?></a>
-		<?php if(!$webpage->isNew() && $project instanceof Project && $webpage->canLinkObject(logged_user(), $project)) { ?> - 
+		<?php if($webpage->isNew() || $webpage->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
@@ -84,10 +84,13 @@
 	</div>
   
   
- <?php if(!$webpage->isNew() && $webpage->canLinkObject(logged_user(), $project)) { ?>
+ <?php if($webpage->isNew() || $webpage->canLinkObject(logged_user(), $project)) { ?>
  <div style="display:none" id="add_webpage_linked_objects_div">
 <fieldset>
     <legend><?php echo lang('linked objects') ?></legend>
+  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
     <?php echo render_object_links($webpage, $webpage->canEdit(logged_user())) ?>
 </fieldset>
 </div>

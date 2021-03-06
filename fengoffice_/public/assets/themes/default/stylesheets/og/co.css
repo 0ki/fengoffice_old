@@ -10,7 +10,8 @@
 	right:279px;
 	border-bottom:2px solid;
 	border-left:2px solid;
-	width: 16px;
+	/*width: 16px;*/
+	padding-right:3px;
 	height: 16px;
   	font-weight: bold;
   	padding-left:3px;
@@ -309,6 +310,58 @@
 .ico-large-event {
 	background-image: url('../../images/48x48/view_calendar_day.png');
 }
+
+.calendar .coViewHeader {
+  	background: #C2FFBF;
+  	border-color: #7AAB78;
+  	color: #4F664D;
+  	width:80%;
+}
+
+.calendar .coViewIcon {
+  	background: #EBFFE6;
+  	border-color: #C2FFBF;
+  	padding:2px;
+	width:32px;	
+}
+
+.calendar .coViewHeader .coViewTitle {
+  	border-color: #7AAB78;
+  	border-bottom: none;  	
+  	padding-bottom: 0px;
+}
+
+.calendar .coViewClose {
+  	background: #EBFFE6;
+  	color: #7AAB78;
+}
+
+.calendar .coViewIconImage{
+	height: 32px;
+	width: 32px;
+}
+
+.calendar .coViewBottomRight {	
+	width:3px;
+}
+
+.calendar .coViewBottomRight {
+	width:3px;
+}
+
+
+.calendar .coViewBody {
+	padding:7px;
+}
+
+.ico-small-calendar {
+	background-image: url('../../images/32x32/view_calendar_month.png');
+}
+
+
+
+
+
 
 
 .tpTaskHeader, .tpMilestoneHeader {

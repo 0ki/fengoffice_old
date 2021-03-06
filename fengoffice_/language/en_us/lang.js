@@ -13,6 +13,9 @@ _lang = {
 	"back": "Back",
 	"server could not be reached": "Server could not be reached",
 	"refesh desc": "Refresh the view",
+	"last updated by at": "{0}, at {1}", 
+	"last updated by on": "{0}, on {1}", 
+	"last updated by": "Last updated by",
 
 	/* file manager */
 	"by": "by",
@@ -45,7 +48,8 @@ _lang = {
 	"confirm delete event": "Are you sure you want to delete this event?",
 	"confirm delete file": "Are you sure you want to delete this file?",
 	"confirm delete mail content": "Are you sure you want to delete this email?",
-	"confirm delete milestone": "Are you sure you want to delete this milestone?",
+	"confirm delete mail account": "Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?",
+    "confirm delete milestone": "Are you sure you want to delete this milestone?",
 	"confirm delete chart": "Are you sure you want to delete this chart?",
 	"confirm delete message": "Are you sure you want to delete this message?",
 	"confirm delete task list": "Are you sure you want to delete this task list, along with its subtasks?",
@@ -227,7 +231,9 @@ _lang = {
 	'updated by': 'Updated by',
 	'created by': 'Created by',
 	'view as dashboard': 'View as dashboard',
-	
+	/* Events*/
+	'subject':'Subject',
+	'add event':'Add Event',
 	/* Charts */
 	'reporting' : 'Reporting',
 	'add new chart' : 'Add new chart',
@@ -240,6 +246,7 @@ _lang = {
 	'charts' : 'Charts',
 	'unlock': 'In use',
 	'lock': 'Available',
+	'edit this document': 'Edit this document',
 	
 	/* tasks */
 	'assigned to': 'Assigned to',

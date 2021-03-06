@@ -3,7 +3,7 @@
 	$last_revision = $file->getLastRevision(); ?>
 
 <?php if(($file->getDescription())) { ?>
-      <div id="fileDescription"><?php echo do_textile($file->getDescription()) ?></div>
+      <pre id="fileDescription"><?php echo $file->getDescription() ?></pre>
 <?php } // if ?>
 
 <?php if($file->isCheckedOut()) { ?>
@@ -15,10 +15,15 @@
 <?php } // if ?>
 	</div>
 <?php } ?>
+
+	<?php if ($file->isModifiable()) {
+		echo $file->getFileContent();	
+		echo '<br/><br/>';
+}?>
     
     <fieldset>
-  <legend class="toggle_collapsed" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
-<div id="revisions" style="display:none">
+  <legend class="toggle_expanded" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
+<div id="revisions">
 <?php $counter = 0; ?>
 <?php foreach($revisions as $revision) { ?>
 <?php $counter++; ?>
@@ -31,13 +36,13 @@
 <?php } // if ?>
     </div>
 <?php if(trim($revision->getComment())) { ?>
-    <div class="revisionComment"><?php echo do_textile($revision->getComment()) ?></div>
+    <pre class="revisionComment"><?php echo $revision->getComment() ?></pre>
 <?php } // if ?>
 <?php 
   $options = array();
-  if($revision->canDownload(logged_user())) $options[] = '<a target="_blank" href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
-  if($revision->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
-  if($revision->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete revision') . '\')">' . lang('delete') . '</a>';
+  if($file->canDownload(logged_user())) $options[] = '<a href="' . $revision->getDownloadUrl() . '" class="downloadLink">' . lang('download') . ' <span>(' . format_filesize($revision->getFileSize()) . ')</span></a>';
+  if($file->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getEditUrl() . '">' . lang('edit') . '</a>';
+  if($file->canDelete(logged_user())) $options[] = '<a class="internalLink" href="' . $revision->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete revision') . '\')">' . lang('delete') . '</a>';
 ?>
 <?php if(count($revisions)) { ?>
     <div class="revisionOptions"><?php echo implode(' | ', $options) ?></div>

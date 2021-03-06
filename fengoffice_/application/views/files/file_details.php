@@ -1,7 +1,23 @@
 <?php
 $options = array();
 
-	if ($file->isCheckedOut()){
+	if (strcmp($file->getTypeString(), 'prsn')==0) {
+		add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
+	}
+	
+	if($file->canDownload(logged_user())) 
+		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), 'ico-download', '', array("download" => true));
+	
+	if ($file->isModifiable() && $file->canEdit(logged_user())) 
+		add_page_action(lang('edit this file'), $file->getModifyUrl(), 'ico-edit');
+		
+	if($file->canDelete(logged_user())) 
+		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete file'))) og.openLink('" . $file->getDeleteUrl() ."');", 'ico-delete');
+	
+	if($file->canEdit(logged_user()))
+		add_page_action(lang('file properties'), $file->getEditUrl(), 'ico-properties');
+	
+		if ($file->isCheckedOut()){
 		if ($file->canCheckin(logged_user())){
 			add_page_action(lang('checkin file'), $file->getCheckinUrl(), 'ico-checkin'); 
 			add_page_action(lang('undo checkout'), $file->getUndoCheckoutUrl() . "&show=redirect", 'ico-undo'); 
@@ -9,22 +25,6 @@ $options = array();
 	} else {
 		if ($file->canCheckout(logged_user())) 
 			add_page_action(lang('checkout file'), $file->getCheckoutUrl(). "&show=redirect", 'ico-checkout');
-	}
-	
-	if($file->canDownload(logged_user())) 
-		add_page_action(lang('download') . ' (' . format_filesize($file->getFilesize()) . ')', $file->getDownloadUrl(), 'ico-download', "_blank");
-	
-	if($file->canEdit(logged_user()))
-		add_page_action(lang('file properties'), $file->getEditUrl(), 'ico-properties');
-	
-	if($file->canDelete(logged_user())) 
-		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete file'))) og.openLink('" . $file->getDeleteUrl() ."');", 'ico-delete');
-	
-	if ($file->isModifiable()) 
-		add_page_action(lang('edit'), $file->getModifyUrl(), 'ico-edit');
-		
-	if (strcmp($file->getTypeString(), 'prsn')==0) {
-		add_page_action(lang('slideshow'), "javascript:og.slideshow(".$file->getId().")", 'ico-slideshow');
 	}
 
 // Arreglar el slideshow!!!!

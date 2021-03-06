@@ -204,60 +204,6 @@ function cal_load_options(){
 
 
 
-/* ###################################################################
-   cal_check_user()
-     organizes the posted username and password, calls function to check password, 
-	 and sets session variables to log user in if password correct.
-################################################################### */
-function cal_check_user(){
-/*	global $cal_db;
-	// trim the username posted.
-	$u = trim($_POST['user']);
-	// take md5 of password with salt (salt defined in config.php file).
-	$pass = md5($_POST['pass'].CAL_SQL_PASSWD_SALT);
-	// if user and password correct, set session variables appropriately.
-	// note it's okay if return is 0 since 0 means root user. -1 means password did not match.
-	$uid = cal_check_pass($u,$pass);
-	if( $uid >= 0 ){
-		$_SESSION['cal_loginfailed'] = 0;
-		$_SESSION['cal_user'] = $u;
-		$_SESSION['cal_userid'] = $uid;
-	}
-	// if login failed, mark session variable to say so (causes error message to display later in code).
-	else{
-		$_SESSION['cal_loginfailed'] = 1;
-		cal_logout();
-	}*/
-}
-
-
-
-/* ##################################################################
-  cal_check_pass()
-   This function takes the $user and $pass defined above,
-   and checks the pass with that in the database,
-   returns -1 if login failed, 0 if root login, else returns the user_id
-###################################################################*/
-function cal_check_pass($user,$pass){
-	// use the database object
-	global $cal_db;
-	// if user is root
-	if($user == CAL_ROOT_USERNAME){
-		if($pass == cal_option("root_password")) return 0;
-		else return -1;
-	}
-	// if user is not root
-	else{
-		$result = cal_query_getuser($user); // sql injection checked for in the cal_get_user function
-		// strip out the password
-		$d = $cal_db->sql_fetchrow($result);
-		$pass2 = $d['pass'];
-		$uid = $d['id'];
-		// see if they match or not.
-		if($pass==$pass2) return $uid;
-		return -1;
-	}
-}
 
 
 

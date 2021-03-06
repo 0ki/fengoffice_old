@@ -114,7 +114,15 @@ og.Overview = function() {
 	}
 
 	function renderProject(value, p, r) {
-		return String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', value, r.data.projectId);
+		var ids = String(r.data.projectId).split(',');
+		var names = value.split(',');
+		var result = "";
+		for(var i = 0; i < ids.length; i++){
+			result += String.format('<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select({1})">{0}</a>', names[i], ids[i]);
+			if (i < ids.length - 1)
+				result += ",&nbsp";
+		}
+		return result;
 	}
 
 	function renderDate(value, p, r) {

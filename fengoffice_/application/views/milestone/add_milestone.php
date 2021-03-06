@@ -49,7 +49,7 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_properties_div', this)"><?php echo lang('properties') ?></a>
-		<?php if(!$milestone->isNew() && $project instanceof Project && $milestone->canLinkObject(logged_user(), $project)) { ?> - 
+		<?php if($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_linked_objects_div', this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?>
 	</div>
@@ -105,10 +105,13 @@
 	</fieldset>
 	</div>
 	
-	<?php if ($project instanceof Project && $milestone->canLinkObject(logged_user(), $project)) { ?>
+	<?php if ($milestone->isNew() || $milestone->canLinkObject(logged_user())) { ?>
 	<div style="display:none" id="<?php echo $genid ?>add_milestone_linked_objects_div">
 	<fieldset>
 	<legend><?php echo lang('linked objects') ?></legend>
+	  	  <table style="width:100%;margin-left:2px;margin-right:3px" id="tbl_linked_objects">
+	   	<tbody></tbody>
+		</table>
 		<?php echo render_object_links($milestone, $milestone->canEdit(logged_user())) ?>
 	</fieldset>	
 	</div>

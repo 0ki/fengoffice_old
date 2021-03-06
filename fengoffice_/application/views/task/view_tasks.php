@@ -20,13 +20,14 @@ if ($first) {
 ?>
 {
 	id: <?php echo $task->getId() ?>,
-	title: '<?php echo str_replace("'", "\\'", $task->getTitle()) ?>',
+	title: '<?php echo str_replace("\n"," ",str_replace("'", "\\'", $task->getTitle())) ?>',
 	parent: <?php echo $task->getParentId() ?>,
 	milestone: <?php echo $task->getMilestoneId() ?>,
 	subtasks: [],
 	assignedTo: '<?php echo str_replace("'", "\\'", $task->getAssignedTo() == null ? '' : $task->getAssignedToName()) ?>',
 	workspaces: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $task->getProject()->getId() == active_project()->getId()) ? '' : $task->getProject()->getName()) ?>',
 	workspaceids: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $task->getProject()->getId() == active_project()->getId()) ? '' : $task->getProject()->getId()) ?>',
+	workspacecolors: '<?php echo str_replace("'", "\\'", (active_project() instanceof Project && $task->getProject()->getId() == active_project()->getId()) ? '' : $task->getWorkspaceColorsCSV()) ?>',
 	expanded: false,
 	completed: <?php echo $task->isCompleted()?"true":"false" ?>,
 	completedBy: '<?php echo str_replace("'", "\\'", $task->getCompletedByName()) ?>',

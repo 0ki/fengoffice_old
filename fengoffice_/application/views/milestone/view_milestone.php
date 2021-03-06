@@ -61,7 +61,7 @@
 	<div class="dueDate"><span><?php echo lang('due date') ?>:</span> <?php echo format_descriptive_date($milestone->getDueDate(), 0) ?></div>
 	<?php } // if ?>
 	<?php if ($milestone->getDescription()) { ?>
-	<div class="description"><?php echo do_textile($milestone->getDescription()) ?></div>
+	<pre class="description"><?php echo $milestone->getDescription() ?></pre>
 	<?php } // if ?>
 
 	<!-- Task lists -->

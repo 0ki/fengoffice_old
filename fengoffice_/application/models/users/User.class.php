@@ -203,14 +203,18 @@ class User extends BaseUser {
 		return $this->is_administrator;
 	} // isAdministrator
 
-	function setAsAdministrator() {
-		if ($this->isAdministrator() && can_manage_security(logged_user())) {
-			return;
+	function setAsAdministrator($setAsAdmin = true) {
+		if (can_manage_security(logged_user())){
+			if ($setAsAdmin && !$this->isAdministrator()){
+				$group_user = new GroupUser();
+				$group_user->setUserId($this->getId());
+				$group_user->setGroupId(Group::CONST_ADMIN_GROUP_ID);
+				$group_user->save();
+			}
+			if (!$setAsAdmin && $this->getId() != 1 && $this->isAdministrator()) {
+				GroupUsers::delete('user_id = ' . $this->getId() . ' and group_id = ' . Group::CONST_ADMIN_GROUP_ID);
+			}
 		}
-		$group_user = new GroupUser();
-		$group_user->setUserId($this->getId());
-		$group_user->setGroupId(Group::CONST_MINIMUM_GROUP_ID);
-		$group_user->save();
 	}
 	
 	/**

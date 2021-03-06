@@ -351,24 +351,10 @@ og.captureLinks = function(id, caller) {
 	});
 }
 
-og.getViewTab = function(){
-	vtindex++;
-	if (vtlist.length >= 3){
-		var toRemove = vtlist.shift();
-		Ext.getCmp('tabs-panel').remove(toRemove);
-	}
-	vtlist.push('vtab' + vtindex);
-		
-	return 'vtab' + vtindex;
-}
-
 og.openLink = function(url, options) {
 	if (!options) options = {};
 	if (typeof options.caller == "object") {
 		options.caller = options.caller.id;
-	}
-	if (options.caller == 'viewTab'){
-		options.caller = og.getViewTab();
 	}
 	if (!options.caller) {
 		var tabs = Ext.getCmp('tabs-panel');
@@ -471,53 +457,54 @@ og.submit = function(form, callback) {
 }
 
 og.processResponse = function(data, options) {
-	if (options)
-		var caller = options.caller;
 	if (!data) return;
+	if (options) var caller = options.caller;
+	
+	//Fire events
 	if (data.events) {
 		for (var i=0; i < data.events.length; i++) {
 			og.eventManager.fireEvent(data.events[i].name, data.events[i].data);
 		}
 	}
-	/*for (var k in data.libs) {
-		og.loadScript("");
-	}*/
-	if (data.contents) {
-		for (var i=0; i < data.contents.length; i++) {
-			var p = Ext.getCmp(data.contents[i].panel);
-			if (p) {
-				p.load(data.contents[i]);
+	
+	//Load data
+	if (!options || !options.preventPanelLoad){
+		//Load data into more than one panel
+		if (data.contents) {
+			for (var i=0; i < data.contents.length; i++) {
+				var p = Ext.getCmp(data.contents[i].panel);
+				if (p) {
+					p.load(data.contents[i]);
+				}
 			}
 		}
-	}
-	if (data.current && !options.preventPanelLoad) {
-		if (data.current.panel) {
-			var p = Ext.getCmp(data.current.panel);
-			if (p) {
-				var tp = p.ownerCt;
-				if (tp.setActiveTab) {
-					tp.setActiveTab(p);
+		
+		//Loads data into a single panel
+		if (data.current) {
+			if (data.current.panel || caller) { //Loads data into a specific panel
+				var panelName = data.current.panel ? data.current.panel : caller; //sets data into current.panel, otherwise into caller
+				var p = Ext.getCmp(panelName);
+				if (p) {
+					var tp = p.ownerCt;
+					if (tp.setActiveTab) {
+						tp.setActiveTab(p);
+					}
+					p.load(data.current);
+				} else {
+					og.newTab(data.current, panelName, data); //Creates the panel if it doesn't exist
 				}
-				p.load(data.current);
-			} else {
-				og.newTab(data.current, data.current.panel);
+			} else { //Loads the data into a new tab
+				og.newTab(data.current);
 			}
-		} else if (caller) {
-			var p = Ext.getCmp(caller);
-			if (p) {
-				var tp = p.ownerCt;
-				if (tp.setActiveTab) {
-					tp.setActiveTab(p);
-				}
-				p.load(data.current);
-				p = Ext.getCmp('tabs-panel');
-			} else {
-				og.newTab(data.current, caller, data);
-			}
-		} else {
-			og.newTab(data.current);
+		}
+		
+		//Show help in content panel if help is available
+		if (data.help_content){
+			Ext.getCmp('help-panel').load(data.help_content);
 		}
 	}
+	
+	//Show messages if any
 	if (data.errorCode != 0) {
 		og.msg(lang("error"), data.errorMessage);
 	} else if (data.errorMessage) {
