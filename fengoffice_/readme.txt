@@ -1,5 +1,5 @@
 
-    About OpenGoo 1.5.2
+    About OpenGoo 1.5.3
     ===================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
@@ -54,18 +54,27 @@
     
     WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
-    This can be solved by setting "memory_limit=32" in php.ini.    
+    This can be solved by setting "memory_limit=32" in php.ini.
+    
+    
+    Debugging
+    =========
+    
+    If you encounter an error in OpenGoo (or a white page) you can generally get more information
+    about what caused it by enabling DEBUG mode. This can be done by setting the "DEBUG" constant
+    to true in file 'config/config.php' (this file is created during installation). You can report
+    the bug to http://bugs.opengoo.org 
 
 
     Upgrade instructions
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.5.2 - http://www.opengoo.org/
+    2. Download OpenGoo 1.5.3 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.5.2
+    	from your current version to 1.5.3
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,6 +95,40 @@
 
 	Changelog
 	=========
+	
+	Since 1.5.2
+	-----------
+	- bugfix: Cannot create companies with normal user without the "Can manage contacts" permission
+	- bugfix: Auto-upgrade feedback fixed.
+	- bugfix: Fixed a problem when classifying email (attachments were added as new versions of existing files).
+	- bugfix: Allow email addresses with single quote
+	- bugfix: Changed several "substr" for "utf8_substr" to avoid errors like "null" on dashboard.
+	- bugfix: Added a default address when sending email reminders. Fixes problems when sending reminders.
+	- bugfix: Fixed some display issues with the "Close" button in objects' view.
+	- bugfix: Fixed a problem that would cause the Overview to be loaded on every tab when clicking the "All" workspace.
+	- bugfix: Custom properties were not being kept when editing an object.
+	- bugfix: If a user is subscribed to an object and loses permissions to it it will not receive notifications any more.
+	- bugfix: Error 500 when deleting a user.
+	- bugfix: Email body was not shown for html emails when ROOT_URL was relative.
+	- bugfix: Create user from contact was not allowed if user was linked to a trashed contact, fix: contact is restored.
+	- bugfix: Task drag & drop does not allow drag from a workspace to another.
+	- bugfix: Saving workspace while rendering permissions was allowed, and no permissions were saved.
+	- bugfix: When creating new workspace, user checkboxes did not check/uncheck all permissions.
+	- bugfix: Internal server error when deleting user with its personal workspace.
+	- bugfix: Instantianting template without parameters was going back instead of reloading.
+	- bugfix: Calendar views was not showing milestones assigned to everybody when filtering by "my calendar".
+	- bugfix: In IE when expanding subtask list, the tasks below them did non move aside.
+	- bugfix: Some mail contents were not included in reply or forward body.
+	- bugfix: Instantiating repeating tasks with subtasks did not put correct status to some subtasks.
+	- bugfix: isToday function was not returning the correct value sometimes.
+	- bugfix: Csv export: when a field contains "," export is wrong, field must be enclosed with quotes.
+	- bugfix: Importing more than one contact with no email address overwrites the previous one.
+	- bugfix: Contacts are not linked to companies when importing from csv.
+	- bugfix: Subscribers and invitation lists were not showing users who have group permissions but no individual permissions.
+	- bugfix: If an error occurs when sending a queued email the email is now not deleted.
+	- bugfix: Mindmap viewer overlaps object linker.
+	- bugfix: The "include subworkspaces" checkbox for the iCal feed was being ignored.
+	- usability: The user is warned when searching for short strings.
 	
 	Since 1.5.1
 	-----------

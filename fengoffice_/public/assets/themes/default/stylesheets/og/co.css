@@ -6,9 +6,10 @@
 }
 
 .coViewClose{
-	position:absolute;
-	top:7px;
-	right:279px;
+	cursor: pointer;
+	position: absolute;
+	right: 0;
+	top: 0;
 	border-bottom:2px solid;
 	border-left:2px solid;
 	/*width: 16px;*/
@@ -30,10 +31,20 @@
 }
 
 .coViewHeader {
+	padding:0px;
+	padding-bottom:4px;
+  	border-bottom: 1px solid;
+}
+
+.coViewSmallHeader {
 	padding:12px;
 	padding-bottom:4px;	
 	padding-top:8px;
-  	border-bottom: 1px solid;
+}
+
+.coViewHeader .coViewTitleContainer {
+	padding: 8px 12px 0px 12px;
+	position:relative;
 }
 
 .coViewHeader .coViewTitle {
@@ -41,6 +52,10 @@
   	font-weight: bold;
   	padding-bottom: 4px;
   	border-bottom: 3px solid;
+}
+
+.coViewHeader .coViewDesc {
+	padding-left: 12px;
 }
 
 .coViewBody {

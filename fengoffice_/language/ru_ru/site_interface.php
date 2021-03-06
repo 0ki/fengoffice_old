@@ -454,7 +454,7 @@ http://code.google.com/p/opengooru/
 	'hours' => 'Часы',
 	'minutes' => 'Минуты',
 	'seconds' => 'Секунды',
-	'days' => 'Дни',
+	'days' => 'день/дней(я)',
 	'time estimate' => 'Оценка времени',
 	'work in progress' => 'Идет работа',
 	'total time' => 'Итого',
@@ -623,7 +623,7 @@ http://code.google.com/p/opengooru/
   'add value' => 'Добавить значение',
   'remove value' => 'Удалить значение',
 	
-  'hide options' => 'Скрытые опции',
+  'hide options' => 'Скрыть опции',
   
   'personal workspace name' => '{0} Личный',
   'personal workspace description' => 'Личный проект',

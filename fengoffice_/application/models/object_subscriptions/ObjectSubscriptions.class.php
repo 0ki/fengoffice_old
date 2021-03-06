@@ -23,7 +23,16 @@
       if(is_array($subscriptions)) {
         foreach($subscriptions as $subscription) {
           $user = $subscription->getUser();
-          if($user instanceof User) $users[] = $user;
+          if(!$user instanceof User) continue;
+          
+		  $user_object_workspaces = $object->getWorkspaces(logged_user()->getWorkspacesQuery());
+		  foreach ($user_object_workspaces as $ws) {
+			$can_read = can_read_type($user, $ws, get_class($object->manager()));
+			if ($can_read) break;
+		  }
+		  if (!$can_read) continue;				
+
+          $users[] = $user;
         } // foreach
       } // if
       return $users;

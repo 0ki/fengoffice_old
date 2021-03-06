@@ -97,6 +97,7 @@ if($has_search_results) {
 <?php } else { ?>
 <div id="noResultsFoundDiv" class="searchDescription" style="font-weight:normal;font-size:140%;padding-top:30px; padding-bottom:30px">
 <?php echo lang('no search result for', clean($search_string)) ?>
+<?php if (strlen($search_string) < 4 && strpos($search_string, '*') === false) echo "<br/>" . lang('short search query warning', $search_string) ?>
 <?php if (array_var($_GET, 'search_all_projects') != 'true' && active_project() instanceof Project) { ?>
 <br/>
 <a class="internalLink" href="<?php echo get_url('search','search',array("search_for" => array_var($_GET, 'search_for'), "search_all_projects" => "true" )) ?>"><?php echo lang('search in all workspaces') ?></a>

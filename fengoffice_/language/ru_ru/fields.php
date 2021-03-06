@@ -172,7 +172,7 @@ return array(
 	'field ProjectTasks title' => 'Заголовок', 
 	'field ProjectTasks started_on' => 'Начало',
 	'field ProjectTasks priority' => 'Приоритет', 
-    'field ProjectTasks assigned_on' => 'Присвоено',
+   'field ProjectTasks assigned_on' => 'Присвоено',
 	'field ProjectTasks time_estimate' => 'Временная оценка',
 	'field ProjectTasks is_template' => 'Шаблон',
 	'field ProjectTasks created_by_id' => 'Создал',
@@ -181,6 +181,13 @@ return array(
 	'field ProjectTasks assigned_to_company_id' => 'Присвоено компании',		
 	'field ProjectTasks assigned_to_user_id' => 'Присвоено пользователю',
 	'field ProjectTasks completed_by_id' => 'Завершил',
+	'field ProjectTasks repeat_by' => 'Повторить',
+	'field ProjectTasks repeat_end' => 'Повторить конец',
+  'field ProjectTasks repeat_num' => 'Повторить (раз)',
+	'field ProjectTasks repeat_forever' => 'Повторять всегда',
+  'field ProjectTasks repeat_d' => 'Повторять день',
+  'field ProjectTasks repeat_m' => 'Повторять месяц',
+  'field ProjectTasks repeat_y' => 'Повторять год',
 
 	// User fields
     'field Users username' => 'Пользователь', 

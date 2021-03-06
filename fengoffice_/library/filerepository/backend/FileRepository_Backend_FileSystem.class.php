@@ -453,9 +453,9 @@ class FileRepository_Backend_FileSystem implements FileRepository_Backend {
 			throw new DirDnxError($value);
 		} // if
 
-		if(!folder_is_writable($value)) {
+		/*if(!folder_is_writable($value)) {
 			throw new DirNotWritableError($value);
-		} // if
+		} // if*/
 
 		$this->repository_dir = $value;
 	} // setRepositoryDir

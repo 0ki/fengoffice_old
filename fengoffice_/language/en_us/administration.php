@@ -231,7 +231,7 @@
 	'add to a template' => 'Add to a template',
   	'add an object to template' => 'Add an object to this template',
   	'add a parameter to template' => 'Add a parameter to this template',
-	'you are adding object to template' => 'You are adding {0} \'{1}\' to a template. Choose a template below or create a new one for this {0}.',
+	'you are adding object to template' => 'You are adding {0} \'{1}\' to a template. Choose a template below or create a new one.',
 	'success add object to template' => 'Object added to template successfully',
 	'object type not supported' => 'This object type is not supported for templates',
   	'assign template to workspace' => 'Assign template to workspace',

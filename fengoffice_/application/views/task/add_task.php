@@ -84,7 +84,7 @@
 			</div>
 		<?php }?>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project->getId(), $genid) .'</div>'?>
+		<?php echo '<div style="float:left;">' .select_project2('task[project_id]', $project instanceof Project ? $project->getId() : 0, $genid) .'</div>'?>
 
 		<?php if (!$task->isNew()) { ?>
 			<div style="float:left; padding:5px;"><?php echo checkbox_field('task[apply_ws_subtasks]', array_var($task_data, 'apply_ws_subtasks', false), array("id" => "$genid-checkapplyws")) ?><label class="checkbox" for="<?php echo "$genid-checkapplyws" ?>"><?php echo lang('apply workspace to subtasks') ?></label></div>

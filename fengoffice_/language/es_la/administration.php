@@ -140,7 +140,7 @@
 	'no objects in template' => 'No hay objetos en la plantilla',
 	'add to a template' => 'Agregar a plantilla',
 	'add an object to template' => 'Agregar un objeto a esta plantilla',
-	'you are adding object to template' => 'Está agregando {0} \'{1}\' a una plantilla. Elija una plantilla o cree una {0}.',
+	'you are adding object to template' => 'Está agregando {0} \'{1}\' a una plantilla. Elija una plantilla o cree una nueva.',
 	'success add object to template' => 'Objeto correctamente agregado a template',
 	'object type not supported' => 'Este tipo de objeto no está soportado para plantillas',
 	'assign template to workspace' => 'Asignar template a espacio de trabajo',

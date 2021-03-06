@@ -43,7 +43,16 @@ class COTemplate extends BaseCOTemplate {
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, true);
 			}
+			$tags = implode(',',$object->getTagNames());
+			$copy->setTagsFromCSV($tags);			
 			$copy->copyCustomPropertiesFrom($object);
+			
+			$linked_objects = $object->getAllLinkedObjects();
+			if (is_array($linked_objects)) {
+				foreach ($linked_objects as $lo) {
+					$copy->linkObject($lo);
+				}
+			}
 			$template = $copy;
 		} else {
 			// the object is a template or can't be one, use it as it is

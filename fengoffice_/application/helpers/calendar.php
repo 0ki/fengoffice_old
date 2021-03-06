@@ -58,23 +58,27 @@ function cal_month_name($month){
 function cal_month_short($month) {
 	$month = ($month - 1) % 12 + 1;
 	switch($month) {
-		case 1:  return substr(lang('CAL_JANUARY'),0,3);
-		case 2:  return substr(lang('CAL_FEBRUARY'),0,3);
-		case 3:  return substr(lang('CAL_MARCH'),0,3);
-		case 4:  return substr(lang('CAL_APRIL'),0,3);
-		case 5:  return substr(lang('CAL_MAY'),0,3);
-		case 6:  return substr(lang('CAL_JUNE'),0,3);
-		case 7:  return substr(lang('CAL_JULY'),0,3);
-		case 8:  return substr(lang('CAL_AUGUST'),0,3);
-		case 9:  return substr(lang('CAL_SEPTEMBER'),0,3);
-		case 10: return substr(lang('CAL_OCTOBER'),0,3);
-		case 11: return substr(lang('CAL_NOVEMBER'),0,3);
-		case 12: return substr(lang('CAL_DECEMBER'),0,3);
+		case 1:  return utf8_substr(lang('CAL_JANUARY'),0,3);
+		case 2:  return utf8_substr(lang('CAL_FEBRUARY'),0,3);
+		case 3:  return utf8_substr(lang('CAL_MARCH'),0,3);
+		case 4:  return utf8_substr(lang('CAL_APRIL'),0,3);
+		case 5:  return utf8_substr(lang('CAL_MAY'),0,3);
+		case 6:  return utf8_substr(lang('CAL_JUNE'),0,3);
+		case 7:  return utf8_substr(lang('CAL_JULY'),0,3);
+		case 8:  return utf8_substr(lang('CAL_AUGUST'),0,3);
+		case 9:  return utf8_substr(lang('CAL_SEPTEMBER'),0,3);
+		case 10: return utf8_substr(lang('CAL_OCTOBER'),0,3);
+		case 11: return utf8_substr(lang('CAL_NOVEMBER'),0,3);
+		case 12: return utf8_substr(lang('CAL_DECEMBER'),0,3);
 	}
 }
 
 function forwardRepDate(ProjectTask $task, $min_date) {
 	if ($task->isRepetitive()) {
+		if (($task->getRepeatBy() == 'start_date' && !$task->getStartDate() instanceof DateTimeValue) ||
+			($task->getRepeatBy() == 'due_date' && !$task->getDueDate() instanceof DateTimeValue)) {
+				return array('date' => $min_date, 'count' => 0); //This should not happen...
+		}
 		$date = new DateTimeValue($task->getRepeatBy() == 'start_date' ? $task->getStartDate()->getTimestamp() : $task->getDueDate()->getTimestamp());
 		$count = 0;
 		if($date->getTimestamp() >= $min_date->getTimestamp()) {

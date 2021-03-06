@@ -1273,15 +1273,42 @@ class ContactController extends ApplicationController {
 							$contact_data['import_status'] = '('.lang('updated').')';
 							$fname = mysql_real_escape_string(array_var($contact_data, "firstname"));
 							$lname = mysql_real_escape_string(array_var($contact_data, "lastname"));
-							$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' OR email = '".array_var($contact_data, "email")."'"));
+							$email_cond = array_var($contact_data, "email") != '' ? " OR email = '".array_var($contact_data, "email")."'" : "";
+							$contact = Contacts::findOne(array("conditions" => "firstname = '".$fname."' AND lastname = '".$lname."' $email_cond"));
+							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$contact) {
 								$contact = new Contact();
 								$contact_data['import_status'] = '('.lang('new').')';
+								$log_action = ApplicationLogs::ACTION_ADD;
 							}
 							if ($contact->canEdit(logged_user())) {
+								$comp_name = mysql_real_escape_string(array_var($contact_data, "company_id"));
+								if ($comp_name != '') {
+									$company = Companies::findOne(array("conditions" => "name = '$comp_name'"));
+									if ($company) {
+										$contact_data['company_id'] = $company->getId();
+									} else {
+										$company_data = self::getCompanyDataFromContactData($contact_data);
+										$company = new Company();
+										$company->setFromAttributes($company_data);
+										if ($company->isOwner()) 
+											$company->setClientOfId(0);
+										else 
+											$company->setClientOfId(owner_company()->getId());
+										$company->save();
+										ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
+										$company->setTagsFromCSV(array_var($_POST, 'tags'));
+										if (active_project() instanceof Project) $company->addToWorkspace(active_project());
+										$contact_data['company_id'] = $company->getId();
+									}
+									$contact_data['import_status'] .= " " . lang("company") . " $comp_name";
+								} else {
+									$contact_data['company_id'] = 0;
+								}
+
 								$contact->setFromAttributes($contact_data);
 								$contact->save();
-								ApplicationLogs::createLog($contact, null, ApplicationLogs::ACTION_ADD);
+								ApplicationLogs::createLog($contact, null, $log_action);
 								$contact->setTagsFromCSV(array_var($_POST, 'tags'));
 							
 								if(active_project() instanceof Project) {
@@ -1302,9 +1329,11 @@ class ContactController extends ApplicationController {
 							$contact_data['import_status'] = '('.lang('updated').')';
 							$comp_name = mysql_real_escape_string(array_var($contact_data, "name"));
 							$company = Companies::findOne(array("conditions" => "name = '$comp_name'"));
+							$log_action = ApplicationLogs::ACTION_EDIT;
 							if (!$company) {
 								$company = new Company();
 								$contact_data['import_status'] = '('.lang('new').')';
+								$log_action = ApplicationLogs::ACTION_ADD;
 							}
 							if ($company->canEdit(logged_user())) {
 								$company->setFromAttributes($contact_data);
@@ -1313,9 +1342,9 @@ class ContactController extends ApplicationController {
 								else 
 									$company->setClientOfId(owner_company()->getId());
 								$company->save();
-								ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
+								ApplicationLogs::createLog($company, null, $log_action);
 								$company->setTagsFromCSV(array_var($_POST, 'tags'));
-								$company->addToWorkspace(active_or_personal_project());
+								if (active_project() instanceof Project) $company->addToWorkspace(active_project());
 								
 								$import_result['import_ok'][] = $contact_data;
 							}
@@ -1385,6 +1414,24 @@ class ContactController extends ApplicationController {
 		return $del;
 	}
 	
+	private function getCompanyDataFromContactData($contact_data) {
+		$comp = array();
+		$comp['name'] = array_var($contact_data, 'company_id');
+		$comp['email'] = array_var($contact_data, 'email');
+		$comp['homepage'] = array_var($contact_data, 'w_web_page');
+		$comp['address'] = array_var($contact_data, 'w_address');
+		$comp['address2'] = '';
+		$comp['city'] = array_var($contact_data, 'w_city');
+		$comp['state'] = array_var($contact_data, 'w_state');
+		$comp['zipcode'] = array_var($contact_data, 'w_zipcode');
+		$comp['country'] = array_var($contact_data, 'w_country');
+		$comp['phone_number'] = array_var($contact_data, 'w_phone_number');
+		$comp['fax_number'] = array_var($contact_data, 'w_fax_number');
+		$comp['notes'] = '';
+		$comp['timezone'] = logged_user()->getTimezone();
+		return $comp;
+	}
+	
 	function buildCompanyData($position, $checked, $fields) {
 		$contact_data = array();
 		if (isset($checked['name']) && $checked['name']) $contact_data['name'] = array_var($fields, $position['name']);
@@ -1409,6 +1456,7 @@ class ContactController extends ApplicationController {
 		if (isset($checked['firstname']) && $checked['firstname']) $contact_data['firstname'] = array_var($fields, $position['firstname']);
 		if (isset($checked['lastname']) && $checked['lastname']) $contact_data['lastname'] = array_var($fields, $position['lastname']);
 		if (isset($checked['email']) && $checked['email']) $contact_data['email'] = array_var($fields, $position['email']);
+		if (isset($checked['company_id']) && $checked['company_id']) $contact_data['company_id'] = array_var($fields, $position['company_id']);
 		
 		if (isset($checked['w_web_page']) && $checked['w_web_page']) $contact_data['w_web_page'] = array_var($fields, $position['w_web_page']);
 		if (isset($checked['w_address']) && $checked['w_address']) $contact_data['w_address'] = array_var($fields, $position['w_address']);
@@ -1549,53 +1597,67 @@ class ContactController extends ApplicationController {
 		} else $this->setTemplate('csv_export');
 	}
 	
+	private function build_csv_field($text, $last = false) {
+		if ($text instanceof DateTimeValue) {
+			$text = $text->format("Y-m-d");
+		}
+		if (strpos($text, ",") !== FALSE) {
+			$str = "'$text'";
+		} else $str = $text;
+		if (!$last) {
+			$str .= ",";
+		}
+		return $str;
+	}
+	
 	function build_csv_from_contact(Contact $contact, $checked) {
 		$str = '';
 		
-		if (isset($checked['firstname']) && $checked['firstname'] == 'checked') $str .= $contact->getFirstname() . ',';
-		if (isset($checked['lastname']) && $checked['lastname'] == 'checked') $str .= $contact->getLastname() . ',';
-		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= $contact->getEmail() . ',';
+		if (isset($checked['firstname']) && $checked['firstname'] == 'checked') $str .= self::build_csv_field($contact->getFirstname());
+		if (isset($checked['lastname']) && $checked['lastname'] == 'checked') $str .= self::build_csv_field($contact->getLastname());
+		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= self::build_csv_field($contact->getEmail());
+		if (isset($checked['company_id']) && $checked['company_id'] == 'checked') $str .= self::build_csv_field($contact->getCompany() ? $contact->getCompany()->getName() : "");
 		
-		if (isset($checked['w_web_page']) && $checked['w_web_page'] == 'checked') $str .= $contact->getWWebPage() . ',';
-		if (isset($checked['w_address']) && $checked['w_address'] == 'checked') $str .= $contact->getWAddress() . ',';
-		if (isset($checked['w_city']) && $checked['w_city'] == 'checked') $str .= $contact->getWCity() . ',';
-		if (isset($checked['w_state']) && $checked['w_state'] == 'checked') $str .= $contact->getWState() . ',';
-		if (isset($checked['w_zipcode']) && $checked['w_zipcode'] == 'checked') $str .= $contact->getWZipcode() . ',';
-		if (isset($checked['w_country']) && $checked['w_country'] == 'checked') $str .= $contact->getWCountryName() . ',';
-		if (isset($checked['w_phone_number']) && $checked['w_phone_number'] == 'checked') $str .= $contact->getWPhoneNumber() . ',';
-		if (isset($checked['w_phone_number2']) && $checked['w_phone_number2'] == 'checked') $str .= $contact->getWPhoneNumber2() . ',';
-		if (isset($checked['w_fax_number']) && $checked['w_fax_number'] == 'checked') $str .= $contact->getWFaxNumber() . ',';
-		if (isset($checked['w_assistant_number']) && $checked['w_assistant_number'] == 'checked') $str .= $contact->getWAssistantNumber() . ',';
-		if (isset($checked['w_callback_number']) && $checked['w_callback_number'] == 'checked') $str .= $contact->getWCallbackNumber() . ',';
+		if (isset($checked['w_web_page']) && $checked['w_web_page'] == 'checked') $str .= self::build_csv_field($contact->getWWebPage());
+		if (isset($checked['w_address']) && $checked['w_address'] == 'checked') $str .= self::build_csv_field($contact->getWAddress());
+		if (isset($checked['w_city']) && $checked['w_city'] == 'checked') $str .= self::build_csv_field($contact->getWCity());
+		if (isset($checked['w_state']) && $checked['w_state'] == 'checked') $str .= self::build_csv_field($contact->getWState());
+		if (isset($checked['w_zipcode']) && $checked['w_zipcode'] == 'checked') $str .= self::build_csv_field($contact->getWZipcode());
+		if (isset($checked['w_country']) && $checked['w_country'] == 'checked') $str .= self::build_csv_field($contact->getWCountryName());
+		if (isset($checked['w_phone_number']) && $checked['w_phone_number'] == 'checked') $str .= self::build_csv_field($contact->getWPhoneNumber());
+		if (isset($checked['w_phone_number2']) && $checked['w_phone_number2'] == 'checked') $str .= self::build_csv_field($contact->getWPhoneNumber2());
+		if (isset($checked['w_fax_number']) && $checked['w_fax_number'] == 'checked') $str .= self::build_csv_field($contact->getWFaxNumber());
+		if (isset($checked['w_assistant_number']) && $checked['w_assistant_number'] == 'checked') $str .= self::build_csv_field($contact->getWAssistantNumber());
+		if (isset($checked['w_callback_number']) && $checked['w_callback_number'] == 'checked') $str .= self::build_csv_field($contact->getWCallbackNumber());
 		
-		if (isset($checked['h_web_page']) && $checked['h_web_page'] == 'checked') $str .= $contact->getHWebPage() . ',';
-		if (isset($checked['h_address']) && $checked['h_address'] == 'checked') $str .= $contact->getHAddress() . ',';
-		if (isset($checked['h_city']) && $checked['h_city'] == 'checked') $str .= $contact->getHCity() . ',';
-		if (isset($checked['h_state']) && $checked['h_state'] == 'checked') $str .= $contact->getHState() . ',';
-		if (isset($checked['h_zipcode']) && $checked['h_zipcode'] == 'checked') $str .= $contact->getHZipcode() . ',';
-		if (isset($checked['h_country']) && $checked['h_country'] == 'checked') $str .= $contact->getHCountryName() . ',';
-		if (isset($checked['h_phone_number']) && $checked['h_phone_number'] == 'checked') $str .= $contact->getHPhoneNumber() . ',';
-		if (isset($checked['h_phone_number2']) && $checked['h_phone_number2'] == 'checked') $str .= $contact->getHPhoneNumber2() . ',';
-		if (isset($checked['h_fax_number']) && $checked['h_fax_number'] == 'checked') $str .= $contact->getHFaxNumber() . ',';
-		if (isset($checked['h_mobile_number']) && $checked['h_mobile_number'] == 'checked') $str .= $contact->getHMobileNumber() . ',';
-		if (isset($checked['h_pager_number']) && $checked['h_pager_number'] == 'checked') $str .= $contact->getHPagerNumber() . ',';
+		if (isset($checked['h_web_page']) && $checked['h_web_page'] == 'checked') $str .= self::build_csv_field($contact->getHWebPage());
+		if (isset($checked['h_address']) && $checked['h_address'] == 'checked') $str .= self::build_csv_field($contact->getHAddress());
+		if (isset($checked['h_city']) && $checked['h_city'] == 'checked') $str .= self::build_csv_field($contact->getHCity());
+		if (isset($checked['h_state']) && $checked['h_state'] == 'checked') $str .= self::build_csv_field($contact->getHState());
+		if (isset($checked['h_zipcode']) && $checked['h_zipcode'] == 'checked') $str .= self::build_csv_field($contact->getHZipcode());
+		if (isset($checked['h_country']) && $checked['h_country'] == 'checked') $str .= self::build_csv_field($contact->getHCountryName());
+		if (isset($checked['h_phone_number']) && $checked['h_phone_number'] == 'checked') $str .= self::build_csv_field($contact->getHPhoneNumber());
+		if (isset($checked['h_phone_number2']) && $checked['h_phone_number2'] == 'checked') $str .= self::build_csv_field($contact->getHPhoneNumber2());
+		if (isset($checked['h_fax_number']) && $checked['h_fax_number'] == 'checked') $str .= self::build_csv_field($contact->getHFaxNumber());
+		if (isset($checked['h_mobile_number']) && $checked['h_mobile_number'] == 'checked') $str .= self::build_csv_field($contact->getHMobileNumber());
+		if (isset($checked['h_pager_number']) && $checked['h_pager_number'] == 'checked') $str .= self::build_csv_field($contact->getHPagerNumber());
 		
-		if (isset($checked['o_web_page']) && $checked['o_web_page'] == 'checked') $str .= $contact->getOWebPage() . ',';
-		if (isset($checked['o_address']) && $checked['o_address'] == 'checked') $str .= $contact->getOAddress() . ',';
-		if (isset($checked['o_city']) && $checked['o_city'] == 'checked') $str .= $contact->getOCity() . ',';
-		if (isset($checked['o_state']) && $checked['o_state'] == 'checked') $str .= $contact->getOState() . ',';
-		if (isset($checked['o_zipcode']) && $checked['o_zipcode'] == 'checked') $str .= $contact->getOZipcode() . ',';
-		if (isset($checked['o_country']) && $checked['o_country'] == 'checked') $str .= $contact->getOCountryName() . ',';
-		if (isset($checked['o_phone_number']) && $checked['o_phone_number'] == 'checked') $str .= $contact->getOPhoneNumber() . ',';
-		if (isset($checked['o_phone_number2']) && $checked['o_phone_number2'] == 'checked') $str .= $contact->getOPhoneNumber2() . ',';
-		if (isset($checked['o_fax_number']) && $checked['o_fax_number'] == 'checked') $str .= $contact->getOFaxNumber() . ',';
-		if (isset($checked['o_birthday']) && $checked['o_birthday'] == 'checked') $str .= $contact->getOBirthday() . ',';
-		if (isset($checked['email2']) && $checked['email2'] == 'checked') $str .= $contact->getEmail2() . ',';
-		if (isset($checked['email3']) && $checked['email3'] == 'checked') $str .= $contact->getEmail3() . ',';
-		if (isset($checked['job_title']) && $checked['job_title'] == 'checked') $str .= $contact->getJobTitle() . ',';
-		if (isset($checked['department']) && $checked['department'] == 'checked') $str .= $contact->getDepartment() . ',';
-		if (isset($checked['middlename']) && $checked['middlename'] == 'checked') $str .= $contact->getMiddlename() . ',';
-		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= $contact->getNotes();
+		if (isset($checked['o_web_page']) && $checked['o_web_page'] == 'checked') $str .= self::build_csv_field($contact->getOWebPage());
+		if (isset($checked['o_address']) && $checked['o_address'] == 'checked') $str .= self::build_csv_field($contact->getOAddress());
+		if (isset($checked['o_city']) && $checked['o_city'] == 'checked') $str .= self::build_csv_field($contact->getOCity());
+		if (isset($checked['o_state']) && $checked['o_state'] == 'checked') $str .= self::build_csv_field($contact->getOState());
+		if (isset($checked['o_zipcode']) && $checked['o_zipcode'] == 'checked') $str .= self::build_csv_field($contact->getOZipcode());
+		if (isset($checked['o_country']) && $checked['o_country'] == 'checked') $str .= self::build_csv_field($contact->getOCountryName());
+		if (isset($checked['o_phone_number']) && $checked['o_phone_number'] == 'checked') $str .= self::build_csv_field($contact->getOPhoneNumber());
+		if (isset($checked['o_phone_number2']) && $checked['o_phone_number2'] == 'checked') $str .= self::build_csv_field($contact->getOPhoneNumber2());
+		if (isset($checked['o_fax_number']) && $checked['o_fax_number'] == 'checked') $str .= self::build_csv_field($contact->getOFaxNumber());
+		if (isset($checked['o_birthday']) && $checked['o_birthday'] == 'checked') $str .= self::build_csv_field($contact->getOBirthday());
+		if (isset($checked['email2']) && $checked['email2'] == 'checked') $str .= self::build_csv_field($contact->getEmail2());
+		if (isset($checked['email3']) && $checked['email3'] == 'checked') $str .= self::build_csv_field($contact->getEmail3());
+		if (isset($checked['job_title']) && $checked['job_title'] == 'checked') $str .= self::build_csv_field($contact->getJobTitle());
+		if (isset($checked['department']) && $checked['department'] == 'checked') $str .= self::build_csv_field($contact->getDepartment());
+		if (isset($checked['middlename']) && $checked['middlename'] == 'checked') $str .= self::build_csv_field($contact->getMiddlename());
+		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= self::build_csv_field($contact->getNotes(), true);
 		
 		$str = str_replace(array(chr(13).chr(10), chr(13), chr(10)), ' ', $str); //remove line breaks
 		
@@ -1605,18 +1667,18 @@ class ContactController extends ApplicationController {
 	function build_csv_from_company(Company $company, $checked) {
 		$str = '';
 		
-		if (isset($checked['name']) && $checked['name'] == 'checked') $str .= $company->getName() . ',';
-		if (isset($checked['address']) && $checked['address'] == 'checked') $str .= $company->getAddress() . ',';
-		if (isset($checked['address2']) && $checked['address2'] == 'checked') $str .= $company->getAddress2() . ',';
-		if (isset($checked['city']) && $checked['city'] == 'checked') $str .= $company->getCity() . ',';
-		if (isset($checked['state']) && $checked['state'] == 'checked') $str .= $company->getState() . ',';
-		if (isset($checked['zipcode']) && $checked['zipcode'] == 'checked') $str .= $company->getZipcode() . ',';
-		if (isset($checked['country']) && $checked['country'] == 'checked') $str .= $company->getCountryName() . ',';
-		if (isset($checked['phone_number']) && $checked['phone_number'] == 'checked') $str .= $company->getPhoneNumber() . ',';
-		if (isset($checked['fax_number']) && $checked['fax_number'] == 'checked') $str .= $company->getFaxNumber() . ',';
-		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= $company->getEmail() . ',';
-		if (isset($checked['homepage']) && $checked['homepage'] == 'checked') $str .= $company->getHomepage() . ',';
-		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= $company->getNotes() . ',';
+		if (isset($checked['name']) && $checked['name'] == 'checked') $str .= self::build_csv_field($company->getName());
+		if (isset($checked['address']) && $checked['address'] == 'checked') $str .= self::build_csv_field($company->getAddress());
+		if (isset($checked['address2']) && $checked['address2'] == 'checked') $str .= self::build_csv_field($company->getAddress2());
+		if (isset($checked['city']) && $checked['city'] == 'checked') $str .= self::build_csv_field($company->getCity());
+		if (isset($checked['state']) && $checked['state'] == 'checked') $str .= self::build_csv_field($company->getState());
+		if (isset($checked['zipcode']) && $checked['zipcode'] == 'checked') $str .= self::build_csv_field($company->getZipcode());
+		if (isset($checked['country']) && $checked['country'] == 'checked') $str .= self::build_csv_field($company->getCountryName());
+		if (isset($checked['phone_number']) && $checked['phone_number'] == 'checked') $str .= self::build_csv_field($company->getPhoneNumber());
+		if (isset($checked['fax_number']) && $checked['fax_number'] == 'checked') $str .= self::build_csv_field($company->getFaxNumber());
+		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= self::build_csv_field($company->getEmail());
+		if (isset($checked['homepage']) && $checked['homepage'] == 'checked') $str .= self::build_csv_field($company->getHomepage());
+		if (isset($checked['notes']) && $checked['notes'] == 'checked') $str .= self::build_csv_field($company->getNotes());
 		
 		$str = str_replace(array(chr(13).chr(10), chr(13), chr(10)), ' ', $str); //remove line breaks
 		

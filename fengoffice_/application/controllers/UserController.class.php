@@ -371,7 +371,7 @@ class UserController extends ApplicationController {
 			DB::beginWork();
 			$project = $user->getPersonalProject();
 			$user->delete();
-			if ($project instanceof Project && $delete_ws == 1 && $project>canDelete(logged_user())) {
+			if ($project instanceof Project && $delete_ws == 1 && $project->canDelete(logged_user())) {
 								
 				$pid = $project->getId();
 				
@@ -414,9 +414,21 @@ class UserController extends ApplicationController {
 			return;
 		} // if
 		
-		if($user->getContact()){
-			flash_error(lang('user has contact'));
-			return;			
+		if($contact = $user->getContact()){
+			if ($contact->isTrashed()) {
+				try{
+					DB::beginWork();
+					$contact->untrash();
+					DB::commit();
+					$this->redirectTo('contact','card',array('id'=>$contact->getId()));
+				}
+				catch (Exception  $exx){
+					flash_error(lang('error add contact from user') . $exx->getMessage());
+				}
+			} else {
+				flash_error(lang('user has contact'));
+				return;
+			}			
 		}
 		
 		try{

@@ -94,7 +94,7 @@ class ObjectController extends ApplicationController {
 		$genid = array_var($_GET, 'genid', '');
 		$type = array_var($_GET, 'object_type', '');
 		$workspaces = Projects::findByCSVIds($ws_ids);
-		$subscriberIds = split(",", $uids);
+		$subscriberIds = explode(",", $uids);
 
 		tpl_assign('type', $type);
 		tpl_assign('workspaces', $workspaces);
@@ -270,7 +270,7 @@ class ObjectController extends ApplicationController {
 		$str_obj = array_var($_GET, 'objects');
 		if ($str_obj == null) return;
 		try {
-			$split = split(",", $str_obj);
+			$split = explode(",", $str_obj);
 			$succ = 0; $err = 0;
 			foreach ($split as $objid) {
 				$parts = split(":", $objid);
@@ -331,7 +331,7 @@ class ObjectController extends ApplicationController {
 		if (is_array($objects)) {
 			$err = 0;
 			foreach ($objects as $objid) {
-				$split = split(":", $objid);
+				$split = explode(":", $objid);
 				$object = get_object_by_manager_and_id($split[1], $split[0]);
 				if ($object->canLinkObject(logged_user())) {
 					$the_object->linkObject($object);
@@ -1318,7 +1318,7 @@ class ObjectController extends ApplicationController {
 			flash_error(lang("project dnx"));
 			return;
 		}
-		$id_list = split(";", $ids);
+		$id_list = explode(";", $ids);
 		$err = 0;
 		$succ = 0;
 		foreach ($id_list as $cid) {

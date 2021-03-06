@@ -683,11 +683,16 @@ addLangs({
     'keep old workspaces': 'Keep workspaces',
     'move to workspace or keep old ones': 'Move to or keep old ones and add',
     'do you want to move objects to this ws or keep old ones and add this ws': 'Do you wanto to move the selected object(s) to this workspace or keep old ones and add this workspace?',
-    
+    'classify mail attachments': 'Classify mail attachments',
+    'do you want to classify the unclassified emails attachments': 'Do you want to add a new document for each attachment of these unclassified emails?',
+
     'tag selected events': 'Tag selected events',
     'edit selected event': 'Edit selected event',
     'apply milestone to subtasks': 'Apply Milestone to Subtasks',
   	'apply workspace to subtasks': 'Apply Workspace to Subtasks',
+  	
+  	'task milestone does not belong to workspace' : 'Task\'s milestone does not belongs to destination workspace, if you continue task will be removed from its milestone. Are you sure you wish to continue?',
+  	'task milestone workspace inconsistency' : 'NOTICE: this action will set the task\'s workspace to that of the selected milestone. Are you sure you wish to continue?',
   	
   	'click here to download the csv file': 'Click here to download the csv file.'
 });

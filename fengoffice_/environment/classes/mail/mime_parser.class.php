@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.7.4.1 2009/07/24 18:36:41 idesoto Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.7.4.2 2009/09/02 15:49:27 idesoto Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.7.4.1 2009/07/24 18:36:41 idesoto Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.7.4.2 2009/09/02 15:49:27 idesoto Exp $</version>
 	<copyright>Copyright  (C) Manuel Lemos 2006 - 2008</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -1970,7 +1970,7 @@ class mime_parser_class
 			$content_type = $message['Headers']['content-type:'][0];
 		}
 		if ($content_type){
-			$split = split(';',$content_type);
+			$split = explode(';',$content_type);
 			if (is_array($split) && count($split) > 0)
 				$results["content-type"] = $split[0];
 		}

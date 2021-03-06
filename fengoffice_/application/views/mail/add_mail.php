@@ -138,8 +138,8 @@ og.changeSignature = function(acc_id) {
 			break;
 		}
 	}
-	var signature = new_sig.substr(1, new_sig.length-2); //Remove quotes
-	actualSignature = actualSignature.substr(1, actualSignature.length-2);
+	var signature = new_sig.substring(1, new_sig.length-2); //Remove quotes
+	actualSignature = actualSignature.substring(1, actualSignature.length-2);
 	
 	if (Ext.getDom('format_html').checked){
 		actualSignature = og.replaceAllOccurrences(actualSignature, '\n', '<br />');
@@ -206,13 +206,13 @@ var actualSignature = '';
 	    	if ($m_acc->getId() == $acc_id) {
 	    		$orig_signature = $sig;
 	    ?><script type="text/javascript">
-	    		actualSignature = String('<?php echo json_encode($sig) ?>');
+	    		actualSignature = <?php echo json_encode($sig) ?>;
 	    </script> <?php
 	    	}
     	}
 ?>
 <script type="text/javascript">
-		accountSignatures[accountSignatures.length] = {acc:'<?php echo $m_acc->getId() ?>', sig:'<?php echo json_encode($sig) ?>'};
+		accountSignatures[accountSignatures.length] = {acc:'<?php echo $m_acc->getId() ?>', sig:<?php echo json_encode($sig) ?>};
 </script>
 <?php } ?>
 
@@ -373,7 +373,7 @@ var actualSignature = '';
     	$idx = stripos($body, '<body');
     	if ($idx !== FALSE) {
     		$end_tag = strpos($body, '>', $idx) + 1;
-    		$html_body = substr($body, 0, $end_tag) . "<br />--<br />$orig_signature<br />" . substr($body, $end_tag); 
+    		$html_body = utf8_substr($body, 0, $end_tag) . "<br />--<br />$orig_signature<br />" . utf8_substr($body, $end_tag); 
     	} else {
     		$html_body = "<br />--<br />$orig_signature" . $body;
     	}
@@ -390,7 +390,7 @@ var actualSignature = '';
 			$oFCKeditor->Width = '100%';
 			$oFCKeditor->Height = '100%';
 			$oFCKeditor->Config['SkinPath'] = get_theme_url('fckeditor/');
-			$oFCKeditor->Config['StartupFocus'] = true;
+//			$oFCKeditor->Config['StartupFocus'] = true;
 			$oFCKeditor->Config['EnterMode'] = 'br';
 			$oFCKeditor->Value = $html_body;
 			$oFCKeditor->ToolbarSet  = 'Basic' ;
@@ -426,7 +426,7 @@ og.resizeMailDiv = function() {
 }
 og.resizeMailDiv();
 window.onresize = og.resizeMailDiv;
-
+/*
 // Set cursor in mail body field
 var orig_type = '<?php echo $mail_data['type']?>';
 if (orig_type == 'plain') {
@@ -436,6 +436,7 @@ if (orig_type == 'plain') {
 		body_field.setSelectionRange(0, 0);
 	}
 }
+*/
 
 //autosave drafts
 og.autoSaveTOut = null;
@@ -485,4 +486,6 @@ og.stopAutosave = function(){
 if (og.draftAutosaveTimeout > 0) {
 	og.autoSaveTOut = setTimeout('og.autoSaveDraft()', og.draftAutosaveTimeout);
 }
+
+Ext.get('mailTo').focus();
 </script>

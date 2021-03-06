@@ -147,6 +147,9 @@ og.ImageChooser.show = function(imagesUrl, func, scope, button) {
 		func.call(scope, og.getUrl('files', 'download_file', {id: data.id}));
 	};
 	this.chooser.animateTarget = Ext.get(button);
+	this.chooser.on('hide', og.restoreFlashObjects);
+	this.chooser.on('close', og.restoreFlashObjects);
+	og.hideFlashObjects();
    	this.chooser.show();
 };
 

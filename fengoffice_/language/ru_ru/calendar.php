@@ -74,7 +74,7 @@ return array(
 	'CAL_EVERY' => 'Каждый',
 	'CAL_REPEAT_FOREVER' => 'Повторять всегда',
 	'CAL_REPEAT_UNTIL' => 'Повторять до',
-	'CAL_TIMES' => 'Период',
+	'CAL_TIMES' => 'раз(а)',
 	'CAL_HOLIDAY_EXPLAIN' => 'Событие будет повторяться каждый',
 	'CAL_DURING' => 'Во время',
 	'CAL_EVERY_YEAR' => 'Каждый год',
@@ -143,7 +143,7 @@ return array(
   	'invitation accepted' => 'Приглашение принято',
 	'invitation rejected' => 'Приглашение отклонено',
 	
-	'days' => 'дни',
+	'days' => 'день/дней(я)',
 	'weeks' => 'недели',
 	'months' => 'месяцы',
 	'years' => 'годы',

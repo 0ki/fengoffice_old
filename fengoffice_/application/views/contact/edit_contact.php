@@ -17,8 +17,8 @@
 	</div>
 	
 	</div>
-	<input type="hidden" name="contact[new_contact_from_mail_div_id]" value="<?php echo $contact_data['new_contact_from_mail_div_id'] ?>"/>
-	<input type="hidden" name="contact[hf_contacts]" value="<?php echo $contact_data['hf_contacts'] ?>"/>
+	<input type="hidden" name="contact[new_contact_from_mail_div_id]" value="<?php echo array_var($contact_data, 'new_contact_from_mail_div_id', 0) ?>"/>
+	<input type="hidden" name="contact[hf_contacts]" value="<?php echo array_var($contact_data, 'hf_contacts', "") ?>"/>
 	<table><tr><td>
 		<div>
 			<?php echo label_tag(lang('first name'), $genid . 'profileFormFirstName') ?>

@@ -374,3 +374,17 @@ og.WorkspaceSelected = function(controlName, workspace){
 	document.getElementById(controlName + 'Header').style.display = 'block';
 	document.getElementById(controlName + 'Value').value = workspace.id;	
 }
+
+
+og.IsWorkspaceParentOf = function(parentWsId, childWsId){
+	var tree = Ext.getCmp('workspaces-tree');
+	var node = tree.tree.getNodeById('ws' + childWsId);
+	
+	if (node != null && node.ws.id != 0){
+		while (node != null && node.ws.id != 0 && node.ws.id != parentWsId){
+			node = node.parentNode;
+		}
+		return node.ws.id == parentWsId;
+	}
+	return false;
+}

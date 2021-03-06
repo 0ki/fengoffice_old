@@ -33,7 +33,8 @@ class Notifier {
 		if (!is_array($subscribers) || count($subscribers) == 0) return;
 		if ($action == ApplicationLogs::ACTION_ADD) {
 			if ($object instanceof Comment) {
-				self::newObjectComment($object);
+				//self::newObjectComment($object, $subscribers);
+				// check ProjectDataObject::onAddComment()
 			} else {
 				self::objectNotification($object, $subscribers, logged_user(), 'new');
 			}
@@ -60,6 +61,9 @@ class Notifier {
 		} else {
 			$sendername = owner_company()->getName();
 			$senderemail = owner_company()->getEmail();
+			if (!is_valid_email($senderemail)) {
+				$senderemail = 'noreply@opengoo.org';
+			}
 			$senderid = 0;
 		}
 		
@@ -96,7 +100,7 @@ class Notifier {
 		
 		$emails = array();
 		foreach($people as $user) {
-			if ($user->getId() != $senderid) {
+			if ($user->getId() != $senderid && $object->canView($user)) {
 				// send notification on user's locale and with user info
 				$locale = $user->getLocale();
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
@@ -535,7 +539,6 @@ class Notifier {
 	}
 	
 	static function sendQueuedEmails() {
-		$now = DateTimeValueLib::now();
 		$date = DateTimeValueLib::now();
 		$date->add("d", -2);
 		$emails = QueuedEmails::getQueuedEmails($date);
@@ -558,6 +561,7 @@ class Notifier {
 					'text/plain',
 					'8bit'
 				);
+				$email->delete();
 				$count++;
 			} catch (Exception $e) {
 			}

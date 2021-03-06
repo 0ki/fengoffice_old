@@ -526,4 +526,7 @@
 	'log delete users' => 'Utilisateur \'{0}\' effacé.',
 	'log add users' => 'Utilisateur \'{0}\' ajouté.',
 	'recipient must be specified' => 'Vous devez spécifier l\'adresse de messagerie du destinataire.',
+	'some objects could not be linked' => 'Faute de permissions suffisantes, {0} objet(s) n\'ont pas été liés.',
+	'user cannot link objects' => 'Vous n\'avez pas les permissions suffisantes pour lier des objets à celui ci.',
+	'ie browser outdated' => 'Votre navigateur n\'est pas supporté officiellement. Mettez le à jour pour une utilisation plus attrayante.',
 ); ?>

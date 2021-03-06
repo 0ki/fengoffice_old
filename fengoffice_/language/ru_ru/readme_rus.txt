@@ -1,6 +1,6 @@
 /* 
-Translated into Russian for OpenGoo 1.5.1
-Last update:  05-August-2009
+Translated into Russian for OpenGoo 1.5.2
+Last update:  13-August-2009
 
 http://code.google.com/p/opengooru/
 
@@ -16,6 +16,10 @@ http://code.google.com/p/opengooru/
 -------------------------------------------------------------
   История изменений
 -------------------------------------------------------------
+13-August-2009
+Вышел новый релиз OpenGoo 1.5.2
+Исправлены ошибки прошлой версии.
+
 05-August-2009
 Вышел новый релиз OpenGoo 1.5.1
 Сделано много исправлений и добавлены защитные функции.

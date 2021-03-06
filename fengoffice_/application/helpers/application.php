@@ -1266,10 +1266,11 @@ function render_add_custom_properties(ProjectDataObject $object) {
 	$properties = ObjectProperties::getAllPropertiesByObject($object);
 	if (is_array($properties)) {
 		foreach($properties as $property) {
-			'<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");</script>';
+			$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "'.$property->getPropertyName().'", "'.$property->getPropertyValue().'");</script>';
+			
 		} // for
 	} // if
-	'<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");</script>';
+	$output .= '<script>og.addObjectCustomProperty(document.getElementById("'.$genid.'"), "", "");</script>';
 	return $output;
 }
 

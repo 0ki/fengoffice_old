@@ -395,6 +395,18 @@ og.LinkedObjectManager = function(config) {
     		this.needRefresh = true;
     	}
 	}, this);
+	
+	var wschevid = og.eventManager.addListener("workspace changed", function() {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(wschevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
+		} else {
+    		this.needRefresh = true;
+    	}
+	}, this);
 };
 
 Ext.extend(og.LinkedObjectManager, Ext.grid.GridPanel, {

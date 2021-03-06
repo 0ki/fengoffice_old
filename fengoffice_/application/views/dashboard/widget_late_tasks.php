@@ -77,7 +77,7 @@
 		echo '<span class="project-replace">' . implode(',',$projectLinks) . '</span>';?>
 	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>" title="<?php echo clean($task->getTitle()) ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean(strlen($task->getTitle()) > 40 ? substr($task->getTitle(), 0, 40)." ..." : $task->getTitle()) ?>
+    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean(strlen($task->getTitle()) > 40 ? utf8_substr($task->getTitle(), 0, 40)." ..." : $task->getTitle()) ?>
 <?php } else { ?>
     <?php echo clean($task->getTitle()) ?>
 <?php } // if ?>
@@ -183,7 +183,7 @@
 		echo  '<span class="project-replace">' . implode(',',$projectLinks) . '</span>';?>
 	<a class="internalLink" href="<?php echo $task->getViewUrl() ?>" title="<?php echo clean($task->getTitle()) ?>">
 <?php if($task->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean(strlen($task->getTitle()) > 40 ? substr($task->getTitle(), 0, 40)." ..." : $task->getTitle()) ?>
+    <span style="font-weight:bold"> <?php echo clean($task->getAssignedTo()->getObjectName()) ?>: </span><?php echo clean(strlen($task->getTitle()) > 40 ? utf8_substr($task->getTitle(), 0, 40)." ..." : $task->getTitle()) ?>
 <?php } else { ?>
     <?php echo clean($task->getTitle()) ?>
 <?php } // if ?>

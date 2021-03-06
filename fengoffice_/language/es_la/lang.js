@@ -586,6 +586,8 @@ addLangs({
     'keep old workspaces': 'Mantener espacios',
     'move to workspace or keep old ones': 'Mover a espacio o agregar espacio',
     'do you want to move objects to this ws or keep old ones and add this ws': '¿Desea mover de espacio de trabajo a los objetos seleccionados o mantener los espacios a los que pertenece?',
+    'classify mail attachments': 'Clasificar archivos adjuntos',
+    'do you want to classify the unclassified emails attachments': '¿Desea crear un nuevo documento por cada archivo adjunto de los emails seleccionados?',
 
 	'string': 'Texto',
     'add parameter': 'Agregar parámetro',
@@ -609,5 +611,9 @@ addLangs({
     'apply milestone to subtasks': 'Aplicar hito a las subtareas',
     'apply workspace to subtasks': 'Applicar espacio a las subtareas',
     
-    'click here to download the csv file': 'Click aquí para descargar el archivo csv.'
+  	'task milestone does not belong to workspace' : 'El hito de la tarea no pertenece al espacio de trabajo, si cambia la tarea de espacio, ésta será removida del hito. ¿Está seguro que desea continuar?',
+
+    'click here to download the csv file': 'Click aquí para descargar el archivo csv.',
+    
+    'task milestone workspace inconsistency' : 'AVISO: Esta acción colocará a la tarea en el mismo espacio que el hito seleccionado. Está seguro de que desea continuar?'
 });

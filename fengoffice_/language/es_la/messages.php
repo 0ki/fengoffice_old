@@ -624,5 +624,6 @@
   
   	'some objects could not be linked' => 'No se pudo vincular {0} objetos por falta de permisos.',
     'user cannot link objects' => 'Notiene permisos para vincular objetos a este objeto.',
+  	'short search query warning' => 'Su búsqueda es muy corta. Puede buscar "<b>{0}*</b>" para encontrar palabras que comiencen con "<b>{0}</b>".',
   ); // array
 ?>

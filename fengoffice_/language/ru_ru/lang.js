@@ -587,7 +587,7 @@ addLangs({
 	'reminder_email': 'Email',
 	'minutes': 'минуты',
 	'weeks': 'недели',
-	'days': 'дни',
+	'days': 'день/дней(я)',
 	'before': 'до',
 	'remove object reminder': 'Удалить напоминание',
 	'apply to subscribers': 'Применить ко всем подписчикам',
@@ -683,7 +683,7 @@ addLangs({
    	'change parent':'Изменить объект',
    	'confirm unlink objects' : 'Вы уверены, что хотите удалить связь с выбранным объектом(и)?',
    	
-   	'repetitive task':'Повторяющихся задач',
+   	'repetitive task':'Повторяющаяся задача',
     
     'move to workspace': 'Переместить в проект',
     'keep old workspaces': 'Сохранить проекты',

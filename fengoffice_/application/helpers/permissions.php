@@ -414,7 +414,7 @@
 			if (!$project instanceof Project) return false;
 			$user_id = $user->getId();
 			$proj_perm = ProjectUsers::findOne(array('conditions' => array('user_id = ? AND project_id = ? ',  $user_id , $project->getId())));
-			if ($proj_perm && can_manage_type($object_manager,$proj_perm, ACCESS_LEVEL_WRITE)){
+			if ($proj_perm && can_manage_type($object_manager,$proj_perm, ACCESS_LEVEL_READ)){
 				return true; // if user has permissions over type of object in the project
 			}
 			$group_ids = GroupUsers::getGroupsCSVsByUser($user_id);

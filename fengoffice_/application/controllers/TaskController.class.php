@@ -218,10 +218,11 @@ class TaskController extends ApplicationController {
 		if (is_array($task_data)) {
 			$task_data['due_date'] = getDateValue(array_var($task_data, 'task_due_date'));
 			$task_data['start_date'] = getDateValue(array_var($task_data, 'task_start_date'));
+			$old_milestone_id = $task->getMilestoneId();
 				
 			$task->setFromAttributes($task_data);
 			$project = Projects::findById(array_var($task_data, 'project_id', 0));
-				
+
 			//$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
@@ -255,6 +256,21 @@ class TaskController extends ApplicationController {
 				$subtasks = $task->getAllSubTasks();
 				$project = $task->getProject();
 				$milestone_id = $task->getMilestoneId();
+
+				//Check for milestone workspace restrictions, update the task's workspace if milestone changed
+				if ($milestone_id > 0 && $old_milestone_id != $milestone_id){
+					$milestone = ProjectMilestones::findById($milestone_id);
+					$milestoneWs = $milestone->getProject();
+					if ($milestoneWs->getId() != $project->getId() && !$milestoneWs->isParentOf($project)){
+						$project = $milestoneWs;
+						if ($task->canAdd(logged_user(),$project)) {
+							$task->setProject($project);
+						} else {
+							throw new Exception(lang('no access permissions'));
+						}
+					}
+				}
+
 				$apply_ws = array_var($task_data, 'apply_ws_subtasks', '') == "checked";
 				$apply_ms = array_var($task_data, 'apply_milestone_subtasks', '') == "checked";
 				foreach ($subtasks as $sub) {
@@ -1278,13 +1294,18 @@ class TaskController extends ApplicationController {
 				}
 				if (!$complete_last_task) {
 					// generate completed task
-					$new_task = $task->cloneTask();
+					$new_task = $task->cloneTask(true);
 					$new_task->completeTask();
 						
 					// set next values for repetetive task
 					if ($task->getStartDate() instanceof DateTimeValue ) $task->setStartDate($new_st_date);
 					if ($task->getDueDate() instanceof DateTimeValue ) $task->setDueDate($new_due_date);
 
+					foreach ($task->getSubTasks() as $subt) {
+						$subt->setCompletedById(0);
+						$subt->setCompletedOn(EMPTY_DATETIME);
+						$subt->save();
+					}
 					$task->save();
 				} else {
 					// if this is the last repetition, complete this

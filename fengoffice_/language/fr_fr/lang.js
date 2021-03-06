@@ -603,5 +603,6 @@ addLangs({
 	'edit selected event': 'Editer l\'évènement sélectionné',
 	'apply milestone to subtasks': 'Appliquer le jalon aux sous-tâches',
 	'apply workspace to subtasks': 'Appliquer le contexte aux sous-tâches',
-	'click here to download the csv file': 'Cliquez ici pour télécharger le fichier CSV.'
+	'click here to download the csv file': 'Cliquez ici pour télécharger le fichier CSV.',
+	'confirm inherit permissions': 'Voulez vous appliquer les permissions héritées du contexte parent ?'
 });

@@ -162,7 +162,9 @@
 			$user = Users::getByToken($token);
 			if ($cal == 0) $pids = $user->getWorkspacesQuery();
 			else {
-				$pids = Projects::findById($cal)->getAllSubWorkspacesQuery(true, $user);
+				if ($inc_sub)
+					$pids = Projects::findById($cal)->getAllSubWorkspacesQuery(true, $user);
+				else $pids = $cal;
 			}
 			
 			$events = ProjectEvents::findAll(array('conditions' => array(ProjectEvents::getWorkspaceString($pids))));

@@ -95,9 +95,14 @@ class DateTimeValue {
 	 */
 	function isToday() {
 		$today = DateTimeValueLib::now();
-		return $this->getDay() == $today->getDay() &&
-		$this->getMonth() == $today->getMonth() &&
-		$this->getYear() == $today->getYear();
+		if (logged_user() instanceof User) {
+			$date = new DateTimeValue($this->getTimestamp() + logged_user()->getTimezone() * 3600);
+		} else {
+			$date = $this;
+		}
+		return $date->getDay() == $today->getDay() &&
+			$date->getMonth() == $today->getMonth() &&
+			$date->getYear() == $today->getYear();
 	} // isToday
 
 	/**

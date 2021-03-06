@@ -237,7 +237,9 @@ class ProjectMilestones extends BaseProjectMilestones {
 		 
 		$assignedFilter = '';
 		if ($assignedUser instanceof User) {
-			$assignedFilter = ' AND (`assigned_to_user_id` = '.$assignedUser->getId().' OR `id` IN (SELECT milestone_id FROM '.TABLE_PREFIX.'project_tasks WHERE `trashed_by_id` = 0 AND `milestone_id` > 0 AND `assigned_to_user_id` = ' . $assignedUser->getId() . ' OR (`assigned_to_user_id` = 0 AND `assigned_to_company_id` = '. $assignedUser->getCompanyId().')))';
+			$assignedFilter = ' AND (`assigned_to_user_id` = '.$assignedUser->getId().' OR 
+				(`id` IN (SELECT milestone_id FROM '.TABLE_PREFIX.'project_tasks WHERE `trashed_by_id` = 0 AND `milestone_id` > 0 AND `assigned_to_user_id` = ' . $assignedUser->getId() . ') OR 
+				(`assigned_to_user_id` = 0 AND (`assigned_to_company_id` = '. $assignedUser->getCompanyId().' OR `assigned_to_company_id` = 0))))';
 		}
 
 		$result = self::findAll(array(

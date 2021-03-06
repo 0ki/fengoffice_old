@@ -88,7 +88,7 @@ return array(
     'mail address' => 'Email адрес',
     'mail address description' => 'Email адрес для отправки сообщений к Вам другими людьми',
 
-	'unread emails' => 'Непрочитанных сообщений',
+	'unread emails' => 'Непрочитанные сообщения',
 	//'view due task' => 'Посмотреть задачу',
 	'due_date reminder notification task' => 'Напоминания задачи',
 	'due_date task reminder desc' => 'Задача "{0}" в "{1}" еще незавершен',

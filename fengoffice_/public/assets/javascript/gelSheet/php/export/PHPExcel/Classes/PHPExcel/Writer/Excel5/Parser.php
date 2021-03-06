@@ -594,7 +594,7 @@ class PHPExcel_Writer_Excel5_Parser
         // TODO: possible class value 0,1,2 check Formula.pm
         // Split the range into 2 cell refs
         if (preg_match("/^([A-Ia-i]?[A-Za-z])(\d+)\:([A-Ia-i]?[A-Za-z])(\d+)$/", $range)) {
-            list($cell1, $cell2) = split(':', $range);
+            list($cell1, $cell2) = explode(':', $range);
         } elseif (preg_match("/^([A-Ia-i]?[A-Za-z])(\d+)\.\.([A-Ia-i]?[A-Za-z])(\d+)$/", $range)) {
             list($cell1, $cell2) = split('\.\.', $range);
 
@@ -636,7 +636,7 @@ class PHPExcel_Writer_Excel5_Parser
         $class = 2; // as far as I know, this is magick.
 
         // Split the ref at the ! symbol
-        list($ext_ref, $range) = split('!', $token);
+        list($ext_ref, $range) = explode('!', $token);
 
         // Convert the external reference part (different for BIFF8)
         if ($this->_BIFF_version == 0x0500) {
@@ -715,7 +715,7 @@ class PHPExcel_Writer_Excel5_Parser
         $class = 2; // as far as I know, this is magick.
 
         // Split the ref at the ! symbol
-        list($ext_ref, $cell) = split('!', $cell);
+        list($ext_ref, $cell) = explode('!', $cell);
 
         // Convert the external reference part (different for BIFF8)
         if ($this->_BIFF_version == 0x0500) {
@@ -756,7 +756,7 @@ class PHPExcel_Writer_Excel5_Parser
 
         // Check if there is a sheet range eg., Sheet1:Sheet2.
         if (preg_match("/:/", $ext_ref)) {
-            list($sheet_name1, $sheet_name2) = split(':', $ext_ref);
+            list($sheet_name1, $sheet_name2) = explode(':', $ext_ref);
 
             $sheet1 = $this->_getSheetIndex($sheet_name1);
             if ($sheet1 == -1) {
@@ -801,7 +801,7 @@ class PHPExcel_Writer_Excel5_Parser
 
         // Check if there is a sheet range eg., Sheet1:Sheet2.
         if (preg_match("/:/", $ext_ref)) {
-            list($sheet_name1, $sheet_name2) = split(':', $ext_ref);
+            list($sheet_name1, $sheet_name2) = explode(':', $ext_ref);
 
             $sheet1 = $this->_getSheetIndex($sheet_name1);
             if ($sheet1 == -1) {

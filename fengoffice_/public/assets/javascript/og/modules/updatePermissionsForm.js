@@ -19,10 +19,19 @@ App.modules.updatePermissionsForm = {
    * @param integer company_id
    */
   userCheckboxClick: function(user_id, company_id,genid) {
+  	var userCheckbox = Ext.getDom(genid+'project_user_' + user_id);
+    var checkAll = Ext.getDom(genid+'project_user_' + user_id + '_all');
+    
+    if (checkAll) checkAll.checked = userCheckbox.checked;
+    for(i = 0; i < App.modules.updatePermissionsForm.project_permissions.length; i++) {
+      var permission_name = App.modules.updatePermissionsForm.project_permissions[i];
+      Ext.getDom(genid+'project_user_' + user_id + '_' + permission_name).checked = userCheckbox.checked;
+    }
+    
     if(company_id == App.modules.updatePermissionsForm.owner_company_id) {
       return;
     } // if
-    var new_display_value = Ext.getDom(genid+'project_user_' + user_id).checked ? 'block' : 'none';
+    var new_display_value = userCheckbox.checked ? 'block' : 'none';
     Ext.getDom(genid+'user_' + user_id + '_permissions').style.display = new_display_value;
     return;
   }, // userCheckboxClick

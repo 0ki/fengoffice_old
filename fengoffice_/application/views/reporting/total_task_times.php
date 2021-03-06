@@ -35,7 +35,7 @@
 					return $ts->getObject()->getName();
 				else
 					return $ts->getObject()->getTitle();
-			case 'user_id': return $ts->getUser()->getDisplayName();
+			case 'user_id': return Users::getUserDisplayName($ts->getUserId());
 			case 'project_id_0': return $tsRow["wsId0"] != 0 ? Projects::findById($tsRow["wsId0"])->getName() : '';
 			case 'project_id_1': return $tsRow["wsId1"] != 0 ? Projects::findById($tsRow["wsId1"])->getName() : '';
 			case 'project_id_2': return $tsRow["wsId2"] != 0 ? Projects::findById($tsRow["wsId2"])->getName() : '';
@@ -170,7 +170,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	<td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo format_datetime($ts->getStartTime(), $date_format)?></td>
 	<?php if ($showTitleCol) { ?><td style="padding:4px;max-width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo ($ts->getObjectManager() == 'Projects' ? lang('workspace') . ':&nbsp;' . clean($ts->getObject()->getName()) : clean($ts->getObject()->getTitle())) ?></td><?php } ?>
 	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
-	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getUser()->getDisplayName()) ?></td><?php } ?>
+	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean(Users::getUserDisplayName($ts->getUserId())) ?></td><?php } ?>
 	<?php $lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now()); ?>
 	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "hm", 60, $ts->getSubtract()) ?>
 	<?php if ($showBillingCol) { ?><td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo config_option('currency_code', '$') ?>&nbsp;<?php echo $ts->getFixedBilling() ?></td><?php } ?>

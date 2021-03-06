@@ -204,7 +204,7 @@ class ToolController extends ApplicationController {
 		
 		if (!defined('LANG_DIR')) define('LANG_DIR', 'language');
 		
-		$download = $_GET['download'];
+		$download = array_var($_GET, 'download');
 		if (isset($download)) {
 			// download zip file and die
 			$this->download_zip_lang($download);
@@ -212,11 +212,11 @@ class ToolController extends ApplicationController {
 		}
 		
 		// save submissions
-		$lang = $_POST['lang'];
+		$lang = array_var($_POST, 'lang');
 		$added = 0;
 		if (isset($lang)) {
-			$file = $_POST['file'];
-			$locale = $_POST['locale'];
+			$file = array_var($_POST, 'file');
+			$locale = array_var($_POST, 'locale');
 			$rootfile = LANG_DIR . "/" . $locale . ".php";
 			$dirname = LANG_DIR . "/" . $locale;
 			$filename = $dirname . "/" . $file;

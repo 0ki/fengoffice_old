@@ -38,7 +38,7 @@ class TemplateController extends ApplicationController {
 				$cotemplate->save();
 				$objects = array_var($_POST, 'objects');
 				foreach ($objects as $objid) {
-					$split = split(":", $objid);
+					$split = explode(":", $objid);
 					$object = get_object_by_manager_and_id($split[1], $split[0]);
 					$oid = $cotemplate->addObject($object);
 					$object_ids[$objid] = $oid;
@@ -162,7 +162,7 @@ class TemplateController extends ApplicationController {
 				$cotemplate->removeObjects();
 				$objects = array_var($_POST, 'objects');
 				foreach ($objects as $objid) {
-					$split = split(":", $objid);
+					$split = explode(":", $objid);
 					$object = get_object_by_manager_and_id($split[1], $split[0]);
 					$oid = $cotemplate->addObject($object);
 					$object_ids[$objid] = $oid;
@@ -363,7 +363,14 @@ class TemplateController extends ApplicationController {
 			$copy->save();
 			$wsId = array_var($_POST, 'project_id', active_or_personal_project()->getId());
 			$copy->addToWorkspace(Projects::findById($wsId));
-			$copy->setTagsFromCSV(array_var($_POST, 'tags'));
+			$tags = implode(',', $object->getTagNames());
+			$copy->setTagsFromCSV($tags . "," . array_var($_POST, 'tags'));
+			$linked_objects = $object->getAllLinkedObjects();
+			if (is_array($linked_objects)) {
+				foreach ($linked_objects as $lo) {
+					$copy->linkObject($lo);
+				}
+			}
 			$copy->setProject(active_or_personal_project());
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, false);
@@ -409,7 +416,11 @@ class TemplateController extends ApplicationController {
 				}
 			}
 		}
-		ajx_current("back");
+		if (is_array($parameters) && count($parameters) > 0){
+			ajx_current("back");
+		}else{
+			ajx_current("reload");
+		}
 	}
 
 	function instantiate_parameters(){

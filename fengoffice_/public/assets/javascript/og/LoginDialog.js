@@ -127,5 +127,8 @@ og.LoginDialog.show = function(url, options) {
 	this.dialog.findById('username').setValue(og.loggedUser.username);
 	this.dialog.findById('password').setValue('');
 	this.dialog.params = {url: url, options: options};
+	this.dialog.on('hide', og.restoreFlashObjects);
+	this.dialog.on('close', og.restoreFlashObjects);
+	og.hideFlashObjects();
 	this.dialog.show();
 }

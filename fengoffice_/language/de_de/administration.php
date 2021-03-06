@@ -154,7 +154,7 @@
 	'start automatic upgrade' => 'Start Automatik-Update',
 	'config option desc use_minified_resources' => 'Benutzt komprimierte Javascript- und CSS-Dateien, um die Geschwindigkeit zu erhöhen. Nach Änderungen an den Javascript- und CSS-Dateien muß mittels public/tools neu komprimiert werden.',
 	'config option name use_minified_resources' => 'Benutze "Minifikation", siehe http://en.wikipedia.org/wiki/Minify',
-	'user ws config option name show dashboard info widget' => 'Zeige Arbeitsbereichs-Beschreibung',
+	'user ws config option name show dashboard info widget' => 'Zeige Arbeitsbereichs-Information',
 	'config category name passwords' => 'Passwörter',
 	'config category desc passwords' => 'Sicherheits-Einstellungen für Benutzer-Passwörter.',
 	'config option name checkout_notification_dialog' => 'Checkout-Dialog bei Download von Dokumenten',

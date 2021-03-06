@@ -73,7 +73,7 @@
 	* @return array
 	*/
 	static function getByName($name) {
-		$conditions = array('`name` = ?', $filename);
+		$conditions = array('`name` = ?', $name);
 		
 		return self::findOne(array(
 			'conditions' => $conditions
@@ -87,7 +87,7 @@
 	 * @return array
 	 */
 	static function findByCSVIds($csv) {
-		$ids = split(",", $csv);
+		$ids = explode(",", $csv);
 		if (!is_array($ids)) return array();
 		$ws = array();
 		foreach ($ids as $id) {

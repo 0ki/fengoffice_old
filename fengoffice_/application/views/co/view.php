@@ -1,5 +1,4 @@
-<?php 
-	
+<?php	
 	Hook::fire("render_page_actions", $object, $ret = 0);
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))
@@ -25,22 +24,23 @@
 				<?php } ?>
 			</td>
 			
-			<td class="coViewHeader" rowspan=2>
-				<div class="coViewTitle">
-					<table><tr><td>
-					<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
-					</td>
-					
-					</tr></table>
+			<td class="coViewHeader" rowspan="2">
+				<div class="coViewTitleContainer">
+					<div class="coViewTitle">
+						<table><tr><td>
+						<?php echo isset($title)? $title : lang($object->getObjectTypeName()) . ": " . clean($object->getObjectName()) ?>
+						</td>
+						
+						</tr></table>
+					</div>
+					<div title="<?php echo lang('close') ?>" onclick="og.closeView()" class="coViewClose"><?php echo lang('close') ?>&nbsp;&nbsp;X</div>
 				</div>
-				<div>
+				<div class="coViewDesc">
 					<?php if (!isset($description)) $description = "";
 					Hook::fire("render_object_description", $object, $description);
 					echo $description;
 					?>
 				</div>
-				
-				<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose" style="cursor:pointer"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>
 			</td>
 			
 			<td class="coViewTopRight" style="width:12px"></td>
@@ -91,7 +91,7 @@
 <table style="width:240px;border-collapse:collapse">
 	<col width=12/><col width=216/><col width=12/>
 	<tr>
-		<td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
+		<td class="coViewHeader coViewSmallHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
 		<td class="coViewTopRight"></td>
 	</tr>
 		
@@ -163,7 +163,7 @@
 <table style="width:240px">
 	<col width=12/><col width=216/><col width=12/>
 	<tr>
-		<td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
+		<td class="coViewHeader coViewSmallHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("properties") ?></div></td>
 		<td class="coViewTopRight"></td>
 	</tr>
 		

@@ -8,24 +8,25 @@
 class QueuedEmails extends BaseQueuedEmails {
 
 	/**
-	 * Returns all queued emails younger than the given date
-	 * and deletes all emails.
+	 * Returns all queued emails younger than the given date (or all if none given)
+	 * and deletes emails younger than the given date if one given.
 	 * @return array
 	 */
 	static function getQueuedEmails($date = null) {
-		DB::beginWork();
 		if ($date instanceof DateTimeValue) {
 			$emails = self::findAll(array(
-				'condition' => array(
-					'`timestamp` < ?',
+				'conditions' => array(
+					'`timestamp` >= ?',
 					$date
 				)
+			));
+			self::delete(array(
+				'`timestamp` < ?',
+				$date
 			));
 		} else {
 			$emails = self::findAll();
 		}
-		self::delete();
-		DB::commit();
 		return $emails;
 	}
 

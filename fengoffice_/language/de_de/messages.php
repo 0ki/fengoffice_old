@@ -84,7 +84,7 @@
 	'success deleted milestone' => 'Meilenstein \'{0}\' wurde erfolgreich gelöscht',
 	'success add message' => 'Notiz {0} wurde erfolgreich hinzugefügt',
 	'success edit message' => 'Notiz {0} wurde erfolgreich aktualisiert',
-	'success deleted message' => 'Notiz \'{0}\' and all of its comments wurde erfolgreich gelöscht',
+	'success deleted message' => 'Notiz \'{0}\' wurde erfolgreich mit allen Kommentaren gelöscht',
 	'success add comment' => 'Kommentar wurde erfolgreich hinzugefügt',
 	'success edit comment' => 'Kommentar wurde erfolgreich aktualisiert',
 	'success delete comment' => 'Kommentar wurde erfolgreich gelöscht',
@@ -527,4 +527,6 @@
 	'log add users' => 'Benutzer {0} hinzugefügt',
 	'recipient must be specified' => 'Email-Empfänger muss angegeben werden',
 	'ie browser outdated' => 'Der verwendete Internet-Browser wird nicht unterstützt. Bitte den Browser aktualisieren.',
+	'some objects could not be linked' => '{0} Objekt(e) konnten wegen fehlender Rechte nicht verlinkt werden.',
+	'user cannot link objects' => 'Rechte zum Verlinken nicht vorhanden.',
 ); ?>

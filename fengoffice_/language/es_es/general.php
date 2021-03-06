@@ -125,7 +125,7 @@
     'month 6' => 'Junio',
     'month 7' => 'Julio',
     'month 8' => 'Agosto',
-    'month 9' => 'Setiembre',
+    'month 9' => 'Septiembre',
     'month 10' => 'Octubre',
     'month 11' => 'Noviembre',
     'month 12' => 'Diciembre',

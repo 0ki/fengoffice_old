@@ -154,6 +154,7 @@ class Contacts extends BaseContacts {
 		return array('contact[firstname]' => lang('first name'),
 			'contact[lastname]' => lang('last name'), 
 			'contact[email]' => lang('email address'),
+			'contact[company_id]' => lang('company'),
 
 			'contact[w_web_page]' => lang('website'), 
 			'contact[w_address]' => lang('address'),

@@ -115,7 +115,7 @@ class Timeslots extends BaseTimeslots {
 		$commonConditions .= $user? ' AND `ts`.`user_id` = '. $user->getId() : '';
 		
 		//Object condition
-		$commonConditions .= $object_id > 0 ? ' AND `ts`.`object_manager` = "ProjectTasks" AND `ts`.`object_id = ' . $object_id : ''; //Only applies to tasks
+		$commonConditions .= $object_id > 0 ? ' AND `ts`.`object_manager` = "ProjectTasks" AND `ts`.`object_id` = ' . $object_id : ''; //Only applies to tasks
 		
 		$sql = '';
 		switch($timeslot_type){
@@ -170,7 +170,7 @@ class Timeslots extends BaseTimeslots {
 							$sql.= "`pt`.`$gb` ASC, "; 
 						break;
 					default:
-						$sql.= "`$gb` ASC, "; break;
+						if (is_string($gb) && trim($gb) != '')  $sql.= "`$gb` ASC, "; break;
 				}
 			}
 		}
@@ -178,7 +178,7 @@ class Timeslots extends BaseTimeslots {
 		//Order by
 		if (is_array($order_by)){
 			foreach ($order_by as $ob){
-				$sql.= "`$ob` ASC, ";
+				if (is_string($ob) && trim($ob) != '')  $sql.= "`$ob` ASC, ";
 			}
 		}
 		

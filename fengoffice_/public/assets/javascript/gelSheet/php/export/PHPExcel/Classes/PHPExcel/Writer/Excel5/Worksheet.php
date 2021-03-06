@@ -1370,12 +1370,14 @@ class PHPExcel_Writer_Excel5_Worksheet extends PHPExcel_Writer_Excel5_BIFFwriter
 		$row	 = $match[2];
 
 		// Convert base26 column string to number
-		$chars = split('', $col);
+		$chars = $col;
 		$expn  = 0;
 		$col   = 0;
+		$i = strlen($chars) - 1;
 
-		while ($chars) {
-			$char = array_pop($chars);		// LS char first
+		while ($i >= 0) {
+			//$char = array_pop($chars);		// LS char first
+			$char = $chars[$i];
 			$col += (ord($char) -ord('A') +1) * pow(26,$expn);
 			$expn++;
 		}

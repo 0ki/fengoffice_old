@@ -26,8 +26,9 @@
   	<div class="adminHeaderUpperRow">
   		<div class="adminTitle"><table style="width:535px"><tr><td>
   			<?php echo $project->isNew() ? lang('new workspace') : lang('edit workspace') ?>
-  		</td><td style="text-align:right">
-  			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+  		</td><td>
+  			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('id'=>$genid.'submit_btn1', 'style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
+  			<div id="<?php echo $genid ?>load1" class="loading-indicator" style="display: none;"><?php echo lang('loading') ?></div>
   		</td></tr></table></div>
   	</div>
   	<div>
@@ -42,7 +43,7 @@
   	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>
 		<?php if ($project->canChangePermissions(logged_user())) { ?>
-			 - <a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+			 - <a href="#" id="<?php echo $genid ?>perm_togg" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
 		<?php } ?>
 		<?php  if ($billing_amounts && count($billing_amounts) > 0) {  ?>
 			 - <a href="#" class="option" onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>workspace_billing',this)"><?php echo lang('billing') ?></a>
@@ -345,7 +346,10 @@
 		<?php echo render_object_custom_properties($object, 'Projects', true) ?>
 	</div><br/>
 	
-	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '250')) ?>
+	<div>
+	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('id'=>$genid.'submit_btn2', 'tabindex' => '250')) ?>
+	<div id="<?php echo $genid ?>load2" class="loading-indicator" style="display: none;"><?php echo lang('loading') ?></div>
+	</div>
 </div>
 </div>
 </form>
@@ -357,10 +361,23 @@
 			if (wsVal != 0 && og.addWsPrevWsValue != -1) {
 				var overwrite = confirm(lang('confirm inherit permissions'));
 				if (overwrite) {
+					document.getElementById(genid + 'load1').style.display = 'block';
+					document.getElementById(genid + 'load2').style.display = 'block';
+					document.getElementById(genid + 'submit_btn1').style.display = 'none';
+					document.getElementById(genid + 'submit_btn2').style.display = 'none';
 					Ext.get('projectCompaniesContainer').load({
 						url: og.getUrl('project', 'get_ws_permissions', {ws_id:wsVal, genid:genid}),
-						scripts: true
+						scripts: true,
+						callback: function (){
+							document.getElementById(genid + 'load1').style.display = 'none';
+							document.getElementById(genid + 'load2').style.display = 'none';
+							document.getElementById(genid + 'submit_btn1').style.display = 'block';
+							document.getElementById(genid + 'submit_btn2').style.display = 'block';
+						}
 					});
+					if (document.getElementById(genid + 'workspace_permissions').style.display == 'none') {
+						og.toggleAndBolden(genid + 'workspace_permissions', document.getElementById(genid + 'perm_togg'));
+					}
 				}
 			}
 			og.addWsPrevWsValue = wsVal;

@@ -387,7 +387,7 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function canAdd(User $user, Project $project){
-      return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() || can_add($user, $project, get_class(Copmanies::instance()));
+      return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() || can_add($user, $project, get_class(Companies::instance()));
     } // canAddClient
     
     /**

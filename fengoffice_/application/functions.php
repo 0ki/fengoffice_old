@@ -562,6 +562,7 @@ function get_ext_language_file($loc) {
 function get_language_name($loc) {
 	static $names = array(
 		'cs_cz' => 'Čeština',
+		'da_dk' => 'Dansk',
 		'de_de' => 'Deutsch',
 		'en_us' => 'English (U.S.)',
 		'es_es' => 'Español (España)',
@@ -580,7 +581,7 @@ function get_language_name($loc) {
 		'zh_cn' => '中文 (中国)',
 		'zh_tw' => '中文 (臺灣)',
 	);
-	return $names[$loc];
+	return array_var($names, $loc, $loc);
 }
 
 ?>

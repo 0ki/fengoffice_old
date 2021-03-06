@@ -17,7 +17,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_client_run.php,v 1.1 2008/11/27 12:11:20 alvarotm01 Exp $
+// $Id: interop_client_run.php,v 1.1.10.1 2009/09/02 15:49:27 idesoto Exp $
 //
 
 if (isset($_SERVER['SERVER_NAME'])) {
@@ -107,7 +107,7 @@ foreach ($args[0] as $arg) {
         help();
         exit(0);
     case 'l':
-        $iop->skipEndpointList = split(',', $arg[1]);
+        $iop->skipEndpointList = explode(',', $arg[1]);
         break;
     case 'm':
         $iop->testMethod = $arg[1];

@@ -16,7 +16,7 @@
 // | Authors: Shane Caraveo <Shane@Caraveo.com>                           |
 // +----------------------------------------------------------------------+
 //
-// $Id: interop_client.php,v 1.1 2008/11/27 12:11:20 alvarotm01 Exp $
+// $Id: interop_client.php,v 1.1.10.1 2009/09/02 15:49:27 idesoto Exp $
 //
 require_once 'DB.php'; // PEAR/DB
 require_once 'SOAP/Client.php';
@@ -720,7 +720,7 @@ class Interop_Client
             . "<table border=\"1\" cellspacing=\"0\" cellpadding=\"2\">\n"
             . "<tr><td class=\"BLANK\">Endpoint</td>\n";
         foreach ($methods as $method) {
-            $info = split(':', $method);
+            $info = explode(':', $method);
             echo "<td class='BLANK' valign='top'>";
             foreach ($info as $m) {
                 $hi = split(',', $m);

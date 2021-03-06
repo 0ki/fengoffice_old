@@ -189,6 +189,17 @@ class Users extends BaseUsers {
 		if (!is_array($users)) $users = array();
 		return $users;
 	}//getByPersonalProject
+	
+	function getUserDisplayName($user_id) {
+		$user = Users::findById($user_id);
+		if ($user) {
+			return $user->getDisplayName();
+		} else {
+			$log = ApplicationLogs::findOne(array('conditions' => "`rel_object_id` = '$user_id' AND `rel_object_manager` = 'Users' AND `action` = 'add'"));
+			if ($log) return $log->getObjectName();
+			else return lang('n/a');
+		}
+	}
 } // Users
 
 ?>

@@ -390,7 +390,7 @@ og.captureLinks = function(id, caller) {
 	var links = element.getElementsByTagName("a");
 	for (var i=0; i < links.length; i++) {
 		var link = links[i];
-		if (!link.href || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
+		if (!link.href || link.href == link.baseURI || link.href.indexOf('javascript:') == 0 || link.href.indexOf('#') >= 0) continue;
 		if (link.target == '_blank' || link.target == '_self') continue;
 		if (caller && !link.target) {
 			link.target = caller.id;
@@ -1344,6 +1344,53 @@ og.moveToWsOrMantainWs = function(manager, ws) {
 	og.ExtendedDialog.show(config);
 };
 
+og.askToClassifyUnclassifiedAttachs = function(manager, mantain, ws) {
+	var man = Ext.getCmp(manager);
+	
+	var classifyAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+		man.moveObjectsClassifyingEmails(mantain, ws, 1);
+	};
+	var leaveAction = function() {
+		og.ExtendedDialog.dialog.destroy();
+		man.moveObjectsClassifyingEmails(mantain, ws, 0);
+	};
+
+	var config = {
+		title :'classify mail attachments',
+		y :50,
+		id :'classifyAttachs',
+		modal :true,
+		height :150,
+		width :300,
+		resizable :false,
+		closeAction :'hide',
+		iconCls :'op-ico',
+		border :false,
+		buttons : [ {
+			text :lang('yes'),
+			handler :classifyAction,
+			id :'yes_button',
+			scope :this
+		}, {
+			text :lang('no'),
+			handler :leaveAction,
+			id :'no_button',
+			scope :this
+		} ],
+		dialogItems : [ {
+			xtype :'label',
+			name :'classify_label',
+			id :'classify_leave',
+			hideLabel :true,
+			style: 'font-size:100%;',
+			text :lang('do you want to classify the unclassified emails attachments')
+		} ]
+	};
+	og.ExtendedDialog.show(config);
+};
+
+
 og.replaceAllOccurrences = function(str, search, replace) {
 	while (str.indexOf(search) != -1) {
 		str = str.replace(search, replace);
@@ -1360,5 +1407,21 @@ og.showHide = function(itemId) {
 	if (el) {
 		if (el.style.display == 'none') el.style.display = 'block';
 		else el.style.display = 'none';
+	}
+};
+
+og.hideFlashObjects = function() {
+	var flash = document.getElementsByTagName('embed');
+	for (var i=0; i < flash.length; i++) {
+		flash[i].style.visibility = 'hidden';
+		flash[i].hiddenFlashObject = true;
+	}
+};
+
+og.restoreFlashObjects = function() {
+	var flash = document.getElementsByTagName('embed');
+	for (var i=0; i < flash.length; i++) {
+		if (flash[i].hiddenFlashObject) flash[i].style.visibility = 'visible';
+		flash[i].hiddenFlashObject = false;
 	}
 };

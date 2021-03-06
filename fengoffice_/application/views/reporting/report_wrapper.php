@@ -14,8 +14,10 @@ $genid = gen_id();
 		<div id="iconDiv" class="coViewIconImage ico-large-report"></div>
 	</td>
 	<td rowspan=2 class="coViewHeader">
-		<div class="coViewTitle"><?php echo $title ?></div>
-		<input type="submit" value="<?php echo lang('print view') ?>" style="width:120px; margin-top:10px;"/>
+		<div class="coViewTitleContainer">
+			<div class="coViewTitle"><?php echo $title ?></div>
+			<input type="submit" value="<?php echo lang('print view') ?>" style="width:120px; margin-top:10px;"/>
+		</div>
 	</td>
 	
 	<td class="coViewTopRight"></td>

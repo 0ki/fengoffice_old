@@ -861,12 +861,17 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
+		og.askToClassifyUnclassifiedAttachs('mails-manager', mantain, ws);
+	},
+	
+	moveObjectsClassifyingEmails: function(mantain, ws, classifyatts) {
 		this.load({
 			action: 'move',
 			ids: this.getSelectedIds(),
 			types: this.getSelectedTypes(),
 			moveTo: ws,
-			mantainWs: mantain
+			mantainWs: mantain,
+			classify_atts: classifyatts
 		});
 	},
 	

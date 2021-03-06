@@ -61,7 +61,6 @@ div.event_block{
 	padding-bottom: 2px;
 	border-bottom: 0px solid #888888;
 	over-flow:hidden;
-	white-space:nowrap;
 }
 
 div.event_block img{

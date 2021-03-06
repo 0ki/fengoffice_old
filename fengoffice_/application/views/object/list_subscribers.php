@@ -29,7 +29,7 @@ if (!$object->isNew()) {
 	<?php $subscribers = $object->getSubscribers();
 		if($subscribers){
 			foreach ($subscribers as $subscriber) {
-				if (!$subscriber instanceof User || $subscriber->getId() == logged_user()->getId()) continue;
+				if (!$subscriber instanceof User || $subscriber->getId() == logged_user()->getId() || !$object->canView($subscriber)) continue;
 				$counter++;?>
 				<tr class="subscriber<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 				<td style="padding-left:1px;vertical-align:middle;width:22px">

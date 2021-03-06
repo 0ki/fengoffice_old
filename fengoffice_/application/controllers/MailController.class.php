@@ -63,14 +63,15 @@ class MailController extends ApplicationController {
 			$re_subject = str_starts_with($original_mail->getSubject(), 'Re:') ? $original_mail->getSubject(): 'Re: ' . $original_mail->getSubject();
 			$re_body = $original_mail->getBodyHtml() == '' ? $original_mail->getBodyPlain() : $original_mail->getBodyHtml();
 
-			$arr_body=preg_split("/<body.*>/i",$re_body);
-			$re_body = $this->build_original_mail_info($original_mail);
-
-			if (count($arr_body)>1)
-				$re_body = $arr_body[0]."<body>".$re_body.$arr_body[1];
-			else
-				$re_body = $re_body.$arr_body[0];
-		
+			$re_info = $this->build_original_mail_info($original_mail);
+			$pos = stripos($re_body, "<body");
+			$pos = stripos($re_body, ">", $pos);
+			if ($pos !== FALSE) {
+				$re_body = substr($re_body, 0, $pos+1) . $re_info . substr($re_body, $pos+1);
+			} else {
+				$re_body = $re_info . $re_body;
+			}
+			
 			$cc = "";
 			if (array_var($_GET,'all','') != '') {
 				MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
@@ -110,6 +111,20 @@ class MailController extends ApplicationController {
 		tpl_assign('mail', $mail);
 		tpl_assign('mail_data', $mail_data);
 		tpl_assign('mail_accounts', $mail_accounts);
+	}
+	
+	private function checkRequiredCustomPropsBeforeSave($custom_props) {
+		$errors = array();
+		if (is_array($custom_props)) {
+			foreach ($custom_props as $id => $value) {
+				$cp = CustomProperties::findById($id);
+				if (!$cp) continue;
+				if ($cp->getIsRequired() && $value == '') {
+					 $errors[] = lang('custom property value required', $cp->getName());
+				}
+			}
+		}
+		return $errors;
 	}
 
 	/**
@@ -155,6 +170,15 @@ class MailController extends ApplicationController {
 				ajx_current("empty");
 				return;
 			}
+			$cp_errs = $this->checkRequiredCustomPropsBeforeSave(array_var($_POST, 'object_custom_properties', array()));
+			if (is_array($cp_errs) && count($cp_errs) > 0) {
+				foreach ($cp_errs as $err) {
+					flash_error($err);
+				}
+				ajx_current("empty");
+				return;
+			}
+
 			$subject = array_var($mail_data, 'subject');
 			$body = array_var($mail_data, 'body');
 			$type = 'text/' . array_var($mail_data, 'format');
@@ -191,7 +215,7 @@ class MailController extends ApplicationController {
  				$err = 0;
  				$count = 0;
  				foreach ($objects as $objid) {
- 					$split = split(":", $objid);
+ 					$split = explode(":", $objid);
  					$object = get_object_by_manager_and_id($split[1], $split[0]);
  					
  					if (!$object) {
@@ -597,7 +621,7 @@ class MailController extends ApplicationController {
 					$email->setTagsFromCSV($csv);
 					
 					//Classify attachments
-					$this->classifyFile($classification_data, $email,$parsedEmail, $validWS, $csv);	
+					$this->classifyFile($classification_data, $email,$parsedEmail, $validWS, true, $csv);	
 					
 					flash_success(lang('success classify email'));
 					ajx_current("back");
@@ -621,7 +645,7 @@ class MailController extends ApplicationController {
 
 	function classifyFile($classification_data, $email, $parsedEmail, $validWS, $mantainWs = true, $csv = '') {
 		if (!is_array($classification_data)) $classification_data = array();
-		
+
 		for ($c = 0; $c < count($classification_data); $c++) {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c]) {
 				$att = $parsedEmail["Attachments"][$c];
@@ -630,8 +654,8 @@ class MailController extends ApplicationController {
 				$fh = fopen($tempFileName, 'w') or die("Can't open file");
 				fwrite($fh, $att["Data"]);
 				fclose($fh);
-							
-				$file = ProjectFiles::getByFilename($fName);
+
+				$file = ProjectFiles::findOne(array('conditions' => "`filename` = '".mysql_real_escape_string($fName)."' AND `mail_id` = ".$email->getId()));
 				if ($file == null){
 					$file = new ProjectFile();
 					$file->setFilename($fName);
@@ -641,53 +665,51 @@ class MailController extends ApplicationController {
 					$file->setCommentsEnabled(true);
 					$file->setAnonymousCommentsEnabled(false);
 					$file->setMailId($email->getId());
-				}
-						
-				try
-				{
-					DB::beginWork();
-					$file->save();
-					if (!$mantainWs) {
-						$file->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
-					}
-					foreach ($validWS as $w) {
-						if (!$file->hasWorkspace($w)) {
-							$file->addToWorkspace($w);
+
+					try {
+						DB::beginWork();
+						$file->save();
+						if (!$mantainWs) {
+							$file->removeFromWorkspaces(logged_user()->getWorkspacesQuery());
 						}
+						foreach ($validWS as $w) {
+							if (!$file->hasWorkspace($w)) {
+								$file->addToWorkspace($w);
+							}
+						}
+						DB::commit();
+	
+						$file->setTagsFromCSV($csv);
+						$enc = array_var($parsedMail,'Encoding','UTF-8');
+						
+						$ext = utf8_substr($fName, strrpos($fName,'.')+1, utf8_strlen($fName, $enc), $enc);
+						
+									
+						$mime_type = '';
+						if (Mime_Types::instance()->has_type($att["content-type"]))
+							$mime_type = $att["content-type"]; //mime type is listed & valid
+						else
+							$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
+	
+						$fileToSave = array(
+		      				"name" => $fName, 
+		      				"type" => $mime_type, 
+		      				"tmp_name" => $tempFileName,
+		      				"error" => 0,
+		      				"size" => filesize($tempFileName));
+	
+						$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
+						$email->linkObject($file);
+						ApplicationLogs::createLog($file, $email->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+						// Error...
+					} catch(Exception $e) {
+							DB::rollback();
+							flash_error($e->getMessage());
+							ajx_current("empty");
 					}
-					DB::commit();
-
-					$file->setTagsFromCSV($csv);
-					$enc = array_var($parsedMail,'Encoding','UTF-8');
-					
-					$ext = utf8_substr($fName, strrpos($fName,'.')+1, utf8_strlen($fName, $enc), $enc);
-					
-								
-					$mime_type = '';
-					if (Mime_Types::instance()->has_type($att["content-type"]))
-						$mime_type = $att["content-type"]; //mime type is listed & valid
-					else
-						$mime_type = Mime_Types::instance()->get_type($ext); //Attempt to infer mime type
-
-					$fileToSave = array(
-	      				"name" => $fName, 
-	      				"type" => $mime_type, 
-	      				"tmp_name" => $tempFileName,
-	      				"error" => 0,
-	      				"size" => filesize($tempFileName));
-
-					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
-					$email->linkObject($file);
-					ApplicationLogs::createLog($file, $email->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-					// Error...
-				} catch(Exception $e) {
-						DB::rollback();
-						flash_error($e->getMessage());
-						ajx_current("empty");
+					unlink($tempFileName);
 				}
-				unlink($tempFileName);
 			}
-			$c++;
 		}		
 	}
 	
@@ -715,7 +737,7 @@ class MailController extends ApplicationController {
 	
 	function show_html_mail() {
 		$acc_id = $_GET['acc'];
-		$filename = ROOT_URL."/tmp/".$acc_id."temp_mail_content.html";
+		$filename = ROOT."/tmp/".$acc_id."temp_mail_content.html";
 		
 		if (!file_exists(ROOT."/tmp/".$acc_id."temp_mail_content.html")) {
 			ajx_current("empty");
@@ -1140,16 +1162,16 @@ class MailController extends ApplicationController {
 
 		if(!is_array($mail_data)) {
 			$fwd_subject = str_starts_with($original_mail->getSubject(),'Fwd:')?$original_mail->getSubject():'Fwd: '.$original_mail->getSubject();
-
-			$fwd_body = $this->build_original_mail_info($original_mail);
-			
 			$body = $original_mail->getBodyHtml() == '' ? $original_mail->getBodyPlain() : $original_mail->getBodyHtml();
-			$arr_body=preg_split("/<body.*>/i",$body);
-			if (count($arr_body)>1)
-				$fwd_body = $arr_body[0].$fwd_body.$arr_body[1];
-			else
-				$fwd_body = $fwd_body.$arr_body[0];
-			 
+			
+			$fwd_info = $this->build_original_mail_info($original_mail);
+			$pos = stripos($body, "<body");
+			$pos = stripos($body, ">", $pos);
+			if ($pos !== FALSE) {
+				$fwd_body = substr($body, 0, $pos+1) . $fwd_info . substr($body, $pos+1);
+			} else {
+				$fwd_body = $fwd_info . $body;
+			}
 			 
 			$mail_data = array(
 	          'to' => '',
@@ -1235,6 +1257,7 @@ class MailController extends ApplicationController {
 			"stateType" => array_var($_GET,'state_type'),
 			"moveTo" => array_var($_GET, 'moveTo'),
 			"mantainWs" => array_var($_GET, 'mantainWs'),
+			"classify_atts" => array_var($_GET, 'classify_atts'),
 		);
 		$order = array_var($_GET,'sort');
 		switch ($order){
@@ -1474,11 +1497,13 @@ class MailController extends ApplicationController {
 								$email = MailContents::findById($id);											
 								MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
 								$classification_data = array();
-								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++)
-								{
-									$classification_data["att_".$j] = true;		
+								if (array_var($attributes, 'classify_atts')) {
+									for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
+										$classification_data["att_".$j] = true;		
+									}
 								}
-								$this->classifyFile($classification_data, $email, $parsedEmail, $validWS, $attributes["mantainWs"]);
+								$tags = implode(",", $email->getTagNames());
+								$this->classifyFile($classification_data, $email, $parsedEmail, $validWS, $attributes["mantainWs"], $tags);
 								break;	
 							default:
 								$resultMessage = lang("Unimplemented type: '" . $type . "'");// if

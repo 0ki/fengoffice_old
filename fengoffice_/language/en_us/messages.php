@@ -620,6 +620,8 @@
   	'some objects could not be linked' => '{0} object(s) could not be linked due to permission restrictions',
   	'user cannot link objects' => 'You don\'t have enough permissions to link objects to this object',
   	'ie browser outdated' => 'Your browser is not officially supported. For a better experience please upgrade your browser.',
+  
+  	'short search query warning' => 'You search query is too short. You can try searching for "<b>{0}*</b>" to find words starting with "<b>{0}</b>".',
   ); // array
 
 ?>

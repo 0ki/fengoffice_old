@@ -60,6 +60,9 @@ og.ExtendedDialog.show = function(config) {
 	}
 	
 	this.dialog.purgeListeners();
+	this.dialog.on('hide', og.restoreFlashObjects);
+	this.dialog.on('close', og.restoreFlashObjects);
+	og.hideFlashObjects();
 	this.dialog.show();
 	var pos = this.dialog.getPosition();
 	if (pos[0] < 0) pos[0] = 0;

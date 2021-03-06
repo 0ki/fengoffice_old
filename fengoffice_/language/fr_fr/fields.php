@@ -191,4 +191,11 @@
 	'field Projects updated_by_id' => 'Modifié par',
 	'field MailContents cc' => 'CC',
 	'field MailContents bcc' => 'BCC',
+	'field ProjectTasks repeat_by' => 'Répété chaque',
+	'field ProjectTasks repeat_end' => 'fin des répétitions',
+	'field ProjectTasks repeat_num' => 'Nombre de répétitions',
+	'field ProjectTasks repeat_forever' => 'Répété Toujours',
+	'field ProjectTasks repeat_d' => 'Jour de répétition',
+	'field ProjectTasks repeat_m' => 'Mois de répétition',
+	'field ProjectTasks repeat_y' => 'Année de répétition',
 ); ?>

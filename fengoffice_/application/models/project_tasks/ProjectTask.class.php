@@ -473,7 +473,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 	}
 	
-	function cloneTask() {
+	function cloneTask($copy_status = false) {
 		$new_task = new ProjectTask();
 				
 		$new_task->setParentId($this->getParentId());
@@ -497,6 +497,10 @@ class ProjectTask extends BaseProjectTask {
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
 		if ($this->getStartDate() instanceof DateTimeValue )
 			$new_task->setStartDate(new DateTimeValue($this->getStartDate()->getTimestamp()));
+		if ($copy_status) {
+			$new_task->setCompletedById($this->getCompletedById());
+			$new_task->setCompletedOn($this->getCompletedOn());
+		}
 		
 		$new_task->save();
 		$new_task->setTagsFromCSV(implode(",", $this->getTagNames()));
@@ -511,7 +515,7 @@ class ProjectTask extends BaseProjectTask {
 		}
 		$sub_tasks = $this->getAllSubTasks();
 		foreach ($sub_tasks as $st) {
-			$new_st = $st->cloneTask();
+			$new_st = $st->cloneTask($copy_status);
 			$new_task->attachTask($new_st);
 		}
 		foreach ($this->getAllComments() as $com) {

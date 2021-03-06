@@ -19,7 +19,7 @@ require_javascript('og/modules/addMessageForm.js');
 				$canRead = true;
 			} else {
 				// see if user can read type of object in the workspace
-				$canRead = can_manage_type($type, ProjectUsers::getByUserAndProject($ws, $u), ACCESS_LEVEL_READ);
+				$canRead = can_read_type($u, $ws, $type);
 			}
 			if ($canRead) {
 				$users["u".$u->getId()] = $u;

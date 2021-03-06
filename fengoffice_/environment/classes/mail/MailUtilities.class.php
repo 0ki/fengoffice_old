@@ -364,12 +364,22 @@ class MailUtilities {
 		
 		// Send Swift mail
 		foreach ($to as $k => $v) {
-			if (trim($v) == '') unset($to[$k]);
+			if (is_array($v)) {
+				if (isset($v[1]) && trim($v[1]) == '') unset($to[$k]);
+			} 
+			else if (trim($v) == '') unset($to[$k]);
 		}
-		$cc = trim($cc, " ,");
-		$bcc = trim($bcc, " ,");
-		if ($cc != '') $mailer->addCc(explode(",", $cc));
-		if ($bcc != '') $mailer->addBcc(explode(",", $bcc));
+
+		$ccArr = explode(",", $cc);
+		foreach ($ccArr as $k => $v) {
+			if (trim($v) == '') unset($ccArr[$k]);
+		}
+		if(count($ccArr)>0) $mailer->addCc($ccArr);
+		$bccArr = explode(",", $bcc);
+		foreach ($bccArr as $k => $v) {
+			if (trim($v) == '') unset($bccArr[$k]);
+		}
+		if(count($bccArr)>0) $mailer->addBcc($bccArr);
 		
 		// add attachments
  		if (is_array($attachments)) {

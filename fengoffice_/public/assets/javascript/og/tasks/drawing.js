@@ -186,7 +186,28 @@ var rx__TasksDrag = {
 				params2["task[" + i + "]"] = parameters[i];
 		/*alert('Updating (quick edit) #'+this.t+' with '+dump(params2));/**/
 		/*return params2;		*/
-
+		if (parameters['milestone_id'] > 0){
+			var milestone = ogTasks.getMilestone(parameters['milestone_id']);
+			var task = ogTasks.getTask(task_id);
+			
+			if (milestone.id != task.milestoneId){//Milestone changed
+				if (milestone.workspaceIds != task.workspaceIds)
+					if(!og.IsWorkspaceParentOf(milestone.workspaceIds, task.workspaceIds)){
+						if (!confirm(lang('task milestone workspace inconsistency')))
+							return;
+					}
+			}
+			
+			// Workspace changed -> milestone control
+			if (milestone.workspaceIds != parameters['project_id'] && 
+				!og.IsWorkspaceParentOf(milestone.workspaceIds, parameters['project_id'])) {
+					if (!confirm(lang('task milestone does not belong to workspace'))) {
+						return;
+					} else {
+						params2["task[milestone_id]"] = 0;
+					}
+			}
+		}
 		
 		parameters = params2;
 		var url = og.getUrl('task', 'quick_edit_task', {id:task_id});
@@ -318,6 +339,7 @@ var rx__TasksDrag = {
 					else parameters['tags'] += ', '+this.d;
 				}
 			} break;
+			case 'workspace':	parameters["project_id"] = this.d; /* ? */ break;
 			default:
 		}
 		
@@ -390,7 +412,7 @@ ogTasks.draw = function(){
 	rx__TasksDrag.allowDrag = false;
 	if(displayCriteria.group_by=='milestone' || displayCriteria.group_by=='priority' 
 	|| displayCriteria.group_by=='assigned_to' || displayCriteria.group_by=='status' 
-	|| displayCriteria.group_by=='tag' ) rx__TasksDrag.allowDrag = true;
+	|| displayCriteria.group_by=='tag' || displayCriteria.group_by=='workspace') rx__TasksDrag.allowDrag = true;
 	// *** /RX ***
 	
 	//Drawing

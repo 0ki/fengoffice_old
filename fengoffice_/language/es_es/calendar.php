@@ -43,7 +43,7 @@
 	'CAL_JUNE' => 'Junio',
 	'CAL_JULY' => 'Julio',
 	'CAL_AUGUST' => 'Agosto',
-	'CAL_SEPTEMBER' => 'Setiembre',
+	'CAL_SEPTEMBER' => 'Septiembre',
 	'CAL_OCTOBER' => 'Octubre',
 	'CAL_NOVEMBER' => 'Noviembre',
 	'CAL_DECEMBER' => 'Diciembre',

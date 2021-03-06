@@ -80,6 +80,9 @@ class EventController extends ApplicationController {
 	            $invitation->setUserId($id);
 	            $invitation->setInvitationState($assist);
 	            $invitation->save();
+				if (is_array($_POST['subscribers'])) {
+	            	$_POST['subscribers']['user_' . $id] = 'checked';
+	            }
             }
 		}
 	}
@@ -784,8 +787,7 @@ class EventController extends ApplicationController {
 				foreach ($users as $k => $user) { // removing event creator from notification list
 					$keep = false;
 					foreach ($ws as $w) {
-						$proj_us = ProjectUsers::findById(array('project_id' => $w->getId(), 'user_id' => $user->getId()));
-						if ($proj_us != null && $proj_us->getCanReadEvents()) {
+						if (can_read_type($user, $w, 'ProjectEvents')) {
 							$keep = true;
 						}
 					}
@@ -1032,7 +1034,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.94.2.7 2009/08/05 22:26:44 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.94.2.9 2009/08/31 19:17:52 alvarotm01 Exp $
  *
  ***************************************************************************/
 

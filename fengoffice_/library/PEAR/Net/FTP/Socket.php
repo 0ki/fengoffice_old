@@ -21,7 +21,7 @@
  * @author    Tobias Schlitt <toby@php.net>
  * @copyright 1997-2008 The PHP Group
  * @license   http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version   CVS: $Id: Socket.php,v 1.1 2008/11/27 12:11:21 alvarotm01 Exp $
+ * @version   CVS: $Id: Socket.php,v 1.1.10.1 2009/09/02 15:49:27 idesoto Exp $
  * @link      http://pear.php.net/package/Net_FTP
  * @since     File available since Release 0.0.1
  */
@@ -362,7 +362,7 @@ function ftp_pasv(&$control, $pasv)
     $pos2   = strrpos($cont, ')')-$pos;
     $string = substr($cont, $pos, $pos2);
 
-    $array = split(',', $string);
+    $array = explode(',', $string);
     // IP we are connecting to
     $ip = $array[0]. '.' .$array[1]. '.' .$array[2]. '.' .$array[3];
     // Port ( 256*lowbit + highbit
