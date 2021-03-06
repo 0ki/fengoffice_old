@@ -326,7 +326,7 @@ class ProjectTask extends BaseProjectTask {
 	
 	
 	/**
-	 * Check if specific user can change task status
+	 * Check if specific user can change task status, complete or reopen
 	 *
 	 * @access public
 	 * @param Contact $user
@@ -425,7 +425,7 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return $log_info
 	 */
-	function completeTask($options) {
+	function completeTask($options = array()) {
 		if (!$this->canChangeStatus(logged_user())) {
 			flash_error('no access permissions');
 			ajx_current("empty");
@@ -452,7 +452,9 @@ class ProjectTask extends BaseProjectTask {
 
 		// check if all previuos tasks are completed
 		$log_info = "";
-		if (config_option('use tasks dependencies')) {
+		$ignore_task_dependencies = array_var($options, 'ignore_task_dependencies');
+		
+		if (config_option('use tasks dependencies') && !$ignore_task_dependencies) {
 			$saved_ptasks = ProjectTaskDependencies::findAll(array('conditions' => 'task_id = '. $this->getId()));
 			foreach ($saved_ptasks as $pdep) {
 				$ptask = ProjectTasks::findById($pdep->getPreviousTaskId());

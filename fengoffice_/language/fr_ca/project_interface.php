@@ -94,7 +94,7 @@
 	'file revision info long' => 'Révision #{0} <span>(par <a class="internalLink" href="{1}">{2}</a> le {3})</span>',
 	'file revision title short' => 'Créée le {0}</span>',
 	'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b> le {2}',
-	'file checkout info short' => '<span>Vérifié le {0}</span>',
+	'file checkout info short' => '<span>Vérrouillé le {0}</span>',
 	'file checkout info long' => '<span>Verrouillé par </span> <a class="internalLink" href="{0}">{1}</a> <span> le {2}</span>',
 	'update file' => 'Mettre à jour le fichier',
 	'version file change' => 'Se souvenir de cette modification (l\'ancien fichier sera sauvegardé comme référence)',

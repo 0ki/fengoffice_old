@@ -336,11 +336,11 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				<input type="hidden" name="task[clean_dep]" value="1" />
 				<?php 
 					foreach ($previous_tasks as $task_dep) {
-						$task = ProjectTasks::findById($task_dep->getPreviousTaskId());
+						$task_prev = ProjectTasks::findById($task_dep->getPreviousTaskId());
 				?>
 					<div class="og-add-template-object previous-task">
-						<input type="hidden" name="task[previous]['<?php echo $k?>']" value="<?php echo $task->getId()?>" />
-						<div class="previous-task-name action-ico ico-task"><?php echo clean($task->getTitle()) ?></div>
+						<input type="hidden" name="task[previous]['<?php echo $k?>']" value="<?php echo $task_prev->getId()?>" />
+						<div class="previous-task-name action-ico ico-task"><?php echo clean($task_prev->getTitle()) ?></div>
 						<a href="#" onclick="og.removePreviousTask(this.parentNode, '<?php echo $genid?>', '<?php echo $k?>')" class="removeDiv link-ico ico-delete" style="display: block;"><?php echo lang('remove') ?></a>
 					</div>
 					<script>

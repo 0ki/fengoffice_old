@@ -109,5 +109,34 @@
 			return $parent_members;
 		}
 	}
+	
+
+	/**
+	 * @abstract Returns all the childs of the member ids passed by parameters, does not check permissions
+	 * @param array $members_ids: parent member ids to retrieve childs
+	 * @param boolean $only_ids: if true then only the child member ids will be returned, otherwise the member objects will be returned 
+	 */
+	static function getAllChildrenInHierarchy($members_ids, $only_ids = false) {
+		$child_members = array();
+		$child_member_ids = array();
+		
+		$tmp_child_member_ids = array_filter($members_ids);
+		while (count($tmp_child_member_ids) > 0) {
+		
+			$tmp_child_member_ids = DB::executeAll("SELECT id FROM ".TABLE_PREFIX."members WHERE parent_member_id IN (".implode(',', $tmp_child_member_ids).")");
+			$tmp_child_member_ids = array_filter(array_flat($tmp_child_member_ids));
+		
+			$child_member_ids = array_unique(array_merge($child_member_ids, $tmp_child_member_ids));
+		}
+		
+		if ($only_ids) {
+			return $child_member_ids;
+		} else {
+			if (count($child_member_ids) > 0) {
+				$child_members = Members::findAll(array('conditions' => 'id IN ('.implode(',', $child_member_ids).')'));
+			}
+			return $child_members;
+		}
+	}
 
   }

@@ -81,7 +81,7 @@ addLangs({
 	'email tab': 'Messagerie',
 	'checkin': 'Nouvelle révision',
 	'checkout': 'Enregistrer',
-	'checked out by': 'Enregistré par {0}',
+	'checked out by': 'Verrouillé par',
 	'add file checked out by': '{0} a été enregistré par {1}',
 	'song': 'Titre',
 	'artist': 'Artiste',

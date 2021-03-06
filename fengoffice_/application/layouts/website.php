@@ -275,6 +275,7 @@ og.loggedUser = {
 	tz: <?php echo logged_user()->getTimezone() ?>,
 	type: <?php echo logged_user()->getUserType() ?>,
 	localization: '<?php echo logged_user()->getLocale() ?>',
+	can_instantiate_templates: <?php echo can_instantiate_templates(logged_user()) ? 'true' : 'false'?>,
 	can_manage_tasks: <?php echo can_manage_tasks(logged_user()) ? 'true' : 'false' ?>
 };
 og.zipSupported = <?php echo zip_supported() ? 1 : 0 ?>;

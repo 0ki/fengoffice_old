@@ -470,6 +470,11 @@ class TemplateController extends ApplicationController {
 	
 
 	function template_parameters(){
+		if (!can_instantiate_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
 		$id = get_id();
 		$parameters = TemplateParameters::getParametersByTemplate($id);
 		ajx_current("empty");
@@ -495,6 +500,12 @@ class TemplateController extends ApplicationController {
 	
 	
 	function instantiate($arguments = null) {
+		if (!can_instantiate_templates(logged_user())) {
+			flash_error(lang("no access permissions"));
+			ajx_current("empty");
+			return;
+		}
+
 		$selected_members = array();
 		$id = array_var($arguments, 'id', get_id());
 	

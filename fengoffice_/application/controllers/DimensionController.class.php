@@ -1117,4 +1117,55 @@ class DimensionController extends ApplicationController {
 		ajx_current("empty");
 		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));
 	}
+
+
+	//return all members in member_ids array
+	function get_allowed_users_in_members($member_ids = null) {
+		if (!can_manage_security(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+
+		$from_view = false;
+		if(is_null($member_ids)){
+			$member_ids = json_decode(array_var($_REQUEST, 'member_ids', null ));
+			$from_view = true;
+		}
+
+		$result = null;
+		if (is_array($member_ids)) {
+			$all_users = array();
+
+
+			if(count($member_ids) > 1){
+				$users_by_member_ids= array();
+				foreach ($member_ids as $m) {
+					$contactMemberCache = ContactMemberCaches::getContactsIdsByMemberId($m);
+					$users_by_member_ids[$m] = $contactMemberCache;
+
+				}
+
+				$result = call_user_func_array('array_intersect', $users_by_member_ids);
+			}else{
+				$contactMemberCache = ContactMemberCaches::getContactsIdsByMemberId($member_ids[0]);
+				$result = $contactMemberCache;
+			}
+		}
+
+		//super admins
+		$admins = Contacts::findAll(array('conditions' => "user_type = 1"));
+		foreach ($admins as $admin) {
+			if(!in_array($admin->getId(),$result) ){
+				$result[] = $admin->getId();
+			}
+		}
+
+		if($from_view){
+			ajx_extra_data(array("users_ids" => $result));
+			ajx_current("empty");
+		}else{
+			return $result;
+		}
+	}
 }

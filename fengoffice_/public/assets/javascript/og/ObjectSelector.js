@@ -672,7 +672,7 @@ og.ObjectSelector.show = function(callback, scope, config, object_id, object_id_
 	// if no type menu set all_type_menu_items_rendered as true
 	this.dialog.all_type_menu_items_rendered = !config.registered_types_of_objects || config.registered_types_of_objects.length==0;
 	// if no cp filters set all_cp_filters_rendered as true
-	this.dialog.all_cp_filters_rendered = cp_array.length==0;
+	this.dialog.all_cp_filters_rendered = cp_array.length==0 || typeof(og.custom_properties_filter)=='undefined';
 	
 	
 	// add current context to the selected member ids variable
@@ -729,7 +729,9 @@ og.ObjectSelector.show = function(callback, scope, config, object_id, object_id_
 	// send selected/removed ids to server timeout variable
 	this.dialog.send_selected_timeout = null;
 	
-	og.custom_properties_filter.init();
+	if (og.custom_properties_filter) {
+		og.custom_properties_filter.init();
+	}
 	
 	if (!config.keep_selector_changes) {
 		var obj_selector = this.dialog;

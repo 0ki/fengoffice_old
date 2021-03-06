@@ -368,6 +368,10 @@ class WebpageController extends ApplicationController {
 			"start" => $start,
 			"webpages" => array()
 		);
+		foreach ($res as $k => $v) {
+			if ($k != 'total' && $k != 'objects') $object[$k] = $v;
+		}
+		
 		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(ProjectWebpages::instance()->getObjectTypeId());
 		if (isset($res->objects)) {
 			$index = 0;

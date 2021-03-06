@@ -33,7 +33,7 @@ table {
 
 <div class="printHeader report-print-header">
 	<div class="title-container"><h1 align="center"><?php echo $title ?></h1></div>
-	<?php if (isset($pdf_export) && $pdf_export) : ?>
+	<?php if (isset($save_html_in_file) && $save_html_in_file) : ?>
 	<div class="company-info">
 		<?php if (owner_company()->getPictureFile() != '') {
 			?><div class="logo-container"><img src="<?php echo owner_company()->getPictureUrl()?>"/></div> 
@@ -63,7 +63,7 @@ table {
 </div>
 </div>
 
-<?php 	if (!isset($pdf_export) || !$pdf_export) : ?>
+<?php 	if (!isset($save_html_in_file) || !$save_html_in_file) : ?>
 <script>
 window.print();
 </script>

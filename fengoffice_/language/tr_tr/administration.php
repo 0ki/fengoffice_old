@@ -602,4 +602,6 @@
 	'config category desc mail module' => 'E-posta modülünün genel ayarları',
 	'default value must be numeric' => '{0} için varsayılan değer bir sayı olmalıdır.',
 	'default value must be date' => '{0} için varsayılan değer bir tarih olmalıdır.',
+	'config option name show company logo in notifications' => 'Bildirimlerde kurum logosu görüntülensin',
+	'config option desc show company logo in notifications' => 'Bu seçenek etkinleştirildiğinde, kurum logosu bildirim içeriğine eklenir.',
 ); ?>

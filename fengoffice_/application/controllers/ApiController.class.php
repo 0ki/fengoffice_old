@@ -123,7 +123,7 @@ class ApiController extends ApplicationController {
         }
         $params = array('dim_id' => $dimension_id, 'type_id' => $typeId, 'start'=>$start,'limit'=>$limit);
         $memberController = new MemberController();
-        $object = $memberController->list_all($params);
+        $object = $memberController->listing($params);
         foreach ($object["members"] as $m) {
         	$member = Members::getMemberById($m['id']);
         	$memberInfo = array(

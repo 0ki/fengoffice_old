@@ -460,6 +460,8 @@
 
 	'can_manage_security description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar usuarios y grupos y modificar sus permisos.',
 	'can_manage_configuration description' => 'Si este permiso está marcado el usuario podrá modificar la Configuración de la aplicación, Eventos de Cron, Actualizar la aplicación, cambiar el logo mostrado en la esquina superior izquierda y los colores.',
+	'can_instantiate_templates' => 'Puede usar plantillas de tareas',
+	'can_instantiate_templates description' => 'Si este permiso está marcado el usuario podrá instanciar Plantillas.',
 	'can_manage_templates description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar Plantillas. Todos los usuarios con permisos sobre el módulo de tareas podrán utilizar las plantillas..',
 	'can_manage_time description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre el módulo de Tiempo, incluyendo las los registros de horas que fueron creadas por otros usuarios.',
 	'can_add_mail_accounts description' => 'Si este permiso está marcado el usuario podrá crear nuevas cuentas de Correo.',
@@ -507,6 +509,9 @@
 		'config option desc brand_colors_head_back' => '',
 		'config option name brand_colors_head_font' => 'Color de fuente del encabezado',
 		'config option desc brand_colors_head_font' => '',
+  		
+  	'user config option name tasksUseDateFilters' => 'Utilizar filtros de fechas en tareas',
+  	'user config option desc tasksUseDateFilters' => 'Si se habilita se podrán filtrar las tareas utilizando un rango de fechas.',
   		
   		'dimension options' => 'Opciones de dimensiones',
   		'dimension options desc' => 'Aquí se pueden cambiar algunas propiedades de las dimensiones para que se ajusten a sus necesidades.',

@@ -35,4 +35,12 @@
 	'add new row' => 'Satır Ekle',
 	'update subtasks' => 'Alt Görevleri Güncelle',
 	'success complete subtasks of' => '\'{0}\' ögesinin alt görevleri güncellendi',
+	'you have x new emails' => '{0} yeni e-postanız var',
+	'notify assigned user' => 'Atanmış Kullanıcıya Bildirilsin',
+	'change date' => 'Tarihi Değiştir',
+	'new date' => 'Yeni Tarih',
+	'new start date' => 'Yeni Başlangıç Tarihi',
+	'new due date' => 'Yeni Bitiş Tarihi',
+	'new start date desc' => 'Seçilmiş görevlerin başlangıç tarihi değiştirilecek.',
+	'new due date desc' => 'Seçilmiş görevlerin bitiş tarihi değiştirilecek.',
 ); ?>

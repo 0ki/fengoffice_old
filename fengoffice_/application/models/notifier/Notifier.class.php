@@ -68,7 +68,8 @@ class Notifier {
 				if (!is_numeric($contactId)) unset($contactIds[$k]);
 			}
 			if (count($contactIds)) {
-				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+				$contactIdsStr = implode(',', $contactIds);
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIdsStr.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
 				}
@@ -83,7 +84,8 @@ class Notifier {
 				if (!is_numeric($contactId)) unset($contactIds[$k]);
 			}
 			if (count($contactIds)) {
-				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+				$contactIdsStr = implode(',', $contactIds);
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIdsStr.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
 				}
@@ -96,7 +98,8 @@ class Notifier {
 				if (!is_numeric($contactId)) unset($contactIds[$k]);
 			}
 			if (count($contactIds)) {
-				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+				$contactIdsStr = implode(',', $contactIds);
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIdsStr.")"));
 				foreach ($contacts as $contact){
 					$subscribers[] = $contact;
 				}
@@ -109,7 +112,8 @@ class Notifier {
 				if (!is_numeric($contactId)) unset($contactIds[$k]);
 			}
 			if (count($contactIds)) {
-				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIds.")"));
+				$contactIdsStr = implode(',', $contactIds);
+				$contacts = Contacts::instance()->findAll(array("conditions"=>" o.id IN (".$contactIdsStr.")"));
 			}else {
 				$contacts = array();
 			}

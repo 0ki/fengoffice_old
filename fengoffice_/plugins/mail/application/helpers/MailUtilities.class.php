@@ -32,6 +32,18 @@ class MailUtilities {
 		$errAccounts = array();
 		$mailsReceived = 0;
 		if (isset($accounts)) {
+			if (count($accounts) > 10 && $maxPerAccount > 50) {
+				$maxPerAccount = 50;
+			}
+			if (count($accounts) > 20 && $maxPerAccount > 25) {
+				$maxPerAccount = 25;
+			}
+			if (count($accounts) > 50 && $maxPerAccount > 10) {
+				$maxPerAccount = 10;
+			}
+			
+			debug_log("Start checking ".count($accounts)." accounts", "checkmail_log.php");
+			
 			foreach($accounts as $account) {
 				
 				debug_log("Start checking account ".$account->getId(), "checkmail_log.php");
@@ -128,7 +140,7 @@ class MailUtilities {
 		}
 	}*/
 
-	private function getAddresses($field) {
+	function getAddresses($field) {
 		$f = '';
 		if ($field) {
 			foreach($field as $add) {
@@ -302,6 +314,7 @@ class MailUtilities {
 			if ($from_name == ''){
 				$from_name = $from;
 			} else if (strtoupper($encoding) =='KOI8-R' || strtoupper($encoding) =='CP866' || $from_encoding != 'UTF-8' || !$enc_conv->isUtf8RegExp($from_name)){ //KOI8-R and CP866 are Russian encodings which PHP does not detect
+				
 				$utf8_from = $enc_conv->convert($encoding, 'UTF-8', $from_name);
 	
 				if ($enc_conv->hasError()) {
@@ -309,6 +322,7 @@ class MailUtilities {
 				}
 				$utf8_from = utf8_safe($utf8_from);
 				$mail->setFromName($utf8_from);
+			
 			} else {
 				$mail->setFromName($from_name);
 			}
@@ -330,6 +344,7 @@ class MailUtilities {
 				$utf8_subject = utf8_safe($subject_aux);
 				$mail->setSubject($utf8_subject);
 			}
+			
 			$mail->setTo($to_addresses);
 			$sent_timestamp = false;
 			if (array_key_exists("Date", $parsedMail)) {
@@ -425,7 +440,9 @@ class MailUtilities {
 							}
 						}
 						$mail->setBodyHtml($attached_body);
-					} else if (isset($parsedMail['FileName'])) {
+					}
+					
+					if (isset($parsedMail['FileName'])) {
 						// content-type is a file type => set as it has attachments, they will be parsed when viewing email
 						$mail->setHasAttachments(true);
 					}
@@ -595,6 +612,46 @@ class MailUtilities {
 			}
 		}
 	}
+	
+	
+	static function getAttachmentsFromEmlAttachment(&$attach) {
+		$more_attachments = array();
+		
+		if (!array_var($attach, 'FileName')) {
+			$attach['FileName'] = 'ForwardedMessage.eml';
+		}
+		
+		$attach_content = array_var($attach, 'Data');
+		MailUtilities::parseMail($attach_content, $attach_decoded, $attach_parsedEmail, $attach_warnings);
+		
+		if (in_array($attach_parsedEmail['Type'], array('text','html'))) {
+			
+			$more_parsed_attachments = array_var($attach_parsedEmail, 'Attachments');
+			foreach ($more_parsed_attachments as $a) {
+				$att = array(
+					'Data' => $a['Data'],
+					'Type' => $a['Type'],
+					'FileName' => $a['FileName'],
+					'size' => format_filesize(strlen($a["Data"])),
+				);
+				$more_attachments[] = $att;
+			}
+			
+		} else if (isset($attach_parsedEmail['FileName'])) {
+			
+			$att = array(
+				'Data' => $attach_parsedEmail['Data'],
+				'Type' => $attach_parsedEmail['Type'],
+				'FileName' => $attach_parsedEmail['FileName'],
+				'size' => format_filesize(strlen($attach_parsedEmail["Data"])),
+			);
+			$more_attachments[] = $att;
+		}
+		
+		return $more_attachments;
+	}
+	
+	
 
 	/**
 	 * Gets all new mails from a given mail account
@@ -604,6 +661,7 @@ class MailUtilities {
 	 */
 	private function getNewPOP3Mails(MailAccount $account, $max = 0) {
 		$pop3 = new Net_POP3();
+		debug_log("  START getNewPOP3Mails ".$account->getId(), "checkmail_log.php");
 
 		$received = 0;
 		// Connect to mail server
@@ -618,6 +676,7 @@ class MailUtilities {
 		
 		$mailsToGet = array();
 		$summary = $pop3->getListing();
+		debug_log("  after getListing - count(summary)=".count($summary), "checkmail_log.php");
 
 		$tmp_uids_to_get = array();
 		$uids = MailContents::getUidsFromAccount($account->getId());
@@ -630,6 +689,8 @@ class MailUtilities {
 		
 		if ($max == 0) $toGet = count($mailsToGet);
 		else $toGet = min(count($mailsToGet), $max);
+		
+		debug_log("  count(mailsToGet)=".count($mailsToGet)." -- toGet=$toGet", "checkmail_log.php");
 
 		// fetch newer mails first
 		$mailsToGet = array_reverse($mailsToGet, true);
@@ -660,6 +721,8 @@ class MailUtilities {
 			}
 		}
 		$pop3->disconnect();
+		
+		debug_log("  END getNewPOP3Mails ".$account->getId(), "checkmail_log.php");
 
 		return $received;
 	}
@@ -1019,8 +1082,8 @@ class MailUtilities {
 							$server_max_summary = $imap->getSummary($numMessages);
 							if (PEAR::isError($server_max_summary)) {
 								debug_log("    PEAR ERROR in imap->getSummary(numMessages). numMessages=$numMessages. errmsg: ".$server_max_summary->getMessage(), "checkmail_log.php");
-								Logger::log($server_max_summary->getMessage());							
-							}else{					
+								Logger::log($server_max_summary->getMessage());
+							}else{
 								$server_max_uid = $server_max_summary[0]['UID'];
 							}
 							debug_log("    summary of msg:$numMessages received", "checkmail_log.php");
@@ -1059,8 +1122,12 @@ class MailUtilities {
 										if(count($server_uids_list)){
 											$lastReceived = $server_uids_list[0]["msg_id"];
 										}else{
-											$lastReceived = 1;
-										}								
+											
+											// if there are no messages with uid > max_uid => dont download any messages from this folder, continue with next folder.
+											continue;
+											
+										}
+										
 									}
 								}
 								$lastReceived = $lastReceived - 1;

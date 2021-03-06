@@ -25,4 +25,6 @@
 	
 	'the workspaces' => 'the workpsaces',
 	'the tags' => 'the tags',
+	'workspace report' => 'Workspaces report',
+	'tag report' => 'Tags report',
 );

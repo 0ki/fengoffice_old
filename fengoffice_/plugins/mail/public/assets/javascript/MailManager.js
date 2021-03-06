@@ -90,7 +90,11 @@ og.MailManager = function() {
 					//reload columns for this folder
 					showFolderColumns();
 					
-					manager.reloadGridPagingToolbar('mail','list_all','mails-manager');
+					var text_filter = $("#mails-manager #text_filter").val();
+
+					if(!text_filter || text_filter.trim() == ''){
+						manager.reloadGridPagingToolbar('mail','list_all','mails-manager');
+					}
 					
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 					
@@ -432,6 +436,7 @@ og.MailManager = function() {
 			id: 'cp_' + cps[i].id,
 			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
+			align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: false,
 			renderer: og.clean
@@ -1302,14 +1307,16 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 		// send a random id to the server and save it as the last, if the response has the last check_id then load it, else ignore it.
 		this.last_check_id = Ext.id();
 		params.check_id = this.last_check_id;
-		
+
+		var old_scroll_top = $("#mails-panel .x-grid3-scroller").scrollTop();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
 				limit: mails_per_page
 			}),
 			callback: function() {
-				Ext.getCmp('mails-manager').actionRep.checkMails.enable();				
+				Ext.getCmp('mails-manager').actionRep.checkMails.enable();
+				$("#mails-panel .x-grid3-scroller").scrollTop(old_scroll_top);
 			}
 		});
 		this.store.baseParams.action = "";

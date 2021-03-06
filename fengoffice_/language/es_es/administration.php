@@ -531,6 +531,8 @@
 	'can_manage_dimensions' => 'Puede administrar la configuración de dimensiones',
 	'can_manage_dimension_members' => 'Puede agregar o editar miembros de dimensiones',
 	'can_see_assigned_to_other_tasks' => 'Puede ver tareas asignadas a otros usuarios',
+	'can_instantiate_templates' => 'Puede usar plantillas de tareas',
+	'can_instantiate_templates description' => 'Si este permiso está marcado el usuario podrá instanciar Plantillas.',
 	'can_manage_security description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar usuarios y grupos y modificar sus permisos.',
 	'can_manage_configuration description' => 'Si este permiso está marcado el usuario podrá modificar la Configuración de la aplicación, Eventos de Cron, Actualizar la aplicación, cambiar el logo mostrado en la esquina superior izquierda y los colores.',
 	'can_manage_templates description' => 'Si este permiso está marcado el usuario podrá crear, modificar y borrar Plantillas. Todos los usuarios con permisos sobre el módulo de tareas podrán utilizar las plantillas..',
@@ -603,6 +605,9 @@
     'user config option desc contacts_per_page' => 'Cantidad de contactos listados (evite 0 y números negativos). Tenga en cuenta que cuanto mayor sea el número, más tiempo demorará en cargar el listado de contactos.',
     'member custom properties' => 'Propiedades personalizadas para miembros de dimensiones.',
     'select member type' => 'Seleccione tipo',
+  		
+  	'user config option name tasksUseDateFilters' => 'Utilizar filtros de fechas en tareas',
+  	'user config option desc tasksUseDateFilters' => 'Si se habilita se podrán filtrar las tareas utilizando un rango de fechas.',
 		
 		'billing and invoicing' => 'Facturación',
 		'billing categories description' => 'En esta sección se pueden definir las tarifas de las personas.',

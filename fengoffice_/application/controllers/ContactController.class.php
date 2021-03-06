@@ -556,7 +556,7 @@ class ContactController extends ApplicationController {
 		
 		
 		// Prepare response object
-		$object = $this->prepareObject($content_objects->objects, $content_objects->total, $start, $attributes);
+		$object = $this->prepareObject($content_objects->objects, $content_objects, $start, $attributes);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 
@@ -654,13 +654,18 @@ class ContactController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($objects, $count, $start = 0, $attributes = null)
+	private function prepareObject($objects, $res_obj, $start = 0, $attributes = null)
 	{
 		$object = array(
-			"totalCount" => $count,
+			"totalCount" => $res_obj->total,
 			"start" => $start,
 			"contacts" => array()
 		);
+
+		foreach ($res_obj as $k => $v) {
+			if ($k != 'total' && $k != 'objects') $object[$k] = $v;
+		}
+		
 		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(Contacts::instance()->getObjectTypeId());
 		for ($i = 0; $i < count($objects); $i++){
 			if (isset($objects[$i])){
@@ -2409,7 +2414,6 @@ class ContactController extends ApplicationController {
 						$titles .= $field_names["contact[$k]"] . $delimiter;
 					}
 				}
-				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 			}else{
 				$field_names = Contacts::getCompanyFieldNames();
 				
@@ -2418,8 +2422,23 @@ class ContactController extends ApplicationController {
 						$titles .= $field_names["company[$k]"] . $delimiter;
 					}
 				}
-				$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 			}
+			
+			// available custom properties
+			$cps = CustomProperties::getAllCustomPropertiesByObjectType(Contacts::instance()->getObjectTypeId());
+			$custom_properties = array();
+			foreach ($cps as $cp) $custom_properties[$cp->getId()] = $cp;
+			
+			// add selected custom properties to titles
+			foreach($checked_fields as $k => $v) {
+				if ($v == 'checked' && is_numeric($k)) {
+					$cp = array_var($custom_properties, $k);
+					if ($cp instanceof CustomProperty) {
+						$titles .= $cp->getName() . $delimiter;
+					}
+				}
+			}
+			$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 			
 			// export the same type of contact objects that are enabled in the contacts tab.
 			$extra_conditions = "";
@@ -2453,7 +2472,7 @@ class ContactController extends ApplicationController {
 				$conditions .= $context_condition;
 				$contacts = Contacts::instance()->getAllowedContacts($conditions);
 				foreach ($contacts as $contact) {					
-					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields, $delimiter) . "\n");
+					fwrite($handle, $this->build_csv_from_contact($contact, $checked_fields, $delimiter, $custom_properties) . "\n");
 				}
 			}else{
 				$conditions .= ($conditions == "" ? "" : " AND ") . "`archived_by_id` = 0" . ($conditions ? " AND $conditions" : "");
@@ -2461,7 +2480,7 @@ class ContactController extends ApplicationController {
 				$conditions .= $context_condition;
 				$companies = Contacts::getVisibleCompanies(logged_user(), $conditions);
 				foreach ($companies as $company) {
-					fwrite($handle, $this->build_csv_from_company($company, $checked_fields, $delimiter) . "\n");
+					fwrite($handle, $this->build_csv_from_company($company, $checked_fields, $delimiter, $custom_properties) . "\n");
 				}
 			}
 			
@@ -2521,7 +2540,7 @@ class ContactController extends ApplicationController {
 	}
 	
 	
-	function build_csv_from_contact(Contact $contact, $checked, $delimiter = ',') {
+	function build_csv_from_contact(Contact $contact, $checked, $delimiter = ',', $custom_properties=array()) {
 		$str = '';
 		
 		//Personal emails
@@ -2578,23 +2597,33 @@ class ContactController extends ApplicationController {
 				'job_title' => array('object' => $contact, 'func_name' => 'getJobTitle', 'params' => array()),
 				'department' => array('object' => $contact, 'func_name' => 'getDepartment', 'params' => array())				
 				);
-		
+
 		//add csv fields to $str
 		foreach ($checked as $key => $param) {
 			if($param == 'checked'){
-				$param_func = $params_fucntions[$key];
-				//check the object
-				if(is_null($param_func['object'])){
-					$str .= self::build_csv_field("", $delimiter);
-				}else{
-					//check method exists
-					if(method_exists($param_func['object'], $param_func['func_name'])){
-						$param_text = call_user_func_array(array($param_func['object'],$param_func['func_name']),$param_func['params']);
-						$str .= self::build_csv_field($param_text, $delimiter);
-					}else{
+				if (is_numeric($key)) {
+					// custom property
+					$cp = array_var($custom_properties, $key);
+					if ($cp instanceof CustomProperty) {
+						$str .= self::build_csv_field(get_custom_property_value_for_listing($cp, $contact), $delimiter);
+					} else {
 						$str .= self::build_csv_field("", $delimiter);
-					}					
-				}				
+					}
+				} else {
+					$param_func = $params_fucntions[$key];
+					//check the object
+					if(is_null($param_func['object'])){
+						$str .= self::build_csv_field("", $delimiter);
+					}else{
+						//check method exists
+						if(method_exists($param_func['object'], $param_func['func_name'])){
+							$param_text = call_user_func_array(array($param_func['object'],$param_func['func_name']),$param_func['params']);
+							$str .= self::build_csv_field($param_text, $delimiter);
+						}else{
+							$str .= self::build_csv_field("", $delimiter);
+						}
+					}
+				}
 			}
 		}
 					
@@ -3226,7 +3255,7 @@ class ContactController extends ApplicationController {
 	}
 	
 	
-	function build_csv_from_company(Contact $company, $checked, $delimiter = ',') {
+	function build_csv_from_company(Contact $company, $checked, $delimiter = ',', $custom_properties=array()) {
 		$str = '';
 		
 		if (isset($checked['first_name']) && $checked['first_name'] == 'checked') $str .= self::build_csv_field($company->getObjectName(), $delimiter);
@@ -3243,6 +3272,18 @@ class ContactController extends ApplicationController {
 		if (isset($checked['fax_number']) && $checked['fax_number'] == 'checked') $str .= self::build_csv_field($company->getPhoneNumber('fax', true), $delimiter);
 		if (isset($checked['email']) && $checked['email'] == 'checked') $str .= self::build_csv_field($company->getEmailAddress(), $delimiter);
 		if (isset($checked['homepage']) && $checked['homepage'] == 'checked') $str .= self::build_csv_field($company->getWebpageUrl('work'), $delimiter);
+		
+		foreach ($checked as $key => $param) {
+			if ($param == 'checked' && is_numeric($key)) {
+				// custom property
+				$cp = array_var($custom_properties, $key);
+				if ($cp instanceof CustomProperty) {
+					$str .= self::build_csv_field(get_custom_property_value_for_listing($cp, $company), $delimiter);
+				} else {
+					$str .= self::build_csv_field("", $delimiter);
+				}
+			}
+		}
 		
 		$str = str_replace(array(chr(13).chr(10), chr(13), chr(10)), ' ', $str); //remove line breaks
 		

@@ -288,7 +288,6 @@
 	'is_user' => 'Es usuario',
 	'field Objects is_user' => 'Es usuario',
 	'field Contacts is_user' => 'Es usuario',
-	
 	'home_phone' => 'Teléfono personal',
 	'work_phone' => 'Teléfono del trabajo',
 	'mobile_phone' => 'Teléfono móvil',

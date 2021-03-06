@@ -55,6 +55,8 @@ og.WebpageManager = function() {
 					if (cmp) {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						
+						og.eventManager.fireEvent('after grid panel load', {man:cmp, data:d});
 					}
 					Ext.getCmp('webpage-manager').reloadGridPagingToolbar('webpage','list_all','webpage-manager');
 					
@@ -77,6 +79,9 @@ og.WebpageManager = function() {
 	var readClass = 'read-unread-' + Ext.id();
 	
     function renderName(value, p, r) {
+		if (isNaN(r.data.object_id)) {
+			return '<span class="bold" id="'+r.data.id+'">'+ (value ? og.clean(value) : '') +'</span>';
+		}
     	var classes = readClass + r.id;
 		if (!r.data.isRead) classes += " bold";
 		
@@ -112,6 +117,8 @@ og.WebpageManager = function() {
 	}
     
     function renderIsRead(value, p, r){
+		if (isNaN(r.data.object_id)) return;
+		
     	var idr = Ext.id();
 		var idu = Ext.id();
 		var jsr = 'og.WebpageManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:' + r.id + '}));'; 
@@ -248,6 +255,7 @@ og.WebpageManager = function() {
 			id: 'cp_' + cps[i].id,
 			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
+			align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: false,
 			renderer: og.clean

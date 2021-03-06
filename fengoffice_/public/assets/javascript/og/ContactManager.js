@@ -66,6 +66,8 @@ og.ContactManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.contacts+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						
+						og.eventManager.fireEvent('after grid panel load', {man:cmp, data:d});
 					}
 					
 					Ext.getCmp('contact-manager').reloadGridPagingToolbar('contact','list_all','contact-manager');
@@ -88,6 +90,9 @@ og.ContactManager = function() {
 	}
 	
     function renderContactName(value, p, r) {
+		if (isNaN(r.data.object_id)) {
+			return '<span class="bold" id="'+r.data.id+'">'+ (value ? og.clean(value) : '') +'</span>';
+		}
     	var name = lang('n/a');
 		if (r.data.type == 'company'){
 			name = String.format(
@@ -465,6 +470,7 @@ og.ContactManager = function() {
 			id: 'cp_' + cps[i].id,
 			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
+			align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
 			renderer: og.clean

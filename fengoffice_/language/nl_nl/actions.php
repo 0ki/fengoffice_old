@@ -86,8 +86,7 @@
 	'delete form' => 'Verwijder formulier',
 	'submit project form' => 'Verzend',
 	'add file' => 'Bestand toevoegen',
-	'edit file properties' => 'Bewerk eigenschappen van bestand
-',
+	'edit file properties' => 'Bewerk eigenschappen van bestand',
 	'upload file' => 'Upload bestand',
 	'create new revision' => 'Maak een nieuwe revisie',
 	'add document' => 'Commentaar toevoegen',
@@ -103,8 +102,7 @@
 	'new document' => 'Nieuw document',
 	'new spreadsheet' => 'Nieuwe spreadsheet',
 	'new presentation' => 'Nieuwe presentatie',
-	'slideshow' => 'Dia voorstelling
-',
+	'slideshow' => 'Dia voorstelling',
 	'revisions and comments' => 'Revisie en commentaar',
 	'Save' => 'Opslaan',
 	'all elements' => 'Alle elementen',
@@ -165,4 +163,5 @@
 	'activate' => 'Activeren',
 	'disabled' => 'Uitgeschakeld',
 	'template context' => 'Kies de locatie van de template',
+	'write comment' => 'Schrijf hier uw commentaar',
 ); ?>

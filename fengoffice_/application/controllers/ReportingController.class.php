@@ -774,93 +774,209 @@ class ReportingController extends ApplicationController {
 		}
 	}
 
-	function view_custom_report(){
-		$report_id = array_var($_GET, 'id');
+	function view_custom_report($report_id = null, $view_attributes = null, $params = null) {
+		
+		if (!$report_id) {
+			$report_id = array_var($_GET, 'id');
+		}
+		
 		if (array_var($_GET, 'replace')) {
 			ajx_replace();
 		}
+		$report = Reports::getReport($report_id);
+		if (!$report instanceof Report) {
+			flash_error("report dnx");
+			ajx_current("empty");
+			return;
+		}
 		tpl_assign('id', $report_id);
-		if(isset($report_id)){
-			$report = Reports::getReport($report_id);
-			$conditions = ReportConditions::getAllReportConditions($report_id);
-			$paramConditions = array();
-			foreach($conditions as $condition){
-				if($condition->getIsParametrizable()){
-					$paramConditions[] = $condition;
+		
+			
+		$conditions = ReportConditions::getAllReportConditions($report_id);
+		$paramConditions = array();
+		foreach($conditions as $condition){
+			if($condition->getIsParametrizable()){
+				$paramConditions[] = $condition;
+			}
+		}
+		
+		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
+		if (class_exists($ot->getHandlerClass())) {
+			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+			$externalCols = $managerInstance->getExternalColumns();
+			
+			if ($ot->getName() == 'mail') {
+				foreach ($externalCols as $k => $ecol) {
+					if (in_array($ecol, array('to','cc','bcc','body_plain','body_html'))) unset($externalCols[$k]);
 				}
 			}
+			
+		} else {
+			$externalCols = array();
+		}
+		
+		tpl_assign('object_type', $ot);
+		$externalFields = array();
+		foreach($externalCols as $extCol){
+			$externalFields[$extCol] = $this->get_ext_values($extCol, $report->getReportObjectTypeId());
+		}
+		if (!$params) {
+			$params = array_var($_GET, 'params');
+		}
+		if (count($paramConditions) > 0 && !$params) {
+			
+			$this->setTemplate('custom_report_parameters');
+			tpl_assign('model', $report->getReportObjectTypeId());
+			tpl_assign('title', $report->getObjectName());
+			tpl_assign('description', $report->getDescription());
+			tpl_assign('conditions', $paramConditions);
+			tpl_assign('external_fields', $externalFields);
+			
+		} else {
+			
+			$parametersUrl = '';
+			if ($params) {
+				foreach($params as $id => $value){
+					$parametersUrl .= '&params['.$id.']='.$value;
+				}
+			}
+			
+			$offset = array_var($_GET, 'offset', 0);
+			$limit = array_var($_GET, 'limit', 50);
+			$order_by = array_var($_GET, 'order_by', '');
+			$order_by_asc = array_var($_GET, 'order_by_asc', false);
+			
+			$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, $offset, $limit);
 			
 			$ot = ObjectTypes::findById($report->getReportObjectTypeId());
-			if (class_exists($ot->getHandlerClass())) {
-				eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
-				$externalCols = $managerInstance->getExternalColumns();
-				
-				if ($ot->getName() == 'mail') {
-					foreach ($externalCols as $k => $ecol) {
-						if (in_array($ecol, array('to','cc','bcc','body_plain','body_html'))) unset($externalCols[$k]);
-					}
-				}
-				
-			} else {
-				$externalCols = array();
-			}
-			tpl_assign('object_type', $ot);
-			$externalFields = array();
-			foreach($externalCols as $extCol){
-				$externalFields[$extCol] = $this->get_ext_values($extCol, $report->getReportObjectTypeId());
-			}
-			$params = array_var($_GET, 'params');
-			if(count($paramConditions) > 0 && !isset($params)){
-				$this->setTemplate('custom_report_parameters');
-				tpl_assign('model', $report->getReportObjectTypeId());
-				tpl_assign('title', $report->getObjectName());
-				tpl_assign('description', $report->getDescription());
-				tpl_assign('conditions', $paramConditions);
-				tpl_assign('external_fields', $externalFields);
-			}else{
-				$this->setTemplate('report_wrapper');
-				tpl_assign('template_name', 'view_custom_report');
-				tpl_assign('title', $report->getObjectName());
-				tpl_assign('genid', gen_id());
-				$parameters = '';
-				if(isset($params)){
-					foreach($params as $id => $value){
-						$parameters .= '&params['.$id.']='.$value;
-					}
-				}
-				tpl_assign('parameterURL', $parameters);
-				$offset = array_var($_GET, 'offset');
-				if(!isset($offset)) $offset = 0;
-				$limit = array_var($_GET, 'limit');
-				if(!isset($limit)) $limit = 50;
-				$order_by = array_var($_GET, 'order_by');
-				if(!isset($order_by)) $order_by = '';
-				tpl_assign('order_by', $order_by);
-				$order_by_asc = array_var($_GET, 'order_by_asc');
-				if(!isset($order_by_asc)) $order_by_asc = null;
-				tpl_assign('order_by_asc', $order_by_asc);
-				$results = Reports::executeReport($report_id, $params, $order_by, $order_by_asc, $offset, $limit);
-				if(!isset($results['columns'])) $results['columns'] = array(); 
-				tpl_assign('columns', $results['columns']);
-				tpl_assign('db_columns', $results['db_columns']);
-				if(!isset($results['rows'])) $results['rows'] = array();
-				tpl_assign('rows', $results['rows']);
-				if(!isset($results['pagination'])) $results['pagination'] = '';
-				tpl_assign('pagination', $results['pagination']);
-				tpl_assign('types', self::get_report_column_types($report_id));
-				tpl_assign('post', $_REQUEST);
-				$ot = ObjectTypes::findById($report->getReportObjectTypeId());
-				tpl_assign('model', $ot->getHandlerClass());
-				tpl_assign('description', $report->getDescription());
-				tpl_assign('conditions', $conditions);
-				tpl_assign('parameters', $params);
-				tpl_assign('id', $report_id);
-				tpl_assign('to_print', false);
-			}
+
+			tpl_assign('results', $results);
+			tpl_assign('model', $ot->getHandlerClass());
+			tpl_assign('types', self::get_report_column_types($report_id));
+			tpl_assign('post', $_REQUEST);
+			tpl_assign('order_by', $order_by);
+			tpl_assign('order_by_asc', $order_by_asc);
+			tpl_assign('description', $report->getDescription());
+			tpl_assign('conditions', $conditions);
+			tpl_assign('parameters', $params);
+			tpl_assign('parameterURL', $parametersUrl);
+			tpl_assign('id', $report_id);
+			tpl_assign('to_print', false);
 			
+			$this->setTemplate('report_wrapper');
+			tpl_assign('template_name', 'view_custom_report');
+			tpl_assign('title', $report->getObjectName());
+			tpl_assign('genid', gen_id());
+			
+			if ($view_attributes) {
+				foreach ($view_attributes as $k => $v) tpl_assign($k, $v);
+			}
+		
 			ApplicationReadLogs::createLog($report, ApplicationReadLogs::ACTION_READ);
+			
+			return $results;
 		}
 	}
+	
+	
+	function print_custom_report() {
+		ajx_current("empty");
+		set_time_limit(0);
+		ini_set("memory_limit", "512M");
+		
+		$report_id = array_var($_GET, 'id');
+
+		$report = Reports::getReport($report_id);
+		if (!$report instanceof Report) {
+			flash_error("report dnx");
+			return;
+		}
+
+		$filename = "report_print_".gen_id().".html";
+		$filepath = ROOT . "/tmp/$filename";
+		
+		$params_str = array_var($_REQUEST, 'params');
+		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true); 
+		
+		$_GET['limit'] = 0;
+		$results = $this->view_custom_report($report_id, null, $params);
+		
+		$html = report_table_html($results, $report, '', true);
+		
+		ajx_extra_data(array('html' => $html));
+		
+	}
+	
+	function export_custom_report_csv() {
+		ajx_current("empty");
+		set_time_limit(0);
+		ini_set("memory_limit", "512M");
+		
+		$report_id = array_var($_GET, 'id');
+		
+		$report = Reports::getReport($report_id);
+		if (!$report instanceof Report) {
+			flash_error("report dnx");
+			return;
+		}
+		
+		$filename = $report->getName().".csv";
+		$filepath = ROOT . "/tmp/$filename";
+		
+		$params_str = array_var($_REQUEST, 'report_params');
+		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true);
+		
+		$_GET['limit'] = 0;
+		$results = $this->view_custom_report($report_id, null, $params);
+		
+		$csv = report_table_csv($results, $report);
+		
+		file_put_contents($filepath, $csv);
+		
+		ajx_extra_data(array("filename" => $filename));
+		
+	}
+	
+	function export_custom_report_pdf() {
+		ajx_current("empty");
+		set_time_limit(0);
+		ini_set("memory_limit", "512M");
+		
+		$report_id = array_var($_GET, 'id');
+		
+		$report = Reports::getReport($report_id);
+		if (!$report instanceof Report) {
+			flash_error("report dnx");
+			return;
+		}
+		
+		$html_filename = gen_id().'pdf.html';
+		$html_filepath = ROOT . "/tmp/$html_filename";
+		
+		$params = array();
+		$params_str = array_var($_REQUEST, 'report_params');
+		if ($params_str) $params = json_decode(str_replace("'", '"',$params_str), true);
+		
+		$_GET['limit'] = 0;
+		$results = $this->view_custom_report($report_id, null, $params);
+		
+		// title html
+		$html = '<div class="report-print-header"><div class="title-container"><h1>'.clean($report->getName()).'</h1></div></div>';
+		
+		// build html
+		$html .= report_table_html($results, $report, '', true);
+		file_put_contents($html_filepath, $html);
+		
+		// convert html to pdf
+		$orientation = array_var($_REQUEST, 'pdfPageLayout') == 'L' ? 'Landscape' : 'Portrait';
+		
+		$real_pdf_filename = convert_to_pdf($html, $orientation, str_replace(" ", "_", $report->getObjectName()));
+		
+		ajx_extra_data(array("filename" => $real_pdf_filename));
+		
+	}
+	
+	
 
 	function view_custom_report_print(){
 		$this->setLayout("html");
@@ -903,7 +1019,7 @@ class ReportingController extends ApplicationController {
 			
 			if (array_var($_POST, 'exportPDF')) {
 				$this->setLayout("empty");
-				tpl_assign('pdf_export', true);
+				tpl_assign('save_html_in_file', true);
 				$html_filename = ROOT.'/tmp/'.gen_id().'pdf.html';
 				$pdf_filename = $report->getObjectName() . '.pdf';
 				tpl_assign('html_filename', $html_filename);
@@ -1493,34 +1609,24 @@ class ReportingController extends ApplicationController {
 		$col_types = array();
 		$report = Reports::getReport($report_id);
 		$ot = ObjectTypes::findById($report->getReportObjectTypeId());
-		$model = $ot->getHandlerClass();
-		$manager = new $model();
-		
-		if ($ot->getName() == 'timeslot') {
-			$task_manager = ProjectTasks::instance();
-		}
-
-		$columns = ReportColumns::getAllReportColumns($report_id);
-
-		foreach ($columns as $col) {
-			$cp_id = $col->getCustomPropertyId();
-			if ($cp_id == 0) {
-				
-				// timeslot reports includes task columns, if timeslot manager does not know the column => ask task manager
-				if ($ot->getName() == 'timeslot' && $task_manager->columnExists($col->getFieldName())) {
-					$col_types[$col->getFieldName()] = $task_manager->getColumnType($col->getFieldName());
-				} else {
+		$model = trim($ot->getHandlerClass());
+		if ($model && class_exists($model)) {
+			$manager = new $model();
+	
+			$columns = ReportColumns::getAllReportColumns($report_id);
+	
+			foreach ($columns as $col) {
+				$cp_id = $col->getCustomPropertyId();
+				if ($cp_id == 0) {
 					$col_types[$col->getFieldName()] = $manager->getColumnType($col->getFieldName());
-				}
-			
-			} else {
-				$cp = CustomProperties::getCustomProperty($cp_id);
-				if ($cp) {
-					$col_types[$cp->getName()] = $cp->getOgType();
+				} else {
+					$cp = CustomProperties::getCustomProperty($cp_id);
+					if ($cp) {
+						$col_types[$cp->getName()] = $cp->getOgType();
+					}
 				}
 			}
 		}
-
 		return $col_types;
 	}
 	
@@ -1655,3 +1761,4 @@ class ReportingController extends ApplicationController {
 		return $filename;
 	}
 }
+

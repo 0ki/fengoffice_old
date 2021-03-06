@@ -2,6 +2,7 @@ og.reports = {};
 og.reports.createPrintWindow = function(title) {
 	var disp_setting = "toolbar=yes,location=no,directories=yes,menubar=yes,scrollbars=yes,";
 	var printWindow = window.open("","",disp_setting);
+	
 	printWindow.document.open(); 
 	printWindow.document.write('<html><head><title>' + title + '</title>');
 	printWindow.document.write('<link href="' + og.hostName + '/public/assets/themes/default/stylesheets/website.css" rel="stylesheet" type="text/css">');
@@ -41,7 +42,18 @@ og.reports.closePrintWindow = function(printWindow) {
 	printWindow.focus();
 }
 
-og.reports.printReport = function(genid, title) {
+og.reports.printReport = function(genid, title, report_id) {
+	var params = $("#params_"+genid).val();
+	og.openLink(og.getUrl('reporting', 'print_custom_report', {id:report_id, params:params}), {
+		callback: function(success, data) {
+			var printWindow = og.reports.createPrintWindow(title);
+			printWindow.document.write(data.html);
+			og.reports.closePrintWindow(printWindow);
+		}
+	});
+}
+
+og.reports.printNoPaginatedReport = function(genid, title) {
 	var printWindow = og.reports.createPrintWindow(title);
 
 	printWindow.document.write(document.getElementById(genid + 'report_container').innerHTML);

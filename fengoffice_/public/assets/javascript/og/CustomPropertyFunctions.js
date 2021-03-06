@@ -124,6 +124,8 @@ og.addCustomPropertyRow = function(genid, property, id_suffix) {
 		} else if (property.type == 'boolean') {
 			$(pre_id + " #default_value_bool").show();
 			$(pre_id + " #default_value").hide();
+		} else if (property.type == 'numeric') {
+			$(pre_id + " #numeric_options").show();
 		}
 
 		if (property.is_special) {
@@ -151,6 +153,16 @@ og.addCustomPropertyRow = function(genid, property, id_suffix) {
 				$(pre_id + " #disable_action").show();
 			}
 			
+		}
+		
+		if (og.after_add_custom_property_row && og.after_add_custom_property_row.length > 0) {
+			for (var i=0; i<og.after_add_custom_property_row.length; i++) {
+				var fn = og.after_add_custom_property_row[i];
+				
+				if (typeof(fn) == "function") {
+					fn.call(null, property, pre_id);
+				}
+			}
 		}
 	}
 	
@@ -247,6 +259,12 @@ og.customPropTypeChanged = function(combo) {
 	} else {
 		$("#"+$(container).attr('id')+" #default_value_bool").hide();
 		$("#"+$(container).attr('id')+" #default_value").show();
+	}
+	
+	if ($(combo).val() == 'numeric') {
+		$("#"+$(container).attr('id')+" #numeric_options").show();
+	} else {
+		$("#"+$(container).attr('id')+" #numeric_options").hide();
 	}
 }
 

@@ -1922,6 +1922,9 @@ class FilesController extends ApplicationController {
 			"objType" => ProjectFiles::instance()->getObjectTypeId(),
 			"files" => array(),
 		);
+		foreach ($objects as $k => $v) {
+			if ($k != 'total' && $k != 'objects') $listing[$k] = $v;
+		}
 		
 		if (is_array($objects->objects)) {
 			$index = 0;

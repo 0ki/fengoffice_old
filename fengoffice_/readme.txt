@@ -1,5 +1,5 @@
 
-	About Feng Office 3.4.1
+	About Feng Office 3.4.1-beta2
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,14 +105,94 @@
 	Changelog
 	=========
 	
+	Since 3.4.1-beta
+	----------------
+	bugfix: custom reports pdf export compatibility in windows (need to install wkhtmltopdf)
+	bugfix: custom report print view only shows first page
+	bugfix: custom reports print and csv/pdf export adjustments
+	bugfix: replicate purchase orders permissions over suppliers in the other content objects
+	bugfix: assigned user cannot complete task from task view if doesn't have write permissions
+	feature: filter member reports by associated dimensions (selected in left panel)
+	
+	Since 3.4.1.13
+    ----------------
+    language: fr_fr updated.
+
+    Since 3.4.1.12
+    ----------------
+    bugfix: users widget not working properly.
+
+	Since 3.4.1.11
+    ----------------
+	feature: search filter on mails
+
+	Since 3.4.1.10
+    ----------------
+	performance: email recommendations when sending emails
+	bugfix: active context information widget is not shown when more than one member is in context.
+
+	Since 3.4.1.9
+	----------------
+	bugfix: disabled custom properties are shown in contact form
+	bugfix: cannot export contact/company custom properties
+	bugfix: scroll on mail panel after delete mails
+	
+	Since 3.4.1.8
+	----------------
+	feature: new system permission can instantiate template
+	
+	Since 3.4.1.7
+    ----------------
+    bugfix: prevent infinite loop when calculating repetitive tasks instances for calendars.
+
+	Since 3.4.1.6
+    ----------------
+    bugfix: cannot complete task from task view when user does not have write permissions.
+    language: nl_nl updated.
+
+	Since 3.4.1.5
+    ----------------
+    bugfix: when adding permissions to user by a group in one dimension and by personal permissions in other, the task list is not correct.
+    bugfix: fixed email decoding when entire email is an inline attachment.
+    performance: task assigned selector, subscribers selector, other user selectors.
+
+	Since 3.4.1.4
+    ----------------
+    bugfix: add unique index in object prefixes to avoid duplicated prefixes
+    bugfix: object selector, if custom property filters not defined the list is not initialized
+    bugfix: when checking email prevent querying all the mailbox mails when some mails are not found in server.
+    feature: newsletter errors management improved
+	private plugins updates
+
+	Since 3.4.1.3
+    ----------------
+    bugfix: attached eml attachments are not parsed, and attached .eml cant be downloaded.
+
+	Since 3.4.1.2
+    ----------------
+    bugfix: encoding problem on mail attachments names.
+
+	Since 3.4.1.1
+	----------------
+	bugfix: cannot delete client email.
+	bugfix: client email format is not controlled when editing client.
+	
+	Since 3.4.1
+	----------------
+	bugfix: several reference errors when using previous task on task edit view (affect reminders, multi assignment, repetition, assign to, custom properties, subscription, subtasks, linked objects)
+	bugfix: edit tasks does not send notifications
+	bugfix: when editing mail account, the signature of other users with permissions in the account are deleted.
+	feature: user config option to show/hide date filters in tasks list
+	css updates: key-value object properties input css modifications
+	language: fr_fr language updates
+	
 	Since 3.4.1-rc
 	----------------
 	bugfix: error when adding task with more than 10 custom properties
 	bugfix: error when changing user role and permissions in the same submit.
 	bugfix: timeslot report has wrong time format
 	bugfix: when editing a task and adding subtasks notifications are not sent if parent task assigned to is not changed.
-	
-	language updates: Türkçe (tr_tr)
+	language: Türkçe (tr_tr) language updates
 	
 	Since 3.4.1-beta
 	----------------
@@ -124,8 +204,8 @@
 	bugfix: events repeating by fixed day aren't shown correctly in monthly view.
 	bugfix: events repeating until date doesn't include the last day in monthly view.
 	
-	Since 3.4.0.24
-	----------------
+	Since 3.4.0.x
+    ----------------
 	feature: new calculated column total_worked_time in tasks
 	feature: Tasks list drag & drop between task groups.
 	feature: Tasks list drag & drop to dimension members.
@@ -134,7 +214,31 @@
 	feature: Make client sectors dimension multiple and hierarchical.
 	feature: add address and phones info to client dashboard information
 	feature: imap config option preserve emails state (read, unread)
+	feature: Newsletters plugin.
 	
+	Since 3.4.0.29
+    ----------------
+	bugfix: several reference errors when using previous task on task edit view (affect reminders, multi assignment, repetition, assign to, custom properties, subscription, subtasks, linked objects)
+	css updates: object properties input.
+
+	Since 3.4.0.28
+	----------------
+	Config option to use or not the dates filters in tasks 
+	
+	Since 3.4.0.27
+	----------------
+	bugfix: Error when sending notifications after editing tasks
+	
+	Since 3.4.0.26
+	----------------
+	bugfix: Error when upgrading to 3.3.2 with fixed table prefix.
+	
+	Since 3.4.0.25
+	----------------
+	bugfix: Error when changing permissions and role.
+	
+	Since 3.4.0.24
+	----------------
 	bugfix: Non-working days calculation in template instantiation fixes.
 	bugfix: search associated members was being filtered by current context.
 	

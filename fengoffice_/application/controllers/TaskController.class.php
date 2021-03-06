@@ -598,7 +598,7 @@ class TaskController extends ApplicationController {
 				switch ($action){
 					case 'complete':
 						if ($task->canEdit(logged_user())){
-							$log_info = $task->completeTask($options);
+							$log_info = $task->completeTask();
 							$application_logs[] = array($task,ApplicationLogs::ACTION_CLOSE,false, false, true, substr($log_info,0,-1));
 							// if task is repetitive, generate a complete instance of this task and modify repeat values
 							if ($task->isRepetitive()) {
@@ -838,19 +838,23 @@ class TaskController extends ApplicationController {
 			$filter_to_date = $filter_to_date->toMySQL();
 		}
 		$tasks_to_date = '';
-		if (user_config_option('tasksDateStart') != $filter_from_date){
-			if($filter_from_date != '0000-00-00 00:00:00' || array_var($_REQUEST, 'resetDateStart')){
-				set_user_config_option('tasksDateStart', $copFromDate , logged_user()->getId());
-			}else{
-				$filter_from_date = user_config_option('tasksDateStart');
-			}
-		}
 		
-		if (user_config_option('tasksDateEnd') != $filter_to_date) {
-			if( $filter_to_date != '0000-00-00 00:00:00'|| array_var($_REQUEST, 'resetDateEnd')){
-				set_user_config_option('tasksDateEnd', $copToDate , logged_user()->getId());
-			}else{
-				$filter_to_date = user_config_option('tasksDateEnd');
+		// only apply saved task dates filters if dates filter inputs are enabled
+		if (user_config_option('tasksUseDateFilters')) {
+			if (user_config_option('tasksDateStart') != $filter_from_date){
+				if($filter_from_date != '0000-00-00 00:00:00' || array_var($_REQUEST, 'resetDateStart')){
+					set_user_config_option('tasksDateStart', $copFromDate , logged_user()->getId());
+				}else{
+					$filter_from_date = user_config_option('tasksDateStart');
+				}
+			}
+			
+			if (user_config_option('tasksDateEnd') != $filter_to_date) {
+				if( $filter_to_date != '0000-00-00 00:00:00'|| array_var($_REQUEST, 'resetDateEnd')){
+					set_user_config_option('tasksDateEnd', $copToDate , logged_user()->getId());
+				}else{
+					$filter_to_date = user_config_option('tasksDateEnd');
+				}
 			}
 		}
 		
@@ -2129,18 +2133,20 @@ class TaskController extends ApplicationController {
 			tpl_assign('users', $users);
 			tpl_assign('allUsers', $allUsers);
 			tpl_assign('companies', $companies);
-			if (strtotime(user_config_option('tasksDateStart'))){//this return null if date is 0000-00-00 00:00:00
-				$dateStart = new DateTime('@'.strtotime(user_config_option('tasksDateStart')));
-				$dateStart = $dateStart->format(user_config_option('date_format'));
-			}else{
-				$dateStart = '';
-			}
-			if (strtotime(user_config_option('tasksDateEnd'))){//this return null if date is 0000-00-00 00:00:00
-				$dateEnd = new DateTime('@'.strtotime(user_config_option('tasksDateEnd')));
-				$dateEnd = $dateEnd->format(user_config_option('date_format'));
-			}else{
-				$dateEnd = '';
+			
+			$dateStart = '';
+			$dateEnd = '';
+			if (user_config_option('tasksUseDateFilters')) {
+				if (strtotime(user_config_option('tasksDateStart'))){//this return null if date is 0000-00-00 00:00:00
+					$dateStart = new DateTime('@'.strtotime(user_config_option('tasksDateStart')));
+					$dateStart = $dateStart->format(user_config_option('date_format'));
 				}
+				if (strtotime(user_config_option('tasksDateEnd'))){//this return null if date is 0000-00-00 00:00:00
+					$dateEnd = new DateTime('@'.strtotime(user_config_option('tasksDateEnd')));
+					$dateEnd = $dateEnd->format(user_config_option('date_format'));
+				}
+			}
+			
 			$userPref = array();
 
 			$showDimensionCols = array_map('intval', explode(',', user_config_option('tasksShowDimensionCols')));
@@ -3755,7 +3761,7 @@ class TaskController extends ApplicationController {
 			$reload_view = false;
 			DB::beginWork();
 			
-			$log_info = $task->completeTask($options);
+			$log_info = $task->completeTask();
 			
 			// if task is repetitive, generate a complete instance of this task and modify repeat values
 			if ($task->isRepetitive()) {
@@ -3840,9 +3846,12 @@ class TaskController extends ApplicationController {
 			$log_info = array();
 			$subtasks = $task->getAllSubTasks();
 			
+			// all subtasks must be completed
+			$options = array('ignore_task_dependencies' => true);
+			
 			foreach ($subtasks as $sub) {
 				if ($sub->getCompletedById() == 0 && $sub->canChangeStatus(logged_user())) {
-					$log_info[$sub->getId()] = $sub->completeTask();
+					$log_info[$sub->getId()] = $sub->completeTask($options);
 					$completed_tasks[] = $sub;
 				}
 			}
@@ -4016,7 +4025,9 @@ class TaskController extends ApplicationController {
 		
 		Hook::fire('modify_allowed_users_to_assign', array('params' => array_var($_REQUEST, 'extra_params')), $object);
 		
-		if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) $object['only_me'] = "1";
+		if (count($comp_array)==1 && count($comp_array[0]['users'])==1 && $comp_array[0]['users'][0]['id'] == logged_user()->getId()) {
+			$object['only_me'] = "1";
+		}
 		
 		ajx_extra_data($object);
 		ajx_current("empty");

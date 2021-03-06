@@ -1,5 +1,7 @@
 <?php
 
+include_once dirname(__FILE__)."/../../../application/helpers/plugin_installer_functions.php";
+
 function _workspaces_check_custom_prop_exists($table_prefix, $cp_code, $ot_name) {
 	$exists_cp = false;
 
@@ -18,18 +20,8 @@ function _workspaces_check_custom_prop_exists($table_prefix, $cp_code, $ot_name)
 function workspaces_get_additional_install_queries($table_prefix) {
 	
 	$queries = array();
-	$is_installed_mem_custom_props = false;
 	
-	$sql = "SELECT is_installed FROM ".$table_prefix."plugins WHERE name='member_custom_properties'";
-	$mysql_res = mysql_query($sql);
-	if ($mysql_res) {
-		$rows = mysql_fetch_assoc($mysql_res);
-		
-		if (is_array($rows) && count($rows) > 0) {
-			
-			$is_installed_mem_custom_props = $rows['is_installed'] > 0;
-		}
-	}
+	$is_installed_mem_custom_props = check_is_installed_plugin($table_prefix, 'member_custom_properties');
 	
 	if ($is_installed_mem_custom_props) {
 		
@@ -47,6 +39,13 @@ function workspaces_get_additional_install_queries($table_prefix) {
 			ON DUPLICATE KEY UPDATE `code`=`code`;";
 		}
 		
+	}
+	
+	$is_installed_advanced_reports = check_is_installed_plugin($table_prefix, 'advanced_reports');
+	if ($is_installed_advanced_reports) {
+		include_once dirname(__FILE__)."/../../advanced_reports/application/helpers/default_member_reports.php";
+		$w_rep_q = get_default_member_report_queries($table_prefix, 'workspace');
+		$queries = array_merge($queries, $w_rep_q);
 	}
 	
 	return $queries;

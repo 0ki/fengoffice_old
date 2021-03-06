@@ -210,7 +210,7 @@ function workspaces_additional_dashboard_actions($ignored, &$actions) {
 	}
 	
 	$tags_dim = Dimensions::findByCode('tags');
-	if (in_array($ws_dim->getId(), $enabled_dimensions)) {
+	if (in_array($tags_dim->getId(), $enabled_dimensions)) {
 		$tot = ObjectTypes::findByName('tag');
 		$tdot = DimensionObjectTypes::findOne(array('conditions' => 'dimension_id='.$tags_dim->getId().' AND object_type_id='.$tot->getId()));
 		if ($tdot instanceof DimensionObjectType && $tdot->getEnabled()) {

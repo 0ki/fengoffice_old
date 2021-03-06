@@ -778,11 +778,19 @@
 }
 .og-add-custom-properties th.actions {
 	width: 16px;
-	background: none;
 }
 .og-add-custom-properties input {
 	width: 200px;
 }
+
+.task-data div.og-add-custom-properties table td input.name,
+.task-data div.og-add-custom-properties table td input.value {
+	width: 115px;
+}
+.task-data div.og-add-custom-properties table {
+	width: 260px;
+}
+
 
 .og-custom-properties .row {
 	background-color:white;	

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.1
+ * Bauru upgrade script will upgrade FengOffice 3.3.2-beta to FengOffice 3.4.2-beta2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.3.2-beta');
-		$this->setVersionTo('3.4.1');
+		$this->setVersionTo('3.4.2-beta2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -210,22 +210,75 @@ class BauruUpgradeScript extends ScriptUpgraderScript {
 		}
 		
 		if (version_compare($installed_version, '3.4.1') < 0) {
-			// add total worked time column to tasks
-			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."project_tasks` ADD `total_worked_time` int(10) unsigned NOT NULL DEFAULT 0;
-			";
-			// add index by total worked time
-			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."project_tasks` ADD INDEX `total_worked_time` (`total_worked_time`);
-			";
 			
+			if (!$this->checkColumnExists($t_prefix."project_tasks", "total_worked_time", $this->database_connection)) {
+				// add total worked time column to tasks
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."project_tasks` ADD `total_worked_time` int(10) unsigned NOT NULL DEFAULT 0;
+				";
+				// add index by total worked time
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."project_tasks` ADD INDEX `total_worked_time` (`total_worked_time`);
+				";
+			}
 			// calculate total worked time foreach task
 			$upgrade_script .= "
 				UPDATE ".$t_prefix."project_tasks SET total_worked_time = (
 					SELECT (SUM(GREATEST(TIMESTAMPDIFF(MINUTE,start_time,end_time),0)) - SUM(subtract/60)) 
 					FROM ".$t_prefix."timeslots ts 
 					WHERE ts.rel_object_id=".$t_prefix."project_tasks.object_id
-				)
+				);
+			";
+		}
+		
+		if (version_compare($installed_version, '3.4.1.1') < 0) {
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+					('task panel', 'tasksUseDateFilters', '1', 'BoolConfigHandler', 0, 0, '')
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
+
+		if (version_compare($installed_version, '3.4.1.9') < 0) {
+			if (!$this->checkColumnExists($t_prefix."system_permissions", "can_instantiate_templates", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."system_permissions` ADD COLUMN `can_instantiate_templates` tinyint(1) unsigned NOT NULL default '0';
+	
+					UPDATE `".$t_prefix."system_permissions` SET `can_instantiate_templates`=1 WHERE `permission_group_id` IN (
+						SELECT permission_group_id FROM `".$t_prefix."contacts` WHERE `user_type` IN (
+							SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive')
+						)
+					);
+	
+					UPDATE `".$t_prefix."system_permissions` SET `can_instantiate_templates`=1 WHERE `permission_group_id` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive')
+					);
+	
+					ALTER TABLE `".$t_prefix."max_system_permissions` ADD COLUMN `can_instantiate_templates` tinyint(1) unsigned NOT NULL default '0';
+	
+					UPDATE `".$t_prefix."max_system_permissions` SET `can_instantiate_templates`=1 WHERE `permission_group_id` IN (
+						SELECT id FROM `".$t_prefix."permission_groups` WHERE `type`='roles' AND `name` IN ('Super Administrator','Administrator','Manager','Executive')
+					);
+				";
+			}
+		}
+
+		if (version_compare($installed_version, '3.4.2-beta') < 0) {
+			
+			if (!$this->checkColumnExists($t_prefix."reports", "is_default", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."reports` 
+						ADD COLUMN `is_default` tinyint(1) NOT NULL DEFAULT 0,
+						ADD COLUMN `code` varchar(255) COLLATE 'utf8_unicode_ci' NOT NULL DEFAULT '';
+				";
+			}
+			
+			$upgrade_script .= "
+				ALTER TABLE `".$t_prefix."member_property_members` ADD INDEX (`property_member_id`, `member_id`);
+			";
+			
+			$upgrade_script .= "
+				UPDATE ".$t_prefix."members SET name=LTRIM(name);
 			";
 		}
 		

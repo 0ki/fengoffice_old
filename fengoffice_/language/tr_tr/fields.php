@@ -276,4 +276,5 @@
 	'field Contacts home_address' => 'Ev Adresi',
 	'field Contacts work_address' => 'İş Adresi',
 	'field Contacts other_address' => 'Diğer Adres',
+	'field ProjectTasks total_worked_time' => 'Toplam Çalışma Süresi',
 ); ?>

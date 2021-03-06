@@ -467,6 +467,8 @@ og.TasksBottomToolbar = function(config) {
         	}
         }
     });
+    
+  if (og.config.tasks_use_date_filters) {
     // DatePicker Menu  
     this.dateFieldStart = new og.DateField({
 		displayField : 'text',
@@ -583,6 +585,7 @@ og.TasksBottomToolbar = function(config) {
 	});
     this.dateFieldEnd.setValue(ogTasks.userPreferences.dateEnd); 	
     this.dateFieldStart.setValue(ogTasks.userPreferences.dateStart);
+  }
     this.statusCombo.setValue(ogTasks.userPreferences.status);
     this.add(lang('filter') + ':');
     this.add(this.filtercombo);
@@ -614,11 +617,13 @@ og.TasksBottomToolbar = function(config) {
     this.add(this.groupcombo);
     this.add('&nbsp;&nbsp;&nbsp;' + lang('order by') + ':');
     this.add(this.ordercombo);
-    this.add('&nbsp;&nbsp;&nbsp;' + lang('from date') + ':');
-    this.add(this.dateFieldStart);
-    this.add('&nbsp;&nbsp;&nbsp;' + lang('to date') + ':');
-    this.add(this.dateFieldEnd);
     
+    if (og.config.tasks_use_date_filters) {
+	    this.add('&nbsp;&nbsp;&nbsp;' + lang('from date') + ':');
+	    this.add(this.dateFieldStart);
+	    this.add('&nbsp;&nbsp;&nbsp;' + lang('to date') + ':');
+	    this.add(this.dateFieldEnd);
+    }
     if (ogTasks.extraBottomToolbarItems) {
     	for (i=0; i<ogTasks.extraBottomToolbarItems.length; i++) {
     		this.add(ogTasks.extraBottomToolbarItems[i]);

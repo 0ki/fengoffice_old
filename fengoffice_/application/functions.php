@@ -970,6 +970,7 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 		if (isset($user_data['can_manage_security'])) $sp->setCanManageSecurity(array_var($user_data, 'can_manage_security'));
 		if (isset($user_data['can_manage_configuration'])) $sp->setCanManageConfiguration(array_var($user_data, 'can_manage_configuration'));
 		if (isset($user_data['can_manage_templates'])) $sp->setCanManageTemplates(array_var($user_data, 'can_manage_templates'));
+		if (isset($user_data['can_instantiate_templates'])) $sp->setCanManageTemplates(array_var($user_data, 'can_instantiate_templates'));
 		if (isset($user_data['can_manage_time'])) $sp->setCanManageTime(array_var($user_data, 'can_manage_time'));
 		if (isset($user_data['can_add_mail_accounts'])) $sp->setCanAddMailAccounts(array_var($user_data, 'can_add_mail_accounts'));
 		if (isset($user_data['can_manage_dimensions'])) $sp->setCanManageDimensions(array_var($user_data, 'can_manage_dimensions'));
@@ -1188,6 +1189,13 @@ function send_notification($user_data, $contact_id){
 function utf8_safe($text) {
 	$safe = html_entity_decode(htmlentities($text, ENT_COMPAT, "UTF-8"), ENT_COMPAT, "UTF-8");
 	return preg_replace('/[\xF0-\xF4][\x80-\xBF][\x80-\xBF][\x80-\xBF]/', "", $safe);
+}
+
+function utf8_encode_mime_header_value($text) {
+	$fName = str_starts_with($text, "=?") ? iconv_mime_decode($text, 0, "UTF-8") : utf8_safe($text);
+	if (trim($fName) == "" && strlen($text) > 0) $fName = utf8_encode($text);
+
+	return $fName;
 }
 
 function clean_csv_addresses($csv) {
@@ -1922,21 +1930,30 @@ function pdf_convert_and_download($html_filename, $download_filename=null, $orie
 	}
 }
 
-function convert_to_pdf($html_to_convert, $orientation='Protrait', $genid) {
+function convert_to_pdf($html_to_convert, $orientation='Portrait', $genid) {
 	$pdf_filename = null;
 	
 	if(is_exec_available()){
 		//controlar q sea linux
 		$pdf_filename = $genid . "_pdf.pdf";
-		$pdf_path = "tmp/".$pdf_filename;
+		$pdf_path = ROOT."/tmp/".$pdf_filename;
 		
-		$tmp_html_path = "tmp/tmp_html_".$genid.".html";
+		$tmp_html_path = ROOT."/tmp/tmp_html_".$genid.".html";
 		file_put_contents($tmp_html_path, $html_to_convert);
 		
 		if (!in_array($orientation, array('Portrait', 'Landscape'))) $orientation = 'Portrait';
 		
-		//convert png to pdf in background
-		exec("wkhtmltopdf -s A4 --encoding utf8 -O $orientation ".$tmp_html_path." ".$pdf_path." > /dev/null &", $result, $return_var);
+		//convert to pdf in background
+		if (substr(php_uname(), 0, 7) == "Windows") {
+			
+			if (!defined('WKHTMLTOPDF_PATH')) define('WKHTMLTOPDF_PATH', "C:\\Program Files\\wkhtmltopdf\\bin\\");
+			$command_location = with_slash(WKHTMLTOPDF_PATH) . "wkhtmltopdf";
+			
+			$command = "\"$command_location\" -s A4 --encoding utf8 -O $orientation \"".$tmp_html_path."\" \"".$pdf_path."\"";
+		} else {
+			$command = "wkhtmltopdf -s A4 --encoding utf8 -O $orientation \"".$tmp_html_path."\" \"".$pdf_path."\" > /dev/null &";
+		}
+		exec($command, $result, $return_var);
 		
 		if ($return_var > 0){
 			Logger::log("command not found convert",Logger::WARNING);

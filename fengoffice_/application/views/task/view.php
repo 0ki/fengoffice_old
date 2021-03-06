@@ -6,10 +6,10 @@ require_javascript("og/modules/addTaskForm.js");
  */
 if (isset($task_list) && $task_list instanceof ProjectTask) {
 	if (!$task_list->isTrashed()){
-		if (!$task_list->isCompleted() && $task_list->canEdit(logged_user())) {
+		if (!$task_list->isCompleted() && ($task_list->canEdit(logged_user()) || $task_list->getAssignedTo() == logged_user())) {
 			add_page_action(lang('do complete'), $task_list->getCompleteUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) , 'ico-complete', null, null, true);
 		} // if
-		if ($task_list->isCompleted() && $task_list->canEdit(logged_user())) {
+		if ($task_list->isCompleted() && ($task_list->canEdit(logged_user()) || $task_list->getAssignedTo() == logged_user())) {
 			add_page_action(lang('open task'), $task_list->getOpenUrl(rawurlencode(get_url('task','view',array('id'=>$task_list->getId())))) , 'ico-reopen', null, null, true);
 		} // if
 

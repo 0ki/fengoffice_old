@@ -853,5 +853,7 @@ addLangs({
 	'previous tasks': 'Bu Görevden Önce Tamamlanması Gereken Görev',
 	'previous pending tasks': 'Önceki bekleyen görev sayısı',
 	'birthday': 'Doğum Günü',
-	'job title': 'İş Ünvanı'
+	'job title': 'İş Ünvanı',
+	'select all': 'Tümünü Seç',
+	'select all desc': 'Tümünü Seç'
 });

@@ -211,7 +211,9 @@
 			UPDATE `".TABLE_PREFIX."config_categories` set `category_order`=`category_order`*10;
 		");
 		DB::execute("
-			INSERT INTO `".TABLE_PREFIX."config_categories` (`name`, `is_system`, `category_order`) VALUES ('mail module', 0, 60);
+			INSERT INTO `".TABLE_PREFIX."config_categories` (`name`, `is_system`, `category_order`) VALUES
+				('mail module', 0, 60)
+			ON DUPLICATE KEY UPDATE `name`=`name`;
 		");
 		DB::execute("
 			update ".TABLE_PREFIX."config_options set category_name='mail module' where name in ('show images in document notifications','user_email_fetch_count','sent_mails_sync','check_spam_in_subject');
@@ -224,4 +226,10 @@
 				ALTER TABLE `".TABLE_PREFIX."mail_accounts` ADD COLUMN `get_read_state_from_server` BOOLEAN NOT NULL default 1;
 			");
 		}
+	}
+
+	function mail_update_19_20() {
+		DB::execute("
+			ALTER TABLE `".TABLE_PREFIX."contact_emails` ADD INDEX (`email_address`);
+		");
 	}

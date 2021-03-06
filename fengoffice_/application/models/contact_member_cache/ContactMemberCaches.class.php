@@ -7,6 +7,22 @@ class ContactMemberCaches extends BaseContactMemberCaches {
 		return $m;
 	}
 	
+	static function getContactsIdsByMemberId($member_id) {
+		$member_id = mysql_real_escape_string($member_id, DB::connection()->getLink());
+		$sql = "SELECT `contact_id` FROM `fo_contact_member_cache` WHERE member_id = $member_id";
+
+		// Run!
+		$rows = DB::executeAll($sql);
+
+		$users_ids = array();
+
+		foreach($rows as $row) {
+			$users_ids[] = $row['contact_id'];
+		}
+
+		return $users_ids;
+	}
+
 	/**
 	 * 
 	  * @param array $args 

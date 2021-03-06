@@ -55,6 +55,8 @@ og.MessageManager = function() {
 						cmp.getView().focusRow(og.lastSelectedRow.messages+1);
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						
+						og.eventManager.fireEvent('after grid panel load', {man:cmp, data:d});
 					}
 					Ext.getCmp('message-manager').reloadGridPagingToolbar('message','list_all','message-manager');
 					
@@ -73,6 +75,10 @@ og.MessageManager = function() {
 	
 	var readClass = 'read-unread-' + Ext.id();
 	function renderName(value, p, r) {
+		if (isNaN(r.data.object_id)) {
+			return '<span class="bold" id="'+r.data.id+'">'+ (value ? og.clean(value) : '') +'</span>';
+		}
+			
 		var name = '';
 		
 		var classes = readClass + r.id;
@@ -102,6 +108,8 @@ og.MessageManager = function() {
 	}
 
 	function renderIsRead(value, p, r){
+		if (isNaN(r.data.object_id)) return;
+		
 		var idr = Ext.id();
 		var idu = Ext.id();
 		var jsr = 'og.MessageManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:' + r.data.object_id + '}));'; 
@@ -250,6 +258,7 @@ og.MessageManager = function() {
 			id: 'cp_' + cps[i].id,
 			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
+			align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
 			renderer: og.clean

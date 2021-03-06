@@ -305,7 +305,7 @@ class TemplateTask extends BaseTemplateTask {
 	} // canEdit
 	
 	function canAddTimeslot($user) {
-		return $this->canChangeStatus($user) || can_manage_time($user) || can_access_pgids($user->getPermissionGroupIds(), $this->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE);
+		return $this->canChangeStatus($user) || can_manage_time($user) || can_access($user, $this->getMembers(), Timeslots::instance()->getObjectTypeId(), ACCESS_LEVEL_WRITE);
 	}
 	
 	

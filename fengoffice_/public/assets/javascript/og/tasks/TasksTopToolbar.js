@@ -113,14 +113,17 @@ og.TasksTopToolbar = function(config) {
 	},'-'];
 	allTemplates = newTemplate.concat(allTemplates);
 	
-	
-	menuItems = menuItems.concat([{
-		text: lang('templates'),
-		iconCls: 'ico-template',
-		cls: 'scrollable-menu',
-		menu: {
-			items: allTemplates
-		}}]);
+
+	if(og.loggedUser.can_instantiate_templates){
+		menuItems = menuItems.concat([{
+			text: lang('templates'),
+			iconCls: 'ico-template',
+			cls: 'scrollable-menu',
+			menu: {
+				items: allTemplates
+			}}]);
+	}
+
 
 	
 	

@@ -182,4 +182,5 @@
 	'confirm delete permanently sync' => 'Eşitleme verilerini silmek istediğinize emin misiniz?',
 	'dont filter' => 'Süzülmesin',
 	'select all' => 'Tümünü Seç',
+	'year' => 'Yıl',
 ); ?>

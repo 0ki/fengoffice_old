@@ -90,20 +90,23 @@ $(function() {
 					if (!is_null($label_value)) $cp_name = $label_value;
 				}
 			}
+			
+			$prop = array(
+				'id' => $cp->getId(),
+				'name' => $cp_name,
+				'type' => $cp->getType(),
+				'description' => escape_character($cp->getDescription()),
+				'values' => escape_character($cp->getValues()),
+				'default_value' => escape_character($cp->getDefaultValue()),
+				'is_special' => $cp->getColumnValue('is_special') ? '1' : '',
+				'is_disabled' => $cp->getColumnValue('is_disabled') ? '1' : '',
+				'visible_by_default' => $cp->getVisibleByDefault() ? '1' : '',
+				'is_required' => $cp->getIsRequired() ? '1' : '',
+				'is_multiple_values' => $cp->getIsMultipleValues() ? '1' : '',
+			);
+			Hook::fire('additional_custom_property_fields', $cp, $prop);
 ?>
-		var prop = {
-				id: '<?php echo $cp->getId()?>',
-				name: '<?php echo $cp_name ?>',
-				type: '<?php echo $cp->getType()?>',
-				description: '<?php echo escape_character($cp->getDescription())?>',
-				values: '<?php echo escape_character($cp->getValues())?>',
-				default_value: '<?php echo escape_character($cp->getDefaultValue())?>',
-				is_special: <?php echo $cp->getColumnValue('is_special') ? '1' : '0'?>,
-				is_disabled: <?php echo $cp->getColumnValue('is_disabled') ? '1' : '0'?>,
-				visible_by_default: <?php echo $cp->getVisibleByDefault() ? '1' : '0' ?>,
-				is_required: <?php echo $cp->getIsRequired() ? '1' : '0' ?>,
-				is_multiple_values: <?php echo $cp->getIsMultipleValues() ? '1' : '0' ?>
-		};
+		var prop = Ext.util.JSON.decode('<?php echo json_encode($prop)?>');
 		og.addCustomPropertyRow('<?php echo $genid?>', prop);
 	
 	<?php }

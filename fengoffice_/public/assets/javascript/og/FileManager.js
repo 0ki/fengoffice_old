@@ -68,6 +68,8 @@ og.FileManager = function() {
 						cmp.objectTypeId = d.objType;
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
+						
+						og.eventManager.fireEvent('after grid panel load', {man:cmp, data:d});
 					}
 					
 					Ext.getCmp('file-manager').reloadGridPagingToolbar('files','list_files','file-manager');
@@ -87,6 +89,9 @@ og.FileManager = function() {
 	
 	var readClass = 'read-unread-' + Ext.id();
 	function renderName(value, p, r) {
+		if (isNaN(r.data.object_id)) {
+			return '<span class="bold" id="'+r.data.id+'">'+ (value ? og.clean(value) : '') +'</span>';
+		}
 		var result = '';
 		
 		var classes = readClass + r.id;
@@ -113,6 +118,8 @@ og.FileManager = function() {
 		return name;
 	}
 	function renderIsRead(value, p, r){
+		if (isNaN(r.data.object_id)) return;
+		
 		var idr = Ext.id();
 		var idu = Ext.id();
 		var jsr = 'og.FileManager.store.getById(\'' + r.id + '\').data.isRead = true; Ext.select(\'.' + readClass + r.id + '\').removeClass(\'bold\'); Ext.get(\'' + idu + '\').setDisplayed(true); Ext.get(\'' + idr + '\').setDisplayed(false); og.openLink(og.getUrl(\'object\', \'mark_as_read\', {ids:' + r.data.object_id + '}));'; 
@@ -207,6 +214,8 @@ og.FileManager = function() {
 	}
 	
 	function renderActions(value, p, r) {
+		if (isNaN(r.data.object_id)) return;
+			
 		var actions = '';
 		var actionStyle= ' style="font-size:105%;padding-bottom:3px;padding-left:16px;background-repeat:no-repeat;" '; 
 		
@@ -422,6 +431,7 @@ og.FileManager = function() {
 			id: 'cp_' + cps[i].id,
 			hidden: parseInt(cps[i].visible_def) == 0,
 			header: cps[i].name,
+			align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 			dataIndex: 'cp_' + cps[i].id,
 			sortable: true,
 			renderer: og.clean

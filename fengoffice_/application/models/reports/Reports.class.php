@@ -392,7 +392,7 @@ class Reports extends BaseReports {
 			}
 			
 			Hook::fire('custom_report_extra_conditions', array('report' => $report), $allConditions);
-			Logger::log_r($allConditions);
+			
 			if ($managerInstance) {
 				if ($order_by_col == "order"){
 					$order_by_col = "`$order_by_col`";
@@ -423,6 +423,8 @@ class Reports extends BaseReports {
 			$results['pagination'] = Reports::getReportPagination($id, $params, $original_order_by_col, $order_by_asc, $offset, $limit, $totalResults);
 		
 			$dimensions_cache = array();
+
+			$results['columns'] = array('names' => array(), 'order' => array());
 			
 			foreach($report_columns as $column){
 				if ($column->getCustomPropertyId() == 0) {
@@ -434,36 +436,43 @@ class Reports extends BaseReports {
 						
 						$column_name = $dimension->getName();
 						
-						$results['columns'][$field] = $column_name;
-						$results['db_columns'][$column_name] = $field;
+						$results['columns']['names'][$field] = $column_name;
+						$results['columns']['order'][] = $field;
+						
 					} else {
 						if ($managerInstance->columnExists($field) || Objects::instance()->columnExists($field)) {
 							$column_name = Localization::instance()->lang('field '.$ot->getHandlerClass().' '.$field);
 							if (is_null($column_name)) $column_name = lang('field Objects '.$field);
-							$results['columns'][$field] = $column_name;
-							$results['db_columns'][$column_name] = $field;
+							
+							$results['columns']['names'][$field] = $column_name;
+							$results['columns']['order'][] = $field;
+							
 						}else{
 							if($ot->getHandlerClass() == 'Contacts'){
 								if (in_array($field, $contact_extra_columns)){
-									$results['columns'][$field] = lang($field);	
-									$results['db_columns'][lang($field)] = $field;
+									$results['columns']['names'][$field] = lang($field);
+									$results['columns']['order'][] = $field;
 								}
 							} else if($ot->getHandlerClass() == 'Timeslots'){
 								if (in_array($field, array('time', 'billing'))){
-									$results['columns'][$field] = lang('field Objects '.$field);
-									$results['db_columns'][lang('field Objects '.$field)] = $field;
+									$results['columns']['names'][$field] = lang('field Objects '.$field);
+									$results['columns']['order'][] = $field;
 								}
 							} else if($ot->getHandlerClass() == 'MailContents'){
 								if (in_array($field, array('to', 'cc', 'bcc', 'body_plain', 'body_html'))){
-									$results['columns'][$field] = lang('field Objects '.$field);
-									$results['db_columns'][lang('field Objects '.$field)] = $field;
+									$results['columns']['names'][$field] = lang('field Objects '.$field);
+									$results['columns']['order'][] = $field;
 								}
 							}
 						}
 					}
 					
 				} else {
-					$results['columns'][$column->getCustomPropertyId()] = $column->getCustomPropertyId();					
+					$cp = CustomProperties::getCustomProperty($column->getCustomPropertyId());
+					if ($cp instanceof CustomProperty) {
+						$results['columns']['names'][$column->getCustomPropertyId()] = $cp->getName();
+						$results['columns']['order'][] = $column->getCustomPropertyId();
+					}
 				}
 			}
 			
@@ -526,8 +535,9 @@ class Reports extends BaseReports {
 												}
 											}
 										}
-										$results['columns'][$field] = lang('field ProjectTasks '.$field);
-										$results['db_columns'][lang('field ProjectTasks '.$field)] = $field;
+										
+										$results['columns']['names'][$field] = lang('field ProjectTasks '.$field);
+										$results['columns']['order'][] = $field;
 									}
 								}
 							} else {
@@ -554,11 +564,10 @@ class Reports extends BaseReports {
 							if(in_array($field, $managerInstance->getExternalColumns())){
 								if ($object instanceof Timeslot && $field == 'time') {
 									$lastStop = $object->getEndTime() != null ? $object->getEndTime() : ($object->isPaused() ? $object->getPausedOn() : DateTimeValueLib::now());
-									$seconds = $lastStop->getTimestamp() - $object->getStartTime()->getTimestamp() - $object->getSubtract();
-									$minutes = floor($seconds / 60);
-									
-									$value = DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($minutes * 60), 'hm', 60);
-									
+									$seconds = $lastStop->getTimestamp() - $object->getStartTime()->getTimestamp();
+									$hours = number_format($seconds / 3600, 2, ',', '.');
+									$value = $hours;
+									//$value = DateTimeValue::FormatTimeDiff($object->getStartTime(), $lastStop, "hm", 60, $object->getSubtract());
 								} else if ($object instanceof Timeslot && $field == 'billing') {
 									$value = config_option('currency_code', '$') .' '. $object->getFixedBilling();
 								} else {
@@ -647,8 +656,6 @@ class Reports extends BaseReports {
 						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
 							
 							$row_values[$cp->getName()] = get_custom_property_value_for_listing($cp, $object);
-							$results['columns'][$colCp] = $cp->getName();
-							$results['db_columns'][$cp->getName()] = $colCp;
 							
 						}
 					}
@@ -661,17 +668,21 @@ class Reports extends BaseReports {
 			}
 			
 			if (!$to_print) {
-				if (is_array($results['columns'])) {
-					array_unshift($results['columns'], '');
+				if (is_array($results['columns']['names'])) {
+					$results['columns']['names']['link'] = '';
+					array_unshift($results['columns']['order'], 'link');
 				} else {
-					$results['columns'] = array('');
+					$results['columns']['names'] = array('');
+					$results['columns']['order'] = array('link');
 				}
 				Hook::fire("report_header", $ot, $results['columns']);
 			}
+			
 			$results['rows'] = $report_rows;
 		}
 		
 		return $results;
+		
 	} //  executeReport
 	
 	function isReportColumnEmail($col){
@@ -704,7 +715,7 @@ class Reports extends BaseReports {
 	}
 
 	static function getReportPagination($report_id, $params, $order_by='', $order_by_asc=true, $offset, $limit, $total){
-		if($total == 0) return '';
+		if($total == 0 || $limit == 0) return '';
 		$a_nav = array(
 			'<span class="x-tbar-page-first" style="padding-left:12px">&nbsp;</span>', 
 			'<span class="x-tbar-page-prev" style="padding-left:12px">&nbsp;</span>', 
@@ -727,20 +738,20 @@ class Reports extends BaseReports {
 		
 		$nav = '';
 		if($page != 0){
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => '0', 'limit' => $limit)).$parameters.'">'.sprintf($a_nav[0], $offset).'</a>';
+			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => '0', 'limit' => $limit, 'replace'=>1)).$parameters.'">'.sprintf($a_nav[0], $offset).'</a>';
 			$off = $offset - $limit;
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$a_nav[1].'</a>&nbsp;';
+			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[1].'</a>&nbsp;';
 		}
 		for($i = 1; $i < $totalPages + 1; $i++){
 			$off = $limit * ($i - 1);
-			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) $nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$i.'</a>&nbsp;&nbsp;';
+			if(($i != $page + 1) && abs($i - 1 - $page) <= 2 ) $nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$i.'</a>&nbsp;&nbsp;';
 			else if($i == $page + 1) $nav .= '<span class="bold">'.$i.'</span>&nbsp;&nbsp;';
 		}
 		if($page < $totalPages - 1){
 			$off = $offset + $limit;
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$a_nav[2].'</a>';
+			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[2].'</a>';
 			$off = $limit * ($totalPages - 1);
-			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit)).$parameters.'">'.$a_nav[3].'</a>';
+			$nav .= '<a class="internalLink" href="'.get_url('reporting', 'view_custom_report', array('id' => $report_id, 'offset' => $off, 'limit' => $limit, 'replace'=>1)).$parameters.'">'.$a_nav[3].'</a>';
 		}
 		return $nav . "<br/><span class='desc'>&nbsp;".lang('total').": $totalPages ".lang('pages').'</span>';
 	}

@@ -182,23 +182,12 @@ function allowed_users_to_assign($context = null, $filter_by_permissions = true)
 		$context = active_context();
 	}
 	
-	// only companies with users
-	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name, surname"));
-
-	$comp_ids = array("0");
-	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
-	
-	foreach ($companies as $company) {
-		$comp_ids[] = $company->getId();
-		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
-	}
-	
 	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
 		$contacts = array(logged_user());
 	} else if (can_manage_tasks(logged_user())) {
 		// for task selectors
 		if ($filter_by_permissions) {
-			$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
+			$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ);
 		} else {
 			// for template variables selectors
 			$tmp_contacts = Contacts::getAllUsers();
@@ -211,63 +200,34 @@ function allowed_users_to_assign($context = null, $filter_by_permissions = true)
 		$contacts = array();
 	}
 	
+	$comp_array = array();
+	
 	foreach ($contacts as $contact) { /* @var $contact Contact */
-		$pg_ids = implode(',', $contact->getPermissionGroupIds());
-		if ($pg_ids == "") $pg_ids = "0";
-		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id IN ($pg_ids) AND tab_panel_id = 'tasks-panel' " )) && can_task_assignee($contact)){
-			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		
+		if (!isset($comp_array[$contact->getCompanyId()])) {
+			if ($contact->getCompanyId() == 0) {
+				$comp_array[0] = array('id' => "0", 'name' => lang('without company'), 'users' => array() );
+			} else {
+				$comp = Contacts::findById($contact->getCompanyId());
+				$comp_array[$contact->getCompanyId()] = array('id' => $contact->getCompanyId(), 'name' => $comp->getObjectName(), 'users' => array());
+			}
 		}
+		$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
+		
 	}
-	foreach ($comp_array as $company_id => &$comp_data) {
-		if (count($comp_data['users']) == 0) {
-			unset($comp_array[$company_id]);
-		}
-	}
+	
 	return array_values($comp_array);
 }
 
 function allowed_users_to_assign_all_mobile($member_id = null) {
-	if ($member_id == null) {
-		$context = active_context();
-	}else{
+	$context = null;
+	if ($member_id != null) {
 		$member = Members::findById($member_id);
 		if ($member instanceof Member){
-			$context[] = $member;
+			$context = array($member);
 		}
 	}
-	
-	// only companies with users
-	$companies = Contacts::findAll(array("conditions" => "is_company = 1 AND object_id IN (SELECT company_id FROM ".TABLE_PREFIX."contacts WHERE user_type>0 AND disabled=0)", "order" => "first_name ASC"));
-
-	$comp_ids = array("0");
-	$comp_array = array("0" => array('id' => "0", 'name' => lang('without company'), 'users' => array() ));
-	
-	foreach ($companies as $company) {
-		$comp_ids[] = $company->getId();
-		$comp_array[$company->getId()] = array('id' => $company->getId(), 'name' => $company->getObjectName(), 'users' => array() );
-	}
-	
-	if(!can_manage_tasks(logged_user()) && can_task_assignee(logged_user())) {
-		$contacts = array(logged_user());
-	} else if (can_manage_tasks(logged_user())) {
-		$contacts = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), $context, ACCESS_LEVEL_READ, "AND `is_company`=0 AND `company_id` IN (".implode(",", $comp_ids).")");
-	} else {
-		$contacts = array();
-	}
-	
-	foreach ($contacts as $contact) { /* @var $contact Contact */
-		$pg_ids = implode(',', $contact->getPermissionGroupIds());
-		if ($pg_ids == "") $pg_ids = "0";
-		if ( TabPanelPermissions::instance()->count( array( "conditions" => "permission_group_id IN ($pg_ids) AND tab_panel_id = 'tasks-panel' " )) && can_task_assignee($contact)){
-			$comp_array[$contact->getCompanyId()]['users'][] = array('id' => $contact->getId(), 'name' => $contact->getObjectName(), 'isCurrent' => $contact->getId() == logged_user()->getId());
-		}
-	}
-	foreach ($comp_array as $company_id => &$comp_data) {
-		if (count($comp_data['users']) == 0) {
-			unset($comp_array[$company_id]);
-		}
-	}
-	return array_values($comp_array);
+	return allowed_users_to_assign($context);
 }
 
 
@@ -1075,7 +1035,8 @@ function render_add_custom_properties(ContentDataObject $object) {
 	
 	$genid = gen_id();
 	$output = '
-		<div id="'.$genid.'" class="og-add-custom-properties">
+        <label>'.lang('properties').'</label>
+		<div id="'.$genid.'" class="og-add-custom-properties" style="float:left;">
 			<table><tbody><tr>
 			<th>' . lang('name') . '</th>
 			<th>' . lang('value') . '</th>
@@ -1083,6 +1044,7 @@ function render_add_custom_properties(ContentDataObject $object) {
 			</tr></tbody></table>
 			<a href="#" onclick="og.addObjectCustomProperty(this.parentNode, \'\', \'\', true);return false;">' . lang("add custom property") . '</a>
 		</div>
+		<div class="clear"></div>
 		<script>
 		var ti = 30000;
 		og.addObjectCustomProperty = function(parent, name, value, focus) {
@@ -1097,7 +1059,7 @@ function render_add_custom_properties(ContentDataObject $object) {
 			td.innerHTML = \'<input class="value" type="text" name="custom_prop_values[\' + count + \']" value="\' + value + \'" tabindex=\' + (ti + 1) + \'>\';;
 			tr.appendChild(td);
 			var td = document.createElement("td");
-			td.innerHTML = \'<div class="link-ico ico-delete" style="width:16px;height:16px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
+			td.innerHTML = \'<div class="db-ico ico-delete" style="margin-left:2px;height:20px;cursor:pointer" onclick="og.removeCustomProperty(this.parentNode.parentNode);return false;">&nbsp;</div>\';
 			tr.appendChild(td);
 			tbody.appendChild(tr);
 			if (input && focus)

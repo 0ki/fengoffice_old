@@ -38,11 +38,23 @@ og.MemberManager = function() {
 	  	this.fields = this.fields.concat(dim_assocs);
   	}
   	
+  	// add specific member type columns
+  	var mem_type_cols = [];
+  	if (og.listing_member_type_cols && og.listing_member_type_cols[this.dimension_id]) {
+  		var mem_type_cols_objs = og.listing_member_type_cols[this.dimension_id][this.object_type_id];
+  		if (mem_type_cols_objs) {
+	  		for (var i=0; i<mem_type_cols_objs.length; i++) {
+		  		mem_type_cols.push(mem_type_cols_objs[i].id);
+		  	}
+  		}
+  	}
+  	this.fields = this.fields.concat(mem_type_cols);
+  	
 	if (!this.store) {
 		//this.store = new Ext.data.GroupingStore({
 		this.store = new Ext.data.Store({
 			proxy: new og.GooProxy({
-				url: og.getUrl('member', 'list_all')
+				url: og.getUrl('member', 'listing')
 			}),
 			reader: new Ext.data.JsonReader({
 				root: 'members',
@@ -55,7 +67,7 @@ og.MemberManager = function() {
 			remoteSort: true,
 			listeners: {
 				'load': function() {
-					try {
+					
 					var d = this.reader.jsonData;
 					
 					if (d.totalCount === 0) {
@@ -66,11 +78,11 @@ og.MemberManager = function() {
 						this.fireEvent('messageToShow', "");
 					}
 					
+					var man = Ext.getCmp('member-manager-' + d.dimension_id);
+					og.eventManager.fireEvent('after grid panel load', {man:man, data:d});
+					
 					this.dimension_id = d.dimension_id;
 					og.eventManager.fireEvent('replace all empty breadcrumb', null);
-					} catch (e) {
-						//console.log(e);
-					}
 				},
 				'datachanged': function() {
 					if (this.dimension_id > 0) {
@@ -98,13 +110,20 @@ og.MemberManager = function() {
 	var readClass = 'read-unread-' + Ext.id();
 	
 	function renderName(value, p, r) {
-		var text = '<span class="bold">'+ og.clean(value) +'</span>';
-		var dcode = '';
-		var treepanel = Ext.getCmp('dimension-panel-'+r.data.dimension_id);
-		if (treepanel) dcode = treepanel.dimensionCode;
-		var onclick = "og.memberTreeExternalClick('"+dcode+"', "+r.data.id+"); return false;";
 		
-		return String.format('<a style="font-size:120%;" class="{3}" href="{1}" onclick="{4}" title="{2}">{0}</a>', text, "#", og.clean(value), '', onclick);
+		if (isNaN(r.data.id)) {
+			
+			return '<span class="bold" id="'+r.data.id+'">'+ (value ? og.clean(value) : '') +'</span>';
+			
+		} else {
+			var text = '<span class="bold">'+ (value ? og.clean(value) : '') +'</span>';
+			var dcode = '';
+			var treepanel = Ext.getCmp('dimension-panel-'+r.data.dimension_id);
+			if (treepanel) dcode = treepanel.dimensionCode;
+			var onclick = "og.memberTreeExternalClick('"+dcode+"', "+r.data.id+"); return false;";
+			
+			return String.format('<a style="font-size:120%;" class="{3}" href="{1}" onclick="{4}" title="{2}">{0}</a>', text, "#", og.clean(value), '', onclick);
+		}
 	}
 
 	function renderIcon(value, p, r) {
@@ -254,7 +273,7 @@ og.MemberManager = function() {
 			id: 'mem_path',
 			header: lang("located under"),
 			dataIndex: 'mem_path',
-			width: 250,
+			width: 100,
 			renderer: renderMemberPath,
 			sortable:true
 		/*},{
@@ -322,6 +341,7 @@ og.MemberManager = function() {
 				hidden: parseInt(cps[i].visible_def) == 0,
 				header: cps[i].name,
 				dataIndex: 'cp_' + cps[i].id,
+				align: cps[i].cp_type=='numeric' ? 'right' : 'left',
 				sortable: true,
 				renderer: og.clean
 			});
@@ -343,6 +363,23 @@ og.MemberManager = function() {
 			sortable: false,
 			renderer: renderDimAssociation
 		});
+  	}
+  	
+  	// member type specific columns
+  	if (og.listing_member_type_cols && og.listing_member_type_cols[this.dimension_id] && og.listing_member_type_cols[this.dimension_id][this.object_type_id]) {
+  		var mem_type_cols = og.listing_member_type_cols[this.dimension_id][this.object_type_id];
+  		if (mem_type_cols) {
+	  		for (var i=0; i<mem_type_cols.length; i++) {
+	  			var col = mem_type_cols[i];
+	  			cm_info.push({
+	  				id: 'mem_type_col_' + col.id,
+	  				header: col.name,
+	  				dataIndex: col.id,
+	  				sortable: true,//col.sortable,
+	  				renderer: col.renderer
+	  			});
+	  		}
+  		}
   	}
 	
     var cm = new Ext.grid.ColumnModel(cm_info);
@@ -403,7 +440,14 @@ og.MemberManager = function() {
 		tbar.push(actions.del);
 	}
 	
-	//og.MemberManager.superclass.constructor.call(this, {
+	if (og.additional_member_list_actions && og.additional_member_list_actions[this.object_type_id]) {
+		var add_actions = og.additional_member_list_actions[this.object_type_id];
+		for (var k=0; k<add_actions.length; k++) {
+			add_actions[k].initialConfig.dim_id = this.dimension_id;
+			tbar.push(add_actions[k]);
+		}
+	}
+	
 	og.MemberManager.superclass.constructor.call(this, {
 		store: this.store,
 		layout: 'fit',

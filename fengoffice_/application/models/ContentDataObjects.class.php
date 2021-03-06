@@ -670,10 +670,34 @@ abstract class ContentDataObjects extends DataManager {
 						$result->total = $start + count($result->objects);
 					}
 				}
+				
+				// additional data over result
+				$from_sql = "FROM ".TABLE_PREFIX."objects o";
+				$joins_sql = "$SQL_BASE_JOIN $SQL_EXTRA_JOINS";
+				$all_conditions_sql = "
+					$permissions_condition
+					AND	$SQL_CONTEXT_CONDITION
+					AND $SQL_TYPE_CONDITION
+					AND $SQL_TRASHED_CONDITION $SQL_ARCHIVED_CONDITION $SQL_EXTRA_CONDITIONS
+				";
+				$params = array('type_id' => $type_id, 'from_sql' => $from_sql, 'joins_sql' => $joins_sql, 'conditions_sql' => $all_conditions_sql,
+						'group_by' => $SQL_GROUP_BY, 'order' => array_var($args,'order'), 'order_dir' => array_var($args,'order_dir'),
+						'start' => $start, 'limit' => $limit, 'totalCount' => $result->total);
+				
+				$more_data = null;
+				Hook::fire('object_listing_additional_data', $params, $more_data);
+				if ($more_data) {
+					foreach ($more_data as $key => $value) {
+						$result->$key = $value;
+					}
+				}
+				// ---------------------------
+				
 		    }else{
 		    	$total = DB::executeOne($sql_total);
 		    	$result->total = $total['total'];		    	
 		    }
+		    
 		} else {
 			$result->objects = array();
 			$result->total = 0;

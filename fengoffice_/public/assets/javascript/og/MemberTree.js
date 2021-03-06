@@ -128,6 +128,7 @@ og.MemberTree = function(config) {
 				var has_relations = false;
 				var ids = [];
 				for (var i=0; i<e.data.selections.length; i++) {
+					if (isNaN(e.data.selections[i].data.object_id)) continue;
 					ids.push(e.data.selections[i].data.object_id);
 					if (!has_relations) {
 						var mpath = Ext.util.JSON.decode(e.data.selections[i].data.memPath);

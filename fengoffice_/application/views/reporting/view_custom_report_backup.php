@@ -47,6 +47,28 @@
 	}
 	?>
 	
+<div id="pdfOptions" style="display:none;">
+	<span class="bold"><?php echo lang('report pdf options') ?></span><hr/>
+	<?php echo lang('report pdf page layout') ?>:
+	<select name="pdfPageLayout">
+		<option value="P" selected><?php echo lang('report pdf vertical') ?></option>
+		<option value="L"><?php echo lang('report pdf landscape') ?></option>
+	</select>&nbsp;&nbsp;
+	<?php echo lang('report font size') ?>:
+	<select name="pdfFontSize">
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="10">10</option>
+		<option value="11">11</option>
+		<option value="12" selected>12</option>
+		<option value="13">13</option>
+		<option value="14">14</option>
+		<option value="15">15</option>
+		<option value="16">16</option>
+	</select>
+	<input type="submit" name="exportPDF" value="<?php echo lang('export') ?>" onclick="document.getElementById('form<?php echo $genid ?>').target = '_download';" style="width: 120px; background-color: #ddd; margin-top: 2px; border-color: #aaa; border-radius: 5px;"/>
+	<hr/>
+</div>
 
 <?php if ($conditionHtml != '') : ?>
 <div style="float:left;">
@@ -78,24 +100,74 @@
 <input type="hidden" name="id" value="<?php echo $id ?>" />
 <input type="hidden" name="order_by" value="<?php echo $order_by ?>" />
 <input type="hidden" name="order_by_asc" value="<?php echo $order_by_asc ?>" />
-
-<?php 
-	$params_url = isset($parametersURL) ? $parametersURL : "";
-	$report = Reports::getReport($id);
+<table>
+<tr>
+<?php foreach($columns as $col) {
+	$sorted = false;
+	$asc = false;
 	
-	Env::useHelper('reporting');
-	echo report_table_html($results, $report, $params_url);
-	
-	$pagination = array_var($results, 'pagination');
+	if($col != '' && $col != lang('located_under') && array_var($db_columns, $col) == $order_by) {
+		$sorted = true;
+		$asc = $order_by_asc;
+	}	?>
+	<td style="padding-right:10px;border-bottom:1px solid #666" class="bold">
+<?php if($to_print){
+		echo clean($col);
+	  }else if($col != ''){
+	  	$allow_link = true;
+	  	if ($model == 'Timeslots' && in_array(array_var($db_columns, $col), ProjectTasks::instance()->getColumns())) {
+	  		$allow_link = false;
+	  	}
+	  	$echo_link = $allow_link && !(is_numeric(array_var($db_columns, $col)) || str_starts_with(array_var($db_columns, $col), "dim_") || array_var($db_columns, $col) == 'time' || array_var($db_columns, $col) == 'billing'); 
+	  	?>
+		<a href="<?php echo $echo_link ? get_url('reporting', 'view_custom_report', array('id' => $id, 'replace' => true, 'order_by' => array_var($db_columns,$col), 'order_by_asc' => $asc ? 0 : 1)).$parameterURL : "#" ?>" <?php echo ($echo_link ? "" : 'style="cursor:default;"') ?>>
+			<?php echo clean($col) ?>
+		</a>
+<?php }
+	  if(!$to_print && $sorted){ ?>
+		<span class="db-ico ico-<?php echo $asc ? 'asc' : 'desc' ?>" style="padding:2px 0 0 18px;">&nbsp;</span>
+<?php } ?>
+	</td>
+<?php }?>
+</tr>
+<?php
+	$isAlt = true; 
+	foreach($rows as $row) {
+		$isAlt = !$isAlt;
+		$i = 0; 
 ?>
+	<tr<?php echo ($isAlt ? ' style="background-color:#F4F8F9"' : "");?>>
+		<?php
+		foreach ($columns as $k => $col) {
+			if ($k == "0") $k = 'link';
+			if ($k == 'object_type_id') continue;
+			
+			$value = (is_numeric($k) ? array_var($row, $col) : array_var($row, $k));
+			
+			$db_col = (is_numeric($k) ? array_var($db_columns, $col) : $k);
+			?>
+			<td style="padding-right:10px;">
+			<?php 
+			$val_type = ($k == 'link' ? '' : array_var($types, $k));
+			$date_format = is_numeric(array_var($db_columns, $k)) ? "Y-m-d" : user_config_option('date_format');
+			
+			echo ($val_type == 'DATETIME') ? $value : format_value_to_print($db_col, $value, $val_type, array_var($row, 'object_type_id'), '', $date_format);
+			?>
+			</td>
+		<?php
+			$i++;
+		} ?>
+	</tr>
+<?php } ?>
+<?php $null=null; Hook::fire('render_additional_report_rows', array('results' => $results, 'report_id' => $id), $null); ?>
+</table>
 
 <div style="margin-top: 10px;">
+<?php if (isset($pagination)) echo $pagination ?>
 </div>
 <?php
-	if ($pagination) echo $pagination;
-
-	if (isset($save_html_in_file) && $save_html_in_file) {
+	if (isset($pdf_export) && $pdf_export) {
 		$html = ob_get_clean();
 		file_put_contents($html_filename, $html);
 	}
-
+?>

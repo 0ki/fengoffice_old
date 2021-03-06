@@ -112,7 +112,7 @@ class MessageController extends ApplicationController {
 		$messages = $res->objects ; 
 		
 		// Prepare response object
-		$object = $this->prepareObject($messages, $start, $limit, $res->total);
+		$object = $this->prepareObject($messages, $start, $limit, $res);
 		ajx_extra_data($object);
 		tpl_assign("listing", $object);
 		
@@ -234,12 +234,16 @@ class MessageController extends ApplicationController {
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $total) {
+	private function prepareObject($totMsg, $start, $limit, $res_obj) {
 		$object = array(
-			"totalCount" => $total,
+			"totalCount" => $res_obj->total,
 			"start" => $start,
 			"messages" => array()
 		);
+		foreach ($res_obj as $k => $v) {
+			if ($k != 'total' && $k != 'objects') $object[$k] = $v;
+		}
+		
 		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType(ProjectMessages::instance()->getObjectTypeId());
 		$ids = array();
 		for ($i = 0; $i < $limit; $i++){

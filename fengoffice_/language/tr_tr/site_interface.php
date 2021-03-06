@@ -625,4 +625,6 @@
 	'template_task' => 'Kalıp Görevi',
 	'repeat options' => 'Yinelenme Ayarları',
 	'new account step update account' => '{0}. adım: Kişisel hesabınızı güncelleyin',
+	'get read state from server' => 'FengOffice tarafından alınan e-postaların durumu korunsun (okundu, okunmadı)',
+	'other properties' => 'Diğer Özellikler',
 ); ?>

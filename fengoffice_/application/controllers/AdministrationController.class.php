@@ -248,7 +248,7 @@ class AdministrationController extends ApplicationController {
 		
 		$extra_conditions = array_var($extra_params, 'extra_conditions');
 		
-		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType($object_type->getId(), 'all', $extra_conditions, true);
+		$custom_properties = CustomProperties::getAllCustomPropertiesByObjectType($object_type->getId(), 'all', $extra_conditions, true, true);
 		
 		tpl_assign('object_type', $object_type);
 		tpl_assign('dont_fire_hook', array_var($_REQUEST, 'dont_fire_hook'));

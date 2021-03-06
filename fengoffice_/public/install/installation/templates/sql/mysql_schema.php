@@ -75,6 +75,7 @@ CREATE TABLE `<?php echo $table_prefix ?>member_property_members` (
   `created_by_id` int(10) unsigned default NULL,
   PRIMARY KEY  (`id`),
   INDEX `member_id_property_member_id` (`member_id`, `property_member_id`),
+  INDEX `property_member_id_member_id` (`property_member_id`, `member_id`),
   INDEX  `is_active` (`is_active`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -231,6 +232,7 @@ CREATE TABLE `<?php echo $table_prefix ?>system_permissions` (
   `can_manage_contacts` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_update_other_users_invitations` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_link_objects` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_instantiate_templates` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -251,6 +253,7 @@ CREATE TABLE `<?php echo $table_prefix ?>max_system_permissions` (
   `can_manage_contacts` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_update_other_users_invitations` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `can_link_objects` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `can_instantiate_templates` tinyint(1) unsigned NOT NULL default '0',
   PRIMARY KEY  (`permission_group_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
@@ -907,6 +910,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>reports` (
   `order_by` varchar(255) <?php echo $default_collation ?> NOT NULL,
   `is_order_by_asc` tinyint(1) <?php echo $default_collation ?> NOT NULL,
   `ignore_context` tinyint(1) NOT NULL DEFAULT '1',
+  `is_default` tinyint(1) NOT NULL DEFAULT '0',
+  `code` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`object_id`),
   KEY `object_type` (`report_object_type_id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

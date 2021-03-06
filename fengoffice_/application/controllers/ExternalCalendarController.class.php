@@ -467,6 +467,7 @@ class ExternalCalendarController extends ApplicationController {
             foreach ($calendars as $calendar){
             	$events = ProjectEvents::findByExtCalId($calendar->getId());
                 foreach ($events as $event){
+					//if is not feng calendar sen events to trash
                 	if($calendar->getCalendarFeng() == 0){
                     	$event->trash();
                     }
@@ -815,7 +816,8 @@ class ExternalCalendarController extends ApplicationController {
 		}catch(Exception $e){
 			Logger::log("Fail to add event: ". $event->getId());
 			Logger::log($e->getMessage());
-			throw $e;
+			return;
+			//throw $e;
 		}
 	
 		$event->setSpecialID($createdEvent->getId());
