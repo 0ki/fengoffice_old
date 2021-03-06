@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.3-rc
+	About Feng Office 3.2.3
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -113,8 +113,8 @@
 	bugfix: new mail old view from contact list.
 	bugfix: blocking file for uploading new revision.
 	bugfix: when instantiating template from email, assigned users should be filtered using email's members
-			-ensure that member template tasks are classified in the recently created member.
-			-when viewing mails, container must be bigger before the resize
+	bugfix: ensure that member template tasks are classified in the recently created member.
+	bugfix: when viewing mails, container must be bigger before the resize
 	bugfix: view more french.
 
 	
