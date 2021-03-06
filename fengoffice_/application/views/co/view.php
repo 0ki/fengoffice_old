@@ -1,7 +1,10 @@
 <?php 
 	if($object instanceof ProjectDataObject && $object->canView(logged_user())) 	{
 		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history');
+		if (!$object->isTrashed())
+			add_page_action(lang('share'), $object->getShareUrl(), 'ico-share');
 	}
+	Hook::fire("render_page_actions", $object, $ret = 0);
 	$coId = $object->getId() . get_class($object->manager()); 
 	if (!isset($iconclass))
 		$iconclass = "ico-large-" . $object->getObjectTypeName();

@@ -28,7 +28,18 @@ function check_upgrade() {
 
 function send_reminders() {
 	_log("Sending reminders...");
-	$sent = Notifier::sendReminders();
+	$sent = 0;
+	$ors = ObjectReminders::getDueReminders();
+	foreach ($ors as $or) {
+		$function = $or->getType();
+		try {
+			$ret = 0;
+			Hook::fire($function, $or, $ret);
+			$sent += $ret;
+		} catch (Exception $ex) {
+			_log("Error sending reminder: " . $ex->getMessage());
+		}
+	}
 	_log("$sent reminders sent.");
 }
 

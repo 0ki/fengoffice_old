@@ -98,118 +98,15 @@ class UserController extends ApplicationController {
 		tpl_assign('company', $company);
 		tpl_assign('permissions', $permissions);
 		tpl_assign('user_data', $user_data);
+		tpl_assign('billing_categories', BillingCategories::findAll());
 
 		if(is_array(array_var($_POST, 'user'))) {
 			$user->setFromAttributes($user_data);
 			//$user->setCompanyId($company->getId());
+			$is_admin = logged_user()->isAdministrator() && array_var($_POST, 'is_admin');
 
 			try {
-				// Generate random password
-				if(array_var($user_data, 'password_generator') == 'random') {
-					$password = substr(sha1(uniqid(rand(), true)), rand(0, 25), 13);
-
-					// Validate user input
-				} else {
-					$password = array_var($user_data, 'password');
-					if(trim($password) == '') {
-						throw new Error(lang('password value required'));
-					} // if
-					if($password <> array_var($user_data, 'password_a')) {
-						throw new Error(lang('passwords dont match'));
-					} // if
-				} // if
-				$user->setPassword($password);
-
-				DB::beginWork();
-				$user->save();
-
-				if (array_var($_POST, 'is_admin')) {
-					$user->setAsAdministrator();
-				}
-				
-				/* create contact for this user*/
-				
-				
-				if (array_var($user_data, 'create_contact')) {
-					$contact = new Contact();
-					$contact->setFirstname($user->getDisplayName());
-					$contact->setUserId($user->getId());
-					$contact->setEmail($user->getEmail());
-					$contact->setTimezone($user->getTimezone());
-					$contact->setCompanyId($user->getCompanyId());
-					$contact->save();
-				}
-				
-				/* create personal project */
-				$project = new Project();
-				$project->setName($user->getUsername().'_personal');
-				$project->setDescription(lang('files'));
-				$project->setCreatedById($user->getId());
-
-				$project->save(); //Save to set an ID number
-				$project->setP1($project->getId()); //Set ID number to the first project
-				$project->save();
-				
-				$new_project = $project;
-				$user->setPersonalProjectId($project->getId());
-				$user->save();
-
-				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
-
-				$project_user = new ProjectUser();
-				$project_user->setProjectId($project->getId());
-				$project_user->setUserId($user->getId());
-				$project_user->setCreatedById($user->getId());
-				$project_user->setAllPermissions(true);
-				
-				$project_user->save();
-				/* end personal project */
-
-			  	//TODO - Make batch update of these permissions
-				$permissionsString = array_var($_POST,'permissions');
-				if ($permissionsString && $permissionsString != ''){
-					$permissions = json_decode($permissionsString);
-				}
-			  	if(is_array($permissions)) {
-			  		foreach($permissions as $perm){			  			
-			  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){	
-				  			$relation = new ProjectUser();
-					  		$relation->setProjectId($perm->wsid);
-					  		$relation->setUserId($user->getId());
-				  			
-					  		$relation->setCheckboxPermissions($perm->pc);
-					  		$relation->setRadioPermissions($perm->pr);
-					  		$relation->save();
-			  			}
-			  		}
-				  } // if
-		
-				  // update contact info if user was created from a contact
-				  $contact_id = array_var($user_data,'contact_id');
-				  if($contact_id && $contact = Contacts::findById($contact_id)){
-				  	 if($contact->getUserId()==0){
-					  	 $contact->setUserId($user->getId());
-					  	 $contact->save();
-				  	 }
-				  }
-				  // End: update contact info if user was created from a contact
-				  DB::commit();
-				  if (logged_user()->isProjectUser($new_project)) {
-				  	evt_add("workspace added", array(
-						"id" => $new_project->getId(),
-						"name" => $new_project->getName(),
-						"color" => $new_project->getColor()
-					));
-				  }
-	
-			  // Send notification...
-			  try {
-			  	if(array_var($user_data, 'send_email_notification')) {
-			  		Notifier::newUserAccount($user, $password);
-			  	} // if
-			  } catch(Exception $e) {
-	
-			  } // try
+			  $user = $this->createUser($user, $user_data, $is_admin, array_var($_POST,'permissions'));
 	
 			  flash_success(lang('success add user', $user->getDisplayName()));
 			  ajx_current("back");
@@ -223,6 +120,125 @@ class UserController extends ApplicationController {
 		} // if
 
 	} // add
+	
+	/**
+	 * Creates an user (called from add_user)
+	 *
+	 * @param User $user
+	 * @param array $user_data
+	 * @param boolean $is_admin
+	 * @param string $permissionsString
+	 * @return User $user
+	 */
+	function createUser($user, $user_data, $is_admin, $permissionsString) {
+		if (!$user) {
+			$user = new User();
+			$user->setFromAttributes($user_data);
+		}
+		// Generate random password
+		if(array_var($user_data, 'password_generator') == 'random') {
+			$password = substr(sha1(uniqid(rand(), true)), rand(0, 25), 13);
+
+			// Validate user input
+		} else {
+			$password = array_var($user_data, 'password');
+			if(trim($password) == '') {
+				throw new Error(lang('password value required'));
+			} // if
+			if($password <> array_var($user_data, 'password_a')) {
+				throw new Error(lang('passwords dont match'));
+			} // if
+		} // if
+		$user->setPassword($password);
+
+		DB::beginWork();
+		$user->save();
+		if ($is_admin) {
+			$user->setAsAdministrator();
+		}
+		
+		/* create contact for this user*/
+		if (array_var($user_data, 'create_contact')) {
+			$contact = new Contact();
+			$contact->setFirstname($user->getDisplayName());
+			$contact->setUserId($user->getId());
+			$contact->setEmail($user->getEmail());
+			$contact->setTimezone($user->getTimezone());
+			$contact->setCompanyId($user->getCompanyId());
+			$contact->save();
+		}
+		
+		/* create personal project */
+		$project = new Project();
+		$project->setName($user->getUsername().'_personal');
+		$project->setDescription(lang('files'));
+		$project->setCreatedById($user->getId());
+
+		$project->save(); //Save to set an ID number
+		$project->setP1($project->getId()); //Set ID number to the first project
+		$project->save();
+		
+		$new_project = $project;
+		$user->setPersonalProjectId($project->getId());
+		$user->save();
+
+		ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
+
+		$project_user = new ProjectUser();
+		$project_user->setProjectId($project->getId());
+		$project_user->setUserId($user->getId());
+		$project_user->setCreatedById($user->getId());
+		$project_user->setAllPermissions(true);
+		
+		$project_user->save();
+		/* end personal project */
+
+	  	//TODO - Make batch update of these permissions
+		if ($permissionsString && $permissionsString != ''){
+			$permissions = json_decode($permissionsString);
+		} else $permissions = null;
+	  	if(is_array($permissions)) {
+	  		foreach($permissions as $perm){			  			
+	  			if(ProjectUser::hasAnyPermissions($perm->pr,$perm->pc)){	
+		  			$relation = new ProjectUser();
+			  		$relation->setProjectId($perm->wsid);
+			  		$relation->setUserId($user->getId());
+		  			
+			  		$relation->setCheckboxPermissions($perm->pc);
+			  		$relation->setRadioPermissions($perm->pr);
+			  		$relation->save();
+	  			}
+	  		}
+		  } // if
+
+		  // update contact info if user was created from a contact
+		  $contact_id = array_var($user_data,'contact_id');
+		  if($contact_id && $contact = Contacts::findById($contact_id)){
+		  	 if($contact->getUserId()==0){
+			  	 $contact->setUserId($user->getId());
+			  	 $contact->save();
+		  	 }
+		  }
+		  // End: update contact info if user was created from a contact
+		  DB::commit();
+		  if (logged_user()->isProjectUser($new_project)) {
+		  	evt_add("workspace added", array(
+				"id" => $new_project->getId(),
+				"name" => $new_project->getName(),
+				"color" => $new_project->getColor()
+			));
+		  }
+
+		  // Send notification...
+		  try {
+		  	if(array_var($user_data, 'send_email_notification')) {
+		  		Notifier::newUserAccount($user, $password);
+		  	} // if
+		  } catch(Exception $e) {
+		
+		  } // try
+		  return $user;
+	}
 
 	/**
 	 * Delete specific user
@@ -452,6 +468,7 @@ class UserController extends ApplicationController {
 	
 					$option->setUserValue($new_value, logged_user()->getId());
 					$option->save();
+					evt_add("user config ".$option->getName()." changed", $new_value);
 				} // foreach
 				DB::commit();
 				flash_success(lang('success update config value', $category->getDisplayName()));

@@ -260,9 +260,16 @@ class ProjectController extends ApplicationController {
 		$project_data = array_var($_POST, 'project');
 		$projects = logged_user()->getActiveProjects();
 		
+		if (active_project() instanceof Project){ 
+			$billing_amounts = active_project()->getBillingAmounts();
+		} else {
+			$billing_amounts = BillingCategories::getDefaultBillingAmounts();
+		}
+		
 		tpl_assign('project', $project);
 		tpl_assign('projects', $projects);
 		tpl_assign('project_data', $project_data);
+		tpl_assign('billing_amounts', $billing_amounts);
 		
 		/* <permissions> */
 		if ($project->canChangePermissions(logged_user())) {
@@ -302,6 +309,23 @@ class ProjectController extends ApplicationController {
 					$project->setParentWorkspace($parent);
 				}
 				$project->save();
+				
+				/* Billing */
+				$billings = array_var($project_data,'billing', null);
+				if ($billings){
+					foreach ($billings as $billing_id => $billing){
+						if ($billing['update'] && $billing['value'] && $billing['value'] != 0){
+							$wb = new WorkspaceBilling();
+							$wb->setProjectId($project->getId());
+							$wb->setBillingId($billing_id);
+							$value = $billing['value'];
+							if (strpos($value,',') && !strpos($value,'.'))
+								$value = str_replace(',','.',$value);
+							$wb->setValue($value);
+							$wb->save();
+						}
+					}
+				}
 
 				$permission_columns = ProjectUsers::getPermissionColumns();
 				$auto_assign_users = owner_company()->getAutoAssignUsers();
@@ -448,6 +472,7 @@ class ProjectController extends ApplicationController {
 		tpl_assign('project', $project);
 		tpl_assign('projects', $projects);
 		tpl_assign('project_data', $project_data);
+		tpl_assign('billing_amounts', $project->getBillingAmounts());
 		
 		/* <permissions> */
 		if ($project->canChangePermissions(logged_user())) {
@@ -499,6 +524,24 @@ class ProjectController extends ApplicationController {
 					$project->setParentWorkspace($parent);
 				}
 				$project->save();
+				
+				/* Billing */
+				WorkspaceBillings::clearByProject($project);
+				$billings = array_var($project_data,'billing', null);
+				if ($billings){
+					foreach ($billings as $billing_id => $billing){
+						if ($billing['update'] && $billing['value'] && $billing['value'] != 0){
+							$wb = new WorkspaceBilling();
+							$wb->setProjectId($project->getId());
+							$wb->setBillingId($billing_id);
+							$value = $billing['value'];
+							if (strpos($value,',') && !strpos($value,'.'))
+								$value = str_replace(',','.',$value);
+							$wb->setValue($value);
+							$wb->save();
+						}
+					}
+				}
 				
 				/* <permissions> */
 				if ($project->canChangePermissions(logged_user())) {

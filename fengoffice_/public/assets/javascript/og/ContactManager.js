@@ -68,11 +68,7 @@ og.ContactManager = function() {
 					og.clean(r.data.companyName), og.getUrl('company', 'view_client', {id: r.data.companyId}), og.clean(r.data.companyName));
 			} //end else
 		}// end else
-		var ids = String(r.data.wsIds).split(',');
-		var wsString = "";
-		for(var i = 0; i < ids.length; i++)
-			wsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
-		return wsString + name;
+		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
     }
     function renderCompany(value, p, r) {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', og.clean(value), og.getUrl('company', 'card', {id: r.data.companyId}));

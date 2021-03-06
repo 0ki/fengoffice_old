@@ -112,8 +112,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 				if (drawOptions.show_workspaces){
 					var ids = String(milestone.workspaceIds).split(',');
 					var projectsString = "<td style='padding-left:10px'>";
-					for(var i = 0; i < ids.length; i++)
-						projectsString += '<span class="project-replace">' + ids[i] + '</span>&nbsp;';
+					projectsString += '<span class="project-replace">' + ids.join(',') + '</span>&nbsp;';
 					sb.append(projectsString + "</td>");
 				}
 			} else {
@@ -292,9 +291,12 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 	if (drawOptions.show_workspaces){
 		var ids = String(task.workspaceIds).split(',');
 		var projectsString = "";
+		var ids_to_show = new Array();
 		for(var i = 0; i < ids.length; i++)
 			if (!(displayCriteria.group_by == 'workspace' && group_id == ids[i]))
-				projectsString += '<span class="project-replace">' + ids[i] + '</span>&nbsp;';
+				ids_to_show.push(ids[i]);
+
+		projectsString += '<span class="project-replace">' + ids_to_show.join[','] + '</span>&nbsp;';
 		sb.append(projectsString);
 	}
 	

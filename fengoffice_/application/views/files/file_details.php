@@ -98,7 +98,6 @@ if (isset($file) && $file instanceof ProjectFile) {
 			$description .= lang('file revision info short', $last_revision->getRevisionNumber(), format_descriptive_date($last_revision->getCreatedOn()));
 		}
 	} // if
-	
 	if (!$file->isTrashed())
 		tpl_assign('image', '<div><img src="' . $file->getTypeIconUrl(false) .'" alt="' . clean($file->getFilename()) . '" /></div>');
 	tpl_assign('iconclass', $file->isTrashed()? 'ico-large-files-trashed' :  'ico-large-files');

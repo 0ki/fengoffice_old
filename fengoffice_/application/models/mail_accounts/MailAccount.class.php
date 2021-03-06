@@ -58,9 +58,11 @@ class MailAccount extends BaseMailAccount {
       )); // findAll
 	} // getMailContents
 
-	function getUids() {
+	function getUids($folder = null) {
 		$sql = "SELECT `uid` FROM `" . MailContents::instance()->getTableName() .
 				"` WHERE `account_id` = ". $this->getId();
+		if (!is_null($folder)) 
+			$sql .= " AND `imap_folder_name` = '$folder'";
 		$rows = DB::executeAll($sql);
 		$uids = array();
 		if (isset($rows) && is_array($rows)) {

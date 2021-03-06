@@ -154,6 +154,8 @@ class User extends BaseUser {
 	
 	private $groups_csv;
 	
+	private $default_billing;
+	
     /**
     * Returns true if this user is taggable
     *
@@ -570,6 +572,12 @@ class User extends BaseUser {
 		return $this->groups_csv;
 	}
 	
+	function getDefaultBilling(){
+		if (is_null($this->default_billing) && $this->getDefaultBillingId() != false){
+			$this->default_billing = BillingCategories::findById($this->getDefaultBillingId());
+		} // if
+		return $this->default_billing;
+	}
 	
 	// ---------------------------------------------------
 	//  Avatars

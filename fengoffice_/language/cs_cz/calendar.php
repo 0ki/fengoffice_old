@@ -141,6 +141,6 @@
 	'duration must be at least 15 minutes' => 'Délka musí být alespoň 15 minut',
   
 	'event dnx' => 'Požadovaná událost neexistuje',
-  
+	'view date title' => 'l, d/m/Y',  
   ); // array
 ?>

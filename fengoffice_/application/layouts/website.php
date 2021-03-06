@@ -21,7 +21,8 @@
 		$jss = array('ogmin.js');
 	} else {
 		$jss = include "javascripts.php";
-	}	
+	}
+	Hook::fire('autoload_javascripts', null, $jss);
 	if (defined('USE_JS_CACHE') && USE_JS_CACHE) {
 		echo add_javascript_to_page(with_slash(ROOT_URL).'public/tools/combine.php?type=javascript&files='.implode(',', $jss));
 	} else {
@@ -39,7 +40,7 @@
 	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
 </div>
 
-<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;"></div>
+<div id="subWsExpander" onmouseover="clearTimeout(og.eventTimeouts['swst']);" onmouseout="og.eventTimeouts['swst'] = setTimeout('og.HideSubWsTooltip()', 2000);" style="display:none;top:10px"></div>
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>
@@ -111,7 +112,8 @@ og.initialURL = '<?php echo ROOT_URL . "/?active_project=$initialWS&" . $_SERVER
 og.loggedUser = {
 	id: <?php echo logged_user()->getId() ?>,
 	username: <?php echo json_encode(logged_user()->getUsername()) ?>,
-	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>
+	displayName: <?php echo json_encode(logged_user()->getDisplayName()) ?>,
+	isAdmin: <?php echo logged_user()->isAdministrator() ? 'true' : 'false' ?>
 };
 og.hasNewVersions = <?php
 	if (config_option('upgrade_last_check_new_version', false)) {
@@ -132,8 +134,15 @@ og.enableReportingModule = <?php echo config_option("enable_reporting_module", 1
 og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1100 // give a 10% margin to PHP's timeout ?>;
 og.GooPlayer.sound = new Sound();
+og.systemSound = new Sound();
 
 var quickAdd = new og.QuickAdd({renderTo:'quickAdd'});
+
+setInterval(function() {
+	og.openLink(og.getUrl('object', 'popup_reminders'), {
+		doNotShowLoading: true
+	});
+}, 60000);
 
 </script>
 <?php include_once(Env::getLayoutPath("listeners"));?>

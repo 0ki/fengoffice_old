@@ -30,7 +30,7 @@ og.submitCsv = function(genid) {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo isset($import_result) ? lang('import result') : ($import_type == 'contact' ? lang('import contacts from csv') : lang('import companies from csv'));?></td>
 <?php if (isset($titles)) { ?>
-	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1')) ?></td>
+	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1', 'tabindex' => 40)) ?></td>
 <?php } ?>
 	</tr></table>
 </div>
@@ -39,17 +39,17 @@ og.submitCsv = function(genid) {
 <?php if (!isset($titles) && !isset($import_result)) { ?>
 	<div id="<?php echo $genid ?>selectFileControlDiv">
         <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
-        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitCsv(\'' . $genid .'\')')) ?>
+        <?php echo file_field('csv_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'tabindex' => 10, 'size' => '88', "onchange" => 'javascript:og.submitCsv(\'' . $genid .'\')')) ?>
     </div>
     <div id="<?php echo $genid ?>first_record_has_names_div">
     	<table><tr><td><?php echo label_tag(lang('first record contains field names'), $genid . 'first_record_has_names') ?></td>
     	<td style="padding-left:10px;padding-top:5px;">
-    	<?php echo yes_no_widget('first_record_has_names', $genid.'first_record_has_names', true, lang('yes'), lang('no')) ?></td></tr></table>
+    	<?php echo yes_no_widget('first_record_has_names', $genid.'first_record_has_names', true, lang('yes'), lang('no'), 20) ?></td></tr></table>
     </div>
     <div id="<?php echo $genid ?>delimiter_div">
     	<table><tr><td><?php echo label_tag(lang('field delimiter'), $genid . 'delimiter') ?></td>
     	<td style="padding-left:10px;">
-    	<?php echo text_field('delimiter', '', array('id' => $genid.'delimiter', 'style' => 'width:10px;')) ?></td></tr></table>
+    	<?php echo text_field('delimiter', '', array('id' => $genid.'delimiter', 'style' => 'width:10px;', 'tabindex' => 30)) ?></td></tr></table>
     </div>
    	<?php } //if ?>
 <?php if (isset($titles)) { ?>
@@ -64,7 +64,7 @@ og.submitCsv = function(genid) {
 	
 	<div id="<?php echo $genid ?>import_contact_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_tags_field("tags", array_var($contact_data, 'tags')); ?>
+		<?php echo autocomplete_tags_field("tags", array_var($contact_data, 'tags'), 50); ?>
 	</fieldset>
 	</div>
 	
@@ -97,13 +97,13 @@ og.submitCsv = function(genid) {
 			$i++;
 	?>	
 				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-				<td><?php echo checkbox_field('check_'.$c_field, true) ?></td><td><?php echo $c_label ?></td><td><?php echo select_box('select_'.$c_field, $options); ?></td></tr>	
+				<td><?php echo checkbox_field('check_'.$c_field, true,array( 'tabindex' => 50+$i)) ?></td><td><?php echo $c_label ?></td><td><?php echo select_box('select_'.$c_field, $options); ?></td></tr>	
 	<?php	
 		} //foreach	?>
 	</table>
 	
 	<div><table style="width:535px">
-		<tr><td><?php echo submit_button(isset($titles) ? lang('import') : lang('read file'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1')) ?></td></tr></table>
+		<tr><td><?php echo submit_button(isset($titles) ? lang('import') : lang('read file'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_import_submit1', 'tabindex' => 100)) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -146,3 +146,7 @@ og.submitCsv = function(genid) {
 	</div>
 </div>
 </form>
+
+<script type="text/javascript">
+	Ext.get('<?php echo $genid ?>filenamefield').focus();
+</script>

@@ -55,10 +55,7 @@ og.MessageManager = function() {
 				'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 				og.clean(value), og.getUrl('message', 'view', {id: r.data.object_id}), og.clean(r.data.text));
 	
-		var ids = String(r.data.wsIds).split(',');
-		var wsString = "";
-		for(var i = 0; i < ids.length; i++)
-			wsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
+		var wsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
 		
 		var text = '';
 		if (r.data.text != ''){

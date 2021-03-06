@@ -48,16 +48,7 @@ class ProjectEvents extends BaseProjectEvents {
 		} else {
 			$tag_str= "";
 		}
-		// build the query
-//		$q = "SELECT UNIX_TIMESTAMP(`start`) as start_since_epoch,
-//			UNIX_TIMESTAMP(duration) as end_since_epoch, private, created_by_id, subject,
-//			description, eventtype, ".TABLE_PREFIX."project_events.id, 
-//			repeat_d, repeat_m, repeat_y, repeat_h, repeat_end, type_id, 
-//			typename, typedesc, typecolor, repeat_num, special_id, created_on
-//			FROM ".TABLE_PREFIX."project_events left outer join ".TABLE_PREFIX."eventtypes 
-//			
-//			ON ".TABLE_PREFIX."project_events.type_id=".TABLE_PREFIX."eventtypes.id 
-//			WHERE
+
 		$conditions = "	(
 				-- 
 				-- THIS RETURNS EVENTS ON THE ACTUAL DAY IT'S SET FOR (ONE TIME EVENTS)
@@ -178,24 +169,20 @@ class ProjectEvents extends BaseProjectEvents {
 							unset($result_events[$k]);
 						}
 					} else {
-						foreach ($inv as $key => $v) {
-							if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()))) {
-								unset($result_events[$k]);
-								break;
-							}	
-						}
+						if (count($inv) > 0){
+							foreach ($inv as $key => $v) {
+								if ($v == null || (trim($inv_state) != '-1' && !strstr($inv_state, ''.$v->getInvitationState()))) {
+									unset($result_events[$k]);
+									break;
+								}	
+							}
+						} else unset($result_events[$k]);
 					}
 				}
 			}
 		}
 		
 		return $result_events;
-//			$result = DB::execute($q); // $cal_db->sql_query($q);
-//		if(!$result AND DEBUG){
-//			echo "Error executing event-retrieval query.";
-//		}		
-//    	$rows=$result->fetchAll();
-//		return $rows;
 	}
 	
 	
@@ -343,11 +330,7 @@ class ProjectEvents extends BaseProjectEvents {
 		if (isset($result_events) && is_array($result_events) && count($result_events)) {
 			foreach ($result_events as $event) {
 				$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_id));
-				/*if (is_array($inv)) {
-					foreach ($inv as $i) {
-						$event->addInvitation($i);
-					}
-				} else */if ($inv != null) {
+				if ($inv != null) {
 					$event->addInvitation($inv);
 				}
 			}

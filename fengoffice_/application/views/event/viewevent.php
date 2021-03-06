@@ -136,7 +136,7 @@ if (isset($event) && $event instanceof ProjectEvent) {
 					if ($inv->getInvitationState() == 1) $state_desc = lang('yes');
 					else if ($inv->getInvitationState() == 2) $state_desc = lang('no');
 					else if ($inv->getInvitationState() == 3) $state_desc = lang('maybe');
-					$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . $inv_user->getDisplayName() . '</td><td>' . $state_desc . '</td></tr>';
+					$otherInvitationsTable .= '<tr'.($isAlt ? ' class="altRow"' : '').'><td>' . clean($inv_user->getDisplayName()) . '</td><td>' . $state_desc . '</td></tr>';
 					$isAlt = !$isAlt;
 					$cant++;
 				}

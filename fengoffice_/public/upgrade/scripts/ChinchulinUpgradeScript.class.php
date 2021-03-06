@@ -134,7 +134,7 @@ class ChinchulinUpgradeScript extends ScriptUpgraderScript {
 			$upgrade_script = "DELETE FROM `".TABLE_PREFIX."config_options` WHERE `name` = 'time_format_use_24';
 			UPDATE `".TABLE_PREFIX."config_options` SET `category_name` = 'modules' WHERE `name` = 'enable_email_module';
 			ALTER TABLE `".TABLE_PREFIX."mail_contents` ADD COLUMN `content_file_id` VARCHAR(40) NOT NULL default '';
-			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = '1', `config_handler_class` = 'TNChkConfigHandler', `dev_comment` = 'Notification checkbox default value' WHERE `name` = 'can notify from quick add';
+			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = '2', `config_handler_class` = 'TNChkConfigHandler', `dev_comment` = 'Notification checkbox default value' WHERE `name` = 'can notify from quick add';
 			";
 		}
 		@unlink("../../language/de_de/._lang.js");

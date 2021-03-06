@@ -405,7 +405,7 @@
     	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );
   } // pick_date_widget
   
-  function pick_date_widget2($name, $value = null, $genid = null, $display_date_info = true) {
+  function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true) {
   	if ($genid == null) $genid = gen_id();
   	$dateValue = '';
   	if ($value instanceOf DateTimeValue){
@@ -422,8 +422,9 @@
 	var dtp" . gen_id() . " = new og.DateField({
 		renderTo:'" . $genid . $name . "',
 		name: '" . $name . "',
-		id: '" . $genid . $name . "Cmp',
-		value: '" . $dateValue . "'});
+		id: '" . $genid . $name . "Cmp',".
+		(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
+		"value: '" . $dateValue . "'});
 	</script>";
 	return $html;
   } // pick_date_widget
@@ -440,7 +441,7 @@
     return text_field($name, $value);
   } // pick_time_widget
   
-  function pick_time_widget2($name, $value = null, $genid = null, $format = null) {
+  function pick_time_widget2($name, $value = null, $genid = null, $tabindex = null, $format = null) {
   	if ($format == null) $format = (user_config_option('time_format_use_24') ? 'G:i' : 'g:i A');
   	if ($value instanceof DateTimeValue) {
   		$value = $value->format($format);
@@ -452,8 +453,9 @@
 		renderTo:'" . $genid . $name . "',
 		name: '" . $name . "',
 		format: '" . $format . "',
-		width: 80,
-		value: '" . $value . "'});
+		width: 80,".
+		(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
+		"value: '" . $value . "'});
 	</script>";
   	return $html;
   }

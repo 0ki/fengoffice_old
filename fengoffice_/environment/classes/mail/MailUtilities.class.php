@@ -1,4 +1,7 @@
 <?php
+require_once 'Net/IMAP.php';
+require_once "Net/POP3.php";
+
 class MailUtilities {
 
 	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived, $maxPerAccount = 0) {
@@ -6,6 +9,7 @@ class MailUtilities {
 			$accounts = MailAccounts::findAll();
 		}
 		
+		$old_memory_limit = ini_get('memory_limit');
 		ini_set('memory_limit', '96M');
 
 		$err = 0;
@@ -19,9 +23,8 @@ class MailUtilities {
 					$accId = $account->getId();
 					$emails = array();
 					if (!$account->getIsImap()) {
-						if (!$account->getIncomingSsl()) {
-							$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
-						}
+						if (!$account->getIncomingSsl())
+						$mailsReceived += self::getNewPOP3Mails($account, $maxPerAccount);
 					} else {
 						$mailsReceived += self::getNewImapMails($account, $maxPerAccount);
 					}
@@ -34,6 +37,8 @@ class MailUtilities {
 				}
 			}
 		}
+		
+		ini_set('memory_limit', $old_memory_limit);
 		
 		tpl_assign('err',$err);
 		tpl_assign('errAccounts',$errAccounts);
@@ -63,7 +68,7 @@ class MailUtilities {
 		fclose($handle);
 		$date = DateTimeValueLib::now()->format("Y_m_d_H_i_s__");
 		$repository_id = FileRepository::addFile($tmp, array('name' => $date.$uid, 'type' => 'text/plain', 'size' => strlen($content)));
-
+		
 		unlink($tmp);
 		
 		return $repository_id;
@@ -72,9 +77,8 @@ class MailUtilities {
 	private function SaveMail(&$content, MailAccount $account, $uidl, $state = 0, $imap_folder_name = '') {
 		if (strpos($content, '+OK ') > 0) $content = substr($content, strpos($content, '+OK '));
 		self::parseMail($content, $decoded, $parsedMail, $warnings);
-
 		$encoding = array_var($parsedMail,'Encoding', 'UTF-8');
-		
+
 		if (!isset($parsedMail['Subject'])) $parsedMail['Subject'] = '';
 		$mail = new MailContent();
 		$mail->setAccountId($account->getId());
@@ -98,6 +102,7 @@ class MailUtilities {
 		$mail->setCreatedOn(new DateTimeValue(time()));
 		$mail->setCreatedById($account->getUserId());
 		$mail->setAccountEmail($account->getEmail());
+		
 		$uid = trim($uidl);
 		if ($uid[0]== '<') {
 			$uid = mb_substr($uid, 1, mb_strlen($uid, $encoding) - 2, $encoding);
@@ -119,10 +124,10 @@ class MailUtilities {
 				$mail->setBodyPlain(iconv(array_var($parsedMail['Alternative'][0],'Encoding','UTF-8'),'UTF-8//IGNORE', array_var($parsedMail['Alternative'][0], 'Data', '')));
 			}
 		}
-
+		
 		$repository_id = self::SaveContentToFilesystem($mail->getUid(), iconv($encoding, 'UTF-8//IGNORE', $content));
 		$mail->setContentFileId($repository_id);
-
+		
 		try {
 			DB::beginWork();
 			$mail->save();
@@ -159,7 +164,6 @@ class MailUtilities {
 	 * @return array
 	 */
 	private function getNewPOP3Mails(MailAccount $account, $max = 0) {
-		require_once "Net/POP3.php";
 		$mime = new mime_parser_class();
 		$pop3 = new Net_POP3();
 
@@ -262,21 +266,25 @@ class MailUtilities {
 		}
 	}
 
-	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain') {
+	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain',$transport=0) {
 		//Load in the files we'll need
 		Env::useLibrary('swift');
 		// Load SMTP config
-		$transport = 0;
 		$smtp_authenticate = $smtp_username != null;
 		
+		switch ($transport) {
+			case 'ssl': $transport = SWIFT_SSL; break;
+			case 'tls': $transport = SWIFT_TLS; break;
+			default: $transport = 0; break;
+		}
+		
 		//Start Swift
-		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));		
+		$mailer = new Swift(new Swift_Connection_SMTP($smtp_server, $smtp_port, $transport));
+
 		if(!$mailer->isConnected()) {
 			return false;
 		} // if
 		$mailer->setCharset('UTF-8');
-		//        if($cc) $mailer->addCc($cc);
-		//        if($bcc) $mailer->addBcc($bcc);
 		if($smtp_authenticate) {
 			if(!($mailer->authenticate($smtp_username, self::ENCRYPT_DECRYPT($smtp_password)))) {
 				return false;
@@ -304,76 +312,84 @@ class MailUtilities {
 	
 	private function getNewImapMails(MailAccount $account, $max = 0) {
 		$received = 0;
-		// mailbox_string e.g. "{imap.gmail.com:993/imap/ssl}", box = INBOX
-		$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap/".($account->getIncomingSsl() ? "ssl" : "")."}";
 
+		$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
+		$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+		
 		$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 		if (is_array($mailboxes)) {
 			foreach ($mailboxes as $box) {
-				if ($box->getCheckFolder() && function_exists("imap_open")) {
-					$mailbox = imap_open ($mailbox_string.$box->getFolderName(), $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-					$check = imap_check($mailbox);
-					if ($check) {
-						$oldUids = $account->getUids();
-						// get the index of the last received email
-						$lastReceived = $check->Nmsgs;
-						while ($lastReceived > 0 && !in_array(imap_uid($mailbox, $lastReceived), $oldUids)) {
-							$lastReceived--;
+				if ($box->getCheckFolder()) {
+					
+					if ($imap->selectMailbox($box->getFolderName())) {
+						$oldUids = $account->getUids($box->getFolderName());
+						$numMessages = $imap->getNumberOfMessages($box->getFolderName());
+						
+						$mails_info = array();
+						if (!is_array($oldUids) || count($oldUids) == 0) $lastReceived = 0;
+						else {
+							$lastReceived = $numMessages;
+							$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
+							while (is_array($mails_info[$lastReceived]) && $lastReceived > 0 && !in_array($mails_info[$lastReceived][0]['UID'], $oldUids)) {
+								$lastReceived--;
+								$mails_info[$lastReceived] = $imap->getSummary($lastReceived);
+							}
 						}
 						
-						if ($max == 0) {
-							$toGet = $check->Nmsgs;
-						} else {
-							$toGet = min($lastReceived + $max, $check->Nmsgs);
+						for($i=0;$i<10;$i++) {
+							//$summary = $imap->getSummary($numMessages - $i);
+							//Logger::log($summary[0]['MSG_NUM']." ".$summary[0]['SUBJECT']);
 						}
+						
+						if ($max == 0) $toGet = $numMessages;
+						else $toGet = min($lastReceived + $max, $numMessages);
 						
 						// get mails since last received (last received is not included)
-						for ($i = $lastReceived; $i < $check->Nmsgs; $i++) {
+						for ($i = $lastReceived; $i < $toGet; $i++) {
 							$index = $i+1;
-							// view if it is Draft or Sent
-							$header = imap_header($mailbox, $index);
-							$state = '0';
-							if (isset($header)) {
-								if ($header->Draft == 'D') $state = '2'; //Draft
-								else if (strcasecmp($header->from[0]->mailbox.'@'.$header->from[0]->host, $account->getEmail()) == 0) $state = '1'; //Sent
-							}
-							self::SaveImapMail($mailbox, $account, $index, $state, $box->getFolderName());
+							$summary = array_var($mails_info, $index, $imap->getSummary($index));
+							if ($imap->isDraft($index)) $state = '2';
+							else if ($summary[0]['FROM'][0]['EMAIL'] == $account->getEmail()) $state = '1';
+							else $state = '0';
+							
+							$messages = $imap->getMessages($index);
+							self::SaveMail($messages[$index], $account, $summary[0]['UID'], $state, $box->getFolderName());
 							$received++;
 						}
+
 					}
-					imap_close($mailbox);
 				}
 			}
 		}
+		$imap->disconnect();
 		return $received;
 	}
 
-	private function SaveImapMail($mailbox, MailAccount $account, $index, $state = 0, $imap_folder_name = '')
-	{
-		$uidl = imap_uid($mailbox, $index);
-		$header = imap_fetchheader($mailbox, $index, FT_INTERNAL);
-		$body = imap_body($mailbox, $index);
-		
-		self::SaveMail($header . $body, $account, $uidl, $state, $imap_folder_name);
-	}
-	
 	function getImapFolders(MailAccount $account) {
+		$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
+		$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+		$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+		
 		$result = array();
-		if (function_exists("imap_open")) {
-			$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
-			$mailbox = imap_open ($mailbox_string, $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-			if ($mailbox) {
-				$check = imap_check($mailbox);
-				
-				$list = imap_list($mailbox, $mailbox_string, '*');
-				if (is_array($list)) {
-				    foreach ($list as $val) {
-				    	$val = imap_utf7_decode($val);
-				        $result[] = substr($val, strpos($val, '}') + 1);
-				    }
+		if ($ret === true) {
+			$mailboxes = $imap->getMailboxes('',0,true);
+			if (is_array($mailboxes)) {
+				foreach ($mailboxes as $mbox) {
+					$select = true;
+					$attributes = array_var($mbox, 'ATTRIBUTES');
+					if (is_array($attributes)) {
+						foreach($attributes as $att) {
+							if (strtolower($att) == "\\noselect") $select = false;
+							if (!$select) break;
+						}
+					}
+					$name = array_var($mbox, 'MAILBOX');
+					if ($select && isset($name)) $result[] = $name;
 				}
 			}
-		}
+		}		
+		$imap->disconnect();
 		return $result;
 	}
 	
@@ -382,30 +398,34 @@ class MailUtilities {
 			$max_date = DateTimeValueLib::now();
 			$max_date->add('d', -1 * $account->getDelFromServer());
 			if ($account->getIsImap()) {
-				if (function_exists("imap_open")) {
-					$mailbox_string = "{".$account->getServer().($account->getIncomingSsl() ? ":".$account->getIncomingSslPort() : "")."/imap".($account->getIncomingSsl() ? "/ssl" : "")."}";
+				$server_url = ($account->getIncomingSsl() ? "ssl" : "tcp") . "://" . $account->getServer();
+				$imap = new Net_IMAP($server_url, $account->getIncomingSslPort());
+				$ret = $imap->login($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
+				
+				$result = array();
+				if ($ret === true) {
 					$mailboxes = MailAccountImapFolders::getMailAccountImapFolders($account->getId());
 					if (is_array($mailboxes)) {
 						foreach ($mailboxes as $box) {
 							if ($box->getCheckFolder()) {
-								$mailbox = imap_open ($mailbox_string.$box->getFolderName(), $account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
-								$check = imap_check($mailbox);
-								for ($i = 1; $i < $check->Nmsgs; $i++) {
-									$info = imap_header($mailbox, $i);
-									if ($info) {
-										if ($max_date->getTimestamp() > $info->udate) {
-											imap_delete($mailbox, $i);
-										} else break;
-									}
+								$numMessages = $imap->getNumberOfMessages($box->getFolderName());
+								for ($i = 1; $i < $numMessages; $i++) {
+									$summary = $imap->getSummary($i);
+									if (is_array($summary)) {
+										$m_date = DateTimeValueLib::makeFromString($summary[0]['INTERNALDATE']);
+										if ($max_date->getTimestamp() > $m_date->getTimestamp())
+											$imap->deleteMessages($i);
+										else break;
+									} 
 								}
-								imap_expunge($mailbox);
-								imap_close($mailbox);
+								$imap->expunge();
 							}
 						}
 					}
 				}
+				
 			} else {
-				require_once "Net/POP3.php";
+				//require_once "Net/POP3.php";
 				$pop3 = new Net_POP3();
 				// Connect to mail server
 				$pop3->connect($account->getServer());

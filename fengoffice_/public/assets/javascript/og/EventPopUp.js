@@ -215,9 +215,6 @@ og.EventPopUp.goToEdit = function (){
 	var ev_type = Ext.getCmp('type_id').getValue();
 	var data = this.the_data;
 	
-	if (Ext.getCmp('hide_calendar_toolbar').getValue() == 1) 
-		hideCalendarToolbar();
-		
 	duration_split = Ext.getCmp('duration').getValue().split(':');
 	data.durationhour = duration_split[0];
 	data.durationmin = duration_split[1];

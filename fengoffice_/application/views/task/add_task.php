@@ -29,7 +29,7 @@
 			echo lang('edit task list');
 		}
 	?>
-	</td><td style="text-align:right"><?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -43,7 +43,8 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_more_div', this)"><?php echo lang('task data') ?></a> -  
-		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?> 
+		<?php /*<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_task_handins_div', this)"><?php echo lang('handins') ?></a> - */ ?>
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
@@ -64,7 +65,7 @@
 	<div id="<?php echo $genid ?>add_task_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_tags_field("task[tags]", array_var($task_data, 'tags')); ?>
+		<?php echo autocomplete_tags_field("task[tags]", array_var($task_data, 'tags'), null, 30); ?>
 	</fieldset>
 	</div>
 
@@ -74,11 +75,11 @@
     <legend><?php echo lang('task data') ?></legend>
     
 	    <label><?php echo lang('milestone') ?>: <span class="desc">(<?php echo lang('assign milestone task list desc') ?>)</span></label>
-    	<?php echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone')) ?>
+    	<?php echo select_milestone('task[milestone_id]', null, array_var($task_data, 'milestone_id'), array('id' => $genid . 'taskListFormMilestone', 'tabindex' => '40')) ?>
     	
     	<div style="padding-top:4px">
     		<?php echo label_tag(lang('parent task'), $genid . 'addTaskTaskList') ?>
-			<?php echo select_task_list('task[parent_id]', active_or_personal_project(), array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList')) ?>
+			<?php echo select_task_list('task[parent_id]', active_or_personal_project(), array_var($task_data, 'parent_id'), false, array('id' => $genid . 'addTaskTaskList', 'tabindex' => '50')) ?>
     	</div>
     	
     	<div style="padding-top:4px">	
@@ -86,11 +87,11 @@
     	<table><tbody><tr><td style="padding-right: 10px">
     	<?php echo label_tag(lang('start date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid) ?>
+		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid, 60) ?>
 		</td></tr><tr><td style="padding-right: 10px">
 		<?php echo label_tag(lang('due date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid) ?>
+		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid, 70) ?>
 		</td></tr></tbody></table>
 		</div>
 		
@@ -103,9 +104,9 @@
       		<table>
 		<tr>
 			<td align="right"><?php echo lang("hours") ?>:&nbsp;</td>
-			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('style' => 'width:30px')) ?></td>
+			<td align='left'><?php echo text_field("task[time_estimate_hours]", $hours, array('style' => 'width:30px', 'tabindex' => '80')) ?></td>
 			<td align="right" style="padding-left:10px"><?php echo lang("minutes") ?>:&nbsp;</td>
-			<td align='left'><select name="task[time_estimate_minutes]" size="1">
+			<td align='left'><select name="task[time_estimate_minutes]" size="1" tabindex="85">
 			<?php
 				$minutes = ($totalTime % 60);
 				$minuteOptions = array(0,5,10,15,20,30,45);
@@ -121,7 +122,7 @@
 		
 		<div style="padding-top:4px">
 		<?php echo label_tag(lang('task priority')) ?>
-		<?php echo select_task_priority('task[priority]', array_var($task_data, 'priority', ProjectTasks::PRIORITY_NORMAL)) ?>
+		<?php echo select_task_priority('task[priority]', array_var($task_data, 'priority', ProjectTasks::PRIORITY_NORMAL), array('tabindex' => '90')) ?>
 		</div>
   	</fieldset>
   	</div>
@@ -159,6 +160,19 @@
 	</fieldset>
   	</div> */ ?>
   
+	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object reminders') ?></legend>
+		<label><?php echo lang("due date")?>:</label>
+		<div id="<?php echo $genid ?>add_reminders_content">
+			<?php echo render_add_reminders($object, 'due_date', array(
+				'type' => 'reminder_email',
+				'duration' => 1,
+				'duration_type' => 1440
+			)); ?>
+		</div>
+		</fieldset>
+	</div>
 	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
 	<fieldset>
@@ -208,7 +222,7 @@
 		
    	
 	<div><?php echo label_tag(lang('description'), $genid . 'taskListFormDescription') ?>
-	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription')) ?>
+	<?php echo textarea_field('task[text]', array_var($task_data, 'text'), array('class' => 'short', 'id' => $genid . 'taskListFormDescription', 'tabindex' => '140')) ?>
 	</div>
 
 	<div>
@@ -226,8 +240,8 @@
 		</td></tr></table>
 		
 	</div>
-	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden")); ?>
-  <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '1')) ?>
+	<?php echo input_field("task[is_template]", array_var($task_data, 'is_template', false), array("type" => "hidden", 'tabindex' => '160')); ?>
+  <?php echo submit_button($task->isNew() ? (array_var($task_data, 'is_template', false) ? lang('save template') : lang('add task list')) : lang('save changes'), 's', array('tabindex' => '170')) ?>
 </div>
 </div>
 </form>
@@ -294,6 +308,7 @@
 	        triggerAction: 'all',
 	        selectOnFocus:true,
 	        width:160,
+	        tabIndex: '150',
 	        valueField: 'value',
 	        emptyText: (lang('select user or group') + '...'),
 	        valueNotFoundText: ''

@@ -6,7 +6,7 @@
 og.eventManager.addListener('tag changed', 
  	function (tag){ 
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink(og.getUrl('event', cal_actual_view, {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y'), user_filter: 0, state_filter: -1}), 
+ 			og.openLink(og.getUrl('event', 'view_calendar', {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y')}), 
  				{caller:'calendar-panel',
  				get:{tag:tag.name}}
  			);
@@ -22,7 +22,7 @@ og.eventManager.addListener('tag changed',
 og.eventManager.addListener('workspace changed', 
  	function (ws){ 
  		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel') {
- 			og.openLink(og.getUrl('event', cal_actual_view, {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y'), user_filter: 0, state_filter: -1}), 
+ 			og.openLink(og.getUrl('event', 'view_calendar', {day: calToolbarDateMenu.picker.getValue().format('d'), month: calToolbarDateMenu.picker.getValue().format('n'), year: calToolbarDateMenu.picker.getValue().format('Y')}), 
  				{caller:'calendar-panel'}
  			);
  		}
@@ -43,9 +43,23 @@ og.eventManager.addListener('company added',
  	}
 );
 
-og.eventManager.addListener('debug',
-	function (text){
-		og.msg(lang('debug'), text, 0);
+og.eventManager.addListener('popup',
+	function (args) {
+		og.msg(args.title, args.message, 0, args.type, args.sound);
+	}
+);
+
+og.eventManager.addListener('user config localization changed',
+	function(val) {
+		og.loadScript(og.getUrl('access', 'get_javascript_translation'),
+			function() {
+				var spans = document.getElementsByName('og-lang');
+				for (var i=0; i < spans.length; i++) {
+					var key = spans[i].id.substring(8);
+					spans[i].innerHTML = lang(key);
+				}
+			}
+		);
 	}
 );
 </script>

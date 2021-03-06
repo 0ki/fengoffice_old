@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.2.1 
-    ===================
+    About OpenGoo 1.3-beta 
+    ======================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -61,10 +61,10 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download OpenGoo 1.2.1 - http://www.opengoo.org/
+    2. Download OpenGoo 1.3-beta - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
-    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.1.
+    5. Go to <your_opengoo>/public/upgrade in your browser and choose to upgrade from your current version to 1.2.0.1.
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -86,169 +86,33 @@
 	Changelog
 	=========
 
-	Since 1.2
-	---------
-	- usability: Changed the behavior of the "Show notification checkbox" user config option. Now it always shows the checkbox but it's checked or unchecked by default depending on this config option.
-	- usability: Now you will be notified of new versions of OpenGoo.
-	- bugfix: Fixed some layout problems in the object's view in IE.
-	- bugfix: Notification checkboxes weren't working correctly when adding or editing an event.
-	- bugfix: Clicking on "+1 more" on the calendar's monthly view would ignore the saved calendar filters.
-	- bugfix: Error in Notifier when deleting an object.
-	- system: Changed how emails are stored, which will let you receive larger emails.
-	- security: Fixed a security vulnerability that would allow a normal user to modify his own permissions.
-
-	Since 1.2 RC2
-	-------------
-	- bugfix: "No Title!!!" shown on some comment notifications.
-	- bugfix: Displaying documents on the dashboard didn't work for some languages.
-	- bugfix: Events on a workspace with no color had no name on the monthly view.
-	- bugfix: Clicking on Compress action would show the delete email account dialog.
-	- bugfix: Error 500 when closing a timeslot on a task.
-
-	Since 1.2 RC1
-	-------------
-	- bugfix: could not edit or delete a milestone in PHP 5.1.2	
-	- bugfix: could not view a task with no due date.
-	- bugfix: editing custom properties threw an error on Opera.
-	- bugfix: when setting initial workspace as 'none' the last workspace was being shown.	
-	- bugfix: Workspace crumbs showed only 'All' when an initial workspace was being loaded.	
-	- bugfix: if a milestone with tasks was sent to trash the tasks listing breaks.
-	- bugfix: milestone date was being set incorrectly.
+	Since 1.2.1
+	-----------
+	- feature: Billing Module. Allows defining hourly rates for users and workspaces. You can generate a report showing how much should be billed for some client. You also get charts on the dashboard comparing billing amounts by user.
+	- feature: Reminders. Define email reminders or popup reminders for events, tasks and milestones. Needs a properly configured cron job.
+	- feature: Share with an external user easily.
+	- feature: New dashboard widget with workspace info.
 	
-	Since 1.2 beta 2
-	----------------
+	- usability: Sort weblinks by date as well as name.
+	- usability: Improved display of documents' contents. HTML documents are shown with its CSS. Long documents are shown with a scrollbar, so that it doesn't displace comments and revisions out of the view.
+	- usability: Weblinks view. This allows to comment on web links.
+	- usability: User is automatically subscribed to objects when using quick adds.
+	- usability: Correctes tabindex order in forms in Firefox.
+	- usability: Added button 'clasify' next to title at mail clasification view.	
+	- usability: Title in calendar daily was made localizable.
+	- usability: Calendar filters are remembered.
+	- usability: Now you can see the state of attendance to an event in the monthly view.
+	- usability: User filters in calendar filter also tasks and milestones.
+	- usability: When adding objects to a template the custom properties are now also copied.
 	
-	usability: A Task's due date was not being shown on the task's view.
-	usability: Client users can't be admins, so now you won't be allowed to add them to the Administrators group.
-	usability: If an email was sent to two users, and one user classified the email, the other user would see both emails.
-	bugfix: Sometimes it was not possible to add a task through the quick add (clicking the button wouldn't do aything).
-	bugfix: Could not filter the Dashboard by tags with a quote in the name.
-	bugfix: Error 411 when adding a task.
-	bugfix: Error in Notifier when deleting a task.
-	bugfix: Error when filtering tasks by milestone = None or assigned to = anyone.
-	bugfix: Only comments made by the logged user were being shown.
-	bugfix: Some single quotes weren't being escaped from langs.
-	bugfix: Actions column (documents tab) didn't display icons correctly in IE, Chrome and Safari.
-	bugfix: Contacts role wasn't being shown sometimes on the listing.
-	bugfix: Searching an email address returend all emails from the same domain (e.g. searching for john@opengoo.org returned all emails ending in @opengoo.org).
-	bugfix: Error when editing imap account when the imap extension is not installed.
-	bugfix: Mail with some special characters made mail check hang. 1.1.
-	bugfix: Multilple workspaces selector was taking too much time to load when there were lots of workspaces.
-	bugfix: Some controls were not showing when quick-adding a task to an unassigned category.
-	bugfix: User filter menu had no scrollbars on IE when too many users.
-	bugfix: Weekly calendar: when advancing week by week sometimes it skiped more than one week.
-	bugfix: When displaying some html files content, the revision list sometimes lost some format and was put on the right of the screen.
-	
-	Since 1.2 beta
-	--------------
-	
-	usability: Allow to hide filtering panels on the object picker.
-	bugfix: Trashed email was incorrectly sorted.
-	bugfix: Email widget showed trashed email.
-	bugfix: Fixed a problem when downloading a backup.
-	bugfix: Error when checking in files "There is no session matching this name".
-	bugfix: Following a link from an email notification to a content object would show the dashboard.
-	bugfix: Email with trailing whitespace was not being considered valid.
-	bugfix: Missing langs on notifications.
-	bugfix: Invalid controller action when viewing a webpage.
-	bugfix: Email notifications for object editions or deletions showed a wrong user.
-	bugfix: Couldn't upload files with unknown extensions.
-	bugfix: Couldn't link objects or invite users to an event.
-	bugfix: Error when filtering by a tag overview / list files or contacts.
-	bugfix: Backup command failed but a success message was being shown.
-	
-	Since 1.1
-	---------
-	
-	feature: Importing and Exporting:
-		- Import/Export support for iCalendar files.
-		- Import company info from CSV files in addition to the exiting contact import.
-		- Export contacts and companies to CSV files.
-	feature: Improved Email module:
-		- Added support for SSL connections
-		- Partial support for IMAP (now you can fetch emails using IMAP protocol)
-		- Assign email to more than one workspace.
-		- Comments for emails.
-		- Autocomplete email addresses.
-		- Email accounts configuration option to delete emails from the server after N days
-	feature: Spreadsheets integration - An alpha version of the Spreadsheets module of OpenGoo.
-	feature: Automatize OpenGoo upgrade - OpenGoo's upgrade now can download and install new versions with just one click. (Your webserver needs write permission on all OpenGoo files and folders).
-	feature: Cron events - Some common procedures like checking email can be configured to be done by a cron job so that you don't have to do them manually saving you time and improving the user experience (just refresh the email panel to get new email).
-	feature: Improved Content Object subscriptions - Now you can subscribe other users and you will be notified when the object is created, modified, commented on or deleted.
-	feature: Enhanced custom properties - Now you can add an unlimited amount of custom properties and you can see them on the object's view, as well as search them.
-	feature: Copy documents - You can now create copies of a document.
-	feature: New system configuration options:
-		- Show/hide modules (notes, contacts, email, etc.)
-	feature: New user configuration options
-		- Allow to remember graphical interface state
-		- Choose initially selected workspace or remember last viewed workspace	
-		- 12/24 hour format
-		- Start of work time
-		- User language
-		- Enable/Disable 'send email notification' checkbox for tasks.
-	feature: Files massive upload as a zip file - Upload a zip containing multiple files and extract it inside OpenGoo.
-	feature: Zip files in OpenGoo to ease download.
-	feature: Sort tags by name or number of occurences (including tag count).
-	feature: Edit timeslots.
-	feature: Improved Content Objects' history - Now it includes tagging, commenting, etc.
-	feature: Indexing of .doc and .ppt when using filesystem storage and the 'catdoc' and 'catppt' commands are present.
-	
-	usability: When deleting an email account it now asks you whether you want to delete all its emails (by default it won't).
-	usability: URLs in Content Objects' descriptions are shown as links.
-	usability: When adding a milestone to a template, all of its tasks are now (implicitly) added.
-	usability: Emails now display the local time instead of the time of origin.
-	usability: Events displayed in the calendar now have a minimum height so that it is always correctly visible, even if it is 15 minutes or less.
-	usability: A user is now always able to edit its associated contact data.
-	usability: 'Created by' and 'Mofified by' properties are now displayed on the workspace's edit view.
-	usability: 'Anyone' was removed from list of possible people to assign a task to.
-	usability: There's a new warning that passwords are sent as plain text when creating a user.
-	usability: When linking objects, selecting multiple objects now links all of them.
-	usability: Improved display for: Edit comments & change password.
-	usability: Localized date format in time reports.
-	usability: The expanding workspace label now floats when expanded instead of displacing the rest of the content.
-	usability: When an administrator is editing permissions for a user, all system workspaces are shown.
-	
-	system: Implemented an og.OpenGooProxy that extends Ext.data.DataProxy for listings.
-	system: Changed POP3 backend to improve email checking reliability.
-	
-	bugfix: Comments with non ASCII characters could break Overview, because of the use of substr function to truncate the description. Fixed this all around by using mb_substr instead of substr.
-	bugfix: Tags with single quotes would give an error when filtering by it.
-	bugfix: Linking an object in an edit view would refresh the view. It now works like when in the create view.
-	bugfix: Fixed a time report error: unknown column 'deleted_by'.
-	bugfix: Timezones would only go up to 9.9, so timezones with two digits (+12, -10, etc.) wouldn't work.
-	bugfix: Trashed comments were being displayed on the dashboard.
-	bugfix: When an admin edited another user's personal workspace he would get permissions to the workspace.
-	bugfix: When editing a task/milestone in an OpenGoo translated to french, the date changed the month for the day.
-	bugfix: A user could change another user's attendance to an event.
-	bugfix: An email with an attachment with no name couldn't be classified.
-	bugfix: Several bugs while checking mail were fixed.
-	bugfix: Dates in listings weren't localized.
-	bugfix: Some emails were being displayed incorrectly.
-	bugfix: Errors with UTF-8 codification on emails.php.
-	bugfix: Mail drafts had two scrollbars.
-	bugfix: Mail drafts: an error prevented the editor from being displayed.
-	bugfix: Mail without body is showing all the original content.
-	bugfix: Tasks interface: Selection for 'Assigned to' filter was lost when changing workspace.
-	bugfix: When editing an event, the invited user list was being taken from the selected workspace and not from the event's workspace.
-	bugfix: Tasks added with due date = tomorrow, and in overview it appeared as overdued.
-	bugfix: Error undefined property Timeslot:$workspaces.
-	bugfix: Apply to all when unassigning permissions left some ticks that shouldn't be there.
-	bugfix: Completed deleted tasks weren't shown on the trash.
-	bugfix: File upload: when clicking on the submit button before the name textbox loses focus the file wasn't being uploaded.
-	bugfix: Performing a search from the search form of a search results view didn't take into account the active workspace. It searched on the same workspace as the search result.
-	bugfix: Search for documents and presentations content was not working correctly.
-	bugfix: Search: Contacts were not searchable, problems with ProjectDataObject inheritance.
-	bugfix: Tasks and Time panels: For date displays, when the year is different than the current year, it is now displayed (e.g. Jan 12, 2007).
-	bugfix: Tasks panel: When selecting a filter that does not return any tasks, when changing group criteria the tasks from the previous filter condition were redrawn.
-	bugfix: Tasks: Solved issues with actions involving 2 or more levels of subtasks (getSubtasks gets only the first level of subtasks).
-	bugfix: Tasks: When moving to trash a parent task that has subtasks, the subtasks were also removed from the main view, but when refreshing the tasks panel they were back.
-	bugfix: Tasks: When there's no filter applied, New->New Task didn't work.
-	bugfix: The green progress bar on milestones counted trashed tasks.
-	bugfix: The trash workspace's name is now translatable. It was hardcoded to 'Trash'.	
-	bugfix: When selecting a workspace in page 2 of contacts, and workspace had only one page of contacts, no contacts are seen (panel is still in page 2).
-	bugfix: If there are corrupt files (e.g. because the filesystem backend was changed) now you are allowed to delete the file anyway. Before you would get an error.
-	bugfix: Solved some 'memory exhausted' errors when downloading big files from the file system (OpenGoo files, backups, etc.). Not fixed for database file storage.
-	bugfix: A problem with Calendar in Russian language.
-	bugfix: Could not edit permissions on client users (Administration)
-	bugfix: ',' support when adding fractional time worked hours to a task (tasks panel, edit task, task view).
-	bugfix: Assigning 'none' to task milestone in edit on tasks panel wouldn't work.
+	- system: Email content is now stored as a file, which allows receiving larger emails when using filesystem storage.
+	- system: Removed table eventtypes.
+	- system: Separate calendar filter menu, user combo (unificated with tasks) and status combo.
+	- system: Substituted imap functions for PEAR's Net_IMAP functions, which allows for greater compatibilty for using IMAP accounts.
+	- system: External company users are no longer shown other external company users.
+	 
+	- bugfix: Email comments weren't listed.
+	- bugfix: SSL for outgoing connections was not correctly supported in email accounts.
+	- bugfix: Reduced the number of CSS files in OpenGoo to bypass a limitation in IE that won't let you include more than 32 CSS files in one page.
+	- bugfix: search in a workspace returned no results but search in all workspaces returned results from that workspace.
+	- bugfix: Total task execution time report included task pause time as well as task time.

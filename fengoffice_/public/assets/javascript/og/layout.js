@@ -28,7 +28,7 @@ Ext.onReady(function(){
 	og.panels = {};
 	var panels = [
 		og.panels.overview = new og.ContentPanel({
-			title: lang('overview'),
+			title: langhtml('overview'),
 			id: 'overview-panel',
 			iconCls: 'ico-overview',
 			refreshOnWorkspaceChange: true,
@@ -76,13 +76,11 @@ Ext.onReady(function(){
 			title: lang('calendar'),
 			id: 'calendar-panel',
 			iconCls: 'ico-calendar',
-			refreshOnWorkspaceChange: false, //the handler is in listeners.php
+			refreshOnWorkspaceChange: true,
 			defaultContent: {
-				type: "url",
-				data: og.getUrl('event', cal_actual_view, {day: today_date.format('d'), month: today_date.format('n'), year: today_date.format('Y'), user_filter: 0, state_filter: ' 0 1 3'})
-			},
-			baseCls: '',
-			tbar: og.CalendarToolbarItems
+				type: "panel",
+				data: "events"
+			}
 		}),
 		og.panels.documents = new og.ContentPanel({
 			title: lang('documents'),
@@ -298,6 +296,6 @@ Ext.onReady(function(){
     og.captureLinks();
     
     if (og.hasNewVersions) {
-    	og.msg(lang('message'), og.hasNewVersions, 0);
+    	og.msg(lang('new version notification title'), og.hasNewVersions, 0);
     }
 });

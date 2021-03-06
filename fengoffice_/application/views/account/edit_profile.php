@@ -35,6 +35,9 @@
 		<?php if(logged_user()->isAdministrator()) { ?>
 			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
 		<?php } // if ?>
+		<?php if (logged_user()->isAdministrator() && isset($billing_categories) && count($billing_categories) > 0) {?>
+			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_billing',this)"><?php echo lang('billing') ?></a> - 
+		<?php } // if ?>
 		<a href="#" class="option" tabindex=1020 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
 	</div>
   
@@ -91,6 +94,22 @@
     <input type="hidden" name="user[username]" value="<?php echo clean(array_var($user_data, 'username')) ?>" />
   </div>
 <?php } // if ?>
+
+<?php if (logged_user()->isAdministrator() && isset($billing_categories) && count($billing_categories) > 0) {?>
+  <div id="<?php echo $genid ?>update_profile_billing" style="display:none">
+<fieldset>
+	<legend><?php echo lang('billing') ?></legend>
+<?php 
+	$options = array(option_tag(lang('select billing category'),0,($user->getDefaultBillingId() == 0?array('selected' => 'selected'):null)));
+	foreach ($billing_categories as $category){
+		$options[] = option_tag($category->getName(),$category->getId(),($category->getId()==$user->getDefaultBillingId())?array('selected' => 'selected'):null);	
+	}
+    echo label_tag(lang('billing category'), null, false);
+	echo select_box('user[default_billing_id]',$options,array('id' => 'userDefaultBilling'))
+?>
+</fieldset>
+</div>
+<?php } //if ?>
 
    
   <div id="<?php echo $genid ?>update_profile_timezone" style="display:none">

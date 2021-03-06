@@ -63,7 +63,7 @@
 	'user ws config option name my tasks is default view' => 'Tasks assigned to me is the default view',
 	'user ws config option desc my tasks is default view' => 'If no is selected, the default view of the task panel will show all tasks',
 	'user ws config option name show tasks in progress widget' => 'Show \'Tasks in progress\' widget',
-	'user ws config option name can notify from quick add' => 'Notification checkbox in quick add',
+	'user ws config option name can notify from quick add' => 'Task notification is checked by default',
 	'user ws config option desc can notify from quick add' => 'A checkbox is enabled so assigned users can be notified after quick addition on a task',
 	'backup process desc' => 'A backup saves the current state of the whole application into a compressed folder. It can de used to easily backup an OpenGoo installation. <br> Generating a backup of the database and filesystem can last more than a couple of seconds, so making a backup is a process consisting on three steps: <br>1.- Launch a backup process, <br>2.- Download the backup. <br> 3.- Optionally, a backup can be manually deleted so that it is not available in the future. <br> ',
 	'start backup' => 'Launch backup process',

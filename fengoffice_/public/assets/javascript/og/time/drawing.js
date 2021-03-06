@@ -53,9 +53,7 @@ ogTimeManager.orderTasks = function(){
 	
 	//Draw Workspaces
 	var ids = String(task.workspaceIds).split(',');
-	var projectsString = "";
-	for(var i = 0; i < ids.length; i++)
-		projectsString += '<span class="project-replace">' + ids[i] + '</span>&nbsp;';
+	var projectsString = '<span class="project-replace">' + ids.join(',') + '</span>&nbsp;';
 	sb.append(projectsString);
 	
 	var taskName = '';
@@ -134,6 +132,7 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	var time = timeslot.time / 3600;
 	var row = table.insertRow(position);
 	row.id = genid + 'TMTimespanTableRow' + timeslot.id;
+	row.height = '20px';
 	
 	if (position % 2 == 1)
 		row.style.backgroundColor = '#F0F6FF';
@@ -165,11 +164,11 @@ ogTimeManager.insertRow = function(genid, timeslot, position){
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(5);
-	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0" title="' + lang('edit') + '">&nbsp;</a>';
+	cell.innerHTML = '<a class="internalLink coViewAction ico-edit" href="javascript:ogTimeManager.EditTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('edit') + '">&nbsp;</a>';
 	cell.width = 18;
 	
 	cell = row.insertCell(6);
-	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0" title="' + lang('delete') + '">&nbsp;</a>';
+	cell.innerHTML = '<a class="internalLink coViewAction ico-delete" href="javascript:if(confirm(lang(\'confirm delete timeslot\'))) ogTimeManager.DeleteTimeslot(' + timeslot.id + ')" style="display: block;width:0;padding-bottom:0;padding-top:0;line-height:18px" title="' + lang('delete') + '">&nbsp;</a>';
 	cell.width = 18;
 	
 	

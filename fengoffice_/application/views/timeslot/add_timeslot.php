@@ -15,20 +15,20 @@
 <div class="coInputMainBlock">
   <div class="formAddTimeslotDescription">
     <?php echo label_tag(lang('description'), 'addTimeslotDescription', false) ?>
-    <?php echo textarea_field("timeslot[description]", array_var($timeslot_data, 'description'), array('class' => 'short', 'id' => 'addTimeslotDescription')) ?>
+    <?php echo textarea_field("timeslot[description]", array_var($timeslot_data, 'description'), array('class' => 'short', 'id' => 'addTimeslotDescription', 'tabindex' => '10')) ?>
   </div>
 	<table>
 		<tr>
 			<td><b><?php echo lang("start date") ?>:&nbsp;</b></td>
 			<td align='left'><?php 
 				$start_time = new DateTimeValue($timeslot->getStartTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
-				echo pick_date_widget2('timeslot[start_value]',$start_time, $genid);
+				echo pick_date_widget2('timeslot[start_value]',$start_time, $genid, 20);
 			?></td>
 		</tr>
 		
 		<tr>
 			<td><b><?php echo lang("start time") ?>:&nbsp;</b></td>
-			<td align='left'><select name="timeslot[start_hour]" size="1">
+			<td align='left'><select name="timeslot[start_hour]" size="1" tabindex="30">
 			<?php
 			for($i = 0; $i < 24; $i++) {
 					echo "<option value=\"$i\"";
@@ -55,13 +55,13 @@
 					$end_time = new DateTimeValue($dt->getTimestamp() + logged_user()->getTimezone() * 3600);
 				} else
 					$end_time = new DateTimeValue($timeslot->getEndTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
-			echo pick_date_widget2('timeslot[end_value]',$end_time, $genid);
+			echo pick_date_widget2('timeslot[end_value]',$end_time, $genid, 40);
 			?></td>
 		</tr>
 		
 		<tr>
 			<td><b><?php echo lang("end time") ?>:&nbsp;</b></td>
-			<td align='left'><select name="timeslot[end_hour]" size="1">
+			<td align='left'><select name="timeslot[end_hour]" size="1" tabindex="50">
 			<?php
 			for($i = 0; $i < 24; $i++) {
 					echo "<option value=\"$i\"";
@@ -69,7 +69,7 @@
 					echo ">$i</option>\n";
 				}
 			?>
-			</select> <b>:</b> <select name="timeslot[end_minute]" size="1">
+			</select> <b>:</b> <select name="timeslot[end_minute]" size="1" tabindex="60">
 			<?php
 			$minute = $end_time->getMinute();
 			for($i = 0; $i < 60; $i++) {
@@ -89,7 +89,7 @@
 				$hours = (($totalSeconds - $seconds - ($minutes * 60)) / 3600);
 				
 			?><input type="text" style="width:40px;margin-right:3px" name="timeslot[subtract_hours]" value="<?php echo($hours); ?>"/><?php echo lang('hours') ?>,&nbsp;
-			<select name="timeslot[subtract_minutes]" size="1">
+			<select name="timeslot[subtract_minutes]" size="1" tabindex="70">
 			<?php
 			for($i = 0; $i < 60; $i++) {
 				echo "<option value='$i'";
@@ -98,7 +98,7 @@
 			}
 			?>
 			</select><?php echo lang('minutes') ?>,&nbsp;
-			<select name="timeslot[subtract_seconds]" size="1">
+			<select name="timeslot[subtract_seconds]" size="1" tabindex="80">
 			<?php
 			for($i = 0; $i < 60; $i++) {
 				echo "<option value='$i'";
@@ -110,8 +110,23 @@
 		</tr>
 	</table>
 
+	<?php if ($show_billing) {?>
+		<br/>
+		<?php echo radio_field('timeslot[is_fixed_billing]',!$timeslot_data['is_fixed_billing'],array('onchange' => 'og.showAndHide("' . $genid. 'hbilling",["' . $genid. 'fbilling"])', 
+			'value' => '0', 'style' => 'width:16px')); echo '<b>' . lang('hourly billing') . '</b>'; ?>
+		<?php echo radio_field('timeslot[is_fixed_billing]',$timeslot_data['is_fixed_billing'],array('onchange' => 'og.showAndHide("' . $genid. 'fbilling",["' . $genid. 'hbilling"])', 
+		'value' => '1', 'style' => 'width:16px')); echo '<b>' . lang('fixed billing') . '</b>'; ?>
+	  	<div id="<?php echo $genid ?>hbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'display:none':'' ?>">
+	    	<?php echo label_tag(lang('hourly rates'), 'addTimeslotHourlyBilling', false) ?>
+	  		<?php echo text_field('timeslot[hourly_billing]',array_var($timeslot_data, 'hourly_billing'), array('id' => 'addTimeslotHourlyBilling')) ?>
+	  	</div>
+	  	<div id="<?php echo $genid ?>fbilling" style="<?php echo $timeslot_data['is_fixed_billing']?'':'display:none' ?>">
+	    	<?php echo label_tag(lang('billing amount'), 'addTimeslotFixedBilling', false) ?>
+	  		<?php echo text_field('timeslot[fixed_billing]',array_var($timeslot_data, 'fixed_billing'), array('id' => 'addTimeslotFixedBilling')) ?>
+	  	</div>
+  	<?php } ?>
 
-    <?php echo submit_button($timeslot->isNew() ? lang('add timeslot') : lang('save changes')) ?>
+    <?php echo submit_button($timeslot->isNew() ? lang('add timeslot') : lang('save changes'), 's', array('tabindex' => '80')); ?>
 </div>
 </div>
 

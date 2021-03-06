@@ -51,11 +51,17 @@ function download_zip() {
 }
 
 // load translation files
+if (isset($_GET['to'])) {
+	$translated = array();
+}
 $translations = array();
 $handle = opendir(LANG_DIR . "/en_us");
 while (false !== ($file = readdir($handle))) {
 	if ($file != "." && $file != ".." && $file != "CVS") {
 		$translations[$file] = loadFileTranslations("en_us", $file);
+		if (isset($_GET['to'])) {
+			$translated[$file] = loadFileTranslations($_GET["to"], $file);
+		}
 	}
 }
 closedir($handle);
@@ -89,10 +95,20 @@ foreach ($translations as $file => $pairs) {
 		$value = str_replace(array('\\', '"'), array('\\\\', '\\"'), $value);
 		fwrite($f, "msgctxt \"$key\"\n");
 		fwrite($f, "msgid \"$value\"\n");
-		fwrite($f, "msgstr \"\"\n\n");
+		if (isset($_GET["to"])) {
+			$text = $translated[$file][$key];
+			$text = str_replace(array('\\', '"'), array('\\\\', '\\"'), $text);
+			fwrite($f, "msgstr \"$text\"\n\n");
+		} else {
+			fwrite($f, "msgstr \"\"\n\n");
+		}
 	}
 	fclose($f);
-	$zip->addFile($filename, "$file.pot");
+	if (isset($_GET["to"])) {
+		$zip->addFile($filename, "$file.po");
+	} else {
+		$zip->addFile($filename, "$file.pot");
+	}
 }
 $zip->close();
 header("Cache-Control: public");
@@ -100,7 +116,11 @@ header("Expires: -1");
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Content-Type: application/zip");
 header("Content-Length: " . (string) filesize($zipname));
-header("Content-Disposition: 'attachment'; filename=\"gettext.zip\"");
+if (isset($_GET["to"])) {
+	header("Content-Disposition: 'attachment'; filename=\"".$_GET["to"].".zip\"");
+} else {
+	header("Content-Disposition: 'attachment'; filename=\"gettext.zip\"");
+}
 header("Content-Transfer-Encoding: binary");
 readfile($zipname);
 die();

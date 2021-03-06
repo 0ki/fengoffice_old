@@ -559,6 +559,29 @@
     	$this->setColumnValue('personal_project_id', $value);
     }
     
+    
+    /**
+    * Return value of 'default_billing_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getDefaultBillingId() {
+      return $this->getColumnValue('default_billing_id');
+    } // getDefaultBillingId()
+    
+    /**
+    * Set value of 'company_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setDefaultBillingId($value) {
+      return $this->setColumnValue('default_billing_id', $value);
+    } // setDefaultBillingId() 
+    
     /**
     * Return manager instance
     *

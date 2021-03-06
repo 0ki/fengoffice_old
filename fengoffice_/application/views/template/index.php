@@ -29,12 +29,11 @@ foreach($templates as $cotemplate) {
 		<td style="text-align: center">
 			<?php
 				$workspaces = $cotemplate->getWorkspaces();
-				foreach ($workspaces as $workspace) {
+				$project_ids = array();
+				foreach ($workspaces as $workspace)
+					$project_ids[] = $workspace->getId();
 			?>
-				<span class="project-replace"><?php echo $workspace->getId() ?></span>
-			<?php
-				}
-			?>
+				<span class="project-replace"><?php echo implode(',',$project_ids) ?></span>
 		</td>
 <?php 
   $options = array(); 

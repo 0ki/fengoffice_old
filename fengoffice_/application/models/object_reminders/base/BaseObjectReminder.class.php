@@ -123,6 +123,28 @@
     } // setType()
     
     /**
+    * Return value of 'context' field
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getContext() {
+      return $this->getColumnValue('context');
+    } // getContext()
+    
+    /**
+    * Set value of 'context' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setContext($value) {
+      return $this->setColumnValue('context', $value);
+    } // setContext()
+    
+    /**
     * Return value of 'minutes_before' field
     *
     * @access public
@@ -144,6 +166,27 @@
       return $this->setColumnValue('minutes_before', $value);
     } // setMinutesBefore
     
+    /**
+    * Return value of 'date' field
+    *
+    * @access public
+    * @param void
+    * @return integer
+    */
+    function getDate() {
+      return $this->getColumnValue('date');
+    } // getDate()
+    
+    /**
+    * Set value of 'date' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setDate($value) {
+      return $this->setColumnValue('date', $value);
+    } // setDate
     
     /**
     * Return manager instance

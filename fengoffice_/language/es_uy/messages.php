@@ -17,7 +17,8 @@
     'project dnx' => 'El espacio requerido no existe en la base de datos',
     'contact dnx' => 'El contacto requerido no existe en la base de datos',
     'company dnx' => 'La empresa requerida no existe en la base de datos',
-    'message dnx' => 'La nota requerida no existe en la base de datos',
+	'billing category dnx' => 'La categoría de facturación solicitada no existe en la base de datos',
+    'message dnx' => 'La nota requerido no eexiste en la base de datos',
     'no comments in message' => 'Esta nota no tiene comentarios',
     'no comments associated with object' => 'No se han ingresado comentarios para este objeto',
     'no messages in project' => 'No hay notas en este espacio',
@@ -227,6 +228,10 @@
   	'success undo checkout file' => 'Bloqueo para edición del archivo cancelado en forma exitosa',
 	'success extracting files' => '{0} Archivos fueron extraidos',
 	'success compressing files' => 'Archivos comprimidos satisfactoriamente',
+  
+	'success add billing category' => 'Categoría de facturación añadida satisfactoriamente',
+	'success delete billing category' => 'Categoría de facturación eliminada satisfactoriamente',
+	'success edit billing category' => 'Categoría de facturación editada satisfactoriamente',
       
     // Failures
     'error checkin file' => 'Ha ocurrido un error al devolver el archivo',
@@ -597,5 +602,10 @@
     'success purging trash' => '{0} objects deleted.',
     'success sending reminders' => '{0} reminders sent.',
   	'failed to assign contact due to permissions' => 'No tiene permisos para escribir contactos en los siguientes espacios: {0}',
+  
+  	'success assign user billing categories' => 'Las categorías de facturación fueron asignadas a los usuarios correctamente',
+    'confirm delete billing category' => 'Está seguro que desea eliminar la categoría de facturación seleccionada?',
+    'weblink dnx' => 'El enlace web requerido no existe en la base de datos',
+  
   ); // array
 ?>

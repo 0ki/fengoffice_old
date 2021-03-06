@@ -13,12 +13,12 @@ og.maxFileSize = 1024 * 1024;
 og.showMailsTab = 0;
 
 // functions
-og.msg =  function(title, format, timeout, classname) {
+og.msg =  function(title, format, timeout, classname, sound) {
 	if (typeof timeout == 'undefined') timeout = 4;
 	if (!classname) classname = "msg";
 
 	var click_to_remove_msg = ''; // only show this message if error
-	if (classname == "err")
+	if (timeout == 0)
 		click_to_remove_msg = '<div style="text-align:center; font-size:small; font-style:italic"><a>' + lang('click to remove') + '</a></div>';
 			
 	var box = ['<div class="' + classname + '" title="' + lang('click to remove') + '">',
@@ -41,6 +41,10 @@ og.msg =  function(title, format, timeout, classname) {
 		m.slideIn('t').pause(timeout).ghost("t", {remove:true});
 	} else {
 		m.slideIn('t');
+	}
+	if (sound) {
+		og.systemSound.loadSound('public/assets/sounds/' + sound + '.mp3', true);
+		og.systemSound.start(0);
 	}
 };
 
@@ -230,6 +234,19 @@ og.toggleAndBolden = function(id, btn) {
 	}
 };
 
+og.showAndHide = function(idToShow, idsToHide, displayType){
+	if (!displayType)
+		displayType = 'block';
+	var show = document.getElementById(idToShow);
+	if(show){
+		show.style.display = displayType;
+		for(var i = 0; i < idsToHide.length; i++){
+			var hide = document.getElementById(idsToHide[i]);
+			if (hide) hide.style.display = 'none';
+		}
+	}
+};
+
 og.toggleAndHide = function(id, btn) {
 	var obj = Ext.getDom(id);
 	if (obj.style.display == 'block') {
@@ -395,6 +412,11 @@ og.captureLinks = function(id, caller) {
 	});
 };
 
+og.log = function(msg) {
+	if (!og._log) og._log = "";
+	og._log += msg + "\n";
+};
+
 og.openLink = function(url, options) {
 	if (!options) options = {};
 	if (typeof options.caller == "object") {
@@ -424,12 +446,16 @@ og.openLink = function(url, options) {
 		var oldTimeout = Ext.Ajax.timeout;
 		Ext.Ajax.timeout = options.timeout;
 	}
+	var startTime = new Date().getTime();
 	Ext.Ajax.request({
 		url: url,
 		params: options.post,
 		callback: function(options, success, response) {
 			og.hideLoading();
 			if (success) {
+				UnTip(); //fixes ws tooltip is displayed some times when changing page
+				if (og)
+					clearTimeout(og.triggerFPTTO);
 				try {
 					try {
 						var data = Ext.util.JSON.decode(response.responseText);
@@ -460,6 +486,8 @@ og.openLink = function(url, options) {
 				if (options.postProcess) options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
 				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}
+			var endTime = new Date().getTime();
+			og.log(url + ": " + (endTime - startTime) + " ms");
 		},
 		caller: options.caller,
 		postProcess: options.callback || options.postProcess,
@@ -667,6 +695,7 @@ og.showHelp = function() {
 };
 
 og.extractScripts = function(html) {
+	var startTime = new Date().getTime();
 	var id = Ext.id();
 	html += '<span id="' + id + '"></span>';
 	Ext.lib.Event.onAvailable(id, function() {
@@ -686,6 +715,8 @@ og.extractScripts = function(html) {
 					}
 				}
 			}
+			var endTime = new Date().getTime();
+			og.log("scripts: " + (endTime - startTime) + " ms");
 			var el = document.getElementById(id);
 			if (el) { Ext.removeNode(el); }
 		} catch (e) { alert(e);}
@@ -885,4 +916,37 @@ og.displayFileContents = function(genid, isFull){
 		text += '&hellip;&nbsp;&nbsp;<a href="#" onclick="og.displayFileContents(\'' + genid + '\',true)">[' + lang('show more') + '&hellip;]</a>';
 	}
 	document.getElementById(genid + 'file_display').innerHTML = text;
+};
+
+og.dashExpand = function(genid,widget_name){
+	var widget = document.getElementById(genid + 'widget');
+	if (widget){
+		var setExpanded = widget.style.display == 'none';
+		widget.style.display = (setExpanded) ? 'block':'none';
+		var expander = document.getElementById(genid + 'expander');
+		expander.className = (setExpanded) ? "dash-expander ico-dash-expanded":"dash-expander ico-dash-collapsed";
+		var url = og.getUrl('account', 'update_user_preference', {name: widget_name + '_widget_expanded', value:setExpanded?1:0});
+		og.openLink(url,{doNotShowLoading:true});
+	}
+};
+
+og.billingEditValue = function(id){
+	document.getElementById(id + 'bv').style.display = 'none';
+	document.getElementById(id + 'bvedit').style.display = 'inline';
+	document.getElementById(id + 'edclick').value = 1;
+	document.getElementById(id + 'text').focus();
+};
+
+og.loadScript = function(url, callback, scope) {
+	Ext.Ajax.request({
+		url: url,
+		callback: function(options, success, response) {
+			if (success) {
+				eval(response.responseText);
+				if (typeof callback == 'function') {
+					callback.call(scope);
+				}
+			}
+		}
+	});
 };

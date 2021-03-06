@@ -39,8 +39,7 @@
 <?php } else { ?>
   <input type="hidden" name="user[company_id]" value="<?php echo $company->getId()?>" />
 <?php } // if ?>
-  	
-  </div>
+
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
   
@@ -118,6 +117,20 @@
   <?php } ?>
   <br/>
   
+<?php if (isset($billing_categories) && count($billing_categories) > 0) {?>
+<fieldset>
+	<legend><?php echo lang('billing') ?></legend>
+<?php 
+	$options = array();
+	foreach ($billing_categories as $category){
+		$options[] = option_tag($category->getName(),$category->getId(),($category->getId()==$user->getDefaultBillingId())?array('selected' => 'selected'):null);	
+	}
+    echo label_tag(lang('billing category'), null, true);
+	echo select_box('user[default_billing_id]',$options,array('id' => 'userDefaultBilling'))
+?>
+</fieldset>
+<?php } //if ?>
+  
 <fieldset>
 	<legend><?php echo lang('permissions') ?></legend>
 <?php 
@@ -133,7 +146,7 @@
   echo input_field('user[contact_id]',array_var($user_data, 'contact_id',''), array('type' => 'hidden'));
   echo submit_button($user->isNew() ? lang('add user') : lang('save changes'), 's', array('tabindex' => '1500')); ?>
   </div>
-  </div>
+</div>
 </form>
 
 <script type="text/javascript">

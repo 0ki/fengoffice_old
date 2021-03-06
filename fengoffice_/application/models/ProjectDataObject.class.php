@@ -227,14 +227,6 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		}
 	}
 
-	private function isInCsv($value, $csv){
-		$arr = explode(',',$csv);
-		foreach($arr as $s)
-		if (intval($s) == $value)
-		return true;
-		return false;
-	}
-
 	/**
 	 * Returns true if the object is in workspace $w.
 	 *
@@ -1061,6 +1053,21 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	function getCustomProperties() {
 		return ObjectProperties::getAllPropertiesByObject($this);
 	}
+	
+	/**
+	 * Copies custom properties from an object
+	 * @param ProjectDataObject $object
+	 */
+	function copyCustomPropertiesFrom($object) {
+		$properties = $object->getCustomProperties();
+		foreach ($properties as $property) {
+			$copy = new ObjectProperty();
+			$copy->setPropertyName($property->getPropertyName());
+			$copy->setPropertyValue($property->getPropertyValue());
+			$copy->setObject($this);
+			$copy->save();
+		}
+	}
 
 	/**
 	 * Sets the value of a property, removing all its previous values.
@@ -1243,6 +1250,8 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		if ($this->allowsTimeslots())
 			$this->clearTimeslots();
 		WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+		SharedObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
+		ObjectUserPermissions::delete(array("`rel_object_manager` = ? AND `rel_object_id` = ?", $this->getObjectManagerName(), $this->getId()));
 		return parent::delete();
 	} // delete
 
@@ -1360,12 +1369,7 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 * @return array
 	 */
 	function getSubscribers() {
-		if(is_null($this->subscribers)) {
-			$this->subscribers = ObjectSubscriptions::getUsersByObject($this);
-			if (is_null($this->subscribers)) {
-				$this->subscribers = array();
-			}
-		}
+		if(is_null($this->subscribers)) $this->subscribers = ObjectSubscriptions::getUsersByObject($this);
 		return $this->subscribers;
 	} // getSubscribers
 
@@ -1436,8 +1440,12 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 		return ObjectSubscriptions::clearByObject($this);
 	} // clearSubscriptions
 
-	function clearReminders() {
-		return ObjectReminders::clearByObject($this);
+	function clearReminders($user = null, $include_subscribers = false) {
+		if (isset($user)) {
+			return ObjectReminders::clearByObjectAndUser($this, $user, $include_subscribers);
+		} else {
+			return ObjectReminders::clearByObject($this);
+		}
 	}
 
 	/**
@@ -1494,6 +1502,18 @@ abstract class ProjectDataObject extends ApplicationDataObject {
 	 */
 	function removeFromCOTemplates() {
 		TemplateObjects::removeObjectFromTemplates($this);
+	}
+	
+	
+	// ---------------------------------------------------
+	//  Sharing
+	// ---------------------------------------------------
+	
+	function getShareUrl() {
+		return get_url('object', 'share', array(
+			'object_id' => $this->getId(),
+			'manager' => get_class($this->manager())
+		));
 	}
 
 } // ProjectDataObject

@@ -65,6 +65,9 @@
     'config option desc upgrade_check_enabled' => 'If Yes system will once a day check if there are new versions of OpenGoo available for download',
 	'config option name work_day_start_time' => 'Work day start time',
   	'config option desc work_day_start_time' => 'Specifies the time when work day starts',
+  
+  	'config option name use_minified_resources' => 'Use minified resources',
+  	'config option desc use_minified_resources' => 'Uses compressed Javascript and CSS to improve performance. You need to recompress JS and CSS if you modify them, by using the public/tools.',
     
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',

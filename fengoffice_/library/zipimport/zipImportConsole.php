@@ -15,6 +15,7 @@ require_once APP_ROOT . '/library/zipimport/ZipImport.class.php';
 require_once APP_ROOT . '/library/zipimport/ImportLogger.class.php';
 
 ini_set('memory_limit', '256M');
+set_time_limit(0);
 
 if(!isset($argv) || !is_array($argv)) {
 //	die('There is no input arguments');
@@ -26,7 +27,7 @@ if (isset($argv[1])) {
 	$zip_path = $argv[1];
 } else {
 	ImportLogger::instance()->logError('Missing Parameter: zip file name');
-	die('Missing Parameter: zip file name');
+	die('Missing Parameter: file name or directory');
 }
 if (isset($argv[2])) {
 	$parentWorkSpace = $argv[2];
@@ -45,10 +46,15 @@ if (isset($argv[3])) {
 	ImportLogger::instance()->log("Init Import ------------------------------------------------------------ \r\n");
 
 	$imp = new ZipImport($parentWorkSpace);
-	$imp->extractToTmpDir($zip_path); //APP_ROOT . '/prueba.zip'
+	$is_zip = str_ends_with($zip_path, ".zip");
+	if ($is_zip)
+		$imp->extractToTmpDir($zip_path);
+	else $imp->setDirectory($zip_path);
+	
 	$imp->initUser($user_id);
-	$imp->makeWorkSpaces();
-	$imp->deleteTmpDir();
+	$imp->makeWorkSpaces($is_zip ? null : $zip_path);
+	if ($is_zip) $imp->deleteTmpDir();
 
+	print "Complete\r\n";
 	ImportLogger::instance()->log("\r\nEnd Import -------------------------------------------------------------");
 ?>

@@ -291,7 +291,7 @@ addLangs({
 	'next month':'Next Month',
 	'prev month':'Previous Month',
 	'today':'Today',
-	'pick a date':'Pick a date',
+	'pick a date':'Go to',
 	'month':'Month',
 	'month view':'Month view',
 	'week':'Week',
@@ -394,6 +394,7 @@ addLangs({
 	'ungrouped': 'Unclassified',
 	'unassigned': 'Unassigned',
 	'anyone': 'Anyone',
+	'everyone': 'Everyone',
 	'pending': 'Pending',
 	'group by': 'Group by',
 	'order by': 'Order by',
@@ -487,7 +488,7 @@ addLangs({
   
   	'date format' : 'm/d/Y',
   	'date format alternatives' : 'm/d/y|n/j/Y|n/j/y|m/j/y|n/d/y|m/j/Y|n/d/Y',
-  	'warning start date greater than due date': 'Warning: the start date is later than the due date',
+	'warning start date greater than due date': 'Warning: the start date is later than the due date',
   	
 	'event start time': 'Time',
 	'all day event': 'All day',
@@ -543,7 +544,20 @@ addLangs({
     'sort tags': 'Sort tags',
     'sort tags alphabetically': 'Alphabetically',
     'sort tags by count': 'By Count',
-    'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)',
+    'actions' : 'Actions',
 	'show more' : 'Show more',
-	'actions' : 'Actions'
+    'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)',
+    'confirm delete tag': 'Are you sure you want to completely delete the tag \'\'?',
+    'delete tag': 'Delete tag',
+    
+    'reminder_popup': 'Pop-up message',
+    'reminder_email': 'E-mail',
+    'minutes': 'minutes',
+    'weeks': 'weeks',
+    'days': 'days',
+    'before': 'before',
+    'remove object reminder': 'Remove reminder',
+    'apply to subscribers': 'Apply to all subscribers',
+    
+    'must choose company': 'You must choose a company'
 });

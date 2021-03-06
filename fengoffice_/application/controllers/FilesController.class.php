@@ -1770,6 +1770,23 @@ class FilesController extends ApplicationController {
 		flash_success(lang('success compressing files'));
 		ajx_current("reload");
 	}
+	
+	function display_content() {
+		$file = ProjectFiles::findById(get_id());
+		if (!$file instanceof ProjectFile) {
+			die(lang("file dnx"));
+		}
+		if (!$file->canView(logged_user())) {
+			die(lang("no access permissions"));
+		}
+		header("Expires: " . gmdate("D, d M Y H:i:s", mktime(date("H") + 2, date("i"), date("s"), date("m"), date("d"), date("Y"))) . " GMT");
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		header("Content-Type: " . $file->getTypeString());
+		header("Content-Length: " . (string) $file->getFileSize());
+		$content = remove_scripts($file->getFileContent());
+		print iconv(mb_detect_encoding($content, array('UTF-8', 'ISO-8859-1')), 'UTF-8', $content);
+		die();
+	}
 
 } // FilesController
 

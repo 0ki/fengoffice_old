@@ -16,7 +16,7 @@ og.download_exported_file = function() {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo ($import_type == 'contact' ? lang('export contacts to csv') : lang('export companies to csv')) ?></td>
 	<?php if (!isset($result_msg)) { ?>
-	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('contact', 'export_to_csv_file'), {callback:og.download_exported_file});")) ?></td>
+	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('contact', 'export_to_csv_file'), {callback:og.download_exported_file});")) ?></td>
 	<?php } //if ?>
 	</tr></table>
 </div>
@@ -49,14 +49,14 @@ og.download_exported_file = function() {
 			$i++;
 	?>	
 				<tr<?php echo ($isAlt ? ' class="altRow"': '') ?>>
-				<td><?php echo checkbox_field('check_'.$c_field, true) ?></td><td><?php echo $c_label ?></td></tr>
+				<td><?php echo checkbox_field('check_'.$c_field, true, array('tabindex' => 20 + $i)) ?></td><td><?php echo $c_label ?></td></tr>
 	<?php	
 		} //foreach ?>
 	</table>
 
 	<br>
 	<div><table style="width:535px">
-		<tr><td><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('contact', 'export_to_csv_file'), {callback:og.download_exported_file});")) ?></td></tr></table>
+		<tr><td><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'csv_export_submit1', 'tabindex' => '100', 'onclick'=>"javascript:og.openLink(og.getUrl('contact', 'export_to_csv_file'), {callback:og.download_exported_file});")) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -65,3 +65,7 @@ og.download_exported_file = function() {
 	<?php } ?>
 </div>
 </form>
+
+<script type="text/javascript">
+	Ext.get('<?php echo $genid ?>csv_export_submit1').focus();
+</script>

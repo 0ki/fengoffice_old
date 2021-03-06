@@ -47,6 +47,7 @@
     'configuration categories' => 'Configuration categories',
     'handin' => 'Hand-In',
     'handins' => 'Hand-Ins',
+	'emailunclassified' => 'Email',
     
     // Variations
     'owner company' => 'Owner company',
@@ -82,7 +83,10 @@
     'private task list' => 'Private tasks',
     'private comment' => 'Private comment',
     'private file' => 'Private file',
-    
+
+  
+  	'object reminders' => 'Reminders',
+  	'add object reminder' => 'Add reminder',
   ); // array
 
 ?>

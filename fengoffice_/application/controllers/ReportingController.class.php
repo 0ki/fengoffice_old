@@ -243,6 +243,7 @@ class ReportingController extends ApplicationController {
 		
 		tpl_assign('workspaces', $workspaces);
 		tpl_assign('users', $users);
+		tpl_assign('has_billing',BillingCategories::count() > 0);
 	}
 	
 	function total_task_times($report_data = null, $task = null){

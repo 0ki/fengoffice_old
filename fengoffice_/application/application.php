@@ -14,6 +14,7 @@ define('FILE_STORAGE_MYSQL', 'mysql');
 
 // Init flash!
 Flash::instance();
+Hook::init();
 include_once APPLICATION_PATH . '/functions.php';
 try {
 	CompanyWebsite::init();

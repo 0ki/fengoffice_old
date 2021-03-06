@@ -916,18 +916,20 @@ class Contact extends BaseContact {
      *
      * @return unknown
      */
-    function getProjectIdsCSV() {
-    	$projs=ProjectContacts::getProjectsByContact($this);
-    	$ret= ''; // default return value
-    	if($projs){
-	    	foreach ($projs as $proj){
-	    		if($ret)
-	    			$ret .= ', ' . $proj->getId();
-	    		else
-	    			$ret = $proj->getId();
+    function getProjectIdsCSV($wsIds = null) {
+    	$workspaces = ProjectContacts::getProjectsByContact($this);
+    	$result = array();
+    	if($workspaces){
+	    	if (!is_null($wsIds)){
+				foreach($workspaces as $w){
+					if ($this->isInCsv($w->getId(),$wsIds))
+						$result[] = $w->getId();
+				}
+			} else foreach ($workspaces as $w){
+	    		$result[] = $w->getId();
 	    	}
     	}
-    	return $ret;
+    	return implode(',',$result);
     }
     
     function getTagNames() {

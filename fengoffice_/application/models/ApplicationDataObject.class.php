@@ -599,6 +599,19 @@ abstract class ApplicationDataObject extends DataObject {
 	function isTrashed() {
 		return false;
 	}
+	
+
+	// ---------------------------------------------------
+	//  Utilities
+	// ---------------------------------------------------
+
+	protected function isInCsv($value, $csv){
+		$arr = explode(',',$csv);
+		foreach($arr as $s)
+			if (intval($s) == $value)
+				return true;
+		return false;
+	}
 
 
 } // ApplicationDataObject

@@ -63,14 +63,14 @@
 .ext-strict .ext-ie6 .x-layout-split{
 	background-color: #dfe8f6; /* fixes split panels in ie6 */
 }
-.msg .x-box-mc {
-	font-size: 14px;
-}
-.err .x-box-mc {
+.x-box-mc {
 	font-size: 14px;
 }
 .err .x-box-mc h3 {
 	color: #AA0000;
+}
+.reminder .x-box-mc h3 {
+	color: #008800;
 }
 #msg-div {
 	position:absolute;

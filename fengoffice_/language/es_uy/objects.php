@@ -46,6 +46,7 @@
     'configuration categories' => 'Configuración de categorías',
     'handin' => 'Entregable',
     'handins' => 'Entregables',
+	'emailunclassified' => 'Correo',
     
     // Variations
     'owner company' => 'Empresa propietaria',
@@ -82,6 +83,9 @@
     'private comment' => 'Comentario privado',
     'private file' => 'Archivo privado',
   	'file contents' => 'Contenido del archivo',
+  
+  	'object reminders' => 'Recordatorios',
+    'add object reminder' => 'Agregar recordatorio',
     
   ); // array
 

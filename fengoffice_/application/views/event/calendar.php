@@ -1,6 +1,3 @@
-<script type="text/javascript">
-	showCalendarToolbar();
-</script>
 <?php
 
 /*
@@ -27,14 +24,10 @@ $_SESSION['year'] = $year;
 $_SESSION['month'] = $month;
 $_SESSION['day'] = $day;
 
-$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter'];
-$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
+$user_filter = $userPreferences['user_filter'];
+$status_filter = $userPreferences['status_filter'];
 
 $user = Users::findById(array('id' => $user_filter));
-/*
- * If user does not exists, assign logged_user() to $user 
- * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
- */
 if ($user == null) $user = logged_user(); 
 
 $use_24_hours = user_config_option('time_format_use_24');
@@ -51,8 +44,19 @@ if(cal_option("start_monday")) $firstday = (date("w", mktime(0, 0, 0, $month, 1,
 else $firstday = (date("w", mktime(0, 0, 0, $month, 1, $year))) % 7;
 $lastday = date("t", mktime(0, 0, 0, $month, 1, $year));
 
+$users_array = array();
+$companies_array = array();
+foreach($users as $u)
+	$users_array[] = $u->getArrayInfo();
+foreach($companies as $company)
+	$companies_array[] = $company->getArrayInfo();
 ?>
 
+<div id="calHiddenFields">
+	<input type="hidden" id="hfUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
+	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
+	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+</div>
 
 <script type="text/javascript">
 function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
@@ -67,6 +71,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 </script>
 <div style="padding-right:1px">
 <div class="calendar" align="center" style="width:100%;height:100%;">
+<div align="left" id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
 <table style="width:100%;height:100%;">
 <tr>
 <td>
@@ -109,8 +114,8 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					<?php
 					$date_start = new DateTimeValue(mktime(0,0,0,$month-1,$firstday,$year)); 
 					$date_end = new DateTimeValue(mktime(0,0,0,$month+1,$lastday,$year)); 
-					$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start,$date_end,logged_user(), $tags, active_project());
-					$tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end, $user, $tags, active_project());
+					$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+					$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 								
 					// Loop to render the calendar
 					for ($week_index = 0;; $week_index++) {
@@ -166,12 +171,12 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 					<?php
 						
 							if($day_of_month <= $lastday AND $day_of_month >= 1){ 
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
+								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$w = $day_of_month;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $day_of_month, $year_aux);
 							}elseif($day_of_month < 1){
-								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
+								$p = cal_getlink("index.php?action=viewdate&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$t = cal_getlink("index.php?action=add&day=$day_of_month&month=$month_aux&year=$year_aux");
 								$ld = idate('d', mktime(0, 0, 0, $month_aux, 0, $year_aux));//date("t", strtotime("last month",mktime(0,0,0,$month-1,1,$year)));
 								$w = $ld + $day_of_month ;
@@ -185,7 +190,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 										$year_aux++;
 									}
 								}
-								$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux&user_filter=$user_filter&state_filter=$state_filter");
+								$p = cal_getlink("index.php?action=viewdate&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
 								$t = cal_getlink("index.php?action=add&day=".($day_of_month-$lastday)."&month=$month_aux&year=$year_aux");
 								$w = $day_of_month - $lastday;
 								$dtv = DateTimeValueLib::make(0, 0, 0, $month_aux, $w, $year_aux);
@@ -212,7 +217,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 							
 							// This loop writes the events for the day in the cell
 							if (is_numeric($w)){ //if it is a day after the first of the month
-								$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $state_filter); 
+								$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $status_filter); 
 								if(!$result)
 									$result = array();
 								if($milestones)
@@ -245,11 +250,34 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 												$tip_text = str_replace("\n", '<br>', $tip_text);													
 												if (strlen_utf($tip_text) > 200) $tip_text = substr_utf($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo ($typeofevent == 2 ? "og-wsname-color-$ws_color ": 'event_block') ?>" style="margin: 1px;padding-left:1px;padding-bottom:2px;"> 
-													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); hideCalendarToolbar(); return true;" <?php echo ($typeofevent == 2 ? "style='color:$txt_color;'" : '') ?>>
+												<div id="m_ev_div_<?php echo $event->getId()?>" class="<?php echo ($typeofevent == 2 ? "og-wsname-color-$ws_color ": 'event_block') ?>" style="margin: 1px;padding-left:1px;padding-bottom:0px;">
+													<table style="width:100%;"><tr><td>
+													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); return true;" <?php echo ($typeofevent == 2 ? "style='color:$txt_color;'" : '') ?>>
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
-														<?php echo $subject ?>
+														<?php echo (strlen($subject) < 15 ? $subject : substr($subject, 0, 14).'...')?>
 													</a></nobr>
+													</td><td align="right">
+														<div align="right" style="padding-right:1px;">
+														<?php
+														if ($user_filter != -1) { 
+															$invitations = $event->getInvitations();
+															if ($invitations != null && is_array($invitations) && $invitations[$user_filter] != null) {
+																$inv = $invitations[$user_filter];
+																
+																if ($inv->getInvitationState() == 0) { // Not answered
+																	echo '<img src="' . image_url('/16x16/mail_mark_unread.png') . '"/>';
+																} else if ($inv->getInvitationState() == 1) { // Assist = Yes
+																	echo '<img src="' . image_url('/16x16/complete.png') . '"/>';
+																} else if ($inv->getInvitationState() == 2) { // Assist = No
+																	echo '<img src="' . image_url('/16x16/del.png') . '"/>';
+																} else if ($inv->getInvitationState() == 3) { // Assist = Maybe
+																	echo '<img src="' . image_url('/16x16/help.png') . '"/>';
+																} else {
+																};
+															} // if
+														} // if ?>
+														</div>
+													</td></tr></table>
 											 	</div>
 										 		<script type="text/javascript">
 													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - ' + <?php echo json_encode(clean($event->getSubject())) ?>, <?php echo json_encode($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format($use_24_hours ? 'G:i' : 'g:i A') .' - '. $event->getDuration()->format($use_24_hours ? 'G:i' : 'g:i A') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>);
@@ -359,6 +387,18 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 </div>
 </div>
 <script type="text/javascript">
+	// Top Toolbar	
+	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
+	var ogCalTT = new og.CalendarTopToolbar({
+		usersHfId:'hfUsers',
+		companiesHfId:'hfCompanies',
+		renderTo:'calendarPanelTopToolbar'
+	});	
+	
+	// Mantain the actual values after refresh by clicking Calendar tab.
+	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
+	calToolbarDateMenu.picker.setValue(dtv);
+
 	Ext.QuickTips.init();
 
 	function showMonthEventPopup(day, month, year) {

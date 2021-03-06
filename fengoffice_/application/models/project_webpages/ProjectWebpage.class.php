@@ -29,6 +29,7 @@ class ProjectWebpage extends BaseProjectWebpage {
 	 */
 	protected $searchable_columns = array('title', 'description');
 
+	protected $is_commentable = true;
 
 	/**
 	 * Validate before save
@@ -186,12 +187,13 @@ class ProjectWebpage extends BaseProjectWebpage {
 	 * @return string
 	 */
 	function getObjectUrl() {
-		return $this->getUrl();
+		return $this->getViewUrl();
 	} // getObjectUrl
 
 	function getDashboardObject(){
 		$result = parent::getDashboardObject();
 		$result["url"] = $this->getUrl();
+		$result["description"] = $this->getDescription();
 		return $result;
 	}
 }

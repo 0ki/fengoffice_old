@@ -102,6 +102,21 @@ class TagController extends ApplicationController {
 		Tags::renameTag($tag, $new_tag);
 		$this->redirectTo("tag", "list_tags");
 	}
+	
+	function delete_tag_by_name() {
+		if (!logged_user()->isAdministrator()) {
+			flash_error(lang("no access permissions"));
+			return;
+		}
+		ajx_current("empty");
+		$tag = array_var($_GET, 'tag');
+		if (is_null($tag)) {
+			flash_error(lang("error must enter tag"));
+			return;
+		}
+		Tags::deleteTagByName($tag);
+		$this->redirectTo("tag", "list_tags");
+	}
 } // TagController
 
 ?>

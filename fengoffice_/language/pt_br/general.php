@@ -160,8 +160,8 @@
 	'apply to all subworkspaces' => 'Aplicar permissões a todos subespaços',
 	'weblinks' => 'Páginas Web',
 	'add work' => 'Adicionar Trabalho',
-	'date format' => 'm/d/Y',
-	'date format description' => '(mm/dd/yyyy)',
+	'date format' => 'd/m/Y',
+	'date format description' => '(dd/mm/yyyy)',
 	'confirm move to trash' => 'Confirma envio do objeto para lixeira?',
 	'add' => 'Adicionar',
 ); ?>

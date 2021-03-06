@@ -411,13 +411,20 @@ class Timeslot extends BaseTimeslot {
 			$task_name = '';
 		}
 			
+		$user = $this->getUser();
+		if ($user instanceof User) {
+			$displayname = $user->getDisplayName();
+		} else {
+			$displayname = lang("n/a");
+		}
 		$result = array(
 			'id' => $this->getId(),
 			'date' => $this->getStartTime()->getTimestamp(),
 			'time' => $this->getSeconds(),
 			'pid' => $project_id,
 			'uid' => $this->getUserId(),
-			'uname' => $this->getUser()->getDisplayName());
+			'uname' => $displayname
+		);
 		
 		if ($this->getDescription() != '')
 			$result['desc'] = $this->getDescription();

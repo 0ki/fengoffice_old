@@ -177,6 +177,7 @@
   	'date format description' => '(día/mes/año)',
     'confirm move to trash' => 'Está seguro que desea mover el objeto seleccionado a la papelera?',
   	'add' => 'Agregar',
+  	'shared with' => 'Compartido con'
 
   ); // array
 

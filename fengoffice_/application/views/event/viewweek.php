@@ -1,6 +1,5 @@
 <script type="text/javascript">
 	scroll_to = -1;
-	showCalendarToolbar();
 </script>
 
 <?php
@@ -13,14 +12,10 @@ $_SESSION['year'] = $year;
 $_SESSION['month'] = $month;
 $_SESSION['day'] = $day;
 
-$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter'];
-$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3'; 
+$user_filter = $userPreferences['user_filter'];
+$status_filter = $userPreferences['status_filter'];
 
 $user = Users::findById(array('id' => $user_filter));
-/*
- * If user does not exists, assign logged_user() to $user 
- * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
- */
 if ($user == null) $user = logged_user();
 
 $use_24_hours = user_config_option('time_format_use_24');
@@ -37,18 +32,16 @@ $tags = active_tag();
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
-		
+	
 	$lastday = date("t", mktime(0, 0, 0, $month, 1, $year)); // # of days in the month
-	//DateTimeValue
 	
 	$date_start = new DateTimeValue(mktime(0, 0, 0, $month, $startday, $year)); 
 	$date_end = new DateTimeValue(mktime(0, 0, 0, $month, $endday, $year)); 
 	
-	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, logged_user(), $tags, active_project());
-	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, $user, $tags, active_project());
+	$milestones = ProjectMilestones::getRangeMilestonesByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
+	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $tags, active_project());
 	
-	//$day_events = array();
-	$dates = array();//datetimevalye for each day of week
+	$dates = array(); //datetimevalue for each day of week
 	$results = array();
 	$allday_events_count = array();
 	$alldayevents = array();
@@ -87,7 +80,7 @@ $tags = active_tag();
 		}
 
 		
-		$results[$day_of_week] = ProjectEvents::getDayProjectEvents($dates[$day_of_week], $tags, active_project(), $user_filter, $state_filter); 
+		$results[$day_of_week] = ProjectEvents::getDayProjectEvents($dates[$day_of_week], $tags, active_project(), $user_filter, $status_filter); 
 		if(!$results[$day_of_week]) $results[$day_of_week]=array();
 		foreach ($results[$day_of_week] as $key => $event){
 			if ($event->getTypeId()> 1){
@@ -114,13 +107,25 @@ $tags = active_tag();
 	
 	$max_events = max($allday_events_count) == 0 ? 1 : max($allday_events_count);
 	$alldaygridHeight = $max_events * PX_HEIGHT / 2 + PX_HEIGHT / 2;//Day events container height= all the events plus an extra free space
-	
-?>
 
+
+	$users_array = array();
+	$companies_array = array();
+	foreach($users as $u)
+		$users_array[] = $u->getArrayInfo();
+	foreach($companies as $company)
+		$companies_array[] = $company->getArrayInfo();	
+?>
+<div id="calHiddenFields">
+	<input type="hidden" id="hfUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
+	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
+	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+</div>
 
 
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
-
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+	
 <table style="width:100%;height:100%;">
 <tr>
 <td>
@@ -241,7 +246,7 @@ $tags = active_tag();
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-bottom:1px solid; border-color:<?php echo $border_color ?>"></div>
 						<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 							<div class="" style="overflow: hidden; padding-bottom: 1px;">										
-								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="stopPropagation(event);hideCalendarToolbar();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
+								<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()."&amp;view=week"?>' class='internalLink'" onclick="stopPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>										
 							</div>
 						</div>
 						<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:0px; border-top:1px solid; border-color:<?php echo $border_color ?>"></div>
@@ -468,12 +473,12 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 						<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 						<div class="chipbody edit og-wsname-color-<?php echo $ws_color?>">
-						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="hideCalendarToolbar();og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
+						<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>" onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'week', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 							<dt class="<?php echo  $ws_class?>" style="<?php echo $ws_style?>;">
 							<table width="100%"><tr><td>
 								<a 
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="stopPropagation(event);hideCalendarToolbar();"
+								onclick="stopPropagation(event);"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo "$start_time"?></div></a>
 							</td><td align="right">
 								<dd><div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -504,7 +509,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 							<dd>
 							<div><a
 								href='<?php echo cal_getlink("index.php?action=viewevent&amp;view=week&amp;id=".$event->getId())."&amp;user_id=".$user_filter;?>'
-								onclick="stopPropagation(event);hideCalendarToolbar();"
+								onclick="stopPropagation(event);"
 								class='internalLink'><div style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%;"><?php echo $subject;?></div></a>
 							</div>
 							</dd>
@@ -549,12 +554,17 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 
 
 <script type="text/javascript">
+	// Top Toolbar	
+	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
+	var ogCalTT = new og.CalendarTopToolbar({
+		usersHfId:'hfUsers',
+		companiesHfId:'hfCompanies',
+		renderTo:'calendarPanelTopToolbar'
+	});	
 
-// Mantain the actual values after refresh by clicking Calendar tab.
-	cal_actual_view = '<?php echo $_SESSION['active_calendar_view'] ?>';
+	// Mantain the actual values after refresh by clicking Calendar tab.
 	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
 	calToolbarDateMenu.picker.setValue(dtv);
-//----------
 
 	// scroll to first event
 	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);
@@ -567,7 +577,7 @@ onmouseup="showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->getMo
 		maindiv = document.getElementById('cal_main_div');
 		if (maindiv != null) {
 			var divHeight = maindiv.offsetHeight;
-			divHeight = divHeight - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
+			divHeight = divHeight - 30 - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
 		}
 	}

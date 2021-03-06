@@ -58,6 +58,10 @@ class DashboardController extends ApplicationController {
 					. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag=".DB::escape($tag)." AND t.rel_object_manager='ProjectCharts')"):'')
 					, 'order' => 'updated_on DESC', 'limit' => 5));
 			tpl_assign('charts', $charts);
+			
+			if (BillingCategories::count() > 0 && active_project() instanceof Project){
+				tpl_assign('billing_chart_data', active_project()->getBillingTotalByUsers(logged_user()));
+			}
 		}
 		if(user_config_option('show messages widget') && config_option('enable_notes_module')){
 			$messages = ProjectMessages::findAll(array(

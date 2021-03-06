@@ -51,16 +51,22 @@ og.OverviewManager = function() {
 	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
-		var ids = String(r.data.wsIds).split(',');
-		var projectsString = "";
-		for(var i = 0; i < ids.length; i++)
-			projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
-	
+		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
+
+		var viewUrl = r.data.url;
+		
+		var actions = '';
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" ';
 		if (r.data.type == 'webpage') {
-			return projectsString + String.format('<a href="#" onclick="window.open(\'{1}\'); return false">{0}</a>', og.clean(value), r.data.url);
-		} else {
-			return projectsString + String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), r.data.url);
+			viewUrl = og.getUrl('webpage', 'view', {id:r.data.object_id});
+			actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+				r.data.url, lang('open link in new window', value));
 		}
+		actions = '<span>' + actions + '</span>';
+	
+		var name = String.format('<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl);
+		
+		return projectsString + name + actions;
 	}
 
 	function renderType(value, p, r){

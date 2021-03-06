@@ -68,7 +68,6 @@ class TimeslotController extends ApplicationController {
 	} 
 	
 	function add_timespan() {
-
 		$object_id = get_id('object_id');
 		$object_manager = array_var($_GET, 'object_manager');
 
@@ -101,6 +100,15 @@ class TimeslotController extends ApplicationController {
 		$timeslot->setUserId(logged_user()->getId());
 		$timeslot->setObjectManager($object_manager);
 		$timeslot->setObjectId($object_id);
+		
+		/* Billing */
+		$billing_category_id = logged_user()->getDefaultBillingId();
+		$project = $object->getProject();
+		$timeslot->setBillingId($billing_category_id);
+		$hourly_billing = $project->getBillingAmount($billing_category_id);
+		$timeslot->setHourlyBilling($hourly_billing);
+		$timeslot->setFixedBilling($hourly_billing * $hours);
+		$timeslot->setIsFixedBilling(false);
 		
 		try{
 			DB::beginWork();
@@ -148,6 +156,15 @@ class TimeslotController extends ApplicationController {
 		$timeslot_data = array_var($_POST, 'timeslot');
 		$timeslot->close();
 		$timeslot->setFromAttributes($timeslot_data);
+		
+		/* Billing */
+		$billing_category_id = logged_user()->getDefaultBillingId();
+		$project = $object->getProject();
+		$timeslot->setBillingId($billing_category_id);
+		$hourly_billing = $project->getBillingAmount($billing_category_id);
+		$timeslot->setHourlyBilling($hourly_billing);
+		$timeslot->setFixedBilling($hourly_billing * $timeslot->getMinutes() / 60);
+		$timeslot->setIsFixedBilling(false);
 		
 		try{
 			DB::beginWork();
@@ -273,13 +290,17 @@ class TimeslotController extends ApplicationController {
 			$timeslot_data = array(
           		'description' => $timeslot->getDescription(),
           		'start_time' => $timeslot->getStartTime(),
-          		'end_time' => $timeslot->getEndTime()
+          		'end_time' => $timeslot->getEndTime(),
+          		'is_fixed_billing' => $timeslot->getIsFixedBilling(),
+          		'hourly_billing' => $timeslot->getHourlyBilling(),
+          		'fixed_billing' => $timeslot->getFixedBilling()
 			); // array
 		} // if
 
 		tpl_assign('timeslot_form_object', $object);
 		tpl_assign('timeslot', $timeslot);
 		tpl_assign('timeslot_data', $timeslot_data);
+		tpl_assign('show_billing', BillingCategories::count() > 0);
 		
 		if(is_array(array_var($_POST, 'timeslot'))) {
 			try {
@@ -326,6 +347,18 @@ class TimeslotController extends ApplicationController {
 				}
 				
 				$timeslot->setSubtract($subtract);
+				
+				/* Billing */
+				$timeslot->setIsFixedBilling(array_var($timeslot_data,'is_fixed_billing',false));
+				$timeslot->setHourlyBilling(array_var($timeslot_data,'hourly_billing',0));
+				if ($timeslot->getIsFixedBilling()){
+					$timeslot->setFixedBilling(array_var($timeslot_data,'fixed_billing',0));
+				} else {
+					$timeslot->setFixedBilling($timeslot->getHourlyBilling() * $timeslot->getMinutes() / 60);
+				}
+				if ($timeslot->getBillingId() == 0 && ($timeslot->getHourlyBilling() > 0 || $timeslot->getFixedBilling() > 0)){
+					$timeslot->setBillingId($timeslot->getUser()->getDefaultBillingId());
+				}
 				
 				DB::beginWork();
 				$timeslot->save();

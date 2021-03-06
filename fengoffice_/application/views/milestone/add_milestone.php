@@ -27,7 +27,7 @@
 			echo lang('edit milestone');
 		}
 	?>
-	</td><td style="text-align:right"><?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -41,7 +41,8 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_description_div', this)"><?php echo lang('description') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_milestone_options_div', this)"><?php echo lang('options') ?></a> -
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_reminders_div',this)"><?php echo lang('object reminders') ?></a>  - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties') ?></a> -
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
@@ -66,7 +67,7 @@
 	<div id="<?php echo $genid ?>add_milestone_tags_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('tags') ?></legend>
-		<?php echo autocomplete_tags_field("milestone[tags]", array_var($milestone_data, 'tags')); ?>
+		<?php echo autocomplete_tags_field("milestone[tags]", array_var($milestone_data, 'tags'), null, 10); ?>
 		
 	</fieldset>
 	</div>
@@ -74,7 +75,7 @@
 	<div id="<?php echo $genid ?>add_milestone_description_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'short', 'id' => $genid . 'milestoneFormDesc')) ?>
+		<?php echo textarea_field('milestone[description]', array_var($milestone_data, 'description'), array('class' => 'short', 'id' => $genid . 'milestoneFormDesc', 'tabindex' => '20')) ?>
 	</fieldset>
 	</div>
   
@@ -84,16 +85,30 @@
 	<?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
 		<div class="objectOptions">
 		<div class="optionLabel"><label><?php echo lang('private milestone') ?>: <span class="desc">(<?php echo lang('private milestone desc') ?>)</span></label></div>
-		<div class="optionControl"><?php echo yes_no_widget('milestone[is_private]', $genid . 'milestoneFormIsPrivate', array_var($milestone_data, 'is_private'), lang('yes'), lang('no')) ?></div>
+		<div class="optionControl"><?php echo yes_no_widget('milestone[is_private]', $genid . 'milestoneFormIsPrivate', array_var($milestone_data, 'is_private'), lang('yes'), lang('no'), 30) ?></div>
 		</div>
 	<?php } // if ?>
 		<div class="objectOption">
 		<div class="optionLabel"><?php echo label_tag(lang('assign to'), $genid . 'milestoneFormAssignedTo') ?></div>
-		<div class="optionControl"><?php echo assign_to_select_box('milestone[assigned_to]', active_or_personal_project(), array_var($milestone_data, 'assigned_to'), array('id' => $genid . 'milestoneFormAssignedTo')) ?></div>
-		<div class="optionControl"><?php echo checkbox_field('milestone[send_notification]', array_var($milestone_data, 'send_notification', true), array('id' => $genid . 'milestoneFormSendNotification')) ?> 
+		<div class="optionControl"><?php echo assign_to_select_box('milestone[assigned_to]', active_or_personal_project(), array_var($milestone_data, 'assigned_to'), array('id' => $genid . 'milestoneFormAssignedTo', 'tabindex' => '40')) ?></div>
+		<div class="optionControl"><?php echo checkbox_field('milestone[send_notification]', array_var($milestone_data, 'send_notification', true), array('id' => $genid . 'milestoneFormSendNotification', 'tabindex' => '45')) ?> 
 		<label for="<?php echo $genid ?>milestoneFormSendNotification" class="checkbox"><?php echo lang('send milestone assigned to notification') ?></label></div>
 		</div>
 	</fieldset>
+	</div>
+
+	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
+		<fieldset>
+		<legend><?php echo lang('object reminders') ?></legend>
+		<label><?php echo lang("due date")?>:</label>
+		<div id="<?php echo $genid ?>add_reminders_content">
+			<?php echo render_add_reminders($object, 'due_date', array(
+				'type' => 'reminder_email',
+				'duration' => 1,
+				'duration_type' => 1440
+			)); ?>
+		</div>
+		</fieldset>
 	</div>
 	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="display:none">
@@ -144,12 +159,12 @@
 	
 	<div>
 	<?php echo label_tag(lang('due date'), null, true) ?>
-	<?php echo pick_date_widget2('milestone[due_date_value]', array_var($milestone_data, 'due_date'),$genid) ?>
+	<?php echo pick_date_widget2('milestone[due_date_value]', array_var($milestone_data, 'due_date'),$genid, 90) ?>
 	</div>
 
 	<?php echo input_field("milestone[is_template]", array_var($milestone_data, 'is_template', false), array("type" => "hidden")); ?>
 
-	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '10')) ?>
+	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '100')) ?>
 </div>
 </div>
 </form>

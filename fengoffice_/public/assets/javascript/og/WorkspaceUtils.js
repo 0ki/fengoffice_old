@@ -44,12 +44,27 @@ og.showWsPaths = function(containerItemName, showPath, showCurrent){
 		container = document;
 	
 	var list = container.getElementsByTagName('span');
-	for(var i = 0; i < list.length; i++)
+	var rand_no = Math.ceil(10000*Math.random());
+	for(var i = 0; i < list.length; i++){
+
 		if (list[i].className == 'project-replace'){
 			list[i].className = '';
-			var id = list[i].innerHTML.replace(/^\s*([\S\s]*?)\s*$/, '$1');
-			list[i].innerHTML = og.renderWsPath(id,showPath, showCurrent);
+			var ids = list[i].innerHTML.split(',');
+			var html = '';
+			if (ids.length > 2){
+				html = '<span class="og-wsname og-wsname-color-0 ico-workspaces-expand" id="spshow' + rand_no + '-' + i + '" onclick="document.getElementById(\'sphide' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'inline\';this.style.display=\'none\'">' + ids.length + '&nbsp;'+ lang('workspaces') + '</span>';
+				html += '<span class="ico-workspaces-collapse" id="sphide' + rand_no + '-' + i + '" onclick="document.getElementById(\'spshow' + rand_no + '-' + i + '\').style.display =\'inline\';document.getElementById(\'spcont' + rand_no + '-' + i + '\').style.display =\'none\';this.style.display=\'none\'" style="display:none">&nbsp</span>';
+				html += '<span id="spcont' + rand_no + '-' + i + '" style="display:none">';
+			}
+			for(var j = 0; j < ids.length; j++){
+				html = html + "<span>" + og.renderWsPath(ids[j].replace(/^\s*([\S\s]*?)\s*$/, '$1'),showPath, showCurrent) + "</span>&nbsp;";
+			}
+			if (ids.length > 2){
+				html += '</span>';
+			}
+			list[i].innerHTML = html;
 		}
+	}
 };
 
 og.renderWsPath = function(id,showPath, showCurrent){
@@ -57,18 +72,47 @@ og.renderWsPath = function(id,showPath, showCurrent){
 	var node = tree.tree.getNodeById('ws' + id);
 	var html = '';
 	
+	var shortLength = 4;
+	var longLength = 12;
+	var append = '&hellip;';
+	
+	var count = 0;
 	if (node != null && node.ws.id != 0){
+		//Count path depth
 		var activews = tree.tree.getActiveWorkspace();
 		if (node.ws.id != activews.id || showPath || showCurrent){
 			var originalNode = node;
 			node = node.parentNode;
 			while (node != null && node.ws.id != 0 && (node.ws.id != activews.id || showPath || showCurrent)){
-				html = '<a class="og-wsname-color-' + originalNode.ws.color + '" href="#"  onclick="Ext.getCmp(\'workspace-panel\').select(' + node.ws.id + ')" name="' + og.clean(og.clean(node.ws.name)).replace('"', '\\"') + '">' + og.trimMax(node.ws.name, 4) + "</a>/" + html;
+				count++;
 				if (node.ws.id == activews.id && !showPath)
 					break;
 				node = node.parentNode;
 			}
-			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.triggerFPT(this)" onmouseout="og.clearTriggerFPT()">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + og.clean(og.clean(originalNode.ws.name)).replace('"', '\\"') + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, 12) + "</a></span></span>";
+			count++;
+		}
+		//Adjust workspace label size
+		if (count > 3){
+			shortLength = 2;
+			longLength = 8;
+			append = '.';
+		}else if (count > 5){
+			shortLength = 1;
+			longLength = 5;
+			append = '.';
+		}else if (count == 1) longLength = 16;
+		//Render path
+		node = tree.tree.getNodeById('ws' + id);
+		if (node.ws.id != activews.id || showPath || showCurrent){
+			originalNode = node;
+			node = node.parentNode;
+			while (node != null && node.ws.id != 0 && (node.ws.id != activews.id || showPath || showCurrent)){
+				html = '<a class="og-wsname-color-' + originalNode.ws.color + '" href="#"  onclick="Ext.getCmp(\'workspace-panel\').select(' + node.ws.id + ')" name="' + og.clean(og.clean(node.ws.name)).replace('"', '\\"') + '">' + og.trimMax(node.ws.name, shortLength,append) + "</a>/" + html;
+				if (node.ws.id == activews.id && !showPath)
+					break;
+				node = node.parentNode;
+			}
+			html = '<span class="og-wscont og-wsname"><span style="padding-left:1px;padding-right:1px" class="og-wsname-color-' + originalNode.ws.color + '" onmouseover="og.triggerFPT(this)" onmouseout="og.clearTriggerFPT()">'+ html + '<a href="#" onclick="Ext.getCmp(\'workspace-panel\').select(' + originalNode.ws.id + ')" name="' + og.clean(og.clean(originalNode.ws.name)).replace('"', '\\"') + '" class="og-wsname-color-' + originalNode.ws.color + '">' + og.trimMax(originalNode.ws.name, longLength, append) + "</a></span></span>";
 		}
 	}
 	return html;
@@ -100,7 +144,7 @@ og.showFullPathTooltip = function(object, isMouseOver){
 				og.swapNames(cn[i]);
 			}
 		}
-		Tip(object.innerHTML,FOLLOWMOUSE,false,FADEIN,300,STICKY,1,CLICKCLOSE,true,BGCOLOR,bgColor,BORDERCOLOR,bgColor);
+		Tip(object.innerHTML,FOLLOWMOUSE,false,FADEIN,300,STICKY,0,CLICKCLOSE,true,BGCOLOR,bgColor,BORDERCOLOR,bgColor);
 		for (var i = 0; i < cn.length; i++) {
 			if (cn[i].name != null && cn[i].name != ''){
 				og.swapNames(cn[i]);

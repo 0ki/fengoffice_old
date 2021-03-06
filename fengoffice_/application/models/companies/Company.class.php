@@ -63,7 +63,7 @@ class Company extends BaseCompany {
 	function getUsers() {
 		return Users::findAll(array(
         'conditions' => '`company_id` = ' . DB::escape($this->getId()),        
-        'order' => '`display_name`'
+        'order' => 'concat(`display_name`, `username`)'
 		)); // findAll
 	} // getUsers
 

@@ -109,7 +109,10 @@ ogTimeManager.GetNewTimeslotParameters = function(genid){
 	parameters["timeslot[project_id]"] = document.getElementById(genid + 'wsSelValue').value;
 	parameters["timeslot[hours]"] = document.getElementById(genid + 'tsHours').value;
 	parameters["timeslot[description]"] = document.getElementById(genid + 'tsDesc').value;
-	parameters["timeslot[user_id]"] = document.getElementById(genid + 'tsUser').value;
+	var userSel = document.getElementById(genid + 'tsUser');
+	if (userSel){
+		parameters["timeslot[user_id]"] = userSel.value;
+	}
 	parameters["timeslot[id]"] = document.getElementById(genid + 'tsId').value;
 	
 	return parameters;
@@ -199,10 +202,12 @@ ogTimeManager.EditTimeslot = function(timeslotId){
 		document.getElementById(this.genid + 'tsId').value = timeslotId;
 		og.drawWorkspaceSelector(this.genid + "wsSel", ts.workspaceId, 'timeslot[project_id]', false);
 		var userSel = document.getElementById(this.genid + 'tsUser');
-		for (var i = 0; i < userSel.options.length; i++){
-			if (userSel.options[i].value == ts.userId){
-				userSel.selectedIndex = i;
-				break;	
+		if (userSel){
+			for (var i = 0; i < userSel.options.length; i++){
+				if (userSel.options[i].value == ts.userId){
+					userSel.selectedIndex = i;
+					break;	
+				}
 			}
 		}
 		var datePick = Ext.getCmp(this.genid + 'timeslot[date]Cmp');

@@ -328,14 +328,12 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	// ---------------------------------------------------
 
 	private function cat_file($fname, $extension){
-		if (strpos(strtoupper($_ENV["OS"]), "WIN") === false){
+		if ((defined('CATDOC_PATH') && CATDOC_PATH != '' && $extension == "doc") || 
+			(defined('CATPPT_PATH') && CATPPT_PATH != '' && $extension == "ppt")){
 			exec(($extension == "doc"? CATDOC_PATH . ' -a ' : CATPPT_PATH) . ' ' . escapeshellarg($fname) . ' 2>&1', $result, $return_var);
 			if ($return_var > 0){
-				if (strpos(($extension == 'doc'?'catdoc':'catppt'),implode(" ",$result)) === false) {
-					if (Env::isDebugging()) {
-						Logger::log($result,Logger::ERROR);
-					}
-				}
+				if (Env::isDebugging())
+					Logger::log(implode(" ",$result),Logger::WARNING);	// catdoc command not found
 				return false;
 			}
 			return trim(implode(" ",$result));
@@ -361,32 +359,29 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 		            
 		    $searchable_object->save();
 		} else // add .doc and .ppt files to the search 
-			if ($this->getFileType() && ($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
-				&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
-					
+		if ($this->getFileType() && ($this->getFileType()->getExtension() == "doc" || $this->getFileType()->getExtension() == "ppt") 
+			&& FileRepository::getBackend() instanceof FileRepository_Backend_FileSystem){
 			if (!$this->isNew())
 	    		SearchableObjects::dropContentByObjectColumn($this,'filecontent');
 	    		
 			$backend = FileRepository::getBackend();
-			if (!$backend->isInRepository($this->getRepositoryId()))
-				return;
-			$filepath = $backend->getFilePath($this->getRepositoryId());
-			$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
-			
-			if (!$fileContents)
-				return;
-	    	
-		    $searchable_object = new SearchableObject();
-		          
-		    $searchable_object->setRelObjectManager(get_class($this->manager()));
-		    $searchable_object->setRelObjectId($this->getObjectId());
-		    $searchable_object->setColumnName('filecontent');
-		    $searchable_object->setContent($fileContents);
-	        $searchable_object->setProjectId(0); //TODO: search
-		    $searchable_object->setIsPrivate($this->isPrivate());
-		            
-		    $searchable_object->save();
-			
+			if ($backend->isInRepository($this->getRepositoryId())){
+				$filepath = $backend->getFilePath($this->getRepositoryId());
+				$fileContents = $this->cat_file($filepath,$this->getFileType()->getExtension());
+				
+				if ($fileContents){
+				    $searchable_object = new SearchableObject();
+				          
+				    $searchable_object->setRelObjectManager(get_class($this->manager()));
+				    $searchable_object->setRelObjectId($this->getObjectId());
+				    $searchable_object->setColumnName('filecontent');
+				    $searchable_object->setContent($fileContents);
+			        $searchable_object->setProjectId(0); //TODO: search
+				    $searchable_object->setIsPrivate($this->isPrivate());
+				            
+				    $searchable_object->save();
+				}
+			}
 		}
 	}
 	

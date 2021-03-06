@@ -61,7 +61,6 @@
 	'user ws config option name my tasks is default view' => 'La vista di default è quella delle attività assegnate a me',
 	'user ws config option desc my tasks is default view' => 'Se disabilitata, la vista di default del pannello attività mostrerà tutte le attività',
 	'user ws config option name show tasks in progress widget' => 'Mostra lo strumento \'Attività in corso\'',
-	'user ws config option name can notify from quick add' => 'Casella di notifica in \'Aggiunta veloce\'',
 	'user ws config option desc can notify from quick add' => 'Una casella è abilitata così gli utenti assegnati possono essere notificati dopo l\'aggiunta veloce a una attività',
 	'backup process desc' => 'Un backup salva lo stato corrente dell\'intera applicazione in una cartella compressa. Può essere usato per salvare una installazione di OpenGoo. <br> Generare il backup di database e filesystem può durare un pò, ed è un processo  in tre passi: <br>1.- Lanciare la procedura di backup, <br>2.- Scaricare il backup. <br> 3.- Opzionalmente, il backup può essere cancellato manualmente, in questo caso non sarà più disponibile. <br> ',
 	'start backup' => 'Lancia il backup',

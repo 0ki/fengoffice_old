@@ -221,6 +221,7 @@ class MilestoneController extends ApplicationController {
 			    $object_controller->link_to_new_object($milestone);
 				$object_controller->add_subscribers($milestone);
 				$object_controller->add_custom_properties($milestone);
+				$object_controller->add_reminders($milestone);
 				
 				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
@@ -291,7 +292,7 @@ class MilestoneController extends ApplicationController {
 
 		if(is_array(array_var($_POST, 'milestone'))) {
 			if (array_var($milestone_data, 'due_date_value') != ''){
-	       		$milestone_data['due_date'] = getDateValue(array_var($milestone_data, 'due_date_value'));
+				$milestone_data['due_date'] = getDateValue(array_var($milestone_data, 'due_date_value'));
 			} else {
 				$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, $now->getMonth(), $now->getDay(), $now->getYear());
 			}
@@ -327,6 +328,7 @@ class MilestoneController extends ApplicationController {
 			    $object_controller->link_to_new_object($milestone);
 				$object_controller->add_subscribers($milestone);
 				$object_controller->add_custom_properties($milestone);
+				$object_controller->add_reminders($milestone);
 				
 				ApplicationLogs::createLog($milestone, $milestone->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();

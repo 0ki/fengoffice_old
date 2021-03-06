@@ -190,7 +190,7 @@
     * @param void
     * @return array
     */
-    function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end,User $user, $tags = '', $project = null){
+    function getRangeMilestonesByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser = null, $tags = '', $project = null){
 		
       $from_date =   (new DateTimeValue($date_start->getTimestamp()));
       $from_date = $date_start->beginningOfDay();
@@ -210,9 +210,13 @@
 	  } else {
 		$tag_str= "";
 	  }
+	  
+	  $assignedFilter = '';
+	  if ($assignedUser instanceof User) 
+	  	$assignedFilter = ' AND `id` IN (SELECT milestone_id FROM '.TABLE_PREFIX.'project_tasks WHERE `trashed_by_id` = 0 AND `milestone_id` > 0 AND `assigned_to_user_id` = ' . $assignedUser->getId() . ' OR (`assigned_to_user_id` = 0 AND `assigned_to_company_id` = '. $assignedUser->getCompanyId().'))';
       
 	  $result = self::findAll(array(
-        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
       )); // findAll
       
       return $result;
@@ -313,6 +317,7 @@
 			}
 			$new->setProjectId($milestoneTo->getProjectId());
 			$new->save();
+			$new->copyCustomPropertiesFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
 		}

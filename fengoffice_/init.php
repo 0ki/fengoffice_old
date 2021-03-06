@@ -85,6 +85,10 @@
   
   include_once 'environment/environment.php';
   
+  if (Env::isDebuggingTime()) {
+    TimeIt::start("total");
+  }
+  
   include_once 'library/cal/index.php';
   
   include_once 'library/json/json.php';
@@ -156,4 +160,9 @@
     } // if
   } // try
   
+  if (Env::isDebuggingTime()) {
+    TimeIt::stop();
+    $report = TimeIt::getTimeReportByType();
+    Logger::log($_SERVER['QUERY_STRING']."\n$report");
+  }
 ?>

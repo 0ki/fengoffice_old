@@ -46,13 +46,15 @@
     'config option desc default_project_folders' => 'Carpetas que van a ser creadas cuando se cree el espacio. El nombre de cada carpeta debera aparecer en una línea. Las líneas duplicadas o vacías no van a ser tenidas en cuenta',
     'config option name theme' => 'Tema',
     'config option desc theme' => 'Usando temas puede cambiar el aspecto de OpenGoo',
-    
     'config option name upgrade_check_enabled' => 'Habilitar chequeo de actualizaciones',
     'config option desc upgrade_check_enabled' => 'Si escoge esta opción el sistema corroborara una vez al día si hay nuevas versiones disponibles de OpenGoo',
     'config option name work_day_start_time' => 'Hora de inicio de la jornada laboral',
 	'config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
   	'config option name time_format_use_24' => 'Utilizar formato de 24 horas',
   	'config option desc time_format_use_24' => 'Si está habilitado el formato de hora será \'hh:mm\' desde 00:00 hasta 23:59, sino las horas se utilizarán desde 1 a 12 utilizando AM o PM.',
+    'config option name use_minified_resources' => 'Usar recursos minificados',
+    'config option desc use_minified_resources' => 'Usar achivos CSS y Javascript para mejorar la performance. En el caso de efectuar modificaciones, debe recomprimir los archivos usando las herramientas de public/tools.',
+  
 	
     // Mailing
     'config option name exchange_compatible' => 'Modo compatibilidad con Microsoft Exchange',

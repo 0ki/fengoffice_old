@@ -16,7 +16,8 @@ og.WebpageManager = function() {
 	            totalProperty: 'totalCount',
 	            id: 'id',
 	            fields: [
-	                'title', 'description', 'url', 'tags', 'wsIds'
+	                'title', 'description', 'url', 'tags', 'wsIds', 'updatedBy', 'updatedById',
+	                {name: 'updatedOn', type: 'date', dateFormat: 'timestamp'},
 	            ]
 	        }),
 	        remoteSort: true,
@@ -48,18 +49,34 @@ og.WebpageManager = function() {
 
     
     function renderName(value, p, r) {
-		var result = '';
-		var name = String.format('<a href="" onclick="window.open(\'{1}\'); return false"; title="' 
-			+ lang('open link in new window', value) + '">{0}</a>', og.clean(value), r.data.url);
+		var name = String.format(
+			'<a style="font-size:120%" title="{2}" href="#" onclick="og.openLink(\'{1}\')">{0}</a>',
+			og.clean(value), og.getUrl('webpage', 'view', {id: r.id}), lang('view weblink'));
 		
-		var projectsString = '';
-	    if (r.data.wsIds != ''){
-			var ids = String(r.data.wsIds).split(',');
-			for(var i = 0; i < ids.length; i++)
-				projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
+		var actions = '';
+		var actionStyle= ' style="font-size:90%;color:#777777;padding-top:3px;padding-left:18px;background-repeat:no-repeat" '; 
+		actions += String.format('<a class="list-action ico-open-link" href="#" onclick="window.open(\'{0}\')" title="{1}" ' + actionStyle + '> </a>',
+			r.data.url, lang('open link in new window', value));
+		actions = '<span>' + actions + '</span>';
+		
+		var projectsString = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds);
+	    
+		return projectsString + name + actions;
+	}
+	
+	function renderDateUpdated(value, p, r) {
+		if (!value) {
+			return "";
 		}
-		
-		return projectsString + name;
+		var userString = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', r.data.updatedBy, og.getUrl('user', 'card', {id: r.data.updatedById}));
+	
+		var now = new Date();
+		var dateString = '';
+		if (now.dateFormat('Y-m-d') > value.dateFormat('Y-m-d')) {
+			return lang('last updated by on', userString, value.dateFormat(lang('date format')));
+		} else {
+			return lang('last updated by at', userString, value.dateFormat('h:i a'));
+		}
 	}
     
 	function getSelectedIds() {
@@ -114,6 +131,13 @@ og.WebpageManager = function() {
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120
+        },{
+			id: 'updated',
+			header: lang("last updated by"),
+			dataIndex: 'updatedOn',
+			width: 120,
+			renderer: renderDateUpdated,
+			sortable: true
         }]);
     cm.defaultSortable = false;
 	

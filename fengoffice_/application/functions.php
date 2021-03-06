@@ -420,6 +420,6 @@ function get_object_by_manager_and_id($object_id, $manager_class) {
 } // get_object_by_manager_and_id
 
 function alert($text) {
-	evt_add("debug", $text);
+	evt_add("popup", array('title' => "Debug", 'message' => $text));
 }
 ?>

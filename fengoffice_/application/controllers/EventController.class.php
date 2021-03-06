@@ -29,8 +29,6 @@ class EventController extends ApplicationController {
 		$_SESSION['cal_userid'] = logged_user()->getId();
 		cal_add_to_links('c=event');
 		cal_load_permissions();
-		
-		$_SESSION['active_calendar_view'] = 'viewweek';
 	} // __construct
      	
 	/**
@@ -39,7 +37,7 @@ class EventController extends ApplicationController {
 	* @param void
 	* @return null
 	*/
-	function index() {
+	function index($view_type = null, $user_filter = null, $status_filter = null) {
 		//auth check in cal_query_get_eventlist		
 		if( (!(logged_user()->isAdministrator())) && ((active_project() && !(logged_user()->isProjectUser(active_project()))))){	    	
 			flash_error(lang('no access permissions'));
@@ -48,34 +46,19 @@ class EventController extends ApplicationController {
 	    }		
 		ajx_set_no_toolbar(true);
 		ajx_replace(true);
-		
-		$_SESSION['active_calendar_view'] = 'index';
 				 
 		$year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		
-		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
-	    $state_filter = explode(' ', $state_filter); // make an array of filters
+		if ($view_type == null)
+			$this->getUserPreferences($view_type, $user_filter, $status_filter);
 				  
-		$pm = $month - 1;
-		$py = $year;
-		if($pm == 0){
-			$pm = 12;
-			$py--;
-		}
-		$nm = $month + 1;
-		$ny = $year;
-		if($nm == 13){
-			$nm = 1;
-			$ny++;
-		}
-		ajx_replace(true);
-		 
 	    $tag = active_tag();
 		tpl_assign('tags',$tag);
+		
 		$this->setTemplate('calendar');
+		$this->setViewVariables($view_type, $user_filter, $status_filter);
 	}
 	
 	function registerInvitations($data, $event) {
@@ -276,8 +259,6 @@ class EventController extends ApplicationController {
 		$year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		
 		$user_filter = isset($_GET['user_filter']) ? $_GET['user_filter'] : logged_user()->getId();
-		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
-	    $state_filter = explode(' ', $state_filter); // make an array of filters 
 		
 		if(!is_array($event_data)) {
 			// if data sent from quickadd popup (via get) we se it, else default
@@ -352,17 +333,19 @@ class EventController extends ApplicationController {
 			    $object_controller->link_to_new_object($event);
 				$object_controller->add_subscribers($event);
 				$object_controller->add_custom_properties($event);
+				$object_controller->add_reminders($event);
 				
 				ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_ADD);
-	         	DB::commit();
-	          	
-	          	flash_success(lang('success add event', $event->getObjectName()));
-
-	          	if (array_var($_POST, 'popup', false)) {
+				
+				if (array_var($_POST, 'popup', false)) {
+	          		$event->subscribeUser(logged_user());
 					ajx_current("reload");
 	          	} else {
 	          		ajx_current("back");
 	          	}
+	         	DB::commit();
+	          	
+	          	flash_success(lang('success add event', $event->getObjectName()));
 	          	ajx_add("overview-panel", "reload");
 	        } catch(Exception $e) {
 	          	DB::rollback();
@@ -423,42 +406,93 @@ class EventController extends ApplicationController {
 		} // try
 	}
 	
-	function viewdate(){
+	function viewdate($view_type = null, $user_filter = null, $status_filter = null){
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
-		
-		$_SESSION['active_calendar_view'] = 'viewdate';
 		
 		$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 	    $year = isset($_GET['year'])?$_GET['year']:date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 
-		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
-	    $state_filter = explode(' ', $state_filter); // make an array of filters
-	    	    
-	    $this->setTemplate('viewdate');		
+	    if ($view_type == null)
+	        $this->getUserPreferences($view_type, $user_filter, $status_filter);
+		
+		$this->setTemplate('viewdate');
+		$this->setViewVariables($view_type, $user_filter, $status_filter);
 	}
 	
-	function viewweek(){
+	function viewweek($view_type = null, $user_filter = null, $status_filter = null){
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		ajx_set_no_toolbar(true);
-		
-		$_SESSION['active_calendar_view'] = 'viewweek';
-				
+						
 		$day = isset($_GET['day']) ? $_GET['day'] : date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 		$month = isset($_GET['month']) ? $_GET['month'] : date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 	    $year = isset($_GET['year']) ? $_GET['year'] : date('Y', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 
-		$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter']; 
-	    $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
-	    $state_filter = explode(' ', $state_filter); // make an array of filters
+	    if ($view_type == null)
+	    	$this->getUserPreferences($view_type, $user_filter, $status_filter);
+	    
+	    $this->setTemplate('viewweek');
+		$this->setViewVariables($view_type, $user_filter, $status_filter);
+	}
+	
+	function setViewVariables($view_type, $user_filter, $status_filter) {
+		//Get Users Info
+		if (logged_user()->isMemberOfOwnerCompany())
+			$users = Users::getAll();
+		else $users = logged_user()->getCompany()->getUsers();
+		
+		//Get Companies Info
+		if (logged_user()->isMemberOfOwnerCompany())
+			$companies = Companies::getCompaniesWithUsers();
+		else $companies = array(logged_user()->getCompany());
+		
+		$usr = Users::findById($user_filter);
+		$user_filter_comp = $usr != null ? $usr->getCompanyId() : 0;
+		
+		tpl_assign('users', $users);
+		tpl_assign('companies', $companies);
+		tpl_assign('userPreferences', array(
+				'view_type' => $view_type,
+				'user_filter' => $user_filter,
+				'status_filter' => $status_filter,
+				'user_filter_comp' => $user_filter_comp
+		));
+	}
+	
+	function getUserPreferences(&$view_type = null, &$user_filter = null, &$status_filter = null) {
+		$view_type = array_var($_GET,'view_type');
+		if (is_null($view_type) || $view_type == '') {
+			$view_type = user_config_option('calendar view type', 'viewweek');
+		}
+		if (user_config_option('calendar view type') != $view_type)
+			set_user_config_option('calendar view type', $view_type, logged_user()->getId());
 
-		$this->setTemplate('viewweek');		
+		$user_filter = array_var($_GET,'user_filter');
+		if (is_null($user_filter) || $user_filter == '') {
+			$user_filter = user_config_option('calendar user filter', 0);
+		}
+		if ($user_filter == 0) $user_filter = logged_user()->getId(); 	
+		if (user_config_option('calendar user filter') != $user_filter)
+			set_user_config_option('calendar user filter', $user_filter, logged_user()->getId());
+			
+		$status_filter = array_var($_GET,'status_filter');
+		if (is_null($status_filter)) {
+			$status_filter = user_config_option('calendar status filter', ' 0 1 3');
+		} 
+		if (user_config_option('calendar status filter') != $status_filter)
+			set_user_config_option('calendar status filter', $status_filter, logged_user()->getId());
+	}
+	
+	function view_calendar() {
+		$this->getUserPreferences($view_type, $user_filter, $status_filter);
+		if($view_type == 'viewdate') $this->viewdate($view_type, $user_filter, $status_filter);
+		else if($view_type == 'index') $this->index($view_type, $user_filter, $status_filter);
+		else $this->viewweek($view_type, $user_filter, $status_filter);
 	}
 	
 	
@@ -499,8 +533,6 @@ class EventController extends ApplicationController {
 		$event = ProjectEvents::findById(get_id());
 		
 		$user_filter = isset($_GET['user_id']) ? $_GET['user_id'] : logged_user()->getId();
-		$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3';
-	    $state_filter = explode(' ', $state_filter); // make an array of filters
 		
 		$inv = EventInvitations::findById(array('event_id' => $event->getId(), 'user_id' => $user_filter));
 		if ($inv != null) {
@@ -589,8 +621,7 @@ class EventController extends ApplicationController {
 			try {
 				$data = $this->getData($event_data);
 				// run the query to set the event data 
-				$projId = array_var($event_data,'project_id');                    
-			
+				$projId = array_var($event_data,'project_id');
 				$old_project_id = $event->getProjectId();
 				if($projId != '' && $projId != $old_project_id) {
 					$project = Projects::findById($projId);
@@ -628,10 +659,10 @@ class EventController extends ApplicationController {
 			    $object_controller->link_to_new_object($event);
 				$object_controller->add_subscribers($event);
 				$object_controller->add_custom_properties($event);
+				$object_controller->add_reminders($event);
 			 	
 	          	ApplicationLogs::createLog($event, $event->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 	          	DB::commit();
-	          	
 	          	flash_success(lang('success edit event', $event->getObjectName()));
 
 	          	if (array_var($_POST, 'popup', false)) {
@@ -854,7 +885,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.71.2.2 2009/02/10 19:28:34 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.76 2009/02/12 21:30:34 idesoto Exp $
  *
  ***************************************************************************/
 

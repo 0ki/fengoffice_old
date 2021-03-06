@@ -30,7 +30,8 @@
     'smtp_use_auth' => DATA_TYPE_INTEGER,  
     'smtp_username' => DATA_TYPE_STRING, 
     'smtp_password' => DATA_TYPE_STRING,
-    'del_from_server' => DATA_TYPE_INTEGER 
+    'del_from_server' => DATA_TYPE_INTEGER,
+    'outgoing_transport_type' => DATA_TYPE_STRING
 );
   
     /**

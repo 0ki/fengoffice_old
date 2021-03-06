@@ -12,6 +12,14 @@ class Env {
 	static function isDebugging() {
 		return defined('DEBUG') && DEBUG;
 	} // isDebugging
+	
+	static function isDebuggingDB() {
+		return defined('DEBUG') && DEBUG && defined('DEBUG_DB') && DEBUG_DB;
+	}
+	
+	static function isDebuggingTime() {
+		return defined('DEBUG') && DEBUG && defined('DEBUG_TIME') && DEBUG_TIME;
+	}
 
 	/**
 	 * Use specific library. This function will look in application directory

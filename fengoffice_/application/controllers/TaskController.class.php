@@ -146,7 +146,16 @@ class TaskController extends ApplicationController {
 					$timeslot->setObjectId($task->getId());
 					$timeslot->save();
 				}
+				
+				// subscribe
+				$task->subscribeUser(logged_user());
+				
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ADD);
+				$assignee = $task->getAssignedToUser();
+				if ($assignee instanceof User) {
+					$task->subscribeUser($assignee);
+				}
+				
 				DB::commit();
 
 				// notify asignee
@@ -226,6 +235,10 @@ class TaskController extends ApplicationController {
 					$timeslot->save();
 				}
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
+				$assignee = $task->getAssignedToUser();
+				if ($assignee instanceof User) {
+					$task->subscribeUser($assignee);
+				}
 				DB::commit();
 
 				// notify asignee
@@ -719,6 +732,7 @@ class TaskController extends ApplicationController {
 			    $object_controller->link_to_new_object($task);
 				$object_controller->add_subscribers($task);
 				$object_controller->add_custom_properties($task);
+				$object_controller->add_reminders($task);
 				
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_ADD);
 				
@@ -971,6 +985,7 @@ class TaskController extends ApplicationController {
 			    $object_controller->link_to_new_object($task);
 				$object_controller->add_subscribers($task);
 				$object_controller->add_custom_properties($task);
+				$object_controller->add_reminders($task);
 				
 				ApplicationLogs::createLog($task, $task->getWorkspaces(), ApplicationLogs::ACTION_EDIT);
 				
@@ -1068,6 +1083,8 @@ class TaskController extends ApplicationController {
 			}
 			if (array_var($_GET, 'quick', false)) {
 				ajx_current('empty');
+			} else if (array_var($_GET, 'taskview', false)){
+				ajx_current('reload');
 			} else {
 				ajx_current('back');
 			}

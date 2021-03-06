@@ -76,7 +76,7 @@
 		if (is_null($g))
   			$g = $this->getGraph();
     	$g2 = $this->Draw($g, true);
-  		$g2->set_title('');
+  		//$g2->set_title('');
   		if ($this->getDisplayId() == 20)
   			$g2->set_height(180);
   		else
@@ -91,7 +91,7 @@
 		if (!isset($g))
   			$g = $this->getGraph();
 		$g->set_bg_colour("#FFFFFF");
-		$g->set_title($this->getTitle(),"font-size: 12px; color: #404040;" );
+		$g->set_title($this->getTitle(),"font-size: 12px; color: #404040;font-weight:bold;padding-bottom:4px" );
 		
 		$max = 0;
 		$min = 0;

@@ -93,7 +93,6 @@
   	'user ws config option name my tasks is default view' => 'Výchozí zobrazení mně připojených úkolů',
   	'user ws config option desc my tasks is default view' => 'Pokud je vybráno Ne, bude v panelu úkolů použito jako výchozí zobrazení všech úkolů',
   	'user ws config option name show tasks in progress widget' => 'Zobrazit tlačítko  \'Úkoly ve vývoji \'',
-  	'user ws config option name can notify from quick add' => 'Rychlé oznámení pomocí zaškrtávacího tlačítka',
   	'user ws config option desc can notify from quick add' => 'Zaškrtávací políčko je aktivováno. Pripojení uživatelů může být zaznamenáno po rachlém přidání k úkolu.',
  	
   	'backup process desc' => 'Zálohování uloží aktuální stav celé aplikace do komprimovaného adresáře. Může být použit pro usnadnění zálohování instalace OpenGoo. <br> Generování zálohy databáze a souborového systému proběhne v několika sekundách. Záloha se vytváří ve třech krocích: <br>1.- Spusťte zálohovací proces, <br>2.- Stáhněte zálohu. <br> 3.- Volitelně může být záloha ručně vymazána takže nebue v budoucnu dostupná. <br> ',

@@ -305,6 +305,9 @@ class Tags extends BaseTags {
 		DB::execute($sql);
 	}
 	
+	function deleteTagByName($tag) {
+		self::delete(array('`tag` = ?', $tag));
+	}
 } // Tags
 
 ?>

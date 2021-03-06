@@ -63,7 +63,6 @@
 	'user ws config option name my tasks is default view' => 'Visão padrão exibe apenas as tarefas a mim atribuídas',
 	'user ws config option desc my tasks is default view' => 'Se selecionar não, então exibe todas as tarefas',
 	'user ws config option name show tasks in progress widget' => 'Exibir o container \'Tarefas em progresso\' ',
-	'user ws config option name can notify from quick add' => 'Checkbox de notificação em adição rápida',
 	'user ws config option desc can notify from quick add' => 'Se o checkbox estiver marcado então o usuário atribuído pode ser notificado após adição rápida de tarefa',
 	'backup process desc' => 'A backup salva o estado corrente da Aplicação em uma pasta comprimida. Isto pode ser usado para facilmente executar uma cópia de segurança da instalação. <br> Gerar um backup do Banco de Dados pode gastar pouco mais de alguns segundos, Assim fazer um backup é um processo em três etapas: <br>1.- Lançar processo de backup, <br>2.- Download do backup gerado. <br> 3.- Opcionalmente, um backup pode ser apagado, neste caso, ele não estará disponível no futuro. <br> ',
 	'start backup' => 'Lançar processo de backup',

@@ -20,7 +20,6 @@ class TimeController extends ApplicationController {
 		prepare_company_website_controller($this, 'website');
 	} // __construct
 	
-	
 	function index(){
 		$tasksUserId = array_var($_GET,'tu');
 		if (is_null($tasksUserId)) {
@@ -119,6 +118,10 @@ class TimeController extends ApplicationController {
 			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
 			$timeslot_data['object_manager'] = 'Projects';
 			$timeslot = new Timeslot();
+			
+			//Only admins can change timeslot user
+			if (!array_var($timeslot_data,'user_id',false) || !logged_user()->isAdministrator())
+				$timeslot_data['user_id'] = logged_user()->getId();
 			$timeslot->setFromAttributes($timeslot_data);
 			
 			DB::beginWork();
@@ -160,6 +163,11 @@ class TimeController extends ApplicationController {
 			$timeslot_data['end_time'] = $endTime;
 			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
 			$timeslot_data['object_manager'] = 'Projects';
+			
+			//Only admins can change timeslot user
+			if (array_var($timeslot_data,'user_id',false) && !logged_user()->isAdministrator())
+				$timeslot_data['user_id'] = $timeslot->getUserId();
+				
 			$timeslot->setFromAttributes($timeslot_data);
 			
 			DB::beginWork();
@@ -173,7 +181,6 @@ class TimeController extends ApplicationController {
 		} // try
 	}
 	
-
 	function delete_project_timeslot(){
 		ajx_current("empty");
 		$timeslot = Timeslots::findById(get_id());

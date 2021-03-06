@@ -367,6 +367,29 @@
     
 
     /**
+     * Return value of 'outgoing_transport_type' field
+     *
+     * @access public
+     * @param void
+     * @return string
+     */
+    function getOutgoingTrasnportType() {
+    	return $this->getColumnValue('outgoing_transport_type');
+    } // getOutgoingTrasnportType()
+
+    /**
+     * Set value of 'outgoing_transport_type' field
+     *
+     * @access public
+     * @param string $value
+     * @return boolean
+     */
+    function setOutgoingTrasnportType($value) {
+    	return $this->setColumnValue('outgoing_transport_type', $value);
+    } // setOutgoingTrasnportType()
+    
+    
+    /**
     * Return manager instance
     *
     * @access protected

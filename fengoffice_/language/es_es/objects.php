@@ -46,7 +46,8 @@
     'configuration categories' => 'Configuración de categorías',
     'handin' => 'Entrega',
     'handins' => 'Entregas',
-    
+    'emailunclassified' => 'Correo',
+  
     // Variations
     'owner company' => 'Empresa propietaria',
   	'client companies' => 'Empresas clientes',
@@ -82,6 +83,10 @@
     'private comment' => 'Comentario privado',
     'private file' => 'Archivo privado',
   	'file contents' => 'Contenido del archivo',
+  
+  	'object reminders' => 'Recordatorios',
+    'add object reminder' => 'Agregar recordatorio',
+  
     
   ); // array
 

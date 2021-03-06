@@ -8,6 +8,12 @@
   		function __construct() {
     	} // __construct
  
+    	/**
+    	 * Returns a new chart object given the specified chart id
+    	 *
+    	 * @param integer $chartId
+    	 * @return ProjectChart
+    	 */
     	function loadChart($chartId){
     		$chart = ProjectCharts::findById($chartId);
     		$res = $this->getChart($chart->getTypeId());
@@ -55,7 +61,8 @@
   				"2" => "TasksByDueDate",
   				"3" => "BudgetExecution",
   				"4" => "BudgetExecutionTrack",
-  				"5" => "MonthlyBudgetExecution");
+  				"5" => "MonthlyBudgetExecution",
+  				"6" => "ProjectBillingByUser");
   		}
   	
   		function getChartDisplays(){

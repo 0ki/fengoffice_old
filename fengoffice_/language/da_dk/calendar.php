@@ -119,4 +119,5 @@
 	'no invitations to this event' => 'Ingen kampkort er sendt til denne kamp',
 	'duration must be at least 15 minutes' => 'Varighed skal være mindst 15 minutter',
 	'event dnx' => 'Kampen du søger findes ikke',
+	'view date title' => 'l, m/d/Y',
 ); ?>

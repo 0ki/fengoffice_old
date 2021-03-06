@@ -268,7 +268,7 @@
     * @return boolean
     */
     function isInRepository($file_id) {
-      return /*isset($this->attributes[$file_id]) &&*/ is_file($this->getFilePath($file_id));
+      return is_file($this->getFilePath($file_id));
     } // isInRepository
     
     // ---------------------------------------------------

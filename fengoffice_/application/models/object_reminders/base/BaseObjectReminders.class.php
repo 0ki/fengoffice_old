@@ -20,7 +20,9 @@
     	'object_manager' => DATA_TYPE_STRING,
     	'user_id' => DATA_TYPE_INTEGER,
     	'type' => DATA_TYPE_STRING,
+    	'context' => DATA_TYPE_STRING,
     	'minutes_before' => DATA_TYPE_INTEGER,
+    	'date' => DATA_TYPE_DATETIME,
     );
   
     /**

@@ -390,7 +390,6 @@
 	'my tasks in progress' => 'Mine igangværende opgaver',
 	'tasks in progress for' => 'igangværende opgaver for {0}',
 	'time has to be greater than 0' => 'Tid skal være størrere end 0',
-  
-  	'auto' => 'Auto',
+	  	'auto' => 'Auto',
 'print all groups' => 'Print',
 ); ?>

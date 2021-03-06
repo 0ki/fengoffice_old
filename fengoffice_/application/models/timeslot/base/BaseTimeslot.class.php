@@ -301,6 +301,97 @@
     
     
     /**
+    * Return value of 'fixed_billing' field
+    *
+    * @access public
+    * @param void
+    * @return float 
+    */
+    function getFixedBilling() {
+      return $this->getColumnValue('fixed_billing');
+    } // getFixedBilling()
+    
+    /**
+    * Set value of 'fixed_billing' field
+    *
+    * @access public   
+    * @param float $value
+    * @return boolean
+    */
+    function setFixedBilling($value) {
+      return $this->setColumnValue('fixed_billing', $value);
+    } // setFixedBilling() 
+    
+    
+    /**
+    * Return value of 'hourly_billing' field
+    *
+    * @access public
+    * @param void
+    * @return float 
+    */
+    function getHourlyBilling() {
+      return $this->getColumnValue('hourly_billing');
+    } // getHourlyBilling()
+    
+    /**
+    * Set value of 'hourly_billing' field
+    *
+    * @access public   
+    * @param float $value
+    * @return boolean
+    */
+    function setHourlyBilling($value) {
+      return $this->setColumnValue('hourly_billing', $value);
+    } // setHourlyBilling() 
+    
+    /**
+    * Return value of 'is_fixed_billing' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsFixedBilling() {
+      return $this->getColumnValue('is_fixed_billing');
+    } // getIsFixedBilling()
+    
+    /**
+    * Set value of 'is_fixed_billing' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setIsFixedBilling($value) {
+      return $this->setColumnValue('is_fixed_billing', $value);
+    } // setIsFixedBilling() 
+    
+    /**
+    * Return value of 'billing_id' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getBillingId() {
+      return $this->getColumnValue('billing_id');
+    } // getBillingId()
+    
+    /**
+    * Set value of 'billing_id' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setBillingId($value) {
+      return $this->setColumnValue('billing_id', $value);
+    } // setBillingId() 
+    
+    
+    
+    /**
     * Return manager instance
     *
     * @access protected

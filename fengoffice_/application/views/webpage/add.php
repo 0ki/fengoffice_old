@@ -24,7 +24,7 @@
 	<div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px">
 	<tr><td><?php echo $webpage->isNew() ? lang('new webpage') : lang('edit webpage') ?>
-	</td><td style="text-align:right"><?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '20')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -57,7 +57,7 @@
     <fieldset>
     <legend>
     	<?php echo lang('tags') ?></legend>
-    	<?php echo autocomplete_tags_field("webpage[tags]", array_var($webpage_data, 'tags')); ?>
+    	<?php echo autocomplete_tags_field("webpage[tags]", array_var($webpage_data, 'tags'), null, 30); ?>
 	</fieldset>
 	</div>
 
@@ -65,7 +65,7 @@
 	<fieldset>
 	<legend>
 		<?php echo label_tag(lang('description'), 'webpageFormDesc') ?> </legend>
-    	<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'short', 'id' => 'webpageFormDesc')) ?>
+    	<?php echo textarea_field('webpage[description]', array_var($webpage_data, 'description'), array('class' => 'short', 'id' => 'webpageFormDesc', 'tabindex' => '40')) ?>
     </fieldset>
 	</div>
   
@@ -118,11 +118,11 @@
 
   <div>
     <?php echo label_tag(lang('url'), 'webpageFormURL', true) ?>
-    <?php echo text_field('webpage[url]', array_var($webpage_data, 'url'), array('class' => 'title', 'tabindex' => '2', 'id' => 'webpageFormURL')) ?>
+    <?php echo text_field('webpage[url]', array_var($webpage_data, 'url'), array('class' => 'title', 'tabindex' => '10', 'id' => 'webpageFormURL')) ?>
   </div>
   
   <?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'), 's', 
-  	array('tabindex' => '3')) ?>
+  	array('tabindex' => '200')) ?>
   </div>
  </div>
 </form>

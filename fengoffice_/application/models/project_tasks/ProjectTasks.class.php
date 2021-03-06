@@ -399,7 +399,7 @@ class ProjectTasks extends BaseProjectTasks {
 	 * @param void
 	 * @return array
 	 */
-	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, User $user, $tags = '', $project = null){
+	function getRangeTasksByUser(DateTimeValue $date_start, DateTimeValue $date_end, $assignedUser, $tags = '', $project = null){
 
 		$from_date =   (new DateTimeValue($date_start->getTimestamp()));
 		$from_date = $date_start->beginningOfDay();
@@ -419,9 +419,13 @@ class ProjectTasks extends BaseProjectTasks {
 		} else {
 			$tag_str= "";
 		}
+		
+		$assignedFilter = '';
+		if ($assignedUser instanceof User) 
+			$assignedFilter = ' AND (`assigned_to_user_id` = ' . $assignedUser->getId() . ' OR (`assigned_to_user_id` = 0 AND `assigned_to_company_id` = '. $assignedUser->getCompanyId() .')) ';
 			
 		$result = self::findAll(array(
-        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $assignedFilter . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
 		)); // findAll
 		return $result;
 	} // getDayTasksByUser
@@ -470,6 +474,7 @@ class ProjectTasks extends BaseProjectTasks {
 				$new->setFromTemplateId($sub->getId());
 			}
 			$new->save();
+			$new->copyCustomPropertiesFrom($sub);
 			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
 			ProjectTasks::copySubTasks($sub, $new, $as_template);
 		}

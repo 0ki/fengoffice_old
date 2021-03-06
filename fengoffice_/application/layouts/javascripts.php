@@ -1,5 +1,6 @@
 <?php
 return array(
+		'wztooltip/wz_tooltip.js',
 		'extjs/adapter/ext/ext-base.js',
 		'extjs/ext-all.js',
 		'extfix.js',
@@ -33,6 +34,7 @@ return array(
 		'og/FileManager.js',
 		'og/ReportingManager.js',
 		'og/ReportingFunctions.js',
+		'og/CalendarManager.js',
 		'og/swfobject.js',
 		'og/ImageChooser.js',
 		'og/Sound.js',
@@ -72,6 +74,5 @@ return array(
 		'slimey/toolbar.js',
 		'slimey/integration.js',
 		'og/DateField.js',
-		'wztooltip/wz_tooltip.js',
 );
 ?>

@@ -89,7 +89,7 @@ class Users extends BaseUsers {
 	 * @return array
 	 */
 	static function getGroupedByCompany() {
-		$companies = Companies::getAll();
+		$companies = Companies::getCompaniesWithUsers();
 		if(!is_array($companies) || !count($companies)) {
 			return null;
 		} // if

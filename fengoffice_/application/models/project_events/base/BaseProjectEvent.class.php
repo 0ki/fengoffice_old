@@ -102,28 +102,6 @@
     } //  setForever() 
     
     /**
-    * Return value of 'eventtype' field
-    *
-    * @access public
-    * @param void
-    * @return string 
-    */
-    function getEventType() {
-      return $this->getColumnValue('eventtype');
-    } //  getEventType()
-    
-    /**
-    * Set value of 'eventtype' field
-    *
-    * @access public   
-    * @param string $value
-    * @return boolean
-    */
-    function  setEventType($value) {
-      return $this->setColumnValue('eventtype', $value);
-    } //  setEventType() 
-    
-    /**
     * Return value of 'description' field
     *
     * @access public

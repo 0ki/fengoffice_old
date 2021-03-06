@@ -2,26 +2,41 @@ og.TagPanel = function(config) {
 	if (!config) config = {};
 	this.tree = new og.TagTree(config.tagtree);
 	
-	Ext.applyIf(config, {
-		split: true,
-		height: 200,
-		iconCls: 'ico-tags',
-		title: lang('tags'),
-		region: 'south',
-		border: false,
-		style: 'border-top-width: 1px',
-		bodyBorder: false,
-		collapsible: true,
-		layout: 'fit',
-		items: [this.tree],
-		tbar: [{
-			iconCls: 'ico-workspace-refresh',
-			tooltip: lang('refresh desc'),
-			handler: function() {
-				this.loadTags();
-			},
-			scope: this.tree
-		},{
+	var tbar = [];
+	tbar.push({
+		iconCls: 'ico-workspace-refresh',
+		tooltip: lang('refresh desc'),
+		handler: function() {
+			this.loadTags();
+		},
+		scope: this.tree
+	});
+	tbar.push({
+		iconCls: 'ico-sort-count',
+		tooltip: lang('sort tags'),
+		id: 'sort',
+		menu: {
+			items: [{
+				iconCls: 'ico-sort-alphabetical',
+				text: lang('sort tags alphabetically'),
+				handler: function() {
+					this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'name'}));
+					this.getTopToolbar().items.get('sort').setIconClass('ico-sort-alphabetical');
+				},
+				scope: this
+			},{
+				iconCls: 'ico-sort-count',
+				text: lang('sort tags by count'),
+				handler: function() {
+					this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'count'}));
+					this.getTopToolbar().items.get('sort').setIconClass('ico-sort-count');
+				},
+				scope: this
+			}]
+		}
+	});
+	if (og.loggedUser.isAdmin) {
+		tbar.push({
 			iconCls: 'ico-rename',
 			tooltip: lang('rename tag'),
 			id: 'rename',
@@ -39,30 +54,32 @@ og.TagPanel = function(config) {
 					this);
 			},
 			scope: this.tree
-		},{
-			iconCls: 'ico-sort-count',
-			tooltip: lang('sort tags'),
-			id: 'sort',
-			menu: {
-				items: [{
-					iconCls: 'ico-sort-alphabetical',
-					text: lang('sort tags alphabetically'),
-					handler: function() {
-						this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'name'}));
-						this.getTopToolbar().items.get('sort').setIconClass('ico-sort-alphabetical');
-					},
-					scope: this
-				},{
-					iconCls: 'ico-sort-count',
-					text: lang('sort tags by count'),
-					handler: function() {
-						this.tree.loadTags(og.getUrl('tag', 'list_tags', {order: 'count'}));
-						this.getTopToolbar().items.get('sort').setIconClass('ico-sort-count');
-					},
-					scope: this
-				}]
-			}
-		}]
+		});
+		tbar.push({
+			iconCls: 'ico-delete',
+			tooltip: lang('delete tag'),
+			id: 'delete',
+			handler: function() {
+				if (confirm(lang('confirm delete tag'))) {
+					this.deleteTag(this.getSelectedTag().name);
+				}
+			},
+			scope: this.tree
+		});
+	}
+	Ext.applyIf(config, {
+		split: true,
+		height: 200,
+		iconCls: 'ico-tags',
+		title: lang('tags'),
+		region: 'south',
+		border: false,
+		style: 'border-top-width: 1px',
+		bodyBorder: false,
+		collapsible: true,
+		layout: 'fit',
+		items: [this.tree],
+		tbar: tbar
 	});
 	og.TagPanel.superclass.constructor.call(this, config);
 	
@@ -317,6 +334,10 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	 */
 	nameToId: function(name) {
 		return og.clean(name).replace(/[^a-zA-Z0-9]/g, '_');
+	},
+	
+	deleteTag: function(name) {
+		this.loadTags(og.getUrl('tag', 'delete_tag_by_name', {tag: name}));
 	}
 });
 

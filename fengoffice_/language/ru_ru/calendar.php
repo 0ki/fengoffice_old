@@ -119,4 +119,5 @@
 	'no invitations to this event' => 'Нет приглашений, отправленных в это событие',
 	'duration must be at least 15 minutes' => 'Продолжительность должна быть не менее 15 минут',
 	'event dnx' => 'Запрашиваемое событие не найдено',
+	'view date title' => 'l, d/m/Y',
 ); ?>

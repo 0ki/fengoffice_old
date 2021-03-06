@@ -85,6 +85,17 @@
     </div>
 </td>
 <?php } ?>
+<?php if(can_manage_security(logged_user())){ ?>
+<td align="center">
+    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
+    <table width="100%" align="center"><tr><td align="center">
+    	<a class="internalLink" href="<?php echo get_url('billing', 'index') ?>"><div class="coViewIconImage ico-large-billing"></div></a>
+    </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo get_url('billing', 'index') ?>"><?php echo lang('billing') ?></a></b>
+    	<br/><a class="internalLink coViewAction ico-add" href="<?php echo get_url('billing', 'add') ?>"><?php echo lang('add billing category') ?></a>
+    </td></tr></table>
+    </div>
+</td>
+<?php } ?>
 </tr></table>
 
 <table>

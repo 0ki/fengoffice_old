@@ -32,6 +32,10 @@ function lang(name) {
 	return value;
 }
 
+function langhtml(name) {
+	return '<span name="og-lang" id="og-lang-' + name + '">' + lang(name) + '</span>';
+}
+
 function addLangs(langs) {
 	for (var k in langs) {
 		_lang[k] = langs[k];

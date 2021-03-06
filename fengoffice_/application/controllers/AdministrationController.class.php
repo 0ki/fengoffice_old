@@ -129,6 +129,7 @@ class AdministrationController extends ApplicationController {
 	function task_templates() {
 		tpl_assign('task_templates', ProjectTasks::getAllTaskTemplates());
 	} // tools
+
 	
 	
 	/**
@@ -329,6 +330,7 @@ class AdministrationController extends ApplicationController {
 			}
 		}
 	}
+
 	
 } // AdministrationController
 

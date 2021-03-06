@@ -26,14 +26,17 @@
   
   <div>
     <?php echo label_tag(lang('new picture'), 'pictureFormPicture', true) ?>
-    <?php echo file_field('new picture', null, array('id' => 'pictureFormPicture')) ?>
+    <?php echo file_field('new picture', null, array('id' => 'pictureFormPicture', 'tabindex' => '1')) ?>
 <?php if($contact->hasPicture()) { ?>
     <p class="desc"><?php echo lang('new picture notice') ?></p>
 <?php } // if ?>
   </div>
   
-  <?php echo submit_button(lang('save')) ?>
+  <?php echo submit_button(lang('save'), 's', array('tabindex' => '10')) ?>
  
  </div>
  </div>
 </form>
+<script type="text/javascript">
+	Ext.get('pictureFormPicture').focus();
+</script>

@@ -133,14 +133,14 @@ $use_24_hours = user_config_option('time_format_use_24');
 					<td>
 					<?php echo $event->isNew() ? lang('new event') : lang('edit event') ?></td>
 					<td style="text-align:right">
-						<?php echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px'))?>
+						<?php echo submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => 200))?>
 					</td>
 				</tr>
 				</table>
 			</div>		
 		</div>
 		<div style="text-align:left;"><?php echo label_tag(lang('subject'), 'taskListFormName', true) . text_field('event[subject]', array_var($event_data, 'subject'), 
-	    		array('class' => 'title', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100')) ?>
+	    		array('class' => 'title', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100', 'tabindex' => '10')) ?>
 	    </div>
 	 
 	 	<div style="padding-top:5px;text-align:left;">
@@ -148,12 +148,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<a href='#' class='option' onclick="og.ToggleTrap('trap2', 'fs2');og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap3', 'fs3');og.toggleAndBolden('<?php echo $genid ?>add_event_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap4', 'fs4');og.toggleAndBolden('<?php echo $genid ?>event_repeat_options_div', this)"><?php echo lang('CAL_REPEATING_EVENT')?></a> -
-		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties')?></a> - 
-		<a href="#" class="option" onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
+		<a href='#' class='option' onclick="og.ToggleTrap('trap5', 'fs5');og.toggleAndBolden('<?php echo $genid ?>add_reminders_div', this)"><?php echo lang('object reminders')?></a> - 
+		<a href='#' class='option' onclick="og.ToggleTrap('trap6', 'fs6');og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div', this)"><?php echo lang('custom properties')?></a> - 
+		<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
-			<a href="#" class="option" onclick="og.ToggleTrap('trap7', 'fs7');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+			<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?> -
-		<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
+		<a href="#" class="option" onclick="og.ToggleTrap('trap9', 'fs9');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
 		</div></div>
 	
 		<div class="coInputSeparator"></div>
@@ -170,7 +171,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<div id="<?php echo $genid ?>add_event_tags_div" style="display:none">
 		<fieldset>
 			<legend><?php echo lang('tags')?></legend>
-			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]"); ?>
+			<?php echo autocomplete_tags_field("event[tags]", array_var($event_data, 'tags'), "event[tags]", 20); ?>
 		</fieldset>
 		</div>
 		<div id="trap2"><fieldset id="fs2" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
@@ -178,7 +179,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<div id="<?php echo $genid ?>add_event_description_div" style="display:none">
 			<fieldset>
 			<legend><?php echo lang('description')?></legend>
-				<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '2'));?>
+				<?php echo textarea_field('event[description]',array_var($event_data, 'description'), array('id' => 'descriptionFormText', 'tabindex' => '30'));?>
 			</fieldset>
 		</div>
 		<div id="trap3"><fieldset id="fs3" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
@@ -210,7 +211,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<td align="left" valign="top" style="padding-bottom:6px">
 		
 			<table><tr><td><?php echo lang('CAL_REPEAT')?> 
-			<select name="event[occurance]" onChange="changeRepeat()">
+			<select name="event[occurance]" onChange="changeRepeat()" tabindex="40">
 				<option value="1" id="today"<?php if(isset($occ) && $occ == 1) echo ' selected="selected"'?>><?php echo lang('CAL_ONLY_TODAY')?></option>
 				<option value="2" id="daily"<?php if(isset($occ) && $occ == 2) echo ' selected="selected"'?>><?php echo lang('CAL_DAILY_EVENT')?></option>
 				<option value="3" id="weekly"<?php if(isset($occ) && $occ == 3) echo ' selected="selected"'?>><?php echo lang('CAL_WEEKLY_EVENT')?></option>
@@ -225,7 +226,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 			<?php } ?>
 			</td><td>
 			<div id="cal_extra1" style="<?php echo $hide ?>">
-				&nbsp;<?php echo lang('CAL_EVERY') . text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100', 'style'=>'width:25px')) ?>
+				&nbsp;<?php echo lang('CAL_EVERY') . text_field('event[occurance_jump]',array_var($event_data, 'rjump'), array('class' => 'title','size' => '2', 'id' => 'eventSubject', 'tabindex' => '50', 'maxlength' => '100', 'style'=>'width:25px')) ?>
 				<span id="word"></span>
 			</div>
 			</td></tr></table>
@@ -233,13 +234,13 @@ $use_24_hours = user_config_option('time_format_use_24');
 		</tr><tr>
 		<td>
 			<div id="cal_extra2" style="width: 400px; align: center; text-align: left; <?php echo $hide ?>">
-				<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1')) . lang('CAL_REPEAT_FOREVER')?>
+				<?php echo radio_field('event[repeat_option]',$rsel1,array('id' => 'cal_repeat_option','value' => '1', 'tabindex' => '60')) . lang('CAL_REPEAT_FOREVER')?>
 				<br/>
-				<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2')) .lang('CAL_REPEAT');
-				echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px')) ."&nbsp;" . lang('CAL_TIMES') ?>
+				<?php echo radio_field('event[repeat_option]',$rsel2,array('id' => 'cal_repeat','value' => '2', 'tabindex' => '70')) .lang('CAL_REPEAT');
+				echo "&nbsp;" . text_field('event[repeat_num]', $rnum, array('size' => '3', 'id' => 'repeat_num', 'maxlength' => '3', 'style'=>'width:25px', 'tabindex' => '80')) ."&nbsp;" . lang('CAL_TIMES') ?>
 				<br/>
-				<table><tr><td><?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3')) .lang('CAL_REPEAT_UNTIL');?></td>
-				<td><?php echo pick_date_widget2('event[repeat_end]', $rend, $genid);?></td></tr></table>
+				<table><tr><td><?php echo radio_field('event[repeat_option]',$rsel3,array('id' => 'cal_repeat_until','value' => '3', 'tabindex' => '90')) .lang('CAL_REPEAT_UNTIL');?></td>
+				<td><?php echo pick_date_widget2('event[repeat_end]', $rend, $genid, 95);?></td></tr></table>
 				<br>
 			</div>
 			<div id="cal_extra3" style="width: 300px; align: center; text-align: left; <?php echo $hide2 ?>'">
@@ -279,13 +280,21 @@ $use_24_hours = user_config_option('time_format_use_24');
 		</div>
 	<div id="trap4"><fieldset id="fs4" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
+	<div id="<?php echo $genid ?>add_reminders_div" style="display:none">
+	<fieldset>
+	<legend><?php echo lang('object reminders')?></legend>
+		<?php echo render_add_reminders($object, "start");?>
+	</fieldset>
+	</div>
+	<div id="trap5"><fieldset id="fs5" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+
 	<div id="<?php echo $genid ?>add_custom_properties_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('custom properties')?></legend>
 		<?php echo render_add_custom_properties($object);?>
 	</fieldset>
 	</div>
-	<div id="trap5"><fieldset id="fs5" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+	<div id="trap6"><fieldset id="fs6" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 	<div id="<?php echo $genid ?>add_subscribers_div" style="display:none">
 		<fieldset>
@@ -316,7 +325,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		}
 	}, wsTree);
 	</script>
-	<div id="trap6"><fieldset id="fs6" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 	<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?>
 
@@ -326,7 +335,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<?php echo render_object_link_form($object) ?>
 	</fieldset>	
 	</div>
-	<div id="trap7"><fieldset id="fs7" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+	<div id="trap8"><fieldset id="fs8" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 	<?php } // if ?>
 
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none" class="og-add-subscribers">
@@ -352,18 +361,18 @@ $use_24_hours = user_config_option('time_format_use_24');
 					}
 					?>
 					<table><tr><td style="padding-right: 6px;"><label for="eventFormComboAttendance" class="combobox"><?php echo lang('confirm attendance') ?></label></td><td>
-					<?php echo select_box('event[confirmAttendance]', $options, array('id' => 'eventFormComboAttendance'));?>
+					<?php echo select_box('event[confirmAttendance]', $options, array('id' => 'eventFormComboAttendance', 'tabindex' => '100'));?>
 					</td></tr></table>	
 			<?php	} //if			
 			} // if ?>
 
 			<p><?php echo lang('event invitations desc') ?></p>
 
-			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification')) ?> 
+			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification', 'tabindex' => '110')) ?> 
 			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
 	</fieldset>
 	</div>	
-	<div id="trap8"><fieldset id="fs8" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
+	<div id="trap9"><fieldset id="fs9" style="height:0px;border:0px;padding:0px;display:none"><span style="color:#FFFFFF;"></span></fieldset></div>
 
 <div>
 <fieldset><legend><?php echo lang('CAL_TIME_AND_DURATION') ?></legend>
@@ -376,7 +385,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 				$dv_start->setMonth($month);
 				$dv_start->setYear($year);
 				$event->setStart($dv_start);
-				echo pick_date_widget2('event[start_value]', $event->getStart(), $genid); ?>
+				echo pick_date_widget2('event[start_value]', $event->getStart(), $genid, 120); ?>
 		</td>
 	</tr>
 
@@ -390,7 +399,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		 	$minute = array_var($event_data, 'minute');
 			$is_pm = array_var($event_data, 'pm');
 			$time_val = "$hr:" . str_pad($minute, 2, '0') . ($use_24_hours ? '' : ' '.($is_pm ? 'PM' : 'AM'));
-			echo pick_time_widget2('event[start_time]', $time_val, $genid);
+			echo pick_time_widget2('event[start_time]', $time_val, $genid, 130);
 		?>
 		</td>
 	</tr>
@@ -399,7 +408,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('CAL_DURATION') ?></td>
 		<td align="left">
 		<div id="<?php echo $genid ?>ev_duration_div">
-			<select name="event[durationhour]" size="1">
+			<select name="event[durationhour]" size="1" tabindex="150">
 			<?php
 			for($i = 0; $i < 24; $i++) {
 				echo "<option value='$i'";
@@ -408,7 +417,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 			}
 			?>
 			</select> <?php echo lang('CAL_HOURS') ?> <select
-				name="event[durationmin]" size="1">
+				name="event[durationmin]" size="1" tabindex="160">
 				<?php
 				// print out the duration minutes drop down
 				$durmin = array_var($event_data, 'durationmin');
@@ -426,7 +435,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px">&nbsp;</td>
 		<td align='left'>
 			<?php
-			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'onchange' => 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'));
+			echo checkbox_field('event[type_id]',array_var($event_data, 'typeofevent') == 2, array('id' => 'format_html','value' => '2', 'tabindex' => '170', 'onchange' => 'toggleDiv(\''.$genid.'event[start_time]\'); toggleDiv(\''.$genid.'ev_duration_div\');'));
 			echo lang('CAL_FULL_DAY');
 			?>
 		</td>
@@ -444,7 +453,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 	<?php 
 	// THIS IS HERE SO THAT THE DURATION CAN BE SET CORRECTLY ACCORDING TO THE EVENT'S ACTUAL START DATE.
 	// otherwise, if you modify a repeating event, it can save the duration as a totally different date!
-	echo  submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px'));?>
+	echo  submit_button($event->isNew() ? lang('add event') : lang('save changes'),'e',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '180'));?>
 	</div></div>
 </form>
 

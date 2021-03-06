@@ -95,6 +95,7 @@ class AccountController extends ApplicationController {
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
 		tpl_assign('user_data', $user_data);
+		tpl_assign('billing_categories', BillingCategories::findAll());
 
 		if(is_array(array_var($_POST, 'user'))) {
 			if(array_var($user_data,'company_id') && !(Companies::findById(array_var($user_data,'company_id')) instanceof Company )){
@@ -104,7 +105,7 @@ class AccountController extends ApplicationController {
 			}
 			try {
 				DB::beginWork();
-			
+				
 				$user->setDisplayName(array_var($user_data,'display_name'));
 				$user->setEmail(array_var($user_data,'email'));
 				$user->setTimezone(array_var($user_data,'timezone'));
@@ -112,9 +113,10 @@ class AccountController extends ApplicationController {
 				
 				if (logged_user()->isAdministrator()){
 					$user->setCompanyId(array_var($user_data,'company_id'));
+					$user->setDefaultBillingId(array_var($user_data,'default_billing_id'));
 					$user->setUsername(array_var($user_data,'username'));
 				}
-				
+
 				$user->save();
 
 				if ($user->getId() != 1) //System admin cannot change its own admin status

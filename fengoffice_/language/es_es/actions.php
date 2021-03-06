@@ -203,6 +203,9 @@
     'delete permanently' => 'Eliminar permanentemente',
   
   	'copy file' => 'Copiar este archivo',
+  	'open weblink' => 'Abrir enlace web',
+  
+  
   ); // array
 
 ?>

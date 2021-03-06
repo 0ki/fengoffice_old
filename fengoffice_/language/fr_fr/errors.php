@@ -82,5 +82,4 @@
 	'name must be unique' => 'Désolé, mais le nom sélectionné est déjà pris',
 	'success db backup' => 'La sauvegarde a bien été créée.',
 	'not implemented' => 'Non implémenté',
-	'backup command failed' => 'Erreur en créant la sauvegarde de la base de données. Vérifier la constante MYSQLDUMP_COMMAND.',
 ); ?>

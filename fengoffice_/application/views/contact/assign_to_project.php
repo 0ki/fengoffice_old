@@ -16,9 +16,9 @@ $selected = array();
 foreach ($projects as $project) {
 	if (array_var($contact_data, 'pid_' . $project->getId())) {
 		$selected[] = $project;
-		echo checkbox_field("contact[pid_".$project->getId()."]", true, array("id" => "$genid"."_".$project->getId()));
+		echo checkbox_field("contact[pid_".$project->getId()."]", true, array("id" => "$genid"."_".$project->getId(), 'tabindex' => '10'));
 	} else {
-		echo checkbox_field("contact[pid_".$project->getId()."]", false, array("id" => "$genid"."_".$project->getId()));
+		echo checkbox_field("contact[pid_".$project->getId()."]", false, array("id" => "$genid"."_".$project->getId(), 'tabindex' => '10'));
 	}
 }
 ?>
@@ -45,7 +45,7 @@ echo "<p>".lang("assign contact to workspace desc")."</p><br />";
 foreach ($projects as $project) {
 	echo '<div id="role_' . $project->getId() . '_' . $genid . '" style="display:none">';
 	echo label_tag(lang("role"), null, false, array("style" => "display:inline;padding-right:10px"));
-	echo text_field("contact[role_pid_".$project->getId()."]", array_var($contact_data, 'role_pid_' . $project->getId()));
+	echo text_field("contact[role_pid_".$project->getId()."]", array_var($contact_data, 'role_pid_' . $project->getId()), array('tabindex' => '20'));
 	echo '</div>';
 } ?>	
 	</td>

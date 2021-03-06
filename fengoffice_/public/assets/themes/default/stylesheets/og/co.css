@@ -52,7 +52,7 @@
 	padding-top:4px;
 	padding-bottom :2px;
 	margin-bottom: 2px;
-	margin-right: 12px;
+	/*margin-right: 12px;*/
 }
 
 .coViewPropertiesHeader {
@@ -508,6 +508,35 @@
 }
 
 
+/* ----- Weblinks -----*/
+
+.weblink .coViewHeader {
+  	background: #FFE966;
+  	border-color: #CCB633;
+  	color: #736617;
+}
+
+.weblink .coViewIcon {
+  	background: #FFF8CC;
+  	border-color: #F2DF6D;
+}
+
+.weblink .coViewHeader .coViewTitle {
+  	border-color: #CCB633;
+}
+
+.weblink .coViewClose {
+  	background: #FFF8CC;
+  	color: #736617;
+}
+
+.ico-large-weblink {
+	background-image: url(../../images/48x48/weblink.png);
+}
+
+.ico-large-weblink-trashed {
+	background-image: url(../../images/48x48/weblink_trashed.png);
+}
 
 
 

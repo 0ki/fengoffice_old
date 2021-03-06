@@ -77,6 +77,41 @@ class ObjectController extends ApplicationController {
 		}
 	}
 	
+	function add_reminders($object) {
+		$object->clearReminders(logged_user(), true);
+		$typesC = array_var($_POST, 'reminder_type');
+		$durationsC = array_var($_POST, 'reminder_duration');
+		$duration_typesC = array_var($_POST, 'reminder_duration_type');
+		$subscribersC = array_var($_POST, 'reminder_subscribers');
+		foreach ($typesC as $context => $types) {
+			$durations = $durationsC[$context];
+			$duration_types = $duration_typesC[$context];
+			$subscribers = $subscribersC[$context];
+			for ($i=0; $i < count($types); $i++) {
+				$type = $types[$i];
+				$duration = $durations[$i];
+				$duration_type = $duration_types[$i];
+				$minutes = $duration * $duration_type;
+				$reminder = new ObjectReminder();
+				$reminder->setMinutesBefore($minutes);
+				$reminder->setType($type);
+				$reminder->setContext($context);
+				$reminder->setObject($object);
+				if (isset($subscribers[$i])) {
+					$reminder->setUserId(0);
+				} else {
+					$reminder->setUser(logged_user());
+				}
+				$date = $object->getColumnValue($context);
+				if ($date instanceof DateTimeValue) {
+					$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
+					$reminder->setDate($rdate);
+				}
+				$reminder->save();
+			}
+		}
+	}
+	
 	// ---------------------------------------------------
 	//  Link / Unlink
 	// ---------------------------------------------------
@@ -609,11 +644,12 @@ class ObjectController extends ApplicationController {
     		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
     		$tag_str= ' ';
-    	$unclassifiedMails = "";
+    		
+    	$extraMailConditions = "";
     	if (!isset($project)){
     		$accountIds = logged_user()->getMailAccountIdsCSV();
     		if ($accountIds != "")
-    			$unclassifiedMails = " UNION SELECT 'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" . TABLE_PREFIX . "mail_contents` `co` WHERE $trashed_cond AND `account_id` IN (" . $accountIds . ") " . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str);
+    			$extraMailConditions = " OR ($trashed_cond AND `account_id` IN (" . $accountIds . ") " . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . ")";
     	}
     	$res = array();
     	
@@ -684,18 +720,21 @@ class ObjectController extends ApplicationController {
     	// Weblinks
     	if (config_option("enable_weblinks_module")) {
 			$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectWebpages::instance(), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
-			$res['Web Pages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, $order_crit_webpages AS `order_value` FROM `" . 
+			$res['WebPages'] = "SELECT  'ProjectWebPages' AS `object_manager_value`, `id` AS `oid`, $order_crit_webpages AS `order_value` FROM `" . 
 						TABLE_PREFIX . "project_webpages` `co` WHERE " . $trashed_cond ." AND ".$proj_cond_weblinks . str_replace('= `object_manager_value`', "= 'ProjectWebpages'", $tag_str) . $permissions;
+			$res['WebPagesComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" . 
+						TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'ProjectWebpages' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
+						TABLE_PREFIX . "project_webpages` `co` WHERE " . $trashed_cond ." AND ".$proj_cond_weblinks . str_replace('= `object_manager_value`', "= 'ProjectWebpages'", $tag_str) . $permissions . ")";
     	}
 
 		// Email
     	if (config_option("enable_email_module")) {
 			$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(), ACCESS_LEVEL_READ, logged_user(), isset($project)?$project->getId():0, '`co`') .')';
 			$res['Emails'] = "SELECT  'MailContents' AS `object_manager_value`, `id` AS `oid`, $order_crit_emails AS `order_value` FROM `" . 
-						TABLE_PREFIX . "mail_contents` `co` WHERE " . $trashed_cond ." AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $unclassifiedMails;
-			/*$res['EmailsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" . 
+						TABLE_PREFIX . "mail_contents` `co` WHERE " . $trashed_cond ." AND ".$proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $extraMailConditions;
+			$res['EmailsComments'] = "SELECT  'Comments' AS `object_manager_value`, `id` AS `oid`, $order_crit_comments AS `order_value` FROM `" . 
 						TABLE_PREFIX . "comments` WHERE $trashed_cond AND `rel_object_manager` = 'MailContents' AND `rel_object_id` IN (SELECT `co`.`id` FROM `" . 
-						TABLE_PREFIX . "mail_contents` `co` WHERE `trashed_by_id` = 0 AND " . $proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $unclassifiedMails . ")";*/
+						TABLE_PREFIX . "mail_contents` `co` WHERE `trashed_by_id` = 0 AND " . $proj_cond_emails . str_replace('= `object_manager_value`', "= 'MailContents'", $tag_str) . $permissions . $extraMailConditions . ")";
     	}
 		
     	// Conacts and Companies
@@ -1254,6 +1293,203 @@ class ObjectController extends ApplicationController {
 			flash_success("success purging trash", $deleted);
 		} catch (Exception $e) {
 			flash_error($e->getMessage());
+		}
+	}
+	
+	function popup_reminders() {
+		ajx_current("empty");
+		$reminders = ObjectReminders::getDueReminders("reminder_popup");
+		$popups = array();
+		foreach ($reminders as $reminder) {
+			$object = $reminder->getObject();
+			$context = $reminder->getContext();
+			$type = $object->getObjectTypeName();
+			$date = $object->getColumnValue($reminder->getContext());
+			if (!$date instanceof DateTimeValue) continue;
+			// convert time to the user's locale
+			$timezone = logged_user()->getTimezone();
+			if ($date->getTimestamp() + 5*60 < DateTimeValueLib::now()->getTimestamp() + $timezone * 60*60) {
+				// don't show popups older than 5 minutes
+				$reminder->delete();
+				continue;
+			}
+			if ($reminder->getUserId() == 0) {
+				if (!$object->isSubscriber(logged_user())) {
+					// reminder for subscribers and user is not subscriber
+					continue;
+				}
+			} else if ($reminder->getUserId() != logged_user()->getId()) {
+				continue;
+			}
+			if ($context == "due_date" && $object instanceof ProjectTask) {
+				if ($object->isCompleted()) {
+					// don't show popups for completed tasks
+					$reminder->delete();
+					continue;
+				}
+			}
+			$url = $object->getViewUrl();
+			$link = '<a href="#" onclick="og.openLink(\''.$url.'\');return false;">'.$object->getObjectName().'</a>';
+			evt_add("popup", array(
+				'title' => lang("$context $type reminder"),
+				'message' => lang("$context $type reminder desc", $link, format_datetime($date)),
+				'type' => 'reminder',
+				'sound' => 'info'
+			));
+			if ($reminder->getUserId() != 0) {
+				// don't delete if the reminder is for all subscribers
+				$reminder->delete();
+			}
+		}
+	}
+	
+	function share() {
+		$id = array_var($_GET, 'object_id');
+		$manager = array_var($_GET, 'manager');
+		$obj = get_object_by_manager_and_id($id, $manager);
+
+	    if(!($obj instanceof DataObject )) {
+	        flash_error(lang('object dnx'));
+			ajx_current("empty");
+			return;
+	    } // if
+	    
+	    $contacts = Contacts::getAll();
+	    $allEmails = array();
+	    $emailAndComp = array();
+	    foreach ($contacts as $contact) {
+	    	if (trim($contact->getEmail()) != "") {
+	    		$emailStr = str_replace(",", " ", $contact->getFirstname() . ' ' . $contact->getLastname() . ' <' . $contact->getEmail() . '>');
+	    		$allEmails[] = $emailStr;
+	    		if ($contact->getCompany()) $emailAndComp[$emailStr] = $contact->getCompany()->getId();
+	    	}
+	    }
+	    
+	    $companies = Companies::getAll();
+	    $allCompanies = array();
+	    foreach ($companies as $comp) {
+	    	$allCompanies[$comp->getId()] = $comp->getName();
+	    }
+	    
+	    $actuallySharing = array();
+	    $users = SharedObjects::getUsersSharing($id, $manager);
+	    foreach ($users as $u) {
+	    	$user = Users::findById($u->getUserId());
+	    	if ($user) $actuallySharing[] = array('name' => $user->getDisplayName(), 'email' => $user->getEmail(), 'company' => $user->getCompany()->getName());
+	    }
+	    
+	    tpl_assign('allEmails', $allEmails);
+	    tpl_assign('allCompanies', $allCompanies);
+	    tpl_assign('emailAndComp', $emailAndComp);
+	    tpl_assign('actuallySharing', $actuallySharing);
+	    tpl_assign('object', $obj);
+	}
+	
+	function do_share() {
+		$share_data = array_var($_POST, 'share_data');
+		if (is_array($share_data)) {
+			$obj = get_object_by_manager_and_id(array_var($share_data, 'object_id'), array_var($share_data, 'object_manager'));
+			
+			$emails = array_var($_POST, 'emails');
+			$companies = array_var($_POST, 'companiesId');
+			
+			if (!is_array($emails) || !count($emails)) {
+				flash_error(lang('must specify recipients'));
+				ajx_current("empty");
+				return;
+			}
+			
+			$people = array();
+			foreach($emails as $k => $email) { // Retrieve users to notify
+				$lt_pos = strpos($email, '<');
+				if ($lt_pos !== FALSE) { // only email address
+					$email = substr($email, $lt_pos + 1);
+					$email = str_replace('>', '', $email);
+				}
+				if (trim($email) != '') {
+					$user = Users::findOne(array('conditions' => "`email` = '" . $email . "'"));
+					if (!($user instanceof User)) { // User not exists -> create one with minimum permissions
+						$user = $this->createMinimumUser($email, $companies[$k]);
+					}
+					$people[] = $user;
+					$canWrite = array_var($share_data, 'allow_edit');
+					
+					if ($canWrite && !$obj->canEdit($user) || !$obj->canView($user)) {
+						$this->setObjUserPermission($user, $obj, $canWrite);
+					}
+					$this->saveSharedObject($obj, $user);
+				}
+			}
+			Notifier::shareObject($obj, $people);
+			
+			flash_success(lang("success sharing object"));
+			ajx_current("back");
+		}
+	}
+	
+	function createMinimumUser($email, $compId) {
+		$contact = Contacts::getByEmail($email);
+		$posArr = strpos($email, '@') === FALSE ? null : strpos($email, '@');
+		$user_data = array(
+			'username' => $email,
+			'display_name' => $posArr != null ? substr($email, 0, $posArr) : $email,
+			'email' => $email,
+			'contact_id' => isset($contact) ? $contact->getId() : null,
+			'password_generator' => 'random',
+			'timezone' => isset($contact) ? $contact->getTimezone() : 0,
+			'create_contact' => !isset($contact),
+			'company_id' => $compId,
+			'send_email_notification' => true,
+		); // array
+		
+		$user = null;
+		$user = UserController::createUser($user, $user_data, false, '');
+		
+		return $user;
+	}
+	
+	function setObjUserPermission($user, $obj, $canWrite) {
+		$obj_perm = ObjectUserPermissions::findOne(array('conditions' => "rel_object_id = ".$obj->getId()." AND rel_object_manager = '".$obj->getObjectManagerName()."' AND user_id = ".$user->getId()));
+		if ($obj_perm) $obj_perm->setColumnValue('can_write', $canWrite);
+		else {
+			$obj_perm = new ObjectUserPermission();
+			$obj_perm->setFromAttributes(array(
+				'rel_object_id' => $obj->getId(),
+				'rel_object_manager' => $obj->getObjectManagerName(),
+				'user_id' => $user->getId(),
+				'can_read' => 1,
+				'can_write' => $canWrite
+			));
+		}
+		try {
+			DB::beginWork();
+			$obj_perm->save();
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			flash_error($e->getMessage());
+			ajx_current("empty");
+		}
+	}
+	
+	function saveSharedObject($object, $user) {
+		$ou = SharedObjects::findOne(array('conditions' => "object_id = ".$object->getId()." AND object_manager = '". $object->getObjectManagerName()."' AND user_id = ".$user->getId()));
+		if (!$ou) {
+			DB::beginWork();
+			try {
+				$ou = new SharedObject();
+				$ou->setObjectId($object->getId());
+				$ou->setObjectManager($object->getObjectManagerName());
+				$ou->setUserId($user->getId());
+				$ou->setCreatedOn(DateTimeValueLib::now());
+				$ou->setCreatedById(logged_user()->getId());
+				$ou->save();
+				DB::commit();
+			} catch (Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+				ajx_current("empty");
+			}
 		}
 	}
 }

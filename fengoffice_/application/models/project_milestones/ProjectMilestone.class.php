@@ -501,6 +501,19 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @param void
 	 * @return boolean
 	 */
+	
+	function save() {
+		parent::save();
+		if ($this->getDueDate() instanceof DateTimeValue) {
+			$id = $this->getId();
+			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
+				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_milestones` WHERE `id` = $id),
+					interval `minutes_before` minute) WHERE
+					`object_manager` = 'ProjectMilestones' AND `object_id` = $id;";
+			DB::execute($sql);
+		}
+	}
+	
 	function delete() {
 		$is_template = $this->getIsTemplate();
 		if ($is_template) {

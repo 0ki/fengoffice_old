@@ -120,7 +120,6 @@
     'user ws config option name my tasks is default view' => 'Zeige nur mir zugeteilte Aufgaben in der Standard-Ansicht',
     'user ws config option desc my tasks is default view' => 'Bei \'Nein\' werden alle Aufgaben in der Standard-Ansicht angezeigt',
     'user ws config option name show tasks in progress widget' => 'Zeige \'Aufgaben in Bearbeitung\'',
-    'user ws config option name can notify from quick add' => 'Hinweis-Checkbox in \'Schnelleingabe\'',
     'user ws config option desc can notify from quick add' => 'Bei der Schnelleingabe von Aufgaben wird eine Checkbox zur Benachrichtigung der ausgewählten Benutzer angezeigt',
    
     'backup process desc' => 'Ein Backup speichert den momentanen Zustand der gesamten Anwendung in einem komprimierten Ordner. Damit kann man einfach ein Backup der OpenGoo-Installation anfertigen.<br><br>Das Erzeugen eines Backups von Datenbank und Dateisystem kann länger als ein paar Sekunden dauern, weshalb der Backup-Vorgang aus drei Schritten besteht:<br>1. Backup-Prozess starten,<br>2. Backup-Paket herunterladen. <br>3. Optional kann ein bestehendes Backup-Paket manuell gelöscht werden, wodurch es nicht mehr zur Verfügung steht.<br> ',

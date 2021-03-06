@@ -77,8 +77,8 @@ if($has_search_results) {
 			$dws = $result->getWorkspaces();
 			$projectLinks = array();
 			foreach ($dws as $ws) {
-				$projectLinks[] = '<span class="project-replace">' . $ws->getId() . '</span>';
-			echo '<span style="padding-right:5px">' . implode('&nbsp;',$projectLinks) . '</span>';
+				$projectLinks[] = $ws->getId();
+			echo '<span style="padding-right:5px"><span class="project-replace">' . implode(',',$projectLinks)  . '</span></span>';
 		}}?><?php if ($search_result["manager"] == 'Projects') {?>
 			<span class="project-replace" onclick="Ext.getCmp('tabs-panel').setActiveTab('overview-panel')"><?php echo $result->getId() ?></span>
 		<?php } else { ?>

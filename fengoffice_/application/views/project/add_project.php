@@ -26,7 +26,7 @@
   		<div class="adminTitle"><table style="width:535px"><tr><td>
   			<?php echo $project->isNew() ? lang('new workspace') : lang('edit workspace') ?>
   		</td><td style="text-align:right">
-  			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')) ?>
+  			<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '5')) ?>
   		</td></tr></table></div>
   	</div>
   	<div>
@@ -37,9 +37,12 @@
   
   
   	<div style="padding-top:5px">
-		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a> - 
+		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_description',this)"><?php echo lang('description') ?></a>
 		<?php if ($project->canChangePermissions(logged_user())) { ?>
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_permissions',this)"><?php echo lang('edit permissions') ?></a>
+		<?php } ?>
+		<?php  if ($billing_amounts && count($billing_amounts) > 0) {  ?>
+			 - <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>workspace_billing',this)"><?php echo lang('billing') ?></a>
 		<?php } ?>
 	</div>
   
@@ -50,14 +53,15 @@
 	<div id="<?php echo $genid ?>workspace_description" style="display:none">
 	<fieldset>	
 	<legend><?php echo lang('description') ?></legend>
-		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription')) ?>
+		<?php echo textarea_field('project[description]', array_var($project_data, 'description'), array('id' => 'projectFormDescription', 'tabindex' => '10')) ?>
 		<?php echo label_tag(lang('show project desciption in overview')) ?>
-		<?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview'), lang('yes'), lang('no')) ?>
+		<?php echo yes_no_widget('project[show_description_in_overview]', 'projectFormShowDescriptionInOverview', array_var($project_data, 'show_description_in_overview'), lang('yes'), lang('no'), 20) ?>
 	</fieldset>
 	</div>
 
 	<!-- permissions -->
 	<?php if ($project->canChangePermissions(logged_user())) { ?>
+		<?php $field_tab = 30; ?>
 		<div id="<?php echo $genid ?>workspace_permissions" style="display:none">
 		<fieldset>
 		<legend><?php echo lang('edit permissions') ?></legend>
@@ -77,7 +81,7 @@
 						<!-- <label><?php //echo clean($compangetName()) ?></label>-->
 							<input type="hidden" name="project_company_<?php echo $company->getId() ?>" value="checked" />
 					<?php } else { ?>
-							<?php echo checkbox_field('project_company_' . $company->getId(), $company->isProjectCompany(active_or_personal_project()), array('id' => $genid . 'project_company_' . $company->getId(), 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
+							<?php echo checkbox_field('project_company_' . $company->getId(), $company->isProjectCompany(active_or_personal_project()), array('id' => $genid . 'project_company_' . $company->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.companyCheckboxClick(" . $company->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_company_' . $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
 					<?php } // if ?>
 						</div>
 						<div class="projectCompanyUsers" id="<?php echo $genid ?>project_company_users_<?php echo $company->getId() ?>">
@@ -86,7 +90,7 @@
 <?php						 foreach ($users as $user) { ?>
 								<tr class="user">
 									<td>
-								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>"><?php echo clean($user->getDisplayName()) ?></label>
+								<?php echo checkbox_field('project_user_' . $user->getId(), $user->isProjectUser(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId(), 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userCheckboxClick(" . $user->getId() . ", " . $company->getId() . ",'".$genid."')")) ?> <label class="checkbox" for="<?php echo 'project_user_' . $user->getId() ?>"><?php echo clean($user->getDisplayName()) ?></label>
 <?php //							 } // if ?>
 <?php							 if($user->isAdministrator()) {?> 
 										<span class="desc">(<?php echo lang('administrator') ?>)</span>
@@ -95,9 +99,9 @@
 									<td>
 							<?php if(!$company->isOwner()) { ?>
 										<div class="projectUserPermissions" id="<?php echo $genid ."user_".$user->getId() ?>_permissions">
-										<div><?php echo checkbox_field('project_user_' . $user->getId() . '_all', $user->hasAllProjectPermissions(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId() . '_all', 'onclick' => "App.modules.updatePermissionsForm.userPermissionAllCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . '_all' ?>" class="checkbox" style="font-weight: bolder"><?php echo lang('all permissions') ?></label></div>
+										<div><?php echo checkbox_field('project_user_' . $user->getId() . '_all', $user->hasAllProjectPermissions(active_or_personal_project()), array('id' => $genid . 'project_user_' . $user->getId() . '_all', 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionAllCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . '_all' ?>" class="checkbox" style="font-weight: bolder"><?php echo lang('all permissions') ?></label></div>
 								<?php foreach ($permissions as $permission_id => $permission_text) { ?>						
-										<div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_or_personal_project(), $permission_id), array('id' => $genid . 'project_user_' . $user->getId() . "_$permission_id", 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
+										<div><?php echo checkbox_field('project_user_' . $user->getId() . "_$permission_id", $user->hasProjectPermission(active_or_personal_project(), $permission_id), array('id' => $genid . 'project_user_' . $user->getId() . "_$permission_id", 'tabindex' => $field_tab++, 'onclick' => "App.modules.updatePermissionsForm.userPermissionCheckboxClick(" . $user->getId() . ",'".$genid."')")) ?> <label for="<?php echo 'project_user_' . $user->getId() . "_$permission_id" ?>" class="checkbox normal"><?php echo $permission_text ?></label></div>
 								<?php } // foreach ?>
 										</div>
 									<script type="text/javascript">
@@ -135,6 +139,54 @@
 		</div>
 	<?php } // if ?>
 	<!-- /permissions -->
+	
+	
+	<?php 
+	$current = $project->isNew()? 0: $project->getId();
+	if ($billing_amounts && count($billing_amounts) > 0) { ?>
+	<div id="<?php echo $genid ?>workspace_billing" style="display:none">
+	<fieldset>	
+	<legend><?php echo lang('billing') ?></legend>
+	<table>
+	<tr>
+		<th><?php echo lang('category') ?></th>
+		<th><?php echo lang('hourly rates') ?></th>
+		<th><?php echo lang('origin') ?></th>
+		<th><?php echo lang('default hourly rates') ?></th>
+	</tr>
+	<?php 
+	$isAlt = true;
+	foreach ($billing_amounts as $billing_row) { 
+	$isAlt = !$isAlt; ?>
+	<tr class="<?php echo $isAlt? 'altRow' : '' ?>"><td style="padding:5px;padding-right:15px;font-weight:bold">
+		<?php echo $billing_row['category']->getName() ?></td>
+	<td style="padding:5px;padding-right:15px;">
+<?php 
+	$is_project_billing = $billing_row['origin'] == $current && !$project->isNew();
+	if ($is_project_billing) {
+			echo text_field('project[billing][' . $billing_row['category']->getId() . '][value]', $billing_row['value'], array('style'=>'width:100px'));
+	} else {?>
+		<span id="<?php echo $genid . $billing_row['category']->getId() ?>bv">
+		<a href='#' onclick='og.billingEditValue("<?php echo $genid . $billing_row['category']->getId() ?>");return false;'>
+		$<?php echo $billing_row['value'] ?>&nbsp;&nbsp;(<?php echo lang('edit') ?>)</a></span>
+		<span id="<?php echo $genid . $billing_row['category']->getId() ?>bvedit" style="display:none">
+			<?php echo text_field('project[billing][' . $billing_row['category']->getId() . '][value]', $billing_row['value'], 
+				array('style'=>'width:100px', 'id' => $genid . $billing_row['category']->getId() . 'text')) ?>
+		</span>
+		<?php } //if ?>
+		<input type='hidden' id='<?php echo $genid . $billing_row['category']->getId() ?>edclick' name="project[billing][<?php echo $billing_row['category']->getId() ?>][update]" value='<?php echo $is_project_billing? 1:0 ?>'/>
+		</td>
+	<td style="padding:5px;padding-right:15px;"><?php switch($billing_row['origin']) {
+		case 'default': echo lang('default hourly rates'); break;
+		case $current: echo $project->isNew()?  lang('defined in a parent workspace'):lang('defined in the current workspace'); break;
+		default: echo lang('defined in a parent workspace'); break;
+}?></td>
+	<td style="padding:5px;">$<?php echo $billing_row['category']->getDefaultValue()?></td></tr>
+<?php } //foreach ?>
+	</table>
+	</fieldset>
+	</div>
+	<?php } ?>
 		
 	<?php if (can_manage_workspaces(logged_user()) && isset ($projects) && count($projects) > 0) { ?>
 	<fieldset>
@@ -180,48 +232,7 @@
 			} ?></td></tr></table>
 		</div>
 		
-	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '2')) ?>
-	
-	<?php if (!$project->isNew()) { ?>
-	<br/><br/><br/>
-  	<fieldset>	
-	<legend><?php echo lang('properties') ?></legend>
-	<table><tr><?php if ($project->getCreatedBy() instanceof User){ ?>
-		<td><b><?php echo lang('created by') ?>:</b></td>
-		<td style="padding-left:10px"><?php 
-				if (logged_user()->getId() == $project->getCreatedById())
-					$username = lang('you');
-				else
-					$username = clean($project->getCreatedByDisplayName());
-
-				if ($project->getCreatedOn()->isToday()){
-					$datetime = format_time($project->getCreatedOn());
-					echo lang('user date today at', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
-				} else {
-					$datetime = format_datetime($project->getCreatedOn(), lang('date format'), logged_user()->getTimezone());
-					echo lang('user date', $project->getCreatedByCardUrl(), $username, $datetime, clean($project->getCreatedByDisplayName()));
-				}
-			 ?></td>
-	<?php } 
-		if ($project->getUpdatedBy() instanceof User){ ?>
-		<td style="padding-left:40px"><b><?php echo lang('modified by') ?>:</b></td>
-		<td style="padding-left:10px"><?php 
-				if (logged_user()->getId() == $project->getUpdatedById())
-					$username = lang('you');
-				else
-					$username = clean($project->getUpdatedByDisplayName());
-
-				if ($project->getUpdatedOn()->isToday()){
-					$datetime = format_time($project->getUpdatedOn());
-					echo lang('user date today at', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
-				} else {
-					$datetime = format_datetime($project->getUpdatedOn(), lang('date format'), logged_user()->getTimezone());
-					echo lang('user date', $project->getUpdatedByCardUrl(), $username, $datetime, clean($project->getUpdatedByDisplayName()));
-				}
-			 ?></td>
-	<?php } ?></tr></table>
-	</fieldset>
-	<?php } // if ?>
+	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '250')) ?>
 </div>
 </div>
 </form>

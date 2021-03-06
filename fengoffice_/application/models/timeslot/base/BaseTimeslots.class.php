@@ -27,7 +27,11 @@
     'updated_on' => DATA_TYPE_DATETIME, 
     'updated_by_id' => DATA_TYPE_INTEGER,
     'paused_on' => DATA_TYPE_DATETIME, 
-    'subtract' => DATA_TYPE_INTEGER);
+    'subtract' => DATA_TYPE_INTEGER, 
+    'fixed_billing' => DATA_TYPE_FLOAT, 
+    'hourly_billing' => DATA_TYPE_FLOAT, 
+    'is_fixed_billing' => DATA_TYPE_BOOLEAN, 
+    'billing_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

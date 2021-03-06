@@ -50,6 +50,9 @@
   	'config option desc work_day_start_time' => 'Especifica la hora de comienzo de la jornada laboral',
   	'config option name time_format_use_24' => 'Utilizar formato de 24 horas',
   	'config option desc time_format_use_24' => 'Si está habilitado el formato de hora será \'hh:mm\' desde 00:00 hasta 23:59, sino las horas se utilizarán desde 1 a 12 utilizando AM o PM.',
+    'config option name use_minified_resources' => 'Usar recursos minificados',
+    'config option desc use_minified_resources' => 'Usar achivos CSS y Javascript para mejorar la performance. En el caso de efectuar modificaciones, debe recomprimir los archivos usando las herramientas de public/tools.',
+  
 	
     // OpenGoo.org
     'config option name upgrade_check_enabled' => 'Habilitar comprobación de actualizaciones',
@@ -188,6 +191,7 @@
     'start automatic upgrade' => 'Start automatic upgrade',
   	'cron event name create_backup' => 'Crear respaldo',
     'cron event desc create_backup' => 'Crea un respaldo que puede descargar de la sección Respaldo en Administración.',
+    
   ); // array
 
 ?>

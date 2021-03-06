@@ -1,6 +1,5 @@
 <script type="text/javascript">
 	scroll_to = -1;
-	showCalendarToolbar();	
 </script>
 
 <?php
@@ -15,8 +14,8 @@ $_SESSION['day'] = $day;
 
 $tags = active_tag();	
 
-$user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logged_user()->getId() : $_GET['user_filter'];
-$state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : ' 0 1 3'; 
+$user_filter = $userPreferences['user_filter'];
+$status_filter = $userPreferences['status_filter'];
 
 $user = Users::findById(array('id' => $user_filter));
 /*
@@ -36,21 +35,15 @@ $use_24_hours = user_config_option('time_format_use_24');
 	$currentday = $today->format("j");
 	$currentmonth = $today->format("n");
 	$currentyear = $today->format("Y");
-	
-	$today_style = '';
-	if($currentyear == $year && $currentmonth == $month && $currentday == $day){
-	  $today_style = 'background-color:#FFFFCC;';
-	}
-	
-	$date = new DateTimeValue(mktime(0,0,0,$month,$day,$year)); 
-	$end_date = new DateTimeValue(mktime(0,0,0,$month,$day,$year));
-	$result = ProjectEvents::getDayProjectEvents($date, $tags, active_project(), $user_filter, $state_filter); 
+
+	$dtv = DateTimeValueLib::make(0,0,0,$month,$day,$year);
+	 
+	$result = ProjectEvents::getDayProjectEvents($dtv, $tags, active_project(), $user_filter, $status_filter); 
 	if(!$result) $result = array();	
 	
-	
 	$alldayevents = array();
-	$milestones = ProjectMilestones::getRangeMilestonesByUser($date,$end_date,logged_user(), $tags, active_project());	
-	$tasks = ProjectTasks::getRangeTasksByUser($date, $end_date, $user, $tags, active_project());
+	$milestones = ProjectMilestones::getRangeMilestonesByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $tags, active_project());	
+	$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $tags, active_project());
 	
 	foreach ($result as $key => $event){
 		if ($event->getTypeId()> 1){
@@ -65,9 +58,27 @@ $use_24_hours = user_config_option('time_format_use_24');
 		$alldayevents = array_merge($alldayevents,$tasks);	
 	
 	$alldaygridHeight = count($alldayevents)*PX_HEIGHT/2 + PX_HEIGHT/3;
-	$dtv = DateTimeValueLib::make(0,0,0,$month,$day,$year);
+	
+	$loc = new Localization();
+	$loc->setDateFormat(lang('view date title'));
+	$view_title = $loc->formatDate($dtv);// lang(strtolower(date('l', $dtv))) . date(' j, ', $dtv) . lang('month ' . date('n', $dtv)) . date(' Y', $dtv);
+
+	$users_array = array();
+	$companies_array = array();
+	foreach($users as $u)
+		$users_array[] = $u->getArrayInfo();
+	foreach($companies as $company)
+		$companies_array[] = $company->getArrayInfo();	
 ?>
+<div id="calHiddenFields">
+	<input type="hidden" id="hfUsers" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($users_array)))) ?>"/>
+	<input type="hidden" id="hfCompanies" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($companies_array)))) ?>"/>
+	<input type="hidden" id="hfUserPreferences" value="<?php echo clean(str_replace('"',"'", str_replace("'", "\'", json_encode($userPreferences)))) ?>"/>
+</div>
+
 <div class="calendar" style="padding:0px;height:100%;overflow:hidden;" id="cal_main_div" onmouseup="clearPaintedCells();">
+<div id="calendarPanelTopToolbar" class="x-panel-tbar" style="width:100%;height:30px;display:block;background-color:#F0F0F0;"></div>
+
 <table style="width:100%;height:100%;">
 <tr>
 <td>
@@ -75,8 +86,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		<tr>
 			<td class="coViewHeader" id='cal_coViewHeader' colspan=2  rowspan=1>
 				<div class="coViewTitle">				
-					<span id="chead0"><?php $dtime = mktime(0, 0, 0, $month, $day, $year); echo lang(strtolower(date('l', $dtime))) . date(' j, ', $dtime) . lang('month ' . date('n', $dtime)) . date(' Y', $dtime)
-					.' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName()))); ?></span>	
+					<span id="chead0"><?php echo $view_title .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getDisplayName()))); ?></span>	
 				</div>
 			</td>
 		</tr>
@@ -132,7 +142,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>; border-left:1px solid; border-right:1px solid; border-color:<?php echo $border_color ?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
 								
-									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="stopPropagation(event);hideCalendarToolbar();"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
+									<nobr style="display: block; text-decoration: none;"><a href='<?php echo $event->getViewUrl()?>' class='internalLink' onclick="stopPropagation(event);"><img src="<?php echo $img_url?>" align='absmiddle' border='0'> <span style="color:<?php echo $txt_color ?>!important"><?php echo $subject ?></span> </a></nobr>
 								
 								</div>
 							</div>
@@ -344,10 +354,10 @@ $use_24_hours = user_config_option('time_format_use_24');
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:0px; border-bottom:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px; border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
-														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"  onclick="hideCalendarToolbar();og.openLink(og.getUrl('event', 'viewevent', {view:'day', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
+														<dl class="<?php echo  $ws_class?>" style="height: <?php echo $height ?>px;<?php echo  $ws_style?>;border-left:1px solid;border-right:1px solid;border-color:<?php echo $border_color ?>"  onclick="og.openLink(og.getUrl('event', 'viewevent', {view:'day', id:<?php echo $event->getId()?>, user_id:<?php echo $user_filter?>}, null));">
 															<dt class="<?php echo  $ws_class?>" style="<?php echo  $ws_style?>;">
 																<table width="100%"><tr><td>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="stopPropagation(event);hideCalendarToolbar();" >
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' onclick="stopPropagation(event);" >
 																	<span class="eventheadlabel" style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo "$start_time - $end_time"; ?></span>
 																	</a>
 																	<?php
@@ -378,7 +388,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 															if ($ev_duration['hours'] > 0) { ?>
 															<dd>
 																<div>
-																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="stopPropagation(event);hideCalendarToolbar();" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
+																	<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' onclick="stopPropagation(event);" class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;"><?php echo $subject?></span></a>
 																</div>
 															</dd>
 															<?php } //if ?>
@@ -419,7 +429,18 @@ $use_24_hours = user_config_option('time_format_use_24');
  ?>
  
 <script type="text/javascript">
-	
+	// Top Toolbar	
+	ogCalendarUserPreferences = Ext.util.JSON.decode(document.getElementById('hfUserPreferences').value);
+	var ogCalTT = new og.CalendarTopToolbar({
+		usersHfId:'hfUsers',
+		companiesHfId:'hfCompanies',
+		renderTo:'calendarPanelTopToolbar'
+	});	
+
+	// Mantain the actual values after refresh by clicking Calendar tab.
+	var dtv = new Date('<?php echo $month.'/'.$day.'/'.$year ?>');
+	calToolbarDateMenu.picker.setValue(dtv);
+
 	// scroll to first event
 	var scroll_pos = (scroll_to == -1 ? <?php echo $defaultScrollTo ?> : scroll_to);
 	Ext.get('gridcontainer').scrollTo('top', scroll_pos, true);
@@ -431,7 +452,7 @@ $use_24_hours = user_config_option('time_format_use_24');
 		maindiv = document.getElementById('cal_main_div');
 		if (maindiv != null) {
 			var divHeight = maindiv.offsetHeight;
-			divHeight = divHeight - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
+			divHeight = divHeight - 30 - <?php echo (PX_HEIGHT + $alldaygridHeight); ?>;
 			document.getElementById('gridcontainer').style.height = divHeight + 'px';
 		}
 	}

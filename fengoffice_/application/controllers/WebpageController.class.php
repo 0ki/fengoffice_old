@@ -227,6 +227,7 @@ class WebpageController extends ApplicationController {
 			$limit = config_option('files_per_page');
 		}
 		$order = array_var($_GET, 'sort');
+		if ($order == "updatedOn") $order = "updated_on";
 		$orderdir = array_var($_GET, 'dir');
 		$tag = array_var($_GET,'tag');
 		$page = (integer) ($start / $limit) + 1;
@@ -327,14 +328,16 @@ class WebpageController extends ApplicationController {
 				$tags = project_object_tags($w);
 				else
 				$tags = "";
-					
 				$object["webpages"][] = array(
-				"id" => $w->getId(),
-				"title" => $w->getTitle(),
-				"description" => $w->getDescription(),
-				"url" => $w->getUrl(),
-				"tags" => $tags,
-				"wsIds" => $w->getProjectId(),
+					"id" => $w->getId(),
+					"title" => $w->getTitle(),
+					"description" => $w->getDescription(),
+					"url" => $w->getUrl(),
+					"tags" => $tags,
+					"wsIds" => $w->getProjectId(),
+					"updatedOn" => $w->getUpdatedOn() instanceof DateTimeValue ? $w->getUpdatedOn()->getTimestamp() : 0,
+					"updatedBy" => $w->getUpdatedByDisplayName(),
+					"updatedById" => $w->getUpdatedById(),
 				);
 			}
 		}
@@ -343,14 +346,24 @@ class WebpageController extends ApplicationController {
 	}
 	
 	function view() {
-		$id = get_id();
-		$wl = ProjectWebpages::findById($id);
-		if (!$wl instanceof ProjectWebpage) {
-			flash_error(lang('webpage dnx'));
+		$this->addHelper("textile");
+		$weblink = ProjectWebpages::findById(get_id());
+		if(!($weblink instanceof ProjectWebpage)) {
+			flash_error(lang('weblink dnx'));
 			ajx_current("empty");
 			return;
-		}
-		$this->redirectToUrl($wl->getUrl());
+		} // if
+
+		if(!$weblink->canView(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		tpl_assign('object', $weblink);
+		tpl_assign('subscribers', $weblink->getSubscribers());
+		ajx_extra_data(array("title" => $weblink->getTitle(), 'icon'=>'ico-weblink'));
+		ajx_set_no_toolbar(true);
 	}
 } // WebpageController
 

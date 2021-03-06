@@ -55,7 +55,6 @@
 	'user ws config option name my tasks is default view' => 'Tâches affectées à moi est la vue par défaut',
 	'user ws config option desc my tasks is default view' => 'Si non est sélectionné, la vue par défaut du panneau des tâches montrera toutes les tâches',
 	'user ws config option name show tasks in progress widget' => 'Voir le widget \'des tâches en cours\' ',
-	'user ws config option name can notify from quick add' => 'Checkbox de notification en ajout express',
 	'user ws config option desc can notify from quick add' => 'Une checkbox est cochée pour notifier aux utilisateurs affectés les ajouts express sur les tâches',
 	'backup process desc' => 'Un backup enregistre l\'état en cours de toute l\'application dans un dossier compressé.<br> Générer un backup du système et de sa base de données peut prendre quelques secondes, ainsi faire un backup est un processus qui se déroule en trois étapes: <br>1.- Lancer le processus de backup , <br>2.- Télécharger le backup. <br> 3.- En Option, un backup peut être détruit manuellement, pour ne plus être disponible dans le futur. <br> ',
 	'start backup' => 'Lancement du processus de backup',

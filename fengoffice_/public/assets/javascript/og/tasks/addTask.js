@@ -466,16 +466,15 @@ ogTasks.drawAssignedToCombo = function(success, data) {
 			'select':function(combo, record){
 				var checkbox = document.getElementById('ogTasksPanelATNotify');
 				if (checkbox){
-					var chkIsVisible = record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0';
-					var chkIsChecked = ogTasks.userPreferences.defaultNotifyValue && chkIsVisible && (record.data.value != (ogTasks.currentUser.companyId + ':' + ogTasks.currentUser.id));
-					
-					checkbox.checked = chkIsChecked;
 					var checkboxDiv = document.getElementById('ogTasksPanelATNotifyDiv');
-					if (chkIsVisible){
-						ogTasks.assignedTo = combo.getValue();
+					if (record.data.value != '-1:-1' && record.data.value.split(':')[1] != '0'){
 						checkboxDiv.style.display = 'block';
+						var currentUser = ogTasks.currentUser;
+						checkbox.checked = (record.data.value != (currentUser.companyId + ':' + currentUser.id));
+						ogTasks.assignedTo = combo.getValue();
 					} else {
 						checkboxDiv.style.display = 'none';
+						checkbox.checked = false;
 					}
 				}
 			}

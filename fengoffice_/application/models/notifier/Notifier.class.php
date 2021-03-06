@@ -73,6 +73,31 @@ class Notifier {
 		); // send
 	}
 	
+	function shareObject(ProjectDataObject $object, $people) {
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('object', $object);
+
+		$recepients = array();
+		foreach($people as $user) {
+			if ($user->getId() != $object->getCreatedById()) {
+				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+			}
+		} // foreach
+		
+		if (count($recepients) == 0) return;
+		if (! $object->getCreatedBy() instanceof User) return;
+		
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress(logged_user()->getEmail(), logged_user()->getDisplayName()),
+			lang('new share notification ' . $object->getObjectTypeName(), $object->getObjectName()),
+			tpl_fetch(get_template_path('share_object', 'notifier'))
+		); // send
+	}
+	
 	function objectEdited(ProjectDataObject $object, $people) {
 		if(!is_array($people) || !count($people)) {
 			return; // nothing here...
@@ -106,6 +131,7 @@ class Notifier {
 			return; // nothing here...
 		} // if
 		$closedBy = $object->getCompletedBy();
+		if ($closedBy instanceof User) return;
 		tpl_assign('object', $object);
 		tpl_assign('closedBy', $closedBy);
 
@@ -124,7 +150,7 @@ class Notifier {
 		); // send
 	}
 	
-	function objectDeleted(ProjectDataObject $object, $people, $closed_by) {
+	function objectDeleted(ProjectDataObject $object, $people) {
 		if(!is_array($people) || !count($people)) {
 			return; // nothing here...
 		} // if
@@ -133,13 +159,13 @@ class Notifier {
 
 		$recepients = array();
 		foreach($people as $user) {
-			if ($user->getId() != $object->getCreatedById()) {
+			if ($user->getId() != $object->getTrashedById()) {
 				$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 			}
 		} // foreach
 
 		$trashedBy = Users::findById($object->getTrashedById());
-		if (!$trashedBy instanceof User) {
+		if ($trashedBy instanceof User) {
 			$displayName = $trashedBy->getDisplayName();
 			$email = $trashedBy->getEmail();
 		} else {
@@ -306,28 +332,64 @@ class Notifier {
 	 * @return boolean
 	 * @throws NotifierConnectionError
 	 */
-	static function taskDue(ProjectTask $task, $people) {
+	static function objectReminder(ObjectReminder $reminder) {
+		$object = $reminder->getObject();
+		$context = $reminder->getContext();
+		$type = $object->getObjectTypeName();
+		$date = $object->getColumnValue($context);
+		if ($reminder->getUserId() == 0) {
+			$people = $object->getSubscribers();
+		} else {
+			$people = array($reminder->getUser());
+		}
+		Env::useHelper("format");
 		if(!is_array($people) || !count($people)) {
 			return; // nothing here...
 		} // if
 
-		tpl_assign('due_task', $task);
+		tpl_assign('object', $object);
+		tpl_assign('type', $type);
+		tpl_assign('context', $context);
+		tpl_assign('date', $date);
 
 		$recepients = array();
 		foreach($people as $user) {
 			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
 		} // foreach
 
-		if (! $task->getCreatedBy() instanceof User) return;
+		if (!$object->getCreatedBy() instanceof User) return;
 		
 		return self::sendEmail(
-		$recepients,
-		self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
-		$task->getProject()->getName() . ' - ' . lang('due task reminder'),
-		tpl_fetch(get_template_path('due_task', 'notifier'))
+			$recepients,
+			self::prepareEmailAddress($object->getCreatedBy()->getEmail(), $object->getCreatedByDisplayName()),
+			lang("$context $type reminder"),
+			tpl_fetch(get_template_path('object_reminder', 'notifier'))
 		); // send
 	} // taskDue
 
+	static function eventReminder(ProjectEvent $event, $people) {
+		Env::useHelper("format");
+		if(!is_array($people) || !count($people)) {
+			return; // nothing here...
+		} // if
+
+		tpl_assign('event', $event);
+
+		$recepients = array();
+		foreach($people as $user) {
+			$recepients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+		} // foreach
+
+		if (! $event->getCreatedBy() instanceof User) return;
+		
+		return self::sendEmail(
+			$recepients,
+			self::prepareEmailAddress($event->getCreatedBy()->getEmail(), $event->getCreatedByDisplayName()),
+			$event->getProject()->getName() . ' - ' . lang('event reminder'),
+			tpl_fetch(get_template_path('event_reminder', 'notifier'))
+		); // send
+	}
+	
 	/**
 	 * Send event notification to the list of users ($people)
 	 *
@@ -428,7 +490,7 @@ class Notifier {
 
 		return self::sendEmail($recepients,
 				self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
-				lang('new comment') . ' - ' . $comment->getObject()->getTitle(),
+				lang('new comment') . ' - ' . $comment->getObject()->getObjectName(),
 				tpl_fetch(get_template_path('new_comment', 'notifier'))
 		); // send
 	} // newObjectComment
@@ -617,30 +679,8 @@ class Notifier {
 	} // getMailer
 
 	function sendReminders() {
-		$sent = 0;
-		$ors = ObjectReminders::findAll();
-		foreach ($ors as $or) {
-			if ($or->getType() == "due_date") {
-				$task = $or->getObject();
-				if (!$task instanceof ProjectTask || $task->isCompleted()) {
-					$or->delete();
-					continue;
-				}
-				$duedate = $task->getDueDate();
-				if (!$duedate instanceof DateTimeValue) continue;
-				$duedate->add("m", -$or->getMinutesBefore());
-				if (DateTimeValueLib::now()->getTimestamp() >= $duedate->getTimestamp()) {
-					try {
-						Notifier::taskDue($task, array($or->getUser()));
-						$or->delete();
-						$sent++;
-					} catch (Exception $e) {
-						
-					}
-				}
-			}
-		}
-		return $sent;
+		include_once "application/cron_functions.php";
+		send_reminders();
 	}
 	
 } // Notifier

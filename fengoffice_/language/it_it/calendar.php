@@ -119,4 +119,5 @@
 	'no invitations to this event' => 'Nessun invito spedito per questo evento',
 	'duration must be at least 15 minutes' => 'Durata massima 15 minuti',
 	'event dnx' => 'Evento inesistente',
+	'view date title' => 'l, m/d/Y',
 ); ?>

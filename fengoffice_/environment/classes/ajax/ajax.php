@@ -6,6 +6,8 @@ define('SESSION_EXPIRED_ERROR_CODE', 2009);
  * Set the current panel's content. Expects the panel'd id, the type of content
  * (html, url), the data (html code, url), and the page actions.
  * If type is 'empty' the current content isn't changed. The other parameters are ignored.
+ * 
+ * $type = empty, back, reload, start
  *
  * @param string $type
  * @param string $data

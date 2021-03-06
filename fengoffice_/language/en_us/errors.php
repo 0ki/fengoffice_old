@@ -115,7 +115,9 @@
   	'mail account name required' => 'Account name required',
   	'mail account id required' => 'Account Id required',
   	'mail account server required' => 'Server required',
-  	'mail account password required' => 'Password required',	
+  	'mail account password required' => 'Password required',
+	'send mail error' => 'Error while sending mail. Possibly wrong SMTP settings.',
+    'email address already exists' => 'That email address is already in use.',
   
   	'session expired error' => 'Session expired due to user inactivity. Please login again',
   	'unimplemented type' => 'Unimplemented type',
@@ -143,6 +145,7 @@
 	'success delete backup' => 'Backup was deleted',
     'name must be unique' => 'Sorry, but selected name is already taken',
   	'not implemented' => 'Not implemented',
+  	'return code' => 'Return code: {0}',
    ); // array
 
 ?>

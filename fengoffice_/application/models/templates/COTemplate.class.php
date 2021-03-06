@@ -36,12 +36,14 @@ class COTemplate extends BaseCOTemplate {
 			// the object isn't a template but can be, create a template copy
 			$copy = $object->copy();
 			$copy->setColumnValue('is_template', true);
+			if ($copy instanceof ProjectTask) $copy->setMilestoneId(0);
 			$copy->save();
 			if ($copy instanceof ProjectTask) {
 				ProjectTasks::copySubTasks($object, $copy, true);
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, true);
 			}
+			$copy->copyCustomPropertiesFrom($object);
 			$template = $copy;
 		} else {
 			// the object is a template or can't be one, use it as it is

@@ -23,7 +23,6 @@
     	'repeat_forever'=>DATA_TYPE_BOOLEAN,
     	'description' => DATA_TYPE_STRING,
     	'private' => DATA_TYPE_STRING,
-    	'eventtype' => DATA_TYPE_INTEGER,
     	'repeat_end' => DATA_TYPE_DATETIME,
     	'repeat_num' => DATA_TYPE_INTEGER,
     	'repeat_d' => DATA_TYPE_INTEGER,

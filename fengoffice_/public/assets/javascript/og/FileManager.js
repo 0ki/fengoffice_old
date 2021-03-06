@@ -57,14 +57,7 @@ og.FileManager = function() {
 			'<a style="font-size:120%" href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
 			htmlentities(value), r.data.name, og.getUrl('files', 'file_details', {id: r.data.object_id}));
 		
-		var projectsString = '';
-	    if (r.data.wsIds != ''){
-			var ids = String(r.data.wsIds).split(',');
-			for(var i = 0; i < ids.length; i++)
-				projectsString += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
-		}
-		
-		return projectsString + name;
+		return String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.wsIds) + name;
 	}
 
 	function renderIcon(value, p, r) {
@@ -263,7 +256,8 @@ og.FileManager = function() {
 			dataIndex: 'dateCreated',
 			width: 120,
 			hidden: true,
-			renderer: renderDateCreated
+			renderer: renderDateCreated,
+			sortable: true
 		},{
 			id: 'status',
 			header: lang("status"),
@@ -273,7 +267,7 @@ og.FileManager = function() {
 		},{
 			id: 'actions',
 			header: lang("actions"),
-			width: 40,
+			width: 50,
 			renderer: renderActions,
 			sortable: false
 		}]);

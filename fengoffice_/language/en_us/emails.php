@@ -13,7 +13,9 @@ return array(
 // Interface
     'hi john doe' => 'Hi {0}',
  
-    'user password reseted' => 'Your password has been reset. New password is \'{0}\'.',
+    'user password reseted desc' => 'Your password has been reset. You can now login to {0} at {1} with the following credentials:',
+	'user password reseted username' => 'Username: {0}',
+	'user password reseted password' => 'Password: {0}',
 
     'dont reply wraning' => 'THIS IS SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
     'new message posted' => 'New message "{0}" has been posted',
@@ -59,6 +61,9 @@ return array(
     'mail account smtp password description' => ' Password  for SMTP Server',
     'smtp port' => 'SMTP Server Port',
     'mail account smtp port description' => ' This is the port in which the server listens to the SMTP Service. The default and most common value is 25.',
+    'outgoing transport type' => 'Secure connection',
+	'mail account outgoing transport type description' => 'Set to "ssl" or "tls" for secure connection',
+	'smtp settings' => 'SMTP Settings',
     'format plain' => 'Format as Plain Text',
     'format html' => 'Format as HTML',
     'mail options' => 'Options',
@@ -74,9 +79,13 @@ return array(
     'mail address description' => 'Email address is the address that other people use to send you emails',
 
 	'unread emails' => 'Unread emails',
-	'view due task' => 'View due task',
-	'due task email' => 'Task "{0}" is due on "{1}" and is still pending',
-	'due task reminder' => 'Due task reminder',
+	//'view due task' => 'View due task',
+	'due_date task reminder' => 'Due task reminder',
+	'due_date task reminder desc' => 'Task "{0}" is due on "{1}" and is still pending',
+	'due_date milestone reminder' => 'Due milestone reminder',
+	'due_date milestone reminder desc' => 'Milestone "{0}" is due on "{1}" and is still pending',
+	'start event reminder' => 'Event reminder',
+	'start event reminder desc' => 'Event "{0}" starts on "{1}"',
 	'task has been modified' => 'Task "{0}" in workspace "{1}" has been modified',
 	'task modified' => 'Task modified',
 	'view task' => 'View task',

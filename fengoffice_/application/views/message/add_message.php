@@ -10,7 +10,7 @@
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo $message->isNew() ? lang('new message') : lang('edit message') ?>
-	</td><td style="text-align:right"><?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	</td><td style="text-align:right"><?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '100')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -49,7 +49,7 @@
 	
 	<div id="<?php echo $genid ?>add_message_add_tags_div" style="display:none">
 	<fieldset><legend><?php echo lang('tags')?></legend>
-		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags')); ?>
+		<?php echo autocomplete_tags_field("message[tags]", array_var($message_data, 'tags'), null, 40); ?>
 	</fieldset>
 	</div>
 
@@ -71,13 +71,13 @@
 
 		<div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('enable comments') ?>:</label></div>
-			<div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', $genid.'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no')) ?></div>
+			<div class="optionControl"><?php echo yes_no_widget('message[comments_enabled]', $genid.'fileFormEnableComments', array_var($message_data, 'comments_enabled', true), lang('yes'), lang('no'), 45) ?></div>
 			<div class="optionDesc"><?php echo lang('enable comments desc') ?></div>
 		</div>
 
 		<div class="objectOption">
 			<div class="optionLabel"><label><?php echo lang('enable anonymous comments') ?>:</label></div>
-			<div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', $genid.'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no')) ?></div>
+			<div class="optionControl"><?php echo yes_no_widget('message[anonymous_comments_enabled]', $genid.'fileFormEnableAnonymousComments', array_var($message_data, 'anonymous_comments_enabled', false), lang('yes'), lang('no'), 50) ?></div>
 			<div class="optionDesc"><?php echo lang('enable anonymous comments desc') ?></div>
 		</div>
 	</fieldset>
@@ -129,13 +129,13 @@
 	<div>
 	<?php echo label_tag(lang('text'), 'messageFormText', false) ?>
 	<?php echo editor_widget('message[text]', array_var($message_data, 'text'), 
-		array('id' => $genid . 'messageFormText', 'tabindex' => '2')) ?>
+		array('id' => $genid . 'messageFormText', 'tabindex' => '20')) ?>
 	</div>
 
 	<div>
 	<?php if(!$message->isNew() && trim($message->getAdditionalText())) { ?>
 		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?>:</label>
-		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText')) ?>
+		<?php echo editor_widget('message[additional_text]', array_var($message_data, 'additional_text'), array('id' => $genid . 'messageFormAdditionalText', 'tabindex' => '25')) ?>
 	<?php } /* else { ?>
 		<label for="<?php echo $genid ?>messageFormAdditionalText"><?php echo lang('additional text') ?> (<a href="#" onclick="return App.modules.addMessageForm.toggleAdditionalText(this, '<?php echo $genid ?>messageFormAdditionalText', 
 				'<?php echo escape_single_quotes(lang('expand additional text')) ?>', '<?php echo escape_single_quotes(lang('collapse additional text')) ?>')"><?php echo lang('expand additional text') ?></a>):</label>
@@ -146,7 +146,7 @@
 	</div>
 	
 	<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',
-		array('style'=>'margin-top:0px', 'tabindex' => '3')) ?>
+		array('style'=>'margin-top:0px', 'tabindex' => '30')) ?>
 </div>
 </div>
 </form>

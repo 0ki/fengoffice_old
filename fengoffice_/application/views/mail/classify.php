@@ -16,7 +16,8 @@ function showProjectTagsDiv()
 <div class="emailClassify">
   <div class="coInputHeader">
   <div class="coInputHeaderUpperRow">
-  	<div class="coInputTitle"><?php echo lang('classify email subject', clean($email->getSubject())) ?></div>
+  	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo lang('classify email subject', clean($email->getSubject())) ?>
+  	</td><td style="text-align:right"><?php echo submit_button(lang('classify email'), 's', array('style'=>'margin-top:0px;margin-left:10px;width:auto', 'tabindex' => '40')) ?></td></tr></table></div>
   </div>
   </div>
   
@@ -28,7 +29,7 @@ function showProjectTagsDiv()
 <legend><?php echo lang('project') ?></legend>
 		<?php echo select_workspaces('classification[project_ids]', null, array_var($classification_data, 'project_ids'), $genid.'wsSel'); ?>
 		<?php echo label_tag(lang('tags')) ?>
-	<?php echo autocomplete_tags_field("classification[tag]", array_var($classification_data, 'tag')); ?>
+	<?php echo autocomplete_tags_field("classification[tag]", array_var($classification_data, 'tag'), null, 20); ?>
 </fieldset>
    
    <?php if ($email->getHasAttachments()) {?>
@@ -38,14 +39,14 @@ function showProjectTagsDiv()
    $c = 0;
    foreach($parsedEmail["Attachments"] as $att) { 
    	    $fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
-   		echo checkbox_field('classification[att_'.$c.']', true, array('id' => 'classifyFormAddAttachment'.$c));?>
+   		echo checkbox_field('classification[att_'.$c.']', true, array('id' => 'classifyFormAddAttachment'.$c, 'tabindex' => '30'));?>
     <label for="<?php echo 'classifyFormAddAttachment'.$c ?>" class="yes_no"><?php echo $fName ?></label>
     <?php $c++;
    }?>
    </fieldset>
 <?php } ?>
 
-<?php echo submit_button(lang('classify email')) ?>
+<?php echo submit_button(lang('classify email'), 's', array('tabindex' => '40')) ?>
   </div>
 </div>
 </form>

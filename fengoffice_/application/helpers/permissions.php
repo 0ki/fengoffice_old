@@ -18,10 +18,8 @@
   	function can_manage_security(User $user, $include_groups = true){
   		if ($user->getCanManageSecurity()){
   			return true;
-  		}
-  		if ($include_groups){
-  			$user_ids = $user->getId();  			
-			$group_ids = GroupUsers::getGroupsCSVsByUser($user_ids);
+  		} else if ($include_groups){	
+			$group_ids = GroupUsers::getGroupsCSVsByUser($user->getId());
 			if($group_ids!=''){
 	  			$gr = Groups::findOne(array('conditions' => array('id in ('.$group_ids.') AND can_manage_security = true ')));
 	  			return $gr instanceof Group ;

@@ -17,6 +17,9 @@
 function render_user_box(User $user) {
 	tpl_assign('_userbox_user', $user);
 	tpl_assign('_userbox_projects', $user->getActiveProjects());
+	$extraCrumbs = array();
+	Hook::fire('render_userbox_crumbs', null, $extraCrumbs);
+	tpl_assign('_userbox_extra_crumbs', $extraCrumbs);
 	return tpl_fetch(get_template_path('user_box', 'application'));
 } // render_user_box
  
@@ -1068,9 +1071,10 @@ function autocomplete_emailfield($name, $value, $options, $emptyText, $attribute
 }
 
 
-function autocomplete_tags_field($name, $value, $id = null) {
+function autocomplete_tags_field($name, $value, $id = null, $tabindex = null) {
 	if (!isset($id)) $id = gen_id();
 	$attributes = array("class" => "long", "id" => $id);
+	if (isset($tabindex)) $attributes['tabindex'] = $tabindex;
 
 	if (trim($value) != "") $value .= ", ";
 	$html = text_field($name, $value, $attributes) . '
@@ -1098,6 +1102,135 @@ function autocomplete_tags_field($name, $value, $id = null) {
 	return $html;
 }
 
+function render_add_reminders($object, $context, $defaults = null, $genid = null) {
+	if(!is_array($defaults)) {
+		$defaults = array(
+			'type' => 'reminder_popup',
+			'duration' => '15',
+			'duration_type' => 'minutes'
+		); 
+	}
+	if (is_null($genid)) {
+		$genid = gen_id();
+	}
+	$types = ObjectReminderTypes::findAll();
+	$typecsv = "";
+	foreach ($types as $type) {
+		if ($typecsv != "") {
+			$typecsv .= ",";
+		}
+		$typecsv .= '"'.$type->getName().'"';
+	}
+	$output = '
+		<div id="'.$genid.'" class="og-add-reminders">
+			<a id="'.$genid.'-link" href="#" onclick="og.addReminder(this.parentNode, \''.$context.'\');return false;">' . lang("add object reminder") . '</a>
+		</div>
+		<script>
+		og.reminderTypes = ['.$typecsv.'];
+		og.reminderDurations = [0, 1, 2, 5, 10, 15, 30];
+		og.reminderDurationTypes = {
+			"1":"minutes",
+			"60":"hours",
+			"1440":"days",
+			"10080":"weeks"
+		};
+		og.addReminder = function(parent, context, type, duration, duration_type, for_subscribers) {
+			if (typeof type == "undefined") type = "'.$defaults["type"].'";
+			if (typeof duration == "undefined") duration = "'.$defaults["duration"].'";
+			if (typeof duration_type == "undefined") duration_type = "'.$defaults["duration_type"].'"; 
+			var count = parent.getElementsByTagName("div").length;
+			var div = document.createElement("div");
+			var html = \'<select name="reminder_type[\' + context + \'][\' + count + \']">\';
+			for (var i=0; i < og.reminderTypes.length; i++) {
+				html += \'<option value="\' + og.reminderTypes[i] + \'"\';
+				if (og.reminderTypes[i] == type) {
+					html += \' selected="selected"\';
+				}
+				html += \'>\' + lang(og.reminderTypes[i]) + \'</option>\';
+			}
+			html += \'</select>\';
+			html += \'<select name="reminder_duration[\' + context + \'][\' + count + \']">\';
+			for (var i=0; i < og.reminderDurations.length; i++) {
+				html += \'<option value="\' + og.reminderDurations[i] + \'"\';
+				if (og.reminderDurations[i] == duration) {
+					html += \' selected="selected"\';
+				}
+				html += \'>\' + og.reminderDurations[i] + \'</option>\';
+			}
+			html += \'</select>\';
+			html += \'<select name="reminder_duration_type[\' + context + \'][\' + count + \']">\';
+			for (var i in og.reminderDurationTypes) {
+				html += \'<option value="\' + i + \'"\';
+				if (i == duration_type) {
+					html += \' selected="selected"\';
+				}
+				html += \'>\' + lang(og.reminderDurationTypes[i]) + \'</option>\';
+			}
+			html += \'</select>\';
+			html += \' before. \';
+			var id = Ext.id();
+			html += \'<img title="\' + lang("remove object reminder") + \'" class="ico ico-delete" src="s.gif" style="vertical-align:middle;width:16px;height:16px;margin: 0 5px;position:relative;top:-2px;cursor:pointer" onclick="og.removeReminder(this.parentNode, \\\'\' + context + \'\\\');return false;" />\';
+			html += \'<span style="margin-left:2px;position:relative;top:2px"><input class="checkbox" type="checkbox" name="reminder_subscribers[\' + context + \'][\' + count + \']" \' + (for_subscribers ? \'checked="checked"\' : "") + \' id="\' + id + \'" /><label class="checkbox" for="\' + id + \'">\' + lang("apply to subscribers") + \'</label></span>\';
+			div.innerHTML = html;
+			parent.insertBefore(div, document.getElementById("'.$genid.'-link"));			
+		}
+		og.removeReminder = function(div, context) {
+			var parent = div.parentNode;
+			parent.removeChild(div);
+			// reorder property names
+			var row = parent.firstChild;
+			var num = 0;
+			while (row != null) {
+				if (row.tagName == "DIV") {
+					var inputs = row.getElementsByTagName("select");
+					for (var i=0; i < inputs.length; i++) {
+						var input = inputs[i];
+						if (input.name.substring(0, 13) == "reminder_type") {
+							input.name = "reminder_type[" + context + "][" + num + "]";
+						} else if (input.name.substring(0, 20) == "reminder_subscribers") {
+							input.name = "reminder_subscribers[" + context + "][" + num + "]";
+						} else if (input.name.substring(0, 22) == "reminder_duration_type") {
+							input.name = "reminder_duration_type[" + context + "][" + num + "]";
+						} else {
+							input.name = "reminder_duration[" + context + "][" + num + "]";
+						}
+					}
+					num++;
+				}
+				row = row.nextSibling;
+			}
+		}
+	';
+	
+	if ($object->isNew()) {
+		$output .= 'og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'");';
+	} else {
+		$reminders = ObjectReminders::getAllRemindersByObjectAndUser($object, logged_user(), $context, true);
+		foreach($reminders as $reminder) {
+			$mins = $reminder->getMinutesBefore();
+			if ($mins % 10080 == 0) {
+				$duration = $mins / 10080;
+				$duration_type = "10080";
+			} else if ($mins % 1440 == 0) {
+				$duration = $mins / 1440;
+				$duration_type = "1440";
+			} else if ($mins % 60 == 0) {
+				$duration = $mins / 60;
+				$duration_type = "60";
+			} else {
+				$duration = $mins;
+				$duration_type = "minutes";
+			}
+			$type = $reminder->getType();
+			$forSubscribers = $reminder->getUserId() == 0 ? "true" : "false";
+			$output .= 'og.addReminder(document.getElementById("'.$genid.'"), "'.$context.'", "'.$type.'", "'.$duration.'", "'.$duration_type.'", '.$forSubscribers.');';
+		} // for
+	}
+	$output .= '
+		</script>
+	';
+	return $output;
+}
 
 /**
  * Renders a form to set an object's custom properties.
@@ -1233,7 +1366,6 @@ function select_task_priority($name, $selected = null, $attributes = null) {
 
 /**
  * Render assign to SELECT
- * ("assigned_to", null, $assignedTo, array("id" => "og-task-filter-to", "onchange" => "filterTasks()"));
  * @param string $list_name Name of the select control
  * @param Project $project Selected project, if NULL active project will be used
  * @param integer $selected ID of selected user

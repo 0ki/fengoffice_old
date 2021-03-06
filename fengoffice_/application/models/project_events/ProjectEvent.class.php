@@ -37,13 +37,6 @@ class ProjectEvent extends BaseProjectEvent {
 	protected $is_commentable = true;
 
 	/**
-	 * Cached Event type object
-	 *
-	 * @var EventType
-	 */
-	private $event_type_object;
-
-	/**
 	 * Array of invitated Users
 	 *
 	 * @var array
@@ -65,6 +58,10 @@ class ProjectEvent extends BaseProjectEvent {
 		$user = Users::findById($this->getCreatedById());
 		if ($user instanceof User ) return $user->getUsername();
 		else return null;
+	}
+	
+	function getTitle(){
+		return $this->getSubject();
 	}
 
 	// ---------------------------------------------------
@@ -96,9 +93,6 @@ class ProjectEvent extends BaseProjectEvent {
 		return $this->getModifyUrl();
 	} // getOpenUrl
 	 
-	function getTitle(){
-		return $this->getSubject();
-	}
 	 
 	/**
 	 * Return Event details URL
@@ -240,6 +234,16 @@ class ProjectEvent extends BaseProjectEvent {
 	//  System
 	// ---------------------------------------------------
 
+	function save() {
+		parent::save();
+		$id = $this->getId();
+		$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
+			`date` = date_sub((SELECT `start` FROM `".TABLE_PREFIX."project_events` WHERE `id` = $id),
+				interval `minutes_before` minute) WHERE
+				`object_manager` = 'ProjectEvents' AND `object_id` = $id;";
+		DB::execute($sql);
+	}
+	
 	function delete() {
 		// delete invitations
 		EventInvitations::delete(array ('`event_id` = ?', $this->getId()));
@@ -295,20 +299,6 @@ class ProjectEvent extends BaseProjectEvent {
 		return $this->project;
 	} // getProject
 
-
-	/**
-	 * Return Event type object
-	 *
-	 * @param void
-	 * @return EventType
-	 */
-	 function getEventTypeObject() {	 	
-		if(is_null($this->event_type_object)) {
-			$this->event_type_object = EventTypes::findById($this->getEventType());
-		} // if
-		return $this->event_type_object;
-	 } // getEventTypeObject
-	 
 	 
 	 /**
 	 * Validate before save
@@ -333,39 +323,7 @@ class ProjectEvent extends BaseProjectEvent {
 		}
 	}
 
-	// ---------------------------------------------------
-	//  Revision interface
-	// ---------------------------------------------------
 
-	/**
-	 * Return Event type ID
-	 *
-	 * @param void
-	 * @return integer
-	 */
-//	 function getEventTypeId() {
-//	 	$revision = $this->getLastRevision();
-//	 	return $revision instanceof ProjectEventRevision ? $revision->getEventTypeId() : null;
-//	 } // getEventTypeId
-	 
-	/**
-	 * Return type string. We need to know mime type when forwarding Event
-	 * to the client
-	 *
-	 * @param void
-	 * @return string
-	 */
-	/*/   function getTypeString() {
-	 $revision = $this->getLastRevision();
-	 return $revision instanceof ProjectEventRevision ? $revision->getTypeString() : null;
-	 } // getTypeString
-	 */
-	/**
-	 * Return Event size in bytes
-	 *
-	 * @param void
-	 * @return integer
-	 */
 } // projectEvent
 
 ?>

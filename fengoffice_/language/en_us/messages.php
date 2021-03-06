@@ -17,6 +17,7 @@
     'project dnx' => 'Requested workspace does not exist in database',
     'contact dnx' => 'Requested contact does not exist in database',
     'company dnx' => 'Requested company does not exist in database',
+	'billing category dnx' => 'Requested billing category does not exist in database',
     'message dnx' => 'Requested note does not exist',
     'no comments in message' => 'There are no comments on this note',
     'no comments associated with object' => 'There are no comments posted for this object',
@@ -227,6 +228,11 @@
   	'success undo checkout file' => 'File checkout canceled successfully',
 	'success extracting files' => '{0} Files were extracted',
 	'success compressing files' => 'Files compressed succesfully',
+  
+	'success add billing category' => 'Billing category added successfully',
+	'success delete billing category' => 'Billing category deleted successfully',
+	'success edit billing category' => 'Billing category updated successfully',
+  	'success assign user billing categories' => 'Billing categories were successfully assigned to users',
     
     // Failures
     'error edit timeslot' => 'Failed to save timeslot',
@@ -303,6 +309,7 @@
     'invalid request' => 'Invalid request!',
     
     // Confirmation
+    'confirm delete billing category' => "Are you sure you want to delete the selected billing category?",
     'confirm cancel work timeslot' => "Are you sure you want to cancel the current timeslot?",
     'confirm delete mail account' => 'Warning: All emails belonging to this account will be deleted as well, are you sure that you want to delete this mail account?',
     'confirm delete message' => 'Are you sure that you want to delete this note?',
@@ -595,6 +602,8 @@
   	'success purging trash' => '{0} objects deleted.',
   	'success sending reminders' => '{0} reminders sent.',
   	'failed to assign contact due to permissions' => 'You don\'t have permissions to write contacts on these workspaces: {0}',
+  
+  	'weblink dnx' => 'Requested weblink doesn\'t exist.'
   ); // array
 
 ?>

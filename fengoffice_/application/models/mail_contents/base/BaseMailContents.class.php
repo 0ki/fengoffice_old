@@ -191,7 +191,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
 					$object = $this->loadFromRow($row);
 					if(instance_of($object, $this->getItemClass())) $objects[] = $object;
 				} // foreach
-				return count($objects) > 0 ? $objects : null;
+				return count($objects) > 0 ? $objects : array();
 			} // if
 		} else {
 			return MailContents::instance()->findAllUnread($arguments);

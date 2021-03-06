@@ -29,6 +29,10 @@ final class ZipImport {
 		$this->randomDirName = '' . rand(1000, 10000);
 		mkdir(TEMP_PATH . DIRECTORY_SEPARATOR . $this->randomDirName, 0777);
 	} // __construct
+	
+	function setDirectory($dir) {
+		$this->randomDirName = $dir;
+	}
 
 	function initUser($id) {
 		$this->user = Users::findById($id);
@@ -97,8 +101,6 @@ final class ZipImport {
 
 		$path = TEMP_PATH . DIRECTORY_SEPARATOR . $this->randomDirName . DIRECTORY_SEPARATOR;
 		$this->removeDir($path);
-
-		print "Complete\r\n";
 	} // deleteTmpDir
 
 	function removeDir($dir) {
@@ -117,11 +119,21 @@ final class ZipImport {
 		rmdir($dir);
 	} // removeDir
 
-	function makeWorkSpaces() {
+	function makeWorkSpaces($dir_path) {
 		try {
-			$path = TEMP_PATH . DIRECTORY_SEPARATOR . $this->randomDirName . DIRECTORY_SEPARATOR;
+			if ($dir_path == null)
+				$path = TEMP_PATH . DIRECTORY_SEPARATOR . $this->randomDirName . DIRECTORY_SEPARATOR;
+			else $path = $dir_path;
+			if (!str_ends_with($path, DIRECTORY_SEPARATOR)) $path .= DIRECTORY_SEPARATOR;
 			if ($dirHandler = opendir($path)) {
-				$this->createWorkSpaces($path, $dirHandler, array(), $this->parentWorkspace);
+				$parents = array();
+				$ws = Projects::findById($this->parentWorkspace);
+				for ($i = 1; $i <= 10; $i++) {
+					$pid = $ws->getPID($i);
+					if ($pid != 0 && $pid != $ws->getId()) $parents[] = $pid;
+					else break;
+				}
+				$this->createWorkSpaces($path, $dirHandler, $parents, $this->parentWorkspace);
 				closedir($dirHandler);
 			} // if
 		} catch (Exception $e) {
@@ -244,8 +256,8 @@ final class ZipImport {
 			$file->setIsImportant(false);
 			$file->setCommentsEnabled(true);
 			$file->setAnonymousCommentsEnabled(false);
-			$file->setCreatedOn(new DateTimeValue(time()) );
-
+			//$file->setCreatedOn(new DateTimeValue(time()) );
+			
 			$sourcePath = $path . $doc_name;
 
 			$handle = fopen($sourcePath, "r");
@@ -256,8 +268,10 @@ final class ZipImport {
 			$file_dt['name'] = $file->getFilename();
 			$file_dt['size'] = strlen($file_content);
 			$file_dt['tmp_name'] = $sourcePath; //TEMP_PATH . DIRECTORY_SEPARATOR . rand() ;
-			
 			$extension = trim(get_file_extension($sourcePath));
+			
+			$file->setCreatedOn(new DateTimeValue(filemtime($sourcePath)));
+			$file->setUpdatedOn(new DateTimeValue(filemtime($sourcePath)));
 			
 			$file_dt['type'] = Mime_Types::instance()->get_type($extension);
 			if(!trim($file_dt['type'])) {

@@ -18,7 +18,7 @@ if ($linked_objects_object->isNew()){
 		$counter++;?>
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 		<td rowspan=2 style="padding-left:1px;vertical-align:middle;width:22px">
-		<?php $attr = $linked_object instanceof ProjectWebpage ? 'target="_blank"' : 'class="internalLink"'; ?>
+		<?php $attr = 'class="internalLink"'; ?>
 		<a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>">
 		<div class="db-ico unknown ico-<?php echo clean($linked_object->getObjectTypeName()) ?>" title="<?php echo clean($linked_object->getObjectTypeName()) ?>"></div>
 		</a></td><td><b><a <?php echo $attr ?> href="<?php echo $linked_object->getObjectUrl() ?>">
@@ -27,8 +27,8 @@ if ($linked_objects_object->isNew()){
 		<?php if ($linked_object instanceof ProjectFile){ ?>
 			<a target="_blank" href="<?php echo $linked_object->getDownloadUrl() ?>"><?php echo lang('download') . ' (' . format_filesize($linked_object->getFilesize()) . ')'?></a> | 
 		<?php }
-		if ($linked_object instanceof ProjectWebpage && $linked_object->canEdit(logged_user())) { ?>
-			<a class="internalLink" href="<?php echo $linked_object->getEditUrl() ?>"><?php echo lang('edit')?></a> |
+		if ($linked_object instanceof ProjectWebpage) { ?>
+			<a class="internalLink" href="<?php echo $linked_object->getUrl() ?>"><?php echo lang('open weblink')?></a> |
 		<?php }
 		if ($linked_objects_object->canUnlinkObject(logged_user(), $linked_object)) { 
 			echo '<a class="internalLink" href="' . $linked_objects_object->getUnlinkObjectUrl($linked_object) . '" onclick="return confirm(\'' . escape_single_quotes(lang('confirm unlink object')) . '\')" title="' . lang('unlink object') . '">' . lang('unlink') . '</a>';

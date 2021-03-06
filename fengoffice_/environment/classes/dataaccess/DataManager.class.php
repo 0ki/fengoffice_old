@@ -207,7 +207,12 @@
     function findAll($arguments = null) {
       if(!is_array($arguments)) $arguments = array();
       $arguments['one'] = false;
-      return $this->find($arguments);
+      $ret = $this->find($arguments);
+      if (is_array($ret)) {
+      	return $ret;
+      } else {
+      	return array();
+      }
     } // findAll
     
     /**

@@ -114,7 +114,9 @@
   	'mail account name required' => 'Nombre de cuenta obligatorio, inténtelo de nuevo',
   	'mail account id required' => 'Identificación de cuenta obligatoria, inténtelo de nuevo',
   	'mail account server required' => 'Servidor obligatorio, inténtelo de nuevo',
-  	'mail account password required' => 'Contraseña obligatoria, inténtelo de nuevo',	
+  	'mail account password required' => 'Contraseña obligatoria, inténtelo de nuevo',
+	'send mail error' => 'Ha ocurrido un error al enviar el correo.',
+    'email address already exists' => 'Ya existe una cuenta creada con esa dirección de correo.',
   
   	'session expired error' => 'Sesión cerrada debido a su inactividad por tiempo prolongado',
   	'unimplemented type' => 'Tipo no implementado',
@@ -142,8 +144,7 @@
   	'success db backup' => 'Respaldo creado exitosamente.',
   
 	'backup command failed' => 'Error al ejecutar el comando de respaldo. Verificar constante MYSQLDUMP_COMMAND.',
-  
-  	'return code' => 'Código de retorno',
+  	'return code' => 'Código de retorno: {0}',
   ); // array
 
 ?>

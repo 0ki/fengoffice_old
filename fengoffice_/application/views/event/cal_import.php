@@ -20,14 +20,14 @@ og.submitFile = function(genid) {
 <div class="coInputHeaderUpperRow">
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo lang('import events from file');?></td>
-	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'cal_import_submit1')) ?></td>
+	<td style="text-align:right"><?php echo submit_button(lang('import'), 's', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'cal_import_submit1')) ?></td>
 	</tr></table>
 </div>
 </div>
 
 <div id="<?php echo $genid ?>selectFileControlDiv">
     <?php echo label_tag(lang('file'), $genid . 'filenamefield', true) ?>
-    <?php echo file_field('cal_file', null, array('id' => $genid . 'filenamefield', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitFile(\'' . $genid .'\')')) ?>
+    <?php echo file_field('cal_file', null, array('id' => $genid . 'filenamefield', 'tabindex' => '1', 'class' => 'title', 'size' => '88', "onchange" => 'javascript:og.submitFile(\'' . $genid .'\')')) ?>
     <input type="hidden" name="atimportform" value="1"></input>
     <input type="hidden" name="subscribers[user_<?php echo logged_user()->getId() ?>]" value="checked"></input>
 </div>
@@ -38,3 +38,6 @@ og.submitFile = function(genid) {
 </div>
 </div>
 </form>
+<script type="text/javascript">
+	Ext.get('<?php echo $genid ?>filenamefield').focus();
+</script>

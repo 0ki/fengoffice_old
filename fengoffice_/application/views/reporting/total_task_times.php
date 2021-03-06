@@ -57,7 +57,7 @@
 	}
 	
 	$sectionDepth = 0;
-	$totCols = 5;
+	$totCols = 6;
 ?>
 <?php if ($start_time) { ?><span style="font-weight:bold"><?php echo lang('from')?></span>:&nbsp;<?php echo format_datetime($start_time, lang('date format')) ?><?php } // if ?>
 <?php if ($end_time) { ?><span style="font-weight:bold; padding-left:10px"><?php echo lang('to')?></span>:&nbsp;<?php echo format_datetime($end_time, lang('date format')) ?><?php } // if ?>
@@ -79,6 +79,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 <table style="min-width:564px">
 <?php 
 	$sumTime = 0;
+	$sumBilling = 0;
 	if (!is_array($timeslotsArray) || count($timeslotsArray) == 0){?>
 <tr><td colspan = 4><div style="font-size:120%; padding:10px;"><?php echo lang('no data to display') ?></div></td></tr>
 <?php } else { 
@@ -87,6 +88,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	$headerPrinted = false;
 	$gbvals = array('','','');
 	$sumTimes = array(0,0,0);
+	$sumBillings = array(0,0,0);
 	$hasGroupBy = is_array($group_by) && count($group_by) > 0;
 	$sectionDepth = $hasGroupBy ? count($group_by) : 0;
 	$c = 0;
@@ -97,8 +99,10 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 		}
 	$showUserCol = !has_value($group_by, 'user_id');
 	$showTitleCol = !has_value($group_by, 'id');
+	$showBillingCol = $post['show_billing'];
 	if (!$showUserCol) $totCols--;
 	if (!$showTitleCol) $totCols--;
+	if (!$showBillingCol) $totCols--;
 	
 	$previousTSRow = null;
 	foreach ($timeslotsArray as $tsRow)
@@ -117,9 +121,11 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 			?>		
 <tr style="padding-top:2px;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
-	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
+	<td colspan=<?php echo ($showBillingCol)? $totCols -2 : $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
+	<?php if ($showBillingCol) { ?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;">$&nbsp;<?php echo $sumBillings[$i] ?></td><?php } ?>
 </tr></table></div></td></tr><?php 	}
 				$sumTimes[$i] = 0;
+				$sumBillings[$i] = 0;
 				$isAlt = true;
 			}
 		}
@@ -138,6 +144,7 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 
 <?php 		}
 			$sumTimes[$i] += $ts->getMinutes();
+			$sumBillings[$i] += $ts->getFixedBilling();
 		}
 		
 		$isAlt = !$isAlt;
@@ -149,7 +156,8 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	<?php if ($showTitleCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('title') ?></th><?php } ?>
 	<th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('description') ?></th>
 	<?php if ($showUserCol) { ?><th style="padding:4px;border-bottom:1px solid #666666"><?php echo lang('user') ?></th><?php } ?>
-	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th></tr><?php 
+	<th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('time') ?></th>
+	<?php if ($showBillingCol) { ?><th style="padding:4px;text-align:right;border-bottom:1px solid #666666"><?php echo lang('billing') ?></th><?php } ?></tr><?php 
 		}
 		
 		//Print row info
@@ -160,14 +168,16 @@ if ($task_title) { ?><div style="font-size:120%"><span style="font-weight:bold">
 	<td style="padding:4px; width:250px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getDescription()) ?></td>
 	<?php if ($showUserCol) { ?><td style="padding:4px;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo clean($ts->getUser()->getDisplayName()) ?></td><?php } ?>
 	<td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>"><?php echo DateTimeValue::FormatTimeDiff($ts->getStartTime(), $ts->getEndTime(), "hm", 60, $ts->getSubtract()) ?>
-</td></tr>
+	<?php if ($showBillingCol) { ?><td style="padding:4px;text-align:right;<?php echo $isAlt? 'background-color:#F2F2F2':'' ?>">$&nbsp;<?php echo $ts->getFixedBilling() ?></td><?php } ?>
+</tr>
 <?php } // foreach
 } // if 
 
 		for ($i = $sectionDepth - 1; $i >= 0; $i--){?>
 <tr style="padding-top:2px;text-align:right;font-weight:bold;">
 	<td style="padding:4px;border-top:2px solid #888;font-size:90%;color:#AAA;text-align:left;font-weight:normal"><?php echo truncate(clean(getGroupTitle($group_by[$i], $previousTSRow)),40,'&hellip;') ?></td>
-	<td colspan=<?php echo $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
+	<td colspan=<?php echo ($showBillingCol)? $totCols -2 : $totCols -1 ?> style="padding:4px;border-top:2px solid #888;text-align:right;"><?php echo lang('total') ?>:&nbsp;<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTimes[$i] * 60), "hm", 60) ?></td>
+	<?php if ($showBillingCol) { ?><td style="width:30px;padding:4px;border-top:2px solid #888;text-align:right;">$&nbsp;<?php echo $sumBillings[$i] ?></td><?php } ?>
 </tr></table></div></td></tr>
 		<?php }?>
 
@@ -197,9 +207,11 @@ if (is_array($timeslotsArray)) {
 	foreach ($timeslotsArray as $ts) {
 		$t = $ts['ts'];
 		$sumTime += $t->getMinutes();
+		$sumBilling += $t->getFixedBilling();
 	}
 }?>
-<tr><td colspan="5">
-<div style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;"><?php echo strtoupper(lang("total")) . ": " . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTime * 60), "hm", 60) ?></div>
-</td></tr>
+<tr><td style="text-align: right; border-top: 1px solid #AAA; padding: 10px 0; font-weight: bold;" colspan=<?php echo ($showBillingCol)? $totCols -1 : $totCols ?>>
+<div ><?php echo strtoupper(lang("total")) . ": " . DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($sumTime * 60), "hm", 60) ?></div>
+</td><?php if ($showBillingCol) { ?><td style="width:30px;padding-left:8px;border-top: 1px solid #AAA;"><div style="text-align: right;padding: 10px 0; font-weight: bold;">$&nbsp;<?php echo $sumBilling ?></div></td><?php } ?>
+</tr>
 </table>

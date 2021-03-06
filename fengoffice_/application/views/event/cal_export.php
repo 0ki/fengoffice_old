@@ -17,7 +17,7 @@ og.download_exported_cal = function() {
 <div class="coInputTitle">
 	<table style="width:535px"><tr><td><?php echo lang('export calendar');?></td>
 	<?php if (!isset($result_msg)) { ?>
-	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td>
+	<td style="text-align:right"><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '1', 'id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td>
 	<?php } //if ?>
 	</tr></table>
 </div>
@@ -35,17 +35,17 @@ og.download_exported_cal = function() {
 <fieldset><legend><?php echo lang('range of events') ?></legend>
 	<table><tr style="padding-bottom:4px;">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('from date') ?></td>
-		<td><?php echo pick_date_widget2('from_date', $from_date, $genid); ?></td></tr>
+		<td><?php echo pick_date_widget2('from_date', $from_date, $genid, 20); ?></td></tr>
 	<tr style="padding-bottom:4px;">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('to date') ?></td>
-		<td><?php echo pick_date_widget2('to_date', $to_date, $genid);  ?></td></tr>
+		<td><?php echo pick_date_widget2('to_date', $to_date, $genid, 30);  ?></td></tr>
 	<tr style="padding-bottom:4px;">
 		<td align="right" style="padding-right:10px;padding-bottom:6px;padding-top:2px"><?php echo lang('name') ?></td>
-		<td><?php echo text_field('calendar_name', logged_user()->getDisplayName(), array("style" => "width:120px;")) ?></td><td><span class="desc"><?php echo lang('calendar name desc') ?></span></td></tr>
+		<td><?php echo text_field('calendar_name', logged_user()->getDisplayName(), array("style" => "width:120px;", 'tabindex' => '40')) ?></td><td><span class="desc"><?php echo lang('calendar name desc') ?></span></td></tr>
 	</table>
 </fieldset>
 	<table style="width:535px">
-	<tr><td><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px','id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td></tr></table>
+	<tr><td><?php echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '50', 'id' => $genid.'cal_export_submit1', 'onclick'=>"javascript:og.openLink(og.getUrl('event', 'icalendar_export'), {callback:og.download_exported_cal});")) ?></td></tr></table>
 </div>
 <?php } else { ?>
 	<div><b><?php echo $result_msg ?></b></div>
@@ -53,3 +53,6 @@ og.download_exported_cal = function() {
 
 </div>
 </form>
+<script type="text/javascript">
+	Ext.get('<?php echo $genid ?>cal_export_submit1').focus();
+</script>

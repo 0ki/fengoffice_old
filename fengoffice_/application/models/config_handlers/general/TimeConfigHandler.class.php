@@ -15,7 +15,7 @@
     * @return string
     */
     function render($control_name) {
-    	return pick_time_widget2($control_name, $this->getValue(), null, 'G:i');
+    	return pick_time_widget2($control_name, $this->getValue(), null, null, 'G:i');
     } // render
     
   }    

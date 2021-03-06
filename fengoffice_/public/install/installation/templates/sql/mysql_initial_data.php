@@ -78,50 +78,59 @@ INSERT INTO `<?php echo $table_prefix ?>im_types` (`name`, `icon`) VALUES
 	('Skype', 'skype.gif'),
 	('Jabber', 'jabber.gif');
 
-INSERT INTO `<?php echo $table_prefix ?>eventtypes` (`typename`, `typedesc`, `typecolor`) VALUES
-	('Birthday', 'Someone''s Birthday', 'F1EA74'),
-	('Important', 'Something Important or Critical', 'FFAAAA'),
-	('Boring', 'Boring Everyday Stuff', '999999'),
-	('Holiday', 'A Holiday', 'A4CAE6');
-
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_system`, `type`, `category_order`) VALUES 
 	('general', 0, 0, 0),
 	('dashboard', 0, 0, 1),
 	('task panel', 0, 0, 2),
-	('time panel', 1, 0, 3);
+	('time panel', 1, 0, 3),
+	('calendar panel', 1, 0, 4);
 
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
-	('dashboard', 'show calendar widget', '1', 'BoolConfigHandler', 0, 80, ''),
-	('dashboard', 'show late tasks and milestones widget', '1', 'BoolConfigHandler', 0, 100, ''),
-	('dashboard', 'show pending tasks widget', '1', 'BoolConfigHandler', 0, 200, ''),
-	('dashboard', 'pending tasks widget assigned to filter', '0:0', 'UserCompanyConfigHandler', 0, 210, ''),
-	('dashboard', 'show emails widget', '1', 'BoolConfigHandler', 0, 300, ''),
-	('dashboard', 'show messages widget', '1', 'BoolConfigHandler', 0, 400, ''),
-	('dashboard', 'show documents widget', '1', 'BoolConfigHandler', 0, 500, ''),
-	('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
-	('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
-	('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
-	('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
-	('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
-	('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
-	('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
-	('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
-	('task panel', 'tasksShowTags', '1', 'BoolConfigHandler', 1, 0, ''),
-	('task panel', 'tasksGroupBy', 'milestone', 'StringConfigHandler', 1, 0, ''),
-	('task panel', 'tasksOrderBy', 'priority', 'StringConfigHandler', 1, 0, ''),
-	('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
-	('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),
-	('task panel', 'task panel filter value', '0:0', 'UserCompanyConfigHandler', 1, 0, ''),
-	('time panel', 'TM show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
-	('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
-	('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
-	('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
-	('general', 'localization', 'en_us', 'LocalizationConfigHandler', 0, 100, ''),
-	('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
-	('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
-	('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
-	('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
-	('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format');
+ ('dashboard', 'show calendar widget', '1', 'BoolConfigHandler', 0, 80, ''),
+ ('dashboard', 'show late tasks and milestones widget', '1', 'BoolConfigHandler', 0, 100, ''),
+ ('dashboard', 'show pending tasks widget', '1', 'BoolConfigHandler', 0, 200, ''),
+ ('dashboard', 'pending tasks widget assigned to filter', '0:0', 'UserCompanyConfigHandler', 0, 210, ''),
+ ('dashboard', 'show emails widget', '1', 'BoolConfigHandler', 0, 300, ''),
+ ('dashboard', 'show messages widget', '1', 'BoolConfigHandler', 0, 400, ''),
+ ('dashboard', 'show documents widget', '1', 'BoolConfigHandler', 0, 500, ''),
+ ('dashboard', 'show charts widget', '1', 'BoolConfigHandler', 0, 600, ''),
+ ('dashboard', 'show tasks in progress widget', '1', 'BoolConfigHandler', 0, 700, ''),
+ ('dashboard', 'show comments widget', '1', 'BoolConfigHandler', 0, 800, ''),
+ ('dashboard', 'show dashboard info widget', '1', 'BoolConfigHandler', 0, 900, ''),
+ ('dashboard', 'always show unread mail in dashboard', '0', 'BoolConfigHandler', 0, 10, 'when false, active workspace email is shown'),
+ ('dashboard', 'calendar_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'emails_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'messages_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'active_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'pending_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'late_tasks_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'comments_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'documents_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'charts_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('dashboard', 'dashboard_info_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
+ ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowTime', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowDates', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowTags', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksGroupBy', 'milestone', 'StringConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksOrderBy', 'priority', 'StringConfigHandler', 1, 0, ''),
+ ('task panel', 'task panel status', '1', 'IntegerConfigHandler', 1, 0, ''),
+ ('task panel', 'task panel filter', 'assigned_to', 'StringConfigHandler', 1, 0, ''),
+ ('task panel', 'task panel filter value', '0:0', 'UserCompanyConfigHandler', 1, 0, ''),
+ ('time panel', 'TM show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM report show time type', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('time panel', 'TM tasks user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('general', 'localization', 'en_us', 'LocalizationConfigHandler', 0, 100, ''),
+ ('general', 'initialWorkspace', '0', 'InitialWorkspaceConfigHandler', 0, 200, ''),
+ ('general', 'lastAccessedWorkspace', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('general', 'rememberGUIState', '0', 'BoolConfigHandler', 0, 300, ''),
+ ('general', 'work_day_start_time', '9:00', 'TimeConfigHandler', 0, 400, 'Work day start time'),
+ ('general', 'time_format_use_24', '0', 'BoolConfigHandler', 0, 500, 'Use 24 hours time format'),
+ ('calendar panel', 'calendar view type', 'viewweek', 'StringConfigHandler', 1, 0, ''),
+ ('calendar panel', 'calendar user filter', '0', 'IntegerConfigHandler', 1, 0, ''),
+ ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, '');
 
 
 INSERT INTO `<?php echo $table_prefix ?>cron_events` (`name`, `recursive`, `delay`, `is_system`, `enabled`, `date`) VALUES
@@ -140,3 +149,7 @@ INSERT INTO `<?php echo $table_prefix ?>gs_fonts` VALUES
 	(6, 'Tahoma');
 	
 INSERT INTO `<?php echo $table_prefix ?>gs_users` VALUES  (1, 'Open', 'Goo', 'open', 'goo', 1);
+
+INSERT INTO `<?php echo $table_prefix ?>object_reminder_types` (`name`) VALUES
+  ('reminder_email'),
+  ('reminder_popup');

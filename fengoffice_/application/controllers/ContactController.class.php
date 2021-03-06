@@ -142,7 +142,7 @@ class ContactController extends ApplicationController {
     	$proj_cond_companies = ' `id` IN (SELECT `object_id` FROM `'.TABLE_PREFIX.'workspace_objects` WHERE `object_manager` = \'Companies\' AND `workspace_id` IN ('.$proj_ids.'))';
     	$proj_cond_contacts = ' `project_id` IN (' . $proj_ids . ')';
     	
-	if(isset($tag) && $tag && $tag!='')
+    	if(isset($tag) && $tag && $tag!='')
     		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`=".DB::escape($tag)." AND `co`.`id` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
     		$tag_str= ' ';
@@ -383,7 +383,7 @@ class ContactController extends ApplicationController {
 					$roleName = "";
 					$roleTags = "";
 					$project = active_project();
-					if ($project ) {
+					if ($project) {
 						$role = $c->getRole($project);
 						if ($role instanceof ProjectContact) {
 							$roleName = $role->getRole();
@@ -397,7 +397,7 @@ class ContactController extends ApplicationController {
 						"id" => $i,
 						"object_id" => $c->getId(),
 						"type" => 'contact',
-						"wsIds" => $c->getProjectIdsCSV(),
+						"wsIds" => $c->getProjectIdsCSV(logged_user()->getActiveProjectIdsCSV()),
     					"workspaceColors" => $c->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 						"name" => $c->getReverseDisplayName(),
 						"email" => $c->getEmail(),

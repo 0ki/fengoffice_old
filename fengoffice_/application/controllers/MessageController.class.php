@@ -331,7 +331,7 @@ class MessageController extends ApplicationController {
 			return;
 		} // if
 
-		$this->setHelp("view_message");
+		//$this->setHelp("view_message");
 		
 		tpl_assign('message', $message);
 		tpl_assign('subscribers', $message->getSubscribers());

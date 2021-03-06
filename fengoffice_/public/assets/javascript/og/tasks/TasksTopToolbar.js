@@ -203,7 +203,7 @@ og.TasksTopToolbar = function(config) {
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].cid + ':' + usersArray[i].id;
 	}
-	var ucsData = [[currentUser, lang('me')],['0:0',lang('anyone')],['-1:-1', lang('unassigned')],['0:0','--']];
+	var ucsData = [[currentUser, lang('me')],['0:0',lang('everyone')],['-1:-1', lang('unassigned')],['0:0','--']];
 	for (i in companiesArray)
 		if (companiesArray[i].id) ucsData[ucsData.length] = [(companiesArray[i].id + ':0'), companiesArray[i].name];
 	ucsData[ucsData.length] = ['0:0','--'];
@@ -255,7 +255,7 @@ og.TasksTopToolbar = function(config) {
 		if (usersArray[i].isCurrent)
 			currentUser = usersArray[i].id;
 	}
-	var uData = [[currentUser, lang('me')],['0',lang('anyone')],['0','--']];
+	var uData = [[currentUser, lang('me')],['0',lang('everyone')],['0','--']];
 	uDOtherUsers = [];
 	for (i in usersArray){
 		if (usersArray[i] && !usersArray[i].isCurrent && usersArray[i].id)

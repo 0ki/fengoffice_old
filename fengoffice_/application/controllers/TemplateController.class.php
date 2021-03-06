@@ -230,6 +230,7 @@ class TemplateController extends ApplicationController {
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
+			if ($copy instanceof ProjectTask) $copy->setMilestoneId(0);
 			$copy->save();
 			$copy->addToWorkspace(active_or_personal_project());
 			if ($copy instanceof ProjectTask) {
@@ -237,6 +238,7 @@ class TemplateController extends ApplicationController {
 			} else if ($copy instanceof ProjectMilestone) {
 				ProjectMilestones::copyTasks($object, $copy, false);
 			}
+			$copy->copyCustomPropertiesFrom($object);
 		}
 		ajx_current("reload");
 	}

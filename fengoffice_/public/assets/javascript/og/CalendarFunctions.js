@@ -8,39 +8,6 @@
 	var cant_tips = 0;
 	var tips_array = [];
 
-	function showCalendarToolbar() {
-		cal_panel = Ext.ComponentMgr.get('calendar-panel');
-		if (cal_panel != null) {
-			tb = cal_panel.getTopToolbar();
-			if (tb != null && tb.rendered) {
-				must_show = (Ext.isIE ? true : !tb.isVisible());
-				if (must_show) {
-					if (Ext.isIE) {
-						tb.setHeight(29);
-						tb.enable();
-					}
-					else tb.show();
-				}
-			}
-		}
-	}
-	
-	function hideCalendarToolbar() {
-		cal_panel = Ext.ComponentMgr.get('calendar-panel');
-		if (cal_panel != null) {
-			tb = cal_panel.getTopToolbar();
-			if (tb != null && tb.rendered) {
-				must_hide = (Ext.isIE ? true : tb.isVisible());
-				if (must_hide) {	
-					if (Ext.isIE) {
-						tb.setHeight(0);
-						tb.disable();
-					}
-					else tb.hide();
-				}
-			}
-		}
-	}
 	
 	function addTip(div_id, title, bdy) {
 		tips_array[cant_tips++] = new Ext.ToolTip({

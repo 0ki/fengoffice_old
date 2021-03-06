@@ -201,6 +201,7 @@
   	'restore from trash' => 'Restore from trash',
   	'delete permanently' => 'Delete permanently',
   	'copy file' => 'Copy this file',
+  	'open weblink' => 'Open web link',
   ); // array
 
 ?>

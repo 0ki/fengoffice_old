@@ -59,7 +59,10 @@ return array(
     'mail account smtp password description' => ' Contraseña para el servidor SMTP',
     'smtp port' => 'Puerto de servidor SMTP',
     'mail account smtp port description' => ' Éste es el puerto por el que el servidor escucha el servicio SMTP. El valor asignado por defecto y el más común es el 25.',
-    'forward mail' => 'Reenviar',
+    'outgoing transport type' => 'Conexión segura',
+	'mail account outgoing transport type description' => 'Seleccione "ssl" o "tls" para una conexión segura',
+	'smtp settings' => 'Ajustes SMTP',
+	'forward mail' => 'Reenviar',
     'reply to all mail' => 'Responder a todos',
     'format plain' => 'Texto plano',
     'format html' => 'Formatear como HTML',
@@ -135,7 +138,6 @@ return array(
     'deleted notification milestone' => 'Hito \'{0}\' ha sido enviado a la papelera',
     'deleted notification milestone desc' => 'Hito \'{0}\' ha sido enviado a la papelera por {1}.',
 
-
 	'view file' => 'Ver archivo',
     'view message' => 'Ver nota',
     'view comment' => 'Ver comentario',
@@ -160,6 +162,15 @@ return array(
     'closed notification milestone' => 'El hito \'{0}\' ha sido completado',
     'closed notification milestone desc' => 'El hito \'{0}\' ha sido completado por {1}.',
 
+	'user password reseted desc' => 'Su contraseña ha sido reseteada. Usted ahora puede loguearse a {0} en {1} usando las siguientes credenciales:',
+    'user password reseted username' => 'Usuario: {0}',
+    'user password reseted password' => 'Contraseña: {0}',
+    'due_date task reminder' => 'Recordatorio de tarea con vencimiento',
+    'due_date task reminder desc' => 'La tarea "{0}" vence el "{1}" y aún está pendiente',
+    'due_date milestone reminder' => 'Recordatorio de hito con vencimiento',
+    'due_date milestone reminder desc' => 'El hito "{0}" vence el "{1}" y aún está pendiente',
+    'start event reminder' => 'Recordatorio de evento',
+    'start event reminder desc' => 'El evento "{0}" comienza el "{1}"',
 
 ); // array
 

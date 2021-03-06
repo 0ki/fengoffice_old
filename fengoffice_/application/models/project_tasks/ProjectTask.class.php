@@ -998,6 +998,15 @@ class ProjectTask extends BaseProjectTask {
 		}
 		
 		parent::save();
+		
+		if ($this->getDueDate() instanceof DateTimeValue) {
+			$id = $this->getId();
+			$sql = "UPDATE `".TABLE_PREFIX."object_reminders` SET
+				`date` = date_sub((SELECT `due_date` FROM `".TABLE_PREFIX."project_tasks` WHERE `id` = $id),
+					interval `minutes_before` minute) WHERE
+					`object_manager` = 'ProjectTasks' AND `object_id` = $id;";
+			DB::execute($sql);
+		}
 
 		$tasks = $this->getSubTasks();
 		if(is_array($tasks)) {
@@ -1263,12 +1272,6 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	function subscribeUser($user) {
 		parent::subscribeUser($user);
-		$or = new ObjectReminder();
-		$or->setObject($this);
-		$or->setType("due_date");
-		$or->setUser($user);
-		$or->setMinutesBefore(1440); // notify one day before
-		$or->save();
 	}
 	
 	/**

@@ -46,7 +46,7 @@ og.MailManager = function() {
 					var tag = og.clean(Ext.getCmp('tag-panel').getSelectedTag().name);
 					if (d.totalCount === 0) {
 						if (tag) {
-							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("emails"), ws, tag));
 						} else {
 							this.fireEvent('messageToShow', lang("no objects message", lang("emails"), ws));
 						}
@@ -82,12 +82,7 @@ og.MailManager = function() {
 			name = String.format('<span class="db-ico ico-sent" style="padding-left:18px" title="{1}">{0}</span>',name,lang("mail sent"));
 		}
 		
-		var projectstring = '';
-	    if (r.data.projectId != ''){
-			var ids = String(r.data.projectId).split(',');
-			for(var i = 0; i < ids.length; i++)
-				projectstring += String.format('<span class="project-replace">{0}</span>&nbsp;', ids[i]);
-		}
+		var projectstring = String.format('<span class="project-replace">{0}</span>&nbsp;', r.data.projectId);
 		
 		var text = '';
 		if (r.data.text != ''){

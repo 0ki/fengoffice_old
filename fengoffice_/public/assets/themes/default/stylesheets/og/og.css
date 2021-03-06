@@ -79,6 +79,12 @@
 .ico-company {
 	background-image: url(../../images/16x16/company.png) !important;
 }
+.ico-dash-expanded {
+	background-image: url(../../images/16x16/dash_expanded.png) !important;
+}
+.ico-dash-collapsed {
+	background-image: url(../../images/16x16/dash_collapsed.png) !important;
+}
 .ico-delete {
 	background-image: url(../../images/16x16/del.png) !important;
 }
@@ -136,6 +142,9 @@
 }
 .ico-large-backup {
 	background-image: url(../../images/48x48/backup.png);
+}
+.ico-large-billing {
+	background-image: url(../../images/48x48/billing.png);
 }
 .ico-large-configuration {
 	background-image: url(../../images/48x48/configuration.png);
@@ -263,6 +272,19 @@
 .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
 }
+.ico-workspaces-expand {
+	background-image: url(../../images/12x12/expand.png) !important;
+	padding-left: 15px !important;
+	background-repeat:no-repeat;
+	cursor:pointer;
+}
+.ico-workspaces-collapse {
+	background-image: url(../../images/12x12/collapse.png) !important;
+	padding-left: 13px;
+	background-position: 0 1px;
+	background-repeat:no-repeat;
+	cursor:pointer;
+}
 .ico-today {
 	background-image: url(../../images/16x16/today.png) !important;
 }
@@ -308,7 +330,13 @@
 .ico-zip-add {
 	background-image: url(../../images/16x16/zip-add.png) !important;
 }
+.ico-share {
+	background-image: url(../../images/16x16/share.png) !important;
+}
 
+.ico-open-link {
+	background-image: url(../../images/16x16/openlink.png) !important;
+}
 
 .link-ico {
 	height: 16px;

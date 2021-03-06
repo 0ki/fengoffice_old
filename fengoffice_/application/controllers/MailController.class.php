@@ -141,7 +141,15 @@
 				$from = logged_user()->getDisplayName() . " <" . $account->getEmailAddress() . ">";
 				$sentOK = false;
 				if (!$isDraft) {
-					$sentOK = $utils->sendMail($account->getSmtpServer(),$to,$from,$subject,$body,$cc,$bcc,$account->getSmtpPort(),$account->smtpUsername(),$account->smtpPassword(),$type); 
+					if ($account->getOutgoingTrasnportType() == 'ssl' || $account->getOutgoingTrasnportType() == 'tls') {
+						$available_transports = stream_get_transports();
+						if (array_search($account->getOutgoingTrasnportType(), $available_transports) === FALSE) {
+							flash_error('The server does not support SSL.');
+							ajx_current("empty");
+							return;
+						}
+					}
+					$sentOK = $utils->sendMail($account->getSmtpServer(),$to,$from,$subject,$body,$cc,$bcc,$account->getSmtpPort(),$account->smtpUsername(),$account->smtpPassword(),$type,$account->getOutgoingTrasnportType()); 
 				}
 				if ((!$isDraft && $sentOK)|| $isDraft){
 					
@@ -178,7 +186,7 @@
 			  		evt_add("email saved", array("id" => $mail->getId(), "instance" => array_var($_POST, 'instanceName')));
 				}
 				else {
-					flash_error('Error while sending mail. Possibly wrong SMTP settings.');
+					flash_error(lang('send mail error'));
 					ajx_current("empty");					
 				}
 			} catch(Exception $e) {
@@ -637,7 +645,8 @@
           'smtp_username' => $mailAccount->getSmtpUsername(),
           'smtp_password' => MailUtilities::ENCRYPT_DECRYPT($mailAccount->getSmtpPassword()),
           'smtp_use_auth' => $mailAccount->getSmtpUseAuth(),
-          'del_from_server' => $mailAccount->getDelFromServer()
+          'del_from_server' => $mailAccount->getDelFromServer(),
+          'outgoing_transport_type' => $mailAccount->getOutgoingTrasnportType()
         ); // array
       } // if
       
@@ -917,10 +926,10 @@
 		// Get all emails and messages to display
 		$pid = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($pid);
-		$emails = $this->getEmails($action, $tag, $attributes, $project);
+		$emails = $this->getEmails($action, $tag, $attributes, $project, $start, $limit, $total);
 		
 		// Prepare response object
-		$object = $this->prepareObject($emails, $start, $limit);
+		$object = $this->prepareObject($emails, $start, $limit, $total);
 		ajx_extra_data($object);
     	tpl_assign("listing", $object);
 	}
@@ -935,7 +944,7 @@
 	 * @param Project $project
 	 * @return array
 	 */
-	private function getEmails($action, $tag, $attributes, $project = null)
+	private function getEmails($action, $tag, $attributes, $project = null, $start = null, $limit = null, &$totalCount = 0)
 	{
 		// Return if no emails should be displayed
 		if (isset($attributes["viewType"]) && 
@@ -964,7 +973,10 @@
 		}
 		if ($accountConditions == "")
 			$accountConditions = "account_id = 0";  //Dummy condition, cannot view any valid accounts but can see project emails
-			
+		
+		$pageLimit = '';
+		if ($start != null && $limit != null)
+			$pageLimit = " LIMIT $start, $limit ";
 			
 		// Check for unclassified emails
 		if (isset($attributes["viewType"]) && $attributes["viewType"] == "unclassified")
@@ -1019,22 +1031,32 @@
     			$projectConditions = $accountConditions;
     		else
     			$projectConditions = "($accountConditions OR $wspace_obj_string)" . 
-    			(logged_user()->isMemberOfOwnerCompany() ? '' : " AND is_private = 0))");
+    			(logged_user()->isMemberOfOwnerCompany() ? '' : " AND is_private = 0");
 		}
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), ($project instanceof Project ? $project->getId() : 0)) .')';
 
 		$table_name = TABLE_PREFIX . "mail_contents";
 		
 		//$not_classified_by_other_user = " NOT EXISTS (SELECT `id` FROM $table_name mc WHERE mc.`subject` = $table_name.`subject` AND mc.`sent_date` = $table_name.`sent_date` AND mc.`from` = $table_name.`from` AND mc.`account_id` <> $table_name.`account_id` AND $wspace_obj_string)";
-		
-		$query = "SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from $table_name where " . 
-			"`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions
-			. " ORDER BY `sent_date` DESC"; //. " AND $not_classified_by_other_user"
-		$res = DB::execute($query);
+		$whereStr = "`trashed_by_id` = 0 AND " . $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND ". $state ." AND `is_deleted` = 0 " . $permissions;	//. " AND $not_classified_by_other_user";
 
+		// query to count all emails
+		$countQuery = "SELECT count(*) as total from $table_name where $whereStr";
+		$row = DB::execute($countQuery);
+		if ($row != null) {
+			$fetched = $row->fetchRow();
+			if (is_array($fetched)) 
+				$totalCount = $fetched['total'];
+			else $totalCount = 0;
+		} else $totalCount = 0;
+		
+		// query to get emails
+		$query = "SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from $table_name where " . 
+			$whereStr . " ORDER BY `sent_date` DESC $pageLimit";
+		$res = DB::execute($query);
+		
 		if(!$res) return null;
 		return $res->fetchAll();
-	
 	}
 	
   	
@@ -1046,14 +1068,14 @@
 	 * @param integer $limit
 	 * @return array
 	 */
-	private function prepareObject($totMsg, $start, $limit, $attributes = null)
+	private function prepareObject($totMsg, $start, $limit, $total, $attributes = null)
 	{
 		$object = array(
-			"totalCount" => count($totMsg),
-			"start" => (integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
+			"totalCount" => intval($total),
+			"start" => $start,//(integer)min(array(count($totMsg) - (count($totMsg) % $limit),$start)),
 			"messages" => array()
 		);
-		for ($i = $start; $i < $start + $limit; $i++){
+		for ($i = 0; $i < $limit; $i++){
 			if (isset($totMsg[$i])) {
 				$manager = $totMsg[$i]['manager'];
     			$id = $totMsg[$i]['id'];

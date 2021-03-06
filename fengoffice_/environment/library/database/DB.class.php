@@ -140,14 +140,15 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
-      	$start = microtime(true);
+      $start = microtime(true);
       
       $result = self::connection()->execute($sql, $arguments);
       
-      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB){
-      	$end = microtime(true);
+      $end = microtime(true);
+      if (Env::isDebuggingDB()) {
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+      } else if (Env::isDebuggingTime()) {
+      	TimeIt::add("DB", $end - $start, $start, $end);
       }
       
       return $result;
@@ -166,14 +167,15 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
-      	$start = microtime(true);
+      $start = microtime(true);
       
       $result = self::connection()->executeOne($sql, $arguments);
       
-      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB){
-      	$end = microtime(true);
+      $end = microtime(true);
+      if (Env::isDebuggingDB()) {
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+      } else if (Env::isDebuggingTime()) {
+      	TimeIt::add("DB", $end - $start, $start, $end);
       }
       
       return $result;
@@ -192,14 +194,15 @@
       array_shift($arguments);
       $arguments = count($arguments) ? array_flat($arguments) : null;
       
-      if (Env::isDebugging() && defined('DEBUG_DB') && DEBUG_DB)
-      	$start = microtime(true);
+      $start = microtime(true);
       
       $result = self::connection()->executeAll($sql, $arguments);
     
-      if (Env::isDebugging()&& defined('DEBUG_DB') && DEBUG_DB){
-      	$end = microtime(true);
+      $end = microtime(true);
+      if (Env::isDebuggingDB()) {
       	Logger::log(number_format(($end - $start),4) . " - " .  DB::prepareString($sql, $arguments));
+      } else if (Env::isDebuggingTime()) {
+      	TimeIt::add("DB", $end - $start, $start, $end);
       }
       
       return $result;

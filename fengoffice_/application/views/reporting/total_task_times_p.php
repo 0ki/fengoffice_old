@@ -2,6 +2,8 @@
 	$genid = gen_id();
 	$project_id = 0;
 	$report_data = array_var($_SESSION, 'total_task_times_report_data', array());
+	if (count($report_data) == 0)
+		$report_data['show_billing'] = $has_billing;
 	if (array_var($report_data, "project_id") != null) {
 		$project_id = array_var($report_data, "project_id", 0);
 	} else if (active_project() instanceof Project) {
@@ -126,6 +128,15 @@
 	      		<label for="<?php echo 'report[include_unworked]' ?>" class="checkbox"><?php echo lang('include unworked pending tasks') ?></label>
 			</td>
 		</tr>
+		<?php if ($has_billing) {?>
+		<tr style='height:30px;'>
+			<td>&nbsp;</td>
+			<td align='left'>
+				<?php echo checkbox_field('report[show_billing]', array_var($report_data, 'show_billing', false), array("id" => "report[show_billing]")); ?> 
+	      		<label for="<?php echo 'report[show_billing]' ?>" class="checkbox"><?php echo lang('show billing information') ?></label>
+			</td>
+		</tr>
+		<?php } ?>
 	</table>
 	
 <br/>

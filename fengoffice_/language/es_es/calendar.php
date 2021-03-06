@@ -4,7 +4,7 @@
 	'CAL_SUBM_LOGOUT' => 'Log Out',
 	'CAL_SUBM_LOGIN' => 'Log In',
 	'CAL_SUBM_ADMINPAGE' => 'Admin Page',
-	'CAL_SUBM_SEARCH' => 'Buscar', 
+	'CAL_SUBM_SEARCH' => 'Buscar',
 	'CAL_SUBM_BACK_CALENDAR' => 'Atrás al calendario',
 	'CAL_SUBM_VIEW_TODAY' => 'Ver eventos de hoy',
 	'CAL_SUBM_ADD' => 'Agregar evento hoy',
@@ -132,5 +132,5 @@
 	'success export calendar' => 'Se exportaron {0} eventos.',
 	'calendar name desc' => 'Nombre para el calendario a exportar',
 	'calendar will be exported in icalendar format' => 'El calendario se exportará en formato iCalendar.',
-
+	'view date title' => 'l, d/m/Y',
 ); ?>
