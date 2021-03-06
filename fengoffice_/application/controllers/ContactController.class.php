@@ -17,62 +17,366 @@ class ContactController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
-
+	/**
+	 * Creates a system user, receiving a Contact id
+	 *
+	 */
+	function create_user(){
+		$contact = Contacts::findById(get_id());
+		if(!($contact instanceof Contact)) {
+			flash_error(lang('contact dnx'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		if(!can_manage_security(logged_user())){
+			flash_error(lang('no permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$company = Companies::findById($contact->getCompanyId());
+		if(!($company instanceof Company)) {
+			flash_error(lang('company dnx') .'. ' . lang('users must belong to a company'));
+			ajx_current("empty");
+			return;
+		} // if
+		$this->redirectTo('user','add',array('company_id' => $company->getId(), 'contact_id' => $contact->getId()));
+		
+	}
+	
+	/**
+	 * Lists all contacts and clients
+	 *
+	 */
 	function list_all()
 	{
 		ajx_current("empty");
 		
-		$project = active_project();
-		$isProjectView = ($project instanceof Project);
-		$filesPerPage = config_option('files_per_page');
-		$start = array_var($_GET,'start') ? array_var($_GET,'start') : 0;
-		$limit = array_var($_GET,'limit') ? array_var($_GET,'limit') : $filesPerPage;
-		//$order = array_var($_GET,'sort');
-		//$orderdir = array_var($_GET,'dir');
+		// Get all variables from request
+		$start = array_var($_GET,'start');
+		$limit = config_option('files_per_page');
+		if (! $start) {
+			$start = 0;
+		}
 		$tag = array_var($_GET,'tag');
-		$page = (integer) ($start / $limit) + 1;
-		if ($page < 0) $page = 1;
-		$hide_private = !logged_user()->isMemberOfOwnerCompany();
-
-		/**
-		 * Resolve actions if any
-		 */
-		if (array_var($_GET,'action') == 'delete') {
-			$ids = explode(',', array_var($_GET, 'contacts'));
-			$err = $this->do_delete_contacts($ids);
-			if ($err > 0) {
-				flash_error(lang('error delete contacts'));
+		$action = array_var($_GET,'action');
+		$attributes = array(
+			"ids" => explode(',', array_var($_GET,'ids')),
+			"types" => explode(',', array_var($_GET,'types')),
+			"tag" => array_var($_GET,'tagTag'),
+			"accountId" => array_var($_GET,'account_id'),
+			"viewType" => array_var($_GET,'view_type')
+		);
+		
+		//Resolve actions to perform
+		$actionMessage = array();
+		if (isset($action)) {
+			$actionMessage = $this->resolveAction($action, $attributes);
+			if ($actionMessage["errorCode"] == 0) {
+				flash_success($actionMessage["errorMessage"]);
 			} else {
-				flash_success(lang('success delete contacts'));
+				flash_error($actionMessage["errorMessage"]);
 			}
-		} else if (array_var($_GET, 'action') == 'tag') {
-			$ids = explode(',', array_var($_GET, 'contacts'));
-			$tagTag = array_var($_GET, 'tagTag');
-			list($succ, $err) = Contacts::tagContacts($tagTag, $ids);
-			if ($err > 0) {
-				flash_error(lang('error tag contacts', $err));
-			} else {
-				flash_success(lang('success tag contacts', $succ));
+		} 
+		
+		// Get all emails and messages to display
+		$pid = array_var($_GET, 'active_project', 0);
+		$project = Projects::findById($pid);
+		$contacts = $this->getContacts($tag, $attributes, $project);
+		$companies = array();
+		$companies = $this->getCompanies($tag, $attributes, $project);
+		$totMsg = $this->addContactsAndCompanies($contacts, $companies);
+		
+		// Prepare response object
+		$object = $this->prepareObject($totMsg, $start, $limit);
+		ajx_extra_data($object);
+    	tpl_assign("listing", $object);
+	}
+	
+	/**
+	 * Adds the contacts and companies arrays
+	 *
+	 * @param array $messages
+	 * @param array $emails
+	 * @return array
+	 */
+	private function addContactsAndCompanies($contacts, $companies){
+		$totCount = 0;
+		if (isset($contacts)) $totCount = count($contacts);
+		if (isset($companies)) $totCount += count($companies);
+		$totContacts = array();
+		//Order messages and emails by date
+		if (!isset($contacts)){
+			$totContacts = $companies ;
+		}
+		else if (!isset($companies))
+			$totContacts  = $contacts;
+		else {
+			$e = 0;
+			$m = 0;
+			while (($e + $m) < $totCount){
+				if ($e < count($contacts))
+					if ($m < count($companies))
+						if ($contacts[$e]['comp_date'] > $companies[$m]['comp_date']){
+							$totContacts [] = $contacts[$e];
+							$e++;
+						} else {
+							$totContacts [] = $companies[$m];
+							$m++;
+						}
+					else {
+						$totContacts [] = $contacts[$e];
+						$e++;
+					}
+				else {
+					$totContacts [] = $companies[$m];
+					$m++;
+				}
 			}
 		}
 		
-		/**
-		 * Search by tags
-		 */ 
-		if ($tag == '' || $tag == null) {
+		return $totContacts ;
+	}
+	
+	/**
+	 * Resolve action to perform
+	 *
+	 * @param string $action
+	 * @param array $attributes
+	 * @return string $message
+	 */
+	private function resolveAction($action, $attributes){
+		$resultMessage = "";
+		$resultCode = 0;
+		switch ($action){
+			case "delete":
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "contact":
+							$contact = Contacts::findById($id);
+							if (isset($contact) && $contact->canDelete(logged_user())){
+								try{
+									DB::beginWork();
+									$contact->deletePicture();
+									$contact->delete();
+									DB::commit();
+									$resultMessage = lang("success delete objects", '');
+								} catch(Exception $e){
+									DB::rollback();
+									$resultMessage .= $e->getMessage();
+									$resultCode = $e->getCode();
+								}
+							};
+							break;
+							
+						case "company":
+							$company = Companies::findById($id);
+							if (isset($company) && $company->canDelete(logged_user())){
+								try{
+									DB::beginWork();
+									$company->deleteLogo();
+									$company->delete();									
+									DB::commit();
+									$resultMessage = lang("success delete objects", '');
+								} catch(Exception $e){
+									DB::rollback();
+									$resultMessage .= $e->getMessage();
+									$resultCode = $e->getCode();
+								}
+							};
+							break;
+							
+						default:
+							$resultMessage = lang("unimplemented type" . ": '" . $type . "'");// if 
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+						
+			case "tag":
+				$tag = $attributes["tag"];
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "contact":
+							$contact = Contacts::findById($id);
+							if (isset($contact) && $contact->canEdit(logged_user())){
+								Tags::addObjectTag($tag, $contact);
+								$resultMessage = lang("success tag objects", '');
+							};
+							break;
+
+						case "company":
+							$company = Companies::findById($id);
+							if (isset($company) && $company->canEdit(logged_user())){
+								Tags::addObjectTag($tag, $company);
+								$resultMessage = lang("success tag objects", '');
+							};
+							break;
+
+						default:
+							$resultMessage = lang("unimplemented type" .": '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+							
+			default:
+				$resultMessage = lang("unimplemented action" . ": '" . $action . "'");// if 
+				$resultCode = 2;	
+				break;		
+		} // switch
+		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
+	}
+	
+		
+	/**
+	 * Prepares return object for a list of emails and messages
+	 *
+	 * @param array $totMsg
+	 * @param integer $start
+	 * @param integer $limit
+	 * @return array
+	 */
+	private function prepareObject($totMsg, $start, $limit, $attributes = null)
+	{
+		$object = array(
+			"totalCount" => count($totMsg),
+			"contacts" => array()
+		);
+		for ($i = $start; $i < $start + $limit; $i++){
+			if (isset($totMsg[$i])){
+				$manager= $totMsg[$i]['manager'];
+    			$id = $totMsg[$i]['id'];
+    			if($id && $manager){
+    				$c=get_object_by_manager_and_id($id,$manager);  
+					
+					if ($c instanceof Contact){						
+						$roleName = "";
+						$roleTags = "";
+						$project = active_project();
+						if ($project ) {
+							$role = $c->getRole($project);
+							if ($role instanceof ProjectContact) {
+								$roleName = $role->getRole();
+							}
+						}
+						$company = $c->getCompany();
+						$companyName = '';
+						if (!is_null($company))
+						$companyName= $company->getName();
+						$usr_created_by = Users::findById($c->getCreatedById());
+						$object["contacts"][] = array(
+							"id" => $i,
+							"object_id" => $c->getId(),
+							"type" => 'contact',
+							"name" => $c->getReverseDisplayName(),
+							"email" => $c->getEmail(),
+							"companyId" => $c->getCompanyId(),
+							"companyName" => $companyName,
+							"website" => $c->getHWebPage(),
+							"jobTitle" => $c->getJobTitle(),
+							"createdBy" => $usr_created_by?$usr_created_by->getUsername():'',
+							"createdById" => $c->getCreatedById(),
+					    	"role" => $roleName,
+							"tags" => project_object_tags($c),
+							"department" => $c->getDepartment(),
+							"email2" => $c->getEmail2(),
+							"email3" => $c->getEmail3(),
+							"workWebsite" => $c->getWWebPage(),
+							"workAddress" => $c->getFullWorkAddress(),
+							"workPhone1" => $c->getWPhoneNumber(),
+							"workPhone2" => $c->getWPhoneNumber2(),
+							"homeWebsite" => $c->getHWebPage(),
+							"homeAddress" => $c->getFullHomeAddress(),
+							"homePhone1" => $c->getWPhoneNumber(),
+							"homePhone2" => $c->getWPhoneNumber2(),
+							"mobilePhone" =>$c->getHMobileNumber()
+						);
+					} else if ($c instanceof Company ){					
+						$roleName = "";
+						$roleTags = "";
+//						$project = active_project();
+//						if ($project ) {
+//							$role = $c->getRole($project);
+//							if ($role instanceof ProjectContact) {
+//								$roleName = $role->getRole();
+//							}
+//						}
+//						$company = $c->getCompany();
+//						$companyName = '';
+						if (!is_null($c))
+						$companyName= $c->getName();
+						$object["contacts"][] = array(
+							"id" => $i,
+							"object_id" => $c->getId(),
+							"type" => 'company',
+							'name' => $c->getName(),
+							'email' => $c->getEmail(),
+							'website' => $c->getHomepage(),
+							'workPhone1' => $c->getPhoneNumber(),
+          					'workPhone2' => $c->getFaxNumber(),
+          					'workAddress' => $c->getAddress() . ' - ' . $c->getAddress2(),
+							"companyId" => $c->getId(),
+							"companyName" => $c->getName(),
+							"jobTitle" => '',
+							"createdBy" => Users::findById($c->getCreatedById())->getUsername(),
+							"createdById" => $c->getCreatedById(),
+					    	"role" => lang('company'),
+							"tags" => project_object_tags($c),
+							"department" => lang('company'),
+							"email2" => '',
+							"email3" => '',
+							"workWebsite" => $c->getHomepage(),
+							"homeWebsite" => '',
+							"homeAddress" => '',
+							"homePhone1" => '',
+							"homePhone2" => '',
+							"mobilePhone" =>''
+						);
+					}
+    			}
+			}
+		}
+		return $object;
+	}
+	
+	/**
+	 * Get all contacts for list_all
+	 *
+	 */
+	function getContacts( $tag, $attributes, $project)
+	{
+		$isProjectView = ($project instanceof Project);
+		if (isset($attributes["viewType"]) && 
+			($attributes["viewType"] != "all" && $attributes["viewType"] != "contacts"))
+			return null;
+
+		if ($project instanceof Project){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
+		}
+//		$contactConditions = "`id` IN (SELECT `contact_id` FROM `".TABLE_PREFIX."project_contacts` WHERE `project_id` IN ($pids))";
+
+		if (!isset($tag) || $tag == '' || $tag == null) {
 			$tagstr = " '1' = '1'"; // dummy condition
 		} else {
 			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
-			TABLE_PREFIX . "contacts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
-			TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Contacts' ) > 0 ";
+				TABLE_PREFIX . "contacts.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
+				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Contacts' ) > 0 ";
 		}
+		
 		
 		/**
 		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
@@ -88,67 +392,61 @@ class ContactController extends ApplicationController {
 			} else $permission_str = "";
 		}
 		
-		list($contacts, $pagination) = Contacts::paginate(
-			array(
-				'conditions' => $tagstr . $permission_str,
-				'order' => 'UPPER(`lastname`) ASC, UPPER(`firstname`) ASC'
-			),
-			$filesPerPage,
-			$page
-		); // paginate
+//		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectContacts::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+/*		if($page && $objects_per_page){
+			$start=($page-1) * $objects_per_page ;
+			$query .=  " limit " . $start . "," . $objects_per_page. " ";
+		}		
+		elseif($objects_per_page)
+			$query .= " limit " . $objects_per_page;*/
+		
+		$res = DB::execute("SELECT id, 'Contacts' as manager, `updated_on` as comp_date from " . TABLE_PREFIX. "contacts where " . 
+			$tagstr . $permission_str . " ORDER BY updated_on DESC");
+			
+		if(!$res) return null;
+		return $res->fetchAll();
+	}
+		
+	/**
+	 * Get all companies for list_all
+	 *
+	 */
+	function getCompanies($tag, $attributes, $project)
+	{
+		$isProjectView = ($project instanceof Project);
+		if (isset($attributes["viewType"]) && 
+			($attributes["viewType"] != "all" && $attributes["viewType"] != "companies"))
+			return null;
 
-		tpl_assign('totalCount', $pagination->getTotalItems());
-		tpl_assign('contacts', $contacts);
-		tpl_assign('pagination', $pagination);
-		tpl_assign('tags', Tags::getTagNames());
-
-		$object = array(
-			"totalCount" => $pagination->getTotalItems(),
-			"contacts" => array()
-		);
-		if (isset($contacts)) {
-			foreach ($contacts as $c) {
-				$roleName = "";
-				$roleTags = "";
-				if ($isProjectView) {
-					$role = $c->getRole($project);
-					if ($role instanceof ProjectContact) {
-						$roleName = $role->getRole();
-					}
-				}
-				$company = $c->getCompany();
-				$companyName = '';
-				if (!is_null($company))
-				$companyName= $company->getName();
-				$object["contacts"][] = array(
-					"id" => $c->getId(),
-					"name" => $c->getReverseDisplayName(),
-					"email" => $c->getEmail(),
-					"companyId" => $c->getCompanyId(),
-					"companyName" => $companyName,
-					"website" => $c->getHWebPage(),
-					"jobTitle" => $c->getJobTitle(),
-					"createdBy" => Users::findById($c->getCreatedById())->getUsername(),
-					"createdById" => $c->getCreatedById(),
-			    	"role" => $roleName,
-					"tags" => project_object_tags($c),
-					"department" => $c->getDepartment(),
-					"email2" => $c->getEmail2(),
-					"email3" => $c->getEmail3(),
-					"workWebsite" => $c->getWWebPage(),
-					"workAddress" => $c->getFullWorkAddress(),
-					"workPhone1" => $c->getWPhoneNumber(),
-					"workPhone2" => $c->getWPhoneNumber2(),
-					"homeWebsite" => $c->getHWebPage(),
-					"homeAddress" => $c->getFullHomeAddress(),
-					"homePhone1" => $c->getWPhoneNumber(),
-					"homePhone2" => $c->getWPhoneNumber2(),
-					"mobilePhone" =>$c->getHMobileNumber()
-				);
-			}
+		if ($project instanceof Project){
+			$pids = $project->getAllSubWorkspacesCSV(true, logged_user());
+		} else {
+			$pids = logged_user()->getActiveProjectIdsCSV();
 		}
-		ajx_extra_data($object);
-		tpl_assign("listing", $object);
+		$contactConditions = "";
+		/**
+		 * If logged user cannot manage contacts, only contacts which belong to a project where the user can manage contacts are displayed.
+		 */
+		if($isProjectView){
+			$contactConditions = " `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'Companies' AND `workspace_id` IN ($pids)) AND ";
+		}
+		
+					
+		if (!isset($tag) || $tag == '' || $tag == null) {
+			$tagstr = " '1' = '1'"; // dummy condition
+		} else {
+			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
+				TABLE_PREFIX . "companies.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
+				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='Companies' ) > 0 ";
+		}
+		
+		$permissions = ' AND ( ' . permissions_sql_for_listings(Companies::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+		
+		$res = DB::execute("SELECT id, 'Companies' as manager, `updated_on` as comp_date FROM " . TABLE_PREFIX. "companies WHERE " . 
+			$contactConditions . $tagstr . $permissions . " ORDER BY updated_on DESC");
+			
+		if(!$res) return null;
+		return $res->fetchAll();
 	}
 
 	private function do_delete_contacts($ids)
@@ -201,7 +499,7 @@ class ContactController extends ApplicationController {
 	 */
 	function card() {
 		$contact = Contacts::findById(get_id());
-		if(!Contact::canView(logged_user())) {
+		if(!$contact->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;
@@ -216,6 +514,8 @@ class ContactController extends ApplicationController {
 		}
 
 		tpl_assign('contact', $contact);
+		if(($uid = $contact->getUserId()) && ($usr = Users::findById($uid)))
+			tpl_assign('user', $usr);
 		if (isset($roles))
 		tpl_assign('roles',$roles);
 		if (isset($tags))
@@ -257,7 +557,32 @@ class ContactController extends ApplicationController {
 				$contact->setFromAttributes($contact_data);
 
 				DB::beginWork();
+				
+				if ($contact_data["o_birthday_year"] != 0) {
+					$bday = new DateTimeValue(0);
+					$bday->setYear($contact_data["o_birthday_year"]);
+					$bday->setMonth($contact_data["o_birthday_month"]);
+					$bday->setDay($contact_data["o_birthday_day"]);
+					$contact->setOBirthday($bday);
+				}
+				
 				$contact->save();
+				
+				foreach($im_types as $im_type) {
+					$value = trim(array_var($contact_data, 'im_' . $im_type->getId()));
+					if($value <> '') {
+
+						$contact_im_value = new ContactImValue();
+
+						$contact_im_value->setContactId($contact->getId());
+						$contact_im_value->setImTypeId($im_type->getId());
+						$contact_im_value->setValue($value);
+						$contact_im_value->setIsDefault(array_var($contact_data, 'default_im') == $im_type->getId());
+
+						$contact_im_value->save();
+					} // if
+				} // foreach
+				
 				//link it!
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($contact);
@@ -265,7 +590,7 @@ class ContactController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success add contact', $contact->getDisplayName()));
-				ajx_current("start");
+				ajx_current("back");
 
 				if(active_project() instanceof Project)
 				{
@@ -424,7 +749,7 @@ class ContactController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit contact', $contact->getDisplayName()));
-				ajx_current("start");
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -492,9 +817,12 @@ class ContactController extends ApplicationController {
 				} // if
 
 				flash_success(lang('success edit picture'));
+				
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit_picture
@@ -540,7 +868,7 @@ class ContactController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete picture'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete picture'));
@@ -577,7 +905,7 @@ class ContactController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete contact', $contact->getDisplayName()));
-			ajx_current("start");
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete contact'));
@@ -657,7 +985,7 @@ class ContactController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit contact', $contact->getDisplayName()));
-				ajx_current("start");
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());

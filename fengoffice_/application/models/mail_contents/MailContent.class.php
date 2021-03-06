@@ -128,6 +128,10 @@ class MailContent extends BaseMailContent {
 	function getViewUrl() {
 		return get_url('mail', 'view', $this->getId());
 	} // getAccountUrl
+	
+	function getShowContentsUrl() {
+		return get_url('mail', 'view', $this->getId());
+	} // getAccountUrl
 
 	/**
 	 * Return delete mail URL of this mail
@@ -171,6 +175,12 @@ class MailContent extends BaseMailContent {
 	 */
 	function getReplyMailUrl() {
 		return get_url('mail', 'reply_mail', array( 'id' => $this->getId(), 'type' => 'email'));
+	} // getReplyMailUrl
+	
+	
+	
+	function getForwardMailUrl() {
+		return get_url('mail', 'forward_mail', array( 'id' => $this->getId(), 'type' => 'email'));
 	} // getReplyMailUrl
 	
 	// ---------------------------------------------------

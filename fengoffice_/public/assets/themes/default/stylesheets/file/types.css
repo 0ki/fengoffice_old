@@ -22,6 +22,9 @@
 .ico-contact {
 	background-image: url(../../images/16x16/types/contact.png);
 }
+.ico-company {
+	background-image: url(../../images/16x16/types/company.png);
+}
 .ico-message {
 	background-image: url(../../images/16x16/types/message.png);
 }
@@ -41,7 +44,7 @@
 .ico-application-vnd.ms-powerpoint, .prsn {
 	background-image: url(../../images/16x16/types/application-vnd.ms-powerpoint.png);
 }
-.ico-application-vnd.ms-word, .txt {
+.ico-application-vnd.ms-word, .ico-application-msword, .txt {
 	background-image: url(../../images/16x16/types/application-vnd.ms-word.png);
 }
 .ico-application-vnd.oasis.opendocument.chart {
@@ -115,4 +118,7 @@
 }
 .ico-video {
 	background-image: url(../../images/16x16/types/video.png);
+}
+.ico-user {
+	background-image: url(../../images/16x16/types/user.png) !important;
 }

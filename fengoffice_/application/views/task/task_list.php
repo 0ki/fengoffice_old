@@ -18,13 +18,13 @@
 </script>
   
 <?php if($task_list->getText()) { ?>
-  <pre style="padding-bottom:15px;color:#666666"><?php echo $task_list->getText() ?></pre>
+  <div style="padding-bottom:15px;color:#666666"><?php echo do_textile($task_list->getText()) ?></div>
 <?php } // if ?>
 
 
 
 
-  <table style="border:1px solid #B1BFAC;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#B1BFAC;font-size:120%;font-weight:bolder;color:white;width:100%;"><?php echo lang("open tasks") ?></th></tr><tr><td style="padding-left:10px;">
+  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("open tasks") ?></th></tr><tr><td style="padding-left:10px;">
   <div class="openTasks">
 <?php if(is_array($task_list->getOpenSubTasks())) { ?>
     <table class="blank">
@@ -88,7 +88,7 @@
 
   
 <?php if(is_array($task_list->getCompletedSubTasks())) { ?>
-<table style="border:1px solid #B1BFAC;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#B1BFAC;font-size:120%;font-weight:bolder;color:white;width:100%;"><?php echo lang("completed tasks") ?></th></tr><tr><td style="padding-left:10px;">
+  <table style="border:1px solid #717FA1;width:100%; padding-left:10px;"><tr><th style="padding-left:10px;padding-top:4px;padding-bottom:4px;background-color:#E8EDF7;font-size:120%;font-weight:bolder;color:#717FA1;width:100%;"><?php echo lang("completed tasks") ?></th></tr><tr><td style="padding-left:10px;">
   
   <div class="completedTasks">
     <table class="blank">
@@ -121,4 +121,26 @@
 </td></tr></table>
 <?php } // if ?>
 
+
+<?php
+	$time_estimate = $task_list->getTimeEstimate();
+	$total_minutes = $task_list->getTotalMinutes();
+
+	if ($time_estimate > 0 || $total_minutes > 0){?>
+<br/>
+<table>
+<?php if ($time_estimate > 0) {?>
+<tr><td>
+	<div style="font-weight:bold"><?php echo lang('time estimate'). ':&nbsp;'?></div></td><td> 
+		<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($time_estimate * 60), 'hm', 60) ?></td></tr>
+<?php } ?>
+
+<?php if ($total_minutes > 0) {?>
+	<tr><td><div style="font-weight:bold"><?php echo lang('total time'). ':&nbsp;' ?></div></td><td>
+		<span style="font-size:120%;font-weight:bold;<?php echo ($time_estimate > 0 && $total_minutes > $time_estimate) ? 'color:#FF0000':'' ?>">
+			<?php echo DateTimeValue::FormatTimeDiff(new DateTimeValue(0), new DateTimeValue($total_minutes * 60), 'hm', 60) ?>
+		</span></td></tr>
+<?php } ?>
+</table>
+<?php } ?>
   

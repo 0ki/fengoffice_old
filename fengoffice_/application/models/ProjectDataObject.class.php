@@ -18,6 +18,14 @@
     */
     protected $project = null;
     
+/**
+    * Cached parent workspaces reference
+    *
+    * @var array
+    */
+    protected $workspaces = null;
+    
+    
     // ---------------------------------------------------
     //  Tags
     // ---------------------------------------------------
@@ -69,7 +77,38 @@
     */
     protected $comments_count;
     
+    // ---------------------------------------------------
+    //  Timeslots
+    // ---------------------------------------------------
+ 
+	/**
+    * If true this object will not throw no timeslots allowed exception and will make timeslot methods available
+    *
+    * @var boolean
+    */
+    protected $allow_timeslots = false;
     
+    /**
+    * Cached array of timeslots
+    *
+    * @var array
+    */
+    protected $timeslots;
+    
+    /**
+    * Number of timeslots.
+    *
+    * @var integer
+    */
+    protected $timeslots_count;
+    
+    // ---------------------------------------------------
+    //  General Methods
+    // ---------------------------------------------------
+    
+    function getTitle(){
+    	return 'No title!!!';
+    }
     
     /**
      * Whether the object can have properties
@@ -93,7 +132,14 @@
       } // if
       
       if(is_null($this->project)) {
-        if($this->columnExists('project_id')) $this->project = Projects::findById($this->getProjectId());
+        if($this->columnExists('project_id')) {
+        	$this->project = Projects::findById($this->getProjectId());
+        } else {
+        	if (Env::isDebugging()) {
+        		Logger::log("WARNING: Calling getProject() on an object with multiple workspaces.");
+        	}
+        	return null;
+        }
       } // if
       return $this->project;
     } // getProject
@@ -103,80 +149,88 @@
      *
      * @return array
      */
-    function getWorkspaces() {
+    function getWorkspaces($wsIds = null) {
     	if ($this->isNew()) {
     		return array(active_or_personal_project());
-    	} else if ($this instanceof ProjectFile || $this instanceof ProjectMessage) {
-    		return WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    	} else if (!$this->columnExists('project_id')) {
+    		if (is_null($this->workspaces)){
+    			$this->workspaces = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		}
+    		
+    		if (!is_null($wsIds)){
+    			$result = array();
+    			foreach($this->workspaces as $w){
+    				if ($this->isInCsv($w->getId(),$wsIds))
+    					$result[] = $w;
+    			}
+    			return $result;
+    		} else
+    			return $this->workspaces;
     	} else {
     		$project = $this->getProject();
     		if ($project)
     			return array($project);
     		else
-    			return null;
+    			return array();
     	}
     }
     
     /**
-     * Returns the object¡s workspaces names separated by a comma
+     * Returns the object's workspaces names separated by a comma
      *
      * @return unknown
      */
-  	function getWorkspacesNamesCSV() {
+  	function getWorkspacesNamesCSV($wsIds = null) {
     	if ($this->isNew()) {
     		return active_or_personal_project()->getName();
     	} else {
-    		//TODO Begin Remove for multiple workspaces
-    		if ($this->getProject() instanceof Project)
-    			return $this->getProject()->getName();
-    		if ($this instanceof MailContent)
+    		if ($this instanceof MailContent && !$this->getProject() instanceof Project)
     			return '';
-    		//End todo
-    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
-    		$names = array();
-    		foreach ($ws as $w) {
-    			$names[] = $w->getName();
+    	
+    		$ids = array();
+    		foreach ($this->getWorkspaces($wsIds) as $w) {
+    			$ids[] = $w->getName();
     		}
-    		return join(", ", $names);
+    		return join(", ", $ids);
     	}
     }
     
-  	function getWorkspacesIdsCSV() {
+  	function getWorkspacesIdsCSV($wsIds = null) {
     	if ($this->isNew()) {
     		return active_or_personal_project()->getId();
     	} else {
-    		//TODO Begin Remove for multiple workspaces
-    		if ($this->getProject() instanceof Project)
-    			return $this->getProject()->getId();
-    		if ($this instanceof MailContent)
+    		if ($this instanceof MailContent && !$this->getProject() instanceof Project)
     			return '';
-    		//End todo
-    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		
     		$ids = array();
-    		foreach ($ws as $w) {
+    		foreach ($this->getWorkspaces($wsIds) as $w) {
     			$ids[] = $w->getId();
     		}
     		return join(", ", $ids);
     	}
     }
   
-  	function getWorkspaceColorsCSV() {
+  	function getWorkspaceColorsCSV($wsIds = null) {
     	if ($this->isNew()) {
     		return active_or_personal_project()->getColor();
     	} else {
-    		//TODO Begin Remove for multiple workspaces
-    		if ($this->getProject() instanceof Project)
-    			return $this->getProject()->getColor();
-    		if ($this instanceof MailContent)
+    		if ($this instanceof MailContent && !$this->getProject() instanceof Project)
     			return '';
-    		//End todo
-    		$ws = WorkspaceObjects::getWorkspacesByObject($this->getObjectManagerName(), $this->getObjectId());
+    		
     		$ids = array();
-    		foreach ($ws as $w) {
+    		foreach ($this->getWorkspaces($wsIds) as $w) {
     			$ids[] = $w->getColor();
     		}
     		return join(", ", $ids);
     	}
+    }
+    
+    private function isInCsv($value, $csv){
+    	$arr = explode(',',$csv);
+    	foreach($arr as $s)
+    		if (intval($s) == $value)
+    			return true;
+    	return false;
     }
     
     /**
@@ -235,6 +289,11 @@
     function removeFromAllWorkspaces() {
     	WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
     }
+    
+  	function removeFromWorkspaces($wsCSV) {
+    	WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ? AND `workspace_id` in ($wsCSV)", $this->getObjectManagerName(), $this->getId()));
+    }
+    
     // ---------------------------------------------------
     //  Permissions
     // ---------------------------------------------------
@@ -280,6 +339,8 @@
     * @throws InvalidInstanceError if $user is not instance of User or AnonymousUser
     */
     function canComment($user) {
+      if(!$this->isCommentable()) return false;
+      
       if(!($user instanceof User) && !($user instanceof AnonymousUser)) {
         throw new InvalidInstanceError('user', $user, 'User or AnonymousUser');
       } // if
@@ -287,17 +348,32 @@
       // Access permissions
       if($user instanceof User) {
         if($user->isAdministrator()) return true; // admins have all the permissions
-        $project = $this->getProject();
-        if(!($project instanceof Project)) return false;
-        if(!$user->isProjectUser($project)) return false; // not a project member
+        $ws = $this->getWorkspaces();
+        $can = false;
+        foreach ($ws as $w) {
+        	if($user->isProjectUser($w)) $can = true;
+        }
+        if (!$can) return false;
       } // if
       
-      if(!$this->isCommentable()) return false;
       if($this->columnExists('comments_enabled') && !$this->getCommentsEnabled()) return false;
       if($user instanceof AnonymousUser) {
         if($this->columnExists('anonymous_comments_enabled') && !$this->getAnonymousCommentsEnabled()) return false;
       } // if
       return true;
+    } // canComment
+    
+    /**
+    * Check if specific user can add a timeslot on this object
+    *
+    * @param User $user
+    * @return boolean
+    * @throws InvalidInstanceError if $user is not instance of User
+    */
+    function canAddTimeslot($user) {
+      if(!$this->allowsTimeslots()) return false;
+      
+      return $this->canEdit($user);
     } // canComment
     
     // ---------------------------------------------------
@@ -633,6 +709,150 @@
     } // anonymousCommentsEnabled
     
     // ---------------------------------------------------
+    //  Timeslots
+    // ---------------------------------------------------
+    
+    /**
+    * Returns true if users can assign timeslots on this object
+    *
+    * @param void
+    * @return boolean
+    */
+    function allowsTimeslots() {
+      return (boolean) $this->allow_timeslots;
+    } // allowsTimeslots
+    
+    /**
+    * Attach timeslot to this object
+    *
+    * @param Timeslot $timeslot
+    * @return Timeslot
+    */
+    function attachTimeslot(Timeslot $timeslot) {
+      $manager_class = get_class($this->manager());
+      $object_id = $this->getObjectId();
+      
+      if(($object_id == $timeslot->getObjectId()) && ($manager_class == $timeslot->getObjectManager())) {
+        return true;
+      } // if
+      
+      $timeslot->setObjectId($object_id);
+      $timeslot->setObjectManager($manager_class);
+      
+      $timeslot->save();
+      return $timeslot;
+    } // attachComment
+    
+    /**
+    * Return all timeslots
+    *
+    * @param void
+    * @return boolean
+    */
+    function getTimeslots() {
+      if(is_null($this->timeslots)) {
+        $this->timeslots = Timeslots::getTimeslotsByObject($this);
+      } // if
+      return $this->timeslots;
+    } // getTimeslots
+    
+    /**
+    * This function will return number of timeslots
+    *
+    * @param void
+    * @return integer
+    */
+    function countTimeslots() {
+      if(is_null($this->timeslots_count)) {
+        $this->timeslots_count = Timeslots::countTimeslotsByObject($this);
+      } // if
+      return $this->timeslots_count;
+    } // countTimeslots
+    
+    /**
+    * Return # of specific timeslot
+    *
+    * @param Timeslot $timeslot
+    * @return integer
+    */
+    function getTimeslotNum(Timeslot $timeslot) {
+      $timeslots = $this->getTimeslots();
+      if(is_array($timeslots)) {
+        $counter = 0;
+        foreach($timeslots as $object_timeslot) {
+          $counter++;
+          if($timeslot->getId() == $object_timeslot->getId()) return $counter;
+        } // foreach
+      } // if
+      return 0;
+    } // getTimeslotNum
+    
+    /**
+    * Returns true if this function has associated comments
+    *
+    * @param void
+    * @return boolean
+    */
+    function hasTimeslots() {
+      return (boolean) $this->countTimeslots();
+    } // hasComments
+    
+    /**
+    * Clear object comments
+    *
+    * @param void
+    * @return boolean
+    */
+    function clearTimeslots() {
+      return Timeslots::dropTimeslotsByObject($this);
+    } // clearComments
+    
+    /**
+    * This event is triggered when we create a new timeslot
+    *
+    * @param Timeslot $timeslot
+    * @return boolean
+    */
+    function onAddTimeslot(Timeslot $timeslot) {
+    	
+		return true;
+    } // onAddTimeslot
+    
+    /**
+    * This event is trigered when Timeslot that belongs to this object is updated
+    *
+    * @param Timeslot $timeslot
+    * @return boolean
+    */
+    function onEditTimeslot(Timeslot $timeslot) {
+    	
+		return true;
+    } // onEditTimeslot
+    
+    /**
+    * This event is triggered when timeslot that belongs to this object is deleted
+    *
+    * @param Timeslot $timeslot
+    * @return boolean
+    */
+    function onDeleteTimeslot(Timeslot $timeslot) {
+		
+    	return true;
+    } // onDeleteTimeslot
+    
+    function getTotalMinutes(){
+    	$timeslots = $this->getTimeslots();
+    	$totalMinutes = 0;
+    	if (is_array($timeslots)){
+	    	foreach ($timeslots as $ts){
+	    		if (!$ts->isOpen())
+	    			$totalMinutes += $ts->getMinutes();
+	    	}
+    	}
+    	return $totalMinutes;
+    }
+    
+    // ---------------------------------------------------
     //  Object Properties
     // ---------------------------------------------------
     /**
@@ -791,12 +1011,11 @@
       if($this->isCommentable()) {
         $this->clearComments();
       } // if
-      if($this->isLinkableObject()) {
-        $this->clearLinkedObjects();
-      } // if
       if($this->isPropertyContainer()){
       	$this->clearObjectProperties();
       }
+      if ($this->allowsTimeslots())
+      	$this->clearTimeslots();
       WorkspaceObjects::delete(array("`object_manager` = ? AND `object_id` = ?", $this->getObjectManagerName(), $this->getId()));
       return parent::delete();
     } // delete
@@ -830,9 +1049,9 @@
 				"updatedBy" => $updated_by_name,
 				"updatedById" => $updated_by_id,
 				"dateUpdated" => $updated_on,
-				"project" => $this->getWorkspacesNamesCSV(),
-				"projectId" => $this->getWorkspacesIdsCSV(),
-    			"workspaceColors" => $this->getWorkspaceColorsCSV(),
+				"project" => $this->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+				"projectId" => $this->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+    			"workspaceColors" => $this->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 				"url" => $this->getObjectUrl(),
 				"manager" => get_class($this->manager())
 			);

@@ -7,7 +7,6 @@ og.TagPanel = function(config) {
 		height: 200,
 		iconCls: 'ico-tags',
 		title: lang('tags'),
-		autoScroll: true,
 		region: 'south',
 		collapsible: true,
 		layout: 'fit',

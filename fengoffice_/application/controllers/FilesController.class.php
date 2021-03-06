@@ -62,21 +62,21 @@ class FilesController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
-			
+
 		$revisions = $file->getRevisions();
 		if(!count($revisions)) {
 			flash_error(lang('no file revisions in file'));
 			ajx_current("empty");
 			return;
 		} // if
-			
+
 		tpl_assign('file', $file);
 		tpl_assign('last_revision', $file->getLastRevision());
 		tpl_assign('revisions', $revisions);
 		tpl_assign('order', null);
 		tpl_assign('page', null);
 		ajx_set_no_toolbar(true);
-			
+
 	} // file_details
 
 	function slideshow() {
@@ -150,10 +150,7 @@ class FilesController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success checkout file'));
-			if (array_var($_GET,"show") == 'redirect')
-				$this->redirectTo('files','file_details',array ("id" => get_id()));
-			else
-				ajx_current("start");
+			ajx_current("reload");
 		}
 		catch(Exception $e)
 		{
@@ -185,10 +182,7 @@ class FilesController extends ApplicationController {
 			Db::commit();
 			
 			flash_success(lang("success undo checkout file"));
-			if (array_var($_GET,"show") == 'redirect')
-				$this->redirectTo('files','file_details',array ("id" => get_id()));
-			else
-				ajx_current("start");
+			ajx_current("reload");
 		} catch (Exception $e){
 			Db::rollback();
 			flash_error($e->getMessage());
@@ -253,44 +247,36 @@ class FilesController extends ApplicationController {
 				}
 			}
 			if (empty($validWS)) {
-				flash_error(lang('no access permissions'));
+				flash_error(lang('must choose at least one workspace error'));
 				ajx_current("empty");
 				return;
 			}
 			
-			$upload_id = array_var($_POST, "upload_id");
+			$upload_option = array_var($file_data, 'upload_option');
+			$uploaded_file = array_var($_FILES, 'file_file');
 			$skipSettings = false;
 			try {
 				DB::beginWork();
-				if (array_var($file_data, 'add_type') == 'regular'){
-					$file->setFilename(array_var($file_data, 'name'));
-				} else {
-					if (array_var($file_data, 'new_filename_check') == "true")
-						$file->setFilename(array_var($file_data, 'new_filename'));
-					else {
-						$skipSettings = true;
-						$file = ProjectFiles::findById(array_var($file_data, 'existing_file_id'));
-						
-						if (array_var($file_data, 'add_type') == 'checkedout'){ 
-							if ($file->canCheckin(logged_user()))  // Check for checkin permissions
-								$file->setCheckedOutById(0);
-							else{
-								flash_error(lang('no access permissions'));
-								ajx_current("empty");
-								return;
-							}
-						} else {  // Check for edit permissions
-							if (!$file->canEdit(logged_user())){
-								flash_error(lang('no access permissions'));
-								ajx_current("empty");
-								return;
-							}
+				if ($upload_option && $upload_option != -1){
+					$skipSettings = true;
+					$file = ProjectFiles::findById($upload_option);
+					
+					if ($file->isCheckedOut()){
+						if (!$file->canCheckin(logged_user())){
+							flash_error(lang('no access permissions'));
+							ajx_current("empty");
+							return;
+						}
+						$file->setCheckedOutById(0);
+					} else {  // Check for edit permissions
+						if (!$file->canEdit(logged_user())){
+							flash_error(lang('no access permissions'));
+							ajx_current("empty");
+							return;
 						}
 					}
-				}
-				$uploaded_file = array_var($_FILES, 'file_file');
-				
-				if (!$skipSettings){
+				} else {
+					$file->setFilename(array_var($file_data, 'name'));
 					$file->setFromAttributes($file_data);
 	
 					if(!logged_user()->isMemberOfOwnerCompany()) {
@@ -301,17 +287,18 @@ class FilesController extends ApplicationController {
 					} // if
 					$file->setIsVisible(true);
 				}
+				
 				$file->save();
 				$revision = $file->handleUploadedFile($uploaded_file, true); // handle uploaded file
 				
-				foreach ($validWS as $w) {
-					$file->addToWorkspace($w);
-				}
 
 				//Add properties
 				if (!$skipSettings){
 					$file->save_properties($file_data);
 					$file->setTagsFromCSV(array_var($file_data, 'tags'));
+					foreach ($validWS as $w) {
+						$file->addToWorkspace($w);
+					}
 				}
 				foreach ($validWS as $w) {
 					ApplicationLogs::createLog($file, $w, ApplicationLogs::ACTION_ADD);
@@ -323,7 +310,7 @@ class FilesController extends ApplicationController {
 				//flash_success(array_var($file_data, 'add_type'));
 
 				flash_success(lang('success add file', $file->getFilename()));
-				ajx_current("start");
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -364,9 +351,10 @@ class FilesController extends ApplicationController {
 				fputs($handler,$file_content);
 				fclose($handler);
 				$name = array_var($postFile, 'name');
-				if (!str_ends_with($name, ".html")) {
+				//eyedoc MOD
+				if (!str_ends_with($name, ".html") && !str_ends_with($name, ".eyedoc")) {
 					$name .= ".html";
-				}
+				}//eyedoc MOD
 				$file->setFilename($name);
 				$file->save();
 				$file->setTagsFromCSV(array_var($file_data, 'tags'));
@@ -380,6 +368,7 @@ class FilesController extends ApplicationController {
 				unlink($file_dt['tmp_name']);
 
 				flash_success(lang('success save file', $file->getFilename()));
+				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
 				//$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
 			} catch(Exception $e) {
 				DB::rollback();
@@ -433,7 +422,7 @@ class FilesController extends ApplicationController {
 				}
 				DB::commit();
 				flash_success(lang('success save file', $file->getFilename()));
-				evt_add("file saved", array("id" => $file->getId()));
+				evt_add("document saved", array("id" => $file->getId(), "instance" => array_var($_POST, 'instanceName')));
 				unlink($file_dt['tmp_name']);
 				//$this->redirectTo('files', 'add_document', array('id' => $file->getId()));
 			} catch(Exception $e) {
@@ -550,7 +539,7 @@ class FilesController extends ApplicationController {
 				}
 				DB::commit();
 				flash_success(lang('success save file', $file->getFilename()));
-				evt_add("file saved", array("id" => $file->getId()));
+				evt_add("presentation saved", array("id" => $file->getId()));
 				unlink($file_dt['tmp_name']);
 				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
 			} catch(Exception $e) {
@@ -685,7 +674,7 @@ class FilesController extends ApplicationController {
 
 	function text_edit() {
 		$file_data = array_var($_POST, 'file');
-		if (!$file_data) {
+		if (!isset($file_data)) {
 			// open text file
 			$file = ProjectFiles::findById(get_id());
 			if (!($file instanceof ProjectFile)) {
@@ -707,6 +696,11 @@ class FilesController extends ApplicationController {
 			// save new file content
 			try {
 				$file = ProjectFiles::findById(array_var($file_data, 'id'));
+				if (!($file instanceof ProjectFile)) {
+					flash_error(lang('file dnx'));
+					ajx_current("empty");
+					return;
+				} // if
 				if (!$file->canEdit(logged_user())) {
 					flash_error(lang('no access permissions'));
 					return;
@@ -716,7 +710,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = '';
 
 				$file_dt['name'] = $file->getFilename();
-				$file_content = array_var($_POST, 'fileContent');
+				$file_content = iconv(mb_detect_encoding(array_var($_POST, 'fileContent'), array('UTF-8','ISO-8859-1')), array_var($file_data, 'encoding'),array_var($_POST, 'fileContent'));
 				$file_dt['size'] = strlen($file_content);
 				$file_dt['type'] = $file->getTypeString();
 				$file_dt['tmp_name'] = './tmp/' . rand () ;
@@ -744,6 +738,7 @@ class FilesController extends ApplicationController {
 	} // text_edit
 
 	function add_document() {
+		//ajx_prevent_close(true);
 		if (get_id() > 0) {
 			//open a document
 
@@ -1015,14 +1010,15 @@ class FilesController extends ApplicationController {
 					"dateUpdated" => $o->getUpdatedOn()->getTimestamp(),
 					"icon" => $o->getTypeIconUrl(),
 					"size" => $o->getFileSize(),
-					"project" => $o->getWorkspacesNamesCSV(),
-					"projectId" => $o->getWorkspacesIdsCSV(),
-					"workspaceColors" => $o->getWorkspaceColorsCSV(),
+					"project" => $o->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+					"projectId" => $o->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+					"workspaceColors" => $o->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 					"url" => $o->getOpenUrl(),
 					"manager" => get_class($o->manager()),
 					"checkedOutByName" => $coName,
 					"checkedOutById" => $coId,
-					"isModifiable" => $o->isModifiable() && $o->canEdit(logged_user())
+					"isModifiable" => $o->isModifiable() && $o->canEdit(logged_user()),
+					"modifyUrl" => $o->getModifyUrl()
 				);
 			}
 		}
@@ -1140,7 +1136,7 @@ class FilesController extends ApplicationController {
 					}
 				}
 				if (empty($validWS)) {
-					flash_error(lang('no access permissions'));
+					flash_error(lang('must choose at least one workspace error'));
 					ajx_current("empty");
 					return;
 				}
@@ -1156,6 +1152,7 @@ class FilesController extends ApplicationController {
 				$revision_comment = $post_revision ? trim(array_var($file_data, 'revision_comment')) : ''; // user comment?
 
 				$file->setFromAttributes($file_data);
+				$file->setFilename(array_var($file_data, 'name'));
 
 				if(!logged_user()->isMemberOfOwnerCompany()) {
 					$file->setIsPrivate($old_is_private);
@@ -1171,7 +1168,7 @@ class FilesController extends ApplicationController {
 				} // if
 				$file->save_properties($file_data);
 				
-				$file->removeFromAllWorkspaces();
+				$file->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				foreach ($validWS as $w) {
 					$file->addToWorkspace($w);
 				}
@@ -1182,6 +1179,7 @@ class FilesController extends ApplicationController {
 				
 				
 				flash_success(lang('success edit file', $file->getFilename()));
+				ajx_current("back");
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
@@ -1218,7 +1216,7 @@ class FilesController extends ApplicationController {
 				'comments_enabled' => $file->getCommentsEnabled(),
 				'anonymous_comments_enabled' => $file->getAnonymousCommentsEnabled(),
 				'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
-				'workspaces' => $file->getWorkspacesNamesCSV(),
+				'workspaces' => $file->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
 			); // array
 		} // if
 		tpl_assign('file', $file);
@@ -1260,77 +1258,15 @@ class FilesController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success add file', $file->getFilename()));
+				ajx_current("back");
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
 				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 		} // if
 	} // checkin_file
-
-	/**
-	 * Delete files given by a comma-separated list of their ids
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function delete_files(){
-		$ids = explode(',', array_var($_GET, 'files'));
-		list($succ, $err) = $this->do_delete_files($ids);
-		if($err) {
-			flash_error(lang('error delete files', $err));
-		}
-		if ($succ) {
-			flash_success(lang('success delete files'), $succ);
-		}
-		$this->redirectTo('files');
-	}
-
-	function do_delete_files($ids) {
-		$err = 0; // count errors
-		$succ = 0; // count files deleted
-		foreach ($ids as $id) {
-			try {
-				if(trim($id)!=''){
-					$file = ProjectFiles::findById($id);
-					if(!$file->canDelete(logged_user())) {
-						$err ++;
-					} // if
-					else {
-						FilesController::delete_file_by_id($id);
-						$succ ++;
-					}
-				}
-			} catch(Exception $e) {
-				$err ++;
-			} // try
-		}
-		return array($succ, $err);
-	}
-
-	/**
-	 * Delete file
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	private function delete_file_by_id($fileId) {
-		$file = ProjectFiles::findById($fileId);
-		if(!$file->canDelete(logged_user())) {
-			return ;
-		} // if
-		DB::beginWork();
-		$file->delete();
-		
-		$ws = $file->getWorkspaces();
-		foreach ($ws as $w) {
-			ApplicationLogs::createLog($file, $fw, ApplicationLogs::ACTION_DELETE);
-		}
-		DB::commit();
-
-	} // delete_file
 
 	/**
 	 * Delete file
@@ -1364,7 +1300,7 @@ class FilesController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete file', $file->getFilename()));
-			ajx_current("start");
+			ajx_current("back");
 		} catch(Exception $e) {
 			flash_error(lang('error delete file'));
 			ajx_current("empty");
@@ -1374,30 +1310,43 @@ class FilesController extends ApplicationController {
 	function check_filename(){
 		ajx_current("empty");
 		$filename = array_var($_GET, 'filename');
-		$file = ProjectFiles::getByFilename($filename);
+		$files = ProjectFiles::getAllByFilename($filename, logged_user()->getActiveProjectIdsCSV());
 
-		if ($file instanceof ProjectFile && $file->getId() != array_var($_GET, 'id')){
-			$c = 1;
-			$newFile = $file;
-			do {
-				$c++;
-				$newFilename = insert_before_file_extension($filename, "($c)");
-			} while ($this->filenameExists($newFilename));
-				
-			ajx_extra_data(array(
-				"id" => $file->getId(),
-				"name" => $file->getFilename(),
-				"description" => $file->getDescription(),
-				"size" => $file->getFilesize(),
-				"created_by_id" => $file->getCreatedById(),
-				"created_by_name" => Users::findById($file->getCreatedById())->getDisplayName(),
-				"created_on" => $file->getCreatedOn()->toISO8601(),
-				"suggestedName" => $newFilename,
-				"is_checked_out" => $file->isCheckedOut(),
-				"checked_out_by_name" => $file->getCheckedOutByDisplayName(),
-				"can_check_in" => $file->canCheckin(logged_user()),
-				"can_edit" => $file->canEdit(logged_user())
-			));
+		if (is_array($files) && count($files) > 0){
+			$files_array = array();
+			
+			foreach ($files as $file){
+				if ($file->getId() != array_var($_GET, 'id')){
+					$files_array[] = array(
+						"id" => $file->getId(),
+						"name" => $file->getFilename(),
+						"description" => $file->getDescription(),
+						"type" => $file->getTypeString(),
+						"size" => $file->getFilesize(),
+						"created_by_id" => $file->getCreatedById(),
+						"created_by_name" => Users::findById($file->getCreatedById())->getDisplayName(),
+						"created_on" => $file->getCreatedOn()->getTimestamp(),
+						"is_checked_out" => $file->isCheckedOut(),
+						"checked_out_by_name" => $file->getCheckedOutByDisplayName(),
+						"can_check_in" => $file->canCheckin(logged_user()),
+						"can_edit" => $file->canEdit(logged_user()),
+						"workspace_names" => $file->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+						"workspace_ids" => $file->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+						"workspace_colors" => $file->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
+					);
+				}
+			}
+			
+			if (count($files_array) > 0){
+				ajx_extra_data(array(
+					"files" => $files_array
+				));
+			} else {
+				ajx_extra_data(array(
+					"id" => 0,
+					"name" => $filename
+				));
+			}
 		} else {
 			ajx_extra_data(array(
 				"id" => 0,
@@ -1468,10 +1417,11 @@ class FilesController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit file revision'));
-				$this->redirectToUrl($revision->getDetailsUrl());
+				ajx_current("back");
 			} catch(Exception $e) {
 				flash_error($e->getMessage());
 				DB::rollback();
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit_file_revision
@@ -1520,12 +1470,12 @@ class FilesController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete file revision'));
+			ajx_current("reload");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete file revision'));
+			ajx_current("empty");
 		} // try
-			
-		$this->redirectToUrl($file->getDetailsUrl());
 	} // delete_file_revision
 
 

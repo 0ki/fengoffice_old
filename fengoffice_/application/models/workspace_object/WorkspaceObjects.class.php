@@ -28,8 +28,8 @@ class WorkspaceObjects extends BaseWorkspaceObjects {
 	 * @param $object_id
 	 * @return array
 	 */
-	static function getWorkspacesByObject($object_manager, $object_id){
-		$all = self::findAll(array('conditions' => "`object_manager` = '$object_manager' AND `object_id` = $object_id"));//array('`object_manager` = ? AND `object_id` = ?', $object_manager, $object_id)));
+	static function getWorkspacesByObject($object_manager, $object_id, $wsCSV = null){
+		$all = self::findAll(array('conditions' => "`object_manager` = '$object_manager' AND `object_id` = $object_id" . ($wsCSV ? " AND `workspace_id in` ($wsCSV)":'')));//array('`object_manager` = ? AND `object_id` = ?', $object_manager, $object_id)));
 		if (!is_array($all)) return array();
 		$csv = "";
 		foreach ($all as $w) {

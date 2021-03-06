@@ -15,13 +15,15 @@
 
 <?php 
   $genid = gen_id();
-  set_page_title($milestone->isNew() ? lang('add milestone') : lang('edit milestone'));
-  $project = active_or_personal_project();
+  if ($base_milestone instanceof ProjectMilestone && $base_milestone->getIsTemplate()) {
+  	add_page_action(lang("delete template"), "javascript:if(confirm('".lang('confirm delete template')."')) og.openLink('" . get_url("milestone", "delete", array("id" => $base_milestone->getId())) ."');", "ico-delete");
+  }
+  $project = $milestone->getProject();
   $projects =  active_projects();
 ?>
 
 <?php if($milestone->isNew()) { ?>
-<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('milestone', 'add') ?>" method="post">
+<form style='height:100%;background-color:white' class="internalForm" action="<?php echo get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) ?>" method="post">
 <?php } else { ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->getEditUrl() ?>" method="post">
 <?php } // if ?>
@@ -30,8 +32,20 @@
 <div class="coInputHeader">
 	<div class="coInputHeaderUpperRow">
 	<div class="coInputTitle"><table style="width:535px">
-	<tr><td><?php echo $milestone->isNew() ? lang('new milestone') : lang('edit milestone') ?>
-	</td><td style="text-align:right"><?php echo submit_button($milestone->isNew() ? lang('add milestone') : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
+	<tr><td><?php
+		if ($milestone->isNew()) {
+			if (array_var($milestone_data, 'is_template', false)) {
+				echo lang('new milestone template');
+			} else if ($milestone_task instanceof ProjectTask) {
+				echo lang('new milestone from template');
+			} else {
+				echo lang('new milestone');
+			}
+		} else {
+			echo lang('edit milestone');
+		}
+	?>
+	</td><td style="text-align:right"><?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'),'s',array('style'=>'margin-top:0px;margin-left:10px')) ?></td></tr></table>
 	</div>
 	
 	</div>
@@ -61,7 +75,7 @@
 	<div id="<?php echo $genid ?>add_milestone_select_workspace_div" style="display:none">
 	<fieldset>
 	<legend><?php echo lang('workspace') ?></legend>
-		<?php echo select_project('milestone[project_id]', $projects, ($project instanceof Project)? $project->getId():0) ?>
+		<?php echo select_project('milestone[project_id]', $projects, ($project instanceof Project)? $project->getId():active_or_personal_project()->getId()) ?>
 	</fieldset>
 	</div>
 	<?php } ?>
@@ -101,7 +115,7 @@
 	<div id='<?php echo $genid ?>add_milestone_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('properties') ?></legend>
-		<? echo render_object_properties('milestone', $milestone); ?>
+		<?php echo render_object_properties('milestone', $milestone); ?>
 	</fieldset>
 	</div>
 	
@@ -122,7 +136,9 @@
 	<?php echo pick_date_widget('milestone_due_date', array_var($milestone_data, 'due_date')) ?>
 	</div>
 
-	<?php echo submit_button($milestone->isNew() ? lang('add milestone') : lang('save changes'), 's', array('tabindex' => '10')) ?>
+	<?php echo input_field("milestone[is_template]", array_var($milestone_data, 'is_template', false), array("type" => "hidden")); ?>
+
+	<?php echo submit_button($milestone->isNew() ? (array_var($milestone_data, 'is_template', false) ? lang('save template') : lang('add milestone')) : lang('save changes'), 's', array('tabindex' => '10')) ?>
 </div>
 </div>
 </form>

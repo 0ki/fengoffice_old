@@ -3,59 +3,56 @@
  */
 og.WebpageManager = function() {
 	var actions;
-	this.doNotDestroy = true;
-	this.active = true;
+	this.doNotRemove = true;
+	this.needRefresh = false;
 	
-	this.store = new Ext.data.Store({
-        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-            url: og.getUrl('webpage', 'list_all', {ajax:true})
-        })),
-        reader: new Ext.data.JsonReader({
-            root: 'webpages',
-            totalProperty: 'totalCount',
-            id: 'id',
-            fields: [
-                'name', 'description', 'url', 'tags', 'project', 'projectId'
-            ]
-        }),
-        remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("web pages"), ws, tag));
+	if (!og.WebpageManager.store) {
+		og.WebpageManager.store = new Ext.data.Store({
+	        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+	            url: og.getUrl('webpage', 'list_all', {ajax:true})
+	        })),
+	        reader: new Ext.data.JsonReader({
+	            root: 'webpages',
+	            totalProperty: 'totalCount',
+	            id: 'id',
+	            fields: [
+	                'name', 'description', 'url', 'tags', 'project', 'projectId'
+	            ]
+	        }),
+	        remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("web pages"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("web pages"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("web pages"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-    });
-    this.store.setDefaultSort('name', 'asc');
-    this.store.manager = this;
-    
+	    });
+	    og.WebpageManager.store.setDefaultSort('name', 'asc');
+    }
+    this.store = og.WebpageManager.store;
+    this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
     //--------------------------------------------
     // Renderers
     //--------------------------------------------
@@ -115,29 +112,25 @@ og.WebpageManager = function() {
 			header: lang("project"),
 			dataIndex: 'project',
 			width: 120,
-			renderer: renderProject,
-			sortable: false
+			renderer: renderProject
         },{
 			id: 'name',
 			header: lang("title"),
 			dataIndex: 'name',
 			width: 120,
-			sortable: false,
 			renderer: renderName
         },{
 			id: 'description',
 			header: lang("description"),
 			dataIndex: 'description',
-			sortable: false,
 			width: 120
 		},{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
-			width: 120,
-			sortable: false
+			width: 120
         }]);
-    cm.defaultSortable = true;
+    cm.defaultSortable = false;
 	
 	actions = {
 		newWebpage: new Ext.Action({
@@ -212,7 +205,6 @@ og.WebpageManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-        loadMask: true,
 		style: "padding:7px;",
         bbar: new Ext.PagingToolbar({
             pageSize: og.pageSize,
@@ -251,24 +243,27 @@ og.WebpageManager = function() {
 		}
     });
 
-	og.eventManager.addListener("tag changed", function(tag) {
-		if (this.active) {
-			this.load({start: 0});
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
-	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		//if (this.store.lastOptions) {
-		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		//}
-		
-	}, this);
+	});
 };
 
 Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		this.store.load({
 			params: Ext.apply(params, {
 				start: 0,
@@ -281,14 +276,9 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -296,9 +286,4 @@ Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	}
 });
 
-og.WebpageManager.getInstance = function() {
-	if (!og.WebpageManager.instance) {
-		og.WebpageManager.instance = new og.WebpageManager();
-	}
-	return og.WebpageManager.instance;
-}
+Ext.reg("webpages", og.WebpageManager);

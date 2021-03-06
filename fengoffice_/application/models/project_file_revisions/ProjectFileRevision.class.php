@@ -35,8 +35,6 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @var FileType
 	 */
 	private $file_type;
-	
-	private $workspaces;
 
 	/**
 	 * Construct file revision object

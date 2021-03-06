@@ -21,11 +21,7 @@ class ObjectController extends ApplicationController {
 	*/
 	function __construct() {
 		parent::__construct();
-      if (array_var($_GET,'ajax')) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 	
 	// ---------------------------------------------------
@@ -71,7 +67,7 @@ class ObjectController extends ApplicationController {
 			$object->linkObject($rel_object);
 			DB::commit();
 			flash_success(lang('success link object'));
-			$this->redirectToUrl($object->getObjectUrl());		
+			ajx_current("reload");		
 		} catch(Exception $e){
 			flash_error($e->getMessage());
 			ajx_current("empty");
@@ -241,7 +237,7 @@ class ObjectController extends ApplicationController {
 			DB::commit();
 			
 			flash_success(lang('success unlink object'));
-			$this->redirectToReferer($object1->getObjectUrl());
+			ajx_current("reload");
 		} catch(Exception $e) {
 			flash_error(lang('error unlink object'));
 			DB::rollback();
@@ -472,7 +468,7 @@ class ObjectController extends ApplicationController {
 					TABLE_PREFIX . "project_files co WHERE " . $proj_cond2 . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectTasks::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
 		$res['Tasks'] = "SELECT  'ProjectTasks' as object_manager_value, id as oid, updated_on as last_update FROM " . 
-					TABLE_PREFIX . "project_tasks co WHERE parent_id=0 AND " . $proj_cond . $tag_str . $permissions;
+					TABLE_PREFIX . "project_tasks co WHERE `is_template` = false AND parent_id=0 AND " . $proj_cond . $tag_str . $permissions;
 		$permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id','co') .')';
 		$res['Milestones'] = "SELECT  'ProjectMilestones' as object_manager_value, id as oid, updated_on as last_update FROM " . 
 					TABLE_PREFIX . "project_milestones co WHERE " . $proj_cond . $tag_str . $permissions;

@@ -10,9 +10,9 @@
 <?php 
 	$jss= array('extjs/adapter/ext/ext-base.js',
 			'extjs/ext-all.js',
+			'extfix.js',
 			'app.js',
 			'og/og.js',
-			'og/HttpProvider.js',
 			'og/WorkspaceChooser.js',
 			'og/MessageManager.js',
 			'og/WebpageManager.js',
@@ -28,9 +28,8 @@
 			'og/TagPanel.js',
 			'og/EmailAccountMenu.js',
 			'og/TagMenu.js',
-			'og/Dashboard.js',
-			'og/RowExpander.js',
-			'og/TaskViewer.js',
+			'og/TaskManager.js',
+			'og/ContentPanelLayout.js',
 			'og/ContentPanel.js',
 			'og/HelpPanel.js',
 			'og/layout.js',
@@ -62,10 +61,13 @@
 			'jquery/jquery.min.js',
 			'jquery/jquery.dimensions.js',
 			'jquery/jquery.hoverIntent.js',
-			'jquery/jquery.cluetip.js'
+			'jquery/jquery.cluetip.js',
+			'jquery/jquery-ui.min.js'
 		);
 	
-		
+	
+	echo add_javascript_to_page(get_url("access", "get_javascript_translation"));
+	
 	if(USE_JS_CACHE){
 		echo add_javascript_to_page(implode(',',$jss));
 	}
@@ -76,22 +78,18 @@
 	}
 	
 	?>
-	<?php echo add_javascript_to_page(with_slash(ROOT_URL) . 'language/' . Localization::instance()->getLocale() . "/lang.js") ?>
 	<?php echo add_javascript_to_page(with_slash(ROOT_URL) .  'help/help.js') ?>
 
 		
 	<?php echo render_page_links() ?>
 	<?php echo render_page_meta() ?>
 	<?php echo render_page_inline_css() ?>
-	<!--[if IE]>
-	<style type="text/css">.viewAsList { visibility: hidden; }</style>
-	<![endif]-->
-	
+	<link rel="alternate" type="application/rss+xml" title="<?php echo owner_company()->getName() ?> RSS Feed" href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" />
 </head>
 <body id="body" <?php echo render_body_events() ?>>
 
 <div id="loading">
-	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/>Loading...
+	<img src="<?php echo get_image_url("layout/loading.gif") ?>" width="32" height="32" style="margin-right:8px;" align="absmiddle"/><?php echo lang("loading") ?>...
 </div>
 
 <div id="subWsExpander" onmouseover="clearTimeout(og.globalVars['swst']);" onmouseout="og.setSubWsTooltipTimeout(100)" style="display:none;"></div>
@@ -104,8 +102,10 @@
 	<div id="headerContent">
 	    <table><tr><td style="width:60px">
 		<div id="logodiv"></div></td><td>
-		<div id="wsCrumbsDiv"><div style="font-size:150%;display:inline;">
-		<a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a></div></div>
+		<div id="wsCrumbsWrapper"><table><tr><td><div id="wsCrumbsDiv"><div style="font-size:150%;display:inline;">
+		<a href="#" style="display:inline;line-height:28px" onmouseover="og.expandSubWsCrumbs(0)"><?php echo lang('all') ?></a></div></div></td>
+		<td><div id="wsTagCrumbs"></div></td></tr></table>
+		</div>
 		</td></tr></table>
 		<div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
 		<div id="searchbox">

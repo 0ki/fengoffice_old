@@ -12,7 +12,7 @@
 
   $genid = gen_id();
 ?>
-<form class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $user->getEditProfileUrl($redirect_to) ?>" method="post">
 
 
 <div class="adminEditProfile">

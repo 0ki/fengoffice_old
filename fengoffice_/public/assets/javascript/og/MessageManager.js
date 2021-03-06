@@ -6,60 +6,57 @@ og.MessageManager = function() {
 	var actions, moreActions;
 	this.accountId = 0;
 	this.viewType = "all";
-	this.active = true;
-	this.doNotDestroy = true;
+	this.doNotRemove = true;
 	this.needRefresh = false;
 
-	this.store = new Ext.data.Store({
-		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-			url: og.getUrl('message', 'list_all', {ajax:true})
-		})),
-		reader: new Ext.data.JsonReader({
-			root: 'messages',
-			totalProperty: 'totalCount',
-			id: 'id',
-			fields: [
-				'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
-				'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors'
-			]
-		}),
-		remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("messages"), ws, tag));
+	if (!og.MessageManager.store) {
+		og.MessageManager.store = new Ext.data.Store({
+			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+				url: og.getUrl('message', 'list_all', {ajax:true})
+			})),
+			reader: new Ext.data.JsonReader({
+				root: 'messages',
+				totalProperty: 'totalCount',
+				id: 'id',
+				fields: [
+					'object_id', 'type', 'accountId', 'accountName', 'hasAttachment', 'title', 'text', {name: 'date', type: 'date', dateFormat: 'timestamp'},
+					'projectId', 'projectName', 'userId', 'userName', 'tags', 'workspaceColors','isRead'
+				]
+			}),
+			remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("messages"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("messages"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("messages"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-	});
-	this.store.setDefaultSort('date', 'desc');
-	this.store.manager = this;
+		});
+		og.MessageManager.store.setDefaultSort('date', 'desc');
+	}
+	this.store = og.MessageManager.store;
+	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
 		var result = '';
@@ -68,11 +65,13 @@ og.MessageManager = function() {
 			name = String.format(
 					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
 					value, og.getUrl('message', 'view', {id: r.data.object_id}), String.format(r.data.text));
-		else
+		else{
+			var bold = 'font-weight:normal;';
+			if (!r.data.isRead) bold = 'font-weight:600;';
 			name = String.format(
-					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
-					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.text));
-			
+					'<a style="font-size:120%;{3}" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('mail', 'view', {id: r.data.object_id}), String.format(r.data.text),bold);
+		}	
 		var projectstring = '';		
 	    if (r.data.projectId != ''){
 			var ids = String(r.data.projectId).split(',');
@@ -146,6 +145,23 @@ og.MessageManager = function() {
 		}
 	}
 	
+	function getSelectedReadTypes() {
+		var selections = sm.getSelections();
+		if (selections.length <= 0) {
+			return '';
+		} else {
+			var read = false;
+			var unread = false;
+			for (var i=0; i < selections.length; i++) {
+				if (selections[i].data.isRead) read = true;
+				if (!selections[i].data.isRead) unread = true;
+				if (read && unread) return 'all'
+			}	
+			if (read) return 'read';
+			else return 'unread';
+		}
+	}
+	
 	function getSelectedTypes() {
 		var selections = sm.getSelections();
 		if (selections.length <= 0) {
@@ -172,9 +188,25 @@ og.MessageManager = function() {
 			if (sm.getCount() <= 0) {
 				actions.tag.setDisabled(true);
 				actions.del.setDisabled(true);
+				emailActions.markAsRead.setDisabled(true);				
+				emailActions.markAsUnRead.setDisabled(true);				
 			} else {
 				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
+				
+				var selTypes = getSelectedTypes();
+				if (/message/.test(selTypes)){//read/unread functionality not yet implemented in messages
+					emailActions.markAsRead.setDisabled(true);
+					emailActions.markAsUnRead.setDisabled(true);
+				}else {								
+					emailActions.markAsRead.setDisabled(false);
+					emailActions.markAsUnRead.setDisabled(false);				
+					var selReadTypes = getSelectedReadTypes();
+					
+					if (selReadTypes == 'read') emailActions.markAsRead.setDisabled(true);
+					else if (selReadTypes == 'unread') emailActions.markAsUnRead.setDisabled(true);	
+				}
+				
 			}
 		});
 	
@@ -185,7 +217,6 @@ og.MessageManager = function() {
 			dataIndex: 'type',
 			width: 28,
         	renderer: renderIcon,
-        	sortable: false,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -196,7 +227,6 @@ og.MessageManager = function() {
 			dataIndex: 'hasAttachment',
 			width: 24,
         	renderer: renderAttachment,
-        	sortable: false,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -206,30 +236,27 @@ og.MessageManager = function() {
 			header: lang("title"),
 			dataIndex: 'title',
 			width: 250,
-			sortable: false,
 			renderer: renderName
         },{
 			id: 'account',
 			header: lang("account"),
 			dataIndex: 'accountName',
 			width: 60,
-			renderer: renderAccount,
-			sortable: false
+			renderer: renderAccount
         },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
-			width: 120,
-			sortable: false
+			width: 120
         },{
 			id: 'date',
 			header: lang("last updated by"),
 			dataIndex: 'date',
 			width: 50,
-			sortable: false,
+			sortable: true,
 			renderer: renderDate
         }]);
-	cm.defaultSortable = true;
+	cm.defaultSortable = false;
 
 	moreActions = {}
 	
@@ -237,32 +264,61 @@ og.MessageManager = function() {
 			all: new Ext.Action({
 				text: lang('view all'),
 				handler: function() {
-					og.MessageManager.instance.viewType = "all";
-					og.MessageManager.instance.accountId = 0;
-					og.MessageManager.instance.load();
-				}
+					this.viewType = "all";
+					this.accountId = 0;
+					this.load();
+				},
+				scope: this
 			}),
 			messages: new Ext.Action({
 				text: lang('messages'),
 				iconCls: "ico-message",
 				handler: function() {
-					og.MessageManager.instance.viewType = "messages";
-					og.MessageManager.instance.load();
-				}
+					this.viewType = "messages";
+					this.load();
+				},
+				scope: this
 			}),
 			emails: new Ext.Action({
 				text: lang('all emails'),
 				iconCls: "ico-email",
 				handler: function() {
-					og.MessageManager.instance.viewType = "emails";
-					og.MessageManager.instance.accountId = 0;
-					og.MessageManager.instance.load();
+					this.viewType = "emails";
+					this.readType = "all";
+					this.accountId = 0;
+					this.load();
 				},
+				scope: this,
 				menu: new og.EmailAccountMenu({
 					listeners: {
 						'accountselect': {
 							fn: function(account) {
 								this.viewType = "emails";
+								this.readType = "all";
+								this.accountId = account;
+								this.load();
+							},
+							scope: this
+						}
+					}
+				},{},"view")
+			}),
+			unreademails: new Ext.Action({
+				text: lang('unread emails'),
+				iconCls: "ico-email",
+				handler: function() {
+					this.readType = "unreaded";
+					this.viewType = "emails";
+					this.accountId = 0;
+					this.load();
+				},
+				scope: this,
+				menu: new og.EmailAccountMenu({
+					listeners: {
+						'accountselect': {
+							fn: function(account) {
+								this.viewType = "emails";
+								this.readType = "unreaded";
 								this.accountId = account;
 								this.load();
 							},
@@ -275,10 +331,11 @@ og.MessageManager = function() {
 				text: lang('unclassified emails'),
 				iconCls: "ico-classify",
 				handler: function() {
-					og.MessageManager.instance.viewType = "unclassified";
-					og.MessageManager.instance.accountId = 0;
-					og.MessageManager.instance.load();
+					this.viewType = "unclassified";
+					this.accountId = 0;
+					this.load();
 				},
+				scope: this,
 				menu: new og.EmailAccountMenu({
 					listeners: {
 						'accountselect': {
@@ -305,11 +362,40 @@ og.MessageManager = function() {
 			checkMails: new Ext.Action({
 				text: lang('check mails'),
 				handler: function() {
-					og.MessageManager.instance.load({
+					this.load({
 						action: "checkmail"
 					});
-					og.MessageManager.instance.action = "";
-				}
+					this.action = "";
+				},
+				scope: this
+			}),
+			markAsRead: new Ext.Action({
+				text: lang('mark read'),
+	            tooltip: lang('mark read'),
+	            iconCls: 'ico-mail-mark-read',
+				disabled: true,
+				handler: function() {
+					this.load({
+						action: 'markAsRead',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
+				},
+				scope: this
+			}),
+			markAsUnRead: new Ext.Action({
+				text: lang('mark unread'),
+	            tooltip: lang('mark unread'),
+	            iconCls: 'ico-mail-mark-unread',
+				disabled: true,
+				handler: function() {
+					this.load({
+						action: 'markAsUnRead',
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
+					});
+				},
+				scope: this
 			}),
 			editAccount: new Ext.Action({
 				text: lang('edit account'),
@@ -409,6 +495,7 @@ og.MessageManager = function() {
 				viewActions.all,
 				'-',
 				viewActions.messages,
+				viewActions.unreademails,
 				viewActions.emails,
 				viewActions.unclassified
 			]}
@@ -421,6 +508,8 @@ og.MessageManager = function() {
 			menu: {items: [
 				emailActions.checkMails,
 				'-',
+				emailActions.markAsRead,
+				emailActions.markAsUnRead,
 				emailActions.addAccount,
 				emailActions.editAccount
 			]}
@@ -432,10 +521,10 @@ og.MessageManager = function() {
 		store: this.store,
 		layout: 'fit',
 		cm: cm,
-		id: 'message-manager',
+		//id: 'message-manager',
 		stripeRows: true,
 		closable: true,
-		loadMask: true,
+		loadMask: false,
 		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
@@ -476,25 +565,28 @@ og.MessageManager = function() {
 		}
 	});
 	
-	og.eventManager.addListener("tag changed", function(tag) {
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
 		this.resetVars();
-		if (this.active) {
-			this.load({start: 0});
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
-	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		//if (this.store.lastOptions) {
-		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		//}
 	}, this);
 };
 
 Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
-		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,
@@ -502,7 +594,9 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id,
 				account_id: this.accountId,
-				view_type: this.viewType
+				view_type: this.viewType,
+				read_type: this.readType
+				
 			})
 		});
 	},
@@ -512,14 +606,9 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
-			this.load({start: 0});
+			this.load({start:0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -527,9 +616,5 @@ Ext.extend(og.MessageManager, Ext.grid.GridPanel, {
 	}
 });
 
-og.MessageManager.getInstance = function() {
-	if (!og.MessageManager.instance) {
-		og.MessageManager.instance = new og.MessageManager();
-	}
-	return og.MessageManager.instance;
-}
+
+Ext.reg("messages", og.MessageManager);

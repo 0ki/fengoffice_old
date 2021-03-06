@@ -73,22 +73,16 @@ Ext.extend(og.TagMenu, Ext.menu.Menu, {
 	},
 
 	loadTags: function() {
-		og.loading();
-		Ext.Ajax.request({
-			url: og.getUrl('tag', 'list_tags', {ajax: true}),
-			callback: function(options, success, response) {
+		og.openLink(og.getUrl('tag', 'list_tags'),{
+			callback: function(success, data) {
 				if (success) {
 					try {
-						var tags = Ext.util.JSON.decode(response.responseText);
-						this.addTags(tags.tags);
+						var tags = data.tags;
+						this.addTags(tags);
 					} catch (e) {
-						//og.msg(lang("error"), e.message);
 						throw e;
 					}
-				} else {
-					og.msg(lang("error"), lang("server could not be reached"));
 				}
-				og.hideLoading();
 			},
 			scope: this
 		});

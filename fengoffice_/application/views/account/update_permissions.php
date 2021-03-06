@@ -54,7 +54,7 @@ function checkUncheckSingle(me, id) {
 }
 
 </script>
-<form action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" method="POST">
+<form style="height:100%;background-color:white" action="<?php echo get_url("account", "update_permissions", array("id" => $user->getId())) ?>" class="internalForm" method="POST">
 <div class="adminClients">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang("permissions for user", $user->getUsername()) ?></div>

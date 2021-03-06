@@ -8,7 +8,7 @@
 
 ?>
 
-<form action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, '<?php echo $contact->getUpdatePictureUrl() ?>')">
+<form action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, {callback:{type:'back'}})">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

@@ -1171,7 +1171,7 @@ class Project extends BaseProject {
 	 */
 	function getDashboardUrl() {
 		return get_url('dashboard', 'index', array('active_project' => $this->getId()));
-	} // getOverviewUrl
+	} // getDashboardUrl
 	
 	/**
 	 * Link to project overview page
@@ -1181,7 +1181,7 @@ class Project extends BaseProject {
 	 * @return stirng
 	 */
 	function getOverviewUrl() {
-		return get_url('object', 'list_objects', array('active_project' => $this->getId()));
+		return get_url('project', 'people', array('active_project' => $this->getId()));
 	} // getOverviewUrl
 
 	/**
@@ -1407,9 +1407,6 @@ class Project extends BaseProject {
 	function validate(&$errors) {
 		if(!$this->validatePresenceOf('name')) {
 			$errors[] = lang('project name required');
-		} // if
-		if(!$this->validateUniquenessOf('name')) {
-			$errors[] = lang('project name unique');
 		} // if
 	} // validate
 

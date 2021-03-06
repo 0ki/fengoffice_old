@@ -126,6 +126,25 @@
     'month 10' => 'October',
     'month 11' => 'November',
     'month 12' => 'December',
+  
+  	'monday' => 'Monday',
+  	'tuesday' => 'Tuesday',
+  	'wednesday' => 'Wednesday',
+  	'thursday' => 'Thursday',
+    'friday' => 'Friday',
+  	'saturday' => 'Saturday',
+  	'sunday' => 'Sunday',
+  
+  	'monday short' => 'Mon',
+  	'tuesday short' => 'Tue',
+  	'wednesday short' => 'Wed',
+  	'thursday short' => 'Thu',
+    'friday short' => 'Fri',
+  	'saturday short' => 'Sat',
+  	'sunday short' => 'Sun',
+  
+  	'copy of' => 'Copy of {0}',
+  
   ); // array
 
 ?>

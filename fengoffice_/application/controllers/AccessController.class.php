@@ -248,6 +248,13 @@ class AccessController extends ApplicationController {
 		} // if
 	} // complete_installation
 
+	
+	function get_javascript_translation() {
+		$content = file_get_contents("./language/" . Localization::instance()->getLocale() . "/lang.js");
+		$this->setLayout("json");
+		$this->renderText($content, false);
+	}
+	
 } // AccessController
 
 ?>

@@ -334,6 +334,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   `created_by_id` int(10) unsigned default NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `updated_by_id` int(10) unsigned default NULL,
+  `is_template` BOOLEAN NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`),
   KEY `due_date` (`due_date`),
@@ -351,6 +352,9 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `start_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `assigned_to_company_id` smallint(5) unsigned default NULL,
   `assigned_to_user_id` int(10) unsigned default NULL,
+  `assigned_on` datetime default NULL,
+  `assigned_by_id` int(10) unsigned default NULL,
+  `time_estimate` int(10) unsigned NOT NULL default '0',
   `completed_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `completed_by_id` int(10) unsigned default NULL,
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -359,17 +363,20 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `updated_by_id` int(10) unsigned default NULL,   
   `started_on` DATETIME DEFAULT NULL,
   `started_by_id` INTEGER UNSIGNED NOT NULL,
-  `priority` INTEGER UNSIGNED,
+  `priority` INTEGER UNSIGNED default 200,
   `state` INTEGER UNSIGNED,
   `order` int(10) unsigned  default '0',
   `milestone_id` INTEGER UNSIGNED,
   `is_private` BOOLEAN NOT NULL default '0',
+  `is_template` BOOLEAN NOT NULL default '0',
   PRIMARY KEY  (`id`),
   KEY `parent_id` (`parent_id`),
   KEY `completed_on` (`completed_on`),
   KEY `created_on` (`created_on`),
   KEY `order` (`order`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+
 
 CREATE TABLE `<?php echo $table_prefix ?>project_users` (
   `project_id` int(10) unsigned NOT NULL default '0',
@@ -441,15 +448,6 @@ CREATE TABLE `<?php echo $table_prefix ?>tags` (
   KEY `object_id` (`rel_object_id`,`rel_object_manager`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>user_im_values` (
-  `user_id` int(10) unsigned NOT NULL default '0',
-  `im_type_id` tinyint(3) unsigned NOT NULL default '0',
-  `value` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
-  `is_default` tinyint(1) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`user_id`,`im_type_id`),
-  KEY `is_default` (`is_default`)
-) ENGINE=InnoDB <?php echo $default_charset ?>;
-
 CREATE TABLE `<?php echo $table_prefix ?>users` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `company_id` smallint(5) unsigned NOT NULL default '0',
@@ -462,10 +460,6 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
   `display_name` varchar(50) <?php echo $default_collation ?> default NULL,
   `title` varchar(30) <?php echo $default_collation ?> default NULL,
   `avatar_file` varchar(44) <?php echo $default_collation ?> default NULL,
-  `office_number` varchar(20) <?php echo $default_collation ?> default NULL,
-  `fax_number` varchar(20) <?php echo $default_collation ?> default NULL,
-  `mobile_number` varchar(20) <?php echo $default_collation ?> default NULL,
-  `home_number` varchar(20) <?php echo $default_collation ?> default NULL,
   `timezone` float(2,1) NOT NULL default '0.0',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
@@ -566,7 +560,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
   `project_id` int(10) unsigned NOT NULL default '0',
   `url` text <?php echo $default_collation ?> NOT NULL ,
   `title` varchar(100) <?php echo $default_collation ?> default '',
-  `description` varchar(255) <?php echo $default_collation ?> default '',
+  `description` text <?php echo $default_collation ?> default '',
   `created_on` datetime default NULL,
   `created_by_id` int(10) unsigned NOT NULL default '0',	
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
@@ -612,6 +606,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `is_deleted` int(1) NOT NULL default '0',
   `is_shared` INT(1) NOT NULL default '0',
   `is_private` INT(1) NOT NULL default 0,
+  `is_read` int(1) NOT NULL default '0',
   `created_on` datetime default NULL,
   `created_by_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`),
@@ -659,4 +654,20 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_chart_params` (
   `chart_id` int(10) unsigned NOT NULL,
   `value` varchar(80) NOT NULL,
   PRIMARY KEY  (`id`,`chart_id`)
+) ENGINE=InnoDB <?php echo $default_charset ?>;
+
+CREATE TABLE  `<?php echo $table_prefix ?>timeslots` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `object_id` int(10) unsigned NOT NULL,
+  `object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL,
+  `start_time` datetime NOT NULL default '0000-00-00 00:00:00',
+  `end_time` datetime NOT NULL default '0000-00-00 00:00:00',
+  `user_id` int(10) unsigned NOT NULL,
+  `description` text <?php echo $default_collation ?> NOT NULL default '',
+  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `created_by_id` int(10) unsigned NOT NULL,
+  `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
+  `updated_by_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY  (`id`),
+  INDEX `ObjectID` (`object_id`,`object_manager`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;

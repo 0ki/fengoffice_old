@@ -18,15 +18,6 @@ function ajx_unset_current() {
 	AjaxResponse::instance()->unsetCurrentContent();
 }
 
-/**
- * Set the name of the object's property where the generated content is returned.
- * Defaults to "current".
- *
- * @param string $property
- */
-function ajx_content_property($property) {
-	AjaxResponse::instance()->setContentProperty($property);
-}
 
 /**
  * Add content for a panel. Expects the panel's id, the type of content
@@ -37,8 +28,8 @@ function ajx_content_property($property) {
  * @param string $data
  * @param array $actions
  */
-function ajx_add($panel, $type = null, $data = null, $actions = null) {
-	AjaxResponse::instance()->addContent($panel, $type, $data, $actions);
+function ajx_add($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null) {
+	AjaxResponse::instance()->addContent($panel, $type, $data, $actions, $notbar, $preventClose);
 }
 
 /**
@@ -98,8 +89,15 @@ function ajx_extra_data($data) {
 	AjaxResponse::instance()->addExtraData($data);
 }
 
-function ajx_set_no_toolbar($nt){
+function ajx_set_no_toolbar($nt = true){
 	AjaxResponse::instance()->notbar = $nt;
 }
 
+function ajx_prevent_close($preventClose = true){
+	AjaxResponse::instance()->preventClose = $preventClose;
+}
+
+function ajx_replace($replace = true) {
+	AjaxResponse::instance()->replace = $replace;
+}
 ?>

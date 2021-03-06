@@ -15,6 +15,8 @@
     'email dnx' => 'Requested email does not exist',
   	'email dnx deleted' => 'Requested email was deleted from database',
     'project dnx' => 'Requested workspace does not exist in database',
+    'contact dnx' => 'Requested contact does not exist in database',
+    'company dnx' => 'Requested company does not exist in database',
     'message dnx' => 'Requested message does not exist',
     'no comments in message' => 'There are no comments on this message',
     'no comments associated with object' => 'There are no comments posted for this object',
@@ -34,6 +36,9 @@
     'no open task lists in project' => 'There are no open task in this workspace',
     'no completed task lists in project' => 'There are no completed task in this workspace',
     'no open task in task list' => 'There are no open tasks in this list',
+    'no closed task in task list' => 'There are no open tasks in this list',
+    'no open task in milestone' => 'There are no open tasks in this milestone',
+    'no closed task in milestone' => 'There are no closed tasks in this milestone',
     'no projects in db' => 'There are no defined workspaces in database',
     'no projects owned by company' => 'There are no workspaces owned by this company',
     'no projects started' => 'There are no started workspaces',
@@ -222,6 +227,12 @@
   	'success undo checkout file' => 'File checkout canceled successfully',
     
     // Failures
+    'error edit timeslot' => 'Failed to save timeslot',
+  	'error delete timeslot' => 'Failed to delete the selected timeslot',
+  	'error add timeslot' => 'Failed to add timeslot',
+  	'error open timeslot' => 'Failed to open timeslot',
+  	'error close timeslot' => 'Failed to close timeslot',
+    'error start time after end time' => 'Failed to save timeslot: the start time must happen before the end time',
     'error form validation' => 'Failed to save object because some of its properties are not valid',
     'error delete owner company' => 'Owner company can\'t be deleted',
     'error delete message' => 'Failed to delete selected message',
@@ -235,6 +246,7 @@
     'error complete project' => 'Failed to complete selected workspace',
     'error open project' => 'Failed to reopen selected workspace',
     'error delete client' => 'Failed to delete selected client company',
+    'error delete group' => 'Failed to delete selected group',
     'error delete user' => 'Failed to delete selected user',
     'error update project permissions' => 'Failed to update workspace permissions',
     'error remove user from project' => 'Failed to remove user from workspace',
@@ -313,7 +325,7 @@
     'confirm delete revision' => 'Are you sure that you want to delete this revision?',
     'confirm reset form' => 'Are you sure that you want to reset this form?',
     'confirm delete contacts' => 'Are you sure that you want to delete these contacts?',
-	'confirm delete group' => 'Are you sure that you want to delete this comment?',
+	'confirm delete group' => 'Are you sure that you want to delete this group?',
     
     // Errors...
     'system error message' => 'We are sorry, but a fatal error prevented OpenGoo from executing your request. An Error Report has been sent to the administrator.',
@@ -323,6 +335,10 @@
     'log add projectmessages' => '\'{0}\' added',
     'log edit projectmessages' => '\'{0}\' updated',
     'log delete projectmessages' => '\'{0}\' deleted',
+  
+  	'log add projectevents' => '\'{0}\' added',
+    'log edit projectevents' => '\'{0}\' updated',
+    'log delete projectevents' => '\'{0}\' deleted',
     
     'log add comments' => '{0} added',
     'log edit comments' => '{0} updated',
@@ -361,7 +377,7 @@
     'log edit projectfilerevisions' => '{0} updated',
     'log delete projectfilerevisions' => '{0} deleted',
     
-    'log add projectwebpages' => '\'{0}\' uploaded',
+    'log add projectwebpages' => '\'{0}\' added',
     'log edit projectwebpages' => '\'{0}\' updated',
     'log delete projectwebpages' => '\'{0}\' deleted',
     
@@ -372,7 +388,20 @@
   	'no contacts in company' => 'The company has no contacts.',
   
   	'session expired error' => 'The session has expired. Please, refresh the page and login again.',
+  	'admin cannot be removed from admin group' => 'First user cannot be deleted from Administrators group',
+  	'open this link in a new window' => 'Open this link in a new window',
   
+  	'confirm delete template' => 'Are you sure that you want to delete this template?',
+  	'success delete template' => 'Template \'{0}\' has been deleted',
+  	'success add template' => 'Template has been added',
+  
+  	'log add companies' => '\'{0}\' added',
+  	'log edit companies' => '\'{0}\' updated',
+  	'log delete companies' => '\'{0}\' deleted',
+  
+  	'log add mailcontents' => '\'{0}\' added',
+  	'log edit mailcontents' => '\'{0}\' updated',
+  	'log delete mailcontents' => '\'{0}\' deleted',
   ); // array
 
 ?>

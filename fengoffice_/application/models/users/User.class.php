@@ -423,9 +423,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getLateMilestones($project = null) {
+	function getLateMilestones($project = null, $tag = null) {
 		if(is_null($this->late_milestones)) {
-			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this, $project);
+			$this->late_milestones = ProjectMilestones::getLateMilestonesByUser($this, $project, $tag);
 		} // if
 		return $this->late_milestones;
 	} // getLateMilestones
@@ -437,9 +437,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getTodayMilestones($project = null) {
+	function getTodayMilestones($project = null, $tag = null) {
 		if(is_null($this->today_milestones)) {
-			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this, $project);
+			$this->today_milestones = ProjectMilestones::getTodayMilestonesByUser($this, $project, $tag);
 		} // if
 		return $this->today_milestones;
 	} // getTodayMilestones
@@ -452,9 +452,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getLateTasks($project = null) {
+	function getLateTasks($project = null, $tag = null) {
 		if(is_null($this->late_tasks)) {
-			$this->late_tasks = ProjectTasks::getLateTasksByUser($this, $project);
+			$this->late_tasks = ProjectTasks::getLateTasksByUser($this, $project, $tag);
 		} // if
 		return $this->late_tasks;
 	} // getLateMilestones
@@ -466,9 +466,9 @@ class User extends BaseUser {
 	 * @param void
 	 * @return array
 	 */
-	function getTodayTasks($project = null) {
+	function getTodayTasks($project = null, $tag = null) {
 		if(is_null($this->today_tasks)) {
-			$this->today_tasks = ProjectTasks::getDayTasksByUser(new DateTimeValue(mktime()),$this, $project);
+			$this->today_tasks = ProjectTasks::getDayTasksByUser(new DateTimeValue(mktime()),$this, $project, $tag);
 		} // if
 		return $this->today_tasks;
 	} // getTodayMilestones
@@ -517,78 +517,6 @@ class User extends BaseUser {
 	}
 	
 	
-	// ---------------------------------------------------
-	//  IMs
-	// ---------------------------------------------------
-
-	/**
-	 * Return true if this user have at least one IM address
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function hasImValue() {
-		return UserImValues::count('`user_id` = ' . DB::escape($this->getId()));
-	} // hasImValue
-
-	/**
-	 * Return all IM values
-	 *
-	 * @access public
-	 * @param void
-	 * @return array
-	 */
-	function getImValues() {
-		return UserImValues::getByUser($this);
-	} // getImValues
-
-	/**
-	 * Return value of specific IM. This function will return null if IM is not found
-	 *
-	 * @access public
-	 * @param ImType $im_type
-	 * @return string
-	 */
-	function getImValue(ImType $im_type) {
-		$im_value = UserImValues::findById(array('user_id' => $this->getId(), 'im_type_id' => $im_type->getId()));
-		return $im_value instanceof UserImValue && (trim($im_value->getValue()) <> '') ? $im_value->getValue() : null;
-	} // getImValue
-
-	/**
-	 * Return default IM value. If value was not found NULL is returned
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getDefaultImValue() {
-		$default_im_type = $this->getDefaultImType();
-		return $this->getImValue($default_im_type);
-	} // getDefaultImValue
-
-	/**
-	 * Return default user IM type. If there is no default user IM type NULL is returned
-	 *
-	 * @access public
-	 * @param void
-	 * @return ImType
-	 */
-	function getDefaultImType() {
-		return UserImValues::getDefaultUserImType($this);
-	} // getDefaultImType
-
-	/**
-	 * Clear all IM values
-	 *
-	 * @access public
-	 * @param void
-	 * @return boolean
-	 */
-	function clearImValues() {
-		return UserImValues::instance()->clearByUser($this);
-	} // clearImValues
-
 	// ---------------------------------------------------
 	//  Avatars
 	// ---------------------------------------------------

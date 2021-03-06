@@ -1,5 +1,5 @@
 
-    About OpenGoo beta 0.7.1
+    About OpenGoo beta 0.8
     ======================
 
     OpenGoo is a free, web based WebOffice, project management and collaboration
@@ -69,10 +69,10 @@
     You should be finished in a matter of minutes.
     
     
-    Upgrade from 0.7
+    Upgrade from 0.7.1
     ==================
     
-    1. Download OpenGoo 0.7.1 - http://www.opengoo.org/
+    1. Download OpenGoo 0.8 - http://www.opengoo.org/
     2. Unpack and remove the following folders:
     	- cache
     	- config
@@ -86,8 +86,10 @@
 	Changelog
 	=========
 
-	* Fixed a bug that named downloaded documents as index.php.
-	* Fixed a critical bug that would delete some wrong documents and messages when deleting a workspace.
-	* The tasks view has been further enhanced.
-	* Fixed links to workspaces on listings when there's more than one workspace.
-	* And other small bug fixes.
+	* Task time tracking
+	* Task priority
+	* First approach on task and milestone templates
+	* Better flow of screens (i.e. closing a CO view will actually close it).
+	* Better support for Safari (though it still has some bugs).
+	* Spanish translation (get it by setting DEFAULT_LOCALIZATION to es_uy in config/config.php)
+	* Tons of bugs fixed (assuming that one bug weighs a ton).

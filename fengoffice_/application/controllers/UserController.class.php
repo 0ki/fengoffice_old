@@ -58,11 +58,29 @@ class UserController extends ApplicationController {
 
 		$user_data = array_var($_POST, 'user');
 		if(!is_array($user_data)) {
-			$user_data = array(
-          'password_generator' => 'random',
-          'company_id' => $company->getId(),
-          'timezone' => $company->getTimezone(),
-			); // array
+			//if it is a new contact
+			$contact_id = get_id('contact_id');			
+			if($contact_id && $contact = Contacts::findById($contact_id)){
+				//if it will be created from a contact
+				$user_data = array(
+					'username' => substr($contact->getFirstname(),0,1) . $contact->getLastname(),
+					'display_name' => $contact->getFirstname() . $contact->getLastname(),
+					'email' => $contact->getEmail(),
+					'contact_id' => $contact->getId(),
+					'password_generator' => 'random',
+					'company_id' => $company->getId(),
+					'timezone' => $contact->getTimezone(),
+				); // array
+				
+			}
+			else{
+				// if it is new, and created from admin interface
+				$user_data = array(
+		          'password_generator' => 'random',
+		          'company_id' => $company->getId(),
+		          'timezone' => $company->getTimezone(),
+				); // array
+			}
 		} // if
 
 		$projects = $company->getProjects();
@@ -123,49 +141,58 @@ class UserController extends ApplicationController {
 				$project_user->setUserId($user->getId());
 				$project_user->setCreatedById($user->getId());
 				$project_user->setAllPermissions(true);
-
+				
 				$project_user->save();
 				/* end personal project */
 
-		  if(is_array($projects)) {
-		  	foreach($projects as $project) {
-		  		if(array_var($user_data, 'project_permissions_' . $project->getId()) == 'checked') {
-		  			$relation = new ProjectUser();
-		  			$relation->setProjectId($project->getId());
-		  			$relation->setUserId($user->getId());
-
-		  			foreach($permissions as $permission => $permission_text) {
-		  				$permission_value = array_var($user_data, 'project_permission_' . $project->getId() . '_' . $permission) == 'checked';
-
-		  				$setter = 'set' . Inflector::camelize($permission);
-		  				$relation->$setter($permission_value);
-		  			} // foreach
-
-		  			$relation->save();
-		  		} // if
-		  	} // forech
-		  } // if
-
-		  DB::commit();
-		  if (logged_user()->isProjectUser($new_project)) {
-		  	evt_add("workspace added", array(
-				"id" => $new_project->getId(),
-				"name" => $new_project->getName(),
-				"color" => $new_project->getColor()
-			));
-		  }
-
-		  // Send notification...
-		  try {
-		  	if(array_var($user_data, 'send_email_notification')) {
-		  		Notifier::newUserAccount($user, $password);
-		  	} // if
-		  } catch(Exception $e) {
-
-		  } // try
-
-		  flash_success(lang('success add user', $user->getDisplayName()));
-		  $this->redirectToUrl($company->getViewUrl()); // Translate to profile page
+			  	if(is_array($projects)) {
+				  	foreach($projects as $project) {
+				  		if(array_var($user_data, 'project_permissions_' . $project->getId()) == 'checked') {
+				  			$relation = new ProjectUser();
+				  			$relation->setProjectId($project->getId());
+				  			$relation->setUserId($user->getId());
+		
+				  			foreach($permissions as $permission => $permission_text) {
+				  				$permission_value = array_var($user_data, 'project_permission_' . $project->getId() . '_' . $permission) == 'checked';
+		
+				  				$setter = 'set' . Inflector::camelize($permission);
+				  				$relation->$setter($permission_value);
+				  			} // foreach
+		
+				  			$relation->save();
+				  		} // if
+				  	} // forech
+				  } // if
+		
+				  // update contact info if user was created from a contact
+				  $contact_id = array_var($user_data,'contact_id');
+				  if($contact_id && $contact = Contacts::findById($contact_id)){
+				  	 if($contact->getUserId()==0){
+					  	 $contact->setUserId($user->getId());
+					  	 $contact->save();
+				  	 }
+				  }
+				  // End: update contact info if user was created from a contact
+				  DB::commit();
+				  if (logged_user()->isProjectUser($new_project)) {
+				  	evt_add("workspace added", array(
+						"id" => $new_project->getId(),
+						"name" => $new_project->getName(),
+						"color" => $new_project->getColor()
+					));
+				  }
+	
+			  // Send notification...
+			  try {
+			  	if(array_var($user_data, 'send_email_notification')) {
+			  		Notifier::newUserAccount($user, $password);
+			  	} // if
+			  } catch(Exception $e) {
+	
+			  } // try
+	
+			  flash_success(lang('success add user', $user->getDisplayName()));
+			  ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -216,7 +243,7 @@ class UserController extends ApplicationController {
 
 			flash_success(lang('success delete user', $user->getDisplayName()));
 
-			$this->redirectToUrl($user->getCompany()->getViewUrl());
+			ajx_current("reload");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete user'));
@@ -245,8 +272,15 @@ class UserController extends ApplicationController {
 			ajx_current("empty");
 			return;
 		} // if
+		
+		$pids = null;
+		if (active_project() instanceof Project)
+			$pids = active_project()->getAllSubWorkspacesCSV();
+		$logs = ApplicationLogs::getOverallLogs(false,false,$pids,15,0,get_id());
 
+		tpl_assign('logs', $logs);
 		tpl_assign('user', $user);
+		ajx_set_no_toolbar(true);
 	} // card
 
 } // UserController

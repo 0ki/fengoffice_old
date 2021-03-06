@@ -332,6 +332,30 @@
       return $this->manager;
     } // manager
   
+    
+	/**
+	 * Return value of 'is_template' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return boolean
+	 */
+	function getIsTemplate() {
+		return $this->getColumnValue('is_template');
+	} // getIsTemplate()
+
+	/**
+	 * Set value of 'is_template' field
+	 *
+	 * @access public
+	 * @param boolean $value
+	 * @return boolean
+	 */
+	function setIsTemplate($value) {
+		return $this->setColumnValue('is_template', $value);
+	} // setIsTemplate()
+    
+    
   } // BaseProjectMilestone 
 
 ?>

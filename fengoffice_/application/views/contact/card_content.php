@@ -69,7 +69,7 @@
       <?php if ($contact->getWCallbackNumber()) { ?>
       <div><span><?php echo lang('callback number') ?>:</span> <?php echo clean($contact->getWCallbackNumber());?></div><?php } ?>
       <?php if ($contact->getWWebPage()) { ?>
-      <br/><div><span><?php echo lang('website') ?>: </span><a href="<?php echo clean($contact->getWWebPage()) ?>"><?php echo clean($contact->getWWebPage()) ?></a></div><?php } ?>
+      <br/><div><span><?php echo lang('website') ?>: </span><a href="<?php echo cleanUrl($contact->getWWebPage()) ?>" target="_blank" title="<?php echo lang('open this link in a new window') ?>"><?php echo clean($contact->getWWebPage()) ?></a></div><?php } ?>
     </div>  
 <?php } // if ?>
     
@@ -100,7 +100,7 @@
       <?php if ($contact->getHPagerNumber()) { ?>
       <div><span><?php echo lang('pager number') ?>:</span> <?php echo clean($contact->getHPagerNumber());?></div><?php } ?>
       <?php if ($contact->getHWebPage()) { ?>
-      <br/><div><span><?php echo lang('website') ?>:</span><a href="<?php echo clean($contact->getHWebPage()) ?>"><?php echo clean($contact->getHWebPage()) ?></a></div><?php } ?>
+      <br/><div><span><?php echo lang('website') ?>:</span><a href="<?php echo cleanUrl($contact->getHWebPage()) ?>" target="_blank"><?php echo clean($contact->getHWebPage()) ?></a></div><?php } ?>
     </div> 
 <?php } // if ?>
     

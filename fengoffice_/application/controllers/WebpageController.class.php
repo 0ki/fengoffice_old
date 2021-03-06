@@ -17,43 +17,8 @@ class WebpageController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
-
-//	/**
-//	 * Return project webpages
-//	 *
-//	 * @access public
-//	 * @param void
-//	 * @return array
-//	 */
-//	function index() {
-//		$this->addHelper('textile');
-//		if(active_project()){
-//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-//			array('`project_id` = ?', active_project()->getId()) :
-//			array('`project_id` = ? AND `is_private` = ?', active_project()->getId(), 0);
-//		}
-//		else {
-//			$conditions = logged_user()->isMemberOfOwnerCompany() ?
-//			array('`project_id` in (' . logged_user()->getActiveProjectIdsCSV() . ')' ) :
-//			array('`project_id` = ('.logged_user()->getActiveProjectIdsCSV().') AND `is_private` = ?', 0);
-//		}
-//
-//		$webpages = ProjectWebpages::findAll(array(
-//          'conditions' => $conditions,
-//          'order' => '`title` ASC'
-//          )
-//          );
-//
-//          tpl_assign('webpages', $webpages);
-//
-//          $this->setSidebar(get_template_path('index_sidebar', 'webpage'));
-//	} // index
 
 	/**
 	 * Add webpage
@@ -106,7 +71,7 @@ class WebpageController extends ApplicationController {
 			  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_ADD);
 	
 			  flash_success(lang('success add webpage', $webpage->getTitle()));
-			  ajx_current("start");
+			  ajx_current("back");
 			  // Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -181,7 +146,7 @@ class WebpageController extends ApplicationController {
 		  ApplicationLogs::createLog($webpage, $webpage->getProject(), ApplicationLogs::ACTION_EDIT);
 
 		  flash_success(lang('success edit webpage', $webpage->getTitle()));
-		  ajx_current("start");
+		  ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -223,7 +188,7 @@ class WebpageController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted webpage', $webpage->getTitle()));
-			ajx_current("start");
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete webpage'));

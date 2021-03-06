@@ -155,7 +155,7 @@
     } // getsmtp()
 
     /**
-     * Set value of 'smtp' server name field
+     * Set value of 'smtp_server' server name field
      *
      * @access public
      * @param string $value

@@ -21,11 +21,7 @@ class ReportingController extends ApplicationController {
 	function __construct() 
 	{
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
      	
 	function chart_details() 
@@ -72,17 +68,19 @@ class ReportingController extends ApplicationController {
 					DB::beginWork();
 					$chart->save();
 					DB::commit();
+					flash_success(lang('success add chart', $chart->getTitle()));
+					ajx_current('back');
 				} catch(Exception $e) {
 					DB::rollback();
 					flash_error($e->getMessage());
+					ajx_current("empty");
 				}
-				ajx_current('start');
-				flash_success(lang('success add chart', $chart->getTitle()));
-				return true;
+				return;
 			}
 			
 			$chart->ExecuteQuery();
 			tpl_assign('chart', $chart);
+			ajx_replace(true);
 		}
 		tpl_assign('chart_displays', $factory->getChartDisplays());
 		tpl_assign('chart_list', $factory->getChartTypes());
@@ -110,7 +108,7 @@ class ReportingController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted chart', $chart->getTitle()));
-			ajx_current("start");
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete chart'));

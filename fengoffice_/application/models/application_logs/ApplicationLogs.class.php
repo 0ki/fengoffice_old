@@ -152,14 +152,18 @@
     * @param integer $offset
     * @return array
     */
-    static function getOverallLogs($include_private = false, $include_silent = false, $project_ids = null, $limit = null, $offset = null) {
+    static function getOverallLogs($include_private = false, $include_silent = false, $project_ids = null, $limit = null, $offset = null, $user_id = null) {
       $private_filter = $include_private ? 1 : 0;
       $silent_filter = $include_silent ? 1 : 0;
       
+      $userCond = '';
+      if ($user_id)
+      	$userCond = " AND `taken_by_id` = " . $user_id;
+      
       if(is_array($project_ids)) {
-        $conditions = array('`is_private` <= ? AND `is_silent` <= ? AND `project_id` IN (?)', $private_filter, $silent_filter, $project_ids);
+        $conditions = array('`is_private` <= ? AND `is_silent` <= ? AND `project_id` IN (?)' . $userCond, $private_filter, $silent_filter, $project_ids);
       } else {
-        $conditions = array('`is_private` <= ? AND `is_silent` <= ?', $private_filter, $silent_filter);
+        $conditions = array('`is_private` <= ? AND `is_silent` <= ?' . $userCond, $private_filter, $silent_filter);
       } // if
       
       return self::findAll(array(

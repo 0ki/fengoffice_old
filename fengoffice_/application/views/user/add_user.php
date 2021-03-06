@@ -2,7 +2,7 @@
   set_page_title($user->isNew() ? lang('add user') : lang('edit user'));
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>
-<form class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" method="post">
 
 <div class="adminAddUser">
   <div class="adminHeader">
@@ -155,7 +155,9 @@
 <?php } // if ?>
 <?php } // if ?>
 
-  <?php echo submit_button($user->isNew() ? lang('add user') : lang('save changes'), 's', array('tabindex' => '10')) ?>
+  <?php 
+  echo input_field('user[contact_id]',array_var($user_data, 'contact_id',''),array('type' => 'hidden'));
+  echo submit_button($user->isNew() ? lang('add user') : lang('save changes'), 's', array('tabindex' => '10')); ?>
   </div>
   </div>
 </form>

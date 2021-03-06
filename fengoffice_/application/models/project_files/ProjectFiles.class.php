@@ -157,6 +157,19 @@ class ProjectFiles extends BaseProjectFiles {
 		));
 	} // getByFilename
 	
+	static function getAllByFilename($filename, $project_ids = null) {
+		$projectstr = '';
+		if ($project_ids){
+			$projectstr = " AND `id` IN (SELECT `object_id` FROM `".TABLE_PREFIX."workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($project_ids)) ";
+		}
+		
+		$conditions = array('`filename` = ?' . $projectstr, $filename);
+		
+		return self::findAll(array(
+			'conditions' => $conditions
+		));
+	} // getByFilename
+	
 	/**
 	* Return files index page
 	*

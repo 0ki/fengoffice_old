@@ -3,58 +3,56 @@
  */
 og.ReportingManager = function() {
 	var actions;
-	this.doNotDestroy = true;
-	this.active = true;
+	this.doNotRemove = true;
+	this.needRefresh = false;
 	
-	this.store = new Ext.data.Store({
-        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-            url: og.getUrl('reporting', 'list_all', {ajax:true})
-        })),
-        reader: new Ext.data.JsonReader({
-            root: 'charts',
-            totalProperty: 'totalCount',
-            id: 'id',
-            fields: [
-                'name', 'type', 'tags', 'project', 'projectId'
-            ]
-        }),
-        remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("charts"), ws, tag));
+	if (!og.ReportingManager.store) {
+		og.ReportingManager.store = new Ext.data.Store({
+	        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+	            url: og.getUrl('reporting', 'list_all', {ajax:true})
+	        })),
+	        reader: new Ext.data.JsonReader({
+	            root: 'charts',
+	            totalProperty: 'totalCount',
+	            id: 'id',
+	            fields: [
+	                'name', 'type', 'tags', 'project', 'projectId'
+	            ]
+	        }),
+	        remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("charts"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("charts"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("charts"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-    });
-    this.store.setDefaultSort('name', 'asc');
-    this.store.manager = this;
+	    });
+	    og.ReportingManager.store.setDefaultSort('name', 'asc');
+	}
+	this.store = og.ReportingManager.store;
+	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
     
     //--------------------------------------------
     // Renderers
@@ -208,7 +206,6 @@ og.ReportingManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-        loadMask: true,
         style: "padding:7px",
         bbar: new Ext.PagingToolbar({
             pageSize: og.pageSize,
@@ -247,27 +244,30 @@ og.ReportingManager = function() {
 		}
     });
 
-	og.eventManager.addListener("tag changed", function(tag) {
-		if (this.active) {
-			this.load({start: 0});
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
-	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		//if (this.store.lastOptions) {
-		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		//}
-		
 	}, this);
 };
 
 Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 	load: function(params) {
 		if (!params) params = {};
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		this.store.load({
 			params: Ext.apply(params, {
-				start: 0,
+				start: start,
 				limit: og.pageSize,
 				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
@@ -277,14 +277,9 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -292,9 +287,4 @@ Ext.extend(og.ReportingManager, Ext.grid.GridPanel, {
 	}
 });
 
-og.ReportingManager.getInstance = function() {
-	if (!og.ReportingManager.instance) {
-		og.ReportingManager.instance = new og.ReportingManager();
-	}
-	return og.ReportingManager.instance;
-}
+Ext.reg("reporting", og.ReportingManager);

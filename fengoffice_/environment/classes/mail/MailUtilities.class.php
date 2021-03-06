@@ -257,7 +257,7 @@ class MailUtilities
 		}
 	}
         
-	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password =''){
+	function sendMail($smtp_server,$to,$from,$subject,$body,$cc,$bcc,$smtp_port=25,$smtp_username = null, $smtp_password ='',$type='text/plain'){
 		//Load in the files we'll need
 		Env::useLibrary('swift');
         // Load SMTP config
@@ -278,7 +278,9 @@ class MailUtilities
         }
         if(! $mailer->isConnected() )  return false;
 		// Send Swift mail
-		return $mailer->send($to, $from, $subject,$body);
+		$mailer->addCc(explode(",",$cc));
+		$mailer->addBcc(explode(",",$bcc));
+		return $mailer->send($to, $from, $subject,$body,$type);
 	}
 }
 ?>

@@ -473,5 +473,10 @@
     
     return select_box($name, $options, $attributes);
   } // select_timezone_widget
+  
+  function number_field($name, $value = null, $attributes = null) {
+  	//if (!is_numeric($value)) $value = 0;
+  	return text_field($name, $value, array("maxlength" => 9, "style"=> "width:100px", "onkeyup" => "event.target.value = event.target.value.replace(/[^0-9]/g, '')"));
+  }
 
 ?>

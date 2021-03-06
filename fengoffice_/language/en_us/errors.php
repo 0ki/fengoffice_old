@@ -27,6 +27,8 @@
     'passwords dont match' => 'Passwords don\'t match',
     'old password required' => 'Old password value is required',
     'invalid old password' => 'Old password is not valid',
+    'users must belong to a company' => 'Contacts must belong to a company in order to generate a user',
+    'contact linked to user' => 'Contact is linked to user {0}',
     
     // Avatar
     'invalid upload type' => 'Invalid file type. Allowed types are {0}',
@@ -115,6 +117,16 @@
   	'mail account password required' => 'Password required',	
   
   	'session expired error' => 'Session expired due to user inactivity. Please login again',
+  	'unimplemented type' => 'Unimplemented type',
+  	'unimplemented action' => 'Unimplemented action',
+  
+  	'workspace own parent error' => 'A workspace can\'t be its own parent',
+  	'task own parent error' => 'A task can\'t be its own parent',
+  	'task child of child error' => 'A task can\'t be child of one of its descendants',
+  
+  	'chart title required' => 'Chart title is required.',
+  	'chart title unique' => 'Chart title must be unique.',
+    'must choose at least one workspace error' => 'You must choose at least one workspace where to put the object.',
   ); // array
 
 ?>

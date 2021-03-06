@@ -4,7 +4,7 @@
   	add_page_action(lang('delete mail account'),  "javascript:if(confirm(lang('confirm delete mail account'))) og.openLink('" . $mailAccount->getDeleteUrl() . "');", 'ico-delete');
 ?>
 
-<form class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
 
 <div class="adminAddMailAccount">
   <div class="adminHeader">

@@ -1,0 +1,315 @@
+<?php
+
+/**
+ * Timeslot class
+ *
+ * @author Carlos Palma <chonwil@gmail.com>
+ */
+class Timeslot extends BaseTimeslot {
+
+	/**
+	 * Timeslot # for specific object
+	 *
+	 * @var integer
+	 */
+	protected $timeslot_num = null;
+	
+	protected $assigned_user = null;
+	
+	protected $project = null;
+	
+	/**
+	 * Return object connected with this action
+	 *
+	 * @access public
+	 * @param void
+	 * @return ProjectDataObject
+	 */
+	function getObject() {
+		return get_object_by_manager_and_id($this->getObjectId(), $this->getObjectManager());
+	} // getObject
+
+	/**
+	 * Return project object
+	 *
+	 * @param void
+	 * @return Project
+	 */
+	function getProject() {
+		if(is_null($this->project)) {
+			$object = $this->getObject();
+			if($object instanceof ProjectDataObject) {
+				$project = $object->getproject();
+				$this->project = $project instanceof Project ? $project : null;
+			} // if
+		} // if
+		return $this->project;
+	} // getProject
+	
+	function getWorkspaces($wsIds = null) {
+		if(is_null($this->workspaces)) {
+			$object = $this->getObject();
+			if($object instanceof ProjectDataobject) {
+				$this->workspaces = $object->getWorkspaces($wsIds);
+			} // if
+		} // if
+		return $this->workspaces;
+	} // getProject
+
+	/**
+	 * Return project ID
+	 *
+	 * @param void
+	 * @return integer
+	 */
+	function getProjectId() {
+		$project = $this->getProject();
+		return $project instanceof Project ? $project->getId() : null;
+	} // getProjectId
+
+	/**
+	 * Return timeslot #
+	 *
+	 * @param void
+	 * @return integer
+	 */
+	function getTimeslotNum() {
+		if(is_null($this->timeslot_num)) {
+			$object = $this->getObject();
+			$this->timeslot_num = $object instanceof ProjectDataObject ? $object->getTimeslotNum($this) : 0;
+		} // if
+		return $this->timeslot_num;
+	} // getTimeslotNum
+
+	/**
+    * Return user assigned to this timeslot
+    *
+    * @access public
+    * @param void
+    * @return User
+    */
+    function getUser() {
+      if(is_null($this->assigned_user)) {
+        $this->assigned_user = Users::findById($this->getUserId());
+      } // 
+      return $this->assigned_user;
+    } // getUser
+    
+    function isOpen() {
+    	return $this->getEndTime() == null;
+    }
+	
+    function getMinutes(){
+    	if (!$this->getStartTime())
+    		return 0;
+    		
+    	$endTime = $this->getEndTime();
+    	if (!$endTime)
+    		$endTime = DateTimeValueLib::now();
+    	$timeDiff = DateTimeValueLib::get_time_difference($this->getStartTime()->getTimestamp(),$endTime->getTimestamp());
+    	
+    	return $timeDiff['days'] * 1440 + $timeDiff['hours'] * 60 + $timeDiff['minutes'];
+    }
+    
+    // ---------------------------------------------------
+	//  URLs
+	// ---------------------------------------------------
+
+	/**
+	 * Return tag URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getViewUrl() {
+		$object = $this->getObject();
+		return $object instanceof ProjectDataObject ? $object->getObjectUrl() . '#timeslot' . $this->getId() : '';
+	} // getViewUrl
+
+	/**
+	 * Return add timeslot URL for specific object
+	 *
+	 * @param ProjectDataObject $object
+	 * @return string
+	 */
+	static function getOpenUrl(ProjectDataObject $object) {
+		return get_url('timeslot', 'open', array(
+        'object_id' => $object->getObjectId(),
+        'object_manager' => get_class($object->manager())
+		)); // get_url
+	} // getAddUrl
+	
+	/**
+	 * Return add timeslot URL for specific object
+	 *
+	 * @param ProjectDataObject $object
+	 * @return string
+	 */
+	function getCloseUrl() {
+		return get_url('timeslot', 'close', array(
+		'id' => $this->getId()
+		)); // get_url
+	} // getAddUrl
+
+	/**
+	 * Return edit URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getEditUrl() {
+		return get_url('timeslot', 'edit', array('id' => $this->getId()));
+	} // getEditUrl
+
+	/**
+	 * Return delete URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getDeleteUrl() {
+		return get_url('timeslot', 'delete', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+	} // getDeleteUrl
+
+	// ---------------------------------------------------
+	//  Permissions
+	// ---------------------------------------------------
+
+	/**
+	 * Can $user view this object
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function canView(User $user) {
+		return can_read($user,$this);
+	} // canView
+
+	/**
+	 * Empty implementation of static method.
+	 *
+	 * Add tag permissions are done through ProjectDataObject::canTimeslot() method. This
+	 * will return timeslot permissions for specified object
+	 *
+	 * @param User $user
+	 * @param Project $project
+	 * @return boolean
+	 */
+	function canAdd(User $user, Project $project) {		
+		return can_add($user,$project,get_class(Timeslots::instance()));
+	} // canAdd
+
+	/**
+	 * Empty implementation of static method. Update tag permissions are check by the taggable
+	 * object, not tag itself
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function canEdit(User $user) {
+		return ($user->getId() == $this->getUserId() || $user->isAdministrator());
+	} // canEdit
+
+	/**
+	 * Empty implementation of static method. Update tag permissions are check by the taggable
+	 * object, not tag itself
+	 *
+	 * @param User $user
+	 * @return boolean
+	 */
+	function canDelete(User $user) {
+		return ($user->getId() == $this->getUserId() || $user->isAdministrator());
+	} // canDelete
+
+	// ---------------------------------------------------
+	//  System
+	// ---------------------------------------------------
+
+	/**
+	 * Validate before save
+	 *
+	 * @param array $error
+	 * @return null
+	 */
+	function validate(&$errors) {
+		
+	} // validate
+
+	/**
+	 * Save the object
+	 *
+	 * @param void
+	 * @return boolean
+	 */
+	function save() {
+		$is_new = $this->isNew();
+		$saved = parent::save();
+		if($saved) {
+			$object = $this->getObject();
+			if($object instanceof ProjectDataObject) {
+				if($is_new) {
+					$object->onAddTimeslot($this);
+				} else {
+					$object->onEditTimeslot($this);
+				} // if
+			} // if
+		} // if
+		return $saved;
+	} // save
+
+	/**
+	 * Delete timeslot
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function delete() {
+		$deleted = parent::delete();
+		if($deleted) {
+			$object = $this->getObject();
+			if($object instanceof ProjectDataObject) {
+				$object->onDeleteTimeslot($this);
+			} // if
+		} // if
+		return $deleted;
+	} // delete
+
+	// ---------------------------------------------------
+	//  ApplicationDataObject implementation
+	// ---------------------------------------------------
+
+	/**
+	 * Return object name
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getObjectName() {
+		$object = $this->getObject();
+		return $object instanceof ProjectDataObject ? 
+			lang('timeslot on object', $object->getObjectName()) : $this->getObjectTypeName();
+	} // getObjectName
+
+	/**
+	 * Return object type name
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getObjectTypeName() {
+		return lang('timeslot');
+	} // getObjectTypeName
+
+	/**
+	 * Return view tag URL
+	 *
+	 * @param void
+	 * @return string
+	 */
+	function getObjectUrl() {
+		return $this->getViewUrl();
+	} // getObjectUrl
+
+} // Timeslot
+
+?>

@@ -8,7 +8,7 @@
 
 
 
-<div class="adminProjects">
+<div class="adminProjects" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('projects') ?></div>
   </div>
@@ -32,7 +32,9 @@
 <img src="<?php echo $project->isActive() ? icon_url('not-checked.jpg') : icon_url('checked.jpg') ?>" alt="" title="<?php echo $project->isActive() ? lang('active project') : lang('finished project') ?>" />
 <?php } // if ?>
     </td>
-    <td class="long middle"><a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"><?php echo clean($project->getName()) ?></a></td>
+    <td class="long middle"><!-- a class="internalLink" href="<?php echo $project->getOverviewUrl() ?>"-->
+    	<?php echo clean($project->getName()) ?>
+    <!-- /a --></td>
 <?php
   $options = array();
   if($project->canEdit(logged_user())) $options[] = '<a class="internalLink" href="' . $project->getEditUrl() .'">' . lang('edit') . '</a>';

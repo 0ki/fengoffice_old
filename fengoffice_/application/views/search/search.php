@@ -74,7 +74,7 @@
 			<a class="internalLink" href='<?php echo get_url('search', 'searchbytype', 
 			array('manager' => $search_result["manager"], 'search_for' => $search_string)); ?>'>
 			<?php echo lang('more results', $pagination->getTotalItems() - $pagination->countItemsOnPage(1)) ?></a>
-		<? } else echo "" ?> &nbsp;
+		<?php } else echo "" ?> &nbsp;
 		</div>
 	</div></td></tr></table>
  <?php } // foreach ?>

@@ -195,6 +195,7 @@
 						return 'can_read_mails';
 					else return false;
 					break;
+				case 'Companies' :  
 				case 'ProjectContacts' :  
 					if ($access_level == ACCESS_LEVEL_WRITE)
 						return 'can_write_contacts';
@@ -243,7 +244,7 @@
 		$str = " ( created_by_id = $user_id) ";
 		// element belongs to personal project
 		if($is_project_data_object) // TODO: type of element belongs to a project
-			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles) {
+			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles || $manager instanceof Companies  ) {
 				$str .= "\n OR ( exists(SELECT * FROM $users_table_name xx_u, $wo_tablename xx_wo
 				WHERE xx_u.id = $user_id
 					AND xx_u.personal_project_id = xx_wo.workspace_id
@@ -261,7 +262,7 @@
 					and xx_oup.user_id in $all_ids 
 					and xx_oup.$access_level_text = true) )" ; 
 		if($is_project_data_object){ // TODO: type of element belongs to a project
-			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles) {
+			if ($manager instanceof ProjectMessages || $manager instanceof ProjectFiles|| $manager instanceof Companies ) {
 				$str .= "\n OR ( exists ( SELECT * FROM $pu_table_name xx_pu, $wo_tablename xx_wo 
 				WHERE xx_pu.user_id in $all_ids 
 					AND xx_pu.project_id = xx_wo.workspace_id
@@ -354,7 +355,7 @@
 	 */
 	function can_access(User $user, ApplicationDataObject $object, $access_level){
 		try {
-			if ($object instanceof ProjectMessage || $object instanceof ProjectFile) {
+			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company ) {
 				// handle object in multiple workspaces
 				$user_id = $user->getId();
 				if($object->getCreatedById() == $user_id) {
@@ -517,6 +518,7 @@
 						return $proj_perm->getCanReadMails();
 					else return false;
 					break;
+				case 'Companies':
 				case 'ProjectContacts' :  
 					if ($access_level == ACCESS_LEVEL_WRITE)
 						return $proj_perm->getCanWriteContacts();

@@ -71,8 +71,11 @@
   	 *
   	 * @param unknown_type $group_id
   	 */
-  	static function removeUsersByGroup($group_id){
-  		self::delete(array('`group_id` = ?', $group_id));
+  	static function removeUsersByGroup($group_id,$except_ids_CSV=null){
+  		if($except_ids_CSV)
+  			self::delete(array('`group_id` = ? AND NOT `user_id` IN (?)', $group_id,$except_ids_CSV));
+  		else
+  			self::delete(array('`group_id` = ?', $group_id));
   	}
 //    /**
 //    * Return all relation objects ( GroupUsers) for specific object

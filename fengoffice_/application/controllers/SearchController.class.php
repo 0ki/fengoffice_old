@@ -65,6 +65,7 @@ class SearchController extends ApplicationController {
 		tpl_assign('search_results', $search_results);
 		tpl_assign('time', $timeEnd - $timeBegin);
 		ajx_set_no_toolbar(true);
+		ajx_replace(true);
 	} // search
 	
 	function searchContacts($search_term, $search_results = null, $row_count = 5){

@@ -14,7 +14,7 @@
 function do_textile($text, $lite = false, $encode = false, $noimage = false, $strict = false, $rel = '') {
 	Env::useLibrary('textile');
 	$textile = new Textile();
-	return $textile->TextileThis($text, $lite, $encode, $noimage, $strict, $rel);
+	return '<div class="textile-rewrite">' . $textile->TextileThis($text, $lite, $encode, $noimage, $strict, $rel) . '</div>';
 } // do_textile
 
 

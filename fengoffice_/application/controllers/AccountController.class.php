@@ -17,11 +17,7 @@ class AccountController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
 	/**
@@ -32,7 +28,17 @@ class AccountController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
+		$this->setTemplate("card");
+		$this->setControllerName("user");
 		tpl_assign('user', logged_user());
+		ajx_set_no_toolbar(true);
+		
+		$pids = null;
+		if (active_project() instanceof Project)
+			$pids = active_project()->getAllSubWorkspacesCSV();
+		$logs = ApplicationLogs::getOverallLogs(false,false,$pids,15,0,get_id());
+
+		tpl_assign('logs', $logs);
 	} // index
 
 	/**
@@ -69,8 +75,6 @@ class AccountController extends ApplicationController {
 		} // if
 		tpl_assign('redirect_to', $redirect_to);
 
-		$im_types = ImTypes::findAll(array('order' => '`id`'));
-
 		$user_data = array_var($_POST, 'user');
 		if(!is_array($user_data)) {
 			$user_data = array(
@@ -78,31 +82,17 @@ class AccountController extends ApplicationController {
 	          'email'         => $user->getEmail(),
 	          'display_name'  => $user->getDisplayName(),
 	          'title'         => $user->getTitle(),
-	          'office_number' => $user->getOfficeNumber(),
-	          'fax_number'    => $user->getFaxNumber(),
-	          'mobile_number' => $user->getMobileNumber(),
-	          'home_number'   => $user->getHomeNumber(),
 	          'timezone'      => $user->getTimezone(),
 	          'auto_assign'   => $user->getAutoAssign(),
 	          'company_id'    => $user->getCompanyId(),
 	          'is_admin'    => $user->isAdministrator()
 			); // array
 
-			if(is_array($im_types)) {
-				foreach($im_types as $im_type) {
-					$user_data['im_' . $im_type->getId()] = $user->getImValue($im_type);
-				} // forech
-			} // if
-
-			$default_im = $user->getDefaultImType();
-			$user_data['default_im'] = $default_im instanceof ImType ? $default_im->getId() : '';
-
 		} // if
 
 		tpl_assign('user', $user);
 		tpl_assign('company', $company);
 		tpl_assign('user_data', $user_data);
-		tpl_assign('im_types', $im_types);
 
 		if(is_array(array_var($_POST, 'user'))) {
 			try {
@@ -111,29 +101,13 @@ class AccountController extends ApplicationController {
 				$user->setFromAttributes($user_data);
 				$user->save();
 
-				$user->clearImValues();
 				if ($user->getId() != 1) //System admin cannot change its own admin status
 					$user->setAsAdministrator(array_var($user_data, 'is_admin'));
 				
-				foreach($im_types as $im_type) {
-					$value = trim(array_var($user_data, 'im_' . $im_type->getId()));
-					if($value <> '') {
-
-						$user_im_value = new UserImValue();
-
-						$user_im_value->setUserId($user->getId());
-						$user_im_value->setImTypeId($im_type->getId());
-						$user_im_value->setValue($value);
-						$user_im_value->setIsDefault(array_var($user_data, 'default_im') == $im_type->getId());
-
-						$user_im_value->save();
-					} // if
-				} // foreach
-
 				DB::commit();
 
 				flash_success(lang('success update profile'));
-				$this->redirectToUrl($redirect_to);
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -199,7 +173,7 @@ class AccountController extends ApplicationController {
 
 				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_EDIT);
 				flash_success(lang('success edit user', $user->getUsername()));
-				$this->redirectToUrl($redirect_to);
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -310,7 +284,7 @@ class AccountController extends ApplicationController {
 				DB::commit();
 	
 				flash_success(lang('success user permissions updated'));
-				$this->redirectToUrl($redirect_to);
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -377,7 +351,7 @@ class AccountController extends ApplicationController {
 				} // if
 
 				flash_success(lang('success edit avatar'));
-				$this->redirectToUrl($redirect_to);
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
@@ -427,7 +401,7 @@ class AccountController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete avatar'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete avatar'));

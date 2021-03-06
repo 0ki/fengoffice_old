@@ -2,7 +2,7 @@ og.MilestoneItem = function(config) {
 	Ext.apply(this, config, {
 		id: 0,
 		title: '',
-		subtasks: [],
+		subtasks: {},
 		assignedTo: '',
 		workspaces: '',
 		workspaceids: '',
@@ -155,7 +155,12 @@ og.MilestoneItem = function(config) {
 		var td = document.createElement('td');
 		this.doms.workspace = td;
 		td.className = 'td-duedate';
-		td.innerHTML = new Date(this.duedate*1000).add("d", 1).format("Y-m-d");
+		var newDate = new Date(this.duedate*1000).add("d", 1);
+		var currDate = new Date();
+		if (newDate.getFullYear() != currDate.getFullYear())
+			td.innerHTML = newDate.format("j M Y");
+		else
+			td.innerHTML = newDate.format("j M");
 		tr.appendChild(td);
 	
 	var subtaskdiv = document.createElement('div');
@@ -354,7 +359,7 @@ og.MilestoneItem.prototype = {
 			var next = milestoneDiv.nextSibling;
 			//parent.removeChild(taskDiv);
 			Ext.fly(milestoneDiv).slideOut("t", {remove:true, duration:1});
-			og.openLink(og.getUrl('milestone', 'delete', {id: this.id}), {
+			og.openLink(og.getUrl('milestone', 'delete', {id: this.id, quick: true}), {
 				callback: function(success, data) {
 					if (!success || data.errorCode) {
 						// re insert milestone
@@ -384,9 +389,9 @@ og.MilestoneItem.prototype = {
 			this.expanded = true;
 			var combo = Ext.getDom('og-task-filter-to');
 			var assignedTo = combo?combo.value:"0:0";
-			var combo = Ext.getDom('og-task-filter-status').value;
+			var combo = Ext.getDom('og-task-filter-status');
 			var status =  combo?combo.value:"all"; 
-			og.openLink(og.getUrl('task', 'view_tasks', {milestone_id: this.id, /*assigned_to: assignedTo,*/ status: status}), {
+			og.openLink(og.getUrl('task', 'view_tasks', {milestone_id: this.id, assigned_to: assignedTo, status: status}), {
 				callback: function(success, data) {
 					if (success && !data.errorCode) {
 						// delete previous subtasks
@@ -407,7 +412,7 @@ og.MilestoneItem.prototype = {
 		if (this.completed) {
 			this.completed = false;
 			Ext.fly(this.doms.div).removeClass('og-milestone-completed');
-			og.openLink(og.getUrl('milestone', 'open', {id: this.id}), {
+			og.openLink(og.getUrl('milestone', 'open', {id: this.id, quick: true}), {
 				callback: function(success, data) {
 					if (!success || data.errorCode) {
 						Ext.fly(this.doms.div).addClass('og-milestone-completed');
@@ -421,7 +426,7 @@ og.MilestoneItem.prototype = {
 		} else {
 			this.completed = true;
 			Ext.fly(this.doms.div).addClass('og-milestone-completed');
-			og.openLink(og.getUrl('milestone', 'complete', {id: this.id}), {
+			og.openLink(og.getUrl('milestone', 'complete', {id: this.id, quick: true}), {
 				callback: function(success, data) {
 					if (!success || data.errorCode) {
 						Ext.fly(this.doms.div).removeClass('og-milestone-completed');
@@ -496,10 +501,11 @@ og.MilestoneItem.prototype = {
 				if (success && !data.errorCode) {
 					var task = data.task;
 					var item = new og.TaskItem(task);
-					this.subtasks[this.subtasks.length] = item;
+					this.subtasks["id_" + task.id] = item;
 					var dom = item.doms.div;
 					dom.style.display = 'none';
 					this.doms.subtasks.insertBefore(dom, this.doms.newTaskDiv);
+					this.orderSubtasks();
 					Ext.fly(dom).slideIn("t", {useDisplay: true, duration: 0.5});
 				} else {
 					og.msg(lang("error"), lang("error adding task"));

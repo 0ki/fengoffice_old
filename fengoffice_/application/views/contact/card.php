@@ -5,11 +5,20 @@
     add_page_action(lang('update picture'), $contact->getUpdatePictureUrl(), 'ico-picture');
 	add_page_action(lang('assign to project'), $contact->getAssignToProjectUrl(), 'ico-workspace');
   }
-    
   if($contact->canDelete(logged_user())) {
     add_page_action(lang('delete contact'), "javascript:if(confirm(lang('confirm delete contact'))) og.openLink('" . $contact->getDeleteUrl() ."');", 'ico-delete');
   } // if
-   ?>
+  if(can_manage_security(logged_user())){
+  	if(! $contact->getUserId()){
+  		add_page_action(lang('create user from contact'), $contact->getCreateUserUrl() , 'ico-user');
+  	}
+  	else {
+  		if($user){
+  			add_page_action(lang('contact linked to user', $user->getUsername()), $user->getCardUrl(), 'ico-user');
+  		}
+  	}
+  } 
+?>
    
    
 <div style="padding:7px">

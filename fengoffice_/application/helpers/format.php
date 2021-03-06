@@ -48,7 +48,12 @@
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatDateTime($datetime, $timezone);
+    if ($format){
+    	$l = new Localization();
+    	$l->setDateTimeFormat($format);
+    }else
+    	$l = Localization::instance();
+    return $l->formatDateTime($datetime, $timezone);
   } // format_datetime
   
   /**
@@ -66,7 +71,12 @@
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatDate($datetime, $timezone);
+    if ($format){
+    	$l = new Localization();
+    	$l->setDateFormat($format);
+    }else
+    	$l = Localization::instance();
+    return $l->formatDate($datetime, $timezone);
   } // format_date
   
   /**
@@ -100,7 +110,12 @@
       $timezone = logged_user()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatTime($datetime, $timezone);
+    if ($format){
+    	$l = new Localization();
+    	$l->setTimeFormat($format);
+    }else
+    	$l = Localization::instance();
+    return $l->formatTime($datetime, $timezone);
   } // format_time
 
   

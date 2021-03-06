@@ -30,6 +30,9 @@
 ?>      <li><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>
 <?php }
 	if(can_manage_configuration(logged_user())){ 
+?>      <li><a class="internalLink" href="<?php echo get_url('administration', 'tools') ?>"><?php echo lang('administration tools') ?></a></li>
+<?php }
+	if(can_manage_configuration(logged_user())){ 
 ?>      <li><a class="internalLink" href="<?php echo get_url('administration', 'upgrade') ?>"><?php echo lang('upgrade') ?></a></li>
 <?php } ?>
 </ul>

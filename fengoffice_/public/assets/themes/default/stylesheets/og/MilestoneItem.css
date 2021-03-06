@@ -69,9 +69,10 @@
 	max-width: 200px;
 }
 .og-milestone .td-duedate {
-	padding-left: 20px;
-	width: 100px;
+	padding-left: 10px;
+	width: 75px;
 	overflow: hidden;
+	text-align:right;
 }
 .og-milestone .td-padding {
 	width: 16px;

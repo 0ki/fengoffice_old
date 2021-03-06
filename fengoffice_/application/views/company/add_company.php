@@ -1,8 +1,25 @@
-
-<?php if($company->isNew()) { ?>
-<form class="internalForm" action="<?php echo get_url('company', 'add_client') ?>" method="post">
+<script type="text/javascript">
+var allTags = [<?php
+	$coma = false;
+	$tags = Tags::getTagNames();
+	foreach ($tags as $tag) {
+		if ($coma) {
+			echo ",";
+		} else {
+			$coma = true;
+		}
+		echo "'" . $tag . "'";
+	}
+?>];
+</script>
+<?php 
+	$project = active_or_personal_project();
+	$projects =  active_projects();
+	$genid = gen_id();
+	if($company->isNew()) { ?>
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('company', 'add_client') ?>" method="post">
 <?php } else { ?>
-<form class="internalForm" action="<?php echo $company->getEditUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
 
@@ -23,6 +40,10 @@
   </div>
   
   	<div style="padding-top:5px">
+		<?php if (isset ($projects) && count($projects) > 0) { ?>
+			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
+		<?php } ?>
+		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_add_tags_div', this)"><?php echo lang('tags') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_address',this)"><?php echo lang('address') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_company_online',this)"><?php echo lang('company online') ?></a> - 
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_phone_numbers',this)"><?php echo lang('phone numbers') ?></a> - 
@@ -32,6 +53,24 @@
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
 
+	<?php if (isset ($projects) && count($projects) > 0) { ?>
+	<div id="<?php echo $genid ?>add_company_select_workspace_div" style="display:none">
+	<fieldset><legend><?php echo lang('workspace')?></legend>
+		<?php if ($company->isNew()) {
+			echo select_workspaces('ws_ids', $projects, array($project), $genid.'ws_ids');
+		} else {
+			echo select_workspaces('ws_ids', $projects, $company->getWorkspaces(), $genid.'ws_ids');
+		} ?>
+	</fieldset>
+	</div>
+	<?php } ?>
+		
+	<div id="<?php echo $genid ?>add_company_add_tags_div" style="display:none">
+	<fieldset><legend><?php echo lang('tags')?></legend>
+		<?php echo autocomplete_textfield("company[tags]", array_var($company_data, 'tags'), 'allTags', array("class" => "short")); ?>
+	</fieldset>
+	</div>
+	
   <div id="add_company_address" style="display:none">
   <fieldset>
     <legend><?php echo lang('address') ?></legend>

@@ -44,6 +44,20 @@ class ProjectMilestone extends BaseProjectMilestone {
 	private $completed_by;
 	
 	/**
+	 * Cache of open tasks
+	 *
+	 * @var array
+	 */
+	private $open_tasks;
+	
+	/**
+	 * Cache of completed tasks
+	 *
+	 * @var array
+	 */
+	private $completed_tasks;
+	
+	/**
 	 * Return if this milestone is completed
 	 *
 	 * @access public
@@ -149,17 +163,7 @@ class ProjectMilestone extends BaseProjectMilestone {
 	//  Related object
 	// ---------------------------------------------------
 
-	/**
-	 * Return project
-	 *
-	 * @access public
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		return Projects::findById($this->getProjectId());
-	} // getProject
-
+	
 	/**
 	 * Return all tasks connected with this milestone
 	 *
@@ -174,6 +178,41 @@ class ProjectMilestone extends BaseProjectMilestone {
         )); // findAll
 	} // getTasks
 
+	/**
+	 * Return open tasks
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getOpenSubTasks() {
+		if(is_null($this->open_tasks)) {
+			$this->open_tasks = ProjectTasks::findAll(array(
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `completed_on` = ' . DB::escape(EMPTY_DATETIME),
+          'order' => '`order`, `created_on`'
+          )); // findAll
+		} // if
+
+		return $this->open_tasks;
+	} // getOpenTasks
+
+	/**
+	 * Return completed tasks
+	 *
+	 * @access public
+	 * @param void
+	 * @return array
+	 */
+	function getCompletedSubTasks() {
+		if(is_null($this->completed_tasks)) {
+			$this->completed_tasks = ProjectTasks::findAll(array(
+          'conditions' => '`milestone_id` = ' . DB::escape($this->getId()) . ' AND `completed_on` > ' . DB::escape(EMPTY_DATETIME),
+          'order' => '`completed_on` DESC'
+          )); // findAll
+		} // if
+
+		return $this->completed_tasks;
+	} // getCompletedTasks
 	function countAllTasks() {
 		return ProjectTasks::count('`milestone_id` = ' . DB::escape($this->getId()));
 	} // countAllTasks
@@ -387,9 +426,16 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @param void
 	 * @return string
 	 */
-	function getCompleteUrl() {
-		return get_url('milestone', 'complete', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+	function getCompleteUrl($redirect_to = '') {
+		$params = array(
+        	'id' => $this->getId()
+		);
+		if (trim($redirect_to) != '') {
+			$params["redirect_to"] = $redirect_to;
+		}
+		return get_url('milestone', 'complete', $params);
 	} // getCompleteUrl
+	
 
 	/**
 	 * Return open milestone url
@@ -398,8 +444,14 @@ class ProjectMilestone extends BaseProjectMilestone {
 	 * @param void
 	 * @return string
 	 */
-	function getOpenUrl() {
-		return get_url('milestone', 'open', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+	function getOpenUrl($redirect_to = '') {
+		$params = array(
+        	'id' => $this->getId()
+		);
+		if (trim($redirect_to) != '') {
+			$params["redirect_to"] = $redirect_to;
+		}
+		return get_url('milestone', 'open', $params);
 	} // getOpenUrl
 
 	/**
@@ -484,6 +536,9 @@ class ProjectMilestone extends BaseProjectMilestone {
 		return $this->getViewUrl();
 	} // getObjectUrl
 
+	function getTitle() {
+		return $this->getName();
+	}
 } // ProjectMilestone
 
 ?>

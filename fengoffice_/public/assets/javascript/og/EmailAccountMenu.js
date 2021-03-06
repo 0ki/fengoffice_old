@@ -61,22 +61,17 @@ Ext.extend(og.EmailAccountMenu, Ext.menu.Menu, {
 	},
 
 	loadAccounts: function(type) {
-		og.loading();
-		Ext.Ajax.request({
-			url: og.getUrl('mail', 'list_accounts', {type: type}),
-			callback: function(options, success, response) {
+		og.openLink(og.getUrl('mail', 'list_accounts', {type: type}),{
+			callback: function(success, data) {
 				if (success) {
 					try {
-						var accounts = Ext.util.JSON.decode(response.responseText);
+						var accounts = data.accounts;
 						this.addAccounts(accounts);
 					} catch (e) {
 						og.msg(lang("error"), e.message);
 						throw e;
 					}
-				} else {
-					og.msg(lang("error"), lang("server could not be reached"));
 				}
-				og.hideLoading();
 			},
 			scope: this
 		});

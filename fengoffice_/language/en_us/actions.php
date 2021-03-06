@@ -25,6 +25,7 @@
     'add user' => 'Add user',
     'edit user' => 'Edit user',
     'delete user' => 'Delete user',
+    'create user from contact' => 'Create user from contact',
     
     // Group
     'add group' => 'Add group',
@@ -64,6 +65,8 @@
     'delete task list' => 'Delete task',
     'reorder tasks' => 'Reorder tasks',
 	'reorder sub tasks' => 'Reorder sub tasks',
+  	'copy task' => 'Create a copy of this task',
+  	'copy milestone' => 'Create a copy of this milestone',
     
     // Task
     'add task' => 'Add task',
@@ -84,11 +87,15 @@
     'delete event' => 'Delete event',
     'previous month' => 'Previous month',
     'next month' => 'Next month',
+    'previous week' => 'Previous week',
+    'next week' => 'Next week',
     'previous day' => 'Previous day',
     'next day' => 'Next day',
     'back to calendar' => 'Back to calendar',
     'back to day' => 'Back to day',
     'pick a date' => 'Pick a date',
+    'month' => 'Month',
+    'week' => 'Week',
     
     //Groups
     'can edit company data' => 'Can edit company data',

@@ -150,10 +150,13 @@ og.ObjectPicker = function(config) {
 		filterSelect: function(filter) {
 			if (filter.filter == 'type') {
 				this.type = filter.type;
+				this.store.baseParams.type = this.type;
 			} else if (filter.filter == 'tag') {
 				this.tag = filter.name;
+				this.store.baseParams.tag = this.tag;
 			} else if (filter.filter == 'ws') {
 				this.ws = filter.id;
+				this.store.baseParams.active_project = this.ws;
 			}
 			this.load();
 		},
@@ -163,15 +166,6 @@ og.ObjectPicker = function(config) {
 				start: 0,
 				limit: og.pageSize
 			};
-			if (this.type) {
-				params.type = this.type;
-			}
-			if (this.tag) {
-				params.tag = this.tag;
-			}
-			if (this.ws) {
-				params.active_project = this.ws;
-			}
 			this.store.load({
 				params: params
 			});
@@ -416,6 +410,10 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 		this.findById('wsFilter').loadWorkspaces();
 		this.findById('tagFilter').loadTags();
 		this.findById('typeFilter').loadFilters();
+	},
+	
+	load: function() {
+		this.grid.load();
 	}
 });
 
@@ -425,6 +423,7 @@ og.ObjectPicker.show = function(callback, scope) {
 	}
 
 	this.dialog.loadFilters();
+	this.dialog.load();
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});
 	this.dialog.show();

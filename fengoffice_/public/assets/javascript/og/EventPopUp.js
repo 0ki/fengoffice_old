@@ -13,6 +13,9 @@ og.EventPopUp = function(data,config) {
 		iconCls: 'op-ico',
 		title: data.title,
 		border: false,
+		focus : function() {
+                    Ext.get('subject').focus();
+                },
 		buttons: [{
 			text: lang('add event'),
 			handler: this.accept,
@@ -31,7 +34,7 @@ og.EventPopUp = function(data,config) {
 								        labelWidth: 75, // label settings here cascade unless overridden
 								        frame:false,
 								        height: 80,
-								        url: og.getUrl('event', 'add', {popup:'true'}),
+								        url: '',//og.getUrl('event', 'add', {popup:'true', ajax:'true'),
 								        bodyStyle:'padding:20px 20px 0',
 								        defaultType: 'textfield',
 										border:false,
@@ -60,6 +63,30 @@ og.EventPopUp = function(data,config) {
 								                name: 'event[start_year]',
 								                id: 'year',
 								                value: data.year
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'event[hour]',
+								                id: 'hour',
+								                value: data.hour
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'event[minute]',
+								                id: 'min',
+								                value: data.minute
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'event[type_id]',
+								                id: 'type_id',
+								                value: data.type_id
+								            },
+								            {
+								            	xtype: 'hidden',
+								                name: 'view',
+								                id: 'view',
+								                value: data.view
 								            }
 								        ]
 								    })
@@ -72,16 +99,13 @@ og.EventPopUp = function(data,config) {
 		]
 	}));
     
-	this.addEvents({'eventadded': true});
 }
 
 
 Ext.extend(og.EventPopUp, Ext.Window, {
-	accept: function() {
-		var data=this.the_data;
-		this.form.getForm().submit();
-		//this.fireEvent('eventadded', Ext.getCmp('day').getValue());
+	accept: function() {		
 		this.hide();
+		og.openLink(og.getUrl('event', 'add'),{post:'popup=true&event[start_day]='+Ext.getCmp('day').getValue()+'&event[start_month]='+Ext.getCmp('month').getValue()+'&event[start_year]='+Ext.getCmp('year').getValue()+'&event[hour]='+Ext.getCmp('hour').getValue()+'&event[minute]='+Ext.getCmp('min').getValue()+'&event[type_id]='+Ext.getCmp('type_id').getValue()+'&event[durationhour]=1&view='+Ext.getCmp('view').getValue()+'&event[subject]='+Ext.getCmp('subject').getValue()});	
 	},
 	
 	cancel: function() {
@@ -97,22 +121,25 @@ og.EventPopUp.show = function(callback, data, scope) {
 	this.dialog.setTitle(data.title);
 	Ext.getCmp('year').setValue(data.year);	
 	Ext.getCmp('month').setValue(data.month);	
-	Ext.getCmp('day').setValue(data.day);	
-	
-	
+	Ext.getCmp('day').setValue(data.day);
+	Ext.getCmp('hour').setValue(data.hour);	
+	Ext.getCmp('min').setValue(data.minute);	
+	Ext.getCmp('type_id').setValue(data.type_id);	
+	Ext.getCmp('subject').setValue('');	
+	Ext.getCmp('view').setValue(data.view);	
 	this.dialog.purgeListeners();
-	this.dialog.on('eventadded', callback, scope, {single:true});
 	this.dialog.show();
 	var pos = this.dialog.getPosition();
 	if (pos[0] < 0) pos[0] = 0;
 	if (pos[1] < 0) pos[1] = 0;
 	this.dialog.setPosition(pos[0], pos[1]);
+	Ext.getCmp('subject').focus();
 }
 
 
 og.EventPopUp.goToEdit = function (){
 	var sub = Ext.getCmp('subject').getValue();	
 	var data=this.the_data;
-	og.openLink(og.getUrl('event', 'add', {subject: sub,day:data.day , month: data.month, year: data.year}), null);
+	og.openLink(og.getUrl('event', 'add', {subject: sub,day:data.day , month: data.month, year: data.year,hour: data.hour,minute: data.minute,type_id:data.type_id,view:data.view}), null);
 	this.dialog.hide();	
 }

@@ -5,64 +5,62 @@
 og.FileManager = function() {
 	var actions, moreActions;
 
-	this.doNotDestroy = true;
-	this.active = true;
+	this.doNotRemove = true;
+	this.needRefresh = false;
 
-	this.store = new Ext.data.Store({
-		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-			url: og.getUrl('files', 'list_files', {ajax: true})
-		})),
-		reader: new Ext.data.JsonReader({
-			root: 'files',
-			totalProperty: 'totalCount',
-			id: 'id',
-			fields: [
-				'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-				{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-				'updatedBy', 'updatedById',
-				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-				'icon', 'project', 'projectId', 'manager', 'checkedOutById',
-				'checkedOutByName', 'mimeType', 'workspaceColors', 'isModifiable'
-			]
-		}),
-		remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("documents"), ws, tag));
+	if (!og.FileManager.store) {
+		og.FileManager.store = new Ext.data.Store({
+			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+				url: og.getUrl('files', 'list_files', {ajax: true})
+			})),
+			reader: new Ext.data.JsonReader({
+				root: 'files',
+				totalProperty: 'totalCount',
+				id: 'id',
+				fields: [
+					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
+					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+					'updatedBy', 'updatedById',
+					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+					'icon', 'project', 'projectId', 'manager', 'checkedOutById',
+					'checkedOutByName', 'mimeType', 'workspaceColors', 'isModifiable',
+					'modifyUrl'
+				]
+			}),
+			remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("documents"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("documents"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("documents"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-	});
-	this.store.setDefaultSort('dateUpdated', 'desc');
-	this.store.manager = this;
-
+		});
+		og.FileManager.store.setDefaultSort('dateUpdated', 'desc');
+	}
+	this.store = og.FileManager.store;
+	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 	
 	function renderName(value, p, r) {
 		var result = '';
@@ -85,7 +83,7 @@ og.FileManager = function() {
 		if (r.data.isModifiable) {
 			actions += String.format(
 			'<a class="ico-edit" href="#" onclick="og.openLink(\'{0}\')" title="{1}" ' + actionStyle + '>' + lang('edit') + '</a>',
-			og.getUrl('files', 'add_document', {id: r.data.object_id}),lang('edit this document'));
+			r.data.modifyUrl,lang('edit this document'));
 		}
 		
 		if (actions != '')
@@ -201,7 +199,6 @@ og.FileManager = function() {
         	dataIndex: 'icon',
         	width: 28,
         	renderer: renderIcon,
-        	sortable: false,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -211,28 +208,27 @@ og.FileManager = function() {
 			header: lang("name"),
 			dataIndex: 'name',
 			width: 300,
-			renderer: renderName
+			renderer: renderName,
+			sortable: true
         },{
 			id: 'type',
 			header: lang('type'),
 			dataIndex: 'type',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
 		},{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'updated',
 			header: lang("last updated by"),
 			dataIndex: 'dateUpdated',
 			width: 120,
-			sortable: false,
-			renderer: renderDateUpdated
+			renderer: renderDateUpdated,
+			sortable: true
         },{
 			id: 'created',
 			header: lang("created by"),
@@ -245,10 +241,9 @@ og.FileManager = function() {
 			header: lang("status"),
 			dataIndex: 'checkedOutByName',
 			width: 120,
-			sortable: false,
 			renderer: renderCheckout
 		}]);
-	cm.defaultSortable = true;
+	cm.defaultSortable = false;
 
 	moreActions = {
 		download: new Ext.Action({
@@ -363,10 +358,8 @@ og.FileManager = function() {
 		store: this.store,
 		layout: 'fit',
 		cm: cm,
-		id: 'file-manager',
 		stripeRows: true,
 		closable: true,
-		loadMask: true,
 		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
@@ -405,24 +398,27 @@ og.FileManager = function() {
 		}
 	});
 
-	og.eventManager.addListener("tag changed", function(tag) {
-		if (this.active) {
-			this.load({start: 0});
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
-	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		//if (this.store.lastOptions) {
-		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		//}
 	}, this);
 };
 
 Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	load: function(params) {
-		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
 		if (!params) params = {};
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		Ext.apply(this.store.baseParams, {
 			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
@@ -437,14 +433,9 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -454,10 +445,4 @@ Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	}
 });
 
-og.FileManager.getInstance = function() {
-	if (!og.FileManager.instance) {
-		og.FileManager.instance = new og.FileManager();
-	}
-	return og.FileManager.instance;
-}
-
+Ext.reg("files", og.FileManager);

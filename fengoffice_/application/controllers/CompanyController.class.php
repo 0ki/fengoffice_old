@@ -16,11 +16,7 @@ class CompanyController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
 	/**
@@ -30,6 +26,7 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function card() {
+		$this->setTemplate("view_company");
 		$company = Companies::findById(get_id());
 		if(!($company instanceof Company)) {
 			flash_error(lang('company dnx'));
@@ -43,6 +40,7 @@ class CompanyController extends ApplicationController {
 			return;
 		} // if
 
+		ajx_set_no_toolbar(true);
 		tpl_assign('company', $company);
 	} // card
 
@@ -53,27 +51,7 @@ class CompanyController extends ApplicationController {
 	 * @return null
 	 */
 	function view_client() {
-		$this->setTemplate('view_company');
-
-		if(!logged_user()->isAdministrator(owner_company())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$company = Companies::findById(get_id());
-		if(!($company instanceof Company)) {
-			flash_error(lang('company dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-		$contacts = $company->getContacts();
-
-		tpl_assign('company', $company);
-		tpl_assign('active_projects', Projects::getActiveProjects(Projects::ORDER_BY_NAME));
-		tpl_assign('finished_projects', Projects::getFinishedProjects(Projects::ORDER_BY_NAME));
-
-		$this->setSidebar(get_template_path('view_client_sidebar', 'company'));
+		$this->redirectTo('company','card', array('id' => get_id()));
 	} // view_client
 
 	/**
@@ -127,7 +105,7 @@ class CompanyController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit company', $company->getName()));
-				$this->redirectTo('administration', 'company');
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -159,6 +137,14 @@ class CompanyController extends ApplicationController {
 		tpl_assign('company_data', $company_data);
 
 		if(is_array($company_data)) {
+			$ids = array_var($_POST, "ws_ids", "");
+			$enteredWS = Projects::findByCSVIds($ids);
+			$validWS = array();
+			foreach ($enteredWS as $ws) {
+				if (Company::canAddClient(logged_user())) {
+					$validWS[] = $ws;
+				}
+			}
 			$company->setFromAttributes($company_data);
 			$company->setClientOfId(owner_company()->getId());
 
@@ -166,12 +152,22 @@ class CompanyController extends ApplicationController {
 
 				DB::beginWork();
 				$company->save();
-				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
+				$company->setTagsFromCSV(array_var($company_data, 'tags'));
+//				$company->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
+				foreach ($validWS as $w) {
+					$company->addToWorkspace($w);
+				}
+
+//				$company->save_properties($message_data);
+				foreach ($validWS as $w) {
+					ApplicationLogs::createLog($company, $w, ApplicationLogs::ACTION_ADD);
+				}	
+//				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
 				flash_success(lang('success add client', $company->getName()));
-				ajx_current("start");
 				evt_add("company added", array("id" => $company->getId(), "name" => $company->getName()));
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -204,19 +200,21 @@ class CompanyController extends ApplicationController {
 
 		$company_data = array_var($_POST, 'company');
 		if(!is_array($company_data)) {
+			$tag_names = $company->getTagNames();
 			$company_data = array(
-          'name' => $company->getName(),
-          'timezone' => $company->getTimezone(),
-          'email' => $company->getEmail(),
-          'homepage' => $company->getHomepage(),
-          'address' => $company->getAddress(),
-          'address2' => $company->getAddress2(),
-          'city' => $company->getCity(),
-          'state' => $company->getState(),
-          'zipcode' => $company->getZipcode(),
-          'country' => $company->getCountry(),
-          'phone_number' => $company->getPhoneNumber(),
-          'fax_number' => $company->getFaxNumber()
+	          'name' => $company->getName(),
+  			  'tags' => is_array($tag_names) ? implode(', ', $tag_names) : '',
+	          'timezone' => $company->getTimezone(),
+	          'email' => $company->getEmail(),
+	          'homepage' => $company->getHomepage(),
+	          'address' => $company->getAddress(),
+	          'address2' => $company->getAddress2(),
+	          'city' => $company->getCity(),
+	          'state' => $company->getState(),
+	          'zipcode' => $company->getZipcode(),
+	          'country' => $company->getCountry(),
+	          'phone_number' => $company->getPhoneNumber(),
+	          'fax_number' => $company->getFaxNumber()
 			); // array
 		} // if
 
@@ -231,11 +229,29 @@ class CompanyController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$company->save();
+				$company->setTagsFromCSV(array_var($company_data, 'tags'));
+				/* <multiples workspaces> */
+				$oldws = $company->getWorkspaces();
+				foreach ($oldws as $oldw) {
+					$company->removeFromWorkspace($oldw);
+				}
+				$ids = array_var($_POST, "ws_ids", "");
+				$enteredWS = Projects::findByCSVIds($ids);
+				$validWS = array();
+				foreach ($enteredWS as $ws) {
+					if ($company->canAdd(logged_user(), $ws)) {
+						$validWS[] = $ws;
+					}
+				}
+				foreach ($validWS as $w) {
+					$company->addToWorkspace($w);
+				}
+				/* </multiples workspaces> */
 				ApplicationLogs::createLog($company, null, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				flash_success(lang('success edit client', $company->getName()));
-				$this->redirectTo('administration', 'clients');
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -272,7 +288,7 @@ class CompanyController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete client', $company->getName()));
-			$this->redirectTo('administration', 'clients');
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete client'));
@@ -350,7 +366,7 @@ class CompanyController extends ApplicationController {
 			} // foreach
 
 			flash_success(lang('success update company permissions', $counter));
-			$this->redirectToUrl($company->getViewUrl());
+			ajx_current("back");
 		} // if
 	} // update_permissions
 
@@ -418,6 +434,7 @@ class CompanyController extends ApplicationController {
 					)
 				);
 				tpl_assign("object", $object);
+				ajx_current("back");
 			} catch(Exception $e) {
 				ajx_current("empty");
 				DB::rollback();
@@ -454,7 +471,7 @@ class CompanyController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete company logo'));
-			$this->redirectToUrl($company->getEditLogoUrl());
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete company logo'));
@@ -480,7 +497,7 @@ class CompanyController extends ApplicationController {
 			owner_company()->save();
 
 			flash_success(lang('success hide welcome info'));
-			$this->redirectTo('dashboard');
+			ajx_current("reload");
 		} catch(Exception $e) {
 			flash_error(lang('error hide welcome info'));
 			ajx_current("empty");

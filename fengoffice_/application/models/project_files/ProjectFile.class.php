@@ -297,7 +297,12 @@ class ProjectFile extends BaseProjectFile {
 		if(isset($uploaded_file['error']) && ($uploaded_file['error'] > UPLOAD_ERR_OK)) {
 			throw new InvalidUploadError($uploaded_file);
 		} // if
-		 
+
+		//eyedoc MOD
+		$extension = get_file_extension(basename($uploaded_file['name']));
+		if(($uploaded_file['type'] == 'application/octet-stream') && ($extension == 'eyedoc')) $uploaded_file['type'] = 'text/html';
+		//eyedoc MOD
+		
 		$repository_id = FileRepository::addFile($uploaded_file['tmp_name'], array('name' => $uploaded_file['name'], 'type' => $uploaded_file['type'], 'size' => $uploaded_file['size']));
 
 		$revision->setRepositoryId($repository_id);
@@ -337,6 +342,10 @@ class ProjectFile extends BaseProjectFile {
 			|| strcmp($this->getTypeString(),'sprd')==0 
 			|| strcmp($this->getTypeString(),'prsn')==0 
 			|| substr($this->getTypeString(), 0, 4) == "text";
+	}
+	
+	function isDisplayable() {
+		return substr($this->getTypeString(), 0, 4) == "text";
 	}
 	
 	// ---------------------------------------------------
@@ -503,7 +512,7 @@ class ProjectFile extends BaseProjectFile {
 	function getUndoCheckoutUrl() {
 		return get_url('files', 'undo_checkout', array(
         	'id' => $this->getId())); // get_url
-	} // getCheckinUrl
+	} // getUndoCheckoutUrl
 
 	
 	

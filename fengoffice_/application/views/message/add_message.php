@@ -109,7 +109,12 @@ var allTags = [<?php
 	<fieldset id="emailNotification">
 	<legend><?php echo lang('email notification') ?></legend>
 	<p><?php echo lang('email notification desc') ?></p>
-	<?php foreach($project->getCompanies() as $company) { ?>
+	<?php if (active_project() instanceof Project) {
+		$companies = $project->getCompanies();
+	} else {
+		$companies = Companies::findAll();
+	}?>
+	<?php foreach($companies as $company) { ?>
 		<script type="text/javascript">
 			App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
 				id          : <?php echo $company->getId() ?>,
@@ -117,7 +122,12 @@ var allTags = [<?php
 				users       : []
 			};
 		</script>
-		<?php if(is_array($users = $company->getUsersOnProject($project)) && count($users)) { ?>
+		<?php if (active_project() instanceof Project) {
+			$users = $company->getUsersOnProject($project);
+		} else {
+			$users = $company->getUsers();
+		}?>
+		<?php if(is_array($users) && count($users)) { ?>
 		<div class="companyDetails">
 			<div class="companyName">
 				<?php echo checkbox_field('message[notify_company_' . $company->getId() . ']', 
@@ -154,7 +164,7 @@ var allTags = [<?php
 	<div id='<?php echo $genid ?>add_message_properties_div' style="display:none">
 	<fieldset>
 		<legend><?php echo lang('properties') ?></legend>
-		<? echo render_object_properties('message',$message); ?>
+		<?php echo render_object_properties('message',$message); ?>
 	</fieldset>
 	</div>
 

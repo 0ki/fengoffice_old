@@ -17,7 +17,7 @@
   set_include_path('library/zend' . PATH_SEPARATOR . get_include_path());
   
   if (LUCENE_SEARCH) {
-  	require_once('Zend/Search/Lucene.php');
+ 	require_once('Zend/Search/Lucene.php');
   }
   
   // ---------------------------------------------------
@@ -90,7 +90,6 @@
   include_once 'environment/environment.php';
   
   include_once 'library/cal/index.php';
-  include_once 'library/minicalendar/OGCalendar.php';
   
   include_once 'library/json/json.php';
   
@@ -148,7 +147,8 @@
   
   // Get controller and action and execute...
   try {
-    Env::executeAction(request_controller(), request_action());
+    Env::executeAction(request_controller(), request_action()) or
+    	DB::rollback();
   } catch(Exception $e) {
     if(Env::isDebugging()) {
       Env::dumpError($e);

@@ -65,10 +65,9 @@ class ConfigController extends ApplicationController {
 				$option->save();
 			} // foreach
 			flash_success(lang('success update config category', $category->getDisplayName()));
-			$this->redirectTo('administration', 'configuration');
+			ajx_current("back");
 		} // if
 
-		$this->setSidebar(get_template_path('update_category_sidebar', 'config'));
 	} // update_category
 
 } // ConfigController

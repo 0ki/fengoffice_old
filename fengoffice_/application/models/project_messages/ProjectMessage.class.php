@@ -296,15 +296,6 @@ class ProjectMessage extends BaseProjectMessage {
 		return get_url('message', 'edit', array('id' => $this->getId()));
 	} // getEditUrl
 
-	/**
-	 * Return update options URL
-	 *
-	 * @param void
-	 * @return string
-	 */
-	function getUpdateOptionsUrl() {
-		return get_url('message', 'update_options', array('id' => $this->getId()));
-	} // getUpdateOptionsUrl
 
 	/**
 	 * Return delete message URL
@@ -316,17 +307,6 @@ class ProjectMessage extends BaseProjectMessage {
 	function getDeleteUrl() {
 		return get_url('message', 'delete', array('id' => $this->getId()));
 	} // getDeleteUrl
-
-	/**
-	 * Return add comment URL
-	 *
-	 * @access public
-	 * @param void
-	 * @return string
-	 */
-	function getAddCommentUrl() {
-		return get_url('message', 'add_comment', array('id' => $this->getId()));
-	} // getAddCommentUrl
 
 	/**
 	 * Return subscribe URL
@@ -360,9 +340,6 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return boolean
 	 */
 	function delete() {
-		$comments = $this->getComments();
-		if(is_array($comments)) foreach($comments as $comment) $comment->delete();
-
 		$related_forms = $this->getRelatedForms();
 		if(is_array($related_forms)) {
 			foreach($related_forms as $related_form) {

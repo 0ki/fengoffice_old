@@ -1,9 +1,6 @@
 <?php 
 
   // Set page title and set crumbs to index
-  set_page_title(lang('user card of', $user->getDisplayName()));
-  dashboard_tabbed_navigation();
-  dashboard_crumbs($user->getDisplayName());
   if($user->canUpdateProfile(logged_user())) {
   	add_page_action(lang('update profile'),$user->getEditProfileUrl(), 'ico-edit');
   	add_page_action(lang('update avatar'), $user->getUpdateAvatarUrl(), 'ico-picture');
@@ -15,6 +12,20 @@
   } // if
 
 ?>
-<?php 
-  $this->includeTemplate(get_template_path('user_card', 'user')) 
+
+
+
+<div style="padding:7px">
+<div class="user">
+<?php
+
+	tpl_assign('title', $user->getDisplayName());
+	tpl_assign('show_linked_objects', false);
+	tpl_assign('object', $user);
+	tpl_assign('iconclass', 'ico-large-user');
+	tpl_assign("content_template", array('user_card', 'user'));
+	
+	$this->includeTemplate(get_template_path('view', 'co'));
 ?>
+</div>
+</div>

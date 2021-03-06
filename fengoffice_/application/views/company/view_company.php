@@ -9,24 +9,24 @@
   if(User::canAdd(logged_user(), $company)) {
     add_page_action(lang('add user'), $company->getAddUserUrl(), 'ico-add');
   } // if
+  
 
 ?>
-<?php $this->includeTemplate(get_template_path('company_card', 'company')) ?>
 
-<fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyUsers',this)"><?php echo lang('users') ?></legend>
-<div id='companyUsers' style="display:none">
+
+
+<div style="padding:7px">
+<div class="company">
 <?php
-  $this->assign('users', $company->getUsers());
-  $this->includeTemplate(get_template_path('list_users', 'administration'));
+
+	tpl_assign('title', $title);
+	tpl_assign('show_linked_objects', false);
+	tpl_assign('object', $company);
+	tpl_assign('iconclass', 'ico-large-company');
+	tpl_assign("content_template", array('company_content', 'company'));
+	
+	$this->includeTemplate(get_template_path('view', 'co'));
 ?>
 </div>
-</fieldset>
-
-<fieldset><legend class="toggle_collapsed" onclick="og.toggle('companyContacts',this)"><?php echo lang('contacts') ?></legend>
-<div id='companyContacts' style="display:none">
-<?php
-  $this->assign('contacts', $company->getContacts());
-  $this->includeTemplate(get_template_path('list_contacts', 'contact'));
-?>
 </div>
-</fieldset>
+

@@ -9,7 +9,6 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 		array(lang('files'), get_url('files')),
 		array($file->isNew() ? lang('add document') : lang('edit document'))
 	));
-	unset($content_for_sidebar);
 	
 	//add_stylesheet_to_page('project/documents.css');
 	//add_stylesheet_to_page('file/imageChooser.css');
@@ -17,11 +16,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 ?>
 
 <?php
-	if ($file->isNew()) {
-		$instanceName = "fck" . (time() % 1000000);
-	} else {
-		$instanceName = "fck" . $file->getId();
-	}
+	$instanceName = "fck" . gen_id();
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 <script type="text/javascript">
@@ -46,7 +41,7 @@ function checkFilename(iname) {
 </script>
 
 <form class="internalForm" id="<?php echo $instanceName ?>" action="<?php echo get_url('files', 'save_document') ?>" method="post" enctype="multipart/form-data" onsubmit="return checkFilename('<?php echo $instanceName ?>')">
-
+<input type="hidden" name="instanceName" value="<?php echo $instanceName ?>" />
 <?php tpl_display(get_template_path('form_errors')) ?>
 
 
@@ -62,10 +57,26 @@ if($file->isNew()) {
 	$oFCKeditor->Value = $file->getFileContent();
 }
 $oFCKeditor->Create();
-add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = ''; form.rename = false; form.onsubmit(); })()", "save");
-add_page_action(lang("save as new revision"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save_new_revision");
+//add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = ''; form.rename = false; form.onsubmit(); })()", "save");
+add_page_action(lang("save"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save");
 add_page_action(lang("save as"), "javascript:(function(){ var form = document.getElementById('$instanceName'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as");
 ?>
+
+<script>
+
+function FCKeditor_OnComplete(fck) {
+	fck.ResetIsDirty();
+	fck.Events.AttachEvent('OnSelectionChange', function(fck) {
+		var p = og.getParentContentPanel(Ext.get(fck.Name));
+		if (fck.IsDirty()) {
+			Ext.getCmp(p.id).setPreventClose(true);
+		} else {
+			Ext.getCmp(p.id).setPreventClose(false);
+		}
+	});
+}
+
+</script>
 
  	<div>
 		<input type="hidden" id="fileContent" name="fileContent" value="" />
@@ -76,7 +87,15 @@ add_page_action(lang("save as"), "javascript:(function(){ var form = document.ge
 </form>
 
 <script>
-og.eventManager.addListener("file saved", function(obj) {
-	this['file[id]'].value = obj.id;
-}, Ext.getDom('<?php echo $instanceName ?>'), {single:true});
+og.eventManager.addListener("document saved", function(obj) {
+	var form = Ext.getDom(obj.instance);
+	if (!form) return;
+	form['file[id]'].value = obj.id;
+	var fck = FCKeditorAPI.GetInstance(obj.instance);
+	if (fck) {
+		fck.ResetIsDirty();
+		var p = og.getParentContentPanel(Ext.get(fck.Name));
+		Ext.getCmp(p.id).setPreventClose(false);
+	}
+}, null, {replace:true});
 </script>

@@ -60,6 +60,8 @@ div.event_block{
 	padding-left: 1px;
 	padding-bottom: 2px;
 	border-bottom: 0px solid #888888;
+	over-flow:hidden;
+	white-space:nowrap;
 }
 
 div.event_block img{
@@ -255,7 +257,7 @@ between the cells of the main calendar.  */
 #calendar {
   background-color: white;
   color: white;
-  width: 99%;
+  width: 100%;
   text-align: center;
   font-size: 10pt;
   table-layout: fixed;
@@ -282,9 +284,10 @@ between the cells of the main calendar.  */
 }
 #calendar div.daylink{
 	width: 100%;
-	background-color: #E6E6E6;/*#6485af;*/
-	padding: 3px;
+	background-color: #ECEFF7;/*#6485af;*/
+	padding-right: 3px;
 }
+
 #calendar div.daylink a, #calendar div.daylink a:active, #calendar div.daylink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
@@ -307,7 +310,7 @@ between the cells of the main calendar.  */
 #calendar div.todaylink{
 	width: 100%;
 	background-color: #FFFFB3; /*#FBEA86;  #FFCC33; /* #31528E; */
-	padding: 3px;
+	padding-right: 3px;
 }
 #calendar div.todaylink a, #calendar div.todaylink a:active, #calendar div.todaylink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
@@ -334,13 +337,21 @@ between the cells of the main calendar.  */
   color: black;
   background-color: #FFFFCC;
   border: 1px solid  #999999;
+  height: 90px; 
   }
 
 #calendar div.extralink{
 	width: 100%;
 	background-color: #FFF;/*#A9BCD5;  D1DCEE; /* #A2A9BB; */
-	padding: 3px;
+	padding-right: 3px;
 }
+
+#calendar div.extraweekendlink{
+	width: 100%;
+	/*background-color: #FFF;/*#A9BCD5;  D1DCEE; /* #A2A9BB; */
+	padding-right: 3px;
+}
+
 #calendar div.extralink a, #calendar div.extralink a:active, #calendar div.extralink a:visited{
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10px;
@@ -366,7 +377,7 @@ between the cells of the main calendar.  */
 #calendar td.weekend{
   text-align: left;
   color: black;
-  background-color: #EFF7FF;
+  background-color: #F0F2F7;
   border: #999999 1px solid;
   }
 #calendar td.weekday{
@@ -382,7 +393,7 @@ between the cells of the main calendar.  */
   }
 #calendar td.weekend, #calendar td.weekday, #calendar td.weekday_future{
   text-align: left;
-  height: 110px;
+  height: 100px;
   border:#999 thin solid;
 }
 

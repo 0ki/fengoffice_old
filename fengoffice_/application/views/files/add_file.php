@@ -13,17 +13,15 @@
 	$enableUpload = $file->isNew() 
 	|| (isset($checkin) && $checkin) || ($file->getCheckedOutById() == 0 && logged_user()->isAdministrator()) 
 	|| ($file->getCheckedOutById() == logged_user()->getId()); 
+	$genid = gen_id();
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
 
 
 <form style='height:100%;background-color:white' name="addFileForm" action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="return false;">
   <?php tpl_display(get_template_path('form_errors'));?>
-  <input id="hfExistingFileId" name='file[existing_file_id]' type="hidden" value="0">
   <input id="hfFileIsNew" type="hidden" value="<?php echo $file->isNew()?>">
   <input id="hfAddFileAddType" name='file[add_type]' type="hidden" value="regular">
-  <input id="fileFormNewFilenameH" type="hidden"/>
-  <input id="fileFormFilenameH" type="hidden"/>
   <input id="hfFileId" name='file[file_id]' type="hidden" value="<?php echo array_var($file_data, 'file_id') ?>">
   <input id="hfEditFileName" name='file[edit_name]' type="hidden" value="<?php echo array_var($file_data, 'edit_name') ?>">
     
@@ -40,16 +38,16 @@
 		
     <div id="selectFileControlDiv">
         <?php echo label_tag(lang('file'), 'fileFormFile', true) ?>
-        <?php echo file_field('file_file', null, array('id' => 'fileFormFile', 'class' => 'title', 'onchange' => 'javascript:updateFileName();checkFileName()')) ?>
+        <?php echo file_field('file_file', null, array('id' => 'fileFormFile', 'class' => 'title', 'onchange' => 'javascript:og.updateFileName();og.checkFileName(this.value)')) ?>
     	<p><?php echo lang('upload file desc', format_filesize(get_max_upload_size())) ?></p>  
     </div>
     <?php }} // if ?>
     
     
     
-    <div id="addFileFilenameDNX" style="display:none">
+    <div id="addFileFilename" style="<?php echo $file->isNew()? 'display:none' : '' ?>">
       	<?php echo label_tag(lang('new filename'), 'fileFormFilename') ?>
-        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename', 'onchange' => 'javascript:checkFileName(this.value)')) ?>
+        <?php echo text_field('file[name]',$file->getFilename(), array("id" => 'fileFormFilename', 'onchange' => ($file->isNew()? 'javascript:og.checkFileName(this.value)':''))) ?>
 		<br/>
     </div>
       
@@ -83,44 +81,28 @@
       	<h2><?php echo lang("duplicate filename")?></h2>
       	<p><?php echo lang("filename exists") ?></p>
       	
-      	<div id="addFileExistingFileInfo"></div>
-      	
-      	<table><tr>
-      	  <td style="padding-top:5px;padding-right:5px">
-      	    <?php echo radio_field('file[new_filename_check]',true, array("id" => 'radioAddFileNewName', "value" => "true")) ?>
+      	<div style="padding-top:10px">
+      	<table ><tr>
+      	  <td style="height:20px;padding-right:4px">
+      	    <?php echo radio_field('file[upload_option]',true, array("id" => 'radioAddFileUploadAnyway', "value" => -1)) ?>
       	  </td><td>
-      	    <?php echo label_tag(lang('new filename'), 'fileFormNewFilename') ?>
-            <?php echo text_field('file[new_filename]', array_var($file_data, 'new_filename'),array('id' => 'fileFormNewFilename',
-         	  'onchange' => 'javascript:checkFileName(this.value)')) ?>
-		  </td></tr>
-		  <tr><td>
-		    <?php echo radio_field('file[new_filename_check]', false, array("value" => "false"))?>
-      	  </td><td>
-      		<div id="fileNotCheckedOut" style="display:none">
-      			<?php echo label_tag(lang('add as revision'), 'fileFormCheckAddRevision', false,null,'')  ?>
-      		</div>
-      		<div id="fileCheckedOutPermission" style="display:none">
-      			<?php echo label_tag(lang('add file check in'), 'fileFormCheckInAddRevision', false,null,'')  ?>
-      		</div>
-      		<div id="fileCheckedOut" style="display:none">
-      		</div>
-      		<div id="fileCheckedOutNoPermission" style="display:none">
-      			<?php echo lang("no permission to check in") ?>
-      		</div>
+      	    <?php echo lang('upload anyway')?>
 		  </td></tr>
 		</table>
+		<table id="upload-table">
+		</table>
+		</div>
       </div>
     </div>
     
-   <?php }  else {//----------------------------------------------------------------EDIT
-	if (!isset($checkin)) {?>
+   <?php }  else {//----------------------------------------------------------------EDIT?>
+    <div class="content">
+    <?php if (!isset($checkin)) {?>
+      
+    
       <div class="header">
     	<?php echo checkbox_field('file[update_file]', array_var($file_data, 'update_file'), array('class' => 'checkbox', 'id' => 'fileFormUpdateFile', 'onclick' => 'App.modules.addFileForm.updateFileClick()')) ?> <?php echo label_tag(lang('update file'), 'fileFormUpdateFile', false, array('class' => 'checkbox'), '') ?>
       </div>
-    <?php } // if ?>
-    <div class="content">
-    <?php if (!isset($checkin)) {?>
-    
       <div id="updateFileDescription">
         <p><?php echo lang('replace file description') ?></p>
       </div>
@@ -239,7 +221,7 @@
   <div id="add_file_properties_div" style="display:none">
   <fieldset>
     <legend><?php echo lang('properties') ?></legend>
-      <? echo render_object_properties('file',$file); ?>
+      <?php echo render_object_properties('file',$file); ?>
   </fieldset>
   </div>
   
@@ -260,11 +242,11 @@
   <?php 
   if (!$file->isNew())  //Edit file
   	if (isset($checkin) && $checkin)
-	  echo submit_button(lang('checkin file'),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)'));
+	  echo submit_button(lang('checkin file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
 	else
-	  echo submit_button(lang('save changes'),'s',array("onclick" => 'javascript:submitMe(document.addFileForm)'));
+	  echo submit_button(lang('save changes'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
   else //New file
-    echo submit_button(lang('add file'),'s',array("id" => 'addFileButton', "onclick" => 'javascript:submitMe(document.addFileForm)'));
+    echo submit_button(lang('add file'),'s',array("id" => 'add_file_submit2', "onclick" => 'javascript:submitMe(document.addFileForm)'));
   ?>
   </div>
   

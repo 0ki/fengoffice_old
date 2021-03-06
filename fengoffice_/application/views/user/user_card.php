@@ -13,32 +13,49 @@
     <h2><?php echo lang('contact online') ?></h2>
     
     <div class="cardBlock">
-      <div><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo clean($user->getEmail()) ?>"><?php echo clean($user->getEmail()) ?></a></div>
+      <div><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo clean($user->getEmail()) ?>">
+      <?php echo clean($user->getEmail()) ?></a></div>
       
-<?php if(is_array($im_values = $user->getImValues()) && count($im_values)) { ?>
-      <table class="imAddresses">
-<?php foreach($im_values as $im_value) { ?>
-<?php if($im_type = $im_value->getImType()) { ?>
-        <tr>
-          <td><img src="<?php echo $im_type->getIconUrl() ?>" alt="<?php echo $im_type->getName() ?>" /></td>
-          <td><?php echo clean($im_value->getValue()) ?> <?php if($im_value->getIsDefault()) { ?><span class="desc">(<?php echo lang('primary im service') ?>)</span><?php } ?></td>
-        </tr>
-<?php } // if ?>
-<?php } // foreach ?>
-      </table>
-<?php } // if ?>
 
     </div>
     
-    <h2><?php echo lang('contact offline') ?></h2>
-    
-    <div class="cardBlock" style="margin-bottom: 0">
-      <div><span><?php echo lang('office phone number') ?>:</span> <?php echo $user->getOfficeNumber() ? clean($user->getOfficeNumber()) : lang('n/a') ?></div>
-      <div><span><?php echo lang('fax number') ?>:</span> <?php echo $user->getFaxNumber() ? clean($user->getFaxNumber()) : lang('n/a') ?></div>
-      <div><span><?php echo lang('mobile phone number') ?>:</span> <?php echo $user->getMobileNumber() ? clean($user->getMobileNumber()) : lang('n/a') ?></div>
-      <div><span><?php echo lang('home phone number') ?>:</span> <?php echo $user->getHomeNumber() ? clean($user->getHomeNumber()) : lang('n/a') ?></div>
-    </div>
   
   </div>
 </div>
+
+
+
+
+<?php if (false && isset($logs)){ 
+	$genid = gen_id();
+	?>
+	<fieldset><legend class="toggle_expanded" onclick="og.toggle('<?php echo $genid ?>user_activity',this)"><?php echo lang('latest user activity') ?></legend>
+<div id="<?php echo $genid ?>user_activity"><table><col/><col style="padding-left:10px;"/><col style="padding-left:10px"/>
+		<?php foreach ($logs as $log) {
+			$log_object = $log->getObject();
+			if ($log_object instanceof ApplicationDataObject){?>
+			<tr><td><?php 
+				if ($log->getCreatedOn()->isToday()){
+					$datetime = format_time($log->getCreatedOn());
+					echo lang('today at', $datetime);
+				} else {
+					echo format_date($log->getCreatedOn());
+				}?></td>
+			<td><div class="db-ico ico-<?php echo $log_object->getObjectTypeName() ?>"></div></td>
+			<td><a class='internalLink' href='<?php echo $log_object->getObjectUrl() ?>'><?php echo $log_object->getObjectName() ?></a></td>
+			<td><?php echo $log->getText() ?></td>
+			</tr>
+			
+		<?php } // if
+			} //foreach ?>
+		</table></div>
+	</fieldset><br/>
+<?php } //if ?>
 <?php } // if ?>
+
+
+
+
+
+
+

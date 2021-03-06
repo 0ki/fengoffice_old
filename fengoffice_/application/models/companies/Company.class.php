@@ -21,7 +21,24 @@ class Company extends BaseCompany {
 	 * @var array
 	 */
 	private $completed_projects;
-
+	
+	/**
+    * This project object is taggable
+    *
+    * @var boolean
+    */
+    protected $is_taggable = true;
+    
+    /**
+    * Returns true if this object is taggable
+    *
+    * @param void
+    * @return boolean
+    */
+    function isTaggable() {
+      return $this->is_taggable;
+    } // isTaggable
+    
 	/**
 	 * Return array of all company members
 	 *
@@ -297,7 +314,24 @@ class Company extends BaseCompany {
     * @return boolean
     */
     function canEdit(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator() || $user->isMemberOf(owner_company());
+      return  can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator() ;
+    } // canEdit
+    
+    /**
+    * Check if specific user can view this company
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canView(User $user) {
+    	
+      	if( can_manage_contacts(logged_user()) || $user->isAccountOwner() || $user->isAdministrator()){
+      		return true;
+      	}
+  		else {
+			return can_read($user,$this);
+		}
     } // canEdit
     
     /**
@@ -312,14 +346,27 @@ class Company extends BaseCompany {
     } // canDelete
     
     /**
-    * Returns true if specific user can add clent company
+    * Returns true if specific user can add client company
     *
     * @access public
     * @param User $user
     * @return boolean
     */
     function canAddClient(User $user) {
-      return ($user->isMemberOf($this));
+//      return  ($user->isMemberOf($this)) || can_manage_contacts(logged_user());
+      	
+      return $user->isAccountOwner() || $user->isAdministrator($this) || can_manage_contacts(logged_user());
+    } // canAddClient
+    
+    /**
+    * Returns true if specific user can add client company
+    *
+    * @access public
+    * @param User $user
+    * @return boolean
+    */
+    function canAdd(User $user, Project $project){
+      return  $project instanceof Project && ($user->isMemberOf($this)) || can_manage_contacts(logged_user());
       	
       //return $user->isAccountOwner() || $user->isAdministrator($this);
     } // canAddClient
@@ -636,6 +683,11 @@ class Company extends BaseCompany {
     function getObjectTypeName() {
       return 'company';
     } // getObjectTypeName
+    
+    function getTagNames() {
+      if(!$this->isTaggable()) throw new Error('Object not taggable');
+      return Tags::getTagNamesByObject($this, get_class($this->manager()));
+    } // getTagNames
     
   } // Company 
 

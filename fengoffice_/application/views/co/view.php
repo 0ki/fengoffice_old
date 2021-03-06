@@ -6,7 +6,9 @@
 
 <table style="width:100%"><tr>
 <td>
-	<table style="width:100%"><tr>
+	<table style="width:100%">
+		<col width="12px"/><col width="60px"/>
+		<tr>
 		<td class="coViewIcon" colspan=2 rowspan=2>
 			<?php if (isset($image)) { echo $image; } else {?>
 			<div id="<?php echo $coId; ?>_iconDiv" class="coViewIconImage <?php echo $iconclass ?>"></div>
@@ -48,6 +50,9 @@
 				foreach ($internalDivs as $idiv)
 					echo $idiv;
 			}
+			if ($object instanceof ProjectDataObject && $object->allowsTimeslots())
+				echo render_object_timeslots($object, $object->getViewUrl());
+			
 			if ($object instanceof ProjectDataObject && $object->isCommentable())
 				echo render_object_comments($object, $object->getViewUrl());
 			?>
@@ -137,16 +142,20 @@
     			<?php echo lang('created by') ?>:
 			</span><br/><div style="padding-left:10px">
 			<?php 
-				if ($object->getObjectCreationTime() && $object->getCreatedOn()->isToday())
-					$datetime = format_time($object->getCreatedOn());
-				else
-					$datetime = format_date($object->getCreatedOn());
-					
+			if ($object->getCreatedBy() instanceof User){
 				if (logged_user()->getId() == $object->getCreatedBy()->getId())
 					$username = lang('you');
 				else
 					$username = clean($object->getCreatedBy()->getDisplayName());
-			echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName()) ?></div>
+					
+				if ($object->getObjectCreationTime() && $object->getCreatedOn()->isToday()){
+					$datetime = format_time($object->getCreatedOn());
+					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
+				} else {
+					$datetime = format_date($object->getCreatedOn());
+					echo lang('user date', $object->getCreatedBy()->getCardUrl(), $username, $datetime, $object->getCreatedBy()->getDisplayName());
+				}
+			} ?></div>
     	<?php } // if ?>
     	
     	<?php if($object->getObjectUpdateTime() && $object->getUpdatedBy() instanceof User && $object->getCreatedOn() != $object->getUpdatedOn()) { ?>
@@ -154,16 +163,22 @@
     			<?php echo lang('modified by') ?>:
 			</span><br/><div style="padding-left:10px">
 			<?php 
-				if ($object->getUpdatedOn()->isToday())
-					$datetime = format_time($object->getUpdatedOn());
-				else
-					$datetime = format_date($object->getUpdatedOn());
+			if ($object->getUpdatedBy() instanceof User){
 					
 				if (logged_user()->getId() == $object->getUpdatedBy()->getId())
 					$username = lang('you');
 				else
 					$username = clean($object->getUpdatedBy()->getDisplayName());
-			echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName()) ?></div>
+			
+				if ($object->getUpdatedOn()->isToday()){
+					$datetime = format_time($object->getUpdatedOn());
+					echo lang('user date today at', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName());
+				} else {
+					$datetime = format_date($object->getUpdatedOn());
+					echo lang('user date', $object->getUpdatedBy()->getCardUrl(), $username, $datetime, $object->getUpdatedBy()->getDisplayName());
+				}
+			}
+			 ?></div>
 		<?php } // if ?>
 	</div>
 	</td></tr>

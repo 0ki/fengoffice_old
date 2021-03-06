@@ -49,14 +49,14 @@
 	// for the image chooser
 	imagesUrl = '<?php echo get_url('files', 'list_files', array('type' => 'image', 'ajax' => 'true')) ?>';
 	
-	og.eventManager.addListener("file saved", function(obj) {
+	og.eventManager.addListener("presentation saved", function(obj) {
 		this.fileId = obj.id;
 	}, slimey<?php echo $id ?>, {single:true});
 </script>
 
 <?php
-add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(false); })()", "save");
-add_page_action(lang("save as new revision"), "javascript:(function(){ slimey$id.submitFile(true); })()", "save_new_revision");
+//add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(false); })()", "save");
+add_page_action(lang("save"), "javascript:(function(){ slimey$id.submitFile(true); })()", "save");
 add_page_action(lang("save as"), "javascript:(function(){ slimey$id.submitFile(true, true); })()", "save_as");
 ?>
 

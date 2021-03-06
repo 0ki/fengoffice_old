@@ -16,11 +16,7 @@ class GroupController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		} 
+		prepare_company_website_controller($this, 'website'); 
 	} // __construct
 	
 	/**
@@ -81,7 +77,7 @@ class GroupController extends ApplicationController {
 				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 				flash_success(lang('success add group', $group->getName()));
-				$this->redirectTo('administration', 'groups');
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -138,21 +134,34 @@ class GroupController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$group->save();
-				GroupUsers::removeUsersByGroup($group->getId());
-				if(array_var($_POST, 'user') != '')
+				$gus = array();
+				if(array_var($_POST, 'user') != ''){
 					foreach (array_var($_POST, 'user') as $user_id => $val){
 						if($val='checked' && is_numeric($user_id) && (Users::findById($user_id) instanceof  User)){
 							$gu= new GroupUser();
 							$gu->setGroupId($group->getId());
 							$gu->setUserId($user_id);
-							$gu->save();
+							$gus[] =$gu; //
 						}
 					}
+				}
+				if(count($gus)){
+					//there are still users in the group
+					GroupUsers::removeUsersByGroup($group->getId(),implode(',',$gus)); //remove all deleted
+					foreach ($gus as $gu){
+						$gu->save();
+					}
+				}
+				else{
+					// group was left empty, so delete all
+					GroupUsers::removeUsersByGroup($group->getId());					 
+				}
+				
 				ApplicationLogs::createLog($group, null, ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				flash_success(lang('success edit group', $group->getName()));
-				$this->redirectTo('administration', 'groups');
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -171,12 +180,13 @@ class GroupController extends ApplicationController {
 		if(!can_manage_security(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
+			return;
 		} // if
 
 		$group = Groups::findById(get_id());
 		if(!($group instanceof Group)) {
 			flash_error(lang('group dnx'));
-			$this->redirectTo('administration', 'groups');
+			ajx_current("empty");
 		} // if
 
 		try {
@@ -186,12 +196,12 @@ class GroupController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete group', $group->getName()));
+			ajx_current("reload");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete group'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectTo('administration', 'groups');
 	} // delete_group
 
 } // GroupController

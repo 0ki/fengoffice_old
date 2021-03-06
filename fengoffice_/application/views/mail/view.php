@@ -1,5 +1,7 @@
 <?php
   add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply');
+  add_page_action(lang('reply to all mail'), $email->getReplyMailUrl()."&all=1"  , 'ico-reply-all');
+  add_page_action(lang('forward mail'), $email->getForwardMailUrl()  , 'ico-forward');
   if($email->canDelete(logged_user())) {
     add_page_action(lang('delete email'),"javascript:if(confirm(lang('confirm delete mail content'))) og.openLink('" . $email->getDeleteUrl() ."');" , 'ico-delete');
   }
@@ -7,6 +9,7 @@
     add_page_action(lang('classify'), $email->getClassifyUrl(), 'ico-classify');
   }
   $c = 0;
+  $genid = gen_id();
 ?>
 
 <?php if ($email instanceof MailContent) {?>
@@ -43,12 +46,24 @@
   $description .= '</table></div>';
   
 		if($email->getBodyHtml() != ''){
-			$content =  convert_to_links($email->getBodyHtml());
+			$content = convert_to_links($email->getBodyHtml());
+			
+			$ispan = strpos(strtoupper($content),"<STYLE>");
+			$body = strpos(strtoupper($content),"<BODY>");
+			while ($ispan > 0 && ($body <= 0 || $ispan < $body)){
+				$iendspan = strpos(strtoupper($content), "</STYLE>") + 8;
+				$totLength = $iendspan - $ispan;
+				if ($totLength > 0)
+					$content = substr($content,0,$ispan) . substr($content,$iendspan);
+					
+				$ispan = strpos(strtoupper($content),"<STYLE>");
+				$body = strpos(strtoupper($content),"<BODY>");
+			}
 		} else {
 			if ($email->getBodyPlain() != ''){
 				$content =  convert_to_links(clean($email->getBodyPlain()));
 			} else {
-				$content =  do_textile(convert_to_links($email->getContent()));
+				$content =  nl2br(convert_to_links($email->getContent()));
 			}
 		}
 		

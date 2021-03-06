@@ -2,7 +2,7 @@
   set_page_title(lang('configuration'));
 ?>
 
-<div class="adminConfiguration">
+<div class="adminConfiguration" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('configuration') ?></div>
   </div>

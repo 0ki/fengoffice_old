@@ -36,6 +36,8 @@ class ProjectTask extends BaseProjectTask {
 	 * @var boolean
 	 */
 	protected $is_commentable = true;
+	
+	protected $allow_timeslots = true;
 
 	/**
 	 * Cached task array
@@ -93,6 +95,15 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	private $completed_by;
 
+	private $milestone;
+	
+	function getMilestone(){
+		if ($this->getMilestoneId() > 0 && !$this->milestone){
+			$this->milestone = ProjectMilestones::findById($this->getMilestoneId());
+		}
+		return $this->milestone;
+	}
+	
 	/**
 	 * Return parent task that this task belongs to
 	 *
@@ -104,6 +115,28 @@ class ProjectTask extends BaseProjectTask {
 		$parent = ProjectTasks::findById($this->getParentId());
 		return $parent instanceof ProjectTask  ? $parent : null;
 	} // getProject
+	
+	/**
+	 * Return the user that last assigned the task
+	 *
+	 * @access public
+	 * @param void
+	 * @return User
+	 */
+	function getAssignedBy() {
+		return Users::findById($this->getAssignedById());
+	} // getAssignedBy()
+
+	/**
+	 * Set the user that last assigned the task
+	 *
+	 * @access public
+	 * @param User $value
+	 * @return boolean
+	 */
+	function setAssignedBy($user) {
+		$this->setAssignedById($user->getId());
+	}
 
 	/**
 	 * Return owner user or company
@@ -177,7 +210,7 @@ class ProjectTask extends BaseProjectTask {
 	} // isCompleted
 
 	/**
-	 * Check if this milestone is late
+	 * Check if this task is late
 	 *
 	 * @access public
 	 * @param void
@@ -190,7 +223,7 @@ class ProjectTask extends BaseProjectTask {
 	} // isLate
 	
 	/**
-	 * Check if this milestone is today
+	 * Check if this task is today
 	 *
 	 * @access public
 	 * @param void
@@ -627,17 +660,6 @@ class ProjectTask extends BaseProjectTask {
 	} // countCompletedTasks
 
 	/**
-	 * Return owner project obj
-	 *
-	 * @access public
-	 * @param void
-	 * @return Project
-	 */
-	function getProject() {
-		return Projects::findById($this->getProjectId());
-	} // getProject
-
-	/**
 	 * Get project forms that are in relation with this task list
 	 *
 	 * @param void
@@ -898,6 +920,16 @@ class ProjectTask extends BaseProjectTask {
 	 * @return boolean
 	 */
 	function save() {
+		if (!$this->isNew()) {
+			$old_me = ProjectTasks::findById($this->getId(), true);
+		}
+		if ($this->isNew() ||
+				$this->getAssignedToCompanyId() != $old_me->getAssignedToCompanyId() ||
+				$this->getAssignedToUserId() != $old_me->getAssignedToUserId()) {
+			$this->setAssignedBy(logged_user());
+			$this->setAssignedOn(DateTimeValueLib::now());
+		}
+		
 		parent::save();
 
 		$tasks = $this->getSubTasks();
@@ -951,14 +983,17 @@ class ProjectTask extends BaseProjectTask {
 	 * @param void
 	 * @return string
 	 */
-	function getObjectName() {
+	function getObjectName($charLimit = 0) {
 		$name = $this->getTitle();
 		if (!$name) {
 			$name = $this->getText();
 		}
-		$return = substr_utf($name, 0, 50);
-		return strlen_utf($name) > 50 ? $return . '...' : $return;
+		if ($charLimit > 0 && strlen_utf($name) > $charLimit)
+			return substr_utf($name, 0, $charLimit) . '...';
+		else
+			return $name;
 	} // getObjectName
+	
 
 	/**
 	 * Return object type name
@@ -1026,6 +1061,21 @@ class ProjectTask extends BaseProjectTask {
 			);
     }
 
+    /**
+	 * Returns true if the task has a subtask with id $id.
+	 * 
+	 * @param integer $id id to look for
+	 * @return boolean
+	 */
+	function hasChild($id) {
+		foreach ($this->getSubTasks() as $sub) {
+			if ($sub->getId() == $id || $sub->hasChild($id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+    
 } // ProjectTask
 
 ?>

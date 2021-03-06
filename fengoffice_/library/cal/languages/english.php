@@ -97,7 +97,7 @@ define("CAL_AUGUST","August");
 define("CAL_SEPTEMBER","September");
 define("CAL_OCTOBER","October");
 define("CAL_NOVEMBER","November");
-define("CAL_DECEMBER","November");
+define("CAL_DECEMBER","December");
 
 
 
@@ -148,6 +148,7 @@ define("CAL_FULL_DAY","All Day"); // (view event, view date, calendar, submit ev
 define("CAL_HACKING_ATTEMPT","Hacking Attempt - IP address logged"); // (delete)
 define("CAL_TIME","Time"); // (view date, submit event)
 define("CAL_HOURS","Hours"); // (view event, submit event)
+define("CAL_HOUR","Hour"); // (view event, submit event)
 define("CAL_ANONYMOUS","Anonymous"); // (view event, view date, submit event)
 
 

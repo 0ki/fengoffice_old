@@ -14,8 +14,10 @@ class AjaxResponse {
 	
 	public $notbar = false;
 	
-	public $contentProperty = "current";
-
+	public $preventClose = false;
+	
+	public $replace = false;
+	
 	function __construct() {
 
 	}
@@ -24,11 +26,7 @@ class AjaxResponse {
 		$this->events = $events;
 	}
 	
-	function setContentProperty($property) {
-		$this->contentProperty = $property;
-	}
-
-	function addContent($panel, $type = null, $data = null, $actions = null) {
+	function addContent($panel, $type = null, $data = null, $actions = null, $notbar = null, $preventClose = null) {
 		$this->contents[$panel] = array(
 			"type" => $type,
 			"data" => $data
@@ -36,14 +34,17 @@ class AjaxResponse {
 		if (isset($actions)) {
 			$this->contents[$panel]["actions"] = $actions;
 		}
-		if ($this->notbar)
-			$this->current["notbar"] = true;
+		if (isset($notbar)) {
+			$this->contents[$panel]["notbar"] = $notbar;
+		}
+		if (isset($preventClose)) {
+			$this->contents[$panel]["preventClose"] = $preventClose;
+		}
 	}
 
 	function setCurrentContent($type, $data = null, $actions = null, $panel = null) {
-		$prop = $this->contentProperty;
 		if ($type == 'empty') {
-			$this->$prop = false;
+			$this->current = false;
 			return;
 		}
 		
@@ -53,18 +54,22 @@ class AjaxResponse {
 			$dpanel = ajx_get_panel();
 		}
 		 
-		$this->$prop = array(
+		$this->current = array(
 			"type" => $type,
 			"data" => $data,
 			"actions" => $actions,
 			"panel" => $dpanel,
-			"notbar" => $this->notbar
+			"notbar" => $this->notbar,
+			"preventClose" => $this->preventClose,
+			"replace" => $this->replace,
 		);
+		if ($type == 'html') {
+			$this->current["url"] = "index.php?" . $_SERVER['QUERY_STRING'];
+		}
 	}
 	
 	function unsetCurrentContent() {
-		$prop = $this->contentProperty;
-		$this->$prop = null;
+		$this->current = null;
 	}
 	
 	/**

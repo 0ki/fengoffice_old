@@ -20,11 +20,7 @@ class EventController extends ApplicationController {
 	*/
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}	
+		prepare_company_website_controller($this, 'website');	
 		// Reece calendar initialization
 		//define('CAL_SECURITY_BIT',1);
 		$_SESSION['cal_loginfailed'] = 0;
@@ -47,6 +43,7 @@ class EventController extends ApplicationController {
 			$this->redirectTo('dashboard');
 	    }		
 		ajx_set_no_toolbar(true);
+		ajx_replace(true);
 		
 		if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())) {
 					 add_page_action(lang('add event'), get_url('event','add',
@@ -61,7 +58,7 @@ class EventController extends ApplicationController {
 				 
 		  $month = isset($_GET['month'])?$_GET['month']:date('n');
 		  $year = isset($_GET['year'])?$_GET['year']:date('Y');
-		  $day = isset($_GET['day'])?$_GET['day']:date('n');
+		  $day = isset($_GET['day'])?$_GET['day']:date('j');
 		  
 		  $pm = $month - 1;
 		  $py = $year;
@@ -82,6 +79,13 @@ class EventController extends ApplicationController {
 		 			 )
 		 		), 'ico-today'
 		 );// cal_getlink('index.php?'.$today) );
+		 add_page_action(lang('week'), get_url('event','viewweek',
+		 		array("year"=>  $year,
+		 			 "month" => $month,
+		 			 "day" => $day
+		 			 )
+		 		), 'ico-calendar-week'
+		 );
 		 add_page_action(lang('previous month'), get_url('event','index',
 		 		array("year"=> $py,
 		 			 "month" => $pm
@@ -95,6 +99,8 @@ class EventController extends ApplicationController {
 		 		), 'ico-nextmonth'
 		 );
 		 
+		 ajx_replace(true);
+		 
 	    $tag = active_tag();
 		tpl_assign('tags',$tag);
 		$this->setTemplate('calendar');
@@ -106,7 +112,7 @@ class EventController extends ApplicationController {
        		$month = array_var($event_data, 'start_month');
        		$year = array_var($event_data, 'start_year');
        		
-       		$hour = array_var($event_data, 'hour');
+       		$hour = array_var($event_data, 'hour')==0?12:array_var($event_data, 'hour');
        		$minute = array_var($event_data, 'minute');       		
 			if(array_var($event_data, 'pm') == 1) $hour += 12;
 			// make sure the date is actually valid
@@ -187,7 +193,7 @@ class EventController extends ApplicationController {
 						
 			// calculate timestamp and durationstamp
 			// By putting through mktime(), we don't have to check for sql injection here and ensure the date is valid at the same time.
-			$timestamp = date('Y-m-d H:i:s', mktime($hour,$minute,0,$month,$day,$year));
+			$timestamp = date('Y-m-d H:i:s', mktime($hour+null,$minute+null,0,$month,$day,$year));
 			$durationstamp = date('Y-m-d H:i:s', mktime($hour + $durationhour,$minute + $durationmin, 0,$month,$day,$year)); 
 			
 			// organize the data expected by the query function
@@ -211,20 +217,37 @@ class EventController extends ApplicationController {
 	function add(){		
 		if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
+			ajx_current("empty");
 	    }
 	    $this->setTemplate('event');
 		$event = new ProjectEvent();		
 		$event_data = array_var($_POST, 'event');
 		$event_subject = array_var($_GET, 'subject'); //if sent from pupup
 		
-		$event->setStart(DateTimeValueLib::make(12,0,0,isset($_GET['month'])?$_GET['month']:date('n'),isset($_GET['day'])?$_GET['day']:date('n'),isset($_GET['year'])?$_GET['year']:date('Y')));
+		$month = isset($_GET['month'])?$_GET['month']:date('n');
+		$day = isset($_GET['day'])?$_GET['day']:date('j');
+		$year = isset($_GET['year'])?$_GET['year']:date('Y');
+		
+		$event->setStart(DateTimeValueLib::make(12,0,0,$month,$day,$year));		
+		$event->setDuration(DateTimeValueLib::make(13,0,0,$month,$day,$year));
+		
 		if(!is_array($event_data)) {
+			// if data sent from quickadd popup (via get) we se it, else default
+			$hour = isset($_GET['hour'])?$_GET['hour']:date('i');
+			if(!cal_option("hours_24")){
+				if($hour >= 12){
+					$pm = 1;
+					$hour = $hour - 12;
+				}else $pm = 0;
+			}
 			$event_data = array(
 				'month' => isset($_GET['month'])?$_GET['month']:date('n'),
 				'year' => isset($_GET['year'])?$_GET['year']:date('Y'),
 				'day' => isset($_GET['day'])?$_GET['day']:date('n'),
-				'typeofevent' => 1,
+				'hour' => $hour,
+				'minute' => isset($_GET['minute'])?$_GET['minute']:date('i'),
+				'pm' => $pm,
+				'typeofevent' => isset($_GET['type_id'])?$_GET['type_id']:1,
 				'subject' => $event_subject
 			); // array
 		} // if
@@ -262,17 +285,16 @@ class EventController extends ApplicationController {
 	          	ApplicationLogs::createLog($event, $project, ApplicationLogs::ACTION_ADD);
 	          	
 	          	flash_success(lang('success add event', $event->getObjectName()));
-	          	if(array_var($_GET, 'popup')=='true'){	 
-	          		ajx_current("empty");
-	          	}else {
-	          		ajx_current("start");
+	          	
+	          	if (array_var($_POST, 'popup', false)) {
+					ajx_current("reload");
+	          	} else {
+	          		ajx_current("back");
 	          	}
-	          
 	        } catch(Exception $e) {
 	          	DB::rollback();
 				flash_error($e->getMessage());
 				ajx_current("empty");
-	          //tpl_assign('error', $e);
 	        } // try
 		    
 		}
@@ -300,10 +322,7 @@ class EventController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete event', $event->getSubject()));
-			ajx_current("start");
-	   		/*if(!$event->delete()){
-				echo $this->cal_error($del_error);
-			}*/
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete event'));
@@ -314,10 +333,83 @@ class EventController extends ApplicationController {
 		$tag = active_tag();
 		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
+		ajx_set_no_toolbar(true);
 		
-		tpl_assign('cal_action','viewdate');
+		$day = isset($_GET['day'])?$_GET['day']:date('j');
+		$month = isset($_GET['month'])?$_GET['month']:date('n');
+	    $year = isset($_GET['year'])?$_GET['year']:date('Y');
+		
+		if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())) {
+					 add_page_action(lang('add event'), get_url('event','add',
+					 		array("year"=> $year,
+					 			 "month" =>  $month,
+					 			 "day" => $day
+					 			 )
+					 		), 'ico-event'
+					 );// cal_getlink('index.php?'.$today) );
+				 }
+		
+		
+		add_page_action(lang('month'), get_url('event','index',
+		 		array("year"=> $year,
+		 			 "month" => $month
+		 			 )
+		 		), 'ico-calendar-month'
+		);
+		
+		add_page_action(lang('week'), get_url('event','viewweek',
+		 		array("year"=> $year,
+		 			 "month" => $month,
+		 			 "day" => $day
+		 			 )
+		 		), 'ico-calendar-week'
+		);
+		 
+		 
 		$this->setTemplate('viewdate');		
 	}
+	
+	function viewweek(){
+		$tag = active_tag();
+		tpl_assign('tags',$tag);	
+		tpl_assign('cal_action','viewdate');
+		ajx_set_no_toolbar(true);
+		
+				
+		$day = isset($_GET['day'])?$_GET['day']:date('j');
+		$month = isset($_GET['month'])?$_GET['month']:date('n');
+	    $year = isset($_GET['year'])?$_GET['year']:date('Y');
+		add_page_action(lang('month'), get_url('event','index',
+		 		array("year"=> $year,
+		 			 "month" => $month
+		 			 )
+		 		), 'ico-calendar-month'
+		);
+		
+		$next_week = getDate(strtotime('+1 week',mktime(0, 0, 0, $month, $day , $year)));
+        $prev_week = getDate(strtotime('-1 week',mktime(0, 0, 0, $month, $day , $year)));
+         
+		add_page_action(lang('next week'), get_url('event','viewweek',
+		 		array("day"=> $next_week["mday"],
+		 			 "year"=> $next_week["year"],
+		 			 "month" => $next_week["mon"]
+		 			 )
+		 		), 'ico-nextmonth'
+		);
+		
+		add_page_action(lang('previous week'), get_url('event','viewweek',
+		 		array("day"=> $prev_week["mday"],
+		 			 "year"=> $prev_week["year"],
+		 			 "month" => $prev_week["mon"]
+		 			 )
+		 		), 'ico-prevmonth'
+		);
+		 
+		 
+		$this->setTemplate('viewweek');		
+	}
+	
+	
 	function viewevent(){
 		//check auth
 		$this->addHelper('textile');
@@ -332,6 +424,7 @@ class EventController extends ApplicationController {
 		tpl_assign('tags',$tag);	
 		tpl_assign('event',$event);
 		tpl_assign('cal_action','viewevent');	
+		tpl_assign('view', array_var($_GET, 'view','month'));	
 		tpl_assign('active_projects',logged_user()->getActiveProjects());
 		ajx_extra_data(array("title" => $event->getSubject(), 'icon'=>'ico-calendar'));
 	}
@@ -351,7 +444,7 @@ class EventController extends ApplicationController {
 		$event = ProjectEvents::findById(get_id());
 		if(!$event->canEdit(logged_user())){	    	
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('event');
+			ajx_current("empty");
 	    }
 	    
 		tpl_assign('active_projects',logged_user()->getActiveProjects());
@@ -451,7 +544,7 @@ class EventController extends ApplicationController {
 		          	DB::commit();
 		          
 		          	flash_success(lang('success edit event', $event->getObjectName()));
-					ajx_current("start");		          
+					ajx_current("back");						          
 		          
 		        } catch(Exception $e) {
 		        	DB::rollback();
@@ -472,7 +565,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.27 2008/07/30 20:37:07 nicomede Exp $
+ *   $Id: EventController.class.php,v 1.40 2008/08/26 17:42:05 idesoto Exp $
  *
  ***************************************************************************/
 

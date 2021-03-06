@@ -12,8 +12,8 @@
 <?php
   $options = array();
   if($contact->canEdit(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $contact->getEditUrl($company->getViewUrl()) . '">' . lang('update contact') . '</a>';
-    $options[] = '<a class="internalLink" href="' . $contact->getUpdatePictureUrl($company->getViewUrl()) . '">' . lang('update picture') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $contact->getEditUrl() . '">' . lang('update contact') . '</a>';
+    $options[] = '<a class="internalLink" href="' . $contact->getUpdatePictureUrl() . '">' . lang('update picture') . '</a>';
   } // if
   if($contact->canDelete(logged_user())) {
     $options[] = '<a class="internalLink" href="' . $contact->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete contact') . '\')">' . lang('delete') . '</a>';

@@ -6,7 +6,6 @@ og.WorkspacePanel = function(config) {
 	//this.tree = new og.WorkspaceTree(config.wstree);
 	
 	Ext.applyIf(config, {
-		autoScroll: true,
 		iconCls: 'ico-workspaces',
 		region: 'center',
 		minSize: 200,
@@ -44,7 +43,7 @@ og.WorkspacePanel = function(config) {
 			iconCls: 'ico-workspace-refresh',
 			tooltip: lang('refresh desc'),
 			handler: function() {
-				this.tree.loadWorkspaces();
+				this.tree.loadWorkspaces(null,null,true);
 			},
 			scope: this
 		}/*,'-',{
@@ -85,22 +84,27 @@ og.WorkspaceTree = function(config) {
 	delete config.workspaces;
 	// tree filter
 	var tree = this;
-	var filter = new Ext.tree.TreeFilter(this, {
-		clearBlank: true,
-		autoClear: true
-	});
+	function filterNode(n, re) {
+		var f = false;
+		var c = n.firstChild;
+		while (c) {
+			f = filterNode(c, re) || f;
+			c = c.nextSibling;
+		}
+		f = re.test(n.text.toLowerCase()) || f;
+		if (f) {
+			n.getUI().show();
+		} else {
+			n.getUI().hide();
+		}
+		return f;
+	}
 	function filterTree(e) {
 		var text = e.target.value;
-		if(!text){
-			filter.clear();
-			return;
-		}
 		tree.expandAll();
-		
-		var re = new RegExp('^' + Ext.escapeRe(text.toLowerCase()), 'i');
-		filter.filterBy(function(n){
-			return n == tree.workspaces || re.test(n.text.toLowerCase());
-		});
+		var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
+		filterNode(tree.workspaces, re);
+		tree.workspaces.getUI().show();
 	}
 
 	Ext.applyIf(config, {
@@ -142,13 +146,13 @@ og.WorkspaceTree = function(config) {
 				click: function() {
 					this.unselect();
 					this.select();
-				},
+				}/*,
 				expand: {
 					fn: function(node) {
 						this.loadWorkspaces(node);
 					},
 					scope: this
-				}
+				}*/
 			}
 		})
 	);
@@ -162,6 +166,7 @@ og.WorkspaceTree = function(config) {
 		'selectionchange' : function(sm, node) {
 			if (node && !this.pauseEvents) {
 				this.fireEvent("workspaceselect", node.ws);
+				node.expand();
 			}
 		},
 		scope:this
@@ -172,7 +177,7 @@ og.WorkspaceTree = function(config) {
 	og.eventManager.addListener('workspace edited', this.addWS, this);
 	og.eventManager.addListener('workspace deleted', this.removeWS, this);
 		
-	this.loadWorkspaces();
+	this.loadWorkspaces(null,null,true);
 };
 
 Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
@@ -209,7 +214,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 				exists.remove();
 				var parent = this.getNodeById('ws' + ws.parent);
 				if (parent) {
-//					parent.add(exists);
+					parent.appendChild(exists);
 					exists.ws.parent = parent.ws.id;
 				}
 			}
@@ -217,22 +222,22 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 		var config = {
 			iconCls: 'ico-color' + (ws.color || 0),
-			leaf: false,
+			/*leaf: false,*/
 			//cls: 'workspace-item',
 			text: ws.name,
-			expandable: true,
+			/*expandable: true,*/
 			id: 'ws' + ws.id,
 			listeners: {
 				click: function() {
 					this.unselect();
 					this.select();
-				},
+				}/*,
 				expand: {
 					fn: function(node) {
 						this.loadWorkspaces(node);
 					},
 					scope: this
-				}
+				}*/
 			}
 		};
 		var node = new Ext.tree.TreeNode(config);
@@ -251,6 +256,8 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		return node;
 	},
 	
+	
+	
 	getActiveWorkspace: function() {
 		var s = this.getSelectionModel().getSelectedNode();
 		if (s) {
@@ -260,9 +267,18 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		}
 	},
 	
-	loadWorkspaces: function(node, showWsDiv) {
+	loadWorkspaces: function(node, showWsDiv, isInitial) {
 		if (!node) node = this.workspaces;
-		og.openLink(og.getUrl('project', 'list_projects', {parent: node.ws.id}), {
+		if (isInitial){
+			for (var i = 0; i < node.childNodes.length; i++){
+				node.childNodes[i].remove();
+				i--;
+			}
+		}
+		var action = 'list_projects';
+		if (isInitial)
+			action = 'initial_list_projects';
+		og.openLink(og.getUrl('project', action, {parent: node.ws.id}), {
 			callback: function(success, data, showWsDiv) {
 				if (success) {
 					// remove deleted nodes
@@ -279,8 +295,39 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 						}
 						ch = ch.nextSibling;
 					}
+					
+					var workspacesToAdd = new Array();
+					if (isInitial)
+					{
+						//Set order of elements to add to the workspace list. Parents should be added first
 
-					this.addWorkspaces(data.workspaces);
+						var continueOrdering = true;
+						while(continueOrdering)
+						{
+							continueOrdering = false;
+							for (var i = 0; i < data.workspaces.length; i++){
+								var add = false;
+								var ws = data.workspaces[i];
+								if (ws.parent == 0)
+									add = true;
+								else for (var j = 0; j < workspacesToAdd.length; j++)
+									if (workspacesToAdd[j].id == ws.parent){
+										add = true;
+										break;
+									}
+								if (add){
+									continueOrdering = true;
+									workspacesToAdd[workspacesToAdd.length] = data.workspaces.splice(i,1)[0];
+									i--;
+								}
+							}
+						}
+					} else 
+						workspacesToAdd = data.workspaces;
+
+					this.addWorkspaces(workspacesToAdd);
+					if (isInitial)
+						this.workspaces.expand();
 										
 					if (!this.getSelectionModel().getSelectedNode()) {
 						this.pauseEvents = true;
@@ -288,8 +335,8 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 						this.pauseEvents = false;
 					}
 					
-					if (showWsDiv)
-						og.showSubWsTooltip(node);
+					/*if (showWsDiv)
+						og.showSubWsTooltip(node);*/
 				}
 			},
 			scope: this
@@ -304,10 +351,12 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 	
 	select: function(id) {
 		if (!id) {
+			this.workspaces.ensureVisible();
 			this.workspaces.select();
 		} else {
 			var node = this.getNodeById('ws' + id);
 			if (node) {
+				node.ensureVisible();
 				node.select();
 			}
 		}

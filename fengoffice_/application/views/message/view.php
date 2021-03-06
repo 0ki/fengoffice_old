@@ -14,10 +14,10 @@
 <div style="padding:7px">
 <div class="message">
 	<?php 
-		$content = "<pre>".$message->getText()."</pre>";
+		$content = do_textile($message->getText());
 		if(trim($message->getAdditionalText())) {
-    		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div><pre>' 
-    			.$message->getAdditionalText() . '</pre>';
+    		$content .= '<div class="messageSeparator">' . lang('message separator') . '</div>' 
+    			. do_textile($message->getAdditionalText());
 		}
 		
 		tpl_assign("content", $content);

@@ -1,9 +1,10 @@
 <?php $file = $object;
 	$revisions = $file->getRevisions();
-	$last_revision = $file->getLastRevision(); ?>
+	$last_revision = $file->getLastRevision();
+	$genid = gen_id(); ?>
 
 <?php if(($file->getDescription())) { ?>
-      <pre id="fileDescription"><?php echo $file->getDescription() ?></pre>
+      <div id="fileDescription"><?php echo do_textile($file->getDescription()) ?></div>
 <?php } // if ?>
 
 <?php if($file->isCheckedOut()) { ?>
@@ -16,10 +17,19 @@
 	</div>
 <?php } ?>
 
-	<?php if ($file->isModifiable()) {
-		echo $file->getFileContent();	
-		echo '<br/><br/>';
-}?>
+
+<?php if ($file->isDisplayable()) {?>
+	<fieldset><legend class="toggle_collapsed" onclick="og.toggle('<?php echo $genid ?>file_contents',this)"><?php echo lang('file contents') ?></legend>
+	<div id="<?php echo $genid ?>file_contents" style="display:none">
+		<?php if ($file->getTypeString() == "text/html"){
+			echo $file->getFileContent();
+		} else {
+			$filecontent = $file->getFileContent();
+			echo nl2br(htmlEntities(iconv(mb_detect_encoding($filecontent, array('UTF-8','ISO-8859-1')),'UTF-8',$filecontent), null, 'UTF-8'));
+}?></div>
+	</fieldset><br/>
+<?php } // if ?> 
+	
     
     <fieldset>
   <legend class="toggle_expanded" onclick="og.toggle('revisions',this)"><?php echo lang('revisions'); ?> (<?php echo count($revisions);?>)</legend>
@@ -36,7 +46,7 @@
 <?php } // if ?>
     </div>
 <?php if(trim($revision->getComment())) { ?>
-    <pre class="revisionComment"><?php echo $revision->getComment() ?></pre>
+    <div class="revisionComment"><?php echo do_textile($revision->getComment()) ?></div>
 <?php } // if ?>
 <?php 
   $options = array();

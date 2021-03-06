@@ -412,6 +412,17 @@ class Contact extends BaseContact
     } // getAccountUrl
     
     /**
+    * Return URL that will be used to create a user based on the info of this contact
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getCreateUserUrl() {
+      return get_url('contact', 'create_user', $this->getId());
+    } //  getCreateUserUrl
+    
+    /**
     * Show contact card page
     *
     * @access public
@@ -531,6 +542,11 @@ class Contact extends BaseContact
         return false;
       } // if
       
+      $roles = $this->getRoles();
+	  if($roles){	      
+	      foreach ($roles as $role)
+	      	$role->delete();
+	  }
       $this->deletePicture();
       return parent::delete();
     } // delete
@@ -616,7 +632,12 @@ class Contact extends BaseContact
     * @return boolean
     */
     function canEdit(User $user) {
-		return can_manage_contacts($user, true);
+    	if($this->getUserId()){
+    		// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
+    		return can_manage_security(logged_user()) || $this->getUserId() == logged_user()->getId();
+    	}
+		else 
+			return can_manage_contacts($user, true);
     } // canEdit
     
     /**

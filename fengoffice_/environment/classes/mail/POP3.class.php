@@ -60,7 +60,7 @@ class POP3
     // }}}
     // {{{ private attributes
     const DEFAULT_BUFFER_SIZE = 4096;
-	private $bLogOpened = FALSE;
+	private $bLogOpened = TRUE;
 	private $resLogFp = FALSE;
 	private $strLogFile = NULL;
     private $bHideUsernameAtLog = TRUE;
@@ -272,7 +272,7 @@ class POP3
 
 		if( $bAPOP )
 		{
-			// APOP Auth
+			// APOP Auth			
 			$this->sendCmd("APOP ". $strUser ." ". hash("md5",$this->strAPOPBanner . $strPass, false), "APOP ". (($this->bHideUsernameAtLog) ? hash("sha256",$strUser . microtime(true),false) : $strUser) ." ". hash("md5",$this->strAPOPBanner . $strPass, false));
 		}
 		else
@@ -762,7 +762,7 @@ class POP3
 	// }}}
     // {{{ log()
 	private function log( $str )
-	{
+	{Logger::log(">>".date("Y-m-d H:i:s") .": ". trim($str) . PHP_EOL, Logger::FATAL);
 		if( $this->bLogOpened )
 		{
 		    $str = date("Y-m-d H:i:s") .": ". trim($str) . PHP_EOL;

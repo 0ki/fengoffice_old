@@ -15,11 +15,7 @@ class DashboardController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
 	/**
@@ -29,6 +25,8 @@ class DashboardController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
+		$tag = array_var($_GET,'active_tag');
+		
 		$logged_user = logged_user();
 		if (active_project() instanceof Project){
 			$active_projects = active_project()->getSubWorkspaces();
@@ -53,29 +51,33 @@ class DashboardController extends ApplicationController {
 		
 		$charts = ProjectCharts::findAll(array(
 			'conditions' => '(project_id in ('. $wscsv . ') AND show_in_parents = 1)' 
-				. (active_project() instanceof Project? ' OR (project_id = '. active_project()->getId() . ' AND show_in_project = 1)' : '') 
+				. (active_project() instanceof Project? ' OR (project_id = '. active_project()->getId() . ' AND show_in_project = 1)' : '')
+				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectCharts')"):'')
 				, 'order' => 'updated_on DESC', 'limit' => 5));
 		$messages = ProjectMessages::findAll(array(
-			'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))", 'order' => 'updated_on DESC', 'limit' => 10));
+			'conditions' => 'id IN (SELECT `object_id` FROM `' .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectMessages' && `workspace_id` IN ($wscsv))"
+				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMessages')"):'')
+				, 'order' => 'updated_on DESC', 'limit' => 10));
 		$documents = ProjectFiles::findAll(array(
-			'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))", 'order' => 'updated_on DESC', 'limit' => 10));
-		$tasks = ProjectTasks::getPendingTasks(logged_user(), active_project());
+			'conditions' => "id IN (SELECT `object_id` FROM `" .TABLE_PREFIX. "workspace_objects` WHERE `object_manager` = 'ProjectFiles' && `workspace_id` IN ($wscsv))"
+				. ($tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectFiles')"):'')
+				, 'order' => 'updated_on DESC', 'limit' => 10));
+		$tasks = ProjectTasks::getPendingTasks(logged_user(), active_project(), $tag);
+		
+		$tasks_in_progress = ProjectTasks::getOpenTimeslotTasks(logged_user(), active_project(), $tag);
 
 		tpl_assign('dashtasks', $tasks);
 		tpl_assign('charts', $charts);
 		tpl_assign('messages', $messages);
 		tpl_assign('documents', $documents);
-		tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project()));
-		tpl_assign('late_milestones', $logged_user->getLateMilestones(active_project()));
-		tpl_assign('today_tasks', $logged_user->getTodayTasks(active_project()));
-		tpl_assign('late_tasks', $logged_user->getLateTasks(active_project()));
+		tpl_assign('tasks_in_progress', $tasks_in_progress);
+		tpl_assign('today_milestones', $logged_user->getTodayMilestones(active_project(), $tag));
+		tpl_assign('late_milestones', $logged_user->getLateMilestones(active_project(), $tag));
+		tpl_assign('today_tasks', $logged_user->getTodayTasks(active_project(), $tag));
+		tpl_assign('late_tasks', $logged_user->getLateTasks(active_project(), $tag));
 		tpl_assign('active_projects', $active_projects);
 		tpl_assign('activity_log', $activity_log);
 
-		// Sidebar
-		tpl_assign('online_users', Users::getWhoIsOnline());
-		tpl_assign('my_projects', $active_projects);
-		$this->setSidebar(get_template_path('index_sidebar', 'dashboard'));
 		ajx_set_no_toolbar(true);
 	} // index
 
@@ -89,7 +91,6 @@ class DashboardController extends ApplicationController {
 		$this->addHelper('textile');
 		tpl_assign('active_projects', logged_user()->getActiveProjects());
 		tpl_assign('finished_projects', logged_user()->getFinishedProjects());
-		$this->setSidebar(get_template_path('my_projects_sidebar', 'dashboard'));
 	} // my_projects
 
 	/**
@@ -100,7 +101,6 @@ class DashboardController extends ApplicationController {
 	 */
 	function my_tasks() {
 		tpl_assign('active_projects', logged_user()->getActiveProjects());
-		$this->setSidebar(get_template_path('my_tasks_sidebar', 'dashboard'));
 	} // my_tasks
 } // DashboardController
 

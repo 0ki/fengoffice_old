@@ -53,6 +53,38 @@
 	color: #555555;
 }
 
+#wsTagCrumbs {
+	position: relative;
+	height: 45px;
+	padding-top:20px;
+	font-family: Helvetica,Verdana,Arial,sans-serif;
+	font-size: 120%;
+	font-weight:bolder;
+	color: #555555;
+}
+
+.wsTagCrumbsElement {
+	padding-left: 18px;
+	margin-left: 10px;
+	background-image: url('../../images/16x16/tags.png');
+	background-repeat: no-repeat;
+	text-align: left;
+	position:relative;
+	padding-right: 14px;
+}
+
+.wsTagCloseDiv {
+	width:11px;
+	height:11px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	background-image: url('../../images/layout/tag-close.gif');
+	background-repeat: no-repeat;
+	cursor:pointer;
+	display:none;
+}
+
 #logodiv {
 	background-image: url('../../images/layout/logo.png');
 	width: 60px;
@@ -256,37 +288,6 @@
 
 /** /content **/
 
-/** sidebar **/
-
-#sidebar {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	padding: 10px 15px;
-	border-left: 1px solid #ddd;
-	background-color: white;
-	font-size: 10px;
-	width: 170px;
-	overflow: hidden;
-}
-
-#sidebar h2 {
-	margin-top: 0;
-	font-size: 12px;
-}
-
-#sidebar .blockContent {
-	margin-bottom: 10px;
-	padding: 0 5px;
-	line-height: 120%;
-}
-
-#sidebar .listWithDetails li {
-	padding-bottom: 5px;
-}
-
-/** /sidebar **/
-
 /** page actions **/
 
 #page_actions {
@@ -400,7 +401,7 @@ div.contact div.cardBlock span {
 
 div.card {
 	padding: 10px;
-	border: 1px solid #ccc;
+	/*border: 1px solid #ccc;*/
 }
 
 * html div.card {
@@ -475,5 +476,6 @@ div.private {
 div.private span {
 	display: none;
 }
+
 
 /** /private **/

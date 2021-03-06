@@ -56,9 +56,9 @@ if (!$contact->isNew())
 		<div style="padding-left:20px">
 			<div>
 				<?php echo label_tag(lang('company'), $genid.'profileFormCompany') ?> 
-				<?php echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany')); 
+				<?php echo select_company('contact[company_id]', array_var($contact_data, 'company_id'), array('id' => $genid.'profileFormCompany', "class", "og-edit-contact-select-company")); 
 				if(owner_company()->canAddClient(logged_user())) {?>
-					<a class="internalLink" target="administration" href="<?php echo get_url('company', 'add_client')?>"><?php echo lang('add client')?></a> 
+					<a class="internalLink" target="administration" href="<?php echo get_url('company', 'add_client')?>" onclick=""><?php echo lang('add client')?></a> 
 	        	<?php } // if?>
 			</div>
 			

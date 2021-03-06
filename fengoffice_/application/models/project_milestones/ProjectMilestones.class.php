@@ -27,7 +27,7 @@
       } // foreach
       
       return self::findAll(array(
-        'conditions' => array('`due_date` < ? AND `completed_on` = ? AND `project_id` IN (?)', $due_date, EMPTY_DATETIME, $project_ids),
+        'conditions' => array('`is_template` = false AND due_date` < ? AND `completed_on` = ? AND `project_id` IN (?)', $due_date, EMPTY_DATETIME, $project_ids),
         'order' => '`due_date`',
       )); // findAll
     } // getLateMilestonesByCompany
@@ -51,7 +51,7 @@
       } // foreach
       
       return self::findAll(array(
-        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` IN (?)', EMPTY_DATETIME, $from_date, $to_date, $project_ids),
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` IN (?)', EMPTY_DATETIME, $from_date, $to_date, $project_ids),
         'order' => '`due_date`'
       )); // findAll
     } // getTodayMilestonesByCompany
@@ -74,7 +74,7 @@
       } // foreach
       
       return self::findAll(array(
-        'conditions' => array('(`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `project_id` IN (?) AND `completed_on` = ?', $user->getId(), 0, 0, $project_ids, EMPTY_DATETIME),
+        'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `project_id` IN (?) AND `completed_on` = ?', $user->getId(), 0, 0, $project_ids, EMPTY_DATETIME),
         'order' => '`due_date`'
       )); // findAll
     } // getActiveMilestonesByUser
@@ -88,7 +88,7 @@
     */
     static function getActiveMilestonesByUserAndProject(User $user, Project $project) {
       return self::findAll(array(
-        'conditions' => array('(`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `project_id` = ? AND `completed_on` = ?', $user->getId(), 0, 0, $project->getId(), EMPTY_DATETIME),
+        'conditions' => array('`is_template` = false AND (`assigned_to_user_id` = ? OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `project_id` = ? AND `completed_on` = ?', $user->getId(), 0, 0, $project->getId(), EMPTY_DATETIME),
         'order' => '`due_date`'
       )); // findAll
     } // getActiveMilestonesByUserAndProject
@@ -99,7 +99,7 @@
     * @param User $user
     * @return array
     */
-    function getLateMilestonesByUser(User $user, $project = null) {
+    function getLateMilestonesByUser(User $user, $project = null, $tag = null) {
       $due_date = DateTimeValueLib::now()->beginningOfDay();
       
       if ($project instanceof Project)
@@ -107,8 +107,11 @@
       else
       	$project_ids = $user->getActiveProjectIdsCSV();
       
+      $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMilestones')"):'';
+	
       return self::findAll(array(
-        'conditions' => array('`due_date` < ? AND `completed_on` = ? AND `project_id` IN ('. $project_ids . ')', $due_date, EMPTY_DATETIME),
+        'conditions' => array('`is_template` = false AND `due_date` < ? AND `completed_on` = ? AND `project_id` IN ('. $project_ids . ')' . $tagStr . $permissions, $due_date, EMPTY_DATETIME),
         'order' => '`due_date`'
       )); // findAll
     } // getLateMilestonesByUser
@@ -120,7 +123,7 @@
     * @param void
     * @return array
     */
-    function getTodayMilestonesByUser(User $user, $project = null) {
+    function getTodayMilestonesByUser(User $user, $project = null, $tag = null) {
       $from_date = DateTimeValueLib::now()->beginningOfDay();
       $to_date = DateTimeValueLib::now()->endOfDay();
       
@@ -129,8 +132,11 @@
       else
       	$project_ids = $user->getActiveProjectIdsCSV();
       
-      return self::findAll(array(
-        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` IN (' . $project_ids . ')', EMPTY_DATETIME, $from_date, $to_date)
+      $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
+      $tagStr = $tag? (" AND id in (SELECT rel_object_id from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND t.rel_object_manager='ProjectMilestones')"):'';
+	
+       return self::findAll(array(
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `project_id` IN (' . $project_ids . ')' . $tagStr . $permissions, EMPTY_DATETIME, $from_date, $to_date)
       )); // findAll
     } // getTodayMilestonesByUser
     
@@ -152,7 +158,7 @@
       $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 		
        $result = self::findAll(array(
-        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
       )); // findAll
       return $result;
     } // getDayMilestonesByUser
@@ -171,7 +177,7 @@
       $permissions = ' AND ( ' . permissions_sql_for_listings(ProjectMilestones::instance(),ACCESS_LEVEL_READ, $user, 'project_id') .')';
 		
        $result = self::findAll(array(
-        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND project_id in ('. $project_ids .')' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) AND project_id in ('. $project_ids .')' . $permissions, EMPTY_DATETIME, $from_date, $to_date)
       )); // findAll
       return $result;
     } // getDayMilestonesByUser
@@ -206,13 +212,13 @@
 	  }
       
 	  $result = self::findAll(array(
-        'conditions' => array('`completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
+        'conditions' => array('`is_template` = false AND `completed_on` = ? AND (`due_date` >= ? AND `due_date` < ?) ' . $permissions.$limitation.$tag_str, EMPTY_DATETIME, $from_date, $to_date)
       )); // findAll
       
       return $result;
     } // getRangeMilestonesByUser
     
-    static function getProjectMilestones($project = null, $order = null, $orderdir = 'DESC', $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false) {
+    static function getProjectMilestones($project = null, $order = null, $orderdir = 'DESC', $tag = null, $assigned_to_company = null, $assigned_to_user = null, $assigned_by_user = null, $pending = false, $is_template = false) {
 		// default
 		$order_by = '`due_date` ASC';
 				
@@ -260,7 +266,7 @@
 		
 		$otherConditions = $projectstr . $tagstr . $assignedToStr . $assignedByStr . $permissionstr . $pendingstr;
 		
-		$conditions = array(' true ' . $otherConditions);
+		$conditions = array(' `is_template` = ' . DB::escape($is_template) . $otherConditions);
 		
 		$milestones = ProjectMilestones::find(array(
 				'conditions' => $conditions,
@@ -269,7 +275,44 @@
 		if (!is_array($milestones)) $milestones = array();
 		return $milestones;
 	} // getProjectMilestones
-    
+
+	/**
+	 * Returns an unsaved copy of the milestone. Copies everything except open/closed state,
+	 * anything that needs the task to have an id (like tags, properties, tasks),
+	 * administrative info like who created the milestone and when, etc. 
+	 *
+	 * @param ProjectMilestone $milestone
+	 * @return ProjectMilestone
+	 */
+	function createMilestoneCopy(ProjectMilestone $milestone) {
+		$new = new ProjectMilestone();
+		$new->setName($milestone->getName());
+		$new->setProjectId($milestone->getProjectId());
+		$new->setDescription($milestone->getDescription());
+		$new->setIsPrivate($milestone->getIsPrivate());
+		$new->setAssignedToCompanyId($milestone->getAssignedToCompanyId());
+		$new->setAssignedToUserId($milestone->getAssignedToUserId());
+		$new->setDueDate($milestone->getDueDate());
+		return $new;
+	}
+	
+	/**
+	 * Copies tasks from milestoneFrom to milestoneTo.
+	 *
+	 * @param ProjectMilestone $milestoneFrom
+	 * @param ProjectMilestone $milestoneTo
+	 */
+	function copyTasks(ProjectMilestone $milestoneFrom, ProjectMilestone $milestoneTo, $as_template = false) {
+		foreach ($milestoneFrom->getTasks() as $sub) {
+			$new = ProjectTasks::createTaskCopy($sub);
+			$new->setIsTemplate($as_template);
+			$new->setMilestoneId($milestoneTo->getId());
+			$new->save();
+			$new->setTagsFromCSV(implode(",", $sub->getTagNames()));
+			ProjectTasks::copySubTasks($sub, $new, $as_template);
+		}
+	}
+	
   } // ProjectMilestones
 
 ?>

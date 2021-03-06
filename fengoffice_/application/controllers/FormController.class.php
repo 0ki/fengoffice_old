@@ -63,8 +63,6 @@ class FormController extends ApplicationController {
 		tpl_assign('project_form', $project_form);
 		tpl_assign('project_form_data', $project_form_data);
 
-		$this->setSidebar(get_template_path('submit_sidebar', 'form'));
-
 		if(is_array($project_form_data)) {
 			$content = trim(array_var($project_form_data, 'content'));
 			if($content == '') {

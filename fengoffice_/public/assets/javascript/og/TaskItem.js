@@ -4,7 +4,7 @@ og.TaskItem = function(config) {
 		title: '',
 		parent: 0,
 		milestone: 0,
-		subtasks: [],
+		subtasks: {},
 		assignedTo: '',
 		workspaces: '',
 		workspaceids: '',
@@ -15,6 +15,7 @@ og.TaskItem = function(config) {
 		isLate: false,
 		daysLate: 0,
 		showOnlySubtasks: false,
+		duedate: 0,
 		order: 0
 	});
 
@@ -30,6 +31,12 @@ og.TaskItem = function(config) {
 	if (this.completed) {
 		div.className += ' og-task-completed';
 	}
+	if (this.priority >= 300) {
+		div.className += ' og-task-high-priority';
+	} else if (this.priority <= 100) {
+		div.className += ' og-task-low-priority';
+	}
+	
 	div.onmouseover = this.showActions.createDelegate(this);
 	div.onmouseout = this.hideActions.createDelegate(this);
 	
@@ -141,13 +148,30 @@ og.TaskItem = function(config) {
 		tda.className = 'og-task-name';
 		var linkText = this.title;
 		if (this.assignedTo != '') {
+			if (linkText.length > 66 - this.assignedTo.length)
+				linkText = linkText.substr(0,66 - this.assignedTo.length) + "...";
 			linkText = '<span style="font-weight:bold">' + this.assignedTo + ':</span>&nbsp;' + linkText;
-		}
+		} else 
+			if (linkText.length > 70)
+				linkText = linkText.substr(0,70) + "...";
 		tda.innerHTML = linkText;
 		tda.onclick = this.viewTask.createDelegate(this);
 		tda.title = lang('task view tip', this.title);
 		td.appendChild(tda);
 		
+		tr.appendChild(td);
+		
+		var td = document.createElement('td');
+		this.doms.workspace = td;
+		td.className = 'td-duedate';
+		if (this.duedate > 0){
+			var newDate = new Date(this.duedate*1000).add("d", 1);
+			var currDate = new Date();
+			if (newDate.getFullYear() != currDate.getFullYear())
+				td.innerHTML = newDate.format("j M Y");
+			else
+				td.innerHTML = newDate.format("j M");
+		}
 		tr.appendChild(td);
 		
 	
@@ -265,21 +289,21 @@ og.TaskItem.prototype = {
 		if (confirm(lang('confirm delete task'))) {
 			// TODO:
 			var taskDiv = this.doms.div;
-			var parent = taskDiv.parentNode;
+			var parent = this.getParentTaskOrMilestone();
 			var next = taskDiv.nextSibling;
 			//parent.removeChild(taskDiv);
-			Ext.fly(taskDiv).slideOut("t", {remove:true, duration:1});
-			og.openLink(og.getUrl('task', 'delete_task', {id: this.id}), {
-				callback: function(success, data) {
+			Ext.fly(taskDiv).slideOut("t", {remove:true, duration:0.5});
+			og.openLink(og.getUrl('task', 'delete_task', {id: this.id, quick: true}), {
+				callback: function(success, data, options) {
 					if (!success || data.errorCode) {
 						// re insert task
-						parent.insertBefore(taskDiv, next);
+						options.parent.doms.subtasks.insertBefore(taskDiv, next);
 					} else {
-						if (parent.taskItem) {
-							delete parent.taskItem.subtasks[this.id];
-						}
+						delete options.parent.subtasks["id_" + this.id];
 					}
-				}
+				},
+				scope: this,
+				parent: parent
 			});
 		}
 	},
@@ -308,23 +332,31 @@ og.TaskItem.prototype = {
 	
 	orderSubtasks: function() {
 		// bubble sort
-		for (var i=0; i < this.subtasks.length - 1; i++) {
-			for (var j=i+1; j < this.subtasks.length; j++) {
-				if (this.subtasks[i].completed && !this.subtasks[j].completed ||
-						(this.subtasks[i].completed && this.subtasks[j].completed ||
-						 !this.subtasks[i].completed && !this.subtasks[j].completed) &&
-						this.subtasks[i].order > this.subtasks[j].order) {
+		var inorder = [];
+		for (var i in this.subtasks) {
+			inorder.push(this.subtasks[i]);
+		}
+		for (var i=0; i < inorder.length - 1; i++) {
+			for (var j=i+1; j < inorder.length; j++) {
+				if (inorder[i].completed && !inorder[j].completed ||
+						(inorder[i].completed && inorder[j].completed ||
+						 !inorder[i].completed && !inorder[j].completed) &&
+						inorder[i].order > inorder[j].order) {
 					// swap
-					var aux = this.subtasks[i];
-					this.subtasks[i] = this.subtasks[j];
-					this.subtasks[j] = aux;
+					var aux = inorder[i];
+					inorder[i] = inorder[j];
+					inorder[j] = aux;
 				}
 			}
 		}
 		// reorder dom structure
-		for (var i=0; i < this.subtasks.length; i++) {
-			this.doms.subtasks.removeChild(this.subtasks[i].doms.div);
-			this.doms.subtasks.insertBefore(this.subtasks[i].doms.div, this.doms.newTaskDiv);
+		for (var i=0; i < inorder.length; i++) {
+			try {
+				this.doms.subtasks.removeChild(inorder[i].doms.div);
+			} catch (e) {
+				//alert(inorder[i].id);
+			}
+			this.doms.subtasks.insertBefore(inorder[i].doms.div, this.doms.newTaskDiv);
 		}
 	},
 	
@@ -339,9 +371,11 @@ og.TaskItem.prototype = {
 			this.expanded = true;
 			var combo = Ext.getDom('og-task-filter-to');
 			var assignedTo = combo?combo.value:"0:0";
-			var combo = Ext.getDom('og-task-filter-status').value;
+			var combo = Ext.getDom('og-task-filter-status');
 			var status = combo?combo.value:"all";
-			og.openLink(og.getUrl('task', 'view_tasks', {parent_id: this.id, assigned_to: assignedTo, status: status}), {
+			var combo = Ext.getDom('og-task-filter-priority');
+			var prio = combo?combo.value:"all";
+			og.openLink(og.getUrl('task', 'view_tasks', {parent_id: this.id, assigned_to: assignedTo, status: status, priority: prio}), {
 				callback: function(success, data) {
 					if (success && ! data.errorCode) {
 						// delete previous subtasks
@@ -355,17 +389,18 @@ og.TaskItem.prototype = {
 	},
 	
 	loadSubTasks: function(tasks) {
-		this.subtasks = [];
+		this.subtasks = {};
 		var el = this.doms.subtasks.firstChild;
 		while (el) {
 			this.doms.subtasks.removeChild(el);
 			el = this.doms.subtasks.firstChild;
 		}
 		
-		for (var i=0; i < tasks.length; i++) {
+		for (var i in tasks) {
+			if (typeof tasks[i] != 'object') continue;
 			tasks[i].container = this.doms.subtasks;
 			var task = new og.TaskItem(tasks[i]);
-			this.subtasks[i] = task;
+			this.subtasks["id_" + tasks[i].id] = task;
 		}
 		this.doms.subtasks.appendChild(this.doms.newTaskDiv);
 	},
@@ -374,17 +409,13 @@ og.TaskItem.prototype = {
 		if (this.completed) {
 			this.completed = false;
 			Ext.fly(this.doms.div).removeClass('og-task-completed');
-			og.openLink(og.getUrl('task', 'open_task', {id: this.id}), {
+			og.openLink(og.getUrl('task', 'open_task', {id: this.id, quick: true}), {
 				callback: function(success, data) {
 					if (!success || data.errorCode) {
 						Ext.fly(this.doms.title).addClass('og-task-completed');
 					} else {
 						// reposition according to order
-						if (this.milestone) {
-							var parent = og.MilestoneItem.loadedMilestones[this.milestone];
-						} else {
-							var parent = og.TaskItem.loadedTasks[this.parent];
-						}
+						var parent = this.getParentTaskOrMilestone();
 						parent.orderSubtasks();
 
 						// check auto completed tasks and milestones 
@@ -398,7 +429,7 @@ og.TaskItem.prototype = {
 							if (oTask) {
 								oTask.completed = false;
 								Ext.fly(oTask.doms.div).removeClass('og-task-completed');
-								var parent = og.TaskItem.loadedTasks[oTask.parent];
+								var parent = this.getParentTaskOrMilestone();
 								if (parent) parent.orderSubtasks();
 							}
 						}
@@ -409,17 +440,13 @@ og.TaskItem.prototype = {
 		} else {
 			this.completed = true;
 			Ext.fly(this.doms.div).addClass('og-task-completed');
-			og.openLink(og.getUrl('task', 'complete_task', {id: this.id}), {
+			og.openLink(og.getUrl('task', 'complete_task', {id: this.id, quick: true}), {
 				callback: function(success, data) {
 					if (!success || data.errorCode) {
 						Ext.fly(this.doms.div).removeClass('og-task-completed');
 					} else {
 						// reposition according to order
-						if (this.milestone) {
-							var parent = og.MilestoneItem.loadedMilestones[this.milestone];
-						} else {
-							var parent = og.TaskItem.loadedTasks[this.parent];
-						}
+						var parent = this.getParentTaskOrMilestone();
 						parent.orderSubtasks();
 
 						// check auto completed tasks and milestones
@@ -433,7 +460,7 @@ og.TaskItem.prototype = {
 							if (cTask) {
 								cTask.completed = true;
 								Ext.fly(cTask.doms.div).addClass('og-task-completed');
-								var parent = og.TaskItem.loadedTasks[cTask.parent];
+								var parent = this.getParentTaskOrMilestone();
 								if (parent) parent.orderSubtasks();
 							}
 						}
@@ -489,12 +516,11 @@ og.TaskItem.prototype = {
 				if (success && ! data.errorCode) {
 					var task = data.task;
 					var item = new og.TaskItem(task);
-					this.subtasks[this.subtasks.length] = item;
+					this.subtasks["id_" + task.id] = item;
 					var dom = item.doms.div;
 					dom.style.display = 'none';
 					this.doms.subtasks.insertBefore(dom, this.doms.newTaskDiv);
-					var parent = og.TaskItem.loadedTasks[this.parent];
-					parent.orderSubtasks();
+					this.orderSubtasks();
 					Ext.fly(dom).slideIn("t", {useDisplay: true, duration: 0.5});
 				} else {
 					og.msg(lang("error"), lang("error adding task"));
@@ -503,6 +529,14 @@ og.TaskItem.prototype = {
 			},
 			scope: this
 		});
+	},
+	
+	getParentTaskOrMilestone: function() {
+		if (this.milestone) {
+			return og.MilestoneItem.loadedMilestones[this.milestone];
+		} else {
+			return og.TaskItem.loadedTasks[this.parent];
+		}
 	},
 	
 	debug: function() {

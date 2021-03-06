@@ -43,7 +43,8 @@ class CommentController extends ApplicationController {
 		$object = get_object_by_manager_and_id($object_id, $object_manager);
 		if(!($object instanceof ProjectDataObject) || !($object->canComment(logged_user()))) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl(active_project()->getOverviewUrl());
+			axj_current("empty");
+			return;
 		} // if
 
 		$comment = new Comment();
@@ -90,12 +91,7 @@ class CommentController extends ApplicationController {
 
 				flash_success(lang('success add comment'));
 
-				$redirect_to = $comment->getViewUrl();
-				if(!is_valid_url($redirect_to)) {
-					$redirect_to = $object->getViewUrl();
-				} // if
-
-				$this->redirectToUrl($redirect_to);
+				ajx_current("reload");
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -112,8 +108,6 @@ class CommentController extends ApplicationController {
 	 */
 	function edit() {
 		$this->setTemplate('add_comment');
-
-		$redirect_to = active_or_personal_project()->getOverviewUrl();
 
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
@@ -169,7 +163,7 @@ class CommentController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit comment'));
-				$this->redirectToUrl($redirect_to);
+				ajx_current("back");
 			} catch(Exception $e) {
 				DB::rollback();
 				ajx_current("empty");
@@ -185,8 +179,6 @@ class CommentController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
-		$redirect_to = active_or_personal_project()->getOverviewUrl();
-
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
 			flash_error(lang('comment dnx'));
@@ -217,7 +209,7 @@ class CommentController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete comment'));
-			$this->redirectToUrl($redirect_to);
+			ajx_current("reload");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete comment'));

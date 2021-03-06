@@ -6,7 +6,7 @@
   } // if
 ?>
 
-<div class="adminUsersList">
+<div class="adminUsersList" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('users') ?></div>
   </div>

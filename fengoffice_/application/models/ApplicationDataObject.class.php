@@ -116,6 +116,9 @@
       if($this->isSearchable()) {
         $this->clearSearchIndex();
       } // if
+      if($this->isLinkableObject()) {
+        $this->clearLinkedObjects();
+      } // if
       
       return parent::delete();
   	}

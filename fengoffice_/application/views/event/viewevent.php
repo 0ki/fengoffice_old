@@ -21,7 +21,7 @@ if($event->canDelete(logged_user())) {
 } // if
 
 if($event->canEdit(logged_user())) {
-		add_page_action(lang('edit'), $event->getEditUrl(), 'ico-edit');
+		add_page_action(lang('edit'), $event->getEditUrl()."&view=$view", 'ico-edit');
 }
 	
 	
@@ -82,7 +82,7 @@ if($event->canEdit(logged_user())) {
 	elseif($typeofevent=="4") $duration = CAL_NOT_SPECIFIED;
 	
 	$permission = ProjectEvents::findById($id)->canEdit(logged_user());
-	echo cal_navmenu(true,$day,$month,$year);
+	//echo cal_navmenu(true,$day,$month,$year);
 	
 ?>
 <div style="padding:7px">

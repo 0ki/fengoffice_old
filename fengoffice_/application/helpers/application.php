@@ -229,9 +229,6 @@ function assign_to_select_box($list_name, $project = null, $selected = null, $at
  * @throws InvalidInstanceError
  */
 function select_milestone($name, $project = null, $selected = null, $attributes = null) {
-	if(is_null($project)) $project = active_project();
-	if(/*$project &&*/ !($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
-
 	if(is_array($attributes)) {
 		if(!isset($attributes['class'])) $attributes['class'] = 'select_milestone';
 	} else {
@@ -239,13 +236,11 @@ function select_milestone($name, $project = null, $selected = null, $attributes 
 	} // if
 
 	$options = array(option_tag(lang('none'), 0));
-	//if($project)
-	$milestones = $project->getOpenMilestones();
-	/*else{
-	 $projects=logged_user()->getActiveProjects();
-	 foreach ($projects as $p)
-	 $milestones[]=$p->getOpenMilestones();
-	 }  */
+	if($project)
+	 $milestones = $project->getOpenMilestones();
+	else
+	 $milestones = ProjectMilestones::getActiveMilestonesByUser(logged_user()); 
+	 
 	if(is_array($milestones)) {
 		foreach($milestones as $milestone) {
 			$option_attributes = $milestone->getId() == $selected ? array('selected' => 'selected') : null;
@@ -267,7 +262,7 @@ function select_milestone($name, $project = null, $selected = null, $attributes 
  * @return string
  */
 function select_task_list($name, $project = null, $selected = null, $open_only = false, $attributes = null) {
-	if (is_null($project)) $project = active_project();
+	if (is_null($project)) $project = active_or_personal_project();
 	//if (!($project instanceof Project)) throw new InvalidInstanceError('$project', $project, 'Project');
 
 	if (is_array($attributes)) {
@@ -280,14 +275,26 @@ function select_task_list($name, $project = null, $selected = null, $open_only =
 	if ($project instanceof Project) { 
 		$task_lists = $open_only ? $project->getOpenTasks() : $project->getTasks();
 	} else {
-		$task_lists = $open_only ? ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, true) : ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, false);
+		$task_lists = $open_only ? ProjectTasks::getProjectTasks(null, null, 'ASC', null, null, null, null, null, null, true) : ProjectTasks::getProjectTasks(null, null, 'ASC', 0, null, null, null, null, null, false);
 	}
+	$selected_exists = is_null($selected);
 	if(is_array($task_lists)) {
 		foreach($task_lists as $task_list) {
-			$option_attributes = $task_list->getId() == $selected ? array('selected' => 'selected') : null;
+			if ($task_list->getId() == $selected) {
+				$selected_exists = true;
+				$option_attributes =  array('selected' => 'selected');
+			} else {
+				$option_attributes =  null;
+			}
 			$options[] = option_tag($task_list->getTitle(), $task_list->getId(), $option_attributes);
 		} // foreach
 	} // if
+	if (!$selected_exists) {
+		$task = ProjectTasks::findById($selected);
+		if ($task instanceof ProjectTask) {
+			$options[] = option_tag($task->getTitle(), $task->getId(), array("selected" => "selected"));
+		}
+	}
 
 	return select_box($name, $options, $attributes);
 } // select_task_list
@@ -596,6 +603,18 @@ function render_object_comments(ProjectDataObject $object) {
 } // render_object_comments
 
 /**
+ * Show object timeslots block
+ *
+ * @param ProjectDataObject $object Show timeslots of this object
+ * @return null
+ */
+function render_object_timeslots(ProjectDataObject $object) {
+	if(!$object->allowsTimeslots()) return '';
+	tpl_assign('__timeslots_object', $object);
+	return tpl_fetch(get_template_path('object_timeslots', 'timeslot'));
+} // render_object_comments
+
+/**
  * Render post comment form for specific project object
  *
  * @param ProjectDataObject $object
@@ -609,6 +628,31 @@ function render_comment_form(ProjectDataObject $object) {
 	tpl_assign('comment_form_object', $object);
 	return tpl_fetch(get_template_path('post_comment_form', 'comment'));
 } // render_post_comment_form
+
+/**
+ * Render timeslot form for specific project object
+ *
+ * @param ProjectDataObject $object
+ * @return string
+ */
+function render_timeslot_form(ProjectDataObject $object) {
+	$timeslot = new Timeslot();
+	tpl_assign('timeslot_form_timeslot', $timeslot);
+	tpl_assign('timeslot_form_object', $object);
+	return tpl_fetch(get_template_path('post_timeslot_form', 'timeslot'));
+} // render_timeslot_form
+
+/**
+ * Render open timeslot form for specific project object
+ *
+ * @param ProjectDataObject $object
+ * @return string
+ */
+function render_open_timeslot_form(ProjectDataObject $object, Timeslot $timeslot) {
+	tpl_assign('timeslot_form_timeslot', $timeslot);
+	tpl_assign('timeslot_form_object', $object);
+	return tpl_fetch(get_template_path('post_open_timeslot_form', 'timeslot'));
+} // render_timeslot_form
 
 /**
  * This function will render the code for objects linking section of the form. Note that
@@ -847,4 +891,22 @@ function render_select_mail_account($name, $mail_accounts, $selected = null, $at
 	} // if
 	return select_box($name, $options, $attributes);
 } //  render_select_mail_account
+
+
+/**
+ * Render select task priority box
+ *
+ * @param integer $selected Selected priority
+ * @param array $attributes Additional attributes
+ * @return string
+ */
+function select_task_priority($name, $selected = null, $attributes = null) {
+	$options = array(
+		option_tag(lang('high priority'), ProjectTasks::PRIORITY_HIGH, ($selected >= ProjectTasks::PRIORITY_HIGH)?array('selected' => 'selected'):null),
+		option_tag(lang('normal priority'), ProjectTasks::PRIORITY_NORMAL, ($selected > ProjectTasks::PRIORITY_LOW && $selected < ProjectTasks::PRIORITY_HIGH)?array('selected' => 'selected'):null),
+		option_tag(lang('low priority'), ProjectTasks::PRIORITY_LOW, ($selected <= ProjectTasks::PRIORITY_LOW)?array('selected' => 'selected'):null),
+	);
+	return select_box($name, $options, $attributes);
+} // select_task_priority
+
 ?>

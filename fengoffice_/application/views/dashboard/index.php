@@ -9,11 +9,18 @@ if(active_project() instanceof Project)
 else 
 	echo lang('all projects');
 	
+	$tags = active_tag();
+	
 	$hasPendingTasks = isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0;
 	$hasLateMilestones = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) || (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
 	$hasMessages = isset($messages) && is_array($messages) && count($messages) > 0;
 	$hasDocuments = isset($documents) && is_array($documents) && count($documents) > 0;
 	$hasCharts = isset($charts) && is_array($charts) && count($charts) > 0;
+	
+	$hasToday = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
+			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks));
+	$hasLate = (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
+		|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
 ?>
 </div>
 
@@ -78,8 +85,8 @@ else
 	<tr><td class="coViewRight" rowspan=2 colspan=2 ></td></tr>
 	
 		<tr><td colspan=2>
-			<script language="javascript">
-			
+			<script type="text/javascript">
+
 			function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
 			    var e=(evt)?evt:window.event;
 			    if (window.event) {
@@ -87,20 +94,88 @@ else
 			    } else {
 			        e.stopPropagation();
 			    }
+			    return true;
 			}
 			
 			var ob=true;
-			function show_overlib(overlib_desc,fg_color,bg_color,txt_color,cap_text,cap_color){	
-				if (ob){
-					return overlib(overlib_desc,FGCOLOR,fg_color,BGCOLOR,bg_color,TEXTCOLOR,txt_color,CAPTION,cap_text,CAPCOLOR,cap_color);
-				}
-				return false;
+			
+			function hide_tooltip(elem){
+				jQuery(elem).parent().trigger('mouseout');
 			}
-			//disable showing the overlib. 
+			
+			//disable showing the tooltip. 
 			function disable_overlib(){
 				ob = false;
 			}
-			</script>
+			jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
+			jQuery('span.task_hover_details').cluetip({		
+			    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...
+			                     // ...and split the contents into separate divs where there is a "|"
+			    cluetipClass: 'task',
+			    width: 'auto',
+			    // effect and speed for opening clueTips
+			    fx: {             
+		              open:       'fadeIn', // can be 'show' or 'slideDown' or 'fadeIn'
+		              openSpeed:  ''
+			    },
+			                  
+			    // settings for when hoverIntent plugin is used
+			    hoverIntent: {    
+		              sensitivity:  3,
+		              interval:     50,
+		              timeout:      0
+			    }, 
+			    topOffset:        8,       // Number of px to offset clueTip from top of invoking element. more info below [3]
+		    	leftOffset:       8,
+		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
+				    return ob;
+				  },
+			    showTitle: false // hide the clueTip's heading
+		  	});
+		  	
+		  	jQuery('span.milestone_hover_details').cluetip({		
+			    splitTitle: '|', 
+			    cluetipClass: 'milestone',
+			    width: 'auto',
+			    fx: {             
+		              open:       'fadeIn', 
+		              openSpeed:  ''
+			    },
+			    hoverIntent: {    
+		              sensitivity:  3,
+		              interval:     50,
+		              timeout:      0
+			    }, 
+			    topOffset:        8,       
+		    	leftOffset:       8,
+		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
+				    return ob;
+				  },
+			    showTitle: false 
+		  	});
+		  	
+		  	jQuery('span.event_hover_details').cluetip({		
+			    splitTitle: '|', 
+			    cluetipClass: 'event',
+			    width: 'auto',
+			    fx: {             
+		              open:       'fadeIn', 
+		              openSpeed:  ''
+			    },
+			                  
+			    hoverIntent: {    
+		              sensitivity:  3,
+		              interval:     50,
+		              timeout:      0
+			    }, 
+			    topOffset:        8,      
+		    	leftOffset:       8,
+		    	onActivate: function(e) {//to prevent keeping the tooltip after moving away from the page
+				    return ob;
+				  },
+			    showTitle: false 
+		  	});
+		</script>
   <?php
   
   $startday = date("d",mktime()) - (date("N", mktime()) %7);
@@ -111,8 +186,8 @@ else
   
   $date_start = new DateTimeValue(mktime(0,0,0,$currentmonth,$startday,$currentyear)); 
   $date_end = new DateTimeValue(mktime(0,0,0,$currentmonth,$endday,$currentyear)); 
-  $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start,$date_end,logged_user(), '', active_project());
-  $tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), '', active_project());
+  $milestones = ProjectMilestones::getRangeMilestonesByUser($date_start,$date_end,logged_user(), $tags, active_project());
+  $tasks = ProjectTasks::getRangeTasksByUser($date_start,$date_end,logged_user(), $tags, active_project());
 	
  
 	// load the day we are currently viewing in the calendar
@@ -120,7 +195,6 @@ else
 	$cmonth = $_SESSION['cal_month'];
 	$cyear = $_SESSION['cal_year'];
 	$output ='';
-	$tags = active_tag();
 	if(cal_option("start_monday")) $firstday = (date("w", mktime(0,0,0,$cmonth,1,$cyear))-1) % 7;
 	else $firstday = (date("w", mktime(0,0,0,$cmonth,1,$cyear))) % 7; // Numeric representation of day of week.
 	$lastday = date("t", mktime(0,0,0,$cmonth,1,$cyear)); // # of days in the month
@@ -136,18 +210,18 @@ else
 					$output .= "<tr>";
 					
 					if(!cal_option("start_monday")) {
-						$output .= "    <th width='15%' align='center'>" .  CAL_SUNDAY . '</th>' . "\n";
+						$output .= "    <th width='15%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
 					}
 					$output .= '
-					<th width="14%">' . CAL_MONDAY . '</th>
-					<th width="14%">' . CAL_TUESDAY . '</th>
-					<th width="14%">' . CAL_WEDNESDAY . '</th>
-					<th width="14%">' . CAL_THURSDAY . '</th>
-					<th width="14%">' . CAL_FRIDAY . '</th>
-					<th width="15%">' . CAL_SATURDAY . '</th>';
+					<th width="14%">' . lang('monday short') . '</th>
+					<th width="14%">' . lang('tuesday short') . '</th>
+					<th width="14%">' . lang('wednesday short') . '</th>
+					<th width="14%">' . lang('thursday short') . '</th>
+					<th width="14%">' . lang('friday short') . '</th>
+					<th width="15%">' . lang('saturday short') . '</th>';
 					
 					if(cal_option("start_monday")) {
-						$output .= '<th width="15%">' . CAL_SATURDAY . '</th>';
+						$output .= '<th width="15%">' . lang('sunday short') . '</th>';
 					}
 					$output .= '</tr>';
 	for ($week_index = 0;$week_index<1; $week_index++) {
@@ -247,13 +321,12 @@ else
 					foreach($result as $event){
 						if($event instanceof ProjectEvent ){
 							$count++;
-							$subject =   truncate($event->getSubject(),20,'','UTF-8',true,true);
+							$subject =   $event->getSubject();
 							$typeofevent = $event->getTypeId(); 
 							$private = $event->getIsPrivate(); 
 							$eventid = $event->getId(); 
 						
 							$color = $event->getEventTypeObject()?$event->getEventTypeObject()->getTypeColor():''; 
-							if($color=="") $color = "9DFF80";
 							// organize the time and duraton data
 							$overlib_time = CAL_UNKNOWN_TIME;
 							switch($typeofevent) {
@@ -276,15 +349,14 @@ else
 							
 							// build overlib text
 							$overlib_text = "<strong>$overlib_time</strong><br>" . truncate($event->getDescription(),195);
-							$overlibtext_color = "#000000";
 							// make the event subjects links or not according to the variable $whole_day in gatekeeper.php
 							if(!$private && $count <= 3){
 								if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
 								else $output .= "<div class='event_block'   style='z-index:1000;border-left-color: #$color;'>";
 								if($subject=="") $subject = "[".CAL_NO_SUBJECT."]";
-								$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#75BF60\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';			
+								$output .= "<span class='event_hover_details' title='".$subject."- <i>Event</i>|".str_replace("'","\\'",$overlib_text)."' >";			
 								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
-								$output .= "<a href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"cancel(event); nd();disable_overlib();\" >".$subject."</a>";
+								$output .= "<a href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
 							}
@@ -299,15 +371,13 @@ else
 									if ($milestone->getAssignedTo() instanceof ApplicationDataObject) { 
 										$overlib_text .= 'Assigned to:'. clean($milestone->getAssignedTo()->getObjectName());
 									} else $overlib_text .= 'Assigned to: None';
-									$color = 'FFC0B3'; 
 									
-									$subject = "&nbsp;". truncate($milestone->getName(),20,'','UTF-8',true,true)." - <i>Milestone</i>";
-									$cal_text = truncate($milestone->getName(),20,'','UTF-8',true,true);
-									$overlibtext_color = "#000000";
+									$subject = "&nbsp;". $milestone->getName()." - <i>Milestone</i>";
+									$cal_text = $milestone->getName();
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#FF9680\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';
+									$output .= "<span class='milestone_hover_details' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
 									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
-									$output .= "<a href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"cancel(event);nd();disable_overlib();\" >".$cal_text."</a>";
+									$output .= "<a href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();\" >".$cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
 								}//if count
@@ -322,20 +392,18 @@ else
 							if ($now == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 								$count++;
 								if ($count<=3){
-									$overlib_text = "&nbsp;".truncate($task->getText(),25,'','UTF-8',true,true)."<br>";
+									$overlib_text = "&nbsp;".truncate($task->getText(),195,'','UTF-8',true,true)."<br>";
 									if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
 										$overlib_text .= 'Assigned to:'. clean($task->getAssignedTo()->getObjectName());
 									} else $overlib_text .= 'Assigned to: None';
 									
-									$color = 'D0F29D'; 
-									$subject = truncate($task->getTitle(),20,'','UTF-8',true,true).'- <i>Task</i>';
-									$cal_text = truncate($task->getTitle(),20,'','UTF-8',true,true);
+									$subject = $task->getTitle().'- <i>Task</i>';
+									$cal_text = $task->getTitle();
 									
-								    $overlibtext_color = "#000000";
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= '<span onmouseover="return show_overlib(\''.str_replace("'","\\'",$overlib_text).'\',\'#'.$color.'\',\'#92A96E\',\''.$overlibtext_color.'\',\''.$subject.'\',\'#000\');" onmouseout="return nd();">';
+									$output .= "<span class='task_hover_details' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
 									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
-									$output .= "<a href='".$task->getViewUrl()."' class='internalLink' onclick=\"cancel(event);nd();disable_overlib();\" >".$cal_text."</a>";
+									$output .= "<a href='".$task->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();\" >".$cal_text."</a>";
 									$output .= '</span>';
 									$output .= "";
 								}//if count
@@ -370,12 +438,56 @@ echo $output . '</table>';
 
 
 
+<?php if ($tasks_in_progress) { ?>
+<div class="dashTasksInProgress">
+<table style="width:100%"><tr>
+	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('tasks in progress') ?></div></td>
+	<td class="coViewTopRight"></td></tr>
+	<tr><td class="coViewRight" rowspan=2></td></tr>
+	
+		<tr><td style="background:white"></td><td class="coViewBody" style="padding-left:0px;">
+		<table id="dashTableTIP" style="width:100%">
+		<?php
+		$c = 0;
+		foreach ($tasks_in_progress as $task){
+			$stCount = $task->countAllSubTasks();
+			$c++;
+			$text = $task->getText();
+			if ($text != '')
+				$text = ": " . $text;
+			if(strlen($text)>100)
+				$text = substr($text,0,100) . " ...";
+			?>
+				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
+			<?php 
+			$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
+			if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
+				
+				$projectLinks = array();
+				foreach ($dws as $ws) {
+					$projectLinks[] = '<a href="#" class="og-wsname og-wsname-color-' . $ws->getColor() . '" onclick="Ext.getCmp(\'workspace-panel\').select(' . $ws->getId() . ')">' . clean($ws->getName()) . '</a>';	
+				}
+				echo '<span class="og-wsname">'. implode(' ',$projectLinks) . '</span> ';
+			}?>
+			<a class='internalLink' href='<?php echo $task->getViewUrl() ?>'><?php echo $task->getTitle()?><?php echo $text ?></a></td>
+			<td align="right"><?php $timeslot = Timeslots::getOpenTimeslotByObjectAndUser($task,logged_user());
+				if ($timeslot) {
+					echo lang('x ago', DateTimeValue::FormatTimeDiff($timeslot->getStartTime(), null, 'hm',60))?>
+				<?php } ?></td>
+			</tr>
+		<?php } // foreach ?>
+		</table>
+		</td></tr>
+
+		<tr><td class="coViewBottomLeft"></td>
+		<td class="coViewBottom"></td>
+		<td class="coViewBottomRight"></td></tr>
+	</table>
+</div>
+<?php } ?>
+
 
 <?php 
-	$hasToday = (isset($today_milestones) && is_array($today_milestones) && count($today_milestones)) 
-			|| (isset($today_tasks) && is_array($today_tasks) && count($today_tasks));
-	$hasLate = (isset($late_tasks) && is_array($late_tasks) && count($late_tasks))
-		|| (isset($late_milestones) && is_array($late_milestones) && count($late_milestones));
 	if($hasToday || $hasLate) { 
 ?>
 <div class="dashLate">
@@ -400,7 +512,7 @@ echo $output . '</table>';
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
-		$dws = $milestone->getWorkspaces();
+		$dws = $milestone->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 			
 			$projectLinks = array();
@@ -427,7 +539,7 @@ echo $output . '</table>';
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
-		$dws = $task->getWorkspaces();
+		$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 			
 			$projectLinks = array();
@@ -461,7 +573,7 @@ echo $output . '</table>';
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-milestone"></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
-		$dws = $milestone->getWorkspaces();
+		$dws = $milestone->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 			
 			$projectLinks = array();
@@ -485,7 +597,7 @@ echo $output . '</table>';
     <tr class="<?php echo $c % 2 == 1? '':'dashAltRow' ?>"><td class="db-ico ico-task"></td>
     <td style="padding-left:5px;padding-bottom:2px">
     <?php 
-		$dws = $task->getWorkspaces();
+		$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 		if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 			
 			$projectLinks = array();
@@ -511,11 +623,10 @@ echo $output . '</table>';
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
-<br>
 <?php } // if ?>
  
  
-<?php if (isset($dashtasks) && is_array($dashtasks) && count($dashtasks) > 0) { ?>
+<?php if ($hasPendingTasks) { ?>
 <div class="dashPendingTasks">
 <table style="width:100%"><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('pending tasks') ?></div></td>
@@ -537,7 +648,7 @@ echo $output . '</table>';
 			?>
 				<tr class="<?php echo $c % 2 == 1? '':'dashAltRow'; echo ' ' . ($c > 5? 'dashSMTC':''); ?>" style="<?php echo $c > 5? 'display:none':'' ?>"><td class="db-ico ico-task"></td><td style="padding-left:5px;padding-bottom:2px">
 			<?php 
-			$dws = $task->getWorkspaces();
+			$dws = $task->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 			if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 				
 				$projectLinks = array();
@@ -565,7 +676,7 @@ echo $output . '</table>';
 		<div id="dashSMTT" style="width:100%; text-align:right">
 			<a href="#" onclick="og.hideAndShowByClass('dashSMTT', 'dashSMTC', 'dashTablePT'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
 		</div>
-		<? } //if ?>
+		<?php } //if ?>
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
@@ -573,16 +684,16 @@ echo $output . '</table>';
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>
-<? } ?>
+<?php } ?>
 
 </td>
 <?php if ($hasMessages || $hasDocuments || $hasCharts){ ?>
-<td style="width:330px">
+<td style="width:<?php echo ($hasPendingTasks || $hasLate || $hasToday)? '330px' : '100%' ?>">
 
 <?php if ($hasMessages) { ?>
 <div class="dashMessages">
 <table style="width:100%">
-	<col width=12/><col width=226/><col width=12/><tr>
+	<col width=12/><col/><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('messages') ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -595,7 +706,7 @@ echo $output . '</table>';
 			<td class="db-ico ico-message"></td>
 			<td style="padding-left:5px">
 			<?php 
-				$mws = $message->getWorkspaces();
+				$mws = $message->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				if (!(active_project() instanceof Project && count($mws) == 1 && $mws[0]->getId() == active_project()->getId())){
 					
 					$projectLinks = array();
@@ -620,7 +731,7 @@ echo $output . '</table>';
 		<div id="dashSMMT" style="width:100%;text-align:right">
 			<a href="#" onclick="og.hideAndShowByClass('dashSMMT', 'dashSMMC', 'dashTableMessages'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
 		</div>
-		<? } // if ?>
+		<?php } // if ?>
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>
@@ -636,7 +747,7 @@ echo $output . '</table>';
 	
 <div class="dashChart">
 <table style="width:100%">
-	<col width=12/><col width=226/><col width=12/>
+	<col width=12/><col/><col width=12/>
 	<tr><td style="height:1px;width:12px;"></td><td style="height:1px;width:216px;"></td><td></td></tr>
 	<tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('charts') ?></div></td>
@@ -671,7 +782,7 @@ echo $output . '</table>';
 <?php if ($hasDocuments) { ?>
 <div class="dashDocuments">
 <table style="width:100%">
-	<col width=12/><col width=226/><col width=12/><tr>
+	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 rowspan=2 class="dashHeader"><div class="dashTitle"><?php echo lang('documents') ?></div></td>
 	<td class="coViewTopRight"></td></tr>
 	<tr><td class="coViewRight" rowspan=2></td></tr>
@@ -684,7 +795,7 @@ echo $output . '</table>';
 			<td class="db-ico ico-unknown ico-<?php echo str_replace("/", "-", $document->getTypeString())?>"></td>
 			<td style="padding-left:5px">
 			<?php 
-				$dws = $document->getWorkspaces();
+				$dws = $document->getWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				if (!(active_project() instanceof Project && count($dws) == 1 && $dws[0]->getId() == active_project()->getId())){
 					
 					$projectLinks = array();
@@ -712,7 +823,7 @@ echo $output . '</table>';
 		<div id="dashSMDT" style="width:100%; text-align:right">
 			<a href="#" onclick="og.hideAndShowByClass('dashSMDT', 'dashSMDC', 'dashTableDocuments'); return false;"><?php echo lang("show more amount", $c -5) ?>...</a>
 		</div>
-		<? } // if ?>
+		<?php } // if ?>
 		</td></tr>
 
 		<tr><td class="coViewBottomLeft"></td>

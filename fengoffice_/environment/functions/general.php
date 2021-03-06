@@ -76,6 +76,16 @@ function clean($str) {
 	return $str;
 } // clean
 
+/*
+ * Checks a string to see if it is a valid url address and appends http:// if it doesn't have it
+ */
+function cleanUrl($url){
+	if (strpos($url,'://')<=0){
+		$url = 'http://' . $url;
+	}
+	return $url;
+}
+
 /**
  * Convert entities back to valid characteds
  *
@@ -492,7 +502,7 @@ function gen_id() {
 	do {
 		$time = time();
 		$rand = rand(0, 1000000);
-		$id = "og-$time-$rand";
+		$id = "og_".$time."_".$rand;
 	} while (array_var($ids, $id, false));
 	$ids[$id] = true;
 	return $id;

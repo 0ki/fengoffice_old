@@ -16,8 +16,8 @@
     Foundation Inc, 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	
 */
-//$active_projects = logged_user()->getActiveProjects();
-$project = active_or_personal_project();
+$active_projects = logged_user()->getActiveProjects();
+//$project = active_or_personal_project();
 
 $day =  array_var($event_data, 'day');
 $month =  array_var($event_data, 'month');
@@ -71,7 +71,7 @@ $year =  array_var($event_data, 'year');
 	</script>
 <?php
 	// get dates
-	cal_navmenu(false,$day,$month,$year);
+	//cal_navmenu(false,$day,$month,$year);
 	$setlastweek='';
 
 	if($event->isNew()) { 
@@ -103,9 +103,9 @@ $year =  array_var($event_data, 'year');
 	?>
 
 	<?php if($event->isNew()) { ?>
-	<form class="internalForm" action="<?php echo get_url('event', 'add'); //submitevent ?>" method="post">
+	<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('event', 'add')."&view=". array_var($_GET, 'view','month'); //submitevent ?>" method="post">
 	<?php } else { ?>
-	<form class="internalForm" action="<?php echo $event->getEditUrl() ?>" method="post">
+	<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $event->getEditUrl()."&view=". array_var($_GET, 'view','month'); ?>" method="post">
 	<?php } // if ?>
 	<input type="hidden" id="event[pm]" name="event[pm]" value="<?php echo $pm?>">
 	<div class="event">	
@@ -136,12 +136,8 @@ $year =  array_var($event_data, 'year');
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_list_description_div', this)"><?php echo lang('description')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_properties_div', this)"><?php echo lang('properties')?></a> - 
 		<a href='#' class='option' onclick="og.toggleAndBolden('event_repeat_options_div', this)"><?php echo CAL_REPEATING_EVENT?></a> -
-		<?php //!$event->isNew() && $project instanceof Project &&$event->canLinkObject(logged_user(), $project)
-			if( true) {   
-		?>
 		<a href='#' class='option' onclick="og.toggleAndBolden('add_event_linked_objects_div', this)"><?php echo lang('linked objects')?></a>
-		<?php  }?>
-	    </div></div>
+		</div></div>
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
@@ -290,7 +286,7 @@ $year =  array_var($event_data, 'year');
 					
 						<!--   print extra time options-->
 			<tr>
-				<td align="right"<?php echo CAL_MORE_TIME_OPTIONS?></td>
+				<td align="right"><?php echo CAL_MORE_TIME_OPTIONS?></td>
 				<td align="left">
 					<select name="event[type_id]" size="1">
 						<option value="1" <?php if(array_var($event_data, 'typeofevent') == 1) echo ' selected="selected"'?>></option>

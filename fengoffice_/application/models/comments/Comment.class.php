@@ -21,7 +21,7 @@ class Comment extends BaseComment {
 	 * @var array
 	 */
 	protected $is_file_container = true;
-
+	
 	/**
 	 * Return object connected with this action
 	 *
@@ -48,6 +48,16 @@ class Comment extends BaseComment {
 			} // if
 		} // if
 		return $this->project;
+	} // getProject
+	
+	function getWorkspaces($wsIds = null) {
+		if(is_null($this->workspaces)) {
+			$object = $this->getObject();
+			if($object instanceof ProjectDataobject) {
+				$this->workspaces = $object->getWorkspaces($wsIds);
+			} // if
+		} // if
+		return $this->workspaces;
 	} // getProject
 
 	/**

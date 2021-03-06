@@ -46,15 +46,21 @@
 	cursor: pointer;
 }
 .og-task-late > table > tbody > tr > td > .og-task-name,
-.og-task-late > table > tbody > tr > td > .td-duedate {
+.og-task-late > table > tbody > tr > .td-duedate {
 	color: #FF0000;
 	/*font-weight: bold;*/
 }
 .og-task-completed > table > tbody > tr > td > .og-task-name,
-.og-task-completed > table > tbody > tr > td > .td-duedate {
+.og-task-completed > table > tbody > tr > .td-duedate {
 	text-decoration: line-through;
 	color: #inherit;
 	font-weight: normal;
+}
+.og-task .td-duedate {
+	padding-left: 10px;
+	width: 75px;
+	overflow: hidden;
+	text-align:right;
 }
 /*.og-task table {
 	width: 100%;
@@ -63,10 +69,16 @@
 	padding-left: 20px;
 	background-image: url(../../images/16x16/tasks.png) !important;
 	background-repeat: no-repeat;
-	/*width: 400px;
-	max-width: 400px;*/
+	width: 500px;
+	max-width: 500px;
 	overflow: hidden;
 	white-space: nowrap;
+}
+.og-task-high-priority .td-name {
+	background-image: url(../../images/16x16/task-high.png) !important;
+}
+.og-task-low-priority .td-name {
+	background-image: url(../../images/16x16/task-low.png) !important;
 }
 .og-task .td-delete, .og-task .td-move-down, .og-task .td-checkbox, .og-task .td-toggle {
 	width: 16px;

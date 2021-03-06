@@ -12,12 +12,12 @@ Ext.onReady(function(){
 			text.item(0).dom.select();
 	});
 
-	Ext.state.Manager.setProvider(new og.HttpProvider({
+	/*Ext.state.Manager.setProvider(new og.HttpProvider({
 		saveUrl: og.getUrl('gui', 'save_state'),
 		readUrl: og.getUrl('gui', 'read_state'),
 		autoRead: false
 	}));
-	Ext.state.Manager.getProvider().initState(og.initialGUIState);
+	Ext.state.Manager.getProvider().initState(og.initialGUIState);*/
 	
 
 	Ext.QuickTips.init();
@@ -33,10 +33,14 @@ Ext.onReady(function(){
 				id: 'overview-panel',
 				iconCls: 'ico-overview',
 				refreshOnWorkspaceChange: true,
+				refreshOnTagChange: true,
 				defaultContent: {
 					type: "url",
 					data: og.getUrl('dashboard','index')
-					//type: "overview"
+				},
+				initialContent: {
+					type: "url",
+					data: og.initialURL
 				}
 			}),
 			new og.ContentPanel({
@@ -45,7 +49,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-messages',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "messages"
+					type: "panel",
+					data: "messages"
 				}
 			}),
 			new og.ContentPanel({
@@ -54,7 +59,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-contacts',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "contacts"
+					type: "panel",
+					data: "contacts"
 				}
 			}),
 			new og.ContentPanel({
@@ -73,7 +79,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-documents',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "files"
+					type: "panel",
+					data: "files"
 				}
 			}),
 			new og.ContentPanel({
@@ -92,7 +99,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-webpages',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "webpages"
+					type: "panel",
+					data: "webpages"
 				}
 			})/*,
 			new og.ContentPanel({
@@ -101,7 +109,8 @@ Ext.onReady(function(){
 				iconCls: 'ico-reporting',
 				refreshOnWorkspaceChange: true,
 				defaultContent: {
-					type: "reporting"
+					type: "panel",
+					data: "reporting"
 				}
 			})*/
 		]
@@ -124,7 +133,7 @@ Ext.onReady(function(){
 			helpPanel = new og.HelpPanel({
 				region: 'east',
 				collapsible: true,
-				collapsed: false,
+				collapsed: true,
 				split: true,
 				width: 225,
 				minSize: 175,
@@ -159,7 +168,7 @@ Ext.onReady(function(){
 					},
 					listeners: {
 						render: function() {
-							this.getTopToolbar().setHeight(20);
+							this.getTopToolbar().setHeight(25);
 						}
 					}
 				},{
@@ -168,6 +177,7 @@ Ext.onReady(function(){
 						listeners: {
 							tagselect: function(tag) {
 								og.eventManager.fireEvent('tag changed', tag);
+								og.updateWsCrumbsTag(tag);
 							}
 						}
 					}
@@ -178,8 +188,4 @@ Ext.onReady(function(){
 	});
 	
     og.captureLinks();
-    
-    if (og.initialURL) {
-    	og.openLink(og.initialURL);
-    }
 });

@@ -33,7 +33,10 @@ if ($first) {
 	completedBy: '<?php echo str_replace("'", "\\'", $task->getCompletedByName()) ?>',
 	isLate: <?php echo $task->isLate()?"true":"false" ?>,
 	daysLate: <?php echo $task->getLateInDays() ?>,
+	priority: <?php echo $task->getPriority() ?>,
+	duedate: <?php echo ($task->getDueDate() ? $task->getDueDate()->getTimestamp() : '0') ?>,
 	order: <?php echo $task->getOrder() ?>
+	
 }
 <?php } // foreach ?>
 ];

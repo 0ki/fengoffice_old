@@ -1,16 +1,16 @@
 <?php
 	$user = logged_user();
 	
-  	if($project->canDelete(logged_user())) {
-  		add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete project'))) og.openLink('" . $project->getDeleteUrl() ."');", 'ico-delete');
+  	if(!$project->isNew() && $project->canDelete(logged_user())) {
+  		add_page_action(lang('delete'),  $project->getDeleteUrl() , 'ico-delete');
   	} // if
   	
   	$genid = gen_id();
   	
 if($project->isNew()) { ?>
-<form class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('project', 'add') ?>" method="post">
 <?php } else { ?>
-<form class="internalForm" action="<?php echo $project->getEditUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $project->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
 
@@ -149,24 +149,30 @@ if($project->isNew()) { ?>
 		<div>
 			<script type="text/javascript">
 			function wsColorChoose(obj, color) {
-				var p = obj.parentNode.firstChild;
-				while (p) {
+				var elements = document.getElementsByName("wsColor-<?php echo $genid ?>");
+				for (var i = 0; i < elements.length; i++){
+					var p = elements[i];
 					if (p.className) {
-						if (p.className.indexOf('ico-color'+color) >= 0) {
+						if (p.className.indexOf('ico-color'+color+' ') >= 0) {
 							p.className = 'ico-color' + color + ' ws-color-chooser-selected';
 							document.getElementById('workspace_color').value = color;
 						} else {
 							p.className = p.className.replace(/ws-color-chooser-selected/ig, 'ws-color-chooser');
 						}
 					}
-					p = p.nextSibling;
 				}
 			}
 			</script>
-			<?php for ($i=0; $i < 8; $i++) {
+			<table><tr><td><img class="ico-color0 ws-color-chooser" name="wsColor-<?php echo $genid ?>" onclick="wsColorChoose(this, 0)" src="<?php echo EMPTY_IMAGE ?>"/></td>
+				<td>	
+    		<?php for ($i=1; $i <= 12; $i++) {
 				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
-				echo "<img src=\"".EMPTY_IMAGE."\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
-			} ?>
+				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
+			} ?></td></tr><tr><td></td><td>	
+    		<?php for ($i=13; $i <= 24; $i++) {
+				$class = "ico-color$i " . ($project->getColor() != $i?"ws-color-chooser":"ws-color-chooser-selected");
+				echo "<img src=\"".EMPTY_IMAGE."\" name=\"wsColor-$genid\" class=\"$class\" onclick=\"wsColorChoose(this, $i)\" />";
+			} ?></td></tr></table>
 		</div>
 		
 	<?php echo submit_button($project->isNew() ? lang('add workspace') : lang('save changes'), 's', array('tabindex' => '2')) ?>

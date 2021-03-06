@@ -79,7 +79,7 @@
 	<div id='add_webpage_properties_div' style="display:none">
 	<fieldset>
 	<legend><?php echo lang('properties') ?></legend>
-		<? echo render_object_properties('webpage', $webpage); ?>
+		<?php echo render_object_properties('webpage', $webpage); ?>
 	</fieldset>
 	</div>
   

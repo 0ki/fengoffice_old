@@ -13,8 +13,8 @@ function setSave(){
 <div class="chart">
 <div class="coInputHeader">
 <div class="coInputHeaderUpperRow">
-	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo isset($chart) ? lang('edit chart') : lang('add chart') ?>
-	</td><td style="text-align:right"><?php echo submit_button(isset($chart) ? lang('edit chart') : lang('add chart'),'s',
+	<div class="coInputTitle"><table style="width:535px"><tr><td><?php echo isset($chart) && !$chart->isNew() ? lang('edit chart') : lang('add chart') ?>
+	</td><td style="text-align:right"><?php echo submit_button(isset($chart) && !$chart->isNew() ? lang('edit chart') : lang('add chart'),'s',
 		array('style'=>'margin-top:0px;margin-left:10px', 'onclick' => 'javascript:setSave();return true;')) ?></td></tr></table>
 	</div>
 	

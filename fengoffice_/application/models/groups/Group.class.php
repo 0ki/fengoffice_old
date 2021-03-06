@@ -10,7 +10,16 @@
   class Group extends BaseGroup {
 
     const CONST_MINIMUM_GROUP_ID = 10000000;  
-    const CONST_ADMIN_GROUP_ID = 10000000;       
+    const CONST_ADMIN_GROUP_ID = 10000000; 
+	
+    /**
+     * REturn true if the actual group is the Administrators group (which cannot be deleted)
+     *
+     * @return boolean
+     */
+    function isAdministratorGroup(){
+    	return Group::CONST_ADMIN_GROUP_ID == $this->getId();
+    } //isAdministratorGroup
     /**
     * Return array of all group members
     *
@@ -293,7 +302,7 @@
     * @return boolean
     */
     function canDelete(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator();
+      return ($user->isAccountOwner() || $user->isAdministrator()) && !$this->isAdministratorGroup() ;
     } // canDelete
     
     /**
@@ -546,31 +555,24 @@
 //        } // if
 //      } // if
 //    } // validate
-//    
-//    /**
-//    * Delete this group and all related data
-//    *
-//    * @access public
-//    * @param void
-//    * @return boolean
-//    * @throws Error
-//    */
-//    function delete() {
-//      if($this->isOwner()) {
-//        throw new Error(lang('error delete owner group'));
-//      } // if
-//      
-//      $users = $this->getUsers();
-//      if(is_array($users) && count($users)) {
-//        foreach($users as $user) $user->delete();
-//      } // if
-//      
-//      Projectgroups::clearBygroup($this);
-//      
-//      $this->deleteLogo();
-//      return parent::delete();
-//    } // delete
-//    
+    
+    /**
+    * Delete this group and all related data
+    *
+    * @access public
+    * @param void
+    * @return boolean
+    * @throws Error
+    */
+    function delete() {
+      if ($this->isAdministratorGroup()  ) {
+        throw new Error(lang('error delete group'));
+        return false;
+      } // if
+      
+      return parent::delete();
+    } // delete
+    
 //    // ---------------------------------------------------
 //    //  ApplicationDataObject implementation
 //    // ---------------------------------------------------

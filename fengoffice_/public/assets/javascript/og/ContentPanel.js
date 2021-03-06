@@ -8,9 +8,10 @@
  */
 og.ContentPanel = function(config) {
 	Ext.apply(config, {
-		autoScroll: true,
-		layout: 'fit',
+		//autoScroll: true,
+		layout: 'contentpanel',
 		loaded: false,
+		cls: 'og-content-panel', // identifies ContentPanels (see: og.getParentContentPanel)
 		listeners: {
 			activate: this.activate,
 			deactivate: this.deactivate
@@ -20,6 +21,7 @@ og.ContentPanel = function(config) {
 			html: ""
 		}]
 	});
+	
 	og.ContentPanel.superclass.constructor.call(this, config);
 	
 	this.history = [];
@@ -28,9 +30,10 @@ og.ContentPanel = function(config) {
 	if (config.refreshOnWorkspaceChange) {
 		og.eventManager.addListener('workspace changed', this.reset, this);
 	}
-	if (this.active) {
-		this.load(this.defaultContent);
+	if (config.refreshOnTagChange) {
+		og.eventManager.addListener('tag changed', this.reset, this);
 	}
+	
 	// dirty stuff to allow refreshing a content panel when clicking on its tab
 	this.on('render', function() {
 		var tabs = this.ownerCt.getEl().select('.x-tab-with-icon');
@@ -57,7 +60,13 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.getComponent(0).activate();
 		}
 		if (!this.loaded) {
-			this.load(this.defaultContent);
+			if (this.initialContent) {
+				this.history.push(this.defaultContent);
+				this.load(this.initialContent);
+				this.initialContent = false;
+			} else {
+				this.load(this.defaultContent);
+			}
 		}
 	},
 	
@@ -67,18 +76,59 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			this.getComponent(0).deactivate();
 		}
 	},
+	
+	setPreventClose: function(prevent) {
+		if (!this.preventClose && prevent) {
+			// if this panel was closable but now we want to prevent it:
+			og.ContentPanel.preventCloseCount++;
+			if (og.ContentPanel.preventCloseCount) {
+				window.onbeforeunload = function() {return lang("confirm unload page");};
+			}
+		} else if (this.preventClose && !prevent) {
+			// if this panel prevented closing and now becomes closable
+			og.ContentPanel.preventCloseCount--;
+			if (!og.ContentPanel.preventCloseCount) {
+				window.onbeforeunload = null;
+			}
+		}
+		this.preventClose = prevent;
+	},
+	
+	confirmClose: function() {
+		if (this.preventClose) {
+			if (!confirm(lang("confirm leave panel"))) {
+				return false;
+			}
+			this.setPreventClose(false);
+		}
+		return !this.preventClose;
+	},
 
 	load: function(content, isBack) {
+
+		if (!this.confirmClose()) {
+			if (isBack) {
+				// put content back to the history stack
+				this.history.push(content);
+			}
+			return false;
+		}
 		if (content.type == 'start') {
 			if (this.closable) {
 				this.ownerCt.remove(this);
 			} else {
 				this.reset();
 			}
-			return;
+			return false;
+		} else if (content.type == 'back') {
+			this.back();
+			return false;
+		} else if (content.type == 'reload') {
+			this.reload();
+			return false;
 		}
 	
-		if (this.loaded && this.content && !isBack) {
+		if (this.content && !isBack && this.content.type != 'url' && !content.replace) {
 			this.history.push(this.content);
 		}
 		if (typeof content == 'string') {
@@ -89,16 +139,18 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		}
 		this.content = content;
 		if (this.content.type != 'url') {
-			while (this.getComponent(0)) {
-				var comp = this.getComponent(0);
-				if (comp.doNotDestroy) {
-					this.remove(this.getComponent(0), false);
-					comp.getEl().dom.parentNode.removeChild(comp.getEl().dom);
+			var i=0;
+			while (this.getComponent(i)) {
+				if (this.getComponent(i).doNotRemove) {
+					this.getComponent(i).hide();
+					i++;
 				} else {
-					this.remove(this.getComponent(0));
+					this.remove(this.getComponent(i));
 				}
 			}
+			this.doLayout();
 		}
+		this.setPreventClose(content.preventClose);
 		if (content.type == 'html') {
 			if (this.history.length > 0) {
 				var tbar = [{
@@ -153,45 +205,28 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			});
 			this.add(p);
 			this.doLayout();
-			//og.captureLinks(this.id, this);
 		} else if (content.type == 'url') {
-			og.openLink(content.data, {caller: this});
-			//og.captureLinks(this.id, this);
-		} else if (content.type == 'urlonshow') {
-			this.contentLoaded = false;
-		} else if (content.type == 'overview') {
-			this.add(og.Overview.getInstance());
-			og.Overview.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'files') {
-			this.add(og.FileManager.getInstance());
-			og.FileManager.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'contacts') {
-			this.add(og.ContactManager.getInstance());
-			og.ContactManager.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'messages') {
-			this.add(og.MessageManager.getInstance());
-			og.MessageManager.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'webpages') {
-			this.add(og.WebpageManager.getInstance());
-			og.WebpageManager.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'tasks') {
-			this.add(og.TaskViewer.getInstance());
-			og.TaskViewer.getInstance().load({start:0});
-			this.doLayout();
-			og.captureLinks(this.id, this);
-		} else if (content.type == 'reporting') {
-			this.add(og.ReportingManager.getInstance());
-			og.ReportingManager.getInstance().load({start:0});
+			if (this.active) {
+				og.openLink(content.data, {caller: this});
+			}
+		} else if (content.type == 'panel') {
+			if (!content.panel) {
+				for (var i=0; this.getComponent(i) && !content.panel; i++) {
+					if (this.getComponent(i).getXType() == content.data) {
+						// a panel of this type has already been loaded => use it
+						content.panel = this.getComponent(i);
+					}
+				}
+				if (!content.panel) {
+					// create a new panel of the type
+					var config = content.config || {};
+					config.xtype = content.data || config.xtype;
+					content.panel = Ext.ComponentMgr.create(config);
+				}
+			}
+			this.add(content.panel);
+			content.panel.show();
+			content.panel.load();
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else {
@@ -209,32 +244,37 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 		if (content.type != 'url') {
 			this.loaded = true;
 		}
-	},
-	
-	loadContentUrl: function() {
-		og.openLink(this.content.data, {caller: this});
-		this.contentLoaded = true;
+		
+		return true;
 	},
 	
 	back: function() {
 		var prev = this.history.pop();
-		if (!prev) return;
-		if (prev.type == 'url') {
-			this.back();
-		} else {
+		if (!prev) {
+			this.load({type: 'start'});
+		} else if (prev.type == 'html' && prev.url) {
+			this.load({type: 'url', data: prev.url}, true);
+		} else { 
 			this.load(prev, true);
 		}
 	},
 	
 	reload: function() {
-		this.load(this.content);
+		if (this.content.type == 'html' && this.content.url) {
+			this.load({type:'url',data:this.content.url}, true);
+		} else {
+			this.load(this.content, true);
+		}
 	},
 		
 	reset: function() {
+		if (!this.confirmClose()) return;
 		this.loaded = false;
-		this.history = [];
 		if (this.active) {
 			this.load(this.defaultContent);
 		}
+		this.history = [];
 	}
 });
+
+og.ContentPanel.preventCloseCount = 0;

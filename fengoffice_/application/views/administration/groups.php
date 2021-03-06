@@ -8,7 +8,7 @@
   $genid = gen_id();
 ?>
 
-<div id="<?php echo $genid ?>adminContainer" class="adminGroups">
+<div id="<?php echo $genid ?>adminContainer" class="adminGroups" style="height:100%;background-color:white">
   <div class="adminHeader">
   	<div class="adminTitle"><?php echo lang('groups') ?></div>
   </div>
@@ -36,7 +36,7 @@
   if($group->canEdit(logged_user())) {
     $options[] = '<a class="internalLink" href="' . $group->getEditUrl() . '">' . lang('edit') . '</a>';
   } // if
-  if($group->canDelete(logged_user())) {
+  if($group->canDelete(logged_user()) && !$group->isAdministratorGroup()) {
     $options[] = '<a class="internalLink" href="' . $group->getDeleteGroupUrl() . '" onclick="return confirm(\'' . lang('confirm delete group') . '\')">' . lang('delete') . '</a>';
   } // if
 ?>

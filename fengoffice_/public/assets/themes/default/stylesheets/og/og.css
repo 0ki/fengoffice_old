@@ -23,7 +23,6 @@
 }
 /** /autoCompleter **/
 
-
 .ico-reporting {
 	background-image: url(../../images/16x16/reporting.png) !important;
 }
@@ -61,6 +60,9 @@
 .ico-complete {
 	background-image: url(../../images/16x16/complete.png) !important;
 }
+.ico-reopen {
+	background-image: url(../../images/16x16/reopen.png) !important;
+}
 .ico-contact {
 	background-image: url(../../images/16x16/contacts.png) !important;
 }
@@ -79,11 +81,30 @@
 .ico-email {
 	background-image: url(../../images/16x16/email.png) !important;
 }
+.ico-reply-all {
+	background-image: url(../../images/16x16/mail_replayall.png) !important;
+}
+.ico-forward {
+	background-image: url(../../images/16x16/mail_forward.png) !important;
+}
+.ico-mail-mark-unread {
+	background-image: url(../../images/16x16/mail_mark_unread.png) !important;
+}
+.ico-mail-mark-read {
+	background-image: url(../../images/16x16/mail_mark_read.png) !important;
+}
+
 .ico-email_menu {
 	background-image: url(../../images/16x16/messages.png) !important;
 }
 .ico-event {
 	background-image: url(../../images/16x16/calendar.png) !important;
+}
+.ico-calendar-month {
+	background-image: url(../../images/16x16/view_calendar_month.png) !important;
+}
+.ico-calendar-week {
+	background-image: url(../../images/16x16/view_calendar_week.png) !important;
 }
 .ico-help {
 	background-image: url(../../images/16x16/help.png);
@@ -105,6 +126,9 @@
 }
 .ico-new {
 	background-image: url(../../images/16x16/new.png) !important;
+}
+.ico-copy {
+	background-image: url(../../images/16x16/copy.png) !important;
 }
 .ico-password {
 	background-image: url(../../images/16x16/password.png) !important;
@@ -166,7 +190,25 @@
 .ico-nextmonth {
 	background-image: url(../../images/16x16/nextmonth.png) !important;
 }
+.ico-phone {
+	background-image: url(../../images/16x16/phone.png) !important;
+}
+.ico-fax {
+	background-image: url(../../images/16x16/fax.png) !important;
+}
+.ico-template-task {
+	background-image: url(../../images/16x16/tasks.png) !important;
+}
+.ico-template-milestone {
+	background-image: url(../../images/16x16/milestone.png) !important;
+}
 
+
+.link-ico {
+	height: 16px;
+	background-repeat: no-repeat;
+	padding-left:20px;
+}
 
 .db-ico {
 	height: 16px;
@@ -185,7 +227,10 @@
 }
 .ws-color-chooser, .ws-color-chooser-selected {
 	cursor: pointer;
-	margin-left: 5px;
+	margin-left: 3px;
+}
+.ws-color-chooser {
+	border: 2px solid transparent;
 }
 .ws-color-chooser-selected {
 	border: 2px solid deepskyblue;
@@ -201,47 +246,136 @@
 
 .subwscrumbs {
 	font-weight: bold;
+	padding-bottom:2px;
 }
 
 .og-wsname {
-	color: #FFFFFF;
+	color: #777777;
 	font-size: 9px;
 	padding-left:1px;
 	padding-right:1px;
 }
 
-.og-wsname-color-0 {
-	color: #777777;
-}
-
 .og-wsname-color-1 {
-	background-color: rgb(147,7,7);
+	color: #DEE5F2;
+	background-color: #5A6986;
 }
 
 .og-wsname-color-2 {
-	background-color: rgb(20,208,38);
+	color: #E0ECFF;
+	background-color: #206CE1;
 }
 
 .og-wsname-color-3 {
-	background-color: rgb(14,91,207);
+	color: #DFE2FF;
+	background-color: #0000CC;
 }
 
 .og-wsname-color-4 {
-	background-color: rgb(255,204,0);
-	color: rgb(91,73,0);
+	color: #E0D5F9;
+	background-color: #5229A3;
 }
 
 .og-wsname-color-5 {
-	background-color: rgb(255,126,0);
+	color: #FDE9F4;
+	background-color: #854F61;
 }
 
 .og-wsname-color-6 {
-	background-color: rgb(255,0,180);
+	color: #FFE3E3;
+	background-color: #CC0000;
 }
 
 .og-wsname-color-7 {
-	background-color: rgb(0,214,227);
+	color: #FFF0E1;
+	background-color: #EC7000;
 }
+
+.og-wsname-color-8 {
+	color: #FADCB3;
+	background-color: #B36D00;
+}
+
+.og-wsname-color-9 {
+	color: #F3E7B3;
+	background-color: #AB8B00;
+}
+
+.og-wsname-color-10 {
+	color: #FFFFD4;
+	background-color: #636330;
+}
+
+.og-wsname-color-11 {
+	color: #F9FFEF;
+	background-color: #64992C;
+}
+
+.og-wsname-color-12 {
+	color: #F1F5EC;
+	background-color: #006633;
+}
+
+.og-wsname-color-13 {
+	color: #5A6986;
+	background-color: #DEE5F2;
+}
+
+.og-wsname-color-14 {
+	color: #206CE1;
+	background-color: #E0ECFF;
+}
+
+.og-wsname-color-15 {
+	color: #0000CC;
+	background-color: #DFE2FF;
+}
+
+.og-wsname-color-16 {
+	color: #5229A3;
+	background-color: #E0D5F9;
+}
+
+.og-wsname-color-17 {
+	color: #854F61;
+	background-color: #FDE9F4;
+}
+
+.og-wsname-color-18 {
+	color: #CC0000;
+	background-color: #FFE3E3;
+}
+
+.og-wsname-color-19 {
+	color: #EC7000;
+	background-color: #FFF0E1;
+}
+
+.og-wsname-color-20 {
+	color: #B36D00;
+	background-color: #FADCB3;
+}
+
+.og-wsname-color-21 {
+	color: #AB8B00;
+	background-color: #F3E7B3;
+}
+
+.og-wsname-color-22 {
+	color: #636330;
+	background-color: #FFFFD4;
+}
+
+.og-wsname-color-23 {
+	color: #64992C;
+	background-color: #F9FFEF;
+}
+
+.og-wsname-color-24 {
+	color: #006633;
+	background-color: #F1F5EC;
+}
+
 
 /** wschooser **/
 .og-wschooser th {
@@ -279,17 +413,30 @@
 .og-tasks-actions {
 	font-weight: bolder;
 	color: white;
-	background-color: #8181A1;
+	background-color: #717FA1;
 	padding: 5px;
+  	border-color: #455678;
 }
 .og-task-table-filter {
 	wdth: 100%;
 }
 .og-task-table-filter > tbody > tr > td {
 	padding-left: 10px;
-}
-.og-task-table-filter .td-assigned-to {
-	width: 300px;
 	white-space: nowrap;
 }
+
+.og-timeslot-work-started{
+	line-height:22px;
+	padding-left:28px;
+	background-image: url(../../images/22x22/chronometer.png) !important;
+	background-repeat:no-repeat;
+	font-weight:bold;
+}
 /** /tasks **/
+
+
+
+.og-ico {
+	background-repeat: no-repeat;
+	padding-left: 20px;
+}

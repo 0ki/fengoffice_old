@@ -33,130 +33,136 @@ App.modules.addFileForm = {
 };
 
 function submitMe(form) {
-	if (addFileVerifyName())
-	og.submit(form, function(panel){
-		panel.reset();
+	og.submit(form, {
+		callback: {
+			type: 'back'
+		}
 	});
-	else 
-		return false;
-}
-  
-addFileVerifyName = function(){
-	var fileIsNew = Ext.get("hfFileIsNew").getValue();
-	if (fileIsNew)
-		if (Ext.get("addFileFilenameDNX").isDisplayed())
-			return Ext.get("fileFormFilename").getValue() == Ext.get("fileFormFilenameH").getValue();
-		else
-			return Ext.get("fileFormNewFilename").getValue() == Ext.get("fileFormNewFilenameH").getValue();
-	else
-		return true; // Edit, name verification not necessary
 }
 
-updateFileName = function() {
+og.updateFileName = function() {
 	var name = document.getElementById('fileFormFile').value;
 	var start = Math.max(0, Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\') + 1));
 	name = name.substring(start);
-	Ext.get('fileFormFilename').dom.value = name;
-	Ext.get('fileFormFilenameH').dom.value = name;
+	var fff = document.getElementById('fileFormFilename');
+	fff.value = name;
 }
 
-checkFileName = function(name) {
+
+og.checkFileName = function(name) {
+	var fff = document.getElementById('fileFormFilename');
+	name = fff.value;
+	//Disable Add file buttons and show corresponding divs
 	Ext.get('add_file_submit1').dom.disabled = true;
-	Ext.get('addFileButton').dom.disabled = true;
-	
-    Ext.get("addFileFilenameExists").setDisplayed(false);
+	Ext.get('add_file_submit2').dom.disabled = true;
     Ext.get("addFileFilenameCheck").setDisplayed(true);
-	var eid = 0;
+    Ext.get("addFileFilenameExists").setDisplayed(false);
     
+	var eid = 0;
 	var fileIsNew = Ext.get("hfFileIsNew").getValue();
-  	var ws = Ext.get("ws_ids").getValue();
-    if (!name){
-    	if(fileIsNew){
-    		if (Ext.get('fileFormFilename').dom.value != '')
-    			name = Ext.get('fileFormFilename').dom.value;
-    		else {
-    			//get the name from the file to upload
-		    	var fullPath = Ext.get("fileFormFile").getValue();
-		    	var lastSlash = Math.max(fullPath.lastIndexOf("/"),fullPath.lastIndexOf("\\"));
-		  		name = fullPath.substring(lastSlash+1,fullPath.length);
-	  		}
-    	} else {
-    		name = Ext.get('hfEditFileName').getValue();
-    	}
-  	}
-  	
-  	if (fileIsNew){
-	  	Ext.get("addFileFilenameDNX").setDisplayed(false);
-  	} else {
-    	Ext.get("fileSubmitButton").dom.disabled = true;
+  	if (!fileIsNew){
  		eid = Ext.get('hfFileId').getValue();
   	}
+  	var ws = Ext.get("ws_ids").getValue();
  	
-    og.openLink(og.getUrl('files','check_filename', {filename: name, wsid: ws, id: eid}), {
+    og.openLink(og.getUrl('files','check_filename', {filename: escape(name), wsid: ws, id: eid}), {
     	caller:this,
     	callback: function(success, data) {
     		if (success) {
-    			checkFileNameReturn(data);
-    				Ext.get('add_file_submit1').dom.disabled = false;
-					Ext.get('addFileButton').dom.disabled = false;
+    			Ext.get("addFileFilenameCheck").setDisplayed(false);
+				Ext.get("addFileFilename").setDisplayed('inline');
+    			Ext.get('add_file_submit1').dom.disabled = false;
+				Ext.get('add_file_submit2').dom.disabled = false;
+	
+				if (data.files && Ext.get("hfFileIsNew").dom.value)
+					og.showFileExists(data);
     		}
     	}
     });
 }
-
-checkFileNameReturn = function(fileInfo){
-	Ext.get("addFileFilenameCheck").setDisplayed(false);
-	Ext.get("hfExistingFileId").dom.value = fileInfo.id;
-	var fileIsNew = Ext.get("hfFileIsNew").dom.value;
-	
-	if (fileInfo.id == 0){
-		showFileDoesNotExist(fileInfo, fileIsNew);
-	} else {
-		showFileExists(fileInfo, fileIsNew);
-	}
-}
-
-showFileDoesNotExist = function(fileInfo, fileIsNew){
-	if (fileIsNew){
-		Ext.get("addFileFilenameDNX").setDisplayed('inline');
-		Ext.get("hfAddFileAddType").dom.value = 'regular';
-		Ext.get("fileFormFilename").dom.value = fileInfo.name;
-		Ext.get("fileFormFilenameH").dom.value = fileInfo.name;
-	} else {
-		Ext.get("fileSubmitButton").dom.disabled = false;
-	}
-}  
   
-showFileExists = function(fileInfo, fileIsNew){
+og.showFileExists = function(fileInfo){
  	Ext.get("addFileFilenameExists").setDisplayed(true);
+ 	var table = Ext.getDom('upload-table');
+ 	table.innerHTML = '';
  	
-	if (fileIsNew){ //------------------------------------------------ ADD
-	 	Ext.get("hfAddFileAddType").dom.value = 'exists';
-	 	Ext.get("fileCheckedOut").setDisplayed('none');
-	 	Ext.get("fileCheckedOutNoPermission").setDisplayed('none');
-	 	Ext.get("fileCheckedOutPermission").setDisplayed('none');
-	 	Ext.get("fileNotCheckedOut").setDisplayed('none');
- 		Ext.get("fileFormNewFilename").dom.value = fileInfo.suggestedName;
- 		Ext.get("fileFormNewFilenameH").dom.value = fileInfo.suggestedName;
- 		Ext.get("addFileButton").dom.disabled = false;
-	 	
- 		Ext.get("radioAddFileNewName").dom.checked = true;
- 		Ext.get("addFileExistingFileInfo").update(lang('existing filename info', fileInfo.name, fileInfo.created_by_name, fileInfo.created_on));
- 		
- 		//Print the second option (checkin or add revision)
- 		if(!fileInfo.is_checked_out){
-	 		Ext.get("fileNotCheckedOut").setDisplayed(fileInfo.can_edit ? 'inline':'none');
-	 		Ext.get("radioAddFileNewName").setDisplayed(fileInfo.can_edit ? 'inline':'none');
-	 	} else {
-	 		Ext.get("hfAddFileAddType").dom.value = 'checkedout';
-	 		var chout = Ext.get("fileCheckedOut");
-	 		chout.update('');
-	 		chout.insertHtml('afterBegin',lang('add file checked out by', fileInfo.name, fileInfo.checked_out_by_name));
-	 		chout.setDisplayed('inline');
-	 		Ext.get(fileInfo.can_check_in ? "fileCheckedOutPermission" : "fileCheckedOutNoPermission").setDisplayed('inline');
-	 		Ext.get("radioAddFileNewName").setDisplayed(fileInfo.can_check_in ? 'inline':'none');
-	 	}
-	} else { //------------------------------------------------------- EDIT
-		Ext.get("fileSubmitButton").dom.disabled = true;
+ 	for (var i = 0; i < fileInfo.files.length; i++)
+ 		og.addFileOption(table, fileInfo.files[i]);
+}
+
+og.addFileOption = function(table, file){
+	var row = table.insertRow(table.rows.length);
+	var cell = row.insertCell(0);
+	cell.style.paddingRight='4px';
+
+	if (file.can_edit && (!file.is_checked_out || file.can_check_in)){
+		var el = document.createElement('input');
+		el.type="radio";
+		el.className = "checkbox";
+		el.name='file[upload_option]';
+		el.value=file.id;
+		el.checked = false;
+		el.enabled = file.can_edit && (!file.is_checked_out || (file.is_checked_out && file.can_check_in));
+		cell.appendChild(el);
+	}
+	
+	var cell = row.insertCell(1);
+	cell.style.height = '20px';
+	var div = document.createElement('div');
+	div.className = 'ico-link ico-' + file.type;
+	
+	var addMessage = lang('add as new revision to') + ":&nbsp;";
+	if(file.is_checked_out){
+		if (file.can_check_in)
+			addMessage = lang('check in') + ":&nbsp;";
+		else
+			addMessage = lang('cannot check in') + "&nbsp;";
+	}
+		
+	var classes = "db-ico ico-unknown ico-" + file.type;
+	if (file.type) {
+		var path = file.type.replace(/\//ig, "-").split("-");
+		var acc = "";
+		for (var i=0; i < path.length; i++) {
+			acc += path[i];
+			classes += " ico-" + acc;
+			acc += "-";
+		}
+	}
+	var fileLink = "<a style='padding-left:18px;line-height:16px' class=\""+ classes + "\" href=\"" + og.getUrl('files','download_file',{id : file.id}) + "\" title=\"" + lang('download') + "\">" + file.name + "</a>";
+	var workspaces = '';
+	
+	if (file.workspace_ids != ''){
+		workspaces = "&nbsp;(";
+		var ids = String(file.workspace_ids).split(',');
+		var names = file.workspace_names.split(',');
+		var colors = String(file.workspace_colors).split(',');
+		for (var idi = 0; idi < ids.length; idi++){
+			workspaces +=  "<a href=\"#\" class=\"og-wsname og-wsname-color-" + colors[idi].trim() + "\" onclick=\"Ext.getCmp('workspace-panel').select(" + ids[idi] + ")\">" + names[idi].trim() + "</a>";
+			if (idi < ids.length - 1)
+				workspaces+="&nbsp;";
+		}
+		workspaces += ')';
+	}
+	div.innerHTML = addMessage + fileLink + workspaces;
+	cell.appendChild(div);
+	
+	var cell = row.insertCell(2);
+	cell.style.paddingLeft = '10px';
+	var div = document.createElement('div');
+	var dateToShow = '';
+	var newDate = new Date(file.created_on*1000).add("d", 1);
+	var currDate = new Date();
+	if (newDate.getFullYear() != currDate.getFullYear())
+		dateToShow = newDate.format("j M Y");
+	else
+		dateToShow = newDate.format("j M");
+	cell.innerHTML = lang("created by on", file.created_by_name, dateToShow);
+	
+	var cell = row.insertCell(3);
+	cell.style.paddingLeft = '10px';
+	if (file.is_checked_out){
+		cell.innerHTML = lang('checked out by', file.checked_out_by_name); 
 	}
 }
+

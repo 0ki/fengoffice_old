@@ -4,9 +4,9 @@
     administration_tabbed_navigation(ADMINISTRATION_TAB_GROUPS);
 ?>
 <?php if($group->isNew()) { ?>
-<form class="internalForm" action="<?php echo get_url('group', 'add_group') ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('group', 'add_group') ?>" method="post">
 <?php } else { ?>
-<form class="internalForm" action="<?php echo $group->getEditUrl() ?>" method="post">
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo $group->getEditUrl() ?>" method="post">
 <?php } // if ?>
 
 
@@ -58,10 +58,16 @@
     <legend><?php echo lang('group users') ?></legend>  
     <?php foreach (Users::getAll() as $user) { 
     	$ctrl_name ='user['.$user->getId().']'; ?>
+    	
+		<?php if ($group->isAdministratorGroup() && $user->isAccountOwner()) { ?>
+				<img src="<?php echo icon_url('ok.gif') ?>" title="<?php echo lang('admin cannot be removed from admin group') ?>" alt="" /> <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label>
+				<input type="hidden" name="<?php echo $ctrl_name  ?>" value="checked" id="<?php echo $ctrl_name ?>" />
+		<?php } else { ?>    	
 	    <div>
 	      <?php echo checkbox_field($ctrl_name , array_var($group_data, $ctrl_name), array('id' => $ctrl_name  )) ?> 
 	      <label for="<?php echo $ctrl_name  ?>" class="checkbox"><?php echo $user->getUsername() ?></label>
 	    </div>  
+	    <?php }//if ?>
     <?php } // for ?>
   </fieldset>
   

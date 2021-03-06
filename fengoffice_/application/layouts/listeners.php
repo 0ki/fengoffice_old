@@ -20,10 +20,15 @@ og.eventManager.addListener('tag changed',
  	}
 );
 og.eventManager.addListener('company added', 
- 	function (company){ 
- 		if (Ext.get('profileFormCompany')){
- 			var select = Ext.get('profileFormCompany');
-			select.insertHtml('afterBegin', '<option selected="selected" value="' + company.id + '">' + company.name + '</option>');
+ 	function (company) {
+ 		var elems = document.getElementsByName("contact[company_id]");
+ 		for (var i=0; i < elems.length; i++) {
+ 			if (elems[i].tagName == 'SELECT') {
+	 			var opt = document.createElement('option');
+	        	opt.value = company.id;
+		        opt.innerHTML = company.name;
+	 			elems[i].appendChild(opt);
+ 			}
  		}
  	}
 );

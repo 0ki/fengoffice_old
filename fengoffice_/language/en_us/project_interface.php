@@ -12,6 +12,7 @@ return array(
 
 // Options and descriptions
 	'edit this file' => 'Edit this file',
+	'file contents' => 'File contents',
 
     'important message desc' => 'Important messages are listed in the "Important messages" sidebar on the workspace messages page',
     'important file desc' => 'Important files are listed in the sidebar of files section in "Important files" block',
@@ -47,6 +48,7 @@ return array(
     'project started on' => 'Started on',
 
     'send milestone assigned to notification' => 'Send email notification to user',
+	'send task assigned to notification' => 'Send email notification to user',
 
     'edit company data' => '<a class="internalLink" href="{0}">Edit</a> company data',
     'company users involved in project' => '{0} users involved in {1}',
@@ -229,8 +231,24 @@ return array(
 	'success deleted chart' => 'Chart \'{0}\' deleted successfully',
 	'error deleted chart' => 'An error occurred while deleting the chart',
 
+	'task priority' => 'Priority',
+	'high priority' => 'High',
+	'normal priority' => 'Normal',
+	'low priority' => 'Low',
 
+	'time estimate' => 'Time estimate',
+	'time estimate desc' => 'Estimated duration of the task in hours.',
+	'x hours' => '{0} hours.',
+	'pending' => 'Pending',
 
+	'new task template' => 'New task template',
+	'new task from template' => 'New task from template',
+	'save as template' => 'Save as template',
+	'save template' => 'Save template',
+	'delete template' => 'Delete template',
+	'new milestone template' => 'New milestone template',
+	'new milestone from template' => 'New milestone from template',
+	'loading' => 'Loading',
 ); // array
 
 ?>

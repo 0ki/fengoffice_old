@@ -11,9 +11,10 @@
 @import 'og/search.css';
 @import 'og/coInput.css';
 @import 'og/administration.css';
+@import 'og/textile-rewrite.css';
 
 @import '../slimey/slimey.css';
-@import 'og/imageChooser.css';
+@import 'og/ImageChooser.css';
 @import 'admin/config.css';
 @import 'admin/massmailer.css';
 @import 'admin/user_list.css';
@@ -36,8 +37,8 @@
 /*@import 'project/spreadsheet.css';*/
 /*@import 'project/spreadsheet_grey.css';*/
 @import 'project/task_list.css';
-@import 'og/MiniCalendar.css';
-@import '../jquery/jquery.cluetip.css';
+@import url("../jquery/jquery.cluetip.css");
+@import url("../jquery/ui.datepicker.css");
 
 select.select_milestone, select.select_task_list, select.select_message {
   width: 250px;

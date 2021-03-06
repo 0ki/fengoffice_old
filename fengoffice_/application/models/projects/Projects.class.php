@@ -85,7 +85,10 @@
 		if (!is_array($ids)) return array();
 		$ws = array();
 		foreach ($ids as $id) {
-			$ws[] = Projects::findById($id);
+			$w = Projects::findById($id);
+			if ($w instanceof Project) {
+				$ws[] = $w;
+			}
 		}
 		return $ws;
 	}

@@ -41,7 +41,8 @@ class MessageController extends ApplicationController {
 			"types" => explode(',', array_var($_GET,'types')),
 			"tag" => array_var($_GET,'tagTag'),
 			"accountId" => array_var($_GET,'account_id'),
-			"viewType" => array_var($_GET,'view_type')
+			"viewType" => array_var($_GET,'view_type'),
+			"readType" => array_var($_GET,'read_type')
 		);
 		
 		//Resolve actions to perform
@@ -160,6 +161,36 @@ class MessageController extends ApplicationController {
 				$resultMessage = $resultCheck[1];// if 
 				$resultCode = $resultCheck[0];
 				break;
+				
+			case "markAsRead":case "markAsUnRead":
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "email":
+							$email = MailContents::findById($id);
+							if (isset($email) && $email->canEdit(logged_user())){
+								try{									
+									$email->setIsRead($action=='markAsRead'?1:0);
+									DB::beginWork();
+									$email->save();
+									DB::commit();
+									$resultMessage = lang("success mark objects", '');
+								} catch(Exception $e){
+									DB::rollback();
+									$resultMessage .= $e->getMessage();
+									$resultCode = $e->getCode();
+								}
+							};
+							break;
+
+						default:
+							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
 			
 			default:
 				$resultMessage = lang("Unimplemented action: '" . $action . "'");// if 
@@ -255,6 +286,13 @@ class MessageController extends ApplicationController {
 		else
 			$classified = "'1' = '1'";
 			
+			
+		// Check read emails
+		if (isset($attributes["readType"]) && $attributes["readType"] == "unreaded")
+			$readed = "is_read = 0";
+		else
+			$readed = "'1' = '1'";
+			
 		
 		//Check for tags
 		if (!isset($tag) || $tag == '' || $tag == null) {
@@ -290,7 +328,7 @@ class MessageController extends ApplicationController {
 		$permissions = ' AND ( ' . permissions_sql_for_listings(MailContents::instance(),ACCESS_LEVEL_READ, logged_user(), 'project_id') .')';
 	
 		$res = DB::execute("SELECT `id`, 'MailContents' as manager, `sent_date` as comp_date from " . TABLE_PREFIX. "mail_contents where " . 
-			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0 " . $permissions 
+			$projectConditions . " AND " . $tagstr . " AND " . $classified . " AND " . $readed  . " AND is_deleted = 0 " . $permissions 
 			. " ORDER BY sent_date DESC");
 			
 		if(!$res) return null;
@@ -372,12 +410,13 @@ class MessageController extends ApplicationController {
 							"title" => $msg->getSubject(),
 							"text" => $text,
 							"date" => $msg->getSentDate()->getTimestamp(),
-							"projectId" => $msg->getWorkspacesIdsCSV(),
-							"projectName" => $msg->getWorkspacesNamesCSV(),
-    						"workspaceColors" => $msg->getWorkspaceColorsCSV(),
+							"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+    						"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getAccount()->getOwner()->getId(),
 							"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
-							"tags" => project_object_tags($msg)
+							"tags" => project_object_tags($msg),
+							"isRead" => $msg->getIsRead()
 						);
 					} else if ($msg instanceof ProjectMessage){
 						$text = $msg->getText();
@@ -393,9 +432,9 @@ class MessageController extends ApplicationController {
 							"title" => $msg->getTitle(),
 							"text" => $text,
 							"date" => $msg->getUpdatedOn()->getTimestamp(),
-							"projectId" => $msg->getWorkspacesIdsCSV(),
-							"projectName" => $msg->getWorkspacesNamesCSV(),
-    						"workspaceColors" => $msg->getWorkspaceColorsCSV(),
+							"projectId" => $msg->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV()),
+							"projectName" => $msg->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV()),
+    						"workspaceColors" => $msg->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV()),
 							"userId" => $msg->getCreatedById(),
 							"userName" => $msg->getCreatedBy()->getDisplayName(),
 							"tags" => project_object_tags($msg)
@@ -442,7 +481,6 @@ class MessageController extends ApplicationController {
 		ajx_extra_data(array("title" => $message->getTitle(), 'icon'=>'ico-message'));
 		ajx_set_no_toolbar(true);
 
-//		$this->setSidebar(get_template_path('view_sidebar', 'message'));
 	} // view
 
 	/**
@@ -473,7 +511,7 @@ class MessageController extends ApplicationController {
 				}
 			}
 			if (empty($validWS)) {
-				flash_error(lang('no access permissions'));
+				flash_error(lang('must choose at least one workspace error'));
 				ajx_current("empty");
 				return;
 			}
@@ -493,7 +531,7 @@ class MessageController extends ApplicationController {
 				$message->save();
 				$message->subscribeUser(logged_user());
 				$message->setTagsFromCSV(array_var($message_data, 'tags'));
-				$message->removeFromAllWorkspaces();
+				$message->removeFromWorkspaces(logged_user()->getActiveProjectIdsCSV());
 				foreach ($validWS as $w) {
 					$message->addToWorkspace($w);
 				}
@@ -521,7 +559,7 @@ class MessageController extends ApplicationController {
 								$company_users = $c->getUsersOnProject($w);
 								if (is_array($company_users)) {
 									foreach ($company_users as $company_user) {
-										if (!isset($processedCompanies[$company_user->getId()])) {
+										if (!isset($processedUsers[$company_user->getId()])) {
 											$processedUsers[$company_user->getId()] = true;
 											if ((array_var($message_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($message_data, 'notify_user_' . $company_user->getId()))) {
 												$message->subscribeUser($company_user); // subscribe
@@ -540,7 +578,7 @@ class MessageController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success add message', $message->getTitle()));
-				ajx_current("start");
+				ajx_current("back");
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -631,7 +669,7 @@ class MessageController extends ApplicationController {
 					}
 				}
 				if (empty($validWS)) {
-					throw new Exception(lang('no access permissions'));
+					throw new Exception(lang('must choose at least one workspace error'));
 				}
 				foreach ($validWS as $w) {
 					$message->addToWorkspace($w);
@@ -645,7 +683,7 @@ class MessageController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
-				ajx_current("start");
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -654,52 +692,6 @@ class MessageController extends ApplicationController {
 			} // try
 		} // if
 	} // edit
-
-	/**
-	 * Update message options. This is execute only function and if we don't have
-	 * options in post it will redirect back to the message
-	 *
-	 * @param void
-	 * @return null
-	 */
-	function update_options() {
-		$message = ProjectMessages::findById(get_id());
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$message->canUpdateOptions(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$message_data = array_var($_POST, 'message');
-		if(is_array(array_var($_POST, 'message'))) {
-			try {
-				$message->setIsPrivate((boolean) array_var($message_data, 'is_private', $message->isPrivate()));
-				$message->setIsImportant((boolean) array_var($message_data, 'is_important', $message->getIsImportant()));
-				$message->setCommentsEnabled((boolean) array_var($message_data, 'comments_enabled', $message->getCommentsEnabled()));
-				$message->setAnonymousCommentsEnabled((boolean) array_var($message_data, 'anonymous_comments_enabled', $message->getAnonymousCommentsEnabled()));
-
-				DB::beginWork();
-				$message->save();				
-				$message->save_properties($message_data);
-				$ws = $message->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($message, $w, ApplicationLogs::ACTION_EDIT);
-				}
-				DB::commit();
-
-				flash_success(lang('success edit message', $message->getTitle()));
-			} catch(Exception $e) {
-				flash_error(lang('error update message options'), $message->getTitle());
-			} // try
-		} // if
-		$this->redirectToUrl($message->getViewUrl());
-	} // update_options
 
 	/**
 	 * Delete specific message
@@ -734,7 +726,7 @@ class MessageController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted message', $message->getTitle()));
-			ajx_current("start");
+			ajx_current("back");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete message'));
@@ -797,193 +789,6 @@ class MessageController extends ApplicationController {
 		} // if
 		$this->redirectToUrl($message->getViewUrl());
 	} // unsubscribe
-
-	// ---------------------------------------------------
-	//  Comments
-	// ---------------------------------------------------
-
-	/**
-	 * Add comment
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function add_comment() {
-		$message = ProjectMessages::findById(get_id());
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$message->canAddComment(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$comment = new MessageComment();
-		$comment_data = array_var($_POST, 'comment');
-		tpl_assign('message', $message);
-		tpl_assign('comment', $comment);
-		tpl_assign('comment_data', $comment_data);
-
-		if(is_array($comment_data)) {
-			$comment->setFromAttributes($comment_data);
-			$comment->setMessageId($message->getId());
-			if(!logged_user()->isMemberOfOwnerCompany()) $comment->setIsPrivate(false);
-
-			try {
-
-				DB::beginWork();
-				$comment->save();
-				
-				$comment->save_properties($comment_data);
-				$ws = $message->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_ADD);
-				}
-				DB::commit();
-
-				// Try to send notification but don't break
-				try {
-					Notifier::newMessageComment($comment);
-				} catch(Exception $e) {
-
-				} // try
-
-				flash_success(lang('success add comment'));
-				$this->redirectToUrl($message->getViewUrl());
-
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-				ajx_current("empty");
-			} // try
-
-		} // if
-
-	} // add_comment
-
-	/**
-	 * Edit specific comment
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function edit_comment() {
-		$this->setTemplate('add_comment');
-
-		$comment = MessageComments::findById(get_id());
-		if(!($comment instanceof MessageComment)) {
-			flash_error(lang('comment dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$message = $comment->getMessage();
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$comment->canEdit(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$comment_data = array_var($_POST, 'comment');
-		if(!is_array($comment_data)) {
-			$comment_data = array(
-          'text' => $comment->getText(),
-          'is_private' => $comment->isPrivate(),
-			); // array
-		} // if
-		tpl_assign('message', $message);
-		tpl_assign('comment', $comment);
-		tpl_assign('comment_data', $comment_data);
-
-		if(is_array(array_var($_POST, 'comment'))) {
-			$old_is_private = $comment->isPrivate();
-			$comment->setFromAttributes($comment_data);
-			$comment->setMessageId($message->getId());
-			if(!logged_user()->isMemberOfOwnerCompany()) $comment->setIsPrivate($old_is_private);
-
-			try {
-
-				DB::beginWork();
-				$comment->save();				
-				$comment->save_properties($comment_data);
-				$ws = $message->getWorkspaces();
-				foreach ($ws as $w) {
-					ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_EDIT);
-				}
-				DB::commit();
-
-				flash_success(lang('success edit comment'));
-				$this->redirectToUrl($message->getViewUrl());
-
-			} catch(Exception $e) {
-				DB::rollback();
-				flash_error($e->getMessage());
-				ajx_current("empty");
-			} // try
-		} // if
-
-	} // edit_comment
-
-	/**
-	 * Delete comment
-	 *
-	 * @access public
-	 * @param void
-	 * @return null
-	 */
-	function delete_comment() {
-		$comment = MessageComments::findById(get_id());
-		if(!($comment instanceof MessageComment)) {
-			flash_error(lang('comment dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		$message = $comment->getMessage();
-		if(!($message instanceof ProjectMessage)) {
-			flash_error(lang('message dnx'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		if(!$comment->canDelete(logged_user())) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		} // if
-
-		try {
-
-			DB::beginWork();
-			$comment->delete();
-			$ws = $message->getWorkspaces();
-			foreach ($ws as $w) {
-				ApplicationLogs::createLog($comment, $w, ApplicationLogs::ACTION_DELETE);
-			}
-			DB::commit();
-
-			flash_success(lang('success delete comment'));
-			$this->redirectToUrl($message->getViewUrl());
-
-		} catch(Exception $e) {
-			DB::rollback();
-			flash_error($e->getMessage());
-			ajx_current("empty");
-		} // try
-
-	} // delete_comment
 
 } // MessageController
 

@@ -23,7 +23,11 @@ Ext.extend(og.HtmlPanel, Ext.Panel, {
 				callback: function(options, success, response) {
 					this.load(response.responseText);
 				},
-				scope: this
+				scope: this,
+				headers: {
+					'Content-Length': '0'
+				},
+				params: ""
 			});
 		}
 	},

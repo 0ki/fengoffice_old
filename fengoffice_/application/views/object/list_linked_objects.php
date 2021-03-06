@@ -8,7 +8,7 @@ if ($linked_objects_object->isNew()){
 	<table style="width:100%;margin-left:2px;margin-right:3px">
 	<?php $counter = 0;
 	foreach ($linked_objects as $linked_object) {
-		if ($linked_object instanceof ProjectDataObject && $linked_object->isPrivate() && !logged_user()->isMemberOfOwnerCompany()) continue; 
+		if (!$linked_object instanceof ApplicationDataObject || $linked_object instanceof ProjectDataObject && $linked_object->isPrivate() && !logged_user()->isMemberOfOwnerCompany()) continue; 
 		$counter++;?>
 		<tr class="linkedObject<?php echo $counter % 2 ? 'even' : 'odd' ?>">
 		<td rowspan=2 style="padding-left:1px;vertical-align:middle;width:22px">

@@ -17,11 +17,7 @@ class TaskController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
 	/**
@@ -35,11 +31,18 @@ class TaskController extends ApplicationController {
 		$this->view_tasks();
 		$mc = new MilestoneController();
 		$mc->view_milestones();
-		ajx_content_property("current");
+		$task_templates = ProjectTasks::getProjectTasks(null, null, 'ASC', 0, 0, null, null, null, null, null, null,true);
+		$milestone_templates = ProjectMilestones::getProjectMilestones(null, null, 'ASC', null, null, null, null, null, true);
 		ajx_unset_current();
 		tpl_assign('assignedTo', array_var($_GET, "assigned_to", null));
-		tpl_assign('status', array_var($_GET, "status", null));
+		tpl_assign('status', array_var($_GET, "status", "pending"));
+		tpl_assign('priority', array_var($_GET, "priority", "all"));
+		tpl_assign('task_templates', $task_templates);
+		tpl_assign('milestone_templates', $milestone_templates);
+		ajx_extra_data(array("tasks" => null));
+		ajx_extra_data(array("milestones" => null));
 		ajx_set_no_toolbar(true);
+		ajx_replace(true);
 	} // index
 	
 	function view_tasks() {
@@ -49,10 +52,11 @@ class TaskController extends ApplicationController {
 		$project = Projects::findById($project_id);
 		$tag = active_tag();
 		$parent_id = array_var($_GET, 'parent_id');
-		$milestone_id = array_var($_GET, 'milestone_id');
+		$milestone_id = array_var($_GET, 'milestone_id', 0);
 		$assigned_by = array_var($_GET, 'assigned_by', '');
 		$assigned_to = array_var($_GET, 'assigned_to', '');
-		$status = array_var($_GET, 'status', null);
+		$status = array_var($_GET, 'status', "pending");
+		$priority = array_var($_GET, 'priority', "all");
 		
 		$assigned_to = explode(':', $assigned_to);
 		$to_company = array_var($assigned_to, 0, null);
@@ -64,7 +68,7 @@ class TaskController extends ApplicationController {
 		if ($parent_id == null) {
 			// if no parent task is sent, we get all tasks that satisfy the conditions,
 			// and show as root tasks those tasks whose parents don't satisfy the conditions 
-			$tasks = ProjectTasks::getProjectTasks($project, null, 'ASC', null, $milestone_id, $tag, $to_company, $to_user, $by_user, $status == 'pending');
+			$tasks = ProjectTasks::getProjectTasks($project, null, 'ASC', null, $milestone_id, $tag, $to_company, $to_user, $by_user, $status == 'pending', $priority);
 			$taskset = array();
 			foreach ($tasks as $t) {
 				$taskset[$t->getId()] = true;
@@ -99,7 +103,9 @@ class TaskController extends ApplicationController {
 
 		$ts = array();
 		foreach ($tasks_bottom_complete as $task) {
-			$ts[] = $this->task_item($task);
+			$taskItem = $this->task_item($task);
+			if ($milestone_id || $taskItem["milestone"] == 0)
+				$ts[] = $taskItem;
 		}
 		ajx_extra_data(array("tasks" => $ts));
 		
@@ -109,44 +115,28 @@ class TaskController extends ApplicationController {
 		tpl_assign('milestoneId', $milestone_id);
 	}
 	
-	private function task_item($task) {
+	private function task_item(ProjectTask $task) {
+		$isCurrentProject = active_project() instanceof Project && $task->getProject()->getId() == active_project()->getId();
+		
 		return array(
 			"id" => $task->getId(),
 			"title" => $task->getObjectName(),
 			"parent" => $task->getParentId(),
 			"milestone" => $task->getMilestoneId(),
 			"assignedTo" => $task->getAssignedTo()? $task->getAssignedToName():'',
-			"workspaces" => $task->getWorkspacesNamesCSV(),
-			"workspaceids" => $task->getWorkspacesIdsCSV(),
-			"workspacecolors" => $task->getWorkspaceColorsCSV(),
+			"workspaces" => ($isCurrentProject? '' : $task->getWorkspacesNamesCSV(logged_user()->getActiveProjectIdsCSV())),
+			"workspaceids" => ($isCurrentProject? '' : $task->getWorkspacesIdsCSV(logged_user()->getActiveProjectIdsCSV())),
+			"workspacecolors" => ($isCurrentProject? '' : $task->getWorkspaceColorsCSV(logged_user()->getActiveProjectIdsCSV())),
 			"completed" => $task->isCompleted(),
 			"completedBy" => $task->getCompletedByName(),
 			"isLate" => $task->isLate(),
 			"daysLate" => $task->getLateInDays(),
+			"priority" => $task->getPriority(),
+			"duedate" => $task->getDueDate(),
 			"order" => $task->getOrder()
 		);
 	}
-	
-	private function max_order($parentId = null, $milestoneId = null) {
-		$condition = "";
-		if (is_numeric($parentId)) {
-			if ($condition != "") $condition .= " AND ";
-			$condition .= " `parent_id` = " . DB::escape($parentId);
-		}
-		if (is_numeric($milestoneId)) {
-			if ($condition != "") $condition .= " AND ";
-			$condition .= " `milestone_id` = " . DB::escape($milestoneId);
-		}
-		$res = DB::execute("SELECT max(`order`) as `max` FROM `" . TABLE_PREFIX . "project_tasks` " .
-				($condition == "" ? "" : " WHERE " . $condition));
-		if ($res->numRows() < 1) {
-			return 0;
-		} else {
-			$row = $res->fetchRow();
-			return $row["max"] + 1;
-		}
-	}
-	
+		
 	function quick_add_task() {
 		ajx_current("empty");
 		$task = new ProjectTask();
@@ -166,7 +156,8 @@ class TaskController extends ApplicationController {
 		if (is_array($task_data)) {
 			$task->setFromAttributes($task_data);
 			$task->setProjectId($project->getId());
-			$task->setOrder($this->max_order(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
+			$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
+			$task->setPriority(ProjectTasks::PRIORITY_NORMAL);
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
@@ -286,15 +277,12 @@ class TaskController extends ApplicationController {
 			}
 		}*/
 		$this->addHelper('textile');
-		// Sidebar
-		/*tpl_assign('open_task_lists', $open);
-		tpl_assign('completed_task_lists', $comp);*/
 		ajx_extra_data(array("title" => $task_list->getTitle(), 'icon'=>'ico-task'));
 		ajx_set_no_toolbar(true);
-		$this->setSidebar(get_template_path('index_sidebar', 'task'));
 		$this->setTemplate('view_list');
 	} // view_task
 
+	
 	/**
 	 * Add new task
 	 *
@@ -317,7 +305,9 @@ class TaskController extends ApplicationController {
 				'milestone_id' => array_var($_GET, 'milestone_id'),
 				'title' => array_var($_GET, 'title', ''),
 				'assigned_to' => array_var($_GET, 'assigned_to', '0:0'),
-				'parent_id' => array_var($_GET, 'parent_id', 0)
+				'parent_id' => array_var($_GET, 'parent_id', 0),
+				'priority' => ProjectTasks::PRIORITY_NORMAL,
+				'is_template' => array_var($_GET, "is_template", false)
 			); // array
 		} // if
 
@@ -325,8 +315,12 @@ class TaskController extends ApplicationController {
 		tpl_assign('task', $task);
 
 		if (is_array(array_var($_POST, 'task'))) {
+			$proj = Projects::findById(array_var($task_data, 'project_id'));
+			if ($proj instanceof Project) {
+				$project = $proj;
+			}
 			// order
-			$task_data["order"] = $this->max_order(array_var($_GET, 'id', 0), 0);
+			$task->setOrder(ProjectTasks::maxOrder(array_var($task_data, "parent_id", 0), array_var($task_data, "milestone_id", 0)));
 			
 			if (array_var($_POST, 'use_due_date')) {
 				$task_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_due_date_month', 1), array_var($_POST, 'task_due_date_day', 1), array_var($_POST, 'task_due_date_year', 1970));
@@ -335,31 +329,27 @@ class TaskController extends ApplicationController {
 				$task_data['start_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'task_start_date_month', 1), array_var($_POST, 'task_start_date_day', 1), array_var($_POST, 'task_start_date_year', 1970));
 			}
 			$task->setFromAttributes($task_data);
+			
+			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
+				(array_var($task_data, 'time_estimate_minutes'));
+			$task->setTimeEstimate($totalMinutes);
+			
 			$task->setIsPrivate(false); // Not used, but defined as not null.
 			$task->setProjectId(array_var($task_data, 'project_id'));
 			// Set assigned to
 			$assigned_to = explode(':', array_var($task_data, 'assigned_to', ''));
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));
-			// project id and is private
-			$task->setProjectId($project->getId());
 			
 			if (array_var($_GET, 'id'))
 				$task->setParentId(array_var($_GET, 'id'));
 			
-			// Add tasks
-			$subtasks = array();
-			for ($i = 0; $i < 6; $i++) {
-				if(isset($task_data["task$i"]) && is_array($task_data["task$i"]) && (trim(array_var($task_data["task$i"], 'title')) <> '')) {
-					$assigned_to = explode(':', array_var($task_data["task$i"], 'assigned_to', ''));
-					$subtasks[] = array(
-						'title' => array_var($task_data["task$i"], 'title'),
-						'assigned_to_company_id' => array_var($assigned_to, 0, 0),
-						'assigned_to_user_id' => array_var($assigned_to, 1, 0)
-					); // array
-				} // if
-			} // for
-
+			if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
+				flash_error(lang('task child of child error'));
+				ajx_current("empty");
+				return;
+			}
+			
 			//Add handins
 			$handins = array();
 			for($i = 0; $i < 4; $i++) {
@@ -378,14 +368,6 @@ class TaskController extends ApplicationController {
 				$task->save();
 				//echo 'pepe'; DB::rollback(); die();
 				$task->setTagsFromCSV(array_var($task_data, 'tags'));
-
-				foreach($subtasks as $subtask_data) {
-					$subtask = new ProjectTask();
-					$subtask->setFromAttributes($subtask_data);
-					$subtask->setProjectId(array_var($subtask_data, 'project_id'));
-					$task->attachTask($subtask);
-					$subtask->save();
-				} // foreach
 					
 				foreach($handins as $handin_data) {
 					$handin = new ObjectHandin();
@@ -396,14 +378,71 @@ class TaskController extends ApplicationController {
 				} // foreach*/
 
 				$task->save_properties($task_data);
+				
+				if (array_var($_GET, 'copyId', 0) > 0) {
+					// copy remaining stuff from the task with id copyId
+					$toCopy = ProjectTasks::findById(array_var($_GET, 'copyId'));
+					if ($toCopy instanceof ProjectTask) {
+						ProjectTasks::copySubTasks($toCopy, $task, array_var($task_data, 'is_template', false));
+					}
+				}
+				
 				ApplicationLogs::createLog($task, $project, ApplicationLogs::ACTION_ADD);
 				//Link objects
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($task);
 				DB::commit();
+				
+				// notify email recipients
+				if (!$task->getIsTemplate()) {
+					try {
+						$notify_people = array();
+						$project_companies = array();
+						$processedCompanies = array();
+						$processedUsers = array();
+						$validWS = array($task->getProject());
+						foreach ($validWS as $w) {
+							$workspace_companies = $w->getCompanies();
+							foreach ($workspace_companies as $c) {
+								if (!isset($processedCompanies[$c->getId()])) {
+									$processedCompanies[$c->getId()] = true;
+									$company_users = $c->getUsersOnProject($w);
+									if (is_array($company_users)) {
+										foreach ($company_users as $company_user) {
+											if (!isset($processedUsers[$company_user->getId()])) {
+												$processedUsers[$company_user->getId()] = true;
+												if ((array_var($task_data, 'notify_company_' . $w->getId()) == 'checked') || (array_var($task_data, 'notify_user_' . $company_user->getId()))) {
+													//$task->subscribeUser($company_user); // subscribe
+													$notify_people[] = $company_user;
+												} // if
+											}
+										} // if
+									}
+								}
+							}
+						}
+		
+						Notifier::newTask($task, $notify_people); // send notification email...
+					} catch(Exception $e) {
+						evt_add("debug", $e->getMessage());
+					} // try
+				}
+				
+				// notify asignee
+				if(array_var($task_data, 'send_notification') == 'checked') {
+					try {
+						Notifier::taskAssigned($task);
+					} catch(Exception $e) {
+						evt_add("debug", $e->getMessage());
+					} // try
+				}
 
-				flash_success(lang('success add task list', $task->getTitle()));
-				ajx_current("start");
+				if ($task->getIsTemplate()) {
+					flash_success(lang('success add template', $task->getTitle()));
+				} else {
+					flash_success(lang('success add task list', $task->getTitle()));
+				}
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -412,6 +451,54 @@ class TaskController extends ApplicationController {
 			} // try
 		} // if
 	} // add_task
+	
+	/**
+	 * Copy task
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function copy_task() {
+		$project = active_or_personal_project();
+		if(!ProjectTask::canAdd(logged_user(), $project)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$id = get_id();
+		$task = ProjectTasks::findById($id);
+		if (!$task instanceof ProjectTask) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$task_data = array(
+			'milestone_id' => $task->getMilestoneId(),
+			'title' => $task->getIsTemplate() ? $task->getTitle() : lang("copy of", $task->getTitle()),
+			'assigned_to' => $task->getAssignedToCompanyId() . ":" . $task->getAssignedToUserId(),
+			'parent_id' => $task->getParentId(),
+			'priority' => $task->getPriority(),
+			'tags' => implode(",", $task->getTagNames()),
+			'project_id' => $task->getProjectId(),
+			'time_estimate' => $task->getTimeEstimate(),
+			'text' => $task->getText(),
+			'copyId' => $task->getId(),
+		); // array
+		if ($task->getStartDate() instanceof DateTimeValue) {
+			$task_data['start_date'] = $task->getStartDate()->getTimestamp();
+		}
+		if ($task->getDueDate() instanceof DateTimeValue) {
+			$task_data['due_date'] = $task->getDueDate()->getTimestamp();
+		}
+
+		$newtask = new ProjectTask();
+		tpl_assign('task_data', $task_data);
+		tpl_assign('task', $newtask);
+		tpl_assign('base_task', $task);
+		$this->setTemplate("add_task");
+	} // copy_task
 	
 	function move_down() {
 		ajx_current("empty");
@@ -480,7 +567,8 @@ class TaskController extends ApplicationController {
 				'parent_id' => $task->getParentId(),
 				'tags' => is_array($tag_names) && count($tag_names) ? implode(', ', $tag_names) : '',
 				'is_private' => $task->isPrivate(),
-				'assigned_to' => $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId()
+				'assigned_to' => $task->getAssignedToCompanyId() . ':' . $task->getAssignedToUserId(),
+				'priority' => $task->getPriority()
 			); // array
 			$handins = ObjectHandins::getAllHandinsByObject($task);
 			$id = 0;
@@ -500,6 +588,12 @@ class TaskController extends ApplicationController {
 		tpl_assign('task_data', $task_data);
 
 		if(is_array(array_var($_POST, 'task'))) {
+			$old_owner = $task->getAssignedTo();
+			if (array_var($task_data, 'parent_id') == $task->getId()) {
+				flash_error(lang("task own parent error"));
+				ajx_current("empty");
+				return;
+			}
 			$old_is_private = $task->isPrivate();
 			$old_project_id = $task->getProjectId();
 			if(array_var($_POST, 'use_start_date'))
@@ -516,6 +610,11 @@ class TaskController extends ApplicationController {
 			$task->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$task->setAssignedToUserId(array_var($assigned_to, 1, 0));
 			if(!logged_user()->isMemberOfOwnerCompany()) $task->setIsPrivate($old_is_private);
+			
+			$totalMinutes = (array_var($task_data, 'time_estimate_hours') * 60) +
+				(array_var($task_data, 'time_estimate_minutes'));
+			$task->setTimeEstimate($totalMinutes);
+			
 			//Add handins
 			$handins = array();
 			for($i = 0; $i < 4; $i++) {
@@ -528,6 +627,12 @@ class TaskController extends ApplicationController {
 					); // array
 				} // if
 			} // for
+			
+			if ($task->getParentId() > 0 && $task->hasChild($task->getParentId())) {
+				flash_error(lang('task child of child error'));
+				ajx_current("empty");
+				return;
+			}
 			try {
 				DB::beginWork();
 				if($task_data['project_id'] && $task_data['project_id'] != $old_project_id){
@@ -543,9 +648,28 @@ class TaskController extends ApplicationController {
 				ApplicationLogs::createLog($task, $task->getProject(), ApplicationLogs::ACTION_EDIT);
    
 				DB::commit();
+				
+				try {
+					$new_owner = $task->getAssignedTo();
+					if(array_var($task_data, 'send_notification') == 'checked') {
+						if($old_owner instanceof User) {
+							// We have a new owner and it is different than old owner
+							if($new_owner instanceof User && $new_owner->getId() <> $old_owner->getId()) {
+								Notifier::taskAssigned($task);
+							}
+						} else {
+							// We have new owner
+							if($new_owner instanceof User) {
+								Notifier::taskAssigned($task);
+							}
+						} // if
+					} // if
+				} catch(Exception $e) {
+
+				} // try
 
 				flash_success(lang('success edit task list', $task->getTitle()));
-				ajx_current("start");
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -578,12 +702,21 @@ class TaskController extends ApplicationController {
 
 		try {
 			DB::beginWork();
+			$is_template = $task->getIsTemplate();
 			$task->delete();
 			ApplicationLogs::createLog($task, $project, ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 
-			flash_success(lang('success delete task list', $task->getTitle()));
-			ajx_current('start');
+			if ($is_template) {
+				flash_success(lang('success delete template', $task->getTitle()));
+			} else {
+				flash_success(lang('success delete task list', $task->getTitle()));
+			}
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current('empty');
+			} else {
+				ajx_current('back');
+			}
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete task list'));
@@ -690,11 +823,10 @@ class TaskController extends ApplicationController {
 			flash_success(lang('success complete task'));
 			
 			$redirect_to = array_var($_GET, 'redirect_to', false);
-			if ($redirect_to) {
-				ajx_current("url", $redirect_to);
-			}
-			else {
-				ajx_current("url", $task->getObjectUrl());				
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current("empty");
+			} else {
+				ajx_current("reload");
 			}
 		} catch(Exception $e) {
 			DB::rollback();
@@ -743,12 +875,14 @@ class TaskController extends ApplicationController {
 			ajx_extra_data(array("openedTasks" => $opened_tasks));
 			
 			DB::commit();
-
+			
 			flash_success(lang('success open task'));
 			
 			$redirect_to = array_var($_GET, 'redirect_to', false);
-			if ($redirect_to) {
-				ajx_current("url", $redirect_to);
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current("empty");
+			} else {
+				ajx_current("reload");
 			}
 		} catch(Exception $e) {
 			DB::rollback();
@@ -826,6 +960,51 @@ class TaskController extends ApplicationController {
 		}
 		return $ret;
 	}
+	
+	
+	/**
+	 * Create a new template
+	 *
+	 */
+	function new_template() {
+		$project = active_or_personal_project();
+		if(!ProjectTask::canAdd(logged_user(), $project)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$id = get_id();
+		$task = ProjectTasks::findById($id);
+		if (!$task instanceof ProjectTask) {
+			$task_data = array('is_template' => true);
+		} else {
+			$task_data = array(
+				'milestone_id' => $task->getMilestoneId(),
+				'title' => $task->getTitle(),
+				'assigned_to' => $task->getAssignedToCompanyId() . ":" . $task->getAssignedToUserId(),
+				'parent_id' => $task->getParentId(),
+				'priority' => $task->getPriority(),
+				'tags' => implode(",", $task->getTagNames()),
+				'project_id' => $task->getProjectId(),
+				'time_estimate' => $task->getTimeEstimate(),
+				'text' => $task->getText(),
+				'is_template' => true,
+				'copyId' => $task->getId(),
+			); // array
+			if ($task->getStartDate() instanceof DateTimeValue) {
+				$task_data['start_date'] = $task->getStartDate()->getTimestamp();
+			}
+			if ($task->getDueDate() instanceof DateTimeValue) {
+				$task_data['due_date'] = $task->getDueDate()->getTimestamp();
+			}
+		}
+
+		$task = new ProjectTask();
+		tpl_assign('task_data', $task_data);
+		tpl_assign('task', $task);
+		$this->setTemplate("add_task");
+	} // new_template
 
 } // TaskController
 

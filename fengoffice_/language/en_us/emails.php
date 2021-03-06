@@ -1,33 +1,39 @@
 <?php
 
-  return array(
-  
-    // Titles
+return array(
+
+// Titles
     'new message' => 'New message',
     'new comment' => 'New comment',
     'your account created' => 'Your account has been created',
     'your password' => 'Your password',
     'milestone assigned to you' => 'Milestone has been assigned to you',
-    
-    // Interface
+    'task assigned to you' => 'Task has been assigned to you',
+
+// Interface
     'hi john doe' => 'Hi {0}',
-     
+ 
     'user password reseted' => 'Your password has been reset. New password is \'{0}\'.',
-    
+
     'dont reply wraning' => 'THIS IS SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
-    'new message posted' => 'New message "{0}" has been posted in "{1}" workspace',
+    'new message posted' => 'New message "{0}" has been posted.',
+    'new task' => 'New task',
+    'new task created' => 'New task "{0}" has been created in "{1}" workspace.',
     'view new message' => 'View that message',
-    
+    'view new task' => 'View that task',
+
     'new comment posted' => 'New comment on "{0}" has been posted',
     'view new comment' => 'View that comment',
-    
+
     'user created your account' => '{0} created new account for you',
     'visit and login' => 'Visit {0} and login with',
-    
+
     'milestone assigned' => 'Milestone "{0}" has been assigned to you',
+	'task assigned' => 'Task "{0}" has been assigned to you',
     'view assigned milestones' => 'View the milestone',
-    
-    'reply mail' => 'Reply',
+	'view assigned tasks' => 'View the task',
+
+    'reply mail' => 'Reply',  
     'write mail' => 'Write Mail',
     'mail to' => 'To',
     'mail account' => 'Account',
@@ -52,7 +58,15 @@
     'smtp password' => 'SMTP Password',
     'mail account smtp password description' => ' Password  for SMTP Server',
     'smtp port' => 'SMTP Server Port',
-    'mail account smtp port description' => ' This is the port in which the server listens to the SMTP Service. The default and most common value is 25.'
-  ); // array
+    'mail account smtp port description' => ' This is the port in which the server listens to the SMTP Service. The default and most common value is 25.',
+    'format plain' => 'Format as Plain Text',
+    'format html' => 'Format as HTML',
+    'mail options' => 'Options',
+    'forward mail' => 'Forward',
+    'reply to all mail' => 'Reply to All',
+    'switch format warn' => 'Switching to text will discard all HTML formatting. Continue?',
+    'success mark objects' => 'Mail updated',
+    'error mark email' => 'Error updating email state'
+    ); // array
 
-?>
+    ?>

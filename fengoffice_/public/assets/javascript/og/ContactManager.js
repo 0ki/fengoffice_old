@@ -3,67 +3,74 @@
  */
 og.ContactManager = function() {
 	var actions;
-	this.doNotDestroy = true;
-	this.active = true;
+	this.viewType = "all";
+	this.doNotRemove = true;
+	this.needRefresh = false;
 	
-	this.store = new Ext.data.Store({
-        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-            url: og.getUrl('contact', 'list_all', {ajax:true})
-        })),
-        reader: new Ext.data.JsonReader({
-            root: 'contacts',
-            totalProperty: 'totalCount',
-            id: 'id',
-            fields: [
-                'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'role', 'tags',
-                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
-                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone'
-            ]
-        }),
-        remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("contacts"), ws, tag));
+	if (!og.ContactManager.store) {
+		og.ContactManager.store = new Ext.data.Store({
+	        proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+	            url: og.getUrl('contact', 'list_all', {ajax:true})
+	        })),
+	        reader: new Ext.data.JsonReader({
+	            root: 'contacts',
+	            totalProperty: 'totalCount',
+	            id: 'id',
+	            fields: [
+	                'object_id', 'type', 'name', 'companyId', 'companyName', 'email', 'website', 'jobTitle', 'createdBy', 'createdById', 'role', 'tags',
+	                'department', 'email2', 'email3', 'workWebsite', 'workAddress', 'workPhone1', 'workPhone2', 
+	                'homeWebsite', 'homeAddress', 'homePhone1', 'homePhone2', 'mobilePhone'
+	            ]
+	        }),
+	        remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("contacts"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("contacts"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("contacts"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-    });
-    this.store.setDefaultSort('name', 'asc');
-    this.store.manager = this;
+	    });
+	    og.ContactManager.store.setDefaultSort('name', 'asc');
+	}
+	this.store = og.ContactManager.store;
+	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
     
     //--------------------------------------------
     // Renderers
     //--------------------------------------------
 
     function renderContactName(value, p, r) {
-    	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', value, og.getUrl('contact', 'card', {id: r.id}));
+		if (r.data.type == 'company')
+			name = String.format(
+					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('company', 'view_client', {id: r.data.object_id}), String.format(r.data.name));
+		else
+			name = String.format(
+					'<a style="font-size:120%" href="#" onclick="og.openLink(\'{1}\')" title="{2}">{0}</a>',
+					value, og.getUrl('contact', 'card', {id: r.data.object_id}), String.format(r.data.name));
+		return name;
     }
     function renderCompany(value, p, r) {
     	return String.format('<a href="#" onclick="og.openLink(\'{1}\', null)">{0}</a>', value, og.getUrl('company', 'card', {id: r.data.companyId}));
@@ -82,15 +89,35 @@ og.ContactManager = function() {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].id;
+				ret += "," + selections[i].data.object_id;
+//				ret += "," + selections[i].id;
 			}	
 			return ret.substring(1);
 		}
 	}
 	
+	function getSelectedTypes() {
+		var selections = sm.getSelections();
+		if (selections.length <= 0) {
+			return '';
+		} else {
+			var ret = '';
+			for (var i=0; i < selections.length; i++) {
+				ret += "," + selections[i].data.type;
+			}	
+			return ret.substring(1);
+		}
+	}
+	
+	function getFirstSelectedType() {
+		if (sm.hasSelection()) {
+			return sm.getSelected().data.type;
+		}
+		return '';
+	}
 	function getFirstSelectedId() {
 		if (sm.hasSelection()) {
-			return sm.getSelected().id;
+			return sm.getSelected().data.object_id;
 		}
 		return '';
 	}
@@ -105,7 +132,8 @@ og.ContactManager = function() {
 				actions.assignContact.setDisabled(true);
 			} else {
 				actions.editContact.setDisabled(sm.getCount() != 1);
-				actions.assignContact.setDisabled(sm.getCount() != 1);
+				if(getFirstSelectedType() == 'contact')
+					actions.assignContact.setDisabled(sm.getCount() != 1);
 				actions.tag.setDisabled(false);
 				actions.delContact.setDisabled(false);
 			}
@@ -117,49 +145,42 @@ og.ContactManager = function() {
 			header: lang("name"),
 			dataIndex: 'name',
 			width: 120,
-			sortable: false,
 			renderer: renderContactName
         },
 		{
 			id: 'role',
 			header: lang("role"),
 			dataIndex: 'role',
-			sortable: false,
 			width: 120
         },{
 			id: 'company',
 			header: lang("company"),
 			dataIndex: 'companyName',
 			width: 120,
-			sortable: false,
 			renderer: renderCompany
         },{
 			id: 'email',
 			header: lang("email"),
 			dataIndex: 'email',
 			width: 120,
-			sortable: false,
 			renderer: renderEmail
 		},{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
-			width: 120,
-			sortable: false
+			width: 120
         },{
 			id: 'department',
 			header: lang("department"),
 			dataIndex: 'department',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'email2',
 			header: lang("email2"),
 			dataIndex: 'email2',
 			width: 120,
 			hidden: true,
-			sortable: false,
 			renderer: renderEmail
         },{
 			id: 'email3',
@@ -167,7 +188,6 @@ og.ContactManager = function() {
 			dataIndex: 'email3',
 			width: 120,
 			hidden: true,
-			sortable: false,
 			renderer: renderEmail
         },{
 			id: 'workWebsite',
@@ -175,77 +195,102 @@ og.ContactManager = function() {
 			dataIndex: 'workWebsite',
 			width: 120,
 			hidden: true,
-			sortable: false,
 			renderer: renderWebsite
         },{
 			id: 'workPhone1',
 			header: lang("workPhone1"),
 			dataIndex: 'workPhone1',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'workPhone2',
 			header: lang("workPhone2"),
 			dataIndex: 'workPhone2',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'workAddress',
 			header: lang("workAddress"),
 			dataIndex: 'workAddress',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'homeWebsite',
 			header: lang("homeWebsite"),
 			dataIndex: 'homeWebsite',
 			width: 120,
 			hidden: true,
-			sortable: false,
 			renderer: renderWebsite
         },{
 			id: 'homePhone1',
 			header: lang("homePhone1"),
 			dataIndex: 'homePhone1',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'homePhone2',
 			header: lang("homePhone2"),
 			dataIndex: 'homePhone2',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'homeAddress',
 			header: lang("homeAddress"),
 			dataIndex: 'homeAddress',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'mobilePhone',
 			header: lang("mobilePhone"),
 			dataIndex: 'mobilePhone',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         }]);
-    cm.defaultSortable = true;
-	
+    cm.defaultSortable = false;
+
+	viewActions = {
+			all: new Ext.Action({
+				text: lang('view all'),
+				handler: function() {
+					this.viewType = "all";
+					this.load();
+				},
+				scope: this
+			}),
+			contacts: new Ext.Action({
+				text: lang('contacts'),
+				iconCls: "ico-contacts",
+				handler: function() {
+					this.viewType = "contacts";
+					this.load();
+				},
+				scope: this
+			}),
+			companies: new Ext.Action({
+				text: lang('companies'),
+				iconCls: "ico-company",
+				handler: function() {
+					this.viewType = "companies";
+					this.load();
+				},
+				scope: this
+			})
+	}	
 	actions = {
 		newContact: new Ext.Action({
 			text: lang('new'),
-            tooltip: lang('add new contact'),
-            iconCls: 'ico-contact',
-            handler: function() {
-				var url = og.getUrl('contact', 'add');
-				og.openLink(url, null);
-			}
+            tooltip: lang('create contact or client company'),
+            iconCls: 'ico-new',
+			menu: {items: [
+				{text: lang('contact'), iconCls: 'ico-contact', handler: function() {
+					var url = og.getUrl('contact', 'add');
+					og.openLink(url);
+				}},
+				{text: lang('company'), iconCls: 'ico-company', handler: function() {
+					var url = og.getUrl('company', 'add_client');
+					og.openLink(url);
+				}}
+			]}
 		}),
 		delContact: new Ext.Action({
 			text: lang('delete'),
@@ -256,7 +301,8 @@ og.ContactManager = function() {
 				if (confirm(lang('confirm delete contacts'))) {
 					this.load({
 						action: 'delete',
-						contacts: getSelectedIds()
+						ids: getSelectedIds(),
+						types: getSelectedTypes()
 					});
 				}
 			},
@@ -268,7 +314,11 @@ og.ContactManager = function() {
             iconCls: 'ico-new',
 			disabled: true,
 			handler: function() {
-				var url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
+				var url = '';
+				if (getFirstSelectedType() == 'contact')
+					url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
+				else
+					url = og.getUrl('company', 'edit_client', {id:getFirstSelectedId()});
 				og.openLink(url, null);
 			},
 			scope: this
@@ -289,9 +339,20 @@ og.ContactManager = function() {
             tooltip: lang('refresh desc'),
             iconCls: 'ico-refresh',
 			handler: function() {
-				this.store.reload();
+				og.ContactManager.store.reload();
 			},
 			scope: this
+		}),
+		view: new Ext.Action({
+			text: lang('view'),
+            iconCls: 'ico-view_options',
+			disabled: false,
+			menu: {items: [
+				viewActions.all,
+				'-',
+				viewActions.contacts,
+				viewActions.companies
+			]}
 		}),
 		tag: new Ext.Action({
 			text: lang('tag'),
@@ -304,7 +365,8 @@ og.ContactManager = function() {
 						fn: function(tag) {
 							this.load({
 								action: 'tag',
-								contacts: getSelectedIds(),
+								ids: getSelectedIds(),
+								types: getSelectedTypes(),
 								tagTag: tag
 							});
 						},
@@ -321,7 +383,6 @@ og.ContactManager = function() {
         cm: cm,
         closable: true,
 		stripeRows: true,
-        loadMask: true,
 		style: "padding:7px;",
         bbar: new Ext.PagingToolbar({
             pageSize: og.pageSize,
@@ -341,6 +402,7 @@ og.ContactManager = function() {
 			actions.delContact,
 			actions.editContact,
 			actions.assignContact,
+			actions.view,
 			'-',
 			actions.refresh
         ],
@@ -361,9 +423,13 @@ og.ContactManager = function() {
 		}
     });
 
-	og.eventManager.addListener("tag changed", function(tag) {
-		if (this.active) {
-			this.load({start: 0});
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
@@ -377,10 +443,15 @@ og.ContactManager = function() {
 
 Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	load: function(params) {
-		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
 		if (!params) params = {};
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		Ext.apply(this.store.baseParams, {
 			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			view_type: this.viewType,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
 		this.store.load({
@@ -393,14 +464,9 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -408,9 +474,4 @@ Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	}
 });
 
-og.ContactManager.getInstance = function() {
-	if (!og.ContactManager.instance) {
-		og.ContactManager.instance = new og.ContactManager();
-	}
-	return og.ContactManager.instance;
-}
+Ext.reg("contacts", og.ContactManager);

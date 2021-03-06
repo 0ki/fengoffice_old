@@ -23,13 +23,13 @@ class MilestoneController extends ApplicationController {
 	} // __construct
 	
 	function view_milestones() {
-		ajx_content_property("content");
+		ajx_current("empty");
 		$project_id = array_var($_GET, 'active_project', 0);
 		$project = Projects::findById($project_id);
 		$tag = active_tag();
 		$assigned_by = array_var($_GET, 'assigned_by', '');
 		$assigned_to = array_var($_GET, 'assigned_to', '');
-		$status = array_var($_GET, 'status', null);
+		$status = array_var($_GET, 'status', "pending");
 		
 		$assigned_to = explode(':', $assigned_to);
 		$to_company = array_var($assigned_to, 0, null);
@@ -41,16 +41,21 @@ class MilestoneController extends ApplicationController {
 		$milestones = ProjectMilestones::getProjectMilestones($project, null, 'ASC', $tag, $to_company, $to_user, $by_user, $status == 'pending');
 
 		$milestones_bottom_complete = array();
+		$ms = array();
 		foreach ($milestones as $milestone) {
 			if (!$milestone->isCompleted()) {
 				$milestones_bottom_complete[] = $milestone;
+				$ms[] = $this->milestone_item($milestone);
 			}
 		}
 		foreach ($milestones as $milestone) {
 			if ($milestone->isCompleted()) {
 				$milestones_bottom_complete[] = $milestone;
+				$ms[] = $this->milestone_item($milestone);
 			}
 		}
+		
+		ajx_extra_data(array("milestones" => $ms));
 		
 		tpl_assign('milestones', $milestones_bottom_complete);
 		tpl_assign('project', $project);
@@ -83,23 +88,27 @@ class MilestoneController extends ApplicationController {
 				ApplicationLogs::createLog($milestone, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
-				ajx_extra_data(array("milestone" => array(
-					"id" => $milestone->getId(),
-					"title" => $milestone->getName(),
-					"assignedTo" => $milestone->getAssignedToName(),
-					"workspaces" => $milestone->getProject()->getName(),
-					"completed" => $milestone->isCompleted(),
-					"completedBy" => $milestone->getCompletedByName(),
-					"isLate" => $milestone->isLate(),
-					"daysLate" => $milestone->getLateInDays(),
-					"duedate" => $milestone->getDueDate()->getTimestamp()
-				)));
+				ajx_extra_data(array("milestone" => $this->milestone_item($milestone)));
 				flash_success(lang('success add milestone', $milestone->getName()));
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error($e->getMessage());
 			} // try
 		} // if
+	}
+	
+	private function milestone_item(ProjectMilestone $milestone) {
+		return array(
+			"id" => $milestone->getId(),
+			"title" => $milestone->getName(),
+			"assignedTo" => $milestone->getAssignedToName(),
+			"workspaces" => $milestone->getProject()->getName(),
+			"completed" => $milestone->isCompleted(),
+			"completedBy" => $milestone->getCompletedByName(),
+			"isLate" => $milestone->isLate(),
+			"daysLate" => $milestone->getLateInDays(),
+			"duedate" => $milestone->getDueDate()->getTimestamp()
+		);
 	}
 	
 //
@@ -119,7 +128,6 @@ class MilestoneController extends ApplicationController {
 //		tpl_assign('upcoming_milestones', $project->getUpcomingMilestones());
 //		tpl_assign('completed_milestones', $project->getCompletedMilestones());
 //
-//		$this->setSidebar(get_template_path('index_sidebar', 'milestone'));
 //	} // index
 
 	/**
@@ -173,7 +181,8 @@ class MilestoneController extends ApplicationController {
 			$milestone_data = array(
 				'due_date' => $due_date,
 				'name' => array_var($_GET, 'name', ''),
-				'assigned_to' => array_var($_GET, 'assigned_to', '0:0')
+				'assigned_to' => array_var($_GET, 'assigned_to', '0:0'),
+				'is_template' => array_var($_GET, "is_template", false)
 			); // array
 		} // if
 		$milestone = new ProjectMilestone();
@@ -200,6 +209,14 @@ class MilestoneController extends ApplicationController {
 			    $object_controller = new ObjectController();
 			    $object_controller->link_to_new_object($milestone);
 
+				if (array_var($_GET, 'copyId', 0) > 0) {
+					// copy remaining stuff from the milestone with id copyId
+					$toCopy = ProjectMilestones::findById(array_var($_GET, 'copyId'));
+					if ($toCopy instanceof ProjectMilestone) {
+						ProjectMilestones::copyTasks($toCopy, $milestone, array_var($milestone_data, 'is_template', false));
+					}
+				}
+			    
 				DB::commit();
 				
 				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_ADD);
@@ -207,15 +224,19 @@ class MilestoneController extends ApplicationController {
 
 				// Send notification
 				try {
-					if(array_var($milestone_data, 'send_notification') == 'checked') {
+					if(!$milestone->getIsTemplate() && array_var($milestone_data, 'send_notification') == 'checked') {
 						Notifier::milestoneAssigned($milestone); // send notification
 					} // if
 				} catch(Exception $e) {
 
 				} // try
 
-				flash_success(lang('success add milestone', $milestone->getName()));
-				ajx_current("start");
+				if ($milestone->getIsTemplate()) {
+					flash_success(lang('success add template', $milestone->getName()));
+				} else {
+					flash_success(lang('success add milestone', $milestone->getName()));
+				}
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -303,7 +324,7 @@ class MilestoneController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success edit milestone', $milestone->getName()));
-				ajx_current("start");
+				ajx_current("back");
 
 			} catch(Exception $e) {
 				DB::rollback();
@@ -335,12 +356,27 @@ class MilestoneController extends ApplicationController {
 
 		try {
 			DB::beginWork();
+			$is_template = $milestone->getIsTemplate();
+			if ($is_template) {
+				$tasks = $milestone->getTasks();
+				foreach ($tasks as $t) {
+					$t->delete();
+				}
+			}
 			$milestone->delete();
 			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_DELETE);
 			DB::commit();
 
-			flash_success(lang('success deleted milestone', $milestone->getName()));
-			ajx_current("start");
+			if ($is_template) {
+				flash_success(lang('success delete template', $milestone->getName()));
+			} else {
+				flash_success(lang('success deleted milestone', $milestone->getName()));
+			}
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current('empty');
+			} else {
+				ajx_current('back');
+			}
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete milestone'));
@@ -378,6 +414,12 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success complete milestone', $milestone->getName()));
+			$redirect_to = array_var($_GET, 'redirect_to', false);
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current("empty");
+			} else {
+				ajx_current("reload");
+			}
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error complete milestone'));
@@ -416,7 +458,12 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success open milestone', $milestone->getName()));
-
+			$redirect_to = array_var($_GET, 'redirect_to', false);
+			if (array_var($_GET, 'quick', false)) {
+				ajx_current("empty");
+			} else {
+				ajx_current("reload");
+			}
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error open milestone'));
@@ -424,6 +471,85 @@ class MilestoneController extends ApplicationController {
 
 	} // open
 
+	/**
+	 * Copy milestone
+	 *
+	 * @access public
+	 * @param void
+	 * @return null
+	 */
+	function copy_milestone() {
+		$project = active_or_personal_project();
+		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$id = get_id();
+		$milestone = ProjectMilestones::findById($id);
+		if (!$milestone instanceof ProjectMilestone) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$milestone_data = array(
+			'name' => $milestone->getIsTemplate() ? $milestone->getName() : lang("copy of", $milestone->getName()),
+			'assigned_to' => $milestone->getAssignedToCompanyId() . ":" . $milestone->getAssignedToUserId(),
+			'tags' => implode(",", $milestone->getTagNames()),
+			'project_id' => $milestone->getProjectId(),
+			'description' => $milestone->getDescription(),
+			'copyId' => $milestone->getId(),
+		); // array
+		if ($milestone->getDueDate() instanceof DateTimeValue) {
+			$milestone_data['due_date'] = $milestone->getDueDate()->getTimestamp();
+		}
+
+		$newmilestone = new ProjectMilestone();
+		tpl_assign('milestone_data', $milestone_data);
+		tpl_assign('milestone', $newmilestone);
+		tpl_assign('base_milestone', $milestone);
+		$this->setTemplate("add_milestone");
+	} // copy_milestone
+	
+		
+	/**
+	 * Create a new milestone template
+	 *
+	 */
+	function new_template() {
+		$project = active_or_personal_project();
+		if(!ProjectMilestone::canAdd(logged_user(), $project)) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+		
+		$id = get_id();
+		$milestone = ProjectMilestones::findById($id);
+		if (!$milestone instanceof ProjectMilestone) {
+			$milestone_data = array('is_template' => true);
+		} else {
+			$milestone_data = array(
+				'name' => $milestone->getName(),
+				'assigned_to' => $milestone->getAssignedToCompanyId() . ":" . $milestone->getAssignedToUserId(),
+				'tags' => implode(",", $milestone->getTagNames()),
+				'project_id' => $milestone->getProjectId(),
+				'description' => $milestone->getDescription(),
+				'copyId' => $milestone->getId(),
+				'is_template' => true,
+			); // array
+			if ($milestone->getDueDate() instanceof DateTimeValue) {
+				$milestone_data['due_date'] = $milestone->getDueDate()->getTimestamp();
+			}
+		}
+
+		$milestone = new ProjectMilestone();
+		tpl_assign('milestone_data', $milestone_data);
+		tpl_assign('milestone', $milestone);
+		$this->setTemplate("add_milestone");
+	} // new_template
+	
 } // MilestoneController
 
 ?>

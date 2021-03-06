@@ -144,7 +144,7 @@ class ProjectEvent extends BaseProjectEvent {
 
 	
 	function getViewUrl() {
-		return get_url('event', 'viewdate', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+		return get_url('event', 'viewevent', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
 	}
 	
 	

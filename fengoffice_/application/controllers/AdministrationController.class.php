@@ -46,6 +46,7 @@ class AdministrationController extends ApplicationController {
 	 */
 	function company() {
 		tpl_assign('company', owner_company());
+		ajx_set_no_toolbar(true);
 		$this->setTemplate(get_template_path('view_company', 'company'));
 	} // company
 
@@ -187,10 +188,10 @@ class AdministrationController extends ApplicationController {
 				} else {
 					flash_error(lang('error test mail settings'));
 				} // if
-
-				$this->redirectToUrl($tool->getToolUrl());
+				ajx_current("back");
 			} catch(Exception $e) {
-				tpl_assign('error', $e);
+				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 		} // if
 	} // tool_test_email
@@ -252,10 +253,10 @@ class AdministrationController extends ApplicationController {
 				} else {
 					flash_error(lang('error massmail'));
 				} // if
-
-				$this->redirectToUrl($tool->getToolUrl());
+				ajx_current("back");
 			} catch(Exception $e) {
-				tpl_assign('error', $e);
+				flash_error($e->getMessage());
+				ajx_current("empty");
 			} // try
 		} // if
 	} // tool_mass_mailer

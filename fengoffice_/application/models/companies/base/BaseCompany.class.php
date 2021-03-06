@@ -5,7 +5,7 @@
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
   */
-  abstract class BaseCompany extends ApplicationDataObject {
+  abstract class BaseCompany extends ProjectDataObject {
   
     // -------------------------------------------------------
     //  Access methods

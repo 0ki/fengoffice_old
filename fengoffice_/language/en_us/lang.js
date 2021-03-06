@@ -1,5 +1,8 @@
 locale = "en_us";
 _lang = {
+	"check in": "<b>Check in</b>",
+	"cannot check in": "Cannot check in",
+	"add as new revision to": "Add as new revision to",
 	"error loading content": "Error loading content. Try again later.\nIf the problem persists contact the administrator.",
 	"projects": "Workspaces",
 	"administration": "Administration",
@@ -12,10 +15,12 @@ _lang = {
 	"menu": "Menu",
 	"back": "Back",
 	"server could not be reached": "Server could not be reached",
+	"http error": "Error {0}: {1}",
 	"refesh desc": "Refresh the view",
 	"last updated by at": "{0}, at {1}", 
 	"last updated by on": "{0}, on {1}", 
 	"last updated by": "Last updated by",
+	"close this tag" : "Close this tag",
 
 	/* file manager */
 	"by": "by",
@@ -66,6 +71,7 @@ _lang = {
 	"templates": "Templates",
 	"edit workspace": "Edit the selected workspace",
 	"company": "Company",
+	"companies": "Companies",
 	"email": "E-mail",
 	"checkin": "Check in",
 	"checkout": "Check out",
@@ -201,7 +207,7 @@ _lang = {
 	'undo checkout description': 'Make this file available',
 	'checkin description': 'Check in new version of this file',
 	
-	'existing filename info': '{0}, created by {1} on {2}',
+	'created by on': 'Created by {0} on {1}',
 	
 	/*  */
 	'write' : 'Write',
@@ -276,5 +282,11 @@ _lang = {
 	'new task': 'New task',
 	'error adding task': 'Error adding task',
 	'error adding milestone': 'Error adding milestone',
-	'error fetching tasks': 'Error fetching tasks'
+	'error fetching tasks': 'Error fetching tasks',
+	
+	'confirm unload page': 'You have unsaved data. If you leave the page you will lose any unsaved data.',
+	'confirm leave panel': 'You have unsaved data. If you proceed you will lose any unsaved data.\nProceed?',
+	'unread emails': 'Unread emails',
+	'mark read': 'Mark as read',
+	'mark unread': 'Mark as unread'
 }

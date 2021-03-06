@@ -1,67 +1,65 @@
 /**
- *  Overview
+ *  OverviewManager
  *
  */
-og.Overview = function() {
+og.OverviewManager = function() {
 
 	var actions, moreActions;
 
-	this.doNotDestroy = true;
-	this.active = true;
+	this.doNotRemove = true;
+	this.needRefresh = false;
 
-	this.store = new Ext.data.Store({
-		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
-			method: 'GET',
-			url: og.getUrl('object', 'list_objects', {ajax: true})
-		})),
-		reader: new Ext.data.JsonReader({
-			root: 'objects',
-			totalProperty: 'totalCount',
-			id: 'id',
-			fields: [
-				'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
-				{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
-				'updatedBy', 'updatedById',
-				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-				'icon', 'project', 'projectId', 'manager', 'mimeType', 'url'
-			]
-		}),
-		remoteSort: true,
-		listeners: {
-			'load': function() {
-				if (this.getTotalCount() <= og.pageSize) {
-					this.remoteSort = false;
-				} else {
-					this.remoteSort = true;
-				}
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-				var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
-				var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
-				if (d.totalCount == 0) {
-					if (tag) {
-						this.manager.showMessage(lang("no objects with tag message", lang("objects"), ws, tag));
+	if (!og.OverviewManager.store) {
+		og.OverviewManager.store = new Ext.data.Store({
+			proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
+				method: 'GET',
+				url: og.getUrl('object', 'list_objects', {ajax: true})
+			})),
+			reader: new Ext.data.JsonReader({
+				root: 'objects',
+				totalProperty: 'totalCount',
+				id: 'id',
+				fields: [
+					'name', 'object_id', 'type', 'tags', 'createdBy', 'createdById',
+					{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
+					'updatedBy', 'updatedById',
+					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
+					'icon', 'project', 'projectId', 'manager', 'mimeType', 'url'
+				]
+			}),
+			remoteSort: true,
+			listeners: {
+				'load': function() {
+					var d = this.reader.jsonData;
+					og.processResponse(d);
+					var ws = Ext.getCmp('workspace-panel').getActiveWorkspace().name;
+					var tag = Ext.getCmp('tag-panel').getSelectedTag().name;
+					if (d.totalCount == 0) {
+						if (tag) {
+							this.fireEvent('messageToShow', lang("no objects with tag message", lang("objects"), ws, tag));
+						} else {
+							this.fireEvent('messageToShow', lang("no objects message", lang("objects"), ws));
+						}
 					} else {
-						this.manager.showMessage(lang("no objects message", lang("objects"), ws));
+						this.fireEvent('messageToShow', "");
 					}
-				} else {
-					this.manager.showMessage("");
+					og.hideLoading();
+				},
+				'beforeload': function() {
+					og.loading();
+					return true;
+				},
+				'loadexception': function() {
+					og.hideLoading();
+					var d = this.reader.jsonData;
+					og.processResponse(d);
 				}
-				og.hideLoading();
-			},
-			'beforeload': function() {
-				og.loading();
-				return true;
-			},
-			'loadexception': function() {
-				og.hideLoading();
-				var d = this.reader.jsonData;
-				og.processResponse(d);
 			}
-		}
-	});
-	this.store.setDefaultSort('dateUpdated', 'desc');
-	this.store.manager = this;
+		});
+		og.OverviewManager.store.setDefaultSort('dateUpdated', 'desc');
+	}
+	this.store = og.OverviewManager.store;
+	this.store.addListener({messageToShow: {fn: this.showMessage, scope: this}});
 
 	function renderName(value, p, r) {
 		var tabpanel = '';
@@ -187,7 +185,6 @@ og.Overview = function() {
         	dataIndex: 'icon',
         	width: 28,
         	renderer: renderIcon,
-        	sortable: false,
         	fixed:true,
         	resizable: false,
         	hideable:false,
@@ -198,7 +195,6 @@ og.Overview = function() {
 			dataIndex: 'type',
 			width: 80,
         	renderer: renderType,
-        	sortable: false,
         	fixed:false,
         	resizable: true,
         	hideable:true,
@@ -208,35 +204,30 @@ og.Overview = function() {
 			header: lang("name"),
 			dataIndex: 'name',
 			//width: 300,
-			sortable: false,
 			renderer: renderName
         },{
 			id: 'project',
 			header: lang("project"),
 			dataIndex: 'project',
 			width: 120,
-			renderer: renderProject,
-			sortable: false
+			renderer: renderProject
         },{
         	id: 'user',
         	header: lang('user'),
         	dataIndex: 'updatedBy',
         	width: 120,
-        	renderer: renderUser,
-        	sortable: false
+        	renderer: renderUser
         },{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120,
-			hidden: true,
-			sortable: false
+			hidden: true
         },{
 			id: 'last',
 			header: lang("last update"),
 			dataIndex: 'dateUpdated',
 			width: 80,
-			sortable: false,
 			renderer: renderDate
         },{
 			id: 'created',
@@ -244,7 +235,6 @@ og.Overview = function() {
 			dataIndex: 'dateCreated',
 			width: 80,
 			hidden: true,
-			sortable: false,
 			renderer: renderDate
 		},{
 			id: 'author',
@@ -252,10 +242,9 @@ og.Overview = function() {
 			dataIndex: 'createdBy',
 			width: 120,
 			renderer: renderAuthor,
-			sortable: false,
 			hidden: true
 		}]);
-	cm.defaultSortable = true;
+	cm.defaultSortable = false;
 
 	moreActions = {
 		download: new Ext.Action({
@@ -399,17 +388,15 @@ og.Overview = function() {
 		})
     };
     
-	og.Overview.superclass.constructor.call(this, {
+	og.OverviewManager.superclass.constructor.call(this, {
 		//enableDragDrop: true, //(breaks the checkbox selection)
 		ddGroup : 'WorkspaceDD',
 		store: this.store,
 		layout: 'fit',
 		autoExpandColumn: 'name',
 		cm: cm,
-		id: 'Overview-panel',
 		stripeRows: true,
 		closable: true,
-		loadMask: true,
 		style: "padding:7px;",
 		bbar: new Ext.PagingToolbar({
 			pageSize: og.pageSize,
@@ -450,27 +437,27 @@ og.Overview = function() {
 		}
 	});
 
-	og.eventManager.addListener("tag changed", function(tag) {
-		if (this.active) {
-			this.load({start: 0});
+	var tagevid = og.eventManager.addListener("tag changed", function(tag) {
+		if (!this.ownerCt) {
+			og.eventManager.removeListener(tagevid);
+			return;
+		}
+		if (this.ownerCt.active) {
+			this.load({start:0});
 		} else {
     		this.needRefresh = true;
     	}
 	}, this);
-	og.eventManager.addListener("workspace changed", function(ws) {
-		//if (this.store.lastOptions) {
-		//	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
-		//}
-	}, this);
-	
-	//this.load();
-	//cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 };
 
-Ext.extend(og.Overview, Ext.grid.GridPanel, {
+Ext.extend(og.OverviewManager, Ext.grid.GridPanel, {
 	load: function(params) {
-		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
 		if (!params) params = {};
+		if (typeof params.start == 'undefined') {
+			var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		} else {
+			var start = 0;
+		}
 		Ext.apply(this.store.baseParams, {
 			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
@@ -485,14 +472,9 @@ Ext.extend(og.Overview, Ext.grid.GridPanel, {
 	},
 	
 	activate: function() {
-		this.active = true;
 		if (this.needRefresh) {
 			this.load({start: 0});
 		}
-	},
-	
-	deactivate: function() {
-		this.active = false;
 	},
 	
 	showMessage: function(text) {
@@ -502,9 +484,4 @@ Ext.extend(og.Overview, Ext.grid.GridPanel, {
 	}
 });
 
-og.Overview.getInstance = function() {
-	if (!og.Overview.instance) {
-		og.Overview.instance = new og.Overview();
-	}
-	return og.Overview.instance;
-}
+Ext.reg("overview", og.OverviewManager);

@@ -61,47 +61,45 @@ function disable_overlib(){
 <tr>
 <td>
 	<table style="width:100%">
+			<col width=12/>
+			<col/>
+			<col width=12/>
 		<tr>
-			<td class="coViewIcon" colspan=2 rowspan=2>			
-				<div id="calendar_iconDiv" class="coViewIconImage ico-small-calendar"></div>			
-			</td>
-			<td class="coViewHeader" rowspan=2>
+			<td class="coViewHeader" colspan=2  rowspan=2>
 				<div class="coViewTitle">				
 					<?php echo cal_month_name($month)." ". $year ?>				
 				</div>		
 			</td>
 			
-			<td class="coViewTopRight"></td></tr>
+			<td class="coViewTopRight"></td>
+		</tr>
 		<tr>
 			<td class="coViewRight" rowspan=2></td>
 		</tr>
 		
 		<tr>
-			<td class="coViewBody" colspan=3>
-				<div style="padding-bottom:15px">
-		
-			
-		
-				<table id="calendar" border='0' cellspacing='1' cellpadding='0'>
+			<td class="coViewBody" style="padding:0px" colspan=2>
+				<div style="padding-bottom:0px">
+				<table id="calendar" border='0' cellspacing='1' cellpadding='0' width="100%">
 					<colgroup span="7" width="1*">
 					<tr>
 					<?php 
 					if(!cal_option("start_monday")) {
-						echo "    <th width='15%' align='center'>" .  CAL_SUNDAY . '</th>' . "\n";
+						echo "    <th width='15%' align='center'>" .  lang('sunday short') . '</th>' . "\n";
 					}
 					?>
-					<th width="14%"><?php echo  CAL_MONDAY ?></th>
-					<th width="14%"><?php echo  CAL_TUESDAY ?></th>
-					<th width="14%"><?php echo  CAL_WEDNESDAY ?></th>
-					<th width="14%"><?php echo  CAL_THURSDAY ?></th>
-					<th width="14%"><?php echo  CAL_FRIDAY ?></th>
-					<th width="15%"><?php echo  CAL_SATURDAY ?></th>
+					<th width="14%"><?php echo  lang('monday short') ?></th>
+					<th width="14%"><?php echo  lang('tuesday short') ?></th>
+					<th width="14%"><?php echo  lang('wednesday short') ?></th>
+					<th width="14%"><?php echo  lang('thursday short') ?></th>
+					<th width="14%"><?php echo  lang('friday short') ?></th>
+					<th width="15%"><?php echo  lang('saturday short') ?></th>
 					
 					<?php 
 					$output = '';
 					if(cal_option("start_monday")) {
 					?>
-						<th width="15%"> <?php echo CAL_SUNDAY ?> </th>
+						<th width="15%"> <?php echo lang('sunday short') ?> </th>
 					<?php } ?>
 					</tr>
 					
@@ -132,7 +130,7 @@ function disable_overlib(){
 									$daytype = "weekday_future";
 								}
 							}else{
-								if( !cal_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
+								if( !cal_option("start_monday") AND ($day_of_week==0 OR $day_of_week==6) ){
 									$daytype = "weekend";
 								}elseif( cal_option("start_monday") AND ($day_of_week==5 OR $day_of_week==6) AND $day_of_month <= $lastday AND $day_of_month >= 1){
 									$daytype = "weekend";
@@ -142,13 +140,18 @@ function disable_overlib(){
 									$daytype = "weekday_future";
 								}
 							}
+							
 							// see what type of day it is
 							if($currentyear == $year && $currentmonth == $month && $currentday == $day_of_month){
 							  $daytitle = 'todaylink';
 							  $daytype = "today";
 							}elseif($day_of_month > $lastday OR $day_of_month < 1){
-								$daytitle = 'extralink';
-							}else $daytitle = 'daylink';
+								if ($daytype == "weekend")
+									$daytitle = 'extraweekendlink';
+								else
+									$daytitle = 'extralink';
+							}else 
+								$daytitle = 'daylink';
 							// writes the cell info (color changes) and day of the month in the cell.
 							
 					?>
@@ -183,8 +186,8 @@ function disable_overlib(){
 														
 					?>	
 							
-								<div style='z-index:0; height:100%;' onclick="og.EventPopUp.show(function(data){},{day:<?php echo $dtv->getDay() ?>,month:<?php echo $dtv->getMonth()?>,year:<?php echo $dtv->getYear()?>,title:'<? echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'});disable_overlib();") >
-									<div class='$daytitle' style='text-align:right'>
+								<div style='z-index:0; height:100%;' onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',type_id:1,hour:'0',minute:'0',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
+									<div class='<?php echo $daytitle ?>' style='text-align:right'>
 							
 							 		<a class='internalLink' href="<?php echo $p ?>" onclick="cancel(event);"  style='color:#5B5B5B' ><?php echo $w?></a>				
 					<?php
@@ -221,7 +224,7 @@ function disable_overlib(){
 									foreach($result as $event){
 										if($event instanceof ProjectEvent ){
 											$count++;
-											$subject =  truncate($event->getSubject(),25,'','UTF-8',true,true);
+											$subject =  $event->getSubject();//truncate($event->getSubject(),30,'','UTF-8',true,true);
 											$typeofevent = $event->getTypeId(); 
 											$private = $event->getIsPrivate(); 
 											$eventid = $event->getId(); 
@@ -260,7 +263,7 @@ function disable_overlib(){
 												}		
 								?>
 												<div class="event_block" <?php echo $strStyle  ?> > 
-													 <span class='event_hover_details' title="<?php echo $subject?>|<?php echo str_replace("'","\\'",$overlib_text)?>" >													 	
+													 <span class='event_hover_details' title="<?php echo $subject." - <i>Event</i>"?>|<?php echo $overlib_text?>" >													 	
 														 <a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();" >
 																	<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														 <?php echo $subject ?>
@@ -283,12 +286,12 @@ function disable_overlib(){
 													} else $overlib_text .= 'Assigned to: None';
 													$color = 'FFC0B3'; 
 													
-													$subject = "&nbsp;".truncate($milestone->getName(),25,'','UTF-8',true,true)." - <i>Milestone</i>";
-													$cal_text = substr( $milestone->getName(),0,25);
+													$subject = "&nbsp;".$milestone->getName()." - <i>Milestone</i>";//"&nbsp;".truncate($milestone->getName(),30,'','UTF-8',true,true)." - <i>Milestone</i>";
+													$cal_text = $milestone->getName();
 													$overlibtext_color = "#000000";
 								?>
 													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<span class='milestone_hover_details' title="<?php echo $subject?>|<?php echo str_replace("'","\\'",$overlib_text)?>" >
+														<span class='milestone_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
 															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" align='absmiddle' border='0'>
 															<?php echo $cal_text ?>
@@ -308,20 +311,20 @@ function disable_overlib(){
 											if ($now == mktime(0,0,0,$due_date->getMonth(),$due_date->getDay(),$due_date->getYear())) {	
 												$count++;
 												if ($count<=3){
-													$overlib_text = "&nbsp;".truncate($task->getText(),25,'','UTF-8',true,true)."<br>";
+													$overlib_text = "&nbsp;".$task->getText()."<br>";
 													if ($task->getAssignedTo() instanceof ApplicationDataObject) { 
 														$overlib_text .= 'Assigned to:'. clean($task->getAssignedTo()->getObjectName());
 													} else $overlib_text .= 'Assigned to: None';
 													
 													$color = 'B1BFAC'; 
-													$subject = truncate($task->getTitle(),25,'','UTF-8',true,true).'- <i>Task</i>';
-													$cal_text = truncate($task->getTitle(),15,'','UTF-8',true,true);
+													$subject = $task->getTitle().'- <i>Task</i>';//truncate($task->getTitle(),25,'','UTF-8',true,true).'- <i>Task</i>';
+													$cal_text = $task->getTitle();
 													
 												    $overlibtext_color = "#000000";
 								?>
 								
 													<div class="event_block" style="border-left-color: #<?php echo $color?>;">
-														<span class='task_hover_details' title="<?php echo $subject?>|<?php echo str_replace("'","\\'",$overlib_text)?>" >
+														<span class='task_hover_details' title="<?php echo $subject?>|<?php echo $overlib_text?>" >
 															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
@@ -349,29 +352,30 @@ function disable_overlib(){
 						</tr>
 						<?php
 						// If it's the last day, we're done
-						if($day_of_month >= $lastday+7) {
+						if($day_of_month >= $lastday) {
 							break;
 						}
 					} // end main loop
 					
 				?>
 				</table>
+				</div>
 			</td>
 			</tr>
 			<tr><td class="coViewBottomLeft"></td>
-			<td class="coViewBottom" colspan=2></td>
+			<td class="coViewBottom"></td>
 			<td class="coViewBottomRight"></td></tr>
 		</table>
 	</td>
 	<!-- Actions Panel -->
-	<td style="width:250px; padding-left:10px">
-		<table style="width:100%">
-			<col width=12/><col width=226/><col width=12/>
+	<td style="width:200px; padding-left:10px">
+		<table>
+			<colgroup><col width=12/><col width=176/><col width=12/></colgroup>
 			<tr><td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("actions") ?></div></td>
-			<td class="coViewTopRight"></td></tr>
+			<td class="coViewTopRight" ></td></tr>
 				
 			<tr><td class="coViewRight" rowspan=2></td></tr>
-			<tr><td class="coViewBody" colspan=2>
+			<tr><td class="coViewBody"  colspan=2>
 				<?php if(count(PageActions::instance()->getActions()) > 0 ) {?>
 					<div>
 					<?php
@@ -395,22 +399,16 @@ function disable_overlib(){
 		</table>
 	
 	
-		<table style="width:100%">
-			<col width=12/><col width=226/><col width=12/>
+		<table>
+			<col width=12/><col width=176/><col width=12/>
 			<tr><td class="coViewHeader" colspan=2 rowspan=2><div class="coViewPropertiesHeader"><?php echo lang("pick a date") ?></div></td>
 			<td class="coViewTopRight"></td></tr>
 				
 			<tr><td class="coViewRight" rowspan=2></td></tr>
 			<tr><td class="coViewBody" colspan=2>
-				<div align="center">
-				<? 
-					$cal = new OGCalendar; 
-					
-					$minimonth = isset($_GET['minimonth'])?$_GET['minimonth']:$_SESSION['cal_month'];
-		  			$miniyear = isset($_GET['miniyear'])?$_GET['miniyear']:$_SESSION['cal_year'];
-					echo $cal->getMonthView($minimonth,$miniyear); 
-				?>
-				</div>
+				<div align="center" id="datepicker">
+				
+				</div><p style="clear: both;"><!-- See day-by-day example for highlighting days code --></p>
 			</td></tr>
 			
 			<tr><td class="coViewBottomLeft"></td>
@@ -422,14 +420,18 @@ function disable_overlib(){
 </tr></table>
 </div>
 </div>
-
-<?php
-$day = $_SESSION['cal_day'];
-$month = $_SESSION['cal_month'];
-$year = $_SESSION['cal_year'];
-?>
 <script type="text/javascript">
 	jQuery.noConflict();//YUI redefines $, so we need to set jQuery to non-conflict mode	
+	
+	jQuery(document).ready(function() {
+		jQuery("#datepicker").datepicker({ 
+			defaultDate: new Date(<?php echo $year?>, <?php echo $month - 2?>, <?php echo $day?>),
+		    onSelect: function(date) { 
+		    	var s = date.split("/");
+		    	og.openLink(og.getUrl('event', 'viewdate', {day:s[1] , month:s[0], year: s[2]}), null);
+		    } 
+		});		
+	})
 	jQuery('span.task_hover_details').cluetip({		
 	    splitTitle: '|', // use the invoking element's title attribute to populate the clueTip...
 	                     // ...and split the contents into separate divs where there is a "|"
