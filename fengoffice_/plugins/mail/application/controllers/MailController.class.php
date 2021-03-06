@@ -1597,9 +1597,9 @@ class MailController extends ApplicationController {
 						}
 
 						$file->addToMembers($members);
+						
 						// fill sharing table in background
-						$user = logged_user() instanceof Contact ? logged_user() : $email->getAccount()->getOwner();
-						add_object_to_sharing_table($file, $user);
+						add_object_to_sharing_table($file, logged_user());
 						//$file->addToSharingTable();
 
 						$enc = array_var($parsedMail,'Encoding','UTF-8');
@@ -2654,6 +2654,10 @@ class MailController extends ApplicationController {
 			}
 			foreach ($custom_properties as $cp) {
 				$cp_value = CustomPropertyValues::getCustomPropertyValue($email->getId(), $cp->getId());
+				if ($cp->getType() == 'contact' && $cp_value instanceof CustomPropertyValue) {
+					$contact = Contacts::findById($cp_value->getValue());
+					if ($contact instanceof Contact) $cp_value->setValue($contact->getObjectName());
+				}
 				$object["messages"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
 			}
 			$i++;

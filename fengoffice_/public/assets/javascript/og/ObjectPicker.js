@@ -1,15 +1,25 @@
-og.ObjectPicker = function(config,object_id,object_id_no_select) {
+og.ObjectPicker = function(config, object_id, object_id_no_select, ignore_context) {
 	if (!config) config = {};
 	
 	if (!config.extra_list_params) config.extra_list_params = {};
 	extra_list_param = Ext.util.JSON.encode(config.extra_list_params);
 		
+	var url_params = {
+		ajax: true,
+		include_comments: true,
+		id_no_select: object_id_no_select,
+		extra_list_params: extra_list_param
+	};
+	if (ignore_context) {
+		url_params['ignore_context'] = ignore_context;
+	}
+	
 	var Grid = function(config) {
 		if (!config) config = {};
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects', {ajax: true, include_comments:true, id_no_select : object_id_no_select, extra_list_params: extra_list_param})
+            	url: og.getUrl('object', 'list_objects', url_params)
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
@@ -150,7 +160,7 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 				member_ids.push(this.member_filter[x]);
 			}
 			this.store.baseParams.extra_member_ids = Ext.util.JSON.encode(member_ids);
-			this.store.baseParams.ignore_context = member_ids.length > 0;
+			this.store.baseParams.ignore_context = this.store.baseParams.ignore_context || member_ids.length > 0;
 			
 			this.load();
 		},
@@ -369,6 +379,7 @@ og.ObjectPicker = function(config,object_id,object_id_no_select) {
 				width: 200,
 				region: 'west',
 				collapsible: true,
+				hidden: config.hideFilters,
 				title: lang('filter'),
 				items: [{
 						xtype: 'typefilter',
@@ -447,14 +458,15 @@ Ext.extend(og.ObjectPicker, Ext.Window, {
 });
 
 og.ObjectPicker.show = function(callback, scope, config, object_id, object_id_no_select) {
-    
-	this.dialog = new og.ObjectPicker(config,object_id,object_id_no_select);
-	
 	if (!config) config = {};
-	if (config.context) {
-		this.dialog.grid.store.baseParams.context = config.context ;
-	}
+	if (!config.ignore_context) config.ignore_context = false;
+    
+	this.dialog = new og.ObjectPicker(config, object_id, object_id_no_select, config.ignore_context);
+	
 	this.dialog.loadFilters(config);
+	if (config.context) {
+		this.dialog.grid.store.baseParams.context = config.context;
+	}
 	this.dialog.load();
 	this.dialog.purgeListeners();
 	this.dialog.on('objectselected', callback, scope, {single:true});

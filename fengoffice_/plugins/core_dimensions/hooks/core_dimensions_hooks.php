@@ -124,8 +124,9 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 		foreach ( $all_members as $m ) {
 			if ($m->getDimensionId() == $a->getAssociatedDimensionMemberAssociationId() && $m->getObjectTypeId() == $a->getAssociatedObjectType()) {
 				
-				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
-				if (!$mpm instanceof MemberPropertyMember) {
+				$mpm = MemberPropertyMembers::findOne(array('id' => true, 'conditions' => array('association_id = ? AND member_id = ? AND property_member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
+				//if (!$mpm instanceof MemberPropertyMember) {
+				if (is_null($mpm)) {
 					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, member_id, property_member_id, is_active, created_on, created_by_id)
 						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . $creator->getId() . ") ";
 					DB::execute( $sql );
@@ -142,8 +143,9 @@ function core_dim_create_member_associations(Contact $contact, $contact_member, 
 		foreach ( $all_members as $m ) {
 			if ($m->getDimensionId() == $a->getDimensionId() && $m->getObjectTypeId() == $a->getObjectTypeId()) {
 				
-				$mpm = MemberPropertyMembers::findOne(array('conditions' => array('association_id = ? AND property_member_id = ? AND member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
-				if (!$mpm instanceof MemberPropertyMember) {
+				$mpm = MemberPropertyMembers::findOne(array('id' => true, 'conditions' => array('association_id = ? AND property_member_id = ? AND member_id = ?', $a->getId(), $contact_member->getId(), $m->getId())));
+				//if (!$mpm instanceof MemberPropertyMember) {
+				if (is_null($mpm)) {
 					$sql = "INSERT INTO " . TABLE_PREFIX . "member_property_members (association_id, property_member_id, member_id, is_active, created_on, created_by_id)
 						VALUES (" . $a->getId() . "," . $contact_member->getId() . "," . $m->getId() . ", 1, NOW()," . $creator->getId() . ") ";
 					DB::execute( $sql );

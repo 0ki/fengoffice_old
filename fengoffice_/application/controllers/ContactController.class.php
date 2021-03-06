@@ -735,8 +735,18 @@ class ContactController extends ApplicationController {
 					);
 				}
 				
+				$columns = array();
+				Hook::fire('object_definition', 'Contact', $columns);
+				foreach ($columns as $col => $type) {
+					$object["contacts"][$i][$col] = $c->getColumnValue($col);
+				}
+				
 				foreach ($custom_properties as $cp) {
 					$cp_value = CustomPropertyValues::getCustomPropertyValues($c->getId(), $cp->getId());
+					if ($cp->getType() == 'contact' && $cp_value[0] instanceof CustomPropertyValue) {
+						$contact = Contacts::findById($cp_value[0]->getValue());
+						if ($contact instanceof Contact) $cp_value[0]->setValue($contact->getObjectName());
+					}
 					for ($j = 0; $j < count($cp_value); $j++){
 						if ($j == 0){
 							$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
@@ -1774,7 +1784,7 @@ class ContactController extends ApplicationController {
 								$contact = new Contact();
 								$contact_data['import_status'] = '('.lang('new').')';
 								$log_action = ApplicationLogs::ACTION_ADD;
-								$can_import = $contact->canAdd(logged_user(), active_context());
+								$can_import = Contact::canAdd(logged_user(), active_context());
 								
 							} else {
 								$can_import = $contact->canEdit(logged_user());
@@ -1793,13 +1803,13 @@ class ContactController extends ApplicationController {
 								} else {
 									$contact_data['company_id'] = 0;
 								}
-                                                                $contact_data['birthday'] = $contact_data["o_birthday"];
+								$contact_data['birthday'] = $contact_data["o_birthday"];
 								$contact_data['name'] = $contact_data['first_name']." ".$contact_data['surname'];
 								$contact->setFromAttributes($contact_data);
 								$contact->save();
 
 								//Home form
-                                if($contact_data['h_address'] != "" || $contact_data['h_city'] != "" || $contact_data['h_state'] != "" || $contact_data['h_country'] != "" || $contact_data['h_zipcode'] != ""){
+								if($contact_data['h_address'] != "" || $contact_data['h_city'] != "" || $contact_data['h_state'] != "" || $contact_data['h_country'] != "" || $contact_data['h_zipcode'] != ""){
 									$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
 								}
 								if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
@@ -3461,5 +3471,57 @@ class ContactController extends ApplicationController {
 			flash_error($e->getMessage());
 			DB::rollback();
 		}
+	}
+	
+	
+	function get_contacts_for_selector() {
+		ajx_current("empty");
+		
+		$name_condition = "";
+		$name_filter = trim(array_var($_REQUEST, 'query'));
+		if ($name_filter != "") {
+			$name_condition = " AND o.name LIKE '%$name_filter%'";
+		}
+		
+		$extra_conditions = "";
+		if ($filters = array_var($_REQUEST, 'filters')) {
+			$filters = json_decode($filters, true);
+			foreach ($filters as $col => $val) {
+				if (Contacts::instance()->columnExists($col)) {
+					$extra_conditions .= " AND ".DB::escapeField($col)." = ".DB::escape($val);
+				}
+			}
+		}
+		
+		$info = array();
+		$pg_ids = logged_user()->getPermissionGroupIds();
+		if (count($pg_ids) > 0) {
+			$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
+			
+			$conditions = "is_company=0 AND o.trashed_by_id=0 AND o.archived_by_id=0 $name_condition $permissions_condition $extra_conditions";
+			$query_params = array(
+				'condition' => $conditions,
+				'order' => 'o.name ASC',
+			);
+			
+			$count = Contacts::count($conditions);
+			
+			if ($name_filter != "" || $count < 20) {
+				$contacts = Contacts::findAll($query_params);
+				foreach ($contacts as $c) {
+					$info[] = array(
+						"id" => $c->getId(),
+						"name" => $c->getObjectName(),
+					);
+				}
+			} else {
+				$info = array(
+					array('id' => -1, 'name' => 'Escriba las primeras letras del nombre o apellido de la persona a seleccionar o '),
+					array('id' => -2, 'name' => '<a href="#" class="db-ico ico-expand" style="color:blue;text-decoration:underline;padding-left:20px;">Seleccione una de la lista</a>'),
+				);
+			}
+		}
+		
+		ajx_extra_data(array('contacts' => $info));
 	}
 } 

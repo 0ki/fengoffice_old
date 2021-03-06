@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6
+ * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.5.1.5');
-		$this->setVersionTo('2.6');
+		$this->setVersionTo('2.6.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -157,21 +157,12 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('task panel', 'quick_add_task_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip')
 					ON DUPLICATE KEY UPDATE `name`=`name`;
-					
-					UPDATE `".$t_prefix."contact_config_options` 
-					 SET default_value = concat((SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='tags')) 
-					 WHERE name='quick_add_task_view_dimensions_combos';
-					
-					
+										
 					INSERT INTO `".$t_prefix."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 					('time panel', 'add_timeslot_view_dimensions_combos', '', 'ManageableDimensionsConfigHandler', '0', '0', 'dimensions ids for skip'),
 					('task panel', 'show_notify_checkbox_in_quick_add', '0', 'BoolConfigHandler', 0, 0, 'Show notification checkbox in quick add task view')
 					ON DUPLICATE KEY UPDATE `name`=`name`;
-					
-					UPDATE `".$t_prefix."contact_config_options` 
-					 SET default_value = concat((SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `".$t_prefix."dimensions` WHERE `code`='tags')) 
-					 WHERE name='add_timeslot_view_dimensions_combos';
-					 
+										 
 					UPDATE `".$t_prefix."contact_config_categories` 
 					 SET is_system = 0
 					 WHERE name='time panel';
@@ -196,6 +187,31 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 				$upgrade_script .="
 					UPDATE `".$t_prefix."config_options` SET `value` = '1' WHERE `name` = 'use tasks dependencies';
 				";
+			}
+						
+			if (version_compare($installed_version, '2.6.0.2') < 0) {
+				$upgrade_script .= "
+					UPDATE `".$t_prefix."contact_config_options`
+					 SET default_value = ''
+					 WHERE name='quick_add_task_view_dimensions_combos';
+					
+					UPDATE `".$t_prefix."contact_config_options`
+					 SET default_value = ''
+					 WHERE name='add_timeslot_view_dimensions_combos';
+				";
+			}
+			
+			if (version_compare($installed_version, '2.6.1') < 0) {	
+				if (!$this->checkColumnExists($t_prefix."custom_properties", "code", $this->database_connection)) {
+					$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."custom_properties` ADD COLUMN `code` VARCHAR(255) NOT NULL DEFAULT '';
+					";
+				}
+				if (!$this->checkColumnExists($t_prefix."member_custom_properties", "code", $this->database_connection)) {
+					$upgrade_script .= "
+					ALTER TABLE `".$t_prefix."member_custom_properties` ADD COLUMN `code` VARCHAR(255) NOT NULL DEFAULT '';
+					";
+				}
 			}
 			
 			if(!$this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {

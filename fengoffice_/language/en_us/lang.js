@@ -915,6 +915,7 @@ addLangs({
 	'general view': 'General view',
 	'save as' : 'Save as {0}',
 	
+	'select contact' : 'Select contact',
 	'viewing all information' : 'Viewing all Information'
 	
 });

@@ -19,6 +19,14 @@ og.ContactManager = function() {
    		cp_names.push('cp_' + cps[i].id);
    	}
    	this.fields = this.fields.concat(cp_names);
+   	
+   	var additional_fields = [];
+   	if (og.additional_list_columns && og.additional_list_columns['contact-manager']) {
+	   	for (i=0; i<og.additional_list_columns['contact-manager'].length; i++) {
+	   		additional_fields.push(og.additional_list_columns['contact-manager'][i].dataIndex);
+	   	}
+   	}
+   	this.fields = this.fields.concat(additional_fields);
 	
 	if (!og.ContactManager.store) {
 		og.ContactManager.store = new Ext.data.Store({
@@ -443,6 +451,13 @@ og.ContactManager = function() {
 			og.breadcrumbs_skipped_dimensions[did] = did;
 		}
 	}
+	// additional columns
+	if (og.additional_list_columns && og.additional_list_columns['contact-manager']) {
+		for (i=0; i<og.additional_list_columns['contact-manager'].length; i++) {
+			cm_info.push(og.additional_list_columns['contact-manager'][i]);
+		}
+	}
+	
 	// create column model
 	var cm = new Ext.grid.ColumnModel(cm_info);
     cm.defaultSortable = false;
@@ -563,7 +578,7 @@ og.ContactManager = function() {
 			disabled: true,
 			handler: function() {
 				var url = '';
-				if (getFirstSelectedType() == 'contact' || getFirstSelectedType() == 'user' )
+				if (getFirstSelectedType() == 'contact' || getFirstSelectedType() == 'user')
 					url = og.getUrl('contact', 'edit', {id:getFirstSelectedId()});
 				else
 					url = og.getUrl('contact', 'edit_company', {id:getFirstSelectedId()});

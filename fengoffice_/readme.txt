@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6
+	About Feng Office 2.6.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,25 +101,30 @@
 	
 	Changelog
 	=========
+
+	Since 2.6.0.2
+	----------------
+	bugfix: disabled users are not loaded in tasks list.
+	bugfix: add clients and projects column to total tasks times csv export.
+		
+	Since 2.6.0.1
+	----------------
+	bugfix: gantt crashes in ie.
+	bugfix: function add_file_form_multi() doesn't exist, it should be add_file_from_multi().
+	bugfix: default contact config options with wrong values after upgrade.
+	
+	Since 2.6
+	----------------
+	bugfix: task dependencies in templates did not show up correctly.
+	bugfix: in calendar view the time line has a gmt error.
+	bugfix: task quick add/edit alignment.
+	bugfix: importing a contact csv does not send context when sending the file and permission query fails.
+	bugfix: js error in save as button for documents, when comments are mandatory.
 	
 	Since 2.6-rc
 	----------------
 	
-	bugfix: show custom property text fully.
-	bugfix: filesystem permissions fix in some scenarios when uploading files.
-	bugfix: when importing companies or contacts from csv.
-	bugfix: time zone error on calendar view.
-	bugfix: calendar date javascript variable had a null value.
-	bugfix: can't delete mails without an account, even if you are a Super Administrator
-	bugfix: pagination error on time panel.
-	bugfix: report date parameters are not formatted correctly the first time if they are not saved in contact config options.
-	bugfix: In Overview, view as list pagination problems.
-	bugfix: refresh Assigned to combo after selecting a member in quick add/edit task and in timeslots view.
-	bugfix: main breadcrumb sometimes shows html chars.
-	bugfix: hide "vinculations" link for workspaces and folders
-	bugfix: select members combo missing members.
-	bugfix: html in tiemeslots description.
-	bugfix: can't add timeslots if members combos are not present.
+	bugfix: report date parameters are not formatted correctly the first time if they are not saved in contact config options
 	
 	
 	Since 2.6-beta

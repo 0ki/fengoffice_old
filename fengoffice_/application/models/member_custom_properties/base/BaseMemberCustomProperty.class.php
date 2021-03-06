@@ -77,6 +77,28 @@
     } // setName() 
     
     /**
+    * Return value of 'code' field
+    *
+    * @access public
+    * @param void
+    * @return string 
+    */
+    function getCode() {
+      return $this->getColumnValue('code');
+    } // getCode()
+    
+    /**
+    * Set value of 'code' field
+    *
+    * @access public   
+    * @param string $value
+    * @return boolean
+    */
+    function setCode($value) {
+      return $this->setColumnValue('code', $value);
+    } // setCode() 
+
+    /**
     * Return value of 'type' field
     *
     * @access public

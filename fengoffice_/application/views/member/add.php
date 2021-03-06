@@ -174,8 +174,8 @@
 		tree.getSelectionModel().on("selectionchange",function(sm,node) {
 			if (node.id) {
 				document.getElementById(genid+"memberParent").value = node.id;
-			}	
-		});			
+			}
+		});
 	});
 
 	<?php if (count($selected_members) > 0) { ?>

@@ -81,6 +81,7 @@ og.addCustomProperty = function(genid, property){
 		'<option value="text"' + (property != null && property.type == 'text' ? 'selected' : '') + '>' + lang('text') + '</option>' + 
 		'<option value="numeric"' + (property != null && property.type == 'numeric' ? 'selected' : '') + '>' + lang('numeric') + '</option>' +
 		'<option value="boolean"' + (property != null && property.type == 'boolean' ? 'selected' : '') + '>' + lang('boolean') + '</option>' +
+		'<option value="contact"' + (property != null && property.type == 'contact' ? 'selected' : '') + '>' + lang('contact') + '</option>' +
 		'<option value="list"' + (property != null && property.type == 'list' ? 'selected' : '') + '>' + lang('list') + '</option>' +
 		'<option value="date"' + (property != null && property.type == 'date' ? 'selected' : '') + '>' + lang('date') + '</option>' +
 		'<option value="memo"' + (property != null && property.type == 'memo' ? 'selected' : '') + '>' + lang('memo') + '</option>' +

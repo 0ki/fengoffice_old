@@ -580,7 +580,7 @@ og.objPickerTypeFilters = [];
 	var searchForm = document.getElementById("searchbox").getElementsByTagName("form")[0] ;
 	H5F.setup(searchForm);
 
-
+	og.additional_list_columns = [];
 	og.additional_on_dimension_object_click = [];
 	og.dimension_object_types = [];
 <?php

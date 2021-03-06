@@ -43,8 +43,6 @@ og.OverviewManager = function() {
 						var sm = cmp.getSelectionModel();
 						sm.clearSelections();
 					}
-										
-					Ext.getCmp('overview-manager').reloadGridPagingToolbar('object','list_objects','overview-manager');
 				}
 			}
 		});

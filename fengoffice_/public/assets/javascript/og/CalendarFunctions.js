@@ -12,10 +12,8 @@
 	og.drawCurrentHourLine = function(d, pre) {
 		if (cal_actual_view == 'viewweek' && pre == 'w_' || cal_actual_view == 'viewweek5days' && pre == 'w5_' || cal_actual_view == 'viewdate' && pre == 'd_') {
 			if (!og.startLineTime) og.startLineTime = new Date();
-			var now = new Date();
-			var diff = now.getTime() - og.startLineTime.getTime();
+						
 			var date = new Date();
-			date.setTime(og.startLocaleTime.getTime() + diff);
 			var h = date.format('H');
 			var m = date.format('i');
 			var cell = h*2 + (m > 30 ? 1 : 0);

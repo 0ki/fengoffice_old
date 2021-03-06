@@ -115,6 +115,7 @@ og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' :
 og.config.show_notify_checkbox_in_quick_add = <?php echo user_config_option('show_notify_checkbox_in_quick_add') ? 'true' : 'false' ?>;
 og.config.quick_add_task_combos = <?php 
 		$dimensions_from_config = explode(",",user_config_option("quick_add_task_view_dimensions_combos"));
+		$dimensions_from_config = is_array($dimensions_from_config)? array_filter($dimensions_from_config) : array();
 		$dimensions_user = get_user_dimensions_ids();	
 		$object = "";
 		foreach ($dimensions_from_config as $key=>$conf){

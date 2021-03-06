@@ -15,6 +15,19 @@ class Billing extends BaseBilling {
 		} // if
 		return $this->billing_category;
 	}
+	
+	function canView(Contact $user) {
+		return can_read_sharing_table($user, $this->getRelObjectId());
+	}
+	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
+		return true;
+	}
+	function canEdit(Contact $user) {
+		return true;
+	}
+	function canDelete(Contact $user) {
+		return true;
+	}
 } // Billing
 
 ?>

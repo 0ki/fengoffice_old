@@ -154,7 +154,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     		<?php if (isset($task_data['parent_id'])&& $task_data['parent_id'] == 0) {?>
     			    			    			
     			<span id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
-    			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a>
+    			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a>
     			
     		<?php }else{
     			if(array_var($_GET, 'template_task', false)){
@@ -164,7 +164,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 				}
  				if ($parentTask instanceof ProjectTask || $parentTask instanceof TemplateTask){?>
  				<span style="display: none;" id="no-task-selected<?php echo $genid?>"><?php echo lang('none')?></span>
-    			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a> 
+    			<a style="display: none;margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickPreviousTemplateTask(this, '<?php echo $genid?>', '<?php echo $task->getId()?>', '<?php echo $template_id?>')"><?php echo lang('set parent task') ?></a> 
 				<div class="og-add-template-object ico-task">
 					<input type="hidden" name="task[parent_id]" value="<?php echo $parentTask->getId() ?>" />
     				<span style="float:left" class="name"> <?php echo $parentTask->getTitle() ?> </span>

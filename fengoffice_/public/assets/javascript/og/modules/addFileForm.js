@@ -266,7 +266,7 @@ og.updateFileName = function(genid, name) {
 
 og.showAddDocumentDialog = function(genid){
 	var form = Ext.getDom(genid + 'form');
-	var commentsRequired = (Ext.getDom(genid + "commentsRequired").value == 1) && (form.autosave.value == 0);
+	var commentsRequired = (Ext.getDom(genid + "commentsRequired").value == 1) && (!form.autosave || form.autosave.value == 0);
 	var config = {};
 	
 	config.ok_fn = function(){

@@ -138,10 +138,11 @@
 				<?php
 					//get skipped dimensions for this view
 					$dimensions_to_show = explode(",",user_config_option("add_timeslot_view_dimensions_combos"));
+					$dimensions_to_show = is_array($dimensions_to_show)? array_filter($dimensions_to_show) : array();
 					$dimensions_to_skip = array_diff(get_user_dimensions_ids(), $dimensions_to_show);
 					$listeners = array();
 					$listeners = array('on_selection_change' => 'ogTimeManager.renderUserCombo("'.$genid.'")');
-					if(intval($dimensions_to_show[0]) != 0){
+					if(!empty($dimensions_to_show)){
 						render_member_selectors(Timeslots::instance()->getObjectTypeId(), $genid, null, array('select_current_context' => true, 'listeners' => $listeners), $dimensions_to_skip, null, false);	
 					}
 					?>

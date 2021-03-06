@@ -66,3 +66,11 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('listing preferences', concat('lp_dim_workspaces_show_as_column'), '0', 'BoolConfigHandler', 0, 0),
  ('listing preferences', concat('lp_dim_tags_show_as_column'), '0', 'BoolConfigHandler', 0, 0)
 ON DUPLICATE KEY UPDATE name=name;
+
+UPDATE `<?php echo $table_prefix ?>contact_config_options` 
+ SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags'),',',(default_value)) 
+ WHERE name='quick_add_task_view_dimensions_combos';
+ 
+UPDATE `<?php echo $table_prefix ?>contact_config_options` 
+ SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags'),',',(default_value)) 
+ WHERE name='add_timeslot_view_dimensions_combos';

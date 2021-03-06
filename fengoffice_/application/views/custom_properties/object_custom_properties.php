@@ -179,6 +179,42 @@ if(count($cps) > 0){
 					$print_table_functions = true;
 					echo $html;
 					break;
+					
+				case 'contact':
+					$value = '0';
+					$cp_value = CustomPropertyValues::getCustomPropertyValue($_custom_properties_object->getId(), $customProp->getId());
+					if ($cp_value instanceof CustomPropertyValue && is_numeric($cp_value->getValue())) {
+						$value = $cp_value->getValue();
+						$contact = Contacts::findById($value);
+					}
+					
+					Hook::fire('object_contact_cp_filters', array('cp' => $customProp, 'object' => $_custom_properties_object), $filters);
+					if (is_array($filters) && count($filters) > 0) {
+						$filters_str = '{';
+						foreach ($filters as $k => $v) {
+							$filters_str .= ($filters_str=='{' ? '' : ',') . "$k : $v";
+						}
+						$filters_str .= '}';
+					} else {
+						$filters_str = 'null';
+					}
+					
+					$html = '<div id="'.$genid.'contacts_combo_container-cp'.$customProp->getId().'"></div>';
+					$html .= '<script>'.
+					'$(function(){
+					  og.renderContactSelector({
+						genid: "'.$genid.'",
+						id: "cp'.$customProp->getId().'",
+						name: "'.$name.'",
+						render_to: "contacts_combo_container-cp'.$customProp->getId().'",
+						selected: '.$value.',
+						selected_name: "'.($contact instanceof Contact ? clean($contact->getName()) : '').'",
+						filters: '.$filters_str.'
+					  });
+					});
+					</script>';
+					echo $html;
+					break;
 				default: break;
 			}
 		}

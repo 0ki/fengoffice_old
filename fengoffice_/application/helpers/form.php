@@ -502,7 +502,7 @@
   	$daterow = '';
  // 	if ($display_date_info)
  // 		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
-  	$html = "<table><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>
+  	$html = "<table class='date-picker'><tr><td><span id='" . $genid . $name . "'></span></td>$daterow</tr></table>
 	<script>
 		var dtp" . gen_id() . " = new og.DateField({
 			renderTo:'" . $genid . $name . "',

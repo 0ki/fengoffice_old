@@ -90,3 +90,17 @@
 			ON DUPLICATE KEY UPDATE dimension_id=dimension_id;
 		");
 	}
+	
+	function workspaces_update_9_10() {
+		DB::execute("
+				UPDATE ".TABLE_PREFIX."contact_config_options 
+					 SET default_value = concat((SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='tags'),',',(default_value)) 
+					 WHERE name='quick_add_task_view_dimensions_combos';
+				");
+		
+		DB::execute("
+				UPDATE ".TABLE_PREFIX."contact_config_options
+					SET default_value = concat((SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `".TABLE_PREFIX."dimensions` WHERE `code`='tags'),',',(default_value))
+					WHERE name='add_timeslot_view_dimensions_combos';
+				");
+	}

@@ -159,7 +159,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	html += "<table style='width:100%; margin-top:7px'><tr>";
 	
 	//First column
-	html += "<td style='padding-left:10px; margin-right:10px;width:410px;'>";
+	html += "<td style='padding-left:10px; margin-right:10px;width:420px;'>";
 	
 	// <TASK SELECTORS>
 	html +="<div id='tasks_quick_add_selectors'>";
@@ -205,15 +205,19 @@ ogTasks.drawTaskForm = function(container_id, data){
 	var time_picker_html_start = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left: 5px;' id='ogTasksPanelATStartTime'></div>" : "";
 	html += "<div id='ogTasksPanelStartDateCont' class='small-member-selector'>" +
 				"<div style='float:left;width: 125px;'><b>" + lang('start date') + ":</b></div>&nbsp;" +
-				"<div style='float:left;' id='ogTasksPanelATStartDate'></div>" +
-				time_picker_html_start +
+				"<div style='float:right;width: 267px;'>" +
+					"<div style='float:left;' id='ogTasksPanelATStartDate'></div>" +
+					time_picker_html_start +
+				"</div>"+
 			"</div>";
 	
 	var time_picker_html_duetime = og.config.use_time_in_task_dates ? "<div style='float:left;margin-left: 5px;' id='ogTasksPanelATDueTime'></div>" : "";
 	html += "<div id='ogTasksPanelDueDateCont' class='small-member-selector'>" +
 				"<div style='float:left;width: 125px;'><b>" + lang('due date') + ":</b></div>&nbsp;" +
-				"<div style='float:left;' id='ogTasksPanelATDueDate'></div>" + 
-				time_picker_html_duetime +
+				"<div style='float:right;width: 267px;'>" +
+					"<div style='float:left;' id='ogTasksPanelATDueDate'></div>" + 
+					time_picker_html_duetime +
+				"</div>"+
 			"</div>";
 	
 	html += "</div>";

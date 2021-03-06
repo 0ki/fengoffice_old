@@ -595,6 +595,9 @@ class MemberController extends ApplicationController {
 			}
 			
 			
+			$ret = null;
+			Hook::fire('after_member_save', $member, $ret);
+			
 			if ($is_new) {
 				// set all permissions for the creator
 				$dimension = $member->getDimension();

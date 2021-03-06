@@ -840,10 +840,7 @@ class FilesController extends ApplicationController {
 			try {
 				DB::beginWork();
 	
-				//returns the array 'members_ids' with all the members in which the file has to be classified.
-				//@todo: This code is probably duplicate (many times). It should be a separate function.
-				//@todo: Review if it makes sense to ask for the 'member of the object' (the code) inside the elseif).
-				//@todo: Does it make sense to waste DB transaction time doing this?
+				//members
 				$member_ids = array();
 				$object_controller = new ObjectController();
 				if(count(active_context_members(false)) > 0 ){
@@ -864,21 +861,22 @@ class FilesController extends ApplicationController {
 				
 				//files ids to return
 				$file_ids = array();
-				
-				foreach ($uploaded_file['name'] as $key => $file_name) {
-					$file_data_mult = $file_data;
-					$file_data_mult['name'] = $file_name;
-					$uploaded_file_mult['name'] = $file_name;
-					$uploaded_file_mult['size'] = $uploaded_file['size'][$key];
-					$uploaded_file_mult['type'] = $uploaded_file['type'][$key];
-					$uploaded_file_mult['tmp_name'] = $uploaded_file['tmp_name'][$key];
-					$uploaded_file_mult['error'] = $uploaded_file['error'][$key];
-					
-					if(count($uploaded_file['name']) != 1){
-						$upload_option = -1;
+				if (isset($uploaded_file['name']) && is_array($uploaded_file['name'])) {
+					foreach ($uploaded_file['name'] as $key => $file_name) {
+						$file_data_mult = $file_data;
+						$file_data_mult['name'] = $file_name;
+						$uploaded_file_mult['name'] = $file_name;
+						$uploaded_file_mult['size'] = $uploaded_file['size'][$key];
+						$uploaded_file_mult['type'] = $uploaded_file['type'][$key];
+						$uploaded_file_mult['tmp_name'] = $uploaded_file['tmp_name'][$key];
+						$uploaded_file_mult['error'] = $uploaded_file['error'][$key];
+						
+						if(count($uploaded_file['name']) != 1){
+							$upload_option = -1;
+						}
+						
+						$file_ids[] = $this->add_file_from_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 					}
-					
-					$file_ids[] = $this->add_file_from_multi($file_data_mult, $uploaded_file_mult, $member_ids, $upload_option);
 				}
 				unset($_SESSION[$upload_id]);
 	
@@ -1858,6 +1856,10 @@ class FilesController extends ApplicationController {
 				
 				foreach ($custom_properties as $cp) {
 					$cp_value = CustomPropertyValues::getCustomPropertyValues($o->getId(), $cp->getId());
+					if ($cp->getType() == 'contact' && $cp_value[0] instanceof CustomPropertyValue) {
+						$contact = Contacts::findById($cp_value[0]->getValue());
+						if ($contact instanceof Contact) $cp_value[0]->setValue($contact->getObjectName());
+					}
 					for ($j = 0; $j < count($cp_value); $j++){
 						if ($j == 0){
 							$values['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';

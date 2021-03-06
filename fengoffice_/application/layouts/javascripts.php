@@ -45,6 +45,8 @@ return array(
 	"og/ofc.js",
 	"og/Breadcrumbs.js",
 	"og/MemberCombo.js",
+	"og/ObjectPicker.js",
+	"og/ContactCombo.js",
 	"h5f.min.js",
 	"og/main.js",
 	"jquery/bootstrap-dropdown.js",

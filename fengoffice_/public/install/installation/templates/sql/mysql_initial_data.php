@@ -7,6 +7,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_categories` (`name`, `is_system`,
 	('mailing', 0, 2),
 	('passwords', 0, 4);
 
+
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
 	('system', 'project_logs_per_page', '10', 'IntegerConfigHandler', 1, 0, NULL),
 	('system', 'messages_per_page', '5', 'IntegerConfigHandler', 1, 0, NULL),
@@ -532,11 +533,3 @@ INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,con
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
 ('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
 ON DUPLICATE KEY UPDATE widget_name=widget_name;
-
-UPDATE `<?php echo $table_prefix ?>contact_config_options` 
- SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags')) 
- WHERE name='quick_add_task_view_dimensions_combos';
-
-UPDATE `<?php echo $table_prefix ?>contact_config_options` 
- SET default_value = concat((SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='workspaces'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='customer_project'),',', (SELECT `id` FROM `<?php echo $table_prefix ?>dimensions` WHERE `code`='tags')) 
- WHERE name='add_timeslot_view_dimensions_combos';

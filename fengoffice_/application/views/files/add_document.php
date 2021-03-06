@@ -24,9 +24,9 @@
 	}
 	
 
-	add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = false; form.onsubmit(); })()", "save",
+	add_page_action(lang("save as").' <b>'.$filename.'</b>', "javascript:(function(){ var form = document.getElementById('{$genid}form'); document.getElementById('{$genid}new_revision_document').value = 'checked'; form.rename = false; form.onsubmit(); })()", "save",
 		null, array('id' => $genid . 'save_as_name'));
-	add_page_action(lang("save with a new name"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); form.new_revision_document.value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as",
+	add_page_action(lang("save with a new name"), "javascript:(function(){ var form = document.getElementById('{$genid}form'); document.getElementById('{$genid}new_revision_document').value = 'checked'; form.rename = true; form.onsubmit(); })()", "save_as",
 		null, array('id' => $genid . 'save_new_name', 'hidden' => $file->isNew()));
 ?>
 
@@ -35,7 +35,7 @@
 		<input type="hidden" id="fileid" name="file[id]" value="<?php if (!$file->isNew()) echo $file->getId(); ?>" />
 		<input type="hidden" id="filename" name="file[name]" value="<?php if (!$file->isNew()) echo clean($file->getFilename()); ?>" />
 		<input type="hidden" id ="<?php echo $genid ?>comment" name="file[comment]" value="" />
-		<input type="hidden" name="new_revision_document" value="checked" />
+		<input type="hidden" id="<?php echo $genid?>new_revision_document" name="new_revision_document" value="checked" />
 		<input type="hidden" name="checkin" value="" />
 	</div>
 	

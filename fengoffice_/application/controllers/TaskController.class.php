@@ -957,7 +957,7 @@ class TaskController extends ApplicationController {
 		
 		// Get Users Info
 		$users = allowed_users_in_context(ProjectTasks::instance()->getObjectTypeId(), active_context(), ACCESS_LEVEL_READ, '', true);
-		$allUsers = Contacts::getAllUsers();
+		$allUsers = Contacts::getAllUsers(null, true);
 		
 		$user_ids = array(-1);
 		foreach ($allUsers as $user) {

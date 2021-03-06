@@ -471,7 +471,7 @@ abstract class ContentDataObjects extends DataManager {
 			
 			if($template_objects){
 				$permissions_condition = "true";
-				$SQL_BASE_JOIN .= " INNER JOIN  ".TABLE_PREFIX."template_objects temob ON temob.object_id = o.id ";
+				$SQL_BASE_JOIN .= " INNER JOIN  ".TABLE_PREFIX."template_tasks temob ON temob.object_id = o.id ";
 			}
 			$sql = "
 				SELECT $SQL_FOUND_ROWS $SQL_COLUMNS FROM ".TABLE_PREFIX."objects o

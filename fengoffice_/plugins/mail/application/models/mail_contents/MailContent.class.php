@@ -486,7 +486,11 @@ class MailContent extends BaseMailContent {
 			}
 		}else{
 			// if classified
-			return can_delete($user, $members, $this->getObjectTypeId());			
+			if (count($members) > 0) {
+				return can_delete($user, $members, $this->getObjectTypeId());
+			} else {
+				return false;
+			}
 		}
 	}
 

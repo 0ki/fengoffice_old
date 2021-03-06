@@ -269,6 +269,10 @@ class MessageController extends ApplicationController {
 					
 					foreach ($custom_properties as $cp) {
 						$cp_value = CustomPropertyValues::getCustomPropertyValue($msg->getId(), $cp->getId());
+						if ($cp->getType() == 'contact' && $cp_value instanceof CustomPropertyValue) {
+							$contact = Contacts::findById($cp_value->getValue());
+							if ($contact instanceof Contact) $cp_value->setValue($contact->getObjectName());
+						}
 						$object["messages"][$i]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
 					}
     			}

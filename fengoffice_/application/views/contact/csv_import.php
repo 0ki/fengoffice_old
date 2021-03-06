@@ -14,8 +14,13 @@ og.submitCsv = function(genid) {
 	if (ok) {
 		if (fname.value != '') {
 			form = document.getElementById(genid + 'csvimport');
+			form.action = form.action += "&context="+og.contextManager.plainContext();
 			og.submit(form, {
-				callback: og.getUrl('contact', 'import_from_csv_file', {calling_back: 1})
+				callback: function(result) {
+					if (result.errorCode == 0) {
+						og.getUrl('contact', 'import_from_csv_file', {calling_back: 1});
+					}
+				}
 			});
 		}
 	}

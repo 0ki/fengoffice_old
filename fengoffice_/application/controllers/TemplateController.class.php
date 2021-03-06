@@ -328,7 +328,7 @@ class TemplateController extends ApplicationController {
 					foreach($parameters as $parameter){
 						$newTemplateParameter = new TemplateParameter();
 						$newTemplateParameter->setTemplateId($cotemplate->getId());
-						$newTemplateParameter->setName($parameter['name']);
+						$newTemplateParameter->setName(rtrim($parameter['name'], " "));
 						$newTemplateParameter->setType($parameter['type']);
 						$newTemplateParameter->save();
 					}

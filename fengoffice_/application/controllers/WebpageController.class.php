@@ -349,6 +349,10 @@ class WebpageController extends ApplicationController {
 				
 				foreach ($custom_properties as $cp) {
 					$cp_value = CustomPropertyValues::getCustomPropertyValue($w->getId(), $cp->getId());
+					if ($cp->getType() == 'contact' && $cp_value instanceof CustomPropertyValue) {
+						$contact = Contacts::findById($cp_value->getValue());
+						if ($contact instanceof Contact) $cp_value->setValue($contact->getObjectName());
+					}
 					$object["webpages"][$index]['cp_'.$cp->getId()] = $cp_value instanceof CustomPropertyValue ? $cp_value->getValue() : '';
 				}
 				$index++;

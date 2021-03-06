@@ -1119,8 +1119,6 @@ class ObjectController extends ApplicationController {
 		$extra_conditions[] = "IF((SELECT ot.name FROM ".TABLE_PREFIX."object_types ot WHERE ot.id=o.object_type_id)='task',
 			 (SELECT t.is_template FROM ".TABLE_PREFIX."project_tasks t WHERE t.object_id=o.id) = 0, true)";
 		
-		$only_count_result = array_var($_GET, 'only_result',false);
-		
 		if($object_ids_filter == "" && $show_all_linked_objects){
 			$pagination = array();
 		}else{
@@ -1135,7 +1133,6 @@ class ObjectController extends ApplicationController {
 				"extra_conditions" => " AND ".implode(" AND ", $extra_conditions),
 				"ignore_context" => $ignore_context,
 				"extra_member_ids" => $extra_member_ids,
-				"only_count_results" => $only_count_result,
 				"template_objects" => $template_objects
 			));
 		}
@@ -1748,8 +1745,8 @@ class ObjectController extends ApplicationController {
 			$timezone = logged_user()->getTimezone();
 			if ($date->getTimestamp() + 5*60 < DateTimeValueLib::now()->getTimestamp()) {
 				// don't show popups older than 5 minutes
-				$reminder->delete();
-				continue;
+				//$reminder->delete();
+				//continue;
 			}
 			if ($reminder->getUserId() == 0) {
 				if (!$object->isSubscriber(logged_user())) {

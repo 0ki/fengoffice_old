@@ -451,6 +451,8 @@
 	'can_manage_tasks description' => 'Si este permiso está marcado el usuario tendrá permisos completos sobre tareas. Podrá asignar tareas a otros y completarlas.',
 	'can_see_assigned_to_other_tasks description' => 'Si este permiso está marcado el usuario podrá ver tareas asignadas a otros usuarios.',
 
+	'member custom properties' => 'Propiedades personalizadas para miembros de dimensiones.',
+	'select member type' => 'Seleccione tipo',
 
 	//Hidden
 	'can_task_assignee'=>'Puede asignarsele tareas',

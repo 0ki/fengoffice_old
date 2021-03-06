@@ -66,8 +66,8 @@
 				 * Add people button
 				 */
 				?> 
-				<div style="float:left; width: 50%;">
-					<button style="overflow: hidden; max-width: 300px;" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-hide').show();" id="add-person-form-show" class="add-first-btn">
+				<div style="float:left; width: 75%;">
+					<button style="overflow: hidden; width:auto;" onclick="$('.add-person-form').slideToggle();$(this).hide();$('#add-person-form-hide').show();" id="add-person-form-show" class="add-first-btn">
 						<img src="public/assets/themes/default/images/16x16/add.png"/>&nbsp;<?php echo ((isset($add_people_btn)) ? lang('add contact here') : lang('add contact'));?></button>
 				</div>
 							  
@@ -77,7 +77,7 @@
 				 */
 				?> 
 				<?php if (count($contacts) == $limit) :?>
-					<div class="view-all-container" style="float:right; width: 50%; overflow: hidden; font-size: 14px; margin-top: 0.75em; height: 16px;">
+					<div class="view-all-container" style="float:right; width: 25%; overflow: hidden; font-size: 14px; margin-top: 0.75em; height: 16px;">
 						<a href="<?php echo get_url('contact', 'init')?>" ><?php echo lang("view all");?></a>
 					</div>
 					<div class="clear"></div>

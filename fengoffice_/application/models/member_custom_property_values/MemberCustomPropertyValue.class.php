@@ -56,6 +56,10 @@ class MemberCustomPropertyValue extends BaseMemberCustomPropertyValue {
 				case 'memo':
 					$formatted = $this->getValue();
 					break;
+				case 'contact':
+					$c = Contacts::findById($this->getValue());
+					$formatted = $c instanceof Contact ? clean($c->getObjectName()) : '';
+					break;
 				case 'boolean':
 					$formatted = '<div class="db-ico ico-'. ($this->getValue() ? 'complete' : 'delete') .'">&nbsp;</div>';
 					break;

@@ -526,8 +526,11 @@ class Reports extends BaseReports {
 						$colCp = $column->getCustomPropertyId();
 						$cp = CustomProperties::getCustomProperty($colCp);
 						if ($cp instanceof CustomProperty) { /* @var $cp CustomProperty */
-							
 							$cp_val = CustomPropertyValues::getCustomPropertyValue($object->getId(), $colCp);
+							if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
+								$cp_contact = Contacts::findById($cp_val->getValue());
+								$cp_val->setValue($cp_contact->getObjectName());
+							}
 							$row_values[$cp->getName()] = $cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "";
 							
 							$results['columns'][$colCp] = $cp->getName();

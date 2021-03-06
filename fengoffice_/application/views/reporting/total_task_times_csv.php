@@ -47,11 +47,18 @@
 	
 	function cvs_total_task_times_table($objects, $pad_str, $options, $group_name, &$sub_total = 0) {
 		
-		echo lang('date') . ';';
-		echo lang('title') . ';';
-		echo lang('description') . ';';
-		echo lang('person') . ';';
-		echo lang('time') .'('.lang('hours').')'. ';';
+		$column_titles = array(
+			lang('date'),
+			lang('title'),
+			lang('description'),
+			lang('person'),
+			lang('time') .' ('.lang('hours').')'
+		);
+		Hook::fire('total_tasks_times_csv_columns', $column_titles, $column_titles);
+		
+		foreach ($column_titles as $ct) {
+			echo $ct . ';';
+		}
 		echo "\n";
 		
 		$sub_total = 0;
@@ -75,6 +82,16 @@
 			$resultado = round(($resultado/60),5);
 			echo $resultado;
 			$sub_total += $resultado;
+			
+			$new_values = null;
+			Hook::fire('total_tasks_times_csv_column_values', $ts, $new_values);
+			if (is_array($new_values) && count($new_values) > 0) {
+				foreach ($new_values as $nv) {
+					$nv = str_replace("\r", " ", str_replace("\n", " ", str_replace("\r\n", " ", $nv)));
+					echo ';' . $nv;
+				}
+			}
+			
 			echo "\n";
 		}
 	}
