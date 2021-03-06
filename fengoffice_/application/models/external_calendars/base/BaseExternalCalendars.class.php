@@ -14,11 +14,13 @@ abstract class BaseExternalCalendars extends DataManager {
 	 */
 	static private $columns = array(
                 'id' => DATA_TYPE_INTEGER,
-		'ext_cal_user_id' => DATA_TYPE_INTEGER,
-		'calendar_user' => DATA_TYPE_STRING,
+				'ext_cal_user_id' => DATA_TYPE_INTEGER,
+				'original_calendar_id' => DATA_TYPE_STRING,
                 'calendar_visibility' => DATA_TYPE_STRING,
                 'calendar_name' => DATA_TYPE_STRING,
-                'calendar_feng' => DATA_TYPE_INTEGER
+				'sync' => DATA_TYPE_INTEGER,
+                'calendar_feng' => DATA_TYPE_INTEGER,
+				'related_to' => DATA_TYPE_STRING
 	);
 
 	/**
@@ -99,16 +101,14 @@ abstract class BaseExternalCalendars extends DataManager {
 	 *  - offset - limit offset, valid only if limit is present
 	 *  - limit
 	 *
-	 * @return one or MailAccounts objects
+	 *
 	 * @throws DBQueryError
 	 */
 	function find($arguments = null) {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::find($arguments);
 		} else {
-			return ExternalCalendars::instance()->find($arguments);
-			//$instance =& MailAccounts::instance();
-			//return $instance->find($arguments);
+			return ExternalCalendars::instance()->find($arguments);			
 		} // if
 	} // find
 
@@ -117,15 +117,13 @@ abstract class BaseExternalCalendars extends DataManager {
 	 *
 	 * @access public
 	 * @param array $arguments
-	 * @return one or MailAccounts objects
+	 *
 	 */
 	function findAll($arguments = null) {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::findAll($arguments);
 		} else {
-			return ExternalCalendars::instance()->findAll($arguments);
-			//$instance =& MailAccounts::instance();
-			//return $instance->findAll($arguments);
+			return ExternalCalendars::instance()->findAll($arguments);			
 		} // if
 	} // findAll
 
@@ -134,15 +132,13 @@ abstract class BaseExternalCalendars extends DataManager {
 	 *
 	 * @access public
 	 * @param array $arguments
-	 * @return MailAccount
+	 * 
 	 */
 	function findOne($arguments = null) {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::findOne($arguments);
 		} else {
-			return ExternalCalendars::instance()->findOne($arguments);
-			//$instance =& MailAccounts::instance();
-			//return $instance->findOne($arguments);
+			return ExternalCalendars::instance()->findOne($arguments);			
 		} // if
 	} // findOne
 
@@ -152,15 +148,13 @@ abstract class BaseExternalCalendars extends DataManager {
 	 * @access public
 	 * @param mixed $id
 	 * @param boolean $force_reload If true cache will be skipped and data will be loaded from database
-	 * @return MailAccount
+	 * 
 	 */
 	function findById($id, $force_reload = false) {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::findById($id, $force_reload);
 		} else {
-			return ExternalCalendars::instance()->findById($id, $force_reload);
-			//$instance =& MailAccounts::instance();
-			//return $instance->findById($id, $force_reload);
+			return ExternalCalendars::instance()->findById($id, $force_reload);			
 		} // if
 	} // findById
 
@@ -175,9 +169,7 @@ abstract class BaseExternalCalendars extends DataManager {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::count($condition);
 		} else {
-			return ExternalCalendars::instance()->count($condition);
-			//$instance =& MailAccounts::instance();
-			//return $instance->count($condition);
+			return ExternalCalendars::instance()->count($condition);			
 		} // if
 	} // count
 
@@ -189,12 +181,10 @@ abstract class BaseExternalCalendars extends DataManager {
 	 * @return boolean
 	 */
 	function delete($condition = null) {
-		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
+		if(isset($this) && instance_of($this, 'ExternalCalendars')) {						
 			return parent::delete($condition);
 		} else {
-			return ExternalCalendars::instance()->delete($condition);
-			//$instance =& MailAccounts::instance();
-			//return $instance->delete($condition);
+			return ExternalCalendars::instance()->delete($condition);			
 		} // if
 	} // delete
 
@@ -216,9 +206,7 @@ abstract class BaseExternalCalendars extends DataManager {
 		if(isset($this) && instance_of($this, 'ExternalCalendars')) {
 			return parent::paginate($arguments, $items_per_page, $current_page);
 		} else {
-			return ExternalCalendars::instance()->paginate($arguments, $items_per_page, $current_page);
-			//$instance =& MailAccounts::instance();
-			//return $instance->paginate($arguments, $items_per_page, $current_page);
+			return ExternalCalendars::instance()->paginate($arguments, $items_per_page, $current_page);			
 		} // if
 	} // paginate
 

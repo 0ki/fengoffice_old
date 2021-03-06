@@ -1261,7 +1261,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	    };
 		
 		this.actionRep.checkMails.disable();
-		this.store.removeAll();
+		//this.store.removeAll();
 		this.store.load({
 			params: Ext.apply(params, {
 				start: start,

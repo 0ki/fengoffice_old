@@ -73,6 +73,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
 	('general', 'enabled_dimensions', '', 'RootDimensionsConfigHandler', '1', '0', NULL),
 	('general', 'last_sharing_table_rebuild', '', 'StringConfigHandler', '1', '0', NULL),
+	('system', 'last_template_instantiation_id', '0', 'IntegerConfigHandler', 1, 0, NULL),
 	('brand_colors', 'brand_colors_head_back', '424242', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', 'FFFFFF', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_tabs_back', 'e7e7e7', 'ColorPickerConfigHandler', '1', '0', NULL),
@@ -584,6 +585,55 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
 UPDATE <?php echo $table_prefix ?>role_object_type_permissions SET can_write = 1 
 WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment') 
 	AND role_id IN (SELECT p.id FROM `<?php echo $table_prefix ?>permission_groups` p WHERE p.`name` IN ('Non-Exec Director','Guest Customer'));
+
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 1, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','mail','timeslot','report','comment','template')
+ AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','task','milestone','event','contact','report','file','timeslot','comment')
+ AND p.`name` IN ('Collaborator Customer');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','task','milestone','event','report')
+ AND p.`name` IN ('Internal Collaborator','External Collaborator');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('file','timeslot','comment')
+ AND p.`name` IN ('Internal Collaborator','External Collaborator');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','event','comment','report')
+ AND p.`name` IN ('Guest Customer');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','event','comment','report')
+ AND p.`name` IN ('Guest');
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 0, 0
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
+ AND p.`name` IN ('Non-Exec Director');
+
+UPDATE <?php echo $table_prefix ?>max_role_object_type_permissions SET can_write = 1 
+WHERE object_type_id = (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='comment') 
+	AND role_id IN (SELECT p.id FROM `<?php echo $table_prefix ?>permission_groups` p WHERE p.`name` IN ('Non-Exec Director','Guest Customer'));
+
+
 
 INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,contact_id,member_type_id,`option`,`value`,config_handler_class,is_system) VALUES
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),

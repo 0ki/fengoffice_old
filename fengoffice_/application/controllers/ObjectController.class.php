@@ -99,7 +99,7 @@ class ObjectController extends ApplicationController {
 			// remove subscribers without permissions
 			$subscribed_users = $object->getSubscribers();
 			foreach ($subscribed_users as $user) {
-				if (!can_read_sharing_table($user, $object->getId())) {
+				if ($object->canView($user)) {
 					$object->unsubscribeUser($user);
 				}
 			}
@@ -400,6 +400,8 @@ class ObjectController extends ApplicationController {
 							CustomPropertyValues::deleteCustomPropertyValues($object->getId(), $cpropid);
 						}
 					}
+					
+					Hook::fire('before_save_custom_property_value', array('custom_prop' => $custom_property), $value);
 					
 					//Save multiple values
 					if(is_array($value)){
@@ -1022,15 +1024,15 @@ class ObjectController extends ApplicationController {
 					"trashed" => true,
 				));
 				$objects = $result->objects;
+				
+				if (count($objects) > 0) {
+					$obj_ids_str = implode(',', array_flat($objects));
+					$extra_conds = "AND o.id IN ($obj_ids_str)";
+					
+					$count = Trash::purge_trash(0, 1000, $extra_conds);
+					flash_success(lang('success delete objects', $count));
+				}
 
-				$real_deleted_ids = array();
-				list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids, true);
-				if ($err > 0) {
-					flash_error(lang('error delete objects', $err));
-				}
-				if ($succ > 0) {
-					flash_success(lang('success delete objects', $succ));
-				}
 			} else if (array_var($_GET, 'action') == 'archive') {
 				$ids = explode(',', array_var($_GET, 'objects'));
 				list($succ, $err) = $this->do_archive_unarchive_objects($ids, 'archive');
@@ -1309,7 +1311,6 @@ class ObjectController extends ApplicationController {
 							$obj->delete(false);
 						} else {
 							$obj->delete();
-							Members::delete(array("conditions"=>"object_id = ".$obj->getId()));
 						}
 						$deleted_object_ids[] = $obj->getId();
 						ApplicationLogs::createLog($obj, ApplicationLogs::ACTION_DELETE);
@@ -1385,87 +1386,7 @@ class ObjectController extends ApplicationController {
 	}
 	
 	function move() {
-		/*	TODO implement again this function 
-		if (logged_user()->isGuest()) {
-			flash_error(lang('no access permissions'));
-			ajx_current("empty");
-			return;
-		}
-		ajx_current("empty");
-		$ids = array_var($_GET, 'ids');
-		if (!$ids) return;
-		$wsid = array_var($_GET, 'ws');
-		$keep = array_var($_GET, 'keep', 1) == 1;
-		$atts = array_var($_GET, 'atts', 0) == 1;
-		$workspace = Projects::findById($wsid);
-		if (!$workspace instanceof Project) {
-			flash_error(lang('project dnx'));
-			return;
-		}
-		$id_list = explode(",", $ids);
-		$err = 0;
-		$succ = 0;
-		foreach ($id_list as $cid) {
-			list($manager, $id) = explode(":", $cid);
-			if (isset($maganer) && $maganer == 'Projects') continue;
-			try {
-				$obj = Objects::findObject($id);
-				if ($obj instanceof ContentDataObject && $obj->canEdit(logged_user())) {
-					if ($obj instanceof MailContent) {
-						$conversation = MailContents::getMailsFromConversation($obj);
-						$count = 0;
-						foreach ($conversation as $conv_email) {
-							$count += MailController::addEmailToWorkspace($conv_email->getId(), $workspace, $keep);
-							if (array_var($_GET, 'atts') && $conv_email->getHasAttachments()) {
-								MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-								$classification_data = array();
-								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-									$classification_data["att_".$j] = true;		
-								}
-								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($workspace), $keep, $tags);
-							}
-						}
-						$succ++;
-					} else {
-						$remain = 0;
-						if (!$keep || $obj instanceof ProjectTask || $obj instanceof ProjectMilestone) { // Tasks and Milestones can have only 1 workspace
-							$removed = "";
-							$ws = $obj->getWorkspaces();
-							foreach ($ws as $w) {
-								if (can_add(logged_user(), $w, get_class($obj->manager()))) {
-									$obj->removeFromWorkspace($w);
-									$removed .= $w->getId() . ",";
-								} else {
-									$remain++;
-								}
-							}
-							$removed = substr($removed, 0, -1);
-							$log_action = ApplicationLogs::ACTION_MOVE;
-							$log_data = ($removed == "" ? "" : "from:$removed;") . "to:$wsid";
-						} else {
-							$log_action = ApplicationLogs::ACTION_COPY;
-							$log_data = "to:$wsid";
-						}
-						if ($remain > 0 && ($obj instanceof ProjectTask || $obj instanceof ProjectMilestone)) {
-							$err++;
-						} else {
-							$obj->addToWorkspace($workspace);
-							ApplicationLogs::createLog($obj, $log_action, false, null, true, $log_data);
-							$succ++;
-						}
-					}
-				} else {
-					$err++;
-				}
-			} catch (Exception $e) {
-				$err++;
-			}
-		}
-		if ($err > 0) {
-			flash_error(lang("error move objects", $err));
-		} else {
-			flash_success(lang("success move objects", $succ));
-		}*/
+		//	TODO implement again this function
 	}
 
 	function view_history(){
@@ -1998,55 +1919,7 @@ class ObjectController extends ApplicationController {
 		ajx_extra_data(array("html" => $html, 'scripts' => implode("", $scripts)));
 	}
         
-        function created_event_google_calendar($object,$event){
-            require_once 'Zend/Loader.php';
-
-            Zend_Loader::loadClass('Zend_Gdata');
-            Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-            Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-            Zend_Loader::loadClass('Zend_Gdata_Calendar');
-            
-            $users = ExternalCalendarUsers::findByContactId();
-            $calendar = ExternalCalendars::findById($event->getExtCalId());
-
-            $user = $users->getAuthUser();
-            $pass = $users->getAuthPass();
-            $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-
-            $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
-
-            $gdataCal = new Zend_Gdata_Calendar($client);
-            $newEvent = $gdataCal->newEventEntry();
-
-            $newEvent->title = $gdataCal->newTitle($event->getObjectName());
-            $newEvent->content = $gdataCal->newContent($event->getDescription());
-
-            $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-            $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-
-            if($event->getTypeId() == 2){
-                $when = $gdataCal->newWhen();
-                $when->startTime = $star_time[0];
-                $when->endTime = $end_time[0];
-                $newEvent->when = array($when);
-            }else{                                    
-                $when = $gdataCal->newWhen();
-                $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                $newEvent->when = array($when);
-            }   
-
-            // insert event
-            $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
-            
-            $event_id = explode("/",$createdEvent->id->text);
-            $special_id = end($event_id); 
-            $event->setSpecialID($special_id);
-            $event->setExtCalId($calendar->getId());
-            $event->save();
-        }
+        
 
 	function get_cusotm_property_columns() {
 		$grouped = array();

@@ -235,7 +235,9 @@ og.getMembersFromServer = function(members_ids,func_callback, callback_extra_par
 		}
 	}
 	if(missing_members_ids.length > 0){
-		og.openLink(og.getUrl('dimension', 'get_members', {member_ids:Ext.encode(missing_members_ids)}), {
+		og.openLink(og.getUrl('dimension', 'get_members'), {
+			method: 'POST',
+			post: {member_ids:Ext.encode(missing_members_ids)},
 			hideLoading: true,
 			callback: function(s, d) {
 				for (var prop in d.members) {

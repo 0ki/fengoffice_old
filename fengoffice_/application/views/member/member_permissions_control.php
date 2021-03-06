@@ -154,6 +154,13 @@
 		    </tr>
 		<?php }?>
 		  </table>
+		<?php if ($member instanceof Member) { ?>
+		  <input type="hidden" id="<?php echo $genid?>_dim_id" value="<?php echo $member->getDimensionId()?>" />
+		  <div class="apply-member-permissions-to-submembers">
+			<?php echo checkbox_field('apply_to_submembers', false, array('id' => $genid."apply_to_submembers"))?>
+			<?php echo label_tag("", $genid."apply_to_submembers", false, array('id' => $genid . "_apply_to_submembers_label", "style" => "display:inline;cursor:pointer;"))?>
+		  </div>
+		<?php } ?>
 		  
 		  <div class="additional-member-permissions">
 		<?php $ret=null; Hook::fire('render_additional_member_permissions', array('member' => $member, 'genid' => $genid, 'dim' => $current_dimension, 'ot_id' => $obj_type_sel), $ret); ?>

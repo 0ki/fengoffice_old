@@ -1,4 +1,4 @@
-<?php
+<div class="custom-properties"><?php
 require_javascript("og/CustomProperties.js");
 
 $object_type_id = $_custom_properties_object instanceof TemplateTask ? ProjectTasks::instance()->getObjectTypeId() : $_custom_properties_object->getObjectTypeId();
@@ -264,8 +264,10 @@ if(count($cps) > 0){
 					break;
 				default: break;
 			}
+			$ret = null;
+			Hook::fire('after_render_cp_input', array('custom_prop' => $customProp, 'value' => $value, 'input_name' => $name), $ret);
 		}
 	}
 }
 
-?>
+?></div>

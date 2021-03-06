@@ -744,6 +744,28 @@ abstract class BaseProjectTask extends ContentDataObject {
 	function setOriginalTaskId($value) {
 		return $this->setColumnValue('original_task_id', $value);
 	} // setOriginalTaskId()
+	
+	/**
+	 * Return value of 'instantiation_id' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return integer
+	 */
+	function getInstantiationId() {
+		return $this->getColumnValue('instantiation_id');
+	} // getInstantiationId()
+	
+	/**
+	 * Set value of 'instantiation_id' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return boolean
+	 */
+	function setInstantiationId($value) {
+		return $this->setColumnValue('instantiation_id', $value);
+	} // setInstantiationId()
         
         /**
 	 * Return value of 'type_content' field

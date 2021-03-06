@@ -1973,19 +1973,7 @@ class FilesController extends ApplicationController {
 				Hook::fire('add_classification_value', $o, $values);
 				
 				foreach ($custom_properties as $cp) {
-					$cp_value = CustomPropertyValues::getCustomPropertyValues($o->getId(), $cp->getId());
-					if ($cp->getType() == 'contact' && $cp_value[0] instanceof CustomPropertyValue) {
-						$contact = Contacts::findById($cp_value[0]->getValue());
-						if ($contact instanceof Contact) $cp_value[0]->setValue($contact->getObjectName());
-					}
-					for ($j = 0; $j < count($cp_value); $j++){
-						if ($j == 0){
-							$values['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
-						}else{
-							$values['cp_'.$cp->getId()] .= ", ";
-							$values['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
-						}
-					}
+					$values['cp_'.$cp->getId()] = get_custom_property_value_for_listing($cp, $o);
 				}
 				
 				$listing["files"][] = $values;

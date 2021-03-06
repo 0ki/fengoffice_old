@@ -310,7 +310,7 @@ og.CalendarTopToolbar = function(config) {
 			text: lang('sync'),
 			tooltip: lang('sync'),
 			handler: function() {
-				var url = og.getUrl('event', 'calendar_sinchronization');
+				var url = og.getUrl('externalCalendar', 'calendar_sinchronization');
 				og.openLink(url);
 			},
 			scope: this

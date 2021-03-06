@@ -158,7 +158,7 @@ class MailController extends ApplicationController {
 		// Put original mail images in the reply or foward
 		if ($original_mail->getBodyHtml() != '') {
 			MailUtilities::parseMail($original_mail->getContent(), $decoded, $parsedEmail, $warnings);
-			$tmp_folder = "/tmp/" . $original_mail->getId() . "_reply";//$hola _fwd
+			$tmp_folder = "/tmp/" . $original_mail->getId() . "_reply";
 			if (is_dir(ROOT . $tmp_folder)) remove_dir(ROOT . $tmp_folder);
 			if ($parts_container = array_var($decoded, 0)) {
 				$re_body = self::rebuild_body_html($re_body, array_var($parts_container, 'Parts'), $tmp_folder);
@@ -1628,7 +1628,12 @@ class MailController extends ApplicationController {
 			
 			$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
 			if ($canWriteFiles) {
-				DB::beginWork();
+				
+				// if $after_receiving == true transaction has already been started, so dont start a new one
+				if (!$after_receiving) {
+					DB::beginWork();
+				}
+				
 				if (count($members) > 0) {
 					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
@@ -1637,7 +1642,7 @@ class MailController extends ApplicationController {
 						if (count($members) > 0) {
 							$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
 							MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
-							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, false);
+							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, false, !$after_receiving);
 						}
 					}
 					
@@ -1656,7 +1661,7 @@ class MailController extends ApplicationController {
 							
 							if ($conv_email->getHasAttachments()) {
 								if (!$after_receiving || user_config_option('auto_classify_attachments')) {
-									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, false);
+									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, false, !$after_receiving);
 								}
 							}
 						}
@@ -1668,14 +1673,20 @@ class MailController extends ApplicationController {
 						}
 					}
 				}
-				DB::commit();
+				
+				if (!$after_receiving) {
+					DB::commit();
+				}
+				
 				flash_success(lang('success classify email'));
 				if ($create_task) {
 					ajx_replace(true);
 					$this->redirectTo('task', 'add_task', array('from_email' => $email->getId(), 'replace' =>  1));
 				} else {
 					ajx_current("back");
-					evt_add("reload mails panel", array());
+					if (!$after_receiving) {
+						evt_add("reload mails panel", array());
+					}
 				}
 			} else {
 				flash_error(lang("error classifying attachment cant open file"));
@@ -1683,13 +1694,15 @@ class MailController extends ApplicationController {
 			} // If can write files
 			// Error...
 		} catch(Exception $e) {
-			DB::rollback();
+			if (!$after_receiving) {
+				DB::rollback();
+			}
 			flash_error($e->getMessage());
 			ajx_current("empty");
 		}
 	}
 
-	function classifyFile($classification_data, $email, $parsedEmail, $members, $remove_prev) {
+	function classifyFile($classification_data, $email, $parsedEmail, $members, $remove_prev, $use_transaction) {
 		if (!is_array($classification_data)) $classification_data = array();
 
 		if (!isset($parsedEmail["Attachments"])) {
@@ -1740,7 +1753,9 @@ class MailController extends ApplicationController {
 							$file = ProjectFiles::findOne(array('conditions' => "mail_id = ".$email->getId()." AND o.name = ".DB::escape($fName).""));
 						}
 						
-						DB::beginWork();
+						if ($use_transaction) {
+							DB::beginWork();
+						}
 						if ($file == null){
 							$fileIsNew = true;
 							$file = new ProjectFile();
@@ -1802,10 +1817,15 @@ class MailController extends ApplicationController {
 								ApplicationLogs::createLog($file, ApplicationLogs::ACTION_ADD);
 							}*/
 						}
-						DB::commit();
+						
+						if ($use_transaction) {
+							DB::commit();
+						}
 						// Error...
 					} catch(Exception $e) {
-						DB::rollback();
+						if ($use_transaction) {
+							DB::rollback();
+						}
 						flash_error($e->getMessage());
 						ajx_current("empty");
 					}
@@ -2731,16 +2751,7 @@ class MailController extends ApplicationController {
 			}
 			
 			foreach ($custom_properties as $cp) {
-				$cp_vals = CustomPropertyValues::getCustomPropertyValues($email->getId(), $cp->getId());
-				$val_to_show = "";
-				foreach ($cp_vals as $cp_val) {
-					if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
-						$cp_contact = Contacts::findById($cp_val->getValue());
-						$cp_val->setValue($cp_contact->getObjectName());
-					}
-					$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
-				}
-				$object["messages"][$i]['cp_'.$cp->getId()] = $val_to_show;
+				$object["messages"][$i]['cp_'.$cp->getId()] = get_custom_property_value_for_listing($cp, $email);
 			}
 			$i++;
 		}
@@ -2943,54 +2954,7 @@ class MailController extends ApplicationController {
 					}; // switch
 				}; // for
 				break;
-			/*case "move": //clasify
-				
-				$wsid = $attributes["moveTo"];
-				$destination = Projects::findById($wsid);
-		
-				if (!$destination instanceof Project) {
-					$resultMessage = lang('project dnx');
-					$resultCode = 1;
-				} else if (!can_add(logged_user(), $destination, 'MailContents')) {
-					$resultMessage = lang('no access permissions');
-					$resultCode = 1;
-				} else {
-					$count = 0;
-					for($i = 0; $i < count($attributes["ids"]); $i++){
-						$id = $attributes["ids"][$i];
-						$type = $attributes["types"][$i];
-						switch ($type){
-							case "email":
-								$email = MailContents::findById($id);
-								if (user_config_option('show_emails_as_conversations',true,logged_user()->getId())) {
-									$conversation = MailContents::getMailsFromConversation($email);
-								} else {
-									$conversation = array($email);
-								}
-								foreach ($conversation as $conv_email) {
-									$this->addEmailToWorkspace($conv_email->getId(), $destination, array_var($attributes, "mantainWs", true));
-								
-									if (array_var($attributes, 'classify_atts') && $conv_email->getHasAttachments()) {
-										MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
-										$classification_data = array();
-										for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
-											$classification_data["att_".$j] = true;
-										}
-										$this->classifyFile($classification_data, $conv_email, $parsedEmail, array($destination), array_var($attributes, "mantainWs", true));
-									}
-								}
-								$count++;
-								break;	
-							default:
-								$resultMessage = "Unimplemented type: '" . $type . "'";
-								$resultCode = 2;
-								break;
-						}; // switch
-					}; // for
-					$resultMessage = lang("success move objects", $count);
-					$resultCode = 0;
-				}
-				break;*/
+			
 				
 			case "checkmail":
 				$resultCheck = MailController::checkmail();

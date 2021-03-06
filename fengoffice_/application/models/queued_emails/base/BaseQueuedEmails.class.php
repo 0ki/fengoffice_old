@@ -17,6 +17,8 @@ abstract class BaseQueuedEmails extends DataManager {
 	static private $columns = array(
 		'id' => DATA_TYPE_INTEGER,
 		'to' => DATA_TYPE_STRING,
+		'cc' => DATA_TYPE_STRING,
+		'bcc' => DATA_TYPE_STRING,
 		'from' => DATA_TYPE_STRING,
 		'subject' => DATA_TYPE_STRING,
 		'body' => DATA_TYPE_STRING,

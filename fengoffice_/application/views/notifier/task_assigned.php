@@ -75,7 +75,7 @@
                 <!-- CONTEXTS -->
                 <?php 
                     foreach ($contexts as $dimension => $context) { 
-                        if($dimension == "customer_project"){
+                        if($dimension == "customer_project" || $dimension == "customers"){
                             foreach ($context as $obj => $cont){
                                 echo lang($obj). ": ";
                                 foreach ($cont as $c){

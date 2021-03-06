@@ -87,3 +87,10 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
  WHERE o.`name` IN ('mail')
  AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
 ON DUPLICATE KEY UPDATE role_id=role_id;
+
+INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
+ SELECT p.id, o.id, 1, 1
+ FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
+ WHERE o.`name` IN ('mail')
+ AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive')
+ON DUPLICATE KEY UPDATE role_id=role_id;

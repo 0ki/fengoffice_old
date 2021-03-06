@@ -53,9 +53,12 @@
 	<div style="padding-bottom: 10px;">
 	<div style="<?php echo $width_style?> float: left;">
 <?php
-		foreach ($dimensions_info as $dname => $dinfo) { ?>
-			<div class="member-path-dim-block">
-				<span class="dname coViewAction <?php echo array_var($dinfo, 'icon')?>"><?php echo $dname?>:&nbsp;</span>
+		foreach ($dimensions_info as $dname => $dinfo) {
+			$dim_name = $dname;
+			Hook::fire("edit_dimension_name", array('dimension' => $dinfo['id']), $dim_name);
+			
+			?><div class="member-path-dim-block">
+				<span class="dname coViewAction <?php echo array_var($dinfo, 'icon')?>"><?php echo $dim_name?>:&nbsp;</span>
 		<?php
 			$breadcrumb_count = 1;
 			if (count($dinfo['members']) == 0) {

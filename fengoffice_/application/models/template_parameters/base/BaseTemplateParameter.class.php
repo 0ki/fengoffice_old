@@ -98,6 +98,15 @@ abstract class BaseTemplateParameter extends DataObject {
 	function setType($value) {
 		return $this->setColumnValue('type', $value);
 	} // setType()
+	
+	
+	function getDefaultValue() {
+		return $this->getColumnValue('default_value');
+	}
+	
+	function setDefaultValue($value) {
+		return $this->setColumnValue('default_value', $value);
+	}
 
 	/**
 	 * Return manager instance

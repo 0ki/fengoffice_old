@@ -99,6 +99,7 @@
     'back to day' => 'Back to day',
     'pick a date' => 'Pick a date',
     'month' => 'Month',
+    'day' => 'Day',
     'week' => 'Week',
     
     //Groups

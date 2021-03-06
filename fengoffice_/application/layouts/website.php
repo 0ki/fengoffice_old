@@ -360,9 +360,8 @@ echo "og.userRolesPermissions =".json_encode($rolePermissions).";";
 $maxRolePermissions = MaxSystemPermissions::getAllMaxRolesPermissions();
 echo "og.userMaxRolesPermissions =".json_encode($maxRolePermissions).";";
 
-echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
-// para cuando se tenga la tabla de MaxRoleObjectTypePermissions
-// echo "og.maxRoleObjectTypePermissions = ".json_encode(MaxRoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo());
+echo "og.defaultRoleObjectTypePermissions = ".json_encode(RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo()).";";
+echo "og.maxRoleObjectTypePermissions = ".json_encode(MaxRoleObjectTypePermissions::getAllMaxRoleObjectTypePermissionsInfo()).";";
 ?>
 
 <?php 
@@ -493,7 +492,8 @@ og.dimensionPanels = [
 	 	}
 	 		
 		/* @var $dimension Dimension */
-		$title = ( $dimension->getOptions() && isset($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) ) ? lang($dimension->getCode()) : $dimension->getName(); 
+		$title = ( $dimension->getOptions() && isset($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) ) ? lang($dimension->getCode()) : $dimension->getName();
+	 	Hook::fire("edit_dimension_name", array('dimension' => $dimension), $title); 
 		if (!$first) echo ",";
 		$first = false;
 		

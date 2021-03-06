@@ -737,7 +737,7 @@
 	}
 	
 	
-	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true, $update_contact_member_cache = true, $users_ids_to_check = array()) {
+	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true, $update_contact_member_cache = true, $users_ids_to_check = array(), $only_member_permissions=false) {
 	
 		if (is_null($permissions_data)) {
 			
@@ -777,16 +777,18 @@
 			$changed_members = array();
 					
 			// save module permissions
-			try {
+			if (!$only_member_permissions) {
+			  try {
 				TabPanelPermissions::clearByPermissionGroup($pg_id, true);
 				if (!is_null($mod_permissions_data) && is_array($mod_permissions_data)) {
 					foreach($mod_permissions_data as $tab_id => $val) {
 						DB::execute("INSERT INTO ".TABLE_PREFIX."tab_panel_permissions (permission_group_id,tab_panel_id) VALUES ('$pg_id','$tab_id') ON DUPLICATE KEY UPDATE permission_group_id=permission_group_id");
 					}
 				}
-			} catch (Exception $e) {
+			  } catch (Exception $e) {
 				Logger::log("Error saving module permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
 				throw $e;
+			  }
 			}
 			
 			$root_permissions_sharing_table_delete = array();
@@ -794,6 +796,7 @@
 			if (logged_user() instanceof Contact && can_manage_security(logged_user())) {
 				try {
 					
+				  if (!$only_member_permissions) {
 					// save system permissions
 					$system_permissions = SystemPermissions::findById($pg_id);
 					if (!$system_permissions instanceof SystemPermission) {
@@ -870,7 +873,7 @@
 						$all_object_type_ids = ObjectTypes::findAll(array('id' => true));
 						$sh_controller->adjust_root_permissions($pg_id, array('root_permissions_sharing_table_delete' => $all_object_type_ids));
 					}
-					
+				  }
 				} catch (Exception $e) {
 					
 					Logger::log("Error saving system and root permissions for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
@@ -1087,7 +1090,7 @@
 		$user = Contacts::findOne(array('conditions' => 'permission_group_id='.$pg_id));
 		if ($user instanceof Contact) {
 			$to_remove = array();
-			if (is_array($all_perm_deleted)) {
+			if (isset($all_perm_deleted) && is_array($all_perm_deleted)) {
 				foreach ($all_perm_deleted as $m_id => $must_remove) {
 					if ($must_remove) $to_remove[] = $m_id;
 				}
@@ -1523,7 +1526,7 @@
 	
 	
 	
-	function save_user_permissions_background($user, $pg_id, $is_guest=false, $users_ids_to_check = array()) {
+	function save_user_permissions_background($user, $pg_id, $is_guest=false, $users_ids_to_check = array(), $only_member_permissions=false) {
 		
 		// system permissions
 		$sys_permissions_data = array_var($_POST, 'sys_perm');
@@ -1531,7 +1534,14 @@
 		$mod_permissions_data = array_var($_POST, 'mod_perm');
 		// root permissions
 		$rp_permissions_data = array();
-		if ($rp_genid = array_var($_POST, 'root_perm_genid')) {
+		$set_root_permissions = false;
+		$tmp_contact = Contacts::findOne(array('conditions' => "permission_group_id=$pg_id"));
+		if ($tmp_contact instanceof Contact && $tmp_contact->getUserType() > 0) {
+			if (in_array($tmp_contact->getUserTypeName(), array('Super Administrator','Administrator','Manager','Executive'))) {
+				$set_root_permissions = true;
+			}
+		}
+		if ($rp_genid = array_var($_POST, 'root_perm_genid') && $set_root_permissions) {
 			foreach ($_POST as $name => $value) {
 				if (str_starts_with($name, $rp_genid . 'rg_root_')) {
 					$rp_permissions_data[$name] = $value;
@@ -1545,7 +1555,7 @@
 		
 		if (substr(php_uname(), 0, 7) == "Windows" || !can_save_permissions_in_background()){
 			//pclose(popen("start /B ". $command, "r"));
-			save_permissions($pg_id, $is_guest, null, true, true, true, true, $users_ids_to_check);
+			save_permissions($pg_id, $is_guest, null, true, true, true, true, $users_ids_to_check, $only_member_permissions);
 		} else {
 
 			// populate permission groups
@@ -1586,9 +1596,10 @@
 			
 			$usrcheck_filename = ROOT ."/tmp/usrcheck_".gen_id();
 			file_put_contents($usrcheck_filename, json_encode($users_ids_to_check));
-						
+			
+			$only_mem_perm_str = $only_member_permissions ? "1" : "0";
 			$is_guest_str = $is_guest ? "1" : "0";
-			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $usrcheck_filename $rp_genid";
+			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $usrcheck_filename $rp_genid $only_mem_perm_str";
 			exec("$command > /dev/null &");
 		}
 	}

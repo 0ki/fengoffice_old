@@ -263,10 +263,10 @@ class Timeslot extends BaseTimeslot {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		if ($this->getRelObjectId() > 0) {
-			return can_read_sharing_table($user, $this->getRelObjectId());
+		if ($this->getRelObject() instanceof ContentDataObject) {
+			return can_read($user, $this->getRelObject()->getMembers(), $this->getRelObject()->getObjectTypeId());
 		} else {
-			return can_read_sharing_table($user, $this->getId());
+			return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 		}
 	}
 

@@ -277,7 +277,7 @@ class TemplateTask extends BaseTemplateTask {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	
 	/**
@@ -494,7 +494,7 @@ class TemplateTask extends BaseTemplateTask {
 	 * @param void
 	 * @return null
 	 */
-	function copyToProjectTask() {
+	function copyToProjectTask($instantiation_id=0) {
 		//$new_st_date='',$new_due_date='',$copy_status = false,$copy_repeat_options = true,$parent_subtask=0
 		//param
 		$parent_subtask=0;
@@ -529,6 +529,7 @@ class TemplateTask extends BaseTemplateTask {
 		$new_task->setFromTemplateObjectId($this->getId());
 		$new_task->setParentId($this->getParentId());
 		$new_task->setOriginalTaskId(0);
+		$new_task->setInstantiationId($instantiation_id);
 		if ($this->getDueDate() instanceof DateTimeValue ) {
 			$new_task->setDueDate(new DateTimeValue($this->getDueDate()->getTimestamp()));
 		}

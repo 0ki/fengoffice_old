@@ -377,16 +377,7 @@ class WebpageController extends ApplicationController {
 				);
 				
 				foreach ($custom_properties as $cp) {
-					$cp_vals = CustomPropertyValues::getCustomPropertyValues($w->getId(), $cp->getId());
-					$val_to_show = "";
-					foreach ($cp_vals as $cp_val) {
-						if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
-							$cp_contact = Contacts::findById($cp_val->getValue());
-							$cp_val->setValue($cp_contact->getObjectName());
-						}
-						$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
-					}
-					$object["webpages"][$index]['cp_'.$cp->getId()] = $val_to_show;
+					$object["webpages"][$index]['cp_'.$cp->getId()] = get_custom_property_value_for_listing($cp, $w);
 				}
 				$index++;
 			}

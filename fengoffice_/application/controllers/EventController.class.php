@@ -480,6 +480,15 @@ class EventController extends ApplicationController {
 					ajx_current("back");
 				}
 				DB::commit();
+
+				//external calendar sync				
+				$ext_user = ExternalCalendarUsers::findByContactId();
+				if ($ext_user instanceof ExternalCalendarUser && $ext_user->getSync() == 1) {
+					$calendar_feng = ExternalCalendars::findFengCalendarByExtCalUserIdValue($ext_user->getId());
+					$externalCalendarController = new ExternalCalendarController();
+					$externalCalendarController->sync_event_on_extern_calendar($event, $ext_user, $calendar_feng);
+				}
+				
 				$is_silent = false;
 				if (isset($data['send_notification']) && $data['send_notification']) {
 					$users_to_inv = array();
@@ -510,7 +519,7 @@ class EventController extends ApplicationController {
 	}
 	
 	function delete() {
-                $options = array_var($_GET, 'options');
+        $options = array_var($_GET, 'options');
 		if (logged_user()->isGuest()) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
@@ -540,40 +549,31 @@ class EventController extends ApplicationController {
 			}
 		}
 	    
-                $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
+        $this->getUserPreferences($view_type, $user_filter, $status_filter, $task_filter);
 		$this->setTemplate($view_type);
 		
 		try {
 			foreach ($events as $event) {
-				$notifications = array();
-				$invs = EventInvitations::findAll(array ('conditions' => 'event_id = ' . $event->getId()));
-				if (is_array($invs)) {
-					foreach ($invs as $inv) {
-						if ($inv->getContactId() != logged_user()->getId()) 
-							$notifications[] = Contacts::findById(array('id' => $inv->getContactId()));
-					}
-				} else {
-					if ($invs->getContactId() != logged_user()->getId()) 
-						$notifications[] = Contacts::findById(array('id' => $invs->getContactId()));
-				}
-				//Notifier::notifEvent($event, $notifications, 'deleted', logged_user());
 				try {
 					DB::beginWork();
 					// delete event
 					$event->trash();
 	                                
-	                                if($event->getSpecialID() != ""){
-	                                    $this->delete_event_calendar_extern($event);
-	                                    $event->setSpecialID("");
-	                                    $event->save();
-	                                }       
-	                                
-	                                if($options == "news" || $options == "all"){
-	                                    $this->repetitive_event_related($event,"delete",$options);
-	                                }
+	                if($options == "news" || $options == "all"){
+	                	$this->repetitive_event_related($event,"delete",$options);
+	                }
 	                                
 					DB::commit();
 					ApplicationLogs::createLog($event, ApplicationLogs::ACTION_TRASH);
+					
+					//external calendar sync
+					if($event->getSpecialID() != ""){
+						$ext_user = ExternalCalendarUsers::findByContactId();
+						if ($ext_user instanceof ExternalCalendarUser) {
+							$externalCalendarController = new ExternalCalendarController();
+							$externalCalendarController->delete_event_calendar_extern($event, $ext_user);
+						}
+					}					
 				}catch(Exception $e) {
 					flash_error(lang('error delete event'));
 					ajx_current("empty");
@@ -960,10 +960,7 @@ class EventController extends ApplicationController {
 				}
 				
 				DB::beginWork ();
-				$event->save ();
-				if ($event->getSpecialID () != "") {
-					$this->sync_calendar_extern ( $event );
-				}
+				$event->save ();				
 				
 				$member_ids = json_decode ( array_var ( $_POST, 'members' ) );
 				
@@ -997,6 +994,11 @@ class EventController extends ApplicationController {
 				
 				$event->resetIsRead ();
 				DB::commit ();
+				
+				if ($event->getSpecialID () != "") {
+					$externalCalendarController = new ExternalCalendarController();
+					$externalCalendarController->sync_event_on_extern_calendar($event );
+				}
 				
 				$is_silent = false;
 				if (isset ( $data ['send_notification'] ) && $data ['send_notification']) {
@@ -1296,11 +1298,13 @@ class EventController extends ApplicationController {
 	    DB::beginWork();
 	    $event->setDuration($duration->format("Y-m-d H:i:s"));
 	    $event->save();
-            
-            if($event->getSpecialID() != ""){
-                $this->sync_calendar_extern($event);
-            }
+                      
 	    DB::commit();
+	    
+	    if($event->getSpecialID() != ""){
+	    	$externalCalendarController = new ExternalCalendarController();
+	    	$externalCalendarController->sync_event_on_extern_calendar($event );
+	    }
 	    
 	    ajx_extra_data($this->get_updated_event_data($event));
 	    if ($event->isRepetitive()) ajx_current("reload");
@@ -1394,11 +1398,13 @@ class EventController extends ApplicationController {
         if (!$is_read) {
             $event->setIsRead(logged_user()->getId(), false);
         }
-        if($event->getSpecialID() != ""){
-            $this->sync_calendar_extern($event);
-        }
-            
+                    
 	    DB::commit();
+	    
+	    if($event->getSpecialID() != ""){
+	    	$externalCalendarController = new ExternalCalendarController();
+	    	$externalCalendarController->sync_event_on_extern_calendar($event );
+	    }
     
 	    ajx_extra_data($this->get_updated_event_data($event));
 	    if ($different_days || $event->isRepetitive()) ajx_current("reload");
@@ -1446,951 +1452,6 @@ class EventController extends ApplicationController {
 			ajx_current("reload");
 	}
 	
-	private function update_sync_cron_events() {
-		$count = ExternalCalendarUsers::count();
-		$events = CronEvents::findAll(array('conditions' => "name IN ('import_google_calendar','export_google_calendar')"));
-		foreach ($events as $event) {
-			if ($count > 0) {
-				if (!$event->getEnabled()) {
-					$event->setEnabled(true);
-					$event->save();
-				}
-			} else {
-				if ($event->getEnabled()) {
-					$event->setEnabled(false);
-					$event->save();
-				}
-			}
-		}
-	}
-
-        function calendar_sinchronization() {
-                
-                $user = ExternalCalendarUsers::findByContactId();
-                $user_data = array();
-                
-                if($user){
-                    $external_calendars = array();
-                    $calFeed = array();
-                    require_once 'Zend/Loader.php';
-
-                    Zend_Loader::loadClass('Zend_Gdata');
-                    Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-                    Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-                    Zend_Loader::loadClass('Zend_Gdata_Calendar');
-                    
-                    $user_cal = $user->getAuthUser();
-                    $pass = $user->getAuthPass();
-                    $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-                    
-                    try
-                    {                                        
-                        $client = Zend_Gdata_ClientLogin::getHttpClient($user_cal,$pass,$service);
-                        $gdataCal = new Zend_Gdata_Calendar($client); 
-
-                        $calFeed = $gdataCal->getCalendarListFeed();   
-                    }
-                    catch(Exception $e)
-                    {
-                            flash_error(lang('check your account'));
-                    }
-                    $calendar_google = array();
-                    if(count($calFeed) > 0){
-                        foreach ($calFeed as $calF){
-                            $cal_src = explode("/",$calF->content->src);
-                            array_pop($cal_src);
-                            $calendar_visibility = end($cal_src);
-                            array_pop($cal_src);
-                            $calendar_user = end($cal_src);
-
-                            $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                    WHERE ec.calendar_user = '".$calendar_user."' AND ecu.contact_id = ".logged_user()->getId()."  AND ec.ext_cal_user_id = ecu.id ";
-                            $calendar_feng = DB::executeOne($sql);
-                            $sel = 0;
-                            if($calendar_feng){
-                                $sel = 1;
-                            }
-                            $external_calendars[] = array('user' => $calendar_user, 'title' => $calF->title->text , 'sel' => $sel);                        
-
-                            $calendar_google[] = $calendar_user;
-                        }
-                    }
-                    
-                    $view_calendars = array();
-                    $calendars = ExternalCalendars::findByExtCalUserId($user->getId());       
-                    foreach ($calendars as $ext_calendar){
-                        if(in_array($ext_calendar->getCalendarUser(), $calendar_google)){
-                            $view_calendars[] = $ext_calendar;
-                        }else{
-                            $ext_calendar->delete();
-                        }
-                    }
-                    tpl_assign('calendars', $view_calendars);
-                    
-                    $members_ids = explode(",", $user->getRelatedTo());
-                    foreach($members_ids as $members_id){
-                        $members[] = $members_id;
-                    }
-                    $user_data['id'] = $user->getId();
-                    $user_data['auth_user'] = $user->getAuthUser();
-                    $user_data['auth_pass'] = $user->getAuthPass();
-                    $user_data['related_to'] = $members;
-                    $user_data['sync'] = $user->getSync(); 
-                    
-                    tpl_assign('user', $user_data);
-                    tpl_assign('external_calendars', $external_calendars);
-                }else{
-                    tpl_assign('external_calendars', array());
-                }
-                
-                $cal_data = array();
-                if(get_id('cal_id')){
-                    $edit_calendar = ExternalCalendars::findById(get_id('cal_id'));
-                    
-                    $cal_data['id'] = $edit_calendar->getId();
-                    
-                    $cal_data['calendar_link'] = "http://www.google.com/calendar/feeds/".$edit_calendar->getCalendarUser()."/".$edit_calendar->getCalendarVisibility()."/basic";
-                    $cal_data['calendar_name'] = $edit_calendar->getCalendarName();
-                    tpl_assign('cal_data', $cal_data);
-                }
-	}
-        
-        function add_calendar_user() {
-                ajx_current("empty");
-                if($_POST){                    
-                    if (!array_var($_POST, 'auth_user')) {
-                            flash_error(lang('must enter a account gmail'));
-                            ajx_current("empty");
-                            return;
-                    }
-                    $user_email = ExternalCalendarUsers::findByEmail(array_var($_POST, 'auth_user'));
-                    if($user_email) {
-                            flash_error(lang('account has already'));
-                            ajx_current("empty");
-                            return;
-                    } 
-                    if (!array_var($_POST, 'auth_pass')) {
-                            flash_error(lang('must enter the password gmail'));
-                            ajx_current("empty");
-                            return;
-                    }
-                    
-                    $sync = 0;
-                    if(array_var($_POST, 'sync')){
-                        $sync = 1;
-                    }
-                    
-                    $member_ids = json_decode(array_var($_POST, 'related_to'));
-                    $members = "";
-                    foreach($member_ids as $member_id){
-                        $members .= $member_id.",";
-                    }
-                    $members = rtrim($members, ",");
-                    
-                    $user_cal = ExternalCalendarUsers::findById(get_id('cal_user_id'));
-                    if($user_cal){
-                        $user_cal->setAuthUser(array_var($_POST, 'auth_user'));
-                        $user_cal->setAuthPass(array_var($_POST, 'auth_pass'));
-                        $user_cal->setRelatedTo($members);
-                        $user_cal->setSync($sync);
-                        $user_cal->save();
-                        
-                        flash_success(lang('success edit account gmail'));
-                        
-                    }else{
-                        $user_cal = new ExternalCalendarUser();
-                        $user_cal->setAuthUser(array_var($_POST, 'auth_user'));
-                        $user_cal->setAuthPass(array_var($_POST, 'auth_pass'));
-                        $user_cal->setContactId(logged_user()->getId());
-                        $user_cal->setRelatedTo($members);
-                        $user_cal->setType("google");
-                        $user_cal->setSync($sync);
-                        $user_cal->save();
-                        
-                        flash_success(lang('success add account gmail'));
-                    }                   
-                    ajx_current("reload");
-                }
-                
-                $this->update_sync_cron_events();
-	}
-        
-        function add_calendar() {
-                ajx_current("empty");
-                if($_POST){
-                    if (!array_var($_POST, 'calendar_name')) {
-                            flash_error(lang('must enter a calendar name'));
-                            ajx_current("empty");
-                            return;
-                    }
-                    if (!array_var($_POST, 'calendar_link')) {
-                            flash_error(lang('must enter an calendar link'));
-                            ajx_current("empty");
-                            return;
-                    }
-                    
-                    $link = explode("/",array_var($_POST, 'calendar_link'));
-                    array_pop($link); 
-                    $calendar_visibility = end($link);
-                    array_pop($link);                     
-                    $calendar_user = end($link);
-                    
-                    $calendar = ExternalCalendars::findById(get_id('cal_id'));
-                    if($calendar){
-                        $calendar->setCalendarUser($calendar_user);
-                        $calendar->setCalendarVisibility($calendar_visibility);
-                        $calendar->setCalendarName(array_var($_POST, 'calendar_name'));
-                        $calendar->save();
-                        
-                        flash_success(lang('success edit calendar'));                        
-                    }else{
-                        $calendar = new ExternalCalendar();
-                        $calendar->setCalendarUser($calendar_user);
-                        $calendar->setCalendarVisibility($calendar_visibility);
-                        $calendar->setCalendarName(array_var($_POST, 'calendar_name'));
-                        $calendar->setExtCalUserId(array_var($_POST, 'ext_cal_user_id'));
-                        $calendar->save();
-                        
-                        flash_success(lang('success add calendar'));
-                    }                   
-                    ajx_current("reload");
-                }         
-	}
-        
-        function delete_calendar_user() {
-                ajx_current("empty");
-                
-                try
-                {
-                    $cal_users = ExternalCalendarUsers::findByContactId();
-                    $calendars = ExternalCalendars::findByExtCalUserId($cal_users->getId());                
-                    foreach ($calendars as $calendar){
-                        $events = ProjectEvents::findByExtCalId($calendar->getId());
-                        foreach ($events as $event){
-                            if($calendar->getCalendarFeng() == 0){
-                                $event->trash();
-                            }
-                            $event->setSpecialID("");
-                            $event->setExtCalId(0);
-                            $event->save();
-                        }
-                        $calendar->delete();
-                    }
-                    
-                    $cal_users->delete();  
-
-                    $this->update_sync_cron_events();
-
-                    flash_success(lang('success delete calendar'));
-                    ajx_current("reload");
-                }
-                catch(Exception $e)
-                {
-                        flash_error($e->getMessage());
-                        ajx_current("empty");
-                }
-	}
-        
-        function delete_calendar() {
-                ajx_current("empty");
-                                    
-                $deleteCalendar = array_var($_GET, 'deleteCalendar', false);
-                
-                require_once 'Zend/Loader.php';
-
-                Zend_Loader::loadClass('Zend_Gdata');
-                Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-                Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-                Zend_Loader::loadClass('Zend_Gdata_Calendar');
-                
-                $users = ExternalCalendarUsers::findByContactId();
-                
-                $user = $users->getAuthUser();
-                $pass = $users->getAuthPass();
-                $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;             
-                
-                $calendar = ExternalCalendars::findById(get_id('cal_id'));
-                $events = ProjectEvents::findByExtCalId($calendar->getId());
-                
-                $calendar_user = $calendar->getCalendarUser();
-                $calendar_visibility = 'private';
-                if($calendar){
-                    if($calendar->delete()){
-                        if($events){
-                            foreach($events as $event){                            
-                                $event->delete();                                                               
-                            }                        
-
-                            if($deleteCalendar){
-                                try
-                                {
-                                        $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-                                        $gdataCal = new Zend_Gdata_Calendar($client);
-                                        $query = $gdataCal->newEventQuery();
-                                        $query->setUser($calendar_user);
-                                        $query->setVisibility($calendar_visibility);
-                                        $query->setMaxResults(999999999);
-
-                                        $event_list = $gdataCal->getCalendarEventFeed($query);
-                                        foreach ($event_list as $event)
-                                        {
-                                            $event->delete();
-                                        }   
-                                }
-                                catch(Exception $e)
-                                {
-                                		Logger::log($e->getMessage());
-                                        flash_error(lang('could not connect to calendar'));
-                                        ajx_current("empty");
-                                }
-                            }
-                        }
-                        
-                        flash_success(lang('success delete calendar'));
-                        ajx_current("reload");
-                    }         
-                } 
-	}
-        
-	function sync_calendar_extern($event, $user = NULL){
-		require_once 'Zend/Loader.php';
-
-		Zend_Loader::loadClass('Zend_Gdata');
-		Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-		Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-		Zend_Loader::loadClass('Zend_Gdata_Calendar');
-		
-		if($user = NULL){
-			$users = ExternalCalendarUsers::findByContactId();
-		}else{
-			$users = $user;
-		}
-		
-		if (!$users instanceof ExternalCalendarUser) return;
-		$calendar = ExternalCalendars::findById($event->getExtCalId());
-		if (!$calendar instanceof ExternalCalendar) return;
-		//if($calendar->getCalendarUser() != logged_user()->getId()){
-			 
-			$event_inv = EventInvitations::findSyncByEvent($event->getId());
-			foreach ($event_inv as $invitation){
-
-				$calendarUser = ExternalCalendarUsers::findByGivenContactId($invitation->getContactId());
-
-				$calendar = ExternalCalendars::findByExtCalUserIdValue($calendarUser->getId());
-
-				$user = $calendarUser->getAuthUser();
-				$pass = $calendarUser->getAuthPass();
-				$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-				try
-				{
-					$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-
-					$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$invitation->getSpecialId();
-
-					$gcal = new Zend_Gdata_Calendar($client);
-					 
-					$edit_event = $gcal->getCalendarEventEntry($event_id);
-					$edit_event->title = $gcal->newTitle($event->getObjectName());
-					$edit_event->content = $gcal->newContent($event->getDescription());
-
-					$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-					$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-					
-					if($event->getTypeId() == 2){
-						$when = $gcal->newWhen();
-						$when->startTime = $star_time[0];
-						$when->endTime = $end_time[0];
-						$edit_event->when = array($when);
-					}else{
-						$when = $gcal->newWhen();
-						$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-						$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-						$edit_event->when = array($when);
-					}
-
-					$edit_event->save();
-				}
-				catch(Exception $e)
-				{
-					flash_error($e->getMessage());
-					ajx_current("empty");
-				}
-			}
-	}
-        
-	function delete_event_calendar_extern($event){
-		ajx_current("empty");
-		if($event->getExtCalId() > 0){
-			require_once 'Zend/Loader.php';
-
-			Zend_Loader::loadClass('Zend_Gdata');
-			Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-			Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-			Zend_Loader::loadClass('Zend_Gdata_Calendar');
-
-				$event_inv = EventInvitations::findSyncByEvent($event->getId());
-				foreach ($event_inv as $invitation){
-
-					$calendarUser = ExternalCalendarUsers::findByGivenContactId($invitation->getContactId());
-
-					$calendar = ExternalCalendars::findByExtCalUserIdValue($calendarUser->getId());
-
-					$user = $calendarUser->getAuthUser();
-					$pass = $calendarUser->getAuthPass();
-					$service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-					try
-					{
-						$client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);
-
-						$event_id = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full/'.$invitation->getSpecialId();
-
-						$gcal = new Zend_Gdata_Calendar($client);
-
-						$edit_event = $gcal->getCalendarEventEntry($event_id);
-						$edit_event->delete();
-					}
-					catch(Exception $e)
-					{
-						flash_error($e->getMessage());
-						ajx_current("empty");
-					}
-				}
-
-		}
-	}
-        
-        function import_calendars(){
-            ajx_current("empty");
-            if(array_var($_POST, 'e_calendars')){
-                $users = ExternalCalendarUsers::findByContactId();
-                foreach (array_var($_POST, 'e_calendars') as $cal_title => $cal_user){
-                    $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                            WHERE ec.calendar_user = '".$cal_user."' AND ecu.contact_id = ".logged_user()->getId()."";
-                    $calendar_feng = DB::executeOne($sql);  
-                    
-                    if(!$calendar_feng){
-                        $instalation = explode("/", ROOT_URL);
-                        $instalation_name = end($instalation);
-                        $calendar = new ExternalCalendar();
-                        $calendar->setCalendarUser($cal_user);
-                        $calendar->setCalendarVisibility("private");
-                        $calendar->setCalendarName($cal_title);
-                        $calendar->setExtCalUserId($users->getId());
-                        if($cal_title == lang('feng calendar',$instalation_name)){
-                            $calendar->setCalendarFeng(1);
-                        }
-                        $calendar->save();
-                        
-                        $sync = true;
-                    }
-                }
-                $this->import_google_calendar();
-                flash_success(lang('success import calendar'));
-                ajx_current("reload");
-            }
-        }
-        
-        function import_google_calendar() {
-                ajx_current("empty");
-                $users = ExternalCalendarUsers::findByContactId();  
-                if($users){
-                    $calendars = ExternalCalendars::findByExtCalUserId($users->getId());
-
-                    require_once 'Zend/Loader.php';
-
-                    Zend_Loader::loadClass('Zend_Gdata');
-                    Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-                    Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-                    Zend_Loader::loadClass('Zend_Gdata_Calendar');
-
-                    $user = $users->getAuthUser();
-                    $pass = $users->getAuthPass();
-                    $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-                    try
-                    {
-                            $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);                                                       
-                            $gdataCal = new Zend_Gdata_Calendar($client);
-
-                            //update or insert events for calendars                        
-                            foreach ($calendars as $calendar){
-
-                                //check the deleted calendars
-                                $delete_calendar = false;
-                                $calFeed = $gdataCal->getCalendarListFeed();        
-                                foreach ($calFeed as $calF){
-                                    $cal_src = explode("/",$calF->content->src);
-                                    array_pop($cal_src);
-                                    $calendar_visibility = end($cal_src);
-                                    array_pop($cal_src);
-                                    $calendar_user = end($cal_src); 
-
-                                    if($calendar_user == $calendar->getCalendarUser()){
-                                        $delete_calendar = true;
-                                    }
-                                }
-
-                                if($delete_calendar){
-                                    $calendar_user = $calendar->getCalendarUser();
-                                    $calendar_visibility = $calendar->getCalendarVisibility();
-                                    $start_sel = date('Y-m-d', strtotime('-1 week'));
-                                    $end_sel = date('Y-m-d', strtotime('+2 year'));
-
-                                    $query = $gdataCal->newEventQuery();
-                                    $query->setUser($calendar_user);
-                                    $query->setVisibility($calendar_visibility);
-                                    $query->setSingleEvents(true);
-                                    $query->setProjection('full');
-                                    $query->setOrderby('starttime');
-                                    $query->setSortOrder('ascending'); 
-                                    $query->setStartMin($start_sel);
-                                    $query->setStartMax($end_sel);
-                                    $query->setMaxResults(50);
-                                    $query->setParam('showdeleted', 'true');
-                                    // execute and get results
-                                    $event_list = $gdataCal->getCalendarEventFeed($query);
-
-                                    $array_events_google = array();
-                                    foreach ($event_list as $event){                                        
-                                        $event_id = explode("/",$event->id->text);
-                                        $special_id = end($event_id); 
-                                        $event_name = lang("untitle event");
-                                        if($event->title->text != ""){
-                                            $event_name = $event->title->text;
-                                        }
-                                        $array_events_google[] = $special_id;
-                                        $new_event = ProjectEvents::findBySpecialId($special_id);
-                                        $is_invitation = EventInvitations::findBySpecialId($special_id);
-                                        //If event deleted in google, delete event from feng
-                                      /*  if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
-                                        	if($new_event|| $is_invitation){
-                                            	if($is_invitation){
-                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
-                                            	}
-                                        		$event_controller->delete_event_calendar_extern($new_event);
-                                        		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
-                                        		$new_event->trash();
-                                        		 
-                                        		$new_event->setSpecialID("");
-                                        		$new_event->setExtCalId(0);
-                                        		$new_event->save();
-                                        	}
-                                        }else{*/
-                                        //If event deleted in google, delete event from feng
-                                        if(array_pop(explode( '.', $event->getEventStatus() )) == "canceled"){
-                                        	//$event_controller->delete_event_calendar_extern($new_event);
-                                        	if($new_event){
-                                        		EventInvitations::delete(array("conditions"=>"event_id = ".$new_event->getId()));
-                                        		$new_event->trash();
-                                        		 
-                                        		$new_event->setSpecialID("");
-                                        		$new_event->setExtCalId(0);
-                                        		$new_event->save();
-                                        	}elseif ($is_invitation){
-                                        		//$new_event = ProjectEvents::findById($is_invitation->getEventId());
-                                        		EventInvitations::delete(array("conditions"=>"special_id = '".$special_id."'"));
-                                        
-                                        	}
-                                        }else{
-                                        if($new_event|| $is_invitation){
-                                            	if($is_invitation){
-                                            		$new_event = ProjectEvents::findById($is_invitation->getEventId());
-                                            	}
-                                            if(strtotime(ProjectEvents::date_google_to_sql($event->updated)) > $new_event->getUpdateSync()->getTimestamp()){
-                                                $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                                if(($fin - $start) == 86400){
-                                                    $new_event->setStart(date("Y-m-d H:i:s",$start));
-                                                    $new_event->setDuration(date("Y-m-d H:i:s",$start));
-                                                    $new_event->setTypeId(2);
-                                                }elseif(($fin - $start) > 86400){                                                
-                                                    $t_s = explode(' ', date("Y-m-d H:i:s",$start));
-                                                    $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
-
-                                                    $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
-                                                    $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
-
-                                                    $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
-                                                    $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
-                                                    $new_event->setTypeId(2);
-                                                }else{
-                                                    $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                    $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                                }
-                                                if( strlen($event_name) > 100){
-                                                	$pieces = explode(" ", $event_name);
-                                                	$name = $pieces[0];
-                                                	if(strlen($name) > 100){
-                                                		$name = substr($pieces[0], 0, 100);
-                                                		$desc = substr($pieces[0], 100, strlen($pieces[0]));
-                                                	}else{
-                                                		$desc = "";
-                                                		foreach ($pieces as $piece){
-                                                			if(strlen($name.$piece) < 90)
-                                                				$name .= " ".$piece;
-                                                			else
-                                                				$desc .= " ".$piece;
-                                                		}
-                                                	}
-                                                	$new_event->setObjectName($name);
-                                                	$new_event->setDescription($desc." ".$event->content->text);
-                                                }else{
-                                                	$new_event->setObjectName($event_name);
-                                                	$new_event->setDescription($event->content->text);
-                                                }
-                                                $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
-                                                if(!$is_invitation) $new_event->setExtCalId($calendar->getId());
-                                                $new_event->save(); 
-                                               $this->sync_calendar_extern($new_event);
-                                            }
-                                        }else{
-                                        	if(!$is_invitation){
-                                            $new_event = new ProjectEvent();
-                                            
-                                            $start = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                            $fin = strtotime(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                            if(($fin - $start) == 86400){
-                                                $new_event->setStart(date("Y-m-d H:i:s",$start));
-                                                $new_event->setDuration(date("Y-m-d H:i:s",$start));
-                                                $new_event->setTypeId(2);
-                                            }elseif(($fin - $start) > 86400){
-                                                $t_s = explode(' ', date("Y-m-d H:i:s",$start));
-                                                $t_f = explode(' ', date("Y-m-d H:i:s",$fin));
-                                                
-                                                $date_s = new DateTimeValue(strtotime($t_s[0]."00:00:00") - logged_user()->getTimezone() * 3600);
-                                                $date_f = new DateTimeValue(strtotime($t_f[0]."23:59:59 -1 day") - logged_user()->getTimezone() * 3600);
-                                                
-                                                $new_event->setStart(date("Y-m-d H:i:s",$date_s->getTimestamp()));
-                                                $new_event->setDuration(date("Y-m-d H:i:s",$date_f->getTimestamp()));
-                                                $new_event->setTypeId(2);
-                                            }else{
-                                                $new_event->setStart(ProjectEvents::date_google_to_sql($event->when[0]->startTime));
-                                                $new_event->setDuration(ProjectEvents::date_google_to_sql($event->when[0]->endTime));
-                                                $new_event->setTypeId(1);
-                                            }
-                                              if( strlen($event_name) > 100){
-                                                	$pieces = explode(" ", $event_name);
-                                                	$name = $pieces[0];
-                                                	if(strlen($name) > 100){
-                                                		$name = substr($pieces[0], 0, 100);
-                                                		$desc = substr($pieces[0], 100, strlen($pieces[0]));
-                                                	}else{
-                                                		$desc = "";
-                                                		foreach ($pieces as $piece){
-                                                			if(strlen($name.$piece) < 90)
-                                                				$name .= " ".$piece;
-                                                			else
-                                                				$desc .= " ".$piece;
-                                                		}
-                                                	}
-                                                	$new_event->setObjectName($name);
-                                                	$new_event->setDescription($desc." ".$event->content->text);
-                                                }else{
-                                                	$new_event->setObjectName($event_name);
-                                                	$new_event->setDescription($event->content->text);
-                                                }
-                                            $new_event->setSpecialID($special_id);
-                                            $new_event->setUpdateSync(ProjectEvents::date_google_to_sql($event->updated));
-                                            $new_event->setExtCalId($calendar->getId());                                            
-                                            $new_event->save(); 
-                                            
-                                            $conditions = array('event_id' => $new_event->getId(), 'contact_id' => logged_user()->getId());
-                                            //insert only if not exists 
-                                            if (EventInvitations::findById($conditions) == null) { 
-                                                $invitation = new EventInvitation();
-                                                $invitation->setEventId($new_event->getId());
-                                                $invitation->setContactId(logged_user()->getId());
-                                                $invitation->setInvitationState(1);
-                                                $invitation->setUpdateSync();
-                                                $invitation->setSpecialId($special_id);
-                                                $invitation->save();
-                                            }
-                                            
-                                            //insert only if not exists 
-                                            if (ObjectSubscriptions::findBySubscriptions($new_event->getId()) == null) { 
-                                                $subscription = new ObjectSubscription();
-                                                $subscription->setObjectId($new_event->getId());
-                                                $subscription->setContactId(logged_user()->getId());
-                                                $subscription->save();
-                                            }
-
-                                            if($users->getRelatedTo()){
-                                                $member = array();
-                                                $member_ids = explode(",",$users->getRelatedTo());
-                                                foreach ($member_ids as $member_id){
-                                                    $member[] = $member_id;
-                                                }
-                                                $object_controller = new ObjectController();
-                                                $object_controller->add_to_members($new_event, $member); 
-                                            }else{
-                                                $member_ids = array();
-                                                $context = active_context();
-                                                foreach ($context as $selection) {
-                                                    if ($selection instanceof Member) $member_ids[] = $selection->getId();
-                                                }		        
-                                                $object_controller = new ObjectController();
-                                                $object_controller->add_to_members($new_event, $member_ids); 
-                                            }  
-                                        }                                           
-                                        }    
-                                        }       
-                                    }
-                                }else{                
-                                    $events = ProjectEvents::findByExtCalId($calendar->getId());
-                                    if($calendar->delete()){
-                                        if($events){
-                                            foreach($events as $event){                            
-                                                $event->trash();
-
-                                                $event->setSpecialID("");
-                                                $event->setExtCalId(0);
-                                                $event->save();
-                                            }  
-                                        }
-                                    }
-                                }
-                            }//foreach calendars
-                    }
-                    catch(Exception $e)
-                    {
-                    		Logger::log($e->getMessage());
-                            flash_error(lang('could not connect to calendar'));
-                            ajx_current("empty");
-                    }
-                }
-	}
-        
-        function export_google_calendar() {
-		ajx_current("empty");
-                
-                require_once 'Zend/Loader.php';
-
-                Zend_Loader::loadClass('Zend_Gdata');
-                Zend_Loader::loadClass('Zend_Gdata_AuthSub');
-                Zend_Loader::loadClass('Zend_Gdata_ClientLogin');
-                Zend_Loader::loadClass('Zend_Gdata_Calendar');
-                
-                $users = ExternalCalendarUsers::findByContactId();
-                if($users){
-                    if($users->getSync() == 1){
-                        $sql = "SELECT ec.* FROM `".TABLE_PREFIX."external_calendars` ec,`".TABLE_PREFIX."external_calendar_users` ecu 
-                                WHERE ec.ext_cal_user_id = ecu.id AND ec.calendar_feng = 1 AND ecu.contact_id = ".logged_user()->getId();
-                        $calendar_feng = DB::executeOne($sql);
-                        $events = ProjectEvents::findNoSync(logged_user()->getId());
-                        $events_inv = ProjectEvents::findNoSyncInvitations(logged_user()->getId());
-                        $user = $users->getAuthUser();
-                        $pass = $users->getAuthPass();
-                        $service = Zend_Gdata_Calendar::AUTH_SERVICE_NAME;
-
-                        try
-                        {
-                                $client = Zend_Gdata_ClientLogin::getHttpClient($user,$pass,$service);  
-                                $gdataCal = new Zend_Gdata_Calendar($client);
-
-                                if ($calendar_feng){
-                                    foreach ($events as $event){
-                                        $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
-
-                                        $newEvent = $gdataCal->newEventEntry();
-                                        $newEvent->title = $gdataCal->newTitle($event->getObjectName());
-                                        $newEvent->content = $gdataCal->newContent($event->getDescription());
-
-                                        $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-                                        $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-
-                                        if($event->getTypeId() == 2){
-                                            $when = $gdataCal->newWhen();
-                                            $when->startTime = $star_time[0];
-                                            $when->endTime = $end_time[0];
-                                            $newEvent->when = array($when);
-                                        }else{                                    
-                                            $when = $gdataCal->newWhen();
-                                            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                                            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                                            $newEvent->when = array($when);
-                                        }
-
-                                        // insert event
-                                        $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
-
-                                        $event_id = explode("/",$createdEvent->id->text);
-                                        $special_id = end($event_id); 
-                                        $event->setSpecialID($special_id);
-                                        $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
-                                        $event->setExtCalId($calendar_feng['id']);
-                                        $event->save();
-                                    $invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
-                                        	if($invitation){
-                                        		$invitation->setUpdateSync();
-                                        		$invitation->setSpecialId($special_id);
-                                        		$invitation->save();
-                                        	}
-                                    }
-                                    foreach ($events_inv as $event){
-                                        	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
-                                        
-                                        	$newEvent = $gdataCal->newEventEntry();
-                                        	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
-                                        	$newEvent->content = $gdataCal->newContent($event->getDescription());
-                                        
-                                        	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-                                        	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-                                        
-                                        	if($event->getTypeId() == 2){
-                                        		$when = $gdataCal->newWhen();
-                                        		$when->startTime = $star_time[0];
-                                        		$when->endTime = $end_time[0];
-                                        		$newEvent->when = array($when);
-                                        	}else{
-                                        		$when = $gdataCal->newWhen();
-                                        		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                                        		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                                        		$newEvent->when = array($when);
-                                        	}
-                                        
-                                        	// insert event
-                                        	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
-                                        
-                                        	$event_id = explode("/",$createdEvent->id->text);
-                                        	$special_id = end($event_id);
-                                        	 
-                                        	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
-                                        	if($invitation){
-                                        		$invitation->setUpdateSync();
-                                        		$invitation->setSpecialId($special_id);
-                                        		$invitation->save();
-                                        	}
-                                        	
-                                        	
-                                        }                       
-                                }else{
-                                    $appCalUrl = '';
-                                    $calFeed = $gdataCal->getCalendarListFeed();        
-                                    foreach ($calFeed as $calF){
-                                        $instalation = explode("/", ROOT_URL);
-                                        $instalation_name = end($instalation);
-                                        if($calF->title->text == lang('feng calendar',$instalation_name)){
-                                            $appCalUrl = $calF->content->src;
-                                            $t_calendario = $calF->title->text;
-                                        }
-                                    }    
-
-                                    if($appCalUrl != ""){
-                                        $title_cal = $t_calendario;
-                                    }else{
-                                        $instalation = explode("/", ROOT_URL);
-                                        $instalation_name = end($instalation);
-                                        $appCal = $gdataCal -> newListEntry();
-                                        $appCal -> title = $gdataCal-> newTitle(lang('feng calendar',$instalation_name));                         
-                                        $own_cal = "http://www.google.com/calendar/feeds/default/owncalendars/full";                        
-                                        $new_cal = $gdataCal->insertEvent($appCal, $own_cal);
-
-                                        $title_cal = $new_cal->title->text;
-                                        $appCalUrl = $new_cal->content->src;                                
-                                    }               
-
-                                    $cal_src = explode("/",$appCalUrl);
-                                    array_pop($cal_src);
-                                    $calendar_visibility = end($cal_src);
-                                    array_pop($cal_src);
-                                    $calendar_user = end($cal_src);                            
-
-                                    $calendar = new ExternalCalendar();
-                                    $calendar->setCalendarUser($calendar_user);
-                                    $calendar->setCalendarVisibility($calendar_visibility);
-                                    $calendar->setCalendarName($title_cal);
-                                    $calendar->setExtCalUserId($users->getId());
-                                    $calendar->setCalendarFeng(1);
-                                    $calendar->save();
-
-                                    foreach ($events as $event){                               
-                                        $calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar->getCalendarUser().'/private/full';
-
-                                        $newEvent = $gdataCal->newEventEntry();
-
-                                        $newEvent->title = $gdataCal->newTitle($event->getObjectName());
-                                        $newEvent->content = $gdataCal->newContent($event->getDescription());
-
-                                        $star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-                                        $end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-
-                                        if($event->getTypeId() == 2){
-                                            $when = $gdataCal->newWhen();
-                                            $when->startTime = $star_time[0];
-                                            $when->endTime = $end_time[0];
-                                            $newEvent->when = array($when);
-                                        }else{                                    
-                                            $when = $gdataCal->newWhen();
-                                            $when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                                            $when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                                            $newEvent->when = array($when);
-                                        }
-
-                                        // insert event
-                                        $createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
-
-                                        $event_id = explode("/",$createdEvent->id->text);
-                                        $special_id = end($event_id); 
-                                        $event->setSpecialID($special_id);
-                                        $event->setUpdateSync(ProjectEvents::date_google_to_sql($createdEvent->updated));
-                                        $event->setExtCalId($calendar->getId());
-                                        $event->save();
-                                    	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.logged_user()->getId().' AND event_id ='.$event->getId())));
-                                        	if($invitation){
-                                        		$invitation->setUpdateSync();
-                                        		$invitation->setSpecialId($special_id);
-                                        		$invitation->save();
-                                        	}
-                                    }
-                                    foreach ($events_inv as $event){
-                                    	$calendarUrl = 'http://www.google.com/calendar/feeds/'.$calendar_feng['calendar_user'].'/private/full';
-                                    
-                                    	$newEvent = $gdataCal->newEventEntry();
-                                    	$newEvent->title = $gdataCal->newTitle($event->getObjectName());
-                                    	$newEvent->content = $gdataCal->newContent($event->getDescription());
-                                    
-                                    	$star_time = explode(" ",$event->getStart()->format("Y-m-d H:i:s"));
-                                    	$end_time = explode(" ",$event->getDuration()->format("Y-m-d H:i:s"));
-                                    
-                                    	if($event->getTypeId() == 2){
-                                    		$when = $gdataCal->newWhen();
-                                    		$when->startTime = $star_time[0];
-                                    		$when->endTime = $end_time[0];
-                                    		$newEvent->when = array($when);
-                                    	}else{
-                                    		$when = $gdataCal->newWhen();
-                                    		$when->startTime = $star_time[0]."T".$star_time[1].".000-00:00";
-                                    		$when->endTime = $end_time[0]."T".$end_time[1].".000-00:00";
-                                    		$newEvent->when = array($when);
-                                    	}
-                                    
-                                    	// insert event
-                                    	$createdEvent = $gdataCal->insertEvent($newEvent, $calendarUrl);
-                                    
-                                    	$event_id = explode("/",$createdEvent->id->text);
-                                    	$special_id = end($event_id);
-                                    	$invitation = EventInvitations::findOne(array('conditions' => array('contact_id = '.$users->getContactId().' AND event_id ='.$event->getId())));
-                                    	if($invitation){
-                                    		$invitation->setUpdateSync();
-                                    		$invitation->setSpecialId($special_id);
-                                    		$invitation->save();
-                                    	}
-                                    
-                                    } 
-                                }
-                                flash_success(lang('success add sync'));
-                                ajx_current("reload");
-                        }
-                        catch(Exception $e)
-                        {
-                        		Logger::log($e->getMessage());
-                                flash_error(lang('could not connect to calendar'));
-                                ajx_current("empty");
-                        }
-                    }
-                }
-	}
-        
         function repetitive_event($event,$opt_rep_day){
             if($event->isRepetitive()){
                 if ($event->getRepeatNum() > 0) {
@@ -2538,10 +1599,6 @@ class EventController extends ApplicationController {
             	DB::beginWork();
             	$event->save();
             	
-            	if($event->getSpecialID() != ""){
-            		$this->sync_calendar_extern($event);
-            	}
-            	
             	$object_controller = new ObjectController();
             	$object_controller->add_to_members($event, array_var($task_data, 'members'));
             	$object_controller->add_subscribers($event);
@@ -2553,6 +1610,12 @@ class EventController extends ApplicationController {
             	$event->resetIsRead();
             	 
             	DB::commit();
+            	
+            	if($event->getSpecialID() != ""){
+            		$externalCalendarController = new ExternalCalendarController();
+            		$externalCalendarController->sync_event_on_extern_calendar($event );
+            	}
+            	
             	ApplicationLogs::createLog($event, ApplicationLogs::ACTION_EDIT);
             	
             } catch(Exception $e) {

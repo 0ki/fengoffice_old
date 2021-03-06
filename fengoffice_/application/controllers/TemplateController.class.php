@@ -113,6 +113,10 @@ class TemplateController extends ApplicationController {
 						$newTemplateParameter->setTemplateId($cotemplate->getId());
 						$newTemplateParameter->setName($parameter['name']);
 						$newTemplateParameter->setType($parameter['type']);
+						$newTemplateParameter->setDefaultValue(array_var($parameter, 'default_value'));
+						
+						Hook::fire('template_parameter_default_value', array('parameter' => $parameter), $newTemplateParameter);
+						
 						$newTemplateParameter->save();
 					}
 				}
@@ -330,6 +334,10 @@ class TemplateController extends ApplicationController {
 						$newTemplateParameter->setTemplateId($cotemplate->getId());
 						$newTemplateParameter->setName(rtrim($parameter['name'], " "));
 						$newTemplateParameter->setType($parameter['type']);
+						$newTemplateParameter->setDefaultValue(array_var($parameter, 'default_value'));
+						
+						Hook::fire('template_parameter_default_value', array('parameter' => $parameter), $newTemplateParameter);
+						
 						$newTemplateParameter->save();
 					}
 				}
@@ -479,6 +487,21 @@ class TemplateController extends ApplicationController {
 		tpl_assign('id',$id);
 	}
 	
+	function save_instantiated_parameters($template, $parameters, $parameterValues) {
+		$instantiation_id = config_option('last_template_instantiation_id') + 1;
+		
+		foreach ($parameters as $param) {
+			/* @var $param TemplateParameter */
+			$param_val = array_var($parameterValues, $param->getName(), '');
+			$param_val = str_replace("'", "\'", $param_val);
+			DB::execute("INSERT INTO `".TABLE_PREFIX."template_instantiated_parameters` (`template_id`, `instantiation_id`, `parameter_name`, `value`) VALUES
+					('".$template->getId()."', '$instantiation_id', '".$param->getName()."', '$param_val') ON DUPLICATE KEY UPDATE template_id=template_id");
+		}
+		
+		set_config_option('last_template_instantiation_id', $instantiation_id);
+		return $instantiation_id;
+	}
+	
 	
 	function instantiate($arguments = null) {
 		$selected_members = array();
@@ -496,6 +519,11 @@ class TemplateController extends ApplicationController {
 		if(count($parameters) > 0 && !isset($parameterValues)) {
 			ajx_current("back");
 			return;
+		}
+		
+		$instantiation_id = 0;
+		if (count($parameters) > 0 ) {
+			$instantiation_id = $this->save_instantiated_parameters($template, $parameters, $parameterValues);
 		}
 		
 		if(array_var($_POST, 'members') || array_var($arguments, 'members')){
@@ -538,7 +566,7 @@ class TemplateController extends ApplicationController {
 					}											
 				}
 											
-				$copy = $object->copyToProjectTask();
+				$copy = $object->copyToProjectTask($instantiation_id);
 				//if is subtask
 				if($copy->getParentId() > 0){	
 					foreach ($copies as $c) {
@@ -569,7 +597,7 @@ class TemplateController extends ApplicationController {
 			$copiesIds[$object->getId()] = $copy->getId();
 			
 			$ret = null;
-			Hook::fire('after_template_object_instantiation', array('original' => $object, 'copy' => $copy), $ret);
+			Hook::fire('after_template_object_instantiation', array('template' => $template, 'original' => $object, 'copy' => $copy), $ret);
 			
 			
 			/* Set instantiated object members:
@@ -700,13 +728,15 @@ class TemplateController extends ApplicationController {
 	function instantiate_parameters(){
 		if(is_array(array_var($_POST, 'parameterValues'))){
 			ajx_current("back");
+			$ret = null;
+			Hook::fire('before_instantiate_paramters', array_var($_POST, 'parameterValues'), $ret);
 			$this->instantiate();
 		}else{
 			$id = get_id();
 			$parameters = TemplateParameters::getParametersByTemplate($id);
 			$params = array();
 			foreach($parameters as $parameter){
-				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType());
+				$params[] = array('name' => $parameter->getName(), 'type' => $parameter->getType(), 'default_value' => $parameter->getDefaultValue());
 			}
 			tpl_assign('id', $id);
 			tpl_assign('parameters', $params);

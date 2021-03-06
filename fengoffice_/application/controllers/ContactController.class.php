@@ -751,20 +751,7 @@ class ContactController extends ApplicationController {
 				}
 				
 				foreach ($custom_properties as $cp) {
-					$cp_value = CustomPropertyValues::getCustomPropertyValues($c->getId(), $cp->getId());
-					if ($cp->getType() == 'contact' && isset($cp_value[0]) && $cp_value[0] instanceof CustomPropertyValue) {
-						$contact = Contacts::findById($cp_value[0]->getValue());
-						if ($contact instanceof Contact) $cp_value[0]->setValue($contact->getObjectName());
-					}
-					for ($j = 0; $j < count($cp_value); $j++){
-						if ($j == 0){
-							$object["contacts"][$i]['cp_'.$cp->getId()] = $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
-						}else{
-							$object["contacts"][$i]['cp_'.$cp->getId()] .= ", ";
-							$object["contacts"][$i]['cp_'.$cp->getId()] .= $cp_value[$j] instanceof CustomPropertyValue ? $cp_value[$j]->getValue() : '';
-						}
-					}
-										
+					$object["contacts"][$i]['cp_'.$cp->getId()] = get_custom_property_value_for_listing($cp, $c);
 				}
     		}
 		}
@@ -1262,6 +1249,8 @@ class ContactController extends ApplicationController {
       	    $contact_data['all_webpages'] = $all_webpages;
       	    $all_emails = $contact->getNonMainEmails();
       	    $contact_data['all_emails'] = $all_emails;
+      	    
+      	    $null = null; Hook::fire('before_edit_contact_form', array('object' => $contact), $null);
 		} // if
 		
 		tpl_assign('isEdit', array_var($_GET, 'isEdit',false));
@@ -1380,7 +1369,7 @@ class ContactController extends ApplicationController {
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
 				$object_controller = new ObjectController();
-				if (count($member_ids)){
+				if (!is_null($member_ids)){
 					$object_controller->add_to_members($contact, $member_ids);
 				}
 				$no_perm_members_ids = json_decode(array_var($_POST, 'no_perm_members'));
@@ -1398,9 +1387,15 @@ class ContactController extends ApplicationController {
 				// User settings
 				$user = array_var(array_var($_POST, 'contact'),'user');
 				if($user && $contact->canUpdatePermissions(logged_user())){
+					$user_type_changed = false;
 					if (array_var($user, 'type')) {
+						$user_type_changed = $contact->getUserType() != array_var($user, 'type');
 						$contact->setUserType(array_var($user, 'type'));
 						$contact->save();
+					}
+					
+					if ($user_type_changed) {
+						$this->cut_max_user_permissions($contact);
 					}
 					
 					// update user groups
@@ -1445,6 +1440,59 @@ class ContactController extends ApplicationController {
 		} // if
 	} // edit
 
+	
+	private function cut_max_user_permissions(Contact $user) {
+		$admin_pg = PermissionGroups::findOne(array('conditions' => "`name`='Super Administrator'"));
+	
+		$all_roles_max_permissions = RoleObjectTypePermissions::getAllRoleObjectTypePermissionsInfo();
+		
+		$admin_perms = $all_roles_max_permissions[$admin_pg->getId()];
+		$all_object_types = array();
+		foreach ($admin_perms as &$aperm) {
+			$all_object_types[] = $aperm['object_type_id'];
+		}
+
+		$max_permissions = array_var($all_roles_max_permissions, $user->getUserType());
+		$pg_id = $user->getPermissionGroupId();
+		
+		foreach ($all_object_types as $ot) {
+			if (!$ot) continue;
+			$max = array_var($max_permissions, $ot);
+		
+			if (!$max) {
+				// cannot read -> delete in contact_member_permissions
+				$sql = "DELETE FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id AND object_type_id=$ot";
+				DB::execute($sql);
+					
+			} else {
+				// cut can_delete and can_write using max permissions
+				$can_d = $max['can_delete'] ? "1" : "0";
+				$can_w = $max['can_write'] ? "1" : "0";
+					
+				$sql = "UPDATE ".TABLE_PREFIX."contact_member_permissions
+				SET can_delete=(can_delete AND $can_d), can_write=(can_write AND $can_w)
+				WHERE permission_group_id=$pg_id AND object_type_id=$ot";
+				DB::execute($sql);
+					
+			}
+		}
+		
+		// rebuild sharing table for permission group $pg_id
+		$cmp_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id");
+		$permissions_array = array();
+		foreach ($cmp_rows as $row) {
+			$p = new stdClass();
+			$p->m = array_var($row, 'member_id');
+			$p->o = array_var($row, 'object_type_id');
+			$p->d = array_var($row, 'can_delete');
+			$p->w = array_var($row, 'can_write');
+			$p->r = 1;
+			$permissions[] = $p;
+		}
+		
+		$sharing_table_controller = new SharingTableController();
+		$sharing_table_controller->after_permission_changed($pg_id, $permissions_array);
+	}
 	
 	
 	private function save_non_main_emails($contact_data, $contact) {
@@ -2175,17 +2223,7 @@ class ContactController extends ApplicationController {
 			}
 			
 			$members = active_context_members(false);
-			$context_condition = "";
-			if(count($members) > 0){
-				$context_condition = " AND (EXISTS
-					(SELECT om.object_id
-						FROM  ".TABLE_PREFIX."object_members om
-						WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND e.object_id = om.object_id
-						GROUP BY object_id
-						HAVING count(member_id) = ".count($members)."
-					)
-				)";
-			}
+			$context_condition = $this->getActiveContextConditions();
 			
 			if (array_var($_SESSION, 'import_type', 'contact') == 'contact') {
 				$conditions .= " AND `archived_by_id` = 0 ";
@@ -2218,18 +2256,31 @@ class ContactController extends ApplicationController {
 		if ($filename != '') {
 			$path = ROOT.'/tmp/'.$filename;
 			$size = filesize($path);
-                        
-			if (isset($_SESSION['fname'])) {
-				$name = $_SESSION['fname'];
-				unset($_SESSION['fname']);
+			
+			$name = array_var($_REQUEST, 'fname', array_var($_SESSION, 'fname', ''));
+			if ($name == '') {
+				$name = (array_var($_SESSION, 'import_type', 'contact') == 'contact' ? 'contacts.csv' : 'companies.csv');
 			}
-			else $name = (array_var($_SESSION, 'import_type', 'contact') == 'contact' ? 'contacts.csv' : 'companies.csv');
 			
 			unset($_SESSION['contact_export_filename']);
 			unset($_SESSION['import_type']);
-			download_file($path, 'text/csv', $name, $size, true);
-			unlink($path);
-			die();			
+			
+			$file_type = array_var($_SESSION, 'text/csv', array($_REQUEST, 'file_type', ''));
+			unset($_SESSION['file_type']);
+			
+			// download file
+			header("Cache-Control: public");
+			header("Content-Description: File Transfer");
+			header("Content-Disposition: attachment; filename=".$name."");
+			header("Content-Transfer-Encoding: binary");
+			header("Content-Type: $file_type");
+			readfile($path);
+			
+			// delete tmp file
+			//unlink($path);
+			
+			die();
+			
 		} else $this->setTemplate('csv_export');
 	}
 	
@@ -2792,19 +2843,27 @@ class ContactController extends ApplicationController {
     }
 
     function export_to_vcard_all() {
-      $contacts_all = Contacts::instance()->getAllowedContacts();
-      $user = logged_user();
-      if (count($contacts_all) == 0) {
-        flash_error(lang("you must select the contacts from the grid"));
-        ajx_current("empty");
-        return;
-      }
-
-      $data = self::build_vcard($contacts_all);
-      $name = "contacts_all_".$user->getUsername().".vcf";
-
-      download_contents($data, 'text/x-vcard', $name, strlen($data), true);
-      die();
+    	ajx_current("empty");
+    	
+    	$context_condition = $this->getActiveContextConditions(false);
+    	$contacts_all = Contacts::instance()->getAllowedContacts($context_condition);
+    	
+    	$user = logged_user();
+    	if (count($contacts_all) == 0) {
+    		flash_error(lang("you must select the contacts from the grid"));
+    		ajx_current("empty");
+    		return;
+    	}
+    	
+    	$data = self::build_vcard($contacts_all);
+    	$name = "contacts_all_".$user->getUsername().".vcf";
+    	file_put_contents(ROOT."/tmp/".$name, $data);
+    	
+    	$_SESSION['contact_export_filename'] = $name;
+    	$_SESSION['fname'] = $name;
+    	$_SESSION['file_type'] = 'text/x-vcard';
+    	
+    	flash_success(lang('success export contacts'));
     }
 	
 	
@@ -3030,6 +3089,8 @@ class ContactController extends ApplicationController {
 			$company_data['all_webpages'] = $all_webpages;
 			$all_emails = $company->getNonMainEmails();
 			$company_data['all_emails'] = $all_emails;
+			
+			$null = null; Hook::fire('before_edit_contact_form', array('object' => $company), $null);
 		} // if
 
 		tpl_assign('company', $company);
@@ -3632,6 +3693,9 @@ class ContactController extends ApplicationController {
 			$name_condition = " AND o.name LIKE '%$name_filter%'";
 		}
 		
+		// by default list only contacts
+		$type_condition = " AND is_company=0";
+		
 		$extra_conditions = "";
 		if ($filters = array_var($_REQUEST, 'filters')) {
 			$filters = json_decode($filters, true);
@@ -3646,6 +3710,14 @@ class ContactController extends ApplicationController {
 							SELECT * FROM ".TABLE_PREFIX."contact_member_permissions cmp 
 							WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id and member_id='$val') 
 						)";
+					} else if ($col == 'only_companies') {
+						if ($val == 1) {
+							$type_condition = " AND is_company=1";
+						}
+					} else if ($col == 'include_companies') {
+						if ($val == 1) {
+							$type_condition = "";
+						}
 					}
 				}
 			}
@@ -3664,7 +3736,7 @@ class ContactController extends ApplicationController {
 		if (count($pg_ids) > 0) {
 			$permissions_condition = " AND (o.id=".logged_user()->getId()." OR EXISTS (SELECT sh.object_id FROM ".TABLE_PREFIX."sharing_table sh WHERE sh.object_id=o.id AND group_id IN (".implode(',',$pg_ids).")))";
 			
-			$conditions = "is_company=0 AND o.trashed_by_id=0 AND o.archived_by_id=0 $name_condition $permissions_condition $extra_conditions";
+			$conditions = "o.trashed_by_id=0 AND o.archived_by_id=0 $name_condition $permissions_condition $type_condition $extra_conditions";
 			$query_params = array(
 				'condition' => $conditions,
 				'order' => 'o.name ASC',
@@ -3689,5 +3761,23 @@ class ContactController extends ApplicationController {
 		}
 		
 		ajx_extra_data(array('contacts' => $info));
+	}
+	
+	
+	private function getActiveContextConditions($include_and=true) {
+		$members = active_context_members(false);
+		$context_condition = "";
+		if(count($members) > 0){
+			$context_condition = ($include_and ? " AND" : "") . " (EXISTS
+				(SELECT om.object_id
+					FROM  ".TABLE_PREFIX."object_members om
+					WHERE	om.member_id IN (" . implode ( ',', $members ) . ") AND e.object_id = om.object_id
+					GROUP BY object_id
+					HAVING count(member_id) = ".count($members)."
+				)
+			)";
+		}
+		
+		return $context_condition;
 	}
 } 

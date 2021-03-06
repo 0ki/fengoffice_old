@@ -56,8 +56,12 @@
 	width: 20px;
 	background-repeat: no-repeat;
 }
-.x-tree-node-icon.ico-contact, .x-tree-node-icon.ico-mail {
+.x-tree-node-icon.ico-contact {
 	background-image: url(../../images/icons-feng-3/16x16/contacts.png) !important;
+	background-size: 17px 17px !important;
+}
+.x-tree-node-icon.ico-mail {
+	background-image: url(../../images/icons-feng-3/16x16/email.png) !important;
 	background-size: 17px 17px !important;
 }
 .ico-company {

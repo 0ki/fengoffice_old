@@ -534,7 +534,7 @@
   		$value = $value->format($format);
   	}
   	if (!$id) $id = $genid . $name . "Cmp";
-  	$html = "<table><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>
+  	$html = "<table class='time-picker'><tr><td><div id='" . $genid . $name . "'></div></td></tr></table>
 	<script>
 		var tp" . gen_id() . " = new Ext.form.TimeField({
 			renderTo:'" . $genid . $name . "',

@@ -45,6 +45,22 @@ class  ProjectTaskDependencies extends BaseProjectTaskDependencies {
 	static function getDependantsForTask($task_id) {
 		return self::findAll(array('conditions' => '`previous_task_id` = ' . $task_id . " AND 0 = (SELECT `trashed_by_id` FROM `".TABLE_PREFIX."objects` WHERE `id`=`task_id`)"));
 	}
+	
+	static function getDependantTasksAssignedUsers($task_id) {
+		$users = array();
+		$deps = self::getDependantsForTask($task_id);
+		foreach ($deps as $dep) {
+			/* @var $dep ProjectTaskDependency */
+			$task = ProjectTasks::findById($dep->getTaskId());
+			if ($task instanceof ProjectTask) {
+				$u = $task->getAssignedTo();
+				if ($u instanceof Contact) {
+					$users[] = $u;
+				}
+			}
+		}
+		return $users;
+	}
 
 } // ProjectTaskDependencies
 

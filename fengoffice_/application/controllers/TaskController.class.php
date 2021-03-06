@@ -706,10 +706,14 @@ class TaskController extends ApplicationController {
 								$sd = $task->getStartDate() instanceof DateTimeValue ? $task->getStartDate() : null;
 									
 								if($dd){
-									$task->setDueDate($dd->advance($time_push * 3600, false));
+									$time_push_dd = $time_push;
+									Hook::fire('task_push_dates_calculation', array('date' => $dd, 'only_working_days' => $time["use_only_working_days"]), $time_push_dd);
+									$task->setDueDate($dd->advance($time_push_dd * 3600, false));
 								}
 								if($sd){
-									$task->setStartDate($sd->advance($time_push * 3600, false));
+									$time_push_sd = $time_push;
+									Hook::fire('task_push_dates_calculation', array('date' => $sd, 'only_working_days' => $time["use_only_working_days"]), $time_push_sd);
+									$task->setStartDate($sd->advance($time_push_sd * 3600, false));
 								}
 							}
 							$task->save();
@@ -2262,6 +2266,7 @@ class TaskController extends ApplicationController {
 				if ($email instanceof MailContent) {
 					$task_data['name'] = $email->getSubject();
 					$task_data['text'] = lang('create task from email description', $email->getSubject(), $email->getFrom(), $email->getTextBody());
+					$task_data['selected_members_ids'] = $email->getMemberIds();
 					tpl_assign('from_email', $email);
 				}
 			}
@@ -3065,7 +3070,6 @@ class TaskController extends ApplicationController {
 				if (!is_array($member_ids) || count($member_ids) == 0) $member_ids = array(0);
 				$members = Members::findAll(array('conditions' => "id IN (".implode(',', $member_ids).")"));
 				$task->apply_members_to_subtasks($members, true);
-				file_put_contents(ROOT.'/cache/lala.txt', "\n".date('H:i:s')."\tACA 9", FILE_APPEND);
 
 				// apply values to subtasks
 				$assigned_to = $task->getAssignedToContactId();

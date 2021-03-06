@@ -1063,7 +1063,7 @@ class Contact extends BaseContact {
 	function canView(Contact $user) {
 		if ( $this->isOwnerCompany()) return true;
 		if ( $user->getId() == logged_user()->getId() ) return true ;
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 	
 	
@@ -1140,7 +1140,7 @@ class Contact extends BaseContact {
 	
 
 	function canLinkObject(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	}
 	
 	

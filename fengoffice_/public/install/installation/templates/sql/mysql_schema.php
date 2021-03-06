@@ -188,7 +188,7 @@ CREATE TABLE `<?php echo $table_prefix ?>permission_groups` (
   `name` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
   `contact_id` int(10) unsigned,
   `is_context` tinyint(1) unsigned NOT NULL default '0',
-  `plugin_id` int(10) unsigned,
+  `plugin_id` int(10) unsigned NOT NULL DEFAULT '0',
   `parent_id` int(10) unsigned NOT NULL default '0',
   `type` ENUM( 'roles', 'permission_groups', 'user_groups') NULL,
   PRIMARY KEY  (`id`), 
@@ -663,6 +663,7 @@ CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `use_due_time` BOOLEAN default '0',
   `use_start_time` BOOLEAN default '0',
   `original_task_id` INT( 10 ) UNSIGNED NULL DEFAULT '0',
+  `instantiation_id` int(10) unsigned NOT NULL default '0',
   `type_content` ENUM( 'text', 'html' ) NOT NULL DEFAULT 'text',
   PRIMARY KEY  (`object_id`),
   KEY `parent_id` (`parent_id`),
@@ -862,6 +863,8 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>custom_property_values` (
 CREATE TABLE `<?php echo $table_prefix ?>queued_emails` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `to` text <?php echo $default_collation ?>,
+  `cc` text <?php echo $default_collation ?>,
+  `bcc` text <?php echo $default_collation ?>,
   `from` text <?php echo $default_collation ?>,
   `subject` text <?php echo $default_collation ?>,
   `body` text <?php echo $default_collation ?>,
@@ -901,10 +904,12 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>report_conditions` (
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_parameters` (
-`id` INT( 10 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-`template_id` INT( 10 ) NOT NULL ,
-`name` VARCHAR( 255 ) <?php echo $default_collation ?> NOT NULL ,
-`type` VARCHAR( 255 ) <?php echo $default_collation ?> NOT NULL
+  `id` INT( 10 ) NOT NULL AUTO_INCREMENT,
+  `template_id` INT( 10 ) NOT NULL,
+  `name` VARCHAR( 255 ) <?php echo $default_collation ?> NOT NULL,
+  `type` VARCHAR( 255 ) <?php echo $default_collation ?> NOT NULL,
+  `default_value` text <?php echo $default_collation ?> NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_object_properties` (
@@ -997,7 +1002,7 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>tab_panels` (
   `enabled` tinyint(1) NOT NULL,
   `type` enum('system','plugin') <?php echo $default_collation ?> NOT NULL,
   `ordering` int(10) NOT NULL,
-  `plugin_id` int(10) unsigned NOT NULL,
+  `plugin_id` int(10) unsigned NOT NULL default 0,
   `object_type_id` int(10) unsigned NOT NULL default 0,
   PRIMARY KEY (`id`),
   KEY `enabled` (`enabled`,`type`,`plugin_id`)
@@ -1057,11 +1062,19 @@ CREATE TABLE `<?php echo $table_prefix ?>role_object_type_permissions` (
   PRIMARY KEY (`role_id`, `object_type_id`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
 
+CREATE TABLE `<?php echo $table_prefix ?>max_role_object_type_permissions` (
+  `role_id` INTEGER UNSIGNED NOT NULL,
+  `object_type_id` INTEGER UNSIGNED NOT NULL,
+  `can_delete` BOOLEAN NOT NULL,
+  `can_write` BOOLEAN NOT NULL,
+  PRIMARY KEY (`role_id`, `object_type_id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
+
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `contact_id` int(10) unsigned NOT NULL,
   `auth_user` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `auth_pass` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `auth_pass` text COLLATE utf8_unicode_ci NOT NULL,
   `type` text COLLATE utf8_unicode_ci NOT NULL,
   `sync` TINYINT( 1 ) NULL DEFAULT '0',
   `related_to` VARCHAR( 255 ) NOT NULL,
@@ -1071,11 +1084,20 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_users` 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendars` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ext_cal_user_id` int(10) unsigned NOT NULL,
-  `calendar_user` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `original_calendar_id` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `calendar_visibility` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `calendar_name` text COLLATE utf8_unicode_ci NOT NULL,
   `calendar_feng` TINYINT( 1 ) NOT NULL DEFAULT '0',
+  `sync` TINYINT( 1 ) NOT NULL DEFAULT '0',
+  `related_to` VARCHAR( 255 ) NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>external_calendar_properties` (
+  `external_calendar_id` int(10) unsigned NOT NULL,
+  `key` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `value` text <?php echo $default_collation ?> NOT NULL, 
+  PRIMARY KEY (`external_calendar_id`,`key`)
 ) ENGINE = <?php echo $engine ?> <?php echo $default_charset ?>;
 
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>template_tasks` (
@@ -1187,4 +1209,12 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>contact_member_cache` (
   KEY `by_contact` USING HASH (`contact_id`),
   KEY `by_parent` USING HASH (`parent_member_id`),
   KEY `last_activity` (`last_activity`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE `<?php echo $table_prefix ?>template_instantiated_parameters` (
+  `template_id` INTEGER UNSIGNED NOT NULL,
+  `instantiation_id` INTEGER UNSIGNED NOT NULL,
+  `parameter_name` varchar(255) <?php echo $default_collation ?> NOT NULL,
+  `value` TEXT NOT NULL,
+  PRIMARY KEY (`template_id`, `instantiation_id`, `parameter_name`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

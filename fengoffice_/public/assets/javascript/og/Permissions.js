@@ -603,8 +603,7 @@ og.showPermissionsPopup = function(genid, dim_id, mem_id, name, set_default_perm
 }
 
 og.showHidePermissionsRadioButtonsByRole = function(genid, dim_id, role_id) {
-	// cambiar a max_perms = og.maxRoleObjectTypePermissions[role_id];
-	var max_perms = og.defaultRoleObjectTypePermissions[role_id];
+	var max_perms = og.maxRoleObjectTypePermissions[role_id];
 	
 	var object_types = [];
 	var ot_radios = $("#"+genid+"member_permissions"+dim_id+" input.radio_3");
@@ -1055,6 +1054,14 @@ og.userPermissions.showPermissionsPopup = function(container, genid) {
 	var name = $("#username_"+pg_id).html();
 	var is_guest = $("#" + genid + "_is_guest_" + pg_id).val() > 0;
 	
+	var dim_id = $("#" + genid + "_dim_id").val();
+	var tree = Ext.getCmp("dimension-panel-"+dim_id);
+	if (tree) {
+		var mem_name = $("#"+genid+"-name").val();
+		var tree_title = tree.title.toLowerCase().replace("&", "and");
+		$("#" + genid + "_apply_to_submembers_label").html(lang('apply to all submembers', tree_title, mem_name));
+	}
+	
 	og.userPermissions.onUserSelect(genid, {id:pg_id, n:name, isg:is_guest});
 
 	og.userPermissions.current_pg_id = pg_id;
@@ -1097,8 +1104,7 @@ og.userPermissions.cancelPermissionsModification = function(genid, pg_id) {
 }
 
 og.userPermissions.showHidePermissionsRadioButtonsByRole = function(genid, role_id) {
-	// cambiar a max_perms = og.maxRoleObjectTypePermissions[role_id];
-	var max_perms = og.defaultRoleObjectTypePermissions[role_id];
+	var max_perms = og.maxRoleObjectTypePermissions[role_id];
 	
 	var object_types = [];
 	var ot_radios = $("#"+genid+"member_permissions input.radio_3");
@@ -1274,10 +1280,13 @@ og.userPermissions.savePermissions = function(genid, member_id) {
 				}
 			}
 			
+			var applysub = $("#"+genid+"apply_to_submembers").attr('checked') == 'checked' ? 1 : 0;
+			
 			if (to_send.length > 0) {
 				var post_vars = {
 					pg_id: og.userPermissions.current_pg_id,
 					member_id: member_id,
+					apply_submembers: applysub,
 					perms: Ext.util.JSON.encode(to_send)
 				};
 				if (og.before_send_member_permissions && og.before_send_member_permissions.length > 0) {

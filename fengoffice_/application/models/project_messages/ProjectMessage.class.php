@@ -89,7 +89,7 @@ class ProjectMessage extends BaseProjectMessage {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
 	/**

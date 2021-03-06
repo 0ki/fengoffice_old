@@ -8,16 +8,6 @@
 	$genid = gen_id();
 	if (!isset($import_type)) $import_type = 'contact';
 ?>
-<script>
-og.download_exported_file = function() {
-	setTimeout(function() {
-		if (!Ext.isIE) {
-			location.href = og.getUrl('contact', 'download_exported_file');
-			og.openLink(og.getUrl('contact', 'init'));
-		}	
-	}, 1500);
-}
-</script>
 
 <form style="height:100%;background-color:white" id="<?php echo $genid ?>csvexport" name="<?php echo $genid ?>csvexport" class="internalForm" method="post" enctype="multipart/form-data" action="<?php echo $submit_url ?>">
 
@@ -28,7 +18,7 @@ og.download_exported_file = function() {
 	<table style="width:535px"><tr><td><?php echo ($import_type == 'contact' ? lang('export contacts to csv') : lang('export companies to csv')) ?></td>
 	<?php if (!isset($result_msg)) { ?>
 	<td style="text-align:right"><?php
-		echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 'onclick'=>'og.download_exported_file()')) 
+		echo submit_button(lang('export'), 'e', array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '10','id' => $genid.'csv_export_submit1', 'onclick'=>'og.download_exported_file(\'contacts.csv\',\'text/csv\')')) 
 	?></td>
 	<?php } //if ?>
 	<td><div id="<?php echo $genid."downloadlink"?>" style="padding-left:20px; font-size: 9pt; vertical-align: middle;"></div></td>

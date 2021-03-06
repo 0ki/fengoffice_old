@@ -96,7 +96,7 @@ og.getRealCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_
 			
 			if (title != "" && breadcrumb_count <= max_members_per_dim) title += '- ';
 			var color = members[id]['c'];
-			var member_path_span = '<span class="bread-crumb-'+ id +' member-path og-wsname-color-'+ color +'">';
+			var member_path_span = '<span class="bread-crumb-'+ id +' member-path real-breadcrumb og-wsname-color-'+ color +'">';
 			var member_path_content = "";
 			
 			for (i=texts.length-1; i>=0; i--) {

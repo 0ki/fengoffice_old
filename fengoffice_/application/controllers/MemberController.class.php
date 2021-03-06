@@ -275,7 +275,7 @@ class MemberController extends ApplicationController {
 					$user_types = implode(',', config_option('give_member_permissions_to_new_users'));
 					if (trim($user_types) != "") {
 						$users = Contacts::findAll(array('conditions' => "user_type IN (".$user_types.")"));
-						
+			
 						if (!array_var($_REQUEST, 'permissions')) $_REQUEST['permissions'] = "[]";
 						$permissions_decoded = json_decode(array_var($_REQUEST, 'permissions'));
 						foreach ($users as $user) {
@@ -1444,7 +1444,7 @@ class MemberController extends ApplicationController {
 						}
 					}
 					
-					if ($obj instanceof MailContent) {
+					if (Plugins::instance()->isActivePlugin('mail') && $obj instanceof MailContent) {
 						$conversation = MailContents::getMailsFromConversation($obj);
 						foreach ($conversation as $conv_email) {
 							if (array_var($_POST, 'attachment') && $conv_email->getHasAttachments()) {
@@ -1453,7 +1453,7 @@ class MemberController extends ApplicationController {
 								for ($j=0; $j < count(array_var($parsedEmail, "Attachments", array())); $j++) {
 									$classification_data["att_".$j] = true;
 								}
-								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($member), array_var($_POST, 'remove_prev'));
+								MailController::classifyFile($classification_data, $conv_email, $parsedEmail, array($member), array_var($_POST, 'remove_prev'), false);
 							}
 						}
 					}
@@ -1678,11 +1678,39 @@ class MemberController extends ApplicationController {
 			return;
 		}
 		
+		$members = array($member);
+		
+		// if apply to submembers is checked get submembers verifying logged user permissions
+		if (array_var($_REQUEST, 'apply_submembers') > 0) {
+			$dimension = $member->getDimension();
+			$pg_ids_str = implode(',', logged_user()->getPermissionGroupIds());
+			
+			$extra_conditions = "";
+			if (!$dimension->hasAllowAllForContact($pg_ids_str)) {
+				$extra_conditions = " AND EXISTS (SELECT cmp.member_id FROM ".TABLE_PREFIX."contact_member_permissions cmp 
+					WHERE cmp.member_id=".TABLE_PREFIX."members.id AND cmp.permission_group_id IN (". $pg_ids_str ."))";
+			}
+			$childs = $member->getAllChildren(true, null, $extra_conditions);
+			$members = array_merge($members, $childs);
+		}
+		
+		$pg_id = array_var($_REQUEST, 'pg_id');
 		$permissions = array_var($_REQUEST, 'perms');
+		
+		$all_permissions = array();
+		foreach ($members as $member) {
+			$all_permissions[$member->getId()] = json_decode($permissions);
+			foreach ($all_permissions[$member->getId()] as &$perm) {
+				$perm->m = $member->getId();
+			}
+		}
+		$all_permissions_str = json_encode(array_flat($all_permissions));
+		$_POST['permissions'] = $all_permissions_str;
+		
 		try {
 			DB::beginWork();
 			
-			save_member_permissions_background(logged_user(), $member, $permissions);
+			save_user_permissions_background(logged_user(), $pg_id, false, array(), true);
 			
 			$null = null;
 			Hook::fire('after_save_member_permissions_for_pg', $_REQUEST, $null);

@@ -278,7 +278,7 @@ class ProjectTask extends BaseProjectTask {
 	 */
 	function canView(Contact $user) {
 		$other_perm_conditions = SystemPermissions::userHasSystemPermission($user, 'can_see_assigned_to_other_tasks') || $this->getAssignedToContactId() == $user->getId();
-		return can_read_sharing_table($user, $this->getId()) && $other_perm_conditions;
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId()) && $other_perm_conditions;
 	} // canView
 	
 	/**
@@ -287,8 +287,8 @@ class ProjectTask extends BaseProjectTask {
 	 * @param Contact $user
 	 * @return boolean
 	 */
-	function canLinkObject(Contact $user) {		
-		if(can_read_sharing_table($user, $this->getId())){
+	function canLinkObject(Contact $user) {
+		if(can_read($user, $this->getMembers(), $this->getObjectTypeId())) {
 			return can_link_objects($user);
 		}
 		return parent::canLinkObject();		
@@ -1287,7 +1287,7 @@ class ProjectTask extends BaseProjectTask {
 			DB::execute($sql);
 		}
 		
-		$old_parent_id = $old_me instanceof ProjectTask ? $old_me->getParentId() : 0;
+		$old_parent_id = isset($old_me) && $old_me instanceof ProjectTask ? $old_me->getParentId() : 0;
 		if ($this->isNew() || $old_parent_id != $new_parent_id) {
 			//update Depth And Parents Path for subtasks
 			$subtasks = $this->getSubTasks();

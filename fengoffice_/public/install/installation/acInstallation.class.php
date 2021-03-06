@@ -197,6 +197,18 @@ final class acInstallation {
 			}
 		}
 		closedir($handle);
+		
+		
+		//Execute plugin php files
+		$handle = opendir(get_template_path('php/plugins'));
+		while ($file = readdir($handle)) {
+			$file_path = get_template_path("php/plugins/$file");
+			if ($file != 'dummy.txt' && is_file($file_path)) {
+				include $file_path;
+			}
+		}
+		closedir($handle);
+		
 
 		$this->installPlugins($plugins);
 		

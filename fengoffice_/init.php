@@ -18,14 +18,10 @@ if(!defined('PUBLIC_FOLDER')) {
 } // if
 
 set_include_path(ROOT . PATH_SEPARATOR . APPLICATION_PATH . PATH_SEPARATOR . get_include_path());
-set_include_path(LIBRARY_PATH . "/zend" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/ezcomponents" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/PEAR" . PATH_SEPARATOR . get_include_path());
 set_include_path(LIBRARY_PATH . "/pdf" . PATH_SEPARATOR . get_include_path());
 
-if ((defined('LUCENE_SEARCH') && LUCENE_SEARCH)) {
-	require_once('Zend/Search/Lucene.php');
-}
 
 // ---------------------------------------------------
 //  Fix some $_SERVER vars (taken from wordpress code)

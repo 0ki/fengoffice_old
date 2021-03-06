@@ -5,6 +5,9 @@
 	
 	$genid = gen_id();
 	$object = $cotemplate;
+	
+	$categories = array();
+	Hook::fire('object_edit_categories', $object, $categories);
 ?>
 <form id="templateForm" style='height:100%;background-color:white' class="internalForm" action="<?php echo $cotemplate->isNew() ? get_url('template', 'add') : $cotemplate->getEditUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.templateConfirmSubmit('<?php echo $genid ?>') && og.handleMemberChooserSubmit('<?php echo $genid; ?>', <?php echo $cotemplate->manager()->getObjectTypeId() ?>);">
 
@@ -19,14 +22,6 @@
 	<?php echo label_tag(lang('name'), $genid . 'templateFormName', true) ?>
 	<?php echo text_field('template[name]', array_var($template_data, 'name'), 
 		array('id' => $genid . 'templateFormName', 'class' => 'name long', 'tabindex' => '1')) ?>
-	</div>
-	
-	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
-	
-	<div style="padding-top:5px">
-		<?php foreach ($categories as $category) { ?>
-			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
-		<?php } ?>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
@@ -103,8 +98,10 @@
 	
 	
 	if (isset($parameters) && is_array($parameters)) {
-		foreach ($parameters as $param) { ?>
-		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo str_replace("'","\'",$param->getName()) ?>','<?php echo $param->getType() ?>'); 
+		foreach ($parameters as $param) {
+			$param_def_val = str_replace(array('{{','}}'), '', $param->getDefaultValue());
+	?>
+		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo str_replace("'","\'",$param->getName()) ?>','<?php echo $param->getType() ?>','<?php echo $param_def_val ?>'); 
 	<?php }
 	}?>
 

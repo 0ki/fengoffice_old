@@ -259,6 +259,7 @@ og.eventManager.addListener('try to select member',
 			var treenode = tree ? (member.id > 0 ? tree.getNodeById(member.id) : tree.getRootNode()) : null;
 			if (treenode) {
 				treenode.fireEvent('click', treenode);
+				og.Breadcrumbs.refresh(treenode);
 				clearInterval(interval);
 			}
 		}, 1000);

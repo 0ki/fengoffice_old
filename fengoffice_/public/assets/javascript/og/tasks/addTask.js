@@ -824,7 +824,8 @@ ogTasks.drawTaskRowAfterEdit = function(data) {
 	ogTasks.getGroupsForTask(task.id);	
 	
 	
-	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');	
+	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
+	if (!topToolbar) return;
 	var drawOptions = topToolbar.getDrawOptions();
 	
 	if(drawOptions.show_subtasks_structure && task.parentId > 0){

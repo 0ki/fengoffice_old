@@ -329,15 +329,20 @@ og.MemberTree = function(config) {
 								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
 									// Filter other Member Trees
 									self.totalFilterTrees++;
-									item.filterByMember(selected_members ,function(){
-										self.filteredTrees ++ ;
-										if (self.filteredTrees == self.totalFilterTrees) {
-											self.resumeEvents() ;
-											og.eventManager.fireEvent('member trees updated',node);
-										}
-									}) ;
 									
+									if (item.disableReloadOtherDimensions) {
+										item.disableReloadOtherDimensions = false;
+									} else {
 									
+										item.filterByMember(selected_members ,function(){
+											self.filteredTrees ++ ;
+											if (self.filteredTrees == self.totalFilterTrees) {
+												self.resumeEvents() ;
+												og.eventManager.fireEvent('member trees updated',node);
+											}
+										});
+										
+									}
 								}								
 							});
 							
@@ -518,25 +523,52 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 	}, 
 
 	selectNodes: function(nids) {
+		var mem_count = 0;
 		for (var i = 0 ; i < nids.length ; i++ ) {
 			if ( nids[i] != "undefined" ) {
 				if ( nids[i] != 0 ) {
-					var node = this.getNodeById(nids[i]) ;
-				}else{
+					var node = this.getNodeById(nids[i]);
+					
+					// expand selected member hierarchy
+					var member_obj = og.dimensions[this.dimensionId][nids[i]];
+					if (member_obj) {
+						
+						var pnode = member_obj ? og.dimensions[this.dimensionId][member_obj.parent] : null;
+						while (pnode != null && pnode.id != this.getRootNode().id) {
+							if (pnode.id > 0) {
+								og.eventManager.fireEvent('try to expand member', {id:pnode.id, dimension_id:this.dimensionId});
+							}
+							pnode = pnode.parent > 0 ? og.dimensions[this.dimensionId][pnode.parent] : null;
+						}
+					}
+					// select member
+					og.eventManager.fireEvent('try to select member', {id:nids[i], dimension_id:this.dimensionId});
+					
+				} else if (nids.length == 1) {
 					var node = this.getRootNode();
+				} else {
+					continue;
 				}
-				if (node) {
-					selModel = this.getSelectionModel() ;
-					selModel.suspendEvents();
-					selModel.select(node) ;
-					selModel.resumeEvents();
-				}else{
-					// If node not found in the new tree remove it from contextMAnager
-					og.contextManager.cleanActiveMembers(this.dimensionId);
+				
+				if (nids[i] > 0) {
+					var dimensions_to_reload = this.reloadDimensions;
+				
+					var trees = this.ownerCt.items;
+					if (trees) {
+						trees.each(function (item, index, length){
+							if (dimensions_to_reload.indexOf(item.dimensionId) != -1) {
+								item.disableReloadOtherDimensions = true;
+							}
+						});
+					}
+					
+					mem_count++;
 				}
-			} 
+			}
 		}
-	
+		if (mem_count == 0) {
+			og.contextManager.cleanActiveMembers(this.dimensionId);
+		}
 	},
 	
 	expandNodes: function (nids, callback) {
@@ -582,6 +614,13 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		this.loader.load(this.getRootNode(), function() {
 			tree.init(
 				function() {
+					
+					// expand filtered nodes
+					og.expandAllChildNodes(tree.getRootNode());
+					/*setTimeout(function(){
+						$("."+tree.dimensionCode+".x-tree .x-tree-ec-icon.x-tree-elbow-end-plus").click();
+					},500);*/
+					
 					if (tree.expandMode != "all"){
 						// If not all nodes are exapnded, expand only needed
 						tree.expandNodes(expandedNodes);
@@ -621,15 +660,17 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			mem.leaf = true;
 			mem.text = mem.name;
 			var new_node = dimension_tree.loader.createNode(mem);
-				    												
+			
 			var node_exist = dimension_tree.getNodeById(mem.id);			
 			
 			if(!node_exist){
 				if (node_parent) node_parent.appendChild(new_node);
 			}else{				
 				if (node_parent){
-					node_parent.removeChild(node_exist);
-					node_parent.appendChild(new_node);								
+					console.log(new_node);
+					node_exist.setText(new_node.text);
+				/*	node_parent.removeChild(node_exist);
+					node_parent.appendChild(new_node);*/								
 				}							
 			}
 		}
@@ -650,20 +691,20 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 				callback: function(success, data){
 					
 					var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
-											
-					dimension_tree.addMembersToTree(data.members, data.dimension_id);
-					
-					dimension_tree.innerCt.unmask();
-					
-					var n = dimension_tree.getNodeById(data.member_id);
-					if(n){
-						dimension_tree.suspendEvents();
-						if (n.parentNode) dimension_tree.expandPath(n.parentNode.getPath(), false);
-						dimension_tree.resumeEvents();
-						n.select();
-						og.eventManager.fireEvent('member tree node click', n);
+					if (dimension_tree) {
+						
+						dimension_tree.addMembersToTree(data.members, data.dimension_id);
+						dimension_tree.innerCt.unmask();
+						
+						var n = dimension_tree.getNodeById(data.member_id);
+						if(n){
+							dimension_tree.suspendEvents();
+							if (n.parentNode) dimension_tree.expandPath(n.parentNode.getPath(), false);
+							dimension_tree.resumeEvents();
+							n.select();
+							og.eventManager.fireEvent('member tree node click', n);
+						}
 					}
-					
 				}
 			});
 		}

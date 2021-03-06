@@ -54,6 +54,50 @@ abstract class BaseQueuedEmail extends DataObject {
 	function setTo($value) {
 		return $this->setColumnValue('to', $value);
 	} // setTo()
+	
+	/**
+	 * Return value of 'to' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getCc() {
+		return $this->getColumnValue('cc');
+	} // getTo()
+	
+	/**
+	 * Set value of 'to' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setCc($value) {
+		return $this->setColumnValue('cc', $value);
+	}
+	
+	/**
+	 * Return value of 'to' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getBcc() {
+		return $this->getColumnValue('bcc');
+	} // getTo()
+	
+	/**
+	 * Set value of 'to' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return boolean
+	 */
+	function setBcc($value) {
+		return $this->setColumnValue('bcc', $value);
+	}
 
 	/**
 	 * Return value of 'from' field

@@ -699,7 +699,9 @@ og.ContactManager = function() {
 			    				}, {
 			    					text: lang('to vcard all'), iconCls: 'ico-account', handler: function() {
 			    						var url = og.getUrl('contact', 'export_to_vcard_all');
-			    						location.href = url;
+			    						og.openLink(url, {callback: function(success, data){
+			    							og.download_exported_file();
+			    						}});
 			    					}
 			    				}]
 		            		}

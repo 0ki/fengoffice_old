@@ -36,9 +36,11 @@ if (isset($email)){
 		}
 	}
 	add_page_action(lang('mark as unread'), get_url('mail', 'mark_as_unread', array('id' => $email->getId())), 'ico-mark-as-unread');
-	//if (count($email->getWorkspaces()) && !logged_user()->isGuest()) { TODO Feng 2 Members
+	
 	if ( !logged_user()->isGuest()) {
-		add_page_action(lang('create task from email'), get_url('task', 'add_task', array('from_email' => $email->getId())), 'ico-task', null, null, true);
+		add_page_action(lang('create task from email'), "javascript:og.render_modal_form('', {c:'task', a:'add_task', params: {id:".$email->getId().", from_email:".$email->getId()."}});", 'ico-task', null, null, true);
+		$ret = null;
+		Hook::fire('additional_email_actions', array('email' => $email), $ret);
 	}
 	if ($email->getState() < 200) {
 		$download_url = get_url('mail', 'download', array('id' => $email->getId()));

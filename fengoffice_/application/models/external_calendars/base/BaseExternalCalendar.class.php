@@ -56,26 +56,26 @@ abstract class BaseExternalCalendar extends DataObject {
 	} // setExtCalUserId()
 	 
 	/**
-	 * Return value of 'calendar_user' field
+	 * Return value of 'original_calendar_id' field
 	 *
 	 * @access public
 	 * @param void
 	 * @return string
 	 */
-	function getCalendarUser() {
-		return $this->getColumnValue('calendar_user');
-	} // getCalendarUser()
+	function getOriginalCalendarId() {
+		return $this->getColumnValue('original_calendar_id');
+	} // getOriginalCalendarId()
 
 	/**
-	 * Set value of 'calendar_user' field
+	 * Set value of 'original_calendar_id' field
 	 *
 	 * @access public
 	 * @param string $value
 	 * @return string
 	 */
-	function setCalendarUser($value) {
-		return $this->setColumnValue('calendar_user', $value);
-	} // setCalendarUser()
+	function setOriginalCalendarId($value) {
+		return $this->setColumnValue('original_calendar_id', $value);
+	} // setOriginalCalendarId()
         
         /**
 	 * Return value of 'calendar_visibility' field
@@ -142,6 +142,48 @@ abstract class BaseExternalCalendar extends DataObject {
 	function setCalendarFeng($value) {
 		return $this->setColumnValue('calendar_feng', $value);
 	} // setCalendarFeng()
+	
+	/**
+	 * Return value of 'sync' field
+	 * @return integer
+	 */
+	function getSync() {
+		return $this->getColumnValue('sync');
+	} // getSync()
+	
+	/**
+	 * Set value of 'sync' field
+	 *
+	 * @access public
+	 * @param integer $value
+	 * @return integer
+	 */
+	function setSync($value) {
+		return $this->setColumnValue('sync', $value);
+	} // setSync()
+	
+	/**
+	 * Return value of 'related_to' field
+	 *
+	 * @access public
+	 * @param void
+	 * @return string
+	 */
+	function getRelatedTo() {
+		return $this->getColumnValue('related_to');
+	} // getRelatedTo()
+	
+	/**
+	 * Set value of 'related_to' field
+	 *
+	 * @access public
+	 * @param string $value
+	 * @return string
+	 */
+	function setRelatedTo($value) {
+		return $this->setColumnValue('related_to', $value);
+	} // setRelatedTo()
+	
         
         /**
         * Return manager instance

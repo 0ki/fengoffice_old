@@ -23,6 +23,7 @@
 		
 		$is_required = array_var($dimension, 'is_required');
 		$dimension_name = array_var($dimension, 'dimension_name');
+		Hook::fire("edit_dimension_name", array('dimension' => $dimension_id), $dimension_name);
 		if ($is_required) $dimension_name .= " *";
 		
 		if (isset($simulate_required) && is_array($simulate_required) && in_array($dimension_id, $simulate_required)) $is_required = true;
@@ -99,7 +100,7 @@
 	}
 ?>
 </div>
-<div class="clear"></div>
+
 <script>
 <?php if ($dim_count > 0) { ?>
 member_selector['<?php echo $genid; ?>'].members_dimension = Ext.util.JSON.decode('<?php echo json_encode($members_dimension)?>');

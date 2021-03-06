@@ -1,5 +1,5 @@
 
-	About Feng Office 3.1.5.1
+	About Feng Office 3.2-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,53 @@
 	
 	Changelog
 	=========
+	
+	Since 3.1.5.3
+	----------------
+	feature: dont use sharing table to check canView for individual objects.
+	feature: instantiate task templates from email.
+	feature: upgrade script change searchable_objects table to InnoDB if mysql version is  5.6 or greater.
+	feature: checkbox to apply same permissions to submembers in edit member form, permissions modal form.
+	feature: new table to define max member permissions by role.
+	feature: send notifications grouped by language and timezone, max of 20 users x group.
+	feature: invoicing repetition - repeat by fixed date.
+	feature: When calculating task dates in templates and task push, do not count non-working days.
+	feature: google calendar sync api v3.
+	feature: notify assigned user of task A when A has a previous task B and B has been completed.
+	feature: allow time inputs in date custom properties, only if crpm plugin is installed.
+	feature: when instantiating template tasks check dates and if it is a non-working day execute the action defined in the template.
+	feature: non working days abm.
+	
+	permissions: give read permissions over reports to all roles as default permissions 
+	permissions: hide "templates" object type radio buttons in permissions forms
+	
+	bugfix: when member filters associated dimension, get_child_members is not filtering. 
+	bugfix: when member filters associated dimension, if filtered member is clicked then the other dimensions are cleared and no member is selected.
+	bugfix: when changing user role to a lower role, max permissions are not updated.
+	bugfix: root permission are set to ext. collaborators.
+	bugfix: nested transactions when saving mail.
+	bugfix: contact export reloads the page. 
+	bugfix: export all contacts to vcard does not filter by context.
+	bugfix: pagination in invoices listing.
+	bugfix: config option "inherit_permissions_from_parent_member" was not inserted in installer.
+	bugfix: when conditional task is automatically instantiated it is non added to sharing table.
+	bugfix: purge trash performance.
+	bugfix: if role cannot read object type the permission radio button is not hidden.
+	bugfix: create task from email form is not modal and  does not autoselect the email's context.
+	bugfix: template workflow - when tasks are automatically created, the parameters are not instantiated in the new tasks.
+	bugfix: use post for get_members function.
+	bugfix: breadcrumbs sometimes shows parent members that doesn't have permissions.
+	
+	Since 3.1.5.2
+	----------------
+	bugfix: on overview member selectors not working.
+	bugfix: remove all members from contact.
+	
+	Since 3.1.5.1
+	----------------
+	usability: dont remove all items when reloading mail list.
+    bugfix: mail panel is reloaded foreach email received (only when checking mail manually)
+	bugfix: push tasks dates.
 	
 	Since 3.1.5
 	----------------

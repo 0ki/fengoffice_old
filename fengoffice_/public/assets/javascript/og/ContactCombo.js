@@ -129,7 +129,7 @@ og.renderContactSelector = function(config) {
         triggerAction: 'all',
         selectOnFocus: true,
         valueField: 'id',
-        emptyText: (lang('select contact') + '...'),
+        emptyText: config.empty_text ? config.empty_text : (lang('select contact') + '...'),
         valueNotFoundText: ''
 	});
 	contactsCombo.doQuery('', true);

@@ -17,7 +17,8 @@ abstract class BaseTemplateParameters extends DataManager {
 		'id' => DATA_TYPE_INTEGER,
 		'template_id' => DATA_TYPE_INTEGER,
 		'name' => DATA_TYPE_STRING,
-		'type' => DATA_TYPE_STRING
+		'type' => DATA_TYPE_STRING,
+		'default_value' => DATA_TYPE_STRING,
 	);
 
 	/**

@@ -17,7 +17,7 @@ class Billing extends BaseBilling {
 	}
 	
 	function canView(Contact $user) {
-		return can_read_sharing_table($user, $this->getRelObjectId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	}
 	function canAdd(Contact $user, $context, &$notAllowedMember = ''){
 		return true;

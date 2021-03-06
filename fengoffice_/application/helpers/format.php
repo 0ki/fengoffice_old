@@ -306,5 +306,28 @@ function date_format_tip($format) {
 		
 		return $formatted;
 	}
+	
+	
+	function get_custom_property_value_for_listing($cp, $obj) {
+		$cp_vals = CustomPropertyValues::getCustomPropertyValues($obj->getId(), $cp->getId());
+		$val_to_show = "";
+		foreach ($cp_vals as $cp_val) {
+			if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
+				$cp_contact = Contacts::findById($cp_val->getValue());
+				$cp_val->setValue($cp_contact->getObjectName());
+			}
+			
+			if ($cp->getType() == 'date' && $cp_val instanceof CustomPropertyValue) {
+				
+				$format = user_config_option('date_format');
+				Hook::fire("custom_property_date_format", null, $format);
+				$tmp_date = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $cp_val->getValue());
+				$cp_val->setValue($tmp_date->format($format));
+			}
+			
+			$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof CustomPropertyValue ? $cp_val->getValue() : "");
+		}
+		return $val_to_show;
+	}
 
 ?>

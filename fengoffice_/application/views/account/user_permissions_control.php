@@ -121,12 +121,12 @@ foreach ( $dimensions as $dimension ) {
 <?php }?>
     
 	    </table>
-		<div style="width: 100%; text-align: right;">
+		<div style="width: 100%; text-align: right; margin: 15px 0;">
 			<div>
-				<a href="#" class="internalLink" onclick="og.ogPermApplyToSubmembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" id="<?php echo $genid."_".$dimension->getId()?>_apply_to_submembers"></a>
+				<a href="#" class="internalLink underline" onclick="og.ogPermApplyToSubmembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" id="<?php echo $genid."_".$dimension->getId()?>_apply_to_submembers"></a>
 			</div>
 			<div>
-				<a href="#" class="internalLink" onclick="og.ogPermApplyToAllMembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" id="<?php echo $genid."_".$dimension->getId()?>_apply_to_all_members"></a>
+				<a href="#" class="internalLink underline" onclick="og.ogPermApplyToAllMembers('<?php echo $genid ?>', '<?php echo $dimension->getId() ?>');return false;" id="<?php echo $genid."_".$dimension->getId()?>_apply_to_all_members"></a>
 			</div>
 		</div>
 	

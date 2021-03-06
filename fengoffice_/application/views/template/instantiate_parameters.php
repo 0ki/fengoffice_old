@@ -21,12 +21,19 @@ if (array_var($_REQUEST, 'modal')) {
 	
 	<div>
 		<table><tbody>
-		<?php foreach($parameters as $parameter) {?>
+		<?php foreach($parameters as $parameter) {
+				$default_value = array_var($parameter, 'default_value');
+				$dont_render_this_param = false;
+				Hook::fire('before_instantiating_template_param_def_value', array('param' => $parameter), $dont_render_this_param);
+				if ($dont_render_this_param) {
+					continue;
+				}
+		?>
 			<tr style='height:30px;'>
 				<td style="padding:3px 10px 0 10px;"><b><?php echo $parameter['name']; ?></b></td>
 				<td align="left">
 					<?php if($parameter['type'] == 'string'){ ?>
-						<input id="parameterValues[<?php echo $parameter['name'] ?>]" name="parameterValues[<?php echo $parameter['name'] ?>]" />
+						<input id="parameterValues[<?php echo $parameter['name'] ?>]" name="parameterValues[<?php echo $parameter['name'] ?>]" class="title" value="<?php echo $default_value?>"/>
 					<?php }else if($parameter['type'] == 'date'){ ?>
 						<?php echo pick_date_widget2('parameterValues['.$parameter['name'].']')?>
 					<?php }else{ ?>

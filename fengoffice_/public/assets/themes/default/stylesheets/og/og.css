@@ -1697,3 +1697,10 @@ span.member-path span a:hover {
 	border-color: #1F7408;
 }
 /* end styled checkboxes */
+
+.apply-member-permissions-to-submembers {
+	margin: 15px 0px;
+}
+a.underline {
+	text-decoration: underline;
+}

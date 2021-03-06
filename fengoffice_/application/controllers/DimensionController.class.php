@@ -402,6 +402,15 @@ class DimensionController extends ApplicationController {
 					$member_type_cond = " AND object_type_id IN (".implode(',', $allowed_member_types).")";
 				}
 				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
+				
+				// filter $childs by other dimension associations
+				$context = active_context();
+				$filter_by_members = array();
+				foreach ($context as $selection) {
+					if ($selection instanceof Member) $filter_by_members[] = $selection;
+				}
+				$memberList = $this->apply_association_filters($dimension, $memberList, $filter_by_members);
+				
 				//include all parents
 				//Check hierarchy
 				if($parents){
@@ -514,7 +523,9 @@ class DimensionController extends ApplicationController {
 		
 		$dim_names = array();
 		foreach ($dimensions as $dim) {
-			$dim_names[$dim->getId()] = array("name" => clean($dim->getName()));
+			$dim_name = clean($dim->getName());
+			Hook::fire("edit_dimension_name", array('dimension' => $dim), $dim_name);
+			$dim_names[$dim->getId()] = array("name" => $dim_name);
 		}
 		ajx_extra_data(array("dim_names" => $dim_names));
 	}
@@ -538,7 +549,16 @@ class DimensionController extends ApplicationController {
 				}else{
 					$childs = Members::getSubmembers($mem, false, "");
 				}
-							
+				
+				// filter $childs by other dimension associations
+				$context = active_context();
+				$filter_by_members = array();
+				foreach ($context as $selection) {
+					if ($selection instanceof Member) $filter_by_members[] = $selection;
+				}
+				$childs = $this->apply_association_filters($mem->getDimension(), $childs, $filter_by_members);
+				
+				// build resultant member list
 				$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
 				
 				ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId(), "member_id" => $mem->getId()));			

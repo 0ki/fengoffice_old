@@ -321,8 +321,12 @@ class ReportingController extends ApplicationController {
 				break;
 		}
 		
-		$st->add('h',-logged_user()->getTimezone());
-		$et->add('h',-logged_user()->getTimezone());
+		if ($st instanceof DateTimeValue) {
+			$st->add('h',-logged_user()->getTimezone());
+		}
+		if ($et instanceof DateTimeValue) {
+			$et->add('h',-logged_user()->getTimezone());
+		}
 				
 		$timeslotType = array_var($report_data, 'timeslot_type', 0);
 		$group_by = array();

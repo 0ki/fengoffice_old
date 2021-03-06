@@ -3312,3 +3312,22 @@ og.removeUserFromUserGroup = function(genid, group_id) {
 	}
 	$("#"+genid+"user_group_"+group_id).remove();
 }
+
+og.download_exported_file = function(filename, filetype) {
+	setTimeout(function() {
+		var params = {};
+		if (filename) params.fname = filename;
+		if (filetype) params.file_type = filetype;
+		window.location = og.getUrl('contact', 'download_exported_file', params);
+	}, 1000);
+}
+
+og.expandAllChildNodes = function(node) {
+	if (node) {
+		setTimeout(function() {
+			node.eachChild(function(n){
+				if (n) n.expand(true, false, og.expandAllChildNodes);
+			});
+		}, 1000);
+	}
+}

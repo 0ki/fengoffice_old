@@ -320,7 +320,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
 	
@@ -331,7 +331,7 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return boolean
 	 */
 	function canDownload(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canDownload
 
 	

@@ -155,6 +155,10 @@ $(document).ready(function() {
 
 	<?php if (count(array_var($contact_data, 'all_phones')) == 0) { ?>
 	og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', def_phone_type);
+	<?php } else { 
+			foreach (array_var($contact_data, 'all_phones') as $phone) { ?>
+				og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo $phone->getNumber()?>', '<?php echo $phone->getName()?>', '<?php echo $phone->getId()?>');
+	  <?php } ?>
 	<?php } ?>
 
 	$('#<?php echo $genid?>clientFormAssistantNumber').change(function(){

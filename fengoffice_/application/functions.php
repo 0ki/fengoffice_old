@@ -2019,8 +2019,9 @@ function associate_member_to_status_member($project_member, $old_project_status,
 
 
 function get_associated_status_member_id($member, $dimension, $ot=null) {
-	if ($member instanceof Member) {
+	if ($member instanceof Member && $dimension instanceof Dimension) {
 		$member_dimension = $member->getDimension();
+		if (!$member_dimension instanceof Dimension) return 0;
 
 		$a = DimensionMemberAssociations::instance()->findOne(array('conditions' => array('dimension_id=? AND object_type_id=? AND associated_dimension_id=?'.
 				($ot instanceof ObjectType ? ' AND associated_object_type_id='.$ot->getId() : ''),
@@ -2111,7 +2112,9 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 					$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
 				}
 				$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
-	
+				
+				Hook::fire('template_param_date_calculation', array('op' => $operator, 'date' => $date, 'template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy), $dateNum);
+				
 				$value = $date->add($dateUnit, $dateNum);
 			}else{
 				$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
@@ -2128,4 +2131,7 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 		}
 		
 	}
+	
+	$ret = null;
+	Hook::fire('after_template_object_param_instantiation', array('template_id' => $object->getTemplateId(), 'original' => $object, 'copy' => $copy, 'parameter_values' => $parameterValues), $ret);
 }

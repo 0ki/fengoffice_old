@@ -806,7 +806,8 @@ og.parameterNameExistsInTemplate = function(before, name){
 	return false;
 };
 
-og.addParameterToTemplate = function(params, name, type) {
+og.addParameterToTemplate = function(params, name, type, default_value) {
+	if (!default_value) default_value = '';
 	var parent = params.parentNode;
 	var count = parent.getElementsByTagName('input').length / 2;
 	var div = document.createElement('div');
@@ -821,7 +822,10 @@ og.addParameterToTemplate = function(params, name, type) {
 	var param = [];
 	param['name'] = name;
 	param['type'] = type;
+	param['default_value'] = default_value;
 	og.templateParameters.push(param);
+	
+	og.eventManager.fireEvent('after add tempalte parameter', {param: param});
 };
 
 og.removeParameterFromTemplate = function(div, name) {
@@ -852,6 +856,8 @@ og.removeParameterFromTemplate = function(div, name) {
 		editRemoveParamSpan.innerHTML = '<a href="#" onclick="og.promptAddParameter(this, 1, ' + (k - 1) + ')" >'+lang('edit')+'</a>' +
 		'&nbsp;|&nbsp;<a href="#" onclick="og.removeParameterFromTemplate(this.parentNode.parentNode, \'' + name + '\')" class="removeParamDiv">'+lang('remove')+'</a>';
 	}
+	
+	og.eventManager.fireEvent('after remove tempalte parameter', {param: param});
 };
 
 og.templateConfirmSubmit = function(genid) {

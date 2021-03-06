@@ -99,7 +99,19 @@ class Member extends BaseMember {
 		
 		if ($include_itself){
 			while($child != null){
-				$members[] = $child;
+				$add_member = true;
+				
+				if ($check_permissions) {
+					$add_member = false;
+					$pg_ids_str = implode(',', logged_user()->getPermissionGroupIds());
+					if (logged_user() instanceof Contact && ContactMemberPermissions::contactCanAccessMemberAll($pg_ids_str, $child->getId(), logged_user(), ACCESS_LEVEL_READ)) {
+						$add_member = true;
+					}
+				}
+				
+				if ($add_member) {
+					$members[] = $child;
+				}
 				$child = $child->getParentMember();
 			}
 		}

@@ -20,7 +20,9 @@
 					// dates are in standard format "Y-m-d H:i:s", must be formatted
 					if ($customProp->getType() == 'date') {
 						$dtv = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $cpv->getValue());
-						$value = $dtv->format(user_config_option('date_format'));
+						$format = user_config_option('date_format');
+						Hook::fire("custom_property_date_format", null, $format);
+						$value = $dtv->format($format);
 					} else {
 						$value = clean($cpv->getValue());
 					}

@@ -146,7 +146,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return boolean
 	 */
 	function canView(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canView
 
 	/**
@@ -156,7 +156,7 @@ class ProjectEvent extends BaseProjectEvent {
 	 * @return boolean
 	 */
 	function canDownload(Contact $user) {
-		return can_read_sharing_table($user, $this->getId());
+		return can_read($user, $this->getMembers(), $this->getObjectTypeId());
 	} // canDownload
 	
 	

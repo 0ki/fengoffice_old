@@ -77,7 +77,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
   <div>
 	<div class="coInputName">
 	<?php
-		echo text_field('task[name]', $task->getName(), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
+		echo text_field('task[name]', array_var($task_data, 'name', $task->getName()), array('class' => 'title', 'id' => 'ogTasksPanelATTitle', "size"=>"255", "maxlength"=>"255", 'placeholder' => lang('task')));
 	?>
 	</div>
 		

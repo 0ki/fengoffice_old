@@ -63,7 +63,7 @@ border-bottom:1px solid black;
 					foreach ($members as $member){
 						$dim = $member->getDimension();
 						if($dim->getIsManageable()){
-							if ($dim->getCode() == "customer_project"){
+							if ($dim->getCode() == "customer_project" || $dim->getCode() == "customers"){
 								$obj_type = ObjectTypes::findById($member->getObjectTypeId());
 								if ($obj_type instanceof ObjectType) {
 								echo lang($dim->getCode()). ": ";
