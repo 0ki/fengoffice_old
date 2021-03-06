@@ -562,7 +562,7 @@ $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($objec
 </form>
 
 <script>
-
+var is_new_event = <?php echo $event->isNew() ? '1' : '0'?>;
 og.eventInvitationsUserFilter = '<?php echo $filter_user ?>';
 
 og.drawInnerHtml = function(companies) {
@@ -594,7 +594,7 @@ og.drawInnerHtml = function(companies) {
 				htmlStr += '<input style="display:none;" type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="' + genid + 'inviteUser'+usr.id+'" value="checked"></input>';
 				htmlStr += '<label style="overflow:hidden; background: transparent url('+usr.avatar_url+') no-repeat;" ><span class="link-ico ico-user" >'+og.clean(usr.name)+'</span> <br> <span style="color:#888888;font-size:90%;font-weight:normal;">'+ usr.mail+ ' </span></label>';
 				script += 'cos.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'inviteUser' + usr.id + '\'});';
-				if (usr.invited || usr.id == calendar_user_filter) {
+				if (usr.invited || (is_new_event && usr.id == calendar_user_filter)) {
 					script += 'og.checkUser(document.getElementById(\'div' + genid + 'inviteUser'+usr.id+'\'));'
 				}
 				htmlStr += '</div>';

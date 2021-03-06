@@ -136,7 +136,7 @@ function friendly_date(DateTimeValue $date, $timezone = null) {
 	
 	//TODO: 7 days before: "Dom at 13:43", older: "Oct, 06 at 15:20"
 	$dateControl = new DateTimeValue($date->getTimestamp()+$timezone*3600);	
-	if ($dateControl->isToday()) {
+	if ($date->isToday()) {
 		$now = DateTimeValueLib::now();
 		$diff = DateTimeValueLib::get_time_difference($date->getTimestamp(), $now->getTimestamp());
 		if ($diff['hours'] == 0) {

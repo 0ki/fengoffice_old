@@ -196,6 +196,8 @@
 	'must choose at least one member of' => 'You must choose at least one member of {0}.',
 	'timeslot dnx' => 'Timeslot does not exist',
 	'you dont have permissions to classify object in member' => 'You don\'t have permissions to classify \'{0}\' in \'{1}\'',
+  
+  	'uploaded file bigger than max upload size' => 'You are trying to upload a document that is over your current upload size limit of {0}.',
   ); // array
 
 ?>

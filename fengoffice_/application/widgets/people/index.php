@@ -44,7 +44,7 @@
 			$intersection_condition = count($intersection) > 0 ? 'o.id NOT IN ('.implode(',',$intersection).') AND' : '';
 			$contacts_for_combo = Contacts::findAll(array(
 				'conditions' => $intersection_condition . ' `is_company` = 0 AND `user_type` > '.logged_user()->getUserType().' AND disabled = 0',
-				'order' => 'last_activity, updated_on',
+				'order' => 'first_name',
 				'order_dir' => 'desc',
 			));
 		}

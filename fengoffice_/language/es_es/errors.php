@@ -132,4 +132,6 @@
 	'member name already exists in dimension' => 'Ya existe un miembro de nombre \'{0}\' en la dimensión seleccionada.',
 	'there are no changes'=> 'No se han realizado cambios. El documento no ha sido sobreescrito. ',
 	'start date > closure date' => 'La fecha de cierre debe ser mayor que la fecha de inicio.',
+  
+  	'uploaded file bigger than max upload size' => 'Está intentando subir un documento que es mayor a su límite de tamaño que es {0}.',
 ); ?>

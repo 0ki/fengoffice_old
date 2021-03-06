@@ -128,8 +128,7 @@ class Timeslots extends BaseTimeslots {
 			$conditions .= " AND `e`.`contact_id` = " . logged_user()->getId();
 		}
 		
-		$conditions .= $commonConditions;		
-		$join_params = null;
+		$conditions .= $commonConditions;
 		
 		$order_by[] = 'start_time';
 		$result = self::instance()->listing(array(

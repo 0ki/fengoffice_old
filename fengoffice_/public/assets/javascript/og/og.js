@@ -647,7 +647,7 @@ og.submit = function(form, options) {
 	frame.name = id;
 	frame.className = 'x-hidden';
 	document.body.appendChild(frame);
-	frame.src = Ext.SSL_SECURE_URL;
+	if (Ext.isIE) frame.src = Ext.SSL_SECURE_URL;
 
 	if(Ext.isIE){
 	   document.frames[id].name = id;

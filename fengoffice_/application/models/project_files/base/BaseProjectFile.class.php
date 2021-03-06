@@ -217,7 +217,11 @@
     * @return string 
     */
     function getUrl() {
-      return $this->getColumnValue('url');
+      $url = $this->getColumnValue('url');
+	  if ($url && strpos($url, ':') === false) {
+		$url = "http://". $url;
+	  }
+	  return $url;
     } // getUrl()
     
     /**

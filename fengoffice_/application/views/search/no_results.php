@@ -21,6 +21,6 @@
 </div>
 <script>
 	$("#searchButton").prop("disabled",false);
-	$("#search_for").prop("disabled",false);	
+	$("#search_for_in").prop("disabled",false);	
 
 </script>

@@ -1219,6 +1219,7 @@ class MemberController extends ApplicationController {
 		$member = Members::findById($mem_id);
 		
 		try {
+
 			DB::beginWork();
 			
 			$objects = array();

@@ -170,6 +170,7 @@ og.MemberTree = function(config) {
 					});
 				}
 			}
+			
 			return false;
 		}
     });

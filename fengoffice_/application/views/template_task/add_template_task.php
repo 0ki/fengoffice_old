@@ -157,7 +157,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
     			<a style="margin-left: 10px" id="<?php echo $genid ?>parent_before" href="#" onclick="og.pickParentTask(this)"><?php echo lang('set parent task') ?></a>
     			
     		<?php }else{
-    			//$hola template_task
     			if(array_var($_GET, 'template_task', false)){
  					$parentTask = TemplateTasks::findById($task_data['parent_id']);
  				}else{

@@ -175,7 +175,7 @@
 <script>
 	og.loadReportingFlags();	
 	og.reportTask('<?php echo $genid?>', '<?php echo array_var($report_data, 'order_by') ?>', '<?php echo array_var($report_data, 'order_by_asc') ?>', '');	
-	
+
 	var first = document.getElementById('<?php echo $genid ?>reportFormName');
 	if (first) first.focus();
 	

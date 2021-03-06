@@ -1,5 +1,5 @@
 
-	About Feng Office 2.4-rc
+	About Feng Office 2.4
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,26 @@
 	
 	Changelog
 	=========
+	
+	Since 2.4-rc
+	----------------
+	
+	fetaure: error message improved when upload limit is reached.
+ 
+	bugfix: on gantt, names of the tasks were not displayed completely.
+	bugfix: on gantt, the time estimation for tasks was not displayed correctly.
+	bugfix: date custom properties default value does not use user's timezone.
+	bugfix: on people widget add user combo is not ordered by name.
+	bugfix: on activity widget dates have gmt errors.
+	bugfix: general search allways search for empty string.
+	bugfix: url files are not saved correctly when url is not absolute.
+	bugfix: imap fetch fixed when last email does not exists in server.
+	bugfix: only invite automatically the "filtered user" when adding a new event, not when editing an existing one.
+	bugfix: variable member_deleted uninitialized in a cycle, maintains the value of previous iterations and fills the log warnings.
+	bugfix: don't display group-mailer button if user doesn't have an email account.
+	bugfix: allow mail rules for all incoming messages, useful for autoreplies.
+	bugfix: the invitations of the events created on google calendar will have the same special ID of the event.
+	
 	
 	Since 2.4-beta
 	----------------

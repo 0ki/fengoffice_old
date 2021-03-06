@@ -20,7 +20,7 @@ class FilesController extends ApplicationController {
 	function __construct() {
 		parent::__construct();
 		
-		$protocol = (strpos($_SERVER['SERVER_PROTOCOL'], 'HTTPS')) ? 'https' : 'http';
+		$this->protocol = (strpos($_SERVER['SERVER_PROTOCOL'], 'HTTPS')) ? 'https' : 'http';
 		
 		prepare_company_website_controller($this, 'website');
 	} // __construct
@@ -377,7 +377,7 @@ class FilesController extends ApplicationController {
 				} else if ($file->getType() == ProjectFiles::TYPE_WEBLINK) {
 					$url = array_var($file_data, 'url', '');
 					if ($url && strpos($url, ':') === false) {
-						$url = $this->protocol . $url;
+						$url = $this->protocol ."://". $url;
 						$file->setUrl($url);
 						$file->save();
 					}

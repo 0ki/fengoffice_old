@@ -16,8 +16,7 @@ if (!isset($conditions)) $conditions = array();
 <div class="coInputTitle">
 <table style="width: 535px">
 	<tr>
-		<td><?php echo (isset($id) ? lang('edit custom report') : lang('new custom report')) ?>
-		</td>
+		<td><?php echo (isset($id) ? lang('edit custom report') : lang('new custom report')) ?></td>
 		<td style="text-align: right"><?php echo submit_button((isset($id) ? lang('save changes') : lang('add report')),'s',array('style'=>'margin-top:0px;margin-left:10px', 'tabindex' => '20')) ?></td>
 	</tr>
 </table>
@@ -44,7 +43,7 @@ foreach ($object_types as $type) {
 	$options[] = '<option value="'.$type[0].'" '.$selected.'>'.$type[1].'</option>';
 }
 
-$context_menu_style = "font-weight:bold";
+$context_menu_style = "font-weight:normal";
 $context_div_display ="display:none;";
 $strDisabled = count($options) > 1 ? '' : 'disabled';
 echo select_box('objectTypeSel', $options, array('id' => 'objectTypeSel' ,'onchange' => 'og.reportObjectTypeChanged("'.$genid.'", "", 1, "")', 'style' => 'width:200px;', $strDisabled => '', 'tabindex' => '10'));

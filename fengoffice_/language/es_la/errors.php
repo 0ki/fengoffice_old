@@ -134,4 +134,6 @@
 	'start date > closure date' => 'La fecha de cierre debe ser mayor que la fecha de inicio.',	
 	'timeslot dnx' => 'No existe el tiempo de trabajo',
 	'you dont have permissions to classify object in member' => 'No tiene permisos para clasificar \'{0}\' en \'{1}\'',
+  
+  	'uploaded file bigger than max upload size' => 'Está intentando subir un documento que es mayor a su límite de tamaño que es {0}.',
 ); ?>

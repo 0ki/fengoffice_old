@@ -319,6 +319,10 @@ class ProjectFile extends BaseProjectFile {
 			$revision = $this->getLastRevision();
 		} // if
 
+		if (!is_array($uploaded_file) || count($uploaded_file) == 0) {
+			throw new Exception(lang('uploaded file bigger than max upload size', format_filesize(get_max_upload_size())));
+		}
+		
 		if(!($revision instanceof ProjectFileRevision)) {
 			$revision = new ProjectFileRevision();
 			$revision->setFileId($this->getId());

@@ -553,6 +553,8 @@ class ProjectEvents extends BaseProjectEvents {
                                                     $invitation->setEventId($new_event->getId());
                                                     $invitation->setContactId($contact->getId());
                                                     $invitation->setInvitationState($contact instanceof Contact && $contact->getId() == $contact->getId() ? 1 : 0);
+                                                    $invitation->setUpdateSync();
+                                                    $invitation->setSpecialId($special_id);
                                                     $invitation->save();
                                                 }
 

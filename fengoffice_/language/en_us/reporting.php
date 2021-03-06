@@ -5,6 +5,7 @@
 	'showing information for' => 'Showing information for',
   	'custom' => 'Custom',
     'custom reports' => 'Custom reports',
+  	'general reports' => 'General reports',
   	'no custom reports' => 'There are no custom reports for \'{0}\' with the selected relations',
   	'add custom report' => 'Add a custom report',
   	'edit custom report' => 'Edit custom report',

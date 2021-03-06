@@ -184,16 +184,19 @@ class ReportingController extends ApplicationController {
 		$report_data['timeslot_type'] = user_config_option('timeReportTimeslotType');
 		
 		$group = explode( ',', user_config_option('timeReportGroupBy') );
-		$report_data['group_by_1'] = $group[0];
-		$report_data['group_by_2'] = $group[1];
-		$report_data['group_by_3'] = $group[2];
+		$report_data['group_by_1'] = array_var($group, 0);
+		$report_data['group_by_2'] = array_var($group, 1);
+		$report_data['group_by_3'] = array_var($group, 2);
 		
 		$altGroup = explode( ',', user_config_option('timeReportAltGroupBy') );
-		$report_data['alt_group_by_1'] = $altGroup[0];
-		$report_data['alt_group_by_2'] = $altGroup[1];
-		$report_data['alt_group_by_3'] = $altGroup[2];
+		$report_data['alt_group_by_1'] = array_var($altGroup, 0);
+		$report_data['alt_group_by_2'] = array_var($altGroup, 1);
+		$report_data['alt_group_by_3'] = array_var($altGroup, 2);
 		
 		$report_data['show_billing'] = user_config_option('timeReportShowBilling');
+		
+		$cp_ids = CustomProperties::getCustomPropertyIdsByObjectType(ProjectTasks::instance()->getObjectTypeId());
+		tpl_assign('has_custom_properties', count($cp_ids) > 0);
 		
 		$users = Contacts::getAllUsers();
 		$_SESSION['total_task_times_report_data'] = $report_data;
@@ -217,28 +220,28 @@ class ReportingController extends ApplicationController {
 		if (!$report_data) {
 			$report_data = array_var($_POST, 'report');
 			set_user_config_option('timeReportDate', $report_data['date_type'] , logged_user()->getId());
-				
+			
 			$dateStart = getDateValue($report_data['start_value']);
 			if ($dateStart instanceof DateTimeValue) {
 				set_user_config_option('timeReportDateStart', $dateStart , logged_user()->getId());
 			}
-				
+			
 			$dateEnd = getDateValue($report_data['end_value']);
 			if ($dateEnd instanceof DateTimeValue) {
 				set_user_config_option('timeReportDateEnd', $dateEnd , logged_user()->getId());
 			}
-				
+			
 			set_user_config_option('timeReportPerson', $report_data['user'] , logged_user()->getId());
 			set_user_config_option('timeReportTimeslotType', $report_data['timeslot_type'] , logged_user()->getId());
 			set_user_config_option('timeReportShowBilling', isset($report_data['show_billing']) ? 1:0 , logged_user()->getId());
-				
+			
 			$group = $report_data['group_by_1'].", ".$report_data['group_by_2'].", ".$report_data['group_by_3'];
 			$altGroup = $report_data['alt_group_by_1'].", ".$report_data['alt_group_by_2'].", ".$report_data['alt_group_by_3'];
-				
+			
 			set_user_config_option('timeReportGroupBy', $group , logged_user()->getId());
 			set_user_config_option('timeReportAltGroupBy', $altGroup , logged_user()->getId());
 			
-			$_SESSION['total_task_times_report_data'] = $report_data;			
+			$_SESSION['total_task_times_report_data'] = $report_data;
 		}
 		
 		
@@ -1070,29 +1073,35 @@ class ReportingController extends ApplicationController {
 	}
 
 	function get_object_fields_custom_properties(){ //returns only the custom properties
-		$fields = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'));
+		$fields = $this->get_allowed_columns_custom_properties(array_var($_GET, 'object_type'), false);
 
 		ajx_current("empty");
 		ajx_extra_data(array('fields' => $fields));
 	}
 	
 	
-	private function get_allowed_columns_custom_properties($object_type) {
-		return array(); //FIXME: no usar todo lo de custom properties por el momento
+	private function get_allowed_columns_custom_properties($object_type, $include_common_cols=true) {
+		//return array(); //FIXME: no usar todo lo de custom properties por el momento
 		$fields = array();
 		if(isset($object_type)){
+			if (!is_numeric($object_type)) {
+				$otype = ObjectTypes::instance()->findOne(array('conditions' => array('handler_class=?', $object_type)));
+				if ($otype instanceof ObjectType) $object_type = $otype->getId();
+			}
 			$customProperties = CustomProperties::getAllCustomPropertiesByObjectType($object_type);
 			$objectFields = array();
 			foreach($customProperties as $cp){				
 				if ($cp->getType() != 'table')
 					$fields[] = array('id' => $cp->getId(), 'name' => $cp->getName(), 'type' => $cp->getType(), 'values' => $cp->getValues(), 'multiple' => $cp->getIsMultipleValues());
 			}
-			$ot = ObjectTypes::findById($report->getObjectTypeId());
-			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");	
-	
-			$common_columns = Objects::instance()->getColumns(false);
-			$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
-			$objectFields = array_merge($objectFields, $common_columns);
+			$ot = ObjectTypes::findById($object_type);
+			eval('$managerInstance = ' . $ot->getHandlerClass() . "::instance();");
+			
+			if ($include_common_cols) {
+				$common_columns = Objects::instance()->getColumns(false);
+				$common_columns = array_diff_key($common_columns, array_flip($managerInstance->getSystemColumns()));
+				$objectFields = array_merge($objectFields, $common_columns);
+			}
 			
 			foreach($objectFields as $name => $type){
 				if($type == DATA_TYPE_FLOAT || $type == DATA_TYPE_INTEGER){

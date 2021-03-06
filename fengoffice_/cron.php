@@ -51,8 +51,8 @@ foreach ($events as $event) {
 					$event->save();
 					DB::commit();
 				} catch (Exception $e) {
-					DB::rollback();
 					echo $e->getMessage();
+					DB::rollback();
 				}
 			}
 		}

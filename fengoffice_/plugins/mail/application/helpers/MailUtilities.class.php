@@ -888,6 +888,11 @@ class MailUtilities {
 								Logger::log($max_summary->getMessage());
 								throw new Exception($max_summary->getMessage());
 							}
+							
+							while (is_numeric($max_uid) && !$max_summary && $max_uid > 0) {
+								$max_uid = $max_uid - 1;
+								$max_summary = $imap->getSummary($max_uid, true);
+							}
 							$lastReceived = $max_summary[0]['MSG_NUM'];
 						}
 						

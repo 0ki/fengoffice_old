@@ -1,4 +1,4 @@
-<?php 
+<?php
 	$genid = gen_id();
 	$selectedPage = user_config_option('custom_report_tab');
 	$customReports = Reports::getAllReportsByObjectType();

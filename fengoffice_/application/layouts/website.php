@@ -137,12 +137,13 @@ $use_owner_company_logo = owner_company()->hasLogo();
 					<table>
 						<tr>
 							<td>
-								<input name="search_for" placeholder="<?php echo lang('search') . "..."?>" id="search_for"/>
+								<input name="search_for_in" placeholder="<?php echo lang('search') . "..."?>" id="search_for_in"/>
 								<input type="hidden" name="c" value="search" />
 								<input type="hidden" name="a" value="search" />
 								<input type="hidden" name="current" value="search" />
 								<input type="hidden" id="hfVars" name="vars" value="dashboard" />
 								<input style="display:none" id="searchButtonReal" type="submit" />
+								<input style="display:none" name="search_for" id="search_for"/>	
 							</td>
 							<td>
 								<div class="btn-group">
@@ -283,8 +284,9 @@ $use_owner_company_logo = owner_company()->hasLogo();
                     });
 
                     $("#form_search").submit(function (e){
+                    	$("#search_for").val($("#search_for_in").val());
                     	$("#searchButton").prop("disabled",true);
-                    	$("#search_for").prop("disabled",true);
+                    	$("#search_for_in").prop("disabled",true);
                     });
                 }
             );

@@ -7,6 +7,7 @@
     $acts['data'] = array();
     foreach($activities as $activity){
     	$user = Contacts::findById($activity->getCreatedById());
+    	$member_deleted = false;
     	if($activity->getMemberId()){
     		$object = Members::findById($activity->getMemberId());
     		$key = $activity->getRelObjectId(). "-" .$activity->getId() . "-" . $activity->getCreatedById();

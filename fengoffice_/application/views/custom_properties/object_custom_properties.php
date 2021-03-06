@@ -104,6 +104,9 @@ if(count($cps) > 0){
 						echo '</table>';
 						echo '&nbsp;<a href="#" class="link-ico ico-add" onclick="og.addCPDateValue(\''.$genid.'\','.$customProp->getId().')">'.lang('add value').'</a><br/>';
 					}else{
+						if ($default_value == '') {
+							$default_value = DateTimeValueLib::now()->advance(logged_user()->getTimezone()*3600, false)->toMySQL();
+						}
 						$value = DateTimeValueLib::dateFromFormatAndString("Y-m-d H:i:s", $default_value);
 						echo pick_date_widget2($name, $value, null, $startTi + $ti, null, $genid . 'cp' . $customProp->getId());
 					}

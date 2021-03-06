@@ -699,7 +699,7 @@ og.ContactManager = function() {
 	if (!og.loggedUser.isGuest) {
 		tbar.push('-');
 		tbar.push(actions.imp_exp);
-		if (og.additional_group_mailer_send) {
+		if (og.additional_group_mailer_send && og.loggedUserHasEmailAccounts) {
 			tbar.push(sendItems);
 		}
 	}

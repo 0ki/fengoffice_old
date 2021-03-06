@@ -87,7 +87,7 @@ class DateTimeValue {
 
 	/**
 	 * This function will return true if this day is today
-	 *
+	 * Date must be in GMT0
 	 * @param void
 	 * @return boolean
 	 */
@@ -95,6 +95,7 @@ class DateTimeValue {
 		$today = DateTimeValueLib::now();
 		if (logged_user() instanceof Contact) {
 			$date = new DateTimeValue($this->getTimestamp() + logged_user()->getTimezone() * 3600);
+			$today = new DateTimeValue($today->getTimestamp() + logged_user()->getTimezone() * 3600);
 		} else {
 			$date = $this;
 		}

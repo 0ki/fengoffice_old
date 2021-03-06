@@ -2055,6 +2055,8 @@ class EventController extends ApplicationController {
                                                 $invitation->setEventId($new_event->getId());
                                                 $invitation->setContactId(logged_user()->getId());
                                                 $invitation->setInvitationState(1);
+                                                $invitation->setUpdateSync();
+                                                $invitation->setSpecialId($special_id);
                                                 $invitation->save();
                                             }
                                             
