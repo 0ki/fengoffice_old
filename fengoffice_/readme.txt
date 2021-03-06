@@ -1,5 +1,5 @@
 
-	About Feng Office 3.0.5
+	About Feng Office 3.0.5.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,12 @@
 	
 	Changelog
 	=========
+	
+	Since 3.0.5
+	----------------
+	bugfix: Error when creating user from company view.
+	bugfix: Error when viewing empty custom property if it is of type=contact.
+	bugfix: Installer error, missing column 'can_update_other_users_invitations'.
 	
 	Since 3.0.4.1
 	----------------

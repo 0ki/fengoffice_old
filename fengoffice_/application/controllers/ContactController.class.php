@@ -752,7 +752,7 @@ class ContactController extends ApplicationController {
 				
 				foreach ($custom_properties as $cp) {
 					$cp_value = CustomPropertyValues::getCustomPropertyValues($c->getId(), $cp->getId());
-					if ($cp->getType() == 'contact' && $cp_value[0] instanceof CustomPropertyValue) {
+					if ($cp->getType() == 'contact' && isset($cp_value[0]) && $cp_value[0] instanceof CustomPropertyValue) {
 						$contact = Contacts::findById($cp_value[0]->getValue());
 						if ($contact instanceof Contact) $cp_value[0]->setValue($contact->getObjectName());
 					}
