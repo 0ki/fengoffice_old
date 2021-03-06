@@ -641,7 +641,7 @@ class AccessController extends ApplicationController {
 
 			$plg_dir = $plugin->getLanguagePath () . "/" . Localization::instance()->getLocale ();
 			if (is_dir ( $plg_dir )) {
-				$files = array_merge ( get_files ( $plg_dir, 'js' ));
+				$files = get_files($plg_dir, 'js');
 				if (is_array ( $files )) {
 					sort ( $files );
 					foreach ( $files as $file ) {

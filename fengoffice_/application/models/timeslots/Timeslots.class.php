@@ -91,11 +91,12 @@ class Timeslots extends BaseTimeslots {
 	static function getTaskTimeslots($context, $members = null, $user = null, $start_date = null, $end_date = null, $object_id = 0, $group_by = null, $order_by = null, $limit = 0, $offset = 0, $timeslot_type = 0){
 		
 		$commonConditions = "";
-		if ($start_date)
+		if ($start_date) {
 			$commonConditions .= DB::prepareString(' AND `e`.`start_time` >= ? ', array($start_date));
-		if ($end_date)
-			$commonConditions .= DB::prepareString(' AND (`e`.`paused_on` <> 0 OR `e`.`end_time` <> 0 AND `e`.`end_time` <= ?) ', array($end_date));
-			
+		}
+		if ($end_date) {
+			$commonConditions .= DB::prepareString(' AND (`e`.`paused_on` <> 0 AND `e`.`paused_on` <= ? OR `e`.`end_time` <> 0 AND `e`.`end_time` <= ?) ', array($end_date, $end_date));
+		}
 		//User condition
 		$commonConditions .= $user ? ' AND `e`.`contact_id` = '. $user->getId() : '';
 		

@@ -378,22 +378,24 @@ class Notifier {
 
                         $toemail = $user->getEmailAddress();
                         try {
-	                        $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-	                        $file_path = ROOT . "/tmp/logo_empresa.png";
-	                        $handle = fopen($file_path, 'wb');
-	                        fwrite($handle, $content);
-	                        fclose($handle);
-	                        if($content != ""){
-	                            $attachments['logo'] = array(
+                        	$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+                        	if ($content != "") {
+	                        	$file_path = ROOT . "/tmp/logo_empresa.png";
+	                        	$handle = fopen($file_path, 'wb');
+	                        	if ($handle) {
+	                        		fwrite($handle, $content);
+	                        		fclose($handle);
+	                        		$attachments['logo'] = array(
 	                                    'cid' => gen_id() . substr($toemail, strpos($toemail, '@')),
 	                                    'path' => $file_path,
 	                                    'type' => 'image/png',
 	                                    'disposition' => 'inline',
 	                                    'name' => 'logo_empresa.png',
-	                            );
-	                        }
+	                        		);
+	                        	}
+                        	}
                         } catch (FileNotInRepositoryError $e) {
-                                unset($attachments['logo']);
+                        	unset($attachments['logo']);
                         }
                         tpl_assign('attachments', $attachments);// attachments
                         $from = self::prepareEmailAddress($senderemail, $sendername);
@@ -609,51 +611,53 @@ class Notifier {
 		if(!is_array($people) || !count($people) || !$sender instanceof Contact) {
 			return; // nothing here...
 		} // if
-				
+
 		$name = $object->getObjectName();
-                $type = $object->getObjectTypeName();
+		$type = $object->getObjectTypeName();
 		$typename = lang($object->getObjectTypeName());
-		
+
 		tpl_assign('object', $object);
-                tpl_assign('title', $name);
-                tpl_assign('description', escape_html_whitespace(convert_to_links(clean($object->getDescription()))));//descripction
-                
-                //context
-                $contexts = array();
-                if($object->getMembersToDisplayPath()){
-                    $members = $object->getMembersToDisplayPath();
-                    foreach ($members as $key => $member){                        
-                        $dim = Dimensions::getDimensionById($key);
-                        if ($dim->getCode() == "customer_project"){
-                            foreach($members[$key] as $member){
-                                $obj_type = ObjectTypes::findById($member['ot']);
-                                $contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }else{
-                            foreach($members[$key] as $member){
-                                $contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
-                            }
-                        }
-                    }
-                }
-                tpl_assign('contexts', $contexts);//folders
-		
+		tpl_assign('title', $name);
+		tpl_assign('description', escape_html_whitespace(convert_to_links(clean($object->getDescription()))));//descripction
+
+		//context
+		$contexts = array();
+		if($object->getMembersToDisplayPath()){
+			$members = $object->getMembersToDisplayPath();
+			foreach ($members as $key => $member){
+				$dim = Dimensions::getDimensionById($key);
+				if ($dim->getCode() == "customer_project"){
+					foreach($members[$key] as $member){
+						$obj_type = ObjectTypes::findById($member['ot']);
+						$contexts[$dim->getCode()][$obj_type->getName()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+					}
+				}else{
+					foreach($members[$key] as $member){
+						$contexts[$dim->getCode()][]= '<span style="'.get_workspace_css_properties($member['c']).'">'. $member['name'] .'</span>';
+					}
+				}
+			}
+		}
+		tpl_assign('contexts', $contexts);//folders
+
 		$attachments = array();
 		try {
-                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                    $file_path = ROOT . "/tmp/logo_empresa.png";
-                    $handle = fopen($file_path, 'wb');
-                    fwrite($handle, $content);
-                    fclose($handle);
-                    if($content != ""){
-                        $attachments['logo'] = array(
-                                'cid' => gen_id() . substr($sender->getEmailAddress(), strpos($sender->getEmailAddress(), '@')),
-                                'path' => $file_path,
-                                'type' => 'image/png',
-                                'disposition' => 'inline',
-                                'name' => 'logo_empresa.png',
-                        );
-                    }
+			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+			if ($content) {
+				$file_path = ROOT . "/tmp/logo_empresa.png";
+				$handle = fopen($file_path, 'wb');
+				if ($handle) {
+					fwrite($handle, $content);
+					fclose($handle);
+					$attachments['logo'] = array(
+						'cid' => gen_id() . substr($sender->getEmailAddress(), strpos($sender->getEmailAddress(), '@')),
+						'path' => $file_path,
+						'type' => 'image/png',
+						'disposition' => 'inline',
+						'name' => 'logo_empresa.png',
+					);
+				}
+			}
 		} catch (FileNotInRepositoryError $e) {
 			unset($attachments['logo']);
 		}
@@ -987,21 +991,23 @@ class Notifier {
 		
 		$attachments = array();
 		try {
-                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                    $file_path = ROOT . "/tmp/logo_empresa.png";
-                    $handle = fopen($file_path, 'wb');
-                    fwrite($handle, $content);
-                    fclose($handle);
-                    if($content != ""){
-                        $attachments['logo'] = array(
-                                'cid' => gen_id() . substr($task->getAssignedTo()->getEmailAddress(), strpos($task->getAssignedTo()->getEmailAddress(), '@')),
-                                'path' => $file_path,
-                                'type' => 'image/png',
-                                'disposition' => 'inline',
-                                'name' => 'logo_empresa.png',
-                        );
-                        tpl_assign('attachments', $attachments);// attachments
-                    }
+			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+			if ($content) {
+				$file_path = ROOT . "/tmp/logo_empresa.png";
+				$handle = fopen($file_path, 'wb');
+				if ($handle) {
+					fwrite($handle, $content);
+					fclose($handle);
+					$attachments['logo'] = array(
+						'cid' => gen_id() . substr($task->getAssignedTo()->getEmailAddress(), strpos($task->getAssignedTo()->getEmailAddress(), '@')),
+						'path' => $file_path,
+						'type' => 'image/png',
+						'disposition' => 'inline',
+						'name' => 'logo_empresa.png',
+					);
+					tpl_assign('attachments', $attachments);// attachments
+				}
+			}
 		} catch (FileNotInRepositoryError $e) {
 			unset($attachments['logo']);
 		}
@@ -1101,23 +1107,25 @@ class Notifier {
                         $date .= " " . $time;
                         tpl_assign('due_date', $date);//due_date
 		}
-		
+
 		$attachments = array();
 		try {
-                    $content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
-                    $file_path = ROOT . "/tmp/logo_empresa.png";
-                    $handle = fopen($file_path, 'wb');
-                    fwrite($handle, $content);
-                    fclose($handle);
-                    if($content != ""){
-                        $attachments['logo'] = array(
-                                'cid' => gen_id() . substr($task->getAssignedBy()->getEmailAddress(), strpos($task->getAssignedBy()->getEmailAddress(), '@')),
-                                'path' => $file_path,
-                                'type' => 'image/png',
-                                'disposition' => 'inline',
-                                'name' => 'logo_empresa.png',
-                        );
-                    }
+			$content = FileRepository::getBackend()->getFileContent(owner_company()->getPictureFile());
+			if ($content) {
+				$file_path = ROOT . "/tmp/logo_empresa.png";
+				$handle = fopen($file_path, 'wb');
+				if ($handle) {
+					fwrite($handle, $content);
+					fclose($handle);
+					$attachments['logo'] = array(
+						'cid' => gen_id() . substr($task->getAssignedBy()->getEmailAddress(), strpos($task->getAssignedBy()->getEmailAddress(), '@')),
+						'path' => $file_path,
+						'type' => 'image/png',
+						'disposition' => 'inline',
+						'name' => 'logo_empresa.png',
+					);
+				}
+			}
 		} catch (FileNotInRepositoryError $e) {
 			unset($attachments['logo']);
 		}

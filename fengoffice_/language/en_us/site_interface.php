@@ -401,7 +401,7 @@ return array(
   'due in x days' => 'Due in {0} days',
   'overdue by x days' => 'Overdue by {0} days',
   'due today' => 'Due today',
-  'unclassified' => 'Uncalssified',
+  'unclassified' => 'Unclassified',
   'priority 100' => 'Low',
   'priority 200' => 'Normal',
   'priority 300' => 'High',

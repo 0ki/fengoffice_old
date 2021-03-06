@@ -88,11 +88,11 @@
 
   	
   	function can_manage_tabs(Contact $user){
-		return $user->isAdministrator();
+		return $user->isAdminGroup();
   	}
   	
   	function can_manage_plugins(Contact $user){
-		return $user->isAdministrator();
+		return $user->isAdminGroup();
   	}
   	
 

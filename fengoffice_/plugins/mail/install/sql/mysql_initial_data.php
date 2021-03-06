@@ -1,3 +1,11 @@
+INSERT INTO <?php echo $table_prefix ?>object_types (name, handler_class, table_name, type, icon, plugin_id) VALUES
+ ("mail", "MailContents", "mail_contents", "content_object", "mail", (SELECT id FROM <?php echo $table_prefix ?>plugins WHERE name='mail'))
+ON DUPLICATE KEY UPDATE name=name;
+
+INSERT INTO `<?php echo $table_prefix ?>tab_panels` (`id`,`ordering`,`title`,`icon_cls`,`refresh_on_context_change`,`default_controller`,`default_action`,`initial_controller`,`initial_action`,`type`,`object_type_id`, `enabled`) VALUES
+ ('mails-panel', 4, 'email tab', 'ico-mail', 1, 'mail', 'init', '', '', 'system', (SELECT id FROM <?php echo $table_prefix ?>object_types WHERE name='mail'), 1)
+ON DUPLICATE KEY UPDATE id=id;
+
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
  ('mailing', 'user_email_fetch_count', '10', 'IntegerConfigHandler', 0, 0, 'How many emails to fetch when checking for email'),

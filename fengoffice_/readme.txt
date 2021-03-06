@@ -1,5 +1,5 @@
 
-    About Feng Office 2.2.1 rc
+    About Feng Office 2.2.1
     ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,20 @@
  
     Changelog
     =========
+    
+    
+    Since 2.2.1-rc
+    ----------------
+    bugfix: Cannot manage plugins if no super admin.
+    bugfix: Reports were not grouping unclassified objects.
+    bugfix: Reports grouping misses a group.
+    bugfix: Fixed findById function in ContentDataObjects.
+    bugfix: Fixed Email plugin installation.
+    bugfix: Fixed translations for dimension names.
+    bugfix: Error with company logo when sending notifications.
+    bugfix: Time report fix when selecting custom dates and listing paused timeslots.
+    bugfix: Fix when getting plugin's javascript translations.
+    
 	
 	Since 2.2
 	----------------

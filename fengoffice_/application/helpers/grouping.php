@@ -80,6 +80,12 @@
 						
 					}
 				}
+			} else {
+				if (!isset($groups[1])) $groups[1] = array();
+				if (!isset($groups[1][0])) $groups[1][0] = array('group' => array('id' => 0, 'name' => lang('unclassified'), 'pid' => 0, 'type' => 0, 'obj' => 0), 'subgroups' => array());
+				
+				if (!isset($grouped_objects[0])) $grouped_objects[0] = array();
+				$grouped_objects[0][] = $object;
 			}
 		}
 		
@@ -89,7 +95,12 @@
 				$member = $gp['group'];
 				$pid = $member['pid'];
 				
-				if (isset($groups[$i-1][$pid])) $groups[$i-1][$pid]['subgroups'][$member_id] = $gp;
+				foreach ($groups as $l => $g) {
+					if (isset($groups[$l][$pid])) {
+						$groups[$l][$pid]['subgroups'][$member_id] = $gp;
+						break;
+					}
+				}
 			}
 			$i--;
 		}

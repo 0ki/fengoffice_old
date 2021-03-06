@@ -40,7 +40,7 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.1');
-		$this->setVersionTo('2.2.1-rc');
+		$this->setVersionTo('2.2.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -177,9 +177,11 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 			}
 			
 			if (version_compare($installed_version, '2.2.0.1') < 0) {
-				$upgrade_script .= "
-					ALTER TABLE `".$t_prefix."dimensions` ADD COLUMN `permission_query_method` ENUM('mandatory','not_mandatory') NOT NULL DEFAULT 'mandatory';
-				";
+				if (!$this->checkColumnExists($t_prefix."dimensions", 'permission_query_method', $this->database_connection)) {
+					$upgrade_script .= "
+						ALTER TABLE `".$t_prefix."dimensions` ADD COLUMN `permission_query_method` ENUM('mandatory','not_mandatory') NOT NULL DEFAULT 'mandatory';
+					";
+				}
 			}
 			
 			if (version_compare($installed_version, '2.2.1-beta') < 0) {
@@ -189,7 +191,6 @@ class PamplonaUpgradeScript extends ScriptUpgraderScript {
 						('general', 'use_milestones', 0, 'BoolConfigHandler', 0),
 						('general', 'show_tab_icons', '1', 'BoolConfigHandler', '0')
 					ON DUPLICATE KEY UPDATE name=name;
-					ALTER TABLE `".$t_prefix."event_invitations` ADD INDEX `contact_id`(`contact_id`, `event_id`);
 				";
 			}
 		}

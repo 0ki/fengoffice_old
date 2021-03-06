@@ -320,10 +320,11 @@ abstract class ContentDataObjects extends DataManager {
 	}
 
 
-	function findById($id){
-		$co = parent::findById($id);
-		if (!is_null($co))
-			$co->setObject(Objects::findById($id));
+	function findById($id, $force_reload = false) {
+		$co = parent::findById($id, $force_reload);
+		if (!is_null($co)) {
+			$co->setObject(Objects::findById($id, $force_reload));
+		}
 		return $co;
 	}
 	
