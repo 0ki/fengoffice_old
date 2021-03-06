@@ -2,7 +2,7 @@
 	'administration tool name test_mail_settings' => 'Comprobar las configuraciones del mail',
 	'administration tool desc test_mail_settings' => 'Use esta herramienta para enviar mails de prueba y comprobar que el mail de Feng Office está bien configurado',
 	'administration tool name mass_mailer' => 'Mass mailer',
-	'administration tool desc mass_mailer' => 'Herramienta que permite enviar mensages a cualquier grupo registrado en el sistema',
+	'administration tool desc mass_mailer' => 'Herramienta que permite enviar mensajes a cualquier grupo registrado en el sistema',
 	'configuration' => 'Configuración',
 	'mail transport mail()' => 'Configuración de PHP',
 	'mail transport smtp' => 'Servidor SMTP',

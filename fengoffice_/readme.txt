@@ -1,5 +1,5 @@
 
-    About Feng Office 1.7.4.1
+    About Feng Office 1.7.5
     =========================
 
     Feng Office is a free and open source Web Office, project management
@@ -90,7 +90,38 @@
 
 	Changelog
 	=========
-	
+
+	Since 1.7.5
+	-----------
+    bugfix: Problem when upload an image from CKEditor
+    bugfix: Missing validation for some filenames when upload an image.
+    bugfix: Restore password does not work properly.
+    bugfix: The system was creating a new user for receiving attachments
+    bugfix: Error with searchable_objects
+    bugfix: Solved issue with Spanish lang files
+    bugfix: Issue when unarchive a file
+    bugfix: Issue related with subscriptions
+    bugfix: Unworked pending tasks in report
+
+    usability: Changed layout when create a new system user.
+    usability: Enhancements related to workspace panel
+    usability: Was simplified the user creation from the new task form
+    usability: Improvements to getting started wizard
+
+    system: Resolved issues about SSL and APC implementation
+    system: Issue when update the system	
+    
+
+	Since 1.7.4.1
+	-------------
+    bugfix: Issue with mail queries
+    bugfix: Added config option for user of other companies    
+    bugfix: Resolved issue arround reports
+    bugfix: Issues with wizard (v1.0)
+    bugfix: Issue with timezone on calendar.    
+    
+    usability: Implemented lang support for getting started wizard
+        
 	Since 1.7.4
 	------------
 	bugfix: Bug when creating contact from user.
@@ -112,7 +143,7 @@
 	
 	system: Check for mb_string library when installing.
 	system: Images spriting.
-	system: HTTPS support.
+	system: Use of static.fengoffice.com for static content.
 	
 	Since 1.7.3.3
 	------------

@@ -100,9 +100,9 @@ final class CompanyWebsite {
 			if (!($user instanceof User)) return;
 			$do_find = true;
 			// check the cache for the option value
-			if (GlobalCache::isAvailable()) {
-				$active_ws = GlobalCache::get('active_ws_'.$user->getId(), $success);
-				if ($success && $active_ws != null) $do_find = ($active_ws->getId() != $project_id);
+			if (GlobalCache::isAvailable() && GlobalCache::key_exists('active_ws_'.$user->getId())) {					
+				$active_ws = GlobalCache::get('active_ws_'.$user->getId(), $success);							
+				if ($success && $active_ws != null) $do_find = ($active_ws->getId() != $project_id);				
 			}
 			if ($do_find) {
 				$project = Projects::findById($project_id);

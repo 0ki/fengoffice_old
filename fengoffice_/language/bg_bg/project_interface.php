@@ -96,7 +96,7 @@
 	'file revision title long' => '<b><a class="internalLink" href="{0}">{1}</a></b> на {2}',
 	'file checkout info short' => '<span>Резервирано на {0}</span>',
 	'file checkout info long' => '<span>Резервирано от </span> <a class="internalLink" href="{0}">{1}</a> <span> на {2}</span>',
-	'update file' => 'Актуализирай файл',
+	'update file' => 'Редакция',
 	'version file change' => 'Запомни тази промяна (старият файл ще бъде записан за бъдещи референции)',
 	'last revision' => 'Последна ревизия',
 	'revision comment' => 'Коментар за ревизия',

@@ -112,12 +112,13 @@ class Timeslots extends BaseTimeslots {
 			$commonConditions2 .= $commonConditions;
 		}
 		if ($end_date){
-			if ($timeslot_type == '1' || $timeslot_type == '2'){ //this is for the General timeslots queries only
-				$commonConditions2 .= DB::prepareString(' AND (`ts`.`paused_on` <> 0 AND `ts`.`paused_on` < ?) OR `ts`.`end_time` <> 0 AND `ts`.`start_time` < ? ' , array($end_date, $end_date)); 
+			if ($timeslot_type == '1' || $timeslot_type == '2'){//this is for the General timeslots queries only
+				$commonConditions2 .= DB::prepareString(' AND (`ts`.`paused_on` <> 0 OR `ts`.`end_time` <> 0 ) AND `ts`.`start_time` < ? ' , array($end_date)); //this is for the General timeslots queries only
 			}
-			$commonConditions .= DB::prepareString(' AND ((`ts`.`paused_on` <> 0 AND `ts`.`paused_on` < ?) OR `ts`.`end_time` <> 0) AND `ts`.`end_time` < ? ', array($end_date, $end_date));						
+			$commonConditions .= DB::prepareString(' AND (`ts`.`paused_on` <> 0 OR `ts`.`end_time` <> 0) AND `ts`.`end_time` < ? ', array($end_date));
+			//$commonConditions .= DB::prepareString(' AND (`ts`.`paused_on` <> 0 OR `ts`.`end_time` <> 0) AND `ts`.`end_time` > 0 AND `ts`.`end_time` < ? ', array($end_date));  -- another fix reported by a user, but we have to test it yet		
 		}
-			
+		
 		//User condition
 		$user_condition = $user? ' AND `ts`.`user_id` = '. $user->getId() : '';
 		$commonConditions .= $user_condition;

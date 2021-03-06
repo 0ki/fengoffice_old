@@ -139,7 +139,7 @@ class AccountController extends ApplicationController {
 				}
 
 				$user->save();
-				
+							
 				$autotimezone = array_var($user_data, 'autodetect_time_zone', null);
 				if ($autotimezone !== null) {
 					set_user_config_option('autodetect_time_zone', $autotimezone, $user->getId());
@@ -160,6 +160,10 @@ class AccountController extends ApplicationController {
 					} else {
 						$user->setAsAdministrator(false);
 					}
+				}
+								
+				if (GlobalCache::isAvailable()) {	
+					GlobalCache::delete('logged_user_'.$user->getId());
 				}
 				
 				DB::commit();
@@ -237,6 +241,10 @@ class AccountController extends ApplicationController {
 				$user->setPassword($new_password);
 				$user->setUpdatedOn(DateTimeValueLib::now());
 				$user->save();
+											
+				if (GlobalCache::isAvailable()) {	
+					GlobalCache::delete('logged_user_'.$user->getId());
+				}
 				
 				if ($user->getId() == logged_user()->getId()) {
 					CompanyWebsite::instance()->logUserIn($user, Cookie::getValue("remember", 0));

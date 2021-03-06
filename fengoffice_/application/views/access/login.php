@@ -1,5 +1,6 @@
-<?php set_page_title(lang('login')) ?>
-<script>
+<?php set_page_title(lang('login'));?>
+ <input id="hidden_static_value" type="hidden" value='<?php echo (defined('STATIC_CONTENT_ROOT_URL')) ? STATIC_CONTENT_ROOT_URL : ROOT_URL; ?>' />
+<script>	
 	showMoreOptions = function() {
 		var div = document.getElementById("optionsDiv");
 		var more = document.getElementById("optionsLink");
@@ -19,9 +20,10 @@
 
     function preload_installation_js_file(version, file) {
         var script_el = document.createElement("script");
+        var static_value = document.getElementById('hidden_static_value').value;   
         script_el.setAttribute("type", "text/javascript");
-        script_el.setAttribute("language", "JavaScript");
-        script_el.setAttribute("src", "http://static.fengoffice.com/public/assets/"+version+"/javascript/"+file);
+        script_el.setAttribute("language", "JavaScript");        
+        script_el.setAttribute("src", static_value+"public/assets/"+version+"/javascript/"+file);
         document.getElementsByTagName("head")[0].appendChild(script_el);
     } 	
 </script>

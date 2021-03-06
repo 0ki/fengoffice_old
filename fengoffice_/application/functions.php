@@ -631,11 +631,13 @@ function remove_dir($dir) {
 }
 
 function new_personal_project_name($username = null) {
+	Localization::instance()->loadSettings(DEFAULT_LOCALIZATION, ROOT . '/language');
 	$wname = Localization::instance()->lang('personal workspace name');
 	if (is_null($wname)) {
 		$wname = "{0}\'s Workspace";
 	}
 	if ($username != null) $wname = str_replace("{0}", $username, $wname);
+	if (logged_user() != null)Localization::instance()->loadSettings(logged_user()->getLocale(), ROOT . '/language');
 	return $wname;	
 }
 

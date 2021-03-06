@@ -23,19 +23,20 @@
 </style>
 
 <script>
-	function showMoreSettings()
+function showMoreSettings()
+{
+	var element = Ext.query('div.advanceOptionsContainer')[0];
+	var extele= Ext.get(element);
+	if(element.style.display == 'none')
 	{
-		var element = Ext.get(Ext.query('div.advanceOptionsContainer')[0]);
-		console.info(element);
-		if(element.dom.style.display == 'none')
-		{
-			element.slideIn('t', {useDisplay:true});
-			Ext.select('a.showSettings').update('<?php echo lang('add user hide settings'); ?>');
-		}else{
-			element.slideOut('t', {useDisplay:true});
-			Ext.select('a.showSettings').update('<?php echo lang('add user show settings'); ?>');
-		}
+		extele.slideIn('t',{useDisplay:true});
+		Ext.select('a.showSettings').update('<?php echo lang('add user hide settings'); ?>');
+	}else{
+		extele.slideOut('t',{useDisplay:true});
+		
+		Ext.select('a.showSettings').update('<?php echo lang('add user show settings'); ?>');
 	}
+}
 </script>
 <form style="height:100%;background-color:white" class="internalForm" action="<?php echo $company->getAddUserUrl() ?>" onsubmit="javascript:og.ogPermPrepareSendData('<?php echo $genid ?>');return true;" method="post">
     <div class="adminAddUser">

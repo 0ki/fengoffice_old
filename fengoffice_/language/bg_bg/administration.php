@@ -24,7 +24,7 @@
 	'config option name site_name' => 'Име на сайта',
 	'config option desc site_name' => 'Тази стойност ще бъде използвана като име на сайта на началната страница.',
 	'config option name file_storage_adapter' => 'Съхранение на файлове',
-	'config option desc file_storage_adapter' => 'Избери къде искаш да съхраняваш качените документи. 
+	'config option desc file_storage_adapter' => 'Избери къде искаш да съхраняваш качените документи.
 Внимание: превключване на хранилищата ще направи всички вече качени файлове невалидни.',
 	'config option name default_project_folders' => 'Папки по подразбиране',
 	'config option desc default_project_folders' => 'Папки, които ще бъдат създадени при създаване на ново работно пространство. Всяко име на папка трябва да е на нов ред. Дублирани или празни редове ще бъдат игнорирани',
@@ -60,7 +60,7 @@
 	'config option name currency_code' => 'Валута',
 	'config option desc currency_code' => 'Символ за валута',
 	'config option name use_owner_company_logo_at_header' => 'Използвай логото на Компанията собственик за лого на системата',
-	'config option desc use_owner_company_logo_at_header' => 'Поставя логото на Компанията собственик в горната част на екрана. Необходимо е презареждане на страницата (F5) за преглед на промените. 
+	'config option desc use_owner_company_logo_at_header' => 'Поставя логото на Компанията собственик в горната част на екрана. Необходимо е презареждане на страницата (F5) за преглед на промените.
 Препоръчан размер: 50x50 px.',
 	'config option name exchange_compatible' => 'Microsoft Exchange съвместим режим',
 	'config option desc exchange_compatible' => 'Ако използвате Microsoft Exchange Сървър, задайте тази опция на "Да", за да избегнете някои проблеми с имейл комуникациите.',
@@ -76,6 +76,8 @@
 	'config option name smtp_secure_connection' => 'Използвай сигурна SMTP връзка',
 	'config option name user_email_fetch_count' => 'Лимит за прочитане на Имейл',
 	'config option desc user_email_fetch_count' => 'Колко имейла да се прочитат, когато потребителя използва "Провери имейли" бутон.',
+	'config option name check_spam_in_subject' => 'Проверявай заглавия на имейли за фраза "**SPAM**"',
+	'config option desc check_spam_in_subject' => 'Ако фразата "**SPAM**" е намерена в заглавието, имейлът ще бъде преместен в папката за спам.',
 	'config option name min_password_length' => 'Минимална дължина на парола',
 	'config option desc min_password_length' => 'Минимален брой символи изисквани за парола',
 	'config option name password_numbers' => 'Числа в парола',

@@ -387,7 +387,7 @@ class ReportingController extends ApplicationController {
 		$timeslotsArray = Timeslots::getTaskTimeslots($workspace, $user, $workspacesCSV, $st, $et, array_var($report_data, 'task_id', 0), $group_by,null,0,0,$timeslotType, $conditions, $object_subtype);
 		$unworkedTasks = null;
 		if (array_var($report_data, 'include_unworked') == 'checked') {
-			$unworkedTasks = ProjectTasks::getPendingTasks(logged_user(), $workspace);
+			$unworkedTasks = ProjectTasks::getUnworkedPendingTasks(logged_user(), $workspace, null, null, $st, $et);
 			tpl_assign('unworkedTasks', $unworkedTasks);
 		}
 
