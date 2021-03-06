@@ -1,6 +1,6 @@
 <?php return array(
 	'my stuff' => 'Mes Affaires',
-	'personal member warning' => 'Si aucun membre n\'est sélectionnée membre \'Mes affaires\' sera assigné.',
+	'personal member warning' => 'Si aucun membre n\'est sélectionné membre \'Mes affaires\' sera assigné.',
 	'all feng_persons' => 'Tout le Monde',
 	'all feng_users' => 'Tous les Utilisateurs',
 	'feng_persons' => 'Personnes',

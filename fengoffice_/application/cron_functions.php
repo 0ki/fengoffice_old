@@ -144,10 +144,11 @@ function check_sharing_table_flags() {
 		_log("  " . count($flags) . " permission groups needs to be recalculated...");
 		foreach ($flags as $flag) {
 			$ok = SharingTableFlags::instance()->healPermissionGroup($flag);
+			$info = $flag->getObjectId() > 0 ? "object ".$flag->getObjectId() : "permission_group_id ".$flag->getPermissionGroupId().($flag->getMemberId()>0?" and member_id=".$flag->getMemberId():"");
 			if ($ok) {
-				_log("    Sharing table updated successfully for permission_group_id ".$flag->getPermissionGroupId().($flag->getMemberId()>0?" and member_id=".$flag->getMemberId():""));
+				_log("    Sharing table updated successfully for $info");
 			} else {
-				_log("    Failed to update sharing table for permission_group_id ".$flag->getPermissionGroupId().($flag->getMemberId()>0?" and member_id=".$flag->getMemberId():""));
+				_log("    Failed to update sharing table for $info");
 			}
 		}
 		_log("  Sharing table update finished.");

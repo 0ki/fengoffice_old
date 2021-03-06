@@ -217,7 +217,8 @@ class MailContents extends BaseMailContents {
 		if (isset($account_id) && $account_id > 0) { //Single account
 			$accountConditions = " AND $mailTablePrefix.account_id = " . DB::escape($account_id);
 		} else {
-			// show emails from other accounts
+			// show mails for all visible accounts and classified mails where logged_user has permissions so we don't filter by account_id
+			/*// show emails from other accounts
 			$macs = MailAccountContacts::instance()->getByContact(logged_user());
 			$acc_ids = array(0);
 			foreach ($macs as $mac) $acc_ids[] = $mac->getAccountId();
@@ -228,7 +229,7 @@ class MailContents extends BaseMailContents {
 			$perm_sql = "(SELECT count(*) FROM ".TABLE_PREFIX."sharing_table st WHERE st.object_id = $mailTablePrefix.object_id AND st.group_id IN ($pgs)) > 0";
 			
 			// show mails for all visible accounts and classified mails where logged_user has permissions
-			$accountConditions = " AND ($mailTablePrefix.account_id IN (" . implode(",", $acc_ids) . ") OR $perm_sql)";
+			$accountConditions = " AND ($mailTablePrefix.account_id IN (" . implode(",", $acc_ids) . ") OR $perm_sql)";*/
 		}
 		
 		// Check for unclassified emails

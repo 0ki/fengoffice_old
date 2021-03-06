@@ -28,13 +28,15 @@ try {
 	$permissions_filename = array_var($argv, 6);
 	$sys_permissions_filename = array_var($argv, 7);
 	$mod_permissions_filename = array_var($argv, 8);
-	$root_permissions_filename = array_var($argv, 9);
-	$root_permissions_genid = array_var($argv, 10);
+	$root_permissions_filename = array_var($argv, 9);	
+	$users_ids_to_check_filename = array_var($argv, 10);
+	$root_permissions_genid = array_var($argv, 11);
 	
 	$permissions = file_get_contents($permissions_filename);
 	$sys_permissions = json_decode(file_get_contents($sys_permissions_filename), true);
 	$mod_permissions = json_decode(file_get_contents($mod_permissions_filename), true);
 	$root_permissions = json_decode(file_get_contents($root_permissions_filename), true);
+	$users_ids_to_check = json_decode(file_get_contents($users_ids_to_check_filename), true);
 	
 	$perms = array(
 		'permissions' => $permissions,
@@ -47,7 +49,7 @@ try {
 	// save permissions
 	try {
 		DB::beginWork();
-		$result = save_permissions($pg_id, $is_guest, $perms, true, false, false);
+		$result = save_permissions($pg_id, $is_guest, $perms, true, false, false, false);
 		DB::commit();
 	} catch (Exception $e) {
 		DB::rollback();
@@ -71,7 +73,7 @@ try {
 		$root_permissions_sharing_table_delete = array();
 		
 		foreach ($root_permissions as $name => $value) {
-			if (str_starts_with($name, $rp_genid . 'rg_root_')) {
+			if (str_starts_with($name, $root_permissions_genid . 'rg_root_')) {
 				$rp_ot = substr($name, strrpos($name, '_')+1);
 				
 				if (is_numeric($rp_ot) && $rp_ot > 0 && $value == 0) {
@@ -92,6 +94,41 @@ try {
 		$flag->delete();
 		DB::commit();
 		
+	} catch (Exception $e) {
+		DB::rollback();
+		throw $e;
+	}
+	
+	// save tree
+	try {
+		DB::beginWork();
+		$contactMemberCacheController = new ContactMemberCacheController();
+		$group = PermissionGroups::findById($pg_id);
+		
+		$real_group = null;
+		if($group->getType() == 'user_groups'){
+			$real_group = $group;
+		}
+		$users = $group->getUsers();
+		$users_ids_checked = array();
+		
+		//check all users related to the group
+		foreach ($users as $us) {
+			$users_ids_checked[] = $us->getId();
+			$contactMemberCacheController->afterUserPermissionChanged($us, json_decode($permissions), $real_group);
+		}
+		
+		//check all users in users_ids_to_check (we do this because a user can be removed from a group)
+		foreach ($users_ids_to_check as $us_id) {
+			if(!in_array($us_id, $users_ids_checked)){
+				$users_ids_checked[] = $us_id;
+				$us = Contacts::findById($us_id);
+				if($us instanceof Contact){
+					$contactMemberCacheController->afterUserPermissionChanged($us, json_decode($permissions), $real_group);
+				}
+			}
+		}
+		DB::commit();
 	} catch (Exception $e) {
 		DB::rollback();
 		throw $e;

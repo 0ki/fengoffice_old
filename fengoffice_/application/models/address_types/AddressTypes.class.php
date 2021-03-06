@@ -39,6 +39,17 @@
   		if (!is_null($address_type)) return $address_type->getId();
   		else return null;
     }
+    
+    static function getAllAddressTypesInfo() {
+    	$types = AddressTypes::findAll();
+    	$result = array();
+    	foreach ($types as $type) {
+    		$result[] = array('id' => $type->getId(), 'code' => $type->getName(), 'name' => lang($type->getName()));
+    	}
+    	 
+    	return $result;
+    }
+    
   } // AddressTypes 
 
 ?>

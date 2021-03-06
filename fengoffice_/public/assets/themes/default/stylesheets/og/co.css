@@ -177,7 +177,7 @@
   	color: #736617;
 }
 
-.ico-large-message {
+.ico-large-message, .ico-large-messages {
 	background-image: url(../../images/48x48/note.png);
 }
 
@@ -210,7 +210,7 @@
   	color: #666666;
 }
 
-.ico-large-template {
+.ico-large-template, .ico-large-templates {
 	background-image: url(../../images/48x48/template.png);
 }
 
@@ -251,7 +251,7 @@
   	color: #7882BF;
 }
 
-.ico-large-email {
+.ico-large-email, .ico-large-mail {
 	background-image: url(../../images/48x48/email.png);
 }
 
@@ -318,12 +318,17 @@
   	border-color: #CCA970;
 }
 
+.contact .coViewHeader .coViewDesc {
+	padding: 10px 0px 0px 12px;
+	font-size: 120%;
+}
+
 .contact .coViewClose {
   	background: #F2E0C2;
   	color: #CCA970;
 }
 
-.ico-large-contact {
+.ico-large-contact, .ico-large-contacts, .ico-large-feng_persons {
 	background-image: url(../../images/48x48/contact.png);
 }
 
@@ -359,7 +364,7 @@
   	color: #3581D7;
 }
 
-.ico-large-company {
+.ico-large-company, .ico-large-companies {
 	background-image: url(../../images/48x48/company.png);
 }
 
@@ -394,7 +399,7 @@
   	color: #384D8F;
 }
 
-.ico-large-user {
+.ico-large-user, .ico-large-users {
 	background-image: url(../../images/48x48/user.png);
 }
 
@@ -431,6 +436,9 @@
   	color: #B1BFAC;
 }
 
+.ico-large-documents {
+	background-image: url(../../images/48x48/documents.png);
+}
 .ico-large-files {
 	background-image: url(../../images/48x48/files.png);
 }
@@ -513,7 +521,7 @@
   	color: #717FA1;
 }
 
-.ico-large-milestone {
+.ico-large-milestone, .ico-large-milestones {
 	background-image: url(../../images/48x48/milestone.png);
 }
 
@@ -553,7 +561,7 @@
   	color: #717FA1;
 }
 
-.ico-large-event {
+.ico-large-event, .ico-large-calendar {
 	background-image: url(../../images/48x48/view_calendar_day.png);
 }
 
@@ -629,7 +637,7 @@
   	color: #FFFFFF;
 }
 
-.ico-large-report {
+.ico-large-report, .ico-large-reporting {
 	background-image: url(../../images/48x48/report.png);
 }
 
@@ -656,6 +664,9 @@
   	color: #736617;
 }
 
+.ico-large-webpages {
+	background-image: url(../../images/48x48/wwwglobe.png);
+}
 .ico-large-weblink {
 	background-image: url(../../images/48x48/weblink.png);
 }
@@ -770,4 +781,32 @@
 }
 .wysiwyg-description blockquote {
 	margin: 1em 40px;
+}
+
+.ico-map {
+	background-image: url(../../images/16x16/map.png);
+}
+.ico-more-tab {
+	background-image: url(../../images/16x16/arrowright.png) !important;
+}
+.ico-large-time, .ico-large-time-layout {
+	background-image: url(../../images/48x48/time.png);
+}
+.ico-large-overview {
+	background-image: url(../../images/48x48/overview.png);
+}
+.ico-large-expenses-module {
+	background-image: url(../../images/48x48/expense.png);
+}
+.ico-large-gantt-module {
+	background-image: url(../../images/48x48/gantt.png);
+}
+.ico-large-tags {
+	background-image: url(../../images/48x48/tag.png);
+}
+.ico-large-help {
+	background-image: url(../../images/48x48/help.png);
+}
+.ico-large-comment {
+	background-image: url(../../images/48x48/comment.png);
 }

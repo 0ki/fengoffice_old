@@ -299,14 +299,17 @@ og.toggleAndBolden = function(id, btn) {
 	var obj = Ext.get(id);
 	if (obj.isDisplayed()) {
 		obj.dom.style.display = 'none';
-		//obj.slideOut("t", {duration: 0.5, useDisplay: true});
-		if (btn) 
+		if (btn) {
 			btn.style.fontWeight = 'normal';
+		}
 	} else {
 		obj.dom.style.display = 'block';
-		//obj.slideIn("t", {duration: 0.5, useDisplay: true});
-		if (btn) 
+		$("#"+id).closest('form').parent().animate({
+		   scrollTop: $("#"+id).offset().top - 250
+		});
+		if (btn) { 
 			btn.style.fontWeight = 'bold';
+		}
 	}
 };
 
@@ -2205,8 +2208,8 @@ og.getCrumbHtml = function(dims, draw_all_members, skipped_dimensions, show_arch
 		
 		for (id in members) {
 			var m = members[id];
-			var texts = og.getMemberFromTrees(x, id, true);
-			if (texts.length == 0 && show_archived){
+			var texts = og.getMemberFromOgDimensions(x, id, true);
+			if (texts.length == 0){				
 				texts.push({id:id, text:m.name, ot:m.ot, c:m.c});
 			}
 			total_texts += texts.length;
@@ -2305,7 +2308,7 @@ og.getCrumbHtmlWithoutLinksMemPath = function(dims, draw_all_members, skipped_di
 		for (id in members) {
 			var m = members[id];
 			if (!m.archived) {
-				var texts = og.getMemberFromTrees(x, id, true);
+				var texts = og.getMemberFromOgDimensions(x, id, true);				
 			} else {
 				var texts = [];
 				texts.push({id:m.id, text:m.name, ot:m.ot, c:m.c});
@@ -2413,7 +2416,7 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	
 	var member_info = {};
 	member_info[member.id] ={
-			"ot":"1",
+			"ot":member.ot,
 			"c":member.color,
 			"archived": member.archived,
 			"name":member.name
@@ -2428,6 +2431,44 @@ og.getCrumbHtmlWithoutLinks = function (member_id, dimension_id, genid) {
 	return mem_path;
 }
 
+og.getMemberFromOgDimensions = function(dim_id, mem_id, include_parents) {
+	var texts = [];
+	if(og.dimensions && og.dimensions[dim_id] && og.dimensions[dim_id][mem_id]){
+		var member = og.dimensions[dim_id][mem_id];
+		
+		if(member){
+			var member_info = {};
+			member_info ={
+					"id":member.id,
+					"ot":member.ot,
+					"c":member.color,
+					"text":member.name
+			};		
+			
+			texts.push(member_info);
+			
+			if(!include_parents){
+				return texts;
+			}else{
+				while(member.parent_id && member.parent_id > 0) {
+					member = og.dimensions[dim_id][member.parent_id];
+					if (member){
+						member_info ={
+								"id":member.id,
+								"ot":member.ot,
+								"c":member.color,
+								"text":member.name
+						};
+						texts.push(member_info);
+					}
+				}
+						
+			}
+		}
+	}
+	return texts;
+}
+
 og.getMemberTreeNodeColor = function(node) {
 	var color = "";
 	if (node.ui && node.ui.getIconEl()) {
@@ -2439,11 +2480,12 @@ og.getMemberTreeNodeColor = function(node) {
 	return color;
 }
 
+
 og.getMemberFromTrees = function(dim_id, mem_id, include_parents) {
 	var texts = [];
 	var tree = Ext.getCmp("dimension-panel-" + dim_id);
 	if (tree) {
-		og.expandCollapseDimensionTree(tree);
+		//og.expandCollapseDimensionTree(tree);
 		
 		var selnode = tree.getSelectionModel().getSelectedNode();
 		selnode_id = selnode ? selnode.id : -1;
@@ -2487,6 +2529,16 @@ og.expandCollapseDimensionTree = function(tree, previous_exp, selection_id) {
 		
 		tree.expanded_once = true;
 	}
+}
+
+og.memberTreeExternalClick = function(tree_id, member_id) {
+	var dimensions_panel = Ext.getCmp('menu-panel');
+	dimensions_panel.items.each(function(item, index, length) {
+		if (item.dimensionCode == tree_id) {
+			item.onMemberExternalClick(member_id);				
+		}
+	});
+	
 }
 
 /*
@@ -2877,3 +2929,30 @@ og.getColorInputHtml = function(genid, field_name, value, col, label) {
 	
 	return html;
 }
+
+
+og.showSelectTimezone = function(genid)	{
+	var check = document.getElementById(genid + "userFormAutoDetectTimezoneYes");
+	var div = document.getElementById(genid + "selecttzdiv");
+	if (check && div) div.style.display = check.checked ? "none" : "";
+};
+
+og.getTimezoneFromBrowser = function(server, genid) {
+	var check = document.getElementById(genid + 'userFormAutoDetectTimezoneYes');
+	var combo = document.getElementById(genid + 'userFormTimezone');
+	if (check.checked){
+		var client = new Date();
+		var diff = client.getTime() - server.getTime();
+		diff = Math.round(diff*2/3600000);
+		for (var i=0; i<combo.options.length; i++) {
+			if (combo.options[i].value == diff/2) {
+				combo.options[i].selected = 'selected';
+			}
+		}
+	}
+};
+
+og.goback = function(btn) {
+	var p = og.getParentContentPanel(Ext.fly(btn));
+	if (p) Ext.getCmp(p.id).back();
+};

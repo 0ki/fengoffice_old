@@ -1,179 +1,220 @@
 <?php
+	$genid = gen_id();
+
 	$contact = $object;
 	$hasEmailAddrs = false;
 	
 	$main_email = $contact->getEmailAddress('personal');
 	$personal_emails = $contact->getContactEmails('personal');
+	
+	$all_phones = ContactTelephones::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+	$all_addresses = ContactAddresses::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+	$all_webpages = ContactWebpages::findAll(array('conditions' => 'contact_id = '.$contact->getId()));
+
+	$all_telephone_types = TelephoneTypes::getAllTelephoneTypesInfo();
+	$all_address_types = AddressTypes::getAllAddressTypesInfo();
+	$all_webpage_types = WebpageTypes::getAllWebpageTypesInfo();
+	
+	// types ordered
+	$all_type_codes = array('work','mobile','home','personal','other','assistant','callback','pager','fax');
+	$all_types_by_code = array();
+	foreach ($all_type_codes as $code) {
+		$t = null;
+		foreach ($all_telephone_types as $type) if ($type['code'] == $code) $t = $type;
+		if (!$t) {
+			foreach ($all_address_types as $type) if ($type['code'] == $code) $t = $type;
+		}
+		if (!$t) {
+			foreach ($all_webpage_types as $type) if ($type['code'] == $code) $t = $type;
+		}
+		if ($t) {
+			$all_types_by_code[$code] = $t;
+		}
+	}
 ?>
-    <table width=100%><col width=250px/><col/>
-    <?php if ($main_email || count($personal_emails)> 0 || is_array($im_values = $contact->getImValues()) && count($contact) || $contact->getBirthday()) {?>
-    	<tr><td>
-	 	 <?php if ($main_email || count($personal_emails)> 0){ 
-	  			$hasEmailAddrs = true; ?>
-	  			<span style="font-weight:bold"><?php echo lang('email addresses') ?>:</span>
-      			<?php if ($main_email) { ?>
-      					<div style="padding-left:10px"><a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($main_email))) . '"' : 'target="_self" href="mailto:' . clean($main_email) . '"' ?>><?php echo clean($main_email);?></a></div>
-      			<?php } ?>
-      			<?php if (count($personal_emails)> 0) { 
-      				    foreach ($personal_emails as $pe){
-      						?>
-      						<div style="padding-left:10px"><a <?php echo logged_user()->hasMailAccounts() ? 'href="' . get_url('mail', 'add_mail', array('to' => clean($pe->getEmailAddress()))) . '"' : 'target="_self" href="mailto:' . clean($pe->getEmailAddress()) . '"';?>"><?php echo clean($pe->getEmailAddress());?></a></div>
-      			<?php	} 
-            		  }
-	   } 	   
-       if ($contact->getBirthday()) { ?><?php echo $hasEmailAddrs? '<br/>':'' ?>
-      <div><span style="font-weight:bold"><?php echo lang('birthday') ?>:</span> 
-      <?php if ($contact->getBirthday() instanceof DateTimeValue) {
-      		$bday = new DateTimeValue($contact->getBirthday()->getTimestamp() - logged_user()->getTimezone() * 3600);
-      		echo clean(format_datetime($bday, user_config_option('date_format')));
-      		} ?>
-      </div>
-      <?php } ?>
-      </td><td>
-      <?php if(is_array($im_values = $contact->getImValues()) && count($im_values)) { ?>
-	  <span style="font-weight:bold"><?php echo lang('instant messaging') ?>:</span>
-      <table class="imAddresses">
-<?php foreach($im_values as $im_value) { ?>
-<?php if($im_type = $im_value->getImType()) { ?>
-        <tr>
-          <td><img src="<?php echo $im_type->getIconUrl() ?>" alt="<?php echo $im_type->getName() ?>" /></td>
-          <td><?php echo clean($im_value->getValue()) ?> <?php if($im_value->getIsMain()) { ?><span class="desc">(<?php echo lang('primary im service') ?>)</span><?php } ?></td>
-        </tr>
-<?php } // if ?>
-<?php } // foreach ?>
-      </table>
-<?php } // if ?>
-    </td></tr>
-<?php } // if ?>
-    
-    <?php 
-    $w_address = $contact->getAddress('work');
-    $w_web_page= $contact->getWebpageUrl('work');	 
-	$w_phone_number= $contact->getPhoneNumber('work', 1); 
-	$w_phone_number2= $contact->getPhoneNumber('work'); 
-	$w_fax_number= $contact->getPhoneNumber('fax', true); 
-	$w_assistant_number= $contact->getPhoneNumber('assistant'); 
-	$w_callback_number= $contact->getPhoneNumber('callback');
+<style>
+.basic-info {
+	margin: 0 0 15px 0;
+}
+.basic-info .alt-row {
+	background-color: #E0EAEC;
+}
+.basic-info .info-type {
+	float:left;
+	width: 150px;
+	font-weight:bold;
+	margin-top:10px;
+	padding: 2px 0;
+}
+.basic-info .info-content {
+	float:left;
+	width: 400px;
+	margin-top:10px;
+}
+.basic-info .info-content .imAddresses {
+	width: 400px;
+	
+}
+.basic-info .info-content .info-content-item {
+	padding: 2px 0;
+}
+</style>
+<div class="person-view all-info">
+<div class="commentsTitle"><?php echo lang ('contact info') ?></div>
+<div class="basic-info">
+<?php
+$is_alt = true;
+$is_alt_box = true;
+
+if ($main_email) { ?>
+	<div class="info-type" ><?php echo lang('email') ?></div>
+	<div class="info-content"><?php 
+	$is_alt = !$is_alt;
+	echo render_mailto($main_email);
+	?></div>
+	<div class="clear"></div><?php
+}
+
+foreach ($all_type_codes as $type_code) {
+	$is_alt_box = !$is_alt_box;
+	
+	$tel_type = null;
+	foreach ($all_telephone_types as $type) if ($type['code'] == $type_code) $tel_type = $type;
+	$add_type = null;
+	foreach ($all_address_types as $type) if ($type['code'] == $type_code) $add_type = $type;
+	$web_type = null;
+	foreach ($all_webpage_types as $type) if ($type['code'] == $type_code) $web_type = $type;
+	
+	?>
+
+	<div id="<?php echo $genid.'_title_'.$tel_type['code'] ?>" class="info-type" ><?php echo $tel_type['name'] ?></div>
+	<div id="<?php echo $genid.'_content_'.$tel_type['code'] ?>" class="info-content"><?php
+	$any_obj = false;
+	
+	if ($tel_type) {
+		foreach ($all_phones as $phone) {
+			if ($phone->getTelephoneTypeId() != $tel_type['id']) continue; 
+			$any_obj = true;
+			$is_alt = !$is_alt;
+			?>
+			<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item">
+			<?php if (in_array($tel_type['code'], array('work', 'home', 'other'))) { ?>
+				<strong><?php echo lang('phone')?>: </strong>
+			<?php } ?>
+				<?php echo trim($phone->getNumber()) . (trim($phone->getName()) == '' ? '' : ' - '.trim($phone->getName()))?>
+			</div>
+	<?php }
+	}
+
+	if ($add_type) {
+		foreach ($all_addresses as $address) {
+			if (!$add_type || $address->getAddressTypeId() != $add_type['id']) continue;
+			$any_obj = true;
+			$is_alt = !$is_alt;
+			
+			$out = $address->getStreet();
+			if($address->getCity() != '') $out .= ' - ' . $address->getCity();
+			if($address->getState() != '') $out .= ' - ' . $address->getState();
+			if($address->getCountry() != '') $out .= ' - ' . $address->getCountryName();
+?>
+			<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item">
+				<strong><?php echo lang('address')?>: </strong><?php echo $out ?>
+				<a class="map-link coViewAction ico-map" href="http://maps.google.com/?q=<?php echo $out ?>" target="_blank"><?php echo lang('map')?></a>
+			</div>
+<?php 	}
+	}
+	
+	if ($tel_type) {
+		foreach ($all_webpages as $webpage) {
+			if ($webpage->getWebTypeId() != $web_type['id']) continue;
+			$any_obj = true;
+			$is_alt = !$is_alt;
+			?>
+			<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item">
+				<strong><?php echo lang('webpage')?>: </strong><?php echo trim($webpage->getUrl()) ?>
+			</div>
+	<?php }
+	}
+	
+	if (!$any_obj) { ?>
+	<script>
+		$('#<?php echo $genid.'_title_'.$tel_type['code'] ?>').remove();
+		$('#<?php echo $genid.'_content_'.$tel_type['code'] ?>').remove();
+	</script>
+<?php }
+?></div>
+<div class="clear"></div>
+<?php 
+}
+?>
+
+<?php if ($contact->getBirthday()) { 
+		$is_alt = !$is_alt; ?>
+	<div class="info-type" ><?php echo lang('birthday') ?></div>
+	<div class="info-content">
+		<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item"><?php 
+			echo lang('month '.$contact->getBirthday()->getMonth()) . ', ' . $contact->getBirthday()->getDay(); 
+		?></div>
+	</div>
+	<div class="clear"></div>
+<?php } ?>
 
     
-    //if($contact->getWAddress() || $contact->getWCity() || $contact->getWState() || $contact->getWWebPage() || $contact->getWZipcode() || $contact->getWCountry() || $contact->getWPhoneNumber() || $contact->getWPhoneNumber2() || $contact->getWFaxNumber() || $contact->getWAssistantNumber() || $contact->getWCallbackNumber()) {
-    if($w_address||$w_web_page||$w_phone_number||$w_phone_number2||$w_fax_number||$w_assistant_number||$w_callback_number){?>
-    <tr><td colspan=2><div style="font-weight:bold; font-size:120%; color:#888; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
-    <?php echo lang('work'); ?>
-    </div></td></tr><tr><td>
-      <?php  if ($contact->getFullAddress($w_address)) { ?>
-      	<span style="font-weight:bold"><?php echo lang('address') ?>:</span> <div style="padding-left:10px"><p><?php echo nl2br(clean($contact->getFullAddress($w_address)));?></p></div><br/>
-      <?php } if ($w_web_page != '') { ?>
-      	<div><span style="font-weight:bold"><?php echo lang('website') ?>:</span> <div style="padding-left:10px"><a href="<?php echo cleanUrl($w_web_page) ?>" target="_blank" title="<?php echo lang('open this link in a new window') ?>"><?php echo clean($w_web_page) ?></a></div></div>
-      <?php } ?>
-      </td><td>
-      <?php  if($w_phone_number||$w_phone_number2||$w_fax_number||$w_assistant_number||$w_callback_number) { ?>
-      
-    	  <span style="font-weight:bold"><?php echo lang('wphone title') ?>:</span>
-	      <?php if ($w_phone_number) { ?>
-	      <div><span><?php echo lang('wphone') ?>:</span> <?php echo clean($w_phone_number);?></div><?php } ?>
-	      <?php if ($w_phone_number2) { ?>
-	      <div><span><?php echo lang('wphone 2') ?>:</span> <?php echo clean($w_phone_number2);?></div><?php } ?>
-	      <?php if ($w_fax_number) { ?>
-	      <div><span><?php echo lang('wfax') ?>:</span> <?php echo clean($w_fax_number);?></div><?php } ?>
-	      <?php if ($w_assistant_number) { ?>
-	      <div><span><?php echo lang('wassistant') ?>:</span> <?php echo clean($w_assistant_number);?></div><?php } ?>
-	      <?php if ($w_callback_number) { ?>
-	      <div><span><?php echo lang('wcallback') ?>:</span> <?php echo clean($w_callback_number);?></div><?php } ?>
-      <?php } ?>
-    </td></tr> 
-<?php } // if ?>
+<?php if(is_array($im_values = $contact->getImValues()) && count($im_values)) { ?>
+	<div class="info-type" ><?php echo lang('instant messaging') ?></div>
+	<div class="info-content">
+		<table class="imAddresses">
+<?php 	foreach($im_values as $im_value) { ?>
+<?php 		if($im_type = $im_value->getImType()) { 
+				$is_alt = !$is_alt; ?>
+		  <tr class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item">
+			<td><img src="<?php echo $im_type->getIconUrl() ?>" alt="<?php echo $im_type->getName() ?>" /></td>
+			<td><?php echo clean($im_value->getValue()) ?> <?php if($im_value->getIsMain()) { ?><span class="desc">(<?php echo lang('primary im service') ?>)</span><?php } ?></td>
+		  </tr>
+<?php 		} ?>
+<?php 	} ?>
+		</table>
+	</div>
+	<div class="clear"></div>
+<?php } ?>
 
+<?php if ($contact->getCommentsField()) { 
+		$is_alt = !$is_alt; ?>
+	<div class="info-type" ><?php echo lang('notes') ?></div>
+	<div class="info-content">
+		<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item"><?php 
+			echo $contact->getCommentsField(); 
+		?></div>
+	</div>
+	<div class="clear"></div>
+<?php } ?>
 
-    <?php $company = $contact->getCompany();
-    	 if($company instanceof Contact){
-    	?>
-    <tr><td colspan=2><div style="background-position:center left;font-weight:bold; font-size:120%; color:#AAA; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
-    	<?php echo lang('company') ?>
-    </div></td></tr><tr><td colspan=2>
-    	<?php
-    	tpl_assign('company',$company);
-    	$this->includeTemplate(get_template_path('company_card', 'contact'));?>
-    </td></tr> 
-    <?php } ?>
-    
-    <?php 
-    $h_address = $contact->getAddress('home');
-    $h_web_page= $contact->getWebpageUrl('personal');
-	$h_phone_number= $contact->getPhoneNumber('home', true); 
-	$h_phone_number2= $contact->getPhoneNumber('home'); 
-	$h_fax_number= $contact->getPhoneNumber('fax'); 
-	$h_mobile_number= $contact->getPhoneNumber('mobile'); 
-	$h_pager_number= $contact->getPhoneNumber('pager'); 
+<?php if ($contact->getUserType() > 0) { ?>
 
-    
-    //if($contact->getHAddress() || $contact->getHCity() || $contact->getHState() || $contact->getHWebPage() || $contact->getHZipcode() || $contact->getHCountry() || $contact->getHPhoneNumber() || $contact->getHPhoneNumber2() || $contact->getHFaxNumber() || $contact->getHMobileNumber() || $contact->getHPagerNumber()) {
-    if($h_address || $h_web_page || $h_phone_number || $h_phone_number2 || $h_fax_number || $h_mobile_number || $h_pager_number) {?>
-	<tr><td colspan=2><div style="font-weight:bold; font-size:120%; color:#888; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
-    	<?php echo lang('home'); ?>
-    </div></td></tr><tr><td>
-      <?php if ($contact->getFullAddress($h_address)) { ?>
-      	<span style="font-weight:bold"><?php echo lang('address') ?>:</span> <div style="padding-left:10px"><p><?php echo nl2br(clean($contact->getFullAddress($h_address)));?></p></div><br/>
-      <?php } if ($h_web_page != '') { ?>
-      	<div><span style="font-weight:bold"><?php echo lang('website') ?>:</span> <div style="padding-left:10px"><a href="<?php echo cleanUrl($h_web_page) ?>" target="_blank" title="<?php echo lang('open this link in a new window') ?>"><?php echo clean($h_web_page) ?></a></div></div>
-      <?php } ?>
-      </td><td>
-      
-      <?php if($h_phone_number || $h_phone_number2 || $h_fax_number || $h_mobile_number) {?>
-    	  <span style="font-weight:bold"><?php echo lang('hphone title') ?>:</span>
-	      <?php if ($h_phone_number) { ?>
-	      <div><span><?php echo lang('hphone') ?>:</span> <?php echo clean($h_phone_number);?></div><?php } ?>
-	      <?php if ($h_phone_number2) { ?>
-	      <div><span><?php echo lang('hphone 2') ?>:</span> <?php echo clean($h_phone_number2);?></div><?php } ?>
-	      <?php if ($h_fax_number) { ?>
-	      <div><span><?php echo lang('hfax') ?>:</span> <?php echo clean($h_fax_number);?></div><?php } ?>
-	      <?php if ($h_mobile_number) { ?>
-	      <div><span><?php echo lang('hmobile') ?>:</span> <?php echo clean($h_mobile_number);?></div><?php } ?>
-	      <?php if ($h_pager_number) { ?>
-	      <div><span><?php echo lang('hpager') ?>:</span> <?php echo clean($h_pager_number);?></div><?php } ?>
-	      
-      <?php } ?>
-    </td></tr> 
-<?php } // if ?>
-    
-    <?php 
-    $o_address = $contact->getAddress('other');
-    $o_web_page= $contact->getWebpageUrl('other'); 	 
-	$o_phone_number= $contact->getPhoneNumber('other', true); 
-	$o_phone_number2= $contact->getPhoneNumber('other'); 
-    
-    //if($contact->getOAddress() || $contact->getOCity() || $contact->getOState() || $contact->getOZipcode() || $contact->getOCountry() || $contact->getOPhoneNumber() || $contact->getOPhoneNumber2() || $contact->getOFaxNumber()) {
-    if($o_address || $o_web_page || $o_phone_number || $o_phone_number2) {?>
-	<tr><td colspan=2><div style="font-weight:bold; font-size:120%; color:#888; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
-    	<?php echo lang('other'); ?>
-    </div></td></tr><tr><td>
-      <?php if ($contact->getFullAddress($o_address)) { ?>
-      	<span style="font-weight:bold"><?php echo lang('address') ?>:</span> <div style="padding-left:10px"><p><?php echo nl2br(clean($contact->getFullAddress($o_address)));?></p></div><br/>
-      <?php } if ($o_web_page != '') { ?>
-      <div><span style="font-weight:bold"><?php echo lang('website') ?>:</span> <div style="padding-left:10px"><a href="<?php echo cleanUrl($o_web_page) ?>" target="_blank" title="<?php echo lang('open this link in a new window') ?>"><?php echo clean($o_web_page) ?></a></div></div>
-      <?php } ?>
-      </td><td>
-      
-      <?php if($o_phone_number || $o_phone_number2 ) {?>
-		<span style="font-weight:bold"><?php echo lang('ophone title') ?>:</span>
-    	<?php if ($o_phone_number) { ?>
-      	<div><span><?php echo lang('ophone') ?>:</span> <?php echo clean($o_phone_number);?></div><?php } ?>
-      	<?php if ($o_phone_number2) { ?>
-      	<div><span><?php echo lang('ophone 2') ?>:</span> <?php echo clean($o_phone_number2);?></div><?php } ?>
-      	
-      <?php } ?>
-    </td></tr> 
-<?php } // if ?>
-    
+</div>
+<div class="clear"></div>
+<div class="commentsTitle"><?php echo lang ('user info') ?></div>
+<div class="basic-info">
+	<?php $is_alt = !$is_alt; ?>
+	<div class="info-type" ><?php echo lang('username') ?></div>
+	<div class="info-content">
+		<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item"><?php 
+			echo $contact->getUsername(); 
+		?></div>
+	</div>
+	<div class="clear"></div>
+	
+	<?php $is_alt = !$is_alt; ?>
+	<div class="info-type" ><?php echo lang('user type') ?></div>
+	<div class="info-content">
+		<div class="<?php echo ($is_alt ? 'alt-row' : '')?> info-content-item"><?php 
+			echo $contact->getUserTypeName(); 
+		?></div>
+	</div>
+	<div class="clear"></div>
 
-    
-    
-    <?php if($contact->isUser()) {?>
-    <tr><td colspan=2><div style="font-weight:bold; font-size:120%; color:#888; border-bottom:1px solid #DDD;width:100%; padding-top:14px">
-    	<?php echo lang('assigned user'); ?>
-    </div></td></tr><tr><td colspan=2>
-    	<?php tpl_assign('user',$contact);
-    	$this->includeTemplate(get_template_path('user_card', 'contact'));?>
-    </td></tr> 
-    <?php } ?>
-    </table>
+<?php } ?>
+
+</div>
+</div>
+<div class="clear"></div>

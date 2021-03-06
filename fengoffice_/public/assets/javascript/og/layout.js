@@ -236,20 +236,33 @@ Ext.onReady(function(){
 			if (og.hasNewVersions) {
 				og.msg(lang('new version notification title'), og.hasNewVersions, 0);
 			}					
-
-			//get all dimensions with mmbers
-			og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
-				hideLoading: true,
-				hideErrors: true,
-				preventPanelLoad: true,
-				callback: function(s, d) {
-					if (d.dims) {
-						og.dimensions = d.dims;
-						og.dimensions_check_date = new Date();
-						if (d.perms) og.member_permissions = d.perms;
-					}
+			//First og.dimensions load
+			function firstUpdateOgDimensions() {
+				if (typeof og.dimensions == 'undefined'){
+							og.openLink(og.getUrl('dimension', 'reload_dimensions_js'), {
+				                    hideLoading: true,
+				                    hideErrors: true,
+				                    preventPanelLoad: true,
+				                    callback: function(s, d) {
+				                            if (d.dims) {
+				                                    og.dimensions = d.dims;
+				                                    og.dimensions_check_date = new Date();
+				                                    if (d.perms) og.member_permissions = d.perms;
+				                            }
+				                    }
+				            })
 				}
-			});
+			};
+			var interval_panel = setInterval(function(){
+				if (typeof Ext.getCmp('tabs-panel') != 'undefined'){
+					clearInterval(interval_panel);
+					Ext.getCmp('tabs-panel').getActiveTab().enable(
+							firstUpdateOgDimensions()	
+				    );
+				}
+			}, 2000);
+			//END First og.dimensions load
+
 		},
 		onError: function(data) {
 		}

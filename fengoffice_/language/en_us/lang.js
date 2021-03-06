@@ -917,6 +917,15 @@ addLangs({
 	
 	'select contact' : 'Select contact',
 	'viewing all information' : 'Viewing all Information',
-	'add a variable to this task': 'Add a variable to this task'
+	'add a variable to this task': 'Add a variable to this task',
+	
+	'phone number': 'Phone number',
+	'address': 'Address',
+	'city': 'City',
+	'state': 'State',
+	'zip_code': 'Zipcode',
+	'edit_picture':'Edit picture',
+	
+	'birthdays': 'Birthdays'
 	
 });

@@ -1511,7 +1511,14 @@ class MailController extends ApplicationController {
 		tpl_assign('parsedEmail', $parsedEmail);
 	}
 	
-	function do_classify_mail($email, $members, $classification_data = null, $process_conversation = true) {
+	/**
+	 * @param $email MailContent to classify
+	 * @param $members array of member ids in which the $email will be classified
+	 * @param $classification_data additional data needed for classification
+	 * @param $process_conversation boolean, if true all the conversation will be classified
+	 * @param $after_receiving boolean, indicates wheather the function was called after receiving the email or if only the user is classiffying the email 
+	 */
+	function do_classify_mail($email, $members, $classification_data = null, $process_conversation = true, $after_receiving = false) {
 		try {
 			$ctrl = new ObjectController();
 			$create_task = false;//array_var($classification_data, 'create_task') == 'checked';
@@ -1530,6 +1537,15 @@ class MailController extends ApplicationController {
 				if (count($members) > 0) {
 					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
+					
+					if ($after_receiving && $email->getHasAttachments() && user_config_option('auto_classify_attachments')) {
+						if (count($members) > 0) {
+							$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
+							MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
+							$this->classifyFile($classification_data, $email, $parsedEmail, $member_instances, true);
+						}
+					}
+					
 				} else {
 					$email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $email->getMembers()));
 				}
@@ -1542,13 +1558,18 @@ class MailController extends ApplicationController {
 							$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($conv_email->getAccount()->getContactId());
 							$ctrl->add_to_members($conv_email, $members, $account_owner);
 							MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
+							
 							if ($conv_email->getHasAttachments()) {
-								$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+								if (!$after_receiving || user_config_option('auto_classify_attachments')) {
+									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, true);
+								}
 							}
 						}
 					} else {
-						foreach ($conversation as $conv_email) {
-							$conv_email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $conv_email->getMembers()));
+						if (!$after_receiving) {
+							foreach ($conversation as $conv_email) {
+								$conv_email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $conv_email->getMembers()));
+							}
 						}
 					}
 				}

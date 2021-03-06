@@ -1,8 +1,16 @@
 <?php
   set_page_title(lang('edit picture'));
+
+  $action = $contact->getUpdatePictureUrl();
+  if (isset($reload_picture) && $reload_picture) {
+  	$action .= "&reload_picture=$reload_picture";
+  }
+  if (isset($new_contact) && $new_contact) {
+  	$action .= "&new_contact=$new_contact";
+  }
 ?>
 
-<form target="_blank" style='height:100%;background-color:white' action="<?php echo $contact->getUpdatePictureUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $action ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
   
 <div class="avatar">
 <div class="coInputSeparator"></div>

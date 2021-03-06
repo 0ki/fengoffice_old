@@ -13,33 +13,12 @@ og.workspaces = {
 	},
 	
 	
+	
 	onWorkspaceClick: function(member_id) {
-		var dimensions_panel = Ext.getCmp('menu-panel');
-		dimensions_panel.items.each(function(item, index, length) {
-			if (item.dimensionCode == 'workspaces') {
-				og.expandCollapseDimensionTree(item);
-				var n = item.getNodeById(member_id);
-				if (n) {
-					if (n.parentNode) item.expandPath(n.parentNode.getPath(), false);
-					n.select();
-					og.eventManager.fireEvent('member tree node click', n);
-				}
-			}
-		});
+		og.memberTreeExternalClick('workspaces',member_id);		
 	},
 	
 	onTagClick: function(member_id) {
-		var dimensions_panel = Ext.getCmp('menu-panel');
-		dimensions_panel.items.each(function(item, index, length) {
-			if (item.dimensionCode == 'tags') {
-				og.expandCollapseDimensionTree(item);
-				var n = item.getNodeById(member_id);
-				if (n) {
-					if (n.parentNode) item.expandPath(n.parentNode.getPath(), false);
-					n.select();
-					og.eventManager.fireEvent('member tree node click', n);
-				}
-			}
-		});
+		og.memberTreeExternalClick('tags',member_id);
 	}
 };

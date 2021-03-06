@@ -934,8 +934,8 @@ class TaskController extends ApplicationController {
 		
 		//Find all external milestones for these tasks, external milestones are the ones that belong to a parent member and have tasks in the current member
 		$milestone_ids = array();
+		$task_ids = array();
 		if($tasks){
-			$task_ids = array();
 			foreach ($tasks as $task){
 				$task_ids[] = $task['id'];
 				if ($task['milestone_id'] != 0) {

@@ -51,6 +51,13 @@
 	padding-left: 30px;
 }
 
+.template-text-ellipsis {
+	overflow: hidden; 
+	white-space: nowrap; 
+	text-overflow: ellipsis; 
+	word-wrap: break-word;
+}
+
 .template-property-div{
 	border: 1px solid #CCCCCC;
 	margin: 6px;

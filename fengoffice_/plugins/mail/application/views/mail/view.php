@@ -109,10 +109,18 @@ if (isset($email)){
 	}
 	$description .= '<tr><td>' . lang('date') . ':</td><td>' . format_datetime($email->getSentDate(), 'l, j F Y - '.$time_format, logged_user()->getTimezone()) . '</td></tr>';
 	
+	if (user_config_option('view_mail_attachs_expanded')) {
+		$attach_toggle_cls = "toggle_expanded";
+		$attach_div_style = "";
+	} else {
+		$attach_toggle_cls = "toggle_collapsed";
+		$attach_div_style = "display:none;";
+	}
+	
 	if ($email->getHasAttachments() && is_array($attachments) && count($attachments) > 0) {
 		$description .=	'<tr><td colspan=2>	<fieldset>
-		<legend class="toggle_expanded" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
-		<div id="mv_attachments" >
+		<legend class="'.$attach_toggle_cls.'" onclick="og.toggle(\'mv_attachments\',this)">' . lang('attachments') . '</legend>
+		<div id="mv_attachments" style="'.$attach_div_style.'">
 		<table>';
 		foreach($attachments as $att) {
 			if (!array_var($att, 'hide')) {

@@ -13,20 +13,34 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 	/**
 	 * 
 	 * Checks if user can access the member for a specified access level
-	 * @param $permission_group_ids - array: User permission group ids
+	 * @param $permission_group_ids - string array: User permission group ids
 	 * @param $member_id - integer: Member Id
 	 * @param $user - Contact
 	 * @param $access_level - enum: ACCESS_LEVEL_READ, ACCESS_LEVEL_WRITE, ACCESS_LEVEL_DELETE
+	 * @param $check_administrator bool - if user is super administrator do not check permission
 	 */
-	function contactCanAccessMemberAll($permission_group_ids, $member_id, $user, $access_level) {
-		if ($user instanceof Contact && $user->isAdministrator ()) {
+	function contactCanAccessMemberAll($permission_group_ids, $member_id, $user, $access_level, $check_administrator = true) {
+		if ($user instanceof Contact && $user->isAdministrator () && $check_administrator) {
 			return true;
 		}
 		
+		$disabled_ots = array();
+		$disableds = DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0");
+		if (is_array($disableds)) {
+			$disabled_ots = array_flat($disableds);
+		}
+		
+		$ws_ot = ObjectTypes::findByName('workspace')->getId();
+		$disabled_ots[] = $ws_ot;
+		$disabled_ot_cond = "";
+		if (count($disabled_ots) > 0) {
+			$disabled_ot_cond = "AND object_type_id NOT IN (".implode(",",$disabled_ots).")";
+		}
+		
+				
 		if ($access_level == ACCESS_LEVEL_READ) {
-			
 			if (!isset(self::$readable_members["$permission_group_ids"])) {
-				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ")" );
+				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id IN (" . $permission_group_ids . ") $disabled_ot_cond" );
 				$rows = $res->fetchAll();
 				if (is_array($rows)) {
 					self::$readable_members["$permission_group_ids"] = array();
@@ -35,12 +49,11 @@ class ContactMemberPermissions extends BaseContactMemberPermissions {
 					}
 				}
 			}
-			return in_array($member_id, self::$readable_members["$permission_group_ids"]);
-			
+			return in_array($member_id, self::$readable_members["$permission_group_ids"]);						
 		} else {
 			
 			if (!isset(self::$writable_members["$permission_group_ids"])) {
-				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE can_write=1 AND permission_group_id IN (" . $permission_group_ids . ")" );
+				$res = DB::execute("SELECT DISTINCT member_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE can_write=1 AND permission_group_id IN (" . $permission_group_ids . ") $disabled_ot_cond" );
 				$rows = $res->fetchAll();
 				if (is_array($rows)) {
 					self::$writable_members["$permission_group_ids"] = array();

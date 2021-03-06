@@ -7,8 +7,8 @@
   */
   class Members extends BaseMembers {
     
-	static function getSubmembers(Member $member, $recursive = true) {
-		$members = Members::findAll(array('conditions' => '`parent_member_id` = ' . $member->getId()));
+	static function getSubmembers(Member $member, $recursive = true, $extra_conditions="") {
+		$members = Members::findAll(array('conditions' => '`parent_member_id` = ' . $member->getId() .' '. $extra_conditions));
 		if ($recursive) {
 	  		foreach ($members as $m) {
 	  			$members = array_merge($members, self::getSubmembers($m, $recursive));

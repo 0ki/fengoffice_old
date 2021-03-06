@@ -29,7 +29,10 @@ member_selector.init = function(genid) {
 	
 	og.openLink(og.getUrl('member', 'get_dimension_id', {member_id: Ext.util.JSON.encode(dimension_to_get)}), {callback: function(success, data){
 				
-		if (!data.dim_ids) return;
+		if (!data.dim_ids) {
+			og.eventManager.fireEvent('after member_selector init', null);
+			return;
+		}
 		
 		for (var i=0;i<data.dim_ids.length;i++){
 			if (!member_selector[genid].sel_context[data.dim_ids[i].dim_id]) {
@@ -57,7 +60,8 @@ member_selector.init = function(genid) {
 				member_selector.reload_dependant_selectors(dim, genid);				
 			}
 		}
-						
+		
+		og.eventManager.fireEvent('after member_selector init', null);						
 	}});
 	
 	if (selected_member_ids.length == 0) {

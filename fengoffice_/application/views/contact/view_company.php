@@ -1,4 +1,27 @@
 <?php
+	if ($company->hasPicture()){
+		$image = '<div class="cardIcon" style="text-align:center;">';
+	
+		if ($company->canEdit(logged_user())) {
+			$image .= '<a class="internalLink" href="' . $company->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '">';
+		}
+		$image .= '<img src="' . $company->getPictureUrl() .'" alt="'. clean($company->getObjectName()) .' picture" />';
+	
+		if ($company->canEdit(logged_user())) {
+			$image .= '</a>';
+		}
+	
+		$image .= '</div>';
+	
+		tpl_assign("image",$image);
+	} else {
+	
+		if ($company->canEdit(logged_user())) {
+			$image .= '<a class="internalLink" href="' . $company->getUpdatePictureUrl() .'" title="' . lang('edit picture') . '"><div id="2_iconDiv" class="coViewIconImage ico-large-contact"></div></a>';
+			tpl_assign("image",$image);
+		}
+	}
+
 	if (!$company->isTrashed()){
 		if ($company->canAddUser(logged_user())) {
 			add_page_action(lang('add user'), $company->getAddUserUrl(), 'ico-add');

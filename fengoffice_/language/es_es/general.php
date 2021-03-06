@@ -208,7 +208,7 @@
 	'repeat working days' => 'Repitir los días laborables',
 	'forever' => 'para siempre',
 	'n times' => '{0} veces',
-	'until x' => 'hasra {0}',
+	'until x' => 'hasta {0}',
 	'n days' => '{0} días',
 	'n months' => '{0} meses',
 	'n years' => '{0} años',

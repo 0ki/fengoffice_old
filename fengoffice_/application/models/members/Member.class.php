@@ -55,10 +55,10 @@ class Member extends BaseMember {
 		return $child_members;
 	}
 	
-	function getAllChildrenIds($recursive = false) {
+	function getAllChildrenIds($recursive = false, $order = null, $extra_conditions="") {
 		$result = array();
 		//if recursive is false, only the first level of children will be returned
-		$childs = $this->getAllChildren($recursive);
+		$childs = $this->getAllChildren($recursive,$order,$extra_conditions);
 		foreach ($childs as $child) {
 			$result[] = $child->getId();
 		}
@@ -411,6 +411,23 @@ class Member extends BaseMember {
   		return DimensionObjectTypeHierarchies::typeAllowChilds($this->getDimensionId(), $this->getObjectTypeId());
 	}
 
+	/**
+	 * Returnrs true if members have child nodes, false otherwise
+	 */
+	function haveChilds($check_permission = false) {
+		$permission_conditions = "";
+		if($check_permission){
+			$logged_user_pgs = logged_user()->getPermissionGroupIds();
+			$permission_conditions = " AND EXISTS (SELECT cmp.permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions cmp
+			WHERE cmp.permission_group_id IN (".implode(",",$logged_user_pgs).") AND cmp.member_id=".TABLE_PREFIX."members.id)";
+		}
+		
+		$member = Members::findOne(array("conditions" => "`parent_member_id` = ". $this->getId() .' '. $permission_conditions));
+		if($member instanceof Member){
+			return true;
+		}
+		return false;
+	}
 	
 	function getPath(){
 		$path='';

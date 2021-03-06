@@ -67,7 +67,11 @@ if (!$max_events_to_show) $max_events_to_show = 3;
     	$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null), $task_filter);
     }
     
-    $birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
+    if (user_config_option('show_birthdays_in_calendar')) {
+    	$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
+    } else {
+    	$birthdays = array();
+    }
 
 	$tmp_tasks = array();
 	foreach ($tasks as $task) {
@@ -635,6 +639,12 @@ onmouseup="og.showEventPopup(<?php echo $date->getDay() ?>, <?php echo $date->ge
 											$width = (100/5) / $evs_same_time;
 											$left = $width * $posHoriz + ((100/5) * $day_of_week) + 0.25;
 											$width -= 0.5;
+											
+											//provisional fix
+											if($evs_same_time == 1){
+												$left = ((100/5) * $day_of_week) + 0.25;
+											}
+											//End provisional fix
 											
 											if ($event_start->getMinute() < 30) {
 												$occup[$event_start->getHour()][0][$posHoriz] = true;

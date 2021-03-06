@@ -34,7 +34,7 @@ try {
 		// transaction to save permission tables
 		try {
 			DB::beginWork();
-			$result = save_member_permissions($member, $permissions, true, false, false);
+			$result = save_member_permissions($member, $permissions, true, false, false, false);
 			DB::commit();
 		} catch (Exception $e) {
 			DB::rollback();
@@ -46,7 +46,7 @@ try {
 		if (is_array(array_var($result, 'changed_pgs'))) {
 			$perm_array = json_decode($permissions);
 			foreach ($perm_array as $pa) {
-				if (!$pa->m) $pa->m = $member->getId();
+				if (!isset($pa->m)) $pa->m = $member->getId();
 			}
 			foreach (array_var($result, 'changed_pgs') as $pg_id) {
 				try {
@@ -73,6 +73,17 @@ try {
 					throw $e;
 				}
 			}
+		}
+		
+		// save tree
+		try {
+			DB::beginWork();
+			$contactMemberCacheController = new ContactMemberCacheController();
+			$contactMemberCacheController->afterMemberPermissionChanged($result);
+			DB::commit();
+		} catch (Exception $e) {
+			DB::rollback();
+			throw $e;
 		}
 		
 		// transaction for the hooks

@@ -531,9 +531,42 @@
 		return array();
 	}
 	
+	
+	function get_all_children_sorted($member_info, $order='name') {
+		$all_children = array();
+	
+		$children = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE parent_member_id=".$member_info['id']." ORDER BY $order ASC");
+		if (is_array($children) && count($children) > 0) {
+			foreach ($children as $child) {
+				$all_children[] = $child;
+				$all_children = array_merge($all_children, get_all_children_sorted($child));
+			}
+		}
+	
+		return $all_children;
+	}
+	
+	function get_all_parents_sorted($member_info, $order='name') {
+		$all_parents = array();
+		if($member_info['parent_member_id'] == 0){
+			return $all_parents;
+		}
+		
+		$parents = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE id=".$member_info['parent_member_id']." ORDER BY $order ASC");
+		if (is_array($parents) && count($parents) > 0) {
+			foreach ($parents as $parent) {
+				$all_parents[] = $parent;
+				$all_parents = array_merge($all_parents, get_all_parents_sorted($parent));
+			}
+		}
+	
+		return $all_parents;
+	}
 
 
 	function permission_form_parameters($pg_id) {
+		set_time_limit(0);
+		ini_set('memory_limit', '512M');
 		$member_permissions = array();		
 		$dimensions = array();
 		$dims = Dimensions::findAll();
@@ -546,10 +579,10 @@
 		foreach($dims as $dim) {
 			if ($dim->getDefinesPermissions()) {
 				$dimensions[] = $dim;
-				$root_members = Members::findAll(array('conditions' => array('`dimension_id`=? AND `parent_member_id`=0', $dim->getId()), 'order' => '`name` ASC'));
+				$root_members = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."members WHERE dimension_id=".$dim->getId()." AND parent_member_id=0 ORDER BY name ASC");
 				foreach ($root_members as $mem) {
 					$members[$dim->getId()][] = $mem;
-					$members[$dim->getId()] = array_merge($members[$dim->getId()], $mem->getAllChildrenSorted());
+					$members[$dim->getId()] = array_merge($members[$dim->getId()], get_all_children_sorted($mem));
 				}
 				
 				$allowed_object_types[$dim->getId()] = array();
@@ -580,10 +613,10 @@
 				if ($dim->hasAllowAllForContact($pg_id)) {
 					if (isset($members[$dim->getId()])) {
 						foreach ($members[$dim->getId()] as $mem) {
-							$member_permissions[$mem->getId()] = array();
+							$member_permissions[$mem['id']] = array();
 							foreach ($dim_obj_types as $dim_obj_type) {
-								if ($dim_obj_type->getDimensionObjectTypeId() == $mem->getObjectTypeId()) {
-									$member_permissions[$mem->getId()][] = array(
+								if ($dim_obj_type->getDimensionObjectTypeId() == $mem['object_type_id']) {
+									$member_permissions[$mem['id']][] = array(
 										'o' => $dim_obj_type->getContentObjectTypeId(),
 										'w' => 1,
 										'd' => 1,
@@ -595,16 +628,30 @@
 					}
 				} else if (!$dim->deniesAllForContact($pg_id)) {
 					if (isset($members[$dim->getId()])) {
+						$tmp_ids = array();
 						foreach ($members[$dim->getId()] as $mem) {
-							$member_permissions[$mem->getId()] = array();
-							$pgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $mem->getId())));
-							if (is_array($pgs)) {
-								foreach ($pgs as $pg) {
-									$member_permissions[$mem->getId()][] = array(
-										'o' => $pg->getObjectTypeId(),
-										'w' => $pg->getCanWrite(),
-										'd' => $pg->getCanDelete(),
-										'r' => 1
+							$tmp_ids[] = $mem['id'];
+						}
+						$mem_pgs = array();
+						if (is_array($tmp_ids) && count($tmp_ids)) {
+							$pgs = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_member_permissions WHERE permission_group_id=$pg_id AND member_id IN (".implode(',',$tmp_ids).")");
+							if(is_array($pgs)){
+								foreach ($pgs as $p) {
+									if (!isset($mem_pgs[$p['member_id']])) $mem_pgs[$p['member_id']] = array();
+									$mem_pgs[$p['member_id']][] = $p;
+								}
+							}
+						}
+						
+						foreach ($members[$dim->getId()] as $mem) {
+							$member_permissions[$mem['id']] = array();
+							if (isset($mem_pgs[$mem['id']]) && is_array($mem_pgs[$mem['id']])) {
+								foreach ($mem_pgs[$mem['id']] as $pg) {
+									$member_permissions[$mem['id']][] = array(
+											'o' => $pg['object_type_id'],
+											'w' => $pg['can_write'],
+											'd' => $pg['can_delete'],
+											'r' => 1
 									);
 								}
 							}
@@ -614,7 +661,7 @@
 				
 				if (isset($members[$dim->getId()])) {
 					foreach($members[$dim->getId()] as $member) {
-						$member_types[$member->getId()] = $member->getObjectTypeId();
+						$member_types[$member['id']] = $member['object_type_id'];
 					}
 				}
 			}
@@ -640,7 +687,7 @@
 	}
 	
 	
-	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true) {
+	function save_permissions($pg_id, $is_guest = false, $permissions_data = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true, $update_contact_member_cache = true, $users_ids_to_check = array()) {
 	
 		if (is_null($permissions_data)) {
 			
@@ -815,6 +862,39 @@
 				}
 			}
 			
+			if ($update_contact_member_cache) {
+				try {
+					$contactMemberCacheController = new ContactMemberCacheController();
+					$group = PermissionGroups::findById($pg_id);
+					
+					$real_group = null;
+					if($group->getType() == 'user_groups'){
+						$real_group = $group;
+					}
+					$users = $group->getUsers();
+					$users_ids_checked = array();
+					
+					foreach ($users as $us) {
+						$users_ids_checked[] = $us->getId();
+						$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
+					}
+					
+					//check all users related to the group
+					foreach ($users_ids_to_check as $us_id) {
+						if(!in_array($us_id, $users_ids_checked)){
+							$users_ids_checked[] = $us_id;
+							$us = Contacts::findById($us_id);
+							if($us instanceof Contact){
+								$contactMemberCacheController->afterUserPermissionChanged($us, $permissions, $real_group);
+							}
+						}
+					}
+				} catch (Exception $e) {
+					Logger::log("Error saving permissions to contact member cache for permission group $pg_id: ".$e->getMessage()."\n".$e->getTraceAsString());
+					throw $e;
+				}
+			}
+			
 			/* cuando saco permisos sobre un tipo de objeto que no saque sobre todos los tipos
 			foreach ($allowed_members_ids as $key=>$mids){
 				$mbm=Members::findById($key);
@@ -969,6 +1049,20 @@
 			$permission_groups[] = $group->getId();
 		}
 		
+		//$disabled_ots = array_flat(DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0"));
+		$disabled_ots = array();
+		$disableds = DB::executeAll("SELECT object_type_id FROM ".TABLE_PREFIX."tab_panels WHERE object_type_id>0 AND enabled=0");
+		if (is_array($disableds)) {
+			$disabled_ots = array_flat($disableds);
+		}
+		
+		$ws_ot = ObjectTypes::findByName('workspace')->getId();
+		$disabled_ots[] = $ws_ot;
+		$disabled_ot_cond = "";
+		if (count($disabled_ots) > 0) {
+			$disabled_ot_cond = "AND object_type_id NOT IN (".implode(",",$disabled_ots).")";
+		}
+		
 		foreach ($permission_groups as $pg_id) {
 			if ($dim->hasAllowAllForContact($pg_id)) {
 				$member_permissions[$pg_id] = array();
@@ -993,7 +1087,7 @@
 			} else if (!$dim->deniesAllForContact($pg_id)) {
 				$member_permissions[$pg_id] = array();
 				if ($member) {
-					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ?", $pg_id, $member->getId())));
+					$mpgs = ContactMemberPermissions::findAll(array("conditions" => array("`permission_group_id` = ? AND `member_id` = ? $disabled_ot_cond", $pg_id, $member->getId())));
 					if (is_array($mpgs)) {
 						foreach ($mpgs as $mpg) {
 							$member_permissions[$mpg->getPermissionGroupId()][] = array(
@@ -1017,7 +1111,7 @@
 		);
 	}
 	
-	function save_member_permissions($member, $permissionsString = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true) {
+	function save_member_permissions($member, $permissionsString = null, $save_cmps = true, $update_sharing_table = true, $fire_hook = true, $update_contact_member_cache = true) {
 		@set_time_limit(0);
 		ini_set('memory_limit', '1024M');
 
@@ -1030,6 +1124,7 @@
 		}
 		
 		$sharingTablecontroller = new SharingTableController();
+		$contactMemberCacheController = new ContactMemberCacheController();
 		$changed_pgs = array();
 		
 		
@@ -1084,6 +1179,9 @@
 				foreach ($changed_pgs as $pg_id) {
 					$sharingTablecontroller->afterPermissionChanged($pg_id, $permissions);
 				}
+			}
+			if ($update_contact_member_cache) {
+				$contactMemberCacheController->afterMemberPermissionChanged(array('changed_pgs' => $changed_pgs, 'member' => $member));
 			}
 			
 			
@@ -1291,7 +1389,7 @@
 	
 	
 	
-	function save_user_permissions_background($user, $pg_id, $is_guest=false) {
+	function save_user_permissions_background($user, $pg_id, $is_guest=false, $users_ids_to_check = array()) {
 		if (!defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND')) define('DONT_SAVE_PERMISSIONS_IN_BACKGROUND', !is_exec_available());
 		
 		// system permissions
@@ -1314,7 +1412,7 @@
 		
 		if (substr(php_uname(), 0, 7) == "Windows" || (defined('DONT_SAVE_PERMISSIONS_IN_BACKGROUND') && DONT_SAVE_PERMISSIONS_IN_BACKGROUND)){
 			//pclose(popen("start /B ". $command, "r"));
-			save_permissions($pg_id, $is_guest);
+			save_permissions($pg_id, $is_guest, null, true, true, true, true, $users_ids_to_check);
 		} else {
 
 			// populate permission groups
@@ -1353,8 +1451,11 @@
 			$rp_filename = ROOT ."/tmp/rp_".gen_id();
 			file_put_contents($rp_filename, json_encode($rp_permissions_data));
 			
+			$usrcheck_filename = ROOT ."/tmp/usrcheck_".gen_id();
+			file_put_contents($usrcheck_filename, json_encode($users_ids_to_check));
+						
 			$is_guest_str = $is_guest ? "1" : "0";
-			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $rp_genid";
+			$command = "nice -n19 php ". ROOT . "/application/helpers/save_user_permissions.php ".ROOT." ".$user->getId()." ".$user->getTwistedToken()." $pg_id $is_guest_str $perm_filename $sys_filename $mod_filename $rp_filename $usrcheck_filename $rp_genid";
 			exec("$command > /dev/null &");
 		}
 	}

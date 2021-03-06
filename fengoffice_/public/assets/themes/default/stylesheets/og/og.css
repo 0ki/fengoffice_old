@@ -249,7 +249,7 @@
 .ico-large-cron {
 	background-image: url(../../images/48x48/cron.png);
 }
-.ico-large-workspace {
+.ico-large-workspace, .ico-large-workspaces {
 	background-image: url(../../images/48x48/workspace.png);
 }
 .ico-large-tabs {
@@ -257,6 +257,16 @@
 }
 .ico-large-plugins {
 	background-image: url(../../images/48x48/plugins.png);
+}
+
+.ico-large-config {
+	background-image: url(../../images/48x48/config.png);
+}
+.ico-large-change-password {
+	background-image: url(../../images/48x48/change-password.png);
+}
+.ico-large-projects, .ico-large-customer_project {
+	background-image: url(../../images/48x48/projects.png);
 }
 
 
@@ -1131,4 +1141,66 @@ span.member-path span a:hover {
 
 .cursor-pointer {
 	cursor: pointer;
+}
+
+
+
+.contact_form_container label {
+	float: left;
+	width: 200px;
+}
+.contact_form_container select {
+	padding: 0px;
+	margin-left: 0px;
+	height: 21px;
+	min-width: 80px;
+}
+
+.contact_form_container .phone-input-container, .contact_form_container .address-input-container, .contact_form_container .webpage-input-container {
+	padding: 2px;
+	padding-left: 0;
+}
+
+.contact_form_container .input-container {
+	margin: 2px 0;
+}
+
+.contact_form_container label.yes_no {
+	float: none;
+}
+
+.contact_form_container .user-data {
+	margin: 10px 0;
+}
+
+.contact_form_container .access-data {
+	padding: 0;
+}
+.contact_form_container .field-error-msg {
+	display: inline;
+}
+.contact_form_container .field.repeat {
+	clear: both;
+}
+
+.contact_form_container .user-permissions label {
+	float: none;
+	width: auto;
+}
+
+.contact_form_container .user-data .user-data-title, .contact_form_container .additional-data-title, .contact_form_container .main-data-title {
+	text-decoration: underline;
+	margin-top: 15px;
+	margin-bottom: 10px;
+	color: #003562;
+	font-size: 140%;
+	font-weight: bold;
+}
+
+.contact_form_container .information-block {
+	border-bottom: 1px dotted #999;
+	padding-bottom: 5px;
+}
+
+.contact_form_container .avatar-container {
 }

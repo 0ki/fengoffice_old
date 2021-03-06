@@ -126,7 +126,10 @@
 }
 /* </upgrade> */
 .configCategory, .userWsConfigCategory {
-	margin: 5px 0;
+	padding: 10px 5px;
+}
+.configCategory.alt, .userWsConfigCategory.alt {
+	background-color: #D7E5F5;
 }
 
 .adminListing {

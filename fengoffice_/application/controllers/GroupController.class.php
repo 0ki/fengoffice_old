@@ -187,7 +187,22 @@ class GroupController extends ApplicationController {
 				// set permissions
 				$pg_id = $group->getId();
 				//save_permissions($pg_id);
-				save_user_permissions_background(logged_user(), $pg_id);
+				$gr_users = $group->getUsers();
+				$gr_users_ids = array();
+				if ($post_users = array_var($_POST, 'user')) {
+					foreach ($post_users as $user_id => $val){
+						if ($val=='checked' && is_numeric($user_id)) {
+							$gr_users_ids[] = $user_id;
+						}
+					}
+				}
+				foreach ($gr_users as $us){
+					if(!in_array($us->getId(), $gr_users_ids)){
+						$gr_users_ids[] = $us->getId();
+					}
+				}
+				
+				save_user_permissions_background(logged_user(), $pg_id, false, $gr_users_ids);
 				
 				// save users
 				ContactPermissionGroups::delete("`permission_group_id` = $pg_id");

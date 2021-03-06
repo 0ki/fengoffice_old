@@ -165,7 +165,11 @@ foreach($companies as $company)
 						$tasks = ProjectTasks::getRangeTasksByUser($date_start, $date_end, ($user_filter != -1 ? $user : null),$task_filter);
 					}
 					
-					$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
+					if (user_config_option('show_birthdays_in_calendar')) {
+						$birthdays = Contacts::instance()->getRangeContactsByBirthday($date_start, $date_end, active_context_members(false));
+					} else {
+						$birthdays = array();
+					}
 					
 					$result = array();
 					if($milestones) {

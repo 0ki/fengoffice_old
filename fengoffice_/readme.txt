@@ -1,5 +1,5 @@
 
-	About Feng Office 2.6.3
+	About Feng Office 2.7-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -102,6 +102,45 @@
 	Changelog
 	=========
 	
+	Since 2.6.3
+	----------------
+	bugfix: Template tasks names overflow.
+	bugfix: Calendar views event overlapping fixes.
+	bugfix: If tmp/logo_empresa.png exists, then use it in all notifications.
+	bugfix: When configuring widgets, changing to other section resets options.
+	bugfix: When creating admins permissions were not saved in background and not using cache for dimension object type contents.
+	bugfix: Permission issue when disabling a tab and then removing permissions for some workspaces.
+	bugfix: Tasks "assign to" was not filtering by task context.
+	bugfix: Performance in get mails query.
+	bugfix: Remove "related to" option when adding a user.
+	bugfix: Clients and projects widgets fixes.
+	bugfix: Task quick-edit workspace, clients and projects selectors fixed.
+	bugfix: Task drag & drop error after deleting a task.
+	bugfix: Ical feed for calendar does not work.
+	bugfix: Superadmin not viewing all elements.
+	bugfix: Cannot upload file in Internet Explorer when a filtering by a member.
+	bugfix: When uploading files, use a generated name instead of filename to save it in tmp.
+	
+	feature: Added a permissions cache to improve left panel trees load times. 
+	feature: Initial loading performance improved.
+	feature: Performance improved in "People widget" in overview tab.
+	feature: Performance improved in "Activity widget" in overview tab.
+	feature: Add flag by object for sharing table healing process.
+	feature: Gantt full screen option.
+	feature: Toolbar option to show/hide birthdays in caledar views.
+	feature: Upgrade plugins after upgrading core using html interface (only if 'exec' php function is available).
+	feature: Config option to allow (or not) new users to be granted with permissions over all existent workspaces depending on the user type.
+	feature: Don't show popup when adding a new member.
+	feature: Contact form upgraded.
+	feature: Contact card upgraded.
+	fetaure: Config option to decide if mail attachments are classified with the email.
+	feature: Config option to show expanded/collapsed the attachments in mail view
+	feature: Add 'name' field to telephone numbers (to support assistant name and assistant number)
+	
+	language: Languages fr_fr (French France) and fr_ca (French Canada) improved.
+	language: Added language en_gb (English U.K.).
+	
+	
 	Since 2.6.3-beta
 	----------------
 	bugfix: send email inline images attached instead of the link to tmp folder.
@@ -149,7 +188,7 @@
 	bugfix: day calendar view show all task duration.
 	bugfix: quick add task in milestone.
 	bugfix: line break in timeslots comments.
-	
+
 	Since 2.6.2-rc
 	----------------
 	bugfix: javascript error when editing a completed task.

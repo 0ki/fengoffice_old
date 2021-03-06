@@ -120,13 +120,12 @@ return array(
   	'new account step profile info' => 'Update your <a class="internalLink" href="{0}">user profile</a>',
   	'new account step preferences' => 'Step {0}: Update user preferences',
   	'new account step preferences info' => 'Update your <a class="internalLink" href="{0}">user preferences</a> such as general preferences, dashboard options and task options',
-  	'getting started' => 'Getting Started',
+  	'getting started' => 'Getting started',
  
   	'new account step actions' => 'Step {0}: Start managing your online office',
   	'new account step actions info' => 'Create documents and tasks in your company workspaces to share with the company users.<br>
 										Click on the workspace you want to work with and <b>Add a new:</b><br/>',
 
-   	'getting started' => 'Getting Started',
  
 // Application log
     'application log details column name' => 'Details',
@@ -748,6 +747,18 @@ return array(
 	'remove all filters' => 'Remove all filters',
 	'plugins' => 'Plugins',
 	'located under' => 'Located under',
+	'personal' => 'Personal',
+	'add new phone number' => 'Add new phone number',
+	'add new address' => 'Add new address',
+	'add new webpage' => 'Add new webpage',
+	'edit all person data' => 'Edit additional data',
+	'edit user data' => 'Edit user data',
+	'main data' => 'Main information',
+	'user data' => 'User data',
+	'additional data' => 'Additional data',
+	'map' => 'Map',
+	'logo' => 'Logo',
+	'update logo' => 'Update logo',
 ); // array
 
 ?>

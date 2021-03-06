@@ -99,15 +99,7 @@
 			</div>
 			<script type="text/javascript">
 			og.addUserTypeChange('<?php echo $genid?>',$(':input[name$="user[type]"]').val());
-			og.showSelectTimezone = function(genid)	{
-				check = document.getElementById("userFormAutoDetectTimezoneYes");
-				div = document.getElementById(genid + "selecttzdiv");
-				if (check.checked == true){
-					div.style.display= "none";
-				}else{
-					div.style.display= "";
-				}
-			};
+			
 			</script>
 		</div>
 	</fieldset>

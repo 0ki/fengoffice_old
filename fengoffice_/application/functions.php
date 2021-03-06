@@ -900,10 +900,14 @@ function create_user($user_data, $permissionsString) {
 		}
 		$sp->save();
 		
-		if ($contact->isAdminGroup()) {
-			// allow all un all dimensions if new user is admin
-			$dimensions = Dimensions::findAll();
+		// give permissions for user if user type defined in "give_member_permissions_to_new_users" config option
+		$allowed_user_type_ids = config_option('give_member_permissions_to_new_users');
+		if ($contact->isAdministrator() || in_array($contact->getUserType(), $allowed_user_type_ids)) {
+			ini_set('memory_limit', '512M');
 			$permissions = array();
+			$default_permissions = RoleObjectTypePermissions::instance()->findAll(array('conditions' => 'role_id = '.$contact->getUserType()));
+			
+			$dimensions = Dimensions::findAll();
 			foreach ($dimensions as $dimension) {
 				if ($dimension->getDefinesPermissions()) {
 					$cdp = ContactDimensionPermissions::findOne(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `dimension_id` = ".$dimension->getId()));
@@ -912,45 +916,26 @@ function create_user($user_data, $permissionsString) {
 						$cdp->setPermissionGroupId($contact->getPermissionGroupId());
 						$cdp->setContactDimensionId($dimension->getId());
 					}
-					$cdp->setPermissionType('allow all');
+					$cdp->setPermissionType('check');
 					$cdp->save();
 					
 					// contact member permisssion entries
-					$members = $dimension->getAllMembers();
+					$members = DB::executeAll('SELECT * FROM '.TABLE_PREFIX.'members WHERE dimension_id='.$dimension->getId());
 					foreach ($members as $member) {
-						
-						$ots = DimensionObjectTypeContents::getContentObjectTypeIds($dimension->getId(), $member->getObjectTypeId());
-						$ots[]=$member->getObjectId();
-						foreach ($ots as $ot) {
-							$cmp = ContactMemberPermissions::findOne(array("conditions" => "`permission_group_id` = ".$contact->getPermissionGroupId()." AND `member_id` = ".$member->getId()." AND `object_type_id` = $ot"));
-							if (!$cmp instanceof ContactMemberPermission) {
-								$cmp = new ContactMemberPermission();
-								$cmp->setPermissionGroupId($contact->getPermissionGroupId());
-								$cmp->setMemberId($member->getId());
-								$cmp->setObjectTypeId($ot);
-							}
-							$cmp->setCanWrite(1);
-							$cmp->setCanDelete(1);
-							$cmp->save();
-							
+						foreach ($default_permissions as $p) {
 							// Add persmissions to sharing table
 							$perm = new stdClass();
-							$perm->m = $member->getId();
+							$perm->m = $member['id'];
 							$perm->r= 1;
-							$perm->w= 1;
-							$perm->d= 1;
-							$perm->o= $ot;
+							$perm->w= $p->getCanWrite();
+							$perm->d= $p->getCanDelete();
+							$perm->o= $p->getObjectTypeId();
 							$permissions[] = $perm;
 						}
 					}
 				}
 			}
-			
-			if(count($permissions) > 0){
-				$sharingTableController = new SharingTableController();
-				$sharingTableController->afterPermissionChanged($contact->getPermissionGroupId(), $permissions);
-			}
-			
+			$_POST['permissions'] = json_encode($permissions);
 		}
 		
 		if (config_option('let_users_create_objects_in_root') && ($contact->isAdminGroup() || $contact->isExecutive() || $contact->isManager())) {

@@ -1,9 +1,13 @@
 <?php
     set_page_title(lang('update avatar'));
+    $action = $user->getUpdateAvatarUrl();
+    if (isset($reload_picture)) {
+    	$action .= "&reload_picture=$reload_picture";
+    }
 ?>
 
 
-<form target="_blank" style='height:100%;background-color:white' action="<?php echo $user->getUpdateAvatarUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
+<form target="_blank" style='height:100%;background-color:white' action="<?php echo $action ?>" method="post" enctype="multipart/form-data" onsubmit="return og.submit(this)">
 
 <div class="avatar">
 <div class="coInputSeparator"></div>

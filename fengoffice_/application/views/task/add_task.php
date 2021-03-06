@@ -666,9 +666,6 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}		
 	}
 	
-	og.redrawUserLists(og.contextManager.plainContext());
-        
-
 	og.changeTaskRepeat = function() {
 		var ro = document.getElementById("<?php echo $genid ?>repeat_options");
 		if (ro) ro.style.display = 'none';
@@ -696,7 +693,8 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 
 
 
-	og.reload_task_form_selectors = function(is_new) {
+	og.reload_task_form_selectors = function(is_new, render_add_subscribers) {
+		render_add_subscribers = (typeof render_add_subscribers == "undefined") ? true : render_add_subscribers;
 		if (!is_new) {
 			var dimension_members_json = Ext.util.JSON.encode(member_selector['<?php echo $genid ?>'].sel_context);
 		} else {
@@ -717,16 +715,19 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		}
 	
 		var uids = App.modules.addMessageForm.getCheckedUsers('<?php echo $genid ?>');
-	
-		Ext.get('<?php echo $genid ?>add_subscribers_content').load({
-			url: og.getUrl('object', 'render_add_subscribers', {
-				context: dimension_members_json,
-				users: uids,
-				genid: '<?php echo $genid ?>',
-				otype: '<?php echo $task->manager()->getObjectTypeId()?>'
-			}),
-			scripts: true
-		});
+
+		if(render_add_subscribers){
+			Ext.get('<?php echo $genid ?>add_subscribers_content').load({
+				url: og.getUrl('object', 'render_add_subscribers', {
+					context: dimension_members_json,
+					users: uids,
+					genid: '<?php echo $genid ?>',
+					otype: '<?php echo $task->manager()->getObjectTypeId()?>'
+				}),
+				scripts: true
+			});
+		}
+		
 		og.redrawUserLists(dimension_members_json);
 	}
 	
@@ -763,11 +764,13 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 		<?php if(!$task->isCompleted()){ ?>
 			og.changeTaskRepeat();
 		<?php }?>
-		
-		setTimeout(function() {
-			og.reload_task_form_selectors(<?php echo $task->isNew() ? '1' : '0'?>);
-		}, 500);
+					
 	});
+
+	var listenerId = og.eventManager.addListener('after member_selector init',function(){
+		og.reload_task_form_selectors(<?php echo $task->isNew() ? '1' : '0'?>, false);
+		og.eventManager.removeListener(listenerId) ;
+	});	
 
 	function selectRelated(val){
 		$("#<?php echo $genid?>type_related").val(val);

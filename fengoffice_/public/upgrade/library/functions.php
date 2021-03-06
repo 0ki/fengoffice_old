@@ -253,4 +253,21 @@ if (!function_exists('utf8_safe')) {
 	}
 }
 
+if (!function_exists('is_exec_available')) {
+	function is_exec_available() {
+		if (ini_get('safe_mode')) {
+			return false;
+		} else {
+			$d = ini_get('disable_functions');
+			$s = ini_get('suhosin.executor.func.blacklist');
+			if ("$d$s") {
+				$array = preg_split('/,\s*/', "$d,$s");
+				if (in_array('exec', $array)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+}
 ?>

@@ -60,7 +60,7 @@ class DimensionController extends ApplicationController {
 			}
 			else{
 				/*if dimension does not deny everything for each contact's PG, show it*/
-				if (!$dim->deniesAllForContact($contact_pg_ids)){
+				if (!$dim->deniesAllForContact($contact_pg_ids)  || logged_user()->isAdministrator()){
 					$dimensions_to_show ['dimensions'][] = $dim;
 					$added = true;
 				}
@@ -124,7 +124,7 @@ class DimensionController extends ApplicationController {
 	 * @todo: check (and fix) that the system doesn't use the left-panel navigation tree to get member's data
 	 *
 	 */
-	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array(), $access_level=ACCESS_LEVEL_READ){
+	function initial_list_dimension_members($dimension_id, $object_type_id, $allowed_member_type_ids = null, $return_all_members = false, $extra_conditions = "", $limit=null, $return_member_objects = false, $order=null, $return_only_members_name=false, $filter_by_members=array(), $access_level=ACCESS_LEVEL_READ, $use_member_cache=false){
 		$allowed_member_types = array();
 		$item_object = null ;
 		if(logged_user()->isAdministrator())$return_all_members=true;
@@ -158,14 +158,25 @@ class DimensionController extends ApplicationController {
 				$all_members = $dimension->getAllMembers(false, $order, true, $extra_conditions, $limit);
 			}
 			else if ($dimension->hasCheckForContact($contact_pg_ids)){
-				$member_list = $dimension->getAllMembers(false, $order, true, $extra_conditions, $limit);
-				$allowed_members = array();
-				foreach ($member_list as $dim_member){
-					if (ContactMemberPermissions::instance()->contactCanAccessMemberAll($contact_pg_ids, $dim_member->getId(), logged_user(), $access_level)) {
-						$allowed_members[] = $dim_member;
+				if($use_member_cache){
+					//use the contact member cache
+					$params = array(
+							"dimension" => $dimension,
+							"contact_id" => logged_user()->getId(),
+							"parent_member_id" => 0
+					);
+					$all_members = ContactMemberCaches::getAllMembersWithCachedParentId($params);
+									
+				}else{
+					$member_list = $dimension->getAllMembers(false, $order, true, $extra_conditions, $limit);
+					$allowed_members = array();
+					foreach ($member_list as $dim_member){
+						if (ContactMemberPermissions::instance()->contactCanAccessMemberAll($contact_pg_ids, $dim_member->getId(), logged_user(), $access_level)) {
+							$allowed_members[] = $dim_member;
+						}
 					}
+					$all_members = $allowed_members;
 				}
-				$all_members = $allowed_members;
 			}
 			if (!isset($all_members)) {
 				$all_members = array();	
@@ -310,6 +321,75 @@ class DimensionController extends ApplicationController {
 		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));	
 	}
 	
+	//return only root members
+	function initial_list_dimension_members_tree_root() {
+		$dimension_id = array_var($_REQUEST, 'dimension_id');
+		$checkedField = (array_var($_REQUEST, 'checkboxes'))?"checked":"_checked";
+		$objectTypeId = array_var($_REQUEST, 'object_type_id', null );
+	
+		$allowedMemberTypes = json_decode(array_var($_REQUEST, 'allowedMemberTypes', null ));
+		if (!is_array($allowedMemberTypes)) {
+			$allowedMemberTypes = null;
+		}
+	
+		$only_names = array_var($_REQUEST, 'onlyname', false);
+	
+		$name = trim(array_var($_REQUEST, 'query', ''));
+		
+		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
+		
+		$use_member_cache= true;
+		//Super admins are not using the contact member cache
+		if(logged_user()->isAdministrator()){
+			$extra_cond .= "AND `parent_member_id`=0";
+			$use_member_cache= false;
+		}
+		$return_all_members = false;
+	
+		$selected_member_ids = json_decode(array_var($_REQUEST, 'selected_ids', "[0]"));
+		$selected_members = Members::findAll(array('conditions' => 'id IN ('.implode(',',$selected_member_ids).')'));
+		
+		$memberList = $this->initial_list_dimension_members($dimension_id, $objectTypeId, $allowedMemberTypes, $return_all_members, $extra_cond, null, false, null, $only_names, $selected_members,null,true);
+		
+		$tree = buildTree($memberList, "parent", "children", "id", "name", $checkedField);
+	
+		ajx_current("empty");
+		
+		//$dids = explode ("," ,user_config_option('root_dimensions', null, logged_user()->getId() ));
+		//if(in_array($dimension_id, $dids)){
+		ajx_extra_data(array('dimension_members' => $tree, 'dimension_id' => $dimension_id));
+		//}
+	}
+	
+	//serach members by name
+	function search_dimension_members_tree() {
+		$dimension_id = array_var($_REQUEST, 'dimension_id');
+		$dimension = Dimensions::getDimensionById($dimension_id);
+		$name = trim(array_var($_REQUEST, 'query', ''));
+	
+		//search condition
+		$extra_cond = $name == "" ? "" : " AND name LIKE '%".$name."%'";
+				
+		//use the contact member cache
+		$params = array(
+				"dimension" => $dimension,
+				"contact_id" => logged_user()->getId(),
+				"get_all_parent_in_hierarchy" => true,
+				"member_name" => $name
+		);
+		
+		//get the member list
+		$memberList = ContactMemberCaches::getAllMembersWithCachedParentId($params);
+				
+		if(!empty($memberList)){
+			$allMemebers = $this->buildMemberList($memberList, $dimension, array(),array(), null, null);
+					
+			ajx_extra_data(array('members' => $allMemebers));
+		}
+		ajx_extra_data(array('dimension_id' => $dimension_id));
+		ajx_current("empty");			
+	}
+	
 	function reload_dimensions_js () {
 		ajx_current("empty");
 		$dimensions = Dimensions::findAll();
@@ -360,6 +440,58 @@ class DimensionController extends ApplicationController {
 		ajx_extra_data(array("dim_names" => $dim_names));
 	}
 	
+	//return all childs of a member
+	function get_member_childs() {
+		if(!can_manage_dimension_members(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+	
+		$mem_id = array_var($_GET, 'member');
+		$mem = Members::getMemberById($mem_id);
+		if($mem instanceof Member){
+			//Do not use contact member cache for superadmins
+			if(!logged_user()->isAdministrator()){
+				//use the contact member cache
+				$dimension = $mem->getDimension();
+				$params = array(
+						"dimension" => $dimension,
+						"contact_id" => logged_user()->getId(),
+						"parent_member_id" => $mem->getId()
+				);
+				$childs = $member_cache_list = ContactMemberCaches::getAllMembersWithCachedParentId($params);	
+			}else{
+				$childs = Members::getSubmembers($mem, false, "");
+			}
+						
+			$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
+			
+			ajx_extra_data(array("members" => $members, "dimension" => $mem->getDimensionId()));			
+		}
+		ajx_current("empty");
+	}
+	
+	//return all parents of a member
+	function get_member_parents() {
+		if(!can_manage_dimension_members(logged_user())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		}
+		$mem_id = array_var($_GET, 'member');
+		$mem = Members::getMemberById($mem_id);
+		if($mem instanceof Member){
+			$parents = $mem->getAllParentMembersInHierarchy(true);
+			
+			$members = $this->buildMemberList($parents, $mem->getDimension(),  null, null, null, null);
+			
+			ajx_extra_data(array("member_id" => $mem_id));
+			ajx_extra_data(array("members" => $members));
+			ajx_extra_data(array('dimension_id' => $mem->getDimensionId()));
+		}
+		ajx_current("empty");
+	}
 	
 	function buildMemberList($all_members, $dimension,  $allowed_member_type_ids, $allowed_object_type_ids, $item_object, $object_type_id, $return_only_name=false) {
 		$dot_array = array(); // Dimension Object Types array (cache)
@@ -383,15 +515,27 @@ class DimensionController extends ApplicationController {
 				continue;	
 			}
 			$tempParent = $m->getParentMemberId();
-			$x = $m;
-			while ($x instanceof Member && !isset($membersset[$tempParent])) {
-				$tempParent = $x->getParentMemberId();
-				if ($x->getParentMemberId() == 0) break;
-				$x = $x->getParentMember();
+			
+			//check if have parent member id from Contact Member Cache
+			if(isset($m->cached_parent_member_id)){
+				$tempParent = $m->cached_parent_member_id;
+			}else{
+				if(!logged_user()->isAdministrator()){
+					$x = $m;
+					while ($x instanceof Member && !isset($membersset[$tempParent])) {
+						$tempParent = $x->getParentMemberId();
+						if ($x->getParentMemberId() == 0) break;
+						$x = $x->getParentMember();
+					}
+					if (!$x instanceof Member) {
+						$tempParent = 0;
+					}
+				}else{
+					$tempParent = $m->getParentMemberId();
+				}
+				
 			}
-			if (!$x instanceof Member) {
-				$tempParent = 0;
-			}
+			
 			$memberOptions = '';
 			
 			// SET member options (dimension object types table)
@@ -421,6 +565,16 @@ class DimensionController extends ApplicationController {
 					"ico" => $m->getIconClass(),
 				);
 			} else {
+				//Do not use contact member cache for superadmins
+				if(!logged_user()->isAdministrator()){
+					//check childs from contact member cache
+					$childsIds = ContactMemberCaches::getAllChildrenIdsFromCache(logged_user()->getId(), $m->getId());
+				}else{
+					$childsIds = $m->getAllChildrenIds(false,null,"");
+				}				
+				$totalChilds = count($childsIds);
+				$haveChilds = ($totalChilds > 0)? true : false; 
+				
 				/* @var $m Member */
 				$additional_member_class = "";
 				Hook::fire('additional_member_node_class', $m, $additional_member_class);
@@ -437,6 +591,8 @@ class DimensionController extends ApplicationController {
 					"selectable" => isset($selectable) ? $selectable : false,
 					"dimension_id" => $m->getDimensionId(),
 					"object_type_id" => $m->getObjectTypeId(),
+					"expandable" => $haveChilds,
+					"realTotalChilds" => $totalChilds,
 					"allow_childs" => $m->allowChilds()
 				);
 				// Member Actions
@@ -477,11 +633,10 @@ class DimensionController extends ApplicationController {
 		// re-sort by parent and name
 		$tmp_members = array();
 		foreach ($members as $m) {
-			$tmp_members[array_var($m, 'parent') . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
+			$tmp_members[str_pad(array_var($m, 'parent'), 20, "0", STR_PAD_LEFT) . strtolower(array_var($m, 'name')) . array_var($m, 'id')] = $m;
 		}
 		ksort($tmp_members, SORT_STRING);
-		$members = $tmp_members;
-		
+		$members = $tmp_members;		
 		return $members ;
 	}
 	

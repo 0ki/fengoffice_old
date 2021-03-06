@@ -15,7 +15,7 @@
     * @return WebpageType
     */
     function getWebpageType() {
-      return WebpageTypes::findById($this->getWebpageTypeId());
+      return WebpageTypes::findById($this->getWebTypeId());
     } // getWebpageType
     
     /**

@@ -1574,7 +1574,7 @@ function render_widget_option_input($widget_option, $genid=null) {
 			if ($widget_option['widget'] == 'overdue_upcoming') $ot = ObjectTypes::findByName('task');
 			else break;
 			$users = allowed_users_in_context($ot->getId(), array(), ACCESS_LEVEL_READ, '', true);
-			$output .= "<select name='$name' id='".$genid.$name."'>";
+			$output .= "<select name='$name' id='".$genid.$name."' onchange='og.on_widget_select_option_change(this);'>";
 			$sel = $widget_option['value'] == 0 ? 'selected="selected"' : '';
 			$output .= "<option value='0' $sel>".lang('everyone')."</option>";
 			foreach ($users as $user) {
@@ -1584,7 +1584,7 @@ function render_widget_option_input($widget_option, $genid=null) {
 			$output .= "</select>";
 			break;
 		case 'BooleanConfigHandler' :
-			$output .= yes_no_widget($name, $genid.$name, $widget_option['value'], lang('yes'), lang('no'));
+			$output .= yes_no_widget($name, $genid.$name, $widget_option['value'], lang('yes'), lang('no'), null, array('onchange' => 'og.on_widget_radio_option_change(this);'));
 			break;
 		default: break;
 	}

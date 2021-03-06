@@ -30,7 +30,7 @@ if(isset($users) && is_array($users) && $cantUsers) { ?>
   $options = array();
   if (!$user->getDisabled()) {
 	  if($user->canUpdateProfile(logged_user())) {
-	    $options[] = '<a class="internalLink" href="' . $user->getEditProfileUrl() . '">' . lang('update profile') . '</a>';
+	    $options[] = '<a class="internalLink" href="' . $user->getEditUrl() . '">' . lang('update profile') . '</a>';
 	    $options[] = '<a class="internalLink" href="' . $user->getUpdateAvatarUrl() . '">' . lang('update avatar') . '</a>';
 	  }
 	  if ($user->canChangePassword(logged_user())) {

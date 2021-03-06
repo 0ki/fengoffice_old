@@ -285,6 +285,7 @@ class MemberController extends ApplicationController {
 				$ret = null;
 				Hook::fire('after_add_member', $member, $ret);
 				evt_add("reload dimension tree", array('dim_id' => $member->getDimensionId()));
+				/*
 				$member_type = ObjectTypes::findById($member->getObjectTypeId());
 				$context = active_context();
 				$sel_mem = null;
@@ -300,7 +301,12 @@ class MemberController extends ApplicationController {
 					'dimension_id' => $member->getDimensionId(),
 					'sel_mem' => $sel_mem == null ? '' : clean($sel_mem->getName()),
 				));
-				
+				*/
+				evt_add("select member after add", array(
+					'id' => $member->getId(),
+					'parent_id' => $member->getParentMemberId(),
+					'dimension_id' => $member->getDimensionId(),
+				));
 				//evt_add('select dimension member', array('dim_id' => $member->getDimensionId(), 'node' => $member->getId()));
 				if (array_var($_POST, 'rest_genid')) evt_add('reload member restrictions', array_var($_POST, 'rest_genid'));
 				if (array_var($_POST, 'prop_genid')) evt_add('reload member properties', array_var($_POST, 'prop_genid'));
@@ -443,7 +449,8 @@ class MemberController extends ApplicationController {
 				if (!$is_new) $childrenIds = $member->getAllChildrenIds(true);
 				$hasValidParent = false ;
 				if ($member->getId() == $member->getParentMemberId() ||  (!$is_new && in_array($member->getParentMemberId(), $childrenIds))) {
-					throw new Exception(lang("invalid parent member"));
+					$p_name = $member->getParentMember() instanceof Member ? $member->getParentMember()->getName() : '';
+					throw new Exception(lang("invalid parent member", $member_data['name'], $p_name));
 				}
 				foreach ($allowedParents as $parent) {
 					if ( $parent['id'] == $member->getParentMemberId() ){
@@ -452,7 +459,8 @@ class MemberController extends ApplicationController {
 					}
 				}
 				if (!$hasValidParent){
-					throw new Exception(lang("invalid parent member"));
+					$p_name = $member->getParentMember() instanceof Member ? $member->getParentMember()->getName() : '';
+					throw new Exception(lang("invalid parent member", $member_data['name'], $p_name));
 				}
 				$parent = Members::findById($member->getParentMemberId());
 				if ($parent instanceof Member) $member->setDepth($parent->getDepth() + 1);

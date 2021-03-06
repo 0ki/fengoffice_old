@@ -126,7 +126,9 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	div.innerHTML =
 		'<input class="objectID" type="hidden" name="objects[' + obj.object_id + ']" value="' + obj.object_id + '" />' +
 		'<div style="float: left;" class="db-ico '+obj.ico+'"></div>' +
-		'<a id="template-object-name' + obj.object_id + '" href="#" class="internalLink" onclick="og.viewTempObj('+obj.object_id+',  \''+obj.type+'\')">'+og.clean(obj.name)+'</a>';
+		'<div class="template-text-ellipsis">' +
+			'<a id="template-object-name' + obj.object_id + '" href="#" class="internalLink" onclick="og.viewTempObj('+obj.object_id+',  \''+obj.type+'\')">'+og.clean(obj.name)+'</a>' +
+		'</div>';
 			
 	var divActions = document.createElement('div');
 	divActions.className = "template-object-actions";
@@ -157,7 +159,7 @@ og.addObjectToTemplate = function(target, obj, dont_draw_milestone_combo) {
 	subTasksDiv.id = 'subTasksDiv' + obj.object_id;
 	subTasksDiv.className = "template-subtasks-div ";
 	subTasksDiv.style.display = 'none';
-	subTasksDiv.innerHTML =	'<legend>Subtasks of '+og.clean(obj.name)+'</legend>';	
+	subTasksDiv.innerHTML =	'<legend class="template-text-ellipsis" style="max-width: 450px;">Subtasks of '+og.clean(obj.name)+'</legend>';	
 	
 	var editPropDiv = document.createElement('div');
 	editPropDiv.id = 'propDiv' + obj.object_id;

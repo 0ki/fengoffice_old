@@ -471,8 +471,8 @@ og.ContactManager = function() {
 				og.openLink(url,{hideLoading:true, callback: function(success, data) {
 					og.ContactManager.store.reload();
 				}});
-			},
-	 },
+			}
+		},
 		users : {
 			text : lang('users'),
 			checked : (og.preferences['viewUsersChecked'] == 1),
@@ -482,7 +482,7 @@ og.ContactManager = function() {
 				og.openLink(url,{hideLoading:true , callback: function(success, data) {
 					og.ContactManager.store.reload();
 				}});
-			},
+			}
 		},
 		companies : {
 			text : lang('companies'),
@@ -493,7 +493,7 @@ og.ContactManager = function() {
 				og.openLink(url,{hideLoading:true, callback: function(success, data) {
 					og.ContactManager.store.reload();
 				}});
-			},
+			}
 		}
 	};
 

@@ -59,6 +59,14 @@
       return $this->setColumnValue('created_by_id', $value);
     }
     
+    function getObjectId() {
+      return $this->getColumnValue('object_id');
+    }
+    
+    function setObjectId($value) {
+    	return $this->setColumnValue('object_id', $value);
+    }
+    
   
     function manager() {
       if(!($this->manager instanceof SharingTableFlags)) $this->manager = SharingTableFlags::instance();

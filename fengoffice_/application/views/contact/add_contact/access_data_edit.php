@@ -1,8 +1,10 @@
 <?php
 	$permission_groups = array(); 
 	$groups = PermissionGroups::getNonPersonalSameLevelPermissionsGroups('id');
+	$default_permission_group_id = 0;
 	foreach($groups as $group){
     	$permission_groups[] = array($group->getId(), lang($group->getName()));
+    	if ($group->getName() == 'Executive') $default_permission_group_id = $group->getId();
     }
     $genid = gen_id();
     $jqid = "#$genid";
@@ -95,8 +97,8 @@
 <div id = "<?php echo $genid ?>" class="access-data"> 
 	<label class="checkbox" ><?php echo lang("will this person use feng office?") ?></label><input class="checkbox" type="checkbox" name="contact[user][create-user]" <?php if(!$contact_mail){echo "checked";}?> id="create-user"></input>
 	<div class="clear"></div>
-
-	<div class="user-data" <?php if($contact_mail){echo "style='display:none'";}?>>
+		<div style="display:none;" class="user-data-title"><?php echo lang('user data')?></div>
+		<div class="user-data" <?php if($contact_mail){echo "style='display:none'";}?>>
 		
 			<label class="checkbox"><?php echo lang('send task assigned to notification') ?></label>
 			<input class="checkbox" type="checkbox" name="notify-user" <?php if(user_config_option("sendEmailNotification",1,logged_user()->getId())){echo "checked";}?> id="notify-user"></input>
@@ -114,13 +116,14 @@
 		</div>          
 		<div class="clear"></div>
 		<div class="field role">
-			<label><?php echo lang("user type")?>:</label><?php  echo simple_select_box('contact[user][type]', $permission_groups,4)?>
+			<label><?php echo lang("user type")?>:</label><?php  echo simple_select_box('contact[user][type]', $permission_groups, isset($user_type) ? $user_type : $default_permission_group_id)?>
 		</div>
 	<?php if(isset($new_contact) && $new_contact){?>
 		<div class="field role" style="margin-top:8px;">
 			<label class="checkbox"><?php echo lang("specify username?")?></label>
 			<input class="checkbox" type="checkbox" name="contact[specify_username]" id="<?php echo $genid ?>specify-username"/>
-			<input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" name="contact[user][username]" maxlength="50" style="display: none; margin-left:5px;"/>
+			<input id="<?php echo $genid ?>profileFormUsername" type="text" value="<?php echo array_var($contact_data, 'username')?>" 
+				name="contact[user][username]" maxlength="50" style="display: none; margin-left:5px;" placeholder="<?php echo lang('username')?>"/>
 		</div>
 		
 			

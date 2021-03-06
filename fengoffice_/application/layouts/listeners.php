@@ -27,6 +27,17 @@ og.eventManager.addListener('reload tab panel',
  	}
 );
 
+og.eventManager.addListener('reload user picture', 
+ 	function (data){
+ 		var el = document.getElementById(data.el_id);
+ 		if (el) el.src=data.url;
+ 		if (data.file_id && data.hf_picture) {
+ 	 		var hf = document.getElementById(data.hf_picture);
+ 	 		if (hf) hf.value = data.file_id;
+ 		}
+ 	}
+);
+
 og.eventManager.addListener('reload member properties', 
  	function (genid){
  		App.modules.addMemberForm.drawDimensionProperties(genid, document.getElementById(genid + 'dimension_id').value);
@@ -35,42 +46,44 @@ og.eventManager.addListener('reload member properties',
 
 og.eventManager.addListener('reload dimension tree',
 	function (data){
-		if (!og.reloadingDimensions){
-			og.reloadingDimensions = {};
-		}
-		if (!og.reloadingDimensions[data.dim_id]){
-			og.reloadingDimensions[data.dim_id] = true;
-			setTimeout(function(){
-				og.reloadingDimensions[data.dim_id] = false;
-			}, 1000);
-
-			var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
-			if (tree) {
-				var selection = tree.getSelectionModel().getSelectedNode();
-
-				tree.suspendEvents();
-				var expanded = [];
-				tree.root.cascade(function(){
-					if (this.isExpanded()) expanded.push(this.id);
-				});
-				tree.loader.load(tree.getRootNode(), function() {
+		var tree = Ext.getCmp("dimension-panel-" + data.dim_id);
+		if (tree && !tree.hidden){
+			if (!og.reloadingDimensions){
+				og.reloadingDimensions = {};
+			}
+			if (!og.reloadingDimensions[data.dim_id]){
+				og.reloadingDimensions[data.dim_id] = true;
+				setTimeout(function(){
 					og.reloadingDimensions[data.dim_id] = false;
-					tree.expanded_once = false;
-					og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
-					if(selection){
-						setTimeout(function(){
-							if (data.node) {
-								var treenode = tree.getNodeById(data.node);
-							} else {
-								var treenode = tree.getNodeById(selection.id);
-							}
-							og.Breadcrumbs.refresh(treenode);
-							treenode.fireEvent('click', treenode);
-						}, 200);
-						og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
-					}
-				});
-				tree.resumeEvents();
+				}, 1000);
+								
+				if (tree) {
+					var selection = tree.getSelectionModel().getSelectedNode();
+	
+					tree.suspendEvents();
+					var expanded = [];
+					tree.root.cascade(function(){
+						if (this.isExpanded()) expanded.push(this.id);
+					});
+					tree.loader.load(tree.getRootNode(), function() {
+						og.reloadingDimensions[data.dim_id] = false;
+						tree.expanded_once = false;
+						og.expandCollapseDimensionTree(tree, expanded, selection ? selection.id : null);
+						if(selection){
+							setTimeout(function(){
+								if (data.node) {
+									var treenode = tree.getNodeById(data.node);
+								} else {
+									var treenode = tree.getNodeById(selection.id);
+								}
+								og.Breadcrumbs.refresh(treenode);
+								treenode.fireEvent('click', treenode);
+							}, 200);
+							og.contextManager.addActiveMember(selection.id, data.dim_id, selection.id);
+						}
+					});
+					tree.resumeEvents();
+				}
 			}
 		}
 	}
@@ -220,6 +233,30 @@ og.eventManager.addListener('try to select member',
 				clearInterval(interval);
 			}
 		}, 1000);
+	}
+);
+
+
+og.eventManager.addListener('select member after add',
+	function (member){
+		if (og.preferences.access_member_after_add) {
+			var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
+			if (tree) {
+				setTimeout(function () {
+					var treenode = tree.getNodeById(member.id);
+					if (treenode) {
+						treenode.fireEvent('click', treenode);
+						og.Breadcrumbs.refresh(treenode);
+					} else {
+						if (member.parent_id > 0) {
+							var parent_node = tree.getNodeById(member.parent_id);
+							if (parent_node) parent_node.expand();
+						}
+						og.eventManager.fireEvent('try to select member', member);
+					}
+				}, 500);
+			}
+		}
 	}
 );
 

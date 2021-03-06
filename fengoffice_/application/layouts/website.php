@@ -105,6 +105,7 @@
 echo render_page_javascript();
 echo render_page_inline_js();
 $use_owner_company_logo = owner_company()->hasLogo();
+$show_owner_company_name_header = config_option("show_owner_company_name_header");
 ?>
 <!-- header -->
 <div id="header">
@@ -126,7 +127,9 @@ $use_owner_company_logo = owner_company()->hasLogo();
                         <?php if(!$use_owner_company_logo){?>
                         <a id="change-logo-link" style="color: <?php echo "#".config_option('brand_colors_head_font')?>; font-size: 10px; padding-top:15px;" href="index.php?c=contact&a=edit_logo&id=<?php echo owner_company()->getObjectId(); ?>"><?php echo lang('change logo')?></a>
                         <?php } ?>
+                        <?php if($show_owner_company_name_header){?>
                         <h1 style="padding-top:15px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
+                        <?php } ?>
                     </div>
                 </div>
                 
@@ -411,7 +414,8 @@ og.preferences = {
 	'access_member_after_add_remember': <?php echo user_config_option('access_member_after_add_remember') ? '1' : '0' ?>,
 	'listing_preferences': [],
 	'breadcrumb_member_count': <?php echo user_config_option('breadcrumb_member_count') ?>,
-	'can_modify_navigation_panel': <?php echo user_config_option('can_modify_navigation_panel') ? '1' : '0' ?>
+	'can_modify_navigation_panel': <?php echo user_config_option('can_modify_navigation_panel') ? '1' : '0' ?>,
+	'show_birthdays_in_calendar': <?php echo user_config_option('show_birthdays_in_calendar') ? '1' : '0' ?>
 };
 <?php
 	$listing_preferences = ContactConfigOptions::getOptionsByCategoryName('listing preferences');
@@ -639,6 +643,8 @@ $(document).ready(function() {
 			}
 		}
 	});
+	
+		
 });
 
 </script>

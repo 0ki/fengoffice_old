@@ -34,12 +34,13 @@ og.MemberTree = function(config) {
 		});
 	}
 	
-	
+	var expandM = 'root';
+	if(config.hidden) expandM = 'none';
 	Ext.applyIf(config, {
 		region: 'center',
 		id: config.id,
 		loader: new og.MemberChooserTreeLoader({
-    		dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&dimension_id='+config.dimensionId+'&avoid_session=1',
+    		dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree_root&ajax=true&dimension_id='+config.dimensionId+'&avoid_session=1',
     		ownerTree: this  
     	}),
 		autoScroll: true,
@@ -59,7 +60,7 @@ og.MemberTree = function(config) {
     	dimensionId: config.dimensionId,
     	dimensionCode: config.dimensionCode, 
     	cls: config.dimensionCode,
-    	reloadHidden: true, //To force tree reload when is hidden 
+    	reloadHidden: false, //To force tree reload when is hidden 
     	height: 210,
     	animate: false,
     	tools: [
@@ -84,14 +85,14 @@ og.MemberTree = function(config) {
 
     	],  	
     	hideCollapseTool: true ,
-    	expandMode: 'root', //all root,
+    	expandMode: expandM, //all root,
     	tbar: tbar 
 	});
+	
 	config.initialLoader = config.loader;
 	if (!config.listeners) config.listeners = {};
 	Ext.apply(config.listeners, {
 		beforenodedrop: function(e) {
-			//console.log(e);
 			if (!isNaN(e.target.id) && e.data.grid) {
 				
 				var has_relations = false;
@@ -204,6 +205,37 @@ og.MemberTree = function(config) {
 
 	// ********** TREE EVENTS *********** //
 	this.on({
+		expandnode: function(node){
+			//get childs from server
+	        if(node.childNodes.length < node.attributes.realTotalChilds && node.attributes.expandable){
+	        	node.ownerTree.innerCt.mask();
+	        	og.openLink(og.getUrl('dimension', 'get_member_childs', {member:node.id}), {
+	    			hideLoading:true, 
+	    			hideErrors:true,
+	    			callback: function(success, data){
+	    				
+	    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension);
+	    					    				
+	    				for (var prop in data.members) {  
+	    					var mem = data.members[prop];
+	    					var node_parent = dimension_tree.getNodeById(mem.parent);
+	    					
+	    					mem.leaf = true;
+	    					mem.text = mem.name;
+	    					var new_node = dimension_tree.loader.createNode(mem);
+	    						    												
+							var node_exist = dimension_tree.getNodeById(mem.id);
+							if(!node_exist){
+								if (node_parent) node_parent.appendChild(new_node);
+							}
+	    				}	    				
+	    				dimension_tree.innerCt.unmask();
+	    				
+	    			}
+	    		});
+	        }
+			
+		},
 		click: function(node, e){
 			og.contextManager.currentDimension = self.dimensionId ;
 			og.eventManager.fireEvent("member tree node click", node);
@@ -223,14 +255,15 @@ og.MemberTree = function(config) {
 				if ( node.options && node.options.defaultAjax && node.options.defaultAjax.controller && node.options.defaultAjax.action) {
 					var reload = ( this.getSelectionModel() && this.getSelectionModel().getSelectedNode() && this.getSelectionModel().getSelectedNode().id  ==  node.id );
 					og.customDashboard( node.options.defaultAjax.controller, node.options.defaultAjax.action, {id: node.object_id}, reload);
-					this.clearFilter();
+				  /*this.clearFilter();
 
 					if (og.additional_on_dimension_object_click[node.object_type_id]) {
-						eval(og.additional_on_dimension_object_click[node.object_type_id].replace('<parameters>', node.id));
+						//eval(og.additional_on_dimension_object_click[node.object_type_id].replace('<parameters>', node.id));
 					}
 					
-					node.expand();
-					$("#" + this.id + '-textfilter').val("");
+					//node.expand();
+					
+					$("#" + this.id + '-textfilter').val("");*/
 				} else {
 					og.resetDashboard();
 				}
@@ -302,8 +335,10 @@ og.MemberTree = function(config) {
 										}
 									}) ;
 									
-								}
+									
+								}								
 							});
+							
 							if (this.totalFilterTrees == 0 ) {
 								this.resumeEvents();
 								og.eventManager.fireEvent('member trees updated',node);
@@ -347,7 +382,7 @@ og.MemberTree = function(config) {
 		}, 100);
 	}) ;
 	
-	// **************** TREE INIT **************** //
+	// **************** TREE INIT **************** //	
 };
 
 Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
@@ -365,8 +400,37 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 			this.clearFilter();
 		} else {
 			var re = new RegExp(Ext.escapeRe(text.toLowerCase()), 'i');
-			this.filterNode(this.getRootNode(), re);
-			this.expandAll();
+			//search on server
+			og.openLink(og.getUrl('dimension', 'search_dimension_members_tree', {dimension_id:this.id.replace("dimension-panel-", ""),query:Ext.escapeRe(text.toLowerCase())}), {
+    			hideLoading:true, 
+    			hideErrors:true,
+    			callback: function(success, data){
+    				
+    				var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
+    				    	
+    				//add nodes to tree
+    				for (var prop in data.members) {  
+    					var mem = data.members[prop];
+    					var node_parent = dimension_tree.getNodeById( mem.parent );
+    					
+    					mem.leaf = true;
+    					mem.text = mem.name;
+    					var new_node = dimension_tree.loader.createNode(mem);
+    						    												
+						var node_exist = dimension_tree.getNodeById(mem.id);
+						if(!node_exist){
+							if (node_parent) node_parent.appendChild(new_node);
+						}
+    				}    				
+    				//dimension_tree.innerCt.unmask();
+    				
+    				//filter the tree
+    				dimension_tree.filterNode(dimension_tree.getRootNode(), re);
+    				dimension_tree.suspendEvents();
+    				dimension_tree.expandAll();
+    				dimension_tree.resumeEvents();
+    			}
+    		});			
 		}
 	},
 	
@@ -510,16 +574,15 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		var expandedNodes = tree.expandedNodes() ;
 		var selectedMembers = og.contextManager.getDimensionMembers(this.dimensionId) ;
 
-		//tree.expandMode = "none";
+		tree.expandMode = "root";
 		
-		this.collapseAll() ;
+		//this.collapseAll() ;
 		
 		this.loader =  new og.MemberChooserTreeLoader({
-			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree&ajax=true&dimension_id='+this.dimensionId+'&selected_ids='+ Ext.util.JSON.encode(memberIds) +'&avoid_session=1',	
+			dataUrl: 'index.php?c=dimension&a=initial_list_dimension_members_tree_root&ajax=true&dimension_id='+this.dimensionId+'&selected_ids='+ Ext.util.JSON.encode(memberIds) +'&avoid_session=1',	
 			ownerTree: this
 		});
 		this.loader.load(this.getRootNode(), function() {
-			
 			tree.init(
 				function() {
 					if (tree.expandMode != "all"){
@@ -544,10 +607,53 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 		Ext.getCmp("dimension-selector-"+did).suspendEvents();
 		Ext.getCmp("dimension-selector-"+did).setChecked(false);
 		Ext.getCmp("dimension-selector-"+did).resumeEvents();
-	}
+	},
 
+	onMemberExternalClick: function (member_id) {
+		//og.expandCollapseDimensionTree(item);
+		var n = this.getNodeById(member_id);
+		if (n) {
+			if (n.parentNode) this.expandPath(n.parentNode.getPath(), false);
+			n.select();
+			og.eventManager.fireEvent('member tree node click', n);
+		}else {
+			this.innerCt.mask();
+			og.openLink(og.getUrl('dimension', 'get_member_parents', {member:member_id}), {
+				hideLoading:true, 
+				hideErrors:true,
+				callback: function(success, data){
+					
+					var dimension_tree = Ext.getCmp('dimension-panel-'+data.dimension_id);
+						    				
+					for (var prop in data.members) {  
+						var mem = data.members[prop];
+						var node_parent = dimension_tree.getNodeById(mem.parent);
+						
+						mem.leaf = true;
+						mem.text = mem.name;
+						var new_node = dimension_tree.loader.createNode(mem);
+							    												
+						var node_exist = dimension_tree.getNodeById(mem.id);
+						if(!node_exist){
+							if (node_parent) node_parent.appendChild(new_node);
+						}
+					}	    				
+					dimension_tree.innerCt.unmask();
+					dimension_tree.suspendEvents();
+					var n = dimension_tree.getNodeById(data.member_id);
+					if(n){
+						if (n.parentNode) dimension_tree.expandPath(n.parentNode.getPath(), false);
+						n.select();
+						og.eventManager.fireEvent('member tree node click', n);
+					}
+					dimension_tree.resumeEvents();
+				}
+			});
+		}
+	}
 });
 
 
 // ***** EXTJS REGISTER COMPONENT ******* //
 Ext.reg('member-tree', og.MemberTree);
+

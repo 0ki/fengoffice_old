@@ -47,8 +47,10 @@ class PluginController extends ApplicationController {
 			$from_post = true;
 		}
 		try {
+			$name = '';
 			if ( $plg = Plugins::instance()->findById($id)) {
 				if ($plg->isInstalled() && $plg->updateAvailable()){
+					$name = $plg->getName();
 					$plg->update();
 				}
 			}

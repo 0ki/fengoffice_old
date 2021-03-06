@@ -33,6 +33,21 @@
  		
   	}
   	
+  	/**
+  	 * This function return all users ids that are in a set of permission groups ids
+  	 * @param array $permission_group_ids 
+  	 * @return array users ids
+  	 */
+  	static function getAllContactsIdsByPermissionGroupIds($permission_group_ids) {
+  		$c_ids = array();
+  		$res = DB::execute("SELECT DISTINCT cp.contact_id as cid FROM ".TABLE_PREFIX."contact_permission_groups cp  WHERE cp.permission_group_id IN (" . implode(",", $permission_group_ids) . ")");
+  		$rows = $res->fetchAll();
+  		if (is_array($rows)) {
+  			foreach ($rows as $c) $c_ids[] = $c['cid'];
+  		}  		
+  		
+  		return $c_ids;
+  	}
   	
     static function getContextPermissionGroupIdsByContactCSV($contact_id) {
  		

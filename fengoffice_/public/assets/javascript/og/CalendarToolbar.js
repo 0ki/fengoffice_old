@@ -519,17 +519,31 @@ og.CalendarSecondTopToolbar = function(config) {
 				var date = og.calToolbarDateMenu.picker.getValue();
 				changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
 			}
+		},
+		birthdays: {
+			id: 'show_birthdays_in_calendar',
+	        text: lang('birthdays'),
+			checked: og.preferences['show_birthdays_in_calendar'] == 1,
+			checkHandler: function() {
+				og.openLink(og.getUrl('account', 'update_user_preference', {name: 'show_birthdays_in_calendar', value:(this.checked?1:0)}), {
+					callback: function(success, data) {
+						var date = og.calToolbarDateMenu.picker.getValue();
+						changeView(cal_actual_view, date.getDate(), date.getMonth() + 1, date.getFullYear(), actual_user_filter, actual_status_filter, actual_task_filter);
+					}
+				});
+			}
 		}
 	};
 
 	var status_menu = new Ext.Action({
        	iconCls: 'op-ico-details',
-		text: lang('event status'),
+		text: lang('show'),
 		menu: {items: [
 			viewActionsState.pending,
 			viewActionsState.yes,
 			viewActionsState.no,
-			viewActionsState.maybe
+			viewActionsState.maybe,
+			viewActionsState.birthdays
 		]}
 	});
 	

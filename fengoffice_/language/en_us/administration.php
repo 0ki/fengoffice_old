@@ -176,7 +176,12 @@
 	
     'config option name notify_myself_too' => 'Include myself in automatic notifications',
   	'config option desc notify_myself_too' => 'When enabled, the automatic notifications will include yourself (only available for documents)',
-
+  		
+  	'config option name give_member_permissions_to_new_users' => 'Give permissions to all clients, projects, etc. for new users',
+  	'config option desc give_member_permissions_to_new_users' => 'When creating a new user, if the user type is selected in this option then the user will be granted with permissions in all members.',
+  	
+  	'config option name show_owner_company_name_header' => 'Show the company name in the header',
+  	'config option desc show_owner_company_name_header' => 'When enabled, the name of the company is going to be displayed near the company logo in the header.',
   	'user config option name breadcrumb_member_count' => 'Amount of breadcrumbs to show when listing objects',
   
 	'config option name milestone_selector_filter' => 'Milestone selector filters',
@@ -259,7 +264,7 @@
     'user ws config option name displayed events amount' => 'Number of events displayed',
     'user ws config option desc displayed events amount' => 'The number of events per day that are shown in the month view',
   
-	'user config option name access_member_after_add' => 'Access new member after its creation.',
+	'user config option name access_member_after_add' => 'Access new member after its creation',
 	'user config option desc access_member_after_add' => 'If you enable this option, after creating a workspace, client, etc; it will be selected in the left panel (this option only works if "Remember to access member or not when member is created" is enabled).',
 	'user config option name access_member_after_add_remember' => 'Remember to access member or not when member is created',
 	'user config option desc access_member_after_add_remember' => 'Enabling this option allows you to skip the question about what to do after creating a workspace, client, etc.',
@@ -307,7 +312,13 @@
   		
   	'user config option name show_notify_checkbox_in_quick_add' => 'Show the "Send notification" option',
   	'user config option desc show_notify_checkbox_in_quick_add' => 'When enabled, if you are quick adding or editing a task you will be able to select whether a notification should be sent or not.',
-  		
+  	
+  	'user config option name view_mail_attachs_expanded' => 'Show expanded attachments when accessing an email',
+  	'user config option desc view_mail_attachs_expanded' => '',
+  	
+  	'user config option name auto_classify_attachments' => 'Automatically classiffy email attachments when receiving emails',
+  	'user config option desc auto_classify_attachments' => 'If enabled the attachments will be classiffied with the email in the place defined in the account',
+  	
   	'show context help always' => 'Always',
     'show context help never' => 'Never',
     'show context help until close' => 'Until close',
@@ -817,6 +828,9 @@
   
 	'user ws config option name attach_to_notification' => 'Attach documents to notifications',
 	'user ws config option desc attach_to_notification' => 'When enabled, by default, the option to send the document within the notifications is checked.',
+  		
+  		
+  		'invalid parent member' => 'Cannot save \'{0}\' under \'{1}\'',
       
         'file extension prevention uploading' => 'File extension prevention uploading',
         'file extension' => 'File extension',

@@ -40,6 +40,17 @@
   		else return null;
     }
     
+    
+    static function getAllTelephoneTypesInfo() {
+    	$types = TelephoneTypes::findAll();
+    	$result = array();
+    	foreach ($types as $type) {
+    		$result[] = array('id' => $type->getId(), 'code' => $type->getName(), 'name' => lang($type->getName()));
+    	}
+    	
+    	return $result;
+    }
+    
   } // TelephoneTypes 
 
 ?>

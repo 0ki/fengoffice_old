@@ -8,18 +8,27 @@
   class DimensionObjectTypeContents extends BaseDimensionObjectTypeContents {
     
 
+  	static private $content_ot_cache = array();
   	static function getContentObjectTypeIds($dimension_id, $dimension_object_type = null) {
   		$type_ids = array();
   		$cond = "";
   		
-  		if ($dimension_object_type != null)
-  			$cond = ' AND `dimension_object_type_id` = '.$dimension_object_type;
+  		$key = $dimension_id."_".$dimension_object_type;
+  		if (isset(self::$content_ot_cache[$key])) {
+  			return self::$content_ot_cache[$key];
+  		} else {
   		
-  		$types = self::findAll(array('conditions' => '`dimension_id` = '.$dimension_id.$cond));
-  		foreach ($types as $type) {
-  			$type_ids[] = $type->getContentObjectTypeId();
+	  		if ($dimension_object_type != null) {
+	  			$cond = ' AND `dimension_object_type_id` = '.$dimension_object_type;
+	  		}
+  		
+  			$types = DB::executeAll("SELECT content_object_type_id FROM ".TABLE_PREFIX."dimension_object_type_contents WHERE `dimension_id` = ".$dimension_id.$cond);
+  			foreach ($types as $type) {
+  				$type_ids[] = $type['content_object_type_id'];
+  			}
+  			self::$content_ot_cache[$key] = array_unique($type_ids);
+  			return self::$content_ot_cache[$key];
   		}
-  		return array_unique($type_ids);
   	}
     
   	

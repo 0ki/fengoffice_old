@@ -98,9 +98,9 @@ Ext.extend(og.MemberChooserTreeLoader , Ext.tree.TreeLoader, {
 			setTimeout(function(){
 				t.innerCt.unmask();
 				t.getRootNode().setText(old_text);
-				t.getRootNode().expand(true);
-				t.getRootNode().collapse(true);
-				t.getRootNode().expand(false);
+				//t.getRootNode().expand(true);
+				//t.getRootNode().collapse(true);
+				//t.getRootNode().expand(false);
 			}, 1000 * count);
 			
 			node.endUpdate();

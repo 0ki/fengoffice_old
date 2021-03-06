@@ -535,8 +535,12 @@ class Contact extends BaseContact {
 		`telephone_type_id` = ?", $this->getId(), $telephone_type_id)));
 	} // getFaxPhone	
 	
-	function getAllPhones() {
-		return ContactTelephones::findAll(array('conditions' => array("`contact_id` = ?" ,$this->getId())));
+	function getAllPhones($type = '') {
+		$type_cond = '';
+		if ($type != '') {
+			$type_cond = " AND telephone_type_id = (SELECT id FROM ".TABLE_PREFIX."telephone_types WHERE name='$type')";
+		}
+		return ContactTelephones::findAll(array('conditions' => array("`contact_id` = ? $type_cond" ,$this->getId())));
 		
 	} // getAllPhones
 	
@@ -1076,7 +1080,7 @@ class Contact extends BaseContact {
 	function canEdit(Contact $user) {
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_security ($user) || $this->getObjectId () == $user->getObjectId () || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
+			return can_manage_security ($user) || $this->getObjectId () == $user->getObjectId () || $this->getUserType() > $user->getUserType();
 		} 
 		if ($this->isOwnerCompany()) return can_manage_configuration($user);
 		return can_manage_contacts($user) || can_write ($user, $this->getMembers(), $this->getObjectTypeId());

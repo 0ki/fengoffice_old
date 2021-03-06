@@ -81,6 +81,7 @@ try {
 
 } catch (Exception $e) {
 	echo $e->getMessage();
+	echo "\n".$e->getTraceAsString()."\n";
 }
 
 echo "$success_message\n";

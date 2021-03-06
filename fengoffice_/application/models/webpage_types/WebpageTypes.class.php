@@ -39,7 +39,17 @@
   		if (!is_null($webpage_type)) return $webpage_type->getId();
   		else return null;
     }
+
+
+    static function getAllWebpageTypesInfo() {
+    	$types = WebpageTypes::findAll();
+    	$result = array();
+    	foreach ($types as $type) {
+    		$result[] = array('id' => $type->getId(), 'code' => $type->getName(), 'name' => lang($type->getName()));
+    	}
     
+    	return $result;
+    }
   } // WebpageTypes 
 
 ?>

@@ -226,13 +226,17 @@ class ProjectTasks extends BaseProjectTasks {
 		));
 		$tasks = $tasks_result->objects;
 		
-		$milestones_result = ProjectMilestones::instance()->listing(array(
-			"limit" => $limit, 
-			"extra_conditions" => $conditions_milestones, 
-			"order" => array('due_date'), 
-			"order_dir" => "ASC"
-		));
-		$milestones = $milestones_result->objects;
+		if ($user_id == null) {
+			$milestones_result = ProjectMilestones::instance()->listing(array(
+				"limit" => $limit, 
+				"extra_conditions" => $conditions_milestones, 
+				"order" => array('due_date'), 
+				"order_dir" => "ASC"
+			));
+			$milestones = $milestones_result->objects;
+		} else {
+			$milestones = array();
+		}
 		
 		$ordered = array();
 		foreach ($tasks as $task) { /* @var $task ProjectTask */

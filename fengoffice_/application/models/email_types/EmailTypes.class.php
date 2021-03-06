@@ -47,6 +47,16 @@
     }
   	
     
+    static function getAllEmailTypesInfo() {
+    	$types = EmailTypes::findAll();
+    	$result = array();
+    	foreach ($types as $type) {
+    		$result[] = array('id' => $type->getId(), 'code' => $type->getName(), 'name' => lang($type->getName()));
+    	}
+    
+    	return $result;
+    }
+    
   } // EmailTypes 
 
 ?>

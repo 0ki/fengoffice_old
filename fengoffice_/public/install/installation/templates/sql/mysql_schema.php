@@ -793,6 +793,7 @@ CREATE TABLE `<?php echo $table_prefix ?>sharing_table_flags` (
   `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
   `permission_group_id` INTEGER UNSIGNED NOT NULL,
   `member_id` INTEGER UNSIGNED NOT NULL,
+  `object_id` INTEGER UNSIGNED NOT NULL,
   `execution_date` DATETIME NOT NULL,
   `permission_string` TEXT <?php echo $default_collation ?> NOT NULL,
   `created_by_id` INTEGER UNSIGNED NOT NULL,
@@ -1148,4 +1149,15 @@ CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>member_custom_property_va
   `custom_property_id` int(10) NOT NULL,
   `value` text <?php echo $default_collation ?> NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;
+
+CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>contact_member_cache` (
+  `contact_id` int(10) UNSIGNED NOT NULL,
+  `member_id` int(10) UNSIGNED NOT NULL,
+  `parent_member_id` int(10) UNSIGNED NOT NULL default '0',
+  `last_activity` DATETIME NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`contact_id` , `member_id`),
+  KEY `by_contact` USING HASH (`contact_id`),
+  KEY `by_parent` USING HASH (`parent_member_id`),
+  KEY `last_activity` (`last_activity`)
 ) ENGINE=<?php echo $engine ?> <?php echo $default_charset ?>;

@@ -64,7 +64,9 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
     ('general', 'use_object_properties', '0', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'let_users_create_objects_in_root', '1', 'BoolConfigHandler', '0', '0', NULL),
     ('general', 'add_default_permissions_for_users', '1', 'BoolConfigHandler', '0', '0', NULL),
+    ('general', 'give_member_permissions_to_new_users', '', 'UserTypeMultipleConfigHandler', '0', '0', NULL),
     ('general', 'milestone_selector_filter', 'current_and_parents', 'MilestoneSelectorFilterConfigHandler', 0, 0, NULL),
+    ('general', 'show_owner_company_name_header', '1', 'BoolConfigHandler', 1, 100, ''),
 	('task panel', 'tasksShowTimeEstimates', '1', 'BoolConfigHandler', '1', '0', NULL),
 	('general', 'notify_myself_too', '0', 'BoolConfigHandler', '0', '100', ''),
 	('brand_colors', 'brand_colors_head_back', '', 'StringConfigHandler', '1', '0', NULL),
@@ -181,6 +183,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('calendar panel', 'calendar status filter', '', 'StringConfigHandler', 1, 0, ''),
  ('calendar panel', 'start_monday', '', 'BoolConfigHandler', 0, 0, ''),
  ('calendar panel', 'show_week_numbers', '', 'BoolConfigHandler', 0, 0, ''),
+ ('calendar panel', 'show_birthdays_in_calendar', '1', 'BoolConfigHandler', 0, 0, ''),
  ('context help', 'show_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_account_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('context help', 'show_active_tasks_context_help', '1', 'BoolConfigHandler', '1', '0', NULL),
@@ -283,7 +286,6 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
  ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL),
  ('listing preferences', 'breadcrumb_member_count', '5', 'IntegerConfigHandler', '0', '5', NULL),
- ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportDate', '4', 'IntegerConfigHandler', 1, 0, ''),
  ('general', 'timeReportDateStart', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
  ('general', 'timeReportDateEnd', '0000-00-00 00:00:00', 'DateTimeConfigHandler', 1, 0, ''),
@@ -292,6 +294,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'timeReportGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
  ('general', 'timeReportAltGroupBy', '0,0,0', 'StringConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowEstimatedTime', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'can_modify_navigation_panel', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'view_mail_attachs_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
  ('general', 'timeReportShowBilling', '0', 'BoolConfigHandler', 1, 0, '');
  
 
@@ -536,3 +540,8 @@ INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,con
 ('overdue_upcoming',0,0,'assigned_to_user',0,'UserCompanyConfigHandler',0),
 ('calendar',0,0,'filter_by_myself',1,'BooleanConfigHandler',0)
 ON DUPLICATE KEY UPDATE widget_name=widget_name;
+
+UPDATE `<?php echo $table_prefix ?>config_options` SET `value`=(
+	SELECT GROUP_CONCAT(id) FROM <?php echo $table_prefix ?>permission_groups WHERE `name` IN ('Super Administrator', 'Administrator', 'Manager', 'Executive')
+)
+WHERE `name`='give_member_permissions_to_new_users';

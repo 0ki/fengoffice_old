@@ -281,17 +281,14 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$user_condition .= " AND `created_by_id`=".logged_user()->getId();
 		}
 		
-		$member_logs_sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al 
-			INNER JOIN ".TABLE_PREFIX."contact_member_permissions cmp ON cmp.member_id=al.member_id
-			INNER JOIN ".TABLE_PREFIX."members mem ON mem.id=al.member_id
-				WHERE al.member_id>0
-					$user_condition 
-					$is_member_child
-					AND cmp.permission_group_id IN (
-						SELECT permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups
-						WHERE contact_id = ".logged_user()->getId()."
-					) 
-			ORDER BY created_on DESC LIMIT 100";
+		$member_logs_sql = "SELECT al.id FROM ".TABLE_PREFIX."application_logs al
+									INNER JOIN ".TABLE_PREFIX."members mem ON mem.id=al.member_id 
+										INNER JOIN ".TABLE_PREFIX."contact_member_cache cmcache ON cmcache.member_id=mem.id AND cmcache.contact_id = ".logged_user()->getId()."
+											WHERE al.member_id>0
+											$user_condition
+											$is_member_child
+							ORDER BY created_on DESC LIMIT 100";
+		
 		$m_id_rows = array_flat(DB::executeAll($member_logs_sql));
 		
 		$id_rows = array_filter(array_merge($id_rows, $m_id_rows));

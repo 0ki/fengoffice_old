@@ -490,7 +490,7 @@ class MailUtilities {
 			/*	$ctrl = new ObjectController();
 				$ctrl->add_to_members($mail, $member_ids, $account_owner);*/
 				$mail_controller = new MailController();
-				$mail_controller->do_classify_mail($mail, $member_ids, null, false);
+				$mail_controller->do_classify_mail($mail, $member_ids, null, false, true);
 			}
 		
 			$user = Contacts::findById($account->getContactId());

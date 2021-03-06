@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.3
+ * Choto upgrade script will upgrade FengOffice 2.5.1 to FengOffice 2.6.4-beta
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -40,7 +40,7 @@ class ChotoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('2.5.1.5');
-		$this->setVersionTo('2.6.3');
+		$this->setVersionTo('2.6.4-beta');
 	} // __construct
 
 	function getCheckIsWritable() {

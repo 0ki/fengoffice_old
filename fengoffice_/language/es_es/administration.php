@@ -88,8 +88,12 @@
 	'config option name let_users_create_objects_in_root' => 'Permitir crear objetos sin clasificarlos',
 	'config option name add_default_permissions_for_users' => 'Dar permisos por defecto a usuarios Ejecutivos, Gerentes y Administradores',
 	'config option desc add_default_permissions_for_users' => 'Al crear un espacio de trabajo, cliente o proyecto se le dan los permisos por defecto a usuarios Ejecutivos, Gerentes y Administradores.',
+	'config option name give_member_permissions_to_new_users' => 'Otorgar permisos en todos los clientes, proyectos etc. a los nuevos usuarios',
+	'config option desc give_member_permissions_to_new_users' => 'Al crear un usuario, si el tipo del usuario está seleccionado en esta configuración entonces el usuario tendrá permisos sobre todos los clientes, proyectos etc. existentes.',
 	'config option name notify_myself_too' => 'Incluírme en las notificaciones automáticas',
   	'config option desc notify_myself_too' => 'Cuando se habilita el usuario puede elegir si quiere que le llegue una copia de las notifiaciones generadas (solo disponible para documentos).',
+	'config option name show_owner_company_name_header' => 'Mostrar el nombre de la compania en el encabezado.',
+	'config option desc show_owner_company_name_header' => 'Cuando esta opción esta habilitada se mostrara el nombre de la compania junto al logo en el encabezado de la aplicación.',
 	'config option name check_spam_in_subject' => 'Verificar "spam" en el asunto',
 	'config option desc check_spam_in_subject' => 'Filtrar todos los correos que contengan la palabra "Spam" en el asunto',
 	'user config option name breadrcrumb_member_count' => 'Cantidad de rutas a mostrar',
@@ -100,7 +104,7 @@
 	'only in current member' => 'Solamente hitos en el miembro (espacio, cliente, proyecto o carpeta) activo',
 	'only in current member and parents' => 'Solamente hitos en el miembro (espacio, cliente, proyecto o carpeta) activo o uno de sus padres',
 	'all milestones' => 'Todos los hitos',
-	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación.',
+	'user config option name access_member_after_add' => 'Acceder al nuevo miembro luego de su creación',
 	'user config option desc access_member_after_add' => 'Si habilita esta opción, luego de haber creado un espacio de trabajo, cliente, etc; el mismo será seleccionado en el panel de la izquierda (Esta opción solo se aplica si está habilitada la opción "Recordar si acceder a un miembro al crearlo").',
 	'user config option name access_member_after_add_remember' => 'Recordar si acceder a un miembro al crearlo',
 	'user config option desc access_member_after_add_remember' => 'Habilitar esta opción le permite saltear la pregunta de que hacer luego de crear un espacio de trabajo, cliente, etc.',
@@ -483,7 +487,7 @@
 	'success save member' => '{0} \'{1}\' guardado exitosamente',
 	'success delete member' => '{0} borrado exitosamente',
 	'member cannot be root' => 'El miembro es de tipo \'{0}\' y no puede ser raíz de la dimensión, debe seleccionar un miembro padre.',
-	'invalid parent member' => 'Debes seleccionar un miembro padre válido',
+	'invalid parent member' => 'No se puede guardar \'{0}\' bajo \'{1}\'',
 	'cannot delete member childs cannot be moved to parent' => 'No se puede eliminar el miembro, ya que algunos miembros descendientes no pueden ser colocados como hijos del miembro padre.',
 	'cannot delete member cannot be root' => 'No se puede eliminar el miembro, ya que algunos miembros descendientes no pueden ser raíz de la dimensión.',
 	'cannot delete member is associated' => 'No se puede eliminar el miembro, ya que el mismo se encuentra asociado a miembros de otras dimensiones.',
@@ -532,4 +536,11 @@
 	'can_manage_billing' => 'Puede manejar facturación',
 	'can_manage_billing description'=>'Si este permiso está marcado el usuario podrá modificar las configuraciones de facturación.',
 	'can_view_billing' => 'Puede ver facturación',
+	
+	'user config option name view_mail_attachs_expanded' => 'Mostrar los documentos adjuntos expandidos al acceder a un correo',
+	'user config option desc view_mail_attachs_expanded' => '',
+	
+	'user config option name auto_classify_attachments' => 'Clasificar los adjuntos de los correos automáticamente',
+	'user config option desc auto_classify_attachments' => 'Si se habilita esta opción los adjuntos de los correos van a ser clasificados junto al correo en el espacio definido en la cuenta de correos.',
+		 
 ); ?>

@@ -62,7 +62,11 @@ $genid = gen_id();
 		$tasks = ProjectTasks::getRangeTasksByUser($dtv, $dtv, ($user_filter != -1 ? $user : null), $task_filter);
 	}
 	
-	$birthdays = array();//Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv, active_context_members(false));
+	if (user_config_option('show_birthdays_in_calendar')) {
+		$birthdays = Contacts::instance()->getRangeContactsByBirthday($dtv, $dtv, active_context_members(false));
+	} else {
+		$birthdays = array();
+	}
 	
 	foreach ($result as $key => $event){
 		if ($event->getTypeId() > 1){
@@ -425,7 +429,12 @@ $genid = gen_id();
 												$width = 100 / $evs_same_time;
 												$left = $width * $posHoriz + 0.25;
 												$width -= 0.5;
-												
+												//provisional fix
+												if($evs_same_time == 1){
+													$left = 0.25;
+												}
+												//End provisional fix
+																																				
 												if ($event_start->getMinute() < 30) {
 													$occup[$event_start->getHour()][0][$posHoriz] = true;
 													$occup[$event_start->getHour()][1][$posHoriz] = true;

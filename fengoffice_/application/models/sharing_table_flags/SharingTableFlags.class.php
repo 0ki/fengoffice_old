@@ -10,34 +10,60 @@ class SharingTableFlags extends BaseSharingTableFlags {
 	
 	function healPermissionGroup(SharingTableFlag $flag) {
 		
-		$controller = new SharingTableController();
-		
-		$permissions_string = $flag->getPermissionString();
-		$permission_group_id = $flag->getPermissionGroupId();
-		
-		$permissions = json_decode($permissions_string);
-		if ($flag->getMemberId() > 0) {
-			foreach ($permissions as $p) {
-				if (!isset($p->m)) $p->m = $flag->getMemberId();
+		if ($flag->getObjectId() > 0) {
+			
+			try {
+				$obj = Objects::findObject($flag->getObjectId());
+				if (!$obj instanceof ContentDataObject) return;
+				
+				DB::beginWork();
+				// update sharing table
+				$obj->addToSharingTable();
+			
+				// delete flag
+				$flag->delete();
+			
+				DB::commit();
+				return true;
+			
+			} catch(Exception $e) {
+				DB::rollback();
+				Logger::log("Failed to heal object permissions for object ".$flag->getObjectId()." (flag_id = ".$flag->getId().")");
+				return false;
 			}
-		}
-		
-		try {
 			
-			DB::beginWork();
-			// update sharing table
-			$controller->afterPermissionChanged($permission_group_id, $permissions);
 			
-			// delete flag
-			$flag->delete();
+		} else {
+			// heal 
+			$controller = new SharingTableController();
 			
-			DB::commit();
-			return true;
+			$permissions_string = $flag->getPermissionString();
+			$permission_group_id = $flag->getPermissionGroupId();
 			
-		} catch(Exception $e) {
-			DB::rollback();
-			Logger::log("Failed to heal permission group $permission_group_id (flag_id = ".$flag->getId().")");
-			return false;
+			$permissions = json_decode($permissions_string);
+			if ($flag->getMemberId() > 0) {
+				foreach ($permissions as $p) {
+					if (!isset($p->m)) $p->m = $flag->getMemberId();
+				}
+			}
+			
+			try {
+				
+				DB::beginWork();
+				// update sharing table
+				$controller->afterPermissionChanged($permission_group_id, $permissions);
+				
+				// delete flag
+				$flag->delete();
+				
+				DB::commit();
+				return true;
+				
+			} catch(Exception $e) {
+				DB::rollback();
+				Logger::log("Failed to heal permission group $permission_group_id (flag_id = ".$flag->getId().")");
+				return false;
+			}
 		}
 	}
 }

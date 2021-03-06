@@ -3,7 +3,7 @@
         <div>
             <div style="width: 50px; float: left; margin-top: 10px; margin-bottom: 10px; margin-left: 10px; margin-right: 10px">
                 <?php 
-                if (isset($attachments['logo']) && is_array($attachments['logo'])){
+                if (isset($attachments['logo']) && is_array($attachments['logo']) || file_exists(ROOT . '/tmp/logo_empresa.png')){
                 ?>
 <!--                    <img src="cid:<?php echo $attachments['logo']['cid']?>"/>-->
                     <img src="<?php echo ROOT_URL . '/tmp/logo_empresa.png' ?>"/>

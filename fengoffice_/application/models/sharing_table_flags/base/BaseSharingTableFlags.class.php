@@ -12,6 +12,7 @@
     	'id' => DATA_TYPE_INTEGER,
     	'permission_group_id' => DATA_TYPE_INTEGER,
     	'member_id' => DATA_TYPE_INTEGER,
+    	'object_id' => DATA_TYPE_INTEGER,
     	'execution_date' => DATA_TYPE_DATETIME,
     	'permission_string' => DATA_TYPE_STRING,
     	'created_by_id' => DATA_TYPE_INTEGER,

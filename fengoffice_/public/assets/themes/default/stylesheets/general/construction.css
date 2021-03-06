@@ -453,7 +453,7 @@ div.contact div.cardData h2 {
 }
 
 div.contact div.cardBlock {
-	margin-bottom: 25px;
+	margin-bottom: 15px;
 	padding-left: 10px;
 }
 
@@ -515,6 +515,9 @@ div.card table, div.card table tr, div.card table td {
 
 div.card table tr, div.card table td {
 	padding: 2px;
+}
+div.contact div.direct-url {
+	margin: 15px 10px;
 }
 
 /** /user card **/

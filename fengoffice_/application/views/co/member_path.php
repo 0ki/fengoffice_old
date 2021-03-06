@@ -39,17 +39,23 @@
 		}
 	}
 	
+	$breadcrumb_member_count = user_config_option('breadcrumb_member_count');
+	if (!$breadcrumb_member_count) $breadcrumb_member_count = 5;
+	
+	$width_style = ($object instanceof ProjectTask || $object instanceof TemplateTask) ? "width:50%;" : "";
+	
 	if (count($dimensions_info) > 0) {
 		ksort($dimensions_info, SORT_STRING);
 ?>
 <div class="commentsTitle"><?php echo lang('related to')?></div>
 	<div style="padding-bottom: 10px;">
-	<div style="width:50%; float: left;">
+	<div style="<?php echo $width_style?> float: left;">
 <?php
 		foreach ($dimensions_info as $dname => $dinfo) { ?>
 			<div class="member-path-dim-block">
 				<span class="dname coViewAction <?php echo array_var($dinfo, 'icon')?>"><?php echo $dname?>:&nbsp;</span>
 		<?php
+			$breadcrumb_count = 1;
 			if (count($dinfo['members']) == 0) {
 				echo '<span class="desc">' . lang('not related') . '</span>';
 			} else {
@@ -59,6 +65,10 @@
 					$color_cls = ' og-wsname-color-' . $minfo['color'];
 					
 					if (!$first) {
+						$breadcrumb_count++;
+						if ($breadcrumb_count > $breadcrumb_member_count) {
+							break;
+						}
 						if ($minfo['p'] == 0) echo "&nbsp;&#45;&nbsp;"; // " - " same level member separator
 						else echo ($minfo['color'] >= 0 ? "" : "/"); // submember separator
 					}
@@ -76,12 +86,16 @@
 					$first = false;
 				}
 			}
+			if ($breadcrumb_count < count($dinfo['members'])) {
+				echo '<span class="desc">&nbsp;' . lang('and xx more', count($dinfo['members']) - $breadcrumb_count) . '</span>';
+			}
 		?></div><?php
 		}
 		
 	?></div>
-	<div style="width:50%; float: left; "><?php 
+	<?php 
 		if($object instanceof ProjectTask || $object instanceof TemplateTask) {
+		?><div style="width:50%; float: left; "><?php 
 			
 			$task_list = $object;
 			//milestone
@@ -95,7 +109,8 @@
 			}
 				
 		}
-		?></div>
+		?></div><?php 
+		?>
 	
 	
 	</div>

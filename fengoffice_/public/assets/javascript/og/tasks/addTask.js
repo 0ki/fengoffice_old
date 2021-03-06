@@ -187,6 +187,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 	
 	html +="<div id='member_selectors_quick_add'>";
 	for (x in og.config.quick_add_task_combos) {
+		if (typeof(og.config.quick_add_task_combos[x]) == 'function') continue;
 		html += dimCombo (og.config.quick_add_task_combos[x]);
 	}
 	html +="</div>";

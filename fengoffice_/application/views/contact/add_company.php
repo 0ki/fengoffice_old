@@ -23,11 +23,7 @@
   		</td></tr></table></div>
   	</div>
   	
-  <div>
-    <?php echo label_tag(lang('name'), $genid.'clientFormName', true) ?>
-    <?php echo text_field('company[first_name]', array_var($company_data, 'first_name'), 
-    	array('class' => 'title', 'tabindex' => '1', 'id' => $genid.'clientFormName')) ?>
-  </div>
+  
   
   	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
   	
@@ -35,9 +31,7 @@
 	  	<?php if ( $renderContext ) :?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_company_select_context_div',this)"><?php echo lang('context') ?></a> -
 		<?php endif; ?>
-			<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_company_timezone',this)"><?php echo lang('timezone') ?></a> -
 			<a href="#" class="option <?php echo $visible_cps>0 ? 'bold' : ''?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a> -
-			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_contact_notes', this)"><?php echo lang('notes') ?></a> -
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user())) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
@@ -65,20 +59,91 @@
 		</div>
 	<?php endif ;?>	
 	
+	<div style="margin-left:12px;margin-right:12px;" class="contact_form_container">
+		<div class="information-block">
+			<div class="main-data-title"><?php echo lang('main data')?></div>
+			
+			<div class="input-container">
+				<?php echo label_tag(lang('name'), $genid . 'clientFormName') ?>
+				<?php echo text_field('company[first_name]',  array_var($company_data, 'first_name'), array('class' => 'title', 'id' => $genid . 'clientFormName')) ?>
+			</div>
+			<div class="clear"></div>
+			
+			<div class="input-container">
+				<?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?>
+				<?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormEmail', 'style' => 'width: 260px;')) ?>
+			</div>
+			<div class="clear"></div>
+			
+			<div class="input-container">
+				<div><?php echo label_tag(lang('phone')) ?></div>
+	            <div style="float:left;" id="<?php echo $genid?>_phones_container"></div>
+	            <div class="clear"></div>
+	            <div style="margin:5px 0 10px 200px;">
+	            	<a href="#" onclick="og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'company')" class="coViewAction ico-add"><?php echo lang('add new phone number')?></a>
+	            </div>
+	        </div>
+	        
+	        <div style="display:none;"><?php echo select_country_widget('country', '', array('id'=>'template_select_country'));?></div>
+            <div class="input-container">
+	            <div><?php echo label_tag(lang('address')) ?></div>
+	            <div style="float:left;" id="<?php echo $genid?>_addresses_container"></div>
+	            <div class="clear"></div>
+	            <div style="margin:5px 0 10px 200px;">
+	            	<a href="#" onclick="og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'company')" class="coViewAction ico-add"><?php echo lang('add new address') ?></a>
+	            </div>
+            </div>
+            
+            <div class="input-container">
+	            <div><?php echo label_tag(lang('webpage')) ?></div>
+	            <div style="float:left;" id="<?php echo $genid?>_webpages_container"></div>
+	            <div class="clear"></div>
+	            <div style="margin:5px 0 10px 200px;">
+	            	<a href="#" onclick="og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company')" class="coViewAction ico-add"><?php echo lang('add new webpage') ?></a>
+	            </div>
+	        </div>
+	        
+	        <div class="input-container">
+				<div><?php echo label_tag(lang('logo')) ?></div>
+	            <div style="float:left;" id="<?php echo $genid?>_avatar_container" class="avatar-container">
+	            	<img src="<?php echo $company->getPictureUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
+	            </div>
+	            <div style="padding:20px 0 0 20px; text-decoration:underline; float:left; display:none;">
+		           	<a href="<?php echo $company->getUpdatePictureUrl()?>&reload_picture=<?php echo $genid?>_avatar_container" class="internallink coViewAction ico-picture" target=""><?php echo lang('update logo') ?></a>
+				</div>
+				
+				<div style="padding:20px 0 0 20px; text-decoration:underline; float:left;">
+		           	<a href="#" onclick="og.openLink('<?php echo $company->getUpdatePictureUrl();?>&reload_picture=<?php echo $genid?>_avatar_img<?php echo ($company->isNew() ? '&new_contact='.$genid.'_picture_file' :'')?>', {caller:'edit_picture'});" 
+		           		class="coViewAction ico-picture"><?php echo lang('update logo') ?></a>
+		           	<?php if ($company->isNew()) { ?>
+		           		<input type="hidden" id="<?php echo $genid?>_picture_file" name="company[picture_file]" value=""/>
+		           	<?php }?>
+				</div>
+				
+	            <div class="clear"></div>
+			</div>
+			
+			<div class="input-container">
+				<?php echo label_tag(lang('timezone'), 'clientFormTimezone', false)?>
+    			<?php echo select_timezone_widget('company[timezone]', array_var($company_data, 'timezone'), array('id' => 'clientFormTimezone', 'class' => 'long')) ?>
+    			<div class="clear"></div>
+			</div>
+	        
+	        <div class="input-container">
+		      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
+		      <div style="float:left;width:600px;" class="notes-container">
+		      <?php echo textarea_field('company[comments]', array_var($company_data, 'comments'), array('id' => $genid.'profileFormNotes', 'style' => 'width: 100%;')) ?>
+		      </div>
+		      <div class="clear"></div>
+		    </div>
+		</div>
+	</div>
+	
 	<div id='<?php echo $genid ?>add_custom_properties_div' style="<?php echo ($visible_cps > 0 ? "" : "display:none") ?>">
 		<fieldset>
 			<legend><?php echo lang('custom properties') ?></legend>
 			<?php echo render_object_custom_properties($object, false) ?>
 			<?php echo render_add_custom_properties($object); ?>
-		</fieldset>
-	</div>
-	
-	<div style="display:none" id="<?php echo $genid ?>add_contact_notes">
-		<fieldset><legend><?php echo lang('notes') ?></legend>
-		    <div>
-		      <?php echo label_tag(lang('notes'), $genid.'profileFormNotes') ?>
-		      <?php echo textarea_field('company[comments]', array_var($company_data, 'comments'), array('id' => $genid.'profileFormNotes', 'style' => 'width: 100%;', 'tabindex' => '275')) ?>
-		    </div>
 		</fieldset>
 	</div>
 	
@@ -110,14 +175,6 @@
 	<?php } // if ?>
 		
 	
-  <div id="add_company_timezone" style="display:none">
-  <fieldset>
-    <legend><?php echo lang('timezone') ?></legend>
-    <?php echo label_tag(lang('timezone'), 'clientFormTimezone', false)?>
-    <?php echo select_timezone_widget('company[timezone]', array_var($company_data, 'timezone'), array('id' => 'clientFormTimezone', 'class' => 'long', 'tabindex' => '190')) ?>
-  </fieldset>
-  </div>
-  
   <?php foreach ($categories as $category) { ?>
 	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
 	<fieldset>
@@ -127,58 +184,79 @@
 	</div>
 	<?php } ?>
 	
-	  <table style="margin-left:12px;margin-right:12px; margin-top:12px">
-		<tr>
-			<td style="padding-right:30px">
-			<table style="width:100%">
-			<tr>
-				<td class="td-pr"><?php echo label_tag(lang('address'), $genid.'profileFormWAddress') ?></td>
-				<td><?php echo textarea_field('company[address]', array_var($company_data, 'address'), array('id' => $genid.'clientFormAddress', 'tabindex' => '10', 'class' => 'short textarea')) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('city'), $genid.'clientFormCity') ?></td>
-				<td><?php echo text_field('company[city]', array_var($company_data, 'city'), array('id' => $genid.'clientFormCity', 'tabindex' => '30', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('state'), $genid.'clientFormState') ?></td>
-				<td><?php echo text_field('company[state]', array_var($company_data, 'state'), array('id' => $genid.'clientFormState', 'tabindex' => '40', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('zipcode'), $genid.'clientFormZipcode') ?></td>
-				<td><?php echo text_field('company[zipcode]', array_var($company_data, 'zipcode'), array('id' => $genid.'clientFormZipcode', 'tabindex' => '50', 'maxlength' => 30)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('country'), $genid.'clientFormCountry') ?></td>
-				<td><?php echo select_country_widget('company[country]', array_var($company_data, 'country'), array('id' => $genid.'clientFormCountry', 'tabindex' => '60')) ?></td>
-			</tr>
-			</table>
-			</td><td>
-			<table style="width:100%">
-			<tr>
-				<td class="td-pr"><?php echo label_tag(lang('phone'), $genid.'clientFormPhoneNumber') ?> </td>
-				<td><?php echo text_field('company[phone_number]', array_var($company_data, 'phone_number'), array('id' => $genid.'clientFormPhoneNumber', 'tabindex' => '70', 'maxlength' => 50)) ?></td>
-			</tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('fax'), $genid.'clientFormFaxNumber') ?> </td>
-				<td><?php echo text_field('company[fax_number]', array_var($company_data, 'fax_number'), array('id' => $genid.'clientFormFaxNumber', 'tabindex' => '80', 'maxlength' => 50)) ?></td>
-			</tr><tr height=10><td></td><td></td></tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('email address'), $genid.'clientFormEmail') ?> </td>
-				<td><?php echo text_field('company[email]', array_var($company_data, 'email'), array('id' => $genid.'clientFormAssistantNumber', 'tabindex' => '90')) ?></td>
-			</tr><tr height=10><td></td><td></td></tr><tr>
-				<td class="td-pr"><?php echo label_tag(lang('homepage'), $genid.'clientFormHomepage') ?></td>
-				<td><?php echo text_field('company[homepage]', array_var($company_data, 'homepage'), array('id' => $genid.'clientFormCallbackNumber', 'tabindex' => '100')) ?></td>
-			</tr>
-			</table>
-			</td>
-		</tr>
-	</table>
 	
-
+	
+	
+	
   
-<?php if(!$company->isNew() && $company->isOwnerCompany()) { ?>
-  <?php echo submit_button(lang('save changes'), 's', array('tabindex' => '20000')) ?>
-<?php } else { ?>
-  <?php echo submit_button($company->isNew() ? lang('add company') : lang('save changes'), 's', array('tabindex' => '20000')) ?>
-<?php } // if ?>
+<?php 
+	if(!$company->isNew() && $company->isOwnerCompany()) { 
+		echo submit_button(lang('save changes'));
+	} else {
+		echo submit_button($company->isNew() ? lang('add company') : lang('save changes'));
+	}
+?>
 </div>
 </div>
 </form>
 
 <script>
+var is_new_contact = <?php echo $object->isNew() ? 'true' : 'false'?>;
+$(document).ready(function() {
+
+	og.telephoneCount = 0;
+	og.telephone_types = Ext.util.JSON.decode('<?php echo json_encode($all_telephone_types)?>');
+
+	og.addressCount = 0;
+	og.address_types = Ext.util.JSON.decode('<?php echo json_encode($all_address_types)?>');
+
+	og.webpageCount = 0;
+	og.webpage_types = Ext.util.JSON.decode('<?php echo json_encode($all_webpage_types)?>');
+
+	og.emailCount = 0;
+	og.email_types = Ext.util.JSON.decode('<?php echo json_encode($all_email_types)?>');
+
+	if (!is_new_contact) {
+	<?php foreach ($company_data['all_phones'] as $phone) { ?>
+		og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'company', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo $phone->getNumber()?>', '<?php echo $phone->getName()?>', '<?php echo $phone->getId()?>');
+	<?php } ?>
+
+	<?php foreach ($company_data['all_addresses'] as $address) { ?>
+		og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'company', '<?php echo $address->getAddressTypeId()?>', {
+			street: '<?php echo $address->getStreet()?>',
+			city: '<?php echo $address->getCity()?>',
+			state: '<?php echo $address->getState()?>',
+			zip_code: '<?php echo $address->getZipCode()?>',
+			country: '<?php echo $address->getCountry()?>',
+			id: '<?php echo $address->getId()?>'
+		});
+	<?php } ?>
+	
+	<?php foreach ($company_data['all_webpages'] as $webpage) { ?>
+		og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', '<?php echo $webpage->getWebTypeId()?>', '<?php echo $webpage->getUrl()?>', '<?php echo $webpage->getId()?>');
+	<?php } ?>
+	}
+
+	for (var i=0; i<og.telephone_types.length; i++) {
+		if (og.telephone_types[i].code == 'work') def_phone_type = og.telephone_types[i].id;
+	}
+	for (var i=0; i<og.address_types.length; i++) {
+		if (og.address_types[i].code == 'work') def_address_type = og.address_types[i].id;
+	}
+	for (var i=0; i<og.webpage_types.length; i++) {
+		if (og.webpage_types[i].code == 'work') def_web_type = og.webpage_types[i].id;
+	}
+	
+	<?php if (count(array_var($company_data, 'all_phones')) == 0) { ?>
+		og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'company', def_phone_type);
+	<?php } ?>
+	<?php if (count(array_var($company_data, 'all_addresses')) == 0) { ?>
+		og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'company', def_address_type);
+	<?php } ?>
+	<?php if (count(array_var($company_data, 'all_webpages')) == 0) { ?>
+		og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', def_web_type);
+	<?php } ?>
+	
 	Ext.get('<?php echo $genid ?>clientFormName').focus();
+});
 </script>

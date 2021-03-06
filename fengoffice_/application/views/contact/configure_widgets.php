@@ -28,7 +28,7 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 				<td><span style="padding:1px 0 3px 18px;" class="db-ico <?php echo $widget['icon']?>"></span><?php echo lang($widget['title'])?>
 				<?php if (is_array(array_var($widget, 'options')) && count(array_var($widget, 'options')) > 0) {
 						foreach ($widget['options'] as $option) {
-				?><div style="padding-left:30px;padding-top:5px;"><?php 
+				?><div style="padding-left:30px;padding-top:5px;" class="option"><?php 
 					echo '- '.lang('widget_'.$option['widget'].'_'.$option['option']) . ": ";
 					echo render_widget_option_input($option);
 				?></div>
@@ -66,7 +66,7 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 				<td><span style="padding:1px 0 3px 18px;" class="db-ico <?php echo $widget['icon']?>"></span><?php echo lang($widget['title'])?>
 				<?php if (is_array(array_var($widget, 'options')) && count(array_var($widget, 'options')) > 0) {
 						foreach ($widget['options'] as $option) {
-				?><div style="padding-left:30px;padding-top:5px;"><?php 
+				?><div style="padding-left:30px;padding-top:5px;" class="option"><?php 
 					echo '- '.lang('widget_'.$option['widget'].'_'.$option['option']) . ": ";
 					echo render_widget_option_input($option);
 				?></div>
@@ -104,7 +104,7 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 				<td><span style="padding:1px 0 3px 18px;" class="db-ico <?php echo $widget['icon']?>"></span><?php echo lang($widget['title'])?>
 				<?php if (is_array(array_var($widget, 'options')) && count(array_var($widget, 'options')) > 0) {
 						foreach ($widget['options'] as $option) {
-				?><div style="padding-left:30px;padding-top:5px;"><?php 
+				?><div style="padding-left:30px;padding-top:5px;" class="option"><?php 
 					echo '- '.lang('widget_'.$option['widget'].'_'.$option['option']) . ": ";
 					echo render_widget_option_input($option);
 				?></div>
@@ -142,7 +142,7 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 				<td><span style="padding:1px 0 3px 18px;" class="db-ico <?php echo $widget['icon']?>"></span><?php echo lang($widget['title'])?>
 				<?php if (is_array(array_var($widget, 'options')) && count(array_var($widget, 'options')) > 0) {
 						foreach ($widget['options'] as $option) {
-				?><div style="padding-left:30px;padding-top:5px;"><?php 
+				?><div style="padding-left:30px;padding-top:5px;" class="option"><?php 
 					echo '- '.lang('widget_'.$option['widget'].'_'.$option['option']) . ": ";
 					echo render_widget_option_input($option);
 				?></div>
@@ -169,12 +169,36 @@ $title = $default_configuration ? lang('default dashboard options') : lang('dash
 </form>
 </div>
 <script>
+og.radio_options = [];
+og.on_widget_radio_option_change = function(input) {
+	og.radio_options[input.name] = input.value;
+}
+og.select_options = [];
+og.on_widget_select_option_change = function(select) {
+	og.select_options[select.name] = select.value;
+}
+
 og.move_widget_table_row = function(sel, genid) {
 	var section = sel[sel.selectedIndex].value;
 	var table = document.getElementById(genid + section+'-widget-table');
 
 	var tr = sel.parentNode.parentNode;
 
+	// get options to modify
+	var radio_options = [];
+	var radios = $(tr).find('.option input:radio');
+	for (var i=0; i<radios.length; i++) {
+		var el = document.getElementById(radios[i].id);
+		radio_options.push(el);
+	}
+	var select_options = [];
+	var selects = $(tr).find('.option select');
+	for (var i=0; i<selects.length; i++) {
+		select_options.push(selects[i].name);
+	}
+	
+
+	// put html in the other table
 	$("#"+table.id+" tr:last").after('<tr>'+tr.innerHTML+'</tr>');
 
 	var new_tr = table.rows[table.rows.length-1];
@@ -186,6 +210,29 @@ og.move_widget_table_row = function(sel, genid) {
 	c.appendChild(sel);
 
 	tr.parentNode.deleteRow(tr.rowIndex);
+		
+	// restore option values
+	for (var i=0; i<radio_options.length; i++) {
+		var radios = document.getElementsByName(radio_options[i].name);
+		for (var j=0; j<radios.length; j++) {
+			if (og.radio_options[radios[j].name] == 1) {
+				if (radio_options[i].id.indexOf(']Yes') >= 0) document.getElementById(radio_options[i].id).setAttribute('checked', 'checked');
+				else document.getElementById(radio_options[i].id).removeAttribute('checked');
+			} else if (og.radio_options[radios[j].name]) {
+				if (radio_options[i].id.indexOf(']Yes') >= 0) document.getElementById(radio_options[i].id).removeAttribute('checked');
+				else document.getElementById(radio_options[i].id).setAttribute('checked', 'checked');
+			}
+
+		}
+	}
+	for (var i=0; i<select_options.length; i++) {
+		var selects = document.getElementsByName(select_options[i]);
+		for (var j=0; j<selects.length; j++) {
+			if (!og.select_options[selects[i].name]) continue;
+			selects[i].value = og.select_options[selects[i].name];
+		}
+	}
+	
 	return true;
 }
 </script>
