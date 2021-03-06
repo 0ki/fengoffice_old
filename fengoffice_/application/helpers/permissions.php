@@ -206,7 +206,7 @@
 		if (is_array($context)) {
 			foreach($context as $selection){
 				$sel_dimension = $selection instanceof Dimension ? $selection : ($selection instanceof Member ? $selection->getDimension() : null);
-				if ($sel_dimension instanceof Dimension && $sel_dimension->getOptions(1) && isset($sel_dimension->getOptions(1)->hidden) && $sel_dimension->getOptions(1)->hidden ) continue;
+				
 				//$can_add = false;
 				if ($selection instanceof Member){
 					

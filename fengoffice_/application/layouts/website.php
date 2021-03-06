@@ -475,9 +475,12 @@ foreach ($actions as $action) {
 	?>
 	og.additional_dashboard_actions.push(
 		new Ext.Action({
-			id: "add-action-<?php echo $i?>",
+			id: "add-action-<?php echo $action['id']?>",
+			assoc_ot: <?php echo array_var($action, 'assoc_ot', '0')?>,
+			assoc_dim: <?php echo array_var($action, 'assoc_dim', '0')?>,
 			text: "<?php echo $action['name']?>",
 			tooltip: "<?php echo $action['name']?>",
+			cls: "x-btn-text-icon dash-additional-action",
 			iconCls: "<?php echo $action['class']?>",
 			handler: function() {
 				<?php echo $action['onclick']?>
@@ -511,30 +514,30 @@ og.menuPanelCollapsed = false;
 
 og.dimensionPanels = [
 	<?php
+	$dim_obj_type_descendants = array();
 	$enabled_dimensions = config_option("enabled_dimensions");
 	$dimensionController = new DimensionController();
 	$first = true; 
 	$dimensions = $dimensionController->get_context();
-	foreach ( $dimensions['dimensions'] AS $dimension ):
-	 	if ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->hidden) && $dimension->getOptions(1)->hidden || !in_array($dimension->getId(), $enabled_dimensions)) {
+	foreach ( $dimensions['dimensions'] as $dimension ):
+	 	if (!in_array($dimension->getId(), $enabled_dimensions)) {
 	 		continue;
 	 	}
 	 		
 		/* @var $dimension Dimension */
-		$title = ( $dimension->getOptions() && isset($dimension->getOptions(1)->useLangs) && ($dimension->getOptions(1)->useLangs) ) ? lang($dimension->getCode()) : $dimension->getName();
-	 	Hook::fire("edit_dimension_name", array('dimension' => $dimension), $title); 
+		$title = $dimension->getName();
 		if (!$first) echo ",";
 		$first = false;
 		
-		?>                      
+		?>
 		{	
-			reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReload($dimension->getId()) ) ; ?>,
+			reloadDimensions: <?php echo json_encode( DimensionMemberAssociations::instance()->getDimensionsToReloadByObjectType($dimension->getId()), JSON_NUMERIC_CHECK ); ?>,
 			xtype: 'member-tree',
 			id: 'dimension-panel-<?php echo $dimension->getId() ; ?>',
 			lines: false,
 			dimensionId: <?php echo $dimension->getId() ; ?>,
 			dimensionCode: '<?php echo $dimension->getCode() ; ?>',
-			dimensionOptions: <?php echo ( $dimension->getOptions() ) ?  $dimension->getOptions() : '""' ; ?>,
+			dimensionOptions: '{"defaultAjax":{"controller":"dashboard", "action": "main_dashboard"}}',
 			isDefault: '<?php echo (int) $dimension->isDefault() ; ?>',
 			title: "<?php echo $title ?>",
 			multipleSelection: <?php echo (int)$dimension->getAllowsMultipleSelection() ?>,
@@ -542,14 +545,23 @@ og.dimensionPanels = [
 			requiredObjectTypes: <?php echo json_encode($dimension->getRequiredObjectTypes()) ?>,
 			hidden: <?php echo (int) ! $dimension->getIsRoot(); ?>,
 			isManageable: <?php echo (int) $dimension->getIsManageable() ?>,
-			quickAdd: <?php echo ( $dimension->getOptions(1) && isset($dimension->getOptions(1)->quickAdd) && $dimension->getOptions(1)->quickAdd ) ? 'true' : 'false'  ?>,
+			quickAdd: <?php echo ( intval($dimension->getOptionValue('quickAdd')) ) ? 'true' : 'false'  ?>,
 			minHeight: 10
 			//animate: false,
 			//animCollapse: false
 			
 		}	
+	<?php
+		$dim_obj_types = DimensionObjectTypes::getObjectTypeIdsByDimension($dimension->getId());
+		$dim_obj_type_descendants[$dimension->getId()] = array();
+		foreach ($dim_obj_types as $ot_id) {
+			$all_child_ots = DimensionObjectTypeHierarchies::getAllChildrenObjectTypeIds($dimension->getId(), $ot_id);
+			$dim_obj_type_descendants[$dimension->getId()][$ot_id] = array_values($all_child_ots);
+		}
+	?>
 	<?php endforeach; ?>
 ];
+og.dimension_object_type_descendants = Ext.util.JSON.decode('<?php echo json_encode($dim_obj_type_descendants)?>');
 
 og.contextManager.construct();
 og.objPickerTypeFilters = [];

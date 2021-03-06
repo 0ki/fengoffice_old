@@ -133,7 +133,7 @@ class Member extends BaseMember {
 	function getParentMember() {
 		if ($this->parent_member == null){
 			if ($this->getParentMemberId() != 0) {
-				 $this->parent_member = Members::findById($this->getParentMemberId());
+				 $this->parent_member = Members::getMemberById($this->getParentMemberId());
 			}
 		}
 		return $this->parent_member;
@@ -441,17 +441,28 @@ class Member extends BaseMember {
 		return false;
 	}
 	
-	function getPath(){
-		$path='';
-		foreach(array_reverse($this->getAllParentMembersInHierarchy(false)) as $parent){
-			$path.= $parent->getName(). "/";
-		}
-		if ($path){
-			$path=substr($path, 0, -1);
+	function getPath($separator="/", $prefix="", $suffix=""){
+		$path = '';
+		$parents = array_reverse($this->getAllParentMembersInHierarchy(false));
+		foreach($parents as $parent) {
+			$path .= ($path == "" ? "" : $separator) . $prefix . $parent->getName() . $suffix;
 		}
 		return $path;
 	}
 	
+	
+	function getPathToPrint($separator="/", $prefix="", $suffix=""){
+		$path = '';
+		$parents = array_reverse($this->getAllParentMembersInHierarchy(false));
+		if (count($parents) > 1) {
+			$path .= $prefix . "..." . $suffix;
+		} else {
+			foreach($parents as $parent) {
+				$path .= ($path == "" ? "" : $separator) . $prefix . $parent->getName() . $suffix;
+			}
+		}
+		return $path;
+	}
 	
 	
 	/**

@@ -155,7 +155,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_categories` (`name`, `is_
 INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('task panel','tasksDateStart','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'date from to filter out task list'),
  ('task panel','tasksDateEnd','0000-00-00 00:00:00','DateTimeConfigHandler',1,0,'the date up to filter the list of tasks'),
- ('task panel', 'show_notify_checkbox_in_quick_add', '0', 'BoolConfigHandler', 0, 0, 'Show notification checkbox in quick add task view'),
+ ('task panel', 'show_notify_checkbox_in_quick_add', '1', 'BoolConfigHandler', 1, 0, 'Show notification checkbox in quick add task view'),
  ('task panel', 'can notify from quick add', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'can notify subscribers', '1', 'BoolConfigHandler', 0, 0, 'Notification checkbox default value'),
  ('task panel', 'tasksShowWorkspaces', '1', 'BoolConfigHandler', 1, 0, ''),
@@ -187,6 +187,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('task panel', 'task_display_limit', '500', 'IntegerConfigHandler', '0', '200', NULL),
  ('task panel', 'pushUseWorkingDays', '1', 'BoolConfigHandler', '1', '0', NULL),
  ('task panel', 'zoom in gantt', '3', 'IntegerConfigHandler', 1, 0, ''),
+ ('task panel', 'tasksShowDimensionCols', '', 'StringConfigHandler', 1, 0, ''),
  ('general', 'listingContactsBy', '0', 'BoolConfigHandler', '0', '0', NULL),
  ('general', 'localization', '', 'LocalizationConfigHandler', 0, 100, ''),
  ('general', 'search_engine', 'match', 'SearchEngineConfigHandler', 0, 700, ''),

@@ -208,7 +208,7 @@ class FilesController extends ApplicationController {
 		session_commit();
 		download_from_repository($file->getLastRevision()->getRepositoryId(), $file->getTypeString(), $file->getFilename(), !$inline);
 		die();
-	} // download_file
+	} // download_image
 
 	
 	function checkout_file()

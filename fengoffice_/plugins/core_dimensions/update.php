@@ -203,8 +203,31 @@ function core_dimensions_update_9_10() {
 function core_dimensions_update_10_11() {
 	// generate small, medium and large size images for users, contacts and companies
 	$all_contacts_with_picture = Contacts::findAll(array('conditions' => "picture_file <> ''"));
-	
+
 	foreach ($all_contacts_with_picture as $contact) {
 		$result = $contact->generateAllSizePictures($contact->getPictureFile());
 	}
 }
+
+
+function core_dimensions_update_11_12() {
+	// normaize dimension options
+	$dimensions = Dimensions::findAll();
+	
+	foreach ($dimensions as $dimension) {/* @var $dimension Dimension */
+		$options_json = $dimension->getOptions();
+		$options = json_decode($options_json, true);
+		
+		foreach ($options as $key => $value) {
+			if (in_array($key, array('defaultAjax', 'quickAdd'))) {
+				// skip defaultAjax and quickAdd
+				continue;
+			}
+			$sql = "INSERT INTO ".TABLE_PREFIX."dimension_options (`dimension_id`, `name`, `value`) 
+					VALUES (".$dimension->getId().",'$key','$value') 
+					ON DUPLICATE KEY UPDATE `value`='$value'";
+			DB::execute($sql);
+		}
+	}
+}
+

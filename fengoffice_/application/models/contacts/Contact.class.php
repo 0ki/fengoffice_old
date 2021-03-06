@@ -958,7 +958,14 @@ class Contact extends BaseContact {
 		}
 		else{
 			$fields = array();
+			
 			// Validate username if present
+			if ($this->getUserType() > 0 && !$this->validateUniquenessOf('username')) {
+				$errors[] = lang('username must be unique');
+				$fields[] = 'username';
+			}
+			
+			// check existance of firstname or surname
 			if(!$this->validatePresenceOf('surname') && !$this->validatePresenceOf('first_name')) {
 				$errors[] = lang('contact identifier required');
 				$fields[] = 'first_name';

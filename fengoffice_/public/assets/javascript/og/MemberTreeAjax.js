@@ -419,41 +419,7 @@ Ext.extend(og.MemberTreeAjax, Ext.tree.TreePanel, {
 			this.initialized = true;
 		}else{
 			og.initialMemberTreeAjaxLoad(this);
-			/*
-			var tree_id = this.id;
-			og.openLink(og.getUrl('dimension', 'initial_list_dimension_members_tree_root', {dimension_id:this.dimensionId}), {
-    			hideLoading:true, 
-    			hideErrors:true,
-    			callback: function(success, data){
-    				
-    				var dimension_tree = Ext.getCmp(tree_id);
-    					
-    				//add nodes to tree
-    				dimension_tree.addMembersToTree(data.dimension_members,data.dimension_id);
-    				
-    				dimension_tree.innerCt.unmask();
-    				
-    				//filter the tree    				
-    				dimension_tree.suspendEvents();
-    				dimension_tree.expandAll();
-    				dimension_tree.resumeEvents();
-    				dimension_tree.render();
-    				
-    				if(typeof(data.dimensions_root_members) != "undefined" && !data.more_nodes_left){
-    					ogMemberCache.addDimToDimRootMembers(data.dimension_id);
-    				}
-    				
-    				if (data.more_nodes_left) {
-    					og.addViewMoreNode(dimension_tree.getRootNode(), tree_id, true);
-    				} else {
-    					var old_view_more_node = dimension_tree.getNodeById('view_more_' + dimension_tree.getRootNode().id);
-    					if (old_view_more_node) old_view_more_node.remove();
-    				}
-    				
-    				dimension_tree.initialized = true;
-    			}
-    		});
-    		*/
+			
 		}
 	} ,
 

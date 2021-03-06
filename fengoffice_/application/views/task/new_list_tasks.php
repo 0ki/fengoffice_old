@@ -132,7 +132,7 @@ og.config.quick_add_task_combos = <?php
 			$dim = Dimensions::instance()->getDimensionById($dimension_id);
 			if($dim instanceof Dimension){
 				if($key!=0) $object .=",";
-				$object .= "{name : '". $dim->getName()."', desc : '".escape_character(lang('add new relation ' . $dim->getCode()))."'}";
+				$object .= "{name : '". escape_character($dim->getName())."', desc : '".escape_character(lang('add new relation ' . $dim->getCode()))."'}";
 			}
 		}		
 		echo "[".$object."]";
@@ -172,11 +172,11 @@ ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 		<div style="font-weight:bold;width:99%;text-align:center;padding:4px;color:#AF8300;"><?php echo lang('too many tasks to display', user_config_option('task_display_limit')) ?></div>
 	</div>
 	<?php } ?>
-		<div id="tasksPanelContainer" style="background-color:white;padding-top:0px;position: absolute;min-width: 100%;">
+		<table id="tasksPanelContainer" style="background-color:white;padding-top:0px;position: absolute;width: 100%;table-layout: fixed;">
 	<?php if(!(isset($tasks) || $userPreferences['groupBy'] == 'milestone')) { ?>
 			<div style="font-size:130%;width:100%;text-align:center;padding-top:10px;color:#777;"><?php echo lang('no tasks to display') ?></div>
 	<?php } ?>			
-		</div>
+		</table>
 	</div>
 </div>
 

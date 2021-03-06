@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.3
+	About Feng Office 3.3-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -105,6 +105,73 @@
 	Changelog
 	=========
 	
+	Since 3.2.3.2
+	----------------
+
+	bugfix: dont show object in listings if it is only classified in a person member.
+	bugfix: resize members panel.
+	bugfix: multiline text on street address.
+	bugfix: missing contact data inputs in clients edition when client is a person.
+	bugfix: langs in tasks groups.
+	bugfix: user's widget in dashboard showing contacts.
+	bugfix: php execution in tmp folder must be disabled
+	bugfix: no message is shown when tasks report does not have tasks
+	bugfix: change project_manager to custom property
+	bugfix: related dimensions are reloaded with selected node object type not having an association.
+	bugfix: edit button on members trees
+	bugfix: after change client parent classify contact 
+	bugfix: update parent after adding child node on members trees 
+	bugfix: print tasks list
+	bugfix: don't allow duplicated username
+	bugfix: Error when filtering tasks by tag.
+	bugfix: dont show object in listings if it is only classified in a person member
+	bugfix: do not reload tasks list after complete tasks
+	bugfix: javascript infinite loop on tasks list
+	bugfix: dont force repository files download, keep cache for these files
+	bugfix: mail rules mark as read fail when is called from cron
+	bugfix: when filtering members by another dimension, cannot view filtered member childs
+	bugfix: autoclassify components misaligned in mail account edition
+	bugfix: drag and drop on member tree node
+	bugfix: zip code is not shown in user/contact/company card
+	bugfix: cannot download attachments if email has inline images before the attachments
+	bugfix: checkbox to send notification to assignee does not appear
+	
+	
+	feature: resize columns on tasks list.
+	feature: separate dimensions columns on tasks list.
+	feature: general member listings.
+	fetaure: allow to reorder and disable description and color fields (in custom properties administration).
+	feature: custom properties of type user
+	feature: table to add options for different member types
+	feature: dimension object type option to decide if member is selected or not after its creation
+	feature: description field for all type of members.
+	feature: lab samples plugin and object prefixes modifications
+	feature: dimension options normalization
+	feature: dimension options settings section
+	feature: allow to set custom dimension names
+	feature: allow to enable/disable dimension member types
+	feature: show or hide overview action links checking by current context (e.g.: dont show clients list link if a client is selected)
+	feature: sent notifications history log
+	feature: ability to log in filesystem the error details when sending a notification fails
+	feature: dont reload all panel when task workflow generates new tasks, only add new tasks to the list
+	
+	perfromance: mobile member listing
+	performance: remove object timeslots permissions 
+	performance: close timeslots when completing tasks
+	
+	language: non working days traductions for es_es and es_la
+	
+	usability: time report using 100% width, min-width:750
+		
+	
+	Since 3.2.3.1
+	----------------
+	bugfix: Error when filtering tasks by tag.
+	
+	Since 3.2.3
+	----------------
+	feature: view object history paginated.
+	
 	Since 3.2.3-beta
 	----------------
 	bugfix: fixed addToSharingTable when called from rebuild_sharing_table.php
@@ -153,16 +220,6 @@
 	Since 3.2.2-rc
 	----------------
 	bugfix: object prefix is not deleted after deleting object
-	
-	Since 3.2.2-beta
-	----------------
-	bugfix: breadcrumbs on mail list.
-	bugfix: calculate percent completed on tasks.
-	bugfix: group totals aligned on tasks list.
-	bugfix: error when instantiating template milestones.
-	bugfix: showing which tab is selected in mail panel.
-	bugfix: prevent "duplicate key" message in permission groups table when creating an user.
-	bugfix: some checkboxes are not submitted correctly.
 	
 	Since 3.2.2-beta
 	----------------

@@ -172,11 +172,12 @@ class DimensionController extends ApplicationController {
 							"parent_member_id" => 0,
 							"start" => $limit['offset'],
 							"limit" => $limit['limit'],
+							"extra_condition" => $extra_conditions,
 							"order" => '`name`',
 							"order_dir" => 'ASC',
 					);
 					$all_members = ContactMemberCaches::getAllMembersWithCachedParentId($params);
-									
+					
 				}else{
 					$member_list = $dimension->getAllMembers(false, $order, true, $extra_conditions, $limit);
 					$allowed_members = array();
@@ -216,8 +217,11 @@ class DimensionController extends ApplicationController {
 		$all_associated_members_ids = array();
 		
 		foreach ($selected_members as $member) {
-			if (!$member instanceof Member) continue;
-			$association_ids = DimensionMemberAssociations::getAllAssociationIds($member->getDimensionId(), $dimension->getId());
+			// ignore selected members that are from the same dimension that is going to be filtered
+			if (!$member instanceof Member || $member->getDimensionId() == $dimension->getId()) continue;
+			
+			// get dimension associations for selected member object type and the dimension to be filtered
+			$association_ids = DimensionMemberAssociations::getAllAssociationIds($member->getDimensionId(), $dimension->getId(), $member->getObjectTypeId());
 			
 			if (count($association_ids) > 0) {
 				$associated_members_ids = array();
@@ -227,26 +231,26 @@ class DimensionController extends ApplicationController {
 					$property_members_props = null;
 					
 					$association = DimensionMemberAssociations::findById($id);
-					$children = $member->getAllChildrenInHierarchy();
+				//	$children = $member->getAllChildrenInHierarchy();
 					
 					if ($association->getDimensionId() == $dimension->getId()){
 						if (is_null($property_members_members)) $property_members_members = MemberPropertyMembers::getAllPropertyMembers($id);
 						
 						$tmp_assoc_member_ids = array_var($property_members_members, $member->getId(), array());
-						foreach ($children as $child){
+				/*		foreach ($children as $child){
 							$tmp_assoc_member_ids = array_merge($tmp_assoc_member_ids, array_var($property_members_members, $child->getId(), array()));
 						}
-						
+				*/		
 						$associated_members_ids = array_unique(array_merge($associated_members_ids, $tmp_assoc_member_ids));
 					
 					} else {
 						if (is_null($property_members_props)) $property_members_props = MemberPropertyMembers::getAllPropertyMembers($id, true);
 						
 						$tmp_assoc_member_ids = array_var($property_members_props, $member->getId(), array());
-						foreach ($children as $child){
+				/*		foreach ($children as $child){
 							$tmp_assoc_member_ids = array_merge($tmp_assoc_member_ids, array_var($property_members_props, $child->getId(), array()));
 						}
-						
+				*/		
 						$associated_members_ids = array_unique(array_merge($associated_members_ids, $tmp_assoc_member_ids));
 					
 					}
@@ -258,7 +262,7 @@ class DimensionController extends ApplicationController {
 		}
 		
 		
-		if (count($all_associated_members_ids) > 0) {
+		if (isset($association_ids) && count($association_ids) > 0 && count($all_associated_members_ids) > 0) {
 			$intersection = array_var($all_associated_members_ids, 0);
 			if (count($all_associated_members_ids) > 1) {
 	    		$k = 1;
@@ -436,7 +440,7 @@ class DimensionController extends ApplicationController {
 				if (count($allowed_member_types) > 0) {
 					$member_type_cond = " AND object_type_id IN (".implode(',', $allowed_member_types).")";
 				}
-				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
+				$memberList = Members::findAll(array('conditions' => array("`dimension_id`=? AND archived_by_id=0 $search_name_cond $member_type_cond", $dimension_id), 'order' => '`'.$order.'` ASC', 'offset' => $start, 'limit' => $limit_t));
 				
 				// filter $childs by other dimension associations
 				$context = active_context();
@@ -480,8 +484,9 @@ class DimensionController extends ApplicationController {
 					$params["limit"] = $limit + 1;
 				}
 				
+				$params["extra_condition"] = " AND m.archived_by_id=0 ";
 				if (count($allowed_member_types) > 0) {
-					$params["extra_condition"] = " AND m.object_type_id IN (".implode(',', $allowed_member_types).")";
+					$params["extra_condition"] .= " AND m.object_type_id IN (".implode(',', $allowed_member_types).")";
 				}
 				
 				$memberList = ContactMemberCaches::getAllMembersWithCachedParentId($params);
@@ -559,7 +564,7 @@ class DimensionController extends ApplicationController {
 		$dim_names = array();
 		foreach ($dimensions as $dim) {
 			$dim_name = clean($dim->getName());
-			Hook::fire("edit_dimension_name", array('dimension' => $dim), $dim_name);
+			
 			$dim_names[$dim->getId()] = array("name" => $dim_name);
 		}
 		ajx_extra_data(array("dim_names" => $dim_names));
@@ -583,6 +588,7 @@ class DimensionController extends ApplicationController {
 							"dimension" => $dimension,
 							"contact_id" => logged_user()->getId(),
 							"parent_member_id" => $mem->getId(),
+							"extra_condition" => " AND m.archived_by_id=0 ",
 							"start" => $offset,
 							"limit" => $new_limit,
 							"order" => '`name`',
@@ -605,7 +611,7 @@ class DimensionController extends ApplicationController {
 				foreach ($context as $selection) {
 					if ($selection instanceof Member) $filter_by_members[] = $selection;
 				}
-				$childs = $this->apply_association_filters($mem->getDimension(), $childs, $filter_by_members);
+				
 				
 				// build resultant member list
 				$members = $this->buildMemberList($childs, $mem->getDimension(),  null, null, null, null);
@@ -667,7 +673,7 @@ class DimensionController extends ApplicationController {
 		$members = array();
 		foreach ($all_members as $m) {
 			/* @var  $m Member */
-			if ($m->getArchivedById() > 0) continue;
+	//		if ($m->getArchivedById() > 0) continue;
 			if ($object_type_id != null){
 				$selectable = in_array($m->getObjectTypeId(), $allowed_object_type_ids) ? true : false;
 				if ($selectable && isset($item_object)) {
@@ -858,12 +864,8 @@ class DimensionController extends ApplicationController {
 		
 		if (!in_array($order_by_dir, array('ASC', 'DESC'))) $order_by_dir = 'ASC';
 		
-		$dimension_options = $dimension->getOptions(true);
-		if($dimension_options && isset($dimension_options->useLangs) && $dimension_options->useLangs ) {
-			$dim_name = lang($dimension->getCode());
-		} else {
-			$dim_name = $dimension->getName();
-		}
+		// this function already checks dimension options
+		$dim_name = $dimension->getName();
 		
 		// permissions sql
 		$perm_sql = "";

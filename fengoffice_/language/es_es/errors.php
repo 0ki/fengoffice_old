@@ -148,4 +148,5 @@
 	
 	'failed to authenticate email account' => 'No se pudo autenticar la cuenta de correo',
 	'failed to authenticate email account desc' => 'La cuenta "{0}" no se pudo autenticar para enviar notificaciones. Por favor asegúrese de que la contraseña de la cuenta sea la correcta.',
+	'must choose at least one workspace error' => 'Debe elegir al menos un espacio de trabajo donde colocar el objeto.',
 );

@@ -845,6 +845,31 @@ class ProjectTask extends BaseProjectTask {
 	}
 	
 	/**
+	 * Gets all subtasks info recursively
+	 */
+	function getAllSubtaskInfoInHierarchy() {
+		$subtasks = array();
+		$this->getAllSubtaskInfoInHierarchyRecursive($subtasks, 1);
+	
+		return $subtasks;
+	}
+	
+	/**
+	 * Private function to get the subtasks info recursively
+	 */
+	private function getAllSubtaskInfoInHierarchyRecursive(&$subtasks, $depth=0) {
+		$subtasks_ids = $this->getSubTasksIds();
+		foreach ($subtasks_ids as $sub_id) {
+			$sub = ProjectTasks::findById($sub_id);
+			if ($sub instanceof ProjectTask) {
+				$subtasks[$sub_id] = $sub->getArrayInfo();
+				$subtasks[$sub_id]['depth'] = $depth;
+				$sub->getAllSubtaskInfoInHierarchyRecursive($subtasks, $depth+1);
+			}
+		}
+	}
+	
+	/**
 	 * Return open tasks
 	 *
 	 * @access public

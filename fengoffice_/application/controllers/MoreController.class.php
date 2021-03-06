@@ -152,7 +152,7 @@ class MoreController extends ApplicationController {
 		foreach ($active_dimensions_tmp as $dim) {
 			if ($dim->getCode() == 'feng_persons') continue;
 			
-			$dname = ( $dim->getOptions() && isset($dim->getOptions(1)->useLangs) && ($dim->getOptions(1)->useLangs) ) ? lang($dim->getCode()) : $dim->getName();
+			$dname = $dim->getName();
 			$active_dimensions[$dim->getCode()] = array(
 					'id' => $dim->getId(),
 					'name' => $dname,

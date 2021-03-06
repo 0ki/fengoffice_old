@@ -1050,6 +1050,19 @@ class ObjectController extends ApplicationController {
 	function view_history(){
 		$id = array_var($_GET,'id');
 		$obj = Objects::findObject($id);
+		
+		$page_size = 20;
+		$limit = $page_size;
+		 
+		// get submitted modification logs page
+		$mod_page_submitted = array_var($_REQUEST, 'mod_page');
+		$mod_page = $mod_page_submitted ? $mod_page_submitted : 1;
+		$mod_offset = $page_size * ($mod_page - 1);
+		
+		// get submitted read logs page
+		$view_page_submitted = array_var($_REQUEST, 'view_page');
+		$view_page = $view_page_submitted ? $view_page_submitted : 1;
+		$view_offset = $page_size * ($view_page - 1);
 
 		$isUser = $obj instanceof Contact && $obj->isUser() ? true : false;
 		if(!($obj instanceof ApplicationDataObject )) {
@@ -1074,12 +1087,35 @@ class ObjectController extends ApplicationController {
 			$extra_conditions = " AND `created_by_id` = ".logged_user()->getId();
 		}
 		
-		$logs = ApplicationLogs::getObjectLogs($obj, false, true, 100, null, $extra_conditions);
-		$logs_read = ApplicationReadLogs::getObjectLogs($obj, 100, null, $extra_conditions);
+		$logs = ApplicationLogs::getObjectLogs($obj, false, true, $limit, $mod_offset, $extra_conditions);
+		$logs_read = ApplicationReadLogs::getObjectLogs($obj, $limit, $view_offset, $extra_conditions);
+		
+		// build modification logs pagination object
+		$total_logs = ApplicationLogs::countObjectLogs($obj, false, true, $extra_conditions);
+		$mod_logs_pagination = array(
+			'total_pages' => ceil($total_logs / $page_size),
+			'current_page' => $mod_page
+		);
+		
+		// build read logs pagination object
+		$total_read_logs = ApplicationReadLogs::countObjectLogs($obj, $extra_conditions);
+		$view_logs_pagination = array(
+			'total_pages' => ceil($total_read_logs / $page_size),
+			'current_page' => $view_page
+		);
+		
+		if ($mod_page_submitted || $view_page_submitted) {
+			ajx_replace(true);
+		}
 		
 		tpl_assign('object',$obj);
 		tpl_assign('logs',$logs);
 		tpl_assign('logs_read',$logs_read);
+		
+		tpl_assign('mod_logs_pagination', $mod_logs_pagination);
+		tpl_assign('view_logs_pagination', $view_logs_pagination);
+		
+		tpl_assign('curtab', array_var($_REQUEST, 'curtab', ''));
 	}
 
 	// ---------------------------------------------------
@@ -1581,7 +1617,10 @@ class ObjectController extends ApplicationController {
 
 	function get_cusotm_property_columns() {
 		$grouped = array();
-		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id ORDER BY ot.name");
+		$cp_rows = DB::executeAll("SELECT cp.id, cp.name as cp_name, cp.code as cp_code, ot.name as obj_type 
+				FROM ".TABLE_PREFIX."custom_properties cp INNER JOIN ".TABLE_PREFIX."object_types ot on ot.id=cp.object_type_id 
+				ORDER BY ot.name");
+		
 		if (is_array($cp_rows)) {
 			foreach ($cp_rows as $row) {
 				if (!isset($grouped[$row['obj_type']])) $grouped[$row['obj_type']] = array();
@@ -1631,7 +1670,7 @@ class ObjectController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'objects'));
 		
 			$objects = Objects::instance()->findAll(array("conditions" => "id IN (".implode(",",$ids).")"));
-			
+		
 			$real_deleted_ids = array();
 			list($succ, $err) = $this->do_delete_objects($objects, true, $real_deleted_ids);
 		

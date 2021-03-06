@@ -412,7 +412,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 		
 		if (version_compare($installed_version, '3.2.1-beta') < 0) {
 			$upgrade_script .= "
-				ALTER TABLE `".$t_prefix."objects` ADD INDEX `type_trash_arch`(`object_type_id`, `trashed_on`, `archived_on`);
+				ALTER TABLE `".$t_prefix."objects` ADD INDEX (`object_type_id`, `trashed_on`, `archived_on`);
 			";
 			
 			$upgrade_script .= "

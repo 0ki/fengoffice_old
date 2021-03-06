@@ -1080,6 +1080,7 @@ class TaskController extends ApplicationController {
 	}
 	
 	private function getDateGroupsConditions($date_field){
+		$unknown_group_name = $date_field;
 		$date_field = "`".$date_field."`";
 		$date_groups = array();
 		
@@ -1325,8 +1326,15 @@ class TaskController extends ApplicationController {
 		$date_groups[] = $group_16;
 		
 		//no date EMPTY_DATETIME
+		if($unknown_group_name == 'due_date'){
+			$unknown_group_name = 'without due date';
+		}elseif ($unknown_group_name == 'start_date'){
+			$unknown_group_name = 'without start date';
+		}else{
+			$unknown_group_name = 'without date';
+		}
 		$group_17 = array();
-		$group_17['group_name'] = lang('unknown');
+		$group_17['group_name'] = lang($unknown_group_name);
 		$group_17['group_order'] = 17;
 		$group_17['id'] = 'group_undefined';
 		$group_17['conditions'] = $date_field." = '".EMPTY_DATETIME."'";
@@ -1710,13 +1718,17 @@ class TaskController extends ApplicationController {
 			
 		$more_group_ret = array();
 		foreach($groups as $key => $group){
+			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			if (count($tasks_in_group['tasks']) <= 0) {
+				$groups= array();
+				continue;
+			}
 							
 			$group_conditions = "";
 			$groups[$key]['group_id'] = "nothing";
 			$groups[$key]['group_name'] = lang('tasks');
-			$groups[$key]['group_icon'] = 'ico-task';
-							
-			$tasks_in_group = $this->getTasksInGroup($conditions.$group_conditions.$list_subtasks_cond, $start, $limit);
+			$groups[$key]['group_icon'] = 'ico-task';							
+			
 			$groups[$key]['root_total'] = $tasks_in_group['total_roots_tasks'];
 			$groups[$key]['group_tasks'] = $tasks_in_group['tasks'];
 			
@@ -1762,9 +1774,13 @@ class TaskController extends ApplicationController {
 			))->objects;
 			if(is_array($tasks_tree)){
 				$root_nodes = $this->getRootNodes($tasks_tree);
-				$see_roots_ids = implode(',', $root_nodes);
-				$conditions .= " AND e.object_id  IN ($see_roots_ids)"; 
-				$total_see_roots_tasks = count($root_nodes);
+				if (is_array($root_nodes) && count($root_nodes) > 0) {
+					$see_roots_ids = implode(',', $root_nodes);
+					$conditions .= " AND e.object_id  IN ($see_roots_ids)";
+					$total_see_roots_tasks = count($root_nodes);
+				} else {
+					$total_see_roots_tasks = 0;
+				}
 			}else{
 				$total_see_roots_tasks = 0;
 			}
@@ -2070,6 +2086,9 @@ class TaskController extends ApplicationController {
 				$dateEnd = '';
 				}
 			$userPref = array();
+
+			$showDimensionCols = array_map('intval', explode(',', user_config_option('tasksShowDimensionCols')));
+			
 			$userPref = array(
 				'filterValue' => isset($filter_value) ? $filter_value : '',
 				'filter' => $filter,
@@ -2093,6 +2112,7 @@ class TaskController extends ApplicationController {
 				'showQuickComplete' => user_config_option('tasksShowQuickComplete',1),
 				'showQuickComment' => user_config_option('tasksShowQuickComment',1),
 				'showQuickAddSubTasks' => user_config_option('tasksShowQuickAddSubTasks',1),
+				'showDimensionCols' => $showDimensionCols,
 				'groupBy' => user_config_option('tasksGroupBy'),
 				'orderBy' => user_config_option('tasksOrderBy'),
 				'previousPendingTasks' => user_config_option('tasksPreviousPendingTasks',1),
@@ -2173,6 +2193,79 @@ class TaskController extends ApplicationController {
 		tpl_assign('task', $task);
 		$this->setTemplate('print_task');
 	} // print_task
+	
+	
+	
+	function print_tasks_list() {
+		$this->setLayout("html");
+		
+		$request_conditions = $this->get_tasks_request_conditions();
+		$conditions = $request_conditions['conditions'];
+		
+		$groupId = array_var($_REQUEST, 'groupId', null);
+		$start = 0;
+		$limit = null;
+		$show_more_conditions = array("groupId" => $groupId, "start" => $start, "limit" => $limit);
+		
+		//Groups
+		$groupBy = array_var($_REQUEST, 'tasksGroupBy', user_config_option('tasksGroupBy'));
+		
+		if(array_var($_REQUEST, 'tasksOrderBy', false)){
+			set_user_config_option('tasksOrderBy', array_var($_REQUEST, 'tasksOrderBy'), logged_user()->getId());
+		}
+		
+		$groups = $this->getGroups($groupBy, $conditions, $show_more_conditions);
+		
+		if (is_null($groups)) {
+			$groups = array();
+		}
+		
+		// Get subtasks
+		$subtasks = array();
+		foreach ($groups as $group) {
+			foreach ($group['group_tasks'] as $task) {
+				if (count(array_var($task, 'subtasksIds')) > 0) {
+					$t = ProjectTasks::findById($task['id']);
+					$all_subtasks_info = $t->getAllSubtaskInfoInHierarchy();
+					$subtasks[$task['id']] = $all_subtasks_info;
+				}
+			}
+		}
+		
+		// reorder tasks, put subtasks below the parent task
+		if (count($subtasks) > 0) {
+			foreach ($groups as &$group) {
+				$old_tasks = $group['group_tasks'];
+				$group['group_tasks'] = array();
+				
+				foreach ($old_tasks as $t) {
+					$group['group_tasks'][] = $t;
+					
+					if (isset($subtasks[$t['id']])) {
+						foreach ($subtasks[$t['id']] as $subt) {
+							$group['group_tasks'][] = $subt;
+						}
+					}
+				}
+			}
+		}
+		// ----------------------
+		
+		$draw_options = json_decode(array_var($_REQUEST, 'draw_options'), true);
+		
+		$tasks_list_cols = json_decode(array_var($_REQUEST, 'tasks_list_cols'), true);
+		
+		$row_total_cols = json_decode(array_var($_REQUEST, 'row_total_cols'), true);
+		
+		tpl_assign('draw_options', $draw_options);
+		tpl_assign('tasks_list_cols', $tasks_list_cols);
+		tpl_assign('row_total_cols', $row_total_cols);
+		tpl_assign('groups', $groups);
+		
+		
+		
+	}
+	
 
 	/**
 	 * Add new task
@@ -2289,9 +2382,7 @@ class TaskController extends ApplicationController {
 				'is_template' => array_var($_POST, "is_template", array_var($_GET, "is_template", false)),
 				'percent_completed' => array_var($_POST, "percent_completed", ''),
 				'object_subtype' => array_var($_POST, "object_subtype", config_option('default task co type')),
-				'send_notification' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify from quick add"),
-				'send_notification_subscribers' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify subscribers"),
-				'display_notification_checkbox' =>  user_config_option("show_notify_checkbox_in_quick_add")
+				'send_notification_subscribers' => user_config_option("can notify subscribers"),
 			); // array
 			
 			if (Plugins::instance()->isActivePlugin('mail')) {
@@ -2537,7 +2628,7 @@ class TaskController extends ApplicationController {
 				}
 
 				// notify asignee
-				if((array_var($task_data, 'send_notification'))) {
+				if(array_var($task_data, 'send_notification')) {
 					if(($task instanceof ProjectTask) && ($task->getAssignedToContactId() != $task->getAssignedById())) {
 						try {
 							Notifier::taskAssigned($task);
@@ -2886,9 +2977,7 @@ class TaskController extends ApplicationController {
 				'object_subtype' => array_var($_POST, "object_subtype", ($task->getObjectSubtype() != 0 ? $task->getObjectSubtype() : config_option('default task co type'))),
 				'type_content' => $task->getTypeContent(),
 				'multi_assignment' => $task->getColumnValue('multi_assignment',0),
-				'send_notification' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify from quick add"),
-				'send_notification_subscribers' => user_config_option("show_notify_checkbox_in_quick_add")&& user_config_option("can notify subscribers"),
-				'display_notification_checkbox' =>  user_config_option("show_notify_checkbox_in_quick_add")
+				'send_notification_subscribers' => user_config_option("can notify subscribers"),
 					
 			); // array
 
@@ -3629,7 +3718,7 @@ class TaskController extends ApplicationController {
 				if (!$complete_last_task) {
 					// generate new pending task
 					$new_task = $task->cloneTask(array_var($new_dates, 'st'), array_var($new_dates, 'due'));
-					$reload_view = true;
+					//$reload_view = true;
 				}
 			}
 			
@@ -3641,8 +3730,13 @@ class TaskController extends ApplicationController {
 			foreach($task->getAllSubTasks() as $sub){
 				$subt_info[]=$sub->getArrayInfo();
 			}
+
+			$more_tasks = array();
+			if($new_task instanceof ProjectTask){
+				$more_tasks[] = $new_task->getArrayInfo();
+			}
 			
-			ajx_extra_data(array("task" => $task->getArrayInfo(),'subtasks' => $subt_info));
+			ajx_extra_data(array("task" => $task->getArrayInfo(),'subtasks' => $subt_info,'more_tasks' => $more_tasks));
 			
 			if (array_var($_GET, 'quick', false) && !$reload_view) {
 				ajx_current("empty");

@@ -1653,8 +1653,9 @@ abstract class ContentDataObject extends ApplicationDataObject {
 		
 		if(count($members) > 0){
 			foreach ($members as $mem) {
-				$options = Dimensions::getDimensionById($mem['dimension_id'])->getOptions(true);
-				if (isset($options->showInPaths) && $options->showInPaths) {
+				$dimension = Dimensions::getDimensionById($mem['dimension_id']);
+				
+				if (intval($dimension->getOptionValue('showInPaths'))) {
 					if (!isset($members_info[$mem['dimension_id']])) $members_info[$mem['dimension_id']] = array();
 					
 					$active_context_condition = true;

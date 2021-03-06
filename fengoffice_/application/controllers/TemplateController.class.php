@@ -495,7 +495,7 @@ class TemplateController extends ApplicationController {
 			$param_val = array_var($parameterValues, $param->getName(), '');
 			$param_val = escape_character($param_val);
 			DB::execute("INSERT INTO `".TABLE_PREFIX."template_instantiated_parameters` (`template_id`, `instantiation_id`, `parameter_name`, `value`) VALUES
-					('".$template->getId()."', '$instantiation_id', '".$param->getName()."', '$param_val') ON DUPLICATE KEY UPDATE template_id=template_id");
+					('".$template->getId()."', '$instantiation_id', '".escape_character($param->getName())."', '$param_val') ON DUPLICATE KEY UPDATE template_id=template_id");
 		}
 		
 		set_config_option('last_template_instantiation_id', $instantiation_id);
@@ -599,8 +599,7 @@ class TemplateController extends ApplicationController {
 			if ($copy->columnExists('is_template')) {
 				$copy->setColumnValue('is_template', false);
 			}
-
-			$copy->setDontMakeCalculations(true);
+						
 			$copy->save();
 			$copies[] = $copy;
 			$copiesIds[$object->getId()] = $copy->getId();
@@ -661,10 +660,9 @@ class TemplateController extends ApplicationController {
 			}
 			
 		}
-		
+
 		foreach ($copies as $c) {
 			if ($c instanceof ProjectTask) {
-				$c->setDontMakeCalculations(true);
 				if ($c->getMilestoneId() > 0) {
 					// find milestone in copies
 					foreach ($copies as $m) {
@@ -687,9 +685,6 @@ class TemplateController extends ApplicationController {
 				$dep->save();						
 			}
 		}
-
-		$ignored = null;
-		Hook::fire('after_multi_object_action', array('object_ids' => $copiesIds, 'action' => "instantiate"), $ignored);
 		
 		DB::commit();
 		

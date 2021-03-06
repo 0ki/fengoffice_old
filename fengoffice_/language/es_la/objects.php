@@ -21,7 +21,6 @@
 	'tasks' => 'Tareas',
 	'task list' => 'Tarea',
 	'task lists' => 'Tareas',
-	'timeslot' => 'timeslot',
 	'tag' => 'Etiquetar',
 	'tags' => 'Etiquetas',
 	'attachment' => 'Adjunto',

@@ -231,18 +231,7 @@ function core_dimensions_after_save_member_permissions($params, &$ignored) {
 	if (count($permission_group_ids) > 0) {
 		$contacts = Contacts::findAll(array('conditions' => 'user_type > 0 && permission_group_id IN ('.implode(',', $permission_group_ids).')'));
 	}
-	// contacts
-	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM ".TABLE_PREFIX."object_members om INNER JOIN ".TABLE_PREFIX."contacts c ON c.object_id=om.object_id 
-		WHERE om.member_id='".$member->getId()."' AND c.user_type=0");
-	$no_user_ids = array(0);
-	if (is_array($contact_rows)) {
-		foreach ($contact_rows as $row) {
-			$no_user_ids[] = $row['object_id'];
-		}
-	}
-	$more_contacts = Contacts::findAll(array('conditions' => 'object_id IN ('.implode(',', $no_user_ids).')'));
-	
-	$contacts = array_merge($contacts, $more_contacts);
+
 	$contact_ids = array(0);
 	
 	$persons_dim = Dimensions::findByCode("feng_persons");

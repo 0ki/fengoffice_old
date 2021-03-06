@@ -121,7 +121,7 @@ addLangs({
 	'year': 'Year',
 	'playlist': 'Playlist',
 	'playlists': 'Playlists',
-	'unknown': 'Unkown',
+	'unknown': 'Unknown',
 	'previous': 'Previous',
 	'play': 'Play',
 	'pause': 'Pause',
@@ -644,8 +644,8 @@ addLangs({
     'error adding timeslot' : 'An error occurred while adding the timeslot',
     'confirm unclassify email' : 'Are you sure you want to unclassify this email?\nThe email will be removed from the workspaces ant its attachments will not appear in Documents tab.',
     
-    'no due date': 'No due date',
-    'no start date': 'No start date',
+    'no due date': 'Without due date',
+    'no start date': 'Without start date',
     'untagged': 'Untagged',
     'download selected file': 'Download selected file',
     'edit selected file properties': 'Edit selected file\'s properties',
@@ -710,7 +710,7 @@ addLangs({
     'custom property invalid numeric value': 'Default value must be a number for custom property: {0}',
     'value cannot be empty': 'Value cannot be empty',
     'value must be numeric': 'Value must be numeric',
-    'memo': 'Memo',
+    'memo': 'Large text',
     'add value': 'Add value',
     	
     /* Custom Reports */

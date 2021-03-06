@@ -56,6 +56,7 @@
 							
 							$out = $street;
 							if($city != '') $out .= ' - ' . $city;
+							if($zip_code != '') $out .= ' - ' . $zip_code;
 							if($state != '') $out .= ' - ' . $state;
 							if($country != '') $out .= ' - ' . lang("country $country");
 

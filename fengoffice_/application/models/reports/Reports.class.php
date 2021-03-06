@@ -420,8 +420,8 @@ class Reports extends BaseReports {
 						$dim_id = str_replace("dim_", "", $field);
 						$dimension = Dimensions::getDimensionById($dim_id);
 						$dimensions_cache[$dim_id] = $dimension;
-						$doptions = $dimension->getOptions(true);
-						$column_name = $doptions && isset($doptions->useLangs) && $doptions->useLangs ? lang($dimension->getCode()) : $dimension->getName();
+						
+						$column_name = $dimension->getName();
 						
 						$results['columns'][$field] = $column_name;
 						$results['db_columns'][$column_name] = $field;

@@ -324,7 +324,7 @@ function date_format_tip($format) {
 		$cp_vals = CustomPropertyValues::getCustomPropertyValues($obj->getId(), $cp->getId());
 		$val_to_show = "";
 		foreach ($cp_vals as $cp_val) {
-			if ($cp->getType() == 'contact' && $cp_val instanceof CustomPropertyValue) {
+			if (in_array($cp->getType(), array('contact', 'user')) && $cp_val instanceof CustomPropertyValue) {
 				$cp_contact = Contacts::findById($cp_val->getValue());
 				if ($cp_contact instanceof Contact) {
 					$cp_val->setValue($cp_contact->getObjectName());
@@ -387,7 +387,7 @@ function date_format_tip($format) {
 		}
 		$val_to_show = "";
 		foreach ($cp_vals as $cp_val) {
-			if ($cp->getType() == 'contact' && $cp_val instanceof MemberCustomPropertyValue) {
+			if (in_array($cp->getType(), array('contact', 'user')) && $cp_val instanceof MemberCustomPropertyValue) {
 				$cp_contact = Contacts::findById($cp_val->getValue());
 				if ($cp_contact instanceof Contact) {
 					$cp_val->setValue($cp_contact->getObjectName());
@@ -441,6 +441,7 @@ function date_format_tip($format) {
 				
 			$val_to_show .= ($val_to_show == "" ? "" : ", ") . ($cp_val instanceof MemberCustomPropertyValue ? $cp_val->getValue() : "");
 		}
+		$val_to_show = html_to_text($val_to_show);
 		return $val_to_show;
 	}
 

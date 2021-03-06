@@ -802,8 +802,10 @@ og.newTab = function(content, id, data) {
 		id: id || Ext.id(),
 		defaultContent: content
 	}));
-	tp.add(t);
-	tp.setActiveTab(t);
+	if (tp) {
+		tp.add(t);
+		tp.setActiveTab(t);
+	}
 };
 
 /**
@@ -2912,7 +2914,6 @@ og.render_modal_form = function(genid, options) {
 					
 					// resize and reposition form when changing tab and content is larger than the available space
 					$(".ui-tabs-anchor").click(function(){ og.resize_modal_form(); });
-					og.resize_modal_form();
 					
 					// first execution sometimes fails to center the modal
 					var offset = $(".simplemodal-data").offset();
@@ -2926,8 +2927,6 @@ og.render_modal_form = function(genid, options) {
 							}
 						}, 100);
 					}
-					
-					og.resize_modal_form();
 					
 					// set main input width
 					og.update_modal_main_input_width();
@@ -2952,15 +2951,15 @@ og.resize_modal_form = function() {
 		$(".simplemodal-data .form-tab").css({'max-height':(winh - (cont_offset && cont_offset.top ? cont_offset.top : 0) - 175)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
 		
 		if (modalh > winh) {
-			// resize and reposition
-			$(".simplemodal-container").css({top:'10px', height:(winh - 10)+'px'});
+			// resize container
+			$(".simplemodal-container").css({height:(winh - 10)+'px'});
 			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 125)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
 		} else if (offset && modalh + offset.top > winh) {
 			// only reposition
-			var otop = (winh - modalh) / 2;
+			/*var otop = (winh - modalh) / 2;
 			if (otop < 0) otop = 0;
-			$(".simplemodal-container").css({top:(otop)+'px'});
-			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 175)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});
+			//$(".simplemodal-container").css({top:(otop)+'px'});
+			$(".simplemodal-data .form-tab").css({'max-height':(winh - headerh - 175)+'px', 'overflow-y':'auto', 'overflow-x':'hidden'});*/
 		}
 	}, 500);
 }
@@ -3145,6 +3144,10 @@ og.highlight_link = function(config) {
 	var hint_text = config.hint_text;
 	
 	if (!selector) return;
+	
+	if (config.prev_click_selector) {
+		$(config.prev_click_selector).click();
+	}
 	
 	if ($(selector).length == 0) {
 		setTimeout(function() {
@@ -3384,6 +3387,7 @@ og.renderContactDataFields = function(genid, value) {
 	//contact tab
 	if(value == contact_ot){
 		$("#"+genid+"contact_data_tab").parent( ".contact-data-container" ).show();
+		$("#"+genid+"contact_additional_data_tab").parent( ".contact-data-container" ).show();
 		$("#"+genid+"add_contact_custom_properties_div").show();			
 	}
 
@@ -3463,6 +3467,39 @@ og.renderAddressInput = function(id, name, container_id, sel_type, sel_data) {
 	$('#'+container_id).append('<div class="clear"></div>');
 }
 /* end address input */
+
+
+
+
+og.onAssociatedMemberTypeRemove = function (genid, hf_id){
+	document.getElementById(genid + hf_id).value = [];
+}
+
+og.onAssociatedMemberTypeSelect = function (genid, dimension_id, member_id, hf_id){
+	member_selector.remove_all_selections(genid);
+	if (!member_id) {
+		// remove member
+		document.getElementById(genid + hf_id).value = [];
+		return;
+	}
+	
+	member_selector.add_relation(dimension_id, genid, member_id,false);
+	document.getElementById(genid + hf_id).value = "["+member_id+"]";
+}
+
+
+og.onAssociatedMemberTypeSelectMultiple = function (genid, dimension_id, member_id, hf_id){
+	
+	member_selector.add_relation(dimension_id, genid, member_id,false);
+	document.getElementById(genid + hf_id).value = Ext.util.JSON.encode(member_selector[genid].sel_context[dimension_id]);
+}
+
+og.onAssociatedMemberTypeRemoveMultiple = function (genid, dimension_id, hf_id){
+	document.getElementById(genid + hf_id).value = Ext.util.JSON.encode(member_selector[genid].sel_context[dimension_id]);
+}
+
+
+
 
 /**
  * Resets all tree filters in left panel

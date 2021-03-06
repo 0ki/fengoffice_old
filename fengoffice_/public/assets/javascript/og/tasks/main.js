@@ -12,7 +12,7 @@ ogTasks.Users = [];
 ogTasks.Companies = [];
 ogTasks.Milestones = [];
 
-ogTasks.TotalCols = {};
+ogTasks.TasksList = {};
 
 ogTasks.Groups = [];
 
@@ -306,8 +306,8 @@ ogTasks.TaskSelected = function(checkbox, task_id, group_id){
 	var topToolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 	topToolbar.updateCheckedStatus();
 	
-	if (task.isChecked) rx__TasksDrag.addTaskToMove(task_id);
-	else rx__TasksDrag.removeTaskToMove(task_id);
+	//if (task.isChecked) rx__TasksDrag.addTaskToMove(task_id);
+	//else rx__TasksDrag.removeTaskToMove(task_id);
 }
 
 
@@ -327,8 +327,8 @@ ogTasks.GroupSelected = function(checkbox, group_id){
 		var chkTask = document.getElementById('ogTasksPanelChk' + tgId);
 		chkTask.checked = checkbox.checked;
 		
-		if (chkTask.checked) rx__TasksDrag.addTaskToMove(tasks[i].id);
-		else rx__TasksDrag.removeTaskToMove(tasks[i].id);
+		//if (chkTask.checked) rx__TasksDrag.addTaskToMove(tasks[i].id);
+		//else rx__TasksDrag.removeTaskToMove(tasks[i].id);
 		
 		var table = document.getElementById('ogTasksPanelTaskTable' + tgId);
 		if (table)
@@ -353,7 +353,7 @@ ogTasks.updateDependantTasks = function(task_id, add){
 		}else{
 			dependant_task.previous_tasks_total--;
 		}
-		ogTasks.UpdateTask(task.dependants[i],false);
+		ogTasks.UpdateTask(task.dependants[i],true);
 	}
 }
 

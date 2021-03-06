@@ -1144,6 +1144,9 @@ class ContactController extends ApplicationController {
 					evt_add("new user added", $contact->getArrayInfo());
 				}
 				
+
+				$null=null; Hook::fire('after_add_contact', $contact, $null);
+				
 				DB::commit();
 				
 				// save user permissions
@@ -1446,6 +1449,7 @@ class ContactController extends ApplicationController {
 					}
 					
 				}
+				$null=null; Hook::fire('after_edit_contact', $contact, $null);
 				
 				DB::commit();
 				
@@ -1474,7 +1478,10 @@ class ContactController extends ApplicationController {
 		} // if
 	} // edit
 
-	private function get_contact_data_from_contact($contact) {
+	function get_contact_data_from_contact($contact) {
+		if (!$contact instanceof Contact) {
+			return array();
+		}
 		$contact_data = array(
 				'first_name' => $contact->getFirstName(),
 				'surname' => $contact->getSurname(),
@@ -1569,7 +1576,7 @@ class ContactController extends ApplicationController {
 	}
 	
 	
-	private function save_non_main_emails($contact_data, $contact) {
+	function save_non_main_emails($contact_data, $contact) {
 		$emails_data = array_var($contact_data, 'emails');
 		if (is_array($emails_data)) {
 			foreach ($emails_data as $data) {

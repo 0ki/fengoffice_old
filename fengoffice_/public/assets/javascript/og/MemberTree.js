@@ -65,7 +65,15 @@ og.MemberTree = function(config) {
 	       		}
     	    }
 
-    	],  	
+    	], 
+    	toolTemplate: new Ext.XTemplate(
+        '<tpl if="id==\'options\'">',
+			'<buton type="" class="btn btn-xs btn-primary x-tool x-tool-{id}"><div class="x-tool x-tool-{id}-ico">&#160;</div>'+lang("new")+'</buton>',
+        '</tpl>',
+        '<tpl if="id!=\'options\'">',
+            '<div class="x-tool x-tool-{id}">&#160;</div>',
+        '</tpl>'
+    	), 	
     	hideCollapseTool: true ,
     	expandMode: expandM, //all root,
     	tbar: tbar 
@@ -265,7 +273,17 @@ og.MemberTree = function(config) {
 				var trees = this.ownerCt.items;
 				if (trees){
 					trees.each(function (item, index, length){
-						if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
+						var must_reload = false;
+						if (self.reloadDimensions) {
+							for (ot_id in self.reloadDimensions) {
+								if (self.reloadDimensions[ot_id] && typeof(self.reloadDimensions[ot_id].indexOf) == 'function'
+									&& self.reloadDimensions[ot_id].indexOf(item.dimensionId) != -1) {
+										must_reload = true;
+								}
+							}
+						}
+						
+						if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && must_reload ) {
 							
 							item.getRootNode().suspendEvents();
 							item.getRootNode().select();
@@ -381,7 +399,12 @@ og.MemberTree = function(config) {
 							}
 							
 							trees.each(function (item, index, length){
-								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1 ) {
+								var must_reload = false;
+								if (self.reloadDimensions && self.reloadDimensions[node.object_type_id]) {
+									if (self.reloadDimensions[node.object_type_id].indexOf(item.dimensionId) != -1) must_reload = true;
+								}
+								
+								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && (must_reload || item.is_filtered_by)) {
 									// Filter other Member Trees
 									self.totalFilterTrees++;
 									
@@ -399,6 +422,9 @@ og.MemberTree = function(config) {
 										});
 										
 									}
+									
+									// register that this tree has been filtered, so if any other node is selected this has to be reloaded despite of having no associations with selected member.  
+									item.is_filtered_by = must_reload;
 								}								
 							});
 							
@@ -628,8 +654,11 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 					var trees = this.ownerCt.items;
 					if (trees) {
 						trees.each(function (item, index, length){
-							if (dimensions_to_reload.indexOf(item.dimensionId) != -1) {
-								item.disableReloadOtherDimensions = true;
+							for (ot in dimensions_to_reload) {
+								var dims_array = dimensions_to_reload[ot];
+								if (dims_array.indexOf(item.dimensionId) != -1) {
+									item.disableReloadOtherDimensions = true;
+								}
 							}
 						});
 					}
@@ -740,7 +769,7 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 				if (node_parent) node_parent.appendChild(new_node);
 			}else{				
 				if (node_parent){
-					node_exist.setText(new_node.text);
+					//node_exist.setText(new_node.text);
 				/*	node_parent.removeChild(node_exist);
 					node_parent.appendChild(new_node);*/								
 				}							
@@ -822,11 +851,13 @@ og.updateDimensionTreeNode = function(dimension_id, member, extra_params) {
 	}
 	
 	new_node.ensureVisible();
-	dimension_tree.suspendEvents();
-	//dimension_tree.selectNodes([new_node.id]);
-	new_node.select();
-	dimension_tree.resumeEvents();
-	og.eventManager.fireEvent('member tree node click', new_node);
+	if (extra_params.select_node) {
+		dimension_tree.suspendEvents();
+		//dimension_tree.selectNodes([new_node.id]);
+		new_node.select();
+		dimension_tree.resumeEvents();
+		og.eventManager.fireEvent('member tree node click', new_node);
+	}
 	new_node.expand();
 }
 

@@ -708,7 +708,7 @@ addLangs({
     'custom property invalid numeric value': 'Default value must be a number for custom property: {0}',
     'value cannot be empty': 'Value cannot be empty',
     'value must be numeric': 'Value must be numeric',
-    'memo': 'Memo',
+    'memo': 'Large text',
     'add value': 'Add value',
     	
     /* Custom Reports */

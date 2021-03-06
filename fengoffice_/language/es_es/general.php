@@ -276,7 +276,6 @@
 	'not related' => 'No relacionado',
 	'im' => 'IM',
 	'web pages' => 'Enlaces web',
-	'group users' => 'Usuarios del grupo',
 	'of' => 'de',
 	'search results for' => 'Resultados de la búsqueda de',
 	'search speed' => 'Velocidad de búsqueda',
@@ -286,7 +285,6 @@
 	'next' => 'Próxima',
 	'previous' => 'Anterior',
 	'the template' => 'la plantilla',
-	'associate' => 'Vincular',
 	'vinculations' => 'vinculaciones',
 	'last updated' => 'Ultima modificación',
 	'no data to show' => 'No existen datos',
@@ -392,8 +390,16 @@
 	'without a member' => 'Sin',
 	'uncompleted tasks' => 'Tareas sin completar',
 	
+	'without due date' => 'Sin fecha de fin',
+	'without start date' => 'Sin fecha de comienzo',
+	'without date' => 'Sin fecha',
+		
 	'menu home' => 'Inicio',
 	
 	'write the first letters of the name or surname of the person to select' => 'Escriba las primeras letras del nombre o apellido de la persona a seleccionar o ',
 	'click here to select one from a list' => 'Click aquí para seleccionar de una lista',
+	'click to select country' => 'Click aquí para selccionar país',
+		
+	'completed by name on' => 'Completado por {0} el {1}',
+	'notify assigned user' => 'Notificar al usuario asignado',
 );

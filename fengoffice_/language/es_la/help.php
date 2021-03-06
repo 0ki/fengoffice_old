@@ -36,4 +36,10 @@
 	'how to purchase desc' => 'Información acerca de nuestros diferentes planes y beneficios', 
 	'add ticket' => 'Agregar un nuevo ticket de soporte',
 	'add ticket desc' => "Para obtener ayuda personalizada acerca de Feng Office",
+		
+		'Super Administrator user role description' => 'Puede ver y hacer absolutamente todo. Rol ideal para el propietario de la empresa.',
+		'Administrator user role description' => 'Puede hacer todo, excepto cambiar permisos de otros administradores o super administradores.',
+		'Manager user role description' => 'Puede hacer todo lo que los administradores le permitan en clientes, proyectos, espacios de trabajo, etc.',
+		'Executive user role description' => 'Pueden hacer todo lo que necesiten donde se les sea permitido excepto cambiar permisos. Este rol es para usuarios que trabajan con tareas, así como terceros que trabajan junto a la empresa en un proyecto. No puede modificar datos de facturación.',
+		
 );
