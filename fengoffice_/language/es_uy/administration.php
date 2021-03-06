@@ -117,6 +117,8 @@
   	
 	'config option name days_on_trash' => 'Días en la papelera',
     'config option desc days_on_trash' => 'Cuántos días se mantiene un objeto en la papelera antes de ser borrado automaticamente. Si es cero, los objetos no ser borrar automaticamente.',
+  	'config option name enable_email_module' => 'Habilitar Módulo de Correo',
+  	'config option desc enable_email_module' => 'Determina si la pestaña de Correo estará disponible o no. Advertencia: El módulo de correo está en estado Beta y por lo tanto puede contener errores que lo hacen no apto para uso en producción.',
     'templates' => 'Plantillas',
     'add template' => 'Agregar plantilla',
     'confirm delete template' => 'Está seguro de que desea borrar esta plantilla?',

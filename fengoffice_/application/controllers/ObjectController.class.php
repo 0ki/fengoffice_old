@@ -471,7 +471,7 @@ class ObjectController extends ApplicationController {
     	$proj_cond_contacts = $proj_cond;
     	
     	if(isset($tag) && $tag && $tag!='')
-    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`='".$tag."' AND `oid` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
+    		$tag_str = " AND EXISTS (SELECT * FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag`='".DB::escape($tag)."' AND `oid` = `t`.`rel_object_id` AND `t`.`rel_object_manager` = `object_manager_value`) ";
     	else
     		$tag_str= ' ';
     	$unclassifiedMails = "";

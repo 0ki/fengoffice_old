@@ -53,7 +53,7 @@ class FilesServices extends WebServicesBase {
 				$files = ProjectFiles::getUserFiles(logged_user(), null, $tags, null, ProjectFiles::ORDER_BY_NAME, 'ASC');
 			} else {
 				$listfiles = ProjectFiles::getProjectFiles($ws, null,
-					false, ProjectFiles::ORDER_BY_NAME, 'ASC', null, 1000, false, $tags, null, logged_user()->getId());
+					false, ProjectFiles::ORDER_BY_NAME, 'ASC', null, 1000, false, $tags);
 				if (is_array($listfiles) && count($listfiles))
 					$files = $listfiles[0];
 				else $files = array();
@@ -369,11 +369,11 @@ class FilesServices extends WebServicesBase {
 		XMLWriter::endElement();
 		
 		XMLWriter::startElement('name');
-		XMLWriter::text($f->getFilename());
+		XMLWriter::text(clean($f->getFilename()));
 		XMLWriter::endElement();
 		
 		XMLWriter::startElement('description');
-		XMLWriter::text($f->getDescription());
+		XMLWriter::text(clean($f->getDescription()));
 		XMLWriter::endElement();
 		
 		XMLWriter::startElement('version');
@@ -382,6 +382,14 @@ class FilesServices extends WebServicesBase {
 		
 		XMLWriter::startElement('modifiedOn');
 		XMLWriter::text($f->getLastRevision()->getCreatedOn()->format('d/m/Y'));
+		XMLWriter::endElement();
+		
+		XMLWriter::startElement('modifiedBy');
+		XMLWriter::text(clean($f->getLastRevision()->getCreatedBy()->getDisplayName()));
+		XMLWriter::endElement();
+		
+		XMLWriter::startElement('workspaces');
+		XMLWriter::text($f->getWorkspacesIdsCSV());
 		XMLWriter::endElement();
 		
 		XMLWriter::startElement('tags');

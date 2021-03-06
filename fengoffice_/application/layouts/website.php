@@ -106,7 +106,7 @@ og.loggedUser = {
 };
 
 // To enable emails tab: define('SHOW_MAILS_TAB', 1); in config/config.php
-og.showMailsTab = <?php echo (defined('SHOW_MAILS_TAB') ? SHOW_MAILS_TAB : 0)?>;
+og.showMailsTab = <?php echo config_option("enable_email_module", defined('SHOW_MAILS_TAB') && SHOW_MAILS_TAB) ? 1 : 0 ?>;
 og.daysOnTrash = <?php echo config_option("days_on_trash", 0) ?>;
 Ext.Ajax.timeout = <?php echo get_max_execution_time()*1000 ?>;
 og.GooPlayer.sound = new Sound();

@@ -47,7 +47,9 @@
     'config option name theme' => 'Theme',
     'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo',
   	'config option name days_on_trash' => 'Days on trash',
-    'config option desc days_on_trash' => 'How many days a content object is kept in the trash before being automatically deleted. If 0, objects won\'t be deleted from trash.',
+    'config option desc days_on_trash' => 'How many days a content object is kept in the trash before being automatically deleted. If 0, objects won\'t be deleted from trash. Warning: The Email module is in Beta state, and thus may contain errors that make it no suitable for production use.',
+  	'config option name enable_email_module' => 'Enable Email Module',
+  	'config option desc enable_email_module' => 'Determines whether the Email Tab will be available in OpenGoo.',
 	'config option name time_format_use_24' => 'Use 24 hours format for time descriptions',
   	'config option desc time_format_use_24' => 'If enabled time descriptions will be shown as \'hh:mm\' from 00:00 to 23:59, if not hours will go from 1 to 12 using AM or PM.',
   

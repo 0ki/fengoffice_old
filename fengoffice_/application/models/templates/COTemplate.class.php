@@ -37,6 +37,9 @@ class COTemplate extends BaseCOTemplate {
 			$copy = $object->copy();
 			$copy->setColumnValue('is_template', true);
 			$copy->save();
+			if ($copy instanceof ProjectTask) {
+				ProjectTasks::copySubTasks($object, $copy, true);
+			}
 			$template = $copy;
 		} else {
 			// the object is a template or can't be one, use it as it is

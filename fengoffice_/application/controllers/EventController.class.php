@@ -249,7 +249,7 @@ class EventController extends ApplicationController {
 
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
-				if (str_starts_with($k, $compstr) && $v == 'checked') {
+				if (str_starts_with($k, $compstr) && ($v == 'checked' || $v == 'on')) {
 					$data['users_to_invite'][substr($k, strlen($compstr))] = 0; // Pending Answer
 				}
 			}
@@ -667,7 +667,50 @@ class EventController extends ApplicationController {
 			}
 		}
 	}
+	
+	function allowed_users_view_events() {
+		$comp_array = array();
+		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
+		$wspace_id = isset($_GET['ws_id']) ? $_GET['ws_id'] : 0;
+		$ws = Projects::findById($wspace_id);
+		
+		$companies = $ws->getCompanies();
+		
+		$i = 0;
+		foreach ($companies as $comp) {
+			$users = $comp->getUsersOnProject($ws);
+			if (is_array($users)) {
+				
+				foreach ($users as $k => $user) { // removing event creator from notification list
+					$proj_us = ProjectUsers::findById(array('project_id' => $wspace_id, 'user_id' => $user->getId()));
+					if ($user->getId() == $actual_user_id || $proj_us == null || !$proj_us->getCanReadEvents()) {
+						unset($users[$k]);
+					}
+				}
+				if (count($users) > 0) {
+					$comp_data = array(
+									'id' => $i++,
+									'object_id' => $comp->getId(),
+									'name' => $comp->getName(),
+									'users' => array() 
+					);
+					foreach ($users as $user) {
+						$comp_data['users'][] = array('id' => $user->getId(), 'name' => $user->getDisplayName());			
+					}
+					$comp_array[] = $comp_data;
+				}
+			}
+		}
+		$object = array(
+			"totalCount" => count($comp_array),
+			"start" => 0,
+			"companies" => array()
+		);
+		$object['companies'] = $comp_array;
 
+		ajx_extra_data($object);
+		ajx_current("empty");
+	}
 } // EventController
 
 /***************************************************************************
@@ -677,7 +720,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.65 2008/12/05 20:35:05 alvarotm01 Exp $
+ *   $Id: EventController.class.php,v 1.65.2.1 2008/12/12 20:26:47 alvarotm01 Exp $
  *
  ***************************************************************************/
 

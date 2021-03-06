@@ -1,6 +1,6 @@
 
-    About OpenGoo 1.1 beta 
-    ======================
+    About OpenGoo 1.1 RC1
+    =====================
 
     OpenGoo is a free WebOffice, project management and collaboration
     tool. For license details, see license.txt.
@@ -52,7 +52,7 @@
 
     You should be finished in a matter of minutes.
     
-    WARNING: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
+    Warning: Default memory limit por PHP is 8MB. As a new OpenGoo install consumes about 10 MB,
     administrators could get a message similar to "Allowed memory size of 8388608 bytes exhausted".
     This can be solved by setting "memory_limit=32" in php.ini.    
     
@@ -64,20 +64,20 @@
 	the upgrade procedure two times, first from 0.8 to 0.9 and then from 0.9 to 1.0. 
     
     
-    Upgrade instructions from 1.0
-    =============================
+    Upgrade instructions from 1.0 and 1.1 beta
+    ==========================================
     
     1. Backup you current installation (important !)
-    2. Download OpenGoo 1.1 beta - http://www.opengoo.org/
+    2. Download OpenGoo 1.1 RC1 - http://www.opengoo.org/
     3. Unpack into your OpenGoo installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. In your browser, go to <your_opengoo>/public/upgrade and choose to upgrade from 1.0 to 1.1.
+    	Note: If upgrading from 1.1 beta you'll get some database errors. Just ignore them.
     6. If necessary, refresh your browser or clear its cache so that the new javascript, css and images load.
     
-    NOTE: Because of OpenGoo email's BETA status we have chosen to hide email by default. If you want to enable
-    email again in your installation you just need to set SHOW_MAILS_TAB to true in config/config.php.
-    You can do this by adding the following line before the "return true;" line:
-    	define('SHOW_MAILS_TAB', true); 
+    NOTE: Because of email's BETA status we have chosen to hide email by default. If you want to enable
+    email again in your installation you can do so in Administration / Configuration / General and
+    set 'Enable Email Module' to 'Yes'.
     
     
 	Open Source Libraries 
@@ -98,6 +98,19 @@
 	Changelog
 	=========
 	
+	Since 1.1 beta
+	--------------
+	- bugfix: Database error on time reports.
+	- bugfix: When adding or editing an event, the list of users that can be invited is now the users that have permissions to view events on the selected workspace in the workspace control of the add/edit event view.
+	- bugfix: When adding a task to a template, all subtasks are now added too.
+	- bugfix: Unable to add tasks when no filter is selected.
+	- bugfix: Error when instantiating a template.
+	- bugfix: Webservices, fileExist now returns info about the file.
+	- bugfix: Webservices, listFiles was listing only files created by logged user.
+	- bugfix: Removed a scrollbar when editing documents.
+
+	- usability: Email module is still disabled by default, but can now be enabled in Administration / Configuration / General. 
+	
 	Since 1.0
 	---------
 
@@ -110,10 +123,9 @@
 	feature: Print views for tasks and task listings.
 	feature: In search results there's a new option to search in all workspaces.
 	feature: New webservices API.
-	feature: A set of tools in the 'public/tools' folder, including a web interface for translating OpenGoo.
 
 	system: Implemented a PDO_SQL backend to access the database.
-	system: The help folder was moved to the public folder, because 'public' is the only folder that has to be accessible from a browser.
+	system: The help folder was moved to the public folder, because that 'public' is the only folder that has to be accessible from a browser.
 	system: Moved 'library/combinator' to the 'public' folder because it needs public access.
 	system: Now it's possible to choose the database engine, between InnoDB and MyISAM, so that OpenGoo can be used on databases that don't support InnoDB.
 	system: Installation now tries to create the database if it doesn't exist.

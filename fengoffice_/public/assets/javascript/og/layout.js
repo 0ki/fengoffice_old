@@ -138,8 +138,24 @@ Ext.onReady(function(){
 		]
 	});
 	
-	// To enable emails tab: define('SHOW_MAILS_TAB', 1); in config/config.php
+	// To enable emails tab go to Administration / Configuration / General / Enable Email Module
 	if (og.showMailsTab == 0) tab_panel.remove('mails-panel');
+	og.eventManager.addListener('config enable_email_module changed', function(val) {
+		if (val == 1) {
+			this.insert(2, new og.ContentPanel({
+				title: lang('email') + ' (BETA)',
+				id: 'mails-panel',
+				iconCls: 'ico-email',
+				refreshOnWorkspaceChange: true,
+				defaultContent: {
+					type: "panel",
+					data: "mails"
+				}
+			}));
+		} else {
+			this.remove('mails-panel');
+		}
+	}, tab_panel);
 	
 	var viewport = new Ext.Viewport({
 		layout: 'border',

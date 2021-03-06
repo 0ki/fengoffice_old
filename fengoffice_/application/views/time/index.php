@@ -43,7 +43,7 @@
 
 
 
-<table style="width:100%">
+<table style="width:100%;max-width:924px">
 	<col width=12/><col /><col width=12/><tr>
 	<td colspan=2 style="padding-right:14px">
 <div id="<?php echo $genid ?>TMTimespanHeader" class="TMTimespanHeader">
@@ -77,7 +77,7 @@
 </div></td><td class="coViewTopRight">&nbsp;&nbsp;</td></tr>
 <tr>
 	<td colspan=2 class="coViewBody" style="padding-right:14px">
-<div id="<?php echo $genid ?>TMTimespanContents" class="TMTimespanContents">
+<div id="<?php echo $genid ?>TMTimespanContents" style="width:100%" class="TMTimespanContents">
 <table style="width:100%" id="<?php echo $genid ?>TMTimespanTable">
 <tr>
 	<td width='70px'><b><?php echo lang('date') ?></b></td>
@@ -91,7 +91,7 @@
 
 </td><td class="coViewRight"></td></tr>
 		<tr><td class="coViewBottomLeft"></td>
-		<td class="coViewBottom" style="width:60%"></td>
+		<td class="coViewBottom">&nbsp;</td>
 		<td class="coViewBottomRight"></td></tr>
 	</table>
 </div>

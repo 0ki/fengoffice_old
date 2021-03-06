@@ -117,6 +117,8 @@
   	'user ws config option name task panel filter value' => 'Valor del filtro',
   	'config option name days_on_trash' => 'Días en la papelera',
     'config option desc days_on_trash' => 'Cuántos días un objeto es almacenado en la papelera antes de ser eliminado automáticamente. Si es 0, los objetos no serán eliminados de la papelera.',
+  	'config option name enable_email_module' => 'Habilitar Módulo de Correo',
+  	'config option desc enable_email_module' => 'Determina si la pestaña de Correo estará disponible o no. Advertencia: El módulo de correo está en estado Beta y por lo tanto puede contener errores que lo hacen no apto para uso en producción.',
     'templates' => 'Templates',
     'add template' => 'Add template',
     'confirm delete template' => 'Are you sure you want to delete this template?',

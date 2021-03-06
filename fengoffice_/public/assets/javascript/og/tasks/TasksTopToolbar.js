@@ -39,9 +39,11 @@ og.TasksTopToolbar = function(config) {
 			var toolbar = Ext.getCmp('tasksPanelTopToolbarObject');
 			if (toolbar.filterNamesCompaniesCombo.isVisible()){
 				var value = toolbar.filterNamesCompaniesCombo.getValue();
-				var split = value.split(':');
-				if (split[0] > 0 || split[1] > 0){
-					additionalParams.assigned_to = value;
+				if (value){
+					var split = value.split(':');
+					if (split[0] > 0 || split[1] > 0){
+						additionalParams.assigned_to = value;
+					}
 				}
 			}
 			var url = og.getUrl('task', 'add_task');
@@ -60,7 +62,7 @@ og.TasksTopToolbar = function(config) {
 			projectTemplates[projectTemplates.length] = {text: projectTemplatesArray[i].t,
 				iconCls: 'ico-template',
 				handler: function() {
-					var url = og.getUrl('template', 'instantiatek', {id: this.id});
+					var url = og.getUrl('template', 'instantiate', {id: this.id});
 					og.openLink(url);
 				},
 				scope: projectTemplatesArray[i]

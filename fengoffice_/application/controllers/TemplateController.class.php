@@ -231,6 +231,9 @@ class TemplateController extends ApplicationController {
 			}
 			$copy->save();
 			$copy->addToWorkspace(active_or_personal_project());
+			if ($copy instanceof ProjectTask) {
+				ProjectTasks::copySubTasks($object, $copy, false);
+			}
 		}
 		ajx_current("reload");
 	}

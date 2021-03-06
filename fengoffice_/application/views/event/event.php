@@ -263,68 +263,6 @@ $use_24_hours = config_option('time_format_use_24');
 	<div id="<?php echo $genid ?>add_event_invitation_div" style="display:none">
 	<fieldset id="emailNotification">
 		<legend><?php echo lang('event invitations') ?></legend>
-		<p><?php echo lang('event invitations desc') ?></p>
-
-		<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification')) ?> 
-		<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
-
-		<?php
-		$project = $event->getProject() instanceof Project ? $event->getProject() : active_or_personal_project(); 
-		if ($project instanceof Project) {
-			$companies = $project->getCompanies();
-		} else {
-			$companies = Companies::findAll();
-		}?>
-		<?php foreach($companies as $company) { ?>
-			<script type="text/javascript">
-				App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?> = {
-					id          : <?php echo $company->getId() ?>,
-					checkbox_id : 'notifyCompany<?php echo $company->getId() ?>',
-					users       : []
-				};
-			</script>
-			<?php if ($project instanceof Project) {
-				$users = $company->getUsersOnProject($project);
-			} else {
-				$users = $company->getUsers();
-			}?>
-			<?php
-			foreach ($users as $k => $user) { // removing event creator from notification list
-				if ($user->getId() == logged_user()->getId()) {
-					unset($users[$k]);
-					break;
-				}
-			} 
-			if(is_array($users) && count($users)) { ?>
-			<div class="companyDetails">
-				<div class="companyName">
-					<?php echo checkbox_field('event[invite_company_' . $company->getId() . ']', 
-						array_var($event_data, 'invite_company_' . $company->getId()), 
-						array('id' => $genid.'notifyCompany' . $company->getId(), 
-							'onclick' => 'App.modules.addMessageForm.emailNotifyClickCompany(' . $company->getId() . ',"' . $genid. '")')) ?> 
-					<label for="<?php echo $genid ?>notifyCompany<?php echo $company->getId() ?>" class="checkbox"><?php echo clean($company->getName()) ?></label>
-				</div>
-				
-				<div class="companyMembers">
-				<ul>
-				<?php foreach($users as $user) { ?>
-					<li><?php echo checkbox_field('event[invite_user_' . $user->getId() . ']',
-						array_var($event_data, 'invite_user_' . $user->getId()), 
-						array('id' => $genid.'notifyUser' . $user->getId(),
-							'onclick' => 'App.modules.addMessageForm.emailNotifyClickUser(' . $company->getId() . ', ' . $user->getId() . ',"' . $genid. '")')) ?> 
-						<label for="<?php echo $genid ?>notifyUser<?php echo $user->getId() ?>" class="checkbox"><?php echo clean($user->getDisplayName()) ?></label></li>
-					<script type="text/javascript">
-						App.modules.addMessageForm.notify_companies.company_<?php echo $company->getId() ?>.users.push({
-							id          : <?php echo $user->getId() ?>,
-							checkbox_id : 'notifyUser<?php echo $user->getId() ?>'
-						});
-					</script>
-				<?php } // foreach ?>
-				</ul>
-				</div>
-				</div>
-			<?php } // if ?>
-		<?php } // foreach ?>
 		<?php // ComboBox for Assistance confirmation 
 			if (!$event->isNew()) {
 				$event_invs = $event->getInvitations();
@@ -349,6 +287,11 @@ $use_24_hours = config_option('time_format_use_24');
 					</td></tr></table>	
 			<?php	} //if			
 			} // if ?>
+
+			<p><?php echo lang('event invitations desc') ?></p>
+
+			<?php echo checkbox_field('event[send_notification]', array_var($event_data, 'send_notification', $event->isNew()), array('id' => 'eventFormSendNotification')) ?> 
+			<label for="eventFormSendNotification" class="checkbox"><?php echo lang('send new event notification') ?></label>
 	</fieldset>
 	</div>	
 	
@@ -438,6 +381,73 @@ $use_24_hours = config_option('time_format_use_24');
 
 
 <script type="text/javascript">
+
+
+var wsTree = Ext.get('<?php echo $genid ?>wsSel');
+var filter_user = '<?php echo $filter_user ?>';
+var prevWsVal = -1;
+
+og.drawInnerHtml = function(companies) {
+	var htmlStr = '';
+	
+	if (companies != null) {
+		for (i = 0; i < companies.length; i++) {
+			comp_id = companies[i].object_id;
+			comp_name = companies[i].name;
+			htmlStr += '<script type="text/javascript">';
+			htmlStr += 'App.modules.addMessageForm.notify_companies.company_' + comp_id + ' = {id:\'<?php echo $genid ?>notifyCompany' + comp_id + '\', checkbox_id : \'notifyCompany' + comp_id + '\',users : []};';
+			htmlStr += '\<\/script>';
+				
+			htmlStr += '<div class="companyDetails">';
+			htmlStr += '<div class="companyName">';
+			
+			htmlStr += '<input type="checkbox" class="checkbox" name="event[invite_company_'+comp_id+']" id="<?php echo $genid ?>notifyCompany'+comp_id+'" onclick="App.modules.addMessageForm.emailNotifyClickCompany('+comp_id+',\'<?php echo $genid ?>\')"></input>'; 
+			htmlStr += '<label for="<?php echo $genid ?>notifyCompany'+comp_id+'" class="checkbox">'+og.clean(comp_name)+'</label>';
+			
+			htmlStr += '</div>';
+			htmlStr += '<div class="companyMembers">';
+			htmlStr += '<ul>';
+			
+			for (j = 0; j < companies[i].users.length; j++) {
+				usr = companies[i].users[j];
+				htmlStr += '<li><input type="checkbox" class="checkbox" name="event[invite_user_'+usr.id+']" id="<?php echo $genid ?>notifyUser'+usr.id+'" onclick="App.modules.addMessageForm.emailNotifyClickUser('+comp_id+','+usr.id+',\'<?php echo $genid ?>\')"></input>'; 
+				htmlStr += '<label for="<?php echo $genid ?>notifyUser'+usr.id+'" class="checkbox">'+og.clean(usr.name)+'</label></li>';
+				htmlStr += '<script type="text/javascript">';
+				htmlStr += 'App.modules.addMessageForm.notify_companies.company_' + comp_id + '.users.push({ id:'+usr.id+', checkbox_id : \'notifyUser' + usr.id + '\'});';
+				htmlStr += '\<\/script>';
+			}
+			htmlStr += '</ul>';
+			htmlStr += '</div>';
+			htmlStr += '</div>';
+		}
+	}
+	return htmlStr;
+}
+
+og.drawUserList = function(success, data) {
+	companies = data.companies;
+
+	var inv_div = Ext.get('<?php echo $genid ?>inv_companies_div');
+	if (inv_div != null) inv_div.remove();
+	inv_div = Ext.get('emailNotification');
+	
+	if (inv_div != null) {
+		inv_div.insertHtml('beforeEnd', '<div id="<?php echo $genid ?>inv_companies_div">' + og.drawInnerHtml(companies) + '</div>');	
+		inv_div.repaint();
+	}
+}
+
+og.redrawUserList = function(){
+	var wsVal = Ext.get('<?php echo $genid ?>wsSelValue').getValue();
+	
+	if (wsVal != prevWsVal) {
+		og.openLink(og.getUrl('event', 'allowed_users_view_events', {ws_id:wsVal, user:filter_user}), {callback:og.drawUserList});
+		prevWsVal = wsVal;
+	}
+}
+wsTree.addListener('click', og.redrawUserList);
+og.redrawUserList();
+
 function cal_hide(id) {
 	document.getElementById(id).style.display = "none";
 }

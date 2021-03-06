@@ -121,7 +121,7 @@ class Timeslots extends BaseTimeslots {
 		switch($timeslot_type){
 			case 0: //Task timeslots
 				$from = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
-				$conditions = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.deleted_by = 0 and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				$conditions = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.trashed_by_id = 0 and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
 				//Project condition
 				$conditions .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
 				
@@ -138,7 +138,7 @@ class Timeslots extends BaseTimeslots {
 				$from1 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX . "project_tasks`, `" . TABLE_PREFIX ."projects`";
 				$from2 = "`" . TABLE_PREFIX . "timeslots`, `" . TABLE_PREFIX ."projects`";
 				
-				$conditions1 = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.deleted_by = 0 and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
+				$conditions1 = " WHERE `object_manager` = 'ProjectTasks'  and " . TABLE_PREFIX . "project_tasks.trashed_by_id = 0 and " . TABLE_PREFIX . "project_tasks.id = object_id and " . TABLE_PREFIX . "project_tasks.project_id = `" . TABLE_PREFIX . "projects`.id";
 				//Project condition
 				$conditions1 .= $workspacesCSV? ' and ' . TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')' : '';
 				
@@ -207,7 +207,7 @@ class Timeslots extends BaseTimeslots {
 		
 		$projectCondition = '';
 		if ($workspacesCSV && $object_manager == 'ProjectTasks')
-			$projectCondition = ' and (Select count(*) from '. TABLE_PREFIX . 'project_tasks where '. TABLE_PREFIX . 'project_tasks.id = object_id and ' . TABLE_PREFIX . 'project_tasks.deleted_by = 0 and '
+			$projectCondition = ' and (Select count(*) from '. TABLE_PREFIX . 'project_tasks where '. TABLE_PREFIX . 'project_tasks.id = object_id and ' . TABLE_PREFIX . 'project_tasks.trashed_by_id = 0 and '
 			. TABLE_PREFIX . 'project_tasks.project_id in (' . $workspacesCSV . ')) > 0';
 			
 		$objectCondition = '';

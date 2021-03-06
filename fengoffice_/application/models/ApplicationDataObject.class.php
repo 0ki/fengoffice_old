@@ -586,7 +586,7 @@ abstract class ApplicationDataObject extends DataObject {
 		}
 		return $copy;
 	}
-
+	
 	function isTrashed() {
 		return false;
 	}

@@ -273,7 +273,7 @@ Ext.extend(og.WorkspaceTree, Ext.tree.TreePanel, {
 		if (exists)	return;
 		var config = {
 			iconCls: 'ico-trash',
-			text: 'Trash',
+			text: lang('trash'),
 			id: 'trash',
 			listeners: {
 				click: function() {
