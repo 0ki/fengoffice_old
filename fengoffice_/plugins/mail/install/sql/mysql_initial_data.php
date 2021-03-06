@@ -34,6 +34,7 @@ INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, 
  ('mails panel', 'folder_sent_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
  ('mails panel', 'folder_draft_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
  ('mails panel', 'folder_junk_columns', 'from,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL),
+ ('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', 0, 0, ''),
  ('mails panel', 'folder_outbox_columns', 'to,subject,account,date,folder,actions', 'StringConfigHandler', 1, 0, NULL)
 ON DUPLICATE KEY UPDATE name=name;
 

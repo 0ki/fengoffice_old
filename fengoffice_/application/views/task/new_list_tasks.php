@@ -125,18 +125,20 @@ og.config.quick_add_task_combos = <?php
 			return ($a < $b) ? -1 : 1;
 		}
 		usort($dimensions_to_show, "cmp");
-				
+		
+		$first = true;
 		foreach ($dimensions_to_show as $key=>$dimension_id){
 			if (in_array($dimension_id, $dimensions_to_skip)) continue;
 			$dim = Dimensions::instance()->getDimensionById($dimension_id);
 			if($dim instanceof Dimension){
-				if($key!=0) $object .=",";
+				if(!$first) $object .=",";
+				$first = false;
 				$object .= "{name : '". $dim->getName()."', desc : '".str_replace("'", "\'", lang('add new relation ' . $dim->getCode()))."'}";
 			}
 		}
 		echo "[".$object."]";
 ?>;
-var ogTasks.task_ids = <?php echo json_encode($ids)?>;
+ogTasks.task_ids = <?php echo json_encode($ids)?>;
 ogTasks.custom_properties = <?php echo json_encode($cp_values)?>;
 if (!ogTasks.task_ids) ogTasks.task_ids = [];
 </script>

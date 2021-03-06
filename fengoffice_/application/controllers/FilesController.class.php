@@ -590,7 +590,9 @@ class FilesController extends ApplicationController {
 				//Add links
 				$object_controller->link_to_new_object($file);
 				$object_controller->add_subscribers($file);
-				$object_controller->add_custom_properties($file);								
+				if (!array_Var($file_data, 'composing_mail')) {
+					$object_controller->add_custom_properties($file);
+				}
 			}
 			
 			ApplicationLogs::createLog($file,ApplicationLogs::ACTION_ADD);

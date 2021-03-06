@@ -92,4 +92,12 @@
 			SET o.updated_by_id=o.created_by_id, o.updated_on=o.created_on
 			WHERE f.mail_id>0;");
 	}
+	
+	function mail_update_8_9() {
+		DB::execute("
+				INSERT INTO `".TABLE_PREFIX."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', 0, 0, '')						
+					ON DUPLICATE KEY UPDATE name=name;
+		");		
+	}
 

@@ -1,5 +1,5 @@
 
-	About Feng Office 2.7.1.4
+	About Feng Office 2.7.1.5
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,11 @@
 	
 	Changelog
 	=========
+	
+	Since 2.7.1.4
+	----------------
+	bugfix: task list actions
+	bugfix: missing config option auto_classify_attachments
 	
 	Since 2.7.1.3
 	----------------
