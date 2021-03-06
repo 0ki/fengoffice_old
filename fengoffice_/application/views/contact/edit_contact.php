@@ -464,21 +464,21 @@
 			if (!is_new_contact) {
 			<?php foreach (array_var($contact_data, 'all_addresses') as $address) { ?>
 				og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'contact', '<?php echo $address->getAddressTypeId()?>', {
-					street: '<?php echo str_replace("\n", " ", $address->getStreet())?>',
-					city: '<?php echo $address->getCity()?>',
-					state: '<?php echo $address->getState()?>',
-					zip_code: '<?php echo $address->getZipCode()?>',
+					street: '<?php echo str_replace("'", "\'", str_replace("\n", " ", $address->getStreet()))?>',
+					city: '<?php echo str_replace("'", "\'", $address->getCity())?>',
+					state: '<?php echo str_replace("'", "\'", $address->getState())?>',
+					zip_code: '<?php echo str_replace("'", "\'", $address->getZipCode())?>',
 					country: '<?php echo $address->getCountry()?>',
 					id: '<?php echo $address->getId()?>'
 				});
 			<?php } ?>
 			
 			<?php foreach (array_var($contact_data, 'all_webpages') as $webpage) { ?>
-				og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'contact', '<?php echo $webpage->getWebTypeId()?>', '<?php echo $webpage->getUrl()?>', '<?php echo $webpage->getId()?>');
+				og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'contact', '<?php echo $webpage->getWebTypeId()?>', '<?php echo str_replace("'", "\'", $webpage->getUrl())?>', '<?php echo $webpage->getId()?>');
 			<?php } ?>
 
 			<?php foreach (array_var($contact_data, 'all_emails') as $email) { ?>
-				og.addNewEmailInput('<?php echo $genid?>_emails_container', 'contact', '<?php echo $email->getEmailTypeId()?>', '<?php echo $email->getEmailAddress()?>', '<?php echo $email->getId()?>');
+				og.addNewEmailInput('<?php echo $genid?>_emails_container', 'contact', '<?php echo $email->getEmailTypeId()?>', '<?php echo str_replace("'", "\'", $email->getEmailAddress())?>', '<?php echo $email->getId()?>');
 			<?php } ?>
 			}
 

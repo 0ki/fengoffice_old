@@ -198,3 +198,13 @@ function core_dimensions_update_9_10() {
 		DB::executeAll("UPDATE ".TABLE_PREFIX."role_object_type_permissions SET can_write=1, can_delete=1 WHERE object_type_id=".$template_ot->getId()." AND role_id=".$user->getPermissionGroupId());
 	}
 }
+
+
+function core_dimensions_update_10_11() {
+	// generate small, medium and large size images for users, contacts and companies
+	$all_contacts_with_picture = Contacts::findAll(array('conditions' => "picture_file <> ''"));
+	
+	foreach ($all_contacts_with_picture as $contact) {
+		$result = $contact->generateAllSizePictures($contact->getPictureFile());
+	}
+}

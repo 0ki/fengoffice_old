@@ -461,7 +461,24 @@
     */
     function setPictureFile($value) {
       return $this->setColumnValue('picture_file', $value);
-    } // setPictureFile() 
+    } // setPictureFile()
+
+    
+    function getPictureFileSmall() {
+    	return $this->getColumnValue('picture_file_small');
+    }
+    
+    function setPictureFileSmall($value) {
+    	return $this->setColumnValue('picture_file_small', $value);
+    }
+    
+    function getPictureFileMedium() {
+    	return $this->getColumnValue('picture_file_medium');
+    }
+    
+    function setPictureFileMedium($value) {
+    	return $this->setColumnValue('picture_file_medium', $value);
+    }
     
     
     /**

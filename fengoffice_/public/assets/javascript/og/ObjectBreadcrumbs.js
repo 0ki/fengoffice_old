@@ -3,20 +3,8 @@ og.emptyBreadcrumbsToRefresh = new Array();
 og.eventManager.addListener('replace all empty breadcrumb',function(){
 	//before insert breadcrumbs we need to have all members that we need for breadcrumbs in og.dimensions
 	//CALLBACK
-	var callback = function(emptyBreadcrumbs){
-		for (var j = 0; j < emptyBreadcrumbs.length; j++) {
-			var id = emptyBreadcrumbs[j];
-			var members = og.getMemberFromOgDimensions(id, true);
-			
-			if (members.length > 0){
-				var member = members[0];
-				og.replaceAllEmptyBreadcrumbForThisMember (0,member);
-			}
-		}
-		
-		//init popover btns that are not initialized yet
-		var btns = $(".breadcrumbBtn.btnPopoverNotInitialized").toArray();
-		og.initBreadcrumbsBtns(btns);
+	var callback = function(emptyBreadcrumbs){		
+		og.replaceAllEmptyBreadcrumbForThisMemberInterval(emptyBreadcrumbs);		
 	}
 	
 	var copy = og.emptyBreadcrumbsToRefresh.slice(0);
@@ -25,6 +13,33 @@ og.eventManager.addListener('replace all empty breadcrumb',function(){
 	//empty the array after refresh
 	og.emptyBreadcrumbsToRefresh.length = 0;
 });
+
+og.replaceAllEmptyBreadcrumbForThisMemberInterval = function(emptyBreadcrumbs){
+	var curNewsIndex = -1;
+
+	function advanceNewsItem() {
+	    ++curNewsIndex;
+	    if (curNewsIndex >= emptyBreadcrumbs.length) {
+	    	 clearInterval(intervalID);
+	    }
+	   	  
+	    var id = emptyBreadcrumbs[curNewsIndex];
+		var members = og.getMemberFromOgDimensions(id, true);
+		
+		if (members.length > 0){
+			var member = members[0];			
+			og.replaceAllEmptyBreadcrumbForThisMember (0,member);
+		}
+		
+		//init popover btns that are not initialized yet
+		var btns = $(".breadcrumbBtn.btnPopoverNotInitialized").toArray();
+		og.initBreadcrumbsBtns(btns);
+		
+	}
+
+	var intervalID = setInterval(advanceNewsItem, 100);	
+}
+
 
 /*
  * dims array all dimensions with members for this breadcrumb
@@ -370,7 +385,7 @@ og.replaceAllEmptyBreadcrumbForThisMember = function(dimension_id ,member, extra
 		var show_link = $(all_targets[j]).data("show-link");
 		$(all_targets[j]).parent().html('<span id="'+new_target_id+'" class="bread-crumb-'+ member.id +' member-path real-breadcrumb og-wsname-color-'+ member.color +'" data-container-to-fill="'+container_to_fill+'" data-show-link="'+show_link+'"></span>');
 		
-		og.insertBreadcrumb(member.id,new_target_id,false);//.activity-info .task-breadcrumb-container
+		og.insertBreadcrumb(member.id,new_target_id,false);
 	}	
 }
 

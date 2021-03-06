@@ -775,3 +775,23 @@
   		}
   	}
   }
+  
+  
+  function checkAddressInputMandatoryFields($address_info, $field_name, &$error_msgs) {
+  	if ($error_msgs == null) $error_msgs = array();
+  	if (!$field_name) $field_name = lang('address');
+  	$ok = true;
+  	
+  	if (is_array($address_info) && count($address_info)) {
+	  	$mandatory_fields = config_option('mandatory_address_fields');
+	  	foreach ($mandatory_fields as $mfield) {
+	  		if (!array_var($address_info, $mfield)) {
+	  			$ok = false;
+	  			$error_msgs[] = lang('address field is required', $field_name, lang($mfield));
+	  		}
+	  	}
+  	}
+  	
+  	return $ok;
+  }
+  

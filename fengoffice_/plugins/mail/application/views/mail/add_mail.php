@@ -450,6 +450,10 @@ og.checkAttach = function() {
 }
 
 og.checkFrom = function() {
+	var config = <?php echo user_config_option("check_is_defult_account") ? '1' : '0';?>;
+	if (!config){
+		return true;
+	}
 	var sel_acc = $('#' + genid + 'mailAccount').val();
 	var def_acc = $('#' + genid + 'def_acc_id').val();
 	var is_autosaving = $('#' + genid + 'autosave').val();

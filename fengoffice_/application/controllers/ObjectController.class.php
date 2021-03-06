@@ -409,6 +409,12 @@ class ObjectController extends ApplicationController {
 								if (array_var($value, 'street') == '' && array_var($value, 'city') == '' && array_var($value, 'state') == '' && array_var($value, 'country') == '' && array_var($value, 'zip_code') == '') {
 									throw new Exception(lang('custom property value required', $custom_property->getName()));
 								}
+								$errors = array(lang('error form validation'));
+								Env::useHelper('form');
+								$ok = checkAddressInputMandatoryFields($value, $custom_property->getName(), $errors);
+								if (!$ok) {
+									throw new Exception(implode("\n - ", $errors));
+								}
 							}
 							// Address custom property
 							$val = array_var($value, 'type') .'|'. array_var($value, 'street') .'|'. array_var($value, 'city') .'|'. array_var($value, 'state') .'|'. array_var($value, 'country') .'|'. array_var($value, 'zip_code');
@@ -460,10 +466,11 @@ class ObjectController extends ApplicationController {
 					if ($object->isSearchable() && 
 						($custom_property->getType() == 'text' || $custom_property->getType() == 'list' || $custom_property->getType() == 'numeric')){
 						
-						$name = str_replace_first("'", "\'", $custom_property->getName());
+						$name = str_replace("'", "\'", $custom_property->getName());
 						if (is_array($value)) {
 							$value = implode(', ', $value);
 						}
+						$value = str_replace("'", "\'", $value);
 						
 						$sql = "INSERT INTO ".TABLE_PREFIX."searchable_objects (rel_object_id, column_name, content)
 						VALUES ('".$object->getId()."', '".$name."', '".$value."')
@@ -1850,6 +1857,28 @@ class ObjectController extends ApplicationController {
 		
 		$extra_conditions = array();
 		
+		// user filter
+		if (in_array("contact", array_var($filters, 'types', array())) && isset($extra_list_params->is_user)) {
+			$joins[] = "
+				LEFT JOIN ".TABLE_PREFIX."contacts c on c.object_id=o.id";
+			
+			$extra_conditions[] = "
+				c.user_type ".($extra_list_params->is_user == 1 ? ">" : "=" )." 0";
+			
+			if (isset($extra_list_params->has_permissions) && $extra_list_params->has_permissions > 0) {
+				$mem_id = $extra_list_params->has_permissions;
+				$extra_conditions[] = " EXISTS (
+					SELECT cmp.permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions cmp
+					WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id)
+					AND cmp.member_id='$mem_id' 
+					AND cmp.object_type_id NOT IN (SELECT tp.object_type_id FROM ".TABLE_PREFIX."tab_panels tp WHERE tp.enabled=0)
+					AND cmp.object_type_id NOT IN (SELECT oott.id FROM ".TABLE_PREFIX."object_types oott WHERE oott.name IN ('comment','template'))
+					AND cmp.object_type_id IN (SELECT oott2.id FROM ".TABLE_PREFIX."object_types oott2 WHERE oott2.type IN ('content_object','dimension_object'))
+				)";
+			} 
+		}
+		
+		
 		// Object type filter - exclude template types (if not template picker), filter by required type names (if specified) and match value with objects table
 		$extra_object_type_conditions = "
 			AND name <> 'file revision' $template_object_names $type_condition AND o.object_type_id = ot.id";
@@ -2013,14 +2042,18 @@ class ObjectController extends ApplicationController {
 			$rows_count = DB::executeAll($sql_count);
 			$total_items = $rows_count[0]['total_items'];
 		} else {
-			$total_items = count($rows) < $filesPerPage ? count($rows) : 1000000;
+			if (isset($rows) && is_array($rows)) {
+				$total_items = count($rows) < $filesPerPage ? count($rows) : 1000000;
+			} else {
+				$total_items = 0;
+			}
 		}
 		
 		// prepare response object
 		$info = array();
 		
 		// get objects
-		if (is_array($rows)) {
+		if (isset($rows) && is_array($rows)) {
 			foreach ($rows as $row) {
 				$instance = Objects::findObject($row['id']);
 				

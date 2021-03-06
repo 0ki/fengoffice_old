@@ -97,7 +97,10 @@ ogTasks.updateTaskGroups = function(data, add_new_tasks){
 		group.rendering = false;	
 		
 		//update group totals
-		$("#group_totals_"+group.group_id).replaceWith(ogTasks.newTaskGroupTotals(group));
+		$("#group_totals_"+group.group_id).replaceWith(ogTasks.newTaskGroupTotals(group));	
+		
+		//resize total row
+		$("#group_totals_"+group.group_id+" .task-name-container").width(ogTasks.tasks_row_name_width);
 	}	
 };
 

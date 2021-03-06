@@ -101,6 +101,8 @@ og.renderContactSelector = function(config) {
 		url_params['plugin_filters'] = Ext.util.JSON.encode(config.plugin_filters);
 	}
 	
+	var selector_filters = config.filters;
+	
 	var store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy({
 			method: "GET",
@@ -178,6 +180,9 @@ og.renderContactSelector = function(config) {
     		}, combo, {
     			ignore_context: true,
         		hideFilters: true,
+        		sort: 'name',
+        		dir: 'ASC',
+        		extra_list_params: selector_filters,
     			types: ['contact'],
     			selected_type: 'contact'
     		});

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2.1
+ * Butia upgrade script will upgrade FengOffice 3.1.5.3 to FengOffice 3.2.2.1
  *
  * @package ScriptUpgrader.scripts
  * @version 1.0
@@ -39,7 +39,7 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('3.1.5.3');
-		$this->setVersionTo('3.2.1');
+		$this->setVersionTo('3.2.2.1');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -427,6 +427,50 @@ class ButiaUpgradeScript extends ScriptUpgraderScript {
 			";
 		}
 		
+		if (version_compare($installed_version, '3.2.1.1') < 0) {
+			if (!$this->checkColumnExists($t_prefix."contacts", "picture_file_small", $this->database_connection)) {
+				$upgrade_script .= "
+					ALTER TABLE `" . $t_prefix . "contacts`
+					 ADD COLUMN `picture_file_small` VARCHAR(100) NOT NULL AFTER `picture_file`,
+					 ADD COLUMN `picture_file_medium` VARCHAR(100) NOT NULL AFTER `picture_file_small`;
+				";
+			}	
+		}
+		
+		if (version_compare($installed_version, '3.2.2-alpha') < 0) {
+			// config option to specify which address fields are mandatory in case of adding an address
+			$upgrade_script .= "
+				INSERT INTO `".$t_prefix."config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				 ('general', 'mandatory_address_fields', '', 'AddressFieldsConfigHandler', 0, 0, NULL)
+				ON DUPLICATE KEY UPDATE name=name;
+			";
+		}
+		
+		if (version_compare($installed_version, '3.2.2-beta') < 0) {
+			$upgrade_script .= "
+				DELETE FROM ".$t_prefix."role_object_type_permissions
+				WHERE object_type_id IN (
+					SELECT o.id
+					FROM `".$t_prefix."object_types` o
+					WHERE o.`name` IN ('comment','template')
+				);
+				
+				DELETE FROM ".$t_prefix."max_role_object_type_permissions 
+				WHERE object_type_id IN (
+					 SELECT o.id
+					 FROM `".$t_prefix."object_types` o 
+					 WHERE o.`name` IN ('comment','template')				
+				);
+				 
+				 
+				DELETE FROM ".$t_prefix."contact_member_permissions 
+				WHERE object_type_id IN (
+					 SELECT o.id
+					 FROM `".$t_prefix."object_types` o 
+					 WHERE o.`name` IN ('comment','template')				
+				);				
+			";
+		}
 		
 		
 		// Execute all queries

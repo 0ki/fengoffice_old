@@ -84,6 +84,7 @@
 					render_member_selectors($milestone->manager()->getObjectTypeId(), $genid, $milestone->getMemberIds(), array('listeners' => $listeners), null, null, false);
 				} 
 			?>
+			<div class="clear"></div>
 			</div>
 			
 			<div class="dataBlock">

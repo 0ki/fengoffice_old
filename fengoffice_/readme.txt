@@ -1,5 +1,5 @@
 
-	About Feng Office 3.2.1
+	About Feng Office 3.2.2.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -104,6 +104,55 @@
 	
 	Changelog
 	=========
+	
+	Since 3.2.2
+	----------------
+	bugfix: Superadmin cannot edit other superadmins.
+	
+	Since 3.2.2-rc
+	----------------
+	bugfix: object prefix is not deleted after deleting object
+	
+	Since 3.2.2-beta
+	----------------
+	bugfix: breadcrumbs on mail list.
+	bugfix: calculate percent completed on tasks.
+	bugfix: group totals aligned on tasks list.
+	bugfix: error when instantiating template milestones.
+	bugfix: showing which tab is selected in mail panel.
+	bugfix: prevent "duplicate key" message in permission groups table when creating an user.
+	bugfix: some checkboxes are not submitted correctly.
+		
+	Since 3.2.2-alpha
+	----------------
+	fetaure: When editing a task and start or due date is changed, ask the user to advance/rewind the subtasks dates.
+	feature: new config option to configure which address fields are mandatory.
+	
+	performance: breadcrumbs.
+	performance: tasks list.
+	
+	bugfix: when clicking home, the panel is reloaded once per enabled dimension.
+	bugfix: when filtering tree by another dimension and selecting the node it is reloading again unnecessarilly.
+	bugfix: remove comment and template objects types from role_object_type_permissions, max_role_object_type_permissions and contact_member_permissions.
+	bugfix: old breadcrumbs.
+	bugfix: object prefices - setting object name must escape characters.
+	bugfix: linked objects component always filters by context, and intersects with the own member pickers selections.
+	bugfix: when editing object, when cleaning object_members before adding to members, members of non-manageable dimensions must not be cleaned.
+	bugfix: template instantiation with non-working days does not leave task dates as they are if advanced days are 0.
+	bugfix: don't classify "inline" attachments when classifying emails.
+	bugfix: auto_classify_attachments config option is not included in mail plugin installer.
+	bugfix: color input does not render "light grey" color.
+	bugfix: project manager selector changes.
+	bugfix: csv contact/company import encoding problem with iso-8859-1.
+	bugfix: csv contact/company import fails if some fields has apostrophe.
+	bugfix: csv contact/company import duplicates addresses, phones and webpages if import is executed twice.
+	bugfix: custom properties with apostrophe can't be added to searchable objects.
+	bugfix: some checkboxes are not submitted correctly.
+		
+	
+	Since 3.2.1
+	----------------
+	feature: user picture files are scaled in 3 sizes for performace
 	
 	Since 3.2.1-rc
 	----------------

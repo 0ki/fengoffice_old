@@ -48,6 +48,8 @@ og.ArchivedObjects = function() {
 					}
 					og.ArchivedObjects.store.lastOptions.params.archived = true;
 					Ext.getCmp('archivedobjects-manager').reloadGridPagingToolbar('object','list_objects','archivedobjects-manager');
+				
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -74,7 +76,11 @@ og.ArchivedObjects = function() {
 	
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath,false,false,true);
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 		
 		var name = String.format('<a href="{1}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', og.clean(value), viewUrl) + mem_path;
 		

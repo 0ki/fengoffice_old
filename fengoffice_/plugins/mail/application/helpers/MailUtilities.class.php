@@ -357,7 +357,6 @@ class MailUtilities {
 					$mail->setReceivedDate($mail->getSentDate());
 			}
 			$mail->setSize(strlen($content));
-			$mail->setHasAttachments(!empty($parsedMail["Attachments"]));
 			$mail->setCreatedOn(new DateTimeValue(time()));
 			$mail->setCreatedById($account->getContactId());
 			$mail->setAccountEmail($account->getEmail());
@@ -365,6 +364,15 @@ class MailUtilities {
 			$mail->setMessageId($message_id);
 			$mail->setInReplyToId($in_reply_to_id);
 	
+			// set hasAttachments=true onlu if there is any attachment with FileDisposition='attachment'
+			$has_attachments = false;
+			foreach (array_var($parsedMail, "Attachments", array()) as $attachment) {
+				if (array_var($attachment, 'FileDisposition') == 'attachment') {
+					$has_attachments = true;
+				}
+			}
+			$mail->setHasAttachments($has_attachments);
+			
 			$mail->setUid($uid);
 			$type = array_var($parsedMail, 'Type', 'text');
 			

@@ -254,6 +254,8 @@ og.eventManager.addListener('after member save',
 
 og.eventManager.addListener('try to select member',
 	function (member) {
+		if (og.resettingAllTrees) return;
+		
 		var interval = setInterval(function(){
 			var tree = Ext.getCmp("dimension-panel-" + member.dimension_id);
 			var treenode = tree ? (member.id > 0 ? tree.getNodeById(member.id) : tree.getRootNode()) : null;
@@ -414,6 +416,68 @@ og.eventManager.addListener('mark_error_field',
  	 		}
   		}
  	}
+);
+
+
+og.eventManager.addListener('ask to change subtasks dates',
+	function (data) {
+		var s = data.sd_diff;
+		var d = data.dd_diff;
+
+		if (d) {
+			var dd_str = (d.days > 0 ? ' '+d.days+' '+lang('days') : '') + (d.hours > 0 ? ', '+d.hours+' '+lang('hours') : '') + 
+				(d.mins > 0 ? ', '+d.mins+' '+lang('minutes') : '') + ' '+(d.sign >= 0 ? lang('forward'):lang('backward'));
+		}
+		if (s) {
+			var sd_str = (s.days > 0 ? ' '+s.days+' '+lang('days') : '') + (s.hours > 0 ? ', '+s.hours+' '+lang('hours') : '') + 
+				(s.mins > 0 ? ', '+s.mins+' '+lang('minutes') : '') + ' '+(s.sign >= 0 ? lang('forward'):lang('backward'));
+		}
+
+		var question = null;
+		if (d && s) {
+			question = lang('do you want to move subtasks due date X and start date Y', dd_str, sd_str);
+		} else if (d) {
+			question = lang('do you want to move subtasks due date X', dd_str);
+		} else if (s) {
+			question = lang('do you want to move subtasks start date X', sd_str);
+		}
+		if (question) {
+			var info = lang('task start or due date has been changed');
+			var div = document.createElement('div');
+			div.style = "border-radius: 5px; background-color: #fff; padding: 10px; width: 400px;";
+			var genid = Ext.id();
+			div.innerHTML = '<div><label class="coInputTitle">'+lang('modify subtasks dates')+'</label></div>'+
+				'<div id="'+genid+'_question">'+ info + '</br>' + question+'</div>'+
+				'<div id="'+genid+'_buttons">'+
+				'<button class="yes submit blue">'+lang('yes')+'</button><button class="no submit blue">'+lang('no')+'</button>'+
+				'</div><div class="clear"></div>';
+
+			var modal_params = {
+				'escClose': false,
+				'overlayClose': false,
+				'closeHTML': '<a id="'+genid+'_close_link" class="modal-close" title="'+lang('close')+'"></a>',
+				'onShow': function (dialog) {
+					$("#"+genid+"_close_link").addClass("modal-close-img");
+					$("#"+genid+"_buttons").css('text-align', 'right').css('margin', '10px 0');
+					$("#"+genid+"_question").css('margin', '10px 0');
+					$("#"+genid+"_buttons button.yes").css('margin-right', '10px').click(function(){
+						og.openLink(og.getUrl('task', 'advance_subtasks_dates'), {post: {
+							task_id: data.task_id,
+							dd_diff: d ? Ext.util.JSON.encode(d) : '',
+							sd_diff: s ? Ext.util.JSON.encode(s) : ''
+						}});
+						$('.modal-close').click();
+					});
+					$("#"+genid+"_buttons button.no").css('margin-right', '10px').click(function(){
+						$('.modal-close').click();
+					});
+			    }
+			};
+			setTimeout(function() {
+				$.modal(div, modal_params);
+			}, 100);
+		}
+	}
 );
 
 

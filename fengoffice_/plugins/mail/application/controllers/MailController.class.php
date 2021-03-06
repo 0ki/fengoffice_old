@@ -1270,7 +1270,11 @@ class MailController extends ApplicationController {
 			}
 			$to_remove = array();
 			foreach($attachments as $k => &$attach) {
-				if (array_var($parsedEmail, 'FileDisposition') == 'inline' && array_var($attach, 'Type') == 'html') $attach['hide'] = true;
+				
+				// dont show inline images in attachments box
+				if (array_var($attach, 'FileDisposition') == 'inline' && array_var($parsedEmail, 'Type') == 'html') {
+					unset($attachments[$k]);
+				}
 				if (array_var($attach, 'Type') == 'html') {
 					$attach_tmp = $attach['Data'];
 					$attach_tmp = preg_replace('/<html[^>]*[>]/', '', $attach_tmp);
@@ -1645,7 +1649,10 @@ class MailController extends ApplicationController {
 					$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId());
 					$ctrl->add_to_members($email, $members, $account_owner);
 					
-					if ($after_receiving && $email->getHasAttachments() && user_config_option('auto_classify_attachments')) {
+					if ($after_receiving && $email->getHasAttachments() && user_config_option('auto_classify_attachments')
+						|| !$after_receiving && $email->getHasAttachments() && 
+							(user_config_option('mail_drag_drop_prompt')=='classify' || user_config_option('mail_drag_drop_prompt')=='prompt' && intval(array_var($_REQUEST, 'classify_attachments')) > 0) ) {
+							
 						if (count($members) > 0) {
 							$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
 							MailUtilities::parseMail($email->getContent(), $decoded, $parsedEmail, $warnings);
@@ -1656,18 +1663,27 @@ class MailController extends ApplicationController {
 				} else {
 					$email->removeFromMembers(logged_user() instanceof contact ? logged_user() : Contacts::findById($email->getAccount()->getContactId(), $email->getMembers()));
 				}
+				
 				if ($process_conversation) {
 					$conversation = MailContents::getMailsFromConversation($email);
 					
 					if (count($members) > 0) {
 						$member_instances = Members::findAll(array('conditions' => 'id IN ('.implode(',',$members).')'));
 						foreach ($conversation as $conv_email) {
+							// dont process orignal email again
+							if ($conv_email->getId() == $email->getId()) {
+								continue;
+							}
+							
 							$account_owner = logged_user() instanceof contact ? logged_user() : Contacts::findById($conv_email->getAccount()->getContactId());
 							$ctrl->add_to_members($conv_email, $members, $account_owner);
 							MailUtilities::parseMail($conv_email->getContent(), $decoded, $parsedEmail, $warnings);
 							
 							if ($conv_email->getHasAttachments()) {
-								if (!$after_receiving || user_config_option('auto_classify_attachments')) {
+								if ($after_receiving && user_config_option('auto_classify_attachments')
+									|| !$after_receiving && 
+										(user_config_option('mail_drag_drop_prompt')=='classify' || user_config_option('mail_drag_drop_prompt')=='prompt' && intval(array_var($_REQUEST, 'classify_attachments')) > 0)) {
+										
 									$this->classifyFile($classification_data, $conv_email, $parsedEmail, $member_instances, false, !$after_receiving);
 								}
 							}
@@ -1721,6 +1737,9 @@ class MailController extends ApplicationController {
 		
 		for ($c = 0; $c < count($classification_data); $c++) {
 			if (isset($classification_data["att_".$c]) && $classification_data["att_".$c] && isset($parsedEmail["Attachments"][$c])) {
+			  // dont classify inline images
+			  if (array_var($parsedEmail["Attachments"][$c], 'FileDisposition') == 'attachment') {
+				
 				$att = $parsedEmail["Attachments"][$c];
 				$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 				if (trim($fName) == "" && strlen($att["FileName"]) > 0) $fName = utf8_encode($att["FileName"]);
@@ -1842,6 +1861,7 @@ class MailController extends ApplicationController {
 				
 				if (isset($tempFileName) && is_file($tempFileName)) unlink($tempFileName);
 			}
+		  }
 		}
 	}
 	

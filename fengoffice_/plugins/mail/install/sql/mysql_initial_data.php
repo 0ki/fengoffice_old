@@ -15,6 +15,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 
 INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
  ('mails panel', 'view deleted accounts emails', '1', 'BoolConfigHandler', '0', '0', NULL),
+ ('mails panel', 'check_is_defult_account', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'block_email_images', '1', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'draft_autosave_timeout', '60', 'IntegerConfigHandler', '0', '100', NULL),
  ('mails panel', 'attach_docs_content', '1', 'BoolConfigHandler', '0', '0', NULL),
@@ -23,6 +24,7 @@ INSERT INTO <?php echo $table_prefix ?>contact_config_options (`category_name`, 
  ('mails panel', 'max_spam_level', '0', 'IntegerConfigHandler', '0', '100', NULL),
  ('mails panel', 'create_contacts_from_email_recipients', '0', 'BoolConfigHandler', '0', '101', NULL),
  ('mails panel', 'mail_drag_drop_prompt', 'prompt', 'MailDragDropPromptConfigHandler', '0', '102', NULL),
+ ('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', '0', '103', NULL),
  ('mails panel', 'show_emails_as_conversations', '0', 'BoolConfigHandler', '0', '0', NULL),
  ('mails panel', 'mails account filter', '', 'StringConfigHandler', '1', '0', NULL),
  ('mails panel', 'mails classification filter', 'all', 'StringConfigHandler', '1', '0', NULL),

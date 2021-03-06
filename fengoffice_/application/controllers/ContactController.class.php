@@ -1999,7 +1999,7 @@ class ContactController extends ApplicationController {
 							$contact_data['import_status'] = '('.lang('updated').')';
 							$fname = DB::escape(array_var($contact_data, "first_name"));
 							$lname = DB::escape(array_var($contact_data, "surname"));
-							$email_cond = array_var($contact_data, "email") != '' ? " OR email_address = '".array_var($contact_data, "email")."'" : "";
+							$email_cond = array_var($contact_data, "email") != '' ? " OR email_address = ".DB::escape(array_var($contact_data, "email")) : "";
 							$contact = Contacts::findOne(array(
 								"conditions" => "first_name = ".$fname." AND surname = ".$lname." $email_cond",
 								'join' => array(
@@ -2038,39 +2038,116 @@ class ContactController extends ApplicationController {
 
 								//Home form
 								if($contact_data['h_address'] != "" || $contact_data['h_city'] != "" || $contact_data['h_state'] != "" || $contact_data['h_country'] != "" || $contact_data['h_zipcode'] != ""){
-									$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+									if (!$contact->hasAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home')) {
+										$contact->addAddress($contact_data['h_address'], $contact_data['h_city'], $contact_data['h_state'], $contact_data['h_country'], $contact_data['h_zipcode'], 'home');
+									}
 								}
-								if($contact_data['h_phone_number'] != "") $contact->addPhone($contact_data['h_phone_number'], 'home', true);
-								if($contact_data['h_phone_number2'] != "") $contact->addPhone($contact_data['h_phone_number2'], 'home');
-								if($contact_data['h_mobile_number'] != "") $contact->addPhone($contact_data['h_mobile_number'], 'mobile');
-								if($contact_data['h_fax_number'] != "") $contact->addPhone($contact_data['h_fax_number'], 'fax');
-								if($contact_data['h_pager_number'] != "") $contact->addPhone($contact_data['h_pager_number'], 'pager');
-								if($contact_data['h_web_page'] != "") $contact->addWebpage($contact_data['h_web_page'], 'personal');
+								if($contact_data['h_phone_number'] != "") {
+									if (!$contact->hasPhone($contact_data['h_phone_number'], 'home', true)) {
+										$contact->addPhone($contact_data['h_phone_number'], 'home', true);
+									}
+								}
+								if($contact_data['h_phone_number2'] != "") {
+									if (!$contact->hasPhone($contact_data['h_phone_number2'], 'home')) {
+										$contact->addPhone($contact_data['h_phone_number2'], 'home');
+									}
+								}
+								if($contact_data['h_mobile_number'] != "") {
+									if (!$contact->hasPhone($contact_data['h_mobile_number'], 'mobile')) {
+										$contact->addPhone($contact_data['h_mobile_number'], 'mobile');
+									}
+								}
+								if($contact_data['h_fax_number'] != "") {
+									if (!$contact->hasPhone($contact_data['h_fax_number'], 'fax')) {
+										$contact->addPhone($contact_data['h_fax_number'], 'fax');
+									}
+								}
+								if($contact_data['h_pager_number'] != "") {
+									if (!$contact->hasPhone($contact_data['h_pager_number'], 'pager')) {
+										$contact->addPhone($contact_data['h_pager_number'], 'pager');
+									}
+								}
+								if($contact_data['h_web_page'] != "") {
+									if (!$contact->hasWebpage($contact_data['h_web_page'], 'personal')) {
+										$contact->addWebpage($contact_data['h_web_page'], 'personal');
+									}
+								}
 								
 								//Work form
 								if($contact_data['w_address'] != "" || $contact_data['w_city'] != "" || $contact_data['w_state'] != "" || $contact_data['w_country'] != "" || $contact_data['w_zipcode'] != ""){
-									$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+									if (!$contact->hasAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work')) {
+										$contact->addAddress($contact_data['w_address'], $contact_data['w_city'], $contact_data['w_state'], $contact_data['w_country'], $contact_data['w_zipcode'], 'work');
+									}
 								}
-								if($contact_data['w_phone_number'] != "") $contact->addPhone($contact_data['w_phone_number'], 'work', true);
-								if($contact_data['w_phone_number2'] != "") $contact->addPhone($contact_data['w_phone_number2'], 'work');
-								if($contact_data['w_assistant_number'] != "") $contact->addPhone($contact_data['w_assistant_number'], 'assistant');
-								if($contact_data['w_callback_number'] != "") $contact->addPhone($contact_data['w_callback_number'], 'callback');
-								if($contact_data['w_fax_number'] != "") $contact->addPhone($contact_data['w_fax_number'], 'fax', true);
-								if($contact_data['w_web_page'] != "") $contact->addWebpage($contact_data['w_web_page'], 'work');
+								if($contact_data['w_phone_number'] != "") {
+									if (!$contact->hasPhone($contact_data['w_phone_number'], 'work', true)) {
+										$contact->addPhone($contact_data['w_phone_number'], 'work', true);
+									}
+								}
+								if($contact_data['w_phone_number2'] != "") {
+									if (!$contact->hasPhone($contact_data['w_phone_number2'], 'work')) {
+										$contact->addPhone($contact_data['w_phone_number2'], 'work');
+									}
+								}
+								if($contact_data['w_assistant_number'] != "") {
+									if (!$contact->hasPhone($contact_data['w_assistant_number'], 'assistant')) {
+										$contact->addPhone($contact_data['w_assistant_number'], 'assistant');
+									}
+								}
+								if($contact_data['w_callback_number'] != "") {
+									if (!$contact->hasPhone($contact_data['w_callback_number'], 'callback')) {
+										$contact->addPhone($contact_data['w_callback_number'], 'callback');
+									}
+								}
+								if($contact_data['w_fax_number'] != "") {
+									if (!$contact->hasPhone($contact_data['w_fax_number'], 'fax', true)) {
+										$contact->addPhone($contact_data['w_fax_number'], 'fax', true);
+									}
+								}
+								if($contact_data['w_web_page'] != "") {
+									if (!$contact->hasWebpage($contact_data['w_web_page'], 'work')) {
+										$contact->addWebpage($contact_data['w_web_page'], 'work');
+									}
+								}
 								
 								//Other form
-								
 								if($contact_data['o_address'] != "" || $contact_data['o_city'] != "" || $contact_data['o_state'] != "" || $contact_data['o_country'] != "" || $contact_data['o_zipcode'] != ""){
-									$contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+									if (!$contact->hasAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other')) {
+										$contact->addAddress($contact_data['o_address'], $contact_data['o_city'], $contact_data['o_state'], $contact_data['o_country'], $contact_data['o_zipcode'], 'other');
+									}
 								}
-								if($contact_data['o_phone_number'] != "") $contact->addPhone($contact_data['o_phone_number'], 'other', true);
-								if($contact_data['o_phone_number2'] != "") $contact->addPhone($contact_data['o_phone_number2'], 'other');
-								if($contact_data['o_web_page'] != "") $contact->addWebpage($contact_data['o_web_page'], 'other');
+								if($contact_data['o_phone_number'] != "") {
+									if (!$contact->hasPhone($contact_data['o_phone_number'], 'other', true)) {
+										$contact->addPhone($contact_data['o_phone_number'], 'other', true);
+									}
+								}
+								if($contact_data['o_phone_number2'] != "") {
+									if (!$contact->hasPhone($contact_data['o_phone_number2'], 'other')) {
+										$contact->addPhone($contact_data['o_phone_number2'], 'other');
+									}
+								}
+								if($contact_data['o_web_page'] != "") {
+									if (!$contact->hasWebpage($contact_data['o_web_page'], 'other')) {
+										$contact->addWebpage($contact_data['o_web_page'], 'other');
+									}
+								}
 								
 								//Emails and instant messaging form
-								if($contact_data['email'] != "") $contact->addEmail($contact_data['email'], 'personal', true);
-								if($contact_data['email2'] != "") $contact->addEmail($contact_data['email2'], 'personal');
-								if($contact_data['email3'] != "") $contact->addEmail($contact_data['email3'], 'personal');                              
+								if($contact_data['email'] != "") {
+									if (!$contact->hasEmail($contact_data['email'], 'personal', true)) {
+										$contact->addEmail($contact_data['email'], 'personal', true);
+									}
+								}
+								if($contact_data['email2'] != "") {
+									if (!$contact->hasEmail($contact_data['email2'], 'personal')) {
+										$contact->addEmail($contact_data['email2'], 'personal');
+									}
+								}
+								if($contact_data['email3'] != "") {
+									if (!$contact->hasEmail($contact_data['email3'], 'personal')) {
+										$contact->addEmail($contact_data['email3'], 'personal');                              
+									}
+								}
 									
 							    if(count(active_context_members(false)) > 0 ){
                                     $object_controller->add_to_members($contact, active_context_members(false));
@@ -2085,7 +2162,7 @@ class ContactController extends ApplicationController {
 	                                foreach ($custom_properties_info as $cp_id => $col_index) {
 	                                	
 	                                	if (array_var($custom_properties_checked, $cp_id) == 'checked') {
-		                                	$_POST['object_custom_properties'][$cp_id] = array_var($registers[$i], $col_index);
+		                                	$_POST['object_custom_properties'][$cp_id] = str_replace("'", "\'", array_var($registers[$i], $col_index));
 	                                	}
 	                                	
 	                                }
@@ -2120,12 +2197,30 @@ class ContactController extends ApplicationController {
 								$company->save();
 								
 								if($contact_data['address'] != "" || $contact_data['city'] != "" || $contact_data['state'] != "" || $contact_data['country'] != "" || $contact_data['zipcode'] != "" ){
-									 $company->addAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true);
+									if (!$company->hasAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true)) {
+										$company->addAddress($contact_data['address'], $contact_data['city'], $contact_data['state'], $contact_data['country'], $contact_data['zipcode'], 'work', true);
+									}
 								}
-								if($contact_data['phone_number'] != "") $company->addPhone($contact_data['phone_number'], 'work', true);
-								if($contact_data['fax_number'] != "") $company->addPhone($contact_data['fax_number'], 'fax', true);
-								if($contact_data['homepage'] != "") $company->addWebpage($contact_data['homepage'], 'work');
-								if($contact_data['email'] != "") $company->addEmail($contact_data['email'], 'work' , true);
+								if($contact_data['phone_number'] != "") {
+									if (!$company->hasPhone($contact_data['phone_number'], 'work', true)) {
+										$company->addPhone($contact_data['phone_number'], 'work', true);
+									}
+								}
+								if($contact_data['fax_number'] != "") {
+									if (!$company->hasPhone($contact_data['fax_number'], 'fax', true)) {
+										$company->addPhone($contact_data['fax_number'], 'fax', true);
+									}
+								}
+								if($contact_data['homepage'] != "") {
+									if (!$company->hasWebpage($contact_data['homepage'], 'work')) {
+										$company->addWebpage($contact_data['homepage'], 'work');
+									}
+								}
+								if($contact_data['email'] != "") {
+									if (!$company->hasEmail($contact_data['email'], 'work' , true)) {
+										$company->addEmail($contact_data['email'], 'work' , true);
+									}
+								}
 								
 								if(count(active_context_members(false)) > 0 ){
                                     $object_controller->add_to_members($company, active_context_members(false));
@@ -2139,7 +2234,7 @@ class ContactController extends ApplicationController {
                                 	foreach ($custom_properties_info as $cp_id => $col_index) {
                                 
                                 		if (array_var($custom_properties_checked, $cp_id) == 'checked') {
-                                			$_POST['object_custom_properties'][$cp_id] = array_var($registers[$i], $col_index);
+                                			$_POST['object_custom_properties'][$cp_id] = str_replace("'", "\'",array_var($registers[$i], $col_index));
                                 		}
                                 		
                                 	}
@@ -2177,6 +2272,16 @@ class ContactController extends ApplicationController {
 
 		
 	function read_csv_file($filename, $delimiter, $only_first_record = false) {
+		
+		// if encoding=ISO-8859-1 use ut8_encoding function
+		$file_content = file_get_contents($filename);
+		$file_encoding = detect_encoding($file_content, array('ASCII', 'UTF-8', 'ISO-8859-1'));
+		if ($file_encoding == 'ISO-8859-1') {
+			$new_filename = ROOT."/tmp/".gen_id()."_utf8.csv";
+			$file_content = utf8_encode($file_content);
+			file_put_contents($new_filename, $file_content);
+			$filename = $new_filename;
+		}
 		
 		$handle = fopen($filename, 'rb');
 		if (!$handle) {
@@ -3778,12 +3883,20 @@ class ContactController extends ApplicationController {
 					$extra_conditions .= " AND ".DB::escapeField($col)." = ".DB::escape($val);
 				} else {
 					if ($col == 'is_user') {
+						
 						$extra_conditions .= " AND `user_type`". ($val==1 ? " > 0" : " = 0");
+						
 					} else if ($col == 'has_permissions') {
+						
 						$extra_conditions .= " AND `user_type`>0 AND EXISTS(
-							SELECT * FROM ".TABLE_PREFIX."contact_member_permissions cmp 
-							WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id and member_id='$val') 
+							SELECT * FROM ".TABLE_PREFIX."contact_member_permissions cmp
+							WHERE cmp.permission_group_id IN (SELECT x.permission_group_id FROM ".TABLE_PREFIX."contact_permission_groups x WHERE x.contact_id=o.id)
+								AND cmp.member_id='$val'
+								AND cmp.object_type_id NOT IN (SELECT tp.object_type_id FROM ".TABLE_PREFIX."tab_panels tp WHERE tp.enabled=0)
+								AND cmp.object_type_id NOT IN (SELECT oott.id FROM ".TABLE_PREFIX."object_types oott WHERE oott.name IN ('comment','template'))
+								AND cmp.object_type_id IN (SELECT oott2.id FROM ".TABLE_PREFIX."object_types oott2 WHERE oott2.type IN ('content_object','dimension_object'))
 						)";
+						
 					} else if ($col == 'only_companies') {
 						if ($val == 1) {
 							$type_condition = " AND is_company=1";
@@ -3818,19 +3931,20 @@ class ContactController extends ApplicationController {
 			
 			$count = Contacts::count($conditions);
 			
-			if ($name_filter != "" || $count < 20) {
-				$contacts = Contacts::findAll($query_params);
-				foreach ($contacts as $c) {
-					$info[] = array(
-						"id" => $c->getId(),
-						"name" => $c->getObjectName(),
-					);
-				}
-			} else {
-				$info = array(
-					array('id' => -1, 'name' => lang('write the first letters of the name or surname of the person to select')),
-					array('id' => -2, 'name' => '<a href="#" class="db-ico ico-expand" style="color:blue;text-decoration:underline;padding-left:20px;">'.lang('click here to select one from a list').'</a>'),
+			$limit = 30;
+			
+			$query_params['limit'] = $limit;
+			$contacts = Contacts::findAll($query_params);
+			foreach ($contacts as $c) {
+				$info[] = array(
+					"id" => $c->getId(),
+					"name" => $c->getObjectName(),
 				);
+			}
+			
+			if ($name_filter == "" && $count >= $limit) {
+				//$info[] = array('id' => -1, 'name' => lang('write the first letters of the name or surname of the person to select'));
+				$info[] = array('id' => -2, 'name' => '<a href="#" class="db-ico ico-expand" style="color:blue;text-decoration:underline;padding-left:20px;">'.lang('show more').'</a>');
 			}
 		}
 		

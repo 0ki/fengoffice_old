@@ -69,8 +69,7 @@ og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Pl
 			echo lang('edit task list');
 		}
 		echo ": ";
-		$ignored = null;
-		Hook::fire("object_name_prefix", array('object' => $task), $ignored);
+		//$ignored = null; Hook::fire("object_name_prefix", array('object' => $task), $ignored);
 	?></div>
   </div>
 

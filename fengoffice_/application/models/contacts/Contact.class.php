@@ -1116,7 +1116,7 @@ class Contact extends BaseContact {
 	function canEdit(Contact $user) {
 		if ($this->isUser()) {
 			// a contact that has a user assigned to it can be modified by anybody that can manage security (this is: users and permissions) or the user himself.
-			return can_manage_security ($user) && $this->getUserType() > $user->getUserType() || $this->getObjectId () == $user->getObjectId ();
+			return can_manage_security($user) && ($this->getUserType() > $user->getUserType() || $user->isAdministrator()) || $this->getObjectId() == $user->getObjectId();
 		} 
 		if ($this->isOwnerCompany()) return can_manage_configuration($user);
 		return can_manage_contacts($user) || can_write ($user, $this->getMembers(), $this->getObjectTypeId());
@@ -1273,6 +1273,16 @@ class Contact extends BaseContact {
     	$email->save();
     }
     
+    function hasEmail($value, $email_type, $isMain = false) {
+    	$type_id = EmailTypes::getEmailTypeId($email_type);
+    	$obj = ContactEmails::instance()->findOne(array('conditions' => array(
+    			'contact_id=? AND email_type_id=? AND email_address=?',
+    			$this->getId(), $type_id, $value
+    	)));
+    	 
+    	return $obj instanceof ContactEmail;
+    }
+    
     
 	/**
      * 
@@ -1299,6 +1309,16 @@ class Contact extends BaseContact {
     	$address->save();
     }
     
+    function hasAddress($street, $city, $state, $country, $zipCode, $address_type, $isMain = false) {
+    	$type_id = AddressTypes::getAddressTypeId($address_type);
+    	$obj = ContactAddresses::instance()->findOne(array('conditions' => array(
+    			'contact_id=? AND address_type_id=? AND street=? AND city=? AND state=? AND zip_code=? AND country=?',
+    			$this->getId(), $type_id, $street, $city, $state, $zipCode, $country
+    	)));
+    	
+    	return $obj instanceof ContactAddress;
+    }
+    
     
 	/**
      * 
@@ -1318,6 +1338,16 @@ class Contact extends BaseContact {
     	$phone->save();
     }
     
+    function hasPhone($number, $phone_type, $isMain = false, $name = "") {
+    	$type_id = TelephoneTypes::getTelephoneTypeId($phone_type);
+    	$obj = ContactTelephones::instance()->findOne(array('conditions' => array(
+    			'contact_id=? AND telephone_type_id=? AND number=?',
+    			$this->getId(), $type_id, $number
+    	)));
+    	 
+    	return $obj instanceof ContactTelephone;
+    }
+    
     
 	/**
      * 
@@ -1332,6 +1362,16 @@ class Contact extends BaseContact {
     	$web->setWebTypeId(WebpageTypes::getWebpageTypeId($web_type));
     	$web->setContactId($this->getId());
     	$web->save();
+    }
+    
+    function hasWebpage($url, $web_type) {
+    	$type_id = WebpageTypes::getWebpageTypeId($web_type);
+    	$obj = ContactWebpages::instance()->findOne(array('conditions' => array(
+    			'contact_id=? AND web_type_id=? AND url=?',
+    			$this->getId(), $type_id, $url
+    	)));
+    	 
+    	return $obj instanceof ContactWebpage;
     }
     
     
@@ -1451,14 +1491,34 @@ class Contact extends BaseContact {
 	 * @param void
 	 * @return string
 	 */
-	function getPicturePath() {
-		return PublicFiles::getFilePath($this->getPictureFile());
+	function getPicturePath($size = 'small') {
+		switch ($size) {
+			case 'small':
+				if (FileRepository::isInRepository($this->getPictureFileSmall())) {
+					return PublicFiles::getFilePath($this->getPictureFileSmall());
+				}
+			case 'medium':
+				if (FileRepository::isInRepository($this->getPictureFileMedium())) {
+					return PublicFiles::getFilePath($this->getPictureFileMedium());
+				}
+			case 'large':
+				if (FileRepository::isInRepository($this->getPictureFile())) {
+					return PublicFiles::getFilePath($this->getPictureFile());
+				}
+		}
 	} // getPicturePath
     
 	
-    function getPictureUrl() {
-		return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png'));
-	}
+    function getPictureUrl($size = 'small') {
+    	switch ($size) {
+    		case 'small':
+    			return ($this->getPictureFileSmall() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileSmall())): get_image_url('default-avatar.png'));
+    		case 'medium':
+    			return ($this->getPictureFileMedium() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFileMedium())): get_image_url('default-avatar.png'));
+    		case 'large':
+    			return ($this->getPictureFile() != '' ? get_url('files', 'get_public_file', array('id' => $this->getPictureFile())): get_image_url('default-avatar.png'));
+    	}
+	} // getPictureUrl
 	
 	
 	/**
@@ -1489,13 +1549,9 @@ class Contact extends BaseContact {
 		} else {
 			$public_fileId = FileRepository::addFile($source, array('type' => 'image/png', 'public' => true));
 		}
-
-		if($public_fileId) {
-			$this->setPictureFile($public_fileId);
-			if($save) {
-				$this->save();
-			}
-		}
+		
+		$this->generateAllSizePictures($public_fileId, $save);
+		
 		$result = true;
 
 		// Cleanup
@@ -1506,6 +1562,95 @@ class Contact extends BaseContact {
 
 		return $public_fileId;
 	} // setPicture
+	
+	
+	function generateAllSizePictures($repository_id, $save = true) {
+		try {
+			if (!FileRepository::isInRepository($repository_id)) {
+				return;
+			}
+			
+			$result = array();
+			
+			$temp_file_name = CACHE_DIR . "/contact-" . $this->getId() . ".png";
+			
+			$content = FileRepository::getFileContent($repository_id);
+			file_put_contents($temp_file_name, $content);
+			
+			// generate large image
+			$rep_id = $this->generatePictureFile($temp_file_name, 600, str_replace('.png', '-large.png', $temp_file_name));
+			if (is_null($rep_id)) {
+				$rep_id = $repository_id;
+			}
+			$result['large'] = $rep_id;
+			
+			// generate medium image
+			$rep_id = $this->generatePictureFile($temp_file_name, 200, str_replace('.png', '-medium.png', $temp_file_name));
+			if (is_null($rep_id)) {
+				$rep_id = $repository_id;
+			}
+			$result['medium'] = $rep_id;
+			
+			// generate small image
+			$rep_id = $this->generatePictureFile($temp_file_name, 60, str_replace('.png', '-small.png', $temp_file_name));
+			if (is_null($rep_id)) {
+				$rep_id = $repository_id;
+			}
+			$result['small'] = $rep_id;
+			
+			$this->setPictureFile($result['large']);
+			$this->setPictureFileMedium($result['medium']);
+			$this->setPictureFileSmall($result['small']);
+			if ($save) {
+				$this->save();
+			}
+			
+			return $result;
+			
+		} catch (Exception $e) {
+			Logger::log_r("Error in Contact::generateAllSizePictures('$repository_id'): ".$e->getMessage());
+			Logger::log_r($e->getTraceAsString());
+		}
+	}
+	
+	private function generatePictureFile($source_file, $max_size, $tmp_filename = "") {
+		if (!$tmp_filename) {
+			$tmp_filename = CACHE_DIR . "/" . gen_id() . ".png";
+		}
+		if (!is_file($source_file)) {
+			return null;
+		}
+		if (!$max_size) {
+			$max_size = 600;
+		}
+		Env::useLibrary('simplegd');
+		$image = new SimpleGdImage($source_file);
+		
+		if ($image->getWidth() > $max_size || $image->getHeight() > $max_size) {
+				
+			if ($image->getWidth() > $image->getHeight()) {
+				$w = $max_size;
+				$ratio = $image->getHeight() / $image->getWidth();
+				$h = $ratio * $w;
+			} else {
+				$h = $max_size;
+				$ratio = $image->getWidth() / $image->getHeight();
+				$w = $ratio * $h;
+			}
+			
+			$new_image = $image->resize($w, $h, false);
+			$new_image->saveAs($tmp_filename);
+			
+			$repo_id = FileRepository::addFile($tmp_filename, array('type' => 'image/png', 'public' => true));
+			
+			@unlink($tmp_filename);
+			
+			return $repo_id;
+				
+		} else {
+			return null;
+		}
+	}
 	
 	
 	/**

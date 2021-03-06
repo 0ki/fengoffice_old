@@ -1014,4 +1014,199 @@ abstract class ContentDataObjects extends DataManager {
 		
 		return $res;
 	}
+	
+	static function addObjToSharingTable($oid, $tid,  $obj_mem_ids) {
+		$gids = array();
+	
+		$table_prefix = defined('FORCED_TABLE_PREFIX') && FORCED_TABLE_PREFIX ? FORCED_TABLE_PREFIX : TABLE_PREFIX;
+		
+		//1. clear sharing table for this object
+		SharingTables::delete("object_id=$oid");
+		
+		//2. get dimensions of this object's members that defines permissions
+		$res = DB::execute("SELECT d.id as did FROM ".$table_prefix."dimensions d INNER JOIN ".$table_prefix."members m on m.dimension_id=d.id
+				WHERE m.id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0 ) AND d.defines_permissions = 1");
+		$dids_tmp = array();
+		while ($row = $res->fetchRow() ) {
+			$dids_tmp[$row['did']] = $row['did'] ;
+		}
+		$res->free();
+		$dids = array_values($dids_tmp);
+		$dids_tmp = null;
+	
+		$sql_from = "".$table_prefix."contact_member_permissions cmp
+		LEFT JOIN ".$table_prefix."members m ON m.id = cmp.member_id
+		LEFT JOIN ".$table_prefix."dimensions d ON d.id = m.dimension_id";
+	
+		$member_where_conditions = "";
+		$dim_where_conditions = "";
+		// if users can add objects without classifying then check for permissions with member_id=0
+		if (config_option('let_users_create_objects_in_root')) {
+			$member_where_conditions = "member_id=0 OR ";
+			$dim_where_conditions = " OR d.id IS NULL";
+		}
+	
+		$sql_where = "($member_where_conditions member_id IN ( SELECT member_id FROM ".$table_prefix."object_members WHERE object_id = $oid AND is_optimization = 0)) AND cmp.object_type_id = $tid";
+	
+		//3. If there are dimensions that defines permissions containing any of the object members
+		if ( count($dids) ){
+			// 3.1 get permission groups with permissions over the object.
+			$sql_fields = "permission_group_id  AS group_id";
+				
+			$sql = "
+				SELECT
+				$sql_fields
+				FROM
+				$sql_from
+				WHERE
+				$sql_where AND (d.id IN (". implode(',',$dids).") $dim_where_conditions)
+			";
+	
+			$res = DB::execute($sql);
+			$gids_tmp = array();
+			while ( $row = $res->fetchRow() ) {
+				$gids_tmp[$row['group_id']] = $row['group_id'];
+			}
+			$res->free();
+				
+			// allow all permission groups
+			$allow_all_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".$table_prefix."contact_dimension_permissions cdp
+					INNER JOIN ".$table_prefix."members m on m.dimension_id=cdp.dimension_id
+					WHERE cdp.permission_type='allow all' AND cdp.dimension_id IN (". implode(',',$dids).");");
+						
+			if (is_array($allow_all_rows)) {
+				foreach ($allow_all_rows as $row) {
+					$gids_tmp[$row['permission_group_id']] = $row['permission_group_id'];
+				}
+			}
+				
+			$gids = array_values($gids_tmp);
+			$gids_tmp = null;
+				
+			// check for mandatory dimensions
+			$enabled_dimensions_sql = "";
+			$enabled_dimensions_ids = implode(',', config_option('enabled_dimensions'));
+			if ($enabled_dimensions_ids != "") {
+				$enabled_dimensions_sql = "AND id IN ($enabled_dimensions_ids)";
+			}
+						
+			$mandatory_dim_ids = Dimensions::findAll(array('id' => true, 'conditions' => "`defines_permissions`=1 $enabled_dimensions_sql AND `permission_query_method`='".DIMENSION_PERMISSION_QUERY_METHOD_MANDATORY."'"));
+			if (count($gids) > 0 && count($mandatory_dim_ids) > 0) {
+				$sql = "SELECT om.member_id, m.dimension_id FROM ".$table_prefix."object_members om
+					INNER JOIN ".$table_prefix."members m ON m.id=om.member_id INNER JOIN ".$table_prefix."dimensions d ON d.id=m.dimension_id
+					WHERE om.object_id = $oid AND om.is_optimization = 0 AND d.id IN (".implode(",", $mandatory_dim_ids).")";
+	
+			// Object members in mandatory dimensions
+			$object_member_ids_res = DB::executeAll($sql);
+			$mandatory_dim_members = array();
+			if (!is_null($object_member_ids_res)) {
+				foreach ($object_member_ids_res as $row) {
+					if (!isset($mandatory_dim_members[$row['dimension_id']])) $mandatory_dim_members[$row['dimension_id']] = array();
+						$mandatory_dim_members[$row['dimension_id']][] = $row['member_id'];
+					}
+						
+					$mandatory_dim_allowed_pgs = array();
+					// Check foreach group that it has permissions over at least one member of each mandatory dimension
+					foreach ($mandatory_dim_members as $mdim_id => $mmember_ids) {
+						$sql = "SELECT pg.id FROM ".$table_prefix."permission_groups pg
+							INNER JOIN ".$table_prefix."contact_dimension_permissions cdp ON cdp.permission_group_id=pg.id
+							INNER JOIN ".$table_prefix."contact_member_permissions cmp ON cmp.permission_group_id=pg.id
+							WHERE cdp.dimension_id = '$mdim_id' AND (
+							cdp.permission_type='allow all' OR cdp.permission_type='check' AND cmp.permission_group_id IN (".implode(',', $gids).")
+							AND cmp.member_id IN (".implode(',', $mmember_ids).")
+						)";
+		
+						$permission_groups_res = DB::executeAll($sql);
+						$mandatory_dim_allowed_pgs[$mdim_id] = array();
+						if (!is_null($permission_groups_res)) {
+								foreach ($permission_groups_res as $row) {
+									if (!in_array($row['id'], $mandatory_dim_allowed_pgs[$mdim_id])) $mandatory_dim_allowed_pgs[$mdim_id][] = $row['id'];
+								}
+						}
+					}
+		
+					if (isset($mandatory_dim_allowed_pgs) && count($mandatory_dim_allowed_pgs) > 0) {
+						$original_mandatory_dim_allowed_pgs = $mandatory_dim_allowed_pgs;
+						$allowed_gids = array_pop($mandatory_dim_allowed_pgs);
+						foreach ($mandatory_dim_allowed_pgs as $pg_array) {
+							$allowed_gids = array_intersect($allowed_gids, $pg_array);
+						}
+		
+						// If an user has permissions in one dim using a group and in other dim using his personal permissions then add to sharing table its personal permission group
+						$pg_ids = array_unique(array_flat($original_mandatory_dim_allowed_pgs));
+						if (count($pg_ids) == 0) $pg_ids[0] = 0;
+			
+						$contact_pgs = array();
+						$contact_pg_rows = DB::executeAll("SELECT * FROM ".TABLE_PREFIX."contact_permission_groups WHERE permission_group_id IN (".implode(',',$pg_ids).") ORDER BY permission_group_id");
+						if (is_array($contact_pg_rows)) {
+							foreach ($contact_pg_rows as $cpgr) {
+								if (!isset($contact_pgs[$cpgr['contact_id']])) $contact_pgs[$cpgr['contact_id']] = array();
+								$contact_pgs[$cpgr['contact_id']][] = $cpgr['permission_group_id'];
+							}
+						}
+			
+						// each user must have at least one pg for every dimension
+						foreach ($contact_pgs as $contact_id => $permission_groups) {
+							$has_one = array_flip(array_keys($original_mandatory_dim_allowed_pgs));
+							foreach ($has_one as $k => &$v) $v = false;
+								
+							foreach ($permission_groups as $pg_id) {
+								foreach ($original_mandatory_dim_allowed_pgs as $dim_id => $allowedpgs) {
+									if (in_array($pg_id, $allowedpgs)) {
+										$has_one[$dim_id] = true;
+										break;
+									}
+								}
+							}
+							// all dims must be true in this array to allow permissions
+							$has_permission = !in_array(false, $has_one);
+							if ($has_permission) {
+								$contact_row = DB::executeOne("SELECT permission_group_id FROM ".TABLE_PREFIX."contacts where object_id = $contact_id");
+								if (is_array($contact_row) && $contact_row['permission_group_id'] > 0) {
+									$allowed_gids[] = $contact_row['permission_group_id'];
+								}
+							}
+						}
+			
+						$gids = array_unique($allowed_gids, SORT_NUMERIC);
+					} else {
+						$gids = array();
+					}
+				}
+			}
+						
+		} else {
+			if ( $obj_mem_ids ) {
+				// 3.2 No memeber dimensions defines permissions.
+				// No esta en ninguna dimension que defina permisos, El objecto esta en algun lado
+				// => En todas las dimensiones en la que está no definen permisos => Busco todos los grupos
+				$gids = PermissionGroups::instance()->findAll(array('id' => true));
+				
+			} else {
+
+				// if this object is an email and it is unclassified => add to sharing table the permission groups of the users that have permissions in the email's account
+				if (Plugins::instance()->isActivePlugin('mail')) {
+					$mail_ot = ObjectTypes::instance()->findByName('mail');
+					if ($mail_ot instanceof ObjectType && $tid == $mail_ot->getId()) {
+						$gids = DB::executeAll("
+							SELECT cpg.permission_group_id
+							FROM ".TABLE_PREFIX."contact_permission_groups cpg
+							INNER JOIN ".TABLE_PREFIX."contacts c ON c.permission_group_id=cpg.permission_group_id
+							WHERE cpg.contact_id IN (
+							  SELECT mac.contact_id FROM ".TABLE_PREFIX."mail_account_contacts mac WHERE mac.account_id = (SELECT mc.account_id FROM ".TABLE_PREFIX."mail_contents mc WHERE mc.object_id=$oid)
+							);
+						");
+					}
+				}
+			}
+			
+		}
+	
+		if(count($gids)) {
+			$stManager = SharingTables::instance();
+			$stManager->populateGroups($gids, $oid);
+			$gids = null;
+		}
+	
+	}
 }

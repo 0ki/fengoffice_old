@@ -101,6 +101,8 @@ return array(
         'homepage' => 'Homepage',
         'address' => 'Address',
         'address2' => 'Address 2',
+        'street' => 'Street',
+        'zip_code' => 'Zipcode',
         'city' => 'City',
         'state' => 'State',
         'zipcode' => 'Zipcode',
@@ -415,6 +417,8 @@ return array(
 	
 	'without a member' => 'Without',
 	'uncompleted tasks' => 'Uncompleted tasks',
+	
+	'address field is required' => '{1} information for field \'{0}\' is required.',
 	
 	'menu home' => 'Home',
 	'select group to add user' => 'Select a group from the dropdown list below to add the user to the group',

@@ -127,7 +127,6 @@ ogSearchSelector.searchMember = function (genid, container_id, dimension_id, sea
 					var mpath_aux = {};
 					mpath_aux[dim_id] = {};
 					mpath_aux[dim_id][mem.id] = mem;
-					//text = og.getCrumbHtml(mpath_aux,false,null,false,null,false);
 					text = og.getEmptyCrumbHtml(mpath_aux,".search-selector-result",null,false);//searchResultInfo
 					
 					searchResultInfo += "<br>" + text;

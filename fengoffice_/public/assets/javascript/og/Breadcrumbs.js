@@ -2,14 +2,11 @@
 og.Breadcrumbs = {
 		
 	resetSelection: function () {
+		// click root node in first tree, then call the next
 		for (dimId in og.contextManager.dimensionMembers) {
-			var members = og.contextManager.dimensionMembers[dimId];
-			if (members.length > 0) {
-				var tree =  Ext.getCmp("dimension-panel-"+dimId);
-				og.memberTreeExternalClick(tree.dimensionCode, tree.getRootNode().id);
-			}
+			og.clickRootNodeAndCallNext(dimId, 0);
+			break;
 		}
-
 	},
 	
 	refresh: function (node) {

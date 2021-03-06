@@ -14,4 +14,5 @@
 	'field Objects bcc' => 'BCC',
 	'field Objects body_html' => 'Html body',
 	'field Objects body_plain' => 'Plain Body',
+	'classify attachments' => 'Classify attachments',
 );

@@ -575,3 +575,6 @@ div#menu-panel .x-panel-tbar-noheader .x-toolbar, div#menu-panel .x-panel-mc .x-
 .x-grid-group-hd div {
     font: bold 13px "Open Sans",Arial,sans-serif;
 }
+.x-btn-pressed{
+	background-color: #e6e6e6;
+}

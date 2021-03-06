@@ -102,7 +102,7 @@
 	        <div class="dataBlock">
 				<div><?php echo label_tag(lang('avatar')) ?></div>
 	            <div style="float:left;" id="<?php echo $genid?>_avatar_container" class="picture-container">
-	            	<img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
+	            	<img src="<?php echo $contact->getPictureUrl('medium') ?>" alt="<?php echo clean($contact->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
 	            </div>
 	            <div style="padding:20px 0 0 20px; text-decoration:underline; float:left; display:none;">
 		           	<a href="<?php echo $contact->getUpdatePictureUrl()?>&reload_picture=<?php echo $genid?>_avatar_container" class="internallink coViewAction ico-picture" target=""><?php echo lang('update avatar') ?></a>
@@ -158,7 +158,7 @@ $(document).ready(function() {
 	og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', def_phone_type);
 	<?php } else { 
 			foreach (array_var($contact_data, 'all_phones') as $phone) { ?>
-				og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo $phone->getNumber()?>', '<?php echo $phone->getName()?>', '<?php echo $phone->getId()?>');
+				og.addNewTelephoneInput('<?php echo $genid?>_phones_container', 'contact', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo str_replace("'", "\'", $phone->getNumber())?>', '<?php echo str_replace("'", "\'", $phone->getName())?>', '<?php echo $phone->getId()?>');
 	  <?php } ?>
 	<?php } ?>
 

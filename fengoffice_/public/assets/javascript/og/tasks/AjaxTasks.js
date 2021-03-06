@@ -72,9 +72,8 @@ ogTasks.showMoreTasks = function(group_id, show_all){
 			scope: this,
 			post: filters,
 			callback: function(success, data) {
-				ogTasks.updateTaskGroups(data, true);				
+				ogTasks.updateTaskGroups(data, true);
 				
-				ogTasks.resizeRows();
 				og.eventManager.fireEvent('replace all empty breadcrumb', null);
 			}
 	});
@@ -137,7 +136,6 @@ ogTasks.refreshGroupsTotals = function(group_id){
 				
 				ogTasks.updateTaskGroups(data);	
 								
-				ogTasks.resizeRows();
 				og.eventManager.fireEvent('replace all empty breadcrumb', null);
 			}
 	});

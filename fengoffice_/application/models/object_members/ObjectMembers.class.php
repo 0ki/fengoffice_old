@@ -39,7 +39,10 @@
   		static function removeObjectFromMembers(ContentDataObject $object, Contact $contact, $context_members, $members_to_remove = null, $check_permissions = true){
   			
   			if (is_null($members_to_remove)) {
-  				$member_ids = array_flat(DB::executeAll("SELECT member_id FROM ".TABLE_PREFIX."object_members WHERE object_id = " . $object->getId()));
+  				$member_ids = array_flat(DB::executeAll("SELECT om.member_id FROM ".TABLE_PREFIX."object_members om
+  						INNER JOIN ".TABLE_PREFIX."members m ON m.id=om.member_id
+  						INNER JOIN ".TABLE_PREFIX."dimensions d On d.id=m.dimension_id 
+  						WHERE d.is_manageable=1 AND om.object_id = " . $object->getId()));
   			} else {
   				$member_ids = $members_to_remove;
   			}

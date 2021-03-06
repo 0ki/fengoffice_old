@@ -42,6 +42,8 @@ og.TrashCan = function() {
 					}
 					og.TrashCan.store.lastOptions.params.trashed = true;
 					Ext.getCmp('trash-can').reloadGridPagingToolbar('object','list_objects','trash-can');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -64,7 +66,11 @@ og.TrashCan = function() {
 	
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath,false,false,true);
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 		
 		var name = String.format('<a href="#" onclick="og.openLink(\'{1}\')">{0}</a>', og.clean(value), viewUrl) + mem_path;
 		

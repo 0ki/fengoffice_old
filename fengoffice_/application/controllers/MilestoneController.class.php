@@ -125,7 +125,7 @@ class MilestoneController extends ApplicationController {
 			
 			$milestone->setFromAttributes($milestone_data);
 			
-			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
+			$urgent = array_var($milestone_data, 'is_urgent');
 			$milestone->setIsUrgent($urgent);
 
 			try {
@@ -172,7 +172,7 @@ class MilestoneController extends ApplicationController {
 
 				// Send notification
 				try {
-					if(!$milestone instanceof TemplateMilestone && array_var($milestone_data, 'send_notification') == 'checked') {
+					if(!$milestone instanceof TemplateMilestone && array_var($milestone_data, 'send_notification')) {
 						Notifier::milestoneAssigned($milestone); // send notification
 					} // if
 				} catch(Exception $e) {
@@ -267,7 +267,7 @@ class MilestoneController extends ApplicationController {
 			}
 			
 			$milestone->setFromAttributes($milestone_data);
-			$urgent = array_var($milestone_data, 'is_urgent') == 'checked';
+			$urgent = array_var($milestone_data, 'is_urgent');
 			$milestone->setIsUrgent($urgent);
 
 			try {

@@ -62,7 +62,7 @@
 	        <div class="input-container">
 				<div><?php echo label_tag(lang('logo')) ?></div>
 	            <div style="float:left;" id="<?php echo $genid?>_avatar_container" class="picture-container">
-	            	<img src="<?php echo $company->getPictureUrl() ?>" alt="<?php echo clean($company->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
+	            	<img src="<?php echo $company->getPictureUrl('medium') ?>" alt="<?php echo clean($company->getObjectName()) ?>" id="<?php echo $genid?>_avatar_img"/>
 	            </div>
 	            <div style="padding:20px 0 0 20px; text-decoration:underline; float:left; display:none;">
 		           	<a href="<?php echo $company->getUpdatePictureUrl()?>&reload_picture=<?php echo $genid?>_avatar_container" class="internallink coViewAction ico-picture" target=""><?php echo lang('update logo') ?></a>
@@ -113,26 +113,26 @@ $(document).ready(function() {
 
 	<?php if (!$object->isNew()) { ?>
 		<?php foreach ($company_data['all_phones'] as $phone) { ?>
-			og.addNewTelephoneInput('<?php echo $genid?>_company_phones_container', 'company', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo $phone->getNumber()?>', '<?php echo $phone->getName()?>', '<?php echo $phone->getId()?>');
+			og.addNewTelephoneInput('<?php echo $genid?>_company_phones_container', 'company', '<?php echo $phone->getTelephoneTypeId()?>', '<?php echo str_replace("'", "\'", $phone->getNumber())?>', '<?php echo str_replace("'", "\'", $phone->getName())?>', '<?php echo $phone->getId()?>');
 		<?php } ?>
 	
 		<?php foreach ($company_data['all_addresses'] as $address) { ?>
 			og.addNewAddressInput('<?php echo $genid?>_addresses_container', 'company', '<?php echo $address->getAddressTypeId()?>', {
-				street: '<?php echo $address->getStreet()?>',
-				city: '<?php echo $address->getCity()?>',
-				state: '<?php echo $address->getState()?>',
-				zip_code: '<?php echo $address->getZipCode()?>',
+				street: '<?php echo str_replace("'", "\'", $address->getStreet())?>',
+				city: '<?php echo str_replace("'", "\'", $address->getCity())?>',
+				state: '<?php echo str_replace("'", "\'", $address->getState())?>',
+				zip_code: '<?php echo str_replace("'", "\'", $address->getZipCode())?>',
 				country: '<?php echo $address->getCountry()?>',
 				id: '<?php echo $address->getId()?>'
 			});
 		<?php } ?>
 		
 		<?php foreach ($company_data['all_webpages'] as $webpage) { ?>
-			og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', '<?php echo $webpage->getWebTypeId()?>', '<?php echo $webpage->getUrl()?>', '<?php echo $webpage->getId()?>');
+			og.addNewWebpageInput('<?php echo $genid?>_webpages_container', 'company', '<?php echo $webpage->getWebTypeId()?>', '<?php echo str_replace("'", "\'", $webpage->getUrl())?>', '<?php echo $webpage->getId()?>');
 		<?php } ?>
 	
 		<?php foreach (array_var($company_data, 'all_emails') as $email) { ?>
-			og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', '<?php echo $email->getEmailTypeId()?>', '<?php echo $email->getEmailAddress()?>', '<?php echo $email->getId()?>');
+			og.addNewEmailInput('<?php echo $genid?>_emails_container', 'company', '<?php echo $email->getEmailTypeId()?>', '<?php echo str_replace("'", "\'", $email->getEmailAddress())?>', '<?php echo $email->getId()?>');
 		<?php } ?>
 	<?php } ?>
 

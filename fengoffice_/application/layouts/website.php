@@ -139,7 +139,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 		<div style="float: left;" class="header-content-left">
 			<div id="logodiv" onclick="og.Breadcrumbs.resetSelection();">
 				<div style="height: 55px;" id="logo_company_margin_top">
-					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl() : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
+					<img src="<?php echo ($use_owner_company_logo) ? owner_company()->getPictureUrl('medium') : get_product_logo_url() ?>" name="img_company_margin" id="img_company_margin" style="display: none;"/>
 					<script>
 						$('#img_company_margin').load(function() {
 							var margin = (Ext.isIE) ? 25 : Math.round(parseInt(document.img_company_margin.height) / 2);
@@ -153,7 +153,7 @@ $show_owner_company_name_header = config_option("show_owner_company_name_header"
 				</div>
 				<div style="float: left;">
 				<?php if($show_owner_company_name_header){?>
-					<h1 style="padding-top:10px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
+					<h1 style="padding-top:10px;line-height: 35px;"><?php echo clean(owner_company()->getObjectName()) ?></h1>
 				<?php } ?>
 				</div>
 			</div>

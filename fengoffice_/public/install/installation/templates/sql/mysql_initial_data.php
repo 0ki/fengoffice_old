@@ -74,6 +74,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'enabled_dimensions', '', 'RootDimensionsConfigHandler', '1', '0', NULL),
 	('general', 'last_sharing_table_rebuild', '', 'StringConfigHandler', '1', '0', NULL),
 	('general', 'check_unique_mail_contact_comp', '0', 'BoolConfigHandler', 0, 0, NULL),
+	('general', 'mandatory_address_fields', '', 'AddressFieldsConfigHandler', 0, 0, NULL),
 	('system', 'last_template_instantiation_id', '0', 'IntegerConfigHandler', 1, 0, NULL),
 	('brand_colors', 'brand_colors_head_back', '424242', 'ColorPickerConfigHandler', '0', '0', NULL),
 	('brand_colors', 'brand_colors_head_font', 'FFFFFF', 'ColorPickerConfigHandler', '0', '0', NULL),
@@ -548,19 +549,19 @@ INSERT INTO `<?php echo $table_prefix ?>widgets` (`name`,`title`,`plugin_id`,`pa
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report')
  AND p.`name` IN ('Super Administrator','Administrator','Manager');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report')
  AND p.`name` IN ('Executive');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('file','timeslot','comment')
+ WHERE o.`name` IN ('file','timeslot')
  AND p.`name` IN ('Collaborator Customer','Internal Collaborator');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
@@ -572,7 +573,7 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('timeslot','comment')
+ WHERE o.`name` IN ('timeslot')
  AND p.`name` IN ('External Collaborator');
 
 INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
@@ -581,22 +582,16 @@ INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, ob
  WHERE o.`name` IN ('task','file','milestone')
  AND p.`name` IN ('External Collaborator');
 
-INSERT INTO <?php echo $table_prefix ?>role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
- SELECT p.id, o.id, 0, 1
- FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('comment')
- AND p.`name` IN ('Non-Exec Director','Guest Customer');
-
 INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 1, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment','template')
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report')
  AND p.`name` IN ('Super Administrator','Administrator','Manager','Executive');
 
 INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 0, 1
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','timeslot','comment','contact','report')
+ WHERE o.`name` IN ('message','weblink','file','timeslot','contact','report')
  AND p.`name` IN ('Collaborator Customer','Internal Collaborator','External Collaborator');
 
 INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
@@ -608,7 +603,7 @@ INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id
 INSERT INTO <?php echo $table_prefix ?>max_role_object_type_permissions (role_id, object_type_id, can_delete, can_write)
  SELECT p.id, o.id, 0, 0
  FROM `<?php echo $table_prefix ?>object_types` o JOIN `<?php echo $table_prefix ?>permission_groups` p
- WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report','comment')
+ WHERE o.`name` IN ('message','weblink','file','task','milestone','event','contact','timeslot','report')
  AND p.`name` IN ('Guest Customer','Guest','Non-Exec Director');
 
 INSERT INTO `<?php echo $table_prefix ?>contact_widget_options` (widget_name,contact_id,member_type_id,`option`,`value`,config_handler_class,is_system) VALUES

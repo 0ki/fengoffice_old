@@ -299,7 +299,7 @@ og.attachFromWorkspace = function(genid) {
 			var container = document.getElementById(genid + 'attachments');
 			for (var i=0; i < objs.length; i++) {
 				var o = objs[i].data;
-				var obj = {object_id: o.object_id, manager: 'ProjectFiles', name: o.name, icocls: o.ico};
+				var obj = {object_id: o.object_id, manager: 'ProjectFiles', name: o.name, icocls: o.ico, mimeType:o.mimeType};
 				og.addMailAttachment(container, obj);
 			}
 		}

@@ -335,7 +335,6 @@ og.swapVisual = function(id, dir){
 		swap_node = node.prev();
 		swap_node.insertAfter("#CP"+id);
 	}else{
-		console.log(swap_node);
 		swap_node.insertBefore("#CP"+id);
 	}
 	
@@ -348,8 +347,6 @@ og.swapVisual = function(id, dir){
 		//update styles
 		node.toggleClass('odd ');
 		swap_node.toggleClass('odd');
-		console.log(node.length);
-		console.log(swap_node.length);
 	}
 };
 

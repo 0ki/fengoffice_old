@@ -61,6 +61,25 @@
 		return lang('country ' . $this->getCountry());
 		return '';
 	} // getCountryName
+	
+	
+	
+	/**
+	 * Validate before save
+	 *
+	 * @param array $errors
+	 * @return null
+	 */
+	function validate(&$errors) {
+		$mandatory_fields = config_option('mandatory_address_fields');
+		if (is_array($mandatory_fields)) {
+			foreach ($mandatory_fields as $mfield) {
+				if (!$this->validatePresenceOf($mfield)) {
+					$errors[] = lang('address field is required', lang('address'), lang($mfield));
+				}
+			}
+		}
+	} // validate
     
   } // ContactAddress 
 

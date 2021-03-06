@@ -203,6 +203,9 @@
   	'config option desc brand_colors_head_back' => '',
   	'config option name brand_colors_head_font' => 'Header font color',
   	'config option desc brand_colors_head_font' => '',
+  	
+  	'config option name mandatory_address_fields' => 'Mandatory address fields',
+  	'config option desc mandatory_address_fields' => 'Select which of these fields will be mandatory in every form where an address input is present.',
   		
   	'notify myself too' => 'Include myself in automatic notifications',
 	
@@ -557,8 +560,8 @@
   	'user config option desc max_spam_level' => 'When fetching emails, messages with Spam evaluation greater than this value will be sent to "Junk" folder. Set to 0 for max filtering, 10 no filtering. This option works only if a spam filter tool is installed in your server.',
   	'user config option name create_contacts_from_email_recipients' => 'Create people from email recipients',
   	'user config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a person will be automatically created for every email address you send an email to. You need the "Can manage all people" permission.',
-  	'user config option name mail_drag_drop_prompt' => 'Classify email attachments on drag and drop?',
-  	'user config option desc mail_drag_drop_prompt' => 'Choose what should be done with email attachments when dragging an email to a workspace.',
+  	'user config option name mail_drag_drop_prompt' => 'Action to take with attachments when classifying emails manually',
+  	'user config option desc mail_drag_drop_prompt' => 'Choose what should be done with email attachments when classifying an email using drag & drop or classification form.',
   	'user config option name hide_quoted_text_in_emails' => 'Hide quoted text when viewing emails',
   	'user config option desc hide_quoted_text_in_emails' => 'If enabled email messages will be displayed without the quoted text. There will be an option to view it while reading.',
   	'user config option name mail_account_err_check_interval' => 'Email accounts error checking interval',
@@ -757,8 +760,6 @@
     'user config option desc max_spam_level' => 'When fetching emails, messages with Spam evaluation greater than this value will be sent to "Junk" folder. Set to 0 for max filtering, 10 no filtering. This option works only if a spam filter tool is installed in your server.',
     'user config option name create_contacts_from_email_recipients' => 'Create people from email recipients',
     'user config option desc create_contacts_from_email_recipients' => 'When this option is set to "Yes" a person will be automatically created for every email address you send an email to. You need the "Can manage all people" permission.',
-    'user config option name mail_drag_drop_prompt' => 'Classify email attachments on drag and drop?',
-    'user config option desc mail_drag_drop_prompt' => 'Choose what should be done with email attachments when dragging an email to a workspace.',
     'user config option name hide_quoted_text_in_emails' => 'Hide quoted text when viewing emails',
     'user config option desc hide_quoted_text_in_emails' => 'If enabled email messages will be displayed without the quoted text. There will be an option to view it while reading.',
     'user config option name mail_account_err_check_interval' => 'Email accounts error checking interval',

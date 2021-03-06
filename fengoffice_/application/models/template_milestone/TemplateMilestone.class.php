@@ -457,6 +457,8 @@ class TemplateMilestone extends BaseTemplateMilestone {
 		$new->setFromTemplateId($this->getTemplateId());
 		$new->setFromTemplateObjectId($this->getId());
 		
+		$new->save();
+		
 		copy_additional_object_data($this, $new);
 		
 		return $new;

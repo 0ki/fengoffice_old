@@ -46,6 +46,8 @@ og.OverviewManager = function() {
 					
 					Ext.getCmp('overview-manager').store.lastOptions.params.count_results = 1;
 					Ext.getCmp('overview-manager').reloadGridPagingToolbar('object','list_objects','overview-manager');
+					
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
 				}
 			}
 		});
@@ -104,7 +106,11 @@ og.OverviewManager = function() {
 		
 		mem_path = "";
 		var mpath = Ext.util.JSON.decode(r.data.memPath);
-		if (mpath) mem_path = og.getCrumbHtml(mpath);
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 		
 		var name = String.format('<a style="font-size:120%" href="{1}" class="{2}" onclick="og.openLink(\'{1}\');return false;">{0}</a>', cleanvalue, viewUrl, classes) + mem_path;
 		

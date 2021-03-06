@@ -31,6 +31,8 @@
      'username' => DATA_TYPE_STRING,
      'contact_passwords_id' => DATA_TYPE_INTEGER,
      'picture_file' => DATA_TYPE_STRING,
+     'picture_file_small' => DATA_TYPE_STRING,
+     'picture_file_medium' => DATA_TYPE_STRING,
      'avatar_file' => DATA_TYPE_STRING,	 	
      'comments' => DATA_TYPE_STRING,
 	 'last_login' => DATA_TYPE_DATETIME,

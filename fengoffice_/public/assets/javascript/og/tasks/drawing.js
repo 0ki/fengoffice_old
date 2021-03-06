@@ -416,7 +416,6 @@ ogTasks.draw = function(){
 		return;
 	}
 	
-	ogTasks.currentUser.isWorking = false;
 	var start = new Date(); 
 	
 	for (var i = 0; i < this.Tasks.length; i++)
@@ -497,20 +496,37 @@ ogTasks.resizeRows = function(){
 	});
 
 	//set the width of the task panel container
-	if(ogTasks.currentUser.isWorking){
-		container_width = container_width + 60;
-	}
 	$("#tasksPanelContainer").width(container_width+40);
 	
-	//fill all the free space width the name of the task
-	var name = $(".task-name-container").width() + $(".task-list-row-template").first().width() - container_width ;
-	$(".task-name-container").width(name);	
+	ogTasks.tasks_row_width = $(".task-list-row-template").first().width();
 		
+	//fill all the free space width the name of the task
+	var name = $(".task-name-container").width() + ogTasks.tasks_row_width - container_width ;
+		
+	ogTasks.tasks_row_name_width = name;
+	ogTasks.tasks_row_clock_on_width = 65;
+
+	if(ogTasks.tasks_row_clock_on_width > 0 && ($(".og-timeslot-work-started").length > 0 || $(".og-timeslot-work-paused").length > 0) ){
+		ogTasks.tasks_row_name_width = ogTasks.tasks_row_name_width - ogTasks.tasks_row_clock_on_width;
+		ogTasks.tasks_row_clock_on_width = 0;
+	}
+	$(".task-name-container").width(ogTasks.tasks_row_name_width);
+	
 	//name width of subtasks
 	$('.subtasks-container .task-name-container').each(function(){
-		var rest = $(".task-list-row-template").first().width() - $(this).closest(".task-list-row").width() - 15;		
+		var rest = ogTasks.tasks_row_width - $(this).closest(".task-list-row").width() - 15;		
 	    $(this).width(name - rest);
 	});
+}
+
+ogTasks.resizeRow = function(task_row_id,task){
+	if(ogTasks.tasks_row_clock_on_width > 0 && ($(".og-timeslot-work-started").length > 0 || $(".og-timeslot-work-paused").length > 0) ){
+		ogTasks.tasks_row_name_width = ogTasks.tasks_row_name_width - ogTasks.tasks_row_clock_on_width;
+		$(".task-name-container").width(ogTasks.tasks_row_name_width);		
+		ogTasks.tasks_row_clock_on_width = 0;
+	}else{
+		$("#"+task_row_id+" .task-name-container").width(ogTasks.tasks_row_name_width);
+	}
 }
 
 ogTasks.toggleSubtasks = function(taskId, groupId){
@@ -822,6 +838,49 @@ ogTasks.drawAddTask = function(id_subtask, group_id, level){
 //************************************
 //*		Draw task
 //************************************
+ogTasks.drawGroupNextTask = function(group,drawOptions,displayCriteria){
+	 var task_id = group.group_tasks_order[group.task_interval_iteration];	
+	  ogTasks.drawTask(group.group_tasks[task_id], drawOptions, displayCriteria, group.group_id, 1);	
+	  
+	  //start all clocks on the list
+	  var clocks = $(".og-timeslot-work-started span");
+			
+	  for (i = 0; i < clocks.length; i++) { 
+		  var clockId = clocks[i].id;
+		  clockId = clockId.replace("timespan", "");
+		  var user_start_time = parseInt($("#"+clockId+"user_start_time").val());
+				
+		  og.startClock(clockId,user_start_time);
+	  }
+			
+			
+	  $("#tasksPanel").parent().css('overflow', 'hidden');
+							
+	  var btns = $(".tasksActionsBtn").toArray();			
+	  og.initPopoverBtns(btns);
+							
+	  
+		
+	  ++group.task_interval_iteration;
+	  if(group.task_interval_iteration == group.group_tasks_order.length){
+		  clearInterval(group.task_interval);
+		  
+		  ++ogTasks.Groups.group_interval_iteration;
+		  var group = ogTasks.Groups[ogTasks.Groups.group_interval_iteration];
+		  		  
+		  //check if is the last group
+		  if (typeof group != 'undefined') {
+			  ogTasks.drawGroupTasks(group); 
+		  }else{
+			  //if is the last task of the last group
+			  if(ogTasks.Groups.group_interval_iteration == ogTasks.Groups.length){
+					og.eventManager.fireEvent('replace all empty breadcrumb', null);
+			  }
+		  }	  
+		  
+		 
+	  } 
+}
 
 ogTasks.drawGroupTasks = function(group){
 	var bottomToolbar = Ext.getCmp('tasksPanelBottomToolbarObject');
@@ -831,53 +890,20 @@ ogTasks.drawGroupTasks = function(group){
 	var drawOptions = topToolbar.getDrawOptions();
 	group.isExpanded = ogTasks.expandedGroups.indexOf(group.group_id) > -1;
 	
-	for (var i = 0; i < group.group_tasks_order.length; i++){
-		var task_id = group.group_tasks_order[i];	
-		ogTasks.drawTask(group.group_tasks[task_id], drawOptions, displayCriteria, group.group_id, 1);				
-	}	
+	group.task_interval_iteration = 0;
+	group.task_interval = setInterval(function() { ogTasks.drawGroupNextTask(group,drawOptions,displayCriteria)},50);	
 };
 
 ogTasks.drawAllGroupsTasks = function(){
 	og.loading();
-	for (var i = 0; i < ogTasks.Groups.length; i++){
-		setTimeout(function(){ 
-			var last = false;
-			for (var j = 0; j < ogTasks.Groups.length; j++){
-				if(j == ogTasks.Groups.length - 1){
-					last = true;
-				}
-				var group = ogTasks.Groups[j];	
-				if(!group.rendering){
-					group.rendering = true;
-					ogTasks.drawGroupTasks(group);
-					break;
-				}
-			};
-			//last iteration
-			ogTasks.resizeRows();
-			if(last){
-				//start all clocks on the list
-				var clocks = $(".og-timeslot-work-started span");
-				
-				for (i = 0; i < clocks.length; i++) { 
-					var clockId = clocks[i].id;
-					clockId = clockId.replace("timespan", "");
-					var user_start_time = parseInt($("#"+clockId+"user_start_time").val());
-					
-					og.startClock(clockId,user_start_time);
-				}
-				
-				
-				$("#tasksPanel").parent().css('overflow', 'hidden');
-								
-				var btns = $(".tasksActionsBtn").toArray();			
-				og.initPopoverBtns(btns);
-								
-				og.eventManager.fireEvent('replace all empty breadcrumb', null);
-				og.hideLoading();
-			}
-		}, (100*i));
-	};
+
+	ogTasks.Groups.group_interval_iteration = 0;
+
+	var group = ogTasks.Groups[ogTasks.Groups.group_interval_iteration];
+			
+	ogTasks.drawGroupTasks(group);
+	
+	og.hideLoading();
 };
 
 ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level, target, returnHtml){
@@ -897,8 +923,10 @@ ogTasks.drawTask = function(task, drawOptions, displayCriteria, group_id, level,
 		return html;
 	}else if (typeof target != 'undefined') {
 		$(target).append(html);	
+		ogTasks.resizeRow(containerName,task);
 	}else{
 		$("#ogTasksPanelTaskRowsContainer"+group_id).append(html);	
+		ogTasks.resizeRow(containerName,task);
 	}
 }
 
@@ -982,6 +1010,8 @@ ogTasks.reDrawTask = function(task) {
 		//init action btns
 		var btns = $("#ogTasksPanelTask" + task.id + "G"+group_id +" .tasksActionsBtn").toArray();
 		og.initPopoverBtns(btns);
+		
+		ogTasks.resizeRow("ogTasksPanelTask" + task.id + "G"+group_id,task);		
 	});	
 	
 	//start all clocks on the list
@@ -994,8 +1024,6 @@ ogTasks.reDrawTask = function(task) {
 		
 		og.startClock(clockId,user_start_time);
 	}	
-	
-	ogTasks.resizeRows();	
 	
 	og.eventManager.fireEvent('replace all empty breadcrumb', null);	
 }
@@ -1095,7 +1123,6 @@ ogTasks.drawTaskRow = function(task, drawOptions, displayCriteria, group_id, lev
 			for (var i = 0; i < ids.length; i++) {
 				if (this.currentUser && ids[i] == this.currentUser.id){
 					userIsWorking = true;
-					ogTasks.currentUser.isWorking = true;
 					userStartTime = task.workingOnTimes[i];
 					var pauses = (task.workingOnPauses + ' ').split(',');
 					userPaused = pauses[i] == 1;

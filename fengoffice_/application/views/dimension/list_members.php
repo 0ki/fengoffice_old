@@ -132,13 +132,15 @@
 						$crumb_members = array(
 							$p->getId() => array('name' => $p->getName(), 'ot' => $p->getObjectTypeId(), 'c' => $p->getColor()),
 						);
-						$crumbOptions = json_encode(array($member->getDimensionId() => $crumb_members));
-						$crumbJs = " og.getCrumbHtml($crumbOptions, null, null, null, 13)";
+						$crumbOptions = json_encode(array($member->getDimensionId() => $crumb_members));						
 					?>
 					<span class="breadcrumb"></span>
 					<script>
-						var crumbHtml = <?php echo $crumbJs?>;
-						$("#member-<?php echo $member->getId()?> .breadcrumb").html(crumbHtml);
+					var crumbHtml = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+					crumbHtml += og.getEmptyCrumbHtml(<?php echo $crumbOptions?>, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+					crumbHtml += "</div>";
+
+					$("#member-<?php echo $member->getId()?> .breadcrumb").html(crumbHtml);
 					</script>
 			<?php 	} ?>
 				</div>
@@ -257,5 +259,7 @@ $(function() {
 		items_x_page = $(this).val();
 		og.call_dimension_list_members(1);
 	});
+
+	og.eventManager.fireEvent('replace all empty breadcrumb', null);
 });
 </script>

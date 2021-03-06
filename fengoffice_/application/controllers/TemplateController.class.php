@@ -300,7 +300,7 @@ class TemplateController extends ApplicationController {
 					foreach($objectPropertyValues as $objInfo => $propertyValues){
 						foreach($propertyValues as $property => $value){
 
-
+							if (!isset($object_ids[$objInfo])) $object_ids[$objInfo] = $objInfo;
 										
 							$split = explode(":", $objInfo);
 							$templateObjPropValue = new TemplateObjectProperty();
@@ -310,9 +310,9 @@ class TemplateController extends ApplicationController {
 							$propValue = '';
 							if(isset($propValueParams[$objInfo][$property])){
 								$param = $propValueParams[$objInfo][$property];
-								$operation = $propValueOperation[$objInfo][$property];
-								$amount = $propValueAmount[$objInfo][$property];
-								$unit = $propValueUnit[$objInfo][$property];
+								$operation = array_var($propValueOperation[$objInfo], $property);
+								$amount = array_var($propValueAmount[$objInfo], $property);
+								$unit = array_var($propValueUnit[$objInfo], $property);
 								$propValue = '{'.$param.'}'.$operation.$amount.$unit;
 							}else{
 								if(is_array($value)){

@@ -89,9 +89,13 @@ og.WebpageManager = function() {
 			text += og.clean(r.data.description) + "</span>";
 		}
 		
-		var mem_path = "";
-		var mpath = r.data.memPath ? Ext.util.JSON.decode(r.data.memPath) : "";
-		if (mpath) mem_path = og.getCrumbHtml(mpath, false, og.breadcrumbs_skipped_dimensions);
+		mem_path = "";
+		var mpath = Ext.util.JSON.decode(r.data.memPath);
+		if (mpath){ 
+			mem_path = "<div class='breadcrumb-container' style='display: inline-block;min-width: 250px;'>";
+			mem_path += og.getEmptyCrumbHtml(mpath, '.breadcrumb-container', og.breadcrumbs_skipped_dimensions);
+			mem_path += "</div>";
+		}
 	    
 		return name + actions + mem_path + text;
 	}

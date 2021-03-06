@@ -187,3 +187,12 @@
 			ON DUPLICATE KEY UPDATE role_id=role_id;
 		");
 	}
+	
+	function mail_update_15_16() {
+		DB::execute("
+			INSERT INTO `".TABLE_PREFIX."contact_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+				('mails panel', 'check_is_defult_account', '1', 'BoolConfigHandler', 0, 0, NULL),
+				('mails panel', 'auto_classify_attachments', '1', 'BoolConfigHandler', 0, 0, NULL)
+			ON DUPLICATE KEY UPDATE name=name;
+		");
+	}

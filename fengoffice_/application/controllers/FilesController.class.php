@@ -2062,9 +2062,10 @@ class FilesController extends ApplicationController {
 				$v = remove_scripts($v);
 			}
 			try {
+				
 				DB::beginWork();
-				$handle_file      = array_var($file_data, 'update_file') == 'checked'; // change file?
-				$post_revision    = $handle_file && array_var($file_data, 'version_file_change') == 'checked'; // post revision?
+				$handle_file = array_var($file_data, 'update_file'); // change file?
+				$post_revision = $handle_file && array_var($file_data, 'version_file_change'); // post revision?
 				$revision_comment = trim(array_var($file_data, 'revision_comment')); // user comment?
 
 				$file->setFromAttributes($file_data);
@@ -2091,7 +2092,7 @@ class FilesController extends ApplicationController {
 					$file->setUrl($url);
 					$revision = $file->getLastRevision();
 					/* @var $revision ProjectFileRevision */
-					if (!$revision instanceof ProjectFileRevision || array_var($file_data, 'version_file_change') == 'checked') {
+					if (!$revision instanceof ProjectFileRevision || $post_revision) {
 						$revision = new ProjectFileRevision();
 						$revision->setFileId($file->getId());
 						$revision->setRevisionNumber($file->getNextRevisionNumber());

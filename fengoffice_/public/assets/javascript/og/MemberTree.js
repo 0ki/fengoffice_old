@@ -314,6 +314,7 @@ og.MemberTree = function(config) {
 		
 		selectionchange : function(sm, selection) {
 			if (selection && !this.pauseEvents) {
+				var selection_changed = og.contextManager.getDimensionMembers(this.dimensionId).indexOf(selection.id) == -1;
 				og.contextManager.cleanActiveMembers(this.dimensionId) ;
 				if ( ! this.isMultiple() ){
 					// Single Selection
@@ -329,7 +330,7 @@ og.MemberTree = function(config) {
 						$('#'+this.id + " .member-quick-form-link").show();
 						var member = 0 ; 
 					}
-					var selection_changed = og.contextManager.getDimensionMembers(this.dimensionId).indexOf(node.id) == -1;
+					
 					if (!this.hidden) {
 						og.contextManager.addActiveMember(member, this.dimensionId, node );
 					}
@@ -341,25 +342,28 @@ og.MemberTree = function(config) {
 							this.filteredTrees = 0;
 							
 							var selected_members = [];
-							trees.each(function (item, index, length){
-								var sel = item.getSelectionModel().getSelectedNode();
-								if (sel && !isNaN(sel.attributes.id)) selected_members.push(sel.attributes.id);
-							});
+							if (!og.resettingAllTrees) {
+								trees.each(function (item, index, length){
+									var sel = item.getSelectionModel().getSelectedNode();
+									if (sel && !isNaN(sel.attributes.id)) selected_members.push(sel.attributes.id);
+								});
+							}
 							
 							trees.each(function (item, index, length){
-								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1  ) {
+								if ( self.id != item.id  && (!item.hidden ||item.reloadHidden) && self.reloadDimensions.indexOf(item.dimensionId) != -1 ) {
 									// Filter other Member Trees
 									self.totalFilterTrees++;
 									
 									if (item.disableReloadOtherDimensions) {
 										item.disableReloadOtherDimensions = false;
 									} else {
-									
-										item.filterByMember(selected_members, node, function(){
-											self.filteredTrees ++ ;
+										var n = og.resettingAllTrees ? item.getRootNode() : node;
+										
+										item.filterByMember(selected_members, n, function(){
+											self.filteredTrees++;
 											if (self.filteredTrees == self.totalFilterTrees) {
-												self.resumeEvents() ;
-												og.eventManager.fireEvent('member trees updated',node);
+												self.resumeEvents();
+												og.eventManager.fireEvent('member trees updated', n);
 											}
 										});
 										
@@ -379,8 +383,8 @@ og.MemberTree = function(config) {
 					og.contextManager.lastSelectedNode = node ;
 					og.contextManager.lastSelectedDimension = this.dimensionId ;
 					og.contextManager.lastSelectedMemberType = type; 
-					
-					if (selection_changed) {
+
+					if (selection_changed && !og.resettingAllTrees) {
 						og.eventManager.fireEvent('member changed', node);
 					}
 					
@@ -546,6 +550,11 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 	}, 
 
 	selectNodes: function(nids) {
+		if (og.resettingAllTrees) {
+			// if all trees are being reset then don't select any other node
+			nids = [];
+		}
+		
 		var mem_count = 0;
 		for (var i = 0 ; i < nids.length ; i++ ) {
 			if ( nids[i] != "undefined" ) {
@@ -624,7 +633,9 @@ Ext.extend(og.MemberTree, Ext.tree.TreePanel, {
 	filterByMember: function(memberIds, nodeClicked, callback) {
 		var tree = this ; //scope
 		var expandedNodes = tree.expandedNodes() ;
-		var selectedMembers = og.contextManager.getDimensionMembers(this.dimensionId) ;
+		
+		// if resetting all trees don't select any node
+		var selectedMembers = og.resettingAllTrees ? [] : og.contextManager.getDimensionMembers(this.dimensionId);
 
 		tree.expandMode = "root";
 		

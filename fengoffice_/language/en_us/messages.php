@@ -771,10 +771,12 @@
   	'disable' => 'Inactivate',
   	'and xx more' => 'and {0} more.',
   	
+  	'all previous tasks have been completed' => 'All previous tasks of \'{0}\' have been completed',
+  	'task x can be started' => 'All previous tasks have been completed. Now the task \'{0}\' can be started.',
+  	
   	'permissions successfully saved' => 'Permissions saved successfully',
   	
   	'cannot delete file' => 'You don\'t have permissions to delete file \'{0}\'',
-	'unknown' => 'Unknown',
   ); // array
 
 ?>

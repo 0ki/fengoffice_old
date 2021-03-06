@@ -2708,11 +2708,11 @@ og.getColorInputHtml = function(genid, field_name, value, col, label) {
 	}
 	html += '<input name="'+field_name+'[' + col + ']" id="'+ genid + field_name +'_' + col +'" class="color-code" type="hidden" value="'+value+'" />';
 	html += "<div class='ws-color-chooser'>";
-	for (var i=1; i<=24; i++) {
+	for (var i=0; i<=24; i++) {
 		var cls = (value == i)?'selected':'';
 		html += "<div  class='ico-color"+i+ " "+ cls + " color-cell'  onClick='$(\"input.color-code\").val(\""+i+"\");$(\".color-cell\").removeClass(\"selected\");$(this).addClass(\"selected\");'></div>";
 		if (i==12) {
-			html +=	'<div class="x-clear"></div>';
+			html +=	'<div class="x-clear"></div><div style="width:20px;float:left;height:10px;"></div>';
 		}
 	}
 	html+=	'<div class="x-clear"></div>';
@@ -3455,3 +3455,59 @@ og.renderAddressInput = function(id, name, container_id, sel_type, sel_data) {
 	$('#'+container_id).append('<div class="clear"></div>');
 }
 /* end address input */
+
+/**
+ * Resets all tree filters in left panel
+ */
+og.clickRootNodeAndCallNext = function(dimId, currentCall) {
+	// switch on the flag to prevent multiple loading
+	og.resettingAllTrees = true;
+	
+	// clean active members for this dimension in contextManager
+	og.contextManager.cleanActiveMembers(dimId);
+	
+	// click this root node if not already selected
+	var members = og.contextManager.dimensionMembers[dimId];
+	if (members.length > 0) {
+		var tree =  Ext.getCmp("dimension-panel-"+dimId);
+		og.memberTreeExternalClick(tree.dimensionCode, tree.getRootNode().id);
+	}
+	
+	currentCall++;
+	
+	var total = 0;
+	for (x in og.contextManager.dimensionMembers) {
+		total++;
+	}
+	
+	// Call next tree root node
+	if (currentCall < total) {
+		var i = 0;
+		for (dimId in og.contextManager.dimensionMembers) {
+			if (i < currentCall) {
+				i++;
+			} else {
+				og.clickRootNodeAndCallNext(dimId, currentCall);
+				break;
+			}
+		}
+	} else {
+		
+		// reload all panels
+		var all_tabs = Ext.getCmp('tabs-panel');
+		for (i in all_tabs.items.items) {
+			var tab = all_tabs.items.items[i];
+			// update panel url if necessary
+			if (tab && tab.content && tab.content.type == 'html') {
+				tab.content.url = tab.content.url.replace("context=", "ignored=") + "&context=" + og.contextManager.plainContext();
+			}
+			// reset panel
+			if (tab && typeof(tab.reset) == 'function') {
+				tab.reset();
+			}
+		}
+
+		// switch off the flag
+		og.resettingAllTrees = false;
+	}
+};

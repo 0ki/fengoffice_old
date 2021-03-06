@@ -280,3 +280,9 @@ tr.add-member-table-row:hover {
 	letter-spacing: -1px;
 	background-color: #D6F4D9;
 }
+
+div.checkbox-config-option {
+	float:left;
+	margin-right: 15px;
+	min-width: 130px;
+}

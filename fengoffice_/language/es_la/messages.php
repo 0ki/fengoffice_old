@@ -678,4 +678,7 @@
 	'permissions successfully saved' => 'Permisos editados exitosamente',
 	
 	'cannot delete file' => 'No tiene permisos para borrar el documento \'{0}\'',
+		
+	'all previous tasks have been completed' => 'Las tareas previas a \'{0}\' han sido completadas',
+	'task x can be started' => 'Las tareas previas han sido completadas. Ya puede comenzar a trabajar en la tarea \'{0}\'.',
 ); ?>

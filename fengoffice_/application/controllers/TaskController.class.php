@@ -667,10 +667,9 @@ class TaskController extends ApplicationController {
 						if ($task->canAddTimeslot(logged_user())){
 							$timeslot = $task->closeTimeslots(logged_user(),array_var($_POST, 'options'));
 							$application_logs[] = array($timeslot, ApplicationLogs::ACTION_CLOSE,false,true);
-							$tasksToReturn[] = $task->getArrayInfo();
 							$showSuccessMessage = false;
 							$task->calculatePercentComplete();
-							$task->save();
+							$tasksToReturn[] = $task->getArrayInfo();
 						}
 						break;
 					case 'pause_work':
@@ -2553,6 +2552,13 @@ class TaskController extends ApplicationController {
 					$this->setLayout("json");
 					$this->setTemplate(get_template_path("empty"));
 					
+					// reload task info because plugins may have updated some task info (for example: name prefix)
+					if ($is_template) {
+						$task = TemplateTasks::findById($task->getId());
+					} else {
+						$task = ProjectTasks::findById($task->getId());
+					}
+					
 					$params = array('msg' => lang('success add task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST, 'reload'));
 					if ($task instanceof TemplateTask) {
 						$params['msg'] = lang('success add template', $task->getObjectName());
@@ -2988,7 +2994,9 @@ class TaskController extends ApplicationController {
 
 				$member_ids = json_decode(array_var($_POST, 'members'));
 
-				
+				// keep old dates to check for subtasks
+				$old_start_date = $task->getStartDate();
+				$old_due_date = $task->getDueDate();
 
 				if(config_option("wysiwyg_tasks")){
 					$task_data['type_content'] = "html";
@@ -3098,8 +3106,8 @@ class TaskController extends ApplicationController {
 				$assigned_to = $task->getAssignedToContactId();
 				$subtasks = $task->getAllSubTasks();
 				$milestone_id = $task->getMilestoneId();
-				$apply_ms = array_var($task_data, 'apply_milestone_subtasks') == "checked";
-				$apply_at = array_var($task_data, 'apply_assignee_subtasks', '') == "checked";
+				$apply_ms = array_var($task_data, 'apply_milestone_subtasks');
+				$apply_at = array_var($task_data, 'apply_assignee_subtasks', '');
 				foreach ($subtasks as $sub) {
 					$modified = false;
 					//if ($apply_at || !($sub->getAssignedToContactId() > 0)) {
@@ -3244,9 +3252,8 @@ class TaskController extends ApplicationController {
 				} catch(Exception $e) {
 
 				} // try
-				$isSailent = true;
-				if(array_var($task_data, 'send_notification') == 'checked') $isSailent = false;
-				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, $isSailent, true, $log_info);
+				
+				ApplicationLogs::createLog($task, ApplicationLogs::ACTION_EDIT, false, false, true, $log_info);
 				
 				//flash_success(lang('success edit task list', $task->getObjectName()));
 				if (array_var($_REQUEST, 'modal')) {
@@ -3256,6 +3263,13 @@ class TaskController extends ApplicationController {
 						ajx_current("empty");
 						$this->setLayout("json");
 						$this->setTemplate(get_template_path("empty"));
+						
+						// reload task info because plugins may have updated some task info (for example: name prefix)
+						if ($is_template) {
+							$task = TemplateTasks::findById($task->getId());
+						} else {
+							$task = ProjectTasks::findById($task->getId());
+						}
 						
 						$params = array('msg' => lang('success edit task list', $task->getObjectName()), 'task' => $task->getArrayInfo(), 'reload' => array_var($_REQUEST, 'reload'));
 						if ($task instanceof TemplateTask) {
@@ -3268,6 +3282,32 @@ class TaskController extends ApplicationController {
 						
 				} else {
 					ajx_current("back");						
+				}
+				
+				// if has subtasks and dates were changed, ask the user if the subtasks dates should also be changed
+				if ($task instanceof ProjectTask && $task->countOpenSubTasks() > 0) {
+					// check if there was any due date changes
+					$dd_advance_info = null;
+					if ($task->getDueDate() instanceof DateTimeValue && $old_due_date instanceof DateTimeValue && $old_due_date->getTimestamp() != $task->getDueDate()->getTimestamp()) {
+						$dd_to_advance_ts = $task->getDueDate()->getTimestamp() - $old_due_date->getTimestamp();
+						if ($dd_to_advance_ts != 0) {
+							$dd_advance_info = get_time_info($dd_to_advance_ts);
+						}
+					}
+					
+					// check if there was any start date changes
+					$sd_advance_info = null;
+					if ($task->getStartDate() instanceof DateTimeValue && $old_start_date instanceof DateTimeValue && $old_start_date->getTimestamp() != $task->getStartDate()->getTimestamp()) {
+						$sd_to_advance_ts = $task->getStartDate()->getTimestamp() - $old_start_date->getTimestamp();
+						if ($sd_to_advance_ts != 0) {
+							$sd_advance_info = get_time_info($sd_to_advance_ts);
+						}
+					}
+					
+					if ($dd_advance_info != null || $sd_advance_info != null) {
+						evt_add('ask to change subtasks dates', array('dd_diff' => $dd_advance_info, 'sd_diff' => $sd_advance_info, 'task_id' => $task->getId()));
+					}
+					
 				}
 
 			} catch(Exception $e) {
@@ -3283,6 +3323,60 @@ class TaskController extends ApplicationController {
 			} // try
 		} // if
 	} // edit_task
+	
+	
+	function advance_subtasks_dates() {
+		ajx_current("empty");
+		
+		$task = ProjectTasks::findById(array_var($_REQUEST, 'task_id'));
+		if ($task instanceof ProjectTask && (array_var($_REQUEST, 'sd_diff') || array_var($_REQUEST, 'dd_diff'))) {
+			
+			$sd_diff = null;
+			if (array_var($_REQUEST, 'sd_diff')) {
+				$sd_diff = json_decode(array_var($_REQUEST, 'sd_diff'), true);
+			}
+			$dd_diff = null;
+			if (array_var($_REQUEST, 'dd_diff')) {
+				$dd_diff = json_decode(array_var($_REQUEST, 'dd_diff'), true);
+			}
+			
+			$subtasks = $task->getOpenSubTasks();
+			
+			try {
+				DB::beginWork();
+				foreach ($subtasks as $subt) {/* @var $subt ProjectTask */
+					$modified = false;
+					
+					if (is_array($dd_diff) && $subt->getDueDate() instanceof DateTimeValue) {
+						$seconds = array_var($dd_diff, 'days') * (60*60*24) + array_var($dd_diff, 'hours') * (60*60) + array_var($dd_diff, 'mins') * (60);
+						$seconds = array_var($dd_diff, 'sign', 1) * $seconds;
+						$new_dd = $subt->getDueDate()->advance($seconds, false);
+						$subt->setDueDate($new_dd);
+						$modified = true;
+					}
+					
+					if (is_array($sd_diff) && $subt->getStartDate() instanceof DateTimeValue) {
+						$seconds = array_var($sd_diff, 'days') * (60*60*24) + array_var($sd_diff, 'hours') * (60*60) + array_var($sd_diff, 'mins') * (60);
+						$seconds = array_var($sd_diff, 'sign', 1) * $seconds;
+						$new_sd = $subt->getStartDate()->advance($seconds, false);
+						$subt->setStartDate($new_sd);
+						$modified = true;
+					}
+					if ($modified) {
+						$subt->save();
+					}
+				}
+				DB::commit();
+				
+				flash_success('success update subtasks dates');
+				ajx_current("reload");
+				
+			} catch (Exception $e) {
+				DB::rollback();
+				flash_error($e->getMessage());
+			}
+		}
+	}
 
 	/**
 	 * Delete task
@@ -4058,8 +4152,8 @@ class TaskController extends ApplicationController {
             $assigned_to = $task->getAssignedToContactId();
             $subtasks = $task->getAllSubTasks();
             $milestone_id = $task->getMilestoneId();
-            $apply_ms = array_var($task_data, 'apply_milestone_subtasks') == "checked";
-            $apply_at = array_var($task_data, 'apply_assignee_subtasks', '') == "checked";
+            $apply_ms = array_var($task_data, 'apply_milestone_subtasks');
+            $apply_at = array_var($task_data, 'apply_assignee_subtasks', '');
             foreach ($subtasks as $sub) {
                     $modified = false;
                     if ($apply_at || !($sub->getAssignedToContactId() > 0)) {

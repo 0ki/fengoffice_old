@@ -2,7 +2,7 @@
   require_javascript('og/modules/addTaskForm.js'); 
   $genid = gen_id();
   $visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($milestone->getObjectTypeId());
-  $projectMilestone = new ProjectMilestone();s
+  $projectMilestone = new ProjectMilestone();
 ?>
 <form class="add-milestone" style='height:100%;background-color:white' class="internalForm" action="<?php echo $milestone->isNew() ? get_url('milestone', 'add', array("copyId" => array_var($milestone_data, 'copyId'))) : $milestone->getEditUrl() ?>" method="post">
 <input id="<?php echo $genid?>template_milestone" type="hidden" name="template_milestone" value="<?php echo array_var($_GET, 'template_milestone', false)?>" />

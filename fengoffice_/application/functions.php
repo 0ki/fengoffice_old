@@ -865,8 +865,13 @@ function create_user($user_data, $permissionsString, $rp_permissions_data = arra
 	
 	
 	//permissions
+	$additional_name = "";
+	$tmp_pg = PermissionGroups::findOne(array('conditions' => "`name`='User ".$contact->getId()." Personal'"));
+	if ($tmp_pg instanceof PermissionGroup) {
+		$additional_name = "_".gen_id();
+	}
 	$permission_group = new PermissionGroup();
-	$permission_group->setName('User '.$contact->getId().' Personal');
+	$permission_group->setName('User '.$contact->getId().$additional_name.' Personal');
 	$permission_group->setContactId($contact->getId());
 	$permission_group->setIsContext(false);
 	$permission_group->setType("permission_groups");
@@ -2120,7 +2125,7 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 						$date = DateTimeValueLib::now();						
 					}
 						
-					if (config_option('use_time_in_task_dates') && $propName == "due_date"){
+					if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "due_date"){
 						$copy->setUseDueTime(1);
 						
 						$hour_min = getTimeValue(user_config_option('work_day_end_time'));
@@ -2132,7 +2137,7 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 						
 						$date = $date->add('s', -logged_user()->getTimezone()*3600);										
 					}
-					if (config_option('use_time_in_task_dates') && $propName == "start_date"){
+					if ($copy instanceof ProjectTask && config_option('use_time_in_task_dates') && $propName == "start_date"){
 						$copy->setUseStartTime(1);
 						
 						$hour_min = getTimeValue(user_config_option('work_day_start_time'));
@@ -2173,7 +2178,7 @@ function instantiate_template_task_parameters(TemplateTask $object, ProjectTask 
 	}
 	
 	// Ensure that assigned user is subscribed
-	if ($copy->getAssignedTo() instanceof Contact) {
+	if ($copy instanceof ProjectTask && $copy->getAssignedTo() instanceof Contact) {
 		$copy->subscribeUser($copy->getAssignedTo());
 	}
 	
@@ -2206,8 +2211,10 @@ function copy_additional_object_data($object, &$copy, $options=array()) {
 
 	// copy members
 	if ($copy_members) {
-		$object_members = $object->getMemberIds();
-		$controller->add_to_members($copy, $object_members);
+		$object_members = $object->getMembers();
+		$copy->addToMembers($object_members);
+		Hook::fire ('after_add_to_members', $copy, $object_members);
+		$copy->addToSharingTable();
 	}
 
 	// copy linked objects
@@ -2287,4 +2294,22 @@ function copy_additional_object_data($object, &$copy, $options=array()) {
 		}
 	}
 
+}
+
+
+
+function get_time_info($timestamp) {
+	$sign = $timestamp >= 0 ? 1 : -1;
+	
+	$timestamp = abs($timestamp);
+	$days = floor($timestamp / (60*60*24));
+	
+	$ts_hours = $timestamp % (60*60*24);
+	$hours = floor($ts_hours / (60*60));
+	
+	//$ts_mins = $ts_hours - ($hours*60*60);
+	$ts_mins = $ts_hours % (60*60);
+	$mins = floor($ts_mins / (60));
+	
+	return array('days' => $days, 'hours' => $hours, 'mins' => $mins, 'sign' => $sign);
 }

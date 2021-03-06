@@ -738,14 +738,16 @@ class ProjectFile extends BaseProjectFile {
 	 */
 	function validate(&$errors) {
 		$extension = get_file_extension(basename($this->getFilename()));
-		if(!$this->validatePresenceOf('name') || ($this->getFilename() == ".".$extension)) {
+		$known_type = FileTypes::getByExtension($extension);
+		
+		if(!$this->validatePresenceOf('name') || ($this->getFilename() == ".".$extension && $known_type instanceof FileType)) {
 			$errors[] = lang('filename required');
 		}
 		if ($this->getType() != ProjectFiles::TYPE_DOCUMENT){
 			if(!$this->validatePresenceOf('url') || $this->getUrl() == 'http://') {
-					$errors[] = lang('weblink required');
-				} // if				
-			}
+				$errors[] = lang('weblink required');
+			} // if				
+		}
 	} // validate
 	
 	/**
