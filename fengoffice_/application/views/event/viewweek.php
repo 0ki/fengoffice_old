@@ -119,7 +119,7 @@ require_javascript('og/EventPopUp.js');
 			}
 		}
 		
-		if(is_array($milestones)){
+		if(isset($milestones) && is_array($milestones)){
 			foreach ($milestones as $milestone){
 				if ($dates[$day_of_week]->getTimestamp() == mktime(0,0,0,$milestone->getDueDate()->getMonth(),$milestone->getDueDate()->getDay(),$milestone->getDueDate()->getYear())) {	
 					$alldayevents[$day_of_week][] = $milestone;

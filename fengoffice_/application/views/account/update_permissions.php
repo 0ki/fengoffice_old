@@ -26,6 +26,6 @@ echo submit_button(lang('update permissions'));
 </form>
 <?php if ($user->isGuest()) { ?>
 <script>
-og.ogPermReadOnly('<?php echo $genid ?>', true);
+//og.ogPermReadOnly('<?php echo $genid ?>', true);
 </script>
 <?php } ?>

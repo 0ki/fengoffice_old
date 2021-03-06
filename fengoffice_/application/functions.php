@@ -1033,7 +1033,9 @@ function executeMultipleQueries($sql, &$total_queries = null , &$executed_querie
 			} 
 		}
 	}
+	return true ;
 }
+
 function getAllRoleUsers($role){
 	$contacts=Contacts::getAllUsers(" AND `user_type` = $role");
 	$pgs=array();

@@ -219,6 +219,8 @@
   	'mark as unread' => 'Mark as unread',
   	'activate' => 'Activate',
   	'disabled' => 'Disabled',
+  	
+  	'template context' => 'Choose the template\'s context',
   ); // array
 
 ?>

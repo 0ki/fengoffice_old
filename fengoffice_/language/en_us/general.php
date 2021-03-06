@@ -273,6 +273,16 @@
   	'field Objects percent_completed' => 'Percent completed',
   	'field Objects name' => 'Name',
   	'must choose at least one member' => 'Please select the context', 
+  	'invalid email' => 'Invalid Email',
+  	'plugins' => 'Plugins',
+
+  	'can_manage_dimensions'=>'Can manage dimensions',
+	'can_manage_dimension_members'=>'Can manage members',
+	'can_task_assignee'=>'Can task asignee',
+	'can_manage_billing'=>'Can manage billing',
+	'can_view_billing'=>'Can view billing',
+	'can_view_time'=>'Can view time',
+	'can_record_time'=>'Can record time',
   
   
   );

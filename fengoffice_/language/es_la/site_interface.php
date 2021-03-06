@@ -36,7 +36,7 @@
 	'new avatar notice' => 'Advertencia: la imagen nueva reemplazará la anterior borrándola permanentemente',
 	'new logo notice' => 'Advertencia: el nuevo logo reemplazará al anterior borrándolo permanentemente',
 	'days late' => '{0} días de atraso',
-	'days left' => 'quedan {0} días ',
+	'days left' => 'Quedan {0} días ',
 	'user card of' => 'Tarjeta del contacto: {0}',
 	'company card of' => 'Tarjeta de la organización: {0}',
 	'upgrade is not available' => 'No hay nuevas versiones de Feng Office',

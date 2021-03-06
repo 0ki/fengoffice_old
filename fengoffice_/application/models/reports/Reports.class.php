@@ -243,6 +243,9 @@ class Reports extends BaseReports {
 					}
 					$row_values[$field] = $value;
 				}
+				
+
+				Hook::fire("report_row", $object, $row_values);
 				$report_rows[] = $row_values;
 			}
 			
@@ -252,6 +255,8 @@ class Reports extends BaseReports {
 				} else {
 					$results['columns'] = array('');
 				}
+				Hook::fire("report_header", $ot, $results['columns']);
+				
 			}
 			$results['rows'] = $report_rows;
 		}

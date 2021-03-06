@@ -270,7 +270,7 @@ class DashboardController extends ApplicationController {
 			$instance = Objects::instance()->findObject($info_elem['object_id']);
 			$info_elem['url'] = $instance->getViewUrl();
 		
-			if( method_exists($instance, getText))
+			if( method_exists($instance, "getText"))
 				$info_elem['content'] = $instance->getText();
 			
 			$info_elem['picture'] = $instance->getCreatedBy()->getPictureUrl();

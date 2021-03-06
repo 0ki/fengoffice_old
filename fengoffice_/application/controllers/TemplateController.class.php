@@ -16,7 +16,7 @@ class TemplateController extends ApplicationController {
 			return;
 		}
 		
-		$templates = COTemplates::instance()->getContentObjects($context, ObjectTypes::findById(COTemplates::instance()->getObjectTypeId()), $order, $order_dir,null,null,false, false, $start, $limit)->objects;
+		$templates=COTemplates::instance()->findAll();
 		tpl_assign('templates', $templates);
 	}
 
@@ -34,7 +34,17 @@ class TemplateController extends ApplicationController {
 				'description' => ''
 				);
 		} else {
-			$member_ids = json_decode(array_var($_POST, 'members'));
+			//No le agrego miembros
+// 			$member_ids = json_decode(array_var($_POST, 'members'));
+// 			$context = active_context();
+// 			$member_ids = array();
+// 			foreach ($context as $selection) {
+// 				if ($selection instanceof Member) $member_ids[] = $selection->getId();
+// 			}
+// 			if(count($selected_members)==0){
+// 				$member_ids=$object->getMemberIds();
+// 			}
+// 			$controller->add_to_members($copy, $selected_members);
 			$cotemplate = new COTemplate();
 			$cotemplate->setFromAttributes($template_data);
 			$object_ids = array();
@@ -46,7 +56,7 @@ class TemplateController extends ApplicationController {
 					$object = Objects::findObject($objid);
 					$oid = $cotemplate->addObject($object);
 					$object_ids[$objid] = $oid;
-					COTemplates::validateObjectContext($object, $member_ids);
+// 					COTemplates::validateObjectContext($object, $member_ids);
 				}
 				
 				$objectPropertyValues = array_var($_POST, 'propValues');
@@ -97,8 +107,8 @@ class TemplateController extends ApplicationController {
 					}
 				}
 								
-				$object_controller = new ObjectController();
-				$object_controller->add_to_members($cotemplate, $member_ids);
+// 				$object_controller = new ObjectController();
+// 				$object_controller->add_to_members($cotemplate, $member_ids);
 				
 				DB::commit();
 				ApplicationLogs::createLog($cotemplate, ApplicationLogs::ACTION_ADD);
@@ -342,132 +352,172 @@ class TemplateController extends ApplicationController {
 		ajx_current("empty");
 		ajx_extra_data(array('parameters' => $parameters));
 	}
-
-	function instantiate() {
+	function get_context(){
 		$id = get_id();
+		$template = COTemplates::findById($id);
+		$this->setTemplate('get_context');
+		if(array_var($_POST, 'members')){
+			$this->instantiate();
+		}
+		tpl_assign('cotemplate',$template);
+		tpl_assign('id',$id);
+	}
+	function instantiate() {
+		$selected_members = array();
+		$choose_ctx=false;
+		$id = get_id();
+	
+		
 		$template = COTemplates::findById($id);
 		if (!$template instanceof COTemplate) {
 			flash_error(lang("template dnx"));
 			ajx_current("empty");
 			return;
 		}
-
 		$parameters = TemplateParameters::getParametersByTemplate($id);
 		$parameterValues = array_var($_POST, 'parameterValues');
 		if(count($parameters) > 0 && !isset($parameterValues)) {
 			ajx_current("back");
 			return;
 		}
-
-		$objects = $template->getObjects() ;
-		$controller  = new ObjectController() ;
-		foreach ($objects as $object) {
+		if(array_var($_POST, 'members')){
+			$selected_members = json_decode(array_var($_POST, 'members'));
+		}else{
+			$context = active_context();
 			
-			if (!$object instanceof ContentDataObject) continue;
-			// copy object
-			$copy = $object->copy();
-			if ($copy->columnExists('is_template')) {
-				$copy->setColumnValue('is_template', false);
+			foreach ($context as $selection) {
+				if ($selection instanceof Member) $selected_members[] = $selection->getId();
 			}
-			if ($copy instanceof ProjectTask) {
-				// don't copy parent task and milestone
-				$copy->setMilestoneId(0);
-				$copy->setParentId(0);
+			if(count($selected_members)==0){
+				$choose_ctx=true;
 			}
-			$copy->save();
-			
-			$memberIds = $object->getMemberIds();
-			$controller->add_to_members($copy, $memberIds);
-			
-			// ad object tags and specified tags
-			// copy linked objects
-			$copy->copyLinkedObjectsFrom($object);
-			// copy subtasks if applicable
-			if ($copy instanceof ProjectTask) {
-				ProjectTasks::copySubTasks($object, $copy, false);
-				$manager = new ProjectTask();
-			} else if ($copy instanceof ProjectMilestone) {
-				ProjectMilestones::copyTasks($object, $copy, false);
-				$manager = new ProjectMilestone();
-			}
-			// copy custom properties
-			$copy->copyCustomPropertiesFrom($object);
-			// set property values as defined in template
-			$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
-			foreach($objProp as $property) {
-				
-				$propName = $property->getProperty();
-				$value = $property->getValue();
-				if ($manager->getColumnType($propName) == DATA_TYPE_STRING) {
-					if(is_array($parameterValues)){
-						foreach($parameterValues as $param => $val){
-							$value = str_replace('{'.$param.'}', $val, $value);
-						}
+		}
+		if($choose_ctx){
+			$this->get_context();
+		}else{
+		
+			$objects = $template->getObjects() ;
+			$controller  = new ObjectController() ;
+		foreach($selected_members as $memb){
+			$curr_memb=array();
+			$curr_memb[]=$memb;
+			foreach ($objects as $object) {				
+				if (!$object instanceof ContentDataObject) continue;
+				// copy object
+				$copy = $object->copy();
+				if ($copy->columnExists('is_template')) {
+					$copy->setColumnValue('is_template', false);
+				}
+				if ($copy instanceof ProjectTask) {
+					// don't copy parent task and milestone
+					$copy->setMilestoneId(0);
+					$copy->setParentId(0);
+				}
+				$copy->save();
+				$controller->add_to_members($copy, $curr_memb);
+				// ad object tags and specified tags
+				// copy linked objects
+				$copy->copyLinkedObjectsFrom($object);
+				// copy subtasks if applicable
+				if ($copy instanceof ProjectTask) {
+					ProjectTasks::copySubTasks($object, $copy, false);
+					foreach($copy->getOpenSubTasks(false) as $m_task){
+						$controller->add_to_members($m_task, $curr_memb);
 					}
-				} else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME) {
-					$operator = '+';
-					if (strpos($value, '+') === false) {
-						$operator = '-';
+					$manager = new ProjectTask();
+				} else if ($copy instanceof ProjectMilestone) {
+					ProjectMilestones::copyTasks($object, $copy, false);
+					foreach($copy->getTasks(false) as $m_task){
+						$controller->add_to_members($m_task, $curr_memb);
 					}
-					$opPos = strpos($value, $operator);
-					if ($opPos !== false) {
-						// Is parametric
-						$date = $parameterValues[$dateParam];
-						
-						$dateParam = substr($value, 1, strpos($value, '}') - 1);
-						$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
-						if($dateUnit == 'm') {
-							$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
-						}
-						$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
-						
-						
-						$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $date);
-						$value = $date->add($dateUnit, $dateNum);
-					}else{
-						$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
-											
-						
-					}
-				} else if ($manager->getColumnType($propName) == DATA_TYPE_INTEGER) {
-					if (is_array($parameterValues)) {
+					$manager = new ProjectMilestone();
+				}
+				// copy custom properties
+				$copy->copyCustomPropertiesFrom($object);
+				// set property values as defined in template
+				$objProp = TemplateObjectProperties::getPropertiesByTemplateObject($id, $object->getId());
+				foreach($objProp as $property) {
+					
+					$propName = $property->getProperty();
+					$value = $property->getValue();
+					if ($manager->getColumnType($propName) == DATA_TYPE_STRING) {
+						if(is_array($parameterValues)){
 							foreach($parameterValues as $param => $val){
 								$value = str_replace('{'.$param.'}', $val, $value);
-							}							
+							}
+						}
+					} else if($manager->getColumnType($propName) == DATA_TYPE_DATE || $manager->getColumnType($propName) == DATA_TYPE_DATETIME) {
+						$operator = '+';
+						if (strpos($value, '+') === false) {
+							$operator = '-';
+						}
+						$opPos = strpos($value, $operator);
+						if ($opPos !== false) {
+							// Is parametric
+							$date = $parameterValues[$dateParam];
+							
+							$dateParam = substr($value, 1, strpos($value, '}') - 1);
+							$dateUnit = substr($value, strlen($value) - 1); // d, w or m (for days, weeks or months)
+							if($dateUnit == 'm') {
+								$dateUnit = 'M'; // make month unit uppercase to call DateTimeValue::add with correct parameter
+							}
+							$dateNum = (int) substr($value, strpos($value,$operator), strlen($value) - 2);
+							
+							
+							$date = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $date);
+							$value = $date->add($dateUnit, $dateNum);
+						}else{
+							$value = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $value);
+												
+							
+						}
+					} else if ($manager->getColumnType($propName) == DATA_TYPE_INTEGER) {
+						if (is_array($parameterValues)) {
+								foreach($parameterValues as $param => $val){
+									$value = str_replace('{'.$param.'}', $val, $value);
+								}							
+						}
 					}
-				}
-				if($value != '') {
-					if (!$copy->setColumnValue($propName, $value)){
-						$copy->object->setColumnValue($propName, $value);
+					if($value != '') {
+						if (!$copy->setColumnValue($propName, $value)){
+							$copy->object->setColumnValue($propName, $value);
+						}
+						$copy->save();
 					}
-					$copy->save();
-				}
-			
 				
-			}
-			// copy reminders
-			$reminders = ObjectReminders::getByObject($object);
-			foreach ($reminders as $reminder) {
-				$copy_reminder = new ObjectReminder();
-				$copy_reminder->setContext($reminder->getContext());
-				$reminder_date = $copy->getColumnValue($reminder->getContext());
-				if ($reminder_date instanceof DateTimeValue) {
-					$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
-					$reminder_date->add('m', -$reminder->getMinutesBefore());
+					
 				}
-				$copy_reminder->setDate($reminder_date);
-				$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
-				$copy_reminder->setObject($copy);
-				$copy_reminder->setType($reminder->getType());
-				$copy_reminder->setUserId($reminder->getUserId());
-				$copy_reminder->save();
+				// copy reminders
+				$reminders = ObjectReminders::getByObject($object);
+				foreach ($reminders as $reminder) {
+					$copy_reminder = new ObjectReminder();
+					$copy_reminder->setContext($reminder->getContext());
+					$reminder_date = $copy->getColumnValue($reminder->getContext());
+					if ($reminder_date instanceof DateTimeValue) {
+						$reminder_date = new DateTimeValue($reminder_date->getTimestamp());
+						$reminder_date->add('m', -$reminder->getMinutesBefore());
+					}
+					$copy_reminder->setDate($reminder_date);
+					$copy_reminder->setMinutesBefore($reminder->getMinutesBefore());
+					$copy_reminder->setObject($copy);
+					$copy_reminder->setType($reminder->getType());
+					$copy_reminder->setUserId($reminder->getUserId());
+					$copy_reminder->save();
+				}
+				}
 			}
+			if (is_array($parameters) && count($parameters) > 0){
+				ajx_current("back");
+			}else{
+				if(!$choose_ctx){
+					ajx_current("back");
+				}else{
+					ajx_current("reload");
+				}
+			}		
+			
 		}
-		if (is_array($parameters) && count($parameters) > 0){
-			ajx_current("back");
-		}else{
-			ajx_current("reload");
-		}
+	
 	}
 
 	function instantiate_parameters(){

@@ -121,6 +121,14 @@ if (can_manage_tabs(logged_user())) {
 		'extra' => '',
 	);
 }
+/*if (can_manage_plugins(logged_user())) {
+	$icons[] = array(
+		'ico' => 'ico-large-plugins',
+		'url' => get_url('plugin', 'index'),
+		'name' => lang('plugins'),
+		'extra' => '',
+	);
+}*/
 Hook::fire('render_administration_icons', null, $icons);
 if (count($icons > 0)) {}
 ?>

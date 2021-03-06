@@ -106,6 +106,10 @@
 		return $user->isAdministrator();
   	}
   	
+  	function can_manage_plugins(Contact $user){
+		return $user->isAdministrator();
+  	}
+  	
   	
   	/**
   	 * Returns whether a user can edit company data.
@@ -784,8 +788,10 @@
 		}
 		$users = Contacts::getAllUsers($extra_conditions);
 		$members = array();
-		foreach ($context as $selection) {
-			if ($selection instanceof Member) $members[] = $selection;
+		if (isset($context) && is_array($context)) {
+			foreach ($context as $selection) {
+				if ($selection instanceof Member) $members[] = $selection;
+			}
 		}
 		
 		if (count($members) == 0) return $users;

@@ -26,7 +26,6 @@
 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
-		<a href="#" class="option" style="font-weight:bold"  onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_select_workspace_div',this)"><?php echo lang('context') ?></a> - 
 		<a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_parameters_div',this)"><?php echo lang('parameters') ?></a>
 		- <a href="#" class="option" style="font-weight:bold" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_objects_div',this)"><?php echo lang('objects') ?></a>
 		
@@ -37,21 +36,7 @@
 </div>
 <div class="coInputSeparator"></div>
 <div class="coInputMainBlock">	
-		
-	<?php if (isset ($workspaces) && count($workspaces) > 0) { ?>
-	<div id="<?php echo $genid ?>add_template_select_workspace_div">
-	<fieldset>
-		<legend><?php echo lang('context')?></legend>
-		<?php
-			if ($cotemplate->isNew()) {
-				render_dimension_trees($cotemplate->manager()->getObjectTypeId(), $genid, null, array('select_current_context' => true)); 
-			}else {
-				render_dimension_trees($cotemplate->manager()->getObjectTypeId(), $genid, $cotemplate->getMemberIds()); 
-			} 
-		?>		
-	</fieldset>
-	</div>
-	<?php } ?>
+
 	
 	<div id="<?php echo $genid ?>add_template_parameters_div">
 		<fieldset><legend><?php echo lang('parameters')?></legend>
@@ -129,25 +114,7 @@
 		og.addParameterToTemplate(document.getElementById('<?php echo $genid ?>params'), '<?php echo $param->getName() ?>','<?php echo $param->getType() ?>'); 
 	<?php }
 	}?>
-
-	var memberChoosers = Ext.getCmp('<?php echo "$genid-member-chooser-panel-".$cotemplate->manager()->getObjectTypeId()?>').items;
-	if (memberChoosers) {
-		memberChoosers.each(function(item, index, length) {
-			item.on('all trees updated', function() {
-				var dimensionMembers = {};
-				memberChoosers.each(function(it, ix, l) {
-					dim_id = this.dimensionId;
-					dimensionMembers[dim_id] = [];
-					var checked = it.getChecked("id");
-					for (var j = 0 ; j < checked.length ; j++ ) {
-						dimensionMembers[dim_id].push(checked[j]);
-					}
-				});
-				og.contextManager.lastCheckedMembers[<?php echo $cotemplate->manager()->getObjectTypeId() ?>] = {};
-				og.contextManager.lastCheckedMembers[<?php echo $cotemplate->manager()->getObjectTypeId() ?>] = dimensionMembers ;
-			});
-		});
-	}
-
+	
+	
 	
 </script>

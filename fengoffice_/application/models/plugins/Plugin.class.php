@@ -8,10 +8,30 @@
 class Plugin extends BasePlugin {
 	var $systemName = null ;
 	
+	var $metadata = null ;
+	
+	function isActive() {
+		return $this->getIsActivated();
+	}
+	
+	function isInstalled() {
+		return $this->getIsInstalled();
+	}
+	
+	function activate(){
+		$this->setIsActivated(1);
+		$this->save();
+	}
+	
+	function deactivate() {
+		$this->setIsActivated(0);
+		$this->save();
+	}
+	
 	function getSystemName(){
 		if (!$this->systemName) {
 			$this->systemName =  str_replace(
-				array(' ', '-','ñ','á','é','í','ó','ú','.'), 
+				array(' ', '-','ï¿½','ï¿½','ï¿½','ï¿½','ï¿½','ï¿½','.'), 
 				array('_'. '_','n','a','e','i','o','u',''), 
 				strtolower($this->getName())
 			);
@@ -28,6 +48,13 @@ class Plugin extends BasePlugin {
 		return ROOT."/plugins/".$this->getSystemName()."/application/controllers/" ;
 	}
 	
+	function getMetadata() {
+		if ($this->metadata === null) {
+			$this->scanMetadata();
+		}
+		
+		return $this->metadata ;
+	}
 	
 	/**
 	 * Returns the path of the plugin folder  
@@ -55,6 +82,11 @@ class Plugin extends BasePlugin {
 	 */
 	function getLanguagePath() {
 		return PLUGIN_PATH . "/" .$this->getSystemName()."/language" ;
+	}
+	
+	function scanMetadata() {
+		$metadata = include PLUGIN_PATH . "/" .$this->getSystemName()."/info.php";
+		$this->metadata = $metadata ;
 	}
 	
 }

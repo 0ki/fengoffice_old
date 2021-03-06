@@ -1,6 +1,6 @@
 
-    About Feng Office 2.0.0 - Beta
-    ==============================
+    About Feng Office 2.0.0 - Beta 2
+    ================================
  
     Feng Office is a Collaboration Platform and Project Management System.
     It is licensed under the Affero GPL 3 license.
@@ -87,16 +87,14 @@
     Changelog
     =========
  
-    Since 1.7
+    Since 2.0 Beta 
     -----------
  
-    system: Plugin Support
-    system: Search Engine performance improved
-    system: Multiple Dimensions - 'Workspaces' and 'Tags' generalization
-    system: Database and Models structure changes - Each Content object identified by unique id 
-    system: Email removed from core (Available as a plugin)
-    system: User Profile System
-    feature: PDF Quick View - View uploaded PDF's
-    usability: Default Theme improved
-    usability: Customizable User Interface
-
+    bugfix: Fixed problem with context trees when editing content objects
+    bugfix: Fixed template listing
+    bugfix: Fixed issues when instantiating templates with milestones
+    bugfix: Fixed issue deleting users from 'people' and 'users' dimension.
+    bugfix: Fixed 'core_dimensions' installer
+    bugfix: Z-Index fixed in object-picker and header
+	usability: Selected rows style in object picker
+    system: General code cleanup

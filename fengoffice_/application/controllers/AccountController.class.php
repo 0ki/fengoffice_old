@@ -516,9 +516,9 @@ class AccountController extends ApplicationController {
 		
 		try {
 			DB::beginWork();
-			
 			$user->disable();
-			
+			$ret = null ; 
+			Hook::fire("user_disabled", $user, $ret );
 			DB::commit();
 			flash_success('success delete user');
 			ajx_current("reload");
@@ -546,10 +546,10 @@ class AccountController extends ApplicationController {
 		
 		try {
 			DB::beginWork();
-			
 			$user->setDisabled(false);
 			$user->save();
-			
+			$ret = null ; 
+			Hook::fire("user_restored", $user, $ret );			
 			DB::commit();
 			flash_success('success delete user');
 			ajx_current("reload");

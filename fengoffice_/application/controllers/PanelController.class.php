@@ -26,9 +26,7 @@ class PanelController extends ApplicationController {
 				ORDER BY ordering ASC ";
 			
 			$res = DB::execute ( $sql );
-			
 			while ( $row = $res->fetchRow () ) {
-								
 				 $object = array (
 					"title" => lang($row ['title']), 
 					"id" => $row ['id'], 

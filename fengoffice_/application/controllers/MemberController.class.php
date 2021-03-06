@@ -837,7 +837,7 @@ class MemberController extends ApplicationController {
 			$editUrls = array() ;
 			foreach ($object_types as $object_type ){ /* @var $object_type DimensionObjectType */
 				$options = $object_type->getOptions(1);
-				if ( $options->defaultAjax ) {
+				if (isset($options->defaultAjax)) {
 					$editUrls[$object_type->getObjectTypeId()] = get_url( $options->defaultAjax->controller, 'add' );
 				}else{
 					$editUrls[$object_type->getObjectTypeId()] = get_url( 'member', 'add' );

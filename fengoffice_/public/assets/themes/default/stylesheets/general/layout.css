@@ -4,7 +4,7 @@
 	background-color: #000000;
 	height: 55px;
 	xoverflow: hidden;
-	z-index: 10000;
+	z-index: 8000; /* Object pick has z-idex 9000 approx */
 }
 #content {
 	position: absolute;
@@ -348,7 +348,25 @@ fieldset.collapsible.collapsed legend {
 }
 
 .page {
-	padding: 10px ;
+	padding: 0 10px ;
 	background: #FFF;
 	height: 100% ;
+}
+
+
+/** PLUGIN MANAGER **/
+.plugin-manager .loading-indicator {
+	background-position: center center;
+}
+
+.plugin-manager .loading-indicator, .plugin-manager .loading-indicator strong, .plugin-manager .loading-indicator td, .plugin-manager .loading-indicator a {
+	color: #DEDEDE ;  
+}
+
+.plugin-manager .error {
+	margin: 5px 0 ;
+    border: 1px dashed #FF2222;
+    background-color: #FFCCCC;
+    color: #FF2222;
+    padding: 4px 10px;
 }

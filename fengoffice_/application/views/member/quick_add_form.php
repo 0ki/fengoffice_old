@@ -1,4 +1,4 @@
-<?php if ($error_msg) {
+<?php if (isset($error_msg)) {
 	echo "<div class='quick-form-error'>$error_msg</div>";
 	return ;
 }?>

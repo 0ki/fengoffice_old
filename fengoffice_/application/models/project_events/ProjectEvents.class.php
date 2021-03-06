@@ -122,7 +122,9 @@ class ProjectEvents extends BaseProjectEvents {
 					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
 				)
 			)";
-
+		
+			$start = null ;
+			$limit = null ;
 			$result_events = self::getContentObjects(active_context(), ObjectTypes::findById(self::instance()->getObjectTypeId()), '`start`', 'ASC', $conditions,null,false,false,$start, $limit)->objects;
 			
 

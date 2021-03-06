@@ -9,7 +9,7 @@ function render_pie_chart($options) {
 	if  ( is_array($options['data']) ) {
 		foreach ($options['data'] as $data ) {
 		//	$values[]  = new OFC_Charts_Pie_Value($data['value'], $data['text']) ;
-		 	$value  = new OFC_Charts_Pie_Value($data['value']) ;
+		 	$value  = new OFC_Charts_Pie_Value($data['value'], $data['text']) ;
 		 	$value->label = $data['text'];
 			$values[]  = $value ;
 			$colours[] = $data['color'] ;
@@ -40,7 +40,7 @@ function render_pie_chart($options) {
 	open_flash_chart_object(
 		array_var($options, 'width'), 
 		array_var($options, 'height'), 
-		ROOT_URL . "/$filename", $genid
+		ROOT_URL . "/$filename", gen_id()
 	);
 	
 }

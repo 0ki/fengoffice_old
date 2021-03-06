@@ -163,6 +163,30 @@ function core_dimensions_after_user_add($object, $ignored) {
 	}
 }
 
+/**
+ * 
+ * Fires AFTER User is deleted - Contact.class.php
+ * Deletes All members associated with that user  
+ * @param Contact $user
+ */
+function core_dimensions_after_user_deleted(Contact $user, $null) {
+	$uid  =  $user->getId() ;
+	
+	//Delete MyStuff
+	if ( $myStuff = Members::findById($user->getPersonalMemberId() ) ) {
+		$myStuff->delete();
+	}
+	
+	// Delete All members
+	$members =  Members::instance()->findByObjectId($uid) ;
+	if ( count($members) ) {
+		foreach ($members as $member){
+			$member->delete();
+			evt_add("reload dimension tree", $member->getDimensionId());
+		}
+	}
+}
+
 
 function core_dim_add_new_contact_to_person_dimension($object) {
 	/* @var $object Contact */

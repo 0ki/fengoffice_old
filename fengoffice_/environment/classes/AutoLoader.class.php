@@ -202,10 +202,6 @@
 			if(!$buf = @file_get_contents($path)) {
 			  throw new Exception('Couldn\'t read file contents from "'.$path.'".');
 			} // if
-
-			foreach($result[2] as $class_name) {
-			  $this->class_index[$class_name] = str_replace('\\', '/', $path);
-			} 
 			
             /* searching for classes */
 			if(preg_match_all("%(interface|class)\s+(\w+)\s+(extends\s+(\w+)\s+)?(implements\s+\w+\s*(,\s*\w+\s*)*)?{%im", $buf, $result)) {

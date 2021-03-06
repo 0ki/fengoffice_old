@@ -249,5 +249,14 @@
 	'task percent completed must be lower than 100' => 'El porcentaje completado debe ser menor o igual a 100.',
 	'tabs' => 'Pestañas',
   	'field Objects percent_completed' => 'Porcentaje complatado',
-  	'field Objects name' => 'Nombre'
+  	'field Objects name' => 'Nombre',
+
+  	'can_manage_dimensions'=>'Puede manejar dimensiones',
+	'can_manage_dimension_members'=>'Can manejar miembros',
+	'can_task_assignee'=>'Puede asignarsele tareas',
+	'can_manage_billing'=>'Puede manejar facturación',
+	'can_view_billing'=>'Puede ver facturación',
+	'can_view_time'=>'Puede ver tiempo',
+	'can_record_time'=>'Puede grabar tiempo',
+
 ); ?>

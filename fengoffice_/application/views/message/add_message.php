@@ -138,7 +138,7 @@
 	<?php } ?>
 
 	<div>
-		<?php echo render_object_custom_properties($message, true);?>
+		<?php //echo render_object_custom_properties($message, true);?>
 	</div><br/>
 	
 	<?php echo submit_button($message->isNew() ? lang('add message') : lang('save changes'),'s',

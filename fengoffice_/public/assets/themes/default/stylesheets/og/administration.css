@@ -138,3 +138,40 @@
 .abm-members-name {
 	display: inline;
 }
+
+/*********** Plg Manager *************/
+.plugin-manager table.plugin-list {
+	width: 100% ;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	
+}
+
+.plugin-manager th, .plugin-manager td {
+    padding: 3px 5px;
+    vertical-align: middle;
+}
+
+.plugin-manager .check-column {
+	width: 25px ;
+}
+
+
+.plugin-manager tr.active.installed {
+
+}
+.plugin-manager tr.inactive{
+	color: #666;
+}
+
+.plugin-manager .title {
+	background: url(../../images/48x48/plugins.png) no-repeat;
+	margin-bottom: 16px;
+    padding-left: 48px;
+    padding-top: 20px;
+    border: none; 
+}
+
+.plugin-manager tfoot {
+	display:none ;
+}

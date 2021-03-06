@@ -162,4 +162,5 @@
 	'show' => 'Mostrar',
 	'activate' => 'Activar',
 	'disabled' => 'Desactivado',
+	'template context' => 'Eliga el contexto de la plantilla',
 ); ?>

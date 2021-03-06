@@ -52,9 +52,9 @@ class COTemplate extends BaseCOTemplate {
 			$copy->save();
 			
 			//Also copy members..
-			$memberIds = $object->getMemberIds();
-			$controller  = new ObjectController() ;
-			$controller->add_to_members($copy, $memberIds);
+// 			$memberIds = json_decode(array_var($_POST, 'members'));
+// 			$controller  = new ObjectController() ;
+// 			$controller->add_to_members($copy, $memberIds);
 			
 			// copy subtasks
 			if ($copy instanceof ProjectTask) {

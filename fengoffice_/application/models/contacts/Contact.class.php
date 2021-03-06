@@ -95,6 +95,8 @@ class Contact extends BaseContact {
 				TabPanelPermissions::instance()->delete("`permission_group_id` = " . $this->getPermissionGroupId());
 				
 				$this->delete();
+				$ret = null;
+				Hook::fire("after_user_deleted", $this, $ret);
 			}
 			
 			return true;

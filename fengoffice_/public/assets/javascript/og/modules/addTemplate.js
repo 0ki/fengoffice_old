@@ -8,12 +8,12 @@ og.loadTemplateVars = function(){
 
 og.pickObjectForTemplate = function(before) {
 	
-	if (! og.contextManager.hasCheckedMembers(13) ){
-		alert(lang("no template members selected"));
-		return ;
-	}
-	
-	og.contextManager.getCheckedMembers();
+//	if (! og.contextManager.hasCheckedMembers(13) ){
+//		alert(lang("no template members selected"));
+//		return ;
+//	}
+//	
+//	og.contextManager.getCheckedMembers();
 	og.ObjectPicker.show(function (objs) {
 		if (objs) {
 			for (var i=0; i < objs.length; i++) {
@@ -34,7 +34,7 @@ og.pickObjectForTemplate = function(before) {
 	}, before, {
 		types: ['task','milestone'],
 		selected_type: 'task',
-		context: og.contextManager.plainCheckedMembers(13)
+//		context: og.contextManager.plainCheckedMembers(13)
 	});
 	
 };
