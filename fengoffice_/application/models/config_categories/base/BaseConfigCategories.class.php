@@ -22,6 +22,7 @@
     * @return BaseConfigCategories 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ConfigCategory', self::$columns);
       parent::__construct('ConfigCategory', 'config_categories', true);
     } // __construct
     

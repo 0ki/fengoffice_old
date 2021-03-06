@@ -456,5 +456,7 @@ addLangs({
 	'untagged': 'Etiket fjernet',
 	'download selected file': 'Download valgte fil',
 	'edit selected file properties': 'Rediger valgte fils egenskaber',
-	'you must enter a name': 'Du skal altså indtaste et navn'
+	'you must enter a name': 'Du skal altså indtaste et navn',
+	'print all groups': 'Print',
+	'print this group': 'Print'
 });

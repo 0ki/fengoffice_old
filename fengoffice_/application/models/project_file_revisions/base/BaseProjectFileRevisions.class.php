@@ -38,6 +38,7 @@
     * @return BaseProjectFileRevisions 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectFileRevision', self::$columns);
       parent::__construct('ProjectFileRevision', 'project_file_revisions', true);
     } // __construct
     

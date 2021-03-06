@@ -23,6 +23,7 @@
     * @return BaseConfigOptions 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'UserWsConfigOptionValue', self::$columns);
       parent::__construct('UserWsConfigOptionValue', 'user_ws_config_option_values', true);
     } // __construct
     

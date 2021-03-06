@@ -483,7 +483,7 @@ addLangs({
   	'start work': 'Comenzar trabajo',
   	'click to change workspace': 'Clic para cambiar área de trabajo',
   	'add a new task to this group': 'Agregar una nueva tarea a este grupo',
-   	'login dialog desc': 'Se ha cerrado su cesión debido a inactividad. Llene este formulario para volver a ingresar al sistema.',
+   	'login dialog desc': 'Se ha cerrado su sesión debido a inactividad. Llene este formulario para volver a ingresar al sistema.',
    	'duplicate company name': '<span style="color:#F00">Ya existe una empresa con nombre \'{0}\'. </span><a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})">Elija esta empresa</a>, o elija un nombre distinto',
    	'user not found' : 'Usuario no encontrado (id:{0})',
   
@@ -562,6 +562,9 @@ addLangs({
     
     'contact import - export': 'Importar y exportar contactos',
     'calendar import - export': 'Importar y exportar eventos',
-    'view weblink': 'Ver enlace web'
+    'view weblink': 'Ver enlace web',
+    'print all groups': 'Imprimir todos los grupos',
+    'print this group': 'Imprimir este grupo',
+    'new version notification title': 'Nueva versión'
 
 });

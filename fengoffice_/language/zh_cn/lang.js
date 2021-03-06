@@ -1,4 +1,4 @@
-locale = 'zh_CN';
+locale = 'zh_cn';
 addLangs({
 	'check in': '<b>检入</b>',
 	'cannot check in': '不能检入',
@@ -562,4 +562,7 @@ addLangs({
     'contact import - export': '联系人导入导出',
     'calendar import - export': '日历导入导出',
     'view weblink': '显示网站链接',
+    'print all groups' : '打印',
+    'print this group' : '打印',
+    'new version notification title': 'New version'
 });

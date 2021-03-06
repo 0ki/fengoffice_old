@@ -25,6 +25,7 @@
     * @return BaseObjectSubscriptions 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ObjectSubscription', self::$columns);
       parent::__construct('ObjectSubscription', 'object_subscriptions', true);
     } // __construct
     

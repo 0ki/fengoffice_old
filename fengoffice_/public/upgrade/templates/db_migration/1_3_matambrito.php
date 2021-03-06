@@ -119,7 +119,7 @@ ALTER TABLE `<?php echo $table_prefix ?>timeslots` ADD COLUMN `hourly_billing` F
 ALTER TABLE `<?php echo $table_prefix ?>timeslots` ADD COLUMN `is_fixed_billing` FLOAT NOT NULL DEFAULT 0;
 ALTER TABLE `<?php echo $table_prefix ?>timeslots` ADD COLUMN `billing_id` int(10) unsigned NOT NULL DEFAULT 0;
 
-ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `default_billing_id` INTEGER(10) UNSIGNED;
+ALTER TABLE `<?php echo $table_prefix ?>users` ADD COLUMN `default_billing_id` INTEGER(10) UNSIGNED DEFAULT 0;
 
 DELETE FROM `<?php echo $table_prefix ?>object_reminders`;
 ALTER TABLE `<?php echo $table_prefix ?>object_reminders` ADD COLUMN `context` VARCHAR(40) NOT NULL default '';
@@ -149,4 +149,11 @@ INSERT INTO `<?php echo $table_prefix ?>user_ws_config_categories` (`name`, `is_
  ON DUPLICATE KEY UPDATE name=name;
 
 ALTER TABLE `<?php echo $table_prefix ?>companies` MODIFY COLUMN `name` varchar(100) <?php echo $default_collation ?> default NULL;
- 
+
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET
+	`config_handler_class` = 'BoolConfigHandler',
+	`dev_comment` = 'Notification checkbox default value'
+	WHERE `name` = 'can notify from quick add';
+
+UPDATE `<?php echo $table_prefix ?>user_ws_config_options` SET `default_value` = 'es_la' WHERE `name` = 'localization' AND `default_value` = 'es_uy';
+UPDATE `<?php echo $table_prefix ?>user_ws_config_option_values` `v`, `<?php echo $table_prefix ?>user_ws_config_options` `o` SET `v`.`value` = 'es_la' WHERE `o`.`name` = 'localization' AND `o`.`id` = `v`.`option_id` AND `v`.`value` = 'es_uy';

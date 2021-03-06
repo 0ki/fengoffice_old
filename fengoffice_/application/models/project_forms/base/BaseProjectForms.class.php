@@ -39,6 +39,7 @@
     * @return BaseProjectForms 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectForm', self::$columns);
       parent::__construct('ProjectForm', 'project_forms', true);
     } // __construct
     

@@ -25,6 +25,7 @@ abstract class BaseObjectReminderTypes extends DataManager {
 	 * @return BaseObjectReminderTypes
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'ObjectReminderType', self::$columns);
 		parent::__construct('ObjectReminderType', 'object_reminder_types', true);
 	} // __construct
 

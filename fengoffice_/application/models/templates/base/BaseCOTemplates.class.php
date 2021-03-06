@@ -30,6 +30,7 @@ abstract class BaseCOTemplates extends ProjectDataObjects {
 	 * @return BaseCOTemplates
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'COTemplate', self::$columns);
 		parent::__construct('COTemplate', 'templates', true);
 	} // __construct
 

@@ -30,6 +30,7 @@ abstract class BaseCronEvents extends DataManager {
 	 * @return BaseCronEvents
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'CronEvent', self::$columns);
 		parent::__construct('CronEvent', 'cron_events', true);
 	} // __construct
 

@@ -45,6 +45,7 @@
     * @return BaseProjectEvents
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectEvent', self::$columns);
       parent::__construct('ProjectEvent', 'project_events', true);
     } // __construct
     

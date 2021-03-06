@@ -79,11 +79,13 @@ abstract class PageController extends Controller {
 	 * @throws FileDnxError
 	 */
 	function render($template = null, $layout = null, $die = true) {
-
+		
 		// Set template and layout...
 		if(!is_null($template)) $this->setTemplate($template);
 		if(!is_null($layout)) $this->setLayout($layout);
 
+		Hook::fire('override_action_view', $this, $ret);
+		
 		// Get template and layout paths
 		$template_path = $this->getTemplatePath();
 		$layout_path = $this->getLayoutPath();

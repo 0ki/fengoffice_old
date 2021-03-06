@@ -656,7 +656,7 @@ class Company extends BaseCompany {
       
       if($this->validatePresenceOf('homepage')) {
       	$page = trim($this->getHomepage());
-      	if (substr($page, 0,7) != "http://" && substr($page, 0,8) != "https://") {
+      	if (substr_utf($page, 0,7) != "http://" && substr_utf($page, 0,8) != "https://") {
       		$this->setHomepage("http://" . $page);
       	}
         if(!is_valid_url($this->getHomepage())) {

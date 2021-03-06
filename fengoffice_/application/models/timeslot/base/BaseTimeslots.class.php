@@ -39,6 +39,7 @@
     * @return BaseTimeslots 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'Timeslot', self::$columns);
       parent::__construct('Timeslot', 'timeslots', true);
     } // __construct
     

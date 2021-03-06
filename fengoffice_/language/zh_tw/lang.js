@@ -1,4 +1,4 @@
-locale = 'guage';
+locale = 'zh_tw';
 addLangs({
  "check in": "<b>存入</b>",
  "cannot check in": "無法存入",
@@ -493,5 +493,8 @@ addLangs({
  "must choose company": "您必須選擇一個公司",
  "contact import - export": "聯絡人匯入與匯出",
  "calendar import - export": "行事曆匯入與匯出",
- "view weblink": "檢視網頁連結"
+ "view weblink": "檢視網頁連結",
+ "print all groups": "列印",
+ "print this group": "列印",
+ 'new version notification title': 'New version'
 });

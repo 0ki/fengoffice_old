@@ -494,5 +494,8 @@ addLangs({
 	
 	'contact import - export': 'Contacts des importations et exportations',
     'calendar import - export': 'Importations et exportations',
-    'view weblink': 'Voir lien Web'
+    'view weblink': 'Voir lien Web',
+    'print all groups': 'Imprimer',
+    'print this group': 'Imprimer',
+    'new version notification title': 'New version'
 });

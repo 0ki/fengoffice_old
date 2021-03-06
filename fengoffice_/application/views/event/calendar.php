@@ -254,7 +254,7 @@ function cancel (evt) {//cancel clic event bubbling. used to cancel opening a Ne
 													<table style="width:100%;"><tr><td>
 													<nobr><a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="cancel(event); return true;" <?php echo ($typeofevent == 2 ? "style='color:$txt_color;'" : '') ?>>
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
-														<?php echo (strlen($subject) < 15 ? $subject : substr($subject, 0, 14).'...')?>
+														<?php echo (strlen_utf($subject) < 15 ? $subject : substr_utf($subject, 0, 14).'...')?>
 													</a></nobr>
 													</td><td align="right">
 														<div align="right" style="padding-right:1px;">

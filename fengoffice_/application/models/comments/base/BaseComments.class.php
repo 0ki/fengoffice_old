@@ -38,6 +38,7 @@
     * @return BaseComments 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'Comment', self::$columns);
       parent::__construct('Comment', 'comments', true);
     } // __construct
     

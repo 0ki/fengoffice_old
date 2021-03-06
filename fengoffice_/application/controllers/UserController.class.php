@@ -69,7 +69,7 @@ class UserController extends ApplicationController {
 			if($contact_id && $contact = Contacts::findById($contact_id)){
 				//if it will be created from a contact
 				$user_data = array(
-					'username' => substr($contact->getFirstname(),0,1) . $contact->getLastname(),
+					'username' => substr_utf($contact->getFirstname(),0,1) . $contact->getLastname(),
 					'display_name' => $contact->getFirstname() . $contact->getLastname(),
 					'email' => $contact->getEmail(),
 					'contact_id' => $contact->getId(),

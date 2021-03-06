@@ -22,6 +22,7 @@
     * @return BaseObjectProperties 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ObjectProperty', self::$columns);
       parent::__construct('ObjectProperty', 'object_properties', true);
     } // __construct
     

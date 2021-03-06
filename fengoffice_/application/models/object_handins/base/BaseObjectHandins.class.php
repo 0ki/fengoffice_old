@@ -23,6 +23,7 @@
     * @return BaseObjectHandins
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ObjectHandin', self::$columns);
       parent::__construct('ObjectHandin', 'object_handins', true);
     } // __construct
     

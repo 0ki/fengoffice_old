@@ -204,6 +204,7 @@ final class ScriptUpgrader {
 				} // if
 			} // foreach
 			if (isset($last_correct_version)) {
+				@mysql_query("UPDATE `".TABLE_PREFIX."config_options` SET `value` = 0 WHERE `name` = 'upgrade_last_check_new_version'");
 				tpl_assign('version', $last_correct_version);
 				return file_put_contents(INSTALLATION_PATH . '/config/installed_version.php', tpl_fetch(get_template_path('installed_version')));
 			}

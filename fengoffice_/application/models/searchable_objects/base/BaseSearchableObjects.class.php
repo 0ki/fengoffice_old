@@ -29,6 +29,7 @@
     * @return BaseSearchableObjects 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'SearchableObject', self::$columns);
       parent::__construct('SearchableObject', 'searchable_objects', true);
     } // __construct
     

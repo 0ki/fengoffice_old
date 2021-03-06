@@ -34,6 +34,7 @@ abstract class BaseApplicationLogs extends DataManager {
 	 * @return BaseApplicationLogs
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'ApplicationLog', self::$columns);
 		parent::__construct('ApplicationLog', 'application_logs', true);
 	} // __construct
 

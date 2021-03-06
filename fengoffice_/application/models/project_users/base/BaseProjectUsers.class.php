@@ -42,6 +42,7 @@
     * @return BaseProjectUsers 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectUser', self::$columns);
       parent::__construct('ProjectUser', 'project_users', true);
     } // __construct
     

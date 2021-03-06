@@ -478,5 +478,8 @@ addLangs({
   "sort tags by count": "カウント順",
   "confirm template with no objects": "本当にオブジェクトをなしにテンプレートを作成しますか? (後からオブジェクトは追加できます)",
   "show more": "もっと読む",
-  "actions": "アクション"
+  "actions": "アクション",
+  "print all groups": "印刷",
+  "print this group": "印刷",
+  'new version notification title': 'New version'
 });

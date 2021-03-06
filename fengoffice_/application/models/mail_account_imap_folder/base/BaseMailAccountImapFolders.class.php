@@ -26,6 +26,7 @@
     * @return BaseMailAccountImapFolders 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'MailAccountImapFolder', self::$columns);
       parent::__construct('MailAccountImapFolder', 'mail_account_imap_folder', true);
     } // __construct
     

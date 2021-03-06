@@ -131,5 +131,4 @@
 	'success export calendar' => '{0} Ereignisse wurden exportiert.',
 	'calendar will be exported in icalendar format' => 'Kalender wird im iCalender Format exportiert.',
 	'calendar name desc' => 'Name für den Kalender-Export',
-	'view date title' => 'l, d/m/Y',
 ); ?>

@@ -41,6 +41,7 @@ abstract class BaseProjectMilestones extends ProjectDataObjects {
 	 * @return BaseProjectMilestones
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'ProjectMilestone', self::$columns);
 		parent::__construct('ProjectMilestone', 'project_milestones', true);
 	} // __construct
 

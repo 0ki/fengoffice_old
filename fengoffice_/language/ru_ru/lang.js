@@ -493,5 +493,8 @@ addLangs({
 	'must choose company': 'Вы должны выбрать компанию',
 	'contact import - export': 'Импорт и экспорт контактов',
 	'calendar import - export': 'Импорт и экспорт календаря',
-	'view weblink': 'Просмотр web-ссылки'
+	'view weblink': 'Просмотр web-ссылки',
+	'print all groups': 'Печать',
+	'print this group': 'Печать',
+	'new version notification title': 'New version'
 });

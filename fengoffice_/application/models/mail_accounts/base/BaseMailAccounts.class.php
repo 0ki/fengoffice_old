@@ -40,6 +40,7 @@
     * @return BaseMailAccounts 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'MailAccount', self::$columns);
       parent::__construct('MailAccount', 'mail_accounts', true);
     } // __construct
     

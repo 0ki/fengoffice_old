@@ -481,7 +481,9 @@ og.openLink = function(url, options) {
 					if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 				}
 			} else {
-				og.err(lang("http error", response.status, response.statusText));
+				if (!options.options.hideErrors) {
+					og.err(lang("http error", response.status, response.statusText));
+				}
 				if (options.postProcess) options.postProcess.call(options.scope || this, false, data || response.responseText, options.options);
 				if (options.onError) options.onError.call(options.scope || this, data || response.responseText, options.options);
 			}

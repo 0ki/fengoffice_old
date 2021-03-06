@@ -1,11 +1,6 @@
 
-    About OpenGoo 1.3-rc2
-    =====================
-    
-    This version corrects a problem with cookie management introduced in 1.3 RC,
-    that caused that many people couldn't login or logout from the system.
-    
-    Besides that it only updates some translations.
+    About OpenGoo 1.3
+    =================
 
     OpenGoo is a free and open source WebOffice, project management and collaboration
     tool, licensed under the Affero GPL 3 license.
@@ -91,6 +86,20 @@
 
 	Changelog
 	=========
+
+	Since 1.3-rc2
+	-------------
+	- usability: Weblinks view now shows URL.
+	- bugfix: Fixed error about billing id when closing timeslot.
+	- bugfix: Large images would cause a memory exhausted error in the documents listing.
+	- bugfix: Some tags were not being displayed in the TagPanel in Chinese and other languages.
+	- bugfix: Linking objects to comments wasn't working.
+	- bugfix: Http errors are no longer displayed when polling.
+	- bugfix: Fixed occasional error about attributes.php.
+	- bugfix: Corrected a problem when displaying revisions on the trash.
+	- bugfix: General timeslots' billing information is now also included in reports.
+	- system: Share action was removed.
+	- system: New hooks added.
 
 	Since 1.3-rc
 	------------

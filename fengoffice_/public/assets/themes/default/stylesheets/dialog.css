@@ -79,7 +79,7 @@ label.checkbox {
   display: inline;
 }
 
-label span.label_required {
+span.label_required {
   color: red;
   font-size: 90%;
 }
@@ -153,10 +153,17 @@ span.required {
 
 /** Classes **/
 
-.desc {
+.desc, .desc* {
   font-size: 90%;
   color: #666;
   font-style: italic;
+}
+
+.desc ul {
+	list-style-type: disc;
+	list-style-position: inside;
+	list-style-image: none;
+	padding-left: 30px;
 }
 
 .bold {

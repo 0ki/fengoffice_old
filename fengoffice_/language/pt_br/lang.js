@@ -493,5 +493,8 @@ addLangs({
 	'must choose company': 'Você deve escolher uma empresa',
 	'contact import - export': 'Importar e exportar contatos',
 	'calendar import - export': 'Importar e exportar eventos',
-	'view weblink': 'Ver link da web'
+	'view weblink': 'Ver link da web',
+	'print all groups': 'Imprimir',
+	'print this group': 'Imprimir',
+	'new version notification title': 'New version'
 });

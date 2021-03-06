@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3-rc
+ * Matambrito upgrade script will upgrade OpenGoo 1.2.1 to OpenGoo 1.3
  *
  * @package ScriptUpgrader.scripts
  * @version 1.3
@@ -41,7 +41,7 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.2.1');
-		$this->setVersionTo('1.3-rc2');
+		$this->setVersionTo('1.3');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -134,6 +134,11 @@ class MatambritoUpgradeScript extends ScriptUpgraderScript {
 			// change from es_uy to es_la
 			$upgrade_script = "UPDATE `".TABLE_PREFIX."user_ws_config_options` SET `default_value` = 'es_la' WHERE `name` = 'localization' AND `default_value` = 'es_uy';
 			UPDATE `".TABLE_PREFIX."user_ws_config_option_values` `v`, `".TABLE_PREFIX."user_ws_config_options` `o` SET `v`.`value` = 'es_la' WHERE `o`.`name` = 'localization' AND `o`.`id` = `v`.`option_id` AND `v`.`value` = 'es_uy';
+			ALTER TABLE `".TABLE_PREFIX."users` MODIFY COLUMN `default_billing_id` INTEGER(10) UNSIGNED DEFAULT 0;
+			UPDATE `".TABLE_PREFIX."user_ws_config_options` SET
+				`config_handler_class` = 'BoolConfigHandler',
+				`dev_comment` = 'Notification checkbox default value'
+				WHERE `name` = 'can notify from quick add';
 			";
 		}
 

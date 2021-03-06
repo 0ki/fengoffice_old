@@ -143,6 +143,8 @@ $use_24_hours = user_config_option('time_format_use_24');
 	    		array('class' => 'title', 'id' => 'eventSubject', 'tabindex' => '1', 'maxlength' => '100', 'tabindex' => '10')) ?>
 	    </div>
 	 
+	 	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+	 	
 	 	<div style="padding-top:5px;text-align:left;">
 		<a href='#' class='option' onclick="og.ToggleTrap('trap1', 'fs1');og.toggleAndBolden('<?php echo $genid ?>add_event_select_workspace_div', this)"><?php echo lang('workspace')?></a> - 
 		<a href='#' class='option' onclick="og.ToggleTrap('trap2', 'fs2');og.toggleAndBolden('<?php echo $genid ?>add_event_tags_div', this)"><?php echo lang('tags')?></a> - 
@@ -155,7 +157,11 @@ $use_24_hours = user_config_option('time_format_use_24');
 			<a href="#" class="option" onclick="og.ToggleTrap('trap8', 'fs8');og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
 		<?php } ?> -
 		<a href="#" class="option" onclick="og.ToggleTrap('trap9', 'fs9');og.toggleAndBolden('<?php echo $genid ?>add_event_invitation_div', this);"><?php echo lang('event invitations') ?></a>
-		</div></div>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+		<?php } ?>
+		</div>
+		</div>
 	
 		<div class="coInputSeparator"></div>
 		<div class="coInputMainBlock">	
@@ -446,6 +452,15 @@ $use_24_hours = user_config_option('time_format_use_24');
 </table>
 </fieldset>
 </div>
+
+<?php foreach ($categories as $category) { ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
 
 	<input type="hidden" name="cal_origday" value="<?php echo $day?>">
 	<input type="hidden" name="cal_origmonth" value="<?php echo $month?>">

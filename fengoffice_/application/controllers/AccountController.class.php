@@ -250,7 +250,7 @@ class AccountController extends ApplicationController {
 	          'can_manage_workspaces' => $user->getCanManageWorkspaces(),
 	          'can_manage_configuration' => $user->getCanManageConfiguration(),
 	          'can_manage_contacts' => $user->getCanManageContacts(),
-				'can_manage_templates' => $user->getCanManageTemplates(),
+			  'can_manage_templates' => $user->getCanManageTemplates(),
 			); // array			
 		} // if
 

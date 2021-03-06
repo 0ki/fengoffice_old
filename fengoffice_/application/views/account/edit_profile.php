@@ -1,4 +1,5 @@
 <?php
+	$object = $user;
     set_page_title(lang('update profile'));
   
   if($user->canUpdateProfile(logged_user())) {
@@ -31,6 +32,8 @@
     	  array('id' => 'profileFormDisplayName', 'tabindex' => '1000', 'class' => 'title')) ?>
     </div>
   
+  	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+  
   	<div style="padding-top:5px">
 		<?php if(logged_user()->isAdministrator()) { ?>
 			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_administrator_options',this)"><?php echo lang('administrator options') ?></a> - 
@@ -39,6 +42,9 @@
 			<a href="#" class="option" tabindex=1010 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_billing',this)"><?php echo lang('billing') ?></a> - 
 		<?php } // if ?>
 		<a href="#" class="option" tabindex=1020 onclick="og.toggleAndBolden('<?php echo $genid ?>update_profile_timezone',this)"><?php echo lang('timezone') ?></a>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+		<?php } ?>
 	</div>
   
   </div>
@@ -118,6 +124,15 @@
    	<?php echo select_timezone_widget('user[timezone]', array_var($user_data, 'timezone'), array('id' => 'profileFormTimezone', 'class' => 'title', 'tabindex' => '2500')) ?>
   </fieldset>
   </div>
+  
+  <?php foreach ($categories as $category) { ?>
+	<div style="display:none" id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
 
   <div>
     <?php echo label_tag(lang('email address'), 'profileFormEmail', true) ?>

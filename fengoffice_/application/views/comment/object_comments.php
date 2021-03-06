@@ -19,7 +19,7 @@
 				if ($comment->canEdit(logged_user()) && !$__comments_object->isTrashed()) {
 					$options[] = '<a class="internalLink" href="' . $comment->getEditUrl() . '">' . lang('edit') . '</a>';
 					if ($comment->canLinkObject(logged_user(), $comment->getProject()))
-						$options[] = render_link_to_object_2($comment,lang('link objects'));
+						$options[] = render_link_to_object($comment,lang('link objects'));
 				}
 				if ($comment->canDelete(logged_user()) && !$__comments_object->isTrashed()) $options[] = '<a class="internalLink" href="' . $comment->getDeleteUrl() . '" onclick="return confirm(\''.escape_single_quotes(lang('confirm move to trash')).'\')">' . lang('move to trash') . '</a>';
 ?>

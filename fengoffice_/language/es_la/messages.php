@@ -420,7 +420,7 @@
   	'log add projectevents' => '\'{0}\' agregado',
     'log edit projectevents' => '\'{0}\' editado',
     'log delete projectevents' => '\'{0}\' eliminado',
-  	'already logged in' => 'Usted ya había iniciado la cesión',
+  	'already logged in' => 'Usted ya había iniciado la sesión',
   
 	'success subscribe to object' => 'Suscripción al objeto satifactoria',
     'success unsubscribe to object' => 'Suscripción al objeto ha quedado sin efecto',

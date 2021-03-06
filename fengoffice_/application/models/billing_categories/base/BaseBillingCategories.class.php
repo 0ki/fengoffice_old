@@ -32,6 +32,7 @@
     * @return BaseBillingCategories 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'BillingCategory', self::$columns);
       parent::__construct('BillingCategory', 'billing_categories', true);
     } // __construct
     

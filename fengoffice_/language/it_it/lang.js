@@ -493,5 +493,8 @@ addLangs({
 	'must choose company': 'Devi scegliere una società',
 	'contact import - export': 'Importa/esporta contatti',
 	'calendar import - export': 'Importa/esporta agenda',
-	'view weblink': 'Vedi collegamento web'
+	'view weblink': 'Vedi collegamento web',
+	'print all groups': 'Stampa',
+	'print this group': 'Stampa',
+	'new version notification title': 'New version'
 });

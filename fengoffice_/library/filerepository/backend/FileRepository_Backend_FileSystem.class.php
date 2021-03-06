@@ -359,7 +359,7 @@
     * @return null
     */
     protected function loadFileAttributes() {
-      $file = $this->getAttributesFilePath();
+      /*$file = $this->getAttributesFilePath();
       
       if(is_file($file)) {
         if(!is_readable($file)) {
@@ -377,7 +377,7 @@
       } else {
         $this->attributes = array();
         $this->saveFileAttributes();
-      } // if
+      } // if*/
       
     } // loadFileAttributes
     
@@ -388,11 +388,11 @@
     * @return boolean
     */
     protected function saveFileAttributes() {
-      $file = $this->getAttributesFilePath();
+      /*$file = $this->getAttributesFilePath();
       if(is_file($file) && !file_is_writable($file)) {
         throw new FileNotWriableError($file);
       } // if
-      return file_put_contents($file, "<?php\n\nreturn " . var_export($this->attributes, true) . ";\n\n?>");
+      return file_put_contents($file, "<?php\n\nreturn " . var_export($this->attributes, true) . ";\n\n?>");*/
     } // saveFileAttributes
     
     /**

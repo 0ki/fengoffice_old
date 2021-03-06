@@ -22,6 +22,7 @@
     * @return BaseContactImValues 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ContactImValue', self::$columns);
       parent::__construct('ContactImValue', 'contact_im_values', true);
     } // __construct
     

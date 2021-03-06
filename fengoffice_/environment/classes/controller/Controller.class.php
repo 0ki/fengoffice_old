@@ -66,7 +66,14 @@
       // If we have valid action execute and done... Else throw exception
       if($this->validAction($action)) {
         $this->setAction($action);
-        $this->$action();
+        $ret = true;
+        Hook::fire('before_action', array(
+        	'controller' => $this,
+        	'action' => $action
+        ), $ret);
+        if ($ret) {
+        	$this->$action();
+        }
         return true;
       } else {
         throw new InvalidControllerActionError($this->getControllerName(), $action);

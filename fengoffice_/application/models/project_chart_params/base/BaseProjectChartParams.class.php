@@ -22,6 +22,7 @@
     * @return BaseProjectChartParams
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectChartParam', self::$columns);
       parent::__construct('ProjectChartParam', 'project_chart_params', true);
     } // __construct
     

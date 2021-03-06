@@ -22,6 +22,7 @@
     * @return BaseEventInvitations 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'EventInvitation', self::$columns);
       parent::__construct('EventInvitation', 'event_invitations', true);
     } // __construct
     

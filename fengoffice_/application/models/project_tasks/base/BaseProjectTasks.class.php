@@ -52,6 +52,7 @@ abstract class BaseProjectTasks extends ProjectDataObjects {
 	 * @return BaseProjectTasks
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'ProjectTask', self::$columns);
 		parent::__construct('ProjectTask', 'project_tasks', true);
 	} // __construct
 

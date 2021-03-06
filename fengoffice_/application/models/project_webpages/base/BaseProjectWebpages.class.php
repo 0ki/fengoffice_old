@@ -35,6 +35,7 @@
     * @return BaseProjectWebpages 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectWebpage', self::$columns);
       parent::__construct('ProjectWebpage', 'project_webpages', true);
     } // __construct
     

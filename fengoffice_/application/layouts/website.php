@@ -16,6 +16,11 @@
 	} else {
 		echo stylesheet_tag('website.css');
 	}
+	$css = array();
+	Hook::fire('autoload_stylesheets', null, $css);
+	foreach ($css as $c) {
+		echo stylesheet_tag($c);
+	}
 
 	if (defined('COMPRESSED_JS') && COMPRESSED_JS) {
 		$jss = array('ogmin.js');
@@ -95,10 +100,11 @@
 <script>
 
 // OG config options
-og.pageSize = <?php echo config_option('files_per_page',10)?>;
+og.pageSize = <?php echo config_option('files_per_page', 10)?>;
+og.timeFormat24 = <?php echo config_option('time_format_use_24', 0) ? 1 : 0 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
-og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ?>;
+og.rememberGUIState = <?php echo user_config_option("rememberGUIState", 0) ? 1 : 0 ?>;
 <?php if (user_config_option("rememberGUIState", 0)) { ?>
 og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 <?php } ?>

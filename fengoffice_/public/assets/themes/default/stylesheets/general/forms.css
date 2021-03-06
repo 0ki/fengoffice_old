@@ -23,7 +23,7 @@ label.yes_no {
   font-weight: normal;
 }
 
-label span.label_required {
+span.label_required {
   color: red;
 }
 

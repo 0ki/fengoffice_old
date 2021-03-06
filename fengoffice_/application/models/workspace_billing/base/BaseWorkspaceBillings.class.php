@@ -29,6 +29,7 @@
     * @return BaseWorkspaceBillings 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'WorkspaceBilling', self::$columns);
       parent::__construct('WorkspaceBilling', 'workspace_billings', true);
     } // __construct
     

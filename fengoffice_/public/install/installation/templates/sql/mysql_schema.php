@@ -521,7 +521,7 @@ CREATE TABLE `<?php echo $table_prefix ?>users` (
 	`can_manage_contacts` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 	`can_manage_templates` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0, 
   `auto_assign` tinyint(1) unsigned NOT NULL default '0',
-  `default_billing_id` int(10) unsigned default NULL,
+  `default_billing_id` int(10) unsigned default 0,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`),

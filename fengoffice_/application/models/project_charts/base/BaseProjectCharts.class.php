@@ -33,6 +33,7 @@
     * @return BaseProjectCharts
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectChart', self::$columns);
       parent::__construct('ProjectChart', 'project_charts', true);
     } // __construct
     

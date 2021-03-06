@@ -27,6 +27,7 @@ abstract class BaseTemplateObjects extends DataManager {
 	 * @return BaseTemplateObjects
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'TemplateObject', self::$columns);
 		parent::__construct('TemplateObject', 'template_objects', true);
 	} // __construct
 

@@ -32,6 +32,8 @@
 		<?php echo label_tag(lang('title'), 'webpageFormTitle', true) ?>
    		<?php echo text_field('webpage[title]', array_var($webpage_data, 'title'), array('class' => 'title', 'tabindex' => '1', 'id' => 'webpageFormTitle')) ?>
   	</div>
+  	
+  	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
 	
 	<div style="padding-top:5px">
 		<a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('add_webpage_select_workspace_div', this)"><?php echo lang('workspace') ?></a> - 
@@ -41,6 +43,9 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -120,6 +125,15 @@
     <?php echo label_tag(lang('url'), 'webpageFormURL', true) ?>
     <?php echo text_field('webpage[url]', array_var($webpage_data, 'url'), array('class' => 'title', 'tabindex' => '10', 'id' => 'webpageFormURL')) ?>
   </div>
+  
+  <?php foreach ($categories as $category) { ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
   
   <?php echo submit_button($webpage->isNew() ? lang('add webpage') : lang('save changes'), 's', 
   	array('tabindex' => '200')) ?>

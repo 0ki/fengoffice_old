@@ -1232,7 +1232,7 @@ class FilesController extends ApplicationController {
 				//@unlink($file->getFilePath());
 				DB::rollback();
 				ajx_current("empty");
-				flash_error($e->getMessage() . $e->getTraceAsString());
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_file

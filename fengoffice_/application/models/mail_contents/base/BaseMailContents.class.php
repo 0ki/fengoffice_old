@@ -48,6 +48,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
 	 * @return BaseMailContents
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'MailContent', self::$columns);
 		parent::__construct('MailContent', 'mail_contents', true);
 	} // __construct
 

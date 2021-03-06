@@ -22,6 +22,7 @@
     * @return BaseImTypes 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ImType', self::$columns);
       parent::__construct('ImType', 'im_types', true);
     } // __construct
     

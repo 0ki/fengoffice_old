@@ -478,5 +478,6 @@ addLangs({
 	'sort tags by count': 'By Count',
 	'confirm template with no objects': 'Are you sure you want to create a template with no objects in it? (You can add objects to it later)',
   'print all groups': 'Drukuj wszystkie grupy',
-  'print this group': 'Drukuj tylko tą grupę'
+  'print this group': 'Drukuj tylko tą grupę',
+  'new version notification title': 'New version'
 });

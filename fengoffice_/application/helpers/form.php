@@ -399,7 +399,7 @@
     	$attD['id'] .= '_day';
     }
     if (strpos($name, "]")) {
-    	$preName = substr($name,0,strpos($name,"]"));
+    	$preName = substr_utf($name,0,strpos_utf($name,"]"));
     	return select_box($preName . '_month]', $month_options, $attM) . select_box($preName.'_day]', $day_options, $attD) . select_box($preName . '_year]', $year_options, $attY);
     } else
     	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );

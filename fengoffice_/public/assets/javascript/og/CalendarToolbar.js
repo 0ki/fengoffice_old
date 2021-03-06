@@ -4,7 +4,9 @@ var calToolbarDateMenu = new Ext.menu.DateMenu({
     handler : function(dp, date){
     	dp.setValue(date);
     	changeView(cal_actual_view, date.format('d'), date.format('n'), date.format('Y'), actual_user_filter, actual_status_filter);
-    }
+    },
+    format: lang('date format'),
+	altFormats: lang('date format alternatives')
 });
 
 Ext.apply(calToolbarDateMenu.picker, { 

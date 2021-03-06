@@ -20,6 +20,8 @@
 		array('id' => $genid . 'messageFormTitle', 'class' => 'title', 'tabindex' => '1')) ?>
 	</div>
 	
+	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+	
 	<div style="padding-top:5px">
 		<?php if (isset ($projects) && count($projects) > 0) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_message_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
@@ -30,6 +32,9 @@
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($object->isNew() || $object->canLinkObject(logged_user(), $project)) { ?> - 
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>
+		<?php } ?>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
 		<?php } ?>
 	</div>
 </div>
@@ -131,6 +136,15 @@
 	<?php echo editor_widget('message[text]', array_var($message_data, 'text'), 
 		array('id' => $genid . 'messageFormText', 'tabindex' => '20')) ?>
 	</div>
+	
+	<?php foreach ($categories as $category) { ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
 
 	<div>
 	<?php if(!$message->isNew() && trim($message->getAdditionalText())) { ?>

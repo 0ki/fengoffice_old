@@ -21,6 +21,7 @@
     * @return BaseGroupUsers 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'GroupUser', self::$columns);
       parent::__construct('GroupUser', 'group_users', true);
     } // __construct
     

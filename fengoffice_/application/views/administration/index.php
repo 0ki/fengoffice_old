@@ -145,6 +145,32 @@
 </td>
 <?php } } ?>
 </tr></table>
+
+<?php $icons = array();
+Hook::fire('render_administration_icons', null, $icons);
+if (count($icons > 0)) {?>
+<table><tr>
+<?php $count = 0;
+foreach ($icons as $icon) { 
+	$count++;
+	if ($count % 5 == 0) { ?>
+		</tr><tr>
+	<?php } ?>
+<td align="center">
+    <div style="width:150px;display:block; margin-right:10px;margin-bottom:40px">
+    <table width="100%" align="center"><tr><td align="center">
+    	<a class="internalLink" href="<?php echo $icon['url'] ?>"><div class="coViewIconImage <?php echo $icon['ico']?>"></div></a>
+        </td></tr><tr><td align="center"><b><a class="internalLink" href="<?php echo $icon['url'] ?>"><?php echo $icon['name'] ?></a></b>
+    <?php if (isset($icon['extra'])) { ?>
+    </td></tr><tr><td align="center"><?php echo $icon['extra']; ?>
+    <?php } ?>
+    </td></tr></table>
+    </div>
+</td>
+<?php } ?>
+</tr></table>
+<?php } ?>
+
 </div>
     
   </div>

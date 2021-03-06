@@ -22,6 +22,7 @@
     * @return BaseFileTypes 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'FileType', self::$columns);
       parent::__construct('FileType', 'file_types', true);
     } // __construct
     

@@ -333,7 +333,11 @@ Ext.extend(og.TagTree, Ext.tree.TreePanel, {
 	 * so that the result can be used as a node id.
 	 */
 	nameToId: function(name) {
-		return og.clean(name).replace(/[^a-zA-Z0-9]/g, '_');
+		var id = "_";
+		for (var i=0; i < name.length; i++) {
+			id += name.charCodeAt(i) + "_";
+		}
+		return id;
 	},
 	
 	deleteTag: function(name) {

@@ -38,6 +38,7 @@
     * @return BaseProjectMessages 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectMessage', self::$columns);
       parent::__construct('ProjectMessage', 'project_messages', true);
     } // __construct
     

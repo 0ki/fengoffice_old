@@ -241,18 +241,25 @@ class ProjectFileRevision extends BaseProjectFileRevision {
 	 * @return string
 	 */
 	function getTypeIconUrl($showImage = true) {
-		$file_type = $this->getFileType();
-		if($file_type instanceof FileType) {
-			if($file_type->getIsImage() && $showImage) {
-				$thumb_url = $this->getThumbUrl();
-
-				if(trim($thumb_url)) {
-					return $thumb_url; // we have the thumb!
-				} // if
-			} // if
-		} // if
-		$icon_file = $file_type instanceof FileType ? $file_type->getIcon() : 'unknown.png';
-		return get_image_url("filetypes/$icon_file");
+		// return image depending on type string
+		$image = "file.png";
+		$mimeType = str_replace("/", "-", $this->getTypeString());
+		$parts = split("-", $mimeType);
+		if (count($parts) > 0) {
+			$theme = config_option("theme", DEFAULT_THEME);
+			$base = ROOT . "/" . PUBLIC_FOLDER . "/assets/themes/$theme/images/48x48/types/";
+			$acc = "";
+			foreach ($parts as $part) {
+				if ($acc != "") $acc .= "-";
+				$acc .= $part;
+				if (is_file($base . $acc . ".png")) {
+					$image = $acc . ".png";
+				} else {
+					break;
+				}
+			}
+		}
+		return get_image_url("48x48/types/$image");
 	} // getTypeIconUrl
 
 	// ---------------------------------------------------

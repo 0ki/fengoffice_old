@@ -31,6 +31,7 @@
     * @return BaseObjectReminders 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ObjectReminder', self::$columns);
       parent::__construct('ObjectReminder', 'object_reminders', true);
     } // __construct
     

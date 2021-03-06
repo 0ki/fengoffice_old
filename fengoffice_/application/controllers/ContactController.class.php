@@ -1222,7 +1222,7 @@ class ContactController extends ApplicationController {
 						DB::commit();						
 						
 					} catch (Exception $e) {
-						$contact_data['fail_message'] = substr($e->getMessage(), strpos($e->getMessage(), "\r\n"));
+						$contact_data['fail_message'] = substr_utf($e->getMessage(), strpos_utf($e->getMessage(), "\r\n"));
 						DB::rollback();
 						$import_result['import_fail'][] = $contact_data;
 					}		
@@ -1382,7 +1382,7 @@ class ContactController extends ApplicationController {
 						if (isset($field_names["contact[$k]"]) && $v == 'checked')
 							$titles .= $field_names["contact[$k]"] . ',';
 					}
-					$titles = substr($titles, 0, strlen($titles)-1) . "\n";
+					$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 				} else {
 					$field_names = Companies::getCompanyFieldNames();
 					
@@ -1390,7 +1390,7 @@ class ContactController extends ApplicationController {
 						if (isset($field_names["company[$k]"]) && $v == 'checked')
 							$titles .= $field_names["company[$k]"] . ',';
 					}
-					$titles = substr($titles, 0, strlen($titles)-1) . "\n";
+					$titles = substr_utf($titles, 0, strlen_utf($titles)-1) . "\n";
 				}
 				
 				$filename = rand().'.tmp';

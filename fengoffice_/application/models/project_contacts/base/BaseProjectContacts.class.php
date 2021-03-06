@@ -27,6 +27,7 @@
     * @return BaseProjectContacts 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ProjectContact', self::$columns);
       parent::__construct('ProjectContact', 'project_contacts', true);
     } // __construct
     

@@ -23,6 +23,7 @@
     * @return BaseObjectUserPermissions 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ObjectUserPermission', self::$columns);
       parent::__construct('ObjectUserPermission', 'object_user_permissions', true);
     } // __construct
     

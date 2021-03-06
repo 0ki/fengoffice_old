@@ -413,6 +413,8 @@
   	    throw new DAOValidationError($this, $errors);
   	  } // if
   	  
+  	  Hook::fire('before_object_save', $this, $ret);
+  	  
   	  return $this->doSave();
   	} // save
   	
@@ -524,6 +526,7 @@
   	  // Prepare errors array and call validate() method
   	  $errors = array();
   	  $this->validate($errors);
+  	  Hook::fire('object_validate', $this, $errors);
   	  
   	  // If we have errors return them as array, else return NULL
   	  return count($errors) ? $errors : null;

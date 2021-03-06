@@ -22,6 +22,7 @@
     * @return BaseLinkedObjects 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'LinkedObject', self::$columns);
       parent::__construct('LinkedObject', 'linked_objects', true);
     } // __construct
     

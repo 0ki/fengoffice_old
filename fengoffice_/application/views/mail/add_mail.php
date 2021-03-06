@@ -5,6 +5,7 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
  
   $instanceName = "fck" . gen_id();
   $type = array_var($mail_data, 'type','plain');
+  $object = $mail;
 ?>
 <script type="text/javascript">
 function setBody(iname) {
@@ -148,11 +149,16 @@ function setDiscard(val){
     		array('class' => 'title', 'tabindex'=>'40', 'id' => 'mailSubject')) ?>
 	</div>
 	
+	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+	
 	<div style="padding-top:5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_account', this);resizeMailDiv();"><?php echo lang('mail account') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_CC', this);resizeMailDiv();"><?php echo lang('mail CC') ?></a> - 
 		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_BCC', this);resizeMailDiv();"><?php echo lang('mail BCC') ?></a> - 
-		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);resizeMailDiv();"><?php echo lang('mail options') ?></a>	
+		<a href="#" class="option" onclick="og.toggleAndBolden('add_mail_options', this);resizeMailDiv();"><?php echo lang('mail options') ?></a>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+		<?php } ?>	
 	</div>
 
 	<div id="add_mail_account" style="display:none;">
@@ -167,6 +173,15 @@ function setDiscard(val){
 	    <label><?php echo radio_field('mail[format]',$type=='html', array('id' => 'format_html','value' => 'html', 'tabindex'=>'45','onchange'=>"alertFormat('$instanceName','html')")) ." ".lang('format html') ?></label>
 	    <label><?php echo radio_field('mail[format]',$type=='plain', array('id' => 'format_plain','value' => 'plain', 'tabindex'=>'46', 'onchange'=>"alertFormat('$instanceName','plain')"))." ".lang('format plain')  ?></label>
 	</div>
+	
+	<?php foreach ($categories as $category) { ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
   
 </div>
 <div class="coInputSeparator"></div>

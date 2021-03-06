@@ -104,10 +104,11 @@ class EventController extends ApplicationController {
 		// get the day
 			if (array_var($event_data, 'start_value') != '') {
 				$date_from_widget = array_var($event_data, 'start_value');
-				$parsedDate = $this->parseDate($date_from_widget);
-				$day = $parsedDate['day'];
-	       		$month = $parsedDate['month'];
-	       		$year = $parsedDate['year'];
+				$dtv = getDateValue($date_from_widget);
+				$day = $dtv->getDay();
+	       		$month = $dtv->getMonth();
+	       		$year = $dtv->getYear();
+				
 			} else {
 				$month = isset($_GET['month'])?$_GET['month']:date('n', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
 				$day = isset($_GET['day'])?$_GET['day']:date('j', DateTimeValueLib::now()->getTimestamp() + logged_user()->getTimezone() * 3600);
@@ -229,7 +230,7 @@ class EventController extends ApplicationController {
 			$compstr = 'invite_user_';
 			foreach ($event_data as $k => $v) {
 				if (str_starts_with($k, $compstr) && ($v == 'checked' || $v == 'on')) {
-					$data['users_to_invite'][substr($k, strlen($compstr))] = 0; // Pending Answer
+					$data['users_to_invite'][substr_utf($k, strlen_utf($compstr))] = 0; // Pending Answer
 				}
 			}
 			
@@ -704,29 +705,6 @@ class EventController extends ApplicationController {
 		}
 	}
 	
-	/**
-	 * returns an array with keys 'day', 'month' and 'year' containing the values for the day, month and year
-	 * taken from a string obtained from pick_date_widget
-	 *
-	 * @param string $date_from_widget
-	 */
-	function parseDate($date_from_widget) {
-		$result = array();
-		$startDate = explode('/', $date_from_widget);
-		$posD = 0;
-		$posM = 1;
-		$posY = 2;
-		if (lang('date format') == 'm/d/Y') {
-			$posD = 1;
-			$posM = 0;
-		}
-		$result['day'] = $startDate[$posD];
-       	$result['month'] = $startDate[$posM];
-       	$result['year'] = $startDate[$posY];
-       	
-       	return $result;
-	}
-	
 	function allowed_users_view_events() {
 		$comp_array = array();
 		$actual_user_id = isset($_GET['user']) ? $_GET['user'] : logged_user()->getId();
@@ -833,11 +811,8 @@ class EventController extends ApplicationController {
 			$this->setTemplate('cal_export');
 			$calendar_name = array_var($_POST, 'calendar_name');			
 			if ($calendar_name != '') {
-				$parsedFrom = $this->parseDate(array_var($_POST, 'from_date'));
-				$parsedTo = $this->parseDate(array_var($_POST, 'to_date'));
-				
-				$from = DateTimeValueLib::make(0, 0, 0, $parsedFrom['month'], $parsedFrom['day'], $parsedFrom['year']);
-				$to = DateTimeValueLib::make(0, 0, 0, $parsedTo['month'], $parsedTo['day'], $parsedTo['year']);
+				$from = getDateValue(array_var($_POST, 'from_date'));
+				$to = getDateValue(array_var($_POST, 'to_date'));
 				$tags = '';
 				
 				$events = ProjectEvents::getRangeProjectEvents($from, $to, $tags, active_project());
@@ -885,7 +860,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.76 2009/02/12 21:30:34 idesoto Exp $
+ *   $Id: EventController.class.php,v 1.76.2.1 2009/03/16 20:41:23 idesoto Exp $
  *
  ***************************************************************************/
 

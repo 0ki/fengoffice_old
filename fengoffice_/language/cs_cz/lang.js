@@ -523,5 +523,7 @@ addLangs({
     'untagged': 'Odznačeno',
     'download selected file': 'Stáhnout vybraný soubor',
     'edit selected file properties': 'Upravit vlastnosti vybraného souboru',
-    'you must enter a name': 'Musíte uvést jméno (název)'
+    'you must enter a name': 'Musíte uvést jméno (název)',
+    'print all groups' : 'Tisk',
+    'print this group' : 'Tisk'
 });

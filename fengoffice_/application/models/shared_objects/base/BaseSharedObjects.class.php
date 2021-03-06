@@ -22,6 +22,7 @@
     * @return BaseSharedObjects 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'SharedObject', self::$columns);
       parent::__construct('SharedObject', 'shared_objects', true);
     } // __construct
     

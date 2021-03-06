@@ -20,6 +20,8 @@ if (isset($object) && $object instanceof ProjectWebpage) {
 <div class="weblink">
 	<?php
 		$description = convert_to_links(nl2br(clean($object->getDescription())));
+		$url = $object->getUrl();
+		tpl_assign("description", "<b>".lang("url").": </b><a target=\"_blank\" href=\"$url\">$url</a>");
 		tpl_assign("desc", $description);
 		tpl_assign("content_template", array('view_content', 'webpage'));
 		tpl_assign("variables", $variables);

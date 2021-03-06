@@ -28,7 +28,7 @@
 	    <div>
 	      <?php echo checkbox_field('user[can_manage_security]', array_var($user_data,'can_manage_security'), array('id' => 'user[can_manage_security]' )) ?> 
 	      <label for="<?php echo 'user[can_manage_security]' ?>" class="checkbox"><?php echo lang('can manage security') ?></label>
-	    </div>  
+	    </div>
 	    <div>
 	      <?php echo checkbox_field('user[can_manage_workspaces]', array_var($user_data,'can_manage_workspaces'), array('id' => 'user[can_manage_workspaces]' )) ?> 
 	      <label for="<?php echo 'user[can_manage_workspaces]' ?>" class="checkbox"><?php echo lang('can manage workspaces') ?></label>

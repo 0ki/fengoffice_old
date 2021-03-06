@@ -23,6 +23,7 @@
     * @return BaseEventReminders 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'EventReminder', self::$columns);
       parent::__construct('EventReminder', 'event_reminders', true);
     } // __construct
     

@@ -885,23 +885,20 @@ function render_add_subscribers(ProjectDataObject $object, $genid = null, $subsc
 function render_link_to_object($object, $text=null){
 	$id = $object->getId();
 	$manager = get_class($object->manager());
-	if($text==null)
-	$text=lang('link object');
+	if ($text == null) $text = lang('link object');
 	$result = '';
-	$result .= '<a href="#">';
-	$result .=  label_tag($text,null,false,
-	array('onclick' => "og.ObjectPicker.show(function (data) {" .
-			"if (data) {" .
-				"var objects = '';" .
-				"for (var i=0; i < data.length; i++) {" .
-					"if (objects != '') objects += ',';" .
-					"objects += data[i].data.manager + ':' + data[i].data.object_id;" .
-				"}" .
-				" og.openLink('" . get_url('object', 'link_object') .
-						"&object_id=$id&manager=$manager&objects=' + objects);" .
-			"}" .
-		"})", 
-		'id'=>'object_linker' , 'type' => 'button' ),'');
+	$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data) {' .
+			'if (data) {' .
+				'var objects = \'\';' .
+				'for (var i=0; i < data.length; i++) {' .
+					'if (objects != \'\') objects += \',\';' .
+					'objects += data[i].data.manager + \':\' + data[i].data.object_id;' .
+				'}' .
+				' og.openLink(\'' . get_url("object", "link_object") .
+						'&object_id=' . $id . '&manager=' . $manager. '&objects=\' + objects);' .
+			'}' .
+		'})" id="object_linker">';
+	$result .= $text;
 	$result .= '</a>';
 	return $result;
 }

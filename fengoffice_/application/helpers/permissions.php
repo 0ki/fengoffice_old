@@ -5,8 +5,7 @@
 
   	define('ACCESS_LEVEL_READ', 1);
   	define('ACCESS_LEVEL_WRITE', 2);
-  	
-  	
+  	  	
   	/**
   	 * Returns whether a user can manage security.
   	 * If groups are checked, one true permission makes the function return true.
@@ -292,6 +291,14 @@
 					AND `xx_pu`.$can_manage_object = true ) ) ";
 			}
 		}
+		$hookargs = array(
+			'manager' => $manager,
+			'access_level' => $access_level,
+			'user' => $user,
+			'project_id' => $project_id,
+			'table_alias' => $table_alias
+		);
+		Hook::fire('permissions_sql', $hookargs, $str);
 		return ' (' . $str . ') ';
 	}	
 	
@@ -370,8 +377,21 @@
 	 */
 	function can_access(User $user, ApplicationDataObject $object, $access_level){
 		try {
+			$hookargs = array(
+				"user" => $user,
+				"object" => $object,
+				"access_level" => $access_level
+			);
+			$ret = null;
+			Hook::fire('can_access', $hookargs, $ret);
+			if (is_bool($ret)) {
+				return $ret;
+			}
 			if ($object instanceof Comment) {
 				return can_access($user, $object->getObject(), $access_level);
+			}
+			if ($object instanceof ProjectFileRevision) {
+				return can_access($user, $object->getFile(), $access_level);
 			}
 			if ($object instanceof ProjectMessage || $object instanceof ProjectFile || $object instanceof Company || $object instanceof MailContent) {
 				// handle object in multiple workspaces

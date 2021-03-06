@@ -1,8 +1,9 @@
 <?php 
 	if($object instanceof ProjectDataObject && $object->canView(logged_user())) 	{
 		add_page_action(lang('view history'),$object->getViewHistoryUrl(),'ico-history');
-		if (!$object->isTrashed())
+		/*if (!$object->isTrashed())
 			add_page_action(lang('share'), $object->getShareUrl(), 'ico-share');
+		*/
 	}
 	Hook::fire("render_page_actions", $object, $ret = 0);
 	$coId = $object->getId() . get_class($object->manager()); 
@@ -33,7 +34,10 @@
 					</tr></table>
 				</div>
 				<div>
-					<?php if (isset($description)) echo $description ;?>
+					<?php if (!isset($description)) $description = "";
+					Hook::fire("render_object_description", $object, $description);
+					echo $description;
+					?>
 				</div>
 				
 				<a class="internalLink" href="#" onclick="og.closeView(); return false;" title="<?php echo lang('close') ?>" ><div class="coViewClose" style="cursor:pointer"><?php echo lang('close') ?>&nbsp;&nbsp;X</div></a>

@@ -80,6 +80,7 @@ class ObjectController extends ApplicationController {
 	function add_reminders($object) {
 		$object->clearReminders(logged_user(), true);
 		$typesC = array_var($_POST, 'reminder_type');
+		if (!is_array($typesC)) return;
 		$durationsC = array_var($_POST, 'reminder_duration');
 		$duration_typesC = array_var($_POST, 'reminder_duration_type');
 		$subscribersC = array_var($_POST, 'reminder_subscribers');
@@ -693,7 +694,7 @@ class ObjectController extends ApplicationController {
 						TABLE_PREFIX . "project_files` `co` WHERE `trashed_by_id` = 0 AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'ProjectFiles'", $tag_str) . $permissions . ")";
     	
 	    	if ($trashed) {
-				$file_rev_docs = "SELECT `id` FROM `" . TABLE_PREFIX . "project_files` `co` WHERE `trashed_by_id` = 0 AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'ProjectFileRevisions'", $tag_str) . $permissions . $typecond;
+				$file_rev_docs = "SELECT `id` FROM `" . TABLE_PREFIX . "project_files` `co` WHERE `trashed_by_id` = 0 AND " . $proj_cond_documents . str_replace('= `object_manager_value`', "= 'ProjectFiles'", $tag_str) . $permissions . $typecond;
 				$res['FileRevisions'] = "SELECT 'ProjectFileRevisions' AS `object_manager_value`, `id` AS `oid`, $order_crit_file_revisions AS `order_value` FROM `" .
 						TABLE_PREFIX . "project_file_revisions` `co` WHERE $trashed_cond AND `file_id` IN (" . $file_rev_docs . ")";
 			}    	
@@ -1401,9 +1402,9 @@ class ObjectController extends ApplicationController {
 			
 			$people = array();
 			foreach($emails as $k => $email) { // Retrieve users to notify
-				$lt_pos = strpos($email, '<');
+				$lt_pos = strpos_utf($email, '<');
 				if ($lt_pos !== FALSE) { // only email address
-					$email = substr($email, $lt_pos + 1);
+					$email = substr_utf($email, $lt_pos + 1);
 					$email = str_replace('>', '', $email);
 				}
 				if (trim($email) != '') {
@@ -1429,10 +1430,10 @@ class ObjectController extends ApplicationController {
 	
 	function createMinimumUser($email, $compId) {
 		$contact = Contacts::getByEmail($email);
-		$posArr = strpos($email, '@') === FALSE ? null : strpos($email, '@');
+		$posArr = strpos_utf($email, '@') === FALSE ? null : strpos($email, '@');
 		$user_data = array(
 			'username' => $email,
-			'display_name' => $posArr != null ? substr($email, 0, $posArr) : $email,
+			'display_name' => $posArr != null ? substr_utf($email, 0, $posArr) : $email,
 			'email' => $email,
 			'contact_id' => isset($contact) ? $contact->getId() : null,
 			'password_generator' => 'random',

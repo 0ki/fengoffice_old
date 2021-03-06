@@ -1,6 +1,7 @@
 <?php
 	$workspaces = active_projects();
 	$genid = gen_id();
+	$object = $cotemplate;
 ?>
 <form style='height:100%;background-color:white' class="internalForm" action="<?php echo $cotemplate->isNew() ? get_url('template', 'add') : $cotemplate->getEditUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="return og.templateConfirmSubmit()">
 
@@ -18,11 +19,16 @@
 		array('id' => $genid . 'templateFormName', 'class' => 'name long', 'tabindex' => '1')) ?>
 	</div>
 	
+	<?php $categories = array(); Hook::fire('object_edit_categories', $object, $categories); ?>
+	
 	<div style="padding-top:5px">
 		<?php if (isset ($workspaces) && count($workspaces) > 0) { ?>
 			<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_select_workspace_div',this)"><?php echo lang('workspace') ?></a> - 
 		<?php } ?>
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_template_objects_div',this)"><?php echo lang('objects') ?></a>
+		<?php foreach ($categories as $category) { ?>
+			- <a href="#" class="option" <?php if ($category['visible']) echo 'style="font-weight: bold"'; ?> onclick="og.toggleAndBolden('<?php echo $genid . $category['name'] ?>', this)"><?php echo lang($category['name'])?></a>
+		<?php } ?>
 	</div>
 </div>
 <div class="coInputSeparator"></div>
@@ -57,6 +63,16 @@
 			echo input_field("add_to", "true", array("type"=>"hidden"));
 		}
 	?>
+	
+	<?php foreach ($categories as $category) { ?>
+	<div <?php if (!$category['visible']) echo 'style="display:none"' ?> id="<?php echo $genid . $category['name'] ?>">
+	<fieldset>
+		<legend><?php echo lang($category['name'])?><?php if ($category['required']) echo ' <span class="label_required">*</span>'; ?></legend>
+		<?php echo $category['content'] ?>
+	</fieldset>
+	</div>
+	<?php } ?>
+	
 	<?php echo submit_button($cotemplate->isNew() ? lang('add template') : lang('save changes'),'s',
 		array('style'=>'margin-top:0px', 'tabindex' => '3')) ?>
 </div>

@@ -445,7 +445,14 @@ class Project extends BaseProject {
 	// ---------------------------------------------------
 	
 	function getBillingAmount($billing_category_id){
-		$wsBilling = WorkspaceBillings::findOne(array('conditions' => 'project_id = ' . $this->getId() . ' AND billing_id = ' . $billing_category_id));
+		if (!is_numeric($billing_category_id)) $billing_category_id = 0;
+		$wsBilling = WorkspaceBillings::findOne(
+			array('conditions' => array(
+				'project_id = ? AND billing_id = ',
+				$this->getId(),
+				$billing_category_id
+			))
+		);
 		if ($wsBilling)
 			return $wsBilling->getValue();
 		else {

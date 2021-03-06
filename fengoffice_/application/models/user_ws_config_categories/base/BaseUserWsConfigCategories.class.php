@@ -22,6 +22,7 @@
     * @return BaseConfigCategories 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'UserWsConfigCategory', self::$columns);
       parent::__construct('UserWsConfigCategory', 'user_ws_config_categories', true);
     } // __construct
     

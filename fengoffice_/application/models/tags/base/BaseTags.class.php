@@ -22,6 +22,7 @@
     * @return BaseTags 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'Tag', self::$columns);
       parent::__construct('Tag', 'tags', true);
     } // __construct
     

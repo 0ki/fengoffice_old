@@ -22,6 +22,7 @@
     * @return BaseConfigOptions 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ConfigOption', self::$columns);
       parent::__construct('ConfigOption', 'config_options', true);
     } // __construct
     

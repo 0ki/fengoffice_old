@@ -21,6 +21,7 @@ abstract class BaseWorkspaceObjects extends DataManager {
 	 * @return BaseWorkspaceObjects
 	 */
 	function __construct() {
+		Hook::fire('object_definition', 'WorkspaceObject', self::$columns);
 		parent::__construct('WorkspaceObject', 'workspace_objects', true);
 	} // __construct
 

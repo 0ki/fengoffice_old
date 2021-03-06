@@ -561,5 +561,8 @@ addLangs({
     'must choose company': 'You must choose a company',
     'contact import - export': 'Contacts import and export',
     'calendar import - export': 'Calendar import and export',
-    'view weblink': 'View web link'
+    'view weblink': 'View web link',
+    'print all groups': 'Print all groups',
+    'print this group': 'Print this group',
+    'new version notification title': 'New version'
 });

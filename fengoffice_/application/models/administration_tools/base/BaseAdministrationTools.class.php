@@ -22,6 +22,7 @@
     * @return BaseAdministrationTools 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'AdministrationTool', self::$columns);
       parent::__construct('AdministrationTool', 'administration_tools', true);
     } // __construct
     

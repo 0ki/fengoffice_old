@@ -34,6 +34,7 @@
     * @return BaseGroups 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'Group', self::$columns);
       parent::__construct('Group', 'groups', true);
     } // __construct
     

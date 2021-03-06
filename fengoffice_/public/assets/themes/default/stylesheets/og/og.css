@@ -336,7 +336,12 @@
 .ico-rss {
 	background-image: url(../../images/16x16/rss.png) !important;
 }
-
+.ico-up {
+	background-image: url(../../images/16x16/up.png);
+}
+.ico-down {
+	background-image: url(../../images/16x16/down.png);
+}
 .ico-open-link {
 	background-image: url(../../images/16x16/openlink.png) !important;
 }
@@ -345,6 +350,13 @@
 	height: 16px;
 	background-repeat: no-repeat;
 	padding-left:20px;
+}
+
+.clico {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	background-repeat: no-repeat;
 }
 
 .db-ico {

@@ -22,6 +22,7 @@
     * @return BaseReadObjects 
     */
     function __construct() {
+    	Hook::fire('object_definition', 'ReadObject', self::$columns);
       parent::__construct('ReadObject', 'read_objects', true);
     } // __construct
     

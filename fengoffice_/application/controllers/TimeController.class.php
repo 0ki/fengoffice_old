@@ -118,11 +118,23 @@ class TimeController extends ApplicationController {
 			$timeslot_data['object_id'] = array_var($timeslot_data,'project_id');
 			$timeslot_data['object_manager'] = 'Projects';
 			$timeslot = new Timeslot();
+		
+			
 			
 			//Only admins can change timeslot user
 			if (!array_var($timeslot_data,'user_id',false) || !logged_user()->isAdministrator())
 				$timeslot_data['user_id'] = logged_user()->getId();
 			$timeslot->setFromAttributes($timeslot_data);
+			
+			/* Billing */
+			$user = Users::findById($timeslot_data['user_id']);
+			$billing_category_id = $user->getDefaultBillingId();
+			$project = Projects::findById(array_var($timeslot_data,'project_id'));
+			$timeslot->setBillingId($billing_category_id);
+			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$timeslot->setHourlyBilling($hourly_billing);
+			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+			$timeslot->setIsFixedBilling(false);
 			
 			DB::beginWork();
 			$timeslot->save();
@@ -169,6 +181,16 @@ class TimeController extends ApplicationController {
 				$timeslot_data['user_id'] = $timeslot->getUserId();
 				
 			$timeslot->setFromAttributes($timeslot_data);
+			
+			/* Billing */
+			$user = Users::findById($timeslot_data['user_id']);
+			$billing_category_id = $user->getDefaultBillingId();
+			$project = Projects::findById(array_var($timeslot_data,'project_id'));
+			$timeslot->setBillingId($billing_category_id);
+			$hourly_billing = $project->getBillingAmount($billing_category_id);
+			$timeslot->setHourlyBilling($hourly_billing);
+			$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+			$timeslot->setIsFixedBilling(false);
 			
 			DB::beginWork();
 			$timeslot->save();
