@@ -24,23 +24,13 @@
     } // __construct
     
     /**
-    * Return email list
-    *
-    * @access public
-    * @param void
-    * @return null
-    */
-    function index() {
-      $accounts = logged_user()->getMailAccounts();
-      if (isset($accounts))
-      {
-      	$this->view_account($accounts[0]);
-      	$this->setTemplate('view_account');
-      }
-    } // index
-    
+     * View specific email
+     *
+     */
     function view()
     {
+    	$this->addHelper('textile');
+    	
     	$email = MailContents::findById(get_id());
         MailUtilities::parseMail($email->getContent(),$decoded,$parsedEmail,$warnings);
     	tpl_assign('email', $email);
@@ -52,58 +42,6 @@
     }
     
     /**
-    * View mail account
-    *
-    * @access public
-    * @param void
-    * @return null
-    */
-    function view_account($account = null) {
-      if (!isset($account))
-      	$account = MailAccounts::findById(get_id());
-      
-      $page = (integer) array_var($_GET, 'page', 1);
-      if($page < 0) $page = 1;
-      
-      list($emails, $pagination) = MailContents::paginate(
-        array(
-          'conditions' => '`is_deleted` = 0 AND `account_id` = ' .$account->getId(),
-          'order' => '`sent_date` DESC'
-        ),
-        config_option('emails_per_page', 25), 
-        $page
-      ); // paginate
-      
-      tpl_assign('account', $account);
-      tpl_assign('emails', $emails);
-      tpl_assign('emails_pagination', $pagination);
-    } // view
-    
-    /**
-    * View project emails
-    *
-    * @access public
-    * @param void
-    * @return null
-    */
-    function index_project() {
-      $page = (integer) array_var($_GET, 'page', 1);
-      if($page < 0) $page = 1;
-      
-      list($emails, $pagination) = MailContents::paginate(
-        array(
-          'conditions' => '`project_id` = ' .active_project()->getId(),
-          'order' => '`sent_date` DESC'
-        ),
-        config_option('emails_per_page', 20), 
-        $page
-      ); // paginate
-      
-      tpl_assign('emails', $emails);
-      tpl_assign('emails_pagination', $pagination);
-    } // view
-    
-    /**
     * Delete specific email
     *
     * @access public
@@ -113,7 +51,7 @@
     function delete() {
     	$email = MailContents::findById(get_id());
     	$account = $email->getAccount();
-    	$email->delete();
+    	$email->deleteContents();
     	try
     	{
     		DB::beginWork();
@@ -121,10 +59,11 @@
     		DB::commit();
     		
         	flash_success(lang('success delete email'));
-          	$this->redirectToUrl($account->getViewUrl());
+        	ajx_current("start");
     	} catch(Exception $e) {
     		DB::rollback();
         	flash_error(lang('error delete email'));
+        	ajx_current("empty");
     	}
     } // delete
     
@@ -152,6 +91,10 @@
 		die();
 	} // download_file
 	
+	/**
+	 * Classify specific email
+	 *
+	 */
     function classify()
     {
       $email = MailContents::findById(get_id());
@@ -159,7 +102,7 @@
       
       if(!$email->canEdit(logged_user())) {
         flash_error(lang('no access permissions'));
-        $this->redirectToReferer(get_url('mail'));
+        ajx_current("empty");
       } // if
     
       $projects = logged_user()->getActiveProjects();
@@ -170,82 +113,120 @@
       tpl_assign('email', $email);
       tpl_assign('parsedEmail', $parsedEmail);
       
-      if(is_array(array_var($_POST, 'classification')))
-      {
-      	try
-      	{
-      		$project_id = $classification_data["project_id"];
-      		$project = Projects::findById($project_id);
-      		$email->setProjectId($project_id);
-      		DB::beginWork();
-      		$email->save();
-      		DB::commit();
-      		
-      		$csv = array_var($classification_data, 'tag_'.$project_id);
-      		
-      		$email->setTagsFromCSV($csv);
-      		
-      		$c = 0;
-      		while(isset($classification_data["att_".$c]))
-      		{
-      			if ($classification_data["att_".$c])
-      			{
-      				$att = $parsedEmail["Attachments"][$c];
-
-      				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$att["FileName"];
-      				$fh = fopen($tempFileName, 'w') or die("can't open file");
-      				fwrite($fh, $att["Data"]);
-      				fclose($fh);
-
-      				$file = new ProjectFile();
-      				$file->setFilename($att["FileName"]);
-					$file->setIsVisible(true);
-      				$file->setProjectId($project->getId());
-
-      				if(!logged_user()->isMemberOfOwnerCompany()) {
-      					$file->setIsPrivate(false);
-      					$file->setIsImportant(false);
-      					$file->setCommentsEnabled(true);
-      					$file->setAnonymousCommentsEnabled(false);
-      				} // if
-
-      				try
-      				{
-      					DB::beginWork();
-      					$file->save();
-      					DB::commit();
-      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
-
-      					$file->setTagsFromCSV($csv);
-      					$ext = substr($att["FileName"],strrpos($att["FileName"],'.')+1);
-      					$fileToSave = array(
-      					"name" => $att["FileName"], 
-      					"type" => Mime_Types::instance()->get_type($ext), 
-      					"tmp_name" => $tempFileName,
-      					"error" => 0,
-      					"size" => filesize($tempFileName));
-      					fclose($fh);
-      					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
-      					
-      					// Error...
-      				} catch(Exception $e) {
-      					DB::rollback();
-      					tpl_assign('error', $e);
-      				}
-      				unlink($tempFileName);
-      			}
-      			$c++;
-      		}
-      		
-          	flash_success(lang('success classify email'));
-          	$this->redirectToUrl($email->getAccount()->getViewUrl());
+      if(is_array(array_var($_POST, 'classification'))){
+      	try{
+      		$canWriteFiles = $this->checkFileWritability($classification_data, $parsedEmail);
+      		if ($canWriteFiles){
+	      		$project_id = $classification_data["project_id"];
+	      		$project = Projects::findById($project_id);
+	      		$email->setProjectId($project_id);
+	      		DB::beginWork();
+	      		$email->save();
+	      		DB::commit();
+	      		
+	      		$csv = array_var($classification_data, 'tag_'.$project_id);
+	      		$email->setTagsFromCSV($csv);
+	      		
+	      		//Classify attachments
+	      		$c = 0;
+	      		while(isset($classification_data["att_".$c])){
+	      			if ($classification_data["att_".$c]){
+	      				$att = $parsedEmail["Attachments"][$c];
+	
+	      				$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$att["FileName"];
+	      				$fh = fopen($tempFileName, 'w') or die("Can't open file");
+	      				fwrite($fh, $att["Data"]);
+	      				fclose($fh);
+	
+	      				$file = new ProjectFile();
+	      				$file->setFilename($att["FileName"]);
+						$file->setIsVisible(true);
+	      				$file->setProjectId($project->getId());
+	
+	      				if(!logged_user()->isMemberOfOwnerCompany()) {
+	      					$file->setIsPrivate(false);
+	      					$file->setIsImportant(false);
+	      					$file->setCommentsEnabled(true);
+	      					$file->setAnonymousCommentsEnabled(false);
+	      				} // if
+	
+	      				try
+	      				{
+	      					DB::beginWork();
+	      					$file->save();
+	      					DB::commit();
+	      					ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
+	
+	      					$file->setTagsFromCSV($csv);
+	      					$ext = substr($att["FileName"],strrpos($att["FileName"],'.')+1);
+	      					$fileToSave = array(
+	      					"name" => $att["FileName"], 
+	      					"type" => Mime_Types::instance()->get_type($ext), 
+	      					"tmp_name" => $tempFileName,
+	      					"error" => 0,
+	      					"size" => filesize($tempFileName));
+	      					
+	      					$revision = $file->handleUploadedFile($fileToSave, true); // handle uploaded file
+	      					
+	      					// Error...
+	      				} catch(Exception $e) {
+	      					DB::rollback();
+	      					flash_error($e);
+							ajx_current("empty");
+	      				}
+	      				unlink($tempFileName);
+	      			}
+	      			$c++;
+	      		}
+	      		
+	          	flash_success(lang('success classify email'));
+	      		ajx_current("start");
+      		} else {
+      			flash_error(lang("error classifying attachment cant open file"));
+      			ajx_current("empty");
+      		} // If can write files
           // Error...
       	} catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          flash_error($e);
+		  ajx_current("empty");
         } // try
-      	
       }
+    }
+    
+    function checkFileWritability($classification_data, $parsedEmail){
+    	$c = 0;
+    	while(isset($classification_data["att_".$c]))
+    	{
+    		if ($classification_data["att_".$c])
+    		{
+    			$att = $parsedEmail["Attachments"][$c];
+    			$tempFileName = ROOT ."/tmp/saveatt/". logged_user()->getId()."x".$att["FileName"];
+    			$fh = fopen($tempFileName, 'w');
+    			if (!$fh){
+    				return false;
+    			}
+    			fclose($fh);
+      			unlink($tempFileName);
+    		}
+    		$c++;
+    	}
+    	return true;
+    }
+    
+    function checkmail(){
+    	$accounts = MailAccounts::findAll(array(
+    		"conditions" => "`user_id` = " . logged_user()->getId()
+    	));
+    	MailUtilities::getmails($accounts, $err, $succ, $errAccounts, $mailsReceived);
+        $errMessage = lang('success check mail', $mailsReceived);
+    	if ($err > 0){
+    		foreach($errAccounts as $error) {
+        		$errMessage .= '<br/><br/>' . lang('error check mail', $error["accountName"], $error["message"]);
+    		}
+    	}
+    	
+    	return array($err, $errMessage);
     }
     
     // ---------------------------------------------------
@@ -253,7 +234,7 @@
     // ---------------------------------------------------
     
     /**
-    * Add account
+    * Add email account
     *
     * @access public
     * @param void
@@ -264,7 +245,8 @@
       
       if(!MailAccount::canAdd(logged_user())) {
         flash_error(lang('no access permissions'));
-        $this->redirectToReferer(get_url('mail'));
+        ajx_current("empty");
+        return;
       } // if
       
       $mailAccount = new MailAccount();
@@ -278,23 +260,37 @@
         try {
           $mailAccount_data['user_id'] = logged_user()->getId();
           $mailAccount->setFromAttributes($mailAccount_data);
+          $mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
           
           DB::beginWork();
           $mailAccount->save();
           DB::commit();
           
-          flash_success(lang('success add mail account', $mailAccount->getName()));
-          $this->redirectTo('mail');
+          evt_add("mail account added", array(
+					"id" => $mailAccount->getId(),
+					"name" => $mailAccount->getName(),
+					"email" => $mailAccount->getEmail()
+          ));
           
+          flash_success(lang('success add mail account', $mailAccount->getName()));
+          ajx_current("start");
         // Error...
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          ajx_current("empty");
+          flash_error($e->getMessage());
         } // try
         
       } // if
     } // add_account
     
+    /**
+     * Edit email account
+     *
+     * @access public
+     * @param void
+     * @return null
+     */
     function edit_account() {
       $this->setTemplate('add_account');
       
@@ -315,7 +311,7 @@
           'user_id' => logged_user()->getId(),
           'name' => $mailAccount->getName(),
           'email' => $mailAccount->getEmail(),
-          'password' => $mailAccount->getPassword(),
+          'password' => MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()),
           'server' => $mailAccount->getServer(),
           'is_imap' => $mailAccount->getIsImap(),
           'incoming_ssl' => $mailAccount->getIncomingSsl(),
@@ -329,13 +325,14 @@
       if(is_array(array_var($_POST, 'mailAccount'))) {
         try {
           $mailAccount->setFromAttributes($mailAccount_data);
+          $mailAccount->setPassword(MailUtilities::ENCRYPT_DECRYPT($mailAccount->getPassword()));
           
           DB::beginWork();
           $mailAccount->save();
           DB::commit();
           
           flash_success(lang('success edit mail account', $mailAccount->getName()));
-          $this->redirectTo('mail');
+      	  ajx_current("empty");
           
         // Error...
         } catch(Exception $e) {
@@ -346,6 +343,44 @@
     } // edit
     
     /**
+     * List user email accounts
+     * 
+     * @access public
+     * @param void
+     * @return null
+     */
+    function list_accounts(){
+		$this->setLayout('json');
+    	$this->setTemplate(get_template_path('json'));
+    	$type = array_var($_GET,'type');
+    	
+		$accounts = MailAccounts::findAll(array(
+      'conditions' => '`user_id` = ' . logged_user()->getId()));
+    	
+		$object = array();
+		if (isset($accounts)){
+			foreach($accounts as $acc)
+			{
+				$loadAcc = true;
+				if (isset($type))
+				{
+					if ($type == "view")
+						$loadAcc = $acc->canView(logged_user());
+					if ($type == "edit")
+						$loadAcc = $acc->canEdit(logged_user());
+				} 
+				if ($loadAcc)
+					$object[] = array(
+						"id" => $acc->getId(),
+						"name" => $acc->getName(),
+						"email" => $acc->getEmail()
+					);
+			}
+		}
+		tpl_assign('object', $object);
+    }
+    
+    /**
     * Delete specific mail account
     *
     * @access public
@@ -354,17 +389,23 @@
     */
     function delete_account() {
     	$account = MailAccounts::findById(get_id());
+    	$mails = $account->getMailContents();
     	try
     	{
+    		
     		DB::beginWork();
+    		foreach ($mails as $mail){
+    			$mail->delete();
+    		}
     		$account->delete();
     		DB::commit();
 
     		flash_success(lang('success delete mail account'));
-    		$this->redirectTo('message','main');
+      		ajx_current("start");
     	} catch(Exception $e) {
     		DB::rollback();
     		flash_error(lang('error delete mail account'));
+			ajx_current("empty");
     	}
     } // delete
 

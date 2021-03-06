@@ -11,7 +11,7 @@
 
 ?>
 
-<form action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
+<form action="<?php echo $contact->getUpdatePictureUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, '<?php echo $contact->getUpdatePictureUrl() ?>')">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

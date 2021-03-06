@@ -1,63 +1,49 @@
-<div style="padding:7px">
 <?php
-
-  set_page_title($message->getTitle());
-  project_tabbed_navigation(PROJECT_TAB_MESSAGES);
-  project_crumbs(array(
-    array(lang('messages'), get_url('message')),
-    array(lang('view message'))
-  ));
-  if(ProjectMessage::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add message'), get_url('message', 'add'));
+  if(!active_project() || (active_project() && ProjectMessage::canAdd(logged_user(), active_project()))) {
+    add_page_action(lang('add message'), get_url('message', 'add'), 'mm-ico-message');
   } // if
-  add_stylesheet_to_page('project/messages.css');
+  if($message->canEdit(logged_user())) {
+  	add_page_action(lang('edit'), $message->getEditUrl(), 'ico-edit');
+  } // if
+  if($message->canDelete(logged_user())) {
+  	add_page_action(lang('delete'), $message->getDeleteUrl(), 'ico-delete');
+  } // if
 
 ?>
+
+<div style="padding:7px">
 <div class="message">
-  <div class="messageDetails">
+<div class="coContainer">
+  <div class="coHeader">
+  <div class="coHeaderUpperRow">
 <?php if($message->isPrivate()) { ?>
     <div class="private" title="<?php echo lang('private message') ?>"><span><?php echo lang('private message') ?></span></div>
 <?php } // if ?>
-<?php if($message->getCreatedBy() instanceof User) { ?>
-    <div class="messageAuthor"><?php echo lang('posted on by', format_datetime($message->getCreatedOn()), $message->getCreatedBy()->getCardUrl(), clean($message->getCreatedBy()->getDisplayName())) ?></div>
-<?php } // if ?>
+	<div class="coTitle"><?php echo $message->getTitle() ?></div>
+	<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($message, $message->getProject()) ?></div>
+	</div>
+    <div class="coInfo">
+    	<?php if($message->getCreatedBy() instanceof User) { ?>
+    		<?php echo lang('message posted on by', format_datetime($message->getCreatedOn()), $message->getCreatedBy()->getCardUrl(), clean($message->getCreatedBy()->getDisplayName())) ?>
+		<?php } // if ?>
+	</div>
   </div>
-  <div class="messageText">
+  <div class="coMainBlock">
+  <div class="coLinkedObjects">
+  <?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
+  </div>
+  <div class="coContent">
     <?php echo do_textile($message->getText()) ?>
 <?php if(trim($message->getAdditionalText())) { ?>
     <div class="messageSeparator"><?php echo lang('message separator') ?></div>
     <?php echo do_textile($message->getAdditionalText()) ?>
 <?php } // if?>
   </div>
-
-<?php echo render_object_links($message, $message->canEdit(logged_user())) ?>
-  <div class="messageCommentCount">
-<?php if($message->countComments()) { ?>
-    <span><?php echo lang('comments') ?>:</span> <a class="internalLink" href="<?php echo $message->getViewUrl() ?>#objectComments"><?php echo $message->countComments() ?></a>
-<?php } else { ?>
-    <span><?php echo lang('comments') ?>:</span> <?php echo $message->countComments() ?>
-<?php } // if ?>
-  </div>
-  <div class="messageTags">
-    <span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($message, $message->getProject()) ?>
-  </div>
   
-<?php
-  $options = array();
-  if($message->canEdit(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $message->getEditUrl() . '">' . lang('edit') . '</a>';
-  } // if
-  if($message->canDelete(logged_user())) {
-    $options[] = '<a class="internalLink" href="' . $message->getDeleteUrl() . '" onclick="return confirm(\'' . lang('confirm delete message') . '\')">' . lang('delete') . '</a>';
-  } // if
-?>
-<?php if(count($options)) { ?>
-  <div class="messageOptions">
-    <?php echo implode(' | ', $options) ?>
   </div>
-<?php } // if ?>
-</div>
+  <div style="clear:both">
+  <?php echo render_object_comments($message, $message->getViewUrl()) ?></div>
 
-<!-- Comments -->
-<div id="messageComments"><?php echo render_object_comments($message, $message->getViewUrl()) ?></div>
+  
+</div>
 </div>

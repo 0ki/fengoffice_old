@@ -6,7 +6,7 @@
     array(lang('object'), get_url('object')),
     array(lang('link objects'))
   ));
-  add_stylesheet_to_page('project/link_objects.css');
+  //add_stylesheet_to_page('project/link_objects.css');
 
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/linkToObjectForm.js') ?>"></script>

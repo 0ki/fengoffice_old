@@ -24,8 +24,8 @@
     'my account' => 'My account',
     'my documents' => 'My documents',
 	'documents' => 'Documents',
-    'my projects' => 'My projects',
-    'my projects archive desc' => 'List of finished (archived) projects. All actions for these projects are locked, but you can still browse them.',
+    'my projects' => 'My workspaces',
+    'my projects archive desc' => 'List of closed (archived) workspace. All actions for these workspace are locked, but you can still browse them.',
     
     'company online' => 'Company online',
     
@@ -34,7 +34,7 @@
     'user password generate' => 'Generate random password',
     'user password specify' => 'Specify password',
     'is administrator' => 'Administrator',
-    'is auto assign' => 'Auto assign to new projects?',
+    'is auto assign' => 'Auto assign to new workspaces?',
     'auto assign' => 'Auto assign',
     'administrator update profile notice' => 'Administration options (available only to administrators!)',
     
@@ -42,7 +42,7 @@
     
     'im service' => 'Service',
     'primary im service' => 'Primary IM',
-    'primary im description' => 'All IM addresses that you enter will be listed on your card page. Only the primary IM will be shown on other pages (like the people page of the project).',
+    'primary im description' => 'All IM addresses that you enter will be listed on your card page. Only the primary IM will be shown on other pages (like the people page of the workspace).',
     'contact online' => 'Contact online',
     'contact offline' => 'Contact offline',
     
@@ -74,7 +74,7 @@
     
     // Administration
     'welcome to administration' => 'Welcome',
-    'welcome to administration info' => 'Welcome to the administration panel. Using this tool you can manage your company data, members, clients and projects you are involved in.',
+    'welcome to administration info' => 'Welcome to the administration panel. Using this tool you can manage your company data, members, clients and workspaces you are involved in.',
     
     'send new account notification' => 'Send email notification?',
     'send new account notification desc' => 'If you select "Yes" the user will receive an email with a welcome message and login parameters',
@@ -98,22 +98,22 @@
     'new account step2' => 'Step 2: Add team members',
     'new account step2 info' => 'You can <a class="internalLink" href="{0}">create user accounts</a> for all members of your team (unlimited number). Every member will get their username and password which they can use to access the system',
     'new account step3' => 'Step 3: Add client companies and their members',
-    'new account step3 info' => 'Now its time to <a class="internalLink" href="{0}">define client companies</a> (unlimited). When you\'re done you can add their members or leave that for their team leaders. Client members are similar to your company members except that they have limited access to content and functions (you can set what they can do per project and per member)',
-    'new account step4' => 'Step 4: Start a project',
-    'new account step4 info' => 'Defining a <a class="internalLink" href="{0}">new project</a> is really easy: set a name and decription (optional) and click submit. After that you can set permissions for your team members and clients.',
+    'new account step3 info' => 'Now its time to <a class="internalLink" href="{0}">define client companies</a> (unlimited). When you\'re done you can add their members or leave that for their team leaders. Client members are similar to your company members except that they have limited access to content and functions (you can set what they can do per workspace and per member)',
+    'new account step4' => 'Step 4: Start a workspace',
+    'new account step4 info' => 'Defining a <a class="internalLink" href="{0}">new workspace</a> is really easy: set a name and description (optional) and click submit. After that you can set permissions for your team members and clients.',
     
     // Application log
     'application log details column name' => 'Details',
-    'application log project column name' => 'Project',
+    'application log project column name' => 'Workspace',
     'application log taken on column name' => 'Taken on, by',
     
     // RSS
     'rss feeds' => 'RSS feeds',
     'recent activities feed' => 'Recent activities',
-    'recent project activities feed' => 'Recent activities on {0} project',
+    'recent project activities feed' => 'Recent activities on {0} workspace',
     
     // Update company permissions
-    'update company permissions hint' => 'Check project to give access permissions for this company. Note that you\'ll also need to specify access permissions for company members that you want to be able to access and manage selected projects (you can do that through projects People page or through user profiles).',
+    'update company permissions hint' => 'Check workspace to give access permissions for this company. Note that you\'ll also need to specify access permissions for company members that you want to be able to access and manage selected workspaces (you can do that through workspace People page or through user profiles).',
     
     'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. All rights reserved.',
     'footer copy without homepage' => '&copy; {0} by {1}. All rights reserved',
@@ -122,11 +122,11 @@
 	// Menu
 	'all documents' => 'All documents',
 	'created by me' => 'Created by me',
-	'by project' => 'By project',
+	'by project' => 'By workspace',
 	'by tag' => 'By tag',
 	'by type' => 'By type',
 	'recent documents' => 'Recent documents',
-	'current project' => 'Current project',
+	'current project' => 'Current workspace',
 	'show hide menu' => 'Show/Hide Menu',
 	'help' => 'Help',
   
@@ -202,6 +202,8 @@
   'add mail account' => 'Add Email account',
   'no emails in this account' => 'No emails in this account',
   'server address' => 'Server address',
+  'mail account id' => 'Account ID',
+  'mail account name' => 'Account name',
   'is imap' => 'This is an IMAP account',
   'incoming ssl' => 'Use SSL for incoming email connection',
   'incoming ssl port' => 'SSL port',

@@ -2,7 +2,7 @@
 /*
  * mime_parser.php
  *
- * @(#) $Id: mime_parser.class.php,v 1.1 2008/04/24 13:43:31 chonwil Exp $
+ * @(#) $Id: mime_parser.class.php,v 1.2 2008/05/16 17:53:37 chonwil Exp $
  *
  */
 
@@ -30,7 +30,7 @@ define('MIME_ADDRESS_FIRST',            2);
 
 	<package>net.manuellemos.mimeparser</package>
 
-	<version>@(#) $Id: mime_parser.class.php,v 1.1 2008/04/24 13:43:31 chonwil Exp $</version>
+	<version>@(#) $Id: mime_parser.class.php,v 1.2 2008/05/16 17:53:37 chonwil Exp $</version>
 	<copyright>Copyright © (C) Manuel Lemos 2006</copyright>
 	<title>MIME parser</title>
 	<author>Manuel Lemos</author>
@@ -1966,7 +1966,10 @@ class mime_parser_class
 						if($lp != 2)
 							return($this->SetError('this '.$content_type.' message does not have just 2 parts'));
 						if(strcmp($parts[1]['Type'], 'signature'))
-							return($this->SetError('this '.$content_type.' message does not contain a signature'));
+						{
+							$this->SetErrorWithContact('this '.$content_type.' message does not contain a signature');
+							$this->error = '';
+						}
 						$results = $parts[0];
 						$results['Signature'] = $parts[1];
 						break;
@@ -2048,6 +2051,7 @@ class mime_parser_class
 						$results['SubType'] = $sub_type;
 						$results['Description'] = 'Message signature for PGP';
 						break;
+					case 'x-pkcs7-signature':
 					case 'pkcs7-signature':
 						$results['Type'] = 'signature';
 						$results['SubType'] = $sub_type;

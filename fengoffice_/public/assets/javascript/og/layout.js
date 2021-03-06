@@ -1,8 +1,14 @@
 Ext.onReady(function(){
 	Ext.get("loading").hide();
 
+	Ext.state.Manager.setProvider(new og.HttpProvider({
+		saveUrl: og.getUrl('gui', 'save_state'),
+		readUrl: og.getUrl('gui', 'read_state'),
+		autoRead: false
+	}));
+	Ext.state.Manager.getProvider().initState(og.initialGUIState);
+
 	Ext.QuickTips.init();
-	//Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
 
 	new Ext.TabPanel({
 		id: 'tabs-panel',
@@ -24,8 +30,7 @@ Ext.onReady(function(){
 				id: 'messages-panel',
 				iconCls: 'ico-messages',
 				defaultContent: {
-					type: "url",
-					data: og.getUrl('message', 'main')
+					type: "messages"
 				}
 			}),
 			new og.ContentPanel({
@@ -119,8 +124,6 @@ Ext.onReady(function(){
 	});
 	
     og.captureLinks();
-    
-    //Ext.getCmp('workspace-panel').select();
     
     if (og.initialURL) {
     	og.openLink(og.initialURL);

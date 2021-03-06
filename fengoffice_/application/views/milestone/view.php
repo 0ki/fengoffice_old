@@ -9,7 +9,7 @@
   
   if(!$milestone->isCompleted()) {    
     if(ProjectMessage::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add message'), $milestone->getAddMessageUrl());
-    if(ProjectTaskList::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add task list'), $milestone->getAddTaskUrl());
+    if(ProjectTask::canAdd(logged_user(), $milestone->getProject())) add_page_action(lang('add task list'), $milestone->getAddTaskUrl());
   } // if
 
 ?>

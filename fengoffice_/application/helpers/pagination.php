@@ -38,7 +38,7 @@
   *
   * @access public
   * @param DataPagination $pagination Pagination object
-  * @param string $url_base Base URL in witch we will insert current page number
+  * @param string $url_base Base URL in which we will insert current page number
   * @param string $template Template that will be used. It can be absolute path to existing file
   *   or template name that used with get_template_path will return real template path
   * @param string $page_placeholder Short string inside of $url_base that will be replaced with

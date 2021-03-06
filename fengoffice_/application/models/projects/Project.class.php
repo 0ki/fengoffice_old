@@ -653,12 +653,12 @@
     function getObjectsByTag($tag) {
       $exclude_private = !logged_user()->isMemberOfOwnerCompany();
       return array(
-        'messages'   => Tags::getProjectObjects($this, $tag, 'ProjectMessages', $exclude_private),
-        'milestones' => Tags::getProjectObjects($this, $tag, 'ProjectMilestones', $exclude_private),
-        'task_lists' => Tags::getProjectObjects($this, $tag, 'ProjectTasks', $exclude_private),
-        'files'      => Tags::getProjectObjects($this, $tag, 'ProjectFiles', $exclude_private),
-        'contacts'   => Tags::getProjectObjects($this, $tag, 'ProjectContacts', $exclude_private),
-        'webpages'   => Tags::getProjectObjects($this, $tag, 'ProjectWebpages', $exclude_private),
+        'messages'   => Tags::getObjects($this, $tag, 'ProjectMessages', $exclude_private),
+        'milestones' => Tags::getObjects($this, $tag, 'ProjectMilestones', $exclude_private),
+        'task_lists' => Tags::getObjects($this, $tag, 'ProjectTasks', $exclude_private),
+        'files'      => Tags::getObjects($this, $tag, 'ProjectFiles', $exclude_private),
+        'contacts'   => Tags::getObjects($this, $tag, 'ProjectContacts', $exclude_private),
+        'webpages'   => Tags::getObjects($this, $tag, 'ProjectWebpages', $exclude_private),
       ); // array
     } // getObjectsByTag
     
@@ -670,7 +670,7 @@
     */
     function countObjectsByTag($tag) {
       $exclude_private = !logged_user()->isMemberOfOwnerCompany();
-      return Tags::countProjectObjectsByTag($tag, $this, $exclude_private);
+      return Tags::countObjectsByTag($tag, $exclude_private);
     } // countObjectsByTag
     
     // ---------------------------------------------------
@@ -1103,7 +1103,7 @@
     * @return stirng
     */
     function getOverviewUrl() {
-      return get_url('project', 'overview', array('active_project' => $this->getId()));
+      return get_url('object', 'list_objects', array('active_project' => $this->getId()));
     } // getOverviewUrl
     
     /**
@@ -1407,7 +1407,7 @@
     * @return null
     */
     private function clearRoles() {
-      $roles = $this->getAll();
+      $roles = $this->getAllRoles();
       if(is_array($roles)) {
         foreach($roles as $rol) {
           $rol->delete();

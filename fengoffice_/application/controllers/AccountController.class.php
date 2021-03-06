@@ -307,8 +307,6 @@ class AccountController extends ApplicationController {
 		tpl_assign('user', $user);
 
 		if(is_array($avatar)) {
-			$this->setLayout("html");
-			$this->setTemplate(get_template_path("json"));
 			try {
 				if(!isset($avatar['name']) || !isset($avatar['type']) || !isset($avatar['size']) || !isset($avatar['tmp_name']) || !is_readable($avatar['tmp_name'])) {
 					throw new InvalidUploadError($avatar, lang('error upload file'));
@@ -336,22 +334,10 @@ class AccountController extends ApplicationController {
 					@unlink($old_file);
 				} // if
 
-				$object = array(
-					"errorCode" => 0,
-					"errorMessage" => lang('success edit avatar'),
-					"current" => array(
-						"type" => "url",
-						"data" => $redirect_to
-					)
-				);
-				tpl_assign("object", $object);
+				flash_success(lang('success edit avatar'));
 			} catch(Exception $e) {
 				DB::rollback();
-				$object = array(
-					"errorCode" => $e->getCode() || 1,
-					"errorMessage" => $e->getMessage()
-				);
-				tpl_assign("object", $object);
+				flash_error($e->getMessage());
 			} // try
 		} // if
 	} // edit_avatar

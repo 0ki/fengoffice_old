@@ -1,5 +1,5 @@
 <?php
-  add_stylesheet_to_page('project/milestones.css');
+  //add_stylesheet_to_page('project/milestones.css');
 ?>
 <?php if($milestone->isCompleted()) { ?>
 <div class="milestone success">

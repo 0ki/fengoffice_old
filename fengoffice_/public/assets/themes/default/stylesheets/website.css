@@ -6,6 +6,33 @@
 @import 'og/og.css';
 @import 'page_actions.css';
 @import '../reesecal/default.css';
+@import 'og/co.css';
+
+@import '../slimey/slimey.css';
+@import 'og/imageChooser.css';
+@import 'admin/config.css';
+@import 'admin/massmailer.css';
+@import 'admin/user_list.css';
+@import 'admin/user_permissions.css';
+@import 'dashboard/my_tasks.css';
+@import 'file/types.css';
+@import 'help.css';
+@import 'modules/addMessageForm.js';
+@import 'project/comments.css';
+@import 'project/documents.css';
+@import 'project/files.css';
+/*@import 'project/forms.css';*/
+@import 'project/linked_objects.css';
+@import 'project/messages.css';
+@import 'project/milestones.css';
+@import 'project/people.css';
+@import 'project/permissions.css';
+@import 'project/project_log.css';
+@import 'project/reorder_tasks.css';
+@import 'project/search_results.css';
+/*@import 'project/spreadsheet.css';*/
+/*@import 'project/spreadsheet_grey.css';*/
+@import 'project/task_list.css';
 
 select.select_milestone, select.select_task_list, select.select_message {
   width: 250px;

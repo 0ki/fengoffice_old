@@ -229,7 +229,8 @@
     * @return boolean
     */
     function canEdit(User $user) {
-      if(!$user->isProjectUser($this->getProject())) {
+      $project=$this->getProject();
+      if($project==null || !$user->isProjectUser($project)) {
         return false;
       } // if
       if($user->isAdministrator()) {
@@ -291,9 +292,9 @@
     * @return boolean
     */
     function canDelete(User $user) {
-      if(!$user->isProjectUser($this->getProject())) {
-        return false;
-      } // if
+      if ($this->getProject() instanceof Project)
+      	if(!$user->isProjectUser($this->getProject()))
+        	return false;
       if($user->isAdministrator()) {
         return true;
       } // if
@@ -719,8 +720,7 @@
     */
     function getCompleteUrl($redirect_to = null) {
       $params = array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId()
+        'id' => $this->getId()
       ); // array
       
       if(trim($redirect_to)) {
@@ -739,8 +739,7 @@
     */
     function getOpenUrl($redirect_to = null) {
       $params = array(
-        'id' => $this->getId(), 
-        'active_project' => $this->getProjectId()
+        'id' => $this->getId()
       ); // array
       
       if(trim($redirect_to)) {

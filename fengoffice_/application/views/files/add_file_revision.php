@@ -6,7 +6,7 @@
     lang('edit file revisions'),
   ));
   
-  add_stylesheet_to_page('project/files.css');
+  //add_stylesheet_to_page('project/files.css');
 ?>
 <form class="internalForm" action="<?php echo $revision->getEditUrl() ?>" method="post">
   <div id="fileRevisionComment">

@@ -38,16 +38,16 @@
   <div class="formBlock">
     <div>
       <?php echo label_tag(lang('assign to'), 'milestoneFormAssignedTo') ?>
-      <?php echo assign_to_select_box('milestone[assigned_to]', active_project(), array_var($milestone_data, 'assigned_to'), array('id' => 'milestoneFormAssignedTo')) ?>
+      <?php echo assign_to_select_box('milestone[assigned_to]', active_or_personal_project(), array_var($milestone_data, 'assigned_to'), array('id' => 'milestoneFormAssignedTo')) ?>
     </div>
     <div><?php echo checkbox_field('milestone[send_notification]', array_var($milestone_data, 'send_notification', true), array('id' => 'milestoneFormSendNotification')) ?> <label for="milestoneFormSendNotification" class="checkbox"><?php echo lang('send milestone assigned to notification') ?></label></div>
   </div>
   
   <div class="formBlock">
     <?php echo label_tag(lang('tags'), 'milestoneFormTags') ?>
-    <?php echo show_project_tags_option(active_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
+    <?php echo show_project_tags_option(active_or_personal_project(), 'allTagsCombo', array('id' => 'allTagsCombo','style'=> 'width:100px'));
     	 echo show_addtag_button('allTagsCombo','milestoneFormTags',array('style'=> 'width:20px')); ?>
-    <?php echo project_object_tags_widget('milestone[tags]', active_project(), array_var($milestone_data, 'tags'), array('id' => 'milestoneFormTags', 'class' => 'long')) ?>
+    <?php echo project_object_tags_widget('milestone[tags]', active_or_personal_project(), array_var($milestone_data, 'tags'), array('id' => 'milestoneFormTags', 'class' => 'long')) ?>
   </div>
   
   <?php echo submit_button($milestone->isNew() ? lang('add milestone') : lang('edit milestone')) ?>

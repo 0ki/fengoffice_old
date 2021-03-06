@@ -4,6 +4,7 @@
 og.WebpageManager = function() {
 	var actions;
 	this.doNotDestroy = true;
+	this.active = true;
 	
 	this.store = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
@@ -23,7 +24,11 @@ og.WebpageManager = function() {
 			'load': function() {
 				if (this.getTotalCount() <= og.pageSize) {
 					this.remoteSort = false;
+				} else {
+					this.remoteSort = true;
 				}
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
     });
@@ -71,7 +76,7 @@ og.WebpageManager = function() {
 				actions.editWebpage.setDisabled(true);
 			} else {
 				actions.editWebpage.setDisabled(sm.getCount() != 1);
-				actions.tag.setDisabled(false || this.grid.store.lastOptions.params.active_project == 0);
+				actions.tag.setDisabled(false);
 				actions.delWebpage.setDisabled(false);
 			}
 		});
@@ -88,18 +93,19 @@ og.WebpageManager = function() {
 			header: lang("title"),
 			dataIndex: 'name',
 			width: 120,
+			sortable: false,
 			renderer: renderName
         },{
 			id: 'description',
 			header: lang("description"),
 			dataIndex: 'description',
+			sortable: false,
 			width: 120
 		},{
 			id: 'tags',
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120,
-			hidden: true,
 			sortable: false
         }]);
     cm.defaultSortable = true;
@@ -201,37 +207,42 @@ og.WebpageManager = function() {
     });
 
 	og.eventManager.addListener("tag changed", function(tag) {
-    	this.load();
-    	cm.setHidden(2, this.store.lastOptions.params.active_project == 0);
+		if (this.active) {
+			this.load({start: 0});
+		} else {
+    		this.needRefresh = true;
+    	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		this.load();
-		cm.setHidden(cm.getIndexById('tags'), this.store.lastOptions.params.active_project == 0);
 		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 		
 	}, this);
-	
-	this.load();
-	cm.setHidden(cm.getIndexById('tags'), this.store.lastOptions.params.active_project == 0);
-	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 };
 
 Ext.extend(og.WebpageManager, Ext.grid.GridPanel, {
 	load: function(params) {
-	if (!params) params = {};
-	this.store.load({
-		params: Ext.apply(params, {
-			start: 0,
-			limit: og.pageSize,
-			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-		}),
-		callback: function() {
-			var d = this.reader.jsonData;
-			og.processResponse(d);
+		if (!params) params = {};
+		this.store.load({
+			params: Ext.apply(params, {
+				start: 0,
+				limit: og.pageSize,
+				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
+			})
+		});
+		this.needRefresh = false;
+	},
+	
+	activate: function() {
+		this.active = true;
+		if (this.needRefresh) {
+			this.load({start: 0});
 		}
-	});
-}
+	},
+	
+	deactivate: function() {
+		this.active = false;
+	}
 });
 
 og.WebpageManager.getInstance = function() {

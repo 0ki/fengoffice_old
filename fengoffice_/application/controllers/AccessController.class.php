@@ -192,6 +192,7 @@
           $administrator->setPassword($admin_password);
           $administrator->setIsAdmin(true);
           $administrator->setAutoAssign(true);
+          $administrator->setPersonalProjectId(1);
           
           $administrator->save();
 		  

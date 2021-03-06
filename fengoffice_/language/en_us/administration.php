@@ -43,7 +43,7 @@
     'config option name file_storage_adapter' => 'File storage',
     'config option desc file_storage_adapter' => 'Select where you want to store attachments, avatars, logos and any other uploaded documents. <strong>Database storage engine is recommended</strong>.',
     'config option name default_project_folders' => 'Default folders',
-    'config option desc default_project_folders' => 'Folders that will be created when project is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
+    'config option desc default_project_folders' => 'Folders that will be created when workspace is created. Every folder name should be in a new line. Duplicate or empty lines will be ignored',
     'config option name theme' => 'Theme',
     'config option desc theme' => 'Using themes you can change the default look and feel of OpenGoo',
     

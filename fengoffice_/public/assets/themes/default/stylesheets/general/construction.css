@@ -7,7 +7,7 @@
 }
 
 #headerContent {
-	background-position: 5px 5px;
+	background-position: 2px 3px;
 	background-image: url('../../images/layout/logo.png');
 	background-repeat: no-repeat;
 	height: 56px;
@@ -55,7 +55,7 @@
 	width: 80px;
 	height: 22px;
 	border: 1px solid #666;
-	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -42px;
+	background: transparent url(../../extjs/images/default/button/btn-sprite.gif) repeat-x scroll 0pt -42px !important;
 }
 
 #searchbox button:hover {
@@ -337,48 +337,23 @@
 
 /** user card **/
 
-div.card {
-	padding: 10px;
-	border: 1px solid #ccc;
-}
 
-* html div.card {
-	padding-top: 5px;
-}
-
-div.card div.cardIcon {
-	float: left;
-	width: 50px;
-}
-
-div.card div.cardData {
-	margin-left: 60px;
-}
-
-div.card div.cardData h2 {
+div.contact div.cardData h2 {
 	margin-top: 0;
 }
 
-div.card div.cardBlock {
+div.contact div.cardBlock {
 	margin-bottom: 25px;
 	padding-left: 10px;
 }
 
-div.card div.cardBlock span {
+div.contact div.cardBlock span {
 	font-size: 90%;
 	font-weight: bolder;
 	color: #333;
 }
 
-div.card table {
-	margin-top: 10px;
-}
-
-div.card table, div.card table tr, div.card table td {
-	border: 0;
-}
-
-div.card table tr, div.card table td {
+div.contact table tr, div.contact table td {
 	padding: 2px;
 }
 

@@ -11,8 +11,8 @@ include("public/assets/javascript/fckeditor/fckeditor.php");
 	));
 	unset($content_for_sidebar);
 	
-	add_stylesheet_to_page('project/documents.css');
-	add_stylesheet_to_page('file/imageChooser.css');
+	//add_stylesheet_to_page('project/documents.css');
+	//add_stylesheet_to_page('file/imageChooser.css');
 	//add_javascript_to_page('modules/imageChooser.js');
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>

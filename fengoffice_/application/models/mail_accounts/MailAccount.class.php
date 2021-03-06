@@ -32,13 +32,19 @@
       if(!$this->validatePresenceOf('server')) {
         $errors[] = lang('mail account server required');
       } // if
+      if(!$this->validatePresenceOf('password')) {
+        $errors[] = lang('mail account password required');
+      } // if
+      if(!$this->validatePresenceOf('email')) {
+        $errors[] = lang('mail account id required');
+      } // if
     } // validate
     
     /* Return array of all emails
     *
     * @access public
     * @param void
-    * @return array
+    * @return one or MailContents objects
     */
     function getMailContents() {
       return MailContents::findAll(array(

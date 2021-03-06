@@ -68,7 +68,7 @@ class ProjectController extends ApplicationController {
 	 * @return null
 	 */
 	function search() {
-		if(!logged_user()->isProjectUser(active_project())) {
+		if(active_project() && !logged_user()->isProjectUser(active_project())) {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('dashboard');
 		} // if
@@ -81,7 +81,11 @@ class ProjectController extends ApplicationController {
 			$search_results = null;
 			$pagination = null;
 		} else {
-			list($search_results, $pagination) = SearchableObjects::searchPaginated($search_for, active_project(), logged_user()->isMemberOfOwnerCompany());
+			if(active_project())
+				$projects = active_project()->getId();
+			else 
+				$projects = logged_user()->getActiveProjectIdsCSV();
+			list($search_results, $pagination) = SearchableObjects::searchPaginated($search_for, $projects, logged_user()->isMemberOfOwnerCompany());
 		} // if
 
 		tpl_assign('search_string', $search_for);
@@ -89,8 +93,8 @@ class ProjectController extends ApplicationController {
 		tpl_assign('search_results', $search_results);
 		tpl_assign('pagination', $pagination);
 
-		tpl_assign('tag_names', active_project()->getTagNames());
-		$this->setSidebar(get_template_path('search_sidebar', 'project'));
+//		tpl_assign('tag_names', active_project()->getTagNames());
+//		$this->setSidebar(get_template_path('search_sidebar', 'project'));
 	} // search
 
 	/**
@@ -211,7 +215,7 @@ class ProjectController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success update project permissions'));
-				$this->redirectTo('project', 'people');
+				$this->redirectTo('project', 'people', array('active_project'=>$project->getId()));
 			} catch(Exception $e) {
 				DB::rollback();
 				flash_error(lang('error update project permissions'));
@@ -231,7 +235,8 @@ class ProjectController extends ApplicationController {
 
 		if(!Project::canAdd(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('dashboard'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project = new Project();
@@ -239,6 +244,24 @@ class ProjectController extends ApplicationController {
 		$project_data = array_var($_POST, 'project');
 		tpl_assign('project', $project);
 		tpl_assign('project_data', $project_data);
+		
+		/* <permissions> */
+		if ($project->canChangePermissions(logged_user())) {
+			tpl_assign('project_users', $project->getUsers(false));
+			tpl_assign('project_companies', $project->getCompanies());
+			tpl_assign('user_projects', logged_user()->getProjects());
+
+			$permissions = ProjectUsers::getNameTextArray();
+			tpl_assign('permissions', $permissions);
+
+			$companies = array(owner_company());
+			$clients = owner_company()->getClientCompanies();
+			if (is_array($clients)) {
+				$companies = array_merge($companies, $clients);
+			} // if
+			tpl_assign('companies', $companies);
+		} // if
+		/* </permissions> */
 
 		// Submited...
 		if(is_array($project_data)) {
@@ -255,7 +278,7 @@ class ProjectController extends ApplicationController {
 				DB::beginWork();
 				$project->save();
 
-				$permissions = ProjectUsers::getPermissionColumns();
+				$permission_columns = ProjectUsers::getPermissionColumns();
 				$auto_assign_users = owner_company()->getAutoAssignUsers();
 
 				// We are getting the list of auto assign users. If current user is not in the list
@@ -274,22 +297,85 @@ class ProjectController extends ApplicationController {
 					$project_user = new ProjectUser();
 					$project_user->setProjectId($project->getId());
 					$project_user->setUserId($user->getId());
-					if(is_array($permissions)) {
-						foreach($permissions as $permission) $project_user->setColumnValue($permission, true);
+					if(is_array($permission_columns)) {
+						foreach($permission_columns as $permission) $project_user->setColumnValue($permission_columns, true);
 					} // if
 					$project_user->save();
 				} // foreach
 
+				/* <permissions> */
+				$project->clearCompanies();
+				$project->clearUsers();
+
+				$companies = array(owner_company());
+				$client_companies = owner_company()->getClientCompanies();
+				if(is_array($client_companies)) {
+					$companies = array_merge($companies, $client_companies);
+				} // if
+
+				foreach($companies as $company) {
+
+					// Company is selected!
+					if(array_var($_POST, 'project_company_' . $company->getId()) == 'checked') {
+
+						// Owner company is automaticly included so it does not need to be in project_companies table
+						if(!$company->isOwner()) {
+							$project_company = new ProjectCompany();
+							$project_company->setProjectId($project->getId());
+							$project_company->setCompanyId($company->getId());
+							$project_company->save();
+						} // if
+
+						$users = $company->getUsers();
+						if(is_array($users)) {
+							$counter = 0;
+							foreach($users as $user) {
+								$user_id = $user->getId();
+								$counter++;
+								if(array_var($_POST, "project_user_$user_id") == 'checked') {
+
+									$project_user = new ProjectUser();
+									$project_user->setProjectId($project->getId());
+									$project_user->setUserId($user_id);
+
+									foreach($permissions as $permission => $permission_text) {
+
+										// Owner company members have all permissions
+										$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
+
+										$setter = 'set' . Inflector::camelize($permission);
+										$project_user->$setter($permission_value);
+
+									} // if
+
+									$project_user->save();
+
+								} // if
+
+							} // foreach
+						} // if
+					} // if
+				} // foreach
+				/* </permissions> */
+				
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_ADD, false, true);
 				DB::commit();
 				
-				evt_add("workspace added", array("id" => $project->getId(), "name" => $project->getName()));
+				evt_add("workspace added", array(
+					"id" => $project->getId(),
+					"name" => $project->getName(),
+					"color" => $project->getColor()
+				));
 
 				flash_success(lang('success add project', $project->getName()));
-				$this->redirectToUrl($project->getPermissionsUrl());
+				ajx_current("start");
+				return;
 
 			} catch(Exception $e) {
 				tpl_assign('error', $e);
+				flash_error($e->getMessage());
+				ajx_current("empty");
+				return;
 				DB::rollback();
 			} // try
 
@@ -309,25 +395,46 @@ class ProjectController extends ApplicationController {
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
-			$this->redirectTo('administration', 'projects');
+			ajx_current("empty");
+			return;
 		} // if
 
 		if(!$project->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('administration', 'projects'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$project_data = array_var($_POST, 'project');
 		if(!is_array($project_data)) {
 			$project_data = array(
-          'name' => $project->getName(),
-          'description' => $project->getDescription(),
-          'show_description_in_overview' => $project->getShowDescriptionInOverview()
+				'name' => $project->getName(),
+				'description' => $project->getDescription(),
+				'show_description_in_overview' => $project->getShowDescriptionInOverview(),
+				'color' => 0
 			); // array
 		} // if
 
 		tpl_assign('project', $project);
 		tpl_assign('project_data', $project_data);
+		
+		/* <permissions> */
+		if ($project->canChangePermissions(logged_user())) {
+			tpl_assign('project_users', $project->getUsers(false));
+			tpl_assign('project_companies', $project->getCompanies());
+			tpl_assign('user_projects', logged_user()->getProjects());
+
+			$permissions = ProjectUsers::getNameTextArray();
+			tpl_assign('permissions', $permissions);
+
+			$companies = array(owner_company());
+			$clients = owner_company()->getClientCompanies();
+			if (is_array($clients)) {
+				$companies = array_merge($companies, $clients);
+			} // if
+			tpl_assign('companies', $companies);
+		} // if
+		/* </permissions> */
 
 		if(is_array(array_var($_POST, 'project'))) {
 			$project->setFromAttributes($project_data);
@@ -335,14 +442,80 @@ class ProjectController extends ApplicationController {
 			try {
 				DB::beginWork();
 				$project->save();
+				
+				/* <permissions> */
+				$project->clearCompanies();
+				$project->clearUsers();
+
+				$companies = array(owner_company());
+				$client_companies = owner_company()->getClientCompanies();
+				if(is_array($client_companies)) {
+					$companies = array_merge($companies, $client_companies);
+				} // if
+
+				foreach($companies as $company) {
+
+					// Company is selected!
+					if(array_var($_POST, 'project_company_' . $company->getId()) == 'checked') {
+
+						// Owner company is automaticly included so it does not need to be in project_companies table
+						if(!$company->isOwner()) {
+							$project_company = new ProjectCompany();
+							$project_company->setProjectId($project->getId());
+							$project_company->setCompanyId($company->getId());
+							$project_company->save();
+						} // if
+
+						$users = $company->getUsers();
+						if(is_array($users)) {
+							$counter = 0;
+							foreach($users as $user) {
+								$user_id = $user->getId();
+								$counter++;
+								if(array_var($_POST, "project_user_$user_id") == 'checked') {
+
+									$project_user = new ProjectUser();
+									$project_user->setProjectId($project->getId());
+									$project_user->setUserId($user_id);
+
+									foreach($permissions as $permission => $permission_text) {
+
+										// Owner company members have all permissions
+										$permission_value = $company->isOwner() ? true : array_var($_POST, 'project_user_' . $user_id . '_' . $permission) == 'checked';
+
+										$setter = 'set' . Inflector::camelize($permission);
+										$project_user->$setter($permission_value);
+
+									} // if
+
+									$project_user->save();
+
+								} // if
+
+							} // foreach
+						} // if
+					} // if
+				} // foreach
+				/* </permissions> */
+				
 				ApplicationLogs::createLog($project, null, ApplicationLogs::ACTION_EDIT, false, true);
 				DB::commit();
 
+				evt_add("workspace edited", array(
+					"id" => $project->getId(),
+					"name" => $project->getName(),
+					"color" => $project->getColor()
+				));
+				
 				flash_success(lang('success edit project', $project->getName()));
-				$this->redirectToUrl($project->getOverviewUrl());
+				ajx_current("start");
+				return;
 			} catch(Exception $e) {
 				DB::rollback();
 				tpl_assign('error', $e);
+				flash_error($e->getMessage());
+				ajx_current("empty");
+				return;
 			} // try
 		} // if
 	} // edit
@@ -356,7 +529,9 @@ class ProjectController extends ApplicationController {
 	function delete() {
 		ajx_current("empty");
 		$pid = get_id();
-		if ($pid == logged_user()->getPersonalProjectId()) {
+		$u = Users::findOne(array("conditions" => "personal_project_id = $pid"));
+		if ($u) {
+			//flash_error("id: $pid, u: ".$u->getId());
 			flash_error(lang('cannot delete personal project'));
 			return;
 			//$this->redirectTo('administration', 'projects');
@@ -364,16 +539,20 @@ class ProjectController extends ApplicationController {
 		$project = Projects::findById(get_id());
 		if(!($project instanceof Project)) {
 			flash_error(lang('project dnx'));
+			return;
 			//$this->redirectTo('administration', 'projects');
 		} // if
 
 		if(!$project->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
+			return;
 			//$this->redirectToReferer(get_url('administration', 'projects'));
 		} // if
 
 		try {
 
+			$id = $project->getId();
+			$name = $project->getName();
 			DB::beginWork();
 			$project->delete();
 			CompanyWebsite::instance()->setProject(null);
@@ -381,10 +560,14 @@ class ProjectController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete project', $project->getName()));
+			evt_add("workspace deleted", array(
+				"id" => $id,
+				"name" => $name
+			));
 
 		} catch(Exception $e) {
 			DB::rollback();
-			flash_error(lang('error delete project'));
+			flash_error($e->getMessage());
 		} // try
 
 		//$this->redirectTo('administration', 'projects');
@@ -581,7 +764,8 @@ class ProjectController extends ApplicationController {
 		foreach ($all_projects as $p) {
 			$ps[] = array(
 				"id" => $p->getId(),
-				"name" => $p->getName()
+				"name" => $p->getName(),
+				"color" => $p->getColor()
 			);
 		}
 		tpl_assign("object", $ps);

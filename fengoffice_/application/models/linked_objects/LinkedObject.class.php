@@ -4,7 +4,7 @@
   *  LinkedObject class
   * Generated on Wed, 26 Jul 2006 11:18:14 +0200 by DataObject generation tool
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Marcos Saiz <marcos.saiz@gmail.com>
   */
   class  LinkedObject extends BaseLinkedObject {
   

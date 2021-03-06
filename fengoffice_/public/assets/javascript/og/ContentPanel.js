@@ -34,6 +34,9 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 
 	activate: function() {
 		this.active = true;
+		if (this.getComponent(0).activate) {
+			this.getComponent(0).activate();
+		}
 		if (!this.loaded) {
 			this.load(this.defaultContent);
 		}
@@ -41,9 +44,21 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 	
 	deactivate: function() {
 		this.active = false;
+		if (this.getComponent(0).deactivate) {
+			this.getComponent(0).deactivate();
+		}
 	},
 
 	load: function(content, isBack) {
+		if (content.type == 'start') {
+			if (this.closable) {
+				this.ownerCt.remove(this);
+			} else {
+				this.reset();
+			}
+			return;
+		}
+	
 		if (this.loaded && this.content && !isBack) {
 			this.history.push(this.content);
 		}
@@ -84,7 +99,13 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 							if (this.url.indexOf('javascript:') == 0) {
 								location.href = this.url;
 							} else {
-								og.openLink(this.url);
+								if (this.target == '_blank') {
+									window.open(this.url);
+								} else if (this.target) {
+									og.openLink(this.url, {caller: this.target});
+								} else {
+									og.openLink(this.url);
+								}
 							}
 						},
 						scope: content.actions[i],
@@ -105,27 +126,32 @@ Ext.extend(og.ContentPanel, Ext.Panel, {
 			//og.captureLinks(this.id, this);
 		} else if (content.type == 'dashboard') {
 			this.add(og.Dashboard.getInstance());
-			og.Dashboard.getInstance().load();
+			og.Dashboard.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else if (content.type == 'files') {
 			this.add(og.FileManager.getInstance());
-			og.FileManager.getInstance().load();
+			og.FileManager.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else if (content.type == 'contacts') {
 			this.add(og.ContactManager.getInstance());
-			og.ContactManager.getInstance().load();
+			og.ContactManager.getInstance().load({start:0});
+			this.doLayout();
+			og.captureLinks(this.id, this);
+		} else if (content.type == 'messages') {
+			this.add(og.MessageManager.getInstance());
+			og.MessageManager.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else if (content.type == 'webpages') {
 			this.add(og.WebpageManager.getInstance());
-			og.WebpageManager.getInstance().load();
+			og.WebpageManager.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else if (content.type == 'tasks') {
 			this.add(og.TaskViewer.getInstance());
-			og.TaskViewer.getInstance().load();
+			og.TaskViewer.getInstance().load({start:0});
 			this.doLayout();
 			og.captureLinks(this.id, this);
 		} else {

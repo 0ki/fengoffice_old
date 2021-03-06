@@ -1,12 +1,20 @@
 <?php if(isset($contact) && ($contact instanceof Contact)) { ?>
-<div class="card">
- <table>
- <tr>
- <td>
-  <div class="cardIcon"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" /></div>
-  <div class="cardData">
-  
-    <h2><?php echo clean($contact->getDisplayName()) ?></h2>
+
+<div style="padding:7px">
+<div class="contact">
+<div class="coContainer">
+  <div class="coHeader">
+  <div class="coHeaderUpperRow">
+    <div class="coTitle"><?php echo clean($contact->getDisplayName()) ?></div>
+  </div>
+  </div>
+  <div class="coMainBlock">
+  <div class="coContent">
+  <table>
+	 <tr><td style="padding-right:10px">
+         <div class="cardIcon"><img src="<?php echo $contact->getPictureUrl() ?>" alt="<?php echo clean($contact->getDisplayName()) ?> picture" /></div>
+         </td><td>
+  		<div class="cardData">
     
     <?php if ($contact->getDepartment() ||$contact->hasCompany() || $contact->getEmail() || $contact->getEmail2() || $contact->getEmail3()
     || is_array($im_values = $contact->getImValues()) && count($contact)) {?>
@@ -24,19 +32,14 @@
       <div><span><?php echo lang('job title') ?>:</span> <?php echo clean($contact->getJobTitle());?></div><?php } ?>
       
       <h3><?php echo lang('contact online') ?></h3>
-      
       <?php if ($contact->getEmail()) { ?>
       <div><span><?php echo lang('email address') ?>:</span> <a href="mailto:<?php echo clean($contact->getEmail());?>"><?php echo clean($contact->getEmail());?></a></div><?php } ?>
-      
       <?php if ($contact->getEmail2()) { ?>
       <div><span><?php echo lang('email address 2') ?>:</span> <a href="mailto:<?php echo clean($contact->getEmail2());?>"><?php echo clean($contact->getEmail2());?></a></div><?php } ?>
-      
       <?php if ($contact->getEmail3()) { ?>
       <div><span><?php echo lang('email address 3') ?>:</span> <a href="mailto:<?php echo clean($contact->getEmail3());?>"><?php echo clean($contact->getEmail3());?></a></div><?php } ?>
-      
       <?php if ($contact->getOBirthday()) { ?>
-      <div><span><?php echo lang('birthday') ?>:</span> <?php if ($contact instanceof Contact) echo clean($contact->getOBirthday()->format("D M j, Y"));?></div><?php } ?>
-      
+      <div><span><?php echo lang('birthday') ?>:</span> <?php if ($contact->getOBirthday() instanceof DateTimeValue) echo clean($contact->getOBirthday()->format("D M j, Y"));?></div><?php } ?>
       <?php if(is_array($im_values = $contact->getImValues()) && count($contact)) { ?>
       <table class="imAddresses">
 <?php foreach($im_values as $im_value) { ?>
@@ -177,5 +180,15 @@
   </td>
   </tr>
   </table>
+  </div>
+  </div>
+  
+  
+  
 </div>
+</div>
+</div>
+
+
+
 <?php } // if ?>

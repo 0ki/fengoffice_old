@@ -31,7 +31,7 @@ class MilestoneController extends ApplicationController {
 	 */
 	function index() {
 		$this->addHelper('textile');
-		$project = active_project();
+		$project = active_or_personal_project();
 
 		tpl_assign('late_milestones', $project->getLateMilestones());
 		tpl_assign('today_milestones', $project->getTodayMilestones());
@@ -75,22 +75,23 @@ class MilestoneController extends ApplicationController {
 	function add() {
 		$this->setTemplate('add_milestone');
 
-		if(!ProjectMilestone::canAdd(logged_user(), active_project())) {
+		if(!ProjectMilestone::canAdd(logged_user(), active_or_personal_project())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
+			return;
 		} // if
 
 		$milestone_data = array_var($_POST, 'milestone');
 		if(!is_array($milestone_data)) {
 			$milestone_data = array(
-          'due_date' => DateTimeValueLib::now(),
+				'due_date' => DateTimeValueLib::now(),
 			); // array
 		} // if
 		$milestone = new ProjectMilestone();
 		tpl_assign('milestone_data', $milestone_data);
 		tpl_assign('milestone', $milestone);
 
-		if(is_array(array_var($_POST, 'milestone'))) {
+		if (is_array(array_var($_POST, 'milestone'))) {
 			$milestone_data['due_date'] = DateTimeValueLib::make(0, 0, 0, array_var($_POST, 'milestone_due_date_month', 1), array_var($_POST, 'milestone_due_date_day', 1), array_var($_POST, 'milestone_due_date_year', 1970));
 
 			$assigned_to = explode(':', array_var($milestone_data, 'assigned_to', ''));
@@ -98,7 +99,7 @@ class MilestoneController extends ApplicationController {
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate(false);
 
-			$milestone->setProjectId(active_project()->getId());
+			$milestone->setProjectId(active_or_personal_project()->getId());
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
@@ -107,7 +108,7 @@ class MilestoneController extends ApplicationController {
 
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
-				ApplicationLogs::createLog($milestone, active_project(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($milestone, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
 
 				DB::commit();
 
@@ -121,11 +122,12 @@ class MilestoneController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success add milestone', $milestone->getName()));
-				$this->redirectTo('milestone');
+				ajx_current("start");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
 			} // try
 		} // if
 	} // add
@@ -177,7 +179,7 @@ class MilestoneController extends ApplicationController {
 			$milestone->setFromAttributes($milestone_data);
 			if(!logged_user()->isMemberOfOwnerCompany()) $milestone->setIsPrivate($old_is_private);
 
-			$milestone->setProjectId(active_project()->getId());
+			$milestone->setProjectId(active_or_personal_project()->getId());
 			$milestone->setAssignedToCompanyId(array_var($assigned_to, 0, 0));
 			$milestone->setAssignedToUserId(array_var($assigned_to, 1, 0));
 
@@ -186,7 +188,7 @@ class MilestoneController extends ApplicationController {
 				$milestone->save();
 				$milestone->setTagsFromCSV(array_var($milestone_data, 'tags'));
 
-				ApplicationLogs::createLog($milestone, active_project(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
 				// If owner is changed send notification but don't break submission
@@ -206,11 +208,12 @@ class MilestoneController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success edit milestone', $milestone->getName()));
-				$this->redirectTo('milestone');
+				ajx_current("start");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit
@@ -226,12 +229,12 @@ class MilestoneController extends ApplicationController {
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			$this->redirectTo('milestone');
+			ajx_current("empty");
 		} // if
 
 		if(!$milestone->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
 		} // if
 
 		try {
@@ -242,12 +245,12 @@ class MilestoneController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted milestone', $milestone->getName()));
+			ajx_current("start");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete milestone'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectTo('milestone');
 	} // delete
 
 	/**
@@ -276,7 +279,7 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, active_project(), ApplicationLogs::ACTION_CLOSE);
+			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_CLOSE);
 			DB::commit();
 
 			flash_success(lang('success complete milestone', $milestone->getName()));
@@ -300,12 +303,12 @@ class MilestoneController extends ApplicationController {
 		$milestone = ProjectMilestones::findById(get_id());
 		if(!($milestone instanceof ProjectMilestone)) {
 			flash_error(lang('milestone dnx'));
-			$this->redirectTo('milestone');
+			ajx_current("empty");
 		} // if
 
 		if(!$milestone->canChangeStatus(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('milestone'));
+			ajx_current("empty");
 		} // if
 
 		try {
@@ -315,17 +318,18 @@ class MilestoneController extends ApplicationController {
 
 			DB::beginWork();
 			$milestone->save();
-			ApplicationLogs::createLog($milestone, active_project(), ApplicationLogs::ACTION_OPEN);
+			ApplicationLogs::createLog($milestone, $milestone->getProject(), ApplicationLogs::ACTION_OPEN);
 			DB::commit();
 
 			flash_success(lang('success open milestone', $milestone->getName()));
+			$this->redirectToReferer($milestone->getViewUrl());
 
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error open milestone'));
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToReferer($milestone->getViewUrl());
 	} // open
 
 } // MilestoneController

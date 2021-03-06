@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-
+<base href="../" />
 <title>OpenGoo Help - Using the interface</title>
 
 <script type="text/javascript" src="help/help.js"></script>
@@ -19,49 +19,46 @@
 
 <div id="page1" class="page">
 <h2>Main Interface</h2>
-<p>The main interface consists of a <a href="javascript:showPage(2)">header</a> and three center panels, the <a href="javascript:showPage(3)">menu panel</a>, the <a href="javascript:showPage(6)">content panel</a> and the <a href="javascript:showPage(7)">help panel (this panel)</a>.</p>
+<p>The main interface consists of a <a href="javascript:showPage(2)">header</a> and four center panels, the <a href="javascript:showPage(3)">workspace panel</a>, the <a href="javascript:showPage(3)">tag panel</a>, the <a href="javascript:showPage(6)">content panel</a> and the <a href="javascript:showPage(7)">help panel (this panel)</a>.</p>
 </div>
 
 <div id="page2" class="page">
 <h2>Header</h2>
-<p>On the top of the page we have the <b>heather</b>. Inside it you can see the application's logo on the left, the <b>user box</b> on the right and, below these two, a bar containing the <b>crumbs</b> on the left and a <b>search box</b> on the right.</p>
-<p>The <b>user box</b> tells you which user you are logged in as. If you ever see here a username other than yours you should logout and log in back with your own username. Also on the user box you can <b>Logout</b>, view or edit your <b>Account</b> info and show or hide this <b>Help</b>.</p>
-<p>The <b>crumbs</b> tell you which is your active project and where are you located inside the application. The active project is the project you are currently working on, and is where new files, messages, etc. are stored when you create them. You can change the active project on the <a href="javascript:showPage(3)">menu panel</a>.</p>
-<p>Finally, the <b>search box</b> lets you perform a search of objects in the active project.</p>
+<p>On the top of the page we have the <b>heather</b>. Inside it you can see the application's logo on the left, followed by the <b>search box</b> and the <b>user box</b> on the right.</p>
+<p>The <b>user box</b> tells you which user you are logged in as. If you ever see here a username other than yours you should logout and log in back with your own username. Also on the user box you can <b>Logout</b>, view or edit your <b>Account</b> info, perform <b>Administration</b> tasks (if you are an administrator) and show or hide this <b>Help</b>.</p>
+<p>The <b>search box</b> lets you perform a search of objects in the active project.</p>
 </div>
 
 <div id="page3" class="page">
-<h2>Menu Panel (1/3)</h2>
-<p>The <b>menu panel</b> contains links to the different sections of the application, grouped in four categories: <b>Overview</b>, <b>Documents</b>, <b>Projects</b> and <b>Administration</b> (administrators only).</p>
-<p>This panel can be resized by dragging the right edge. To do this place the mouse over the right edge of the menu panel, hold down the left mouse button and move left or right; then release the left button. You can also hide it completely by clicking the <b>&laquo;</b> button on the top right, and you can bring it back in by pressing the <b>&raquo;</b> button.</p>
+<h2>Workspace Panel</h2>
+<p>The <b>workspace panel</b> contains a list of your active workspaces. Here you can add a new workspace or rename and delete an existing one, if you have the appropiate permissions. </p>
+<p>By selecting one of the workspaces you affect the content of the content panel. For example, only the documents of the selected workspace are shown on the <b>Document</b>'s tab.</p>
 </div>
 
 <div id="page4" class="page">
-<h2>Menu Panel (2/3)</h2>
-<p>The <b>Overview</b> category provides the following links:
-<ul>
-<li><b>Dashboard</b>, where you get to see a summary of the recent activities that concern you;</li>
-<li><b>Account</b>, where you can modify your account information;</li>
-<li><b>Help</b>, to show or hide this help;</li>
-<li><b>Logout</b>, to logout of the application;</li>
-</ul>
-</p>
-<p>The <b>Documents</b> category lets you browse all files related to you. You can filter by project, by tags or by type or just list the files created by you. You also have a shortcut to the last three modified files for quicker access to your recent work, and shortcuts to add files.
-</p>
+<h2>Tag Panel</h2>
+<p>The <b>Tag panel</b> lists the tags relevant to the selected workspace. By selecting a tag from this list you can filter the contents of the content panel (if applicable)
 </div>
 
 <div id="page5" class="page">
-<h2>Menu Panel (3/3)</h2>
-<p>The <b>Projects</b> category lets you manage the projects of which you are a member. First you should select the active project, which is the project you will be working on. You can do this by selecting the project on the combobox (expansible list) below <b>Select project:</b>. Then, you can add messages, tasks, files, etc., or just add a new project with the <b>add project</b> action.
-</p>
-<p>
-Finally, only if you are an administrator, you can see the <b>Administration</b> category. Here you can configure the application, edit the company's info, manage users and clients, and more.
-</p>
+<h2>Content Panel</h2>
+<p>The <b>content panel</b> is divided into seven tabs, which are:</p>
+<ul>
+<li>Overview</li>
+<li>Messages</li>
+<li>Contacts</li>
+<li>Calendar</li>
+<li>Documents</li>
+<li>Tasks</li>
+<li>Web pages</li>
+</ul>
 </div>
 
 <div id="page6" class="page">
-<h2>Content Panel</h2>
-<p>This panel is the heart of the application. This is where the different sections of OpenGoo are displayed. To learn more about teh contents of this panel check the other sections in <a class="internalLink" href="index.html">Help</a> or go to OpenGoo's site at <a target="_blank" href="http://www.opengoo.org" target="_new">http://www.opengoo.org</a> and check the forum and wiki.</p>
+<h2>Overview</h2>
+<p>This tab lists all of the Content Objects of the selected workspace which are tagged with the selected tag. This panel is useful, when sorting the objects by the last update date, to get a glimpse of the recent activities in the selected workspace.</p>
+<h2>Messages</h2>
+<p>Here you can access messages of the selected workspace.</p>
 </div>
 
 <div id="page7" class="page">

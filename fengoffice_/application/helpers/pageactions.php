@@ -37,15 +37,16 @@
         } // if
       } // foreach
       
-    // Three string params, title, URL and name
+    // Four string params, title, URL and name
     } else {
       
       $title = array_var($args, 0);
       $url = array_var($args, 1);
       $name = array_var($args, 2);
+      $target = array_var($args, 3);
       
       if(!empty($title) && !empty($url)) {
-        PageActions::instance()->addAction( new PageAction($title, $url, $name) );
+        PageActions::instance()->addAction( new PageAction($title, $url, $name, $target) );
       } // if
       
     } // if
@@ -80,6 +81,8 @@
      * @var string
      */
     public $name;
+    
+    public $target;
   
     /**
     * Construct the PageAction
@@ -88,10 +91,11 @@
     * @param void
     * @return PageAction
     */
-    function __construct($title, $url, $name) {
+    function __construct($title, $url, $name, $target = null) {
       $this->setTitle($title);
       $this->setURL($url);
       $this->setName($name);
+      $this->setTarget($target);
     } // __construct
     
     // ---------------------------------------------------
@@ -159,6 +163,29 @@
     function setURL($value) {
       $this->url = $value;
     } // setURL
+  
+    
+    /**
+    * Get target
+    *
+    * @access public
+    * @param null
+    * @return string
+    */
+    function getTarget() {
+      return $this->target;
+    } // getTarget
+    
+    /**
+    * Set target value
+    *
+    * @access public
+    * @param string $value
+    * @return null
+    */
+    function setTarget($value) {
+      $this->target = $value;
+    } // setTarget
   
   } // PageAction
   

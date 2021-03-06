@@ -1,7 +1,3 @@
-<?php
-
-?>
-
 <h1>Getmails complete!</h1>
 <div>Successful account retrieval: <?php echo $succ ?> accounts</div>
 <div>Total emails received: <?php echo $mailsReceived ?></div>

@@ -1,5 +1,5 @@
 <?php
-  add_stylesheet_to_page('project/link_objects.css');
+  //add_stylesheet_to_page('project/link_objects.css');
 ?>
 <?php if(isset($linked_objects) && is_array($linked_objects) && count($linked_objects)) { ?>
 <div class="objectFiles">
@@ -29,21 +29,15 @@
     </li>
 <?php 	} // foreach ?>
   </ul>
-<?php 		if($linked_objects_object->canLinkObject(logged_user(), $linked_objects_object->getProject())) { ?>
+<?php 		if($linked_objects_object->canLinkObject(logged_user(), $linked_objects_object->getProject()) && $enableAdding) { ?>
   <p><?php echo render_link_to_object($linked_objects_object,lang('link more objects')); ?> </p>
   <!--a class="internalLink" href="<?php echo $linked_objects_object->getLinkObjectUrl() ?>">&raquo; <?php echo lang('link more objects') ?></a-->
 <?php 		} // if ?>
 </div>
-<?php } else { ?>  
-
-   <?php echo lang('no linked objects') ?>. 
-  
-<?php 		if((!($linked_objects_object->isNew())) && $linked_objects_object->canLinkObject(logged_user(), $linked_objects_object->getProject())) { ?>
-  <p><?php echo render_link_to_object($linked_objects_object,lang('link more objects')); ?> </p>
-  <!--a class="internalLink" href="<?php echo $linked_objects_object->getLinkObjectUrl() ?>">&raquo; <?php echo lang('link objects') ?></a-->
+<?php } else { ?>
+   <?php echo $shortDisplay ? '' : lang('no linked objects').'.' ?> 
+<?php 		if((!($linked_objects_object->isNew())) && $linked_objects_object->canLinkObject(logged_user(), $linked_objects_object->getProject()) && $enableAdding) { ?>
+  <?php echo render_link_to_object($linked_objects_object,lang('link objects')); ?>
 <?php 		} // if ?>
-
-
-
 <?php 	  } // if ?>
 <?php //} // if ?>

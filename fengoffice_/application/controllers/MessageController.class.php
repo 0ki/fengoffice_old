@@ -8,6 +8,362 @@
  */
 class MessageController extends ApplicationController {
 
+	function list_all()
+	{
+		// Get all variables from request
+		$this->setLayout('json');
+    	$this->setTemplate(get_template_path('json'));
+		$start = array_var($_GET,'start');
+		$limit = array_var($_GET,'limit');
+		$tag = array_var($_GET,'tag');
+		$action = array_var($_GET,'action');
+		$attributes = array(
+			"ids" => explode(',', array_var($_GET,'ids')),
+			"types" => explode(',', array_var($_GET,'types')),
+			"tag" => array_var($_GET,'tagTag'),
+			"accountId" => array_var($_GET,'account_id'),
+			"viewType" => array_var($_GET,'view_type')
+		);
+		
+		//Resolve actions to perform
+		$actionMessage = array();
+		if (isset($action))
+			$actionMessage = $this->resolveAction($action, $attributes); 
+		
+		// Get all emails and messages to display
+		$emails = $this->getEmails($action, $tag, $attributes);
+		$messages = $this->getMessages($action, $tag, $attributes);
+		$totMsg = $this->addMessagesAndEmails($messages, $emails);
+		
+		// Prepare response object
+		$object = $this->prepareObject($totMsg, $start, $limit, $actionMessage);
+		tpl_assign('object', $object);
+	}
+	
+	/**
+	 * Resolve action to perform
+	 *
+	 * @param string $action
+	 * @param array $attributes
+	 * @return string $message
+	 */
+	private function resolveAction($action, $attributes){
+		$resultMessage = "";
+		$resultCode = 0;
+		switch ($action){
+			case "delete":
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					
+					switch ($type){
+						case "email":
+							$email = MailContents::findById($id);
+							if (isset($email) && $email->canDelete(logged_user())){
+								try{
+									$email->deleteContents();
+									DB::beginWork();
+									$email->save();
+									DB::commit();
+								} catch(Exception $e){
+									DB::rollback();
+									$resultMessage .= $e->getMessage();
+									$resultCode = $e->getCode();
+								}
+							};
+							break;
+							
+						case "message":
+							$message = ProjectMessages::findById($id);
+							if (isset($message) && $message->canDelete(logged_user())){
+								try{
+									DB::beginWork();
+									$message->delete();
+									DB::commit();
+								} catch(Exception $e){
+									DB::rollback();
+									$resultMessage .= $e->getMessage();
+									$resultCode = $e->getCode();
+								}
+							};
+							break;
+							
+						default:
+							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if 
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+						
+			case "tag":
+				$tag = $attributes["tag"];
+				for($i = 0; $i < count($attributes["ids"]); $i++){
+					$id = $attributes["ids"][$i];
+					$type = $attributes["types"][$i];
+					switch ($type){
+						case "email":
+							$email = MailContents::findById($id);
+							if (isset($email) && $email->getProject() instanceof Project && $email->canEdit(logged_user())){
+								Tags::addObjectTag($tag, $email, $email->getProject());
+							};
+							break;
+
+						case "message":
+							$message = ProjectMessages::findById($id);
+							if (isset($message) && $message->canEdit(logged_user())){
+								Tags::addObjectTag($tag, $message, $message->getProject());
+							};
+							break;
+
+						default:
+							$resultMessage = lang("Unimplemented type: '" . $type . "'");// if
+							$resultCode = 2;
+							break;
+					}; // switch
+				}; // for
+				break;
+			case "checkmail":
+				$resultCheck = MailController::checkmail();
+				$resultMessage = $resultCheck[1];// if 
+				$resultCode = $resultCheck[0];
+				break;
+			
+			default:
+				$resultMessage = lang("Unimplemented action: '" . $action . "'");// if 
+				$resultCode = 2;	
+				break;		
+		} // switch
+		return array("errorMessage" => $resultMessage, "errorCode" => $resultCode);
+	}
+
+	
+	/**
+	 * Adds the messages and emails arrays
+	 *
+	 * @param array $messages
+	 * @param array $emails
+	 * @return array
+	 */
+	private function addMessagesAndEmails($messages, $emails){
+		$totCount = 0;
+		if (isset($emails)) $totCount = count($emails);
+		if (isset($messages)) $totCount += count($messages);
+		
+		//Order messages and emails by date
+		if (!isset($messages))
+			$totMsg = $emails;
+		else {
+			$e = 0;
+			$m = 0;
+			while (($e + $m) < $totCount){
+				if ($e < count($emails))
+					if ($m < count($messages))
+						if ($emails[$e]->getSentDate() > $messages[$m]->getUpdatedOn()){
+							$totMsg[] = $emails[$e];
+							$e++;
+						} else {
+							$totMsg[] = $messages[$m];
+							$m++;
+						}
+					else {
+						$totMsg[] = $emails[$e];
+						$e++;
+					}
+				else {
+					$totMsg[] = $messages[$m];
+					$m++;
+				}
+			}
+		}
+		return $totMsg;
+	}
+	
+	/**
+	 * Returns a list of emails according to the requested parameters
+	 *
+	 * @param string $action
+	 * @param integer $accountId
+	 * @return array
+	 */
+	private function getEmails($action, $tag, $attributes)
+	{
+		// Return if no emails should be displayed
+		if (isset($attributes["viewType"]) && 
+			($attributes["viewType"] != "all" && $attributes["viewType"] != "emails" && $attributes["viewType"] != "unclassified"))
+			return null;
+			
+		// Check for accounts
+		$accountConditions ="";
+		$singleAccount = false;
+		if (isset($attributes["accountId"]) && $attributes["accountId"] > 0){ //Single account
+			$singleAccount = true;
+			$accounts = array();
+			$acc = MailAccounts::findById($attributes["accountId"]);
+			if ($acc->canView(logged_user()))
+				$accounts[] = $acc;
+		}
+		else																// All user accounts
+			$accounts = MailAccounts::findAll(array(
+      			'conditions' => '`user_id` = ' . logged_user()->getId()));
+		
+		if (isset($accounts) && count($accounts) > 0){
+			$list = "";
+			foreach ($accounts as $acc)
+				$list .= "," . $acc->getId();
+			$accountConditions = "account_id in (" . substr($list,1) . ")";
+		}
+		if ($accountConditions == "")
+			$accountConditions = "account_id = 0";  //Dummy condition, cannot view any valid accounts but can see project emails
+			
+			
+		// Check for unclassified emails
+		if (isset($attributes["viewType"]) && $attributes["viewType"] == "unclassified")
+			$classified = "project_id = 0";
+		else
+			$classified = "'1' = '1'";
+			
+		
+		//Check for tags
+		if (!isset($tag) || $tag == '' || $tag == null) {
+			$tagstr = " '1' = '1'"; // dummy condition
+		} else {
+			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
+				TABLE_PREFIX . "mail_contents.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
+				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='MailContents' ) > 0 ";
+		}
+		
+		
+		//Check for projects (uses accountConditions
+		if (active_project() instanceof Project){
+			$pid = active_project()->getId();
+			
+			if ($singleAccount)
+				$projectConditions = "($accountConditions AND `project_id` = $pid)";
+			else
+				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
+					"`project_id` = $pid":
+					"(($accountConditions AND `project_id` = $pid) OR (`project_id` = $pid AND is_private = 0))";
+		} else {
+    		$proj_ids = logged_user()->getActiveProjectIdsCSV();
+    		
+    		if ($singleAccount)
+    			$projectConditions = $accountConditions;
+    		else
+				$projectConditions = logged_user()->isMemberOfOwnerCompany() ?
+					"($accountConditions OR `project_id` in ($proj_ids))":
+					"($accountConditions OR (`project_id` in ($proj_ids) AND is_private = 0))";
+		}
+			
+		return MailContents::findAll(array(
+				'conditions' => $projectConditions . " AND " . $tagstr . " AND " . $classified . " AND is_deleted = 0", 
+				'order' => 'sent_date DESC'));
+	}
+	
+	/**
+	 * Returns a list of messages according to the requested parameters
+	 *
+	 * @param string $action
+	 * @return array
+	 */
+	private function getMessages($action, $tag, $attributes)
+	{
+		if (isset($attributes["viewType"]) && 
+			($attributes["viewType"] != "all" && $attributes["viewType"] != "messages"))
+			return null;
+		
+		if (active_project() instanceof Project){
+			$pid = active_project()->getId();
+			$messageConditions = logged_user()->isMemberOfOwnerCompany() ?
+				"`project_id` = $pid":
+				"`project_id` = $pid AND `is_private` = 0";
+		} else {
+			$proj_ids = logged_user()->getActiveProjectIdsCSV();
+			$messageConditions = logged_user()->isMemberOfOwnerCompany() ?
+				"`project_id` in ($proj_ids)" :
+				"`project_id` in ($proj_ids) AND `is_private` = 0";
+		}
+
+		if (!isset($tag) || $tag == '' || $tag == null) {
+			$tagstr = " '1' = '1'"; // dummy condition
+		} else {
+			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
+				TABLE_PREFIX . "project_messages.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
+				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectMessages' ) > 0 ";
+		}
+			
+		return ProjectMessages::findAll(array(
+			'conditions' => $messageConditions . " AND " . $tagstr,
+			'order' => 'updated_on DESC'));
+	}
+	
+	/**
+	 * Prepares return object for a list of emails and messages
+	 *
+	 * @param array $totMsg
+	 * @param integer $start
+	 * @param integer $limit
+	 * @return array
+	 */
+	private function prepareObject($totMsg, $start, $limit, $attributes = null)
+	{
+		$object = array(
+			"totalCount" => count($totMsg),
+			"events" => evt_list(),
+			"errorCode" => isset($attributes["errorCode"])?$attributes["errorCode"]:0,
+			"errorMessage" => isset($attributes["errorMessage"])?$attributes["errorMessage"]:"",
+			"messages" => array()
+		);
+		for ($i = $start; $i < $start + $limit; $i++)
+		{
+			if (isset($totMsg[$i])){
+				$msg = $totMsg[$i];
+				if ($msg instanceof MailContent){
+					$projectName = "";
+					$tags= "--";
+					if ($msg->getProject() instanceof Project){
+						$projectName = $msg->getProject()->getName();
+						$tags = project_object_tags($msg, $msg->getProject(), true);
+					}
+					$object["messages"][] = array(
+					    "id" => $i,
+						"object_id" => $msg->getId(),
+						"type" => 'email',
+						"accountId" => $msg->getAccountId(),
+						"accountName" => $msg->getAccount()->getName(),
+						"title" => $msg->getSubject(),
+						"text" => $msg->getBodyPlain(),
+						"date" => $msg->getSentDate()->getTimestamp(),
+						"projectId" => $msg->getProjectId(),
+						"projectName" => $projectName,
+						"userId" => $msg->getAccount()->getOwner()->getId(),
+						"userName" => $msg->getAccount()->getOwner()->getDisplayName(),
+						"tags" => $tags
+					);
+				} else if ($msg instanceof ProjectMessage){
+					$object["messages"][] = array(
+					    "id" => $i,
+						"object_id" => $msg->getId(),
+						"type" => 'message',
+						"accountId" => 0,
+						"accountName" => '',
+						"title" => $msg->getTitle(),
+						"text" => $msg->getText(),
+						"date" => $msg->getUpdatedOn()->getTimestamp(),
+						"projectId" => $msg->getProjectId(),
+						"projectName" => $msg->getProject()->getName(),
+						"userId" => $msg->getCreatedById(),
+						"userName" => $msg->getCreatedBy()->getDisplayName(),
+						"tags" => project_object_tags($msg, $msg->getProject(), true)
+					);
+				}
+			}
+		}
+		return $object;
+	}
+	
+	
+	
 	/**
 	 * Construct the MessageController
 	 *
@@ -110,24 +466,35 @@ class MessageController extends ApplicationController {
 	 */
 	function add() {
 		$this->setTemplate('add_message');
-
-		if(active_project() && !ProjectMessage::canAdd(logged_user(), active_project())) {
-			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('message'));
-		} // if
-		$project=active_project()?active_project():logged_user()->getPersonalProject();
 		$message = new ProjectMessage();
 		tpl_assign('message', $message);
 
+		if(active_or_personal_project() && !ProjectMessage::canAdd(logged_user(), active_or_personal_project())) {
+			flash_error(lang('no access permissions'));
+			ajx_current("empty");
+			return;
+		} // if
+
 		$message_data = array_var($_POST, 'message');
 		if(!is_array($message_data)) {
-			$message_data = array(
-          'milestone_id' => array_var($_GET, 'milestone_id')
-			); // array
+			$message_data = array(); // array
 		} // if
 		tpl_assign('message_data', $message_data);
 
 		if(is_array(array_var($_POST, 'message'))) {
+			$enteredProject = Projects::findById($message_data["project_id"]);
+			
+			if ($enteredProject instanceof Project)
+				if (!ProjectMessage::canAdd(logged_user(), $enteredProject)){
+					flash_error(lang('no access permissions'));
+					ajx_current("empty");
+					return;
+				} else {
+					$project = $enteredProject;
+				}
+			else
+				$project = active_or_personal_project();
+			
 			try {
 				$uploaded_files = ProjectFiles::handleHelperUploads($project);
 			} catch(Exception $e) {
@@ -187,8 +554,7 @@ class MessageController extends ApplicationController {
 				} // try
 
 				flash_success(lang('success add message', $message->getTitle()));
-				$this->redirectTo('message');
-
+				ajx_current("start");
 				// Error...
 			} catch(Exception $e) {
 				DB::rollback();
@@ -200,7 +566,9 @@ class MessageController extends ApplicationController {
 				} // if
 
 				$message->setNew(true);
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
+				
 			} // try
 
 		} // if
@@ -219,12 +587,12 @@ class MessageController extends ApplicationController {
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		if(!$message->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		$message_data = array_var($_POST, 'message');
@@ -272,11 +640,12 @@ class MessageController extends ApplicationController {
 				DB::commit();
 
 				flash_success(lang('success edit message', $message->getTitle()));
-				$this->redirectToUrl($message->getViewUrl());
+				ajx_current("start");
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
 			} // try
 		} // if
 	} // edit
@@ -330,15 +699,16 @@ class MessageController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
+		ajx_current("empty");
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		if(!$message->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		try {
@@ -349,12 +719,12 @@ class MessageController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success deleted message', $message->getTitle()));
+			ajx_current("start");
 		} catch(Exception $e) {
 			DB::rollback();
 			flash_error(lang('error delete message'));
+			ajx_current("empty");
 		} // try
-
-		$this->redirectTo('message');
 	} // delete
 
 	// ---------------------------------------------------
@@ -428,12 +798,12 @@ class MessageController extends ApplicationController {
 		$message = ProjectMessages::findById(get_id());
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("start");
 		} // if
 
 		if(!$message->canAddComment(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($message->getViewUrl());
+			ajx_current("empty");
 		} // if
 
 		$comment = new MessageComment();
@@ -468,7 +838,8 @@ class MessageController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
 			} // try
 
 		} // if
@@ -488,18 +859,18 @@ class MessageController extends ApplicationController {
 		$comment = MessageComments::findById(get_id());
 		if(!($comment instanceof MessageComment)) {
 			flash_error(lang('comment dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		$message = $comment->getMessage();
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("start");
 		} // if
 
 		if(!$comment->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($message->getViewUrl());
+			ajx_current("empty");
 		} // if
 
 		$comment_data = array_var($_POST, 'comment');
@@ -532,7 +903,8 @@ class MessageController extends ApplicationController {
 
 			} catch(Exception $e) {
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
+				ajx_current("empty");
 			} // try
 		} // if
 
@@ -549,18 +921,18 @@ class MessageController extends ApplicationController {
 		$comment = MessageComments::findById(get_id());
 		if(!($comment instanceof MessageComment)) {
 			flash_error(lang('comment dnx'));
-			$this->redirectTo('message');
+			ajx_current("empty");
 		} // if
 
 		$message = $comment->getMessage();
 		if(!($message instanceof ProjectMessage)) {
 			flash_error(lang('message dnx'));
-			$this->redirectTo('message');
+			ajx_current("start");
 		} // if
 
 		if(!$comment->canDelete(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToUrl($message->getViewUrl());
+			ajx_current("empty");
 		} // if
 
 		try {
@@ -571,25 +943,16 @@ class MessageController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete comment'));
+			$this->redirectToUrl($message->getViewUrl());
 
 		} catch(Exception $e) {
 			DB::rollback();
-			flash_error(lang('error delete comment'));
+			flash_error($e);
+			ajx_current("empty");
 		} // try
 
-		$this->redirectToUrl($message->getViewUrl());
 	} // delete_comment
 
-	/**
-	 * Shows the main panel for messages and emails
-	 *
-	 */
-	function main(){
-		$accounts = MailAccounts::findAll(array(
-      'conditions' => '`user_id` = ' . logged_user()->getId()));
-		tpl_assign('accounts', $accounts);
-	}
-	
 } // MessageController
 
 ?>

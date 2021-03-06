@@ -13,6 +13,15 @@ class Contact extends BaseContact
     * @var boolean
     */
     protected $is_taggable = true;
+    /**
+    * Returns true if this project is taggable
+    *
+    * @param void
+    * @return boolean
+    */
+    function isTaggable() {
+      return $this->is_taggable;
+    } // isTaggable
     
 	private $user;
 	
@@ -151,7 +160,10 @@ class Contact extends BaseContact
     * @return string
     */
     function getDisplayName() {
-      $display = parent::getFirstName()." ".parent::getLastName();
+      $mn = "";
+      if (parent::getMiddlename() != "")
+      	$mn = " " . parent::getMiddlename();
+      $display = parent::getFirstName(). $mn ." ".parent::getLastName();
       return trim($display);
     } // getDisplayName
     
@@ -163,12 +175,15 @@ class Contact extends BaseContact
     * @return string
     */
     function getReverseDisplayName() {
-        if(clean(parent::getLastName()) == '')
-        	$display = parent::getFirstName();
-        else
-    		$display = parent::getLastName().", ".parent::getFirstName();
-      return trim($display);
-    } // getDisplayName
+    	$mn = "";
+    	if (parent::getMiddlename() != "")
+    		$mn = " " . parent::getMiddlename();
+    	if (parent::getLastName() != "")
+    		$display = parent::getLastName().", ".parent::getFirstName() . $mn;
+    	else
+    		$display = parent::getFirstName() . $mn;
+    	return trim($display);
+    } // getReverseDisplayName
     
     /**
     * Returns true if we have title value set
@@ -504,6 +519,7 @@ class Contact extends BaseContact
       $this->deletePicture();
       return parent::delete();
     } // delete
+
     
     // ---------------------------------------------------
     //  ApplicationDataObject implementation
@@ -707,5 +723,52 @@ class Contact extends BaseContact
     	
     	return $result;
     }
+    function getDashboardObject(){
+    	if($this->getUpdatedBy()){
+    		$updated_by_id = $this->getUpdatedBy()->getObjectId();
+    		$updated_by_name = $this->getUpdatedByDisplayName();
+    		$updated_on=($this->getObjectUpdateTime())?$this->getObjectUpdateTime()->getTimestamp(): lang('n/a');
+    	}else {
+    		if($this->getCreatedBy())
+    			$updated_by_id = $this->getCreatedBy()->getId();
+    		else
+    			$updated_by_id = lang('n/a');
+    		$updated_by_name = $this->getCreatedByDisplayName();
+    		$updated_on =($this->getObjectCreationTime())? $this->getObjectCreationTime()->getTimestamp(): lang('n/a');
+    	}
+    	
+    	return array(
+				"id" => $this->getObjectTypeName() . $this->getId(),
+				"object_id" => $this->getId(),
+				"name" => $this->getObjectName(),
+				"type" => $this->getObjectTypeName(),
+				"tags" => project_object_tags($this, active_or_personal_project(), true),
+				"createdBy" => $this->getCreatedByDisplayName(),// Users::findById($this->getCreatedBy())->getUsername(),
+				"createdById" => $this->getCreatedBy()->getId(),
+				"dateCreated" => ($this->getObjectCreationTime())?$this->getObjectCreationTime()->getTimestamp():lang('n/a'),
+				"updatedBy" => $updated_by_name,
+				"updatedById" => $updated_by_id,
+				"dateUpdated" => $updated_on,
+				"project" => $this->getProjects(),
+				"projectId" => 0,
+				"url" => $this->getObjectUrl(),
+				"manager" => get_class($this->manager())
+			);
+    }
+    function getProjects() {
+    	$projs=ProjectContacts::getProjectsByContact($this);
+    	$ret= null;//return value
+    	foreach ($projs as $proj){
+    		if($ret)
+    			$ret .= ', ' . $proj->getName();
+    		else
+    			$ret = $proj->getName();
+    	}
+    	return $ret;
+    }
+    function getTagNames() {
+      if(!$this->isTaggable()) throw new Error('Object not taggable');
+      return Tags::getTagNamesByObject($this, get_class($this->manager()));
+    } // getTagNames
 }
 ?>

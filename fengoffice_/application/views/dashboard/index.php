@@ -9,7 +9,7 @@
     add_page_action(lang('add project'), get_url('project', 'add'));
   } // if
   
-  add_stylesheet_to_page('project/project_log.css');
+  //add_stylesheet_to_page('project/project_log.css');
 
 ?>
 <?php if(logged_user()->isMemberOfOwnerCompany() && !owner_company()->getHideWelcomeInfo()) { ?>
@@ -83,10 +83,4 @@
   </ul>
 <?php } // if ?>
 </div>
-<?php } // if ?>
-
-<?php if(isset($activity_log) && is_array($activity_log) && count($activity_log)) { ?>
-<?php echo render_application_logs($activity_log, array('show_project_column' => true)) ?>
-<?php } else { ?>
-<?php echo lang('no recent activities') ?>
 <?php } // if ?>

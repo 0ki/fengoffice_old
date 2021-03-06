@@ -1,47 +1,49 @@
 <?php
 class MailUtilities
 {
-function getmails()
+	function getmails($accounts = null, &$err, &$succ, &$errAccounts, &$mailsReceived)
 	{
 		if ($_SERVER["SERVER_ADDR"] == $_SERVER["REMOTE_ADDR"]);
+		if (!$accounts);
 		$accounts = MailAccounts::findAll();
 		$err = 0;
 		$succ = 0;
 		$errAccounts = array();
 		$mailsReceived = 0;
 		
-		foreach($accounts as $account){
-			try{
-				$accId = $account->getId();
-				$emails = array();
-				if (!$account->getIsImap())
-				{
-					if (!$account->getIncomingSsl())
-						$emails[$accId] = self::getNewPOP3Mails($account);
-				}
-				
-				if (isset($emails[$accId]) && isset($emails[$accId]['downloads']))
-					for ($i = 0; $i < count($emails[$accId]['downloads']); $i++)
+		if (isset($accounts)){
+			foreach($accounts as $account){
+				try{
+					$accId = $account->getId();
+					$emails = array();
+					if (!$account->getIsImap())
 					{
-						$email = $emails[$accId];
-						self::SaveMail($email['downloads'][$email['messages'][$i]],
-					 					$account, $email['uidls'][$i]);
-					 	$mailsReceived ++;
+						if (!$account->getIncomingSsl())
+							$emails[$accId] = self::getNewPOP3Mails($account);
 					}
-				$succ++;
-			}
-			catch(Exception $e)
-			{
-				$errAccounts[$err]["accountName"] = $account->getEmail();
-				$errAccounts[$err]["message"] = $e->getMessage();
-				$err++;
+					
+					if (isset($emails[$accId]) && isset($emails[$accId]['downloads']))
+						for ($i = 0; $i < count($emails[$accId]['downloads']); $i++)
+						{
+							$email = $emails[$accId];
+							self::SaveMail($email['downloads'][$email['messages'][$i]],
+						 					$account, $email['uidls'][$i]);
+						 	$mailsReceived ++;
+						}
+					$succ++;
+				}
+				catch(Exception $e)
+				{
+					$errAccounts[$err]["accountName"] = $account->getEmail();
+					$errAccounts[$err]["message"] = $e->getMessage();
+					$err++;
+				}
 			}
 		}
-		
-		tpl_assign("mailsReceived", $mailsReceived);
-		tpl_assign("succ", $succ);
-		tpl_assign("err", $err);
-		tpl_assign("errAccounts", $errAccounts);
+		tpl_assign('err',$err);
+		tpl_assign('errAccounts',$errAccounts);
+		tpl_assign('accounts',$accounts);
+		tpl_assign('mailsReceived',$mailsReceived);
 	}
 	
 	private function getAddresses($field)
@@ -80,17 +82,18 @@ function getmails()
 		
 		switch($parsedMail['Type'])
 		{
-			case 'html': $mail->setBodyHtml($parsedMail['Data']); break;
-			case 'text': $mail->setBodyPlain($parsedMail['Data']); break;
-			case 'delivery-status': $mail->setBodyPlain($parsedMail['Response']); break;
+			case 'html': $mail->setBodyHtml(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Data'])); break;
+			case 'text': $mail->setBodyPlain(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Data'])); break;
+			case 'delivery-status': $mail->setBodyPlain(iconv($parsedMail['Encoding'],'UTF-8',$parsedMail['Response'])); break;
 		}
+		
 			
-		if ($parsedMail['Alternative'])
+		if (isset($parsedMail['Alternative']))
 		{
 			if ($parsedMail['Alternative'][0]['Type'] == 'html')
-				$mail->setBodyHtml($parsedMail['Alternative'][0]['Data']);
+				$mail->setBodyHtml(iconv($parsedMail['Alternative'][0]['Encoding'],'UTF-8',$parsedMail['Alternative'][0]['Data']));
 			else
-				$mail->setBodyPlain($parsedMail['Alternative'][0]['Data']);
+				$mail->setBodyPlain(iconv($parsedMail['Alternative'][0]['Encoding'],'UTF-8',$parsedMail['Alternative'][0]['Data']));
 		}
 		
 		try
@@ -105,7 +108,7 @@ function getmails()
 		}
 	}
 
-	private function parseMail($message, &$decoded, &$results, &$warnings)
+	function parseMail($message, &$decoded, &$results, &$warnings)
 	{
 		$mime = new mime_parser_class;
 		$mime->mbox = 0;
@@ -141,7 +144,7 @@ function getmails()
 
 		// Connect to mail server
 		$pop3->connect ($account->getServer());
-		$pop3->login ($account->getEmail(), $account->getPassword());
+		$pop3->login ($account->getEmail(), self::ENCRYPT_DECRYPT($account->getPassword()));
 		$pop3->getOfficeStatus();
 		
 		$messagesToGet = self::getPOP3MessageList($pop3, $account);
@@ -200,6 +203,32 @@ function getmails()
 		}
 		return $result;
 	}
+	
+	public function ENCRYPT_DECRYPT($Str_Message) { 
+//Function : encrypt/decrypt a string message v.1.0  without a known key 
+//Author   : Aitor Solozabal Merino (spain) 
+//Email    : aitor-3@euskalnet.net 
+//Date     : 01-04-2005 
+    $Len_Str_Message=STRLEN($Str_Message); 
+    $Str_Encrypted_Message=""; 
+    FOR ($Position = 0;$Position<$Len_Str_Message;$Position++){ 
+        // long code of the function to explain the algoritm 
+        //this function can be tailored by the programmer modifyng the formula 
+        //to calculate the key to use for every character in the string. 
+        $Key_To_Use = (($Len_Str_Message+$Position)+1); // (+5 or *3 or ^2) 
+        //after that we need a module division because can«t be greater than 255 
+        $Key_To_Use = (255+$Key_To_Use) % 255; 
+        $Byte_To_Be_Encrypted = SUBSTR($Str_Message, $Position, 1); 
+        $Ascii_Num_Byte_To_Encrypt = ORD($Byte_To_Be_Encrypted); 
+        $Xored_Byte = $Ascii_Num_Byte_To_Encrypt ^ $Key_To_Use;  //xor operation 
+        $Encrypted_Byte = CHR($Xored_Byte); 
+        $Str_Encrypted_Message .= $Encrypted_Byte; 
+        
+        //short code of  the function once explained 
+        //$str_encrypted_message .= chr((ord(substr($str_message, $position, 1))) ^ ((255+(($len_str_message+$position)+1)) % 255)); 
+    } 
+    RETURN $Str_Encrypted_Message; 
+} //end function 
 	
 	private static function getPersonLinkFromEmailAddress($email)
 	{

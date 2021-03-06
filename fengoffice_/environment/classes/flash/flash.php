@@ -42,7 +42,7 @@
   * @return mixed
   */
   function flash_get($name) {
-    return Flash::instance()->removeVariable($name);
+    return Flash::instance()->getVariable($name);
   } // flash_get
 
   /**

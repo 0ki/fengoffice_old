@@ -101,14 +101,15 @@ class UserController extends ApplicationController {
 				$project->setName($user->getUsername().'_personal');
 				$project->setDescription(lang('files'));
 				$project->setCreatedById($user->getId());
-				
+
 				$project->save();
-				
+
+
 				$user->setPersonalProjectId($project->getId());
 				$user->save();
-				
+
 				ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_ADD);
-				
+
 				$project_user = new ProjectUser();
 				$project_user->setProjectId($project->getId());
 				$project_user->setUserId($user->getId());
@@ -122,7 +123,7 @@ class UserController extends ApplicationController {
 				$project_user->setCanAssignToOther(true);
 				$project_user->setCanManageEvents(true);
 				$project_user->setCanManageHandins(true);
-				
+
 				$project_user->save();
 				/* end personal project */
 
@@ -146,6 +147,11 @@ class UserController extends ApplicationController {
 		  } // if
 
 		  DB::commit();
+		  evt_add("workspace added", array(
+				"id" => $project->getId(),
+				"name" => $project->getName(),
+				"color" => $project->getColor()
+		  ));
 
 		  // Send notification...
 		  try {
@@ -192,6 +198,7 @@ class UserController extends ApplicationController {
 			DB::beginWork();
 			$project = $user->getPersonalProject();
 			$user->delete();
+			if ($project instanceof Project)
 			$project->delete();
 			ApplicationLogs::createLog($user, null, ApplicationLogs::ACTION_DELETE);
 			DB::commit();

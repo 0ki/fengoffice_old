@@ -21,7 +21,6 @@
     <div class="downloadLinks"><strong><?php echo lang('download') ?>:</strong> <?php echo implode(' | ', $download_links) ?></div>
   </div>
 <?php } // foreach ?>
-  </table>
 </div>
 <?php } else { ?>
 <p><?php echo lang('upgrade is not available') ?></p>

@@ -95,18 +95,6 @@ CREATE TABLE `<?php echo $table_prefix ?>config_options` (
   KEY `category_id` (`category_name`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>event_reminders` (
-  `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
-  `notification_date` DATETIME NOT NULL,
-  `notify_by` VARCHAR(50) <?php echo $default_collation ?> NOT NULL,
-  `sent` BOOLEAN NOT NULL,
-  `created_by_id` INTEGER UNSIGNED NOT NULL,
-  `created_on` DATETIME NOT NULL,
-  `event_id` INTEGER UNSIGNED NOT NULL,
-  PRIMARY KEY(`id`)
-)
-ENGINE = InnoDB <?php echo $default_charset ?>;
-
 CREATE TABLE `<?php echo $table_prefix ?>eventtypes` (
   `id` int(11) NOT NULL auto_increment,
   `typename` varchar(100) <?php echo $default_collation ?> NOT NULL default '',
@@ -146,7 +134,11 @@ CREATE TABLE `<?php echo $table_prefix ?>linked_objects` (
   `object_id` int(10) unsigned NOT NULL default '0',
   `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `created_by_id` int(10) unsigned default NULL,
-  `object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
+  `object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',  
+	`can_edit_company_data` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_security` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+	`can_manage_workspaces` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 ,
+	`can_manage_configuration` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,   
   PRIMARY KEY  (`rel_object_manager`,`rel_object_id`,`object_id`,`object_manager`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
@@ -220,8 +212,8 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_h` smallint(6) NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
   `special_id` int(11) NOT NULL default '0',
-  `deleted` smallint(6) NOT NULL default '0',
   `project_id` int(10) unsigned NOT NULL default '0',
+  `repeat_forever` tinyint NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
@@ -338,27 +330,6 @@ CREATE TABLE `<?php echo $table_prefix ?>project_milestones` (
   KEY `created_on` (`created_on`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-CREATE TABLE `<?php echo $table_prefix ?>project_task_lists` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `milestone_id` int(10) unsigned NOT NULL default '0',
-  `project_id` int(10) unsigned default NULL,
-  `name` varchar(100) <?php echo $default_collation ?> default NULL,
-  `description` text <?php echo $default_collation ?>,
-  `is_private` tinyint(1) unsigned NOT NULL default '0',
-  `completed_on` datetime NOT NULL default '0000-00-00 00:00:00',
-  `completed_by_id` int(10) unsigned default NULL,
-  `created_on` datetime default NULL,
-  `created_by_id` int(10) unsigned NOT NULL default '0',
-  `updated_on` datetime default NULL,
-  `updated_by_id` int(10) unsigned NOT NULL default '0',
-  `order` tinyint(3) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`id`),
-  KEY `milestone_id` (`milestone_id`),
-  KEY `project_id` (`project_id`),
-  KEY `completed_on` (`completed_on`),
-  KEY `created_on` (`created_on`)
-) ENGINE=InnoDB <?php echo $default_charset ?>;
-
 CREATE TABLE `<?php echo $table_prefix ?>project_tasks` (
   `id` int(10) unsigned NOT NULL auto_increment,
   `parent_id` int(10) unsigned default NULL,
@@ -414,6 +385,7 @@ CREATE TABLE `<?php echo $table_prefix ?>projects` (
   `created_by_id` int(10) unsigned default NULL,
   `updated_on` datetime NOT NULL default '0000-00-00 00:00:00',
   `updated_by_id` int(10) unsigned default NULL,
+  `color` int(10) unsigned default 0,
   PRIMARY KEY  (`id`),
   KEY `completed_on` (`completed_on`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
@@ -432,7 +404,6 @@ CREATE TABLE `<?php echo $table_prefix ?>searchable_objects` (
 
 CREATE TABLE `<?php echo $table_prefix ?>tags` (
   `id` int(10) unsigned NOT NULL auto_increment,
-  `project_id` int(10) unsigned NOT NULL default '0',
   `tag` varchar(30) <?php echo $default_collation ?> NOT NULL default '',
   `rel_object_id` int(10) unsigned NOT NULL default '0',
   `rel_object_manager` varchar(50) <?php echo $default_collation ?> NOT NULL default '',
@@ -440,7 +411,6 @@ CREATE TABLE `<?php echo $table_prefix ?>tags` (
   `created_by_id` int(10) unsigned NOT NULL default '0',
   `is_private` tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (`id`),
-  KEY `project_id` (`project_id`),
   KEY `tag` (`tag`),
   KEY `object_id` (`rel_object_id`,`rel_object_manager`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
@@ -556,10 +526,11 @@ CREATE TABLE  `<?php echo $table_prefix ?>contact_im_values` (
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_contacts` (
+  `id` int(10) unsigned NOT NULL auto_increment,
   `contact_id` int(10) unsigned NOT NULL default '0',
   `project_id` int(10) unsigned NOT NULL default '0',
   `role` varchar(255) <?php echo $default_collation ?> default '',
-  PRIMARY KEY  (`contact_id`,`project_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_webpages` (
@@ -605,12 +576,15 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `size` int(10) NOT NULL default '0',
   `is_deleted` int(1) NOT NULL default '0',
   `is_shared` INT(1) NOT NULL default '0',
+  `is_private` INT(1) NOT NULL default 0,
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`),
   KEY `account_id` (`account_id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
-
-
-
-
+-- save gui state
+CREATE TABLE  `<?php echo $table_prefix ?>guistate` (
+  `user_id` int(10) unsigned NOT NULL default '1',
+  `name` varchar(100) NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB <?php echo $default_charset ?>;

@@ -5,6 +5,7 @@
 @import 'ImageChooser.css';
 @import 'TagPanel.css';
 @import 'WorkspacePanel.css';
+@import 'MessageManager.css';
 
 /** autoCompleter **/
 .autoCompleter .selected {
@@ -34,4 +35,17 @@
 
 .ico-administration {
 	background-image: url(../../images/16x16/administration.png);
+}
+
+.ico-edit {
+	background-image: url(../../images/16x16/new.png) !important;
+}
+.ico-delete {
+	background-image: url(../../images/16x16/del.png) !important;
+}
+.ico-upload {
+	background-image: url(../../images/16x16/upload.png) !important;
+}
+.ico-workspace {
+	background-image: url(../../images/16x16/workspace.png) !important;
 }

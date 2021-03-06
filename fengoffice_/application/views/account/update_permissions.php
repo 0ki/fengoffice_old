@@ -32,7 +32,7 @@
     ));
   } // if
   
-  add_stylesheet_to_page('admin/user_permissions.css');
+  //add_stylesheet_to_page('admin/user_permissions.css');
 
 ?>
 <?php

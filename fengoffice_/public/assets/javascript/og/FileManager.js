@@ -6,11 +6,12 @@ og.FileManager = function() {
 	var actions, moreActions;
 
 	this.doNotDestroy = true;
+	this.active = true;
 
 	this.store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-			url: og.getUrl('files', 'list_files')
+			url: og.getUrl('files', 'list_files', {ajax: true})
 		})),
 		reader: new Ext.data.JsonReader({
 			root: 'files',
@@ -21,7 +22,8 @@ og.FileManager = function() {
 				{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
 				'updatedBy', 'updatedById',
 				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-				'icon', 'project', 'projectId', 'manager', 'checkedOutById', 'checkedOutByName'
+				'icon', 'project', 'projectId', 'manager', 'checkedOutById',
+				'checkedOutByName', 'mimeType'
 			]
 		}),
 		remoteSort: true,
@@ -29,7 +31,11 @@ og.FileManager = function() {
 			'load': function() {
 				if (this.getTotalCount() <= og.pageSize) {
 					this.remoteSort = false;
+				} else {
+					this.remoteSort = true;
 				}
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
 	});
@@ -42,7 +48,17 @@ og.FileManager = function() {
 	}
 
 	function renderIcon(value, p, r) {
-		return String.format('<img src="{0}" class="db-ico" />', value);
+		var classes = "db-ico unknown " + r.data.type;
+		if (r.data.mimeType) { 
+			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+			var acc = "";
+			for (var i=0; i < path.length; i++) {
+				acc += path[i];
+				classes += " " + acc;
+				acc += "-";
+			}
+		}
+		return String.format('<div class="{0}" />', classes);
 	}
 
 	function renderUser(value, p, r) {
@@ -103,10 +119,10 @@ og.FileManager = function() {
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false || this.grid.store.lastOptions.params.active_project == 0);
+				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.more.setDisabled(sm.getCount() != 1);
-				if (sm.getSelected().data.type == 'prsn') {
+				if (sm.getSelected().data.mimeType == 'prsn') {
 					moreActions.slideshow.setDisabled(false);
 				} else {
 					moreActions.slideshow.setDisabled(true);
@@ -115,6 +131,23 @@ og.FileManager = function() {
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+        	id: 'icon',
+        	header: '&nbsp;',
+        	dataIndex: 'icon',
+        	width: 28,
+        	renderer: renderIcon,
+        	sortable: false,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+        },{
+			id: 'name',
+			header: lang("name"),
+			dataIndex: 'name',
+			width: 300,
+			renderer: renderName
+        },{
 			id: 'project',
 			header: lang("project"),
 			dataIndex: 'project',
@@ -122,25 +155,12 @@ og.FileManager = function() {
 			renderer: renderProject,
 			sortable: false
         },{
-        	id: 'icon',
-        	header: '&nbsp;',
-        	dataIndex: 'icon',
-        	width: 24,
-        	renderer: renderIcon,
-        	sortable: false
-        },{
         	id: 'user',
         	header: lang('user'),
         	dataIndex: 'updatedBy',
         	width: 120,
         	renderer: renderUser,
         	sortable: false
-        },{
-			id: 'name',
-			header: lang("name"),
-			dataIndex: 'name',
-			//width: 120,
-			renderer: renderName
         },{
 			id: 'type',
 			header: lang('type'),
@@ -173,6 +193,7 @@ og.FileManager = function() {
 			header: lang("author"),
 			dataIndex: 'createdBy',
 			width: 120,
+			sortable: false,
 			renderer: renderAuthor,
 			hidden: true
 		},{
@@ -180,6 +201,7 @@ og.FileManager = function() {
 			header: lang("checkout"),
 			dataIndex: 'checkedOutByName',
 			width: 120,
+			sortable: false,
 			renderer: renderCheckout
 		}]);
 	cm.defaultSortable = true;
@@ -206,12 +228,7 @@ og.FileManager = function() {
 			text: lang('slideshow'),
 			iconCls: 'db-ico-slideshow',
 			handler: function(e) {
-				var url = og.getUrl('files', 'slideshow', {fileId: getFirstSelectedId()});
-				var top = screen.height * 0.1;
-				var left = screen.width * 0.1;
-				var width = screen.width * 0.8;
-				var height = screen.height * 0.8;
-				window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
+				og.slideshow(getFirstSelectedId());
 			},
 			disabled: true
 		})
@@ -227,10 +244,10 @@ og.FileManager = function() {
 					var url = og.getUrl('files', 'add_document');
 					og.openLink(url);
 				}},
-				{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
+				/*{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
 					og.openLink(url);
-				}},
+				}},*/
 				{text: lang('presentation'), iconCls: 'db-ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
 					og.openLink(url);
@@ -329,33 +346,43 @@ og.FileManager = function() {
 	});
 
 	og.eventManager.addListener("tag changed", function(tag) {
-    	this.load();
+		if (this.active) {
+			this.load({start: 0});
+		} else {
+    		this.needRefresh = true;
+    	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		this.load();
 		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 	}, this);
-	
-	this.load();
-	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 };
 
 Ext.extend(og.FileManager, Ext.grid.GridPanel, {
 	load: function(params) {
-		if (!params) params = {};
 		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
-		this.store.load({
-			params: Ext.apply(params, {
-				start: start,
-				limit: og.pageSize,
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-			}),
-			callback: function() {
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-			}
+		if (!params) params = {};
+		Ext.apply(this.store.baseParams, {
+			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
+		this.store.load({
+			params: Ext.applyIf(params, {
+				start: start,
+				limit: og.pageSize
+			})
+		});
+		this.needRefresh = false;
+	},
+	
+	activate: function() {
+		this.active = true;
+		if (this.needRefresh) {
+			this.load({start: 0});
+		}
+	},
+	
+	deactivate: function() {
+		this.active = false;
 	}
 });
 

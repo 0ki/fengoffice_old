@@ -15,7 +15,7 @@
     'user password reseted' => 'Your password has been reset. New password is \'{0}\'.',
     
     'dont reply wraning' => 'THIS IS SYSTEM NOTIFICATION. DO NOT REPLY TO THIS EMAIL!',
-    'new message posted' => 'New message "{0}" has been posted in "{1}" project',
+    'new message posted' => 'New message "{0}" has been posted in "{1}" workspace',
     'view new message' => 'View that message',
     
     'new comment posted' => 'New comment on "{0}" has been posted',

@@ -15,10 +15,6 @@
 	
 */
 
-// if ( !defined('CAL_SECURITY_BIT') ) die("Hacking attempt");
-
-echo stylesheet_tag('../reesecal/default.css');
-
 //echo cal_calendar(,$_SESSION['cal_month'],$_SESSION['cal_day']);
 $year=$_SESSION['cal_year'];
 $month=$_SESSION['cal_month'];
@@ -31,7 +27,7 @@ $day=$_SESSION['cal_day'];
    This function writes the navigator bar for the calendar
    this navbar is used only for the calendar page, so we keep in in this file.
 ###################################################################*/
-function cal_navbar($year, $month, $day){
+function cal_navbar($year, $month, $day, $tags){
   $today = "year=".date("Y")."&month=".date("m")."&day=".date('d');
   $output = "";
   $output .= "<table cellpadding='4' cellspacing='0' width='90%' align='center'><tr><td alight='left' style='padding-left: 10px;'>";
@@ -51,7 +47,7 @@ function cal_navbar($year, $month, $day){
   }
   // calculate next month/year and previous month/year.
   $output .= '</select> ';
-  $output .= '<input type="button" class="formButtons" value="'.CAL_MENU_GO.'" onClick="var mo = document.getElementById(\'calendar_month\'); var m = mo.options[mo.selectedIndex].value; var yo = document.getElementById(\'calendar_year\'); var y = yo.options[yo.selectedIndex].value; og.openLink( \'index.php?c=event&month=\'+m+\'&year=\'+y);"> ';
+  $output .= '<input type="button" class="formButtons" value="'.CAL_MENU_GO.'" onClick="var mo = document.getElementById(\'calendar_month\'); var m = mo.options[mo.selectedIndex].value; var yo = document.getElementById(\'calendar_year\'); var y = yo.options[yo.selectedIndex].value; og.openLink( \'index.php?a=index&c=event&month=\'+m+\'&year=\'+y);"> ';
   $pm = $month - 1;
   $py = $year;
   if($pm==0){
@@ -65,9 +61,25 @@ function cal_navbar($year, $month, $day){
 	$ny++;
   }
   
- add_page_action(lang('today'), cal_getlink('index.php?'.$today) );
- add_page_action(lang('previous month'), cal_getlink("index.php?year=$py&month=$pm"));
- add_page_action(lang('next month'), cal_getlink("index.php?year=$ny&month=$nm"));
+ add_page_action(lang('today'), get_url('event','index',
+ 		array("year"=> date("Y"),
+ 			 "month" => date("m"),
+ 			 "day" => date('d')
+ 			 )
+ 		)
+ );// cal_getlink('index.php?'.$today) );
+ add_page_action(lang('previous month'), get_url('event','index',
+ 		array("year"=> $py,
+ 			 "month" => $pm
+ 			 )
+ 		)
+ );// add_page_action(lang('previous month'), cal_getlink("index.php?year=$py&month=$pm"));
+ add_page_action(lang('next month'), get_url('event','index',
+ 		array("year"=> $ny,
+ 			 "month" => $nm
+ 			 )
+ 		)
+ );// add_page_action(lang('next month'), cal_getlink("index.php?year=$ny&month=$nm"));
 //  $output .= "<input type=\"button\" value=\"<<\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?year=$py&month=$pm") . "');\">";
 //  $output .= "<input type=\"button\" value=\">>\" class=\"formButtons\" onClick=\"og.openLink('" . cal_getlink("index.php?year=$ny&month=$nm") . "');\">";
   $output .= "</td></tr></table>";
@@ -97,7 +109,7 @@ function cal_navbar($year, $month, $day){
 	else $firstday = (date("w", mktime(0,0,0,$month,1,$year))) % 7;
 	$lastday = date("t", mktime(0,0,0,$month,1,$year));
 	
-	$output = cal_navbar($year,$month,$day);
+	$output = cal_navbar($year,$month,$day,$tags);
 	
 	$output .= "<table id=\"calendar\" border='0' cellspacing='1' cellpadding='0'>
 	<colgroup span=\"7\" width=\"1*\">
@@ -190,14 +202,14 @@ function cal_navbar($year, $month, $day){
 			}else $output .= "&nbsp;";
 			$output .= "</div>";
 			// This loop writes the events for the day in the cell
-			$result = cal_query_get_eventlist($w, $month, $year);
+			$result = cal_query_get_eventlist($w, $month, $year, $tags);
 			if($cal_db->sql_numrows($result)<1) $output .= "&nbsp;";
 			while($row = $cal_db->sql_fetchrow($result)) {
-				$subject = stripslashes($row['subject']);
+				$subject = htmlentities(stripslashes($row['subject']));
 				$typeofevent = $row['eventtype'];
 				$private = $row['private'];
 				$eventid = $row['id'];
-				$desc = $row['description'];
+				$desc = htmlentities($row['description']);
 				$overlib = "<strong>$subject</strong><br>$desc";
 				$color = $row['typecolor'];
 				if($color=="") $color = "AAEE00";

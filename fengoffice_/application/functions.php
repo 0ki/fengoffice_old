@@ -267,6 +267,18 @@
     return CompanyWebsite::instance()->getProject();
   } // active_project
   
+  
+  /**
+  * Return active tag
+  *
+  * @access public
+  * @param void
+  * @return Project
+  */
+  function active_tag() {
+    return array_var($_GET,'active_tag');
+  } // active_tag
+  
   /**
   * Return active project if we are on company website
   *
@@ -284,7 +296,7 @@
   *
   * @access public
   * @param void
-  * @return Project
+  * @return array
   */
   function active_projects() {
     return logged_user()->getActiveProjects();

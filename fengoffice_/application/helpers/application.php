@@ -2,7 +2,7 @@
 
   /**
   * Application helpers. This helpers are injected into the controllers
-  * through ApplicationController constructio so they are available in
+  * through ApplicationController constructions so they are available in
   * whole application
   *
   * @author Ilija Studen <ilija.studen@gmail.com>
@@ -125,7 +125,7 @@
   */
   function assign_to_select_box($list_name, $project = null, $selected = null, $attributes = null) {
     if(is_null($project)) {
-      $project = active_project();
+      $project = active_or_personal_project();
     } // if
     if(!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
@@ -499,8 +499,8 @@
   function project_object_tags_widget($name, Project $project, $value, $attributes) {
     return text_field($name, $value, $attributes) . '<br /><span class="desc">' . lang('tags widget description') . '</span>';
   } // project_object_tag_widget
-  
 
+  
   /**
   * Render comma separated tags of specific object that link on project tag page
   *
@@ -508,14 +508,14 @@
   * @param Project $project
   * @return string
   */
-  function project_object_tags(ProjectDataObject $object, Project $project) {
+  function project_object_tags(ApplicationDataObject $object, Project $project) {
     $tag_names = $object->getTagNames();
     if(!is_array($tag_names) || !count($tag_names)) return '--';
     
     $links = array();
     foreach($tag_names as $tag_name) {
-      $links[] = '<a class="internalLink" href="' . $project->getTagUrl($tag_name) . '">' . clean($tag_name) . '</a>';
-    } // foreach
+    	$links[] = '<a href="#" onclick="Ext.getCmp(\'tag-panel\').select(\'' . clean($tag_name) . '\')">' . clean($tag_name) . '</a>';
+	} // foreach
     return implode(', ', $links);
   } // project_object_tags
   
@@ -580,8 +580,10 @@
   * @param boolean $can_remove Logged user can remove linked objects
   * @return string
   */
-  function render_object_links(ProjectDataObject $object, $can_remove = false) {
+  function render_object_links(ProjectDataObject $object, $can_remove = false, $shortDisplay = false, $enableAdding=true) {
     tpl_assign('linked_objects_object', $object);
+    tpl_assign('shortDisplay', $shortDisplay);
+    tpl_assign('enableAdding', $enableAdding);
     tpl_assign('linked_objects', $object->getLinkedObjects());
     return tpl_fetch(get_template_path('list_linked_objects', 'object'));
   } // render_object_links
@@ -597,13 +599,29 @@
   		$manager = get_class($object->manager());
   		if($text==null)
   		$text=lang('link object');
-  		echo '<a href="#">';
-		echo label_tag($text,null,false,
+  		$result = '';
+  		$result .= '<a href="#">';
+		$result .=  label_tag($text,null,false,
 			array('onclick' => "og.ObjectPicker.show(function (data){ if(data) og.openLink('" . get_url('object','link_object') . 
 			"&object_id=$id&manager=$manager&rel_object_id='+data[0].data.object_id + '&rel_manager=' + data[0].data.manager);})", 
-			'id'=>'object_linker' , 'type' => 'button' ));
-		echo '</a>';
+			'id'=>'object_linker' , 'type' => 'button' ),'');
+		$result .= '</a>';
+		return $result;
   }
+  
+  function render_link_to_object_2($object, $text=null){
+  		$id = $object->getId();
+  		$manager = get_class($object->manager());
+  		if($text==null)
+  		$text=lang('link object');
+  		$result = '';
+  		$result .= '<a href="#" onclick="og.ObjectPicker.show(function (data){ if(data) og.openLink(\''
+  		. get_url('object','link_object') . '&object_id=' . $id . '&manager=' . $manager . '&rel_object_id=\'+data[0].data.object_id + \'&rel_manager=\' + data[0].data.manager);})">';
+		$result .=  $text;
+		$result .= '</a>';
+		return $result;
+  }
+  
   /**
   * Render application logs
   * 

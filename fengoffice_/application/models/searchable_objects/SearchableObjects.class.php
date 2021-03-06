@@ -17,7 +17,7 @@
     * @return array
     */
     static function search($search_for, Project $project, $include_private = false) {
-      return SearchableObjects::doSearch(SearchableObjects::getSearchConditions($search_for, $project, $include_private));
+      return SearchableObjects::doSearch(SearchableObjects::getSearchConditions($search_for, $project->getId(), $include_private));
     } // search
     
     /**
@@ -30,10 +30,9 @@
     * @param integer $current_page
     * @return array
     */
-    static function searchPaginated($search_for, Project $project, $include_private = false, $items_per_page = 10, $current_page = 1) {
-      $conditions = SearchableObjects::getSearchConditions($search_for, $project, $include_private);
+    static function searchPaginated($search_for, $project_csvs, $include_private = false, $items_per_page = 10, $current_page = 1) {
+      $conditions = SearchableObjects::getSearchConditions($search_for, $project_csvs, $include_private);
       $pagination = new DataPagination(SearchableObjects::countUniqueObjects($conditions), $items_per_page, $current_page);
-      
       $items = SearchableObjects::doSearch($conditions, $pagination->getItemsPerPage(), $pagination->getLimitStart());
       return array($items, $pagination);
     } // searchPaginated
@@ -42,14 +41,14 @@
     * Prepare search conditions string based on input params
     *
     * @param string $search_for Search string
-    * @param Project $project Search in this project
+    * @param string $project_csvs Search in this project
     * @return array
     */
-    function getSearchConditions($search_for, Project $project, $include_private = false) {
+    function getSearchConditions($search_for, $project_csvs, $include_private = false) {
       if($include_private) {
-        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `project_id` = ?', array($search_for, $project->getId()));
+        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `project_id` in (' . $project_csvs . ')', array($search_for));
       } else {
-        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `project_id` = ? AND `is_private` = ?', array($search_for, $project->getId(), false));
+        return DB::prepareString('MATCH (`content`) AGAINST (? IN BOOLEAN MODE) AND `is_private` = ? AND `project_id` in (' . $project_csvs . ')' , array($search_for,  false));
       } // if
     } // getSearchConditions
     

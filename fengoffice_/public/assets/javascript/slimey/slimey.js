@@ -41,36 +41,24 @@ var Slimey = function(config) {
 }
 
 Slimey.prototype.submitFile = function(newRevision) {
-	var form, nr;
-	if (!form) {
-		form = document.createElement('form');
-		form.target = 'frm' + this.config.container.substring(6);
-		form.method = 'POST';
-		form.action = this.saveUrl;
-		var fn = document.createElement('input');
-		fn.type = 'hidden';
-		fn.name = 'file[name]';
-		fn.value = this.filename;
-		form.appendChild(fn);
-		var sc = document.createElement('input');
-		sc.type = 'hidden';
-		sc.name = 'slimContent';
-		sc.value = this.slimContent;
-		form.appendChild(sc);
-		document.body.appendChild(form);
+	function doSubmit(filename) {
+		this.filename = filename;
+		og.openLink(this.saveUrl, {
+			post: {
+				'file[name]': this.filename,
+				'file[id]': this.fileId,
+				'slimContent': this.slimContent,
+				'new_revision_document': (newRevision?"checked":"")
+			}
+		});
 	}
-	if (!nr) {
-		nr = document.createElement('input');
-		nr.type = 'hidden';
-		nr.name = 'new_revision_document';
-		form.appendChild(nr);
-	}
-	if (newRevision) {
-		nr.value = 'checked';
+	var slim = this.navigation.getSLIMContent();
+	this.slimContent = escapeSLIM(slim);
+	if (this.filename) {
+		doSubmit.call(this, this.filename);
 	} else {
-		nr.value = "";
+		getInput(doSubmit, this);
 	}
-	og.submit(form);
 }
 
 Slimey.imagesDir = 'images/';

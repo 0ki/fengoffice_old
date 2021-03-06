@@ -11,7 +11,7 @@
 	
 	project_crumbs($files_crumbs);
 	
-	add_stylesheet_to_page('file/files.css');
+	//add_stylesheet_to_page('file/files.css');
 	add_javascript_to_page('file/slideshow.js');
 
 ?>

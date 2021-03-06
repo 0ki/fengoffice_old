@@ -20,7 +20,7 @@ class AjaxResponse {
 		$this->events = $events;
 	}
 
-	function addContent($panel, $type, $data, $actions) {
+	function addContent($panel, $type = null, $data = null, $actions = null) {
 		$this->contents[$panel] = array(
 			"type" => $type,
 			"data" => $data
@@ -30,7 +30,7 @@ class AjaxResponse {
 		}
 	}
 
-	function setCurrentContent($type, $data, $actions, $panel) {
+	function setCurrentContent($type, $data = null, $actions = null, $panel = null) {
 		if ($type == 'empty') {
 			$this->current = false;
 			return;
@@ -46,6 +46,17 @@ class AjaxResponse {
 			$this->current["panel"] = $panel;
 		} else {
 			$this->current["panel"] = ajx_get_panel();
+		}
+	}
+	
+	/**
+	 * Adds attributes other than the default (errorCode, events, current, etc.)
+	 * @access public
+	 * @param array
+	 */
+	function addExtraData($data) {
+		foreach ($data as $k => $v) {
+			$this->$k = $v;
 		}
 	}
 	

@@ -17,11 +17,7 @@ class FilesController extends ApplicationController {
 	 */
 	function __construct() {
 		parent::__construct();
-		if (is_ajax_request()) {
-			prepare_company_website_controller($this, 'ajax');
-		} else {
-			prepare_company_website_controller($this, 'website');
-		}
+		prepare_company_website_controller($this, 'website');
 	} // __construct
 
 	/**
@@ -31,11 +27,6 @@ class FilesController extends ApplicationController {
 	 * @return null
 	 */
 	function index() {
-		if (is_ajax_request()) {
-			$this->setLayout('ajaxfull');
-		} else {
-			$this->setLayout('full');
-		}
 		tpl_assign('allParam', array_var($_GET,'all'));
 		tpl_assign('userParam',  array_var($_GET,'user'));
 		tpl_assign('projectParam',  array_var($_GET,'project'));
@@ -62,18 +53,18 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		if(!$file->canView(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		$revisions = $file->getRevisions();
 		if(!count($revisions)) {
 			flash_error(lang('no file revisions in file'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		tpl_assign('file', $file);
@@ -121,12 +112,12 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		if(!$file->canDownload(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		download_contents($file->getFileContent(), $file->getTypeString(), $file->getFilename(), $file->getFileSize(), !$inline);
@@ -161,18 +152,18 @@ class FilesController extends ApplicationController {
 		$revision = ProjectFileRevisions::findById(get_id());
 		if(!($revision instanceof ProjectFileRevision)) {
 			flash_error(lang('file revision dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		$file = $revision->getFile();
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		if(!($revision->canDownload(logged_user()))) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		download_contents($revision->getFileContent(), $revision->getTypeString(), $file->getFilename(), $file->getFileSize());
@@ -198,7 +189,7 @@ class FilesController extends ApplicationController {
 		}
 		if(!ProjectFile::canAdd(logged_user(), $project)) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		$file = new ProjectFile();
 		//deprecated $folder = null;
@@ -217,9 +208,8 @@ class FilesController extends ApplicationController {
 		tpl_assign('file_data', $file_data);
 		tpl_assign('tags', Tags::getTagNames());
 		 
-		if(is_array(array_var($_POST, 'file'))) {
-			$this->setLayout("html");
-			$this->setTemplate(get_template_path("json"));
+		if (is_array(array_var($_POST, 'file'))) {
+			$upload_id = array_var($_POST, "upload_id");
 			try {
 				DB::beginWork();
 				$uploaded_file = array_var($_FILES, 'file_file');
@@ -245,25 +235,11 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, $project, ApplicationLogs::ACTION_ADD);
 				DB::commit();
 
-				//flash_success(lang('success add file', $file->getFilename()));
-				$object = array(
-					"errorCode" => 0,
-					"errorMessage" => lang('success add file', $file->getFilename()),
-					"current" => array(
-						"type" => "url",
-						"data" => $file->getDetailsUrl()
-					)
-				);
-				tpl_assign("object", $object);
-				//$this->redirectToUrl($file->getDetailsUrl());
+				flash_success(lang('success add file', $file->getFilename()));
 			} catch(Exception $e) {
 				DB::rollback();
-				$object = array(
-					"errorCode" => $e->getCode() || 1,
-					"errorMessage" => $e->getMessage()
-				);
-				tpl_assign("object", $object);
-
+				flash_error($e);
+				
 				// If we uploaded the file remove it from repository
 				if(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 					FileRepository::deleteFile($revision->getRepositoryId());
@@ -316,7 +292,7 @@ class FilesController extends ApplicationController {
 			} // try
 		} else  {
 			// new document
-			if (active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				//$this->redirectToReferer(get_url('files'));
 			} // if
@@ -382,12 +358,13 @@ class FilesController extends ApplicationController {
 	}
 
 	function save_presentation() {
-		$this->setLayout("html");
-		$this->setTemplate("save_file");
-		if(get_id() > 0) {
+		ajx_current("empty");
+		$postFile = array_var($_POST, 'file');
+		$fileid = array_var($postFile, 'id');
+		if($fileid > 0) {
 			//edit presentation
 			try {
-				$file = ProjectFiles::findById(get_id());
+				$file = ProjectFiles::findById($fileid);
 				DB::beginWork();
 				$post_revision = array_var($_POST, 'new_revision_document') == 'checked'; // change file?
 				$revision_comment = '';
@@ -400,6 +377,7 @@ class FilesController extends ApplicationController {
 				$handler = fopen($file_dt['tmp_name'], 'w');
 				fputs($handler,$file_content);
 				fclose($handler);
+				$file->setFilename(array_var($postFile, 'name'));
 				$file->save();
 				$file->setTagsFromCSV(array_var($file_data, 'tags'));
 				$file->handleUploadedFile($file_dt, $post_revision, $revision_comment);
@@ -407,29 +385,23 @@ class FilesController extends ApplicationController {
 				DB::commit();
 				unlink($file_dt['tmp_name']);
 
-				//flash_success(lang('success save file', $file->getFilename()));
+				flash_success(lang('success save file', $file->getFilename()));
 				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
-				tpl_assign('error', lang('success save file', $file->getFilename()));
-				tpl_assign('success', "true");
 			} catch(Exception $e) {
 				DB::rollback();
 				unlink($file_dt['tmp_name']);
-				//tpl_assign('error', $e);
-				//flash_error(lang('error while saving'));
+				flash_error(lang('error while saving'));
 				//$this->redirectToUrl(get_url('files'));
-				tpl_assign('success', "false");
-				tpl_assign('error', $e->getMessage());
 			} // try
 		} else  {
 			// new presentation
-			if (active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
 
 			// prepare the file object
 			$file = new ProjectFile();
-			$postFile = array_var($_POST, 'file');
 			$file->setFilename(array_var($postFile, 'name'));
 			$file->setProjectId(active_or_personal_project()->getId());
 			$file->setIsVisible(true);
@@ -471,12 +443,10 @@ class FilesController extends ApplicationController {
 				$revision = $file->handleUploadedFile($file_dt, true);
 				ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_ADD);
 				DB::commit();
-				//flash_success(lang('success save file', $file->getFilename()));
+				flash_success(lang('success save file', $file->getFilename()));
+				evt_add("file saved", array("id" => $file->getId()));
 				unlink($file_dt['tmp_name']);
 				//$this->redirectTo('files', 'add_presentation', array('id' => $file->getId()));
-				tpl_assign('error', lang('success save file', $file->getFilename()));
-				tpl_assign('success', "true");
-				tpl_assign('forward', get_url('files', 'add_presentation', array('id' => $file->getId())));
 			} catch(Exception $e) {
 				DB::rollback();
 
@@ -487,10 +457,8 @@ class FilesController extends ApplicationController {
 				if	(isset($revision) && ($revision instanceof ProjectFileRevision) && FileRepository::isInRepository($revision->getRepositoryId())) {
 					FileRepository::deleteFile($revision->getRepositoryId());
 				} // if
-				//flash_error(lang('error while saving'));
+				flash_error(lang('error while saving'));
 				//$this->redirectToUrl(get_url('files'));
-				tpl_assign('success', "false");
-				tpl_assign('error', $e->getMessage());
 			} // try
 		}
 	}
@@ -528,7 +496,7 @@ class FilesController extends ApplicationController {
 			} // try
 		} else  {
 			//new spreadsheet
-			if(active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if(!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
@@ -598,11 +566,6 @@ class FilesController extends ApplicationController {
 
 
 	function add_document() {
-		if (is_ajax_request()) {
-			$this->setLayout('ajaxfull');
-		} else {
-			$this->setLayout('full');
-		}
 		if (get_id() > 0) {
 			//open a document
 
@@ -637,7 +600,7 @@ class FilesController extends ApplicationController {
 			tpl_assign('file_data', $file_data);
 		} else {
 			//new document
-			if (active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
@@ -664,11 +627,6 @@ class FilesController extends ApplicationController {
 
 
 	function add_spreadsheet() {
-		if (is_ajax_request()) {
-			$this->setLayout('ajaxfull');
-		} else {
-			$this->setLayout('full');
-		}
 		if (get_id() > 0) {
 			//open a spreadsheet
 			$this->setTemplate('add_spreadsheet');
@@ -701,7 +659,7 @@ class FilesController extends ApplicationController {
 			tpl_assign('file_data', $file_data);
 		} else {
 			// edit a spreadsheet
-			if (active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if (!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
@@ -727,11 +685,6 @@ class FilesController extends ApplicationController {
 	} // add_spreadsheet
 
 	function add_presentation() {
-		if (is_ajax_request()) {
-			$this->setLayout('ajaxfull');
-		} else {
-			$this->setLayout('full');
-		}
 		if (get_id() > 0) {
 			//open presentation
 			$this->setTemplate('add_presentation');
@@ -764,7 +717,7 @@ class FilesController extends ApplicationController {
 			tpl_assign('file_data', $file_data);
 		} else {
 			//new presentation
-			if(active_project() && !ProjectFile::canAdd(logged_user(), active_project())) {
+			if(!ProjectFile::canAdd(logged_user(), active_or_personal_project())) {
 				flash_error(lang('no access permissions'));
 				$this->redirectToReferer(get_url('files'));
 			} // if
@@ -790,9 +743,8 @@ class FilesController extends ApplicationController {
 	}
 
 	function list_files() {
-		$this->setLayout('json');
-    	$this->setTemplate(get_template_path('json'));
-    	
+		ajx_current("empty");
+		    	
     	/* get query parameters */
 		$start = array_var($_GET,'start');
 		$limit = array_var($_GET,'limit');
@@ -816,23 +768,18 @@ class FilesController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			list($succ, $err) =  ObjectController::do_delete_objects($ids,'ProjectFiles');
 			if ($err > 0) {
-				tpl_assign('errCode', -1);
-				tpl_assign('errMsg', lang('error delete objects', $err));
+				flash_error(lang('error delete objects', $err));
 			} else {
-				tpl_assign('errCode', 0);
-				tpl_assign('errMsg', lang('success delete objects', $succ));
+				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$tagTag = array_var($_GET, 'tagTag');
 			list($succ, $err) = ObjectController::do_tag_object($tagTag, $ids,'ProjectFiles');
 			if ($err > 0) {
-				tpl_assign('errCode', -1);
-				tpl_assign('errMsg', lang('error tag objects', $err));
+				flash_error(lang('error tag objects', $err));
 			} else {
-				evt_add("tag added", array("name" => $tagTag));
-				tpl_assign('errCode', 0);
-				tpl_assign('errMsg', lang('success tag objects', $succ));
+				flash_success(lang('success tag objects', $succ));
 			}
 		}
 
@@ -847,11 +794,8 @@ class FilesController extends ApplicationController {
 		} // if
 		
 		/* prepare response object */
-		$object = array(
+		$listing = array(
 			"totalCount" => $pagination->getTotalItems(),
-			"events" => evt_list(),
-			"errorCode" => isset($errCode)?$errCode:0,
-			"errorMessage" => isset($errMsg)?$errMsg:"",
 			"files" => array()
 		);
 		if($objects){
@@ -869,11 +813,12 @@ class FilesController extends ApplicationController {
 					}
 				}
 				
-				$object["files"][] = array(
+				$listing["files"][] = array(
 					"id" => $o->getId(),
 					"object_id" => $o->getId(),
 					"name" => $o->getFilename(),
-					"type" => $o->getTypeString(),
+					"type" => $o->getObjectTypeName(),
+					"mimeType" => $o->getTypeString(),
 					"tags" => project_object_tags($o, $o->getProject(), true),
 					"createdBy" => Users::findById($o->getCreatedById())->getUsername(),
 					"createdById" => $o->getCreatedById(),
@@ -892,7 +837,8 @@ class FilesController extends ApplicationController {
 				);
 	    	}
 		}
-    	tpl_assign("object", $object);
+		ajx_extra_data($listing);
+    	tpl_assign("listing", $listing);
 	}
 
 	function open_file() {
@@ -910,7 +856,7 @@ class FilesController extends ApplicationController {
 			}
 		} else {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		}
 	}
 
@@ -932,7 +878,7 @@ class FilesController extends ApplicationController {
 		if ($succ) {
 			flash_success(lang('success tag files'), $succ);
 		}
-		$this->redirectToUrl(get_url('files'));
+		ajx_current("empty");
 	}
 
 	function do_tag_file($tag, $ids) {
@@ -941,7 +887,7 @@ class FilesController extends ApplicationController {
 			if (trim($id) != '') {
 				try {
 					$file = ProjectFiles::findById($id);
-					Tags::addFileTag($tag, $id, $file->getProject());
+					Tags::addObjectTag($tag, $file);
 					$succ++;
 				} catch (Exception $e) {
 					$err ++;
@@ -965,12 +911,12 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		if(!$file->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		$file_data = array_var($_POST, 'file');		
@@ -991,10 +937,6 @@ class FilesController extends ApplicationController {
 		tpl_assign('file_data', $file_data);
 		 
 		if(is_array(array_var($_POST, 'file'))) {
-			$this->setLayout("html");
-
-			$this->setTemplate("save_file");
-			tpl_assign('success', "false");
 			try {
 				$old_is_private = $file->isPrivate();
 				$old_is_important = $file->getIsImportant();
@@ -1023,14 +965,11 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
-				//flash_success(lang('success add file', $file->getFilename()));
-				tpl_assign('forward', $file->getDetailsUrl());
-				tpl_assign('error', lang('success add file', $file->getFilename()));
-				tpl_assign('success', "true");
+				flash_success(lang('success edit file', $file->getFilename()));
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
-				tpl_assign('error', $e);
+				flash_error($e);
 			} // try
 		} // if
 	} // edit_file
@@ -1068,9 +1007,6 @@ class FilesController extends ApplicationController {
 		tpl_assign('checkin', true);
 		 
 		if(is_array(array_var($_POST, 'file'))) {
-			$this->setLayout("html");
-			$this->setTemplate(get_template_path("json"));
-			tpl_assign('success', "false");
 			try {
 				$old_is_private = $file->isPrivate();
 				$old_is_important = $file->getIsImportant();
@@ -1100,23 +1036,11 @@ class FilesController extends ApplicationController {
 				ApplicationLogs::createLog($file, $file->getProject(), ApplicationLogs::ACTION_EDIT);
 				DB::commit();
 
-				$object = array(
-					"errorCode" => 0,
-					"errorMessage" => lang('success add file', $file->getFilename()),
-					"current" => array(
-						"type" => "url",
-						"data" => $file->getDetailsUrl()
-					)
-				);
-				tpl_assign("object", $object);
+				flash_success(lang('success add file', $file->getFilename()));
 			} catch(Exception $e) {
 				//@unlink($file->getFilePath());
 				DB::rollback();
-				$object = array(
-					"errorCode" => $e->getCode() || 1,
-					"errorMessage" => $e->getMessage()
-				);
-				tpl_assign("object", $object);
+				flash_error($e);
 			} // try
 		} // if
 	} // edit_file
@@ -1187,12 +1111,12 @@ class FilesController extends ApplicationController {
 		$file = ProjectFiles::findById(get_id());
 		if(!($file instanceof ProjectFile)) {
 			flash_error(lang('file dnx'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		if(!$file->canEdit(logged_user())) {
 			flash_error(lang('no access permissions'));
-			$this->redirectToReferer(get_url('files'));
+			ajx_current("empty");
 		} // if
 		 
 		try {
@@ -1202,11 +1126,11 @@ class FilesController extends ApplicationController {
 			DB::commit();
 
 			flash_success(lang('success delete file', $file->getFilename()));
+			ajx_current("start");
 		} catch(Exception $e) {
 			flash_error(lang('error delete file'));
+			ajx_current("empty");
 		} // try
-		 
-		$this->redirectTo('files');
 	}
 
 

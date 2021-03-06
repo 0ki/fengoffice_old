@@ -55,4 +55,33 @@ function ajx_get_panel($controller = null, $action = null) {
 	}
 }
 
+/**
+ * Checks whether the user is logged in and if not returns an error response.
+ *
+ */
+function ajx_check_login() {
+	if (is_ajax_request() && !logged_user() instanceof User) {
+		// error, user not logged in => return error message
+		$response = AjaxResponse::instance();
+		$response->setCurrentContent("empty");
+		$response->setError(1, lang("session expired error"));
+			
+		// display the object as json
+		tpl_assign("object", $response);
+		$content = tpl_fetch(Env::getTemplatePath("json"));
+		tpl_assign("content_for_layout", $content);
+		tpl_display(Env::getLayoutPath("json"));
+		exit();
+	}
+}
+
+/**
+ * Adds attributes other than the default (errorCode, events, current, etc.)
+ * @access public
+ * @param array
+ */
+function ajx_extra_data($data) {
+	AjaxResponse::instance()->addExtraData($data);
+}
+
 ?>

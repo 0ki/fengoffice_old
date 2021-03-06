@@ -184,6 +184,14 @@ table.blank th, table.blank td {
   background-color: transparent;
 }
 
+.message .odd {
+	background-color: #f8f8e8;
+}
+
+.file .odd {
+	background-color: #FAFAFA;
+}
+
 .odd {
   background-color: #e8e8e8;
 }

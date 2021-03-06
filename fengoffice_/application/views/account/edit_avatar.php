@@ -40,7 +40,7 @@
 ?>
 
 
-<form action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
+<form action="<?php echo $user->getUpdateAvatarUrl($redirect_to) ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, '<?php echo get_url("account", "index") ?>')">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

@@ -12,7 +12,7 @@
     <?php echo lang('welcome to administration info') ?>
     <ul>
       <li><a class="internalLink" href="<?php echo get_url('administration', 'company') ?>"><?php echo lang('company') ?></a></li>
-      <li><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('members') ?></a> (<a class="internalLink" href="<?php echo owner_company()->getAddUserUrl() ?>"><?php echo lang('add user') ?></a>)</li>
+      <li><a class="internalLink" href="<?php echo get_url('administration', 'members') ?>"><?php echo lang('users') ?></a> (<a class="internalLink" href="<?php echo owner_company()->getAddUserUrl() ?>"><?php echo lang('add user') ?></a>)</li>
       <li><a class="internalLink" href="<?php echo get_url('administration', 'clients') ?>"><?php echo lang('clients') ?></a> (<a class="internalLink" href="<?php echo get_url('company', 'add_client') ?>"><?php echo lang('add client') ?></a>)</li>
       <li><a class="internalLink" href="<?php echo get_url('administration', 'projects') ?>"><?php echo lang('projects') ?></a> (<a class="internalLink" href="<?php echo get_url('project', 'add') ?>"><?php echo lang('add project') ?></a>)</li>
       <li><a class="internalLink" href="<?php echo get_url('administration', 'configuration') ?>"><?php echo lang('configuration') ?></a></li>

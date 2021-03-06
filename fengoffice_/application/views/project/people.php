@@ -8,13 +8,14 @@
     add_page_action(lang('permissions'), get_url('project', 'permissions'));
   } // if
   
-  add_stylesheet_to_page('project/people.css');
+  //add_stylesheet_to_page('project/people.css');
 
 ?>
 <?php if(isset($project_companies) && is_array($project_companies) && count($project_companies)) { ?>
 <div id="people">
 <?php foreach($project_companies as $company) { ?>
   <div class="projectCompany">
+  <fieldset> <legend><?php echo clean($company->getName()) ?></legend>
     <div class="projectCompanyLogo"><img src="<?php echo $company->getLogoUrl() ?>" alt="<?php echo clean($company->getName()) ?>" /></div>
     <div class="projectCompanyMeta">
       <div class="projectCompanyInfo">
@@ -67,7 +68,7 @@
     </div>
 
     <div class="clear"></div>
-
+	</fieldset>
   </div>
 <?php } // foreach?>
 </div>

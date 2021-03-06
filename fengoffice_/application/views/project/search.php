@@ -3,15 +3,15 @@
   set_page_title(lang('search results'));
   project_tabbed_navigation();
   project_crumbs(lang('search results'));
-  add_stylesheet_to_page('project/search_results.css');
+  //add_stylesheet_to_page('project/search_results.css');
 
 ?>
 <div id="searchForm">
-  <form class="internalForm" action="<?php echo active_project()->getSearchUrl() ?>" method="get">
+  <form class="internalForm" action="<?php echo get_url('project','search') ?>" method="get">
     <?php echo input_field('search_for', array_var($_GET, 'search_for')) ?>
     <input type="hidden" name="c" value="project" />
     <input type="hidden" name="a" value="search" />
-    <input type="hidden" name="active_project" value="<?php echo active_project()->getId() ?>" />
+    <input type="hidden" name="active_project" value="<?php echo (active_project())?active_project()->getId():'' ?>" />
     <?php echo submit_button(lang('search')) ?>
   </form>
 </div>
@@ -25,7 +25,11 @@
 </ul>
 
 <?php if(isset($pagination) && ($pagination instanceof DataPagination)) { ?>
-<?php echo advanced_pagination($pagination, active_project()->getSearchUrl($search_string, '#PAGE#')); ?>
+<?php echo advanced_pagination($pagination, get_url('project', 
+			'search',
+				array('active_project' => (active_project())?active_project()->getId():'',
+				'search_for' => $search_string,
+				'page' => (integer) '#PAGE#' > 0 ? (integer) '#PAGE#' : 1 ))); ?>
 <?php } // if ?>
 
 <?php } else { ?>

@@ -7,12 +7,12 @@
 
 <form class="internalForm" action="<?php echo $mailAccount->isNew() ? get_url('mail', 'add_account') : $mailAccount->getEditUrl()?>" method="post">
   <div>
-    <?php echo label_tag(lang('name'), 'mailAccountFormName', true) ?>
+    <?php echo label_tag(lang('mail account name'), 'mailAccountFormName', true) ?>
     <?php echo text_field('mailAccount[name]', array_var($mailAccount_data, 'name'), array('id' => 'mailAccountFormName')) ?>
   </div>
 
   <div>
-    <?php echo label_tag(lang('email address'), 'mailAccountFormEmail', true) ?>
+    <?php echo label_tag(lang('mail account id'), 'mailAccountFormEmail', true) ?>
     <?php echo text_field('mailAccount[email]', array_var($mailAccount_data, 'email'), array('id' => 'mailAccountFormEmail')) ?>
   </div>
 

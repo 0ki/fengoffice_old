@@ -1,5 +1,5 @@
 <!-- <?php if(!$linked_objects_js_included) { ?>
-<?php add_stylesheet_to_page('project/linked_objects.css'); ?>
+<?php //add_stylesheet_to_page('project/linked_objects.css'); ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/linkObjects.js') ?>"></script>
 <?php } // if ?>
 -->

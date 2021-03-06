@@ -1,19 +1,29 @@
 <?php
-  set_page_title(lang('email message').': '.$email->getSubject());
-  
-  if($email->canDelete(logged_user())) {
-    add_page_action(array(lang('delete email')  => $email->getDeleteUrl()));
+if($email->canDelete(logged_user())) {
+    add_page_action(lang('delete email'), $email->getDeleteUrl(), 'db-ico-delete');
   }
-
   if ($email->canEdit(logged_user())){
-    add_page_action(array(lang('classify')  => $email->getClassifyUrl()));
+    add_page_action(lang('classify'), $email->getClassifyUrl(), 'mm-ico-classify');
   }
   $c = 0;
 ?>
 
 <?php if ($email instanceof MailContent) {?>
-<h2><?php echo $email->getSubject() ?></h2>
-<table>
+<div style="padding:7px">
+<div class="email">
+<div class="coContainer">
+  <div class="coHeader">
+  <div class="coHeaderUpperRow">
+  <?php if($email->isPrivate()) { ?>
+    <div class="private" title="<?php echo lang('private email') ?>"><span><?php echo lang('private email') ?></span></div>
+<?php } // if ?>
+	<div class="coTitle"><?php echo $email->getSubject() ?></div>
+	<?php if (isset($project)) { ?>
+		<div class="coTags"><span><?php echo lang('tags') ?>:</span> <?php echo project_object_tags($email, $project) ?></div>
+	<?php } ?>
+  </div>
+  <div class="coInfo">
+	<table>
 	<tr><td style="width:100px"><?php echo lang('from') ?>:</td><td><?php echo MailUtilities::displayMultipleAddresses($email->getFrom()); ?></td></tr>
 	<tr><td><?php echo lang('to') ?>:</td><td><?php echo MailUtilities::displayMultipleAddresses($email->getTo()); ?></td></tr>
 	<tr><td><?php echo lang('date') ?>:</td><td><?php echo $email->getSentDate()->format('D, d M Y H:i:s') ?></td></tr>
@@ -23,7 +33,8 @@
 	<?php if ($email->getHasAttachments()) {?>
 	<tr><td colspan=2>
 	<fieldset>
-		<legend><?php echo lang('attachments') ?></legend>
+		<legend class="toggle_collapsed" onclick="og.toggle('mv_attachments',this)"><?php echo lang('attachments') ?></legend>
+		<div id="mv_attachments" style="display:none">
 		<table>
 		<?php 
 		    foreach($parsedEmail["Attachments"] as $att)
@@ -45,21 +56,34 @@
 				</tr><?php 	$c++;
 			}?>
 		</table>
+		</div>
 	</fieldset>
 	</td></tr>
 	<?php } //if?>
-</table>
-<hr/>
-<div id="emailBody" class="">
-<?php if($email->getBodyHtml() != ''){
+  </table>
+  </div>
+  </div>
+  <div class="coMainBlock">
+  <?php if (isset($project)) { ?>
+  	<div class="coLinkedObjects">
+  		<?php echo render_object_links($email, $email->canEdit(logged_user())) ?>
+  	</div>
+  <?php } ?>
+  <div class="coContent">
+  <?php if($email->getBodyHtml() != ''){
 	echo $email->getBodyHtml();
 } else {
 	if ($email->getBodyPlain() != ''){
-		echo "<pre>". clean($email->getBodyPlain()) . "</pre>";
+		echo do_textile($email->getBodyPlain());
 	} else {
-		echo "<pre>". clean($email->getContent()) . "</pre>";
+		echo do_textile($email->getContent());
 	}
 }
  ?>
+  </div>
+  
+  </div>
+  <div style="clear:both"></div>
+</div>
+</div>
 <?php } else { echo lang('email not available'); } //if ?>
-</div> 

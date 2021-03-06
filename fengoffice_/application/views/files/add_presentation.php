@@ -38,17 +38,27 @@
 </div>
 
 <script type="text/javascript">
-	new Slimey({
+	slimeyInstance = new Slimey({
 		container: 'slimey<?php echo $id ?>',
 		rootDir: '<?php echo SLIMEY_PATH ?>',
 		imagesDir: '<?php echo get_theme_url("slimey/images/") ?>',
 		filename: '<?php echo ($file->isNew()?'':$file->getFilename()) ?>',
+		fileId: <?php echo ($file->isNew()?0:$file->getId()) ?>,
 		slimContent: '<?php echo $slimContent ?>',
 		saveUrl: '<?php echo $url ?>'
 	});
 	// for the image chooser
-	imagesUrl = '<?php echo str_replace("&amp;", "&", get_url('files', 'list_files', array('type' => 'image'))) ?>';
+	imagesUrl = '<?php echo get_url('files', 'list_files', array('type' => 'image', 'ajax' => 'true')) ?>';
+	
+	og.eventManager.addListener("file saved", function(obj) {
+		slimeyInstance.fileId = obj.id;
+	}, null, {single:true});
 </script>
+
+<?php
+add_page_action(lang("save"), "javascript:(function(){ slimeyInstance.submitFile(false); })()", "save");
+add_page_action(lang("save as new revision"), "javascript:(function(){ slimeyInstance.submitFile(true); })()", "save_new_revision");
+?>
 
 <?php tpl_display(get_template_path('form_errors')) ?>
 

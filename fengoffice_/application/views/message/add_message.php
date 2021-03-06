@@ -7,8 +7,8 @@
     array(lang('messages'), get_url('message')),
     array($message->isNew() ? lang('add message') : lang('edit message'))
   ));
-  add_stylesheet_to_page('project/messages.css');
-  add_javascript_to_page('modules/addMessageForm.js');
+  //add_stylesheet_to_page('project/messages.css');
+  //add_javascript_to_page('modules/addMessageForm.js');
   
 ?>
 
@@ -41,17 +41,14 @@
     <script type="text/javascript">$('messageFormAdditionalText').style.display = 'none';</script>
 <?php } // if ?>
   </div>
-  
+  <?php $projects =  active_projects();
+	if (isset ($projects) && count($projects) > 0)
+	{ ?>
 	<fieldset>
 	<legend class="toggle_collapsed" onclick="og.toggle('add_message_project_div',this)"><?php echo lang('workspace') ?></legend>
-	<?php echo select_project('message[project_id]', active_projects(), active_or_personal_project()->getId(), array('id'=>'add_message_project_div', 'style' => 'display:none')) ?>
+	<?php echo select_project('message[project_id]', active_projects(), (active_or_personal_project() instanceof Project)? active_or_personal_project()->getId():0, array('id'=>'add_message_project_div', 'style' => 'display:none')) ?>
 	</fieldset>
-  <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle('messageFormMilestone',this)"><?php echo lang('milestone') ?></legend>
-    <div>
-    <?php echo select_milestone('message[milestone_id]', $project, array_var($message_data, 'milestone_id'), array('id' => 'messageFormMilestone','style'=>'display:none')) ?>
-    </div>
-  </fieldset>
+  <?php } ?>
   
 <?php if(logged_user()->isMemberOfOwnerCompany()) { ?>
   <fieldset>
@@ -111,7 +108,7 @@
     <?php //echo project_object_tags_widget('message[tags]', $project, array_var($message_data, 'tags'), array('id' => 'messageFormTags', 'class' => 'long')) ?>
   </fieldset-->
   
-<?php if($message->isNew()) { ?>
+<?php if($message->isNew() && $project instanceof Project) { ?>
   <fieldset id="emailNotification">
     <legend class="toggle_collapsed" onclick="og.toggle('add_message_mail_notif_div',this)"><?php echo lang('email notification') ?></legend>
     <div id="add_message_mail_notif_div" style="display:none">
@@ -153,7 +150,7 @@
 	  <? echo render_object_properties('message',$message); ?>
   </div>
   </fieldset>
-<?php if($message->canLinkObject(logged_user(), $project)) { ?>
+<?php if($project instanceof Project && $message->canLinkObject(logged_user(), $project)) { ?>
 
 <?php if(!$message->isNew()) { ?>
 <fieldset>

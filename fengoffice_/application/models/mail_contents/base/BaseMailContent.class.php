@@ -363,6 +363,30 @@ abstract class BaseMailContent extends ProjectDataObject {
 		return $this->setColumnValue('size', $value);
 	} // setSize()
 
+	
+    /**
+    * Return value of 'is_private' field
+    *
+    * @access public
+    * @param void
+    * @return boolean 
+    */
+    function getIsPrivate() {
+      return $this->getColumnValue('is_private');
+    } // getIsPrivate()
+    
+    /**
+    * Set value of 'is_private' field
+    *
+    * @access public   
+    * @param boolean $value
+    * @return boolean
+    */
+    function setIsPrivate($value) {
+      return $this->setColumnValue('is_private', $value);
+    } // setIsPrivate() 
+    
+	
 	/**
 	 * Return manager instance
 	 *

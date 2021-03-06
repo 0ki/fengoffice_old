@@ -16,7 +16,7 @@
     ));
   } // if
   
-  add_stylesheet_to_page('admin/user_permissions.css');
+  //add_stylesheet_to_page('admin/user_permissions.css');
 
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addUserForm.js') ?>"></script>

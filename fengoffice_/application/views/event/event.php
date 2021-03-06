@@ -15,11 +15,6 @@
 	
 */
 
-//if ( !defined('CAL_SECURITY_BIT') ) die("Hacking attempt");
-
- echo stylesheet_tag('../reesecal/default.css');
-
-
 $action=$cal_action;
 //if ($cal_action){
 	echo  cal_top();
@@ -53,22 +48,19 @@ $action=$cal_action;
 				document.getElementById("word").innerHTML = "Days";
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
-			}
-			else if(document.getElementById("weekly").selected){
+			} else if(document.getElementById("weekly").selected){
 				document.getElementById("word").innerHTML = "Weeks";
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
-			}
-			else if(document.getElementById("monthly").selected){
+			} else if(document.getElementById("monthly").selected){
 				document.getElementById("word").innerHTML = "Months";
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
-			}
-			else if(document.getElementById("yearly").selected){
+			} else if(document.getElementById("yearly").selected){
 				document.getElementById("word").innerHTML = "Years";
 				cal_show("cal_extra1");
 				cal_show("cal_extra2");
-			}else if(document.getElementById("holiday").selected){
+			} else if(document.getElementById("holiday").selected){
 				cal_show("cal_extra3");
 			}
 		}
@@ -81,52 +73,57 @@ $action=$cal_action;
 		// get the event ID and make sure it is valid.
 		$id = $_GET['id'];
 		// get event info from database
-		$result = cal_query_get_event($id);
-		$row = $cal_db->sql_fetchrow($result);
-		$permission = ProjectEvents::findById($id)->canEdit(logged_user());
+//		$result = cal_query_get_event($id);
+//		$row = $cal_db->sql_fetchrow($result);
+//		$permission = ProjectEvents::findById($id)->canEdit(logged_user());
 		// security check - make sure they are allowed to edit other's events if this is not their event.
-		if(!$permission AND $row['created_by_id']!= logged_user()->getId() ) return cal_error(CAL_DOESNT_EXIST);
+//		if(!$permission AND $row['created_by_id']!= logged_user()->getId() ) return cal_error(CAL_DOESNT_EXIST);
 		// If user cannot view events, make sure they arn't trying to edit one to view the info!
-		if(!$permission AND $row['created_by_id']== logged_user()->getId()) return cal_error(CAL_DOESNT_EXIST);
+//		if(!$permission AND $row['created_by_id']== logged_user()->getId()) return cal_error(CAL_DOESNT_EXIST);
 		// check private event data
-		if($row['private'] AND cal_anon()) return cal_error(CAL_DOESNT_EXIST);
+//		if($event->isPrivate() AND cal_anon()) return cal_error(CAL_DOESNT_EXIST);
 		// make sure user is allowed to add to the past if it's in the past
-		if(!$permission AND date("Y-m-d",$row['start_since_epoch']) < date("Y-m-d")) return cal_error(CAL_NO_EDITPAST_PERMISSION);
+//		if(!$permission AND date("Y-m-d",$event->getStart()) < date("Y-m-d")) return cal_error(CAL_NO_EDITPAST_PERMISSION);
 		// stop XSS here by using htmlentities() since these 3 fields are not restricted  when submitted.
-		$subject =  htmlspecialchars($row['subject']);
-		$desc = htmlspecialchars($row['description']);
-		$name = htmlspecialchars($row['created_by_id']);
+		$subject = $event->getSubject();//  htmlentities  ($row['subject']);
+		$desc = $event->getDescription();// htmlentities  ($row['description']);
+		$name = $event->getCreatedById();// htmlentities  ($row['created_by_id']);
 		// get username, subject, and other data from the event
-		$username = $row['created_by_id'];
-		$private =  $row['private'];
-		$curtype = $row['type_id'];
-		$typeofevent = $row['eventtype'];
+		$username = $event->getCreatedById();// $row['created_by_id'];
+		$private =  $event->getIsPrivate();// $row['private'];
+		$curtype = $event->getTypeId();// $row['type_id'];
+		$typeofevent = $event->getEventType();// $row['eventtype'];
+		$forever= $event->getRepeatForever();
 		if($typeofevent==3) $usetimeandduration = 0;
 		else $usetimeandduration = 1;
 		// organize repeating data for the drop down menu
 		$occ = 1;
-		if($row['repeat_d'] > 0){ $occ = 2; $rjump = $row['repeat_d'];}
-		if($row['repeat_d'] > 0 AND $row['repeat_d']%7==0){ $occ = 3; $rjump = $row['repeat_d']/7;}
-		if($row['repeat_m'] > 0){ $occ = 4; $rjump = $row['repeat_m'];}
-		if($row['repeat_y'] > 0){ $occ = 5; $rjump = $row['repeat_y'];}
-		if($row['repeat_h'] > 0){ $occ = 6;}
-		if($row['repeat_h']==2){ $setlastweek = " checked";}
-		if($row['repeat_end'] > "0000-00-00") $rend = $row['repeat_end'];
-		if($row['repeat_num'] > 0) $rnum = $row['repeat_num'];
+		if($event->getRepeatD()  > 0){ $occ = 2; $rjump = $event->getRepeatD();}
+		if($event->getRepeatD() > 0 AND $event->getRepeatD()%7==0){ $occ = 3; $rjump = $event->getRepeatD()/7;}
+		if($event->getRepeatM() > 0){ $occ = 4; $rjump = $event->getRepeatM();}
+		if($event->getRepeatY() > 0){ $occ = 5; $rjump = $event->getRepeatY();}
+		if($event->getRepeatH() > 0){ $occ = 6;}
+		if($event->getRepeatH()==2){ $setlastweek = " checked";}
+		if($event->getRepeatEnd()) {
+// 			echo $event->getRepeatEnd()->format('Y-m-d');
+			$rend = $event->getRepeatEnd()->format('Y-m-d');
+		}
+		if($event->getRepeatNum() > 0) $rnum = $event->getRepeatNum();
 		if(!isset($rjump) || !is_numeric($rjump)) $rjump = 1;
 		// decide which repeat type it is
-		if(isset($rend) AND $rend!="" AND $rend<"9999-00-00") $rsel3 = " checked";
-		elseif(isset($rnum) AND $rnum>0) $rsel2 = " checked";
-		else $rsel1 = " checked";
+		if($forever) $rsel1 = " checked"; //forever
+		else if(isset($rnum) AND $rnum>0) $rsel2 = " checked"; //repeat n-times
+		else if(isset($rend) AND $rend!="") $rsel3 = " checked"; //repeat until
+		
 		if(isset($rend) AND $rend=="9999-00-00") $rend = "";
 		// organize the time and date data for the html select drop downs.
-		$thetime = $row['start_since_epoch'];
+		$thetime = $event->getStart()->getTimestamp();// $row['start_since_epoch'];
 		$hour = date('G', $thetime);
 		$minute = date('i', $thetime);
 		$month = date('n', $thetime);
 		$year = date('Y', $thetime);
 		$day = date('j', $thetime);
-		$durtime = $row['end_since_epoch'] - $thetime;
+		$durtime = $event->getDuration()->getTimestamp();// $row['end_since_epoch'] - $thetime;
 		$durmin = ($durtime / 60) % 60;     //seconds per minute
 		$durhr  = ($durtime / 3600) % 24;   //seconds per hour
 		$durday = floor($durtime / 86400);  //seconds per day
@@ -143,7 +140,7 @@ $action=$cal_action;
 	// BEGIN WRITING THE FORMS!
 	else { //add -- ! if($action == 'modify' AND is_numeric($_GET['id'])
 		// check if able to write new events
-		if(!ProjectEvent::canAdd(logged_user(), active_project())) return cal_error(NO_WRITE_PERMISSION);
+		if(!ProjectEvent::canAdd(logged_user(), active_or_personal_project())) return cal_error(NO_WRITE_PERMISSION);
 		// output header telling the date the event is on.
 		$datemessage = "<br><center><span class='box_subtitle'>".CAL_ADDING_TO." ".cal_month_name($month).' '.$day.', '.$year."</span></center>";
 		// set important data to nothing.
@@ -313,9 +310,9 @@ $action=$cal_action;
 		if(!isset($rsel1)) $rsel1="";
 		if(!isset($rsel2)) $rsel2="";
 		if(!isset($rsel3)) $rsel3="";
-		if(!isset($rnum)) $rnum="";
-		if(!isset($rend)) $rend="";
-		if(!isset($hide2)) $hide2="";
+		if(!isset($rnum) || $rsel2=='') $rnum="";
+		if(!isset($rend) || $rsel3=='') $rend="";
+		if(!isset($hide2) ) $hide2="";
 		$output .='</td><td>';
 		$output .= '<div id="cal_extra1" style="'.$hide.'">';
 		$output .= '&nbsp;'.CAL_EVERY.' <input type="text" size="2" maxlength="3" name="occurance_jump" value="'.$rjump.'"> <span id="word">Days/Weeks/Months/Years</span>';
@@ -403,16 +400,37 @@ $action=$cal_action;
 	$output .= "</div>";
 	// END THE OPTIONS.
 	$output .= "</center></td></tr></table>";
-	
-	
+	//select workspace
+	$output .= "<fieldset>
+    <legend class='toggle_collapsed' onclick=\"og.toggle('add_event_project_div',this)\">" . lang('workspace') . "</legend>
+    <div id='add_event_project_div' style='display:none'>
+	<select id='event[project_id]' name='event[project_id]'>";
+	// add ws combo
+	$active_projects = logged_user()->getActiveProjects();
+	if (isset($event) && $event && !$event->isNew()) {
+		$projId = $event->getProjectId();
+	} else {
+		$projId = active_or_personal_project()->getId();
+	}
+	if (isset($active_projects) && is_array($active_projects) && count($active_projects)) {
+		foreach($active_projects as $project) { //list all projects, marking the active as selected
+		$output .=" <option value= '" . $project->getId() ;
+		if ($projId == $project->getId()) { 
+			$output .= "' selected='selected" ;
+		 } 
+		 $output .= "'>" . clean($project->getName()) . "</option>";
+		}
+	}
+	$output .= " </select> 	</div>  </fieldset>";
+  /// print properties and tags
 	  $output .= '<fieldset>
     <legend class="toggle_collapsed" onclick="og.toggle(\'add_event_properties_div\',this)">' . lang('properties') .'</legend>
       <div id="add_event_properties_div" style="display:none">
-	  ' . render_object_properties('event',isset($event)?$event:null) .'
+	  ' . render_object_properties('event',isset($event)?$event:null) . '
   </div>
   </fieldset>
   <fieldset>
-    <legend class="toggle_collapsed" onclick="og.toggle(\'add_event_tags_div\',this)">'. lang('tags').'</legend>
+    <legend class="toggle_collapsed" onclick="og.toggle(\'add_event_tags_div\',this)">' . lang('tags').'</legend>
     <script type="text/javascript">
     	var allTags = [';
 	  

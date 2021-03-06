@@ -543,6 +543,18 @@ class User extends BaseUser {
 			$this->setAvatarFile('');
 		} // if
 	} // deleteAvatar
+	
+	/**
+	 * Delete personal project
+	 *
+	 * @param void
+	 * @return null
+	 */
+	function deletePersonalProject() {
+		if($this->personal_project) {
+			$this->personal_project->delete();
+		} // if
+	} // deletePersonalProject
 
 	/**
 	 * Return path to the avatar file. This function just generates the path, does not check if file really exists
@@ -1055,6 +1067,7 @@ class User extends BaseUser {
 		} // if
 
 		$this->deleteAvatar();
+		$this->deletePersonalProject();
 		ProjectUsers::clearByUser($this);
 		MessageSubscriptions::clearByUser($this);
 		return parent::delete();

@@ -5,7 +5,7 @@ og.ObjectPicker = function(config) {
 		this.store = new Ext.data.Store({
         	proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 				method: 'GET',
-            	url: og.getUrl('object', 'list_objects')
+            	url: og.getUrl('object', 'list_objects', {ajax: true})
         	})),
         	reader: new Ext.data.JsonReader({
             	root: 'objects',
@@ -16,7 +16,7 @@ og.ObjectPicker = function(config) {
 	                {name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
 					'updatedBy', 'updatedById',
 					{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-					'icon', 'project', 'projectId', 'manager', 'object_id'
+					'icon', 'project', 'projectId', 'manager', 'object_id', 'mimeType'
             	]
         	}),
         	remoteSort: true,
@@ -29,10 +29,20 @@ og.ObjectPicker = function(config) {
 			}
     	});
     	this.store.setDefaultSort('name', 'asc');
-    	
-	    function renderName(value, p, r) {
-	    	return String.format('<img src="{1}" class="op-details-ico" />{0}', value, r.data.icon);
-	    }
+
+		function renderIcon(value, p, r) {
+			var classes = "db-ico unknown " + r.data.type;
+			if (r.data.mimeType) {
+				var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+				var acc = "";
+				for (var i=0; i < path.length; i++) {
+					acc += path[i];
+					classes += " " + acc;
+					acc += "-";
+				}
+			}
+			return String.format('<div class="{0}" />', classes);
+		}
         
 		function renderDate(value, p, r) {
 			var now = new Date();
@@ -45,10 +55,20 @@ og.ObjectPicker = function(config) {
 
 		var sm = new Ext.grid.RowSelectionModel();
 		var cm = new Ext.grid.ColumnModel([{
+	        	id: 'icon',
+	        	header: '&nbsp;',
+	        	dataIndex: 'icon',
+	        	width: 28,
+	        	renderer: renderIcon,
+	        	sortable: false,
+	        	fixed:true,
+	        	resizable: false,
+	        	hideable:false,
+	        	menuDisabled: true
+	        },{
 				id: 'name',
 				header: lang("name"),
-				dataIndex: 'name',
-				renderer: renderName
+				dataIndex: 'name'
 				//,width: 120
 	        },{
 				id: 'type',
@@ -199,9 +219,6 @@ og.ObjectPicker = function(config) {
 			var node = new Ext.tree.TreeNode(config);
 			node.filter = filter;
 			this.filters.appendChild(node);
-			/*Ext.fly(node.ui.elNode).slideIn('l', {
-				callback: Ext.emptyFn, scope: this, duration: .4
-			});*/
 			return node;
 		},
 		
@@ -289,6 +306,11 @@ og.ObjectPicker = function(config) {
 				name: lang('calendar'),
 				filter: 'type'
 			}, {iconCls: 'ico-calendar'});
+			this.addFilter({
+				id: 'contacts',
+				name: lang('contacts'),
+				filter: 'type'
+			}, {iconCls: 'ico-contacts'});
 			this.addFilter({
 				id: 'documents',
 				name: lang('documents'),

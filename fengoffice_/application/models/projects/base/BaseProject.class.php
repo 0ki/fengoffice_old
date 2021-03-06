@@ -231,6 +231,27 @@
       return $this->setColumnValue('updated_by_id', $value);
     } // setUpdatedById() 
     
+    /**
+    * Return value of 'color' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getColor() {
+    	return $this->getColumnValue('color');
+    }
+    
+    /**
+    * Set value of 'color' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function setColor($value) {
+    	$this->setColumnValue('color', $value);
+    }
     
     /**
     * Return manager instance

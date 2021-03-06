@@ -8,7 +8,7 @@
     array(lang('reorder tasks'))
   ));
   
-  add_stylesheet_to_page('project/reorder_tasks.css');
+  //add_stylesheet_to_page('project/reorder_tasks.css');
 
 ?>
 <div id="reorderTasks">

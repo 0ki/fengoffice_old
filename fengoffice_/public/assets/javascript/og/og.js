@@ -18,7 +18,17 @@ og.msg =  function(title, format) {
 	this.msgCt.alignTo(document, 't-t');
 	var s = String.format.apply(String, Array.prototype.slice.call(arguments, 1));
 	var m = Ext.DomHelper.append(this.msgCt, {html:String.format(box, title, s)}, true);
-	m.slideIn('t').pause(2).ghost("t", {remove:true});
+	m.slideIn('t').pause(4).ghost("t", {remove:true});
+}
+
+og.toggleOpt = function(itemToDisplay){
+	var options = Ext.select("div.coOption");
+	var item = Ext.get(itemToDisplay);
+	var wasDisplayed = item.isDisplayed();
+	for (var i =0; i < options.getCount(); i++){
+		options.item(i).setDisplayed("none");
+	}
+	wasDisplayed? item.setDisplayed("none"): item.setDisplayed("block");
 }
 
 og.loading = function() {
@@ -180,6 +190,11 @@ og.makeAjaxUrl = function(url, params) {
 		var ap = "active_project=" + Ext.getCmp('workspace-panel').getActiveWorkspace().id;
 	} else {
 		var ap = "active_project=0";
+	}	
+	if (Ext.getCmp('tag-panel')) {
+		var at = "active_tag=" + Ext.getCmp('tag-panel').getSelectedTag().name;
+	} else {
+		var at = "";
 	}
 	var p = "";
 	if (params) {
@@ -193,12 +208,12 @@ og.makeAjaxUrl = function(url, params) {
 	}
 	if (q < 0) {
 		if (n < 0) {
-			return url + "?ajax=true&" + ap + p;
+			return url + "?ajax=true&" + ap + "&" + at + p;
 		} else {
-			return url.substring(0, n) + "?ajax=true&" + ap + "&" + url.substring(n) + p;
+			return url.substring(0, n) + "?ajax=true&" + ap + "&" + at + "&" + url.substring(n) + p;
 		}
 	} else {
-		return url.substring(0, q + 1) + "ajax=true&" + ap + "&" + url.substring(q + 1) + p;
+		return url.substring(0, q + 1) + "ajax=true&" + ap + "&" + at + "&" + url.substring(q + 1) + p;
 	}
 }
 
@@ -343,16 +358,7 @@ og.openLink = function(url, options) {
  *  Unlike the function og.openLink, this function doesn't send a ajax=true
  *  parameter.
  */
-og.submit = function(form, caller) {
-	if (typeof caller == "object") {
-		caller = caller.id;
-	}
-	if (!caller) {
-		caller = Ext.getCmp('tabs-panel').getActiveTab().id;
-	}
-	var params = {
-		current: caller
-	};
+og.submit = function(form, callback) {
 	og.loading();
 	// create an iframe
 	var id = Ext.id();
@@ -369,40 +375,18 @@ og.submit = function(form, caller) {
 	}
 	function endSubmit() {
 		og.hideLoading();
-		var doc;
-		if (Ext.isIE) {
-			doc = this.contentWindow.document;
-		} else {
-			doc = (this.contentDocument || window.frames[id].document);
-		}
-		var elem = doc.body;
-		while (elem.nodeType == 1) {
-			elem = elem.firstChild;
-		}
-		var json = elem.nodeValue;
-		json = json.replace(/[\n\r]/g, "");
-		if (json) {
-			try {
-				var data = Ext.util.JSON.decode(json);
-				og.processResponse(data, caller);
-			} catch (e) {
-				alert(e.message);
-				var p = Ext.getCmp(caller);
-				if (p) {
-					p.load(json);
-				} else {
-					Ext.getCmp('tabs-panel').getActiveTab().load(json);
-				}
-			}
-		} else {
-			og.msg(lang('error'), lang('unexpected server response'));
+		
+		if (typeof callback == 'function') {
+			callback();
+		} else if (typeof callback == 'string') {
+			og.openLink(callback);
 		}
 		setTimeout(function(){Ext.removeNode(frame);}, 100);
 	}
 	Ext.EventManager.on(frame, 'load', endSubmit, frame);;
 	
 	form.target = frame.name;
-	var url = og.makeAjaxUrl(form.getAttribute('action'), params).replace(/ajax\=true\&?/g, "");
+	var url = og.makeAjaxUrl(form.getAttribute('action')).replace(/ajax\=true/g, "upload=true");
 	form.setAttribute('action', url);
 	form.submit();
 	return false;
@@ -460,6 +444,7 @@ og.newTab = function(content, id) {
 		iconCls: (id?'ico-' + id:'ico-tab'),
 		defaultContent: content
 	});
+	//t.closable = true;
 	tp.add(t);
 	tp.setActiveTab(t);
 }
@@ -514,25 +499,51 @@ og.extractScripts = function(html) {
 	var id = Ext.id();
 	html += '<span id="' + id + '"></span>';
 	Ext.lib.Event.onAvailable(id, function() {
-		try {
-			var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
-			var match;
-			while (match = re.exec(html)) {
-				if (match[2] && match[2].length > 0) {
+		var re = /(?:<script([^>]*)?>)((\n|\r|.)*?)(?:<\/script>)/ig;
+		var match;
+		while (match = re.exec(html)) {
+			if (match[2] && match[2].length > 0) {
+				try {
 					if (window.execScript) {
 						window.execScript(match[2]);
 					} else {
 						window.eval(match[2]);
 					}
+				} catch (e) {
+					og.msg(lang("error"), e.message);
 				}
 			}
-		} catch (e) {
-			//og.msg(lang("error"), e.message);
-			throw e;
 		}
 		var el = document.getElementById(id);
 		if (el) { Ext.removeNode(el); }
 	});
 	
 	return html.replace(/(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/ig, "");
+}
+
+og.clone = function(o) {
+	if('object' !== typeof o) {
+		return o;
+	}
+	var c = 'function' === typeof o.pop ? [] : {};
+	var p, v;
+	for(p in o) {
+		v = o[p];
+		if('object' === typeof v) {
+			c[p] = og.clone(v);
+		}
+		else {
+			c[p] = v;
+		}
+	}
+	return c;
+}
+
+og.slideshow = function(id) {
+	var url = og.getUrl('files', 'slideshow', {fileId: id});
+	var top = screen.height * 0.1;
+	var left = screen.width * 0.1;
+	var width = screen.width * 0.8;
+	var height = screen.height * 0.8;
+	window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
 }

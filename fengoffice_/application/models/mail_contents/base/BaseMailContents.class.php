@@ -30,7 +30,8 @@
     'has_attachments' => DATA_TYPE_BOOLEAN, 
     'size' => DATA_TYPE_INTEGER, 
     'is_deleted' => DATA_TYPE_BOOLEAN, 
-    'is_shared' => DATA_TYPE_BOOLEAN
+    'is_shared' => DATA_TYPE_BOOLEAN,
+    'is_private' => DATA_TYPE_BOOLEAN,
 );
   
     /**

@@ -1,0 +1,27 @@
+.mm-ico {
+	height: 16px;
+	width: 16px;	
+}
+
+
+.mm-ico-classify {
+	background-image: url(../../images/16x16/classify.png) !important;
+}
+.mm-ico-email {
+	background-image: url(../../images/16x16/email.png) !important;
+}
+.mm-ico-message {
+	background-image: url(../../images/16x16/message.png) !important;
+}
+.mm-ico-new {
+	background-image: url(../../images/16x16/message.png) !important;
+}
+.mm-ico-email_menu {
+	background-image: url(../../images/16x16/messages.png) !important;
+}
+.mm-ico-hide_messages {
+	background-image: url(../../images/16x16/hide_messages.png) !important;
+}
+.mm-ico-view_options {
+	background-image: url(../../images/16x16/view.png) !important;
+}

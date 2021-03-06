@@ -69,14 +69,20 @@
     } // validate
     
     
-    function delete()
+    function deleteContents()
     {
     	$this->setContent("");
     	$this->setBodyHtml("");
     	$this->setBodyPlain("");
-    	$this->setIsDeleted(true);
     	$this->setProjectId(0);
+    	$this->setFrom("");
+    	$this->setTo("");
+    	$this->setIsDeleted(true);
+    	return true;
+    	
     }
+    
+    
     
 	/**
 	 * Returns if the field is classified

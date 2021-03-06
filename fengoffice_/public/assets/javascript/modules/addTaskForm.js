@@ -30,6 +30,7 @@ App.modules.addTaskForm = {
     list_details = App.modules.addTaskForm.task_lists[task_list_id];
     if(!list_details) return;
     if(!list_details.can_add_task) return;
+    if(!$(list_details.text_id)) return;
     
     $(list_details.text_id).value = '';
     $(list_details.assign_to_id).value = '0:0';

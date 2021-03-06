@@ -5,9 +5,9 @@
     array(lang('files'), get_url('files')),
     array($file->isNew() ? lang('add spreadsheet') : lang('edit document'))
   ));
-  add_stylesheet_to_page('project/documents.css');
-  add_stylesheet_to_page('project/spreadsheet.css');
-  add_stylesheet_to_page('project/spreadsheet_grey.css');
+  //add_stylesheet_to_page('project/documents.css');
+  //add_stylesheet_to_page('project/spreadsheet.css');
+  //add_stylesheet_to_page('project/spreadsheet_grey.css');
   
   //add_javascript_to_page('modules/spreadsheet_engine.js');
   //add_javascript_to_page('modules/spreadsheet_ui.js');

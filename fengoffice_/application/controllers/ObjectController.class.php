@@ -420,6 +420,13 @@ class ObjectController extends ApplicationController {
 								TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str ;
 	    			break;
 	    		}
+	    		case 'Contacts':{
+					$query = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " . 
+								TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . 
+								TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" .
+								 str_replace('object_manager)',"'ProjectContacts')",$tag_str) ;
+	    			break;
+	    		}
 	    		default:{					
 	    			$result	=null;
 	    		}
@@ -431,14 +438,13 @@ class ObjectController extends ApplicationController {
 					" union SELECT 'ProjectEvents' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids . $tag_str .
 					" union SELECT 'ProjectTasks' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str .
 					" union SELECT 'ProjectWebPages' as object_manager, id as oid, created_on as last_update FROM " . TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str .
-//					" union SELECT 'ProjectUsers' as object_manager, user_id as oid, created_on as last_update FROM " . TABLE_PREFIX . "project_users co WHERE project_id in " . $proj_ids . $tag_str .
-					" union SELECT 'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str ;
-//					" union SELECT 'ProjectContacts' as object_manager, id, updated_on as last_update FROM " . TABLE_PREFIX . "project_contacts co WHERE project_id in " . $proj_ids 
+					" union SELECT 'ProjectMilestones' as object_manager, id as oid, updated_on as last_update FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str .
+					" union SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " .	TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	")" . str_replace('object_manager)',"'ProjectContacts')",$tag_str) ;
 					
 		if($order){
-			$query .= " order by " . $order ." ";
+			$query .= " order by " . mysql_real_escape_string($order) ." ";
 			if($order_dir)
-				$query .= " " . $order_dir . " ";
+				$query .= " " . mysql_real_escape_string($order_dir) . " ";
 		}
 		else 
 			$query .= " order by last_update desc ";
@@ -472,6 +478,7 @@ class ObjectController extends ApplicationController {
     	}//foreach
     	return $objects;
     } //getDashboardobjects
+    
     /**
      * Counts dashboard objects
      *
@@ -515,6 +522,14 @@ class ObjectController extends ApplicationController {
 								TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str ;
 	    			break;
 	    		}
+	    		case 'Contacts':{
+					$query = "SELECT 'Contacts' as object_manager, id as oid, created_on as last_update FROM " .
+						TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . 
+						"project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids ." ) " . 
+						str_replace('object_manager)','\'ProjectContacts\')',$tag_str);
+
+	    			break;
+	    		}
 	    		default:{					
 	    			$result	=null;
 	    		}
@@ -526,20 +541,22 @@ class ObjectController extends ApplicationController {
 					" union SELECT 'ProjectEvents' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_events co WHERE project_id in " . $proj_ids .$tag_str .
 					" union SELECT 'ProjectTasks' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_tasks co WHERE project_id in " . $proj_ids . $tag_str .
 					" union SELECT 'ProjectWebPages' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_webpages co WHERE project_id in " . $proj_ids . $tag_str .
-//					" union SELECT 'ProjectUsers' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_users co WHERE project_id in " . $proj_ids . $tag_str .
+					" union SELECT 'Contacts' as object_manager, count(*) as q FROM " .	TABLE_PREFIX . "contacts co WHERE exists (SELECT * FROM " . TABLE_PREFIX . "project_contacts pc WHERE pc.contact_id = co.id and pc.project_id in ". $proj_ids .	" ) " . str_replace('object_manager)',"'ProjectContacts')",$tag_str) .
 					" union SELECT 'ProjectMilestones' as object_manager,count(*) as q FROM " . TABLE_PREFIX . "project_milestones co WHERE project_id in " . $proj_ids . $tag_str;
-		$res = DB::execute($query);
-    	$rows=$res->fetchAll();
 		$ret = 0;
+		$res = DB::execute($query);		
+    	if(!$res)  return $ret;
+    	$rows=$res->fetchAll();
+		if(!$rows) return  $ret;
     	foreach ($rows as $row){
     		if(isset($row['q']))
     			$ret += $row['q'];
     	}//foreach
     	return $ret;
 	}
+	
     function list_objects() {
-    	$this->setLayout('json');
-    	$this->setTemplate(get_template_path('json'));
+		ajx_current("empty");
     	
     	/* get query parameters */
 		$start = array_var($_GET,'start');
@@ -564,43 +581,36 @@ class ObjectController extends ApplicationController {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			list($succ, $err) = $this->do_delete_objects($ids);
 			if ($err > 0) {
-				tpl_assign('errCode', -1);
-				tpl_assign('errMsg', lang('error delete objects', $err));
+				flash_error(lang('error delete objects', $err));
 			} else {
-				tpl_assign('errCode', 0);
-				tpl_assign('errMsg', lang('success delete objects', $succ));
+				flash_success(lang('success delete objects', $succ));
 			}
 		} else if (array_var($_GET, 'action') == 'tag') {
 			$ids = explode(',', array_var($_GET, 'objects'));
 			$tagTag = array_var($_GET, 'tagTag');			
 			list($succ, $err) = $this->do_tag_object($tagTag, $ids);
 			if ($err > 0) {
-				tpl_assign('errCode', -1);
-				tpl_assign('errMsg', lang('error tag objects', $err));
+				flash_error(lang('error tag objects', $err));
 			} else {
-				evt_add("tag added", array("name" => $tagTag));
-				tpl_assign('errCode', 0);
-				tpl_assign('errMsg', lang('success tag objects', $succ));
+				flash_success(lang('success tag objects', $succ));
 			}
 		}
 		$result = null;
 		
 		/* perform queries according to type*/
-		$result = $this->getDashboardObjects($page, config_option('files_per_page'),$tag,null,null,$type);
+		//$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, $order, $orderdir, $type);
+		$result = $this->getDashboardObjects($page, config_option('files_per_page'), $tag, null, null, $type);
 		if(!$result)
 			$result = array();
 		$total_items=$this->countDashboardObjects($tag, $type);
 				
 		/* prepare response object */
-		$object = array(
+		$listing = array(
 			"totalCount" => $total_items,
-			"events" => evt_list(),
-			"errorCode" => isset($errCode)?$errCode:0,
-			"errorMessage" => isset($errMsg)?$errMsg:"",
-			"objects" => array()
+			"objects" => $result
 		);
-		$object["objects"] = $result;
-    	tpl_assign("object", $object);
+		ajx_extra_data($listing);
+    	tpl_assign("listing", $listing);
     }
     
     function do_tag_object($tag, $ids, $manager=null) {
@@ -629,7 +639,7 @@ class ObjectController extends ApplicationController {
 		$id = array_var($_GET,'id');
 		$manager = array_var($_GET,'manager');
 		$obj = get_object_by_manager_and_id($id,$manager);
-	    if(!($obj instanceof ProjectDataObject )) {
+	    if(!($obj instanceof DataObject )) {
 	        flash_error(lang('object dnx'));
 	        $this->redirectTo('dashboard');
 	    } // if

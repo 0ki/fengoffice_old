@@ -372,9 +372,9 @@
       if(!$this->validatePresenceOf('repository_id')) {
         $errors[] = lang('file revision filename required');
       } // if
-      if(!$this->validatePresenceOf('type_string')) {
-        $errors[] = lang('file revision type_string required');
-      } // if
+      //if(!$this->validatePresenceOf('type_string')) {
+      //  $errors[] = lang('file revision type_string required');
+      //} // if
     } // validate
     
     /**

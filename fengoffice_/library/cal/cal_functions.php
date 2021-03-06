@@ -89,7 +89,7 @@ function cal_navmenu(){
 	<span class='month_title'>$title</span>
 	</td><td align='right' valign='bottom'>";
 	
-	add_page_action(lang('back to calendar'), cal_getlink("index.php?c=event&action=index&year=$year&month=$month&day=1"));
+	add_page_action(lang('back to calendar'), 'javascript:(function(){ Ext.getCmp(\'calendar-panel\').reset(); })()');
 	//$o .= "<input type=\"button\" value=\"".CAL_MENU_BACK_CALENDAR."\" class=\"formButtons\" onClick=\"og.openLink('index.php?c=event&action=calendar&year=$year&month=$month&day=1');\"> ";
 	$can_add = (active_project() && ProjectEvent::canAdd(logged_user(),active_project()));
 	if( ($a=="viewdate" OR $a=="delete" OR $a=="submitevent") AND  $can_add ) {		

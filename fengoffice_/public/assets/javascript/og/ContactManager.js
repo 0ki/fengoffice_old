@@ -4,6 +4,7 @@
 og.ContactManager = function() {
 	var actions;
 	this.doNotDestroy = true;
+	this.active = true;
 	
 	this.store = new Ext.data.Store({
         proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
@@ -25,7 +26,11 @@ og.ContactManager = function() {
 			'load': function() {
 				if (this.getTotalCount() <= og.pageSize) {
 					this.remoteSort = false;
+				} else {
+					this.remoteSort = true;
 				}
+				var data = this.reader.jsonData;
+				og.processResponse(data);
 			}
 		}
     });
@@ -80,7 +85,7 @@ og.ContactManager = function() {
 			} else {
 				actions.editContact.setDisabled(sm.getCount() != 1);
 				actions.assignContact.setDisabled(sm.getCount() != 1);
-				actions.tag.setDisabled(false || this.grid.store.lastOptions.params.active_project == 0);
+				actions.tag.setDisabled(false);
 				actions.delContact.setDisabled(false);
 			}
 		});
@@ -91,24 +96,28 @@ og.ContactManager = function() {
 			header: lang("name"),
 			dataIndex: 'name',
 			width: 120,
+			sortable: false,
 			renderer: renderContactName
         },
 		{
 			id: 'role',
 			header: lang("role"),
 			dataIndex: 'role',
+			sortable: false,
 			width: 120
         },{
 			id: 'company',
 			header: lang("company"),
 			dataIndex: 'companyName',
 			width: 120,
+			sortable: false,
 			renderer: renderCompany
         },{
 			id: 'email',
 			header: lang("email"),
 			dataIndex: 'email',
 			width: 120,
+			sortable: false,
 			renderer: renderEmail
 		},{
 			id: 'tags',
@@ -317,36 +326,45 @@ og.ContactManager = function() {
     });
 
 	og.eventManager.addListener("tag changed", function(tag) {
-    	this.load();
+		if (this.active) {
+			this.load({start: 0});
+		} else {
+    		this.needRefresh = true;
+    	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		this.load();
 		cm.setHidden(cm.getIndexById('role'), this.store.lastOptions.params.active_project == 0);
 		cm.setHidden(cm.getIndexById('tags'), this.store.lastOptions.params.active_project == 0);
 	}, this);
-	
-	this.load();
-	cm.setHidden(cm.getIndexById('role'), this.store.lastOptions.params.active_project == 0);
-	cm.setHidden(cm.getIndexById('tags'), this.store.lastOptions.params.active_project == 0);
 };
 
 Ext.extend(og.ContactManager, Ext.grid.GridPanel, {
 	load: function(params) {
-	if (!params) params = {};
-	var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
-	this.store.load({
-		params: Ext.apply(params, {
-			start: start,
-			limit: og.pageSize,
+		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
+		if (!params) params = {};
+		Ext.apply(this.store.baseParams, {
 			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
 			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-		}),
-		callback: function() {
-			var d = this.reader.jsonData;
-			og.processResponse(d);
+		});
+		this.store.load({
+			params: Ext.applyIf(params, {
+				start: start,
+				limit: og.pageSize
+			})
+		});
+		this.needRefresh = false;
+	},
+	
+	activate: function() {
+		this.active = true;
+		if (this.needRefresh) {
+			this.load({start: 0});
 		}
-	});
-}
+	},
+	
+	deactivate: function() {
+		this.active = false;
+	}
 });
 
 og.ContactManager.getInstance = function() {

@@ -15,10 +15,6 @@
 	
 */
 
-// if ( !defined('CAL_SECURITY_BIT') ) die("Hacking attempt");
-
-echo stylesheet_tag('../reesecal/default.css');
-
 // this is the message that is displayed when something is saved
 $cal_message = "";
 // this is the error displayed if there is an error.

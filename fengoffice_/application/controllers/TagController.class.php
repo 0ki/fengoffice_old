@@ -53,8 +53,8 @@ class TagController extends ApplicationController {
 			$this->redirectTo('project', 'tags');
 		} // if
 
-		$tagged_objects = active_project()->getObjectsByTag($tag);
-		$total_tagged_objects = 0;
+		$tagged_objects = active_or_personal_project()->getObjectsByTag($tag);
+		$total_tagged_objects = Tags::countObjectsByTag($tag);
 		if(is_array($tagged_objects)) {
 			foreach($tagged_objects as $type => $objects) {
 				if(is_array($objects)) $total_tagged_objects += count($objects);

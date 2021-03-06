@@ -27,15 +27,15 @@
     'delete user' => 'Delete user',
     
     // Project
-    'add project' => 'Add project',
-    'edit project' => 'Edit project details',
-    'delete project' => 'Delete project',
-    'mark project as finished' => 'Mark project as finished',
-    'mark project as active' => 'Mark project as active',
+    'add project' => 'Add workspace',
+    'edit project' => 'Edit workspace details',
+    'delete project' => 'Delete workspace',
+    'mark project as finished' => 'Mark workspace as closed',
+    'mark project as active' => 'Mark workspace as active',
     
     // Workspace
-    'add workspace' => 'Add Workspace',
-    'edit workspace' => 'Edit Workspace details',
+    'add workspace' => 'Add New Workspace',
+    'edit workspace' => 'Edit Workspace',
     'delete workspace' => 'Delete workspace',
     'mark workspace as finished' => 'Mark Workspace as finished',
     'mark workspace as active' => 'Mark Workspace as active',
@@ -85,8 +85,8 @@
     
     // People
     'update people' => 'Update',
-    'remove user from project' => 'Remove from project',
-    'remove company from project' => 'Remove from project',
+    'remove user from project' => 'Remove from workspace',
+    'remove company from project' => 'Remove from workspace',
     
     // Password
     'update profile' => 'Update profile',
@@ -157,7 +157,7 @@
     // Permissions
     'update permissions' => 'Update permissions',
     'edit permissions' => 'Edit permissions',
-    'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created project.',
+    'edit permissions explanation'  => 'Check the boxes to grant users access to the recently created workspace.',
   
   	'save as new revision' => 'Save as new revision',
     

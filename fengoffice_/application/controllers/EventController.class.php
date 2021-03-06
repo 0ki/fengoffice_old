@@ -41,21 +41,25 @@ class EventController extends ApplicationController {
 	*/
 	function index() {
 		//auth check in cal_query_get_eventlist		
-		if(! ( logged_user()->isAdministrator() || (active_project() && logged_user()->isProjectUser(active_project())))){	    	
+		if( (!(logged_user()->isAdministrator())) && ((active_project() && !(logged_user()->isProjectUser(active_project()))))){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('dashboard');
 	    }		
 		//$can_add = ProjectEvent::canAdd(logged_user(), active_project());
+	    $tag = active_tag();
+		tpl_assign('tags',$tag);
 		$this->setTemplate('calendar');
 	}
 	
 	function add(){		
 		//check auth
-	    if(! (ProjectEvent::canAdd(logged_user(), active_project()))){	    	
+	    if(! (ProjectEvent::canAdd(logged_user(), active_or_personal_project()))){	    	
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 	    }
-		$this->setTemplate('event');
+		$this->setTemplate('event');	  
+		$tag = active_tag();
+		tpl_assign('tags',$tag);
 		tpl_assign('cal_action','add');
 	}
 	function modify(){	
@@ -72,6 +76,8 @@ class EventController extends ApplicationController {
         ); // array
         
 		$this->setTemplate('event');
+		$tag = active_tag();
+		tpl_assign('tags',$tag);
 		tpl_assign('event',$event);
 		tpl_assign('cal_action','modify');
 		tpl_assign('event_data',$event_data);
@@ -86,6 +92,8 @@ class EventController extends ApplicationController {
 			$this->redirectTo('event');
 	    }	
 		$this->setTemplate('viewdate');
+		$tag = active_tag();
+		tpl_assign('tags',$tag);
 		//tpl_assign('cal_action','calendar');
 		//tpl_assign('action','calendar');
    		if(!$event->delete()){
@@ -93,6 +101,8 @@ class EventController extends ApplicationController {
 		}
 	}
 	function viewdate(){
+		$tag = active_tag();
+		tpl_assign('tags',$tag);	
 		tpl_assign('cal_action','viewdate');
 		$this->setTemplate('viewdate');		
 	}
@@ -103,8 +113,10 @@ class EventController extends ApplicationController {
 			flash_error(lang('no access permissions'));
 			$this->redirectTo('event');
 	    }
-		$this->setTemplate('viewevent');	
-		// tpl_assign('evnt',$evnt);
+		$this->setTemplate('viewevent');
+		$tag = active_tag();
+		tpl_assign('tags',$tag);	
+		tpl_assign('event',$event);
 		tpl_assign('cal_action','viewevent');	
 	}
 	/*function search(){
@@ -166,8 +178,10 @@ class EventController extends ApplicationController {
 		$repeat_m = 0;
 		$repeat_y = 0;
 		$repeat_h = 0;
-		$oend = "0000-00-00";
+//		$rend = null;
+		$rend = "0000-00-00";		
 		// get the options
+		$forever = 0;
 		$jump = array_var($_POST,'occurance_jump');
 		if(array_var($_POST,'repeat_option')==1) $forever = 1;
 		elseif(array_var($_POST,'repeat_option')==2) $rnum = $_POST['repeat_num'];
@@ -184,7 +198,7 @@ class EventController extends ApplicationController {
 			if($jump<1) return CAL_REPEAT_EVERY_ERROR;
 			if($jump>1000) return CAL_REPEAT_EVERY_ERROR;
 		}else $jump = 1;
-		if(isset($rend) && $rend!=""){
+		if(isset($rend) && $rend!=null && $rend!=""){
 			$endarray = explode("-",$rend);
 			if(count($endarray)!=3) return CAL_ENDING_DATE_ERROR;
 			foreach($endarray as $v){ if(!is_numeric($v)) return CAL_ENDING_DATE_ERROR;}
@@ -192,25 +206,26 @@ class EventController extends ApplicationController {
 		}
 		// check for repeating options
 		// 1=repeat once, 2=repeat daily, 3=weekly, 4=monthy, 5=yearly, 6=holiday repeating
+		$oend = null;
 		switch(array_var($_POST,'occurance')){
 		case "2":
 			$repeat_d = $jump;
-			if($forever==1) $oend = "9999-00-00";
+			if(isset($forever) && $forever==1) $oend = null;
 			else $oend = $rend;
 			break;
 		case "3":
 			$repeat_d = 7*$jump;
-			if($forever==1) $oend = "9999-00-00";
+			if(isset($forever) &&$forever==1) $oend = null;
 			else $oend = $rend;
 			break;
 		case "4":
 			$repeat_m = $jump;
-			if($forever==1) $oend = "9999-00-00";
+			if(isset($forever) &&$forever==1) $oend = null;
 			else $oend = $rend;
 			break;
 		case "5":
 			$repeat_y = $jump;
-			if(isset($forever) && $forever==1) $oend = "9999-00-00";
+			if(isset($forever) && $forever==1) $oend = null;
 			else $oend = $rend;
 			break;
 		case "6":
@@ -264,23 +279,39 @@ class EventController extends ApplicationController {
 		$data['repeat_d'] = $repeat_d;
 		$data['repeat_m'] = $repeat_m;
 		$data['repeat_y'] = $repeat_y;
-		if(isset($oend) && $oend!="") {
+		$data['repeat_forever'] = $forever;
+//		if(isset($oend) && $oend!="") {
 			$data['repeat_end'] =  $oend;
-		}
+//		}
+//		else{
+//			$data['repeat_end'] =  null;
+//		}
 		$data['start'] = $timestamp;
 		$data['subject'] = $subject;
 		$data['private'] = $private;
 		$data['description'] = $description;
 		$data['eventtype'] = $typeofevent;
 		$data['duration'] = $durationstamp;
-		// run the query to set the event data                     
+		// run the query to set the event data 
+		$projId = array_var(array_var($_POST,'event'),'project_id');                    
 		if($modify) {
-			$event = ProjectEvents::findById($id);
-			$project = $event->getProject(); 
+			$event = ProjectEvents::findById($id);		
+			if($projId != '') {
+				$project = Projects::findById($projId );
+			}
+			else {
+				$project = $event->getProject();
+			} 
+        	$event->setProjectId($project->getId());
 		}
 		else {
-			$event=new ProjectEvent();
-			$project = active_or_personal_project();
+			$event=new ProjectEvent();			
+			if($projId != '') {
+				$project = Projects::findById($projId );
+			}
+			else {
+		 		$project = active_or_personal_project();
+			}
         	$event->setProjectId($project->getId());
 		}
         $event->setFromAttributes($data); 
@@ -445,7 +476,7 @@ class EventController extends ApplicationController {
  *   copyright            : (C) 2001 The phpBB Group
  *   email                : support@phpbb.com
  *
- *   $Id: EventController.class.php,v 1.8 2008/05/02 20:38:15 msaiz Exp $
+ *   $Id: EventController.class.php,v 1.13 2008/05/16 14:25:19 msaiz Exp $
  *
  ***************************************************************************/
 

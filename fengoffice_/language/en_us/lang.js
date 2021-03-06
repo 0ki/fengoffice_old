@@ -43,6 +43,7 @@ _lang = {
 	"confirm delete object": "Are you sure you want to delete the selected objects?",
 	"more": "More",
 	"more actions": "More actions",
+	"more actions on first selected object": "More actions on first selected object",
 	"displaying files of": "Displaying files {0} to {1} of {2}",
 	"no files to display": "No files to display",
 	"refresh desc": "Refresh the view",
@@ -64,6 +65,7 @@ _lang = {
 	'contact': 'Contact',
 	'event': 'Event',
 	'task': 'Task',
+	'milestone': 'Milestone',
 	'refresh': 'Refresh',
 	'author': 'Author',
 	
@@ -78,6 +80,8 @@ _lang = {
 	'account': 'Account',
 	'administration': 'Administration',
 	'search': 'Search',
+	'webpage': 'Webpage',
+	'message': 'Message',
 	
 	'workspaces': 'Workspaces',
 	'all': 'All',
@@ -135,8 +139,41 @@ _lang = {
 	'tag selected webpages': 'Tag selected webpages',
 	'edit': 'Edit',
 	
+	/* message manager */
+	'text':'Text',
+	'date':'Date',
+	'add mail account':'Add Email account',
+	'classify':'Classify email',
+	'add new message':'Add new message',
+	'view by account': 'View by account',
+	'view emails by account': 'View emails by account',
+	'edit account': 'Edit account',
+	'edit email account': 'Edit email account',
+	'email actions': 'Email actions',
+	'more email actions': 'More email actions',
+	'view unclassified': 'View unclassified',
+	'view unclassified emails': 'View unclassified emails',
+	'all accounts': 'All accounts',
+	'view all accounts': 'View all accounts',
+	'hide messages': 'Hide messages',
+	'show messages': 'Show messages',
+	'view': 'View',
+	'view all': 'View all',
+	'all emails': 'All emails',
+	'unclassified emails': 'Unclassified emails',
+	'messages': 'Messages',
+	'view options': 'View options',
+	'check mails' : 'Check mail accounts',
+
+	'filter workspaces': 'Filter workspaces...',
+	'filter tags': 'Filter tags...',
+	'alphabetical': 'Alphabetical',
+	'most active': 'Most active',
+	'alphabetical desc': 'Sort in alphabetical order',
+	'most active desc': 'Sort by most activity',
+	'sort desc': 'Sort the view',
 	
 	
 	
-	'dummy': 'Dummy'
+	'debug': 'Debug'
 }

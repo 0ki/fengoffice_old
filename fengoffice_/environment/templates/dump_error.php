@@ -110,7 +110,7 @@
   
 <?php if(function_exists('benchmark_timer_total_execution_time')) { ?>
   <tr>
-    <td colspan="2" class="bold">Execution time:</th>
+    <td colspan="2" class="bold">Execution time:</td>
   </tr>
   <tr>
     <td colspan="2">Total execution time: <?php echo benchmark_timer_total_execution_time() ?> seconds</td>

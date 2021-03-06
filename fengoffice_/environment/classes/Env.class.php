@@ -94,6 +94,8 @@ class Env {
 	 * @return null
 	 */
 	static function executeAction($controller_name, $action) {
+		ajx_check_login();
+		
 		Env::useController($controller_name);
 
 		$controller_class = Env::getControllerClass($controller_name);
@@ -119,7 +121,7 @@ class Env {
 				// set the current content
 				$response->setCurrentContent("html", $controller->getContent(), page_actions(), ajx_get_panel());
 			}
-			$response->setEvents(evt_list());
+			$response->setEvents(evt_pop());
 			$error = flash_pop('error');
 			$success = flash_pop('success');
 			if (!is_null($error)) {
@@ -133,6 +135,17 @@ class Env {
 			$content = tpl_fetch(Env::getTemplatePath("json"));
 			tpl_assign("content_for_layout", $content);
 			tpl_display(Env::getLayoutPath("json"));
+		} else if (is_upload_request()) {
+			// upload requests end up in an iframe and its content is ignored,
+			// so we should avoid flash vars from being processed and we can avoid
+			// generating the html.
+			
+			// execute the action
+			$controller->setAutoRender(false);
+			$controller->execute($action);
+
+			tpl_assign("content_for_layout", "this is ignored");
+			tpl_display(Env::getLayoutPath("html"));
 		} else {
 			return $controller->execute($action);
 		}

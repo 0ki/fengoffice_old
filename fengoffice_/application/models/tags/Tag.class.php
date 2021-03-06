@@ -26,8 +26,7 @@
     * @return string
     */
     function getViewUrl() {
-      $project = $this->getProject();
-      return $project instanceof Project ? $project->getTagUrl($this->getTag()) : null;
+      return get_url('object', 'list_objects', array('tag' => $this->getTag(), 'active_project' => active_project()?active_project()->getId():0));
     } // getViewUrl
     
     // ---------------------------------------------------
@@ -41,7 +40,7 @@
     * @return boolean
     */
     function canView(User $user) {
-      return $user->isProjectUser($this->getProject());
+      return true;
     } // canView
     
     /**

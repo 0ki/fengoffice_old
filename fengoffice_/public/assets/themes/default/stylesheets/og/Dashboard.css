@@ -1,5 +1,6 @@
 .db-ico {
 	height: 16px;
+	width: 16px;
 }
 
 .x-grid3-col-icon {
@@ -17,6 +18,9 @@
 }
 .db-ico-task {
 	background-image: url(../../images/16x16/tasks.png) !important;
+}
+.db-ico-milestone {
+	background-image: url(../../images/16x16/milestone.png) !important;
 }
 .db-ico-doc {
 	background-image: url(../../images/16x16/doc.png) !important;

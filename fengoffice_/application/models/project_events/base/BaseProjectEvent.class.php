@@ -78,6 +78,28 @@
     } // setduration() 
     
     /**
+    * Return value of 'forever' field
+    *
+    * @access public
+    * @param void
+    * @return integer 
+    */
+    function getRepeatForever() {
+      return $this->getColumnValue('repeat_forever');
+    } //  getForever()
+    
+    /**
+    * Set value of 'forever' field
+    *
+    * @access public   
+    * @param integer $value
+    * @return boolean
+    */
+    function  setRepeatForever($value) {
+      return $this->setColumnValue('repeat_forever', $value);
+    } //  setForever() 
+    
+    /**
     * Return value of 'eventtype' field
     *
     * @access public
@@ -197,7 +219,7 @@
     */
     function  setRepeatNum($value) {
       return $this->setColumnValue('repeat_num', $value);
-    } //  setRepeatEnd() 
+    } //  setRepeatNum() 
     
     /**
     * Return value of 'repeat_end' field
@@ -208,7 +230,7 @@
     */
     function getRepeatNum() {
       return $this->getColumnValue('repeat_num');
-    } //  getRepeatEnd()
+    } //  getRepeatNum()
     
     /**
     * Set value of 'repeat_end' field

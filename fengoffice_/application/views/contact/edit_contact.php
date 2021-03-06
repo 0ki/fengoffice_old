@@ -210,7 +210,7 @@ if (!$contact->isNew())
 	</tr>
 	<tr>
 		<td><br />
-		<div><?php echo label_tag(lang('birthday'), 'profileFormBirthday')?> <?php echo pick_date_widget('contact[o_birthday]', array_var($contact_data, 'o_birthday'), 1900, date("Y")) ?>
+		<div><?php echo label_tag(lang('birthday'), 'profileFormBirthday')?> <?php echo pick_date_widget('contact[o_birthday]', array_var($contact_data, 'o_birthday'), 1902, date("Y")) ?>
 		</div>
 		<div><?php echo label_tag(lang('timezone'), 'profileFormTimezone')?> <?php echo select_timezone_widget('contact[timezone]', array_var($contact_data, 'timezone'), array('id' => 'profileFormTimezone', 'class' => 'long')) ?>
 		</div>

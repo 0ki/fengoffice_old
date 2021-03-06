@@ -4,7 +4,7 @@
   set_page_title(lang('my tasks'));
   dashboard_tabbed_navigation(DASHBOARD_TAB_MY_TASKS);
   dashboard_crumbs(lang('my tasks'));
-  add_stylesheet_to_page('dashboard/my_tasks.css');
+  //add_stylesheet_to_page('dashboard/my_tasks.css');
 
 ?>
 <?php 

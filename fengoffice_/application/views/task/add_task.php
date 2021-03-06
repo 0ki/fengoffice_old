@@ -23,6 +23,8 @@ add_page_action(lang('add task list'), get_url('task', 'add_list'));
 	</div>
 <?php } // if ?>
 
+	<div><?php echo label_tag(lang('title'), 'addTaskTitle', true) ?> <?php echo input_field("task[title]", array_var($task_data, 'title'), array('id' => 'addTaskTitle')) ?>
+	</div>
 	<div><?php echo label_tag(lang('text'), 'addTaskText', true) ?> <?php echo textarea_field("task[text]", array_var($task_data, 'text'), array('id' => 'addTaskText', 'class' => 'short')) ?>
 	</div>
 	<div><label><?php echo lang('assign to') ?>:</label> <?php echo assign_to_select_box("task[assigned_to]", active_project(), array_var($task_data, 'assigned_to')) ?>

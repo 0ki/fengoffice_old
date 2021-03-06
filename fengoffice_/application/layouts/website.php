@@ -12,12 +12,17 @@
 	<?php echo add_javascript_to_page('extjs/ext-all.js') ?>
 	<?php echo add_javascript_to_page('app.js') ?>
 	<?php echo add_javascript_to_page('og/og.js') ?>
+	<?php echo add_javascript_to_page('og/HttpProvider.js') ?>
+	<?php echo add_javascript_to_page('og/MessageManager.js') ?>
 	<?php echo add_javascript_to_page('og/WebpageManager.js') ?>
 	<?php echo add_javascript_to_page('og/ContactManager.js') ?>
+	<?php echo add_javascript_to_page('og/FileManager.js') ?>
+	<?php echo add_javascript_to_page('og/ImageChooser.js') ?>
 	<?php echo add_javascript_to_page('og/ObjectPicker.js') ?>
 	<?php echo add_javascript_to_page('og/HtmlPanel.js') ?>
 	<?php echo add_javascript_to_page('og/WorkspacePanel.js') ?>
 	<?php echo add_javascript_to_page('og/TagPanel.js') ?>
+	<?php echo add_javascript_to_page('og/EmailAccountMenu.js') ?>
 	<?php echo add_javascript_to_page('og/TagMenu.js') ?>
 	<?php echo add_javascript_to_page('og/Dashboard.js') ?>
 	<?php echo add_javascript_to_page('og/TaskViewer.js') ?>
@@ -39,7 +44,6 @@
 	add_javascript_to_page('modules/updateUserPermissions.js');
 	add_javascript_to_page('modules/linkObjects.js');
 	add_javascript_to_page('modules/linkToObjectForm.js');
-	add_stylesheet_to_page(get_theme_url('slimey/slimey.css'));
 	add_javascript_to_page(SLIMEY_PATH . 'slimey.js');
 	add_javascript_to_page(SLIMEY_PATH . 'functions.js');
 	add_javascript_to_page(SLIMEY_PATH . 'stack.js');
@@ -48,13 +52,6 @@
 	add_javascript_to_page(SLIMEY_PATH . 'actions.js');
 	add_javascript_to_page(SLIMEY_PATH . 'tools.js');
 	add_javascript_to_page(SLIMEY_PATH . 'toolbar.js');
-	add_stylesheet_to_page('og/imageChooser.css');
-	add_javascript_to_page('og/imageChooser.js');
-	add_javascript_to_page('og/tabCloseMenu.js');
-	add_javascript_to_page('og/fileManager.js');
-	add_javascript_to_page('og/dashboard.js');
-	add_javascript_to_page('og/uploadFile.js');
-	//add_javascript_to_page('og/uploadForm.js');
 	add_javascript_to_page('modules/spreadsheet_engine.js');
 	add_javascript_to_page('modules/spreadsheet_ui.js'); 
 	add_javascript_to_page('modules/overlib.js');?>
@@ -114,8 +111,25 @@
 og.pageSize = <?php echo config_option('files_per_page')?config_option('files_per_page'):10 ?>;
 og.hostName = '<?php echo ROOT_URL ?>';
 og.maxUploadSize = <?php echo get_max_upload_size() ?>;
+og.initialGUIState = <?php echo json_encode(GUIController::getState()) ?>;
 //og.initialURL = '<?php //echo ROOT_URL . "?" . $_SERVER['QUERY_STRING'] ?>';
 //og.initialURL = 'prueba.php';
+
+// some event handlers
+og.eventManager.addListener('tag changed', 
+ 	function (tag){ 
+ 		if (Ext.getCmp('tabs-panel').getActiveTab().id == 'calendar-panel')
+ 			og.openLink('<?php echo get_url('event')?>',
+ 				{caller:'calendar-panel',
+ 				get:{tag:tag.name}}
+ 			);
+ 	}
+);
+og.eventManager.addListener('debug',
+	function (text){
+		og.msg(lang('debug'), text);
+	}
+);
 </script>
 
 </body>

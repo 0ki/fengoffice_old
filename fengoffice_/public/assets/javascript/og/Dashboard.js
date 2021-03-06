@@ -6,11 +6,12 @@ og.Dashboard = function() {
 	var actions, moreActions;
 
 	this.doNotDestroy = true;
+	this.active = true;
 
 	this.store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
 			method: 'GET',
-			url: og.getUrl('object', 'list_objects')
+			url: og.getUrl('object', 'list_objects', {ajax: true})
 		})),
 		reader: new Ext.data.JsonReader({
 			root: 'objects',
@@ -21,7 +22,7 @@ og.Dashboard = function() {
 				{name: 'dateCreated', type: 'date', dateFormat: 'timestamp'},
 				'updatedBy', 'updatedById',
 				{name: 'dateUpdated', type: 'date', dateFormat: 'timestamp'},
-				'icon', 'project', 'projectId', 'manager'
+				'icon', 'project', 'projectId', 'manager', 'mimeType', 'url'
 			]
 		}),
 		remoteSort: true,
@@ -29,20 +30,37 @@ og.Dashboard = function() {
 			'load': function() {
 				if (this.getTotalCount() <= og.pageSize) {
 					this.remoteSort = false;
+				} else {
+					this.remoteSort = true;
 				}
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
 	});
 	this.store.setDefaultSort('dateUpdated', 'desc');
 
 	function renderName(value, p, r) {
+		if (r.data.type == "Weblink"){
+			return String.format('<a href="" onclick="window.open(\'{1}\'); return false">{0}</a>', value, r.data.url);
+		} else
 		return String.format(
 			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
 			value, r.data.name, og.getUrl('object', 'view', {id: r.data.object_id, manager:r.data.manager}));
 	}
 
 	function renderIcon(value, p, r) {
-		return String.format('<img src="{0}" class="db-ico" />', value);
+		var classes = "db-ico unknown " + r.data.type;
+		if (r.data.mimeType) {
+			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+			var acc = "";
+			for (var i=0; i < path.length; i++) {
+				acc += path[i];
+				classes += " " + acc;
+				acc += "-";
+			}
+		}
+		return String.format('<div class="{0}" />', classes);
 	}
 
 	function renderUser(value, p, r) {
@@ -94,18 +112,41 @@ og.Dashboard = function() {
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false || this.grid.store.lastOptions.params.active_project == 0);
+				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.more.setDisabled(false);
-				if (sm.getSelected().data.type == 'prsn') {
+				if (sm.getSelected().data.mimeType == 'prsn') {
 					moreActions.slideshow.setDisabled(false);
 				} else {
 					moreActions.slideshow.setDisabled(true);
+				}
+				if (sm.getSelected().data.type == 'File') {
+					moreActions.download.setDisabled(false);
+				} else {
+					moreActions.download.setDisabled(true);
 				}
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+        	id: 'icon',
+        	header: '&nbsp;',
+        	dataIndex: 'icon',
+        	width: 28,
+        	renderer: renderIcon,
+        	sortable: false,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+        },{
+			id: 'name',
+			header: lang("name"),
+			dataIndex: 'name',
+			width: 300,
+			sortable: false,
+			renderer: renderName
+        },{
 			id: 'project',
 			header: lang("project"),
 			dataIndex: 'project',
@@ -113,25 +154,12 @@ og.Dashboard = function() {
 			renderer: renderProject,
 			sortable: false
         },{
-        	id: 'icon',
-        	header: '&nbsp;',
-        	dataIndex: 'icon',
-        	width: 24,
-        	renderer: renderIcon,
-        	sortable: false
-        },{
         	id: 'user',
         	header: lang('user'),
         	dataIndex: 'updatedBy',
         	width: 120,
         	renderer: renderUser,
         	sortable: false
-        },{
-			id: 'name',
-			header: lang("name"),
-			dataIndex: 'name',
-			//width: 120,
-			renderer: renderName
         },{
 			id: 'type',
 			header: lang('type'),
@@ -151,6 +179,7 @@ og.Dashboard = function() {
 			header: lang("last update"),
 			dataIndex: 'dateUpdated',
 			width: 80,
+			sortable: false,
 			renderer: renderDate
         },{
 			id: 'created',
@@ -158,6 +187,7 @@ og.Dashboard = function() {
 			dataIndex: 'dateCreated',
 			width: 80,
 			hidden: true,
+			sortable: false,
 			renderer: renderDate
 		},{
 			id: 'author',
@@ -165,6 +195,7 @@ og.Dashboard = function() {
 			dataIndex: 'createdBy',
 			width: 120,
 			renderer: renderAuthor,
+			sortable: false,
 			hidden: true
 		}]);
 	cm.defaultSortable = true;
@@ -191,12 +222,7 @@ og.Dashboard = function() {
 			text: lang('slideshow'),
 			iconCls: 'db-ico-slideshow',
 			handler: function(e) {
-				var url = og.getUrl('files', 'slideshow', {fileId: getFirstSelectedId()});
-				var top = screen.height * 0.1;
-				var left = screen.width * 0.1;
-				var width = screen.width * 0.8;
-				var height = screen.height * 0.8;
-				window.open(url, 'slideshow', 'top=' + top + ',left=' + left + ',width=' + width + ',height=' + height + ',status=no,menubar=no,location=no,toolbar=no,scrollbars=no,directories=no,resizable=yes')
+				og.slideshow(getFirstSelectedId());
 			},
 			disabled: true
 		})
@@ -210,31 +236,43 @@ og.Dashboard = function() {
 			menu: {items: [
 				{text: lang('contact'), iconCls: 'db-ico-contact', handler: function() {
 					var url = og.getUrl('contact', 'add');
-					og.openLink(url);
+					og.openLink(url, {caller: 'contacts-panel'});
 				}},
 				{text: lang('event'), iconCls: 'db-ico-event', handler: function() {
 					var url = og.getUrl('event', 'add');
-					og.openLink(url);
+					og.openLink(url, {caller: 'calendar-panel'});
 				}},
 				{text: lang('task'), iconCls: 'db-ico-task', handler: function() {
 					var url = og.getUrl('task', 'add_list');
-					og.openLink(url);
+					og.openLink(url, {caller: 'tasks-panel'});
+				}},
+				{text: lang('milestone'), iconCls: 'db-ico-milestone', handler: function() {
+					var url = og.getUrl('milestone', 'add');
+					og.openLink(url, {caller: 'tasks-panel'});
+				}},
+				{text: lang('webpage'), iconCls: 'ico-webpages', handler: function() {
+					var url = og.getUrl('webpage', 'add');
+					og.openLink(url, {caller: 'webpages-panel'});
+				}},
+				{text: lang('message'), iconCls: 'mm-ico-message', handler: function() {
+					var url = og.getUrl('message', 'add');
+					og.openLink(url, {caller: 'messages-panel'});
 				}},
 				{text: lang('document'), iconCls: 'db-ico-doc', handler: function() {
 					var url = og.getUrl('files', 'add_document');
-					og.openLink(url);
+					og.openLink(url, {caller: 'documents-panel'});
 				}},
-				{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
+				/*{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
 					var url = og.getUrl('files', 'add_spreadsheet');
-					og.openLink(url);
-				}},
+					og.openLink(url, {caller: 'documents-panel'});
+				}},*/
 				{text: lang('presentation'), iconCls: 'db-ico-prsn', handler: function() {
 					var url = og.getUrl('files', 'add_presentation');
-					og.openLink(url);
+					og.openLink(url, {caller: 'documents-panel'});
 				}},
 				{text: lang('upload file'), iconCls: 'db-ico-upload', handler: function() {
 					var url = og.getUrl('files', 'add_file');
-					og.openLink(url);
+					og.openLink(url, {caller: 'documents-panel'});
 				}}
 			]}
 		}),
@@ -326,33 +364,46 @@ og.Dashboard = function() {
 	});
 
 	og.eventManager.addListener("tag changed", function(tag) {
-    	this.load();
+		if (this.active) {
+			this.load({start: 0});
+		} else {
+    		this.needRefresh = true;
+    	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		this.load();
 		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 	}, this);
 	
-	this.load();
-	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+	//this.load();
+	//cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 };
 
 Ext.extend(og.Dashboard, Ext.grid.GridPanel, {
 	load: function(params) {
 		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
 		if (!params) params = {};
-		this.store.load({
-			params: Ext.apply(params, {
-				start: start,
-				limit: og.pageSize,
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-			}),
-			callback: function() {
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-			}
+		Ext.apply(this.store.baseParams, {
+			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
+		this.store.load({
+			params: Ext.applyIf(params, {
+				start: start,
+				limit: og.pageSize
+			})
+		});
+		this.needRefresh = false;
+	},
+	
+	activate: function() {
+		this.active = true;
+		if (this.needRefresh) {
+			this.load({start: 0});
+		}
+	},
+	
+	deactivate: function() {
+		this.active = false;
 	}
 });
 

@@ -350,18 +350,21 @@
     
     $year_options = array();
     
-    if ($year_from <= 1900)
+    if ($year_from <= 1902)
     {
     	$option_attributes = is_null($oldValue) ? array('selected' => 'selected') : null;
     	$year_options[] = option_tag(lang('select'), 0, $option_attributes);
     }
     
     for($i = $year_from; $i <= $year_to; $i++) {
-      $option_attributes = $i == ($value->getYear() && !is_null($oldValue)) ? array('selected' => 'selected') : null;
+      $option_attributes = ($i == $value->getYear() && !is_null($oldValue)) ? array('selected' => 'selected') : null;
       $year_options[] = option_tag($i, $i, $option_attributes);
     } // if
-    
-    return select_box($name . '_month', $month_options) . select_box($name . '_day', $day_options) . select_box($name . '_year', $year_options);
+    if (strpos($name, "]")) {
+    	$preName = substr($name,0,strpos($name,"]"));
+    	return select_box($preName . '_month]', $month_options) . select_box($preName.'_day]', $day_options) . select_box($preName . '_year]', $year_options);
+    } else
+    	return select_box($name . '_month', $month_options) . select_box($name . '_day', $day_options) . select_box($name . '_year', $year_options);
   } // pick_date_widget
   
   /**

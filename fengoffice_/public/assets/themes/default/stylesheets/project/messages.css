@@ -1,4 +1,8 @@
-/** Message display **/
+.message .messageContainer {
+	padding: 5px;
+	border: 3px solid #e8e8a8;
+  	background: #f8f8d8;
+}
 
 .message .block .header {
   font-size: 150%;
@@ -6,8 +10,8 @@
 }
 
 .message .messageDetails {
-  border: 1px solid #e8e8e8;
-  background: #f8f8f8;
+  border: 1px solid #e8e8a8;
+  background: #f8f8e8;
   padding: 2px 5px;
 }
 

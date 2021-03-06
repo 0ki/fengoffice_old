@@ -7,7 +7,12 @@
  * @param unknown_type $data
  */
 function evt_add($name, $data) {
-	Event::instance()->addEvent($name, $data);
+	$events = flash_get("events");
+	if (!$events) {
+		$events = array();
+	}
+	$events[] = array("name" => $name, "data" => $data);
+	flash_add("events", $events);
 }
 
 /**
@@ -16,7 +21,15 @@ function evt_add($name, $data) {
  * @return array
  */
 function evt_list() {
-	return Event::instance()->getEvents();
+	$events = flash_get("events");
+	if (!$events) return array();
+	return $events;
+}
+
+function evt_pop() {
+	$events = flash_pop("events");
+	if (!$events) return array();
+	return $events;
 }
 
 ?>

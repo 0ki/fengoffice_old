@@ -776,6 +776,11 @@
       return $this->getDetailsurl();
     } // getObjectUrl
     
+    function getDashboardObject() {
+    	$ret = parent::getDashboardObject();
+    	$ret["mimeType"] = $this->getTypeString();
+    	return $ret;
+    }
   } // ProjectFile 
 
 ?>

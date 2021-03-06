@@ -4,7 +4,7 @@
   /**
   *  LinkedObjects class
   *
-  * @author Ilija Studen <ilija.studen@gmail.com>
+  * @author Marcos Saiz <marcos.saiz@gmail.com>
   */
   abstract class BaseLinkedObjects extends DataManager {
   

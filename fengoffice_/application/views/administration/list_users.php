@@ -1,4 +1,4 @@
-<?php add_stylesheet_to_page('admin/user_list.css') ?>
+<?php //add_stylesheet_to_page('admin/user_list.css') ?>
 <?php if(isset($users) && is_array($users) && count($users)) { ?>
 <div id="usersList">
 <?php $counter = 0; ?>
@@ -9,7 +9,9 @@
     <div class="userDetails">
       <div class="userName"><a class="internalLink" href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></div>
 <?php if($company->isOwner()) { ?>
-      <div class="userIsAdmin"><span><?php echo lang('administrator') ?>:</span> <?php echo $user->isAdministrator() ? lang('yes') : lang('no') ?></div>
+	<?php if ($user->isAdministrator()) { ?>
+      	<div class="userIsAdmin"><span><?php echo lang('administrator') ?></span></div>
+    <?php } ?>
       <div class="userAutoAssign"><span><?php echo lang('auto assign') ?>:</span> <?php echo $user->getAutoAssign() ? lang('yes') : lang('no') ?></div>
 <?php } // if  ?>
 <?php

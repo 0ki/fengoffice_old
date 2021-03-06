@@ -7,7 +7,7 @@
     array(lang('people'), get_url('project', 'people')),
     array(lang('permissions'))
   ));
-	add_stylesheet_to_page('project/permissions.css');
+	//add_stylesheet_to_page('project/permissions.css');
 ?>
 <?php
   $quoted_permissions = array();

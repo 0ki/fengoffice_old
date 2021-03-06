@@ -955,19 +955,7 @@ SlimeySaveTool.prototype = new SlimeyTool();
  *  saves the current slideshow
  */
 SlimeySaveTool.prototype.execute = function() {
-	var filename = this.slimey.filename;
-	if (filename) {
-		this.filenameChosen(filename);
-	} else {
-		getInput(this.filenameChosen, this, this.element);
-	}
-}
-
-SlimeySaveTool.prototype.filenameChosen = function(filename) {
-	this.slimey.filename = filename;
-	var slim = this.slimey.navigation.getSLIMContent();
-	this.slimey.slimContent = escapeSLIM(slim);
-	this.slimey.submitFile(confirm("Save as new revision?")); 
+	this.slimey.submitFile(confirm("Save as new revision?"));
 }
 
 SlimeySaveTool.prototype.notifyActionPerformed = function() {

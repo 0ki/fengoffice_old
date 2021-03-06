@@ -41,7 +41,7 @@
       if(!$this->validatePresenceOf('title')) {
         $errors[] = lang('webpage title required');
       } // if
-      if(!$this->validatePresenceOf('url')) {
+      if(!$this->validatePresenceOf('url') || $this->getUrl() == 'http://') {
         $errors[] = lang('webpage url required');
       } // if
     } // validate
@@ -124,11 +124,11 @@
     * @return booelean
     */
     function canAdd(User $user, Project $project) {
-      if(!$user->isProjectUser($project)) {
-        return false; // user is on project
-      } // if
       if($user->isAdministrator()) {
         return true; // administrator
+      } // if
+      if(!$user->isProjectUser($project)) {
+        return false; // user is on project
       } // if
       return $user->getProjectPermission($project, ProjectUsers::CAN_MANAGE_MESSAGES);
     } // canAdd
@@ -219,5 +219,10 @@
       return $this->getEditUrl();
     } // getObjectUrl
 	
+  function getDashboardObject(){
+    	$result = parent::getDashboardObject();
+    	$result["url"] = $this->getUrl();
+    	return $result;
+    }
   }
 ?>

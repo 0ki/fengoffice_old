@@ -15,10 +15,6 @@
 	
 */
 
-//if ( !defined('CAL_SECURITY_BIT') ) die("Hacking attempt");
-
-echo stylesheet_tag('../reesecal/default.css');
-
 echo  cal_top();
 //echo  cal_display();
 //echo cal_bottom();
@@ -46,7 +42,7 @@ echo  cal_top();
 		<td class="head" width="15%" style="border-bottom: 1px solid #888888;"><span class="box_subtitle">' .  CAL_DURATION . '</span></td>
 		<tr><td colspan="5" height="10"></td></tr>';
 	// get the events for the date from the database
-	$result = cal_query_get_eventlist($day, $month, $year);
+	$result = cal_query_get_eventlist($day, $month, $year, $tags);
     // print this if there are no events
   	if( $cal_db->sql_numrows($result) < 1 OR $result==NULL){
     	$output .= '  <tr>
@@ -54,12 +50,12 @@ echo  cal_top();
   			</tr>\n";
   	}
 	// begin looping through all the events if any
-	while ($row = $cal_db->sql_fetchrow($result)) {
+	while($row = $cal_db->sql_fetchrow($result)) {//while () {		
 		// organize username, subject, and description
-		$usr=Users::findById(htmlspecialchars($row['created_by_id']));
-		$name = $usr?$usr->getUsername():htmlspecialchars($row['created_by_id']);
-		$subject = htmlspecialchars($row['subject']);
-		$desc = htmlspecialchars($row['description']);
+		$usr = Users::findById(htmlentities($row['created_by_id']));
+		$name = $usr?$usr->getUsername():htmlentities($row['created_by_id']);
+		$subject = htmlentities($row['subject']);
+		$desc = htmlentities($row['description']);
 		// check username to see if it's anonymous
 		if($name=="") $name = CAL_ANONYMOUS;
 		// organize the event type color

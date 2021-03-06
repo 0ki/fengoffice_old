@@ -1,12 +1,13 @@
 
-    About OpenGoo beta 0.6.0
+    About OpenGoo beta 0.6.2
     =========================
 
-    OpenGoo is a free, web based WebOffice, knowledge management and collaboration tool. For license details, see license.txt.
+    OpenGoo is a free, web based WebOffice, project management and collaboration
+    tool. For license details, see license.txt.
 
-    OpenGoo's architecture is based on activecollab 0.7.1.
+    OpenGoo is based on activecollab 0.7.1.
 
-    Note: OpenGoo is under heavy development and is currently on an pre-beta stage.
+    Note: OpenGoo is under heavy development and is currently on an beta stage.
     This means that it still lacks much of its desired functionality and it may
     contain lots of bugs. This release of OpenGoo is intended for testing and
     previewing and not for production use. If you find a bug and want to
@@ -16,10 +17,11 @@
 
     visit:
         * http://www.opengoo.org/
-        * http://forums.opengoo.org/
-        * http://sourceforge.net/projects/opengoo/
+        * http://forum.opengoo.org/
+        * http://sourceforge.net/opengoo
 
     other links:
+        * http://www.activecollab.com/
         * http://www.activecollab.com/forums
         * http://www.fckeditor.net/
 
@@ -39,7 +41,7 @@
 
     Recommended:
 
-    PHP 5.1+
+    PHP 5.2+
     MySQL 4.1+ with InnoDB support
     Apache 2.0+
 
@@ -66,15 +68,4 @@
 
     You should be finished in a matter of minutes.
     
-    Upgrade from 0.5
-    ================
-    
-    Major changes have happened since previous versions, and the upgrade script is still
-    a work in progress.
 
-	Changelog
-	=========
-	
-	* Lots more AJAX features
-		- new filters by workspace, tag and type of object
-	* Events, mails, webpages and lots of other features have been added.

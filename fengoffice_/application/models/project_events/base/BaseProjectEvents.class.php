@@ -14,7 +14,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'project_id' => DATA_TYPE_INTEGER, 'duration' => DATA_TYPE_DATETIME, 'start' => DATA_TYPE_DATETIME, 'subject' => DATA_TYPE_STRING, 'description' => DATA_TYPE_STRING, 'private' => DATA_TYPE_STRING, 'eventtype' => DATA_TYPE_INTEGER, 'repeat_end' => DATA_TYPE_DATETIME, 'repeat_num' => DATA_TYPE_INTEGER, 'repeat_d' => DATA_TYPE_INTEGER,  'repeat_m' => DATA_TYPE_INTEGER,  'repeat_y' => DATA_TYPE_INTEGER,  'repeat_h' => DATA_TYPE_INTEGER, 'type_id' => DATA_TYPE_INTEGER, 'special_id' => DATA_TYPE_INTEGER, 'deleted' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER);
+    static private $columns = array('id' => DATA_TYPE_INTEGER, 'project_id' => DATA_TYPE_INTEGER, 'duration' => DATA_TYPE_DATETIME, 'start' => DATA_TYPE_DATETIME, 'subject' => DATA_TYPE_STRING, 'repeat_forever'=>DATA_TYPE_BOOLEAN, 'description' => DATA_TYPE_STRING, 'private' => DATA_TYPE_STRING, 'eventtype' => DATA_TYPE_INTEGER, 'repeat_end' => DATA_TYPE_DATETIME, 'repeat_num' => DATA_TYPE_INTEGER, 'repeat_d' => DATA_TYPE_INTEGER,  'repeat_m' => DATA_TYPE_INTEGER,  'repeat_y' => DATA_TYPE_INTEGER,  'repeat_h' => DATA_TYPE_INTEGER, 'type_id' => DATA_TYPE_INTEGER, 'special_id' => DATA_TYPE_INTEGER, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'updated_on' => DATA_TYPE_DATETIME, 'updated_by_id' => DATA_TYPE_INTEGER);
   
     /**
     * Construct

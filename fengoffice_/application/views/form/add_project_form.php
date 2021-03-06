@@ -6,7 +6,7 @@
     array(lang('forms'), get_url('form')),
     array($project_form->isNew() ? lang('add form') : lang('edit form'))
   ));
-  add_stylesheet_to_page('project/forms.css');
+  //add_stylesheet_to_page('project/forms.css');
   
 ?>
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addProjectForm.js') ?>"></script>

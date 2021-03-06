@@ -19,6 +19,37 @@
 .ico-workspace-refresh {
 	background-image: url(../../images/16x16/refresh.png) !important;
 }
+.ico-color0, .ico-color1, .ico-color2, .ico-color3, .ico-color4, .ico-color5, .ico-color6, .ico-color7 {
+	height: 16px;
+	background-image: none !important;
+}
+.ico-color0 {
+	background: url(../../images/16x16/color0.png) !important;
+}
+.ico-color1 {
+	background: url(../../images/16x16/color1.png) !important;
+}
+.ico-color2 {
+	background: url(../../images/16x16/color2.png) !important;
+}
+.ico-color3 {
+	background: url(../../images/16x16/color3.png) !important;
+}
+.ico-color4 {
+	background: url(../../images/16x16/color4.png) !important;
+}
+.ico-color5 {
+	background: url(../../images/16x16/color5.png) !important;
+}
+.ico-color6 {
+	background: url(../../images/16x16/color6.png) !important;
+}
+.ico-color7 {
+	background: url(../../images/16x16/color7.png) !important;
+}
+.ico-color8 {
+	background: url(../../images/16x16/color8.png) !important;
+}
 .x-tree {
 	background:#fff !important;
 }

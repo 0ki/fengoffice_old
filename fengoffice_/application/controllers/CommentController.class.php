@@ -36,7 +36,8 @@ class CommentController extends ApplicationController {
 
 		if(!is_valid_function_name($object_manager)) {
 			flash_error(lang('invalid request'));
-			$this->redirectToUrl(active_project()->getOverviewUrl());
+			ajx_current("empty");
+			return;
 		} // if
 
 		$object = get_object_by_manager_and_id($object_id, $object_manager);
@@ -55,7 +56,7 @@ class CommentController extends ApplicationController {
 		if(is_array($comment_data)) {
 			try {
 				try {
-					$attached_files = ProjectFiles::handleHelperUploads(active_project());
+					$attached_files = ProjectFiles::handleHelperUploads(active_or_personal_project());
 				} catch(Exception $e) {
 					$attached_files = null;
 				} // try
@@ -76,7 +77,7 @@ class CommentController extends ApplicationController {
 					} // foreach
 				} // if
 
-				ApplicationLogs::createLog($comment, active_project(), ApplicationLogs::ACTION_ADD);
+				ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_ADD);
 
 				// Subscribe user to message (if $object is message)
 				if($object instanceof ProjectMessage) {
@@ -111,7 +112,7 @@ class CommentController extends ApplicationController {
 	function edit() {
 		$this->setTemplate('add_comment');
 
-		$redirect_to = active_project() instanceof Project ? active_project()->getOverviewUrl() : get_url('dashboard');
+		$redirect_to = active_or_personal_project()->getOverviewUrl();
 
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
@@ -159,7 +160,7 @@ class CommentController extends ApplicationController {
 
 				DB::beginWork();
 				$comment->save();
-				ApplicationLogs::createLog($comment, active_project(), ApplicationLogs::ACTION_EDIT);
+				ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_EDIT);
 				$object->onEditComment($comment);
 				DB::commit();
 
@@ -179,7 +180,7 @@ class CommentController extends ApplicationController {
 	 * @return null
 	 */
 	function delete() {
-		$redirect_to = active_project() instanceof Project ? active_project()->getOverviewUrl() : get_url('dashboard');
+		$redirect_to = active_or_personal_project()->getOverviewUrl();
 
 		$comment = Comments::findById(get_id());
 		if(!($comment instanceof Comment)) {
@@ -203,7 +204,7 @@ class CommentController extends ApplicationController {
 		try {
 			DB::beginWork();
 			$comment->delete();
-			ApplicationLogs::createLog($comment, active_project(), ApplicationLogs::ACTION_DELETE);
+			ApplicationLogs::createLog($comment, active_or_personal_project(), ApplicationLogs::ACTION_DELETE);
 			$object->onDeleteComment($comment);
 			DB::commit();
 

@@ -1,3 +1,7 @@
+-- <?php echo $table_prefix ?> og_
+-- <?php echo $default_charset ?> DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+-- <?php echo $default_collation ?> collate utf8_unicode_ci
+
 -- Create table file_permissions if it did not exist (for young Opengoo versions or ActiveCollab 0.7.1)
 CREATE TABLE IF NOT EXISTS `<?php echo $table_prefix ?>file_permissions` (
   `file_id` INTEGER UNSIGNED NOT NULL,
@@ -13,7 +17,10 @@ ALTER TABLE `<?php echo $table_prefix ?>attached_files` RENAME TO `<?php echo $t
  DROP PRIMARY KEY,
  ADD PRIMARY KEY(`rel_object_manager`, `rel_object_id`, `object_id`, `object_manager`);
  UPDATE <?php echo $table_prefix ?>linked_objects SET object_manager='ProjectFiles';
-
+ 
+ ALTER TABLE `<?php echo $table_prefix ?>projects`,
+ ADD COLUMN `color` INTEGER UNSIGNED NOT NULL AFTER `updated_by_id` DEFAULT 0;
+ 
 -- Create new task IDs for tasklists
 SET @aa = (SELECT max(s.id) FROM <?php echo $table_prefix ?>project_tasks s);
 -- Copy task lists to tasks
@@ -146,10 +153,11 @@ CREATE TABLE  `<?php echo $table_prefix ?>contact_im_values` (
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 CREATE TABLE  `<?php echo $table_prefix ?>project_contacts` (
+  `id` int(10) unsigned NOT NULL auto_increment,
   `contact_id` int(10) unsigned NOT NULL default '0',
   `project_id` int(10) unsigned NOT NULL default '0',
   `role` varchar(255) <?php echo $default_collation ?> default '',
-  PRIMARY KEY  (`contact_id`,`project_id`)
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
 
 -- Create tables for project webpage support
@@ -187,7 +195,6 @@ CREATE TABLE  `<?php echo $table_prefix ?>project_events` (
   `repeat_h` smallint(6) NOT NULL default '0',
   `type_id` int(11) NOT NULL default '0',
   `special_id` int(11) NOT NULL default '0',
-  `deleted` smallint(6) NOT NULL default '0',
   `project_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB <?php echo $default_charset ?>;
@@ -253,6 +260,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `size` int(10) NOT NULL default '0',
   `is_deleted` int(1) NOT NULL default '0',
   `is_shared` INT(1) NOT NULL default '0',
+  `is_private` INT(1) NOT NULL default 0,
   PRIMARY KEY  (`id`),
   KEY `project_id` (`project_id`),
   KEY `account_id` (`account_id`)
@@ -263,3 +271,13 @@ ALTER TABLE `<?php echo $table_prefix ?>project_files` ADD COLUMN `checked_out_o
 ALTER TABLE `<?php echo $table_prefix ?>project_files` ADD COLUMN `checked_out_by_id` int(10) UNSIGNED DEFAULT 0 AFTER `checked_out_on`;
 
 
+ALTER TABLE `<?php echo $table_prefix ?>_users` ADD COLUMN `personal_project_id` INTEGER UNSIGNED NOT NULL DEFAULT 0;
+
+ALTER TABLE `<?php echo $table_prefix ?>tags` DROP COLUMN `project_id` , ROW_FORMAT = DYNAMIC;
+
+-- save gui state
+CREATE TABLE  `opengoo`.`<?php echo $table_prefix ?>guistate` (
+  `user_id` int(10) unsigned NOT NULL default '1',
+  `name` varchar(100) NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB <?php echo $default_charset ?>;

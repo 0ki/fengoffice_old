@@ -39,7 +39,7 @@
     
     // Init company website
     'failed to load company website' => 'Failed to load website. Owner company not found',
-    'failed to load project' => 'Failed to load active project',
+    'failed to load project' => 'Failed to load active workspace',
     
     // Login form
     'username value missing' => 'Please insert your username',
@@ -47,12 +47,12 @@
     'invalid login data' => 'Failed to log you in. Please check your login data and try again',
     
     // Add project form
-    'project name required' => 'Project name value is required',
-    'project name unique' => 'Project name must be unique',
+    'project name required' => 'Workspace name value is required',
+    'project name unique' => 'Workspace name must be unique',
     
     // Add message form
     'message title required' => 'Title value is required',
-    'message title unique' => 'Title value must be unique in this project',
+    'message title unique' => 'Title value must be unique in this workspace',
     'message text required' => 'Text value is required',
     
     // Add comment form
@@ -64,7 +64,7 @@
     
     // Add task list
     'task list name required' => 'Task list name value is required',
-    'task list name unique' => 'Task list name must be unique in project',
+    'task list name unique' => 'Task list name must be unique in workspace',
     
     // Add task
     'task text required' => 'Task text is required',
@@ -82,7 +82,7 @@
     
     // Validate project folder
     'folder name required' => 'Folder name is required',
-    'folder name unique' => 'Folder name need to be unique in this project',
+    'folder name unique' => 'Folder name need to be unique in this workspace',
     
     // Validate add / edit file form
     'folder id required' => 'Please select folder',
@@ -103,6 +103,12 @@
     'massmailer message required' => 'Message body is required',
     'massmailer select recepients' => 'Please select users that will receive this email',
     
+  	//Email module
+  	'mail account name required' => 'Account name required',
+  	'mail account id required' => 'Account Id required',
+  	'mail account server required' => 'Server required',
+  	'mail account password required' => 'Password required',	
+  
   ); // array
 
 ?>

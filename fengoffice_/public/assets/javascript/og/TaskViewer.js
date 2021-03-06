@@ -6,6 +6,7 @@ og.TaskViewer = function() {
 	var actions, moreActions;
 
 	this.doNotDestroy = true;
+	this.active = true;
 
 	this.store = new Ext.data.Store({
 		proxy: new Ext.data.HttpProxy(new Ext.data.Connection({
@@ -13,7 +14,7 @@ og.TaskViewer = function() {
 			url: og.getUrl('task', 'list_tasks')
 		})),
 		reader: new Ext.data.JsonReader({
-			root: 'tasks',
+			root: 'objects',
 			totalProperty: 'totalCount',
 			id: 'id',
 			fields: [
@@ -29,7 +30,11 @@ og.TaskViewer = function() {
 			'load': function() {
 				if (this.getTotalCount() <= og.pageSize) {
 					this.remoteSort = false;
+				} else {
+					this.remoteSort = true;
 				}
+				var d = this.reader.jsonData;
+				og.processResponse(d);
 			}
 		}
 	});
@@ -40,9 +45,19 @@ og.TaskViewer = function() {
 			'<a href="#" onclick="og.openLink(\'{2}\')">{0}</a>',
 			value, r.data.name, og.getUrl('task', 'view_list', {id: r.data.object_id}));
 	}
-
+	
 	function renderIcon(value, p, r) {
-		return String.format('<img src="{0}" class="db-ico" />', value);
+		var classes = "db-ico unknown " + r.data.type;
+		if (r.data.mimeType) {
+			var path = r.data.mimeType.replace(/\//ig, "-").split("-");
+			var acc = "";
+			for (var i=0; i < path.length; i++) {
+				acc += path[i];
+				classes += " " + acc;
+				acc += "-";
+			}
+		}
+		return String.format('<div class="{0}" />', classes);
 	}
 
 	function renderUser(value, p, r) {
@@ -73,7 +88,7 @@ og.TaskViewer = function() {
 		} else {
 			var ret = '';
 			for (var i=0; i < selections.length; i++) {
-				ret += "," + selections[i].data.object_id;
+				ret += "," + selections[i].data.manager + ":" + selections[i].data.object_id;
 			}	
 			return ret.substring(1);
 		}
@@ -94,13 +109,31 @@ og.TaskViewer = function() {
 				actions.del.setDisabled(true);
 				actions.more.setDisabled(true);
 			} else {
-				actions.tag.setDisabled(false || this.grid.store.lastOptions.params.active_project == 0);
+				actions.tag.setDisabled(false);
 				actions.del.setDisabled(false);
 				actions.more.setDisabled(false);
 			}
 		});
 	var cm = new Ext.grid.ColumnModel([
 		sm,{
+        	id: 'icon',
+        	header: '&nbsp;',
+        	dataIndex: 'icon',
+        	width: 28,
+        	renderer: renderIcon,
+        	sortable: false,
+        	fixed:true,
+        	resizable: false,
+        	hideable:false,
+        	menuDisabled: true
+        },{
+			id: 'name',
+			header: lang("name"),
+			dataIndex: 'name',
+			width: 300,
+			sortable: false,
+			renderer: renderName
+        },{
 			id: 'project',
 			header: lang("project"),
 			dataIndex: 'project',
@@ -108,25 +141,12 @@ og.TaskViewer = function() {
 			renderer: renderProject,
 			sortable: false
         },{
-        	id: 'icon',
-        	header: '&nbsp;',
-        	dataIndex: 'icon',
-        	width: 24,
-        	renderer: renderIcon,
-        	sortable: false
-        },{
         	id: 'user',
         	header: lang('user'),
         	dataIndex: 'updatedBy',
         	width: 120,
         	renderer: renderUser,
         	sortable: false
-        },{
-			id: 'name',
-			header: lang("name"),
-			dataIndex: 'name',
-			//width: 120,
-			renderer: renderName
         },{
 			id: 'type',
 			header: lang('type'),
@@ -139,13 +159,13 @@ og.TaskViewer = function() {
 			header: lang("tags"),
 			dataIndex: 'tags',
 			width: 120,
-			hidden: true,
 			sortable: false
         },{
 			id: 'last',
 			header: lang("last update"),
 			dataIndex: 'dateUpdated',
 			width: 80,
+			sortable: false,
 			renderer: renderDate
         },{
 			id: 'created',
@@ -153,6 +173,7 @@ og.TaskViewer = function() {
 			dataIndex: 'dateCreated',
 			width: 80,
 			hidden: true,
+			sortable: false,
 			renderer: renderDate
 		},{
 			id: 'author',
@@ -160,6 +181,7 @@ og.TaskViewer = function() {
 			dataIndex: 'createdBy',
 			width: 120,
 			renderer: renderAuthor,
+			sortable: false,
 			hidden: true
 		}]);
 	cm.defaultSortable = true;
@@ -170,7 +192,7 @@ og.TaskViewer = function() {
 			iconCls: 'db-ico-properties',
 			handler: function(e) {
 				var o = sm.getSelected();
-				var url = og.getUrl('object', 'view_properties', {object_id: o.data.object_id, manager: o.data.manager});
+				var url = og.getUrl('object', 'view', {id: o.data.object_id, manager: o.data.manager});
 				og.openLink(url);
 			}
 		})
@@ -181,33 +203,13 @@ og.TaskViewer = function() {
 			text: lang('new'),
             tooltip: lang('create an object'),
             iconCls: 'db-ico-new',
-			menu: {items: [
-				{text: lang('contact'), iconCls: 'db-ico-contact', handler: function() {
-					var url = og.getUrl('contact', 'add');
-					og.openLink(url);
-				}},
-				{text: lang('event'), iconCls: 'db-ico-event', handler: function() {
-					var url = og.getUrl('event', 'add');
-					og.openLink(url);
-				}},
-				{text: lang('task'), iconCls: 'db-ico-task', handler: function() {
+            menu: {items: [
+            	{text: lang('task'), iconCls: 'db-ico-task', handler: function() {
 					var url = og.getUrl('task', 'add_list');
 					og.openLink(url);
 				}},
-				{text: lang('document'), iconCls: 'db-ico-doc', handler: function() {
-					var url = og.getUrl('files', 'add_document');
-					og.openLink(url);
-				}},
-				{text: lang('spreadsheet'), iconCls: 'db-ico-sprd', handler: function() {
-					var url = og.getUrl('files', 'add_spreadsheet');
-					og.openLink(url);
-				}},
-				{text: lang('presentation'), iconCls: 'db-ico-prsn', handler: function() {
-					var url = og.getUrl('files', 'add_presentation');
-					og.openLink(url);
-				}},
-				{text: lang('upload file'), iconCls: 'db-ico-upload', handler: function() {
-					var url = og.getUrl('files', 'add_file');
+				{text: lang('milestone'), iconCls: 'db-ico-milestone', handler: function() {
+					var url = og.getUrl('milestone', 'add');
 					og.openLink(url);
 				}}
 			]}
@@ -298,32 +300,46 @@ og.TaskViewer = function() {
 	});
 
 	og.eventManager.addListener("tag changed", function(tag) {
-    	this.load();
+		if (this.active) {
+			this.load({start: 0});
+		} else {
+    		this.needRefresh = true;
+    	}
 	}, this);
 	og.eventManager.addListener("workspace changed", function(ws) {
-		this.load();
 		cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 	}, this);
-	this.load();
-	cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
+	
+	//this.load();
+	//cm.setHidden(cm.getIndexById('project'), this.store.lastOptions.params.active_project != 0);
 };
 
 Ext.extend(og.TaskViewer, Ext.grid.GridPanel, {
 	load: function(params) {
-		if (!params) params = {};
 		var start = (this.getBottomToolbar().getPageData().activePage - 1) * og.pageSize;
-		this.store.load({
-			params: Ext.apply(params, {
-				start: start,
-				limit: og.pageSize,
-				tag: Ext.getCmp('tag-panel').getSelectedTag().name,
-				active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
-			}),
-			callback: function() {
-				var d = this.reader.jsonData;
-				og.processResponse(d);
-			}
+		if (!params) params = {};
+		Ext.apply(this.store.baseParams, {
+			tag: Ext.getCmp('tag-panel').getSelectedTag().name,
+			active_project: Ext.getCmp('workspace-panel').getActiveWorkspace().id
 		});
+		this.store.load({
+			params: Ext.applyIf(params, {
+				start: start,
+				limit: og.pageSize
+			})
+		});
+		this.needRefresh = false;
+	},
+	
+	activate: function() {
+		this.active = true;
+		if (this.needRefresh) {
+			this.load({start: 0});
+		}
+	},
+	
+	deactivate: function() {
+		this.active = false;
 	}
 });
 

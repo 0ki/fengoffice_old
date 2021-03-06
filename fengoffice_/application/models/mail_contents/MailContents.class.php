@@ -16,8 +16,7 @@
     static function getProjectMails(Project $project) {
        $conditions = array('`project_id` = ?', $project->getId());
       return self::findAll(array(
-        'conditions' => $conditions,
-        'order' => '`created_on` DESC',
+        'conditions' => $conditions
       )); // findAll
     } // getProjectMails
   	

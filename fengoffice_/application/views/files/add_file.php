@@ -1,19 +1,20 @@
 <?php
   set_page_title($file->isNew() ? lang('upload file') : lang('edit file') . ": " . $file->getFilename());
-  add_stylesheet_to_page('project/files.css');
+  //add_stylesheet_to_page('project/files.css');
 ?>
 
 <script type="text/javascript" src="<?php echo get_javascript_url('modules/addFileForm.js') ?>"></script>
-<form action="<?php
+<?php
 if ($file->isNew()){
-	echo get_url('files', 'add_file');
+	$submit_url = get_url('files', 'add_file');
 } else if (isset($checkin) && $checkin){
-	echo $file->getCheckinUrl();
+	$submit_url = $file->getCheckinUrl();
 } else {
-	echo $file->getEditUrl();
+	$submit_url = $file->getEditUrl();
 }
 
- ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
+ ?>
+<form action="<?php echo $submit_url ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, function(){Ext.getCmp('documents-panel').reset();})">
 
 <?php tpl_display(get_template_path('form_errors'));
 	$enableUpload = $file->isNew() 

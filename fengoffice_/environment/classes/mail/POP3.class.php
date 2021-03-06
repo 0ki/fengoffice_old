@@ -13,7 +13,33 @@
  * NOTES:
  * - IPv6 support NEVER tested
  */
-
+// {{{ final class POP3_Exception
+final class POP3_Exception extends Exception
+{
+    // {{{ __construct()
+	function __construct( $strErrMessage, $intErrCode )
+	{
+        switch( $intErrCode )
+        {
+            case POP3::ERR_NOT_IMPLEMENTS:
+                $strErrMessage = "This function isn't implements at time.";
+            break;
+            
+            case POP3::ERR_SOCKETS:
+               $strErrMessage = "Sockets Error: (". socket_last_error() .") -- ". socket_strerror(socket_last_error());
+            break;
+        }
+	    parent::__construct($strErrMessage, $intErrCode);	
+	}
+	// }}}
+    // {{{ __toString()
+	public function __toString()
+	{
+		return __CLASS__ ." [". $this->getCode() ."] -- ". $this->getMessage() ." in file ". $this->getFile() ." at line ". $this->getLine(). PHP_EOL ."Trace: ". $this->getTraceAsString() .PHP_EOL;
+	}
+    // }}}
+}
+// }}}
 // {{{ class POP3
 class POP3
 { 
@@ -161,7 +187,7 @@ class POP3
 		else
 		{
             $dTimeout = (double) implode(".",$arrConnectionTimeout);
-			if( !$this->resSocket = @fsockopen("tcp://". $this->strHostname .":". $this->intPort, &$intErrno, &$strError, $dTimeout) )
+			if( !$this->resSocket = @fsockopen("tcp://". $this->strHostname, $this->intPort, $intErrno, $strError, $dTimeout) )
 			{
 				throw new POP3_Exception( "[". $intErrno."] -- ". $strError, self::ERR_STREAM );
 			}
@@ -633,7 +659,7 @@ class POP3
 		{
 			if( !$strBuffer = @fgets($this->resSocket, $intBufferSize) )
 			{
-				throw new POP3_Exception("fgets(): Couldn't receive the string from socket", self::ERR_STREAM);
+				throw new POP3_Exception("fgets(): Couldn't recieve the string from socket", self::ERR_STREAM);
 			}
 		}
 		return $strBuffer;
@@ -748,4 +774,111 @@ class POP3
 	}
     // }}}
 }
+// }}}
+//////////////////////////////////////////////////////////////////////
+//////////////////////// EXPERIMENTAL ////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+// {{{ POP3_Message
+class POP3_Message
+{
+    // {{{ private attributes
+    private $intMsgNum = 0;
+    private $arrHeader = array();
+    private $arrBody = array();
+    private $arrAttachments = array();
+    // }}}
+    // {{{ __construct()
+    function __construct( $intMsgNum, $strMessage )
+    {
+        $this->intMsgNum = $intMsgNum;
+        $this->parseMessage($strMessage);
+    }
+    // }}}
+    // {{{ __destruct()
+    function __destruct()
+    {
+        $this->intMsgNum = 0;
+        $this->arrHeader = NULL;
+        $this->arrBody = NULL;
+        $this->arrAttachments = NULL;
+    }
+    // }}}
+    // {{{ getMessageNum()
+    public function getMessageNum()
+    {
+        return $this->intMsgNum;
+    }
+    // }}}
+    // {{{ getHeader()
+    public function getHeader( $bAsArray = FALSE )
+    {
+        if( !$bAsArray )
+        {
+            $strHeader = "";
+            foreach($this->arrHeader AS $strHeadLine )
+            {
+                $strHeader .= $strHeadLine;
+            }
+            return $strHeader;
+        }
+        return $this->arrHeader;
+    }
+    // }}}
+    // {{{ getBody()
+    public function getBody( $bAsArray = TRUE )
+    {
+        if( !$bAsArray )
+        {
+            $strBody = "";
+            foreach($this->arrBody AS $strBodyLine )
+            {
+                $strBody .= $strBodyLine;
+            }
+            return $strBody;
+        }
+        return $this->arrBody;
+    }
+    // }}}
+    // {{{ __toString()
+    function __toString()
+    {
+        return $this->getHeader() . $this->getBody();
+    }
+    // }}}
+    // {{{ getAttachment()
+    public function getAttachment( $intAttchmentNum = 0 )
+    {   
+    }
+    // }}}
+    // {{{ getAttachments()
+    public function getAttachments()
+    {
+    }
+    // }}}
+    // {{{ storeAttachment()
+    public function storeAttachment( $intAttachmentNum )
+    {
+    }
+    // }}}
+    // {{{ storeAttachments()
+    public function storeAttachments( $strDirectoryPath = "./" )
+    {
+    }
+    // }}}
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////// PRIVATE FUNCTIONS ///////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // {{{ parseMessage()
+    private function parseMessage( &$strMessage )
+    {
+        // 1. Split header from the Body
+        // 2. Parse the Header and Body
+        // 2.1 Body: Parse attachments
+    }
+    // }}}
+    // {{{ ()
+    // }}}
+}
+// }}}
 ?>

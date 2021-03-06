@@ -66,8 +66,8 @@
       $this->setTemplate('add');
       
       if(!ProjectWebpage::canAdd(logged_user(), active_or_personal_project())) {
-        flash_error(lang('no access permissions'));
-        $this->redirectToReferer(get_url('webpage'));
+        	flash_error(lang('no access permissions'));
+			ajx_current("empty");
       } // if
       
       $webpage = new ProjectWebpage();
@@ -102,11 +102,12 @@
           DB::commit();
           
           flash_success(lang('success add webpage', $webpage->getTitle()));
-          ajx_current("webpages");
+		  ajx_current("start");
         // Error...
         } catch(Exception $e) {
-          DB::rollback();
-          tpl_assign('error', $e);
+            DB::rollback();
+            flash_error($e);
+			ajx_current("empty");
         } // try
         
       } // if
@@ -125,12 +126,12 @@
       $webpage = ProjectWebpages::findById(get_id());
       if(!($webpage instanceof ProjectWebpage)) {
         flash_error(lang('webpage dnx'));
-        $this->redirectTo('webpage');
+        ajx_current("empty");
       } // if
       
       if(!$webpage->canEdit(logged_user())) {
         flash_error(lang('no access permissions'));
-        $this->redirectTo('webpage');
+        ajx_current("empty");
       } // if
       
       $webpage_data = array_var($_POST, 'webpage');
@@ -169,10 +170,12 @@
           DB::commit();
           
           flash_success(lang('success edit webpage', $webpage->getTitle()));
+          ajx_current("start");
           
         } catch(Exception $e) {
           DB::rollback();
-          tpl_assign('error', $e);
+          flash_error($e);
+          ajx_current("empty");
         } // try
       } // if
     } // edit
@@ -188,12 +191,12 @@
       $webpage = ProjectWebpages::findById(get_id());
       if(!($webpage instanceof ProjectWebpage)) {
         flash_error(lang('webpage dnx'));
-        $this->redirectTo('webpage');
+        ajx_current("empty");
       } // if
       
       if(!$webpage->canDelete(logged_user())) {
         flash_error(lang('no access permissions'));
-        $this->redirectTo('webpage');
+        ajx_current("empty");
       } // if
       
       try {
@@ -204,14 +207,13 @@
         DB::commit();
         
         flash_success(lang('success deleted webpage', $webpage->getTitle()));
+        ajx_current("start");
       } catch(Exception $e) {
         DB::rollback();
         flash_error(lang('error delete webpage'));
+        ajx_current("empty");
       } // try
-      
-      $this->redirectTo('webpage');
     } // delete
-      
     
     function list_all()
     {
@@ -259,16 +261,17 @@
       if($page < 0) $page = 1;
       
       //$conditions = logged_user()->isMemberOfOwnerCompany() ? '' : ' `is_private` = 0';
-      
-      if ($isProjectView)
-      {
-      	if ($tag == '' || $tag == null) {
+    if ($tag == '' || $tag == null) {
 			$tagstr = " '1' = '1'"; // dummy condition
 		} else {
 			$tagstr = "(select count(*) from " . TABLE_PREFIX . "tags where " .
 				TABLE_PREFIX . "project_webpages.id = " . TABLE_PREFIX . "tags.rel_object_id and " .
 				TABLE_PREFIX . "tags.tag = '".$tag."' and " . TABLE_PREFIX . "tags.rel_object_manager ='ProjectWebpages' ) > 0 ";
 		}
+		
+      if ($isProjectView)
+      {
+      	
       	list($webpages, $pagination) = ProjectWebpages::paginate(
       	array("conditions" => "project_id = " . active_project()->getId() ." AND " . $tagstr,
           'order' => '`title` ASC'),
@@ -280,6 +283,7 @@
       {
       	list($webpages, $pagination) = ProjectWebpages::paginate(
       	array(
+      	  "conditions" => $tagstr,
           'order' => '`title` ASC'
           ),
           config_option('files_per_page', 10),
@@ -302,8 +306,8 @@
 		if (isset($webpages))
 		{
 			foreach ($webpages as $w) {
-				if ($isProjectView)
-					$tags = project_object_tags($w, active_project(), true);
+				if ($w->getProject() instanceof Project)
+					$tags = project_object_tags($w, $w->getProject(), true);
 				else
 					$tags = "";
 					

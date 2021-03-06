@@ -1,0 +1,207 @@
+.coContainer {
+	padding: 5px;
+}
+
+.coHeader {
+    padding: 2px 5px;
+    position: relative;
+}
+
+.coHeaderUpperRow {
+	margin: 3px;
+	border-bottom: 1px solid;
+    position: relative;
+    padding-bottom: 2px;
+}
+
+.coTitle {
+  	font-size: 150%;
+}
+
+.coTags {
+	position:absolute;
+	top:0px;
+	right:0px;
+}
+
+.coInfo {
+	padding: 3px;
+}
+
+.coMainBlock {
+	margin-bottom: 5px;
+	margin-top: 5px;
+	width:100%;
+}
+.coContent {
+	padding: 8px;
+	display:table-cell;
+}
+
+.coLinkedObjects {
+	display:table-cell;
+	float:right;
+	width: 200px;
+	border: solid 1px;
+	padding: 3px;
+	height: 100%;
+	margin-left:10px;
+}
+
+.coOptBar {
+	padding-left: 8px;
+	padding-bottom: 3px;
+}
+
+.coOption {
+	display: none;
+	padding:5px;
+	margin:8px;
+}
+
+
+
+
+/* Messages */
+
+.message .coContainer {
+	border: 2px solid #e8e8a8;
+  	background: #f8f8d8;
+}
+
+.message .coHeader {
+    border: 1px solid #e8e8a8;
+    background: #f8f8e8;
+}
+
+.message .coHeaderUpperRow {
+	border-bottom: 1px solid #e8e8a8;
+}
+
+.message .coLinkedObjects {
+    border: 1px solid #e8e8a8;
+    background: #f8f8e8;
+}
+
+.message .coOption {
+    border: 1px solid #e8e8a8;
+    background: #f8f8e8;
+}
+
+.message div.comment .odd {
+	background-color: #D9D9A3;
+}
+
+
+
+
+/* Emails */
+
+.email .coContainer {
+	border: 2px solid #BDBFE6;
+  	background: #EAEAF2;
+}
+
+.email .coHeader {
+    border: 1px solid #BDBFE6;
+    background: #F4F4FF;
+}
+
+.email .coHeaderUpperRow {
+	border-bottom: 1px solid #BDBFE6;
+}
+
+.email .coLinkedObjects {
+    border: 1px solid #BDBFE6;
+    background: #F4F4FF;
+}
+
+.email .coOption {
+    border: 1px solid #BDBFE6;
+    background: #F4F4FF;
+}
+
+
+
+
+/* Files */
+
+.file .coContainer {
+	border: 2px solid #CCCCCC;
+  	background: #F2F2F2;
+}
+
+.file .coHeader {
+    border: 1px solid #CCCCCC;
+    background: #FAFAFA;
+}
+
+.file .coHeaderUpperRow {
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.file .coLinkedObjects {
+    border: 1px solid #CCCCCC;
+    background: #FAFAFA;
+}
+
+.file .coOption {
+    border: 1px solid #CCCCCC;
+    background: #FAFAFA;
+}
+
+
+
+/* Tasks */
+
+.task .coContainer {
+	border: 2px solid #D0F29D;
+  	background: #F5FFE6;
+}
+
+.task .coHeader {
+    border: 1px solid #D0F29D;
+    background: #FAFFF2;
+}
+
+.task .coHeaderUpperRow {
+	border-bottom: 1px solid #D0F29D;
+}
+
+.task .coLinkedObjects {
+    border: 1px solid #D0F29D;
+    background: #FAFFF2;
+}
+
+.task .coOption {
+    border: 1px solid #D0F29D;
+    background: #FAFFF2;
+}
+
+
+
+/* Contacts */
+
+.contact .coContainer {
+	border: 2px solid #E6D3B8;
+  	background: #F2EDE6;
+}
+
+.contact .coHeader {
+    border: 1px solid #E6D3B8;
+    background: #FFFAF2;
+}
+
+.contact .coHeaderUpperRow {
+	border-bottom: 1px solid #E6D3B8;
+}
+
+.contact .coLinkedObjects {
+    border: 1px solid #E6D3B8;
+    background: #FFFAF2;
+}
+
+.contact .coOption {
+    border: 1px solid #E6D3B8;
+    background: #FFFAF2;
+}

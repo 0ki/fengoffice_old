@@ -1,24 +1,33 @@
-#objectComments div.comment {
+.objectComments div.comment {
   margin: 8px 0;
   padding: 10px;
 }
 
-#objectComments .commentHead {
+.objectComments .commentHead {
   color: #333;
   font-size: 10px;
 }
 
-#objectComments .commentHead a {
+.objectComments .commentHead a {
   font-weight: bolder;
 }
 
-#objectComments .commentBody {
+.objectComments .commentBody {
   border: 1px solid #ccc;
-  border-width: 1px 0;
+  border-width: 1px 0px 0px 0px;
   padding: 0 10px;
 }
 
-#objectComments .commentUserAvatar {
+.objectComments .commentUserAvatar {
   float: left;
   margin: 10px 10px 10px 0;
+}
+
+.postComment {
+  margin-top: 20px;
+  margin-bottom: 3px;
+  padding: 3px;
+  font-size: 120%;
+  font-weight: bolder;
+  border-bottom: 1px solid #ccc;
 }

@@ -21,126 +21,57 @@
   cal_query_get_event()
    gets a particular event's information from it's id number.
 ###################################################################*/
-function cal_query_get_event($id){
-	global $cal_db;
-	// set up variables
-	$uid = logged_user()->getId(); // $_SESSION['cal_userid'];
-	if(!is_numeric($uid)) $uid = 0;
-	$limitation = "";
-	// if can't view other's events, set this limitaiton in the query
-	if(!logged_user()->isAdministrator()){
-		if(active_project() instanceof Project ){ //list events for current project, except if perm=0
-			$limitation = " and  ( ( not exists  (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
-				" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0)) ".
-				" AND  ( project_id=" . active_project()->getId() ." )) ";
-		}
-		else{ //list all events for the projects I have permissions on, except if perm=0
-			$projs=get_current_user()->getActiveProjects();
-			$proj_ids = "-1";
-			foreach ($projs as $p){
-				$proj_ids .= "," . $p->getId() ;	
-			}
-			$limitation = " and  (not exists (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
-					" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0) " .
-					" AND ( project_id in (" .$proj_ids .") )) ";
-		}
-	}
-	else {
-		if(active_project() instanceof Project ){ //list events for current project, except if perm=0
-			$limitation = " AND  ( project_id=" . active_project()->getId() ." ) ";
-		}
-	}
-/*	else $limitation = "";
-	if(!cal_permission("readothers")){
-		$limitation .= " AND created_by_id = ".$uid." ";
-	}
-	// if can't view own events, set this limitation in the query
-	if(!cal_permission("read")){
-		$limitation .= " AND created_by_id != ".$uid." ";
-	}*/
-	// access database:
-	if(!is_numeric($id)) return NULL;
-	$q="SELECT UNIX_TIMESTAMP(`start`) AS start_since_epoch,
-		UNIX_TIMESTAMP(duration) AS end_since_epoch,  private, subject, deleted, created_by_id, updated_on,
-		description, eventtype, type_id, repeat_d, repeat_m, repeat_y, repeat_h, repeat_end, repeat_num, typecolor,
-		updated_by_id, UNIX_TIMESTAMP(updated_on) as modstamp , created_on  
-		FROM ".TABLE_PREFIX."project_events left outer join ".TABLE_PREFIX."eventtypes 
-		ON ".TABLE_PREFIX."project_events.type_id=".TABLE_PREFIX."eventtypes.id 
-		WHERE ".TABLE_PREFIX."project_events.id = '$id' 
-		AND deleted=0 
-		$limitation
-		";
-	$result = $cal_db->sql_query($q);
-	if(!$result AND DEBUG){
-		echo CAL_QUERY_GETEVENT_ERROR;
-		echo "<br><br>";
-		echo $cal_db->sql_error();
-	}
-	return $result;
-}
+//function cal_query_get_event($id){
+//	return ProjectEvents::findById($id);
+//	global $cal_db;
+//	// set up variables
+//	$uid = logged_user()->getId(); // $_SESSION['cal_userid'];
+//	if(!is_numeric($uid)) $uid = 0;
+//	$limitation = "";
+//	// if can't view other's events, set this limitaiton in the query
+//	if(!logged_user()->isAdministrator()){
+//		if(active_project() instanceof Project ){ //list events for current project, except if perm=0
+//			$limitation = " and  ( ( not exists  (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
+//				" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0)) ".
+//				" AND  ( project_id=" . active_project()->getId() ." )) ";
+//		}
+//		else{ //list all events for the projects I have permissions on, except if perm=0
+//			$projs=get_current_user()->getActiveProjects();
+//			$proj_ids = "-1";
+//			foreach ($projs as $p){
+//				$proj_ids .= "," . $p->getId() ;	
+//			}
+//			$limitation = " and  (not exists (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
+//					" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0) " .
+//					" AND ( project_id in (" .$proj_ids .") )) ";
+//		}
+//	}
+//	else {
+//		if(active_project() instanceof Project ){ //list events for current project, except if perm=0
+//			$limitation = " AND  ( project_id=" . active_project()->getId() ." ) ";
+//		}
+//	}
+//
+//	// access database:
+//	if(!is_numeric($id)) return NULL;
+//	$q="SELECT UNIX_TIMESTAMP(`start`) AS start_since_epoch,
+//		UNIX_TIMESTAMP(duration) AS end_since_epoch,  private, subject, created_by_id, updated_on,
+//		description, eventtype, type_id, repeat_d, repeat_m, repeat_y, repeat_h, repeat_end, repeat_num, typecolor,
+//		updated_by_id, UNIX_TIMESTAMP(updated_on) as modstamp , created_on  
+//		FROM ".TABLE_PREFIX."project_events left outer join ".TABLE_PREFIX."eventtypes 
+//		ON ".TABLE_PREFIX."project_events.type_id=".TABLE_PREFIX."eventtypes.id 
+//		WHERE ".TABLE_PREFIX."project_events.id = '$id' 
+//		$limitation
+//		";
+//	$result = $cal_db->sql_query($q);
+//	if(!$result AND DEBUG){
+//		echo CAL_QUERY_GETEVENT_ERROR;
+//		echo "<br><br>";
+//		echo $cal_db->sql_error();
+//	}
+//	return $result;
+//}
 
-
-
-
-/* ##################################################################
-  cal_query_setevent()
-   create new event, or update event data, given the event's data
-   if $event_id is not 0 and numberic, we update that event ID with the data provided
-###################################################################*/
-function cal_query_setevent($data, $event_id = 'bogus'){
-	global $cal_db;
-	// note that limitations are checked in eventsub.php
-	// get event info from $data array
-	$rnum = $cal_db->sql_escapestring($data['repeat_num']);
-	$type = $cal_db->sql_escapestring($data['type_id']);
-	$repeat_h = $cal_db->sql_escapestring($data['repeat_h']);
-	$repeat_d = $cal_db->sql_escapestring($data['repeat_d']);
-	$repeat_m = $cal_db->sql_escapestring($data['repeat_m']);
-	$repeat_y = $cal_db->sql_escapestring($data['repeat_y']);
-	$oend = $cal_db->sql_escapestring($data['repeat_end']);
-	if($oend == '')
-		$oend = null;
-	$alias = logged_user()->getId();
-	$timestamp = $cal_db->sql_escapestring($data['start']);
-	$subject = $cal_db->sql_escapestring($data['subject']);
-	$private = $cal_db->sql_escapestring($data['private']);
-	$description = $cal_db->sql_escapestring($data['description']);
-	$typeofevent = $cal_db->sql_escapestring($data['eventtype']);
-	$durationstamp = $cal_db->sql_escapestring($data['duration']);
-	// get user info
-	$username = $cal_db->sql_escapestring($_SESSION['cal_user']);
-	$user_id = $cal_db->sql_escapestring( logged_user()->getId());
-	if(cal_anon()) $username = "";
-	// we only use this if modifying so we can track when it was last modified
-	$modstamp = date("Y-m-d H:i:s");
-	// if we are given the event_id, update that event
-	if(is_numeric($event_id) AND $event_id>0) {
-		$q_oend=($oend)?", repeat_end='$oend' ": "";
-		$query = 'UPDATE '.TABLE_PREFIX."project_events SET repeat_num='$rnum', type_id='$type', repeat_h='$repeat_h', repeat_d='$repeat_d', repeat_m='$repeat_m', repeat_y='$repeat_y' $q_oend , updated_by_id='$user_id', updated_on='$modstamp', subject='$subject', private='$private', description='$description', eventtype='$typeofevent', duration='$durationstamp', `start`='$timestamp' WHERE id='$event_id'";
-	}
-	// otherwise, create a new event if no event_id was passed
-	elseif($event_id=='bogus') {
-		$q_oend=($oend)?" '$oend' ": "null";
-		$project_obj=active_project();
-		$project_id = ($project_obj)? $project_obj->getId():0;
-		$query = 'INSERT INTO '.TABLE_PREFIX."project_events (created_by_id,updated_by_id, repeat_num, type_id, repeat_h, repeat_d, repeat_m, repeat_y, repeat_end, `start`, subject, private, description, eventtype, duration, project_id, created_on, updated_on) VALUES ('$user_id', '$user_id', '$rnum', '$type', '$repeat_h', '$repeat_d','$repeat_m','$repeat_y',$q_oend, '$timestamp', '$subject', '$private', '$description', '$typeofevent', '$durationstamp',".$project_id.", '$modstamp', '$modstamp')";
-	}
-	// if an event_id was passed, but it was not numeric, return NULL
-	else return NULL;
-	// run query and check for errors
-	$result = $cal_db->sql_query($query);
-	if(!$result AND DEBUG){
-		echo CAL_QUERY_SETEVENT_ERROR;
-		echo "<br><br>";
-		echo $cal_db->sql_error();
-	}
-	return $result;
-}
-
-
-
-	
-	
 
 /* ##################################################################
   cal_query_search()
@@ -183,7 +114,6 @@ function cal_query_search($params){
 		ON ev.type_id=et.id 
 		WHERE `start` >= '$fromdate' 
 		AND `start` <= '$todate' 
-		AND deleted=0 
 		AND MATCH (subject,description) AGAINST ('$ss') > 0 
 		$limitation 
 		ORDER BY $sort $order LIMIT 200";
@@ -194,29 +124,6 @@ function cal_query_search($params){
 	}
 	// result is checked by search page, so just pass whatever back
 	return $result;
-}
-
-
-
-
-/* ##################################################################
-  cal_query_delete_event()
-   deletes an event from the database
-   note that we don't actually delete the event, we only flag it as deleted.
-   This way we can still manually un-delete if necessary.
-###################################################################*/
-function cal_query_remove_event($id){
-	global $cal_db;
-	// make sure id is a number
-	if(!is_numeric($id)) return false;
-	// make query and set event as deleted in database
-	$q = "UPDATE ".TABLE_PREFIX."project_events SET deleted=1 WHERE id = $id";
-	$r = $cal_db->sql_query($q);
-	if(!$r AND DEBUG){
-		echo $cal_db->sql_error();
-	}
-	if($r) return true;
-	else return false;
 }
 
 
@@ -298,7 +205,7 @@ function cal_query_permissions($id){
   cal_query_get_eventlist()
    Returns all events that should be listed for the given day/month/year combination.
 ###################################################################*/
-function cal_query_get_eventlist($day,$month,$year){
+function cal_query_get_eventlist($day,$month,$year,$tag){
 // checks OpenGoo permissions with $limitation VARIABLE
 // permissions given if object_permission.permission>0 for the event or the calendar
 	global $cal_db;
@@ -311,11 +218,6 @@ function cal_query_get_eventlist($day,$month,$year){
 	$month = date("m",mktime(0,0,1,$month, $day, $year));
 	$day = date("d",mktime(0,0,1,$month, $day, $year));
 	// get special dates
-/*	$easter = date("Y-m-d", easter_date($year));
-	if($easter=="$year-$month-$day"){
-		$extra = " OR (special_id=1) ";
-	}else */
-	$extra = "";
 	// set up limitation variables
 	$uid =  logged_user()->getId();
 	if(!is_numeric($uid)) $uid = 0;
@@ -323,19 +225,19 @@ function cal_query_get_eventlist($day,$month,$year){
 	$limitation='';
 	if(!logged_user()->isAdministrator()){
 		if(active_project() instanceof Project ){ //list events for current project, except if perm=0
-			$limitation = " and  ( ( not exists  (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
-				" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0)) ".
-				" AND  ( project_id=" . active_project()->getId() ." )) ";
+//			$limitation = " and  ( ( not exists  (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
+//				" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0)) ".
+			$limitation =	" AND  ( project_id=" . active_project()->getId() . " ) "; /// missing 1 parenthesis if previous lines uncommented!!
 		}
 		else{ //list all events for the projects I have permissions on, except if perm=0
-			$projs=get_current_user()->getActiveProjects();
+			$projs=logged_user()->getActiveProjects();
 			$proj_ids = "-1";
 			foreach ($projs as $p){
 				$proj_ids .= "," . $p->getId() ;	
 			}
-			$limitation = " and  (not exists (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
-					" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0) " .
-					" AND ( project_id in (" .$proj_ids .") )) ";
+//			$limitation = " and  (not exists (SELECT permission FROM ".TABLE_PREFIX."object_permissions as p " .
+//					" WHERE p.rel_object_manager='ProjectEvents' and p.rel_object_id = ".TABLE_PREFIX."project_events.id and p.user_id=$uid and permission=0) " .
+			$limitation = " AND ( project_id in (" .$proj_ids .") ) "; /// missing 1 parenthesis if previous lines uncommented!!
 		}
 	}
 	else {
@@ -345,14 +247,12 @@ function cal_query_get_eventlist($day,$month,$year){
 		else
 			$limitation= " AND ( project_id in (". logged_user()->getActiveProjectIdsCSV() .") )";
 	}
-	// if can't view other's events, set this limitaiton in the query
-/*	if(!cal_permission("readothers")){
-		$limitation .= " AND created_by_id = ".$uid." ";
-	}
-	// if can't view own events, set this limitation in the query
-	if(!cal_permission("read")){
-		$limitation .= " AND created_by_id != ".$uid." ";
-	}*/
+	//filter by tags
+	if(isset($tag) && $tag && $tag!='')
+    		$tag_str = " AND exists (SELECT * from " . TABLE_PREFIX . "tags t WHERE tag='".$tag."' AND  ".TABLE_PREFIX."project_events.id=t.rel_object_id AND t.rel_object_manager='ProjectEvents') ";
+	else
+		$tag_str='';
+	$extra = "";
 	// build the query
 	$q = "SELECT UNIX_TIMESTAMP(`start`) as start_since_epoch,
 		UNIX_TIMESTAMP(duration) as end_since_epoch, private, created_by_id, subject,
@@ -385,6 +285,8 @@ function cal_query_get_eventlist($day,$month,$year){
 						(
 							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_d) DAY) >= '$year-$month-$day' 
 							OR
+							repeat_forever = 1
+							OR
 							repeat_end >= '$year-$month-$day'
 						)
 					)
@@ -396,6 +298,8 @@ function cal_query_get_eventlist($day,$month,$year){
 						AND
 						(
 							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_m) MONTH) >= '$year-$month-$day' 
+							OR
+							repeat_forever = 1
 							OR
 							repeat_end >= '$year-$month-$day'
 						)
@@ -410,6 +314,8 @@ function cal_query_get_eventlist($day,$month,$year){
 						AND
 						(
 							ADDDATE(DATE(`start`), INTERVAL ((repeat_num-1)*repeat_y) YEAR) >= '$year-$month-$day' 
+							OR
+							repeat_forever = 1
 							OR
 							repeat_end >= '$year-$month-$day'
 						)
@@ -454,8 +360,7 @@ function cal_query_get_eventlist($day,$month,$year){
 			)
 			$extra
 		)
-		AND deleted=0 
-		$limitation
+		$limitation  $tag_str
 		ORDER BY `start`";
 	$result = $cal_db->sql_query($q);
 	if(!$result AND DEBUG){
@@ -533,166 +438,6 @@ function cal_query_get_eventtypes(){
 	}
 	return $r;
 }
-
-
-
-/* ##################################################################
-  cal_query_delete_user()
-   used by the admin section
-   delete's a user account
-###################################################################*/
-function cal_query_delete_user($id){
-	global $cal_db;
-	// check the data
-	if(!is_numeric($id)) return FALSE;
-	// write the query
-	$q = "DELETE FROM ".TABLE_PREFIX."accounts WHERE id = $id";
-	// run the query
-	$r = $cal_db->sql_query($q);
-	if(!$r AND DEBUG){
-		echo $cal_db->sql_error();
-	}
-	if($r) return TRUE;
-	return FALSE;
-}
-
-
-/* ##################################################################
-  cal_query_add_user()
-   used by the admin section
-   builds the query for adding a user
-     returns 0=failed, 1=successful, 2=user already existed
-###################################################################*/
-function cal_query_add_user($data){
-	global $cal_db;
-	// check the data
-	$username = $cal_db->sql_escapestring($data['username']);
-	$password = $cal_db->sql_escapestring($data['password']);
-	// see if user already existed
-	$check = 'select user from '.TABLE_PREFIX."accounts where user='$username'";
-	$res = $cal_db->sql_query($check);
-	if($cal_db->sql_numrows($res)>0) return 2;
-	// write the query
-	$q = 'INSERT INTO '.TABLE_PREFIX."accounts (user, pass) 
-      	  VALUES ('$username', '$password')";
-	// run the query
-	$r = $cal_db->sql_query($q);
-	if(!$r AND DEBUG){
-		echo $cal_db->sql_error();
-	}
-	if($r) return 1;
-	return 0;
-}
-
-
-/* ##################################################################
-  cal_query_change_pass()
-   used by the admin section
-   changes a user's password
-     returns true or false for successful or failed
-###################################################################*/
-function cal_query_change_pass($pass, $id){
-	global $cal_db;
-	// check the data
-	if(!is_numeric($id)) return FALSE;
-	$password = $cal_db->sql_escapestring($pass);
-	// write the query
-	$q = 'UPDATE '.TABLE_PREFIX."accounts SET pass='$password' where id=$id";
-	// run the query
-	$r = $cal_db->sql_query($q);
-	if(!$r AND DEBUG){
-		echo $cal_db->sql_error();
-	}
-	if($r) return TRUE;
-	return FALSE;
-}
-
-
-
-
-
-/* ##################################################################
-  cal_query_set_permissions()
-   used by the admin section
-   builds the query for setting a user's permissions
-     returns true or false for successful or failed
-###################################################################*/
-function cal_query_set_permissions($data, $id){
-	global $cal_db;
-	// check id
-	if(!is_numeric($id)) return FALSE;
-	if(!is_array($data)) return FALSE;
-	// start the transaction since we do a loop of queries here
-	if($cal_db->sql_query("START TRANSACTION")){
-		// first delete all current permissions
-		$q = "DELETE FROM ".TABLE_PREFIX."permissions WHERE user_id = $id";
-		if(!$cal_db->sql_query($q)){
-			if(DEBUG) echo $cal_db->sql_error();
-			$cal_db->sql_query("ROLLBACK");
-			return FALSE;
-		}
-		// loop through $data variable and add permissions back in
-		foreach($data as $k=>$v){
-			$k = $cal_db->sql_escapestring($k);
-			$v = $cal_db->sql_escapestring($v);
-			$q = "INSERT INTO ".TABLE_PREFIX."permissions (user_id, pname, pvalue) VALUES($id, '$k', '$v')";
-			$r = $cal_db->sql_query($q);
-			if(!$r){
-				if(DEBUG) echo $cal_db->sql_error();
-				$cal_db->sql_query("ROLLBACK");
-				return FALSE;
-			}
-		}
-	}else{
-		if(DEBUG) echo $cal_db->sql_error();
-		return FALSE;
-	}
-	return TRUE;
-}
-
-
-
-/* ##################################################################
-  cal_query_set_options()
-   used by the admin section
-   builds the query for setting a user's permissions
-     returns true or false for successful or failed
-###################################################################*/
-function cal_query_set_options($data){
-	global $cal_db;
-	if(!is_array($data)) return FALSE;
-	// start the transaction since we do a loop of queries here
-	if($cal_db->sql_query("START TRANSACTION")){
-		// loop through $data variable and add permissions back in
-		foreach($data as $k=>$v){
-			$k = $cal_db->sql_escapestring($k);
-			$v = $cal_db->sql_escapestring($v);
-			// first delete all current option.
-			// note we do it in the loop here.  That is because we might only want to 
-			// change some options and wouldn't want to delete them all first
-			// like we did with the permissions (root password option only update's itself for instance)
-			$q = "DELETE FROM ".TABLE_PREFIX."options WHERE opname='$k'";
-			if(!$cal_db->sql_query($q)){
-				if(DEBUG) echo $cal_db->sql_error();
-				$cal_db->sql_query("ROLLBACK");
-				return FALSE;
-			}
-			// now insert the new data
-			$q = "INSERT INTO ".TABLE_PREFIX."options (opname, opvalue) VALUES('$k', '$v')";
-			$r = $cal_db->sql_query($q);
-			if(!$r){
-				if(DEBUG) echo $cal_db->sql_error();
-				$cal_db->sql_query("ROLLBACK");
-				return FALSE;
-			}
-		}
-	}else{
-		if(DEBUG) echo $cal_db->sql_error();
-		return FALSE;
-	}
-	return TRUE;
-}
-
 
 
 ?>

@@ -17,7 +17,7 @@
   } // if
 
 ?>
-<form action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this)">
+<form action="<?php echo $company->getEditLogoUrl() ?>" method="post" enctype="multipart/form-data" onsubmit="og.submit(this, '<?php echo $company->getViewUrl() ?>')">
 
 <?php tpl_display(get_template_path('form_errors')) ?>
   

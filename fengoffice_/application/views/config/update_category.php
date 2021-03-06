@@ -5,7 +5,7 @@
     array(lang('configuration'), get_url('administration', 'configuration')),
     array($category->getDisplayName())
   ));
-  add_stylesheet_to_page('admin/config.css');
+  //add_stylesheet_to_page('admin/config.css');
 ?>
 <?php if(isset($options) && is_array($options) && count($options)) { ?>
 <form class="internalForm" action="<?php echo $category->getUpdateUrl() ?>" method="post" onreset="return confirm('<?php echo lang('confirm reset form') ?>')">

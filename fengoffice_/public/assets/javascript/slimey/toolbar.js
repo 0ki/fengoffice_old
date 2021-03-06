@@ -24,8 +24,8 @@ var SlimeyToolbar = function(slimey) {
 	this.container = document.createElement('div');
 	this.container.className = 'slimeyToolbar';
 	this.tools = new Array();
-	this.addTool(new SlimeySaveTool(this.slimey));
-	this.addSeparator();
+	/*this.addTool(new SlimeySaveTool(this.slimey));
+	this.addSeparator();*/
 	this.addTool(new SlimeyInsertTextTool(this.slimey));
 	this.addTool(new SlimeyInsertImageTool(this.slimey));
 	this.addTool(new SlimeyInsertOrderedListTool(this.slimey));

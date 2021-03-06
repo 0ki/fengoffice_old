@@ -25,18 +25,7 @@ class Event {
 	function getEvents() {
 		return $this->events;
 	}
-	
-	/**
-    * Return event service instance
-    *
-    * @param void
-    * @return Event
-    */
-    function instance() {
-      static $instance;
-      if (!instance_of($instance, 'Event')) $instance = new Event();
-      return $instance;
-    } // instance
+
 }
 
 ?>

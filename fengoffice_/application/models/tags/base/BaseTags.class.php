@@ -14,7 +14,7 @@
     * @var array
     * @static
     */
-    static private $columns = array('id' => DATA_TYPE_INTEGER, 'project_id' => DATA_TYPE_INTEGER, 'tag' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'rel_object_manager' => DATA_TYPE_STRING, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'is_private' => DATA_TYPE_BOOLEAN);
+    static private $columns = array('id' => DATA_TYPE_INTEGER, 'tag' => DATA_TYPE_STRING, 'rel_object_id' => DATA_TYPE_INTEGER, 'rel_object_manager' => DATA_TYPE_STRING, 'created_on' => DATA_TYPE_DATETIME, 'created_by_id' => DATA_TYPE_INTEGER, 'is_private' => DATA_TYPE_BOOLEAN);
   
     /**
     * Construct
