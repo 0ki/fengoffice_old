@@ -106,6 +106,7 @@ og.config.work_day_end_time = '<?php echo strtotime(user_config_option('work_day
 og.config.multi_assignment = '<?php echo config_option('multi_assignment') && Plugins::instance()->isActivePlugin('crpm') ? '1' : '0' ?>';
 og.config.use_milestones = <?php echo config_option('use_milestones') ? 'true' : 'false' ?>;
 var task_ids = <?php echo json_encode($ids)?>;
+if (!task_ids) task_ids = [];
 </script>
 
 <div id="taskPanelHiddenFields">

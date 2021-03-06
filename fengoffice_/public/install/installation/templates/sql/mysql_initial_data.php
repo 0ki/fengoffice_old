@@ -24,7 +24,7 @@ INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`
 	('general', 'file_storage_adapter', 'fs', 'FileStorageConfigHandler', 0, 0, 'What storage adapter should be used? fs or mysql'),
 	('general', 'theme', 'default', 'ThemeConfigHandler', 0, 0, NULL),
 	('general', 'days_on_trash', '30', 'IntegerConfigHandler', 0, 0, 'Days before a file is deleted from trash. 0 = Not deleted'),
-	('mailing', 'exchange_compatible', '0', 'BoolConfigHandler', 0, 0, NULL),
+	('mailing', 'exchange_compatible', '0', 'BoolConfigHandler', 1, 0, NULL),
 	('mailing', 'mail_transport', 'mail()', 'MailTransportConfigHandler', 0, 0, 'Values: ''mail()'' - try to emulate mail() function, ''smtp'' - use SMTP connection'),
 	('mailing', 'smtp_server', '', 'StringConfigHandler', 0, 0, ''),
 	('mailing', 'smtp_port', '25', 'IntegerConfigHandler', 0, 0, NULL),
@@ -271,6 +271,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  ('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  ('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
  ('general', 'updateOnLinkedObjects', '1', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
+ ('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
  ('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL);
  
 

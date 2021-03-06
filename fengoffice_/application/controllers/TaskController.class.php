@@ -682,9 +682,6 @@ class TaskController extends ApplicationController {
 		$filter_to_date =getDateValue(array_var($_GET, 'to_date'));		
 		if ($filter_to_date instanceof DateTimeValue) {
 			$copToDate = $filter_to_date;
-			$filter_to_date->setHour(23);
-			$filter_to_date->setMinute(59);
-			$filter_to_date->setSecond(59);
 			$filter_to_date = $filter_to_date->toMySQL();
 		}		
 		$tasks_to_date = '';
@@ -702,17 +699,30 @@ class TaskController extends ApplicationController {
 			}else{
 				$filter_to_date = user_config_option('tasksDateEnd');
 			}
-		}		
+		}
+				
 		if ((($filter_from_date != '0000-00-00 00:00:00')) || (($filter_to_date != '0000-00-00 00:00:00'))){
+			if(($filter_from_date != '0000-00-00 00:00:00')){ 
+				$dateFrom = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $filter_from_date);
+				$dateFrom->advance(logged_user()->getTimezone() * -3600);
+				$dateFrom = $dateFrom->toMySQL();
+			}
+			if(($filter_to_date != '0000-00-00 00:00:00')){
+				$dateTo = DateTimeValueLib::dateFromFormatAndString(DATE_MYSQL, $filter_to_date);
+				$dateTo->setHour(23);
+				$dateTo->setMinute(59);
+				$dateTo->setSecond(59);
+				$dateTo->advance(logged_user()->getTimezone() * -3600);
+				$dateTo = $dateTo->toMySQL();
+			}
 			if((($filter_from_date != '0000-00-00 00:00:00')) && (($filter_to_date != '0000-00-00 00:00:00'))){
 				
-				$tasks_from_date = " AND ((`start_date` BETWEEN '" . $filter_from_date ."' AND '".$filter_to_date."') AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`due_date` BETWEEN '" . $filter_from_date ."' AND '".$filter_to_date."') AND `due_date` != ". DB::escape(EMPTY_DATETIME) .")";
+				$tasks_from_date = " AND (((`start_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR ((`due_date` BETWEEN '" . $dateFrom ."' AND '".$dateTo."') AND `due_date` != ". DB::escape(EMPTY_DATETIME) ."))";
 			}elseif (($filter_from_date != '0000-00-00 00:00:00')){
-				
-			$tasks_from_date = " AND (`start_date` > '" . $filter_from_date ."' OR `due_date` > '" . $filter_from_date."') ";
+				$tasks_from_date = " AND (`start_date` > '" . $dateFrom ."' OR `due_date` > '" . $dateFrom."') ";
 			}else{
 			
-				$tasks_from_date = "AND ((`start_date` < '".$filter_to_date."' AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`due_date` < '".$filter_to_date."' AND `due_date` != ".DB::escape(EMPTY_DATETIME)."))";
+				$tasks_from_date = "AND ((`start_date` < '".$dateTo."' AND `start_date` != ". DB::escape(EMPTY_DATETIME) .") OR (`due_date` < '".$dateTo."' AND `due_date` != ".DB::escape(EMPTY_DATETIME)."))";
 		
 			}
 		}else{

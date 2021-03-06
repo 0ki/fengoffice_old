@@ -103,16 +103,18 @@ class TimeslotController extends ApplicationController {
 			$timeslot->setDescription(array_var($timeslot_data, 'description'));
 			$timeslot->setContactId(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
 			$timeslot->setRelObjectId($object_id);
-
-			$billing_category_id = logged_user()->getDefaultBillingId();
+			
+			$user = Contacts::findById(array_var($timeslot_data, 'contact_id', logged_user()->getId()));
+			$billing_category_id = $user->getDefaultBillingId();
 			$bc = BillingCategories::findById($billing_category_id);
 			if ($bc instanceof BillingCategory) {
 				$timeslot->setBillingId($billing_category_id);
 				$hourly_billing = $bc->getDefaultValue();
 				$timeslot->setHourlyBilling($hourly_billing);
-				$timeslot->setFixedBilling($hourly_billing * $hoursToAdd);
+				$timeslot->setFixedBilling(number_format($hourly_billing * $hours, 2));
 				$timeslot->setIsFixedBilling(false);
 			}
+			
 
 			try{
 				DB::beginWork();

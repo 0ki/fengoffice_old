@@ -183,8 +183,7 @@ class ApplicationLogs extends BaseApplicationLogs {
 			$removed = 0;
 			foreach ($logs as $k => $log) {
 				if ($log->getAction() == 'link') {
-					$id = explode(":", $log->getLogData());
-					$lobj = Objects::findObject($id[1]);
+					$lobj = Objects::findObject($log->getLogData());
 					if (!$lobj instanceof ApplicationDataObject || !can_access(logged_user(), $lobj->getMembers(), $lobj->getObjectTypeId(), ACCESS_LEVEL_READ)) {
 						$removed++;
 						unset($logs[$k]);

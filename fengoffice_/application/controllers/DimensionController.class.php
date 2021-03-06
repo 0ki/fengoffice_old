@@ -188,6 +188,7 @@ class DimensionController extends ApplicationController {
 		$all_associated_members_ids = array();
 		
 		foreach ($selected_members as $member) {
+			if (!$member instanceof Member) continue;
 			$association_ids = DimensionMemberAssociations::getAllAssociationIds($member->getDimensionId(), $dimension->getId());
 			
 			if (count($association_ids) > 0) {

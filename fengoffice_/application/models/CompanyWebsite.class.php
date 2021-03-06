@@ -194,7 +194,7 @@ final class CompanyWebsite {
 		} else {
 			$user->setLastVisit($user->getLastActivity());
 		} // if
-
+		$user->save();
 		$this->setLoggedUser($user, $remember, true);
 	} // logUserIn
 

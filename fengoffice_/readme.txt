@@ -1,5 +1,5 @@
 
-	About Feng Office 2.3-rc2
+	About Feng Office 2.3.1-beta
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,73 @@
 	
 	Changelog
 	=========
+	
+	Since 2.3.1-beta
+	----------------
+	feature: View Contacts direct url if config option is enabled.
+	feature: The system now remembers whether you are displaying the Overview as dashboard or as list.
+	    
+	bugfix: Duplicate key inserting read objects solved.
+	bugfix: When writing an email from email tab, bcc was always displayed.
+	bugfix: Events report end date did not show the time, now they do.
+	bugfix: Objects history was not displaying linked objects logs.
+	bugfix: On task list when you filter by a range of dates permissions filtering were not applied.
+	bugfix: Exchange compatibility option has been removed.
+	bugfix: When listing tasks timezones were not being taken into account.
+	bugfix: Last login field was not being updated.
+	bugfix: Gantt chart was showing some tasks as completed when their percentage was over 100% and they were not completed
+	bugfix: When adding a timeslot for someone else within a task, the billing value was not being taken into account
+	bugfix: Gantt chart tasks resizing has been improved
+	
+	Since 2.3
+	----------------
+	feature: In the contact panel you can choose contacts in order to send a group mail
+	feature: New user config option, updating an object’s date when it is linked to another object
+	feature: Gantt sub tasks can be out of range of parent task dates.
+	feature: Gantt chart and Task List can be filtered by period.
+	feature: Comments are now displayed on Activity Widget.
+	feature: Gantt Chart now displays tasks with only start or due date
+	feature: archive/unarchive dimension members from administration->dimensions.
+	feature: when uploading a file with the same name as another that has been uploaded by other user and you don't have permissions over it, don't show as if exists.
+	feature: New Projects by default will start with “good” status
+	feature: Listing function does not use limit if start parameter is not specified
+	feature: When adding a client/project the initial focus is on name
+	 
+	performance: tasks list performance has been greatly enhanced by loading the descriptions afterwards through Ajax
+	performance: when saving members save permissions using an async request.
+	 
+	bugfix: Users invited to an event can view/edit their invitation on Google Calendars
+	bugfix: Editing  e-mail accounts correctly by administrator or user with permissions
+	bugfix: Export only visible contacts/companies in contact panel
+	bugfix: User e-mail duplication upon creation
+	bugfix: Completing  tasks with child tasks error
+	bugfix: Contact who trashed a document now shown in history
+	bugfix: Worked time was not always displayed.
+	bugfix: There were empty logs in the Activity widget
+	bugfix: Group by on tasks lists, subtasks displayed in wrong place.
+	bugfix: Sort listings by custom properties(contact, document) .
+	bugfix: Activity Widget broken on small screens.
+	bugfix: Activity Widget time zone issue.
+	bugfix: Custom property, escape commas.
+	bugfix: Contact custom reports now show their email addresses
+	bugfix: Search contacts by phone number, email , im and by address.
+	bugfix: add_to_members when no permissions over parent .
+	bugfix: Duplicate key when adding emails to searchable objects.
+	bugfix: User with permissions to edit account cannot delete unclassified emails.
+	bugfix: projects widget does not show projects.
+	bugfix: Sql was not using "select distinct" on searchable objects().
+	bugfix: add task dependency js error .
+	bugfix: ObjectController::list_objects malformed sql error.
+	bugfix: Now all users can sync Feng Calendar with Google Calendar.
+	bugfix: Google Calendar is no longer trashing old events
+	bugfix: Trash fails when mail plugin is not installed
+	bugfix: Member selector fixed for IE
+	bugfix: Some permissions were not set when adding new member
+	bugfix: Creating reports of “grouping by user” and “members” at the same time issue fix
+	bugfix: Report not showing correct Date in condition legend
+	bugfix: SQL issue in Report fixed
+	bugfix: Description not set for all tasks when listing.
+	bugfix: Left menu expands after adding first client or project
 	
 	Since 2.3-rc
 	----------------

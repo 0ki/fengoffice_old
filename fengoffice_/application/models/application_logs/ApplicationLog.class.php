@@ -222,8 +222,7 @@ class ApplicationLog extends BaseApplicationLog {
 				}
 			case ApplicationLogs::ACTION_LINK :
 			case ApplicationLogs::ACTION_UNLINK :
-				$exploded = explode(":", $this->getLogData());
-				$linked_object = Objects::findObject($exploded[1]);
+				$linked_object = Objects::findObject($this->getLogData());
 				if ($linked_object instanceof ApplicationDataObject ) {
 					$icon_class = "";
 					if ($linked_object instanceof ProjectFile) {

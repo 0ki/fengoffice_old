@@ -79,10 +79,14 @@ function render_single_member_selector(Dimension $dimension, $genid = null, $sel
 	);
 	if($dimension_options && isset($dimension_options->useLangs) && $dimension_options->useLangs ) {
 		$dim_info['dimension_name'] = lang($dimension->getCode());
+	} else {
+		$dim_info['dimension_name'] = $dimension->getName();
 	}
 	
 	$dimensions = array($dim_info);
 	
+	$content_object_type_id = array_var($options, 'content_object_type_id');
+	$initial_selected_members = $selected_member_ids;
 	
 	if (is_null($selected_member_ids)) $selected_member_ids = array();
 			

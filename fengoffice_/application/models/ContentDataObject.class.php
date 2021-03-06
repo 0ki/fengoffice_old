@@ -1093,7 +1093,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 			if ($this->getIsRead($contact_id)) {
 				return; // object is already marked as read
 			}
-			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, NOW())", $this->getId(), $contact_id);
+			DB::execute("INSERT INTO ".TABLE_PREFIX."read_objects (rel_object_id, contact_id, is_read, created_on) VALUES (?, ?, 1, NOW()) ON DUPLICATE KEY UPDATE is_read=1", $this->getId(), $contact_id);
 			$this->is_read[$contact_id] = true;
 		} else {
 			ReadObjects::delete('rel_object_id = ' . $this->getId() . ' AND contact_id = ' . $contact_id);

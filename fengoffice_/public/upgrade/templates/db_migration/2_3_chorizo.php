@@ -22,6 +22,7 @@ INSERT INTO `<?php echo $table_prefix ?>contact_config_options` (`category_name`
  	('general', 'viewUsersChecked', '0', 'BoolConfigHandler', '1', '0', 'in people panel is view users checked'),
  	('general', 'viewCompaniesChecked', '1', 'BoolConfigHandler', '1', '0', 'in people panel is view companies checked'),
  	('general', 'updateOnLinkedObjects', '0', 'BoolConfigHandler', '0', '0', 'Update objects when linking others'),
+ 	('dashboard', 'overviewAsList', '0', 'BoolConfigHandler', '1', '0', 'View Overview as list'),
 	('general', 'contacts_per_page', '50', 'IntegerConfigHandler', '0', '1200', NULL)
 ON DUPLICATE KEY UPDATE name=name;
 
@@ -57,3 +58,5 @@ update <?php echo $table_prefix ?>contacts set avatar_file='' where avatar_file 
 update <?php echo $table_prefix ?>contacts set last_login='0000-00-00 00:00:00' where last_login is null;
 update <?php echo $table_prefix ?>contacts set last_visit='0000-00-00 00:00:00' where last_visit is null;
 update <?php echo $table_prefix ?>contacts set personal_member_id=0 where personal_member_id is null;
+
+update <?php echo $table_prefix ?>config_options set is_system=1 where name='exchange_compatible';

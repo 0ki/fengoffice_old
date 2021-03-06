@@ -11,7 +11,7 @@
 	foreach ($dimensions as $dimension) :
 	
 		$dimension_id = $dimension['dimension_id'];
-		if (is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
+		if (isset($skipped_dimensions) && is_array($skipped_dimensions) && in_array($dimension_id, $skipped_dimensions)) continue;
 		
 		if ( is_array(array_var($options, 'allowedDimensions')) && array_search($dimension_id, $options['allowedDimensions']) === false ){
 			continue;	 
@@ -19,11 +19,11 @@
 
 		if (!array_var($options, 'allow_non_manageable') && !$dimension['is_manageable']) continue;
 		
-		$is_required = $dimension['is_required'];
-		$dimension_name = $dimension['dimension_name'];
+		$is_required = array_var($dimension, 'is_required');
+		$dimension_name = array_var($dimension, 'dimension_name');
 		if ($is_required) $dimension_name .= " *";
 		
-		if (is_array($simulate_required) && in_array($dimension_id, $simulate_required)) $is_required = true;
+		if (isset($simulate_required) && is_array($simulate_required) && in_array($dimension_id, $simulate_required)) $is_required = true;
 
 		$dimension_selected_members = array();
 		foreach ($selected_members as $selected_member) {

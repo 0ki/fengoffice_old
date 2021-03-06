@@ -1190,7 +1190,7 @@ class Notifier {
 	 * @return string
 	 */
 	static function prepareEmailAddress($email, $name = null) {
-		if(trim($name) && !self::getExchangeCompatible()) {
+		if(trim($name)) {
 			return trim($name) . ' <' . trim($email) . '>';
 		} else {
 			return trim($email);

@@ -420,7 +420,6 @@ class ProjectEvents extends BaseProjectEvents {
                                                 $event_name = $event->title->text;
                                             }
                                             $array_events_google[] = $special_id;
-                                            file_put_contents("log.txt", "\r\n"."el la id especial: ".$special_id."\r\n"."el evento: ".$event_name, FILE_APPEND);
                                             $new_event = ProjectEvents::findBySpecialId($special_id);
                                             $is_invitation = EventInvitations::findBySpecialId($special_id);                                            
                                            
@@ -570,7 +569,6 @@ class ProjectEvents extends BaseProjectEvents {
                                         if($inv_delete){
                                         	foreach($inv_delete as $invs_delete){
                                         		if(!in_array($invs_delete->getSpecialID(), $array_events_google)){
-                                        			file_put_contents("log.txt", "\r\n"."el evento: ".print_r($array_events_google,1)."\r\n"."el usurario: ".$invs_delete->getSpecialID(), FILE_APPEND);
                                         			$event_delete = ProjectEvents::findById($invs_delete->getEventId());
                                         			$event_controller->delete_event_calendar_extern($event_delete);
                                         			$event_delete->trash();

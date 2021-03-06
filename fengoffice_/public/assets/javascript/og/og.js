@@ -189,12 +189,15 @@ og.timeslotTypeSelectChange = function(select, genid) {
 }
 
 og.switchToOverview = function(){
+	og.openLink(og.getUrl('account', 'update_user_preference', {name:'overviewAsList', value:1}), {hideLoading:true});
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: 'url', data: og.getUrl('dashboard', 'init_overview')};
 	opanel.load(opanel.defaultContent);
 };
 
 og.switchToDashboard = function(){
+	og.openLink(og.getUrl('account', 'update_user_preference', {name:'overviewAsList', value:0}), {hideLoading:true});
+	
 	var opanel = Ext.getCmp('overview-panel');
 	opanel.defaultContent = {type: "url", data: og.getUrl('dashboard','main_dashboard')};
 	opanel.load(opanel.defaultContent);

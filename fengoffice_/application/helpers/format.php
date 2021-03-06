@@ -276,7 +276,7 @@ function date_format_tip($format) {
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
 					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
-					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && $col == 'start') $formatted = format_datetime($dtVal);
+					if ($obj_type_id == ProjectEvents::instance()->getObjectTypeId() && ($col == 'start'|| $col == 'duration')) $formatted = format_datetime($dtVal);
 					else $formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';
 				break;

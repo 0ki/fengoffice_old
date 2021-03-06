@@ -934,9 +934,13 @@ ogTasks.getTimeDistances = function(){
 */
 ogTasks.getTimeDistance = function(timestamp){
 	var tz = og.loggedUser.tz ? og.loggedUser.tz : 0;
-	var date = new Date((timestamp - tz * 3600) * 1000);
-	date.clearTime();
 	var today = new Date();
+	var todayGMTUser = new Date(today.valueOf() + today.getTimezoneOffset() * 60000 + tz * 3600 * 1000);//getTimezoneOffset because new date take local tz
+	var date = new Date(timestamp * 1000);
+	var dateGMTUser = new Date(timestamp * 1000 + date.getTimezoneOffset() * 60000);
+	today = todayGMTUser;
+	date = dateGMTUser;
+	date.clearTime();
 	today.clearTime();
 	var day = 24*60*60*1000; //milliseconds in a day
 	var startday = 0;//(og.preferences['start_monday']) * day;

@@ -71,7 +71,7 @@
 			echo ($ts->getUser() instanceof Contact ? $ts->getUser()->getObjectName() : '') .';';
 			$lastStop = $ts->getEndTime() != null ? $ts->getEndTime() : ($ts->isPaused() ? $ts->getPausedOn() : DateTimeValueLib::now());
 			$mystring = DateTimeValue::FormatTimeDiff($ts->getStartTime(), $lastStop, "m", 60, $ts->getSubtract());
-			$resultado = ereg_replace("[^0-9]", "", $mystring);
+			$resultado = preg_replace("[^0-9]", "", $mystring);
 			$resultado = round(($resultado/60),5);
 			echo $resultado;
 			$sub_total += $resultado;

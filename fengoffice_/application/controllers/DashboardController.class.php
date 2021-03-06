@@ -20,9 +20,13 @@ class DashboardController extends ApplicationController {
 	} // __construct
 
 	function init_overview() {
-		require_javascript("og/OverviewManager.js");
-		ajx_current("panel", "overview", null, null, true);
-		ajx_replace(true);
+		if (user_config_option("overviewAsList")){
+			require_javascript("og/OverviewManager.js");
+			ajx_current("panel", "overview", null, null, true);
+			ajx_replace(true);
+		}else{
+			ajx_set_no_toolbar(true);
+		}
 	}
 	
 	/**
@@ -227,9 +231,13 @@ class DashboardController extends ApplicationController {
 	 * @author Ignacio Vazquez
 	 */
 	function main_dashboard(){
-		ajx_set_no_toolbar(true);
-		
-		
+		if (user_config_option("overviewAsList")){
+			require_javascript("og/OverviewManager.js");
+			ajx_current("panel", "overview", null, null, true);
+			ajx_replace(true);
+		}else{
+			ajx_set_no_toolbar(true);
+		}
 	}
 	
 	function load_widget () {

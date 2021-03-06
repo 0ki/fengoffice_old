@@ -59,6 +59,17 @@
                             </ul>
                             <?php endif ;?>
                             
+                            	<?php if (isset($internalDivs)){
+				foreach ($internalDivs as $idiv)
+					echo $idiv;
+			}
+			
+			if (!isset($is_user) && user_config_option("show_object_direct_url") ) { ?>
+			<div style="padding-bottom:15px" id="direct_url"><b><?php echo lang('direct url') ?>:</b>
+				<a id="task_url" href="<?php echo($contact->getViewUrl()) ?>" target="_blank"><?php echo($contact->getViewUrl()) ?></a>
+			</div>
+			<?php } ?>
+                            
                             <div class="all-info">                            
                                 <h4><?php echo ucfirst(lang ('work')) ?></h4>
                                 <ul> 
