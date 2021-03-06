@@ -108,10 +108,13 @@ class Notifier {
 				Localization::instance()->loadSettings($locale, ROOT . '/language');
 				$workspaces = $object->getUserWorkspaces($user);
 				$ws = "";
+				$plain_ws = "";
 				foreach ($workspaces as $w) {
 					if ($ws) $ws .= ", ";
+					if ($plain_ws) $plain_ws .= ", ";
 					$css = get_workspace_css_properties($w->getColor());
 					$ws .= "<span style=\"$css\">" . $w->getPath() . "</span>";
+					$plain_ws .= $w->getPath();
 				}
 				$properties['workspace'] = $ws;
 				
@@ -122,7 +125,7 @@ class Notifier {
 				$emails[] = array(
 					"to" => array(self::prepareEmailAddress($user->getEmail(), $user->getDisplayName())),
 					"from" => self::prepareEmailAddress($senderemail, $sendername),
-					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $ws),
+					"subject" => $subject = lang("$notification notification $type", $name, $uid, $typename, $plain_ws),
 					"body" => tpl_fetch(get_template_path('general', 'notifier'))
 				);
 			}
@@ -285,6 +288,7 @@ class Notifier {
 		$typename = lang($object->getObjectTypeName());
 		$description = lang("$notification notification event desc", $object->getObjectName(), $sender->getDisplayName());
 		
+		$properties= array();
 		$properties['unique id'] = $uid;
 		//$properties['view event'] = str_replace('&amp;', '&', $object->getViewUrl());
 

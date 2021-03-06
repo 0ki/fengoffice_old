@@ -78,7 +78,7 @@
 	'update people' => 'Modificar',
 	'remove user from project' => 'Eliminar usuario de esta área de trabajo',
 	'remove company from project' => 'Eliminar empresa de esta área de trabajo',
-	'update profile' => 'Editar datos de mi cuenta',
+	'update profile' => 'Editar cuenta',
 	'change password' => 'Modificar contraseña',
 	'update avatar' => 'Guardar nueva imagen',
 	'delete current avatar' => 'Eliminar la imagen actual',

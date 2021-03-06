@@ -23,8 +23,18 @@
 	}
 	$co_type = array_var($task_data, 'object_subtype');
 ?>
-
-<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post">
+<script>
+og.checkSubmitAddTask = function(genid) {
+	var dd = Ext.getCmp(genid + 'due_date').getValue();
+	var sd = Ext.getCmp(genid + 'start_date').getValue();
+	if (sd && dd && dd < sd) {
+		alert(lang('warning start date greater than due date'));
+		return false;
+	}
+	return true;
+};
+</script>
+<form id="<?php echo $genid ?>submit-edit-form" style='height:100%;background-color:white' class="internalForm" action="<?php echo $task->isNew() ? get_url('task', 'add_task', array("copyId" => array_var($task_data, 'copyId'))) : $task->getEditListUrl() ?>" method="post" onsubmit="return og.checkSubmitAddTask('<?php echo $genid ?>')">
 
 <div class="task">
 <div class="coInputHeader">
@@ -216,11 +226,11 @@
     	<table><tbody><tr><td style="padding-right: 10px">
     	<?php echo label_tag(lang('start date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'),$genid, 60) ?>
+		<?php echo pick_date_widget2('task_start_date', array_var($task_data, 'start_date'), $genid, 60, true, $genid.'start_date') ?>
 		</td></tr><tr><td style="padding-right: 10px">
 		<?php echo label_tag(lang('due date')) ?>
     	</td><td>
-		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'),$genid, 70) ?>
+		<?php echo pick_date_widget2('task_due_date', array_var($task_data, 'due_date'), $genid, 70, true, $genid.'due_date') ?>
 		</td></tr></tbody></table>
 		</div>
 		

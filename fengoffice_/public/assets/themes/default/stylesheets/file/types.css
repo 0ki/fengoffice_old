@@ -1,13 +1,13 @@
 .ico-project, .ico-workspace {
 	background-image: url(../../images/16x16/workspace.png) !important;
 }
-.ico-milestone {
+.ico-projectmilestone, .ico-milestone {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -400px !important;
 }
 .ico-emails {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -437px !important;
 }
-.ico-email {
+.ico-mailcontent, .ico-email {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -438px !important;
 }
 .ico-emailunclassified {
@@ -16,13 +16,13 @@
 .ico-weblinks, .ico-webpages {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -78px !important;
 }
-.ico-weblink, .ico-webpage {
+.ico-projectwebpage, .ico-weblink, .ico-webpage {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -80px !important;
 }
-.ico-task {
+.ico-projecttask, .ico-task {
 	background: transparent url(../../images/16x16/tasks.png) no-repeat !important;
 }
-.ico-event {
+.ico-projectevent, .ico-event {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 0px !important;
 }
 .ico-contact {
@@ -31,13 +31,13 @@
 .ico-company {
 	background: transparent url(../../images/16x16/all_16_16_vertical.png) no-repeat scroll 0 -540px !important;
 }
-.ico-message {
+.ico-projectmessage, .ico-message {
 	background: transparent url(../../images/16x16/message.png) no-repeat !important;
 }
 .ico-message-rfc822 {
 	background-image: url(../../images/16x16/types/message.png) !important;
 }
-.ico-file {
+.ico-projectfile, .ico-file {
 	background-image: url(../../images/16x16/types/file.png) !important;
 }
 .ico-user, .ico-users {

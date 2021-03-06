@@ -164,9 +164,7 @@ class FeedController extends PageController {
 			else {
 				$project = Projects::findById($cal);
 			}
-				
 			$events = ProjectEvents::getAllEventsByProject($project, false, $inc_sub, $user);
-				
 			$calendar_name = isset($_GET['n']) ? $_GET['n'] : $user->getDisplayName();
 			tpl_assign('content', CalFormatUtilities::generateICalInfo($events, $calendar_name, $user));
 		} else {

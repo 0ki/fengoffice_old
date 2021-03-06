@@ -433,7 +433,7 @@
     	return select_box($name . '_month', $month_options, $attM) . select_box($name . '_day', $day_options, $attD) . select_box($name . '_year', $year_options, $attY );
   } // pick_date_widget
   
-  function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true) {
+  function pick_date_widget2($name, $value = null, $genid = null, $tabindex = null, $display_date_info = true, $id = null) {
   	require_javascript('og/DateField.js');
   	
   	$date_format = user_config_option('date_format');
@@ -442,6 +442,7 @@
   	if ($value instanceOf DateTimeValue){
   		$dateValue = $value->format($date_format);
   	}
+  	if (!$id) $id = $genid . $name . "Cmp";
   	$daterow = '';
   	if ($display_date_info)
   		$daterow = "<td style='padding-top:4px;font-size:80%'><span class='desc'>&nbsp;(" . date_format_tip($date_format) . ")</span></td>";
@@ -450,7 +451,7 @@
 		var dtp" . gen_id() . " = new og.DateField({
 			renderTo:'" . $genid . $name . "',
 			name: '" . $name . "',
-			id: '" . $genid . $name . "Cmp',".
+			id: '" . $id . "',".
 			(isset($tabindex) ? "tabIndex: '$tabindex'," : "").
 			"value: '" . $dateValue . "'});
 	</script>

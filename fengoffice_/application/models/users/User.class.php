@@ -248,7 +248,7 @@ class User extends BaseUser {
 	 * @return boolean
 	 */
 	function isMemberOf(Company $company) {
-		return $this->getCompanyId() == $company->getId();
+		return $company instanceof Company ? $this->getCompanyId() == $company->getId() : false;
 	} // isMemberOf
 
 	/**

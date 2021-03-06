@@ -92,7 +92,12 @@
     		$trashed .= ' AND ( ' . permissions_sql_for_listings(eval("return $object_type::instance();"), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`co`') .')';
     		$trashed .= ')';
     	}
-
+	    //Check workspace permissions
+    	if ($object_type == 'Projects') {
+    		$trashed .= " AND `rel_object_id` IN (SELECT `proj`.`id` FROM $tableName `proj` WHERE ";
+    		$trashed .= ' ( ' . permissions_sql_for_listings(eval("return $object_type::instance();"), ACCESS_LEVEL_READ, logged_user(), '`project_id`', '`proj`') .'))';
+    	}
+    	
     	// if search criteria is a mail address, remove its domain to avoid matching emails with same domain that are not from this address
     	$pos = strpos_utf($search_for, '@');
     	while ($pos !== FALSE) {

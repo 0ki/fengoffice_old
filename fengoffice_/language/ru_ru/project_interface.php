@@ -236,6 +236,7 @@ http://code.google.com/p/opengooru/
 	'error deleted chart' => 'Ошибка при удалении диаграммы',
 	
 	'task priority' => 'Приоритет',
+	'urgent priority' => 'Срочный',
 	'high priority' => 'Высокий',
 	'normal priority' => 'Нормальный',
 	'low priority' => 'Низкий',
@@ -341,6 +342,7 @@ http://code.google.com/p/opengooru/
 	'linked milestone tab' => 'Этапы',
 	'linked task tab' => 'Задачи',
 	'linked event tab' => 'События',
+	'apply assignee to subtasks' => 'Добавить исполнителя к подзадачам', 
 	
 ); 
 ?>

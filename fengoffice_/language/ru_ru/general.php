@@ -12,6 +12,7 @@ http://code.google.com/p/opengooru/
 	'password' => 'Пароль',
 	'password again' => 'Повтор пароля',
 	'old password' => 'Старый пароль',
+	'new password' => 'Новый пароль', 
 	'remember me' => 'Запомнить меня на 14 дней',
 	'email address' => 'E-mail адрес',
 	'display name' => 'Отображаемое имя',
@@ -228,6 +229,22 @@ http://code.google.com/p/opengooru/
 	'move down' => 'Переместить вниз',
   
 	'this file is included in document' => "Этот файл включен в документ: {0}",
+	'minutes ago' => "{0} минут назад",
+  	'about hours ago' => "Около {0} часов назад",
+  	'yesterday at' => "Вчера в {0}",
+	'day at' => "{0} в {1}",
+
+  	'added by capitalized' => 'Добавлено',
+  	'in capitalized' => 'В', 
+  	'unique id capitalized' => 'Уникальный ID', 
+  	'system notification email' => 'Это системное извещение, НЕ отвечайте на это письмо', 
+  
+  	'modifications tab' => 'Модификации', 
+  	'views tab' => 'Вид', 
+
+  	'latest activity' => 'Последняя активность', 
+  	'view all activity' => 'Посмотреть всю активность...', 
+  	'advanced' => 'Расширенные',
 	
 	); 
 ?>

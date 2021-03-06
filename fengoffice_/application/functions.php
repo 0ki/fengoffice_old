@@ -872,7 +872,8 @@ function create_user($user_data, $permissionsString) {
 }
 
 function utf8_safe($text) {
-	$safe = @iconv("UTF-8", "UTF-8//IGNORE", $text);
+	//$safe = @iconv("UTF-8", "UTF-8//IGNORE", $text);
+	$safe = html_entity_decode(htmlentities($text, ENT_COMPAT, "UTF-8"), ENT_COMPAT, "UTF-8");
 	return preg_replace('/[\xF0-\xF4][\x80-\xBF][\x80-\xBF][\x80-\xBF]/', "", $safe);
 }
 

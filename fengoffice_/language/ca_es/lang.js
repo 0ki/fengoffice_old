@@ -375,6 +375,7 @@ addLangs({
 	'workspace': 'Espai de treball',
 	'start date': 'Data d\'inici',
 	'task name': 'Nom de tasca',
+	'task subject': 'Assumpte de tasca', 
 	'show': 'Mostra',
 	'time': 'Hora',
 	'dates': 'Dates',

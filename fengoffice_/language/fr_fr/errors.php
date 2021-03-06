@@ -120,4 +120,5 @@
 	'mailAccount dnx' => 'Le compte de messagerie n\'existe pas',
 	'error add contact from user' => 'Impossible de créer un contact depuis l\'utilisateur.',
 	'zip not supported' => 'Le format ZIP n\'est pas pris en charge par le serveur',
+	'no tag specified' => 'Aucune étiquette spécifiée',
 ); ?>

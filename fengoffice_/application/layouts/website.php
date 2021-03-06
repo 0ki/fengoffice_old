@@ -62,12 +62,17 @@
 
 <?php echo render_page_javascript() ?>
 <?php echo render_page_inline_js() ?>
-
+<?php 
+	$use_owner_company_logo = false;
+	if (config_option('use_owner_company_logo_at_header') && owner_company()->hasLogo()) {
+		$use_owner_company_logo = true; 
+	}
+?>
 <!-- header -->
 <div id="header">
 	<div id="headerContent">
 	    <table class="headerLogoAndWorkspace"><tr><td style="width:60px">
-			<div id="logodiv"></div>
+			<div id="logodiv" <?php echo ($use_owner_company_logo ? 'style="background-image:url('.owner_company()->getLogoUrl().');"' : '') ?>></div>
 		</td><td>
 			<div id="wsCrumbsWrapper">
 				<table><tr><td>
@@ -131,7 +136,7 @@
 // OG config options
 og.hostName = '<?php echo ROOT_URL ?>';
 og.sandboxName = <?php echo defined('SANDBOX_URL') ? "'".SANDBOX_URL."'" : 'false'; ?>;
-og.maxUploadSize = <?php echo get_max_upload_size() ?>;
+og.maxUploadSize = '<?php echo get_max_upload_size() ?>';
 <?php $initialWS = user_config_option('initialWorkspace');
 if ($initialWS === "remember") {
 	$initialWS = user_config_option('lastAccessedWorkspace', 0);

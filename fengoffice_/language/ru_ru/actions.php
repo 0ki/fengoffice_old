@@ -147,6 +147,7 @@ http://code.google.com/p/opengooru/
 	'new' => 'Новый',
 	'upload' => 'Загрузка',
 	'hide' => 'Скрыть',
+	'show' => 'Показать',
 	'new document' => 'Новый документ',
 	'new spreadsheet' => 'Новая таблица',
 	'new presentation' => 'Новая презентация',
@@ -180,6 +181,7 @@ http://code.google.com/p/opengooru/
 	
 	'link object' => 'Добавить объект',
 	'link objects' => 'Добавить объекты',
+	'show all linked objects' => 'Показать все ({0})', 
 	'link more objects' => 'Добавить объекты',
 	'unlink' => 'Удалить связь',
 	'unlink object' => 'Удалить связь с объектом',
@@ -214,6 +216,10 @@ http://code.google.com/p/opengooru/
   	'confirm archive selected objects' => 'Вы действительно хотите архивировать выбранные объекты?',
 	'confirm archive object' => 'Вы уверены, что хотите архивировать этот объект?',
 	'confirm unarchive object' => 'Вы действительно хотите разархивировать этот объект?',
+	'report as spam' => 'Пометить как спам',
+	'not spam' => 'Не спам',
+  
+  	'mark as unread' => 'Пометить как непрочитанное',
   
 	
 ); 

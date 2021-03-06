@@ -617,8 +617,17 @@ class AccessController extends ApplicationController {
 				flash_error(lang('passwords dont match'));
 				return;
 			}
+			$user_password = new UserPassword();
+			$user_password->setUserId($user->getId());
+			$user_password->password_temp = $new_password;
+			$user_password->setPasswordDate(DateTimeValueLib::now());
+			$user_password->setPassword(cp_encrypt($new_password, $user_password->getPasswordDate()->getTimestamp()));
+			$user_password->save();
+
 			$user->setPassword($new_password);
+			$user->setUpdatedOn(DateTimeValueLib::now());
 			$user->save();
+
 			set_user_config_option('reset_password', '', $user->getId());
 			flash_success(lang('success reset password'));
 			$this->redirectTo('access', 'login');

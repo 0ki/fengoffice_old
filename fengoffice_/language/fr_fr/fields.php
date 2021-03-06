@@ -222,4 +222,8 @@
 	'field ProjectFiles archived_on' => 'Archivé le',
 	'field Users can_manage_time' => 'Peut gérer le temps',
 	'field Users can_add_mail_accounts' => 'Peut ajouter des comptes de messagerie',
+	'field ProjectEvents repeat_dow' => 'Répéter le jour de la semaine',
+	'field ProjectEvents repeat_mjump' => 'Répéter le mois',
+	'field ProjectEvents repeat_wnum' => 'Répéter le numéro de semaine',
+	'field Users type' => 'Type',
 ); ?>

@@ -235,7 +235,7 @@ class MailContents extends BaseMailContents {
 		else $archived_cond = "AND `archived_by_id` = 0";
 
 		$state_conv_cond_1 = $state != 'received' ? " $stateConditions AND " : " `state` <> '2' AND ";
-		$state_conv_cond_2 = " AND (`mc`.`state` = '1' OR `mc`.`state` = '3' OR `mc`.`state` = '5') ";
+		$state_conv_cond_2 = $state != 'received' ? " AND (`mc`.`state` = '1' OR `mc`.`state` = '3' OR `mc`.`state` = '5') " : " AND `mc`.`state` <> '2' ";
 		
 		if (user_config_option('show_emails_as_conversations')) {
 			$archived_by_id = $archived ? "AND `mc`.`archived_by_id` != 0" : "AND `mc`.`archived_by_id` = 0";

@@ -273,6 +273,11 @@ Ces valeurs ne s\'appliquent qu\'aux utilisateurs n\'ayant pas encore modifié l
 	'search engine mysql match' => 'Rapide',
 	'user ws config option name hide_quoted_text_in_emails' => 'Masquer les citations dans les messages',
 	'user ws config option desc hide_quoted_text_in_emails' => 'Si vous activez cette fonction, le texte cité n\'apparaitra pas lors de l\'affichage des messages. Une option vous permettra de le visualiser lors de la lecture.',
-	'config option name detect_mime_type_from_extension' => 'Détecter le type MIME à partir des extensions',
-	'config option desc detect_mime_type_from_extension' => 'Activer pour détecter le type MIME d\'un fichier d\'après son extension',
+	'user ws config option name detect_mime_type_from_extension' => 'Détecter le type MIME à partir des extensions',
+	'user ws config option desc detect_mime_type_from_extension' => 'Activer pour détecter le type MIME d\'un fichier d\'après son extension',
+	'user ws config option name show activity widget' => 'Montrer le module des activités',
+	'user ws config option name activity widget elements' => 'Taille du module des activités',
+	'user ws config option desc activity widget elements' => 'Nombre d\'éléments à afficher dans le module des activités',
+	'user ws config option name task_display_limit' => 'Nombre maximum de tâches à afficher',
+	'user ws config option desc task_display_limit' => 'Pour des raisons de performances, ce nombre ne devrait pas être trop grand. Entrez 0 pour qu\'il n\'y ait pas de limite.',
 ); ?>

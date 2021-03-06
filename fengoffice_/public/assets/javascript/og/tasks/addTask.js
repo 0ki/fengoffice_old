@@ -262,7 +262,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
 		id: 'ogTasksPanelATMilestoneCombo',
-		hidden: false,
+		hidden: true,
 		width: 200,
 		value: data.milestoneId,
 		tabIndex:1220
@@ -289,17 +289,7 @@ ogTasks.drawTaskForm = function(container_id, data){
 		id:'ogTasksPanelATStartDateCmp',
 		style:'width:100px',
 		tabIndex:1300,
-		value: sd,
-		listeners: {
-			'change': {
-				fn: function(start, val, old) {
-					if (this.getValue() && this.getValue() < start.getValue()) {
-						alert(lang("warning start date greater than due date"));
-					}
-				},
-				scope: DtDue
-			}
-		}
+		value: sd
 	});
 	if (data.dueDate){
 		var date = new Date(data.dueDate * 1000);
@@ -322,6 +312,12 @@ ogTasks.drawTaskForm = function(container_id, data){
 			}
 		}
 	});
+	DtStart.on('change', function(start, val, old) {
+		if (this.getValue() && this.getValue() < start.getValue()) {
+			alert(lang("warning start date greater than due date"));
+		}
+	},
+	DtDue);
 
 	var priorityCombo = bottomToolbar.filterPriorityCombo.cloneConfig({
 		name: 'task[priority]',
@@ -582,7 +578,7 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 		if (!found) ogTasks.selectedMilestone = 0;
 		prev_combo.remove();
 	}
-	
+
 	var milestoneCombo = bottomToolbar.filterMilestonesCombo.cloneConfig({
 		name: 'task[milestone_id]',
 		renderTo: 'ogTasksPanelMilestoneSelector',
@@ -593,5 +589,4 @@ ogTasks.drawMilestonesCombo = function(success, data) {
 		value: ogTasks.selectedMilestone,
 		tabIndex:1220
 	});
-
 }

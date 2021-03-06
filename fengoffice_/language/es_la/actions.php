@@ -79,7 +79,7 @@
 	'update people' => 'Modificar',
 	'remove user from project' => 'Eliminar usuario de este espacio',
 	'remove company from project' => 'Eliminar empresa del espacio',
-	'update profile' => 'Editar datos de mi cuenta',
+	'update profile' => 'Editar cuenta',
 	'change password' => 'Modificar contraseña',
 	'update avatar' => 'Guardar nuevo avatar',
 	'delete current avatar' => 'Eliminar el avatar actual',

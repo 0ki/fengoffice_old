@@ -81,6 +81,7 @@ return array(
     'field MailContents to'  => 'To',
     'field MailContents date' => 'Date',
     'field MailContents sent_date' => 'Sent date',
+	'field MailContents received_date' => 'Received date',
     'field MailContents subject' => 'Subject',
     'field MailContents content' => 'Content',
     'field MailContents body_plain' => 'Body plain',
@@ -203,7 +204,8 @@ return array(
 
 	// User fields
     'field Users username' => 'Username', 
-    'field Users email' => 'Email', 
+    'field Users email' => 'Email',
+	'field Users type' => 'Type', 
     'field Users display_name' => 'Display name', 
     'field Users title' => 'Title', 
     'field Users created_on' => 'Created on', 

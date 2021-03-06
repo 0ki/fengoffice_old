@@ -1,8 +1,12 @@
-<?php return array(
+<?php
+
+  // Return array of langs
+  return array(
 	'username' => 'ユーザ名',
 	'password' => 'パスワード',
 	'password again' => 'パスワード(繰り返し)',
 	'old password' => '古いパスワード',
+	'new password' => '新しいパスワード',
 	'remember me' => 'ユーザ名を14日記憶する',
 	'email address' => 'メールアドレス',
 	'display name' => '表示名',
@@ -15,11 +19,13 @@
 	'view' => 'ビュー',
 	'edit' => '編集',
 	'delete' => '削除',
+	'empty trash can' => 'ゴミ箱を空にする',
 	'save' => '保存',
 	'add' => '追加',
 	'update' => '更新',
 	'submit' => '送信',
 	'reset' => 'リセット',
+	'change' => '変更',
 	'name' => '名前',
 	'title' => 'タイトル',
 	'description' => '詳細',
@@ -60,6 +66,7 @@
 	'dates' => '日付',
 	'permission' => 'アクセス権限',
 	'permissions' => 'アクセス権限',
+	'reset' => 'リセット',
 	'owner' => '所有者',
 	'instant messengers' => 'インスタントメッセンジャー',
 	'value' => '値',
@@ -69,6 +76,7 @@
 	'fax number' => 'Fax',
 	'mobile phone number' => '携帯電話',
 	'home phone number' => 'ホーム',
+	'settings' => '設定',
 	'homepage' => 'ホームページ',
 	'address' => '住所',
 	'address2' => '住所 2',
@@ -105,8 +113,10 @@
 	'events' => 'イベント',
 	'Event' => 'イベント',
 	'Events' => 'イベント',
+
 	'project calendar' => '{0}のカレンダー',
 	'user calendar' => '{0}のカレンダー',
+
 	'month 1' => '1月',
 	'month 2' => '2月',
 	'month 3' => '3月',
@@ -119,6 +129,7 @@
 	'month 10' => '10月',
 	'month 11' => '11月',
 	'month 12' => '12月',
+
 	'monday' => '月曜日',
 	'tuesday' => '火曜日',
 	'wednesday' => '水曜日',
@@ -126,6 +137,7 @@
 	'friday' => '金曜日',
 	'saturday' => '土曜日',
 	'sunday' => '日曜日',
+
 	'monday short' => '月',
 	'tuesday short' => '火',
 	'wednesday short' => '水',
@@ -133,6 +145,13 @@
 	'friday short' => '金',
 	'saturday short' => '土',
 	'sunday short' => '日',
+
+	'1st' => '1番目',
+	'2nd' => '2番目',
+	'3rd' => '3番目',
+	'4th' => '4番目',
+	'5th' => '5番目',
+
 	'copy of' => '{0}のコピー',
 	'task templates' => 'タスクのテンプレート',
 	'add task template' => 'タスクのテンプレートを追加',
@@ -147,6 +166,11 @@
 	'create contact from user' => 'ユーザのデータから連絡先を作成',
 	'confirm create contact from user' => 'ユーザのデータから連絡先を作成してよいですか?',
 	'create contact from user desc' => 'はいを選択すると、ユーザのデータが連絡先として登録されます。',
+	'use previous personal workspace' => '既存のワークスペースをユーザの個人のワークスペースとして使用しますか?',
+	'use previous personal workspace desc' => '「はい」を選択すると、このユーザの個人用として割り当てるワークスペース選択できるようになります。',
+	'select personal workspace' => 'ワークスペースを選択',
+	'create personal workspace' => '新しくワークスペースを作成',
+	'use an existing workspace' => '既存のワークスペースを使用',
 	'go to contact' => '連絡先データに移動',
 	'show assigned to' => '割り当て順に表示',
 	'timeslot on object' => '{0}の時間帯',
@@ -155,27 +179,26 @@
 	'task report' => 'タスクのレポート',
 	'priority' => '優先度',
 	'anybody' => '誰でも',
+
 	'read and write' => '読み書き可能',
 	'read only' => '読み込みだけ',
 	'none no bars' => 'なし',
 	'apply to all subworkspaces' => 'これらのアクセス権限をすべてのサブワークスペースに適用',
 	'weblinks' => 'ウェブリンク',
 	'add work' => '作業を追加',
+
 	'date format' => 'Y年n月j日',
 	'date format description' => '(yyyy年mm月dd日)',
 	'confirm move to trash' => '本当に選択しているオブジェクトをゴミ箱に移動してよいですか?',
-	'new password' => '新しいパスワード',
-	'change' => '変更',
+
 	'remove' => '削除',
-	'use previous personal workspace' => '既存のワークスペースをユーザの個人のワークスペースとして使用しますか?',
-	'use previous personal workspace desc' => '「はい」を選択すると、このユーザの個人用として割り当てるワークスペース選択できるようになります。',
-	'select personal workspace' => 'ワークスペースを選択',
-	'create personal workspace' => '新しくワークスペースを作成',
-	'use an existing workspace' => '既存のワークスペースを使用',
 	'mime type' => 'MIMEタイプ',
+
 	'default' => 'デフォルト',
 	'language' => '言語',
 	'before' => '前',
+	'pages' => 'ページ',
+
 	'repeat by' => '繰り返し',
 	'repeating task' => '繰り返すタスク',
 	'this task repeats' => 'このタスクは繰り返されます: ',
@@ -190,7 +213,34 @@
 	'end of task' => 'タスクの終了',
 	'start of task' => 'タスクの開始',
 	'new task repetition generated' => '新しいタスクの繰り返しの生成に成功しました。',
+
 	'reminders will not apply to repeating events' => '警告: リマイダーは繰り返すイベントには適用されません。',
-	'empty trash can' => 'ゴミ箱を空に',
-	'pages' => 'ページ',
-); ?>
+
+	'move all to right' => '右に全て移動',
+	'move to right' => '右に移動',
+	'move to left' => '左に移動',
+	'move all to left' => '左に全て移動',
+	'move up' => '上へ',
+	'move down' => '下へ',
+
+	'this file is included in document' => "このファイルは次のドキュメントを含んでいます: {0}",
+	'minutes ago' => "{0}分前",
+	'about hours ago' => "約{0}時間前",
+	'yesterday at' => "昨日の{0}",
+	'day at' => "{0}の{1}",
+
+	'added by capitalized' => '追加者',
+	'in capitalized' => 'In',
+	'unique id capitalized' => '一意のID',
+	'system notification email' => 'これは自動送信メールです。このメールには返信しないでください。',
+
+	'modifications tab' => '変更',
+	'views tab' => '表示',
+
+	'latest activity' => '最新の活動',
+	'view all activity' => '全ての活動を表示...',
+	'advanced' => '高度な設定', // Advanced
+
+  ); // array
+
+?>

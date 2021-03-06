@@ -79,7 +79,7 @@
 			    <?php echo lang('file revision title short', format_datetime($revision->getCreatedOn())) ?>
 			<?php } // if ?>
 		</td>
-		<td class='line_header_icons' style="background-color:<?php echo $bgColor ?>;">
+		<td class='line_header_icons' style="background-color:<?php echo $bgColor ?>;width:50px;">
 			<?php if ($file->canDownload(logged_user())){?>
 				<?php if ($file->getType() == ProjectFiles::TYPE_WEBLINK) { ?>
 				<a target="_blank" class="downloadLink coViewAction ico-open-link" href="<?php echo $revision->getTypeString() ?>" title="<?php echo $revision->getTypeString()?>">&nbsp;</a>
@@ -88,7 +88,7 @@
 				<?php } ?>
 			<?php } ?>
 			<?php if ($file->canDelete(logged_user()) && !$file->isTrashed()) {?>
-				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" title="<?php echo lang('move to trash')?>"></a>
+				<a onclick="return confirm('<?php echo escape_single_quotes(lang('confirm move to trash'))?>')" href="<?php echo $revision->getDeleteUrl() ?>" class="internalLink coViewAction ico-trash" title="<?php echo lang('move to trash')?>">&nbsp;</a>
 			<?php } ?>
 		</td>
 	</tr>
@@ -102,7 +102,7 @@
 		</td>
 		<td class="line_comments_icons">
 			<?php if ($file->canEdit(logged_user()) && !$file->isTrashed()){?>
-				<a href="<?php echo $revision->getEditUrl() ?>" class="internalLink coViewAction ico-edit" title="<?php echo lang('edit revision comment')?>"></a>
+				<a href="<?php echo $revision->getEditUrl() ?>" class="internalLink coViewAction ico-edit" title="<?php echo lang('edit revision comment')?>">&nbsp;</a>
 			<?php }?>
 		</td>
 	</tr>

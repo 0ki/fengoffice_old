@@ -29,9 +29,9 @@
 		  $can_read = true;
 		  foreach ($user_object_workspaces as $ws) {
 			$can_read = can_read_type($user, $ws, get_class($object->manager()));
-			if ($can_read) break;
+			if ($can_read) break;  
 		  }
-		  if (!$can_read) continue;				
+		  if (!$can_read) continue;  				
 
           $users[] = $user;
         } // foreach

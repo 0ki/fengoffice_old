@@ -52,6 +52,17 @@ return array(
 							<b>Приоритет</b>: группирует задачи с конкретным приоритетом (низкий, нормальный, высокий) <br/>
 							<b>Проект</b>: группирует задачи конкретного проекта <br/>',
 	
+	'help opt show' => 'Включить',
+	'help opt hide' => 'Выключить',
+	'context help messages' => 'Контекстная справка',
+	'enable all chelp messages' => 'Включить все контекстные сообщения, которые были отключены вручную',
+	'enable all chelp messages click' => 'нажмите тут',
+	'help manual' => 'Справка',
+	'about us' => 'О нас',
+	'success enable all context help' => 'Контекстная справка успешно перезапущена.',
+	'success enable context help' => 'Контекстная справка успешно запущена.',
+	'success disable context help' => 'Контекстная справка успешно отключена.',
+	
 ); // array
 
 ?>

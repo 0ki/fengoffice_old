@@ -180,6 +180,8 @@ return array(
 
   	'mailAccount dnx' => 'Учетной записи электронной почты не существует',
   	'error add contact from user' => 'Не удалось добавить контакт с пользователем.',
+	'zip not supported' => 'ZIP не поддерживается сервером',
+	'no tag specified' => 'Тег не указан',
 
 	); 
 ?>

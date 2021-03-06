@@ -230,4 +230,6 @@
 	'field ProjectEvents repeat_wnum' => 'Número de semana de la repetición',
 	'field Users can_manage_time' => 'Puede manejar tiempo',
 	'field Users can_add_mail_accounts' => 'Puede agregar cuentas de correo',
+	'field MailContents received_date' => 'Fecha de recibido',
+	'field Users type' => 'Tipo',
 ); ?>

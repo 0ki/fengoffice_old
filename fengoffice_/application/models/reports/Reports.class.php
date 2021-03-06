@@ -134,6 +134,10 @@ class Reports extends BaseReports {
 				$object = new Project();
 			}
 			$order_by = '';
+			
+			if (is_object($params)) {
+				$params = get_object_vars($params);				
+			}
 
 			$sql = 'SELECT id FROM '.TABLE_PREFIX.$table.' t WHERE ';
 			$manager = $report->getObjectType();
@@ -158,6 +162,16 @@ class Reports extends BaseReports {
 								}
 							}
 							$wsCondition = $condField->getCondition();
+							if ($fiterUsingWorkspace && $ws_value != 0) {
+								$parentWS = Projects::findById($ws_value);
+								if ($parentWS instanceof Project){
+									$subWorkspaces = $parentWS->getSubWorkspaces();
+									foreach ($subWorkspaces as $subWS){
+										$ws_value .= ','.$subWS->getId();
+									}
+								}
+								$allConditions .= ' AND t.id '.($wsCondition == '=' ? 'IN' : 'NOT IN').' (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id IN ( '. $ws_value .'))';
+							}
 						}
 						if ($condField->getFieldName() == 'tag'){
 							//if is a tag condition:
@@ -178,6 +192,9 @@ class Reports extends BaseReports {
 								}
 							}
 							$tagCondition = $condField->getCondition();
+							if ($fiterUsingTag && $tag_value != '') {
+								$allConditions .= ' AND t.id '.($tagCondition == '=' ? 'IN' : 'NOT IN').' (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
+							}
 						}
 						
 					}else{
@@ -258,26 +275,7 @@ class Reports extends BaseReports {
 					}
 				}
 			}
-			// FILTER USING WORKSPACES AND TAGS
-			if(isset($fiterUsingWorkspace)&& $fiterUsingWorkspace && $ws_value != 0)
-			{
-				$parentWS = Projects::findById($ws_value);
-				if($parentWS instanceof Project){
-					$subWorkspaces = $parentWS->getSubWorkspaces();
-					foreach($subWorkspaces as $subWS){
-						$ws_value .= ','.$subWS->getId();
-					}
-				}
-				if ($manager == 'Contacts'){
-					$allConditions .= ' AND t.id '.($wsCondition == '=' ? 'IN' : 'NOT IN').' (SELECT contact_id FROM ' . TABLE_PREFIX . 'project_contacts WHERE project_id IN ( '. $ws_value .'))';
-				} else {
-					$allConditions .= ' AND t.id '.($wsCondition == '=' ? 'IN' : 'NOT IN').' (SELECT object_id FROM ' . TABLE_PREFIX . 'workspace_objects WHERE object_manager = \''. $manager .'\' AND workspace_id IN ( '. $ws_value .'))';
-				}
-			}
-			if(isset($fiterUsingTag)&& $fiterUsingTag && $tag_value != '')
-			{
-				$allConditions .= ' AND t.id '.($tagCondition == '=' ? 'IN' : 'NOT IN').' (SELECT rel_object_id FROM ' . TABLE_PREFIX . 'tags WHERE rel_object_manager = \''. $manager .'\' AND tag = \''. $tag_value .'\')';
-			}
+			
 			if ($manager != 'Projects' && $manager != 'Users') {
 				$allConditions .= ' AND t.trashed_by_id = 0 ';
 			}
@@ -366,10 +364,13 @@ class Reports extends BaseReports {
 					}
 				}
 				$title = $managerInstance->getReportObjectTitle($reportObjTitleCols);
+				$iconame = strtolower($managerInstance->getItemClass());
 				$id = $row['id'];
 				unset($row['id']);
 				$row = array_slice($row, count($titleCols));
-				$row = array('link' => '<a class="internalLink" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">'.$title.'</a>') + $row;
+				if (!$to_print) {
+					$row = array('link' => '<a class="link-ico ico-'.$iconame.'" title="' . $title . '" target="new" href="'.get_url($controller, $view, array('id' => $id)).'">&nbsp;</a>') + $row;
+				}
 				foreach($row as $col => &$value){
 					if(in_array($col, $managerInstance->getExternalColumns())){
 						$value = self::getExternalColumnValue($col, $value);
@@ -384,10 +385,12 @@ class Reports extends BaseReports {
 				}
 				$row = str_replace('|', ',', $row);
 			}
-			if (is_array($results['columns'])) {
-				array_unshift($results['columns'], '');
-			} else {
-				$results['columns'] = array('');
+			if (!$to_print) {
+				if (is_array($results['columns'])) {
+					array_unshift($results['columns'], '');
+				} else {
+					$results['columns'] = array('');
+				}
 			}
 			$results['rows'] = $rows;
 		}

@@ -1,6 +1,6 @@
 
-    About Feng Office 1.7-RC
-    ========================
+    About Feng Office 1.7
+    =====================
 
     Feng Office is a free and open source Web Office, project management
     and collaboration tool, licensed under the Affero GPL 3 license.
@@ -65,11 +65,11 @@
     ====================
     
     1. Backup you current installation (important!)
-    2. Download Feng Office 1.7-RC - http://fengoffice.com/web/community/
+    2. Download Feng Office 1.7 - http://fengoffice.com/web/community/
     3. Unpack into your Feng Office installation, overwriting your previous files and folders,
     	but keeping your config and upload folders.
     5. Go to <your_feng>/public/upgrade in your browser and choose to upgrade
-    	from your current version to 1.7-RC
+    	from your current version to 1.7
     6. Refresh your browser or clear its cache to load new javascript, css and images.   
 
     
@@ -90,6 +90,51 @@
 
 	Changelog
 	=========
+	
+	
+	Since 1.7-rc
+	------------
+	
+	usability: Unclassify emails by dragging them to 'All'.
+	
+	bugfix: Calendar export was exporting events that the logged user was not invited to.
+	bugfix: Event invitations: showing "no invitations sent" when user has permissions by group over the event.
+	bugfix: Milestone selector loads data two times in task quick add.
+	bugfix: Edit company action (at column in the listing) goes to edit contact.
+	bugfix: Activity widget does not loads all the information.
+	bugfix: ical sync stopped working after 1.7x upgrade.
+	bugfix: Search finds workspaces without permissions.
+	bugfix: Task dates 1 day before in task list.
+	bugfix: 'Failed to upload file' when dragging an email with attachment and classifying it. 
+	bugfix: Internal server error when trying to reply email without a configured account.
+	bugfix: Bug with group users and subscribers.
+	bugfix: Internal server error" when adding/modifying workspaces.
+	bugfix: Calendar export timezone offset format for timezones > 0.
+	bugfix: Error when listing files created/modified by a deleted user.
+	bugfix: Download / trash revision icons are not shown in IE.
+	bugfix: Workspace selector isn't drawn in workspace conditions for custom reports.
+	bugfix: 'Error when ordering email reports by 'Updated by'
+	bugfix: Workspace-group permissions not loaded when editing a workspace
+	bugfix: Custom reports don't filter contacts correctly by workspace.
+	bugfix: A type with only one custom property of type boolean cannot unset its value.
+	bugfix: Custom reports cannot be filtered by more than one tag or workspace condition. Only the last one works.
+	bugfix: Add/Edit workspace: Contacts show all fields as 'undefined'
+	bugfix: Email auto refresh always loads page 1.
+	bugfix: Clicking on 'Send Mail' when a draft is being saved doesn't send the email
+	bugfix: Clicking on Search, Administration or Account or performing a search when it is already open doesn't bring it up.
+	bugfix: Duplicate email messages.
+	bugfix: A due date is allowed to be earlier than a start date in tasks.	
+	bugfix: Forgot password doesn't work correctly when password has expired.
+	bugfix: Revision required when classifying an email.
+	bugfix: SQL error in calendar with MySQL older lower 5.0.
+	bugfix: Event invitations are not shown correctly if the invited users are not directly assigned to the event's workspace.
+	bugfix: Milestone dates are one day off if timezone is greater than GMT.
+	bugfix: Duplicate title column in reports (replaced with an icon and removed in print view).
+	
+	system: Some language fixes
+	system: Cleared non critical logged warnings
+	system: Performance tweaks for object picker queries.
+	
 	
 	Since 1.7-beta2
 	---------------

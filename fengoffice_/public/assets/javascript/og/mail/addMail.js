@@ -42,7 +42,10 @@ og.eventManager.addListener('new email in conversation',
 og.mailSetBody = function(genid) {
 	var form = Ext.getDom(genid + 'form');
 	if (form.preventDoubleSubmit) return false;
-	form.preventDoubleSubmit = true;
+	if (form['mail[autosave]'].value == 'false') {
+		form.preventDoubleSubmit = true;
+	}
+	
 	setTimeout(function() {
 		form.preventDoubleSubmit = false;
 	}, 2000);

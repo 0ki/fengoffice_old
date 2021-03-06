@@ -80,7 +80,6 @@ ogTasksTask.prototype.setFromTdata = function(tdata){
 	this.createdBy = tdata.cid;
 		
 	var dummyDate = new Date();
-	var secondsToSubtract = dummyDate.format('Z');
 
 	if (tdata.s) this.status = tdata.s; else this.status = 0;
 	if (tdata.pid) this.parentId = tdata.pid; else this.parentId = 0;
@@ -106,8 +105,7 @@ ogTasksMilestone = function(id, title, dueDate, workspaceIds, totalTasks, comple
 	this.title = title;
 	
 	var dummyDate = new Date();
-	var secondsToSubtract = dummyDate.format('Z');
-	this.dueDate = dueDate - secondsToSubtract;
+	this.dueDate = dueDate;
 	
 	this.workspaceIds = workspaceIds;
 	this.completedTasks = completedTasks;

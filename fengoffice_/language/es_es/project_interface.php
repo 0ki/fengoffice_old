@@ -278,4 +278,5 @@ Asunto:   {0}
 	'linked event tab' => 'Eventos',
 	'apply assignee to subtasks' => 'Aplicar asignado a subtareas',
 	'urgent priority' => 'Urgente',
+	'attachment from email' => 'Adjunto al correo "{0}"',
 ); ?>

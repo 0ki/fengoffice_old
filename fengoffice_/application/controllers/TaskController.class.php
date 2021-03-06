@@ -185,6 +185,9 @@ class TaskController extends ApplicationController {
 				$reminder->setObject($task);
 				$reminder->setUserId(0);
 				$date = $task->getDueDate();
+				
+				if(!isset($minutes))$minutes=0;
+				
 				if ($date instanceof DateTimeValue) {
 					$rdate = new DateTimeValue($date->getTimestamp() - $minutes * 60);
 					$reminder->setDate($rdate);

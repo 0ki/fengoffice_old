@@ -670,7 +670,7 @@ CREATE TABLE  `<?php echo $table_prefix ?>mail_contents` (
   `subject` varchar(255) <?php echo $default_collation ?> NOT NULL default '',
   `has_attachments` int(1) NOT NULL default '0',
   `size` int(10) NOT NULL default '0',
-  `state` INT( 1 ) NOT NULL DEFAULT '0' COMMENT '0:nothing, 1:sent; 2:draft',
+  `state` INT( 1 ) NOT NULL DEFAULT '0' COMMENT '0:nothing, 1:sent, 2:draft',
   `is_deleted` int(1) NOT NULL default '0',
   `is_shared` INT(1) NOT NULL default '0',
   `is_private` INT(1) NOT NULL default 0,

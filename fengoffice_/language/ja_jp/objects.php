@@ -1,4 +1,8 @@
-<?php return array(
+<?php
+
+  return array(
+
+	// Objects
 	'user' => 'ユーザ',
 	'group' => 'グループ',
 	'groups' => 'グループ',
@@ -43,8 +47,18 @@
 	'configuration categories' => '環境設定のカテゴリ',
 	'handin' => 'ハンドイン',
 	'handins' => 'ハンドイン',
-	'owner company' => 'オーナ会社',
+	'emailunclassified' => 'メール',
+
+	'load file' => 'ファイルを読み込み',
+	'time' => '時刻',
+	'reporting' => 'レポート',
+
+	// Variations
+	'modify object subscribers' => '購読者を変更',
+	'subscription modified successfully' => '購読者の変更に成功しました。',
 	'client companies' => '顧客企業',
+	'owner company' => 'オーナ会社',
+
 	'open milestone' => '未完のマイルストーン',
 	'open milestones' => '未完のマイルストーン',
 	'completed milestone' => '完了したマイルストーン',
@@ -63,24 +77,70 @@
 	'finished projects' => '終了状態のワークスペース',
 	'linked object' => 'リンクされたオブジェクト',
 	'linked objects' => 'リンクされたオブジェクト',
+
 	'important message' => '重要なノート',
 	'important messages' => '重要なノート',
 	'important file' => '重要なファイル',
 	'important files' => '重要なファイル',
 	'parent task' => '親のタスク',
+
 	'private message' => '親のノート',
 	'private milestone' => 'プライベートなマイルストーン',
 	'private task list' => 'プライベートなタスク',
 	'private comment' => 'プライベートなコメント',
 	'private file' => 'プライベートなファイル',
-	'emailunclassified' => 'メール',
-	'load file' => 'ファイルを読み込み',
-	'time' => '時刻',
-	'reporting' => 'レポート',
+
+	'urgent milestone' => '緊急',
+
 	'object reminders' => 'リマインダー',
 	'add object reminder' => 'リマインダーを追加',
+
 	'create document' => 'ドキュメントを作成',
 	'create presentation' => 'プレゼンテーションを作成',
-	'modify object subscribers' => '購読者を変更',
-	'subscription modified successfully' => '購読者の変更に成功しました。',
-); ?>
+
+	'the message' => 'ノート',
+	'the email' => 'メール',
+	'the emailunclassified' => 'メール',
+	'the contact' => '連絡先',
+	'the company' => '会社',
+	'the event' => 'イベント',
+	'the file' => 'ファイル',
+	'the file revision' => 'ファイルリビジョン',
+	'the task' => 'タスク',
+	'the milestone' => 'マイルストーン',
+	'the webpage' => 'ウェブリンク',
+	'the comment' => 'コメント',
+	'the user' => 'ユーザ',
+	'the project' => 'ワークスペース',
+
+	'activity add' => "{1}が{0} {2}を追加しました",
+	'activity edit' => "{1}が{0} {2}を編集しました",
+	'activity delete' => "{1}が{0} {2}を削除しました",
+	'activity trash' => "{1}が{0} {2}をごみ箱に入れました",
+	'activity untrash' => "{1}が{0} {2}をごみ箱から出しました",
+	'activity open' => "{1}が{0} {2}を開きました",
+	'activity close' => "{1}が{0} {2}を閉じました",
+	'activity subscribe' => "{1}が{0} {2}に{3}を購読させました",
+	'activity unsubscribe' => "{1}が{0} {2}から{3}の購読を解除させました",
+	'activity tag' => "{1}が{0} {2}にタグ{3}をつけました",
+	'activity untag' => "{1}が{0} {2}からタグを削除しました",
+	'activity comment' => "{1}が{0} {2}にコメントしました: <br>&nbsp;&nbsp;&nbsp;&nbsp;\"{3}\"",
+	'activity link' => "{1}が{3} {4}で{0} {2}をリンクしました",
+	'activity unlink' => "{1}が{3} {4}から{0} {2}のリンクを解除しました",
+	'activity login' => "{0}がログインしました",
+	'activity logout' => "{0}がログアウトしました",
+	'activity archive' => "{1}が{0} {2}をアーカイブしました",
+	'activity unarchive' => "{1}が{0} {2}のアーカイブを解除しました",
+	'activity move from to' => "{1}が{3}から{4}へ{0} {2}を移動しました",
+	'activity move from' => "{1}が{3}から{0} {2}を移動しました",
+	'activity move to' => "{1}が{2}に{0} {2}を移動しました",
+	'activity move' => "{1}が{0} {2}を移動しました",
+	'activity copy to' => "{1}が{3}へ{0} {2}をコピーしました",
+	'activity copy' => "{1}が{0} {2}をコピーしました",
+	'activity read' => "{1}が{0} {2}を読みました",
+	'activity download' => "{1}が{0} {2}をダウンロードしました",
+
+	'x users' => "{0} ユーザ{1}",
+  ); // array
+
+?>

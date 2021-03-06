@@ -333,7 +333,7 @@ class MailUtilities {
 		} catch(Exception $e) {
 			FileRepository::deleteFile($repository_id);
 			if (strpos($e->getMessage(), "Query failed with message 'Got a packet bigger than 'max_allowed_packet' bytes'") === false) {
-				Logger::log($e->getMessage());
+				throw $e;
 			}
 		}
 		unset($parsedMail);
@@ -399,8 +399,14 @@ class MailUtilities {
 			$content = $pop3->getMsg($idx+1); // message index is 1..N
 			if ($content != '') {
 				$uid = $summary[$idx]['uidl'];
-				$stop_checking = self::SaveMail($content, $account, $uid);
-				if ($stop_checking) break;
+				try {
+					$stop_checking = self::SaveMail($content, $account, $uid);
+					if ($stop_checking) break;
+				} catch (Exception $e) {
+					$mail_file = "unsaved_mail_".$uid.".eml";
+					file_put_contents(ROOT."/$mail_file", $content);
+					Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
+				}
 				unset($content);
 				$received++;
 			}
@@ -681,9 +687,15 @@ class MailUtilities {
 									}
 									$content = array_var($messages, $index, '');
 									if ($content != '') {
-										$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
-										if ($stop_checking) break;
-										$received++;
+										try {
+											$stop_checking = self::SaveMail($content, $account, $summary[0]['UID'], $state, $box->getFolderName());
+											if ($stop_checking) break;
+											$received++;
+										} catch (Exception $e) {
+											$mail_file = "unsaved_mail_".$summary[0]['UID'].".eml";
+											file_put_contents(ROOT."/$mail_file", $content);
+											Logger::log("Could not save mail, original mail saved as $mail_file, exception:\n".$e->getMessage());
+										}
 									} // if content
 								}
 							}

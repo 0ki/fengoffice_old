@@ -23,7 +23,7 @@
 			case DATA_TYPE_DATETIME:
 				if ($value != 0) {
 					$dtVal = DateTimeValueLib::dateFromFormatAndString("$dateformat H:i:s", $value);
-					if ($obj_type == 'ProjectEvents' && $col == 'start') $formatted = format_datetime($dtVal);
+					if ($obj_type == 'ProjectEvents' && ($col == 'start' || $col == 'duration')) $formatted = format_datetime($dtVal);
 					else $formatted = format_date($dtVal, null, 0);
 				} else $formatted = '';
 				break;
@@ -113,6 +113,7 @@
 </p>
 <?php } // if ?>
 <br/>
+<?php if (!isset($id)) $id= ''; ?>
 <input type="hidden" name="id" value="<?php echo $id ?>" />
 <input type="hidden" name="order_by" value="<?php echo $order_by ?>" />
 <input type="hidden" name="order_by_asc" value="<?php echo $order_by_asc ?>" />
@@ -134,7 +135,7 @@
 	<?php } ?>
 	</b>
 	<?php if(!$to_print && $sorted){ ?>
-		<img src="<?php echo icon_url($asc ? 'sorted_asc.gif' : 'sorted_desc.gif') ?>" />
+		<img src="<?php echo icon_url($asc ? 'asc.png' : 'desc.png') ?>" />
 	<?php } //if ?>
 	</td>
 <?php } //foreach?>

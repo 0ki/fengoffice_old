@@ -222,7 +222,7 @@ og.fieldChanged = function(id, condition, value){
 		}else if(fieldType == "external"){
 			if(fields[selField].value == 'workspace'){
 				document.getElementById('tdValue' + id).innerHTML = wsValueField;
-				og.drawWorkspaceSelector('workspace', 'containerConditions[' + id + '][value]', value, 'conditions[' + id + '][value]', true, '');
+				og.drawWorkspaceSelector('containerConditions[' + id + '][value]', value, 'conditions[' + id + '][value]', true, '');
 			}else if(fields[selField].value == 'tag'){
 				document.getElementById('tdValue' + id).innerHTML = tagValueField;
 				var tags = Ext.getCmp("tag-panel").getTags();

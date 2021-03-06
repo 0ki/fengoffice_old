@@ -1,4 +1,8 @@
-<?php return array(
+<?php
+
+  // Reporting
+  return array(
+
 	'custom' => 'カスタム',
 	'custom reports' => 'カスタム・レポート',
 	'no custom reports' => 'カスタム・レポートはありません。',
@@ -21,4 +25,15 @@
 	'ascending' => '昇順',
 	'descending' => '降順',
 	'parametrizable' => 'パラメータ?',
-); ?>
+	'columns to print' => '印刷する列',
+	'columns to print desc' => '矢印アイコンをクリックして右のボックスに印刷したい列を動かしてください。',
+	'reporting workspace' => 'ワークスペース',
+	'reporting user' => 'ユーザ',
+	'report pdf options' => 'PDFオプション',
+	'report pdf page layout' => 'ページレイアウト',
+	'report pdf vertical' => '垂直',
+	'report pdf landscape' => '風景',
+	'report font size' => 'フォントサイズ'
+  );
+
+?>

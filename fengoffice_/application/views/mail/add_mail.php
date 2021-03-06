@@ -67,6 +67,10 @@ sig.actualHtmlSignature = '';
     }
 	    
     $acc_id = array_var($mail_data, 'account_id', (isset($default_account) ? $default_account : $mail_accounts[0]->getId()));
+    $orig_textsignature = $orig_htmlsignature = "";
+    ?><script type="text/javascript">
+    		sig.actualTextSignature = sig.actualHtmlSignature = "";
+    </script> <?php
     foreach ($mail_accounts as $m_acc) {
     	$user_settings = MailAccountUsers::getByAccountAndUser($m_acc, logged_user());
     	if ($user_settings instanceof MailAccountUser) {

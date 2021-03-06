@@ -81,7 +81,7 @@ class CalFormatUtilities {
 		$ical_info .= "X-WR-CALNAME:$calendar_name\r\n";
 		
 		// timezone info
-		$tz = ($user->getTimezone() < 0 ? "-":"").str_pad(abs($user->getTimezone())*100, 4, '0', STR_PAD_LEFT);
+		$tz = ($user->getTimezone() < 0 ? "-":"+").str_pad(abs($user->getTimezone())*100, 4, '0', STR_PAD_LEFT);
 		$tz_desc = $user->getTimezone() > 0 ? lang("timezone gmt +".$user->getTimezone()) : lang("timezone gmt ".$user->getTimezone());
 		$ical_info .= "BEGIN:VTIMEZONE\r\n";
 		$ical_info .= "TZID:$tz_desc\r\n";
@@ -116,8 +116,8 @@ class CalFormatUtilities {
 		    $ical_info .= "DTSTAMP:".$event->getCreatedOn()->format('Ymd').'T'.$event->getCreatedOn()->format('His')."\r\n";
 			
 		    $invitations = $event->getInvitations();
-			if ($invitations != null && is_array($invitations) && $invitations[logged_user()->getId()] != null) {
-				$inv = $invitations[logged_user()->getId()];
+			if (is_array($invitations) && array_var($invitations, $user->getId())) {
+				$inv = array_var($invitations, $user->getId());
 		    	$inv->getInvitationState();
 		    	if ($inv->getInvitationState() == 1) $ical_info .= "STATUS:CONFIRMED\r\n"; 
 		    	else if ($inv->getInvitationState() == 2) $ical_info .= "STATUS:CANCELLED\r\n";

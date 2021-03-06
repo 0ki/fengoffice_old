@@ -126,7 +126,7 @@ abstract class BaseMailContents extends ProjectDataObjects {
     * @return array
     */
     function getExternalColumns() {
-      return array_merge(parent::getExternalColumns(), array());
+      return array('created_by_id');
     } // getExternalColumns
 	
 	/**

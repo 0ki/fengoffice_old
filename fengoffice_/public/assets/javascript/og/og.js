@@ -590,14 +590,8 @@ og.openLink = function(url, options) {
  *  This function allows to submit a form containing a file upload without
  *  refreshing the whole page by using an iframe. The request will behave
  *  as an ajax request (openLink function). You can specify in
- *  the options parameter a callback property saying what to do after the
- *  upload. If the callback property is of type function, then the function
- *  is invoked passing it the options parameter; if it is of type string it
- *  is considered to be an URL to open; if it is of type object it is assumed
- *  to be a content description object (like the ones expected on
- *  og.ContentPanel.load()).
- *  Contents and URLs will be loaded in the panel specified in the panel property of
- *  the options parameter or, if missing, the currently active panel.
+ *  the options parameter a forcedCallback property of type function that
+ *  will be invoked after the upload.
  */
 og.submit = function(form, options) {
 	if (!options) options = {};
@@ -700,7 +694,7 @@ og.processResponse = function(data, options, url) {
 						if (p) {
 							var tp = p.ownerCt;
 							p.load(data.current);
-							if (tp && tp.setActiveTab && Ext.getCmp(panelName) && options.options.show) {
+							if (tp && tp.setActiveTab && Ext.getCmp(panelName) && (options.options.show || data.current.panel)) {
 								tp.setActiveTab(p);
 							}
 							

@@ -480,7 +480,7 @@ require_javascript('og/EventPopUp.js');
 															</a>
 															<?php
 															if ($ev_duration['hours'] == 0) { ?>
-																-<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-weight: <?php echo $bold ?>;"><?php echo $subject . $eventTagString?></span> </a> 
+																-<a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter ?>' class='internalLink' ><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-weight: <?php if (isset($bold))echo $bold; ?>;"><?php echo $subject . $eventTagString?></span> </a> 
 															<?php } //if ?>
 														</td><td align="right">
 														<div align="right" style="padding-right:4px;<?php echo ($ev_duration['hours'] == 0 ? 'height:'.$height.'px;' : '') ?>">
@@ -504,7 +504,7 @@ require_javascript('og/EventPopUp.js');
 														<tr><td>
 															<div><a href='<?php echo $event->getViewUrl()."&amp;view=day&amp;user_id=".$user_filter?>'
 																onclick="og.disableEventPropagation(event);"
-																class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%; font-weight: <?php echo $bold ?>;"><?php echo $subject.$eventTagString;?></span></a>
+																class='internalLink'><span style="color:<?php echo $txt_color?>!important;padding-left:5px;font-size:93%; font-weight: <?php  if (isset($bold))echo $bold; ?>;"><?php echo $subject.$eventTagString;?></span></a>
 															</div>
 														</td></tr>
 														<tr style="height:100%;">

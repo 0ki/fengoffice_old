@@ -1,4 +1,5 @@
 <?php
+if (isset($email)){
 	if (!$email->isTrashed()) {
 		if (logged_user()->hasEmailAccounts()) {
 			add_page_action(lang('reply mail'), $email->getReplyMailUrl()  , 'ico-reply', null, null, true);
@@ -38,7 +39,7 @@
 		add_page_action(lang('create task from email'), get_url('task', 'add_task', array('from_email' => $email->getId())), 'ico-task', null, null, true);
 	}
 	add_page_action(lang('download email'), get_url('mail', 'download', array('id' => $email->getId())), 'ico-download', '_self');
-  
+} 
 	$c = 0;
 	$genid = gen_id();
 	$use_24_hours = user_config_option('time_format_use_24');
@@ -103,7 +104,7 @@
 		<table>';
 		foreach($attachments as $att) {
 			$size = format_filesize(strlen($att["Data"]));
-			$fName = iconv_mime_decode($att["FileName"], 0, "UTF-8");
+			$fName = str_starts_with($att["FileName"], "=?") ? iconv_mime_decode($att["FileName"], 0, "UTF-8") : utf8_safe($att["FileName"]);
 			$description .= '<tr><td style="padding-right: 10px">';
 			$ext = get_file_extension($fName);
 			$fileType = FileTypes::getByExtension($ext);

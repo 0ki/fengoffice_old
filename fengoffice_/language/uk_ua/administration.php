@@ -84,8 +84,8 @@ Last update:  see readme_ua.txt
   	'config option name currency_code' => 'Валюта',
   	'config option desc currency_code' => 'Символ валюти',
   
-	'config option name detect_mime_type_from_extension' => 'Визначати тип MIME за розширенням',
-  	'config option desc detect_mime_type_from_extension' => 'Увімкніть це для того, щоб завжди визначати тип файла за розширенням.',
+	'user ws config option name detect_mime_type_from_extension' => 'Визначати тип MIME за розширенням',
+  	'user ws config option desc detect_mime_type_from_extension' => 'Увімкніть це для того, щоб завжди визначати тип файла за розширенням.',
     
 
 	

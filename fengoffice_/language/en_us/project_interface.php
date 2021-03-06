@@ -340,6 +340,8 @@ Subject:   {0}
 	'linked task tab' => 'Tasks',
 	'linked event tab' => 'Events',
 	'apply assignee to subtasks' => 'Apply assignee to subtasks',
+
+	'attachment from email' => 'Attached to email "{0}"',
 ); // array
 
 ?>

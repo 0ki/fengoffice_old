@@ -25,4 +25,9 @@
 	'columns to print desc' => 'Déplacez les colonnes à imprimer dans la boite située à droite',
 	'reporting workspace' => 'Contexte',
 	'reporting user' => 'Utilisateur',
+	'report pdf options' => 'Options du format PDF',
+	'report pdf page layout' => 'Mise en page',
+	'report pdf vertical' => 'Portrait (Vertical)',
+	'report pdf landscape' => 'Paysage (Horizontal)',
+	'report font size' => 'Taille de la police',
 ); ?>

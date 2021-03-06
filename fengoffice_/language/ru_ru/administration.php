@@ -85,7 +85,9 @@ http://code.google.com/p/opengooru/
 	'config option desc use_minified_resources' => 'Использовать сжатые файлы Javascript и CSS для улучшения производительности. Вам потребуется пересжать файлы JS и CSS, если вы вручную изменяли их, используя public/tools.',
 	
   	'config option name currency_code' => 'Валюта',
-  	'config option desc currency_code' => 'Символ валюты',	
+  	'config option desc currency_code' => 'Символ валюты',
+	'user ws config option name detect_mime_type_from_extension' => 'Определить MIME-тип из расширения',
+  	'user ws config option desc detect_mime_type_from_extension' => 'Включите для определения MIME-типа файла по его расширению', 	
 	
   // Mailing
 	'config option name exchange_compatible' => 'Режим совместимости с Microsoft Exchange',
@@ -138,8 +140,8 @@ http://code.google.com/p/opengooru/
 	'user ws config category name task panel' => 'Опции задач',
 	'user ws config category name general' => 'Главное',
 	'user ws config category name calendar panel' => 'Настройки календаря',
-  'user ws config category name mails panel' => 'Настройки почты',
-  'user ws config option name show pending tasks widget' => 'Показывать предстоящую задачу',
+	'user ws config category name mails panel' => 'Настройки почты',
+	'user ws config option name show pending tasks widget' => 'Показывать предстоящую задачу',
 	'user ws config option name pending tasks widget assigned to filter' => 'Показывать задачу, присвоенную',
 	'user ws config option name show late tasks and milestones widget' => 'Показывать последние задачи и этапы',
 	'user ws config option name show messages widget' => 'Показывать сообщения',
@@ -148,8 +150,9 @@ http://code.google.com/p/opengooru/
 	'user ws config option name show calendar widget' => 'Показывать мини-календарь',
 	'user ws config option name show charts widget' => 'Показывать диаграммы',
 	'user ws config option name show emails widget' => 'Показывать электронную почту',
-  'user ws config option name show dashboard info widget' => 'Показывать виджет с описание проекта',
-  'user ws config option name show getting started widget' =>'Показывать виджет начала работы с ситемой',  
+	'user ws config option name show dashboard info widget' => 'Показывать виджет с описание проекта',
+	'user ws config option name show activity widget' => 'SПоказывать виджет активности',
+	'user ws config option name show getting started widget' =>'Показывать виджет начала работы с ситемой',  
 	'user ws config option name localization' => 'Язык интерфейса',
 	'user ws config option desc localization' => 'Отображение информации исходя из выбранной локализации. Для просмотра изменений перезагрузите страницу.',
 	'user ws config option name initialWorkspace' => 'Начальный проект',
@@ -225,6 +228,7 @@ http://code.google.com/p/opengooru/
 	'no objects in template' => 'Нет объектов в этом шаблоне',
 	'add to a template' => 'Добавить в шаблон',
 	'add an object to template' => 'Добавить объект в этот шаблон',
+	'add a parameter to template' => 'Добавить параметр в этот шаблон', 
 	'you are adding object to template' => 'Вы добавили {0} \'{1}\' в шаблон. Выберите шаблон ниже, или создайте новый для этого {0}.',
 	'success add object to template' => 'Объект успешно добавлен в шаблон',
 	'object type not supported' => 'Данный тип объекта не поддерживается для шаблонов',
@@ -274,7 +278,8 @@ http://code.google.com/p/opengooru/
 	'user ws config option desc attach_docs_content' => 'Если этот параметр установлен "Да", то файлы будут прикрепляться к содержимому как обычное вложение к письму, иначе будет отправлена ссылка на файл.',
 	'user ws config option name max_spam_level' => 'Максимально допустимый уровень спама',
 	'user ws config option desc max_spam_level' => 'При получении писем, сообщения со спам оценкой больше, чем это значение будут направлены в папку "Спам". Установите в 0 для макс фильтрации, 10 нет фильтрации. Эта опция работает только если инструмент спам-фильтр устанавливается на сервере.',
-
+	'user ws config option name hide_quoted_text_in_emails' => 'Прятать цитируемый текст при просмотре почтового сообщения',
+	'user ws config option desc hide_quoted_text_in_emails' => 'При включении почтовое сообщение будет показываться без цитируемого текста. При чтении будет опция для отображения цитат.', 
   	'edit default user preferences' => 'Редактировать настройки пользователя по умолчанию',
   	'default user preferences' => 'Настройки пользователя по умолчанию',
   	'default user preferences desc' => 'Устанавливает настроики пользователя по умолчанию. Как при первом входе в системы.',
@@ -301,7 +306,11 @@ http://code.google.com/p/opengooru/
   	'user ws config option desc autodetect_time_zone' => 'Когда эта опция включена, часовой пояс пользователя будет автоматически определяться из браузера.',
   	'user ws config option name search_engine' => 'Поисковая система',
   	'user ws config option desc search_engine' => 'Выберите, какая поисковая система будет использоваться. "Подробно" сделает более исчерпывающий поиск, но потребуется больше времени, чем "Быстро".',
-  
+	'user ws config option name activity widget elements' => 'Размер виджета активности',
+	'user ws config option desc activity widget elements' => 'Количество событий, отображаемых в виджете активности.',
+	
   	'search engine mysql like' => 'Подробно',
-  	'search engine mysql match' => 'Быстро',	
+  	'search engine mysql match' => 'Быстро',
+	'user ws config option name task_display_limit' => 'Максимальное количество задач для отображения',
+  	'user ws config option desc task_display_limit' => 'Из соображений производительности, это число не должно быть слишком большим. Используйте 0 для отключения ограничения.', 	
 ); ?>

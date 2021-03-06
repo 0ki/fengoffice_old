@@ -32,12 +32,12 @@ class ProjectCharts extends BaseProjectCharts {
 			$ws = "`show_in_parents` = 1";
 		}
 		if ($tag) {
-			$tags = " AND `id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tag)." AND `t`.`rel_object_manager` = 'ProjectCharts')";
+			$tagstr = " AND `id` IN (SELECT `rel_object_id` FROM `" . TABLE_PREFIX . "tags` `t` WHERE `tag` = " . DB::escape($tag)." AND `t`.`rel_object_manager` = 'ProjectCharts')";
 		} else {
-			$tags = "";
+			$tagstr = "";
 		}
 		return self::findAll(array(
-			'conditions' => "$ws $tags" ,
+			'conditions' => "$ws $tagstr" ,
 			'order' => $order,
 			'limit' => $limit));
 	}

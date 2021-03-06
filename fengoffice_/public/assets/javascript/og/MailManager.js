@@ -57,7 +57,7 @@ og.MailManager = function() {
 					var view = manager.getView();
 					for (i=0; i<manager.maxrowidx; i++) {
 						var el = view.getRow(i);
-						el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"')
+						el.innerHTML = el.innerHTML.replace('x-grid3-td-draghandle "', 'x-grid3-td-draghandle " onmousedown="var sm = Ext.getCmp(\'mails-manager\').getSelectionModel();if (!sm.isSelected('+i+')) {sm.clearSelections();} sm.selectRow('+i+', true);"');
 					}
 				}
 			}
@@ -160,7 +160,7 @@ og.MailManager = function() {
 		if (r.data.isDraft) strAction = 'edit_mail';
 		if (!r.data.isRead) classes += ' bold';
 		
-		var receiver = og.clean(value.trim()) || '<i>' + lang("no recipient") + '</i>';
+		var receiver = value && og.clean(value.trim()) || '<i>' + lang("no recipient") + '</i>';
 
 		name = String.format(
 				'<a style="font-size:120%;" class="{3}" href="#" onclick="og.openLink(\'{1}\');return false;" title="{2}">{0}</a>',
@@ -1233,7 +1233,8 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 	},
 	
 	moveObjectsToWsOrMantainWs: function(mantain, ws) {
-		if (this.selectionHasAttachments()) {
+		if (mantain && !ws) return; // dragging to "All" and keeping workspaces
+		if (this.selectionHasAttachments() && ws) {
 			og.askToClassifyUnclassifiedAttachs('mails-manager', mantain, ws);
 		} else {
 			this.moveObjectsClassifyingEmails(mantain, ws, 0);
@@ -1254,7 +1255,7 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 			} else {
 				var pids = "";
 			}
-			pids += ws;
+			if (ws) pids += ws;
 			var wp = Ext.getCmp('workspace-panel');
 			var active = wp.getActiveWorkspace().id;
 			if (!mantain && active != ws && !wp.isSubWorkspace(ws, active)) {
@@ -1266,7 +1267,14 @@ Ext.extend(og.MailManager, Ext.grid.GridPanel, {
 			}
 		}
 		og.showWsPaths();
-		if (ids) og.openLink(og.getUrl('object', 'move', {ids:ids, ws:ws, keep: (mantain ? '1' : '0'), atts:(classifyatts ? '1' : '0')}));
+		if (ids) {
+			if (!ws) {
+				// unclassify
+				og.openLink(og.getUrl('mail', 'unclassify_many', {ids:ids}));
+			} else {
+				og.openLink(og.getUrl('object', 'move', {ids:ids, ws:ws, keep: (mantain ? '1' : '0'), atts:(classifyatts ? '1' : '0')}));
+			}
+		}
 	},
 	
 	trashObjects: function() {

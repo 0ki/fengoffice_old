@@ -97,30 +97,30 @@ og.sme.drawLine = function(genid, data){
 	var position = table.rows.length;
 	
 	var row = table.insertRow(position);
-	row.id = genid + 'searchRow' + data.contact_id;
+	row.id = genid + 'searchRow' + data.id;
 	row.height = '20px';
 	
 	if (position % 2 == 1)
 		row.style.backgroundColor = '#F0F6FF';
 	
 	var cell = row.insertCell(0);
-	cell.id = genid + 'name_cell' + data.contact_id;
+	cell.id = genid + 'name_cell' + data.id;
 	cell.className = 'contact_name';
-	var textNode = document.createTextNode(data.contact_name);
+	var textNode = document.createTextNode(data.name);
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(1);
-	cell.id = genid + 'info_cell' + data.contact_id;
-	var text = data.contact_title;
+	cell.id = genid + 'info_cell' + data.id;
+	var text = data.jobtitle;
 	if (text != '')
 		text += ', ';
-	text += data.company_name;
+	text += data.company.name;
 	textNode = document.createTextNode(text);
 	cell.appendChild(textNode);
 	
 	cell = row.insertCell(2);
 	cell.className = 'actions';
-	cell.innerHTML = '<a class="internalLink coViewAction ico-add" href="#" onclick="javascript:og.sme.addTosme(\'' + genid + '\', \'' + data.contact_id + '\');return false;" style="line-height:18px" title="' + lang('add') + '">' + lang('add') + '</a>';
+	cell.innerHTML = '<a class="internalLink coViewAction ico-add" href="#" onclick="javascript:og.sme.addTosme(\'' + genid + '\', \'' + data.id + '\');return false;" style="line-height:18px" title="' + lang('add') + '">' + lang('add') + '</a>';
 }
 
 og.sme.searchTO = function(e, genid, controller, action){

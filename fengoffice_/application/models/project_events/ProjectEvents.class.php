@@ -95,7 +95,7 @@ class ProjectEvents extends BaseProjectEvents {
 							MOD( DATEDIFF(ADDDATE(`start`, INTERVAL ".logged_user()->getTimezone()." HOUR), '$year-$month-$day') ,repeat_d) = 0
 							AND
 							(
-								TIMESTAMPADD(DAY, (`repeat_num`-1)*`repeat_d`, `start`) >= '$start_date_str'
+								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -109,7 +109,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day 
 							AND
 							(
-								TIMESTAMPADD(MONTH, (`repeat_num`-1)*`repeat_m`, `start`) >= '$start_date_str'
+								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -123,7 +123,7 @@ class ProjectEvents extends BaseProjectEvents {
 							`start` <= '$start_date_str' AND DAY(`start`) = $day AND MONTH(`start`) = $month 
 							AND
 							(
-								TIMESTAMPADD(YEAR, (`repeat_num`-1)*`repeat_y`, `start`) >= '$start_date_str'
+								DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_y` YEAR) >= '$start_date_str'
 								OR
 								repeat_forever = 1
 								OR
@@ -225,6 +225,8 @@ class ProjectEvents extends BaseProjectEvents {
 			$tag_str= "";
 		}
 		
+		$invited = " AND `id` IN (SELECT `event_id` FROM `" . TABLE_PREFIX . "event_invitations` WHERE `user_id` = ".logged_user()->getId().")";
+		
 		if ($archived) $archived_cond = " AND `archived_by_id` <> 0";
 		else $archived_cond = " AND `archived_by_id` = 0";
 
@@ -261,7 +263,7 @@ class ProjectEvents extends BaseProjectEvents {
 					AND
 					(							
 						(
-							TIMESTAMPADD(DAY, (`repeat_num`-1)*`repeat_d`, `start`) >= '$start_date_str' 
+							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_d` DAY) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -269,7 +271,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							TIMESTAMPADD(MONTH, (`repeat_num`-1)*`repeat_m`, `start`) >= '$start_date_str' 
+							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_m` MONTH) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -277,7 +279,7 @@ class ProjectEvents extends BaseProjectEvents {
 						)
 						OR
 						(
-							TIMESTAMPADD(YEAR, (`repeat_num`-1)*`repeat_y`, `start`) >= '$start_date_str' 
+							DATE_ADD(`start`, INTERVAL (`repeat_num`-1)*`repeat_y` YEAR) >= '$start_date_str' 
 							OR
 							repeat_forever = 1
 							OR
@@ -301,8 +303,8 @@ class ProjectEvents extends BaseProjectEvents {
 					MOD( PERIOD_DIFF(DATE_FORMAT(`start`, '%Y%m'), DATE_FORMAT('$start_date_str', '%Y%m')), `repeat_mjump`) = 0
 				)				
 			)
-			$limitation
-			$permissions
+			$wsstring
+			$permissions $invited
 			$tag_str $archived_cond )";
 
 		$result_events = self::findAll(array(
@@ -362,7 +364,7 @@ class ProjectEvents extends BaseProjectEvents {
 		)); // findAll
 
 		// Find invitations for events and logged user
-		ProjectEvents::addInvitations($result_events);
+		ProjectEvents::addInvitations($result_events, $user instanceof User ? $user->getId() : 0);
 
 		return $result_events;
 	} // getAllEventsByProject

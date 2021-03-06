@@ -518,7 +518,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 	//rx__TasksDrag.haveExtDD['ogTasksPanelGroupCont'+group.group_id] = group.group_id;
 	sb.append("<div id='ogTasksPanelGroupCont" + group.group_id + "' class='ogTasksGroup' style='display:" + ((this.existsSoloGroup() && !group.solo)? 'none':'block') + "'><div id='ogTasksPanelGroup" + group.group_id + "' class='ogTasksGroupHeader' onmouseover='ogTasks.mouseMovement(null,\"" + group.group_id + "\",true)' onmouseout='ogTasks.mouseMovement(null,\"" + group.group_id + "\", false)'>");
 	sb.append("<table width='100%'><tr>");
-	//sb.append('<td style="width:20px"><div onclick="ogTasks.expandCollapseAllTasksGroup(\'' + group.group_id + '\')" class="og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG' + group.group_id + '"></div></td>');
+	sb.append('<td style="width:20px"><div onclick="ogTasks.expandCollapseAllTasksGroup(\'' + group.group_id + '\')" class="og-task-expander toggle_expanded" id="ogTasksPanelGroupExpanderG' + group.group_id + '"></div></td>');
 	sb.append('<td style="width:20px" title="'+lang('select all tasks')+'"><input style="width:14px;height:14px" type="checkbox" id="ogTasksPanelGroupChk' + group.group_id + '" ' + (group.isChecked?'checked':'') + ' onclick="ogTasks.GroupSelected(this,\'' + group.group_id + '\')"/></td>');
 	
 	sb.append("<td width='20px'><div class='db-ico " + group.group_icon + "'></div></td>");
@@ -585,6 +585,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		sb.append("<div class='ogTasksGroupHeaderActions' style='visibility:hidden' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group) + '</div>');
 	sb.append('</td></tr></table></div>');
 	
+	sb.append("<div id='ogTasksPanelTaskRowsContainer" + group.group_id + "'>");
 	//draw the group's tasks
 	for (var i = 0; i < group.group_tasks.length; i++){
 		if (i == og.noOfTasks){			//Draw expander if group has more than og.noOfTasks tasks
@@ -600,7 +601,7 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		}
 		sb.append(this.drawTask(group.group_tasks[i], drawOptions, displayCriteria, group.group_id, 1));
 	}
-	sb.append("</div>");
+	sb.append("</div></div>");
 	return sb.toString();
 }
 
@@ -672,7 +673,7 @@ ogTasks.collapseGroup = function(group_id){
 	}
 }
 
-/*ogTasks.expandCollapseAllTasksGroup = function(group_id) {
+ogTasks.expandCollapseAllTasksGroup = function(group_id) {
 	var group = this.getGroup(group_id);
 	if (group){
 		var expander = document.getElementById('ogTasksPanelGroupExpanderG' + group_id);
@@ -686,13 +687,10 @@ ogTasks.collapseGroup = function(group_id){
 			visibility = 'none';
 		}
 		
-		for (var i=0; i < group.group_tasks.length; i++) {
-			var div_id = 'ogTasksPanelTaskTableT' + group.group_tasks[i].id + 'G' +  group.group_id;
-			var task_div = document.getElementById(div_id);
-			if (task_div) task_div.style.display = visibility;
-		}
+		var tasks_container = document.getElementById("ogTasksPanelTaskRowsContainer" +  group.group_id);
+		if (tasks_container) tasks_container.style.display = visibility;
 	}
-}*/
+}
 
 
 ogTasks.drawAddTask = function(id_subtask, group_id, level){

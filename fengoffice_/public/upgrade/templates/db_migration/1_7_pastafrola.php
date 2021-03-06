@@ -9,7 +9,11 @@ INSERT INTO `<?php echo $table_prefix ?>file_types` (`extension`, `icon`, `is_se
 	('webfile', 'webfile.png', 0, 0);
 
 INSERT INTO `<?php echo $table_prefix ?>config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
-	('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used');
+	('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used'),
+	('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', '0', '0', NULL)
+ON DUPLICATE KEY UPDATE id=id;
+
+DELETE FROM `<?php echo $table_prefix ?>config_options` WHERE `category_name`='general' AND `name`='detect_mime_type_from_extension';
 
 ALTER TABLE `<?php echo $table_prefix ?>project_milestones`
  ADD COLUMN `is_urgent` BOOLEAN NOT NULL default '0';
@@ -19,7 +23,8 @@ ALTER TABLE `<?php echo $table_prefix ?>application_logs` MODIFY COLUMN `action`
 INSERT INTO `<?php echo $table_prefix ?>user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
  ('dashboard', 'show activity widget', '1', 'BoolConfigHandler', 0, 1000, ''),
  ('dashboard', 'activity widget elements', '30', 'IntegerConfigHandler', '0', '1100', NULL),
- ('dashboard', 'workspace_description_widget_expanded', '1', 'BoolConfigHandler', 1, 0, '')
+ ('dashboard', 'workspace_description_widget_expanded', '1', 'BoolConfigHandler', 1, 0, ''),
+ ('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', 0, 800, '')
 ON DUPLICATE KEY UPDATE id=id;
 
 INSERT INTO `<?php echo $table_prefix ?>workspace_objects` (`workspace_id`, `object_manager`, `object_id`, `created_by_id`, `created_on`)

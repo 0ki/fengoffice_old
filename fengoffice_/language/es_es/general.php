@@ -219,4 +219,5 @@
 	'latest activity' => 'Última actividad',
 	'view all activity' => 'Ver toda la actividad...',
 	'advanced' => 'Avanzado',
+	'workspace and tags' => 'Espacio y etiquetas',
 ); ?>

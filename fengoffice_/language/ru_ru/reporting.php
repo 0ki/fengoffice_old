@@ -36,6 +36,11 @@ http://code.google.com/p/opengooru/
   	'columns to print desc' => 'Переместите столбцы, которые вы хотите печатать на поле справа.',
   	'reporting workspace' => 'Проект',
   	'reporting user' => 'Пользователь',
+	'report pdf options' => 'Опции PDF',
+  	'report pdf page layout' => 'Ориентация',
+  	'report pdf vertical' => 'Книжная',
+  	'report pdf landscape' => 'Альбомная',
+  	'report font size' => 'Размер шрифта'
   );
   
 ?>

@@ -1418,10 +1418,16 @@ class FilesController extends ApplicationController {
 				$coName = "";
 				$coId = $o->getCheckedOutById();
 				if ($coId != 0) {
-					if ($coId == logged_user()->getId())
+					if ($coId == logged_user()->getId()) {
 						$coName = "self";
-					else
-						$coName = Users::findById($coId)->getUsername();
+					} else {
+						$coUser = Users::findById($coId);
+						if ($coUser instanceof User) {
+							$coName = $coUser->getUsername();
+						} else {
+							$coName = "";
+						}
+					}
 				}
 
 				if ($o->isMP3()) {

@@ -109,6 +109,7 @@
     'order' => 'Order',
     'read' => 'Read',
     'workspace' => 'Workspace',
+	'workspace and tags' => 'Workspace and Tags',
     'event' => 'Event',
     'events' => 'Events',
     'Event' => 'Event',

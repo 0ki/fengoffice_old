@@ -1,14 +1,19 @@
+<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('billing', 'assign_users') ?>" method="post">
 <div class="adminBilling" style="height:100%;background-color:white">
   <div class="adminHeader">
-  	<div class="adminTitle"><?php echo lang('assign billing categories to users') ?></div>
+  	<div class="adminTitle"><table style="width:535px"><tr><td>
+  			<?php echo lang('assign billing categories to users') ?>
+  		</td><td style="text-align:right">
+  			<?php echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px')); ?>
+  		</td></tr></table>
+  	</div>
   </div>
   <div class="adminSeparator"></div>
   <div class="adminMainBlock">
 <?php
 	$genid = gen_id();
 	
-	if ($users_by_company){?>
-		<form style="height:100%;background-color:white" class="internalForm" action="<?php echo get_url('billing', 'assign_users') ?>" method="post">
+	if ($users_by_company){?>		
 		<?php
 		foreach ($users_by_company as $company_row){
 			$company = $company_row['details'];
@@ -45,4 +50,4 @@
 <?php 	} // foreach
 	echo submit_button(lang('save changes'), 's', array('style'=>'margin-top:0px;margin-left:10px'));?>
 	</form>
-<?php } // if?>
+<?php } // if ?>

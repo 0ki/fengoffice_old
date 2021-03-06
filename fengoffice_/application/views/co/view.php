@@ -184,7 +184,7 @@
 	<tr>
 		<td class="coViewBody" colspan=2>
 			<div class="prop-col-div" style="width:200;">
-				<span style="color:333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
+				<span style="color:#333333;font-weight:bolder;"><?php echo lang('unique id') ?>:&nbsp;</span><?php echo $object->getUniqueObjectId() ?>
 			</div>
 		<?php 
 		if ($object instanceof ProjectDataObject) {
@@ -195,7 +195,7 @@
 		if ($has_wss || $object->isTaggable()) { ?>
 			<div class="prop-col-div" style="width:200;">
 			<?php if ($has_wss) {?>
-				<span style="color:333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
+				<span style="color:#333333;font-weight:bolder;"><?php echo lang('workspace') ?>:</span>
 			<?php
 				$projectLinks = array();
 				foreach ($user_object_workspaces as $ws) {
@@ -206,7 +206,7 @@
 		
 			if ($object->isTaggable() && ($tags = project_object_tags2($object)) && $tags != '--') {?>
 				<br/>
-				<div style="color:333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
+				<div style="color:#333333;font-weight:bolder;"><?php echo lang('tags') ?>:</div><?php echo $tags ?>
 			<?php } ?>
 		</div>
 	<?php } // if ?>

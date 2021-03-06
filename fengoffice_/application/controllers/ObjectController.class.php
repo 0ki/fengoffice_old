@@ -182,23 +182,22 @@ class ObjectController extends ApplicationController {
 			return;
 		}
 		$obj_custom_properties = array_var($_POST, 'object_custom_properties');
-		if (is_array($obj_custom_properties)){
-			$customProps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($object->manager()));
-			
-			//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
-			foreach($customProps as $cp){
-				if($cp->getType() == 'boolean'){
+		
+		$customProps = CustomProperties::getAllCustomPropertiesByObjectType(get_class($object->manager()));
+		//Sets all boolean custom properties to 0. If any boolean properties are returned, they are subsequently set to 1.
+		foreach($customProps as $cp){
+			if($cp->getType() == 'boolean'){
+				$custom_property_value = CustomPropertyValues::getCustomPropertyValue($object->getId(), $cp->getId());
+				if(!$custom_property_value instanceof CustomPropertyValue){
 					$custom_property_value = new CustomPropertyValue();
-					$cpv = CustomPropertyValues::getCustomPropertyValue($object->getId(), $cp->getId());
-					if($cpv instanceof CustomPropertyValue){
-						$custom_property_value = $cpv;
-					}
-					$custom_property_value->setObjectId($object->getId());
-					$custom_property_value->setCustomPropertyId($cp->getId());
-					$custom_property_value->setValue(0);
-					$custom_property_value->save();
 				}
+				$custom_property_value->setObjectId($object->getId());
+				$custom_property_value->setCustomPropertyId($cp->getId());
+				$custom_property_value->setValue(0);
+				$custom_property_value->save();
 			}
+		}
+		if (is_array($obj_custom_properties)){
 			
 			foreach($obj_custom_properties as $id => $value){
 				//Get the custom property
@@ -901,7 +900,7 @@ class ObjectController extends ApplicationController {
 	 * @param boolean $count if false the query will return objects, if true it will return object count
 	 */
 	static function getDashboardObjectQueries($project = null, $tag = null, $count = false, $trashed = false, $linkedObject = null, $order = 'updatedOn', $filterName = '', $archived = false, $filterManager = ''){
-		if ($trashed) $order = 'trashedOn';
+		if ($trashed && $trashed != 'all') $order = 'trashedOn';
 		else if ($archived) $order = 'archivedOn';
 		switch ($order){
 			case 'createdOn':
@@ -1002,7 +1001,8 @@ class ObjectController extends ApplicationController {
 		
 		
 		if ($trashed) {
-			$trashed_cond = '`trashed_on` > ' . DB::escape(EMPTY_DATETIME);
+			if ($trashed == 'all') $trashed_cond = '`trashed_on` >= ' . DB::escape(EMPTY_DATETIME);
+			else $trashed_cond = '`trashed_on` > ' . DB::escape(EMPTY_DATETIME);
 			$archived_cond = '1 = 1'; // Show all objects in trash
 			$comments_arch_cond = "1 = 1";
 		} else {

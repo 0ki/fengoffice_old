@@ -313,6 +313,9 @@ class ProjectEvent extends BaseProjectEvent {
 	}
 	
 	function addInvitation($inv) {
+		if (!is_array($this->event_invitations)) {
+			$this->event_invitations = array();
+		}
 		if (isset($inv)) {
 			$this->event_invitations[$inv->getUserId()] = $inv;
 		}

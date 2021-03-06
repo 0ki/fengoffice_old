@@ -7,7 +7,7 @@
 	require_javascript('og/tasks/TasksTopToolbar.js');
 	require_javascript('og/tasks/TasksBottomToolbar.js');
 	require_javascript('og/tasks/print.js');
-	
+
 	$genid = gen_id();
 	
 	$all_templates_array = array();

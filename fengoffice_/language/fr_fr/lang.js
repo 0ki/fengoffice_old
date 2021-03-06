@@ -74,7 +74,7 @@ addLangs({
 	'company': 'Société',
 	'companies': 'Sociétés',
 	'email': 'Adresse de messagerie ',
-	'email tab': 'Messagerie (BETA)',
+	'email tab': 'Messagerie',
 	'checkin': 'Nouvelle révision',
 	'checkout': 'Enregistrer',
 	'checked out by': 'Enregistré par {0}',
@@ -679,5 +679,14 @@ addLangs({
 	'send anyway': 'Envoyer quand même',
 	'view new email': 'Visualiser le message ?',
 	'confirm delete permanently company': 'Etes vous certains de vouloir supprimer définitivement cette société ?\nTous les utilisateurs affiliés à cette société seront également supprimés.',
-	'confirm move to trash company': 'Etes vous certains de vouloir supprimer cette société ?\nTous les utilisateurs affiliés à cette société seront également supprimés.'
+	'confirm move to trash company': 'Etes vous certains de vouloir supprimer cette société ?\nTous les utilisateurs affiliés à cette société seront également supprimés.',
+	'urgent': 'Urgent',
+	'assign contact role on workspace': 'Affecter un rôle à des contacts dans un contexte',
+	'assign roles': 'Affecter des rôles',
+	'apply assignee to subtasks': 'Appliquer les assignations aux sous-tâches',
+	'work week': '5 jours',
+	'work week view': 'Semaine de travail',
+	'mark spam': 'Marquer comme spam',
+	'mark ham': 'Marquer comme non-spam',
+	'select all tasks': 'Sélectionner toutes les tâches'
 });

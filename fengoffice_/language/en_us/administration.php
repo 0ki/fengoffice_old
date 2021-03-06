@@ -91,6 +91,8 @@
     
   	'config option name currency_code' => 'Currency',
   	'config option desc currency_code' => 'Currency symbol',
+	'config option name use_owner_company_logo_at_header' => 'Use Owner company\'s logo as application logo',
+  	'config option desc use_owner_company_logo_at_header' => 'Put the Owner company\'s logo at the top right corner of the screen. Must refresh (F5) to apply the changes. Recommended size: 50x50 px.',
   
     // Mailing
     'config option name exchange_compatible' => 'Microsoft Exchange compatibility mode',
@@ -310,7 +312,7 @@
   	'user ws config option name autodetect_time_zone' => 'Autodetect timezone',
   	'user ws config option desc autodetect_time_zone' => 'When this option is enabled, the user\'s timezone will be autodetected from browser.',
   	'user ws config option name search_engine' => 'Search engine',
-  	'user ws config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick".',
+  	'user ws config option desc search_engine' => 'Choose which search engine to use. "Full" will do a more exhaustive search but will take much longer than "Quick". "Full" is not recommended for heavily loaded installations.',
 	'user ws config option name activity widget elements' => 'Activity widget size',
 	'user ws config option desc activity widget elements' => 'Number of items displayed in Activity widget.',
   

@@ -67,8 +67,9 @@ og.WorkspaceTree = function(config) {
 	delete config.workspaces;
 	var id = config.id || 'workspace-panel';
 	Ext.applyIf(config, {
-		/**/ddGroup: 'WorkspaceDD',
-		enableDrop: true,/**/
+		ddGroup: 'WorkspaceDD',
+		ddAppendOnly: true,
+		enableDrop: true,
 		autoScroll: true,
 		autoLoadWorkspaces: false,
 		border: false,

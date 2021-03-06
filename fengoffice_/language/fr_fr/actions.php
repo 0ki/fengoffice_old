@@ -156,4 +156,8 @@
 	'confirm archive selected objects' => 'Etes vous certain de vouloir archiver les objets sélectionnés ?',
 	'confirm archive object' => 'Etes vous certain de vouloir archiver cet objet ?',
 	'confirm unarchive object' => 'Etes vous certain de vouloir désarchiver cet objet ?',
+	'show' => 'Montrer',
+	'report as spam' => 'Signaler comme spam',
+	'not spam' => 'Non-spam',
+	'mark as unread' => 'Marquer comme non lu',
 ); ?>

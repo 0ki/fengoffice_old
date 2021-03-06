@@ -1533,6 +1533,7 @@ class ContactController extends ApplicationController {
 
 		
 	function read_csv_file($filename, $delimiter, $only_first_record = false) {
+		
 		$handle = fopen($filename, 'rb');
 		if (!$handle) {
 			flash_error(lang('file not exists'));
@@ -1543,13 +1544,14 @@ class ContactController extends ApplicationController {
 		if ($only_first_record) {
 			$result = fgetcsv($handle, null, $delimiter);
 			$aux = array();
-			foreach ($result as $title) $aux[] = mb_convert_encoding($title, "utf-8", detect_encoding($title));
+			foreach ($result as $title) $aux[] = mb_convert_encoding($title, "UTF-8", detect_encoding($title));
 			$result = $aux;			
 		} else {
+			
 			$result = array();
 			while ($fields = fgetcsv($handle, null, $delimiter)) {
 				$aux = array();
-				foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "utf-8", detect_encoding($field));
+				foreach ($fields as $field) $aux[] = mb_convert_encoding($field, "UTF-8", detect_encoding($field));
 				$result[] = $aux;
 			}
 		}

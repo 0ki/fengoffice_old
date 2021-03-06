@@ -277,4 +277,6 @@ Objet:   {0}
 	'linked event tab' => 'Evénements',
 	'update unset billing values' => 'Mettre à jour les intervalles de temps sans valeurs de facturation',
 	'update unset billing values desc' => 'REMARQUE : Ceci appliquera les nouvelles valeurs de facturation aux intervalles de temps qui n\'en possèdent pas. Êtes vous sûr de vouloir continuer ?',
+	'urgent priority' => 'Urgent',
+	'apply assignee to subtasks' => 'Appliquer les assignations aux sous-tâches',
 ); ?>

@@ -21,4 +21,8 @@
 	'ascending' => 'Oplopend',
 	'descending' => 'Aflopend',
 	'parametrizable' => 'Vragen bij uitvoeren',
+	'columns to print' => 'Te printen kolommen',
+	'columns to print desc' => 'Verplaats de kolommen die u wilt printen naar rechts door op de pijltjes te klikken',
+	'reporting workspace' => 'Werkomgeving',
+	'reporting user' => 'Gebruiker',
 ); ?>

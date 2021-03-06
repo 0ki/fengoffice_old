@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Pastafrola upgrade script will upgrade OpenGoo 1.6 to OpenGoo 1.7-rc
+ * Pastafrola upgrade script will upgrade FengOffice 1.6 to FengOffice 1.7-rc2
  *
  * @package ScriptUpgrader.scripts
  * @version 1.1
@@ -40,7 +40,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 	function __construct(Output $output) {
 		parent::__construct($output);
 		$this->setVersionFrom('1.6.2');
-		$this->setVersionTo('1.7-rc');
+		$this->setVersionTo('1.7-rc2');
 	} // __construct
 
 	function getCheckIsWritable() {
@@ -99,6 +99,17 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 						('system', 'notification_from_address', '', 'StringConfigHandler', 1, 0, 'Address to use as from field in email notifications. If empty, users address is used');
 				";
 			}
+			if (version_compare($installed_version, '1.7-rc') <= 0) {
+				$upgrade_script .= "
+					INSERT INTO `" . TABLE_PREFIX . "config_options` (`category_name`, `name`, `value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES
+						('general', 'use_owner_company_logo_at_header', '0', 'BoolConfigHandler', 0, 0, '')
+					ON DUPLICATE KEY UPDATE id=id;
+					DELETE FROM `" . TABLE_PREFIX . "config_options` WHERE `category_name`='general' AND `name`='detect_mime_type_from_extension';
+					INSERT INTO `" . TABLE_PREFIX . "user_ws_config_options` (`category_name`, `name`, `default_value`, `config_handler_class`, `is_system`, `option_order`, `dev_comment`) VALUES 
+ 						('general', 'detect_mime_type_from_extension', '0', 'BoolConfigHandler', 0, 800, '')
+					ON DUPLICATE KEY UPDATE id=id;
+				";
+			}
 		}
 		
 		if($this->executeMultipleQueries($upgrade_script, $total_queries, $executed_queries, $this->database_connection)) {
@@ -108,7 +119,7 @@ class PastafrolaUpgradeScript extends ScriptUpgraderScript {
 			return false;
 		} // if
 		
-		$this->printMessage('OpenGoo has been upgraded. You are now running OpenGoo '.$this->getVersionTo().' Enjoy!');
+		$this->printMessage('Feng Office has been upgraded. You are now running Feng Office '.$this->getVersionTo().' Enjoy!');
 	} // execute
 } // PastafrolaUpgradeScript
 
