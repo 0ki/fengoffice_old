@@ -6,6 +6,7 @@ og.HelpPanel = function(config) {
 		},
 		active: true
 	}));
+	this.load(this.defaultContent);
 };
 
 Ext.extend(og.HelpPanel, og.ContentPanel, {

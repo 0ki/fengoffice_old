@@ -41,7 +41,7 @@
     
     // Init company website
     'failed to load company website' => 'No se pudo cargar el sitio web. La compañía no fue encontrada',
-    'failed to load project' => 'El sistema falló al cargar el proyecto',
+    'failed to load project' => 'El sistema falló al cargar el área de trabajo',
     
     // Login form
     'username value missing' => 'Por favor, introduzca el nombre de usuario',
@@ -49,8 +49,8 @@
     'invalid login data' => 'El nombre de usuario o la contraseña son incorrectas, por favor, inténtelo de nuevo',
     
     // Add project form
-    'project name required' => 'Nombre de proyecto no ingresado, inténtelo de nuevo',
-    'project name unique' => 'El nombre de proyecto seleccionado ya está en uso, inténtelo con uno distinto',   
+    'project name required' => 'Nombre de área de trabajo no ingresado, inténtelo de nuevo',
+    'project name unique' => 'El nombre de área de trabajo seleccionado ya está en uso, inténtelo con uno distinto',   
     // Add message form
     'message title required' => 'Título no introducido, inténtelo de nuevo',
     'message title unique' => 'El título introducido ya existe, inténtelo introduciendo uno distinto',

@@ -18,7 +18,7 @@
 	} // if
 	add_page_action(lang('copy milestone'), get_url("milestone", "copy_milestone", array("id" => $milestone->getId())), 'ico-copy');
 	
-	add_page_action(lang('save as template'), get_url("milestone", "new_template", array("id" => $milestone->getId())), 'ico-template-milestone');
+	//add_page_action(lang('save as template'), get_url("milestone", "new_template", array("id" => $milestone->getId())), 'ico-template-milestone');
 
 ?>
 

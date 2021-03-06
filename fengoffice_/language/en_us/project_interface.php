@@ -201,7 +201,7 @@ return array(
   
   	'display' => 'Display',
   	'display options' => 'Display options',
-  	'show in project' => 'Show in project',
+  	'show in project' => 'Show in workspace',
   	'show in project desc' => 'Show this chart in the overview panel of the selected workspace',
   	'show in parents' => 'Show in parents',
   	'show in parents desc' => 'Show this chart in the overview panel of every parent workspace of the selected workspace',

@@ -12,10 +12,10 @@ App.modules.addTaskForm = {
     if(!list_details.can_add_task) return;
     
     // Show this one
-    $(list_details.add_task_link_id).style.display = 'none';
-    $(list_details.task_form_id).style.display = 'block';
-    $(list_details.text_id).focus();
-    $(list_details.submit_id).accesskey = 's';
+    Ext.getDom(list_details.add_task_link_id).style.display = 'none';
+    Ext.getDom(list_details.task_form_id).style.display = 'block';
+    Ext.getDom(list_details.text_id).focus();
+    Ext.getDom(list_details.submit_id).accesskey = 's';
     
     // Hide all forms
     App.modules.addTaskForm.hideAllAddTaskForms(task_list_id);
@@ -30,13 +30,13 @@ App.modules.addTaskForm = {
     list_details = App.modules.addTaskForm.task_lists[task_list_id];
     if(!list_details) return;
     if(!list_details.can_add_task) return;
-    if(!$(list_details.text_id)) return;
+    if(!Ext.getDom(list_details.text_id)) return;
     
-    $(list_details.text_id).value = '';
-    $(list_details.assign_to_id).value = '0:0';
-    $(list_details.add_task_link_id).style.display = 'block';
-    $(list_details.task_form_id).style.display = 'none';
-    $(list_details.submit_id).accesskey = '';
+    Ext.getDom(list_details.text_id).value = '';
+    Ext.getDom(list_details.assign_to_id).value = '0:0';
+    Ext.getDom(list_details.add_task_link_id).style.display = 'block';
+    Ext.getDom(list_details.task_form_id).style.display = 'none';
+    Ext.getDom(list_details.submit_id).accesskey = '';
   }, // hideAddTaskForm
   
   /**

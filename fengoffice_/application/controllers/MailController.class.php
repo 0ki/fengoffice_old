@@ -270,6 +270,7 @@
     		
         	flash_success(lang('success delete email'));
         	
+        	ajx_current("back");
     	} catch(Exception $e) {
     		DB::rollback();
         	flash_error(lang('error delete email'));

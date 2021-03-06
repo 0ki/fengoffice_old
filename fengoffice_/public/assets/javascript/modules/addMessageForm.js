@@ -10,7 +10,7 @@ App.modules.addMessageForm = {
    * @param string collapse_lang Collapse in selected language
    */
   toggleAdditionalText: function(show_hide_link, editor_id, expand_lang, collapse_lang) {
-    editor = $(editor_id);
+    editor = Ext.getDom(editor_id);
     if(editor.style.display == 'block') {
       editor.style.display = 'none';
       show_hide_link.innerHTML = expand_lang;
@@ -30,10 +30,10 @@ App.modules.addMessageForm = {
     var company_details = App.modules.addMessageForm.notify_companies['company_' + company_id]; // get company details from hash
     if(!company_details) return;
     
-    var company_checkbox = $(genid + company_details.checkbox_id);
+    var company_checkbox = Ext.getDom(genid + company_details.checkbox_id);
     
     for(var i = 0; i < company_details.users.length; i++) {
-      $(genid + company_details.users[i].checkbox_id).checked = company_checkbox.checked;
+      Ext.getDom(genid + company_details.users[i].checkbox_id).checked = company_checkbox.checked;
     } // if
   }, // emailNotifyClickCompany
   
@@ -51,10 +51,10 @@ App.modules.addMessageForm = {
     // If we have all users checked check company box, else uncheck it... Simple :)
     var all_users_checked = true;
     for(var i = 0; i < company_details.users.length; i++) {
-      if(!$(genid + company_details.users[i].checkbox_id).checked) all_users_checked = false;
+      if(!Ext.getDom(genid + company_details.users[i].checkbox_id).checked) all_users_checked = false;
     } // if
     
-    $(genid + company_details.checkbox_id).checked = all_users_checked;
+    Ext.getDom(genid + company_details.checkbox_id).checked = all_users_checked;
   } // emailNotifyClickUser
   
 };

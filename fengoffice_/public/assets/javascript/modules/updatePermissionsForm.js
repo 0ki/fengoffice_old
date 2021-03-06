@@ -8,8 +8,8 @@ App.modules.updatePermissionsForm = {
    * @param integer company_id
    */
   companyCheckboxClick: function(company_id,genid) {
-    var new_display_value = $(genid+'project_company_' + company_id).checked ? 'block' : 'none';
-    $(genid+'project_company_users_' + company_id).style.display = new_display_value;
+    var new_display_value = Ext.getDom(genid+'project_company_' + company_id).checked ? 'block' : 'none';
+    Ext.getDom(genid+'project_company_users_' + company_id).style.display = new_display_value;
   }, // companyCheckboxClick
   
   /**
@@ -22,8 +22,8 @@ App.modules.updatePermissionsForm = {
     if(company_id == App.modules.updatePermissionsForm.owner_company_id) {
       return;
     } // if
-    var new_display_value = $(genid+'project_user_' + user_id).checked ? 'block' : 'none';
-    $(genid+'user_' + user_id + '_permissions').style.display = new_display_value;
+    var new_display_value = Ext.getDom(genid+'project_user_' + user_id).checked ? 'block' : 'none';
+    Ext.getDom(genid+'user_' + user_id + '_permissions').style.display = new_display_value;
     return;
   }, // userCheckboxClick
   
@@ -33,11 +33,11 @@ App.modules.updatePermissionsForm = {
    * @param integer user_id
    */
   userPermissionAllCheckboxClick: function(user_id,genid) {
-    var new_value = $(genid+'project_user_' + user_id + '_all').checked;
+    var new_value = Ext.getDom(genid+'project_user_' + user_id + '_all').checked;
     
     for(i = 0; i < App.modules.updatePermissionsForm.project_permissions.length; i++) {
       var permission_name = App.modules.updatePermissionsForm.project_permissions[i];
-      $(genid+'project_user_' + user_id + '_' + permission_name).checked = new_value;
+      Ext.getDom(genid+'project_user_' + user_id + '_' + permission_name).checked = new_value;
     } // for
   }, // userPermissionAllCheckboxClick
   
@@ -53,10 +53,10 @@ App.modules.updatePermissionsForm = {
     var len = App.modules.updatePermissionsForm.project_permissions.length;
     for(i = 0; i < len; i++) {
       var permission_name = App.modules.updatePermissionsForm.project_permissions[i];
-      if(!$(genid+'project_user_' + user_id + '_' + permission_name).checked) all_checked = false;
+      if(!Ext.getDom(genid+'project_user_' + user_id + '_' + permission_name).checked) all_checked = false;
     } // for
     
-    $(genid+'project_user_' + user_id + '_all').checked = all_checked;
+    Ext.getDom(genid+'project_user_' + user_id + '_all').checked = all_checked;
   } // user_permission_checkbox_click
   
 };

@@ -28,6 +28,11 @@ $user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logge
 $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1; 
 
 $user = Users::findById(array('id' => $user_filter));
+/*
+ * If user does not exists, assign logged_user() to $user 
+ * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
+ */
+if ($user == null) $user = logged_user();
 
 ?>
 <?php echo stylesheet_tag('event/day.css') ?>
@@ -98,7 +103,7 @@ $user = Users::findById(array('id' => $user_filter));
 			<div id="chrome_main2" class="printborder" style="border-color: rgb(195, 217, 255); background: rgb(195, 217, 255) none repeat scroll 0% 50%; width:100%; height:95%">
 					
 				<div id="allDayGrid" class="inset grid"  style="height: <?php echo $alldaygridHeight ?>px; margin-bottom: 5px;background:#E8EEF7;margin-right:0px;margin-left:40px;" 
-					onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',view:'day',type_id:2,title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear()))?>'},'');" >
+					onclick="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, -1, -1);" >
 					
 					<div id="allDay0" class="allDayCell" style="left: 0px; height: <?php echo $alldaygridHeight ?>px;border-left:3px double #DDDDDD !important; position:absolute;width:3px;"></div>
 					<div id="alldayeventowner" onclick="stopPropagation(event) ">
@@ -107,22 +112,30 @@ $user = Users::findById(array('id' => $user_filter));
 							foreach ($alldayevents as $event){	
 								$tipBody = '';
 								$divtype = '';
+								$div_prefix = '';
 								if ($event instanceof ProjectMilestone ){
+									$div_prefix = 'd_ms_div_';
 									$subject =$event->getName();
 									$img_url = image_url('/16x16/milestone.png');
 									$divtype = '<i>' . lang('milestone') . '</i> - ';
-									$tipBody = (trim($event->getDescription()) != '' ? $event->getDescription().'<br>' : '') . '<br>' . lang('assigned to') .': '. $event->getAssignedToName();
+									$tipBody = lang('assigned to') .': '. $event->getAssignedToName() . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');
 								}elseif ($event instanceof ProjectTask){
+									$div_prefix = 'd_ta_div_';
 									$subject =$event->getTitle();
 									$img_url = image_url('/16x16/tasks.png');
 									$divtype = '<i>' . lang('task') . '</i> - ';
-									$tipBody = (trim($event->getText()) != '' ? $event->getText().'<br>' : '') . '<br>' . lang('assigned to') .': '. $event->getAssignedToName();
+									$tipBody = lang('assigned to') .': '. $event->getAssignedToName() . (trim($event->getText()) != '' ? '<br><br>' . $event->getText() : '');
 								}elseif ($event instanceof ProjectEvent){
+									$div_prefix = 'd_ev_div_';
 									$subject =$event->getSubject();
 									$img_url = image_url('/16x16/calendar.png');
 									$divtype = '<i>' . lang('event') . '</i> - ';
 									$tipBody = (trim($event->getDescription()) != '' ? '<br>' . $event->getDescription() : '');									
 								}
+								$tipBody = str_replace("\r", '', $tipBody);
+								$tipBody = str_replace("\n", '<br>', $tipBody);
+								if (strlen($tipBody) > 200) $tipBody = substr($tipBody, 0, strpos($tipBody, ' ', 200)) . ' ...';
+								
 								$dws = $event->getWorkspaces();
 								$ws_color = 0;
 								if (count($dws) >= 1){
@@ -131,7 +144,7 @@ $user = Users::findById(array('id' => $user_filter));
 								cal_get_ws_color($ws_color, $ws_style, $ws_class, $txt_color);	
 														
 						?>
-						<div id="ev_div_<?php echo $event->getId() ?>" class="adc" style="left: 3px; top: <?php echo $top ?>px; z-index: 5;width: 99%;margin:1px;">
+						<div id="<?php echo $div_prefix . $event->getId() ?>" class="adc" style="left: 3px; top: <?php echo $top ?>px; z-index: 5;width: 99%;margin:1px;">
 							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
 							<div class="noleft <?php echo  $ws_class?>" style="<?php echo  $ws_style?>">							
 								<div class="" style="overflow: hidden; padding-bottom: 1px;">
@@ -143,7 +156,7 @@ $user = Users::findById(array('id' => $user_filter));
 							<div class="t3 <?php echo  $ws_class?>" style="<?php echo  $ws_style?>;margin:0px 1px 0px 1px;height:1px;"></div>
 						</div>
 						<script type="text/javascript">
-							addTip('ev_div_' + <?php echo $event->getId() ?>, '<?php echo $divtype . $subject ?>', '<?php echo $tipBody ?>');
+							addTip('<?php echo $div_prefix . $event->getId() ?>', '<?php echo $divtype . $subject ?>', '<?php echo $tipBody ?>');
 						</script>
 						<?php
 								$top += 20;	
@@ -198,9 +211,6 @@ $user = Users::findById(array('id' => $user_filter));
 													<div id="h<?php echo $hour?>"" style="width:100%;top: <?php echo $top?>px; z-index: 100; height:20px;position:absolute;" 
 														onmousedown="selectStartDateTime(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"
 														onmouseup="showEventPopup(<?php echo $dtv->getDay() ?>, <?php echo $dtv->getMonth()?>, <?php echo $dtv->getYear()?>, <?php echo date("G",mktime($hour/2))?>, <?php echo ($hour % 2 ==0)?0:30 ?>);"></div>
-													<!--
-													onclick="og.EventPopUp.show(null, {day:'<?php echo $dtv->getDay() ?>',	month:'<?php echo $dtv->getMonth()?>',year:'<?php echo $dtv->getYear()?>',hour:'<?php echo date("G",mktime($hour/2))?>',minute:'<?php echo ($hour % 2 ==0)?0:30?>',type_id:1,view:'day',title:'<?php echo date("l, F j",  mktime(0, 0, 0, $dtv->getMonth(), $dtv->getDay(), $dtv->getYear())) ?>'},'');"></div>-->
-													
 											<?php
 												}
 											?>
@@ -328,10 +338,10 @@ $user = Users::findById(array('id' => $user_filter));
 												$procesados[$hr_start]++;
 										?>
 												<script type="text/javascript">
-													addTip('ev_div_' + <?php echo $event->getId() ?>, '<?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
+													addTip('d_ev_div_' + <?php echo $event->getId() ?>, '<?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
 												</script>
 												
-												<div id="ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
+												<div id="d_ev_div_<?php echo $event->getId()?>" class="chip" style="position: absolute; top: <?php echo $top?>px; left: <?php echo $left?>%; width: <?php echo $width?>%;z-index:120;"  onclick="stopPropagation(event)">
 													<div class="t1 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 2px 0px 2px;height:1px;"></div>
 													<div class="t2 <?php echo $ws_class ?>" style="<?php echo $ws_style ?>;margin:0px 1px 0px 1px;height:1px;"></div>
 													<div class="chipbody edit og-wsname-color-<?php echo  $ws_color?>">
@@ -453,23 +463,34 @@ $user = Users::findById(array('id' => $user_filter));
 	}
 	
 	function showEventPopup(day, month, year, hour, minute) {
-		selectEndDateTime(day, month, year, hour, minute);
-		var hrs = 0;
-		var mins = getDurationMinutes();
-		while (mins >= 60) {
-			mins -= 60;
-			hrs +=1;
+		var typeid = 1, hrs = 1, mins = 0;
+		if (hour == -1 || minute == -1) {
+			hour = 0;
+			minute = 0;
+			typeid = 2;
+			ev_start_hour = ev_start_minute = durationhour = durationmin = 0;
+			ev_start_day = day;
+			ev_start_month = month;
+			ev_start_year = year;
+		} else {
+			selectEndDateTime(day, month, year, hour, minute);
+			hrs = 0;
+			mins = getDurationMinutes();
+			while (mins >= 60) {
+				mins -= 60;
+				hrs +=1;
+			}
+			if (hrs == 0) {
+				hrs = 1;
+				mins = 0;
+			}
 		}
-		if (hrs == 0) {
-			hrs = 1;
-			mins = 0;
-		}
-
+		
 		if (lang('date format') == 'm/d/Y') 
 			st_val = ev_start_month + '/' + ev_start_day + '/' + ev_start_year;
 		else
 			st_val = ev_start_day + '/' + ev_start_month + '/' + ev_start_year;
-			
+
 		og.EventPopUp.show(null, {day: ev_start_day,
 								month: ev_start_month,
 								year: ev_start_year,
@@ -478,7 +499,8 @@ $user = Users::findById(array('id' => $user_filter));
 								durationhour: hrs,
 								durationmin: mins,
 								start_value: st_val,
-								type_id:1, view:'week', title: lang('add event')
+								type_id: typeid,
+								view:'week', title: lang('add event')
 								}, '');
 	}
 </script>

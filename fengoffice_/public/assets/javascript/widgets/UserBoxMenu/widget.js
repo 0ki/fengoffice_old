@@ -6,8 +6,8 @@
  * @constructor
  */
 App.widgets.UserBoxMenu = function(context_id, block_id) {
-  this.context = $(context_id);
-  this.block = $(block_id);
+  this.context = Ext.getDom(context_id);
+  this.block = Ext.getDom(block_id);
   App.widgets.UserBoxMenu.instances.push(this); // register instance
 };
 

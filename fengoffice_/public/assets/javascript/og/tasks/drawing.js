@@ -138,8 +138,8 @@ ogTasks.drawGroup = function(displayCriteria, drawOptions, group){
 		}
 		sb.append("<td><div id='ogTasksPanelCompleteBar" + group.group_id + "'>" + this.drawMilestoneCompleteBar(group) + "</div></td>");
 		sb.append("<td><div class='ogTasksGroupHeaderActions' style='visibility:hidden;padding-left:15px' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div></td></tr></table>');
-	}
-	sb.append("<div class='ogTasksGroupHeaderActions' style='display:none' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div>');
+	} else
+		sb.append("<div class='ogTasksGroupHeaderActions' style='visibility:hidden' id='ogTasksPanelGroupActions" + group.group_id + "'>" + this.drawGroupActions(group.group_id) + '</div>');
 	sb.append('</td></tr></table></div>');
 	
 	//draw the group's tasks

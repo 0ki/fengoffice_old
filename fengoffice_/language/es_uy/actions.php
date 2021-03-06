@@ -110,7 +110,7 @@
     // People
     'update people' => 'Poner al día',
     'remove user from project' => 'Eliminar usuario de este espacio',
-    'remove company from project' => 'Eliminar compañía del proyecto',
+    'remove company from project' => 'Eliminar compañía del espacio',
     
     // Password
     'update profile' => 'Editar datos de mi cuenta',

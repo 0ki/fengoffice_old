@@ -1,6 +1,6 @@
 App.modules.addProjectForm = {
   formActionClick: function() {
-    $('projectFormActionSelectMessage').disabled = !$('projectFormActionAddComment').checked;
-    $('projectFormActionSelectTaskList').disabled = !$('projectFormActionAddTask').checked;
+    Ext.getDom('projectFormActionSelectMessage').disabled = !Ext.getDom('projectFormActionAddComment').checked;
+    Ext.getDom('projectFormActionSelectTaskList').disabled = !Ext.getDom('projectFormActionAddTask').checked;
   }
 };

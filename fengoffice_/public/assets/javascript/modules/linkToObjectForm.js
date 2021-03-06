@@ -5,13 +5,13 @@ App.modules.linkToObjectForm = {
    * link new file)
    */
   toggleLinkForms: function toggleLinkForms() {
-    if($('linkFormExistingObject').checked) {
-      $('linkFormExistingObjectControls').style.display = 'block';
-      $('linkFormNewObjectControls').style.display = 'none';
-      // $('documentFormFile').value = '';
+    if(Ext.getDom('linkFormExistingObject').checked) {
+      Ext.getDom('linkFormExistingObjectControls').style.display = 'block';
+      Ext.getDom('linkFormNewObjectControls').style.display = 'none';
+      // Ext.getDom('documentFormFile').value = '';
     } else {
-      $('linkFormExistingObjectControls').style.display = 'none';
-      $('linkFormNewObjectControls').style.display = 'block';
+      Ext.getDom('linkFormExistingObjectControls').style.display = 'none';
+      Ext.getDom('linkFormNewObjectControls').style.display = 'block';
     } // if
   } // toggleLinkForms
   

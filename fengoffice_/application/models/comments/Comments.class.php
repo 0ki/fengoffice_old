@@ -66,6 +66,7 @@
 		";
 		$rows = DB::executeAll($sql);
 		$comments = array();
+		if (!is_array($rows)) return $comments;
 		$s = 0; $count = 0;
 		foreach ($rows as $row) {
 			$comment = Comments::findById($row['id']);

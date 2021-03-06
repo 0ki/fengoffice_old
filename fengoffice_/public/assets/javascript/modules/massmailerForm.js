@@ -13,7 +13,7 @@ App.modules.massmailerForm = {
   companyCheckboxClick : function(company_id) {
     var user_ids = App.modules.massmailerForm.controls['company_' + company_id];
     for(var i = 0; i < user_ids.length; i++) {
-      $('massmailerFormCompanyUser' + user_ids[i]).checked = $('massmailerFormCompany' + company_id).checked;
+      Ext.getDom('massmailerFormCompanyUser' + user_ids[i]).checked = Ext.getDom('massmailerFormCompany' + company_id).checked;
     } // for
   },
   
@@ -27,11 +27,11 @@ App.modules.massmailerForm = {
     var user_ids = App.modules.massmailerForm.controls['company_' + company_id];
     var all_checked = true;
     for(var i = 0; i < user_ids.length; i++) {
-      if(!$('massmailerFormCompanyUser' + user_ids[i]).checked) {
+      if(!Ext.getDom('massmailerFormCompanyUser' + user_ids[i]).checked) {
         all_checked = false;
       } // if
     } // for
-    $('massmailerFormCompany' + company_id).checked = all_checked;
+    Ext.getDom('massmailerFormCompany' + company_id).checked = all_checked;
   }
   
 };

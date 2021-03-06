@@ -7,12 +7,12 @@ App.modules.addFileForm = {
   * @return null
   */
   updateFileClick: function(genid) {
-    if($(genid+'fileFormUpdateFile').checked) {
-      $(genid+'updateFileDescription').style.display = 'none';
-      $(genid+'updateFileForm').style.display = 'block';
+    if(Ext.getDom(genid+'fileFormUpdateFile').checked) {
+      Ext.getDom(genid+'updateFileDescription').style.display = 'none';
+      Ext.getDom(genid+'updateFileForm').style.display = 'block';
     } else {
-      $(genid+'updateFileDescription').style.display = 'block';
-      $(genid+'updateFileForm').style.display = 'none';
+      Ext.getDom(genid+'updateFileDescription').style.display = 'block';
+      Ext.getDom(genid+'updateFileForm').style.display = 'none';
     } // if
   }, 
   
@@ -23,12 +23,12 @@ App.modules.addFileForm = {
   * @return null
   */
   versionFileChangeClick: function(genid) {
-    if($(genid+'fileFormVersionChange').checked) {
+    if(Ext.getDom(genid+'fileFormVersionChange').checked) {
       var display_value = 'block';
     } else {
       var display_value = 'none';
     } // if
-    $(genid+'fileFormRevisionCommentBlock').style.display = display_value;
+    Ext.getDom(genid+'fileFormRevisionCommentBlock').style.display = display_value;
   }
 };
 

@@ -7,18 +7,18 @@ App.modules.addUserForm = {
   * @return null
   */
   generateRandomPasswordClick: function() {
-    if($('userFormRandomPassword').checked) {
-      $('userFormPasswordInputs').style.display = 'none';
+    if(Ext.getDom('userFormRandomPassword').checked) {
+      Ext.getDom('userFormPasswordInputs').style.display = 'none';
     } else {
-      $('userFormPasswordInputs').style.display = 'block';
+      Ext.getDom('userFormPasswordInputs').style.display = 'block';
     } // if
   },
   
   generateSpecifyPasswordClick: function() {
-    if($('userFormSpecifyPassword').checked) {
-      $('userFormPasswordInputs').style.display = 'block';
+    if(Ext.getDom('userFormSpecifyPassword').checked) {
+      Ext.getDom('userFormPasswordInputs').style.display = 'block';
     } else {
-      $('userFormPasswordInputs').style.display = 'none';
+      Ext.getDom('userFormPasswordInputs').style.display = 'none';
     } // if
   }
   

@@ -15,6 +15,9 @@
 	
 */
 /* @var $event ProjectEvent*/
+
+if (isset($event) && $event) {
+
 if($event->canDelete(logged_user())) {
 	add_page_action(lang('delete'), "javascript:if(confirm(lang('confirm delete event'))) og.openLink('" . $event->getDeleteUrl() ."');", 'ico-delete');
 } // if
@@ -147,3 +150,4 @@ if($event->canEdit(logged_user())) {
 ?>
 </div>
 </div>
+<?php }//if isset ?>

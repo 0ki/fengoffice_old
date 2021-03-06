@@ -33,11 +33,11 @@
     'delete group' => 'Eliminar grupo',
     
     // Project
-    'add project' => 'Añadir proyecto',
-    'edit project' => 'Editar proyecto',
-    'delete project' => 'Eliminar proyecto',
-    'mark project as finished' => 'Marcar proyecto como cerrado',
-    'mark project as active' => 'Marcar proyecto como activo',
+    'add project' => 'Añadir área de trabajo',
+    'edit project' => 'Editar área de trabajo',
+    'delete project' => 'Eliminar área de trabajo',
+    'mark project as finished' => 'Marcar área de trabajo como cerrada',
+    'mark project as active' => 'Marcar área de trabajo como activa',
     
     // Workspace
     'add workspace' => 'Añadir nueva área de trabajo',
@@ -108,8 +108,8 @@
     
     // People
     'update people' => 'Poner al día',
-    'remove user from project' => 'Eliminar usuario de este proyecto',
-    'remove company from project' => 'Eliminar compañía de este proyecto',
+    'remove user from project' => 'Eliminar usuario de esta área de trabajo',
+    'remove company from project' => 'Eliminar compañía de esta área de trabajo',
     
     // Password
     'update profile' => 'Editar datos de mi cuenta',

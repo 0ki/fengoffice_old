@@ -18,7 +18,7 @@ return array(
     'dont reply wraning' => 'ESTE ES UN MENSAJE DE NOTIFICACIÓN. NO RESPONDER A ESTA DIRECCIÓN DE CORREO!',
     'new message posted' => 'Nueva nota "{0}" ha sido publicado',
     'new task' => 'Nueva tarea',
-    'new task created' => 'Nueva tarea "{0}" ha sido creada en el proyecto "{1}"',
+    'new task created' => 'Nueva tarea "{0}" ha sido creada en el área de trabajo "{1}"',
     'view new message' => 'Ver nota',
     'view new task' => 'Ver tarea',
 
@@ -77,7 +77,7 @@ return array(
 	'view due task' => 'Ver tarea a vencer',
 	'due task email' => 'La tarea "{0}" vencerá el "{1}" y aún está pendiente',
 	'due task' => 'Tarea a vencer',
-	'task has been modified' => 'La tarea "{0}" en el espacio "{1}" ha sido modificada.',
+	'task has been modified' => 'La tarea "{0}" en el área de trabajo "{1}" ha sido modificada.',
 	'task modified' => 'Tarea modificada',
 	'view task' => 'Ver tarea',
     ); // array

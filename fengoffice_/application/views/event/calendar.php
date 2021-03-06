@@ -42,6 +42,11 @@ $user_filter = !isset($_GET['user_filter']) || $_GET['user_filter'] == 0 ? logge
 $state_filter = isset($_GET['state_filter']) ? $_GET['state_filter'] : -1; 
 
 $user = Users::findById(array('id' => $user_filter));
+/*
+ * If user does not exists, assign logged_user() to $user 
+ * to prevent null exception when calling getRangeTasksByUser(), because this func. expects an User instance.
+ */
+if ($user == null) $user = logged_user(); 
 
 global $cal_db;
 // get actual current day info
@@ -291,16 +296,19 @@ function disable_overlib(){
 												$strStyle = '';
 												if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor() == "") { 
 													$strStyle= "style='z-index:1000;border-left-color: #$color;'";
-												}		
+												}
+												$tip_text = str_replace("\r", '', $event->getDescription());
+												$tip_text = str_replace("\n", '<br>', $tip_text);													
+												if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
 								?>
-												<div id="ev_div_<?php echo $event->getId()?>" class="event_block" <?php echo $strStyle ?> > 
+												<div id="m_ev_div_<?php echo $event->getId()?>" class="event_block" <?php echo $strStyle ?> > 
 														<a href='<?php echo cal_getlink("index.php?action=viewevent&amp;id=".$event->getId()."&amp;user_id=".$user_filter)?>' class='internalLink' onclick="hide_tooltip(this); cancel(event); disable_overlib();return true;" >
 															<img src="<?php echo image_url('/16x16/calendar.png')?>" align='absmiddle' border='0'>
 														<?php echo $subject ?>
 														</a>
 											 	</div>
 										 		<script type="text/javascript">
-													addTip('ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : '');?>');
+													addTip('m_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo ($event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . ($tip_text != '' ? '<br><br>' . $tip_text : ''));?>');
 												</script>
 											 	
 								<?php
@@ -325,15 +333,20 @@ function disable_overlib(){
 													$subject = "&nbsp;" . $milestone->getName()." - <i>Milestone</i>";//"&nbsp;".truncate($milestone->getName(),30,'','UTF-8',true,true)." - <i>Milestone</i>";
 													$cal_text = $milestone->getName();
 													$overlibtext_color = "#000000";
+													
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. $milestone->getAssignedToName() . (trim($milestone->getDescription()) == '' ? '' : '<br><br>'. $milestone->getDescription()));
+													$tip_text = str_replace("\n", '<br>', $tip_text);													
+													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+													
 								?>
-													<div id="ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+													<div id="m_ms_div_<?php echo $milestone->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 															<a href='<?php echo $milestone->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;" >
 																<img src="<?php echo image_url('/16x16/milestone.png')?>" align='absmiddle' border='0'>
 															<?php echo $cal_text ?>
 															</a>
 													</div>
 													<script type="text/javascript">
-														addTip('ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo (trim($milestone->getDescription()) != '' ? $milestone->getDescription().'<br>' : '') . '<br>' . lang('assigned to') .': '. $milestone->getAssignedToName();?>');
+														addTip('m_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo ($tip_text != '' ? $tip_text : '');?>');
 													</script>
 								<?php
 												}//if count
@@ -360,17 +373,20 @@ function disable_overlib(){
 													$subject = $task->getTitle().'- <i>Task</i>';//truncate($task->getTitle(),25,'','UTF-8',true,true).'- <i>Task</i>';
 													$cal_text = $task->getTitle();
 													
-												    $overlibtext_color = "#000000";
+													$tip_text = str_replace("\r", '', lang('assigned to') .': '. $task->getAssignedToName() . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+													$tip_text = str_replace("\n", '<br>', $tip_text);													
+													if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+													$overlibtext_color = "#000000";
 								?>
 								
-													<div id="ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
+													<div id="m_ta_div_<?php echo $task->getId()?>" class="event_block" style="border-left-color: #<?php echo $color?>;">
 															<a href='<?php echo $task->getViewUrl()?>' class='internalLink' onclick="hide_tooltip(this);cancel(event);disable_overlib();return true;"  border='0'>
 																	<img src="<?php echo image_url('/16x16/tasks.png')?>" align='absmiddle'>
 														 		<?php echo $cal_text ?>
 														 	</a>
 													</div>
 													<script type="text/javascript">
-														addTip('ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo (trim($task->getText()) != '' ? $task->getText().'<br>' : '') . '<br>' . lang('assigned to') .': '. $task->getAssignedToName();?>');
+														addTip('m_ta_div_<?php echo $task->getId() ?>', '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo (trim($tip_text) != '' ? trim($tip_text) : '');?>');
 													</script>
 								<?php
 												}//if count

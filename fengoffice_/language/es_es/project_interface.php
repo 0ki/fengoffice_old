@@ -14,7 +14,7 @@ return array(
 	'edit this file' => 'Editar archivo',
 	'file contents' => 'Contenidos del archivo',
 
-    'important message desc' => 'Las notas importantes se encuentran en la barra lateral de la página de notas del proyecto, listados bajo el nombre "Notas importantes"',
+    'important message desc' => 'Las notas importantes se encuentran en la barra lateral de la página de notas del área de trabajo, listados bajo el nombre "Notas importantes"',
     'important file desc' => 'Los archivos importantes son listados en la barra lateral, bajo el nombre de "Archivos importantes"',
     'enable comments' => 'Habilitar uso de comentarios',
     'enable comments desc' => 'Los usuarios que puedan ver este comentario, también podrán publicar comentarios. Elija "No" para bloquear los comentarios.',
@@ -55,10 +55,10 @@ return array(
     'company users involved in project' => '{0} usuarios relacionados en {1}',
     'companies involved in project' => 'Empresas relacionadas',
 
-    'tags used on projects' => 'Etiquetas usadas en este proyecto',
+    'tags used on projects' => 'Etiquetas usadas en esta área de trabajo',
     'number of tagged objects' => '{0} objeto(s)',
-    'total objects tagged with' => 'Hay <b>{0}</b> objetos etiquetados <b>{1}</b> en este proyecto',
-    'no objects tagged with' => 'No hay objetos etiquetados con <b>{0}</b> en este proyecto',
+    'total objects tagged with' => 'Hay <b>{0}</b> objetos etiquetados <b>{1}</b> en esta área de trabajo',
+    'no objects tagged with' => 'No hay objetos etiquetados con <b>{0}</b> en esta área de trabajo',
     'tags widget description' => 'Lista de etiquetas separadas por una coma (ejemplo: "interfaz, javascript, beta pública")',
 
     'project permissions form hint' => 'Usando <a class="internalLink" href="{0}">formularios de permisos</a> puede fácilmente añadir o eliminar empresas y usuarios, y controlar sus permisos de acceso.',
@@ -96,8 +96,8 @@ return array(
     'created by' => 'Creado por',
 
     'project description' => 'Descripción',
-    'project status' => 'Estado del proyecto',
-    'show project desciption in overview' => '¿Desea mostrar una descripción en la página de resumen del proyecto?',
+    'project status' => 'Estado del área de trabajo',
+    'show project desciption in overview' => '¿Desea mostrar una descripción en la página de resumen del área de trabajo?',
 
     'new file' => 'Archivo nuevo',
     'existing file' => 'Archivo existente',
@@ -162,15 +162,15 @@ return array(
  
   	'select a tag' => 'Elija etiqueta...',
   	'select a user' => 'Elija un usuario...',
-  	'select a project' => 'Elija un proyecto...',
+  	'select a project' => 'Elija un área de trabajo...',
   	'upload a file' => 'Cargue un archivo',
-  	'upload project desc' => 'Proyecto donde se guardará el archivo cargado',
+  	'upload project desc' => 'Área de trabajo donde se guardará el archivo cargado',
   	'upload tag desc' => 'Aquí puede elegir una etiqueta existente o crear una nueva. Tras elegir una etiqueta presione Enter para añadir otra.',
   	'upload permissions desc' => 'Elija los usuarios habilitados para acceder a este archivo. De forma análoga a las etiquetas, escriba o elija un nombre de usuario, y luego presione Enter para seguir añadiendo usuarios.',
   	'upload description desc' => 'Escriba la descripción del archivo',
   	'uploading file' => 'Cargando archivo...',
 
-	'cannot delete personal project' => 'El proyecto personal no puede ser eliminado',
+	'cannot delete personal project' => 'El área de trabajo personal no puede ser eliminada',
 
 	'workspace color' => 'Color del área de trabajo',
 	'workspace template' => 'Template del área de trabajo',
@@ -199,10 +199,10 @@ return array(
   
   	'display' => 'Desplegar',
   	'display options' => 'Desplegar opciones',
-  	'show in project' => 'Mostrar en el proyecto',
-  	'show in project desc' => 'Mostrar en el panel de descripción general del proyecto',
+  	'show in project' => 'Mostrar en el área de trabajo',
+  	'show in project desc' => 'Mostrar en el panel de descripción general del área de trabajo',
   	'show in parents' => 'Mostrar en los padres',
-  	'show in parents desc' => 'Mostrar en el panel de descripción general de cada proyecto selaccionado',
+  	'show in parents desc' => 'Mostrar en el panel de descripción general de cada área de trabajo selaccionada',
   	'reporting' => 'Informando',
 	'chart' => 'Gráfica',
 	'new chart' => 'Nueva gráfica',
@@ -259,7 +259,7 @@ return array(
 	'latest comments' => 'Últimos comentarios',
 	'include unworked pending tasks' => 'Incluir tareas pendientes no trabajadas',
 	'unworked pending tasks' => 'Tareas pendientes no trabajadas',
-	'assign contact to workspace desc' => 'Para signar un contacto a un espacio marque el espacio y luego ingrese el rol en el campo de texto.',
+	'assign contact to workspace desc' => 'Para asignar un contacto a un área de trabajo marque el área de trabajo y luego ingrese el rol en el campo de texto.',
 
 ); // array
 

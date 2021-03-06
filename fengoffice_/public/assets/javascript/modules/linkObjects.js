@@ -73,7 +73,7 @@ App.modules.linkObjects = {
       App.modules.linkObjects.addControl(set_id);
     };
     
-    $(App.modules.linkObjects.getSetControlId(set_id)).appendChild(add_button);
+    Ext.getDom(App.modules.linkObjects.getSetControlId(set_id)).appendChild(add_button);
   },
   
   addControl : function(set_id) {
@@ -109,15 +109,15 @@ App.modules.linkObjects = {
     control_div.appendChild(file_input);
     control_div.appendChild(remove_button);
     
-    $(App.modules.linkObjects.getSetControlsDivId(set_id)).appendChild(control_div);
+    Ext.getDom(App.modules.linkObjects.getSetControlsDivId(set_id)).appendChild(control_div);
     
     App.modules.linkObjects.sets[set_id]['total_controls'] += 1;
   },
   
   removeControl : function(set_id, control_id) {
     if(control_id == 1) return;
-    $(App.modules.linkObjects.getSetControlsDivId(set_id)).removeChild( 
-      $(App.modules.linkObjects.getFileControlId(set_id, control_id)) 
+    Ext.getDom(App.modules.linkObjects.getSetControlsDivId(set_id)).removeChild( 
+      Ext.getDom(App.modules.linkObjects.getFileControlId(set_id, control_id)) 
     ); // removeChild
     App.modules.linkObjects.sets[set_id]['total_controls'] -= 1;
   },

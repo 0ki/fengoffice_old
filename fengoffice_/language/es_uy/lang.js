@@ -137,7 +137,7 @@ addLangs({
 	'webpage': 'Vínculo web',
 	'message': 'Nota',
 	
-	'workspaces': 'Espacio',
+	'workspaces': 'Espacios',
 	'all': 'Todo',
 	'create a workspace': 'Crear nuevo espacio',
 	'delete selected workspace': 'Eliminar el espacio creado',

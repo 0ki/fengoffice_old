@@ -19,8 +19,6 @@ og.UserMenu = function(config, users) {
 	if (users) {
 		this.addUsers(users);
 	}
-
-	og.eventManager.addListener('tag added', this.addUser, this);
 	
 	this.loadUsers();
 };

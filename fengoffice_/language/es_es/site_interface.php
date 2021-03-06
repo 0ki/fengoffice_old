@@ -24,8 +24,8 @@
     'my account' => 'Mi cuenta',
     'my documents' => 'Mis documentos',
 	'documents' => 'Documentos',
-    'my projects' => 'Mis proyectos',
-    'my projects archive desc' => 'Listado de proyectos cerrados. Todas las acciones de estos proyectos han sido bloqueadas, de todas formas podrá verlos.',
+    'my projects' => 'Mis áreas de trabajo',
+    'my projects archive desc' => 'Listado de áreas de trabajo cerradas. Todas las acciones de estas áreas de trabajo han sido bloqueadas, de todas formas podrá verlos.',
     
     'company online' => 'Compañía en línea',
     
@@ -34,7 +34,7 @@
     'user password generate' => 'Generar contraseña aleatoria',
     'user password specify' => 'Especifique contraseña',
     'is administrator' => 'Administrador',
-    'is auto assign' => '¿Auto-asignar a nuevos proyectos?',
+    'is auto assign' => '¿Auto-asignar a nuevas áreas de trabajo?',
     'auto assign' => 'Auto -asignar',
     'administrator update profile notice' => 'Opciones de administador (sólo disponibles para administradores!)',
     
@@ -74,7 +74,7 @@
     
     // Administration
     'welcome to administration' => 'Bienvenido',
-    'welcome to administration info' => 'Bienvenido al panel de administración. Esta herramienta le permitirá administrar los datos de su empresa, sus miembros, clientes y los proyectos a los que pertenece.',
+    'welcome to administration info' => 'Bienvenido al panel de administración. Esta herramienta le permitirá administrar los datos de su empresa, sus miembros, clientes y las áreas de trabajo a los que pertenece.',
     
     'send new account notification' => '¿Enviar notificación vía correo electrónico?',
     'send new account notification desc' => 'Si elige "Sí", el usuario recibirá un mensaje de bienvenida, vía correo electrónico, con los datos necesarios para conectarse',
@@ -98,22 +98,22 @@
     'new account step2' => 'Paso 2: Añada miembros a su equipo',
     'new account step2 info' => 'Usted puede <a class="internalLink" href="{0}">crear nuevas cuentas de usuarios</a> para todos los miembros de su equipo. Cada miembro obtendrá un nombre de usuario y una contraseña, que utilizará para acceder al sistema',
     'new account step3' => 'Paso 3: Añada empresas clientes y sus miembros',
-    'new account step3 info' => 'Ahora <a class="internalLink" href="{0}">defina una empresa cliente</a>. Al finalizar puede añadir sus miembros o dejar que el encargado de ese grupo se encargue. Estos miembros son muy similares a los de su empresa, sólo que tienen acceso limitado a algunos contenidos y funciones (pueden establecerse distintos niveles de acceso a cada proyecto o miembro)',
-    'new account step4' => 'Paso 4: Crear un proyecto',
-    'new account step4 info' => 'Definir un <a class="internalLink" href="{0}"> nuevo proyecto</a> es muy fácil: establezca un nombre y descripción (opcional) e introduzca los datos. A continuación podrá establecer los permisos de los miembros de su equipo y sus cientes.',
+    'new account step3 info' => 'Ahora <a class="internalLink" href="{0}">defina una empresa cliente</a>. Al finalizar puede añadir sus miembros o dejar que el encargado de ese grupo se encargue. Estos miembros son muy similares a los de su empresa, sólo que tienen acceso limitado a algunos contenidos y funciones (pueden establecerse distintos niveles de acceso a cada área de trabajo o miembro)',
+    'new account step4' => 'Paso 4: Crear un área de trabajo',
+    'new account step4 info' => 'Definir una <a class="internalLink" href="{0}"> nueva área de trabajo</a> es muy fácil: establezca un nombre y descripción (opcional) e introduzca los datos. A continuación podrá establecer los permisos de los miembros de su equipo y sus cientes.',
     
     // Application log
     'application log details column name' => 'Detalles',
-    'application log project column name' => 'Proyecto',
+    'application log project column name' => 'Área de trabajo',
     'application log taken on column name' => 'Adoptadado en relación con',
     
     // RSS
     'rss feeds' => 'Suministro RSS',
     'recent activities feed' => 'Actividades recientes',
-    'recent project activities feed' => 'Actividades recientes en el proyecto {0}',
+    'recent project activities feed' => 'Actividades recientes en el área de trabajo {0}',
     
     // Update company permissions
-    'update company permissions hint' => 'Verficiar proyecto para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la compañía que desea que tengan acceso al control de algunos proyectos (esto puede ser realizado a través de la página de usuarios en el proyecto, o a través de los perfiles).',
+    'update company permissions hint' => 'Marcar área de trabajo para dar permisos a esta empresa. Tenga en cuenta que también deberá establecer los permisos para aquellos miembros de la compañía que desea que tengan acceso al control de algunas áreas de trabajo (esto puede ser realizado a través de la página de usuarios en el área de trabajo, o a través de los perfiles).',
     
     'footer copy with homepage' => '&copy; {0} by <a class="internalLink" href="{1}">{2}</a>. Todos los derechos reservados.',
     'footer copy without homepage' => '&copy; {0} by {1}. Todos los derechos reservados',
@@ -122,11 +122,11 @@
 	// Menu
 	'all documents' => 'Todos los documentos',
 	'created by me' => 'Creado por mí',
-	'by project' => 'Por proyecto',
+	'by project' => 'Por área de trabajo',
 	'by tag' => 'Por etiqueta',
 	'by type' => 'Por tipo',
 	'recent documents' => 'Documentos recientes',
-	'current project' => 'Espacio actual',
+	'current project' => 'Área de trabajo actual',
 	'show hide menu' => 'Mostrar/esconder menú',
 	'help' => 'Ayuda',
   
@@ -165,7 +165,7 @@
     'other information' => 'Otra información',
   
     'email and instant messaging' => 'Correo electrónico y mensajes instántaneos',
-    'no contacts in project' => 'No existen contactos en este proyecto',
+    'no contacts in project' => 'No existen contactos en esta área de trabajo',
   	'picture' => 'Imagen',
     'current picture' => 'Foto actual',
     'delete current picture' => 'Eliminar foto actual',
@@ -173,12 +173,12 @@
     'new picture' => 'Foto nueva',
     'new picture notice' => 'Advertencia: la foto actual será eliminada y reemplazada por una nueva',
     
-  	'assign to project' => 'Asignar al proyecto',
+  	'assign to project' => 'Asignar al área de trabajo',
   	'role' => 'Rol',
-    'contact projects' => 'Proyectos del contacto',
+    'contact projects' => 'Áreas de trabajo del contacto',
     'contact identifier required' => 'Los contactos deben estar definidos al menos por un nombre, o apellido',
     'birthday' => 'Fecha de nacimiento',
-    'role in project' => 'Rol en este proyecto \'{0}\'',
+    'role in project' => 'Rol en esta área de trabajo \'{0}\'',
     'all contacts' => 'Todos los contactos',
     'project contacts' => 'Contactos en {0}', 
     'select' => 'Seleccione',
@@ -190,7 +190,7 @@
   'webpages' => 'Páginas web',
   'private webpage' => 'Página web privada',
   'url' => 'URL',
-  'no active webpages in project' => 'No se encontraron páginas web en este proyecto',
+  'no active webpages in project' => 'No se encontraron páginas web en esta área de trabajo',
   'webpage list description' => 'Descripción',
   'edit webpage' => 'Editar página web',
   'webpage' => 'Página web',
@@ -223,10 +223,10 @@
   'classify' => 'Clasificar',
   'classify email' => 'Clasificar correo electrónico',
   'classify email subject' => 'Clasificar correo: \'{0}\'',
-  'add attachments to project' => 'Agregar un adjunto al proyecto',
+  'add attachments to project' => 'Agregar un adjunto al área de trabajo',
   'project emails' => '{0} correos electrónicos',
   'edit email account' => 'Editar {0}',
-  'no emails in this project' => 'No hay correos electrónicos en este proyecto',
+  'no emails in this project' => 'No hay correos electrónicos en esta área de trabajo',
   'mail content' => 'Correo',
   'mail account name description' => 'El nombre usado para identificar esta cuenta (ej. \'Cuenta personal\')',
   'mail account id description' => 'El nombre de usuario de la cuenta o identificación usada para conectarse al servidor (ej. \'juan@servidor.com\')',
@@ -282,7 +282,7 @@
   'administrator options' => 'Opciones de administrador',
   
   'system permissions' => 'Permisos del sistema',
-  'project permissions' => 'Permisos del proyecto',
+  'project permissions' => 'Permisos del área de trabajo',
   
   
   /* Search */
@@ -305,7 +305,7 @@
   
   'parent workspace' => 'Área de trabajo padre',
   'close' => 'Cerrar',
-  'all projects' => 'Todos los espacios',
+  'all projects' => 'Todas las áreas de trabajo',
   'view as list' => 'Listar',
   'pending tasks' => 'Tareas pendientes',
   'messages' => 'Notas',
@@ -359,8 +359,8 @@
   
   'undo checkout' => 'Deshacer bloqueo de archivo',
   
-  'search for in project' => 'Buscar resultados para \'<i>{0}</i>\' en el proyecto \'{1}\'',
-  'search for' => 'Buscar resultados para \'{0}\' en todos los proyectos',
+  'search for in project' => 'Buscar resultados para \'<i>{0}</i>\' en el área de trabajo \'{1}\'',
+  'search for' => 'Buscar resultados para \'{0}\' en todas las áreas de trabajo',
   
   'workspace permamanent delete' =>  'Cuando un área de trabajo es eliminada, la siguiente información se perderá permanentemente</b>',
   'workspace permamanent delete messages'  => ' Todos las notas en el área de trabajo',
@@ -368,7 +368,7 @@
   'workspace permamanent delete milestones' => ' Todos los hitos en el área de trabajo',
   'workspace permamanent delete files' => ' Todos los archivos en el área de trabajo',
   'workspace permamanent delete logs' => ' Todos los registros relacionados con el área de trabajo',
-  'workspace permamanent delete mails' => ' Todos los correos electrónicos serán desasociados de este área de trabajo, pero permanecerán en el sistema.',
+  'workspace permamanent delete mails' => ' Todos los correos electrónicos serán desasociados de esta área de trabajo, pero permanecerán en el sistema.',
   'sub-workspaces permament delete' => '<b>{0} sub-área(s) de trabajo</b> de {1} también serán eliminadas, con todo su contenido.',
   'multiples workspace object permanent delete' => 'Aquellos objetos contenidos en más de un área de trabajo no serán eliminados.',
   'cancel permanent delete' => 'Para cancelar la eliminación presione "Volver", o cierre esta ventana.',
@@ -394,7 +394,7 @@
   'generate report' => 'Generar reporte',
   'task title' => 'Título de la tarea',
   'total time' => 'Tiempo total',
-  'include subworkspaces' => 'Incluir sub-espacios',
+  'include subworkspaces' => 'Incluir subáreas',
   'print' => 'Imprimir',
   'this week' => 'Esta semana',
   'last week' => 'Semana pasada',
@@ -402,7 +402,7 @@
   'last month' => 'Mes pasado',
   'select dates...' => 'Elegir fechas...',
   
-  'task time report description' => 'Este reporte realiza un resumen del tiempo trabajado por tareas. Se especifica un rango de fechas, usuario (opcional) y espacio de trabajo.',
+  'task time report description' => 'Este reporte realiza un resumen del tiempo trabajado por tareas. Se especifica un rango de fechas, usuario (opcional) y área de trabajo.',
   'no data to display' => 'No hay datos para desplegar',
   'last updated by on' => '{0}, en {1}',
   'updated' => 'Actualizado',
@@ -433,7 +433,7 @@
   'show image in new page' => 'Mostrar imagen en nueva página',
   'no tasks to display' => 'No hay tareas para mostrar',
   'total' => 'Total',
-  'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por espacio, tag, estado o filtro.',
+  'too many tasks to display' => 'Hay demasiadas tareas para mostrar, se despliegan las 500 tareas más recientes. Para mostrar las tareas y ocultar esta advertencia, por favor filtre las tareas por área de trabajo, tag, estado o filtro.',
   'enter tags desc' => 'Ingrese etiquetas separadas por coma ...',
   'do complete' => 'Completar',
   

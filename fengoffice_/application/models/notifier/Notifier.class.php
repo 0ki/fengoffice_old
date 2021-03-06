@@ -398,7 +398,8 @@ class Notifier {
 			throw new NotifierConnectionError();
 		} // if
 
-		if (config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP) {
+		if (config_option("mail_transport", self::MAIL_TRANSPORT_MAIL) == self::MAIL_TRANSPORT_SMTP &&
+				config_option("smtp_authenticate", false)) {
 			$from = self::prepareEmailAddress(config_option("smtp_username", $from), $from);
 		}
 		$result = $mailer->send($to, $from, $subject, $body, $type, $encoding);

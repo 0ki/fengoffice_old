@@ -127,18 +127,6 @@ function addEventHandler(elem, ev, fun, scope) {
 	}
 }
 
-/**
- *  returns document.getElementById(id);
- *  	id: id of the element
- *		container: (optional) where to search (default: document.body)
- *  	frame: (optional) frame where the element is (default: window)
- */
-function $(id, container, frame) {
-	if (!frame) frame = window;
-	if (!container) container = document.body;
-	
-	return frame.document.getElementById(id);
-}
 
 /**
  *  escapes the &, <, >, " and ' characters from a SLIM string

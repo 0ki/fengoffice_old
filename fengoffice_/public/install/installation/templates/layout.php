@@ -8,11 +8,6 @@
 <body>
   <div id="wrapper">
 
-    <div id="warning" style="border: 2px solid red; background-color: lightYellow; width: 675px; font-family: Verdana, sans-serif; font-size: 14px; padding: 10px; font-weight: bold;">
-      <u>Warning:</u> This software is in beta stage, which means that it is not yet a final version of the product, and thus may contain unresolved errors or unimplemented features.
-    </div>
-    <br/>
-	
     <div id="header">
       <h1><?php echo $installation_name ?></h1>
       <div id="installationDesc"><?php echo clean($installation_description) ?></div>

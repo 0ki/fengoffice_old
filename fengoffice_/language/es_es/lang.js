@@ -4,7 +4,7 @@ addLangs({
 	'cannot check in': 'No es posible devolver',
 	'add as new revision to': 'Añadir como nueva revisión a',
 	'error loading content': 'Error cargando contenido. Inténtelo nuevamente en otro momento.\nSi los problemas persisten no dude en contactar al administrador.',
-	'projects': 'Proyectos',
+	'projects': 'Áreas de trabajo',
 	'administration': 'Administración',
 	'open link': 'Abrir vínculo',
 	'open in new tab': 'Abrir en nueva pestaña',
@@ -25,7 +25,7 @@ addLangs({
 	/* file manager */
 	'by': 'Por',
 	'name': 'Nombre',
-	'project': 'Proyecto',
+	'project': 'Área de trabajo',
 	'user': 'Usuario',
 	'tag': 'Etiqueta',
 	'type': 'Escribir',
@@ -61,7 +61,7 @@ addLangs({
 	'confirm delete task list': '¿Está seguro de que desea eliminar esta tarea, y sus sub-tareas?',
 	'confirm delete webpage': '¿Está seguro de que desea eliminar esta página web?',
 	'confirm delete workspace': '¿Está seguro de que desea eliminar el área de trabajo \'{0}\'?',
-	'confirm delete project': '¿Está seguro de que desea eliminar este proyecto y todos los datos relacionados con él (notas, tareas, hitos, archivos...)?',
+	'confirm delete project': '¿Está seguro de que desea eliminar esta área de trabajo y todos los datos relacionados con él (notas, tareas, hitos, archivos...)?',
 	'confirm cancel work timeslot': 'Está seguro que desea cancelar el tiempo de trabajo?',
 	'more': 'Más',
 	'more actions': 'Más acciones',
@@ -95,7 +95,7 @@ addLangs({
 	'next': 'Siguiente',
 	'mute': 'Silenciar',
 	'unmute': 'Desilenciar',
-	'load from current workspace': 'Cargar del espacio actual',
+	'load from current workspace': 'Cargar del área de trabajo actual',
 	'load playlist from file': 'Cargar lista desde archivo',
 	'save playlist to file': 'Guardar lista a archivo',
 	'clear playlist': 'Limpiar lista',
@@ -137,7 +137,7 @@ addLangs({
 	'webpage': 'Página web',
 	'message': 'Nota',
 	
-	'workspaces': 'Área de trabajo',
+	'workspaces': 'Áreas de trabajo',
 	'all': 'Todo',
 	'create a workspace': 'Crear nueva área de trabajo',
 	'delete selected workspace': 'Eliminar el área de trabajo seleccionado',
@@ -180,8 +180,8 @@ addLangs({
 	'mobilePhone': 'Teléfono móvil',
 	'edit selected contact': 'Editar contacto',
 	'edit selected object': 'Editar object',
-	'assign to project': 'Asignar a proyecto',
-	'assign contact to project': 'Asignar contacto a proyecto',
+	'assign to project': 'Asignar a área de trabajo',
+	'assign contact to project': 'Asignar contacto a área de trabajo',
 	
 	/* webpage manager*/
 	'description': 'Descripción',
@@ -380,7 +380,7 @@ addLangs({
 	'pending': 'Pendientes',
 	'group by': 'Agrupar por',
 	'order by': 'Ordenar por',
-	'workspace':'Espacio',
+	'workspace':'Área de trabajo',
 	'start date': 'Fecha de inicio',
 	'task name': 'Nombre de la tarea',
 	'show': 'Mostrar',
@@ -433,7 +433,7 @@ addLangs({
 	
 	'send notification' : 'Enviar notificación por email',
 	'all options': 'Todas las opciones',
-	'click to change workspace': 'Cliquear para cambiar el espacio',
+	'click to change workspace': 'Cliquear para cambiar el área de trabajo',
 	
 	'month 1': 'Enero',
     'month 2': 'Febrero',
@@ -459,7 +459,7 @@ addLangs({
   	
   	'change user': 'Cambiar usuario',
   	'start work': 'Comenzar trabajo',
-  	'click to change workspace': 'Clic para cambiar espacio',
+  	'click to change workspace': 'Clic para cambiar área de trabajo',
   	'add a new task to this group': 'Agregar una nueva tarea a este grupo',
    	'login dialog desc': 'Se ha cerrado su cesión debido a inactividad. Llene este formulario para volver a ingresar al sistema.',
    	'duplicate company name': '<span style="color:#F00">Ya existe una empresa con nombre \'{0}\'. </span><a href="#" style="text-decoration:underline" onclick="og.selectCompany(\'{1}\',{2})">Elija esta empresa</a>, o elija un nombre distinto',

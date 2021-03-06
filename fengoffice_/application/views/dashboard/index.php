@@ -1,3 +1,17 @@
+<script type="text/javascript">
+	var cant_tips = 0;
+	var tips_array = [];
+	
+	function addTip(div_id, title, bdy) {
+		tips_array[cant_tips++] = new Ext.ToolTip({
+			target: div_id,
+	        html: bdy,
+	        title: title,
+	        hideDelay: 1500,
+	        closable: true
+		});
+	}
+</script>
 <?php $genid = gen_id() ?>
 
 
@@ -97,7 +111,7 @@ else
 	
 		<tr><td colspan=2>
 			<script type="text/javascript">
-
+			/*
 			function cancel (evt) {//cancel clic event bubbling. used to cancel opening a New Event window when clicking an object
 			    var e=(evt)?evt:window.event;
 			    if (window.event) {
@@ -141,7 +155,7 @@ else
 					  },
 				    showTitle: false 
 			  	});
-		  	}
+		  	}*/
 		</script>
   <?php
   
@@ -262,7 +276,7 @@ else
 			$output .= "><div style='z-index:0; height:100%;cursor:pointer' onclick=\"og.EventPopUp.show(null, {caller:'overview-panel', day:'".$dtv->getDay()."', month:'".$dtv->getMonth()."', year:'".$dtv->getYear()."', type_id:1, hour:'9', minute:'0', durationhour:1, durationmin:0, start_value: ".$start_value.", title:'".$loc->dateByLocalization('l, j F', $dtv->getTimestamp()) ."', view: 'week'},'');\") >
 			<div class='$daytitle' style='text-align:right'>";
 			if($day_of_month >= 1){
-				$output .= "<a class='internalLink' href=\"$p\" onclick=\"cancel(event);return true;\"  style='color:#5B5B5B' >$w</a>";				
+				$output .= "<a class='internalLink' href=\"$p\" onclick=\"stopPropagation(event);\"  style='color:#5B5B5B' >$w</a>";				
 				// only display this link if the user has permission to add an event
 				if(!active_project() || ProjectEvent::canAdd(logged_user(),active_project())){
 					// if single digit, add a zero
@@ -328,11 +342,20 @@ else
 								if($event->getEventTypeObject() && $event->getEventTypeObject()->getTypeColor()=="") $output .= '<div class="event_block">';
 								else $output .= "<div class='event_block'   style='z-index:1000;border-left-color: #$color;'>";
 								if($subject=="") $subject = "[".lang('CAL_NO_SUBJECT')."]";
-								$output .= "<span class='cluetip" . $event->getProject()->getColor() . "' title='".$subject."- <i>Event</i>|".str_replace("'","\\'",$overlib_text)."' >";			
+								$output .= "<span id='o_ev_div_" . $event->getId() . "'>";			
 								$output .="<img src=" . image_url('/16x16/calendar.png') . " align='absmiddle'>";
-								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"stopPropagation(event);hide_tooltip(this);cancel(event); disable_overlib();\" >".$subject."</a>";
+								$output .= "<a style='vertical-align:bottom;' href='".cal_getlink("index.php?action=viewevent&amp;id=".$event->getId())."' class='internalLink' onclick=\"stopPropagation(event);\" >".$subject."</a>";
 								$output .= '</span>';
 								$output .= "</div>";
+								
+								$tip_text = str_replace("\r", '', $event->getTypeId() == 2 ? lang('CAL_FULL_DAY') : $event->getStart()->format('h:i') .' - '. $event->getDuration()->format('h:i') . (trim($event->getDescription()) != '' ? '<br><br>' . $event->getDescription() : ''));
+								$tip_text = str_replace("\n", '<br>', $tip_text);
+								if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+								?>
+								<script type="text/javascript">
+									addTip('o_ev_div_<?php echo $event->getId() ?>', '<i>' + lang('event') + '</i> - <?php echo $event->getSubject() ?>', '<?php echo $tip_text;?>');
+								</script>
+								<?php
 							}
 						} elseif($event instanceof ProjectMilestone ){
 							$milestone=$event;
@@ -349,11 +372,20 @@ else
 									$subject = "&nbsp;". $milestone->getName()." - <i>Milestone</i>";
 									$cal_text = $milestone->getName();
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= "<span class='cluetip" . $milestone->getProject()->getColor() . "' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
+									$output .= "<span id='o_ms_div_" . $milestone->getId() . "'>";
 									$output .= "<img src=" . image_url('/16x16/milestone.png') . " align='absmiddle'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();return true;\" >".$cal_text."</a>";
+									$output .= "<a style='vertical-align:bottom;' href='".$milestone->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >".$cal_text."</a>";
 									$output .= '</span>';
 									$output .= "</div>";
+									
+									$tip_text = str_replace("\r", '', lang('assigned to') .': '. $milestone->getAssignedToName() . (trim($milestone->getDescription()) == '' ? '' : '<br><br>'. $milestone->getDescription()));
+									$tip_text = str_replace("\n", '<br>', $tip_text);
+									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+									?>
+									<script type="text/javascript">
+										addTip('o_ms_div_<?php echo $milestone->getId() ?>', '<i>' + lang('milestone') + '</i> - <?php echo $milestone->getTitle() ?>', '<?php echo $tip_text?>');
+									</script>
+									<?php
 								}//if count
 							}
 							
@@ -375,17 +407,26 @@ else
 									$cal_text = $task->getTitle();
 									
 									$output .= '<div class="event_block" style="border-left-color: #'.$color.';">';
-									$output .= "<span class='cluetip" . $task->getProject()->getColor() . "' title='".$subject."|".str_replace("'","\\'",$overlib_text)."' >";
+									$output .= "<span id='o_ta_div_" . $task->getId() . "'>";
 									$output .= "<img src=" . image_url('/16x16/tasks.png') . " align='absmiddle'>";
-									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"hide_tooltip(this);cancel(event);disable_overlib();return true;\" >".$cal_text."</a>";
+									$output .= "<a style='vertical-align:bottom;' href='".$task->getViewUrl()."' class='internalLink' onclick=\"stopPropagation(event);\" >".$cal_text."</a>";
 									$output .= '</span>';
-									$output .= "";
+									$output .= "</div>";
+									
+									$tip_text = str_replace("\r", '', lang('assigned to') .': '. $task->getAssignedToName() . (trim($task->getText()) == '' ? '' : '<br><br>'. $task->getText()));
+									$tip_text = str_replace("\n", '<br>', $tip_text);													
+									if (strlen($tip_text) > 200) $tip_text = substr($tip_text, 0, strpos($tip_text, ' ', 200)) . ' ...';
+									?>
+									<script type="text/javascript">
+										addTip('o_ta_div_' + <?php echo $task->getId() ?>, '<i>' + lang('task') + '</i> - <?php echo $task->getTitle()?>', '<?php echo $tip_text;?>');
+									</script>
+									<?php
 								}//if count
 							}
 						}//endif task
 					} // end foreach event writing loop
 					if ($count > 3) {
-						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="cancel(event);nd();disable_overlib();return true;">+'.($count-3).' more</a></div>';
+						$output .= '<div style="witdh:100%;text-align:center;font-size:9px" ><a href="'.$p.'" class="internalLink"  onclick="stopPropagation(event);nd();">+'.($count-3).' more</a></div>';
 					}
 				}
 				
@@ -890,4 +931,6 @@ echo $output . '</table>';
 </div>
 <script type="text/javascript">
 og.showWsPaths('<?php echo $genid ?>-db');
+
+Ext.QuickTips.init();
 </script>

@@ -91,6 +91,8 @@ class Project extends BaseProject {
 		for ($i = 1; $i <= 10; $i++){
 			if ($this->getPID($i) != $this->getId())
 				$result[$i] = $this->getPID($i);
+			else
+				break;
 		}
 		return $result;
 	}
@@ -175,26 +177,33 @@ class Project extends BaseProject {
 		
 		if (is_array($subs) && count($subs) > 0){
 			foreach ($subs as $sub){
-				$sub->setNewParentIds($oldlevel,$this);
+				$sub->setNewParentIds($oldlevel,$workspace);
 				$sub->save();
 			}
 		}
 	}
 	
-	private function setNewParentIds($oldlevel, Project $newParent){
+	private function setNewParentIds($oldlevel, $newParent = null){
 		$oldparents = $this->getParentIds();
 		
 		$this->initializeParents();
-		$newparents = $newParent->getParentIds();
-		$c = $newParent->getDepth();
-		$newparents[$c] = $newParent->getId();
-		for ($i = $oldlevel+1; $i <= count($oldparents); $i++){
+		if ($newParent){
+			$newparents = $newParent->getParentIds();
+			$c = $newParent->getDepth();
+			$newparents[$c] = $newParent->getId();
+		} else {
+			$newparents = array();
+			$c = 0;
+		}
+		for ($i = $oldlevel; $i <= count($oldparents); $i++){
 			$c++;
 			$newparents[$c] = $oldparents[$i];
 		}
-		for ($i = 1; $i <= $c; $i++)
+		$c++;
+		$newparents[$c] = $this->getId();
+		for ($i = 1; $i <= count($newparents); $i++)
 			$this->setPID($i,$newparents[$i]);
-		$this->depth = 0; //Initialize depth
+		$this->depth = count($newparents);
 	}
 	
 	private function initializeParents() {
@@ -1267,7 +1276,7 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	function canDelete(User $user) {
-		return $user->isAccountOwner() || can_manage_workspaces(logged_user());
+		return $user->isAccountOwner() || (can_manage_workspaces($user) && $user->isProjectUser($this));
 	} // canDelete
 
 	/**
@@ -1577,12 +1586,77 @@ class Project extends BaseProject {
 	 * @return boolean
 	 */
 	function delete() {
-		$ws = $this->getSubWorkspaces();
-		if(isset($ws) && !is_null($ws)){
-			foreach ($ws as $w) {
-				$w->delete();
+		$wsIds = $this->getAllSubWorkspacesCSV();
+		if ($wsIds){
+			$ws = $this->getSubWorkspaces();
+			if(isset($ws) && !is_null($ws)){
+				$wsToDelete = array();
+				$wsToMove = array();
+				
+				$users = Users::findAll(array("conditions" => "personal_project_id in ($wsIds)"));
+				foreach ($ws as $w) {
+					$canDelete = $w->canDelete(logged_user());
+					
+					if ($users && $canDelete){
+						foreach ($users as $user)
+							if ($user->getPersonalProjectId() == $w->getId()){
+								$canDelete = false;
+								break;	
+							}
+					}
+					if ($canDelete){
+						$wsToDelete[] = $w;
+					} else {
+						$wsToMove[] = $w;
+					}
+				}
+				
+				if (count($wsToMove) > 0){
+					//Find the new parents
+					$moves = array();
+					
+					foreach ($wsToMove as $w){
+						$parentIds = $w->getParentIds();
+						for ($i = $w->getDepth() - 1; $i > 0; $i--){
+							if ($parentIds[$i] == $this->getId()){
+								$moves[] = array($w,$this->getParentWorkspace());
+								break;
+							} else {
+								$found = false;
+								for ($j = 0; $j < count($wsToMove); $j++)
+									if ($parentIds[$i] == $wsToMove[$j]->getId()){
+										$moves[] = array($w,$wsToMove[$j]);
+										$found = true;
+										break;
+									}
+								if ($found)
+									break;
+							}
+						}
+					}
+				}
+				
+				foreach ($wsToDelete as $w)
+					$w->deleteSingle();
+				
+				if (isset($moves))
+					foreach ($moves as $move){
+						$move[0]->setParentWorkspace($move[1]);
+						$move[0]->save();
+					}
 			}
 		}
+		
+		return $this->deleteSingle();
+	} // delete
+	
+	/**
+	 * Delete project
+	 *
+	 * @param void
+	 * @return boolean
+	 */
+	protected function deleteSingle() {
 		$this->clearMessages();
 		$this->clearTasks();
 		$this->clearMilestones();

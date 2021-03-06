@@ -292,7 +292,7 @@
   	'error check out file' => 'Error while checking out file for exclusive use',
     'error checkin file' => 'Error while checking in file',
     'error classifying attachment cant open file' => 'Error classifying attachment: can\'t open file',
-  	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to project \'{1}\' due to access permissions',
+  	'error contact added but not assigned' => 'The contact \'{0}\' was added but not assigned successfully to workspace \'{1}\' due to access permissions',
   	'error cannot set workspace as parent' => 'Cannot set workspace \'{0}\' as parent, too many workspace levels',
   
     
@@ -311,9 +311,9 @@
     'confirm delete project' => 'Are you sure that you want to delete this workspace and all related data (notes, tasks, milestones, files...)?',
     'confirm complete project' => 'Are you sure that you want to mark this workspace as closed? All workspace actions will be locked',
     'confirm open project' => 'Are you sure that you want to mark this workspace as open? This will unlock all workspace actions',
-    'confirm delete client' => 'Are you sure that you want to delete selected client company and all of its users?\nThis action will also delete the users\\\' personal projects.',
+    'confirm delete client' => 'Are you sure that you want to delete selected client company and all of its users?\nThis action will also delete the users\\\' personal workspaces.',
     'confirm delete contact' => 'Are you sure that you want to delete selected contact?',
-    'confirm delete user' => 'Are you sure that you want to delete this user account?\nThis action will also delete the user\\\'s personal project.',
+    'confirm delete user' => 'Are you sure that you want to delete this user account?\nThis action will also delete the user\\\'s personal workspace.',
     'confirm reset people form' => 'Are you sure that you want to reset this form? All modifications you made will be lost!',
     'confirm remove user from project' => 'Are you sure that you want to remove this user from this workspace?',
     'confirm remove company from project' => 'Are you sure that you want to remove this company from this workspace?',
@@ -385,9 +385,9 @@
     'log edit projectwebpages' => '\'{0}\' updated',
     'log delete projectwebpages' => '\'{0}\' deleted',
     
-    'log add contacts' => '\'{0}\' assigned to project',
+    'log add contacts' => '\'{0}\' assigned to workspace',
     'log edit contacts' => '\'{0}\' changed role',
-    'log delete contacts' => '\'{0}\' removed from project',
+    'log delete contacts' => '\'{0}\' removed from workspace',
   
   	'no contacts in company' => 'The company has no contacts.',
   
