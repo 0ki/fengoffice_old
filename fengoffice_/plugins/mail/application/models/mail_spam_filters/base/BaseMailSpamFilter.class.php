@@ -3,7 +3,7 @@
 /**
  * BaseMailSpamFilter class
  * Generado el 9/2/2012
- * @author Andres Botta <andres@iugo.com.uy>
+ * 
  */
 abstract class BaseMailSpamFilter extends DataObject {
 

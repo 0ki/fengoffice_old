@@ -2,8 +2,6 @@
 
   /**
   * BaseContactebpage class
-  *
-  * @author Sebastian Azar <seba.azar@gmail.com>
   */
   abstract class BaseContactWebpage extends DataObject {
   

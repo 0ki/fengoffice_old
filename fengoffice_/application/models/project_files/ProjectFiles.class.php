@@ -76,7 +76,7 @@ class ProjectFiles extends BaseProjectFiles {
 	
 	/**
 	 * Check that ther are not members containig files with such filename
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param unknown_type $filename
 	 * @param unknown_type $member_ids
 	 */

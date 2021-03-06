@@ -550,7 +550,6 @@ final class acInstallation {
 	} 
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param array of string $pluginNames
 	 */
 	function installPlugins($pluginNames) {

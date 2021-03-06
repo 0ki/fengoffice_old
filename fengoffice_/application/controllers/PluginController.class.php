@@ -134,9 +134,7 @@ class PluginController extends ApplicationController {
 	}
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param array of string $pluginNames
-	 * TODO avoid using mysql functions - (copied from installer)
 	 */
 	static function executeInstaller($name) {
 		

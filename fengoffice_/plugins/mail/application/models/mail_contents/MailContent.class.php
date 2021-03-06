@@ -61,7 +61,7 @@ class MailContent extends BaseMailContent {
 	}
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param string $subject
 	 * The subject is stored in two places: object.name and mailData.subject
 	 */

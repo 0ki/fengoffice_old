@@ -5,7 +5,7 @@
  *
  * @package ScriptUpgrader.scripts
  * @version 1.3
- * @author Alvaro Torterola <alvarotm01@gmail.com>
+ * @author Alvaro Torterola <alvaro.torterola@fengoffice.com>
  */
 class MatambritoUpgradeScript extends ScriptUpgraderScript {
 

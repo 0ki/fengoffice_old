@@ -267,8 +267,6 @@
     return $output . close_html_tag('select') . "\n";
   }
 	/**
-	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type $table
 	 * @param unknown_type $column
 	 * @param unknown_type $name

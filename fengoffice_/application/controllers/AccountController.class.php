@@ -165,7 +165,7 @@ class AccountController extends ApplicationController {
 			return;
 		} // if
 
-		if(!$user->canUpdateProfile(logged_user())) {
+		if(!$user->canChangePassword(logged_user())) {
 			flash_error(lang('no access permissions'));
 			ajx_current("empty");
 			return;

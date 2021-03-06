@@ -1,6 +1,3 @@
-/**
- * @author Pepe  elpepe.uy@gmail.com 
- */
 og.contextManager  = new function() {
 	
 	// Public Attributes

@@ -34,7 +34,7 @@ class COTemplate extends BaseCOTemplate {
 	
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param ProjectTask $object
 	 */
 	function addObject($object) {

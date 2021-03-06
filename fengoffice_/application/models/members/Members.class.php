@@ -22,7 +22,7 @@
 	}
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * Find all members that have $id at 'object_id_column'
 	 * Also accepts as optional parameter dimension_id
 	 * @return Member
@@ -36,7 +36,7 @@
 	}	
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * Find one members that have $id at 'object_id_column'
 	 * Also accepts as optional parameter dimension_id
 	 * @return Member

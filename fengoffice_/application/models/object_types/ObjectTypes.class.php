@@ -8,6 +8,7 @@
   class ObjectTypes extends BaseObjectTypes {
   	
   	private static $object_types_by_name = array();
+  	private static $object_types_by_id = array();
   	
   	/**
   	 * Request-Level cache  
@@ -60,10 +61,31 @@
 	static function findByName($name) {
 		$ot = array_var(self::$object_types_by_name, $name);
 		if (!$ot instanceof ObjectType) {
-			$ot = self::findOne(array('conditions' => array("`name` = ?", $name)));
-			if ($ot instanceof ObjectType) self::$object_types_by_name[$name] = $ot;
+			// cache all object types, they are very few
+			$ots = self::findAll();
+			foreach ($ots as $ot) {
+				self::$object_types_by_name[$ot->getName()] = $ot;
+			}
+			$ot = array_var(self::$object_types_by_name, $name);
 		}
 		return $ot;
+	}
+
+	function findById($id, $force_reload = false) {
+		if(isset($this) && instance_of($this, 'ObjectTypes')) {
+			$ot = array_var(self::$object_types_by_id, $id);
+			if (!$ot instanceof ObjectType) {
+				// cache all object types, they are very few
+				$ots = self::findAll();
+				foreach ($ots as $ot) {
+					self::$object_types_by_id[$ot->getId()] = $ot;
+				}
+				$ot = array_var(self::$object_types_by_id, $id);
+			}
+			return $ot;
+		} else {
+			return ObjectTypes::instance()->findById($id, $force_reload);
+		}
 	}
     
   } // ObjectTypes 

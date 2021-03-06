@@ -38,11 +38,6 @@ function pre_print_r($var) {
 	print '</pre>';
 } 
 
-/**
- * 
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
- * @param unknown_type $var
- */
 function var_alert($var) {
 	if ( is_ajax_request() ) return ;
 	echo "<script>";
@@ -689,11 +684,6 @@ function db_escape_field($field) {
 	return DB::escapeField($field);
 }
 
-/**
- * 
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
- * @param unknown_type $a 
- */
 function plugin_sort($a, $b) {
 	if (isset ( $a ['order'] ) && isset ( $b ['order'] )) {
 		if ($a ['order'] == $b ['order']) {

@@ -1,8 +1,7 @@
 <?php
 
 /**
- * No way! Middle class to API - FengOffice integration
- * @author ngunther<nicolas.gunther@gmail.com>
+ * Middle class to API - FengOffice integration
  */
 class ApiController extends ApplicationController {
 

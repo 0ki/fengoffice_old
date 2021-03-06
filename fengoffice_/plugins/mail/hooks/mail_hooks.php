@@ -19,3 +19,7 @@ function mail_allowed_subscribers($object, &$contacts) {
 		}
 	}
 }
+
+function mail_delete_member($member){
+    DB::executeAll("UPDATE ".TABLE_PREFIX."mail_accounts SET member_id=0 WHERE member_id = '".$member->getId()."'");
+}

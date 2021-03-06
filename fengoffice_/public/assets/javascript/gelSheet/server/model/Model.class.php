@@ -3,7 +3,6 @@
 /**
  * Generic model implementation.
  * @abstract 
- * @author Pepe <elpepe.uy@gmail.com> 
  */
 class Model {
 	

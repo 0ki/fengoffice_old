@@ -95,7 +95,7 @@ foreach($companies as $company)
 	<table style="width:100%;height:100%;">
 		<tr>
 			<td id="calendarMonthTitle" class="coViewHeader" colspan=1 rowspan=1 style="padding: 0;">
-				<div class="coViewTitle" style="width:100%;padding: 8px 12px 8px;">
+				<div class="coViewTitle" style="width:100%;padding: 8px 0px;">
 					<table style="width:100%"><tr><td>				
 						<?php echo cal_month_name($month)." ". $year .' - '. ($user_filter == -1 ? lang('all users') : lang('calendar of', clean($user->getObjectName())));?>
 					</td><td style="width:100px;padding:0 24px 0 0;">

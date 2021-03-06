@@ -213,6 +213,23 @@ class ObjectController extends ApplicationController {
 		Hook::fire ('after_add_to_members', $object, $validMembers);
 		
 		$object->addToSharingTable();
+		
+		// add timeslots to members
+		if ($object->allowsTimeslots()) {
+			$timeslots = $object->getTimeslots();
+			foreach ($timeslots as $timeslot) {
+				$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
+				// if classified then reclassify
+				if (count($ts_mids) > 0) {
+					ObjectMembers::delete('`object_id` = ' . $timeslot->getId());
+					if (count($validMembers) > 0) {
+						$timeslot->addToMembers($validMembers);
+						$timeslot->addToSharingTable();
+					}
+				}
+			}
+		}
+		
 		return $validMembers;
 	}
 	

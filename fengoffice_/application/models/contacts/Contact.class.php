@@ -1664,7 +1664,7 @@ class Contact extends BaseContact {
 	
 	
 	/**
-	 * Check if specific user can change this user password
+	 * Check if specific $user can change $this user's password
 	 *
 	 * @param Contact $user
 	 * @return boolean
@@ -1673,8 +1673,11 @@ class Contact extends BaseContact {
 		if($this->getId() == $user->getId()) {
 			return true;
 		}
-		if(can_manage_security(logged_user())) {
-			return logged_user()->isAdminGroup();
+		if(can_manage_security($user)) {
+			// Only managers, admins and super admins can change lower roles passwords, Super admins can change all passwords
+			if ($user->isAdminGroup() || $user->isManager()) {
+				return $user->isAdministrator() || $this->getUserType() > $user->getUserType();
+			}
 		}
 		return false;
 	}

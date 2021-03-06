@@ -647,17 +647,10 @@ abstract class BaseMailAccount extends DataObject {
 	
 	
 	
-	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
-	 */
 	function getMemberId() {
 		return $this->getColumnValue('member_id');
 	}
 	
-	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
-	 * @param unknown_type $memberId
-	 */
 	function setMemberId($memberId) {
 		return $this->setColumnValue("member_id", $memberId);
 	}

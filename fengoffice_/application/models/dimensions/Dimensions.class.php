@@ -8,6 +8,7 @@
   class Dimensions extends BaseDimensions {
     
   	private static $dimensions_by_id = array();
+  	private static $dimensions_by_code = array();
   	
   	static function getDimensionById($id) {
   		$dim = array_var(self::$dimensions_by_id, $id);
@@ -80,7 +81,11 @@
 	 * @return Dimension
 	 */
 	static function findByCode($code) {
-		return self::findOne(array('conditions' => array("`code` = ?", $code)));
+		if (count(self::$dimensions_by_code) == 0) {
+			$dims = Dimensions::findAll();
+			foreach ($dims as $dim) self::$dimensions_by_code[$dim->getCode()] = $dim;
+		}
+		return array_var(self::$dimensions_by_code, $code);
 	}
 
     

@@ -829,7 +829,7 @@ class ProjectFile extends BaseProjectFile {
 	
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function addToSharingTable() {
 		$revisions = $this->getRevisions();

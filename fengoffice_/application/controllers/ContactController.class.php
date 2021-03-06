@@ -29,10 +29,6 @@ class ContactController extends ApplicationController {
 		ajx_replace(true);
 	}
 	
-	/**
-	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
-	 */
 	function list_companies() {
 		ajx_current("empty");
 		$context = active_context();

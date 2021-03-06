@@ -167,7 +167,7 @@ class Env {
 	 * @param string $controller_name
 	 * @return boolean
 	 * @throws FileDnxError if controller file does not exists
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	static function useController($controller_name) {
 		$controller_class = Env::getControllerClass($controller_name);

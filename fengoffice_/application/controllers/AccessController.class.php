@@ -648,7 +648,6 @@ class AccessController extends ApplicationController {
 						$content .= "\n/* $f */\n";
 						$content .= "try {";
 						/**
-						 * @author PEPE elpepe.uy@gmail.com:
 						 * The js file can contain PHP code so use include instead of file_get_contents.
 						 * To avoid sending headers, use output buffer.
 						 * This change help to avoid the need of multiple lang files.. javascripts and phps. 

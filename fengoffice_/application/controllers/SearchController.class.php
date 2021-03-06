@@ -155,72 +155,83 @@ class SearchController extends ApplicationController {
 		$limitTest = max( $this->limitTest , $this->limit);
 		$filteredResults = 0 ;
 		$uid = logged_user()->getId();
-                
-                if(!isset($search_dimension)){
-                    $members = active_context_members(false);
-                }else{
-                    if($search_dimension == 0){
-                        $members = array();
-                    }else{
-                        $members = array($search_dimension);
-                    }                                        
-                }
-                $members_sql = "";
-                if(count($members) > 0){
-                    $members_sql = "AND rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om WHERE member_id IN (" . implode ( ',', $members ) . ")  
-                                    GROUP BY object_id
-                                    HAVING count(member_id) = ".count($members).")";
-                    $this->search_dimension = implode ( ',', $members );
-                }else{
-                    $this->search_dimension = 0;
-                }
-            
+		
+		if(!isset($search_dimension)){
+			$members = active_context_members(false);
+		}else{
+			if($search_dimension == 0){
+				$members = array();
+			}else{
+				$members = array($search_dimension);
+			}
+		}
+		
+		// click on search everywhere
+		if (array_var($_REQUEST, 'search_all_projects')) {
+			$members = array();
+		}
+		
 		$revisionObjectTypeId = ObjectTypes::findByName("file revision")->getId();
-		$listableObjectTypeIds = implode(",",ObjectTypes::getListableObjectTypeIds());
-                if($_POST){
-                    $conditions = array_var($_POST, 'conditions');                    
-                    $search = array_var($_POST, 'search');
-                    $type_object = array_var($search, 'search_object_type_id');                    
+		
+		$members_sql = "";
+		if(count($members) > 0){
+			$members_sql = "AND (rel_object_id IN (SELECT object_id FROM " . TABLE_PREFIX . "object_members om 
+					WHERE member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members).")
+				OR o.object_type_id = $revisionObjectTypeId AND rel_object_id IN (SELECT fr.object_id FROM " . TABLE_PREFIX . "object_members om 
+					INNER JOIN ".TABLE_PREFIX."project_file_revisions fr ON om.object_id=fr.file_id 
+					WHERE member_id IN (" . implode ( ',', $members ) . ") GROUP BY object_id HAVING count(member_id) = ".count($members)."))";
+			$this->search_dimension = implode ( ',', $members );
+		}else{
+			$this->search_dimension = 0;
+		}
 
-                    if(!is_array($conditions)) $conditions = array();
-                    $where_condiition = '';
-                    $conditions_view = array();
-                    $cont = 0;
-                    foreach($conditions as $condition){
-                        $condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
-                        if($condition['field_type'] == 'boolean'){
-                                $value = array_key_exists('value', $condition);
-                        }else if($condition['field_type'] == 'date'){
-                                if ($condValue != '') {
-                                        $dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condValue);
-                                        $value = date("m/d/Y", $dtFromWidget->getTimestamp());
-                                }
-                        }else{
-                                $value = $condValue;
-                        }              
-                        if($condition['condition'] == "like"){
-                            $where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "%' ";
-                        }else{
-                            $where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "' ";
-                        }
-                        $conditions_view[$cont]['id'] = $condition['id'];
-                        $conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
-                        $conditions_view[$cont]['field_name'] = $condition['field_name'];
-                        $conditions_view[$cont]['condition'] = $condition['condition'];
-                        $conditions_view[$cont]['value'] = $value;
-                        $cont++;
-                    }
-                    tpl_assign('conditions', $conditions_view);
-                    
-                    if($type_object){
-                        $object_table = ObjectTypes::findById($type_object);
-                        $table = $object_table->getTableName();
-                    }
-                    
-                    $sql = "	
+		$listableObjectTypeIds = implode(",",ObjectTypes::getListableObjectTypeIds());
+		
+		if($_POST) {
+			
+			$conditions = array_var($_POST, 'conditions');
+			$search = array_var($_POST, 'search');
+			$type_object = array_var($search, 'search_object_type_id');
+
+			if(!is_array($conditions)) $conditions = array();
+			$where_condiition = '';
+			$conditions_view = array();
+			$cont = 0;
+			foreach($conditions as $condition){
+				$condValue = array_key_exists('value', $condition) ? $condition['value'] : '';
+				if($condition['field_type'] == 'boolean'){
+					$value = array_key_exists('value', $condition);
+				}else if($condition['field_type'] == 'date'){
+					if ($condValue != '') {
+						$dtFromWidget = DateTimeValueLib::dateFromFormatAndString(user_config_option('date_format'), $condValue);
+						$value = date("m/d/Y", $dtFromWidget->getTimestamp());
+					}
+				}else{
+					$value = $condValue;
+				}
+				if($condition['condition'] == "like"){
+					$where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "%' ";
+				}else{
+					$where_condiition .= " AND `" . $condition['field_name'] . "` " . $condition['condition'] . " '" . $value . "' ";
+				}
+				$conditions_view[$cont]['id'] = $condition['id'];
+				$conditions_view[$cont]['custom_property_id'] = $condition['custom_property_id'];
+				$conditions_view[$cont]['field_name'] = $condition['field_name'];
+				$conditions_view[$cont]['condition'] = $condition['condition'];
+				$conditions_view[$cont]['value'] = $value;
+				$cont++;
+			}
+			tpl_assign('conditions', $conditions_view);
+
+			if($type_object){
+				$object_table = ObjectTypes::findById($type_object);
+				$table = $object_table->getTableName();
+			}
+
+			$sql = "
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
-                        INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
+			INNER JOIN  ".TABLE_PREFIX.$table." nto ON nto.object_id = so.rel_object_id 
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
 			WHERE (
 				(
@@ -232,10 +243,12 @@ class SearchController extends ApplicationController {
 			 	)
 			) " . $where_condiition . $members_sql . " ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
-                }else{
-                    $type_object = '';
-                    
-                    $sql = "	
+		
+		} else {
+			
+			$type_object = '';
+			
+			$sql = "	
 			SELECT  distinct(so.rel_object_id) AS id
 			FROM ".TABLE_PREFIX."searchable_objects so
 			INNER JOIN  ".TABLE_PREFIX."objects o ON o.id = so.rel_object_id 
@@ -256,16 +269,15 @@ class SearchController extends ApplicationController {
 			 		)
 			 	)
 			)" . (($useLike) ? "AND	so.content LIKE '%$search_string%' " : "AND MATCH (so.content) AGAINST ('$search_string' IN BOOLEAN MODE) ") . " 
-			AND o.object_type_id IN ($listableObjectTypeIds) 
-                        " . $members_sql . "
+			AND o.object_type_id IN ($listableObjectTypeIds) " . $members_sql . "
 			ORDER by o.updated_on DESC
 			LIMIT $start, $limitTest ";
-                }
-                
-                tpl_assign('type_object', $type_object);
-                
+		}
+		
+		tpl_assign('type_object', $type_object);
+		
 		$db_search_results = array();
-                $search_results_ids = array();
+		$search_results_ids = array();
 		$timeBegin = time();
 		$res = DB::execute($sql);
 		$timeEnd = time();
@@ -296,33 +308,33 @@ class SearchController extends ApplicationController {
 			$extra->time = $timeEnd-$timeBegin ;
 		}
 		//$extra->filteredResults = $filteredResults ;
-		
+
 		// Template asigns
 		tpl_assign('pagination', $this->pagination);
 		tpl_assign('search_string', $search_for);
-                tpl_assign('search_dimension', $this->search_dimension);
+		tpl_assign('search_dimension', $this->search_dimension);
 		tpl_assign('search_results', $search_results);
-                tpl_assign('advanced', $advanced);                
-		tpl_assign('extra', $extra );      
-                
-                $types = array(array("", lang("select one")));
+		tpl_assign('advanced', $advanced);
+		tpl_assign('extra', $extra );
+
+		$types = array(array("", lang("select one")));
 		$object_types = ObjectTypes::getAvailableObjectTypes();
-		
+
 		foreach ($object_types as $ot) {
 			$types[] = array($ot->getId(), lang($ot->getName()));
 		}
 //		if ($selected_type != '')
-//			tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
+//		tpl_assign('allowed_columns', $this->get_allowed_columns($selected_type));
 		
 		tpl_assign('object_types', $types);
 
-//		//Ajax 
+		//Ajax
 		if (!$total && !$advanced){
-                        if($_POST && count($search_results < 0)){
-                            tpl_assign('msg_advanced', true);                    
-                        }else{
-                            $this->setTemplate('no_results');
-                        }			
+			if($_POST && count($search_results < 0)){
+				tpl_assign('msg_advanced', true);
+			}else{
+				$this->setTemplate('no_results');
+			}
 		}
 		ajx_set_no_toolbar(true);
 		
@@ -342,7 +354,6 @@ class SearchController extends ApplicationController {
 	
 	/**
 	 * Build pagination based on $total, $limit and $search_results
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type $search_results
 	 */
 	private function buildPagination($search_results) {
@@ -369,8 +380,6 @@ class SearchController extends ApplicationController {
 	/**
 	 * Map parameters and make some grouping, orders limits not done in DB
 	 * 
-	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type array of int 
 	 * @param unknown_type $filtered_results
 	 * @param unknown_type $total
@@ -436,7 +445,6 @@ class SearchController extends ApplicationController {
 	
 	/**
 	 * Emphaisis around search keywords
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type $content
 	 */
 	private function highlightResult($text) {
@@ -472,8 +480,7 @@ class SearchController extends ApplicationController {
 	
 	
 	/**
-	 * Cut results 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * Cut results
 	 * @param unknown_type $content
 	 * @param unknown_type $size
 	 */

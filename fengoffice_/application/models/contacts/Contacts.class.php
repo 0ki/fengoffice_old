@@ -277,7 +277,6 @@ class Contacts extends BaseContacts {
 	/**
 	 * Validate unique email.
 	 * Accepets id param when editing contact (and not chaging email )
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type $email
 	 * @param unknown_type $id
 	 */
@@ -311,7 +310,6 @@ class Contacts extends BaseContacts {
 	/**
 	 * Validate unique email.
 	 * Accepets id param when editing contact (and not chaging email )
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param unknown_type $email
 	 * @param unknown_type $id
 	 */
@@ -341,7 +339,6 @@ class Contacts extends BaseContacts {
 	/**
 	 * Do a first validation directly from parameters (before the object is loading)
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param array $attributes
 	 */
 	static function validate($attributes, $id = null) {
@@ -373,7 +370,6 @@ class Contacts extends BaseContacts {
 	/**
 	 * Do a first validation directly from parameters (before the object is loading)
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param array $attributes
 	 */
 	static function validateUser($attributes, $id = null) {

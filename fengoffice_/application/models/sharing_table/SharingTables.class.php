@@ -3,7 +3,7 @@
 class SharingTables extends BaseSharingTables {
 	
 	/* 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param array $groupIds
 	 * @param int $objectId
 	 */
@@ -27,7 +27,7 @@ class SharingTables extends BaseSharingTables {
 	}
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param array $objectIds
 	 * @param int $groupId
 	 */

@@ -4,7 +4,6 @@
  * Property controller
  *
  * @version 1.0
- * @author Pablo Kamil <pablokam@gmail.com>
  */
 class PropertyController extends ApplicationController {
 

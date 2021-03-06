@@ -2,8 +2,9 @@
 	require_javascript('og/modules/addMessageForm.js');
 	set_page_title($webpage->isNew() ? lang('add webpage') : lang('edit webpage'));
 	$genid = gen_id();
+	
+	$visible_cps = CustomProperties::countVisibleCustomPropertiesByObjectType($webpage->getObjectTypeId());
 ?>
-
 <form id="<?php echo $genid ?>submit-edit-form" style='height: 100%; background-color: white' class="internalForm"
 	action="<?php echo $webpage->isNew() ? get_url('webpage', 'add') : $webpage->getEditUrl() ?>" method="post">
 
@@ -29,7 +30,7 @@
 	<div style="padding-top: 5px">
 		<a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_webpage_select_context_div',this)"><?php echo lang('context') ?></a>  
 		- <a href="#" class="option" tabindex=0 onclick="og.toggleAndBolden('<?php echo $genid?>add_webpage_description_div', this)"><?php echo lang('description') ?></a>
-                - <a href="#" class="option <?php echo $visible_cps > 0 ? 'bold' : '' ?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
+		- <a href="#" class="option <?php echo $visible_cps > 0 ? 'bold' : '' ?>" onclick="og.toggleAndBolden('<?php echo $genid ?>add_custom_properties_div',this)"><?php echo lang('custom properties') ?></a>
 		- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_subscribers_div',this)"><?php echo lang('object subscribers') ?></a>
 		<?php if($webpage->isNew() || $webpage->canLinkObject(logged_user())) { ?>
 			- <a href="#" class="option" onclick="og.toggleAndBolden('<?php echo $genid ?>add_linked_objects_div',this)"><?php echo lang('linked objects') ?></a>

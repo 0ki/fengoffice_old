@@ -15,7 +15,7 @@ class COTemplates extends BaseCOTemplates {
 	
 	/**
 	 * Returns true if the object blongs to the texmplate context ($memberIds)
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @param ContentDataObject $object
 	 * @param array $memberIds
 	 */
@@ -39,7 +39,7 @@ class COTemplates extends BaseCOTemplates {
 			if ($member instanceof Member ) { /* @var  $member Member */
 				$did = $member->getDimensionId() ;
 				// Si la dimension del miembro esta en la requeridas
-				if ($requiredDimensions[$did]) {
+				if (array_var($requiredDimensions, $did)) {
 					if (! in_array($mid, $memberIds)) {
 						$valid = false; 
 					}
@@ -121,7 +121,7 @@ class COTemplates extends BaseCOTemplates {
 	
 	/**
 	 * @deprecated
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	static function _findAllowed() {
 			

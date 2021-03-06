@@ -48,7 +48,7 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path of the controller folder 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getControllerPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/application/controllers/";
@@ -64,7 +64,7 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path of the plugin folder  
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getHooksPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/hooks/";
@@ -72,7 +72,7 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * Returns the path to the view folder 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getViewPath() {
 		return ROOT . "/plugins/" . $this->getSystemName () . "/application/views/";
@@ -80,7 +80,7 @@ class Plugin extends BasePlugin {
 	
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getLanguagePath() {
 		return PLUGIN_PATH . "/" . $this->getSystemName () . "/language";

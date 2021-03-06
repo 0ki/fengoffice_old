@@ -2,8 +2,6 @@
 
   /**
   * ContactWebpages
-  *
-  * @author Sebastian Azar <seba.azar@gmail.com>
   */
   class ContactWebpages extends BaseContactWebpages {
 

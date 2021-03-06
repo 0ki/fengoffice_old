@@ -26,8 +26,10 @@ function core_dimensions_after_dragdrop_classify($objects, &$member) {
 			$dim_ids = array_merge($dim_ids, $affected_dimensions);
 		}
 	}
-	foreach (array_unique($dim_ids) as $dim_id) {
-		evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+	if (isset($dim_ids)) {
+		foreach (array_unique($dim_ids) as $dim_id) {
+			evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+		}
 	}
 }
 
@@ -193,10 +195,10 @@ function core_dimensions_after_save_contact_permissions($pg_id, &$ignored) {
 
 
 function core_dimensions_after_save_member_permissions($member, &$ignored) {
-	if (!$member instanceof Member) return;
+	if (!$member instanceof Member || !($member->getId()>0)) return;
 	$permission_group_ids = array();
 	
-	$cmp_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id = ".$member->getId()." AND permission_group_id IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type IN ('permission_groups','user_groups'))");
+	$cmp_rows = DB::executeAll("SELECT DISTINCT permission_group_id FROM ".TABLE_PREFIX."contact_member_permissions WHERE member_id = '".$member->getId()."' AND permission_group_id IN (SELECT id FROM ".TABLE_PREFIX."permission_groups WHERE type IN ('permission_groups','user_groups'))");
 	foreach ($cmp_rows as $row) {
 		$permission_group_ids[$row['permission_group_id']] = $row['permission_group_id'];
 	}
@@ -208,10 +210,12 @@ function core_dimensions_after_save_member_permissions($member, &$ignored) {
 	}
 	// contacts
 	$contact_rows = DB::executeAll("SELECT DISTINCT om.object_id FROM fo_object_members om INNER JOIN fo_contacts c ON c.object_id=om.object_id 
-		WHERE om.member_id=".$member->getId()." AND c.user_type=0");
+		WHERE om.member_id='".$member->getId()."' AND c.user_type=0");
 	$no_user_ids = array();
-	foreach ($contact_rows as $row) {
-		$no_user_ids[] = $row['object_id'];
+	if (is_array($contact_rows)) {
+		foreach ($contact_rows as $row) {
+			$no_user_ids[] = $row['object_id'];
+		}
 	}
 	$more_contacts = Contacts::findAll(array('conditions' => 'object_id IN ('.implode(',', $no_user_ids).')'));
 	

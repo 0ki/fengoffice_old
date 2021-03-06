@@ -3,7 +3,6 @@ Ext.ns('Ext.ux.layout');
 /**
  * @class Ext.ux.layout.MultiAccordion
  * @extends Ext.layout.FitLayout
- * @author Ignacio Vazquez < elpepe.uy@gmail.com >
  * <p>Like Accordion Layout with confugurable max active items:</p>
  **/
 Ext.ux.layout.MultiAccordion = Ext.extend(Ext.layout.ContainerLayout, {

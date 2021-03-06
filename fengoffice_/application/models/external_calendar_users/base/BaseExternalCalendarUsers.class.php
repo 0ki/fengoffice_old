@@ -2,7 +2,7 @@
 /**
  * BaseExternalCalendarUsers class
  * Generado el 13/2/2012
- * @author Andres Botta <andres@iugo.com.uy>
+ * 
  */
 abstract class BaseExternalCalendarUsers extends DataManager {
 

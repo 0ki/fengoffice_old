@@ -1,5 +1,5 @@
 
-	About Feng Office 2.2.3.1-beta
+	About Feng Office 2.2.3.1
 	================================
 	
 	Feng Office is a Collaboration Platform and Project Management System.
@@ -101,6 +101,24 @@
 	
 	Changelog
 	=========
+	
+	Since 2.2.3.1-beta
+	------------------
+	bugfix: Search in a member does not find file contents.
+	bugfix: Click on "search everywhere" does not find file contents.
+	bugfix: Groups listed alphabetically in the Administration Panel.
+	bugfix: Monthly view calendar print shows empty calendar.
+	bugfix: Improvements in performance of overview widgets.
+	bugfix: Timeslots are not reclassified reclassifying tasks.
+	bugfix: Cannot delete members if it has objects.
+	bugfix: Member deletion does not clean all related tables.
+	bugfix: Only managers or superior roles can change other user passwords.
+	bugfix: Several missing langs and undefined variables warnings clean.
+	bugfix: Db error when adding two workspaces with the same name.
+	bugfix: Quick add files - all radio buttons can be selected.
+	
+	system: Russian translations updated.
+	
 	
 	Since 2.2.2
 	----------------

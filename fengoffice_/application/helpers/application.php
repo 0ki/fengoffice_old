@@ -1200,15 +1200,12 @@ function has_context_to_render($content_object_type_id) {
 }
 
 /**
- * 
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
  * @param unknown_type $content_object_type_id
  * @param unknown_type $genid
  * @param unknown_type $selected_members
  * @param unknown_type $options
  * @param unknown_type $skipped_dimensions
  * @param unknown_type $simulate_required
- * 
  */
 function render_dimension_trees($content_object_type_id, $genid = null, $selected_members = null, $options = array(), $skipped_dimensions = null, $simulate_required = null) { 
 		if (is_numeric($content_object_type_id)) {
@@ -1368,8 +1365,7 @@ function render_dimension_trees($content_object_type_id, $genid = null, $selecte
  * @param string $parentField	- Parent Field attribute
  * @param string $childField	- Children list attribute
  * @param string $idField		- Node Identificator
- * @param string $textField 	- The field name to show 	
- * @author Pepe <elpepe.uy@gmail.com>
+ * @param string $textField 	- The field name to show
  */
 function buildTree ($nodeList , $parentField = "parent", $childField = "children", $idField = "id", $textField = "name", $checkedField = "_checked") {
 	$tree = array() ;
@@ -1477,8 +1473,6 @@ function buildTree ($nodeList , $parentField = "parent", $childField = "children
 
 
 /**
- * 
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
  * @param string  $str
  * @param lenght $length
  * @param end $end

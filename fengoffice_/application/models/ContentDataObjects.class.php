@@ -22,7 +22,7 @@ abstract class ContentDataObjects extends DataManager {
 			return null;
 		}		
 		if (is_null($this->object_type_id)) {
-			$ot = ObjectTypes::findOne(array("conditions" => "name = '".$this->object_type_name."'"));
+			$ot = ObjectTypes::findByName($this->object_type_name);
 			if ($ot instanceof ObjectType) {
 				$this->object_type_id = $ot->getId();
 			}

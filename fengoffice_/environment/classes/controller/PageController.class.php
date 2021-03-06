@@ -122,6 +122,7 @@ abstract class PageController extends Controller {
 		$content = $this->getContent($template);
 		
 		tpl_assign('content_for_layout', $content);
+		$layout_path = $this->getLayoutPath();
 		return tpl_fetch($layout_path);
 	}
 

@@ -3,7 +3,6 @@ class  SharingTableController extends ApplicationController {
 	
 	/**
 	 * When updating perrmissions, sharing table should be updated
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
 	 * @param stdClass $permission:  
 	 * 			[m] => 36 : Member Id 
 	 * 			[o] => 3 : Object Type Id 

@@ -4,7 +4,7 @@
  * Member controller
  *
  * @version 1.0
- * @author Alvaro Torterola <alvarotm01@gmail.com>
+ * @author Alvaro Torterola <alvaro.torterola@fengoffice.com>
  */
 class MemberController extends ApplicationController {
         
@@ -606,29 +606,46 @@ class MemberController extends ApplicationController {
 			// Remove from shring table
 			SharingTables::instance()->delete(" 
 				object_id IN (
- 				 SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members WHERE member_id = ".get_id()." AND is_optimization = 0
+ 				 SELECT distinct(object_id) FROM ".TABLE_PREFIX."object_members WHERE member_id = ".$member->getId()." AND is_optimization = 0
 				)
 			");
-			$affectedObjectsRows = DB::executeAll("SELECT distinct(object_id) AS object_id FROM ".TABLE_PREFIX."object_members where member_id = ".get_id()." AND is_optimization = 0") ;
+			$affectedObjectsRows = DB::executeAll("SELECT distinct(object_id) AS object_id FROM ".TABLE_PREFIX."object_members where member_id = ".$member->getId()." AND is_optimization = 0") ;
 			if (is_array($affectedObjectsRows) && count($affectedObjectsRows) > 0) {
 				foreach ( $affectedObjectsRows as $row ) {
 					$oid = $row['object_id'];
-					$object = Objects::findObject($row['object_id']) ; // return an instance of Message, contact, etc.
+					$object = Objects::findObject($row['object_id']); // return an instance of Message, contact, etc.
 					/* @var $object ContentDataObject */
-					if ($object) {
-						if ( $object instanceof ContentDataObject ) {
-							$object->addToSharingTable();
-						}
-					}	 
+					if ($object instanceof ContentDataObject) {
+						$object->addToSharingTable();
+					}
 				}
 			}
 			
-			$args = $member;
-			Hook::fire('delete_member', $args, $ret);
+			// remove member associations
+			MemberPropertyMembers::delete('member_id = '.$member->getId().' OR property_member_id = '.$member->getId());
+			MemberRestrictions::delete('member_id = '.$member->getId().' OR restricted_member_id = '.$member->getId());
+			
+			// remove from permissions tables
+			ContactMemberPermissions::delete('member_id = '.$member->getId());
+			PermissionContexts::delete('member_id = '.$member->getId());
+			
+			// remove associated content object
+			if ($member->getObjectId() > 0) {
+				$mobj = Objects::findObject($member->getObjectId());
+				if ($mobj instanceof ContentDataObject) $mobj->delete();
+			}
+			
+			// delete from object_members
+			ObjectMembers::delete('member_id = '.$member->getId());
+			
+			Hook::fire('delete_member', $member, $ret);
 
 //			ApplicationLogs::createLog($member, ApplicationLogs::ACTION_DELETE, false, true);
 			$ok = $member->delete();
-			if ($ok) evt_add("reload dimension tree", array('dim_id' => $dim_id));
+			if ($ok) {
+				evt_add("reload dimension tree", array('dim_id' => $dim_id, 'node' => null));
+				evt_add("select dimension member", array('dim_id' => $dim_id, 'node' => 'root'));
+			}
 			
 			DB::commit();
 			flash_success(lang('success delete member', $member->getName()));
@@ -1065,10 +1082,12 @@ class MemberController extends ApplicationController {
 			$object_Types = array();
 			$parent_member_id = array_var($_GET, 'parent_member_id');
 			
-			if ($parent_member_id) {
-				$parent_member= Members::instance()->findById($parent_member_id) ;
-				$object_types = DimensionObjectTypes::getChildObjectTypes($parent_member_id);
+			$parent_member = Members::instance()->findById($parent_member_id) ;
+			if ($parent_member instanceof Member) {
+				$object_types = DimensionObjectTypes::getChildObjectTypes($parent_member);
 			}else {
+				$parent_member_id = 0;
+				$parent_member = null;
 				$object_types = DimensionObjectTypes::instance()->findAll(array("conditions"=>"dimension_id = $dimension_id AND is_root = 1 "));
 			}
 			if (count($object_types)) {
@@ -1153,6 +1172,22 @@ class MemberController extends ApplicationController {
 				$obj->addToMembers(array($member));
 				$obj->addToSharingTable();
 				$objects[] = $obj;
+				
+				if ($obj->allowsTimeslots()) {
+					$timeslots = $obj->getTimeslots();
+					foreach ($timeslots as $timeslot) {
+						$ts_mids = ObjectMembers::getMemberIdsByObject($timeslot->getId());
+						// if classified then reclassify
+						if (count($ts_mids)) {
+							if (array_var($_POST, 'remove_prev')) {
+								ObjectMembers::delete('`object_id` = ' . $timeslot->getId() . ' AND `member_id` IN (SELECT `m`.`id` FROM `'.TABLE_PREFIX.'members` `m` WHERE `m`.`dimension_id` = '.$member->getDimensionId().')');
+							}
+							$timeslot->addToMembers(array($member));
+							$timeslot->addToSharingTable();
+							$objects[] = $timeslot;
+						}
+					}
+				}
 
 				if ($obj instanceof MailContent) {
 					$conversation = MailContents::getMailsFromConversation($obj);

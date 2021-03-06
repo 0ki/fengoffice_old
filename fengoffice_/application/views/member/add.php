@@ -75,7 +75,7 @@
 			<div id="<?php echo $genid ?>object_type_combo_container"></div>
 		</div>
 		
-		<div id="<?php echo $genid?>memberParentContainer" <?php echo ($parent_sel > 0 ? "" : 'style="display:none; margin-top: 5px; float:left;"')?>>
+		<div id="<?php echo $genid?>memberParentContainer" style="margin-top: 5px; float:left;<?php echo ($parent_sel > 0 ? "" : 'display:none;')?>">
 			<?php  
 				
 				$selected_members = array();

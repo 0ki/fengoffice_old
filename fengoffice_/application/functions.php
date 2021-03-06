@@ -431,9 +431,6 @@ function context_type() {
 }
 
 
-/**
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
- */
 function active_context_members($full = true ) {
 	
 	$ctxMembers  = array ();
@@ -1163,7 +1160,6 @@ function build_context_array($context_plain) {
 }
 
 /**
- * @author Ignacio Vazquez - elpepe.uy@gmail.com
  * @param string  $tableName
  * @param array $cols
  * @param array $rows

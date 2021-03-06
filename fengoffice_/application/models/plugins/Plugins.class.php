@@ -16,7 +16,7 @@
   	
   	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
   	function getAll() {
   		if ( $this->all == null ) {
@@ -29,7 +29,7 @@
   	
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * @return array
 	 */
   	function getActive() {
@@ -52,7 +52,7 @@
 
   	/**
   	 * 
-  	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+  	 * 
   	 * @param unknown_type $plugin
   	 */
   	function setCurrent($plugin) {
@@ -63,7 +63,7 @@
     
   	/**
   	 * 
-  	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+  	 * 
   	 */
   	function getCurrent() {
   		return $this->current ;

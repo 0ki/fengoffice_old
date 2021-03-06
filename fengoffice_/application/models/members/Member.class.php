@@ -38,7 +38,7 @@ class Member extends BaseMember {
 		foreach ($members as $mem){
 			$child_members[] = $mem;
 			if ($recursive) {
-				$children = $mem->getAllChildren($recursive, 'name');
+				$children = $mem->getAllChildren($recursive, $order);
 				$child_members = array_merge($child_members, $children);
 			}
 		}
@@ -203,13 +203,10 @@ class Member extends BaseMember {
 			$error_message = lang("cannot delete member is account owner");
 			return false;
 		}
-		$childs = $this->getAllChildren();
-		if (MemberPropertyMembers::isMemberAssociated($this->getId())){
-			$error_message = lang("cannot delete member is associated");
-			return false;
-		}
 		
 		$continue_check = false;
+		
+		$childs = $this->getAllChildren();
 		if (count($childs) == 0) {
 			$continue_check = true;
 		} else {
@@ -252,11 +249,7 @@ class Member extends BaseMember {
 				}
 				$object_id_condition = $this->getObjectId() > 0 ? " AND o.id <> ".$this->getObjectId() : "";
 				foreach ($objects_in_member as $om) {
-					$obj_members = ObjectMembers::findAll(array("conditions" => array("`object_id` = ? AND `is_optimization` = 0 AND member_id IN ($child_ids_str) AND EXISTS (SELECT o.id FROM ".TABLE_PREFIX."objects o WHERE o.id = ? AND o.trashed_by_id=0 $object_id_condition)".$more_conditions, $om->getObjectId(), $om->getObjectId())));
-					if (count($obj_members) >= 1) {
-						$error_message = lang("cannot delete member has objects");
-						return false;
-					}
+					
 					$db_res = DB::execute("SELECT object_type_id FROM ".TABLE_PREFIX."objects WHERE id=".$om->getObjectId());
 					$row = $db_res->fetchRow();
 					if ($row && array_var($row, 'object_type_id')) {
@@ -296,7 +289,7 @@ class Member extends BaseMember {
 	}
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getMemberColor($default = null) {
 		$color = is_null($default) || !is_numeric($default) ? 0 : $default;
@@ -329,7 +322,7 @@ class Member extends BaseMember {
 	
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function getIconClass() {
 		if (!$this->icon_class) {
@@ -352,7 +345,7 @@ class Member extends BaseMember {
 	}
 	
 	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 * Returns the memeber relations grouped by dimension  
 	 */
 	function getRelatedMembers() {

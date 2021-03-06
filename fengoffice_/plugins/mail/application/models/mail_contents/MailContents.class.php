@@ -293,7 +293,7 @@ class MailContents extends BaseMailContents {
 			'order' => $order_by,
 			'order_dir' => $dir,
 			'extra_conditions' => "$accountConditions $classified $read $conversation_cond $box_cond",
-			'count_results' => false,
+			//'count_results' => false,
 			'join_params' => $join_params
 		));
 		

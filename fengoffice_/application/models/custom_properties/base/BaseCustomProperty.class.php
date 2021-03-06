@@ -3,8 +3,6 @@
   /**
   * BaseCustomProperty class
   * Written on Thu, 4 Oct 2009 14:51:09 -0300
-  *
-  * @author Pablo Kamil <pablokam@gmail.com>
   */
   abstract class BaseCustomProperty extends DataObject {
   

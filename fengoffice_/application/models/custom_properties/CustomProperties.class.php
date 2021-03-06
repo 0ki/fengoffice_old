@@ -2,8 +2,6 @@
 
 /**
  *   CustomProperty class
- *
- * @author Pablo Kamil <pablokam@gmail.com>
  */
 class  CustomProperties extends  BaseCustomProperties {
 

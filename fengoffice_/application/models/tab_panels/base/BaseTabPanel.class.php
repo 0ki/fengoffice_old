@@ -3,7 +3,7 @@
   /**
   * BaseTabPanel class
   *
-  * @author Alvaro Torterola <alvarotm01@gmail.com>
+  * @author Alvaro Torterola <alvaro.torterola@fengoffice.com>
   */
   abstract class BaseTabPanel extends DataObject {
   

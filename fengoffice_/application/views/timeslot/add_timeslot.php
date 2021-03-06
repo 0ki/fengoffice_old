@@ -22,7 +22,7 @@
 	<table style="margin-top:10px;">
 <?php
 	if (can_manage_time(logged_user())) {
-		echo '<tr><td><span class="bold">' . lang("person") . ':&nbsp;</span></td>';
+		echo '<tr><td style="vertical-align:middle;"><span class="bold">' . lang("person") . ':&nbsp;</span></td>';
 		
 		if (logged_user()->isMemberOfOwnerCompany()) {
 			$users = Contacts::getAllUsers();
@@ -48,7 +48,7 @@
 	}
 ?>
 		<tr>
-			<td><span class="bold"><?php echo lang("start date") ?>:&nbsp;</span></td>
+			<td style="vertical-align:middle;"><span class="bold"><?php echo lang("start date") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				$start_time = new DateTimeValue($timeslot->getStartTime()->getTimestamp() + logged_user()->getTimezone() * 3600) ;
 				echo pick_date_widget2('timeslot[start_value]',$start_time, $genid, 20);
@@ -56,7 +56,7 @@
 		</tr>
 		
 		<tr>
-			<td><span class="bold"><?php echo lang("start time") ?>:&nbsp;</span></td>
+			<td style="vertical-align:middle;"><span class="bold"><?php echo lang("start time") ?>:&nbsp;</span></td>
 			<td align='left'><select name="timeslot[start_hour]" size="1" tabindex="30">
 			<?php
 			for($i = 0; $i < 24; $i++) {
@@ -77,7 +77,7 @@
 			</select></td>
 		</tr><tr><td>&nbsp;</td></tr>
 		<tr>
-			<td ><span class="bold"><?php echo lang("end date") ?>:&nbsp;</span></td>
+			<td style="vertical-align:middle;"><span class="bold"><?php echo lang("end date") ?>:&nbsp;</span></td>
 			<td align='left'><?php 
 				if ($timeslot->getEndTime() == null){
 					$dt = DateTimeValueLib::now();
@@ -89,7 +89,7 @@
 		</tr>
 		
 		<tr>
-			<td><span class="bold"><?php echo lang("end time") ?>:&nbsp;</span></td>
+			<td style="vertical-align:middle;"><span class="bold"><?php echo lang("end time") ?>:&nbsp;</span></td>
 			<td align='left'><select name="timeslot[end_hour]" size="1" tabindex="50">
 			<?php
 			for($i = 0; $i < 24; $i++) {
@@ -110,8 +110,8 @@
 			</select></td>
 		</tr><tr><td>&nbsp;</td></tr>
 		<tr>
-			<td ><span class="bold"><?php echo lang("total pause time") ?>:&nbsp;</span></td>
-			<td align='left'><span class="bold"><?php 
+			<td style="vertical-align:middle;"><span class="bold"><?php echo lang("total pause time") ?>:&nbsp;</span></td>
+			<td align='left'><span><?php 
 				$totalSeconds = $timeslot->getSubtract();
 				$seconds = $totalSeconds % 60;
 				$minutes = (($totalSeconds - $seconds) / 60) % 60;
@@ -126,7 +126,7 @@
 				echo sprintf(">%02d</option>\n", $i);
 			}
 			?>
-			</select><?php echo lang('minutes') ?>,&nbsp;
+			</select><span><?php echo lang('minutes') ?>,&nbsp;</span>
 			<select name="timeslot[subtract_seconds]" size="1" tabindex="80">
 			<?php
 			for($i = 0; $i < 60; $i++) {
@@ -135,7 +135,7 @@
 				echo sprintf(">%02d</option>\n", $i);
 			}
 			?>
-			</select><?php echo lang('seconds') ?></td>
+			</select><span><?php echo lang('seconds') ?></span></td>
 		</tr>
 	</table>
 

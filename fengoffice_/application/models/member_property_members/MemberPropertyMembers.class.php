@@ -97,9 +97,7 @@
     }
     
     static function isMemberAssociated($member_id){
-    	$properties = self::findAll(array("conditions" => "`property_member_id` = $member_id"));
-    	if (count($properties)> 0) return true;
-    	return false;
+    	return self::count("member_id = '$member_id' OR property_member_id = '$member_id'") > 0;
     }
     
   } // MemberPropertyMembers 

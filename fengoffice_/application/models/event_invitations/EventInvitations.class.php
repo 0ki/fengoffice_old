@@ -4,7 +4,7 @@
   * EventInvitations class
   * Generated on Mon, 13 Oct 2008
   *
-  * @author Alvaro Torterola <alvarotm01@gmail.com>
+  * @author Alvaro Torterola <alvaro.torterola@fengoffice.com>
   */
   class EventInvitations extends BaseEventInvitations {    
   	function clearByUser($user) {

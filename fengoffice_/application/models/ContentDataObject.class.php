@@ -1359,7 +1359,7 @@ abstract class ContentDataObject extends ApplicationDataObject {
 	
 	/**
 	 * 
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
+	 * 
 	 */
 	function addToSharingTable() {
 		$oid = $this->getId();

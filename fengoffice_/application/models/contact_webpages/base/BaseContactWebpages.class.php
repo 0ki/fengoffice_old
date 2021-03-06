@@ -3,8 +3,6 @@
   
   /**
   * ContactWebpages class
-  *
-  * @author Sebastian Azar <seba.azar@gmail.com>
   */
   abstract class BaseContactWebpages extends DataManager {
   

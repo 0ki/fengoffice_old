@@ -3,8 +3,6 @@
   
   /**
   *  CustomProperties class
-  *
-  * @author Pablo Kamil <pablokam@gmail.com>
   */
   abstract class BaseCustomPropertyValues extends DataManager {
   

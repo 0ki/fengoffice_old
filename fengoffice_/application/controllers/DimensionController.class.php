@@ -192,7 +192,7 @@ class DimensionController extends ApplicationController {
 			
 			if (count($association_ids) > 0) {
 				$associated_members_ids = array();
-					
+				
 				foreach ($association_ids as $id){
 					$property_members_members = null;
 					$property_members_props = null;
@@ -274,9 +274,6 @@ class DimensionController extends ApplicationController {
 
 	
 	
-	/**
-	 * @author Ignacio Vazquez - elpepe.uy@gmail.com
-	 */
 	function initial_list_dimension_members_tree() {
 		$dimension_id = array_var($_REQUEST, 'dimension_id');
 		$checkedField = (array_var($_REQUEST, 'checkboxes'))?"checked":"_checked";
@@ -403,32 +400,32 @@ class DimensionController extends ApplicationController {
 				);
 				// Member Actions
 				if (can_manage_dimension_members(logged_user())){
-					$editUrl = '';			
-					// If member has an object linked, take object edit url 
-					if ($otid = $m->getObjectTypeId()){
-						if ($ot = ObjectTypes::findById($otid)) {
-							if ($handler = $ot->getHandlerClass() ){
-								eval ("\$itemClass = $handler::instance()->getItemClass();");
-								if ($itemClass) {
-									$instance = new $itemClass();
-									$instance->setId($m->getObjectId());
-									$instance->setObjectId($m->getObjectId());
-									if ($instance instanceof Contact) {
-										$instance = Contacts::findById($instance->getId());
-									}
-									$editUrl = $instance->getEditUrl();
+					$editUrl = '';
+					// If member has an object linked, take object edit url
+					
+					if ($ot = ObjectTypes::findById($m->getObjectTypeId())) {
+						if ($handler = $ot->getHandlerClass() ){
+							eval ("\$itemClass = $handler::instance()->getItemClass();");
+							if ($itemClass) {
+								$instance = new $itemClass();
+								$instance->setId($m->getObjectId());
+								$instance->setObjectId($m->getObjectId());
+								if ($instance instanceof Contact) {
+									if ($ot->getName() == 'company') $instance->setIsCompany(1);
 								}
+								$editUrl = $instance->getEditUrl();
 							}
 						}
 					}
+					
 					// Take default membewr edit url if not overwitten
 					if (!$editUrl) {
 						$editUrl = get_url('member', 'edit', array('id'=> $m->getId()));
 					}
 					$member['actions'] = array(array(
 						'url' => $editUrl,
-			  			'text' =>  '',
-			  			'iconCls' =>  'ico-edit'
+			  			'text' => '',
+			  			'iconCls' => 'ico-edit'
 					));	
 				}
 			}
